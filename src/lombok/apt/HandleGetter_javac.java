@@ -60,6 +60,10 @@ class HandleGetter_javac extends HandlerForCompiler<Getter> {
 	
 	private MethodTree createGetter(Element field, TreeMaker treeMaker, Name.Table nameTable) {
 		JCStatement returnStatement = treeMaker.Return(treeMaker.Ident((Symbol)field));
+		
+		//TODO Trab the position in the source file of the field by looking it up in the JCClassDecl,
+		//and copy it into the 'position' info for the Ident and Return AST Nodes.
+		
 		JCBlock methodBody = treeMaker.Block(0, List.of(returnStatement));
 		Name methodName = Name.fromString(nameTable, PKG.toGetterName(field));
 		JCExpression methodType = treeMaker.Type((Type)field.asType());

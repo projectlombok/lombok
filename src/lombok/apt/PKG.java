@@ -8,6 +8,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 
 import lombok.Lombok;
+import lombok.transformations.TransformationsUtil;
 
 
 class PKG {
@@ -48,20 +49,13 @@ class PKG {
 		}
 	}
 	
-	static String toGetterName(Element element) {
-		CharSequence fieldName = element.getSimpleName();
-		if ( fieldName.length() == 0 ) return "get";
+	static String toGetterName(Element field) {
+		CharSequence fieldName = field.getSimpleName();
 		
-		final String prefix, suffix;
+		boolean isBoolean = (field.asType().getKind() == TypeKind.BOOLEAN ||
+				"java.lang.Boolean".equals(field.asType().toString()));
 		
-		if ( element.asType().getKind() == TypeKind.BOOLEAN || "java.lang.Boolean".equals(element.asType().toString()) ) prefix = "is";
-		else prefix = "get";
-		
-		char first = fieldName.charAt(0);
-		if ( Character.isLowerCase(first) )
-			suffix = String.format("%s%s", Character.toTitleCase(first), fieldName.subSequence(1, fieldName.length()));
-		else suffix = fieldName.toString();
-		return String.format("%s%s", prefix, suffix);
+		return TransformationsUtil.toGetterName(fieldName, isBoolean);
 	}
 	
 	static byte[] readStream(InputStream in) throws IOException {
