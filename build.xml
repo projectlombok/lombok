@@ -1,0 +1,49 @@
+<project name="lombok" default="dist">
+	<property name="build.compiler" value="javac1.6" />
+	<path id="deps.path">
+		<fileset dir="deps">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	<path id="libs.path">
+		<fileset dir="lib">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
+	<target name="clean">
+		<delete dir="build" quiet="true" />
+		<delete dir="dist" quiet="true" />
+	</target>
+	
+	<target name="compile">
+		<mkdir dir="build" />
+		<javac srcdir="src" debug="on" destdir="build">
+			<classpath refid="deps.path" />
+			<classpath refid="libs.path" />
+		</javac>
+		<mkdir dir="build/META-INF" />
+		<mkdir dir="build/META-INF/services" />
+		<echo file="build/META-INF/services/javax.annotation.processing.Processor">lombok.apt.Processor</echo>
+	</target>
+	
+	<target name="unpackLibs">
+		<unjar dest="build">
+			<path refid="libs.path" />
+		</unjar>
+	</target>
+	
+	<target name="dist" depends="clean, compile, unpackLibs">
+		<mkdir dir="dist" />
+		<tstamp>
+			<format property="distTime" pattern="yyyyMMdd'T'hhmmss" locale="en,US" />
+		</tstamp>
+		<jar basedir="build" destfile="dist/lombok-${distTime}.jar">
+			<manifest>
+				<attribute name="Premain-Class" value="lombok.agent.eclipse.EclipseParserPatcher" />
+				<attribute name="Can-Redefine-Classes" value="true" />
+			</manifest>
+		</jar>
+		<copy file="dist/lombok-${distTime}.jar" tofile="dist/lombok.jar" />
+	</target>
+</project>

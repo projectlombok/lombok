@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/asm-3.1.jar" sourcepath="contrib/asm-3.1-src.zip">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/lombok/contrib/asm-3.1-javadoc.zip!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="deps/org.eclipse.jdt.apt.core_3.3.200.v20090528-1135.jar"/>
+	<classpathentry kind="lib" path="deps/org.eclipse.jdt.apt.pluggable.core_1.0.200.v20090526-2130.jar"/>
+	<classpathentry kind="lib" path="deps/org.eclipse.jdt.compiler.apt_1.0.200.v20090528-1135.jar"/>
+	<classpathentry kind="lib" path="deps/org.eclipse.jdt.core_3.5.0.v_963.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

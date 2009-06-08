@@ -1,0 +1,45 @@
+Planned lombok features
+=======================
+
+## @Getter
+
+Put on any field; like so:
+
+    private @Getter AnyType foo;
+
+This will generate the following method:
+
+    public AnyType getFoo() {
+        return foo;
+    }
+
+Optionally you can generate a different access level by specifying the `AccessLevel` in the annotation, like so:
+
+    private @Getter(AccessLevel.PROTECTED) AnyType foo;
+
+## @Setter
+
+Like @Getter, but creates setters.
+
+## @Data
+
+Creates getters, setters (for non-final fields), toString, equals, and hashCode, as well as a constructor, or, if you wish,
+a 'static factory method'.
+
+## @Property
+
+## @AutoClose
+
+## @Synchronized
+
+## @Generator
+
+## @SneakyThrows
+
+# Maybes:
+
+## @RunInEDT
+
+## @SaneEquals
+
+## List Comprehensions
