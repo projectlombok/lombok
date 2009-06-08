@@ -52,8 +52,7 @@ class PKG {
 	static String toGetterName(Element field) {
 		CharSequence fieldName = field.getSimpleName();
 		
-		boolean isBoolean = (field.asType().getKind() == TypeKind.BOOLEAN ||
-				"java.lang.Boolean".equals(field.asType().toString()));
+		boolean isBoolean = field.asType().getKind() == TypeKind.BOOLEAN;
 		
 		return TransformationsUtil.toGetterName(fieldName, isBoolean);
 	}

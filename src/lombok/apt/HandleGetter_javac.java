@@ -54,8 +54,6 @@ class HandleGetter_javac extends HandlerForCompiler<Getter> {
 		
 		MethodTree getterMethod = createGetter(element, treeMaker, nameTable);
 		javacClassTree.defs = javacClassTree.defs.append((JCTree)getterMethod);
-		
-		messager.printMessage(Diagnostic.Kind.WARNING, "Generated a getter for this field", element);
 	}
 	
 	private MethodTree createGetter(Element field, TreeMaker treeMaker, Name.Table nameTable) {
