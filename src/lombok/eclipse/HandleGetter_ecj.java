@@ -1,10 +1,12 @@
-package lombok.agent.eclipse;
+package lombok.eclipse;
 
 import java.lang.reflect.Modifier;
 
 import lombok.transformations.TransformationsUtil;
 
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
@@ -16,7 +18,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
 
 public class HandleGetter_ecj {
-	public void apply(TypeDeclaration type, FieldDeclaration field) {
+	public void apply(Annotation annotation, TypeDeclaration type, FieldDeclaration field) {
 		TypeReference fieldType = field.type;
 		String getterName = TransformationsUtil.toGetterName(new String(field.name), nameEquals(fieldType.getTypeName(), "boolean"));
 		
@@ -34,8 +36,11 @@ public class HandleGetter_ecj {
 		method.thrownExceptions = null;
 		method.typeParameters = null;
 		method.scope = new MethodScope(type.scope, method, false);
+		method.bits |= ASTNode.Bit24;
 		Expression fieldExpression = new SingleNameReference(field.name, (field.declarationSourceStart << 32) | field.declarationSourceEnd);
 		Statement returnStatement = new ReturnStatement(fieldExpression, field.sourceStart, field.sourceEnd);
+		method.bodyStart = method.declarationSourceStart = method.sourceStart = annotation.sourceStart;
+		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = annotation.sourceEnd;
 		method.statements = new Statement[] { returnStatement };
 		AbstractMethodDeclaration[] newArray = new AbstractMethodDeclaration[type.methods.length + 1];
 		System.arraycopy(type.methods, 0, newArray, 0, type.methods.length);
