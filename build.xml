@@ -1,11 +1,16 @@
 <project name="lombok" default="dist">
+	<loadresource property="lombok.version">
+		<file file="version.txt" />
+	</loadresource>
 	<property name="build.compiler" value="javac1.6" />
-	<path id="deps.path">
+	<path id="lombok.deps.path">
 		<fileset dir="deps">
 			<include name="**/*.jar" />
 		</fileset>
 	</path>
-	<path id="libs.path">
+	<path id="lombok.libs.path" />
+	<path id="eclipse.agent.deps.path" />
+	<path id="eclipse.agent.libs.path">
 		<fileset dir="lib">
 			<include name="**/*.jar" />
 		</fileset>
@@ -17,33 +22,41 @@
 	</target>
 	
 	<target name="compile">
-		<mkdir dir="build" />
-		<javac srcdir="src" debug="on" destdir="build">
-			<classpath refid="deps.path" />
-			<classpath refid="libs.path" />
+		<mkdir dir="build/lombok" />
+		<javac srcdir="src" debug="on" destdir="build/lombok">
+			<classpath refid="lombok.deps.path" />
+			<classpath refid="lombok.libs.path" />
 		</javac>
-		<mkdir dir="build/META-INF" />
-		<mkdir dir="build/META-INF/services" />
-		<echo file="build/META-INF/services/javax.annotation.processing.Processor">lombok.apt.Processor</echo>
+		<mkdir dir="build/lombok/META-INF" />
+		<mkdir dir="build/lombok/META-INF/services" />
+		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.apt.Processor</echo>
+		
+		<mkdir dir="build/eclipse.agent" />
+		<javac srcdir="src_eclipseagent" debug="on" destdir="build/eclipse.agent">
+			<classpath refid="eclipse.agent.deps.path" />
+			<classpath refid="eclipse.agent.libs.path" />
+		</javac>
 	</target>
 	
 	<target name="unpackLibs">
-		<unjar dest="build">
-			<path refid="libs.path" />
+		<unjar dest="build/lombok">
+			<path refid="lombok.libs.path" />
+		</unjar>
+		<unjar dest="build/eclipse.agent">
+			<path refid="eclipse.agent.libs.path" />
 		</unjar>
 	</target>
 	
 	<target name="dist" depends="clean, compile, unpackLibs">
 		<mkdir dir="dist" />
-		<tstamp>
-			<format property="distTime" pattern="yyyyMMdd'T'hhmmss" locale="en,US" />
-		</tstamp>
-		<jar basedir="build" destfile="dist/lombok-${distTime}.jar">
+		<jar basedir="build/lombok" destfile="dist/lombok-${lombok.version}.jar" />
+		<jar basedir="build/eclipse.agent" destfile="dist/lombok.eclipse.agent-${lombok.version}.jar">
 			<manifest>
 				<attribute name="Premain-Class" value="lombok.agent.eclipse.EclipseParserPatcher" />
 				<attribute name="Can-Redefine-Classes" value="true" />
 			</manifest>
 		</jar>
-		<copy file="dist/lombok-${distTime}.jar" tofile="dist/lombok.jar" />
+		<copy file="dist/lombok-${lombok.version}.jar" tofile="dist/lombok.jar" />
+		<copy file="dist/lombok.eclipse.agent-${lombok.version}.jar" tofile="dist/lombok.eclipse.agent.jar" />
 	</target>
 </project>
