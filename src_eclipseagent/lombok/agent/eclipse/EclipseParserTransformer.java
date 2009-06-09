@@ -1,6 +1,7 @@
 package lombok.agent.eclipse;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -71,9 +72,10 @@ class EclipseParserTransformer {
 				Constructor<? extends MethodVisitor> c = targetVisitorClass.getDeclaredConstructor(MethodVisitor.class);
 				c.setAccessible(true);
 				return c.newInstance(writerVisitor);
+			} catch ( InvocationTargetException e ) {
+				throw sneakyThrow(e.getCause());
 			} catch ( Exception e ) {
 				//NoSuchMethodException: We know they exist.
-				//InvocationTargetException: No checked exceptions thrown by any compilers.
 				//IllegalAccessException: We called setAccessible.
 				//InstantiationException: None of these classes are abstract.
 				throw sneakyThrow(e);
@@ -113,6 +115,7 @@ class EclipseParserTransformer {
 				super.visitMethodInsn(Opcodes.INVOKESTATIC, TARGET_STATIC_CLASS,
 						staticMethodName, TARGET_STATIC_METHOD_DESC);
 			}
+			super.visitInsn(opcode);
 		}
 	}
 	
