@@ -43,3 +43,7 @@ a 'static factory method'.
 ## @SaneEquals
 
 ## List Comprehensions
+
+## Dodge access restrictions (call method private stuff, recompile to reflection).
+
+## @ReturnThis
