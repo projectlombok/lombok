@@ -1,4 +1,4 @@
-package lombok.eclipse;
+package lombok.eclipse.handlers;
 
 import java.lang.reflect.Modifier;
 
