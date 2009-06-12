@@ -4,14 +4,23 @@
 	</loadresource>
 	<property name="build.compiler" value="javac1.6" />
 	<path id="lombok.deps.path">
-		<fileset dir="deps">
+		<fileset dir="deps/lombok">
 			<include name="**/*.jar" />
 		</fileset>
 	</path>
-	<path id="lombok.libs.path" />
-	<path id="eclipse.agent.deps.path" />
+	<path id="lombok.libs.path">
+		<fileset dir="lib/lombok">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<path id="eclipse.agent.deps.path">
+		<fileset dir="deps/eclipse.agent">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
 	<path id="eclipse.agent.libs.path">
-		<fileset dir="lib">
+		<fileset dir="lib/eclipse.agent">
 			<include name="**/*.jar" />
 		</fileset>
 	</path>
