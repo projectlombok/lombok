@@ -15,6 +15,7 @@ import java.util.Map;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
+import org.eclipse.jdt.internal.compiler.ast.Clinit;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Initializer;
@@ -46,6 +47,7 @@ public class EclipseAST {
 				traverseChildren(visitor, child);
 				visitor.endVisitField(child, (FieldDeclaration)n);
 			} else if ( n instanceof AbstractMethodDeclaration ) {
+				if ( n instanceof Clinit ) continue;
 				visitor.visitMethod(child, (AbstractMethodDeclaration)n);
 				traverseChildren(visitor, child);
 				visitor.endVisitMethod(child, (AbstractMethodDeclaration)n);
