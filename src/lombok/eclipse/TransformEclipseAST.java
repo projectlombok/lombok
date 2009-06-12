@@ -1,12 +1,14 @@
 package lombok.eclipse;
 
+import java.util.Map;
+import java.util.WeakHashMap;
+
+import lombok.eclipse.EclipseAST.Node;
+
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.Initializer;
-import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.parser.Parser;
 
 /**
@@ -23,6 +25,9 @@ import org.eclipse.jdt.internal.compiler.parser.Parser;
  * @author rspilker
  */
 public class TransformEclipseAST {
+	private static final Map<CompilationUnitDeclaration, EclipseAST> astCache =
+		new WeakHashMap<CompilationUnitDeclaration, EclipseAST>();
+	
 	/**
 	 * This method is called immediately after eclipse finishes building a CompilationUnitDeclaration, which is
 	 * the top-level AST node when eclipse parses a source file. The signature is 'magic' - you should not
@@ -35,26 +40,25 @@ public class TransformEclipseAST {
 	 * @param ast The AST node belonging to the compilation unit (java speak for a single source file).
 	 */
 	public static void transform(Parser parser, CompilationUnitDeclaration ast) {
-		if ( ast.types != null ) for ( TypeDeclaration type : ast.types ) {
-			if ( type.fields != null ) for ( FieldDeclaration field : type.fields ) {
-				if ( field.annotations != null ) for ( Annotation annotation : field.annotations ) {
-					if ( annotation.type.toString().equals("Getter") ) {
-						new HandleGetter_ecj().apply(annotation, type, field);
-					}
+		EclipseAST existing = astCache.get(ast);
+		if ( existing == null ) {
+			existing = new EclipseAST(ast);
+			astCache.put(ast, existing);
+		} else existing.reparse();
+		
+		existing.traverse(new AnnotationVisitor());
+	}
+	
+	private static class AnnotationVisitor extends EclipseASTAdapter {
+		@Override public void visitField(Node node, FieldDeclaration field) {
+			if ( field.annotations == null ) return;
+			for ( Annotation annotation : field.annotations ) {
+				TypeReference type = annotation.type;
+				if ( type != null && new String(type.getLastToken()).equals("Getter") ) {
+					new HandleGetter_ecj().apply(annotation, node, field);
 				}
 			}
 		}
-	}
-	
-	public static void transform(Parser parser, MethodDeclaration ast) {
-		
-	}
-	
-	public static void transform(Parser parser, ConstructorDeclaration ast) {
-		
-	}
-	
-	public static void transform(Parser parser, Initializer ast) {
 		
 	}
 }

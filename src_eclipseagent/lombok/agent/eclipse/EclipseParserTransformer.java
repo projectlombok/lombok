@@ -19,6 +19,7 @@ class EclipseParserTransformer {
 	private static final String COMPILER_PKG =
 		"Lorg/eclipse/jdt/internal/compiler/ast/";
 	private static final String TARGET_STATIC_CLASS = "java/lombok/ClassLoaderWorkaround";
+	private static final String TARGET_STATIC_METHOD_NAME = "transformCompilationUnitDeclaration";
 	private static final String TARGET_STATIC_METHOD_DESC = "(Ljava/lang/Object;Ljava/lang/Object;)V";
 	
 	private static final Map<String, Class<? extends MethodVisitor>> rewriters;
@@ -26,9 +27,10 @@ class EclipseParserTransformer {
 	static {
 		Map<String, Class<? extends MethodVisitor>> map = new HashMap<String, Class<? extends MethodVisitor>>();
 		map.put(String.format("endParse(I)%sCompilationUnitDeclaration;", COMPILER_PKG), EndParsePatcher.class);
-		map.put(String.format("parse(%1$sMethodDeclaration;%1$sCompilationUnitDeclaration;)V", COMPILER_PKG), ParseMethodPatcher.class);
-		map.put(String.format("parse(%1$sConstructorDeclaration;%1$sCompilationUnitDeclaration;Z)V", COMPILER_PKG), ParseConstructorPatcher.class);
-		map.put(String.format("parse(%1$sInitializer;%1$sTypeDeclaration;%1$sCompilationUnitDeclaration;)V", COMPILER_PKG), ParseInitializerPatcher.class);
+		map.put(String.format("getMethodBodies(%sCompilationUnitDeclaration;)V", COMPILER_PKG), GetMethodBodiesPatcher.class);
+		map.put(String.format("parse(%1$sMethodDeclaration;%1$sCompilationUnitDeclaration;)V", COMPILER_PKG), ParseBlockContainerPatcher.class);
+		map.put(String.format("parse(%1$sConstructorDeclaration;%1$sCompilationUnitDeclaration;Z)V", COMPILER_PKG), ParseBlockContainerPatcher.class);
+		map.put(String.format("parse(%1$sInitializer;%1$sTypeDeclaration;%1$sCompilationUnitDeclaration;)V", COMPILER_PKG), ParseBlockContainerPatcher.class);
 		rewriters = Collections.unmodifiableMap(map);
 	}
 	
@@ -85,12 +87,26 @@ class EclipseParserTransformer {
 	
 	private static final int BIT24 = 0x800000;
 	
-	static class ParseBlockContainerPatcher extends MethodAdapter {
-		private final String staticMethodName;
-		
-		ParseBlockContainerPatcher(MethodVisitor mv, String staticMethodName) {
+	static class GetMethodBodiesPatcher extends MethodAdapter {
+		GetMethodBodiesPatcher(MethodVisitor mv) {
 			super(mv);
-			this.staticMethodName = staticMethodName;
+		}
+		
+		@Override public void visitInsn(int opcode) {
+			if ( opcode == Opcodes.RETURN ) {
+				//injects: ClassLoaderWorkaround.transformCUD(parser, compilationUnitDeclaration);
+				super.visitVarInsn(Opcodes.ALOAD, 0);
+				super.visitVarInsn(Opcodes.ALOAD, 1);
+				super.visitMethodInsn(Opcodes.INVOKESTATIC, TARGET_STATIC_CLASS,
+						TARGET_STATIC_METHOD_NAME, TARGET_STATIC_METHOD_DESC);
+			}
+			super.visitInsn(opcode);
+		}
+	}
+	
+	static class ParseBlockContainerPatcher extends MethodAdapter {
+		ParseBlockContainerPatcher(MethodVisitor mv) {
+			super(mv);
 		}
 		
 		@Override public void visitCode() {
@@ -105,35 +121,6 @@ class EclipseParserTransformer {
 			mv.visitLabel(l0);
 			mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
 			super.visitCode();
-		}
-		
-		@Override public void visitInsn(int opcode) {
-			if ( opcode == Opcodes.RETURN ) {
-				//injects: ClassLoaderWorkaround.transformConstructorDeclaration(parser, constructorDeclaration);
-				super.visitVarInsn(Opcodes.ALOAD, 0);
-				super.visitVarInsn(Opcodes.ALOAD, 1);
-				super.visitMethodInsn(Opcodes.INVOKESTATIC, TARGET_STATIC_CLASS,
-						staticMethodName, TARGET_STATIC_METHOD_DESC);
-			}
-			super.visitInsn(opcode);
-		}
-	}
-	
-	static class ParseConstructorPatcher extends ParseBlockContainerPatcher {
-		public ParseConstructorPatcher(MethodVisitor mv) {
-			super(mv, "transformConstructorDeclaration");
-		}
-	}
-	
-	static class ParseMethodPatcher extends ParseBlockContainerPatcher {
-		public ParseMethodPatcher(MethodVisitor mv) {
-			super(mv, "transformMethodDeclaration");
-		}
-	}
-	
-	static class ParseInitializerPatcher extends ParseBlockContainerPatcher {
-		public ParseInitializerPatcher(MethodVisitor mv) {
-			super(mv, "transformInitializer");
 		}
 	}
 	

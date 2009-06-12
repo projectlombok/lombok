@@ -3,7 +3,9 @@ package java.lombok;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
 
 /**
  * Allows you to inject the lombok classes into any classloader, even if that classloader does not
@@ -14,35 +16,32 @@ import java.lang.reflect.Method;
  * @author rzwitserloot
  */
 public class ClassLoaderWorkaround {
+	static RuntimeException sneakyThrow(Throwable t) {
+		if ( t == null ) throw new NullPointerException("t");
+		ClassLoaderWorkaround.<RuntimeException>sneakyThrow0(t);
+		return null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static <T extends Throwable> void sneakyThrow0(Throwable t) throws T {
+		throw (T)t;
+	}
+	
 	private static boolean initialized;
-	private static Method transformCompilationUnitDeclaration;
-	private static Method transformMethodDeclaration;
-	private static Method transformConstructorDeclaration;
-	private static Method transformInitializer;
+	private static Method transform;
 	
 	public static void transformCompilationUnitDeclaration(Object parser, Object cud) throws Exception {
 		initialize(cud);
-		transformCompilationUnitDeclaration.invoke(null, parser, cud);
-	}
-	
-	public static void transformMethodDeclaration(Object parser, Object methodDeclaration) throws Exception {
-		initialize(methodDeclaration);
-		transformMethodDeclaration.invoke(null, parser, methodDeclaration);
-	}
-	
-	public static void transformConstructorDeclaration(Object parser, Object constructorDeclaration) throws Exception {
-		initialize(constructorDeclaration);
-		transformConstructorDeclaration.invoke(null, parser, constructorDeclaration);
-	}
-	
-	public static void transformInitializer(Object parser, Object initializer) throws Exception {
-		initialize(initializer);
-		transformInitializer.invoke(null, parser, initializer);
+		try {
+			transform.invoke(null, parser, cud);
+		} catch ( InvocationTargetException e ) {
+			throw sneakyThrow(e.getCause());
+		}
 	}
 	
 	private static void initialize(Object cud) throws ClassNotFoundException {
 		if ( initialized ) {
-			if ( transformInitializer == null ) throw new ClassNotFoundException("lombok.eclipse.TransformEclipseAST");
+			if ( transform == null ) throw new ClassNotFoundException("lombok.eclipse.TransformEclipseAST");
 			return;
 		}
 		
@@ -87,15 +86,7 @@ public class ClassLoaderWorkaround {
 			Class<?> c = loader.loadClass("lombok.eclipse.TransformEclipseAST");
 			for ( Method m : c.getMethods() ) {
 				if ( m.getName().equals("transform") ) {
-					if ( m.getParameterTypes().length >= 2 ) {
-						Class<?> astType = m.getParameterTypes()[1];
-						String astName = astType.getName();
-						astName = astName.substring(astName.lastIndexOf('.') + 1);
-						if ( astName.equals("CompilationUnitDeclaration") ) transformCompilationUnitDeclaration = m;
-						else if ( astName.equals("MethodDeclaration") ) transformMethodDeclaration = m;
-						else if ( astName.equals("ConstructorDeclaration") ) transformConstructorDeclaration = m;
-						else if ( astName.equals("Initializer") ) transformInitializer = m;
-					}
+					transform = m;
 				}
 			}
 		} catch ( ClassNotFoundException ignore ) {}
