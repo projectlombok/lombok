@@ -8,5 +8,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.CLASS)
 public @interface Getter {
-	AccessLevel value() default AccessLevel.PUBLIC;
+	AccessLevel value() default lombok.AccessLevel.PUBLIC;
 }
