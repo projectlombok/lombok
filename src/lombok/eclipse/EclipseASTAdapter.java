@@ -18,8 +18,8 @@ public abstract class EclipseASTAdapter implements EclipseASTVisitor {
 	@Override public void endVisitInitializer(Node node, Initializer initializer) {}
 	@Override public void visitField(Node node, FieldDeclaration field) {}
 	@Override public void endVisitField(Node node, FieldDeclaration field) {}
-	@Override public void visitMethod(Node node, AbstractMethodDeclaration declaration) {}
-	@Override public void endVisitMethod(Node node, AbstractMethodDeclaration declaration) {}
-	@Override public void visitLocal(Node node, LocalDeclaration declaration) {}
-	@Override public void endVisitLocal(Node node, LocalDeclaration declaration) {}
+	@Override public void visitMethod(Node node, AbstractMethodDeclaration method) {}
+	@Override public void endVisitMethod(Node node, AbstractMethodDeclaration method) {}
+	@Override public void visitLocal(Node node, LocalDeclaration local) {}
+	@Override public void endVisitLocal(Node node, LocalDeclaration local) {}
 }

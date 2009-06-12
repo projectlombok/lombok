@@ -6,23 +6,21 @@ import java.util.HashSet;
 import java.util.Set;
 
 import lombok.eclipse.EclipseAST;
+import lombok.eclipse.EclipseAST.Node;
 
-import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ImportReference;
+import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.eclipse.jdt.internal.compiler.parser.Parser;
 
 public class TypeResolver {
 	private final TypeLibrary library;
-	private final EclipseAST ast;
 	private Collection<String> imports;
 	
 	
-	public TypeResolver(TypeLibrary library, Parser parser, EclipseAST ast) {
+	public TypeResolver(TypeLibrary library, EclipseAST.Node top) {
 		this.library = library;
-		this.ast = ast;
-		this.imports = makeImportList((CompilationUnitDeclaration) ast.top().getEclipseNode());
+		this.imports = makeImportList((CompilationUnitDeclaration) top.getEclipseNode());
 	}
 	
 	private static Collection<String> makeImportList(CompilationUnitDeclaration declaration) {
@@ -33,8 +31,8 @@ public class TypeResolver {
 		}
 		return imports;
 	}
-
-	public Collection<String> findTypeMatches(ASTNode context, TypeReference type) {
+	
+	public Collection<String> findTypeMatches(Node context, TypeReference type) {
 		Collection<String> potentialMatches = library.findCompatible(toQualifiedName(type.getTypeName()));
 		if ( potentialMatches.isEmpty() ) return Collections.emptyList();
 		
@@ -50,7 +48,14 @@ public class TypeResolver {
 		if ( potentialMatches.isEmpty() ) return Collections.emptyList();
 		
 		//Find a lexically accessible type of the same simple name in the same Compilation Unit. If it exists: no matches.
-		
+		Node n = context;
+		while ( n != null ) {
+			if ( n.getEclipseNode() instanceof TypeDeclaration ) {
+				char[] name = ((TypeDeclaration)n.getEclipseNode()).name;
+				if ( name != null && new String(name).equals(simpleName) ) return Collections.emptyList();
+			}
+			n = n.up();
+		}
 		
 		// The potential matches we found by comparing the import statements is our matching set. Return it.
 		return potentialMatches;

@@ -1,15 +1,15 @@
 package lombok.eclipse;
 
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.lang.reflect.Field;
 
 import lombok.eclipse.EclipseAST.Node;
-import lombok.eclipse.handlers.HandleGetter_ecj;
 
+import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.parser.Parser;
 
 /**
@@ -26,8 +26,27 @@ import org.eclipse.jdt.internal.compiler.parser.Parser;
  * @author rspilker
  */
 public class TransformEclipseAST {
-	private static final Map<CompilationUnitDeclaration, EclipseAST> astCache =
-		new WeakHashMap<CompilationUnitDeclaration, EclipseAST>();
+	private final EclipseAST ast;
+	//The patcher hacks this field onto CUD. It's public.
+	private static final Field astCacheField;
+	private static final HandlerLibrary handlers;
+	
+	static {
+		Field f = null;
+		HandlerLibrary l = null;
+		try {
+			l = HandlerLibrary.load();
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
+		try {
+			f = CompilationUnitDeclaration.class.getDeclaredField("$lombokAST");
+		} catch ( NoSuchFieldException ignore ) {
+			ignore.printStackTrace();
+		}
+		astCacheField = f;
+		handlers = l;
+	}
 	
 	/**
 	 * This method is called immediately after eclipse finishes building a CompilationUnitDeclaration, which is
@@ -41,25 +60,67 @@ public class TransformEclipseAST {
 	 * @param ast The AST node belonging to the compilation unit (java speak for a single source file).
 	 */
 	public static void transform(Parser parser, CompilationUnitDeclaration ast) {
-		EclipseAST existing = astCache.get(ast);
+		EclipseAST existing = getCache(ast);
 		if ( existing == null ) {
 			existing = new EclipseAST(ast);
-			astCache.put(ast, existing);
+			setCache(ast, existing);
 		} else existing.reparse();
-		
-		existing.traverse(new AnnotationVisitor());
+		new TransformEclipseAST(existing).go();
+	}
+	
+	private static EclipseAST getCache(CompilationUnitDeclaration ast) {
+		if ( astCacheField == null ) return null;
+		try {
+			return (EclipseAST)astCacheField.get(ast);
+		} catch ( Exception e ) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	private static void setCache(CompilationUnitDeclaration ast, EclipseAST cache) {
+		if ( astCacheField != null ) try {
+			astCacheField.set(ast, cache);
+		} catch ( Exception ignore ) {
+			ignore.printStackTrace();
+		}
+	}
+	
+	public TransformEclipseAST(EclipseAST ast) {
+		this.ast = ast;
+	}
+	
+	public void go() {
+		ast.traverse(new AnnotationVisitor());
 	}
 	
 	private static class AnnotationVisitor extends EclipseASTAdapter {
 		@Override public void visitField(Node node, FieldDeclaration field) {
 			if ( field.annotations == null ) return;
 			for ( Annotation annotation : field.annotations ) {
-				TypeReference type = annotation.type;
-				if ( type != null && new String(type.getLastToken()).equals("Getter") ) {
-					new HandleGetter_ecj().apply(annotation, node, field);
-				}
+				handlers.handle((CompilationUnitDeclaration) node.top().node, node, annotation);
 			}
 		}
 		
+		@Override public void visitLocal(Node node, LocalDeclaration local) {
+			if ( local.annotations == null ) return;
+			for ( Annotation annotation : local.annotations ) {
+				handlers.handle((CompilationUnitDeclaration) node.top().node, node, annotation);
+			}
+		}
+		
+		@Override public void visitMethod(Node node, AbstractMethodDeclaration method) {
+			if ( method.annotations == null ) return;
+			for ( Annotation annotation : method.annotations ) {
+				handlers.handle((CompilationUnitDeclaration) node.top().node, node, annotation);
+			}
+		}
+		
+		@Override public void visitType(Node node, TypeDeclaration type) {
+			if ( type.annotations == null ) return;
+			for ( Annotation annotation : type.annotations ) {
+				handlers.handle((CompilationUnitDeclaration) node.top().node, node, annotation);
+			}
+		}
 	}
 }

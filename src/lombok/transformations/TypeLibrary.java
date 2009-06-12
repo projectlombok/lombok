@@ -33,6 +33,7 @@ public class TypeLibrary {
 	}
 	
 	public Collection<String> findCompatible(String typeReference) {
-		return simpleToQualifiedMap.get(typeReference);
+		Set<String> result = simpleToQualifiedMap.get(typeReference);
+		return result == null ? Collections.<String>emptySet() : result;
 	}
 }

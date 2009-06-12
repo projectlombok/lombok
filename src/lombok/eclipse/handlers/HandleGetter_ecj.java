@@ -2,6 +2,9 @@ package lombok.eclipse.handlers;
 
 import java.lang.reflect.Modifier;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
 import lombok.transformations.TransformationsUtil;
 
@@ -17,9 +20,12 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
+import org.mangosdk.spi.ProviderFor;
 
-public class HandleGetter_ecj {
-	public void apply(Annotation annotation, Node node, FieldDeclaration field) {
+@ProviderFor(EclipseAnnotationHandler.class)
+public class HandleGetter_ecj implements EclipseAnnotationHandler<Getter> {
+	@Override public void handle(Getter annotation, Annotation ast, Node node) {
+		FieldDeclaration field = (FieldDeclaration) node.getEclipseNode();
 		TypeReference fieldType = field.type;
 		String getterName = TransformationsUtil.toGetterName(
 				new String(field.name), nameEquals(fieldType.getTypeName(), "boolean"));
@@ -30,7 +36,7 @@ public class HandleGetter_ecj {
 		}
 		
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
-		method.modifiers = Modifier.PUBLIC;
+		method.modifiers = toModifier(annotation.value());
 		method.returnType = field.type;
 		method.annotations = null;
 		method.arguments = null;
@@ -42,8 +48,8 @@ public class HandleGetter_ecj {
 		method.bits |= ASTNode.Bit24;
 		Expression fieldExpression = new SingleNameReference(field.name, (field.declarationSourceStart << 32) | field.declarationSourceEnd);
 		Statement returnStatement = new ReturnStatement(fieldExpression, field.sourceStart, field.sourceEnd);
-		method.bodyStart = method.declarationSourceStart = method.sourceStart = annotation.sourceStart;
-		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = annotation.sourceEnd;
+		method.bodyStart = method.declarationSourceStart = method.sourceStart = ast.sourceStart;
+		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = ast.sourceEnd;
 		method.statements = new Statement[] { returnStatement };
 		if ( parent.methods == null ) {
 			parent.methods = new AbstractMethodDeclaration[1];
@@ -56,6 +62,21 @@ public class HandleGetter_ecj {
 		}
 	}
 	
+	private int toModifier(AccessLevel value) {
+		switch ( value ) {
+		case MODULE:
+		case PACKAGE:
+			return 0;
+		default:
+		case PUBLIC:
+			return Modifier.PUBLIC;
+		case PROTECTED:
+			return Modifier.PROTECTED;
+		case PRIVATE:
+			return Modifier.PRIVATE;
+		}
+	}
+
 	private boolean nameEquals(char[][] typeName, String string) {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
@@ -67,4 +88,5 @@ public class HandleGetter_ecj {
 		
 		return string.contentEquals(sb);
 	}
+	
 }
