@@ -15,6 +15,9 @@ import lombok.eclipse.EclipseAST.Node;
 import lombok.transformations.TypeLibrary;
 import lombok.transformations.TypeResolver;
 
+import org.eclipse.jdt.core.compiler.CategorizedProblem;
+import org.eclipse.jdt.internal.compiler.CompilationResult;
+import org.eclipse.jdt.internal.compiler.apt.dispatch.AptProblem;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -27,7 +30,10 @@ import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.impl.Constant;
+import org.eclipse.jdt.internal.compiler.impl.ReferenceContext;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
+import org.eclipse.jdt.internal.compiler.problem.ProblemSeverities;
+import org.eclipse.jdt.internal.compiler.util.Util;
 
 public class HandlerLibrary {
 	private TypeLibrary typeLibrary = new TypeLibrary();
@@ -64,7 +70,7 @@ public class HandlerLibrary {
 			Object value = m.getDefaultValue();
 			for ( MemberValuePair pair : pairs ) {
 				if ( name.equals(new String(pair.name)) ) {
-					value = calculateValue(ast, m.getReturnType(), pair.value);
+					value = calculateValue(pair, ast, m.getReturnType(), pair.value);
 					break;
 				}
 			}
@@ -80,36 +86,37 @@ public class HandlerLibrary {
 		return (A) Proxy.newProxyInstance(target.getClassLoader(), new Class[] { target }, invocations);
 	}
 	
-	private Object calculateValue(CompilationUnitDeclaration ast, Class<?> type, Expression e) throws EnumDecodeFail {
+	private Object calculateValue(MemberValuePair pair,
+			CompilationUnitDeclaration ast, Class<?> type, Expression e) throws EnumDecodeFail {
 		if ( e instanceof Literal ) {
 			((Literal)e).computeConstant();
-			return convertConstant(type, e.constant);
+			return convertConstant(pair, type, e.constant);
 		} else if ( e instanceof ArrayInitializer ) {
-			if ( !type.isArray() ) throw new EnumDecodeFail("Did not expect an array here.");
+			if ( !type.isArray() ) throw new EnumDecodeFail(pair, "Did not expect an array here.");
 			
 			Class<?> component = type.getComponentType();
 			Expression[] expressions = ((ArrayInitializer)e).expressions;
 			int length = expressions == null ? 0 : expressions.length;
 			Object[] values = new Object[length];
 			for (int i = 0; i < length; i++) {
-				values[i] = calculateValue(ast, component, expressions[i]);
+				values[i] = calculateValue(pair, ast, component, expressions[i]);
 			}
 			return values;
 		} else if ( e instanceof ClassLiteralAccess ) {
-			if ( type == Class.class ) return toClass(ast, str(((ClassLiteralAccess)e).type.getTypeName()));
-			else throw new EnumDecodeFail("Expected a " + type + " literal.");
+			if ( type == Class.class ) return toClass(pair, ast, str(((ClassLiteralAccess)e).type.getTypeName()));
+			else throw new EnumDecodeFail(pair, "Expected a " + type + " literal.");
 		} else if ( e instanceof NameReference ) {
 			String s = null;
 			if ( e instanceof SingleNameReference ) s = new String(((SingleNameReference)e).token);
 			else if ( e instanceof QualifiedNameReference ) s = str(((QualifiedNameReference)e).tokens);
-			if ( Enum.class.isAssignableFrom(type) ) return toEnum(type, s);
-			throw new EnumDecodeFail("Lombok annotations must contain literals only.");
+			if ( Enum.class.isAssignableFrom(type) ) return toEnum(pair, type, s);
+			throw new EnumDecodeFail(pair, "Lombok annotations must contain literals only.");
 		} else {
-			throw new EnumDecodeFail("Lombok could not decode this annotation parameter.");
+			throw new EnumDecodeFail(pair, "Lombok could not decode this annotation parameter.");
 		}
 	}
 	
-	private Enum<?> toEnum(Class<?> enumType, String ref) throws EnumDecodeFail {
+	private Enum<?> toEnum(MemberValuePair pair, Class<?> enumType, String ref) throws EnumDecodeFail {
 		int idx = ref.indexOf('.');
 		if ( idx > -1 ) ref = ref.substring(idx +1);
 		Object[] enumConstants = enumType.getEnumConstants();
@@ -117,10 +124,10 @@ public class HandlerLibrary {
 			String target = ((Enum<?>)constant).name();
 			if ( target.equals(ref) ) return (Enum<?>) constant;
 		}
-		throw new EnumDecodeFail("I can't figure out which enum constant you mean.");
+		throw new EnumDecodeFail(pair, "I can't figure out which enum constant you mean.");
 	}
 	
-	private Class<?> toClass(CompilationUnitDeclaration ast, String typeName) throws EnumDecodeFail {
+	private Class<?> toClass(MemberValuePair pair, CompilationUnitDeclaration ast, String typeName) throws EnumDecodeFail {
 		Class<?> c;
 		boolean fqn = typeName.indexOf('.') > -1;
 		
@@ -149,7 +156,7 @@ public class HandlerLibrary {
 		c = tryClass("java.lang." + typeName);
 		if ( c != null ) return c;
 		
-		throw new EnumDecodeFail("I can't find this class. Try using the fully qualified name.");
+		throw new EnumDecodeFail(pair, "I can't find this class. Try using the fully qualified name.");
 	}
 	
 	private Class<?> tryClass(String name) {
@@ -160,7 +167,7 @@ public class HandlerLibrary {
 		}
 	}
 	
-	private Object convertConstant(Class<?> type, Constant constant) throws EnumDecodeFail {
+	private Object convertConstant(MemberValuePair pair, Class<?> type, Constant constant) throws EnumDecodeFail {
 		int targetTypeID;
 		boolean array = type.isArray();
 		if ( array ) type = type.getComponentType();
@@ -176,10 +183,10 @@ public class HandlerLibrary {
 		else if ( type == boolean.class ) targetTypeID = TypeIds.T_boolean;
 		else {
 			//Enum or Class, so a constant isn't going to be very useful.
-			throw new EnumDecodeFail("Expected a constant of some sort here (a number or a string)");
+			throw new EnumDecodeFail(pair, "Expected a constant of some sort here (a number or a string)");
 		}
 		if ( !Expression.isConstantValueRepresentable(constant, constant.typeID(), targetTypeID) ) {
-			throw new EnumDecodeFail("I can't turn this literal into a " + type);
+			throw new EnumDecodeFail(pair, "I can't turn this literal into a " + type);
 		}
 		
 		Object o = null;
@@ -206,8 +213,11 @@ public class HandlerLibrary {
 	private static class EnumDecodeFail extends Exception {
 		private static final long serialVersionUID = 1L;
 		
-		EnumDecodeFail(String msg) {
+		MemberValuePair pair;
+		
+		EnumDecodeFail(MemberValuePair pair, String msg) {
 			super(msg);
+			this.pair = pair;
 		}
 	}
 	
@@ -274,8 +284,33 @@ public class HandlerLibrary {
 				Object annInstance = createAnnotation(container.annotationClass, ast, annotation);
 				container.handle(annInstance, annotation, node);
 			} catch (EnumDecodeFail e) {
-				e.printStackTrace();
-				//TODO: Add to problems array in ast.
+				if ( ast.compilationResult != null ) {
+					Node referenceContextNode = node;
+					while ( !(referenceContextNode.getEclipseNode() instanceof ReferenceContext) ) {
+						referenceContextNode = referenceContextNode.up();
+					}
+					ReferenceContext referenceContext = (ReferenceContext)referenceContextNode.getEclipseNode();
+					char[] fileName = node.getFileName().toCharArray();
+					String message = e.getMessage();
+					int lineNumber = 0;
+					int columnNumber = 1;
+					int startPosition = e.pair.sourceStart;
+					int endPosition = e.pair.sourceEnd;
+					if (referenceContext != null) {
+						CompilationResult result = referenceContext.compilationResult();
+						int[] lineEnds = null;
+						lineNumber = startPosition >= 0
+								? Util.getLineNumber(startPosition, lineEnds = result.getLineSeparatorPositions(), 0, lineEnds.length-1)
+								: 0;
+						columnNumber = startPosition >= 0
+								? Util.searchColumnNumber(result.getLineSeparatorPositions(), lineNumber,startPosition)
+								: 0;
+					}
+					CategorizedProblem problem = new AptProblem(referenceContext, 
+							fileName, message, 0, new String[0], ProblemSeverities.Error,
+							startPosition, endPosition, lineNumber, columnNumber);
+					ast.compilationResult.record(problem, referenceContext);
+				}
 			}
 		}
 	}
