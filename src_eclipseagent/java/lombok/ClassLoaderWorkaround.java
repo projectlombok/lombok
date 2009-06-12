@@ -86,7 +86,12 @@ public class ClassLoaderWorkaround {
 			Class<?> c = loader.loadClass("lombok.eclipse.TransformEclipseAST");
 			for ( Method m : c.getMethods() ) {
 				if ( m.getName().equals("transform") ) {
+					Class<?>[] types = m.getParameterTypes();
+					if ( types.length != 2 ) continue;
+					if ( !types[0].getName().equals("org.eclipse.jdt.internal.compiler.parser.Parser") ) continue;
+					if ( !types[1].getName().equals("org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration") ) continue;
 					transform = m;
+					break;
 				}
 			}
 		} catch ( ClassNotFoundException ignore ) {}
