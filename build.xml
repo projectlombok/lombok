@@ -1,6 +1,9 @@
 <project name="lombok" default="dist">
 	<loadresource property="lombok.version">
 		<file file="version.txt" />
+		<filterchain>
+			<striplinebreaks />
+		</filterchain>
 	</loadresource>
 	<property name="build.compiler" value="javac1.6" />
 	<path id="lombok.deps.path">
