@@ -1,0 +1,11 @@
+- non-lombok Getter in import -> NO
+- in lombok package -> YES
+- name of direct descendent of parent = 'Getter' (recursive) -> NO
+- lombok.Getter present -> YES
+- lombok.* present -> YES
+
+
+apilevel
+kind
+compileroptions
+source
