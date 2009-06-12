@@ -102,7 +102,7 @@ public class HandlerLibrary {
 			String s = null;
 			if ( e instanceof SingleNameReference ) s = new String(((SingleNameReference)e).token);
 			else if ( e instanceof QualifiedNameReference ) s = str(((QualifiedNameReference)e).tokens);
-			if ( Enum.class.isAssignableFrom(type) ) toEnum(type, s);
+			if ( Enum.class.isAssignableFrom(type) ) return toEnum(type, s);
 			throw new EnumDecodeFail("Lombok annotations must contain literals only.");
 		} else {
 			throw new EnumDecodeFail("Lombok could not decode this annotation parameter.");
