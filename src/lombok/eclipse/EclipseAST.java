@@ -281,7 +281,7 @@ public class EclipseAST {
 			this.dim = dim;
 		}
 	}
-	private Map<Class<?>, Collection<FieldAccess>> fieldsOfASTClasses = new HashMap<Class<?>, Collection<FieldAccess>>();
+	private static Map<Class<?>, Collection<FieldAccess>> fieldsOfASTClasses = new HashMap<Class<?>, Collection<FieldAccess>>();
 	private Collection<FieldAccess> fieldsOf(Class<?> c) {
 		Collection<FieldAccess> fields = fieldsOfASTClasses.get(c);
 		if ( fields != null ) return fields;

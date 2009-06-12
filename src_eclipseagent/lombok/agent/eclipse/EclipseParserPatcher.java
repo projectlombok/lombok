@@ -13,12 +13,21 @@ public class EclipseParserPatcher {
 				ProtectionDomain protectionDomain, byte[] classfileBuffer)
 				throws IllegalClassFormatException {
 			
-			if ( !ECLIPSE_PARSER_CLASS_NAME.equals(className) ) return null;
-			EclipseParserTransformer transformer = new EclipseParserTransformer(classfileBuffer);
-			return transformer.transform();
+			if ( ECLIPSE_PARSER_CLASS_NAME.equals(className) ) {
+				EclipseParserTransformer transformer = new EclipseParserTransformer(classfileBuffer);
+				return transformer.transform();
+			}
+			
+			if ( ECLIPSE_CUD_CLASS_NAME.equals(className) ) {
+				EclipseCUDTransformer transformer = new EclipseCUDTransformer(classfileBuffer);
+				return transformer.transform();
+			}
+			
+			return null;
 		}
 	}
-
+	
+	static final String ECLIPSE_CUD_CLASS_NAME = "org/eclipse/jdt/internal/compiler/ast/CompilationUnitDeclaration";
 	static final String ECLIPSE_PARSER_CLASS_NAME = "org/eclipse/jdt/internal/compiler/parser/Parser";
 	
 	public static void agentmain(String agentArgs, Instrumentation instrumentation) {

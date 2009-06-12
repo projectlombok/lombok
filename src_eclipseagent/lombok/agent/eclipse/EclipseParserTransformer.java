@@ -43,6 +43,7 @@ class EclipseParserTransformer {
 	byte[] transform() {
 		ClassReader reader = new ClassReader(in);
 		ClassWriter writer = new ClassWriter(reader, 0);
+		
 		ClassAdapter adapter = new ParserPatcherAdapter(writer);
 		reader.accept(adapter, 0);
 		return writer.toByteArray();
