@@ -25,7 +25,6 @@ import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
-import org.eclipse.jdt.internal.compiler.impl.ReferenceContext;
 import org.eclipse.jdt.internal.compiler.problem.ProblemSeverities;
 import org.eclipse.jdt.internal.compiler.util.Util;
 
@@ -81,7 +80,7 @@ public class EclipseAST {
 		return nodeMap.get(node);
 	}
 	
-	private static class ParseProblem {
+	private class ParseProblem {
 		final boolean isWarning;
 		final String message;
 		final Node node;
@@ -95,13 +94,18 @@ public class EclipseAST {
 			this.sourceStart = sourceStart;
 			this.sourceEnd = sourceEnd;
 		}
+		
+		void addToCompilationResult() {
+			addProblemToCompilationResult(getFileName(), (CompilationUnitDeclaration) top().getEclipseNode(),
+					isWarning, message, node.getEclipseNode(), sourceStart, sourceEnd);
+		}
 	}
 	
 	public void propagateProblems() {
 		if ( queuedProblems.isEmpty() ) return;
 		CompilationUnitDeclaration cud = (CompilationUnitDeclaration) top().getEclipseNode();
 		if ( cud.compilationResult == null ) return;
-		for ( ParseProblem problem : queuedProblems ) addProblemToCompilationResult(problem);
+		for ( ParseProblem problem : queuedProblems ) problem.addToCompilationResult();
 		queuedProblems.clear();
 	}
 	
@@ -112,33 +116,25 @@ public class EclipseAST {
 		propagateProblems();
 	}
 	
-	private void addProblemToCompilationResult(ParseProblem problem) {
-		Node referenceContextNode = problem.node;
-		while ( !(referenceContextNode.getEclipseNode() instanceof ReferenceContext) ) {
-			referenceContextNode = referenceContextNode.up();
-		}
-		ReferenceContext referenceContext = (ReferenceContext)referenceContextNode.getEclipseNode();
-		char[] fileName = getFileName().toCharArray();
-		String message = problem.message;
+	static void addProblemToCompilationResult(String fileName, CompilationUnitDeclaration ast,
+			boolean isWarning, String message, ASTNode node, int sourceStart, int sourceEnd) {
+		char[] fileNameArray = fileName.toCharArray();
 		int lineNumber = 0;
 		int columnNumber = 1;
-		int startPosition = problem.sourceStart;
-		int endPosition = problem.sourceEnd;
-		if (referenceContext != null) {
-			CompilationResult result = referenceContext.compilationResult();
-			int[] lineEnds = null;
-			lineNumber = startPosition >= 0
-					? Util.getLineNumber(startPosition, lineEnds = result.getLineSeparatorPositions(), 0, lineEnds.length-1)
-					: 0;
-			columnNumber = startPosition >= 0
-					? Util.searchColumnNumber(result.getLineSeparatorPositions(), lineNumber,startPosition)
-					: 0;
-		}
-		CategorizedProblem ecProblem = new AptProblem(referenceContext, 
-				fileName, message, 0, new String[0],
-				problem.isWarning ? ProblemSeverities.Warning : ProblemSeverities.Error,
-				startPosition, endPosition, lineNumber, columnNumber);
-		((CompilationUnitDeclaration)top().getEclipseNode()).compilationResult.record(ecProblem, referenceContext);
+		CompilationResult result = ast.compilationResult;
+		int[] lineEnds = null;
+		lineNumber = sourceStart >= 0
+				? Util.getLineNumber(sourceStart, lineEnds = result.getLineSeparatorPositions(), 0, lineEnds.length-1)
+				: 0;
+		columnNumber = sourceStart >= 0
+				? Util.searchColumnNumber(result.getLineSeparatorPositions(), lineNumber,sourceStart)
+				: 0;
+		
+		CategorizedProblem ecProblem = new AptProblem(null, 
+				fileNameArray, message, 0, new String[0],
+				isWarning ? ProblemSeverities.Warning : ProblemSeverities.Error,
+				sourceStart, sourceEnd, lineNumber, columnNumber);
+		ast.compilationResult.record(ecProblem, null);
 	}
 	
 	public final class Node {

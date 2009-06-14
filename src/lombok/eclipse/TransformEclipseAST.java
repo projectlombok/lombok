@@ -31,18 +31,17 @@ public class TransformEclipseAST {
 	private static final Field astCacheField;
 	private static final HandlerLibrary handlers;
 	
+	private static boolean disableLombok = false;
+	
 	static {
 		Field f = null;
 		HandlerLibrary l = null;
 		try {
 			l = HandlerLibrary.load();
-		} catch ( Exception e ) {
-			e.printStackTrace();
-		}
-		try {
 			f = CompilationUnitDeclaration.class.getDeclaredField("$lombokAST");
-		} catch ( NoSuchFieldException ignore ) {
-			ignore.printStackTrace();
+		} catch ( Throwable t ) {
+			Eclipse.error("Problem initializing lombok", t);
+			disableLombok = true;
 		}
 		astCacheField = f;
 		handlers = l;
@@ -60,12 +59,28 @@ public class TransformEclipseAST {
 	 * @param ast The AST node belonging to the compilation unit (java speak for a single source file).
 	 */
 	public static void transform(Parser parser, CompilationUnitDeclaration ast) {
-		EclipseAST existing = getCache(ast);
-		if ( existing == null ) {
-			existing = new EclipseAST(ast);
-			setCache(ast, existing);
-		} else existing.reparse();
-		new TransformEclipseAST(existing).go();
+		if ( disableLombok ) return;
+		try {
+			EclipseAST existing = getCache(ast);
+			if ( existing == null ) {
+				existing = new EclipseAST(ast);
+				setCache(ast, existing);
+			} else existing.reparse();
+			new TransformEclipseAST(existing).go();
+		} catch ( Throwable t ) {
+			try {
+				String fileName = "(unknown)";
+				if ( ast.compilationResult != null && ast.compilationResult.fileName != null ) {
+					fileName = new String(ast.compilationResult.fileName);
+				}
+				
+				String message = "Lombok can't parse this source: " + t.toString();
+				
+				EclipseAST.addProblemToCompilationResult(fileName, ast, false, message, ast, 0, 0);
+			} catch ( Throwable t2 ) {
+				Eclipse.error("Can't create an error in the problems dialog while adding: " + t.toString(), t2);
+			}
+		}
 	}
 	
 	private static EclipseAST getCache(CompilationUnitDeclaration ast) {
