@@ -8,14 +8,8 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Opcodes;
 
 class EclipseCUDTransformer {
-	private final byte[] in;
-
-	EclipseCUDTransformer(byte[] classfileBuffer) {
-		in = classfileBuffer;
-	}
-
-	byte[] transform() {
-		ClassReader reader = new ClassReader(in);
+	public byte[] transform(byte[] classfileBuffer) {
+		ClassReader reader = new ClassReader(classfileBuffer);
 		ClassWriter writer = new ClassWriter(reader, 0);
 	
 		ClassAdapter adapter = new CUDPatcherAdapter(writer);
@@ -29,7 +23,7 @@ class EclipseCUDTransformer {
 		}
 		
 		@Override public void visitEnd() {
-			FieldVisitor fv = cv.visitField(Opcodes.ACC_PUBLIC, "$lombokAST", "Ljava/lang/Object;", null, null);
+			FieldVisitor fv = cv.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_TRANSIENT, "$lombokAST", "Ljava/lang/Object;", null, null);
 			fv.visitEnd();
 			cv.visitEnd();
 		}

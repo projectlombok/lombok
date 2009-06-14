@@ -34,14 +34,8 @@ class EclipseParserTransformer {
 		rewriters = Collections.unmodifiableMap(map);
 	}
 	
-	private final byte[] in;
-	
-	EclipseParserTransformer(byte[] classfileBuffer) {
-		in = classfileBuffer;
-	}
-	
-	byte[] transform() {
-		ClassReader reader = new ClassReader(in);
+	public byte[] transform(byte[] classfileBuffer) {
+		ClassReader reader = new ClassReader(classfileBuffer);
 		ClassWriter writer = new ClassWriter(reader, 0);
 		
 		ClassAdapter adapter = new ParserPatcherAdapter(writer);
