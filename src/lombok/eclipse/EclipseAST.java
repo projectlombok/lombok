@@ -12,6 +12,9 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.core.compiler.CategorizedProblem;
+import org.eclipse.jdt.internal.compiler.CompilationResult;
+import org.eclipse.jdt.internal.compiler.apt.dispatch.AptProblem;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
@@ -22,6 +25,9 @@ import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.impl.ReferenceContext;
+import org.eclipse.jdt.internal.compiler.problem.ProblemSeverities;
+import org.eclipse.jdt.internal.compiler.util.Util;
 
 public class EclipseAST {
 	public void traverse(EclipseASTVisitor visitor) {
@@ -75,6 +81,66 @@ public class EclipseAST {
 		return nodeMap.get(node);
 	}
 	
+	private static class ParseProblem {
+		final boolean isWarning;
+		final String message;
+		final Node node;
+		final int sourceStart;
+		final int sourceEnd;
+		
+		public ParseProblem(boolean isWarning, String message, Node node, int sourceStart, int sourceEnd) {
+			this.isWarning = isWarning;
+			this.message = message;
+			this.node = node;
+			this.sourceStart = sourceStart;
+			this.sourceEnd = sourceEnd;
+		}
+	}
+	
+	public void propagateProblems() {
+		if ( queuedProblems.isEmpty() ) return;
+		CompilationUnitDeclaration cud = (CompilationUnitDeclaration) top().getEclipseNode();
+		if ( cud.compilationResult == null ) return;
+		for ( ParseProblem problem : queuedProblems ) addProblemToCompilationResult(problem);
+		queuedProblems.clear();
+	}
+	
+	private final List<ParseProblem> queuedProblems = new ArrayList<ParseProblem>();
+	
+	private void addProblem(ParseProblem problem) {
+		queuedProblems.add(problem);
+		propagateProblems();
+	}
+	
+	private void addProblemToCompilationResult(ParseProblem problem) {
+		Node referenceContextNode = problem.node;
+		while ( !(referenceContextNode.getEclipseNode() instanceof ReferenceContext) ) {
+			referenceContextNode = referenceContextNode.up();
+		}
+		ReferenceContext referenceContext = (ReferenceContext)referenceContextNode.getEclipseNode();
+		char[] fileName = getFileName().toCharArray();
+		String message = problem.message;
+		int lineNumber = 0;
+		int columnNumber = 1;
+		int startPosition = problem.sourceStart;
+		int endPosition = problem.sourceEnd;
+		if (referenceContext != null) {
+			CompilationResult result = referenceContext.compilationResult();
+			int[] lineEnds = null;
+			lineNumber = startPosition >= 0
+					? Util.getLineNumber(startPosition, lineEnds = result.getLineSeparatorPositions(), 0, lineEnds.length-1)
+					: 0;
+			columnNumber = startPosition >= 0
+					? Util.searchColumnNumber(result.getLineSeparatorPositions(), lineNumber,startPosition)
+					: 0;
+		}
+		CategorizedProblem ecProblem = new AptProblem(referenceContext, 
+				fileName, message, 0, new String[0],
+				problem.isWarning ? ProblemSeverities.Warning : ProblemSeverities.Error,
+				startPosition, endPosition, lineNumber, columnNumber);
+		((CompilationUnitDeclaration)top().getEclipseNode()).compilationResult.record(ecProblem, referenceContext);
+	}
+	
 	public final class Node {
 		final ASTNode node;
 		Node parent;
@@ -84,6 +150,22 @@ public class EclipseAST {
 		Node(ASTNode node, Collection<Node> children) {
 			this.node = node;
 			this.children = children == null ? Collections.<Node>emptyList() : children;
+		}
+		
+		public void addError(String message) {
+			this.addError(message, this.getEclipseNode().sourceStart, this.getEclipseNode().sourceEnd);
+		}
+		
+		public void addError(String message, int sourceStart, int sourceEnd) {
+			addProblem(new ParseProblem(false, message, this, sourceStart, sourceEnd));
+		}
+		
+		public void addWarning(String message) {
+			this.addWarning(message, this.getEclipseNode().sourceStart, this.getEclipseNode().sourceEnd);
+		}
+		
+		public void addWarning(String message, int sourceStart, int sourceEnd) {
+			addProblem(new ParseProblem(true, message, this, sourceStart, sourceEnd));
 		}
 		
 		public ASTNode getEclipseNode() {
@@ -135,6 +217,7 @@ public class EclipseAST {
 	}
 	
 	public void reparse() {
+		propagateProblems();
 		if ( completeParse ) return;
 		boolean newCompleteParse = isComplete(compilationUnitDeclaration);
 		if ( !newCompleteParse ) return;

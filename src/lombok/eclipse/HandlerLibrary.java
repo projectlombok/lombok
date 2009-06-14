@@ -8,16 +8,15 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 import lombok.eclipse.EclipseAST.Node;
 import lombok.transformations.TypeLibrary;
 import lombok.transformations.TypeResolver;
 
-import org.eclipse.jdt.core.compiler.CategorizedProblem;
-import org.eclipse.jdt.internal.compiler.CompilationResult;
-import org.eclipse.jdt.internal.compiler.apt.dispatch.AptProblem;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -30,10 +29,7 @@ import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.impl.Constant;
-import org.eclipse.jdt.internal.compiler.impl.ReferenceContext;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
-import org.eclipse.jdt.internal.compiler.problem.ProblemSeverities;
-import org.eclipse.jdt.internal.compiler.util.Util;
 
 public class HandlerLibrary {
 	private TypeLibrary typeLibrary = new TypeLibrary();
@@ -156,6 +152,20 @@ public class HandlerLibrary {
 		c = tryClass("java.lang." + typeName);
 		if ( c != null ) return c;
 		
+		if ( !fqn ) {
+			c = tryClass(typeName);
+			if ( c != null ) return c;
+		}
+		
+		//Try star imports
+		for ( ImportReference ref : ast.imports ) {
+			String im = str(ref.tokens);
+			if ( im.endsWith(".*") ) {
+				c = tryClass(im.substring(0, im.length() -1) + typeName);
+				if ( c != null ) return c;
+			}
+		}
+		
 		throw new EnumDecodeFail(pair, "I can't find this class. Try using the fully qualified name.");
 	}
 	
@@ -234,11 +244,17 @@ public class HandlerLibrary {
 	@SuppressWarnings("unchecked")
 	public static HandlerLibrary load() {
 		HandlerLibrary lib = new HandlerLibrary();
-		for ( EclipseAnnotationHandler<?> handler : ServiceLoader.load(EclipseAnnotationHandler.class) ) {
-			Class<? extends Annotation> annotationClass = lib.findAnnotationClass(handler.getClass());
-			HandlerContainer<?> container = new HandlerContainer(handler, annotationClass);
-			lib.handlers.put(container.annotationClass.getName(), container);
-			lib.typeLibrary.addType(container.annotationClass.getName());
+		Iterator<EclipseAnnotationHandler> it = ServiceLoader.load(EclipseAnnotationHandler.class).iterator();
+		while ( it.hasNext() ) {
+			try {
+				EclipseAnnotationHandler<?> handler = it.next();
+				Class<? extends Annotation> annotationClass = lib.findAnnotationClass(handler.getClass());
+				HandlerContainer<?> container = new HandlerContainer(handler, annotationClass);
+				lib.handlers.put(container.annotationClass.getName(), container);
+				lib.typeLibrary.addType(container.annotationClass.getName());
+			} catch ( ServiceConfigurationError e ) {
+				Eclipse.error("Can't load Lombok handler for eclipse: ", e);
+			}
 		}
 		
 		return lib;
@@ -284,33 +300,7 @@ public class HandlerLibrary {
 				Object annInstance = createAnnotation(container.annotationClass, ast, annotation);
 				container.handle(annInstance, annotation, node);
 			} catch (EnumDecodeFail e) {
-				if ( ast.compilationResult != null ) {
-					Node referenceContextNode = node;
-					while ( !(referenceContextNode.getEclipseNode() instanceof ReferenceContext) ) {
-						referenceContextNode = referenceContextNode.up();
-					}
-					ReferenceContext referenceContext = (ReferenceContext)referenceContextNode.getEclipseNode();
-					char[] fileName = node.getFileName().toCharArray();
-					String message = e.getMessage();
-					int lineNumber = 0;
-					int columnNumber = 1;
-					int startPosition = e.pair.sourceStart;
-					int endPosition = e.pair.sourceEnd;
-					if (referenceContext != null) {
-						CompilationResult result = referenceContext.compilationResult();
-						int[] lineEnds = null;
-						lineNumber = startPosition >= 0
-								? Util.getLineNumber(startPosition, lineEnds = result.getLineSeparatorPositions(), 0, lineEnds.length-1)
-								: 0;
-						columnNumber = startPosition >= 0
-								? Util.searchColumnNumber(result.getLineSeparatorPositions(), lineNumber,startPosition)
-								: 0;
-					}
-					CategorizedProblem problem = new AptProblem(referenceContext, 
-							fileName, message, 0, new String[0], ProblemSeverities.Error,
-							startPosition, endPosition, lineNumber, columnNumber);
-					ast.compilationResult.record(problem, referenceContext);
-				}
+				node.addError(e.getMessage(), e.pair.sourceStart, e.pair.sourceEnd);
 			}
 		}
 	}
