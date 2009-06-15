@@ -1,10 +1,4 @@
 <project name="lombok" default="dist">
-	<loadresource property="lombok.version">
-		<file file="version.txt" />
-		<filterchain>
-			<striplinebreaks />
-		</filterchain>
-	</loadresource>
 	<property name="build.compiler" value="javac1.6" />
 	<path id="lombok.deps.path">
 		<fileset dir="deps/lombok">
@@ -59,7 +53,23 @@
 		</unjar>
 	</target>
 	
-	<target name="dist" depends="clean, compile, unpackLibs">
+	<target name="getVersion" depends="compile">
+		<java
+			classname="lombok.core.Version"
+			classpath="build/lombok"
+			failonerror="true"
+			output="build/version.txt" />
+		<loadresource property="lombok.version">
+			<file file="build/version.txt" />
+			<filterchain>
+				<striplinebreaks />
+			</filterchain>
+		</loadresource>
+		<delete file="build/version.txt" />
+		<echo level="info">Lombok version: ${lombok.version}</echo>
+	</target>
+	
+	<target name="dist" depends="clean, compile, getVersion, unpackLibs">
 		<mkdir dir="dist" />
 		<jar basedir="build/lombok" destfile="dist/lombok-${lombok.version}.jar" />
 		<jar basedir="build/eclipse.agent" destfile="dist/lombok.eclipse.agent-${lombok.version}.jar">
