@@ -7,6 +7,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -33,11 +35,11 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 public class HandlerLibrary {
 	private TypeLibrary typeLibrary = new TypeLibrary();
 	
-	private static class HandlerContainer<T extends Annotation> {
+	private static class AnnotationHandlerContainer<T extends Annotation> {
 		private EclipseAnnotationHandler<T> handler;
 		private Class<T> annotationClass;
 		
-		HandlerContainer(EclipseAnnotationHandler<T> handler, Class<T> annotationClass) {
+		AnnotationHandlerContainer(EclipseAnnotationHandler<T> handler, Class<T> annotationClass) {
 			this.handler = handler;
 			this.annotationClass = annotationClass;
 		}
@@ -50,7 +52,10 @@ public class HandlerLibrary {
 		}
 	}
 	
-	private Map<String, HandlerContainer<?>> handlers = new HashMap<String, HandlerContainer<?>>();
+	private Map<String, AnnotationHandlerContainer<?>> annotationHandlers =
+		new HashMap<String, AnnotationHandlerContainer<?>>();
+	
+	private Collection<EclipseASTVisitor> visitorHandlers = new ArrayList<EclipseASTVisitor>();
 	
 	@SuppressWarnings("unchecked")
 	public <A extends Annotation> A createAnnotation(Class<A> target,
@@ -240,23 +245,41 @@ public class HandlerLibrary {
 		return sb.toString();
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static HandlerLibrary load() {
 		HandlerLibrary lib = new HandlerLibrary();
+		
+		loadAnnotationHandlers(lib);
+		loadVisitorHandlers(lib);
+		
+		return lib;
+	}
+	
+	@SuppressWarnings("unchecked") private static void loadAnnotationHandlers(HandlerLibrary lib) {
 		Iterator<EclipseAnnotationHandler> it = ServiceLoader.load(EclipseAnnotationHandler.class).iterator();
 		while ( it.hasNext() ) {
 			try {
 				EclipseAnnotationHandler<?> handler = it.next();
 				Class<? extends Annotation> annotationClass = lib.findAnnotationClass(handler.getClass());
-				HandlerContainer<?> container = new HandlerContainer(handler, annotationClass);
-				lib.handlers.put(container.annotationClass.getName(), container);
+				AnnotationHandlerContainer<?> container = new AnnotationHandlerContainer(handler, annotationClass);
+				if ( lib.annotationHandlers.put(container.annotationClass.getName(), container) != null ) {
+					Eclipse.error("Duplicate handlers for annotation type: " + container.annotationClass.getName());
+				}
 				lib.typeLibrary.addType(container.annotationClass.getName());
 			} catch ( ServiceConfigurationError e ) {
-				Eclipse.error("Can't load Lombok handler for eclipse: ", e);
+				Eclipse.error("Can't load Lombok annotation handler for eclipse: ", e);
 			}
 		}
-		
-		return lib;
+	}
+	
+	private static void loadVisitorHandlers(HandlerLibrary lib) {
+		Iterator<EclipseASTVisitor> it = ServiceLoader.load(EclipseASTVisitor.class).iterator();
+		while ( it.hasNext() ) {
+			try {
+				lib.visitorHandlers.add(it.next());
+			} catch ( ServiceConfigurationError e ) {
+				Eclipse.error("Can't load Lombok visitor handler for eclipse: ", e);
+			}
+		}
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -293,14 +316,29 @@ public class HandlerLibrary {
 		TypeReference rawType = annotation.type;
 		if ( rawType == null ) return;
 		for ( String fqn : resolver.findTypeMatches(annotationNode, annotation.type) ) {
-			HandlerContainer<?> container = handlers.get(fqn);
+			AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
 			if ( container == null ) continue;
+			Object annInstance;
 			try {
-				Object annInstance = createAnnotation(container.annotationClass, ast, annotation);
-				container.handle(annInstance, annotation, annotationNode);
+				annInstance = createAnnotation(container.annotationClass, ast, annotation);
 			} catch ( EnumDecodeFail e ) {
 				annotationNode.addError(e.getMessage(), e.pair.sourceStart, e.pair.sourceEnd);
+				return;
 			}
+			
+			try {
+				container.handle(annInstance, annotation, annotationNode);
+			} catch ( Throwable t ) {
+				Eclipse.error(String.format("Lombok annotation handler %s failed", container.handler.getClass()), t);
+			}
+		}
+	}
+	
+	public void callASTVisitors(EclipseAST ast) {
+		for ( EclipseASTVisitor visitor : visitorHandlers ) try {
+			ast.traverse(visitor);
+		} catch ( Throwable t ) {
+			Eclipse.error(String.format("Lombok visitor handler %s failed", visitor.getClass()), t);
 		}
 	}
 }

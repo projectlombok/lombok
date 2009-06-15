@@ -107,8 +107,8 @@ public class TransformEclipseAST {
 	}
 	
 	public void go() {
-//		if ( ast.getFileName().contains("Foo") ) ast.traverse(new EclipseASTVisitor.EclipseASTPrinter());
 		ast.traverse(new AnnotationVisitor());
+		handlers.callASTVisitors(ast);
 	}
 	
 	private static class AnnotationVisitor extends EclipseASTAdapter {
