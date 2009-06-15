@@ -65,7 +65,7 @@
 				<striplinebreaks />
 			</filterchain>
 		</loadresource>
-		<delete file="build/version.txt" />
+		<delete file="build/version.txt" quiet="true" />
 		<echo level="info">Lombok version: ${lombok.version}</echo>
 	</target>
 	
