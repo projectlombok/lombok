@@ -45,8 +45,8 @@ public class HandlerLibrary {
 		@SuppressWarnings("unchecked")
 		public void handle(Object annInstance,
 				org.eclipse.jdt.internal.compiler.ast.Annotation annotation,
-				Node node) {
-			handler.handle((T) annInstance, annotation, node);
+				Node annotationNode) {
+			handler.handle((T) annInstance, annotation, annotationNode);
 		}
 	}
 	
@@ -287,19 +287,19 @@ public class HandlerLibrary {
 		return null;
 	}
 	
-	public void handle(CompilationUnitDeclaration ast, EclipseAST.Node node,
+	public void handle(CompilationUnitDeclaration ast, EclipseAST.Node annotationNode,
 			org.eclipse.jdt.internal.compiler.ast.Annotation annotation) {
-		TypeResolver resolver = new TypeResolver(typeLibrary, node.top());
+		TypeResolver resolver = new TypeResolver(typeLibrary, annotationNode.top());
 		TypeReference rawType = annotation.type;
 		if ( rawType == null ) return;
-		for ( String fqn : resolver.findTypeMatches(node, annotation.type) ) {
+		for ( String fqn : resolver.findTypeMatches(annotationNode, annotation.type) ) {
 			HandlerContainer<?> container = handlers.get(fqn);
 			if ( container == null ) continue;
 			try {
 				Object annInstance = createAnnotation(container.annotationClass, ast, annotation);
-				container.handle(annInstance, annotation, node);
-			} catch (EnumDecodeFail e) {
-				node.addError(e.getMessage(), e.pair.sourceStart, e.pair.sourceEnd);
+				container.handle(annInstance, annotation, annotationNode);
+			} catch ( EnumDecodeFail e ) {
+				annotationNode.addError(e.getMessage(), e.pair.sourceStart, e.pair.sourceEnd);
 			}
 		}
 	}

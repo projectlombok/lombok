@@ -24,15 +24,23 @@ import org.mangosdk.spi.ProviderFor;
 
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleGetter_ecj implements EclipseAnnotationHandler<Getter> {
-	@Override public void handle(Getter annotation, Annotation ast, Node node) {
-		FieldDeclaration field = (FieldDeclaration) node.getEclipseNode();
+	private void generateDuplicateGetterWarning(Node annotationNode, String methodName) {
+		annotationNode.addWarning(String.format("Not generating %s(): A method with that name already exists",  methodName));
+	}
+	
+	@Override public void handle(Getter annotation, Annotation ast, Node annotationNode) {
+		if ( !(annotationNode.up().getEclipseNode() instanceof FieldDeclaration) ) return;
+		FieldDeclaration field = (FieldDeclaration) annotationNode.up().getEclipseNode();
 		TypeReference fieldType = field.type;
 		String getterName = TransformationsUtil.toGetterName(
 				new String(field.name), nameEquals(fieldType.getTypeName(), "boolean"));
 		
-		TypeDeclaration parent = (TypeDeclaration) node.up().getEclipseNode();
+		TypeDeclaration parent = (TypeDeclaration) annotationNode.up().up().getEclipseNode();
 		if ( parent.methods != null ) for ( AbstractMethodDeclaration method : parent.methods ) {
-			if ( method.selector != null && new String(method.selector).equals(getterName) ) return;
+			if ( method.selector != null && new String(method.selector).equals(getterName) ) {
+				generateDuplicateGetterWarning(annotationNode, getterName);
+				return;
+			}
 		}
 		
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
