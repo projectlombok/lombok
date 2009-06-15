@@ -107,36 +107,25 @@ public class TransformEclipseAST {
 	}
 	
 	public void go() {
+//		if ( ast.getFileName().contains("Foo") ) ast.traverse(new EclipseASTVisitor.EclipseASTPrinter());
 		ast.traverse(new AnnotationVisitor());
 	}
 	
 	private static class AnnotationVisitor extends EclipseASTAdapter {
-		@Override public void visitField(Node node, FieldDeclaration field) {
-			if ( field.annotations == null ) return;
-			for ( Annotation annotation : field.annotations ) {
-				handlers.handle((CompilationUnitDeclaration) node.top().node, node, annotation);
-			}
+		@Override public void visitAnnotationOnField(Node node, FieldDeclaration field, Annotation annotation) {
+			handlers.handle((CompilationUnitDeclaration) node.top().node, node, annotation);
 		}
 		
-		@Override public void visitLocal(Node node, LocalDeclaration local) {
-			if ( local.annotations == null ) return;
-			for ( Annotation annotation : local.annotations ) {
-				handlers.handle((CompilationUnitDeclaration) node.top().node, node, annotation);
-			}
+		@Override public void visitAnnotationOnLocal(Node node, LocalDeclaration local, Annotation annotation) {
+			handlers.handle((CompilationUnitDeclaration) node.top().node, node, annotation);
 		}
 		
-		@Override public void visitMethod(Node node, AbstractMethodDeclaration method) {
-			if ( method.annotations == null ) return;
-			for ( Annotation annotation : method.annotations ) {
-				handlers.handle((CompilationUnitDeclaration) node.top().node, node, annotation);
-			}
+		@Override public void visitAnnotationOnMethod(Node node, AbstractMethodDeclaration method, Annotation annotation) {
+			handlers.handle((CompilationUnitDeclaration) node.top().node, node, annotation);
 		}
 		
-		@Override public void visitType(Node node, TypeDeclaration type) {
-			if ( type.annotations == null ) return;
-			for ( Annotation annotation : type.annotations ) {
-				handlers.handle((CompilationUnitDeclaration) node.top().node, node, annotation);
-			}
+		@Override public void visitAnnotationOnType(Node node, TypeDeclaration type, Annotation annotation) {
+			handlers.handle((CompilationUnitDeclaration) node.top().node, node, annotation);
 		}
 	}
 }

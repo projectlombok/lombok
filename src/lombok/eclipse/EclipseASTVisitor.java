@@ -5,6 +5,7 @@ import java.lang.reflect.Modifier;
 import lombok.eclipse.EclipseAST.Node;
 
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -16,18 +17,20 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 
+//TODO
 public interface EclipseASTVisitor {
 	/**
 	 * Called at the very beginning and end.
 	 */
-	void visitCompilationUnit(Node node, CompilationUnitDeclaration unit);
-	void endVisitCompilationUnit(Node node, CompilationUnitDeclaration unit);
+	void visitCompilationUnit(Node top, CompilationUnitDeclaration unit);
+	void endVisitCompilationUnit(Node top, CompilationUnitDeclaration unit);
 	
 	/**
 	 * Called when visiting a type (a class, interface, annotation, enum, etcetera).
 	 */
-	void visitType(Node node, TypeDeclaration type);
-	void endVisitType(Node node, TypeDeclaration type);
+	void visitType(Node typeNode, TypeDeclaration type);
+	void visitAnnotationOnType(Node typeNode, TypeDeclaration type, Annotation annotation);
+	void endVisitType(Node typeNode, TypeDeclaration type);
 	
 	/**
 	 * Called when visiting a field of a class.
@@ -35,39 +38,42 @@ public interface EclipseASTVisitor {
 	 * which are a subclass of FieldDeclaration, those do NOT result in a call to this method. They result
 	 * in a call to the visitInitializer method.
 	 */
-	void visitField(Node node, FieldDeclaration field);
-	void endVisitField(Node node, FieldDeclaration field);
+	void visitField(Node fieldNode, FieldDeclaration field);
+	void visitAnnotationOnField(Node fieldNode, FieldDeclaration Field, Annotation annotation);
+	void endVisitField(Node fieldNode, FieldDeclaration field);
 	
 	/**
 	 * Called for static and instance initializers. You can tell the difference via the modifier flag on the
 	 * ASTNode (8 for static, 0 for not static). The content is in the 'block', not in the 'initialization',
 	 * which would always be null for an initializer instance.
 	 */
-	void visitInitializer(Node node, Initializer initializer);
-	void endVisitInitializer(Node node, Initializer initializer);
+	void visitInitializer(Node initializerNode, Initializer initializer);
+	void endVisitInitializer(Node initializerNode, Initializer initializer);
 	
 	/**
 	 * Called for both methods (MethodDeclaration) and constructors (ConstructorDeclaration), but not for
 	 * Clinit objects, which are a vestigial eclipse thing that never contain anything. Static initializers
 	 * show up as 'Initializer', in the visitInitializer method, with modifier bit STATIC set.
 	 */
-	void visitMethod(Node node, AbstractMethodDeclaration declaration);
-	void endVisitMethod(Node node, AbstractMethodDeclaration declaration);
+	void visitMethod(Node methodNode, AbstractMethodDeclaration method);
+	void visitAnnotationOnMethod(Node methodNode, AbstractMethodDeclaration method, Annotation annotation);
+	void endVisitMethod(Node methodNode, AbstractMethodDeclaration method);
 	
 	/**
 	 * Visits a local declaration - that is, something like 'int x = 10;' on the method level. Also called
 	 * for method parameter (those would be Arguments, a subclass of LocalDeclaration).
 	 */
-	void visitLocal(Node node, LocalDeclaration declaration);
-	void endVisitLocal(Node node, LocalDeclaration declaration);
+	void visitLocal(Node localNode, LocalDeclaration local);
+	void visitAnnotationOnLocal(Node localNode, LocalDeclaration local, Annotation annotation);
+	void endVisitLocal(Node localNode, LocalDeclaration local);
 	
 	/**
 	 * Visits a statement that isn't any of the other visit methods (e.g. TypeDeclaration).
 	 * @param node
 	 * @param statement
 	 */
-	void visitStatement(Node node, Statement statement);
-	void endVisitStatement(Node node, Statement statement);
+	void visitStatement(Node statementNode, Statement statement);
+	void endVisitStatement(Node statementNode, Statement statement);
 	
 	public static class EclipseASTPrinter implements EclipseASTVisitor {
 		int indent = 0;
@@ -112,6 +118,10 @@ public interface EclipseASTVisitor {
 			indent++;
 		}
 		
+		@Override public void visitAnnotationOnType(Node node, TypeDeclaration type, Annotation annotation) {
+			print("<ANNOTATION: %s />", annotation);
+		}
+		
 		@Override public void endVisitType(Node node, TypeDeclaration type) {
 			indent--;
 			print("</TYPE %s>", str(type.name));
@@ -136,6 +146,10 @@ public interface EclipseASTVisitor {
 			indent++;
 		}
 		
+		@Override public void visitAnnotationOnField(Node node, FieldDeclaration field, Annotation annotation) {
+			print("<ANNOTATION: %s />", annotation);
+		}
+		
 		@Override public void endVisitField(Node node, FieldDeclaration field) {
 			indent--;
 			print("</FIELD %s %s>", str(field.type), str(field.name));
@@ -145,6 +159,10 @@ public interface EclipseASTVisitor {
 			String type = method instanceof ConstructorDeclaration ? "CONSTRUCTOR" : "METHOD";
 			print("<%s %s: %s>", type, str(method.selector), method.statements != null ? "filled" : "blank");
 			indent++;
+		}
+		
+		@Override public void visitAnnotationOnMethod(Node node, AbstractMethodDeclaration method, Annotation annotation) {
+			print("<ANNOTATION: %s />", annotation);
 		}
 		
 		@Override public void endVisitMethod(Node node, AbstractMethodDeclaration method) {
@@ -157,6 +175,10 @@ public interface EclipseASTVisitor {
 			String type = local instanceof Argument ? "ARGUMENT" : "LOCAL";
 			print("<%s %s %s = %s>", type, str(local.type), str(local.name), local.initialization);
 			indent++;
+		}
+		
+		@Override public void visitAnnotationOnLocal(Node node, LocalDeclaration local, Annotation annotation) {
+			print("<ANNOTATION: %s />", annotation);
 		}
 		
 		@Override public void endVisitLocal(Node node, LocalDeclaration local) {

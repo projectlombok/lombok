@@ -17,6 +17,7 @@ import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.apt.dispatch.AptProblem;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Clinit;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -60,6 +61,16 @@ public class EclipseAST {
 				visitor.visitLocal(child, (LocalDeclaration)n);
 				traverseChildren(visitor, child);
 				visitor.endVisitLocal(child, (LocalDeclaration)n);
+			} else if ( n instanceof Annotation ) {
+				Node parent = child.up();
+				if ( parent.node instanceof TypeDeclaration )
+					visitor.visitAnnotationOnType(parent, (TypeDeclaration)parent.node, (Annotation)n);
+				else if ( parent.node instanceof AbstractMethodDeclaration )
+					visitor.visitAnnotationOnMethod(parent, (AbstractMethodDeclaration)parent.node, (Annotation)n);
+				else if ( parent.node instanceof FieldDeclaration )
+					visitor.visitAnnotationOnField(parent, (FieldDeclaration)parent.node, (Annotation)n);
+				else if ( parent.node instanceof LocalDeclaration )
+					visitor.visitAnnotationOnLocal(parent, (LocalDeclaration)parent.node, (Annotation)n);
 			} else if ( n instanceof Statement ) {
 				visitor.visitStatement(child, (Statement)n);
 				traverseChildren(visitor, child);
@@ -302,6 +313,7 @@ public class EclipseAST {
 		childNodes.addAll(buildTree(type.fields));
 		childNodes.addAll(buildTree(type.memberTypes));
 		childNodes.addAll(buildTree(type.methods));
+		childNodes.addAll(buildTree(type.annotations));
 		return putInMap(new Node(type, childNodes));
 	}
 	
@@ -320,7 +332,10 @@ public class EclipseAST {
 	private Node buildTree(FieldDeclaration field) {
 		if ( field instanceof Initializer ) return buildTree((Initializer)field);
 		if ( identityDetector.containsKey(field) ) return null;
-		return putInMap(new Node(field, singleton(buildWithStatement(field.initialization))));
+		List<Node> childNodes = new ArrayList<Node>();
+		addIfNotNull(childNodes, buildWithStatement(field.initialization));
+		childNodes.addAll(buildTree(field.annotations));
+		return putInMap(new Node(field, childNodes));
 	}
 	
 	private Node buildTree(Initializer initializer) {
@@ -340,6 +355,7 @@ public class EclipseAST {
 		List<Node> childNodes = new ArrayList<Node>();
 		childNodes.addAll(buildTree(method.arguments));
 		childNodes.addAll(buildTree(method.statements));
+		childNodes.addAll(buildTree(method.annotations));
 		return putInMap(new Node(method, childNodes));
 	}
 	
@@ -355,7 +371,20 @@ public class EclipseAST {
 	
 	private Node buildTree(LocalDeclaration local) {
 		if ( identityDetector.containsKey(local) ) return null;
-		return putInMap(new Node(local, singleton(buildWithStatement(local.initialization))));
+		List<Node> childNodes = new ArrayList<Node>();
+		addIfNotNull(childNodes, buildWithStatement(local.initialization));
+		childNodes.addAll(buildTree(local.annotations));
+		return putInMap(new Node(local, childNodes));
+	}
+	
+	private Collection<Node> buildTree(Annotation[] annotations) {
+		if ( annotations == null ) return Collections.emptyList();
+		List<Node> elements = new ArrayList<Node>();
+		for ( Annotation an : annotations ) {
+			if ( an == null ) continue;
+			elements.add(putInMap(new Node(an, null)));
+		}
+		return elements;
 	}
 	
 	private Collection<Node> buildTree(Statement[] children) {
@@ -375,13 +404,14 @@ public class EclipseAST {
 		//We drill down because LocalDeclarations and TypeDeclarations can occur anywhere, even in, say,
 		//an if block, or even the expression on an assert statement!
 		
+		identityDetector.put(child, null);
 		return drill(child);
 	}
 	
 	private Node drill(Statement statement) {
 		List<Node> childNodes = new ArrayList<Node>();
 		for ( FieldAccess fa : fieldsOf(statement.getClass()) ) childNodes.addAll(buildWithField(statement, fa));
-		return new Node(statement, childNodes);
+		return putInMap(new Node(statement, childNodes));
 	}
 	
 	private static class FieldAccess {
