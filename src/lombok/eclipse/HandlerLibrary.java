@@ -13,8 +13,8 @@ import java.util.Map;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
+import lombok.core.TypeLibrary;
 import lombok.eclipse.EclipseAST.Node;
-import lombok.transformations.TypeLibrary;
 
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;

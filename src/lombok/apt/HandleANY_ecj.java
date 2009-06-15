@@ -3,7 +3,6 @@ package lombok.apt;
 import java.lang.annotation.Annotation;
 
 import javax.lang.model.element.Element;
-
 import javax.tools.Diagnostic;
 
 public class HandleANY_ecj extends HandlerForCompiler<Annotation> {

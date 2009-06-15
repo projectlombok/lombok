@@ -1,4 +1,4 @@
-package lombok.transformations;
+package lombok.core;
 
 import java.util.Collection;
 import java.util.Collections;

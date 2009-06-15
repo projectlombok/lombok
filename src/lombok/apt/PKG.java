@@ -8,7 +8,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 
 import lombok.Lombok;
-import lombok.transformations.TransformationsUtil;
+import lombok.core.TransformationsUtil;
 
 
 class PKG {

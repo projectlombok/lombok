@@ -5,9 +5,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import lombok.eclipse.EclipseAST;
+import lombok.core.TypeLibrary;
 import lombok.eclipse.EclipseAST.Node;
-import lombok.transformations.TypeLibrary;
 
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ImportReference;

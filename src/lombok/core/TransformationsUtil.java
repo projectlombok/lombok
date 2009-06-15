@@ -1,4 +1,4 @@
-package lombok.transformations;
+package lombok.core;
 
 public class TransformationsUtil {
 	private TransformationsUtil() {}
