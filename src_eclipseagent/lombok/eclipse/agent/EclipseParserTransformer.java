@@ -1,4 +1,4 @@
-package lombok.agent.eclipse;
+package lombok.eclipse.agent;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

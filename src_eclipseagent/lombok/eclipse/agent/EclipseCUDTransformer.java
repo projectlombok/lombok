@@ -1,4 +1,4 @@
-package lombok.agent.eclipse;
+package lombok.eclipse.agent;
 
 import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassReader;

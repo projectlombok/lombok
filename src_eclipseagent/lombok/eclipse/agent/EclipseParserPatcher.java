@@ -1,4 +1,4 @@
-package lombok.agent.eclipse;
+package lombok.eclipse.agent;
 
 import java.io.File;
 import java.io.IOException;
