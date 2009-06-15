@@ -25,7 +25,7 @@ public class EclipseParserPatcher {
 			
 			if ( ECLIPSE_PARSER_CLASS_NAME.equals(className) ) {
 				try {
-					return runTransform("lombok.agent.eclipse.EclipseParserTransformer", classfileBuffer);
+					return runTransform("lombok.eclipse.agent.EclipseParserTransformer", classfileBuffer);
 				} catch ( Throwable t ) {
 					System.err.println("Wasn't able to patch eclipse's Parser class:");
 					t.printStackTrace();
@@ -34,7 +34,7 @@ public class EclipseParserPatcher {
 			
 			if ( ECLIPSE_CUD_CLASS_NAME.equals(className) ) {
 				try {
-					return runTransform("lombok.agent.eclipse.EclipseCUDTransformer", classfileBuffer);
+					return runTransform("lombok.eclipse.agent.EclipseCUDTransformer", classfileBuffer);
 				} catch ( Throwable t ) {
 					System.err.println("Wasn't able to patch eclipse's CompilationUnitDeclaration class:");
 					t.printStackTrace();
