@@ -15,7 +15,6 @@ import java.util.ServiceLoader;
 
 import lombok.eclipse.EclipseAST.Node;
 import lombok.transformations.TypeLibrary;
-import lombok.transformations.TypeResolver;
 
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
