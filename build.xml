@@ -71,7 +71,11 @@
 	
 	<target name="dist" depends="clean, compile, getVersion, unpackLibs">
 		<mkdir dir="dist" />
-		<jar basedir="build/lombok" destfile="dist/lombok-${lombok.version}.jar" />
+		<jar basedir="build/lombok" destfile="dist/lombok-${lombok.version}.jar">
+			<manifest>
+				<attribute name="Main-Class" value="lombok.core.ShowUserHelp" />
+			</manifest>
+		</jar>
 		<jar basedir="build/eclipse.agent" destfile="dist/lombok.eclipse.agent-${lombok.version}.jar">
 			<manifest>
 				<attribute name="Premain-Class" value="lombok.agent.eclipse.EclipseParserPatcher" />
