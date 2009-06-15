@@ -77,6 +77,7 @@ public class TransformEclipseAST {
 				String message = "Lombok can't parse this source: " + t.toString();
 				
 				EclipseAST.addProblemToCompilationResult(fileName, ast, false, message, ast, 0, 0);
+				t.printStackTrace();
 			} catch ( Throwable t2 ) {
 				Eclipse.error("Can't create an error in the problems dialog while adding: " + t.toString(), t2);
 			}

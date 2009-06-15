@@ -7,6 +7,7 @@ import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 
 public abstract class EclipseASTAdapter implements EclipseASTVisitor {
@@ -22,4 +23,6 @@ public abstract class EclipseASTAdapter implements EclipseASTVisitor {
 	@Override public void endVisitMethod(Node node, AbstractMethodDeclaration method) {}
 	@Override public void visitLocal(Node node, LocalDeclaration local) {}
 	@Override public void endVisitLocal(Node node, LocalDeclaration local) {}
+	@Override public void visitStatement(Node node, Statement statement) {}
+	@Override public void endVisitStatement(Node node, Statement statement) {}
 }

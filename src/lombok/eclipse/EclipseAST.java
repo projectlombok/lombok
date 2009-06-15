@@ -60,6 +60,10 @@ public class EclipseAST {
 				visitor.visitLocal(child, (LocalDeclaration)n);
 				traverseChildren(visitor, child);
 				visitor.endVisitLocal(child, (LocalDeclaration)n);
+			} else if ( n instanceof Statement ) {
+				visitor.visitStatement(child, (Statement)n);
+				traverseChildren(visitor, child);
+				visitor.endVisitStatement(node, (Statement)n);
 			} else throw new AssertionError("Can't be reached");
 		}
 	}
@@ -142,10 +146,12 @@ public class EclipseAST {
 		Node parent;
 		final Collection<Node> children;
 		boolean handled;
+		private final boolean isStructurallySignificant;
 		
 		Node(ASTNode node, Collection<Node> children) {
 			this.node = node;
 			this.children = children == null ? Collections.<Node>emptyList() : children;
+			this.isStructurallySignificant = calculateIsStructurallySignificant();
 		}
 		
 		public void addError(String message) {
@@ -168,7 +174,39 @@ public class EclipseAST {
 			return node;
 		}
 		
+		/** Returns the structurally significant node that encloses this one.
+		 * 
+		 * @see #isStructurallySignificant()
+		 */
 		public Node up() {
+			Node result = parent;
+			while ( result != null && !result.isStructurallySignificant() ) result = result.parent;
+			return result;
+		}
+		
+		/**
+		 * Structurally significant means: LocalDeclaration, TypeDeclaration, MethodDeclaration, ConstructorDeclaration,
+		 * FieldDeclaration, Initializer, and CompilationUnitDeclaration.
+		 * The rest is e.g. if statements, while loops, etc.
+		 */
+		public boolean isStructurallySignificant() {
+			return isStructurallySignificant;
+		}
+		
+		private boolean calculateIsStructurallySignificant() {
+			if ( node instanceof TypeDeclaration ) return true;
+			if ( node instanceof AbstractMethodDeclaration ) return true;
+			if ( node instanceof FieldDeclaration ) return true;
+			if ( node instanceof LocalDeclaration ) return true;
+			if ( node instanceof CompilationUnitDeclaration ) return true;
+			return false;
+		}
+		
+		/**
+		 * Returns the direct parent node in the AST tree of this node. For example, a local variable declaration's
+		 * direct parent can be e.g. an If block, but its up() Node is the Method that contains it.
+		 */
+		public Node directUp() {
 			return parent;
 		}
 		
@@ -274,15 +312,20 @@ public class EclipseAST {
 		return childNodes;
 	}
 	
+	private static <T> Collection<T> singleton(T item) {
+		if ( item == null ) return Collections.emptyList();
+		else return Collections.singleton(item);
+	}
+	
 	private Node buildTree(FieldDeclaration field) {
 		if ( field instanceof Initializer ) return buildTree((Initializer)field);
 		if ( identityDetector.containsKey(field) ) return null;
-		return putInMap(new Node(field, buildWithStatement(field.initialization)));
+		return putInMap(new Node(field, singleton(buildWithStatement(field.initialization))));
 	}
 	
 	private Node buildTree(Initializer initializer) {
 		if ( identityDetector.containsKey(initializer) ) return null;
-		return putInMap(new Node(initializer, buildWithStatement(initializer.block)));
+		return putInMap(new Node(initializer, singleton(buildWithStatement(initializer.block))));
 	}
 	
 	private Collection<Node> buildTree(AbstractMethodDeclaration[] children) {
@@ -305,52 +348,40 @@ public class EclipseAST {
 		if ( children == null ) return Collections.emptyList();
 		List<Node> childNodes = new ArrayList<Node>();
 		for ( LocalDeclaration local : children ) {
-			if ( !identityDetector.containsKey(local) ) {
-				addIfNotNull(childNodes, buildTree(local));
-				childNodes.addAll(buildWithStatement(local.initialization));
-			}
+			addIfNotNull(childNodes, buildTree(local));
 		}
 		return childNodes;
 	}
 	
 	private Node buildTree(LocalDeclaration local) {
 		if ( identityDetector.containsKey(local) ) return null;
-		return putInMap(new Node(local, null));
+		return putInMap(new Node(local, singleton(buildWithStatement(local.initialization))));
 	}
 	
 	private Collection<Node> buildTree(Statement[] children) {
 		if ( children == null ) return Collections.emptyList();
 		List<Node> childNodes = new ArrayList<Node>();
-		for ( Statement child  : children ) childNodes.addAll(buildWithStatement(child));
+		for ( Statement child  : children ) addIfNotNull(childNodes, buildWithStatement(child));
 		return childNodes;
 	}
 	
 	//Almost anything is a statement, so this method has a different name to avoid overloading confusion
-	private Collection<Node> buildWithStatement(Statement child) {
-		if ( child == null || identityDetector.containsKey(child) ) return Collections.emptyList();
-		if ( child instanceof TypeDeclaration ) {
-			Node n = buildTree((TypeDeclaration)child);
-			return n == null ? Collections.<Node>emptyList() : Collections.singleton(n);
-		}
+	private Node buildWithStatement(Statement child) {
+		if ( child == null || identityDetector.containsKey(child) ) return null;
+		if ( child instanceof TypeDeclaration ) return buildTree((TypeDeclaration)child);
 		
-		if ( child instanceof LocalDeclaration ) {
-			List<Node> childNodes = new ArrayList<Node>();
-			addIfNotNull(childNodes, buildTree((LocalDeclaration)child));
-			identityDetector.put(child, null);
-			childNodes.addAll(buildWithStatement(((LocalDeclaration)child).initialization));
-			return childNodes;
-		}
+		if ( child instanceof LocalDeclaration ) return buildTree((LocalDeclaration)child);
+		
 		//We drill down because LocalDeclarations and TypeDeclarations can occur anywhere, even in, say,
 		//an if block, or even the expression on an assert statement!
 		
-		identityDetector.put(child, null);
 		return drill(child);
 	}
 	
-	private Collection<Node> drill(Statement child) {
+	private Node drill(Statement statement) {
 		List<Node> childNodes = new ArrayList<Node>();
-		for ( FieldAccess fa : fieldsOf(child.getClass()) ) childNodes.addAll(buildWithField(child, fa));
-		return childNodes;
+		for ( FieldAccess fa : fieldsOf(statement.getClass()) ) childNodes.addAll(buildWithField(statement, fa));
+		return new Node(statement, childNodes);
 	}
 	
 	private static class FieldAccess {
@@ -362,6 +393,7 @@ public class EclipseAST {
 			this.dim = dim;
 		}
 	}
+	
 	private static Map<Class<?>, Collection<FieldAccess>> fieldsOfASTClasses = new HashMap<Class<?>, Collection<FieldAccess>>();
 	private Collection<FieldAccess> fieldsOf(Class<?> c) {
 		Collection<FieldAccess> fields = fieldsOfASTClasses.get(c);
@@ -376,6 +408,7 @@ public class EclipseAST {
 	private void getFields(Class<?> c, Collection<FieldAccess> fields) {
 		if ( c == ASTNode.class || c == null ) return;
 		for ( Field f : c.getDeclaredFields() ) {
+			if ( Modifier.isStatic(f.getModifiers()) ) continue;
 			Class<?> t = f.getType();
 			int dim = 0;
 			while ( t.isArray() ) {
@@ -390,17 +423,16 @@ public class EclipseAST {
 		getFields(c.getSuperclass(), fields);
 	}
 	
-	private Collection<Node> buildWithField(Statement child, FieldAccess fa) {
-		if ( Modifier.isStatic(fa.field.getModifiers()) ) return Collections.emptyList();
+	private Collection<Node> buildWithField(Statement statement, FieldAccess fa) {
 		List<Node> list = new ArrayList<Node>();
-		buildWithField(child, fa, list);
+		buildWithField(statement, fa, list);
 		return list;
 	}
 	
 	private void buildWithField(Statement child, FieldAccess fa, Collection<Node> list) {
 		try {
 			Object o = fa.field.get(child);
-			if ( fa.dim == 0 ) list.addAll(buildWithStatement((Statement)o));
+			if ( fa.dim == 0 ) addIfNotNull(list, buildWithStatement((Statement)o));
 			else buildWithArray(o, list, fa.dim);
 		} catch ( IllegalAccessException e ) {
 			sneakyThrow(e);
@@ -410,7 +442,7 @@ public class EclipseAST {
 	private void buildWithArray(Object array, Collection<Node> list, int dim) {
 		if ( array == null ) return;
 		if ( dim == 1 ) for ( Object v : (Object[])array ) {
-			list.addAll(buildWithStatement((Statement)v));
+			addIfNotNull(list, buildWithStatement((Statement)v));
 		} else for ( Object v : (Object[])array ) {
 			buildWithArray(v, list, dim-1);
 		}

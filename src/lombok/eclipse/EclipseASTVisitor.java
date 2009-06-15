@@ -12,6 +12,7 @@ import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 
@@ -59,6 +60,14 @@ public interface EclipseASTVisitor {
 	 */
 	void visitLocal(Node node, LocalDeclaration declaration);
 	void endVisitLocal(Node node, LocalDeclaration declaration);
+	
+	/**
+	 * Visits a statement that isn't any of the other visit methods (e.g. TypeDeclaration).
+	 * @param node
+	 * @param statement
+	 */
+	void visitStatement(Node node, Statement statement);
+	void endVisitStatement(Node node, Statement statement);
 	
 	public static class EclipseASTPrinter implements EclipseASTVisitor {
 		int indent = 0;
@@ -154,6 +163,16 @@ public interface EclipseASTVisitor {
 			String type = local instanceof Argument ? "ARGUMENT" : "LOCAL";
 			indent--;
 			print("</%s %s %s>", type, str(local.type), str(local.name));
+		}
+		
+		@Override public void visitStatement(Node node, Statement statement) {
+			print("<%s>", statement.getClass());
+			indent++;
+		}
+		
+		@Override public void endVisitStatement(Node node, Statement statement) {
+			indent--;
+			print("</%s>", statement.getClass());
 		}
 	}
 }
