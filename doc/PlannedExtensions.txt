@@ -38,6 +38,8 @@ http://today.java.net/pub/a/today/2009/06/02/hacking-javafx-binding.html
 
 ## @SneakyThrows
 
+## @Finalizer
+
 # Maybes:
 
 ## @RunInEDT
