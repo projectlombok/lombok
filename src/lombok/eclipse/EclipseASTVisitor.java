@@ -17,7 +17,7 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 
-//TODO
+//TODO expand javadoc
 public interface EclipseASTVisitor {
 	/**
 	 * Called at the very beginning and end.
@@ -29,7 +29,7 @@ public interface EclipseASTVisitor {
 	 * Called when visiting a type (a class, interface, annotation, enum, etcetera).
 	 */
 	void visitType(Node typeNode, TypeDeclaration type);
-	void visitAnnotationOnType(Node typeNode, TypeDeclaration type, Annotation annotation);
+	void visitAnnotationOnType(TypeDeclaration type, Node annotationNode, Annotation annotation);
 	void endVisitType(Node typeNode, TypeDeclaration type);
 	
 	/**
@@ -39,7 +39,7 @@ public interface EclipseASTVisitor {
 	 * in a call to the visitInitializer method.
 	 */
 	void visitField(Node fieldNode, FieldDeclaration field);
-	void visitAnnotationOnField(Node fieldNode, FieldDeclaration Field, Annotation annotation);
+	void visitAnnotationOnField(FieldDeclaration field, Node annotationNode, Annotation annotation);
 	void endVisitField(Node fieldNode, FieldDeclaration field);
 	
 	/**
@@ -56,7 +56,7 @@ public interface EclipseASTVisitor {
 	 * show up as 'Initializer', in the visitInitializer method, with modifier bit STATIC set.
 	 */
 	void visitMethod(Node methodNode, AbstractMethodDeclaration method);
-	void visitAnnotationOnMethod(Node methodNode, AbstractMethodDeclaration method, Annotation annotation);
+	void visitAnnotationOnMethod(AbstractMethodDeclaration method, Node annotationNode, Annotation annotation);
 	void endVisitMethod(Node methodNode, AbstractMethodDeclaration method);
 	
 	/**
@@ -64,7 +64,7 @@ public interface EclipseASTVisitor {
 	 * for method parameter (those would be Arguments, a subclass of LocalDeclaration).
 	 */
 	void visitLocal(Node localNode, LocalDeclaration local);
-	void visitAnnotationOnLocal(Node localNode, LocalDeclaration local, Annotation annotation);
+	void visitAnnotationOnLocal(LocalDeclaration local, Node annotationNode, Annotation annotation);
 	void endVisitLocal(Node localNode, LocalDeclaration local);
 	
 	/**
@@ -118,7 +118,7 @@ public interface EclipseASTVisitor {
 			indent++;
 		}
 		
-		@Override public void visitAnnotationOnType(Node node, TypeDeclaration type, Annotation annotation) {
+		@Override public void visitAnnotationOnType(TypeDeclaration type, Node node, Annotation annotation) {
 			print("<ANNOTATION: %s />", annotation);
 		}
 		
@@ -146,7 +146,7 @@ public interface EclipseASTVisitor {
 			indent++;
 		}
 		
-		@Override public void visitAnnotationOnField(Node node, FieldDeclaration field, Annotation annotation) {
+		@Override public void visitAnnotationOnField(FieldDeclaration field, Node node, Annotation annotation) {
 			print("<ANNOTATION: %s />", annotation);
 		}
 		
@@ -161,7 +161,7 @@ public interface EclipseASTVisitor {
 			indent++;
 		}
 		
-		@Override public void visitAnnotationOnMethod(Node node, AbstractMethodDeclaration method, Annotation annotation) {
+		@Override public void visitAnnotationOnMethod(AbstractMethodDeclaration method, Node node, Annotation annotation) {
 			print("<ANNOTATION: %s />", annotation);
 		}
 		
@@ -177,7 +177,7 @@ public interface EclipseASTVisitor {
 			indent++;
 		}
 		
-		@Override public void visitAnnotationOnLocal(Node node, LocalDeclaration local, Annotation annotation) {
+		@Override public void visitAnnotationOnLocal(LocalDeclaration local, Node node, Annotation annotation) {
 			print("<ANNOTATION: %s />", annotation);
 		}
 		

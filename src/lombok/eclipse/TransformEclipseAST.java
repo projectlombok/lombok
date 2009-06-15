@@ -112,20 +112,24 @@ public class TransformEclipseAST {
 	}
 	
 	private static class AnnotationVisitor extends EclipseASTAdapter {
-		@Override public void visitAnnotationOnField(Node node, FieldDeclaration field, Annotation annotation) {
-			handlers.handle((CompilationUnitDeclaration) node.top().node, node, annotation);
+		@Override public void visitAnnotationOnField(FieldDeclaration field, Node annotationNode, Annotation annotation) {
+			handlers.handle((CompilationUnitDeclaration) annotationNode.top().node, annotationNode.up(), annotation);
+			annotationNode.setHandled();
 		}
 		
-		@Override public void visitAnnotationOnLocal(Node node, LocalDeclaration local, Annotation annotation) {
-			handlers.handle((CompilationUnitDeclaration) node.top().node, node, annotation);
+		@Override public void visitAnnotationOnLocal(LocalDeclaration local, Node annotationNode, Annotation annotation) {
+			handlers.handle((CompilationUnitDeclaration) annotationNode.top().node, annotationNode.up(), annotation);
+			annotationNode.setHandled();
 		}
 		
-		@Override public void visitAnnotationOnMethod(Node node, AbstractMethodDeclaration method, Annotation annotation) {
-			handlers.handle((CompilationUnitDeclaration) node.top().node, node, annotation);
+		@Override public void visitAnnotationOnMethod(AbstractMethodDeclaration method, Node annotationNode, Annotation annotation) {
+			handlers.handle((CompilationUnitDeclaration) annotationNode.top().node, annotationNode.up(), annotation);
+			annotationNode.setHandled();
 		}
 		
-		@Override public void visitAnnotationOnType(Node node, TypeDeclaration type, Annotation annotation) {
-			handlers.handle((CompilationUnitDeclaration) node.top().node, node, annotation);
+		@Override public void visitAnnotationOnType(TypeDeclaration type, Node annotationNode, Annotation annotation) {
+			handlers.handle((CompilationUnitDeclaration) annotationNode.top().node, annotationNode.up(), annotation);
+			annotationNode.setHandled();
 		}
 	}
 }

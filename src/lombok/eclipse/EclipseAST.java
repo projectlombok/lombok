@@ -64,13 +64,13 @@ public class EclipseAST {
 			} else if ( n instanceof Annotation ) {
 				Node parent = child.up();
 				if ( parent.node instanceof TypeDeclaration )
-					visitor.visitAnnotationOnType(parent, (TypeDeclaration)parent.node, (Annotation)n);
+					visitor.visitAnnotationOnType((TypeDeclaration)parent.node, child, (Annotation)n);
 				else if ( parent.node instanceof AbstractMethodDeclaration )
-					visitor.visitAnnotationOnMethod(parent, (AbstractMethodDeclaration)parent.node, (Annotation)n);
+					visitor.visitAnnotationOnMethod((AbstractMethodDeclaration)parent.node, child, (Annotation)n);
 				else if ( parent.node instanceof FieldDeclaration )
-					visitor.visitAnnotationOnField(parent, (FieldDeclaration)parent.node, (Annotation)n);
+					visitor.visitAnnotationOnField((FieldDeclaration)parent.node, child, (Annotation)n);
 				else if ( parent.node instanceof LocalDeclaration )
-					visitor.visitAnnotationOnLocal(parent, (LocalDeclaration)parent.node, (Annotation)n);
+					visitor.visitAnnotationOnLocal((LocalDeclaration)parent.node, child, (Annotation)n);
 			} else if ( n instanceof Statement ) {
 				visitor.visitStatement(child, (Statement)n);
 				traverseChildren(visitor, child);
