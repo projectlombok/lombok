@@ -31,13 +31,13 @@ public class Processor extends AbstractProcessor {
 		else {
 			this.processingEnv = (JavacProcessingEnvironment) processingEnv;
 			handlers = HandlerLibrary.load(processingEnv.getMessager());
+			trees = Trees.instance(processingEnv);
 		}
 	}
 	
 	@Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		if ( processingEnv == null ) return false;
 		
-		trees = Trees.instance(processingEnv);
 		
 		for ( TypeElement annotationType : annotations ) {
 			if ( !handlers.hasHandlerFor(annotationType) ) continue;
