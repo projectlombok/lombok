@@ -42,7 +42,6 @@ public class Processor extends AbstractProcessor {
 		for ( TypeElement annotationType : annotations ) {
 			if ( !handlers.hasHandlerFor(annotationType) ) continue;
 			for ( Element element : roundEnv.getElementsAnnotatedWith(annotationType) ) {
-				System.out.println("HIGHER PING: " + element);
 				handlers.handleAnnotation(createNode(element), annotationType);
 			}
 		}

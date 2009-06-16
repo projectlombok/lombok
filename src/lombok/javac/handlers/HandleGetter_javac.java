@@ -28,7 +28,6 @@ import com.sun.tools.javac.util.Name;
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleGetter_javac implements JavacAnnotationHandler<Getter> {
 	@Override public void handle(JavacNode node, Getter getter) {
-		System.out.println("PING: " + node.getJavacAST());
 		if ( !node.getJavacAST().getKind().isField() ) {
 			node.addError("@Getter is only supported on a field.");
 			return;
