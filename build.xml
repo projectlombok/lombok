@@ -35,7 +35,7 @@
 		</javac>
 		<mkdir dir="build/lombok/META-INF" />
 		<mkdir dir="build/lombok/META-INF/services" />
-		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.apt.Processor</echo>
+		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.javac.apt.Processor</echo>
 		
 		<mkdir dir="build/eclipse.agent" />
 		<javac srcdir="src_eclipseagent" debug="on" destdir="build/eclipse.agent">

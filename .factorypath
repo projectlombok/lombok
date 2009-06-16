@@ -1,3 +1,3 @@
 <factorypath>
-    <factorypathentry kind="WKSPJAR" id="/lombok/lib/lombok/spi-0.2.3-pre.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="WKSPJAR" id="/lombok/deps/lombok/spi-0.2.3-pre.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>

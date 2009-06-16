@@ -4,9 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -15,6 +13,7 @@ import java.util.Map;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
+import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
 import lombok.eclipse.EclipseAST.Node;
 
@@ -60,7 +59,7 @@ public class HandlerLibrary {
 	@SuppressWarnings("unchecked")
 	public <A extends Annotation> A createAnnotation(Class<A> target,
 			CompilationUnitDeclaration ast,
-			org.eclipse.jdt.internal.compiler.ast.Annotation node) throws EnumDecodeFail {
+			org.eclipse.jdt.internal.compiler.ast.Annotation node) throws AnnotationValueDecodeFail {
 		final Map<String, Object> values = new HashMap<String, Object>();
 		
 		final MemberValuePair[] pairs = node.memberValuePairs();
@@ -87,12 +86,12 @@ public class HandlerLibrary {
 	}
 	
 	private Object calculateValue(MemberValuePair pair,
-			CompilationUnitDeclaration ast, Class<?> type, Expression e) throws EnumDecodeFail {
+			CompilationUnitDeclaration ast, Class<?> type, Expression e) throws AnnotationValueDecodeFail {
 		if ( e instanceof Literal ) {
 			((Literal)e).computeConstant();
 			return convertConstant(pair, type, e.constant);
 		} else if ( e instanceof ArrayInitializer ) {
-			if ( !type.isArray() ) throw new EnumDecodeFail(pair, "Did not expect an array here.");
+			if ( !type.isArray() ) throw new AnnotationValueDecodeFail(pair, "Did not expect an array here.");
 			
 			Class<?> component = type.getComponentType();
 			Expression[] expressions = ((ArrayInitializer)e).expressions;
@@ -104,19 +103,19 @@ public class HandlerLibrary {
 			return values;
 		} else if ( e instanceof ClassLiteralAccess ) {
 			if ( type == Class.class ) return toClass(pair, ast, str(((ClassLiteralAccess)e).type.getTypeName()));
-			else throw new EnumDecodeFail(pair, "Expected a " + type + " literal.");
+			else throw new AnnotationValueDecodeFail(pair, "Expected a " + type + " literal.");
 		} else if ( e instanceof NameReference ) {
 			String s = null;
 			if ( e instanceof SingleNameReference ) s = new String(((SingleNameReference)e).token);
 			else if ( e instanceof QualifiedNameReference ) s = str(((QualifiedNameReference)e).tokens);
 			if ( Enum.class.isAssignableFrom(type) ) return toEnum(pair, type, s);
-			throw new EnumDecodeFail(pair, "Lombok annotations must contain literals only.");
+			throw new AnnotationValueDecodeFail(pair, "Lombok annotations must contain literals only.");
 		} else {
-			throw new EnumDecodeFail(pair, "Lombok could not decode this annotation parameter.");
+			throw new AnnotationValueDecodeFail(pair, "Lombok could not decode this annotation parameter.");
 		}
 	}
 	
-	private Enum<?> toEnum(MemberValuePair pair, Class<?> enumType, String ref) throws EnumDecodeFail {
+	private Enum<?> toEnum(MemberValuePair pair, Class<?> enumType, String ref) throws AnnotationValueDecodeFail {
 		int idx = ref.indexOf('.');
 		if ( idx > -1 ) ref = ref.substring(idx +1);
 		Object[] enumConstants = enumType.getEnumConstants();
@@ -124,10 +123,10 @@ public class HandlerLibrary {
 			String target = ((Enum<?>)constant).name();
 			if ( target.equals(ref) ) return (Enum<?>) constant;
 		}
-		throw new EnumDecodeFail(pair, "I can't figure out which enum constant you mean.");
+		throw new AnnotationValueDecodeFail(pair, "I can't figure out which enum constant you mean.");
 	}
 	
-	private Class<?> toClass(MemberValuePair pair, CompilationUnitDeclaration ast, String typeName) throws EnumDecodeFail {
+	private Class<?> toClass(MemberValuePair pair, CompilationUnitDeclaration ast, String typeName) throws AnnotationValueDecodeFail {
 		Class<?> c;
 		boolean fqn = typeName.indexOf('.') > -1;
 		
@@ -170,7 +169,7 @@ public class HandlerLibrary {
 			}
 		}
 		
-		throw new EnumDecodeFail(pair, "I can't find this class. Try using the fully qualified name.");
+		throw new AnnotationValueDecodeFail(pair, "I can't find this class. Try using the fully qualified name.");
 	}
 	
 	private Class<?> tryClass(String name) {
@@ -181,7 +180,7 @@ public class HandlerLibrary {
 		}
 	}
 	
-	private Object convertConstant(MemberValuePair pair, Class<?> type, Constant constant) throws EnumDecodeFail {
+	private Object convertConstant(MemberValuePair pair, Class<?> type, Constant constant) throws AnnotationValueDecodeFail {
 		int targetTypeID;
 		boolean array = type.isArray();
 		if ( array ) type = type.getComponentType();
@@ -197,10 +196,10 @@ public class HandlerLibrary {
 		else if ( type == boolean.class ) targetTypeID = TypeIds.T_boolean;
 		else {
 			//Enum or Class, so a constant isn't going to be very useful.
-			throw new EnumDecodeFail(pair, "Expected a constant of some sort here (a number or a string)");
+			throw new AnnotationValueDecodeFail(pair, "Expected a constant of some sort here (a number or a string)");
 		}
 		if ( !Expression.isConstantValueRepresentable(constant, constant.typeID(), targetTypeID) ) {
-			throw new EnumDecodeFail(pair, "I can't turn this literal into a " + type);
+			throw new AnnotationValueDecodeFail(pair, "I can't turn this literal into a " + type);
 		}
 		
 		Object o = null;
@@ -224,12 +223,12 @@ public class HandlerLibrary {
 		return o;
 	}
 	
-	private static class EnumDecodeFail extends Exception {
+	private static class AnnotationValueDecodeFail extends Exception {
 		private static final long serialVersionUID = 1L;
 		
 		MemberValuePair pair;
 		
-		EnumDecodeFail(MemberValuePair pair, String msg) {
+		AnnotationValueDecodeFail(MemberValuePair pair, String msg) {
 			super(msg);
 			this.pair = pair;
 		}
@@ -259,7 +258,8 @@ public class HandlerLibrary {
 		while ( it.hasNext() ) {
 			try {
 				EclipseAnnotationHandler<?> handler = it.next();
-				Class<? extends Annotation> annotationClass = lib.findAnnotationClass(handler.getClass());
+				Class<? extends Annotation> annotationClass =
+					SpiLoadUtil.findAnnotationClass(handler.getClass(), EclipseAnnotationHandler.class);
 				AnnotationHandlerContainer<?> container = new AnnotationHandlerContainer(handler, annotationClass);
 				if ( lib.annotationHandlers.put(container.annotationClass.getName(), container) != null ) {
 					Eclipse.error("Duplicate handlers for annotation type: " + container.annotationClass.getName());
@@ -282,34 +282,6 @@ public class HandlerLibrary {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
-	private Class<? extends Annotation> findAnnotationClass(Class<?> c) {
-		if ( c == Object.class || c == null ) return null;
-		for ( Type iface : c.getGenericInterfaces() ) {
-			if ( iface instanceof ParameterizedType ) {
-				ParameterizedType p = (ParameterizedType)iface;
-				if ( !EclipseAnnotationHandler.class.equals(p.getRawType()) ) continue;
-				Type target = p.getActualTypeArguments()[0];
-				if ( target instanceof Class<?> ) {
-					if ( Annotation.class.isAssignableFrom((Class<?>) target) ) {
-						return (Class<? extends Annotation>) target;
-					}
-				}
-				
-				throw new ClassCastException("Not an annotation type: " + target);
-			}
-		}
-		
-		Class<? extends Annotation> potential = findAnnotationClass(c.getSuperclass());
-		if ( potential != null ) return potential;
-		for ( Class<?> iface : c.getInterfaces() ) {
-			potential = findAnnotationClass(iface);
-			if ( potential != null ) return potential;
-		}
-		
-		return null;
-	}
-	
 	public void handle(CompilationUnitDeclaration ast, EclipseAST.Node annotationNode,
 			org.eclipse.jdt.internal.compiler.ast.Annotation annotation) {
 		TypeResolver resolver = new TypeResolver(typeLibrary, annotationNode.top());
@@ -321,7 +293,7 @@ public class HandlerLibrary {
 			Object annInstance;
 			try {
 				annInstance = createAnnotation(container.annotationClass, ast, annotation);
-			} catch ( EnumDecodeFail e ) {
+			} catch ( AnnotationValueDecodeFail e ) {
 				annotationNode.addError(e.getMessage(), e.pair.sourceStart, e.pair.sourceEnd);
 				return;
 			}

@@ -1,19 +1,13 @@
-package lombok.apt;
+package lombok.javac.apt;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.type.TypeKind;
-
 import lombok.Lombok;
-import lombok.core.TransformationsUtil;
 
 
 class PKG {
-	static final String CURRENT_SUPPORT = "javac 1.6 and eclipse (ecj).";
-	
 	private PKG() {}
 	
 	static boolean isInstanceOf(Object o, String className) {
@@ -47,14 +41,6 @@ class PKG {
 		} catch (IOException e) {
 			throw Lombok.sneakyThrow(e);
 		}
-	}
-	
-	static String toGetterName(Element field) {
-		CharSequence fieldName = field.getSimpleName();
-		
-		boolean isBoolean = field.asType().getKind() == TypeKind.BOOLEAN;
-		
-		return TransformationsUtil.toGetterName(fieldName, isBoolean);
 	}
 	
 	static byte[] readStream(InputStream in) throws IOException {

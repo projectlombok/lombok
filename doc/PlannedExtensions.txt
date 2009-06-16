@@ -17,9 +17,12 @@ Optionally you can generate a different access level by specifying the `AccessLe
 
     private @Getter(AccessLevel.PROTECTED) AnyType foo;
 
+Don't forget to allow use on static fields!
+
 ## @Setter
 
 Like @Getter, but creates setters.
+Don't forget to allow use on static fields!
 
 ## @Data
 
