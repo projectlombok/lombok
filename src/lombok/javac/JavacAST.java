@@ -338,12 +338,10 @@ public class JavacAST extends AST<JCTree> {
 		JavaFileObject newSource = null;
 		JCTree astObject = node == null ? null : node.get();
 		JCCompilationUnit top = (JCCompilationUnit) top().get();
-		if (node != null) {
-			newSource = top.sourcefile;
-			if (newSource != null) {
-				oldSource = log.useSource(newSource);
-				pos = astObject.pos();
-			}
+		newSource = top.sourcefile;
+		if (newSource != null) {
+			oldSource = log.useSource(newSource);
+			if ( pos == null ) pos = astObject.pos();
 		}
 		try {
 			switch (kind) {

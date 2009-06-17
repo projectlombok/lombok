@@ -32,7 +32,6 @@ import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
-import com.sun.tools.javac.util.JCDiagnostic.SimpleDiagnosticPosition;
 
 
 public class HandlerLibrary {
@@ -89,12 +88,12 @@ public class HandlerLibrary {
 						for  ( JCExpression inner : elems ) {
 							raws.add(inner.toString());
 							guesses.add(calculateGuess(inner));
-							positions.add(new SimpleDiagnosticPosition(inner.pos));
+							positions.add(inner.pos());
 						}
 					} else {
 						raws.add(rhs.toString());
 						guesses.add(calculateGuess(rhs));
-						positions.add(new SimpleDiagnosticPosition(rhs.pos));
+						positions.add(rhs.pos());
 					}
 				}
 				
