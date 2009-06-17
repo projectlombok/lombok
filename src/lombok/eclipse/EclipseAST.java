@@ -21,7 +21,6 @@ import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.problem.ProblemSeverities;
@@ -56,55 +55,72 @@ public class EclipseAST extends AST<ASTNode> {
 	private void traverseChildren(EclipseASTVisitor visitor, Node node) {
 		for ( Node child : node.down() ) {
 			ASTNode n = child.get();
-			if ( n instanceof TypeDeclaration ) {
+			switch ( child.getKind() ) {
+			case TYPE:
 				visitor.visitType(child, (TypeDeclaration)n);
 				traverseChildren(visitor, child);
 				visitor.endVisitType(child, (TypeDeclaration)n);
-			} else if ( n instanceof Initializer ) {
-				visitor.visitInitializer(child, (Initializer)n);
-				traverseChildren(visitor, child);
-				visitor.endVisitInitializer(child, (Initializer)n);
-			} else if ( n instanceof FieldDeclaration ) {
+				break;
+			case FIELD:
 				visitor.visitField(child, (FieldDeclaration)n);
 				traverseChildren(visitor, child);
 				visitor.endVisitField(child, (FieldDeclaration)n);
-			} else if ( n instanceof AbstractMethodDeclaration ) {
+				break;
+			case INITIALIZER:
+				visitor.visitInitializer(child, (Initializer)n);
+				traverseChildren(visitor, child);
+				visitor.endVisitInitializer(child, (Initializer)n);
+				break;
+			case METHOD:
 				if ( n instanceof Clinit ) continue;
 				visitor.visitMethod(child, (AbstractMethodDeclaration)n);
 				traverseChildren(visitor, child);
 				visitor.endVisitMethod(child, (AbstractMethodDeclaration)n);
-			} else if ( n instanceof Argument ) {
-				ASTNode parent = child.up().get();
-				AbstractMethodDeclaration method = null;
-				if ( parent instanceof AbstractMethodDeclaration ) method = (AbstractMethodDeclaration)parent;
-				else System.out.println("Weird, this isn't a desc of method: " + parent.getClass() + ": " + parent);
+				break;
+			case ARGUMENT:
+				AbstractMethodDeclaration method = (AbstractMethodDeclaration)child.up().get();
 				visitor.visitMethodArgument(child, (Argument)n, method);
 				traverseChildren(visitor, child);
 				visitor.endVisitMethodArgument(child, (Argument)n, method);
-			} else if ( n instanceof LocalDeclaration ) {
+				break;
+			case LOCAL:
 				visitor.visitLocal(child, (LocalDeclaration)n);
 				traverseChildren(visitor, child);
 				visitor.endVisitLocal(child, (LocalDeclaration)n);
-			} else if ( n instanceof Annotation ) {
+				break;
+			case ANNOTATION:
 				Node parent = child.up();
-				if ( parent.get() instanceof TypeDeclaration )
+				switch ( parent.getKind() ) {
+				case TYPE:
 					visitor.visitAnnotationOnType((TypeDeclaration)parent.get(), child, (Annotation)n);
-				else if ( parent.get() instanceof AbstractMethodDeclaration )
-					visitor.visitAnnotationOnMethod((AbstractMethodDeclaration)parent.get(), child, (Annotation)n);
-				else if ( parent.get() instanceof FieldDeclaration )
+					break;
+				case FIELD:
 					visitor.visitAnnotationOnField((FieldDeclaration)parent.get(), child, (Annotation)n);
-				else if ( parent.get() instanceof Argument )
+					break;
+				case METHOD:
+					visitor.visitAnnotationOnMethod((AbstractMethodDeclaration)parent.get(), child, (Annotation)n);
+					break;
+				case ARGUMENT:
 					visitor.visitAnnotationOnMethodArgument(
 							(Argument)parent.get(),
 							(AbstractMethodDeclaration)parent.directUp().get(),
 							child, (Annotation)n);
-				else if ( parent.get() instanceof LocalDeclaration )
+					break;
+				case LOCAL:
 					visitor.visitAnnotationOnLocal((LocalDeclaration)parent.get(), child, (Annotation)n);
-			} else if ( n instanceof Statement ) {
+					break;
+				default:
+					throw new AssertionError("Annotion not expected as child of a " + parent.getKind());
+				}
+				break;
+			case STATEMENT:
 				visitor.visitStatement(child, (Statement)n);
 				traverseChildren(visitor, child);
 				visitor.endVisitStatement(node, (Statement)n);
-			} else throw new AssertionError("Can't be reached");
+				break;
+			default:
+				throw new AssertionError("Unexpected kind during child traversal: " + child.getKind());
+			}
 		}
 	}
 	
