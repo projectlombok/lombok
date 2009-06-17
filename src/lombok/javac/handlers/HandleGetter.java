@@ -24,7 +24,7 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 
 @ProviderFor(JavacAnnotationHandler.class)
-public class HandleGetter_javac implements JavacAnnotationHandler<Getter> {
+public class HandleGetter implements JavacAnnotationHandler<Getter> {
 	@Override public void handle(AnnotationValues<Getter> annotation, JCAnnotation ast, JavacAST.Node node) {
 		if ( node.up().getKind() != Kind.FIELD ) {
 			node.addError("@Getter is only supported on a field.");

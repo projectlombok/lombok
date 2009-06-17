@@ -24,7 +24,7 @@ import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
 import org.mangosdk.spi.ProviderFor;
 
 @ProviderFor(EclipseAnnotationHandler.class)
-public class HandleGetter_ecj implements EclipseAnnotationHandler<Getter> {
+public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 	private void generateDuplicateGetterWarning(Node annotationNode, String methodName) {
 		annotationNode.addWarning(String.format("Not generating %s(): A method with that name already exists",  methodName));
 	}
