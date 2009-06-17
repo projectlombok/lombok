@@ -12,6 +12,8 @@ import lombok.core.TransformationsUtil;
 import lombok.javac.JavacAST;
 
 class PKG {
+	private PKG() {}
+	
 	static String toGetterName(JCVariableDecl field) {
 		CharSequence fieldName = field.name;
 		

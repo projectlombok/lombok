@@ -2,47 +2,49 @@ package lombok.eclipse.handlers;
 
 import static lombok.eclipse.handlers.PKG.*;
 
-import lombok.Getter;
+import org.eclipse.jdt.internal.compiler.ast.ASTNode;
+import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.Argument;
+import org.eclipse.jdt.internal.compiler.ast.Assignment;
+import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.FieldReference;
+import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
+import org.eclipse.jdt.internal.compiler.ast.Statement;
+import org.eclipse.jdt.internal.compiler.ast.ThisReference;
+import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
+import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
+import org.mangosdk.spi.ProviderFor;
+
+import lombok.Setter;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
 
-import org.eclipse.jdt.internal.compiler.ast.ASTNode;
-import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.Annotation;
-import org.eclipse.jdt.internal.compiler.ast.Expression;
-import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
-import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
-import org.eclipse.jdt.internal.compiler.ast.Statement;
-import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
-import org.mangosdk.spi.ProviderFor;
-
 @ProviderFor(EclipseAnnotationHandler.class)
-public class HandleGetter implements EclipseAnnotationHandler<Getter> {
-	@Override public boolean handle(AnnotationValues<Getter> annotation, Annotation ast, Node annotationNode) {
+public class HandleSetter implements EclipseAnnotationHandler<Setter> {
+	@Override public boolean handle(AnnotationValues<Setter> annotation, Annotation ast, Node annotationNode) {
 		if ( !(annotationNode.up().get() instanceof FieldDeclaration) ) return false;
 		FieldDeclaration field = (FieldDeclaration) annotationNode.up().get();
-		TypeReference fieldType = field.type;
-		String getterName = TransformationsUtil.toGetterName(
-				new String(field.name), nameEquals(fieldType.getTypeName(), "boolean"));
+		String setterName = TransformationsUtil.toSetterName(new String(field.name));
 		
 		TypeDeclaration parent = (TypeDeclaration) annotationNode.up().up().get();
 		if ( parent.methods != null ) for ( AbstractMethodDeclaration method : parent.methods ) {
-			if ( method.selector != null && new String(method.selector).equals(getterName) ) {
+			if ( method.selector != null && new String(method.selector).equals(setterName) ) {
 				annotationNode.addWarning(String.format(
-						"Not generating %s(): A method with that name already exists",  getterName));
+						"Not generating %s(%s %s): A method with that name already exists",
+						setterName, field.type, new String(field.name)));
 				return false;
 			}
 		}
 		
 		int modifier = toModifier(annotation.getInstance().value());
 		
-		MethodDeclaration method = generateGetter(parent, field, getterName, modifier, ast);
+		MethodDeclaration method = generateSetter(parent, field, setterName, modifier, ast);
 		
 		if ( parent.methods == null ) {
 			parent.methods = new AbstractMethodDeclaration[1];
@@ -57,24 +59,28 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		return true;
 	}
 	
-	private MethodDeclaration generateGetter(TypeDeclaration parent, FieldDeclaration field, String name,
+	private MethodDeclaration generateSetter(TypeDeclaration parent, FieldDeclaration field, String name,
 			int modifier, Annotation ast) {
+		long pos = (((long)ast.sourceStart) << 32) | ast.sourceEnd;
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
 		method.modifiers = modifier;
-		method.returnType = field.type;
+		method.returnType = TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		method.annotations = null;
-		method.arguments = null;
+		Argument param = new Argument(field.name, pos, field.type, 0);
+		method.arguments = new Argument[] { param };
 		method.selector = name.toCharArray();
 		method.binding = null;
 		method.thrownExceptions = null;
 		method.typeParameters = null;
 		method.scope = parent.scope == null ? null : new MethodScope(parent.scope, method, false);
 		method.bits |= ASTNode.Bit24;
-		Expression fieldExpression = new SingleNameReference(field.name, (field.declarationSourceStart << 32) | field.declarationSourceEnd);
-		Statement returnStatement = new ReturnStatement(fieldExpression, field.sourceStart, field.sourceEnd);
+		FieldReference thisX = new FieldReference(("this." + new String(field.name)).toCharArray(), pos);
+		thisX.receiver = new ThisReference(ast.sourceStart, ast.sourceEnd);
+		thisX.token = field.name;
+		Assignment assignment = new Assignment(thisX, new SingleNameReference(field.name, pos), (int)pos);
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = ast.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = ast.sourceEnd;
-		method.statements = new Statement[] { returnStatement };
+		method.statements = new Statement[] { assignment };
 		return method;
 	}
 }
