@@ -25,19 +25,19 @@ import com.sun.tools.javac.util.Name;
 
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleGetter implements JavacAnnotationHandler<Getter> {
-	@Override public void handle(AnnotationValues<Getter> annotation, JCAnnotation ast, JavacAST.Node node) {
-		if ( node.up().getKind() != Kind.FIELD ) {
-			node.addError("@Getter is only supported on a field.");
+	@Override public void handle(AnnotationValues<Getter> annotation, JCAnnotation ast, JavacAST.Node annotationNode) {
+		if ( annotationNode.up().getKind() != Kind.FIELD ) {
+			annotationNode.addError("@Getter is only supported on a field.");
 			return;
 		}
 		
 		Getter getter = annotation.getInstance();
 		
-		JCClassDecl javacClassTree = (JCClassDecl) node.up().up().get();
+		JCClassDecl javacClassTree = (JCClassDecl) annotationNode.up().up().get();
 		
 		int access = toJavacModifier(getter.value());
 		
-		MethodTree getterMethod = createGetter(access, node.up(), node.getTreeMaker());
+		MethodTree getterMethod = createGetter(access, annotationNode.up(), annotationNode.getTreeMaker());
 		javacClassTree.defs = javacClassTree.defs.append((JCTree)getterMethod);
 	}
 	
