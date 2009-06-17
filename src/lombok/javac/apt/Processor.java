@@ -58,7 +58,7 @@ public class Processor extends AbstractProcessor {
 		
 		for ( JavacAST ast : asts ) {
 			ast.traverse(new AnnotationVisitor());
-			handlers.handleAST(ast);
+			handlers.callASTVisitors(ast);
 		}
 		return false;
 	}

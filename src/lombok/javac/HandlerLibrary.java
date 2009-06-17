@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +22,9 @@ import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
 import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
+import lombok.eclipse.Eclipse;
+import lombok.eclipse.EclipseAST;
+import lombok.eclipse.EclipseASTVisitor;
 
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
@@ -35,7 +39,12 @@ import com.sun.tools.javac.tree.JCTree.JCNewArray;
 public class HandlerLibrary {
 	private final TypeLibrary typeLibrary = new TypeLibrary();
 	private final Map<String, AnnotationHandlerContainer<?>> annotationHandlers = new HashMap<String, AnnotationHandlerContainer<?>>();
-//	private final Collection<JavacASTVisitor> visitorHandlers = new ArrayList<JavacASTVisitor>();
+	private final Collection<JavacASTVisitor> visitorHandlers = new ArrayList<JavacASTVisitor>();
+	private final Messager messager;
+	
+	public HandlerLibrary(Messager messager) {
+		this.messager = messager;
+	}
 	
 	private static class AnnotationHandlerContainer<T extends Annotation> {
 		private JavacAnnotationHandler<T> handler;
@@ -100,13 +109,16 @@ public class HandlerLibrary {
 	}
 	
 	public static HandlerLibrary load(Messager messager) {
-		HandlerLibrary library = new HandlerLibrary();
-		loadAnnotationHandlers(messager, library);
+		HandlerLibrary library = new HandlerLibrary(messager);
+		
+		loadAnnotationHandlers(library);
+		loadVisitorHandlers(library);
+		
 		return library;
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static void loadAnnotationHandlers(Messager messager, HandlerLibrary lib) {
+	private static void loadAnnotationHandlers(HandlerLibrary lib) {
 		//No, that seemingly superfluous reference to JavacAnnotationHandler's classloader is not in fact superfluous!
 		Iterator<JavacAnnotationHandler> it = ServiceLoader.load(JavacAnnotationHandler.class,
 				JavacAnnotationHandler.class.getClassLoader()).iterator();
@@ -117,13 +129,41 @@ public class HandlerLibrary {
 					SpiLoadUtil.findAnnotationClass(handler.getClass(), JavacAnnotationHandler.class);
 				AnnotationHandlerContainer<?> container = new AnnotationHandlerContainer(handler, annotationClass);
 				if ( lib.annotationHandlers.put(container.annotationClass.getName(), container) != null ) {
-					messager.printMessage(Diagnostic.Kind.WARNING,
-							"Duplicate handlers for annotation type: " + container.annotationClass.getName());
+					lib.javacWarning("Duplicate handlers for annotation type: " + container.annotationClass.getName());
 				}
 				lib.typeLibrary.addType(container.annotationClass.getName());
 			} catch ( ServiceConfigurationError e ) {
-				messager.printMessage(Diagnostic.Kind.WARNING,
-						"Can't load Lombok annotation handler for javac: " + e);
+				lib.javacWarning("Can't load Lombok annotation handler for javac", e);
+			}
+		}
+	}
+	
+	public void javacWarning(String message) {
+		javacWarning(message, null);
+	}
+	
+	public void javacWarning(String message, Throwable t) {
+		messager.printMessage(Diagnostic.Kind.WARNING, message + t == null ? "" : (": " + t));
+	}
+	
+	public void javacError(String message) {
+		javacWarning(message, null);
+	}
+	
+	public void javacError(String message, Throwable t) {
+		messager.printMessage(Diagnostic.Kind.ERROR, message + t == null ? "" : (": " + t));
+	}
+	
+	private static void loadVisitorHandlers(HandlerLibrary lib) {
+		//No, that seemingly superfluous reference to JavacASTVisitor's classloader is not in fact superfluous!
+		Iterator<JavacASTVisitor> it = ServiceLoader.load(JavacASTVisitor.class,
+				JavacASTVisitor.class.getClassLoader()).iterator();
+		while ( it.hasNext() ) {
+			try {
+				JavacASTVisitor handler = it.next();
+				lib.visitorHandlers.add(handler);
+			} catch ( ServiceConfigurationError e ) {
+				lib.javacWarning("Can't load Lombok visitor handler for javac", e);
 			}
 		}
 	}
@@ -140,15 +180,17 @@ public class HandlerLibrary {
 			} catch ( AnnotationValueDecodeFail fail ) {
 				fail.owner.setError(fail.getMessage(), fail.idx);
 			} catch ( Throwable t ) {
-				t.printStackTrace();
-//				Eclipse.error(String.format("Lombok annotation handler %s failed", container.handler.getClass()), t);
-				//TODO
+				javacError(String.format("Lombok annotation handler %s failed", container.handler.getClass()), t);
 			}
 		}
 	}
 	
-	public void handleAST(JavacAST ast) {
-		//Later!
+	public void callASTVisitors(JavacAST ast) {
+		for ( JavacASTVisitor visitor : visitorHandlers ) try {
+			ast.traverse(visitor);
+		} catch ( Throwable t ) {
+			javacError(String.format("Lombok visitor handler %s failed", visitor.getClass()), t);
+		}
 	}
 	
 	public boolean hasHandlerFor(TypeElement annotationType) {
