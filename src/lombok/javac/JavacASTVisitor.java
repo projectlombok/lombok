@@ -1,5 +1,9 @@
 package lombok.javac;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
+
 import lombok.javac.JavacAST.Node;
 
 import com.sun.tools.javac.tree.JCTree;
@@ -66,16 +70,31 @@ public interface JavacASTVisitor {
 	void visitStatement(Node statementNode, JCTree statement);
 	void endVisitStatement(Node statementNode, JCTree statement);
 	
-	public static class JavacASTPrinter implements JavacASTVisitor {
+	public static class Printer implements JavacASTVisitor {
+		private final PrintStream out;
+		
+		public Printer() {
+			this(System.out);
+		}
+		
+		public Printer(File file) throws FileNotFoundException {
+			this(new PrintStream(file));
+		}
+		
+		public Printer(PrintStream out) {
+			this.out = out;
+		}
+		
 		int indent = 0;
 		private void print(String text, Object... params) {
 			StringBuilder sb = new StringBuilder();
 			for ( int i = 0 ; i < indent ; i++ ) sb.append("  ");
-			System.out.printf(sb.append(text).append('\n').toString(), params);
+			out.printf(sb.append(text).append('\n').toString(), params);
+			out.flush();
 		}
 		
 		@Override public void visitCompilationUnit(Node Node, JCCompilationUnit unit) {
-			System.out.println("---------------------------------------------------------");
+			out.println("---------------------------------------------------------");
 			
 			print("<CU %s>", Node.getFileName());
 			indent++;

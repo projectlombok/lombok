@@ -1,5 +1,8 @@
 package lombok.eclipse;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.lang.reflect.Modifier;
 
 import lombok.eclipse.EclipseAST.Node;
@@ -79,12 +82,26 @@ public interface EclipseASTVisitor {
 	void visitStatement(Node statementNode, Statement statement);
 	void endVisitStatement(Node statementNode, Statement statement);
 	
-	public static class EclipseASTPrinter implements EclipseASTVisitor {
+	public static class Printer implements EclipseASTVisitor {
+		private final PrintStream out;
+		public Printer() {
+			this(System.out);
+		}
+		
+		public Printer(File file) throws FileNotFoundException {
+			this(new PrintStream(file));
+		}
+		
+		public Printer(PrintStream out) {
+			this.out = out;
+		}
+		
 		int indent = 0;
 		private void print(String text, Object... params) {
 			StringBuilder sb = new StringBuilder();
 			for ( int i = 0 ; i < indent ; i++ ) sb.append("  ");
-			System.out.printf(sb.append(text).append('\n').toString(), params);
+			out.printf(sb.append(text).append('\n').toString(), params);
+			out.flush();
 		}
 		
 		private String str(char[] c) {
