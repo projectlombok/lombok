@@ -172,6 +172,7 @@ public interface JavacASTVisitor {
 		@Override public void visitStatement(Node node, JCTree statement) {
 			print("<%s>", statement.getClass());
 			indent++;
+			print("%s", statement);
 		}
 		
 		@Override public void endVisitStatement(Node node, JCTree statement) {
