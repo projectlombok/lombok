@@ -112,7 +112,7 @@ public interface JavacASTVisitor {
 		}
 		
 		@Override public void visitField(Node node, JCVariableDecl field) {
-			print("<FIELD %s %s>", field.type, field.name);
+			print("<FIELD %s %s>", field.vartype, field.name);
 			indent++;
 		}
 		
@@ -122,7 +122,7 @@ public interface JavacASTVisitor {
 		
 		@Override public void endVisitField(Node node, JCVariableDecl field) {
 			indent--;
-			print("</FIELD %s %s>", field.type, field.name);
+			print("</FIELD %s %s>", field.vartype, field.name);
 		}
 		
 		@Override public void visitMethod(Node node, JCMethodDecl method) {
@@ -142,7 +142,7 @@ public interface JavacASTVisitor {
 		}
 		
 		@Override public void visitMethodArgument(Node node, JCVariableDecl arg, JCMethodDecl method) {
-			print("<METHOARG %s %s = %s>", arg.type, arg.name);
+			print("<METHODARG %s %s>", arg.vartype, arg.name);
 			indent++;
 		}
 		
@@ -152,11 +152,11 @@ public interface JavacASTVisitor {
 		
 		@Override public void endVisitMethodArgument(Node node, JCVariableDecl arg, JCMethodDecl method) {
 			indent--;
-			print("</METHODARG %s %s>", arg.type, arg.name);
+			print("</METHODARG %s %s>", arg.vartype, arg.name);
 		}
 		
 		@Override public void visitLocal(Node node, JCVariableDecl local) {
-			print("<LOCAL %s %s>", local.type, local.name);
+			print("<LOCAL %s %s>", local.vartype, local.name);
 			indent++;
 		}
 		
@@ -166,7 +166,7 @@ public interface JavacASTVisitor {
 		
 		@Override public void endVisitLocal(Node node, JCVariableDecl local) {
 			indent--;
-			print("</LOCAL %s %s>", local.type, local.name);
+			print("</LOCAL %s %s>", local.vartype, local.name);
 		}
 		
 		@Override public void visitStatement(Node node, JCTree statement) {
