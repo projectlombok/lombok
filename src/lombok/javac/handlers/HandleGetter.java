@@ -25,9 +25,16 @@ import com.sun.tools.javac.util.Name;
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleGetter implements JavacAnnotationHandler<Getter> {
 	@Override public void handle(AnnotationValues<Getter> annotation, JCAnnotation ast, JavacAST.Node annotationNode) {
-		//TODO Check for existence of the getter and skip it (+ warn) if it's already there.
 		if ( annotationNode.up().getKind() != Kind.FIELD ) {
 			annotationNode.addError("@Getter is only supported on a field.");
+			return;
+		}
+		
+		String methodName = toGetterName((JCVariableDecl) annotationNode.up().get());
+		
+		if ( methodExists(methodName, annotationNode.up()) ) {
+			annotationNode.addWarning(
+					String.format("Not generating %s(): A method with that name already exists",  methodName));
 			return;
 		}
 		

@@ -1,16 +1,14 @@
 package lombok.javac.handlers;
 
-import static lombok.javac.handlers.PKG.toJavacModifier;
-import static lombok.javac.handlers.PKG.toSetterName;
-
-import org.mangosdk.spi.ProviderFor;
-
+import static lombok.javac.handlers.PKG.*;
 import lombok.Setter;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
 import lombok.javac.JavacAST;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacAST.Node;
+
+import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -29,9 +27,18 @@ import com.sun.tools.javac.util.Name;
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleSetter implements JavacAnnotationHandler<Setter> {
 	@Override public void handle(AnnotationValues<Setter> annotation, JCAnnotation ast, Node annotationNode) {
-		//TODO Check for existence of the setter and skip it (+ warn) if it's already there.
 		if ( annotationNode.up().getKind() != Kind.FIELD ) {
 			annotationNode.addError("@Setter is only supported on a field.");
+			return;
+		}
+		
+		JCVariableDecl fieldNode = (JCVariableDecl) annotationNode.up().get();
+		String methodName = toSetterName(fieldNode);
+		
+		if ( methodExists(methodName, annotationNode.up()) ) {
+			annotationNode.addWarning(
+					String.format("Not generating %s(%s %s): A method with that name already exists",
+							methodName, fieldNode.vartype, fieldNode.name));
 			return;
 		}
 		
