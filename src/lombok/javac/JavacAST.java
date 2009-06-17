@@ -372,8 +372,7 @@ public class JavacAST extends AST<JCTree> {
 			f.setAccessible(true);
 			if ( f.getType() == int.class ) {
 				int val = ((Number)f.get(messager)).intValue();
-				val++;
-				f.set(messager, val);
+				f.set(messager, val +1);
 			}
 		} catch ( Throwable t ) {
 			//Very unfortunate, but in most cases it still works fine, so we'll silently swallow it.
