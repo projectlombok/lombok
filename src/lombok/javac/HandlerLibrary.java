@@ -1,13 +1,9 @@
 package lombok.javac;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Proxy;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -16,19 +12,28 @@ import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 import javax.annotation.processing.Messager;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 
+import lombok.core.AnnotationValues;
 import lombok.core.SpiLoadUtil;
+import lombok.core.TypeLibrary;
+import lombok.core.TypeResolver;
+import lombok.core.AnnotationValues.AnnotationValue;
+import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
+
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCAssign;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
+import com.sun.tools.javac.tree.JCTree.JCNewArray;
 
 
 public class HandlerLibrary {
+	private final TypeLibrary typeLibrary = new TypeLibrary();
 	private final Map<String, AnnotationHandlerContainer<?>> annotationHandlers = new HashMap<String, AnnotationHandlerContainer<?>>();
 //	private final Collection<JavacASTVisitor> visitorHandlers = new ArrayList<JavacASTVisitor>();
 	
@@ -41,9 +46,56 @@ public class HandlerLibrary {
 			this.annotationClass = annotationClass;
 		}
 		
-		@SuppressWarnings("unchecked")
-		public void handle(JavacNode node, Object annInstance) {
-			handler.handle(node, (T) annInstance);
+		private Object calculateGuess(JCExpression expr) {
+			if ( expr instanceof JCLiteral ) {
+				return ((JCLiteral)expr).value;
+			} else if ( expr instanceof JCIdent || expr instanceof JCFieldAccess ) {
+				String x = expr.toString();
+				if ( x.endsWith(".class") ) x = x.substring(0, x.length() - 6);
+				else {
+					int idx = x.lastIndexOf('.');
+					if ( idx > -1 ) x = x.substring(idx + 1);
+				}
+				return x;
+			} else return null;
+		}
+		
+		public void handle(JavacAST.Node node) {
+			Map<String, AnnotationValue> values = new HashMap<String, AnnotationValue>();
+			JCAnnotation anno = (JCAnnotation) node.get();
+			List<JCExpression> arguments = anno.getArguments();
+			for ( Method m : annotationClass.getDeclaredMethods() ) {
+				if ( !Modifier.isPublic(m.getModifiers()) ) continue;
+				String name = m.getName();
+				List<String> raws = new ArrayList<String>();
+				List<Object> guesses = new ArrayList<Object>();
+				
+				for ( JCExpression arg : arguments ) {
+					JCAssign assign = (JCAssign) arg;
+					String mName = assign.lhs.toString();
+					if ( !mName.equals(name) ) continue;
+					JCExpression rhs = assign.rhs;
+					if ( rhs instanceof JCNewArray ) {
+						List<JCExpression> elems = ((JCNewArray)rhs).elems;
+						for  ( JCExpression inner : elems ) {
+							raws.add(inner.toString());
+							guesses.add(calculateGuess(inner));
+						}
+					} else {
+						raws.add(rhs.toString());
+						guesses.add(calculateGuess(rhs));
+					}
+				}
+				
+				values.put(name, new AnnotationValue(node, raws, guesses) {
+					@Override public void setError(String message, int valueIdx) {
+						//TODO
+						super.setError(message, valueIdx);
+					}
+				});
+			}
+			
+			handler.handle(new AnnotationValues<T>(annotationClass, values, node), (JCAnnotation)node.get(), node);
 		}
 	}
 	
@@ -68,6 +120,7 @@ public class HandlerLibrary {
 					messager.printMessage(Diagnostic.Kind.WARNING,
 							"Duplicate handlers for annotation type: " + container.annotationClass.getName());
 				}
+				lib.typeLibrary.addType(container.annotationClass.getName());
 			} catch ( ServiceConfigurationError e ) {
 				messager.printMessage(Diagnostic.Kind.WARNING,
 						"Can't load Lombok annotation handler for javac: " + e);
@@ -75,144 +128,26 @@ public class HandlerLibrary {
 		}
 	}
 	
-	public void handleAnnotation(JavacNode node, TypeElement annotationType) {
-		AnnotationHandlerContainer<?> container = annotationHandlers.get(annotationType.getQualifiedName().toString());
-		if ( container == null ) return;
-		try {
-			container.handle(node, createAnnotation(container.annotationClass, annotationType.getQualifiedName(), node));
-		} catch ( AnnotationValueDecodeFail e ) {
-			node.addError(e.getMessage(), e.mirror, e.value);
-		}
-	}
-	
-	private Object createAnnotation(Class<? extends Annotation> target, Name annotationName, JavacNode node)
-			throws AnnotationValueDecodeFail {
-		AnnotationMirror mirror = fetchMirror(annotationName, node);
-		if ( mirror == null ) throw new AssertionError("This can't be.");
-		
-		InvocationHandler invocations = new AnnotationMirrorInvocationHandler(target, mirror);
-		return Proxy.newProxyInstance(target.getClassLoader(), new Class[] { target }, invocations);
-	}
-	
-	private static class AnnotationValueDecodeFail extends Exception {
-		private static final long serialVersionUID = 1L;
-		
-		AnnotationMirror mirror;
-		AnnotationValue value;
-		
-		AnnotationValueDecodeFail(String msg, AnnotationMirror mirror, AnnotationValue value) {
-			super(msg);
-			this.mirror = mirror;
-			this.value = value;
-		}
-	}
-	
-	private static class AnnotationMirrorInvocationHandler implements InvocationHandler {
-		private final AnnotationMirror mirror;
-		private final Map<String, Object> values = new HashMap<String, Object>();
-		
-		AnnotationMirrorInvocationHandler(Class<?> target, AnnotationMirror mirror) throws AnnotationValueDecodeFail {
-			this.mirror = mirror;
+	public void handleAnnotation(JCCompilationUnit unit, JavacAST.Node node, JCAnnotation annotation) {
+		TypeResolver resolver = new TypeResolver(typeLibrary, node.getPackageDeclaration(), node.getImportStatements());
+		String rawType = annotation.annotationType.toString();
+		for ( String fqn : resolver.findTypeMatches(node, rawType) ) {
+			AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
+			if ( container == null ) continue;
 			
-			for ( Method m : target.getDeclaredMethods() ) {
-				if ( !Modifier.isPublic(m.getModifiers()) ) continue;
-				values.put(m.getName(), decode(m));
-			}
-		}
-		
-		private Object decode(Method m) throws AnnotationValueDecodeFail {
-			for ( Map.Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
-				mirror.getElementValues().entrySet() ) {
-				
-				if ( entry.getKey().getSimpleName().contentEquals(m.getName()) ) {
-					AnnotationValue value = entry.getValue();
-					return convert(m.getReturnType(), mirror, value, value.getValue());
-				}
-			}
-			
-			return m.getDefaultValue();
-		}
-		
-		@Override public Object invoke(Object proxy, Method method, Object[] args) {
-			return values.get(method.getName());
-		}
-		
-		private Object convert(Class<?> expected, AnnotationMirror mirror, AnnotationValue value, Object v) throws AnnotationValueDecodeFail {
-			if ( expected == int.class ) {
-				if ( v instanceof Number ) return ((Number)v).intValue();
-				else throw new AnnotationValueDecodeFail("Expected a numeric value here", mirror, value);
-			} else if ( expected == long.class ) {
-				if ( v instanceof Number ) return ((Number)v).longValue();
-				else throw new AnnotationValueDecodeFail("Expected a numeric value here", mirror, value);
-			} else if ( expected == short.class ) {
-				if ( v instanceof Number ) return ((Number)v).shortValue();
-				else throw new AnnotationValueDecodeFail("Expected a numeric value here", mirror, value);
-			} else if ( expected == byte.class ) {
-				if ( v instanceof Number ) return ((Number)v).byteValue();
-				else throw new AnnotationValueDecodeFail("Expected a numeric value here", mirror, value);
-			} else if ( expected == double.class ) {
-				if ( v instanceof Number ) return ((Number)v).doubleValue();
-				else throw new AnnotationValueDecodeFail("Expected a numeric value here", mirror, value);
-			} else if ( expected == float.class ) {
-				if ( v instanceof Number ) return ((Number)v).floatValue();
-				else throw new AnnotationValueDecodeFail("Expected a numeric value here", mirror, value);
-			} else if ( expected == char.class ) {
-				if ( v instanceof Character ) return v;
-				else throw new AnnotationValueDecodeFail("Expected a character here", mirror, value);
-			} else if ( expected == boolean.class ) {
-				if ( v instanceof Boolean ) return v;
-				else throw new AnnotationValueDecodeFail("Expected a boolean here", mirror, value);
-			} else if ( expected == String.class ) {
-				if ( v instanceof String ) return v;
-				else throw new AnnotationValueDecodeFail("Expected a String here", mirror, value);
-			} else if ( expected == Class.class ) {
-				if ( v instanceof TypeMirror ) {
-					try {
-						return Class.forName(v.toString());
-					} catch ( ClassNotFoundException e ) {
-						throw new AnnotationValueDecodeFail(
-								"I can't find this class. Lombok only works well with types in the core java libraries.",
-								mirror, value);
-					}
-				} else throw new AnnotationValueDecodeFail("Expected a class literal here", mirror, value);
-			} else if ( Enum.class.isAssignableFrom(expected) ) {
-				if ( v instanceof VariableElement ) {
-					String n = ((VariableElement)v).getSimpleName().toString();
-					@SuppressWarnings("unchecked")
-					Object enumVal = Enum.valueOf((Class<? extends Enum>)expected, n);
-					return enumVal;
-				} else throw new AnnotationValueDecodeFail("Expected an enum value here", mirror, value);
-			} else if ( expected.isArray() ) {
-				if ( v instanceof Collection<?> ) {
-					List<Object> convertedValues = new ArrayList<Object>();
-					Class<?> componentType = expected.getComponentType();
-					for ( Object innerV : (Collection<?>)v ) {
-						convertedValues.add(convert(componentType, mirror, value, innerV));
-					}
-					
-					Object array = Array.newInstance(componentType, convertedValues.size());
-					int pos = 0;
-					for ( Object converted : convertedValues ) Array.set(array, pos++, converted);
-					return array;
-				} else throw new AnnotationValueDecodeFail("Expected an array value here", mirror, value);
-//				Collection<AnnotationValue> result = (Collection<AnnotationValue>)entry.getValue().getValue();
-//				return result;
-			} else {
-				throw new AssertionError("We didn't know this is even a legal annotation type: " + expected);
+			try {
+				container.handle(node);
+			} catch ( AnnotationValueDecodeFail fail ) {
+				fail.owner.setError(fail.getMessage(), fail.idx);
+			} catch ( Throwable t ) {
+				t.printStackTrace();
+//				Eclipse.error(String.format("Lombok annotation handler %s failed", container.handler.getClass()), t);
+				//TODO
 			}
 		}
 	}
 	
-	private AnnotationMirror fetchMirror(Name lookingFor, JavacNode node) {
-		for ( AnnotationMirror mirror : node.getJavacAST().getAnnotationMirrors() ) {
-			if ( !lookingFor.contentEquals(
-					((TypeElement)(mirror.getAnnotationType()).asElement()).getQualifiedName()) ) continue;
-			return mirror;
-		}
-		return null;
-	}
-
-	public void handleType(TypeElement typeElement) {
+	public void handleAST(JavacAST ast) {
 		//Later!
 	}
 	

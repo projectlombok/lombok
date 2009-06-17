@@ -4,6 +4,7 @@ import java.lang.reflect.Modifier;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
@@ -28,14 +29,14 @@ public class HandleGetter_ecj implements EclipseAnnotationHandler<Getter> {
 		annotationNode.addWarning(String.format("Not generating %s(): A method with that name already exists",  methodName));
 	}
 	
-	@Override public void handle(Getter annotation, Annotation ast, Node annotationNode) {
-		if ( !(annotationNode.up().getEclipseNode() instanceof FieldDeclaration) ) return;
-		FieldDeclaration field = (FieldDeclaration) annotationNode.up().getEclipseNode();
+	@Override public void handle(AnnotationValues<Getter> annotation, Annotation ast, Node annotationNode) {
+		if ( !(annotationNode.up().get() instanceof FieldDeclaration) ) return;
+		FieldDeclaration field = (FieldDeclaration) annotationNode.up().get();
 		TypeReference fieldType = field.type;
 		String getterName = TransformationsUtil.toGetterName(
 				new String(field.name), nameEquals(fieldType.getTypeName(), "boolean"));
 		
-		TypeDeclaration parent = (TypeDeclaration) annotationNode.up().up().getEclipseNode();
+		TypeDeclaration parent = (TypeDeclaration) annotationNode.up().up().get();
 		if ( parent.methods != null ) for ( AbstractMethodDeclaration method : parent.methods ) {
 			if ( method.selector != null && new String(method.selector).equals(getterName) ) {
 				generateDuplicateGetterWarning(annotationNode, getterName);
@@ -44,7 +45,7 @@ public class HandleGetter_ecj implements EclipseAnnotationHandler<Getter> {
 		}
 		
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
-		method.modifiers = toModifier(annotation.value());
+		method.modifiers = toModifier(annotation.getInstance().value());
 		method.returnType = field.type;
 		method.annotations = null;
 		method.arguments = null;

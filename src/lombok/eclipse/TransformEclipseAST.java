@@ -6,6 +6,7 @@ import lombok.eclipse.EclipseAST.Node;
 
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
@@ -114,25 +115,31 @@ public class TransformEclipseAST {
 	private static class AnnotationVisitor extends EclipseASTAdapter {
 		@Override public void visitAnnotationOnField(FieldDeclaration field, Node annotationNode, Annotation annotation) {
 			if ( annotationNode.isHandled() ) return;
-			handlers.handle((CompilationUnitDeclaration) annotationNode.top().node, annotationNode, annotation);
+			handlers.handle((CompilationUnitDeclaration) annotationNode.top().get(), annotationNode, annotation);
+			annotationNode.setHandled();
+		}
+		
+		@Override public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, Node annotationNode, Annotation annotation) {
+			if ( annotationNode.isHandled() ) return;
+			handlers.handle((CompilationUnitDeclaration) annotationNode.top().get(), annotationNode, annotation);
 			annotationNode.setHandled();
 		}
 		
 		@Override public void visitAnnotationOnLocal(LocalDeclaration local, Node annotationNode, Annotation annotation) {
 			if ( annotationNode.isHandled() ) return;
-			handlers.handle((CompilationUnitDeclaration) annotationNode.top().node, annotationNode, annotation);
+			handlers.handle((CompilationUnitDeclaration) annotationNode.top().get(), annotationNode, annotation);
 			annotationNode.setHandled();
 		}
 		
 		@Override public void visitAnnotationOnMethod(AbstractMethodDeclaration method, Node annotationNode, Annotation annotation) {
 			if ( annotationNode.isHandled() ) return;
-			handlers.handle((CompilationUnitDeclaration) annotationNode.top().node, annotationNode, annotation);
+			handlers.handle((CompilationUnitDeclaration) annotationNode.top().get(), annotationNode, annotation);
 			annotationNode.setHandled();
 		}
 		
 		@Override public void visitAnnotationOnType(TypeDeclaration type, Node annotationNode, Annotation annotation) {
 			if ( annotationNode.isHandled() ) return;
-			handlers.handle((CompilationUnitDeclaration) annotationNode.top().node, annotationNode, annotation);
+			handlers.handle((CompilationUnitDeclaration) annotationNode.top().get(), annotationNode, annotation);
 			annotationNode.setHandled();
 		}
 	}

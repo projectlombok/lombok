@@ -60,8 +60,14 @@ public interface EclipseASTVisitor {
 	void endVisitMethod(Node methodNode, AbstractMethodDeclaration method);
 	
 	/**
-	 * Visits a local declaration - that is, something like 'int x = 10;' on the method level. Also called
-	 * for method parameter (those would be Arguments, a subclass of LocalDeclaration).
+	 * Visits a method argument
+	 */
+	void visitMethodArgument(Node argNode, Argument arg, AbstractMethodDeclaration method);
+	void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, Node annotationNode, Annotation annotation);
+	void endVisitMethodArgument(Node argNode, Argument arg, AbstractMethodDeclaration method);
+	
+	/**
+	 * Visits a local declaration - that is, something like 'int x = 10;' on the method level.
 	 */
 	void visitLocal(Node localNode, LocalDeclaration local);
 	void visitAnnotationOnLocal(LocalDeclaration local, Node annotationNode, Annotation annotation);
@@ -69,8 +75,6 @@ public interface EclipseASTVisitor {
 	
 	/**
 	 * Visits a statement that isn't any of the other visit methods (e.g. TypeDeclaration).
-	 * @param node
-	 * @param statement
 	 */
 	void visitStatement(Node statementNode, Statement statement);
 	void endVisitStatement(Node statementNode, Statement statement);
@@ -171,9 +175,22 @@ public interface EclipseASTVisitor {
 			print("</%s %s>", type, str(method.selector));
 		}
 		
+		@Override public void visitMethodArgument(Node node, Argument arg, AbstractMethodDeclaration method) {
+			print("<METHODARG %s %s = %s>", str(arg.type), str(arg.name), arg.initialization);
+			indent++;
+		}
+		
+		@Override public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, Node node, Annotation annotation) {
+			print("<ANNOTATION: %s />", annotation);
+		}
+		
+		@Override public void endVisitMethodArgument(Node node, Argument arg, AbstractMethodDeclaration method) {
+			indent--;
+			print("</METHODARG %s %s>", str(arg.type), str(arg.name));
+		}
+		
 		@Override public void visitLocal(Node node, LocalDeclaration local) {
-			String type = local instanceof Argument ? "ARGUMENT" : "LOCAL";
-			print("<%s %s %s = %s>", type, str(local.type), str(local.name), local.initialization);
+			print("<LOCAL %s %s = %s>", str(local.type), str(local.name), local.initialization);
 			indent++;
 		}
 		
@@ -182,9 +199,8 @@ public interface EclipseASTVisitor {
 		}
 		
 		@Override public void endVisitLocal(Node node, LocalDeclaration local) {
-			String type = local instanceof Argument ? "ARGUMENT" : "LOCAL";
 			indent--;
-			print("</%s %s %s>", type, str(local.type), str(local.name));
+			print("</LOCAL %s %s>", str(local.type), str(local.name));
 		}
 		
 		@Override public void visitStatement(Node node, Statement statement) {

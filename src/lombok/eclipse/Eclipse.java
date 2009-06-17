@@ -31,4 +31,14 @@ public class Eclipse {
 		
 		log.log(new Status(IStatus.ERROR, bundleName, message, error));
 	}
+	
+	static String toQualifiedName(char[][] typeName) {
+		StringBuilder sb = new StringBuilder();
+		boolean first = true;
+		for ( char[] c : typeName ) {
+			sb.append(first ? "" : ".").append(c);
+			first = false;
+		}
+		return sb.toString();
+	}
 }

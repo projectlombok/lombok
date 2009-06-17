@@ -4,6 +4,7 @@ import lombok.eclipse.EclipseAST.Node;
 
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Initializer;
@@ -25,6 +26,9 @@ public abstract class EclipseASTAdapter implements EclipseASTVisitor {
 	@Override public void visitMethod(Node methodNode, AbstractMethodDeclaration method) {}
 	@Override public void visitAnnotationOnMethod(AbstractMethodDeclaration method, Node annotationNode, Annotation annotation) {}
 	@Override public void endVisitMethod(Node methodNode, AbstractMethodDeclaration method) {}
+	@Override public void visitMethodArgument(Node argNode, Argument arg, AbstractMethodDeclaration method) {}
+	@Override public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, Node annotationNode, Annotation annotation) {}
+	@Override public void endVisitMethodArgument(Node argNode, Argument arg, AbstractMethodDeclaration method) {}
 	@Override public void visitLocal(Node localNode, LocalDeclaration local) {}
 	@Override public void visitAnnotationOnLocal(LocalDeclaration local, Node annotationNode, Annotation annotation) {}
 	@Override public void endVisitLocal(Node localNode, LocalDeclaration local) {}

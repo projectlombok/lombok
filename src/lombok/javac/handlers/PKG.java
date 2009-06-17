@@ -2,17 +2,16 @@ package lombok.javac.handlers;
 
 import java.lang.reflect.Modifier;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.type.TypeKind;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
 import lombok.AccessLevel;
 import lombok.core.TransformationsUtil;
 
 class PKG {
-	static String toGetterName(Element field) {
-		CharSequence fieldName = field.getSimpleName();
+	static String toGetterName(JCVariableDecl field) {
+		CharSequence fieldName = field.name;
 		
-		boolean isBoolean = field.asType().getKind() == TypeKind.BOOLEAN;
+		boolean isBoolean = field.vartype.toString().equals("boolean");
 		
 		return TransformationsUtil.toGetterName(fieldName, isBoolean);
 	}
