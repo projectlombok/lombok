@@ -1,10 +1,13 @@
 package lombok.javac;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.processing.Messager;
+import javax.tools.Diagnostic;
+import javax.tools.JavaFileObject;
 
 import lombok.core.AST;
 
@@ -22,21 +25,21 @@ import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
 public class JavacAST extends AST<JCTree> {
-	private final Trees trees;
-	private final JavacProcessingEnvironment env;
 	private final Messager messager;
 	private final Name.Table nameTable;
 	private final TreeMaker treeMaker;
+	private final Log log;
 	
 	public JavacAST(Trees trees, JavacProcessingEnvironment env, JCCompilationUnit top) {
 		super(top.sourcefile == null ? null : top.sourcefile.toString());
 		setTop(buildCompilationUnit(top));
-		this.trees = trees;
-		this.env = env;
 		this.messager = env.getMessager();
+		this.log = Log.instance(env.getContext());
 		this.nameTable = Name.Table.instance(env.getContext());
 		this.treeMaker = TreeMaker.instance(env.getContext());
 	}
@@ -313,13 +316,69 @@ public class JavacAST extends AST<JCTree> {
 		}
 		
 		public void addError(String message) {
-			System.err.println("ERR: " + message);
-			//TODO
+			printMessage(Diagnostic.Kind.ERROR, message, this, null);
+		}
+		
+		public void addError(String message, DiagnosticPosition pos) {
+			printMessage(Diagnostic.Kind.ERROR, message, null, pos);
 		}
 		
 		public void addWarning(String message) {
-			System.err.println("WARN: " + message);
-			//TODO
+			printMessage(Diagnostic.Kind.WARNING, message, this, null);
+		}
+		
+		public void addWarning(String message, DiagnosticPosition pos) {
+			printMessage(Diagnostic.Kind.WARNING, message, null, pos);
+		}
+	}
+	
+	/** Supply either a position or a node (in that case, position of the node is used) */
+	private void printMessage(Diagnostic.Kind kind, String message, Node node, DiagnosticPosition pos) {
+		JavaFileObject oldSource = null;
+		JavaFileObject newSource = null;
+		JCTree astObject = node == null ? null : node.get();
+		JCCompilationUnit top = (JCCompilationUnit) top().get();
+		if (node != null) {
+			newSource = top.sourcefile;
+			if (newSource != null) {
+				oldSource = log.useSource(newSource);
+				pos = astObject.pos();
+			}
+		}
+		try {
+			switch (kind) {
+			case ERROR:
+				increaseErrorCount(messager);
+				boolean prev = log.multipleErrors;
+				log.multipleErrors = true;
+				try {
+					log.error(pos, "proc.messager", message);
+				} finally {
+					log.multipleErrors = prev;
+				}
+				break;
+			default:
+			case WARNING:
+				log.warning(pos, "proc.messager", message);
+				break;
+			}
+		} finally {
+			if (oldSource != null)
+				log.useSource(oldSource);
+		}
+	}
+	
+	private void increaseErrorCount(Messager messager) {
+		try {
+			Field f = messager.getClass().getDeclaredField("errorCount");
+			f.setAccessible(true);
+			if ( f.getType() == int.class ) {
+				int val = ((Number)f.get(messager)).intValue();
+				val++;
+				f.set(messager, val);
+			}
+		} catch ( Throwable t ) {
+			//Very unfortunate, but in most cases it still works fine, so we'll silently swallow it.
 		}
 	}
 	

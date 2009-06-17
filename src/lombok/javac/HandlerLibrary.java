@@ -22,9 +22,6 @@ import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
 import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
-import lombok.eclipse.Eclipse;
-import lombok.eclipse.EclipseAST;
-import lombok.eclipse.EclipseASTVisitor;
 
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
@@ -34,6 +31,8 @@ import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
+import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
+import com.sun.tools.javac.util.JCDiagnostic.SimpleDiagnosticPosition;
 
 
 public class HandlerLibrary {
@@ -69,7 +68,7 @@ public class HandlerLibrary {
 			} else return null;
 		}
 		
-		public void handle(JavacAST.Node node) {
+		public void handle(final JavacAST.Node node) {
 			Map<String, AnnotationValue> values = new HashMap<String, AnnotationValue>();
 			JCAnnotation anno = (JCAnnotation) node.get();
 			List<JCExpression> arguments = anno.getArguments();
@@ -78,6 +77,7 @@ public class HandlerLibrary {
 				String name = m.getName();
 				List<String> raws = new ArrayList<String>();
 				List<Object> guesses = new ArrayList<Object>();
+				final List<DiagnosticPosition> positions = new ArrayList<DiagnosticPosition>();
 				
 				for ( JCExpression arg : arguments ) {
 					JCAssign assign = (JCAssign) arg;
@@ -89,17 +89,18 @@ public class HandlerLibrary {
 						for  ( JCExpression inner : elems ) {
 							raws.add(inner.toString());
 							guesses.add(calculateGuess(inner));
+							positions.add(new SimpleDiagnosticPosition(inner.pos));
 						}
 					} else {
 						raws.add(rhs.toString());
 						guesses.add(calculateGuess(rhs));
+						positions.add(new SimpleDiagnosticPosition(rhs.pos));
 					}
 				}
 				
 				values.put(name, new AnnotationValue(node, raws, guesses) {
 					@Override public void setError(String message, int valueIdx) {
-						//TODO
-						super.setError(message, valueIdx);
+						node.addError(message, positions.get(valueIdx));
 					}
 				});
 			}
