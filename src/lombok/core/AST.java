@@ -250,6 +250,7 @@ public abstract class AST<N> {
 			Node node = buildStatement(v);
 			if ( node != null ) list.add(nodeType.cast(node));
 		} else for ( Object v : (Object[])array ) {
+			if ( v == null ) return;
 			buildWithArray(nodeType, v, list, dim-1);
 		}
 	}
