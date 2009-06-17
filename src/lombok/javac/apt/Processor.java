@@ -66,32 +66,37 @@ public class Processor extends AbstractProcessor {
 	private class AnnotationVisitor extends JavacASTAdapter {
 		@Override public void visitAnnotationOnType(JCClassDecl type, Node annotationNode, JCAnnotation annotation) {
 			if ( annotationNode.isHandled() ) return;
-			handlers.handleAnnotation((JCCompilationUnit) annotationNode.top().get(), annotationNode, annotation);
-			annotationNode.setHandled();
+			JCCompilationUnit top = (JCCompilationUnit) annotationNode.top().get();
+			boolean handled = handlers.handleAnnotation(top, annotationNode, annotation);
+			if ( handled ) annotationNode.setHandled();
 		}
 		
 		@Override public void visitAnnotationOnField(JCVariableDecl field, Node annotationNode, JCAnnotation annotation) {
 			if ( annotationNode.isHandled() ) return;
-			handlers.handleAnnotation((JCCompilationUnit) annotationNode.top().get(), annotationNode, annotation);
-			annotationNode.setHandled();
+			JCCompilationUnit top = (JCCompilationUnit) annotationNode.top().get();
+			boolean handled = handlers.handleAnnotation(top, annotationNode, annotation);
+			if ( handled ) annotationNode.setHandled();
 		}
 		
 		@Override public void visitAnnotationOnMethod(JCMethodDecl method, Node annotationNode, JCAnnotation annotation) {
 			if ( annotationNode.isHandled() ) return;
-			handlers.handleAnnotation((JCCompilationUnit) annotationNode.top().get(), annotationNode, annotation);
-			annotationNode.setHandled();
+			JCCompilationUnit top = (JCCompilationUnit) annotationNode.top().get();
+			boolean handled = handlers.handleAnnotation(top, annotationNode, annotation);
+			if ( handled ) annotationNode.setHandled();
 		}
 		
 		@Override public void visitAnnotationOnMethodArgument(JCVariableDecl argument, JCMethodDecl method, Node annotationNode, JCAnnotation annotation) {
 			if ( annotationNode.isHandled() ) return;
-			handlers.handleAnnotation((JCCompilationUnit) annotationNode.top().get(), annotationNode, annotation);
-			annotationNode.setHandled();
+			JCCompilationUnit top = (JCCompilationUnit) annotationNode.top().get();
+			boolean handled = handlers.handleAnnotation(top, annotationNode, annotation);
+			if ( handled ) annotationNode.setHandled();
 		}
 		
 		@Override public void visitAnnotationOnLocal(JCVariableDecl local, Node annotationNode, JCAnnotation annotation) {
 			if ( annotationNode.isHandled() ) return;
-			handlers.handleAnnotation((JCCompilationUnit) annotationNode.top().get(), annotationNode, annotation);
-			annotationNode.setHandled();
+			JCCompilationUnit top = (JCCompilationUnit) annotationNode.top().get();
+			boolean handled = handlers.handleAnnotation(top, annotationNode, annotation);
+			if ( handled ) annotationNode.setHandled();
 		}
 	}
 	

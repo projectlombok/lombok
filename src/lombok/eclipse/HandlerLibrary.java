@@ -45,7 +45,7 @@ public class HandlerLibrary {
 			this.annotationClass = annotationClass;
 		}
 		
-		public void handle(org.eclipse.jdt.internal.compiler.ast.Annotation annotation,
+		public boolean handle(org.eclipse.jdt.internal.compiler.ast.Annotation annotation,
 				final Node annotationNode) {
 			Map<String, AnnotationValue> values = new HashMap<String, AnnotationValue>();
 			
@@ -94,7 +94,7 @@ public class HandlerLibrary {
 				});
 			}
 			
-			handler.handle(new AnnotationValues<T>(annotationClass, values, annotationNode), annotation, annotationNode);
+			return handler.handle(new AnnotationValues<T>(annotationClass, values, annotationNode), annotation, annotationNode);
 		}
 	}
 	
@@ -169,26 +169,29 @@ public class HandlerLibrary {
 		}
 	}
 	
-	public void handle(CompilationUnitDeclaration ast, EclipseAST.Node annotationNode,
+	public boolean handle(CompilationUnitDeclaration ast, EclipseAST.Node annotationNode,
 			org.eclipse.jdt.internal.compiler.ast.Annotation annotation) {
 		String pkgName = annotationNode.getPackageDeclaration();
 		Collection<String> imports = annotationNode.getImportStatements();
 		
 		TypeResolver resolver = new TypeResolver(typeLibrary, pkgName, imports);
 		TypeReference rawType = annotation.type;
-		if ( rawType == null ) return;
+		if ( rawType == null ) return false;
+		boolean handled = false;
 		for ( String fqn : resolver.findTypeMatches(annotationNode, toQualifiedName(annotation.type.getTypeName())) ) {
 			AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
 			if ( container == null ) continue;
 			
 			try {
-				container.handle(annotation, annotationNode);
+				handled |= container.handle(annotation, annotationNode);
 			} catch ( AnnotationValueDecodeFail fail ) {
 				fail.owner.setError(fail.getMessage(), fail.idx);
 			} catch ( Throwable t ) {
 				Eclipse.error(String.format("Lombok annotation handler %s failed", container.handler.getClass()), t);
 			}
 		}
+		
+		return handled;
 	}
 	
 	public void callASTVisitors(EclipseAST ast) {

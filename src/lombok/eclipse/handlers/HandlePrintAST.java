@@ -11,7 +11,9 @@ import lombok.eclipse.EclipseAST.Node;
 
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandlePrintAST implements EclipseAnnotationHandler<PrintAST> {
-	@Override public void handle(AnnotationValues<PrintAST> annotation, Annotation ast, Node annotationNode) {
+	@Override public boolean handle(AnnotationValues<PrintAST> annotation, Annotation ast, Node annotationNode) {
+		if ( !annotationNode.isCompleteParse() ) return false;
 		annotationNode.up().traverse(new EclipseASTVisitor.EclipseASTPrinter());
+		return true;
 	}
 }

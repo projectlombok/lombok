@@ -29,8 +29,8 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		annotationNode.addWarning(String.format("Not generating %s(): A method with that name already exists",  methodName));
 	}
 	
-	@Override public void handle(AnnotationValues<Getter> annotation, Annotation ast, Node annotationNode) {
-		if ( !(annotationNode.up().get() instanceof FieldDeclaration) ) return;
+	@Override public boolean handle(AnnotationValues<Getter> annotation, Annotation ast, Node annotationNode) {
+		if ( !(annotationNode.up().get() instanceof FieldDeclaration) ) return false;
 		FieldDeclaration field = (FieldDeclaration) annotationNode.up().get();
 		TypeReference fieldType = field.type;
 		String getterName = TransformationsUtil.toGetterName(
@@ -40,7 +40,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		if ( parent.methods != null ) for ( AbstractMethodDeclaration method : parent.methods ) {
 			if ( method.selector != null && new String(method.selector).equals(getterName) ) {
 				generateDuplicateGetterWarning(annotationNode, getterName);
-				return;
+				return false;
 			}
 		}
 		
@@ -69,6 +69,8 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 			newArray[parent.methods.length] = method;
 			parent.methods = newArray;
 		}
+		
+		return true;
 	}
 	
 	private int toModifier(AccessLevel value) {

@@ -12,7 +12,8 @@ import lombok.javac.JavacAST.Node;
 
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandlePrintAST implements JavacAnnotationHandler<PrintAST> {
-	@Override public void handle(AnnotationValues<PrintAST> annotation, JCAnnotation ast, Node annotationNode) {
+	@Override public boolean handle(AnnotationValues<PrintAST> annotation, JCAnnotation ast, Node annotationNode) {
 		annotationNode.up().traverse(new JavacASTVisitor.JavacASTPrinter());
+		return true;
 	}
 }

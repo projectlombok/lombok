@@ -67,7 +67,7 @@ public class HandlerLibrary {
 			} else return null;
 		}
 		
-		public void handle(final JavacAST.Node node) {
+		public boolean handle(final JavacAST.Node node) {
 			Map<String, AnnotationValue> values = new HashMap<String, AnnotationValue>();
 			JCAnnotation anno = (JCAnnotation) node.get();
 			List<JCExpression> arguments = anno.getArguments();
@@ -104,7 +104,7 @@ public class HandlerLibrary {
 				});
 			}
 			
-			handler.handle(new AnnotationValues<T>(annotationClass, values, node), (JCAnnotation)node.get(), node);
+			return handler.handle(new AnnotationValues<T>(annotationClass, values, node), (JCAnnotation)node.get(), node);
 		}
 	}
 	
@@ -168,21 +168,24 @@ public class HandlerLibrary {
 		}
 	}
 	
-	public void handleAnnotation(JCCompilationUnit unit, JavacAST.Node node, JCAnnotation annotation) {
+	public boolean handleAnnotation(JCCompilationUnit unit, JavacAST.Node node, JCAnnotation annotation) {
 		TypeResolver resolver = new TypeResolver(typeLibrary, node.getPackageDeclaration(), node.getImportStatements());
 		String rawType = annotation.annotationType.toString();
+		boolean handled = false;
 		for ( String fqn : resolver.findTypeMatches(node, rawType) ) {
 			AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
 			if ( container == null ) continue;
 			
 			try {
-				container.handle(node);
+				handled |= container.handle(node);
 			} catch ( AnnotationValueDecodeFail fail ) {
 				fail.owner.setError(fail.getMessage(), fail.idx);
 			} catch ( Throwable t ) {
 				javacError(String.format("Lombok annotation handler %s failed", container.handler.getClass()), t);
 			}
 		}
+		
+		return handled;
 	}
 	
 	public void callASTVisitors(JavacAST ast) {

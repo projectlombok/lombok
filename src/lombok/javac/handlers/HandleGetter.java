@@ -24,10 +24,10 @@ import com.sun.tools.javac.util.Name;
 
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleGetter implements JavacAnnotationHandler<Getter> {
-	@Override public void handle(AnnotationValues<Getter> annotation, JCAnnotation ast, JavacAST.Node annotationNode) {
+	@Override public boolean handle(AnnotationValues<Getter> annotation, JCAnnotation ast, JavacAST.Node annotationNode) {
 		if ( annotationNode.up().getKind() != Kind.FIELD ) {
 			annotationNode.addError("@Getter is only supported on a field.");
-			return;
+			return false;
 		}
 		
 		String methodName = toGetterName((JCVariableDecl) annotationNode.up().get());
@@ -35,7 +35,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		if ( methodExists(methodName, annotationNode.up()) ) {
 			annotationNode.addWarning(
 					String.format("Not generating %s(): A method with that name already exists",  methodName));
-			return;
+			return false;
 		}
 		
 		Getter getter = annotation.getInstance();
@@ -46,6 +46,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		
 		JCMethodDecl getterMethod = createGetter(access, annotationNode.up(), annotationNode.getTreeMaker());
 		javacClassTree.defs = javacClassTree.defs.append(getterMethod);
+		return true;
 	}
 	
 	private JCMethodDecl createGetter(int access, JavacAST.Node field, TreeMaker treeMaker) {

@@ -26,10 +26,10 @@ import com.sun.tools.javac.util.Name;
 
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleSetter implements JavacAnnotationHandler<Setter> {
-	@Override public void handle(AnnotationValues<Setter> annotation, JCAnnotation ast, Node annotationNode) {
+	@Override public boolean handle(AnnotationValues<Setter> annotation, JCAnnotation ast, Node annotationNode) {
 		if ( annotationNode.up().getKind() != Kind.FIELD ) {
 			annotationNode.addError("@Setter is only supported on a field.");
-			return;
+			return false;
 		}
 		
 		JCVariableDecl fieldNode = (JCVariableDecl) annotationNode.up().get();
@@ -39,7 +39,7 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 			annotationNode.addWarning(
 					String.format("Not generating %s(%s %s): A method with that name already exists",
 							methodName, fieldNode.vartype, fieldNode.name));
-			return;
+			return false;
 		}
 		
 		Setter setter = annotation.getInstance();
@@ -50,6 +50,7 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		
 		JCMethodDecl setterMethod = createSetter(access, annotationNode.up(), annotationNode.getTreeMaker());
 		javacClassTree.defs = javacClassTree.defs.append(setterMethod);
+		return true;
 	}
 	
 	private JCMethodDecl createSetter(int access, JavacAST.Node field, TreeMaker treeMaker) {
