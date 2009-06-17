@@ -12,6 +12,7 @@ import javax.tools.JavaFileObject;
 import lombok.core.AST;
 
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
@@ -33,6 +34,7 @@ public class JavacAST extends AST<JCTree> {
 	private final Messager messager;
 	private final Name.Table nameTable;
 	private final TreeMaker treeMaker;
+	private final Symtab symtab;
 	private final Log log;
 	
 	public JavacAST(Trees trees, JavacProcessingEnvironment env, JCCompilationUnit top) {
@@ -42,6 +44,7 @@ public class JavacAST extends AST<JCTree> {
 		this.log = Log.instance(env.getContext());
 		this.nameTable = Name.Table.instance(env.getContext());
 		this.treeMaker = TreeMaker.instance(env.getContext());
+		this.symtab = Symtab.instance(env.getContext());
 	}
 	
 	@Override public String getPackageDeclaration() {
@@ -85,6 +88,10 @@ public class JavacAST extends AST<JCTree> {
 	
 	public TreeMaker getTreeMaker() {
 		return treeMaker;
+	}
+	
+	public Symtab getSymbolTable() {
+		return symtab;
 	}
 	
 	private Node buildCompilationUnit(JCCompilationUnit top) {
@@ -292,6 +299,10 @@ public class JavacAST extends AST<JCTree> {
 		
 		public TreeMaker getTreeMaker() {
 			return treeMaker;
+		}
+		
+		public Symtab getSymbolTable() {
+			return symtab;
 		}
 		
 		public Name toName(String name) {

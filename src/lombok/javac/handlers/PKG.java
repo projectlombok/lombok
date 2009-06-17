@@ -16,6 +16,12 @@ class PKG {
 		return TransformationsUtil.toGetterName(fieldName, isBoolean);
 	}
 	
+	static String toSetterName(JCVariableDecl field) {
+		CharSequence fieldName = field.name;
+		
+		return TransformationsUtil.toSetterName(fieldName);
+	}
+	
 	static int toJavacModifier(AccessLevel accessLevel) {
 		switch ( accessLevel ) {
 		case MODULE:
