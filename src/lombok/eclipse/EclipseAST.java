@@ -46,81 +46,12 @@ public class EclipseAST extends AST<ASTNode> {
 	}
 	
 	public void traverse(EclipseASTVisitor visitor) {
-		Node current = top();
-		visitor.visitCompilationUnit(current, (CompilationUnitDeclaration)current.get());
-		traverseChildren(visitor, current);
-		visitor.endVisitCompilationUnit(current, (CompilationUnitDeclaration)current.get());
+		top().traverse(visitor);
 	}
 	
 	private void traverseChildren(EclipseASTVisitor visitor, Node node) {
 		for ( Node child : node.down() ) {
-			ASTNode n = child.get();
-			switch ( child.getKind() ) {
-			case TYPE:
-				visitor.visitType(child, (TypeDeclaration)n);
-				traverseChildren(visitor, child);
-				visitor.endVisitType(child, (TypeDeclaration)n);
-				break;
-			case FIELD:
-				visitor.visitField(child, (FieldDeclaration)n);
-				traverseChildren(visitor, child);
-				visitor.endVisitField(child, (FieldDeclaration)n);
-				break;
-			case INITIALIZER:
-				visitor.visitInitializer(child, (Initializer)n);
-				traverseChildren(visitor, child);
-				visitor.endVisitInitializer(child, (Initializer)n);
-				break;
-			case METHOD:
-				if ( n instanceof Clinit ) continue;
-				visitor.visitMethod(child, (AbstractMethodDeclaration)n);
-				traverseChildren(visitor, child);
-				visitor.endVisitMethod(child, (AbstractMethodDeclaration)n);
-				break;
-			case ARGUMENT:
-				AbstractMethodDeclaration method = (AbstractMethodDeclaration)child.up().get();
-				visitor.visitMethodArgument(child, (Argument)n, method);
-				traverseChildren(visitor, child);
-				visitor.endVisitMethodArgument(child, (Argument)n, method);
-				break;
-			case LOCAL:
-				visitor.visitLocal(child, (LocalDeclaration)n);
-				traverseChildren(visitor, child);
-				visitor.endVisitLocal(child, (LocalDeclaration)n);
-				break;
-			case ANNOTATION:
-				Node parent = child.up();
-				switch ( parent.getKind() ) {
-				case TYPE:
-					visitor.visitAnnotationOnType((TypeDeclaration)parent.get(), child, (Annotation)n);
-					break;
-				case FIELD:
-					visitor.visitAnnotationOnField((FieldDeclaration)parent.get(), child, (Annotation)n);
-					break;
-				case METHOD:
-					visitor.visitAnnotationOnMethod((AbstractMethodDeclaration)parent.get(), child, (Annotation)n);
-					break;
-				case ARGUMENT:
-					visitor.visitAnnotationOnMethodArgument(
-							(Argument)parent.get(),
-							(AbstractMethodDeclaration)parent.directUp().get(),
-							child, (Annotation)n);
-					break;
-				case LOCAL:
-					visitor.visitAnnotationOnLocal((LocalDeclaration)parent.get(), child, (Annotation)n);
-					break;
-				default:
-					throw new AssertionError("Annotion not expected as child of a " + parent.getKind());
-				}
-				break;
-			case STATEMENT:
-				visitor.visitStatement(child, (Statement)n);
-				traverseChildren(visitor, child);
-				visitor.endVisitStatement(node, (Statement)n);
-				break;
-			default:
-				throw new AssertionError("Unexpected kind during child traversal: " + child.getKind());
-			}
+			child.traverse(visitor);
 		}
 	}
 	
@@ -196,6 +127,79 @@ public class EclipseAST extends AST<ASTNode> {
 	public final class Node extends AST<ASTNode>.Node {
 		Node(ASTNode node, Collection<Node> children, Kind kind) {
 			super(node, children, kind);
+		}
+		
+		public void traverse(EclipseASTVisitor visitor) {
+			switch ( getKind() ) {
+			case COMPILATION_UNIT:
+				visitor.visitCompilationUnit(this, (CompilationUnitDeclaration)get());
+				traverseChildren(visitor, this);
+				visitor.endVisitCompilationUnit(this, (CompilationUnitDeclaration)get());
+				break;
+			case TYPE:
+				visitor.visitType(this, (TypeDeclaration)get());
+				traverseChildren(visitor, this);
+				visitor.endVisitType(this, (TypeDeclaration)get());
+				break;
+			case FIELD:
+				visitor.visitField(this, (FieldDeclaration)get());
+				traverseChildren(visitor, this);
+				visitor.endVisitField(this, (FieldDeclaration)get());
+				break;
+			case INITIALIZER:
+				visitor.visitInitializer(this, (Initializer)get());
+				traverseChildren(visitor, this);
+				visitor.endVisitInitializer(this, (Initializer)get());
+				break;
+			case METHOD:
+				if ( get() instanceof Clinit ) return;
+				visitor.visitMethod(this, (AbstractMethodDeclaration)get());
+				traverseChildren(visitor, this);
+				visitor.endVisitMethod(this, (AbstractMethodDeclaration)get());
+				break;
+			case ARGUMENT:
+				AbstractMethodDeclaration method = (AbstractMethodDeclaration)up().get();
+				visitor.visitMethodArgument(this, (Argument)get(), method);
+				traverseChildren(visitor, this);
+				visitor.endVisitMethodArgument(this, (Argument)get(), method);
+				break;
+			case LOCAL:
+				visitor.visitLocal(this, (LocalDeclaration)get());
+				traverseChildren(visitor, this);
+				visitor.endVisitLocal(this, (LocalDeclaration)get());
+				break;
+			case ANNOTATION:
+				switch ( up().getKind() ) {
+				case TYPE:
+					visitor.visitAnnotationOnType((TypeDeclaration)up().get(), this, (Annotation)get());
+					break;
+				case FIELD:
+					visitor.visitAnnotationOnField((FieldDeclaration)up().get(), this, (Annotation)get());
+					break;
+				case METHOD:
+					visitor.visitAnnotationOnMethod((AbstractMethodDeclaration)up().get(), this, (Annotation)get());
+					break;
+				case ARGUMENT:
+					visitor.visitAnnotationOnMethodArgument(
+							(Argument)parent.get(),
+							(AbstractMethodDeclaration)parent.directUp().get(),
+							this, (Annotation)get());
+					break;
+				case LOCAL:
+					visitor.visitAnnotationOnLocal((LocalDeclaration)parent.get(), this, (Annotation)get());
+					break;
+				default:
+					throw new AssertionError("Annotion not expected as child of a " + up().getKind());
+				}
+				break;
+			case STATEMENT:
+				visitor.visitStatement(this, (Statement)get());
+				traverseChildren(visitor, this);
+				visitor.endVisitStatement(this, (Statement)get());
+				break;
+			default:
+				throw new AssertionError("Unexpected kind during node traversal: " + getKind());
+			}
 		}
 		
 		@Override public String getName() {

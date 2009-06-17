@@ -62,79 +62,12 @@ public class JavacAST extends AST<JCTree> {
 	}
 	
 	public void traverse(JavacASTVisitor visitor) {
-		Node current = top();
-		visitor.visitCompilationUnit(current, (JCCompilationUnit)current.get());
-		traverseChildren(visitor, current);
-		visitor.endVisitCompilationUnit(current, (JCCompilationUnit)current.get());
+		top().traverse(visitor);
 	}
 	
 	private void traverseChildren(JavacASTVisitor visitor, Node node) {
 		for ( Node child : node.down() ) {
-			JCTree n = child.get();
-			
-			switch ( child.getKind() ) {
-			case TYPE:
-				visitor.visitType(child, (JCClassDecl)n);
-				traverseChildren(visitor, child);
-				visitor.endVisitType(child, (JCClassDecl)n);
-				break;
-			case FIELD:
-				visitor.visitField(child, (JCVariableDecl)n);
-				traverseChildren(visitor, child);
-				visitor.endVisitField(child, (JCVariableDecl)n);
-				break;
-			case METHOD:
-				visitor.visitMethod(child, (JCMethodDecl)n);
-				traverseChildren(visitor, child);
-				visitor.endVisitMethod(child, (JCMethodDecl)n);
-				break;
-			case INITIALIZER:
-				visitor.visitInitializer(child, (JCBlock)n);
-				traverseChildren(visitor, child);
-				visitor.endVisitInitializer(child, (JCBlock)n);
-				break;
-			case ARGUMENT:
-				JCMethodDecl parent = (JCMethodDecl) child.up().get();
-				visitor.visitMethodArgument(child, (JCVariableDecl)n, parent);
-				traverseChildren(visitor, child);
-				visitor.endVisitMethodArgument(child, (JCVariableDecl)n, parent);
-				break;
-			case LOCAL:
-				visitor.visitLocal(child, (JCVariableDecl)n);
-				traverseChildren(visitor, child);
-				visitor.endVisitLocal(child, (JCVariableDecl)n);
-				break;
-			case STATEMENT:
-				visitor.visitStatement(child, (JCTree)n);
-				traverseChildren(visitor, child);
-				visitor.endVisitStatement(node, (JCTree)n);
-				break;
-			case ANNOTATION:
-				switch ( child.up().getKind() ) {
-				case TYPE:
-					visitor.visitAnnotationOnType((JCClassDecl)child.up().get(), child, (JCAnnotation)n);
-					break;
-				case FIELD:
-					visitor.visitAnnotationOnField((JCVariableDecl)child.up().get(), child, (JCAnnotation)n);
-					break;
-				case METHOD:
-					visitor.visitAnnotationOnMethod((JCMethodDecl)child.up().get(), child, (JCAnnotation)n);
-					break;
-				case ARGUMENT:
-					JCVariableDecl argument = (JCVariableDecl)child.up().get();
-					JCMethodDecl method = (JCMethodDecl)child.up().up().get();
-					visitor.visitAnnotationOnMethodArgument(argument, method, child, (JCAnnotation)n);
-					break;
-				case LOCAL:
-					visitor.visitAnnotationOnLocal((JCVariableDecl)child.up().get(), child, (JCAnnotation)n);
-					break;
-				default:
-					throw new AssertionError("Can't be reached");
-				}
-				break;
-			default:
-				throw new AssertionError("Can't be reached: " + child.getKind());
-			}
+			child.traverse(visitor);
 		}
 	}
 	
@@ -194,12 +127,12 @@ public class JavacAST extends AST<JCTree> {
 		return putInMap(new Node(field, childNodes, Kind.FIELD));
 	}
 	
-	private Node buildLocalVar(JCVariableDecl local) {
+	private Node buildLocalVar(JCVariableDecl local, Kind kind) {
 		if ( alreadyHandled(local) ) return null;
 		List<Node> childNodes = new ArrayList<Node>();
 		for ( JCAnnotation annotation : local.mods.annotations ) addIfNotNull(childNodes, buildAnnotation(annotation));
 		addIfNotNull(childNodes, buildExpression(local.init));
-		return putInMap(new Node(local, childNodes, Kind.LOCAL));
+		return putInMap(new Node(local, childNodes, kind));
 	}
 	
 	private Node buildInitializer(JCBlock initializer) {
@@ -213,7 +146,7 @@ public class JavacAST extends AST<JCTree> {
 		if ( alreadyHandled(method) ) return null;
 		List<Node> childNodes = new ArrayList<Node>();
 		for ( JCAnnotation annotation : method.mods.annotations ) addIfNotNull(childNodes, buildAnnotation(annotation));
-		for ( JCVariableDecl param : method.params ) addIfNotNull(childNodes, buildLocalVar(param));
+		for ( JCVariableDecl param : method.params ) addIfNotNull(childNodes, buildLocalVar(param, Kind.ARGUMENT));
 		if ( method.body != null && method.body.stats != null )
 			for ( JCStatement statement : method.body.stats ) addIfNotNull(childNodes, buildStatement(statement));
 		return putInMap(new Node(method, childNodes, Kind.METHOD));
@@ -236,7 +169,7 @@ public class JavacAST extends AST<JCTree> {
 		if ( statement == null || alreadyHandled(statement) ) return null;
 		if ( statement instanceof JCAnnotation ) return null;
 		if ( statement instanceof JCClassDecl ) return buildType((JCClassDecl)statement);
-		if ( statement instanceof JCVariableDecl ) return buildLocalVar((JCVariableDecl)statement);
+		if ( statement instanceof JCVariableDecl ) return buildLocalVar((JCVariableDecl)statement, Kind.LOCAL);
 		
 		//We drill down because LocalDeclarations and TypeDeclarations can occur anywhere, even in, say,
 		//an if block, or even the expression on an assert statement!
@@ -265,6 +198,77 @@ public class JavacAST extends AST<JCTree> {
 	public class Node extends AST<JCTree>.Node {
 		public Node(JCTree node, Collection<Node> children, Kind kind) {
 			super(node, children, kind);
+		}
+		
+		public void traverse(JavacASTVisitor visitor) {
+			switch ( this.getKind() ) {
+			case COMPILATION_UNIT:
+				visitor.visitCompilationUnit(this, (JCCompilationUnit)get());
+				traverseChildren(visitor, this);
+				visitor.endVisitCompilationUnit(this, (JCCompilationUnit)get());
+				break;
+			case TYPE:
+				visitor.visitType(this, (JCClassDecl)get());
+				traverseChildren(visitor, this);
+				visitor.endVisitType(this, (JCClassDecl)get());
+				break;
+			case FIELD:
+				visitor.visitField(this, (JCVariableDecl)get());
+				traverseChildren(visitor, this);
+				visitor.endVisitField(this, (JCVariableDecl)get());
+				break;
+			case METHOD:
+				visitor.visitMethod(this, (JCMethodDecl)get());
+				traverseChildren(visitor, this);
+				visitor.endVisitMethod(this, (JCMethodDecl)get());
+				break;
+			case INITIALIZER:
+				visitor.visitInitializer(this, (JCBlock)get());
+				traverseChildren(visitor, this);
+				visitor.endVisitInitializer(this, (JCBlock)get());
+				break;
+			case ARGUMENT:
+				JCMethodDecl parent = (JCMethodDecl) up().get();
+				visitor.visitMethodArgument(this, (JCVariableDecl)get(), parent);
+				traverseChildren(visitor, this);
+				visitor.endVisitMethodArgument(this, (JCVariableDecl)get(), parent);
+				break;
+			case LOCAL:
+				visitor.visitLocal(this, (JCVariableDecl)get());
+				traverseChildren(visitor, this);
+				visitor.endVisitLocal(this, (JCVariableDecl)get());
+				break;
+			case STATEMENT:
+				visitor.visitStatement(this, (JCTree)get());
+				traverseChildren(visitor, this);
+				visitor.endVisitStatement(this, (JCTree)get());
+				break;
+			case ANNOTATION:
+				switch ( up().getKind() ) {
+				case TYPE:
+					visitor.visitAnnotationOnType((JCClassDecl)up().get(), this, (JCAnnotation)get());
+					break;
+				case FIELD:
+					visitor.visitAnnotationOnField((JCVariableDecl)up().get(), this, (JCAnnotation)get());
+					break;
+				case METHOD:
+					visitor.visitAnnotationOnMethod((JCMethodDecl)up().get(), this, (JCAnnotation)get());
+					break;
+				case ARGUMENT:
+					JCVariableDecl argument = (JCVariableDecl)up().get();
+					JCMethodDecl method = (JCMethodDecl)up().up().get();
+					visitor.visitAnnotationOnMethodArgument(argument, method, this, (JCAnnotation)get());
+					break;
+				case LOCAL:
+					visitor.visitAnnotationOnLocal((JCVariableDecl)up().get(), this, (JCAnnotation)get());
+					break;
+				default:
+					throw new AssertionError("Annotion not expected as child of a " + up().getKind());
+				}
+				break;
+			default:
+				throw new AssertionError("Unexpected kind during node traversal: " + getKind());
+			}
 		}
 		
 		@Override public String getName() {
