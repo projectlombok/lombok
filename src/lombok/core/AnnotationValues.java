@@ -98,7 +98,6 @@ public class AnnotationValues<A extends Annotation> {
 				}
 				
 				if ( !isArray && v.valueGuesses.size() > 1 ) {
-					System.out.println(v.valueGuesses.size() + ": " + v.valueGuesses);
 					throw new AnnotationValueDecodeFail(v, 
 							"Expected a single value, but " + method.getName() + " has an array of values", -1);
 				}
