@@ -9,6 +9,8 @@ import java.lang.instrument.UnmodifiableClassException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.security.ProtectionDomain;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
@@ -78,7 +80,8 @@ public class EclipsePatcher {
 		Pattern p = Pattern.compile("^jar:file:([^\\!]+)\\!.*\\.class$");
 		Matcher m = p.matcher(uri.toString());
 		if ( !m.matches() ) return ".";
-		return new File(m.group(1)).getParent();
+		String rawUri = m.group(1);
+		return new File(URLDecoder.decode(rawUri, Charset.defaultCharset().name())).getParent();
 	}
 	
 	public static void premain(String agentArgs, Instrumentation instrumentation) throws Exception {
