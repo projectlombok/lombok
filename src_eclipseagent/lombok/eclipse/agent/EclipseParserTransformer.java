@@ -18,7 +18,7 @@ import org.objectweb.asm.Opcodes;
 class EclipseParserTransformer {
 	private static final String COMPILER_PKG =
 		"Lorg/eclipse/jdt/internal/compiler/ast/";
-	private static final String TARGET_STATIC_CLASS = "java/lombok/ClassLoaderWorkaround";
+	private static final String TARGET_STATIC_CLASS = "java/lombok/eclipse/ClassLoaderWorkaround";
 	private static final String TARGET_STATIC_METHOD_NAME = "transformCompilationUnitDeclaration";
 	private static final String TARGET_STATIC_METHOD_DESC = "(Ljava/lang/Object;Ljava/lang/Object;)V";
 	

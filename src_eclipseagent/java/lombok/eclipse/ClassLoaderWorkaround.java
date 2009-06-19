@@ -1,4 +1,4 @@
-package java.lombok;
+package java.lombok.eclipse;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
