@@ -1,0 +1,38 @@
+## javadoc
+
+Either just let people run lombokc and javadoc that, -or-, use a doclet and presumptively cast our way into javadoc's AST.
+
+## lombokc
+
+To keep comments, try:
+
+com.sun.tools.javac.main.JavaCompiler.instance(context).keepComments = true;
+
+## netbeans agent plugin
+
+module: java.source
+class: org.netbeans.modules.java.source.parsing.JavacParser
+
+to instrument:
+
+class: JavacTaskImpl
+
+method1: public JCBlock reparseMethodBody(CompilationUnitTree topLevel, MethodTree methodBody, String newText, int annonIndex) {}
+method2: public Iterable<? extends CompilationUnitTree> parse();
+
+in either case, returned value could be null/empty. CompilationUnitTree are MethodTree are superinterfaces of JCCU and JCMD.
+
+
+## website
+
+## javadoc
+
+## screencasts
+
+## installers
+
+## hook into class file writing
+
+on javac: com.sun.tools.javac.jvm.ClassWriter.writeClassFile(OutputStream out, ClassSymbol c) - hack the one line where out.write() is called.
+
+
