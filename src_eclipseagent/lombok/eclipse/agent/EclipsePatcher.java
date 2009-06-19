@@ -90,7 +90,7 @@ public class EclipsePatcher {
 		instrumentation.addTransformer(new Patcher(), true);
 		
 		if ( transformExisting ) for ( Class<?> c : instrumentation.getAllLoadedClasses() ) {
-			if ( c.getName().equals(ECLIPSE_PARSER_CLASS_NAME) ) {
+			if ( c.getName().equals(ECLIPSE_PARSER_CLASS_NAME) || c.getName().equals(ECLIPSE_CUD_CLASS_NAME) ) {
 				try {
 					instrumentation.retransformClasses(c);
 				} catch ( UnmodifiableClassException ex ) {
