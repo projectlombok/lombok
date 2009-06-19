@@ -2,14 +2,17 @@ package lombok.javac.handlers;
 
 import static lombok.javac.handlers.PKG.*;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
+import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
-import lombok.javac.JavacAST;
+import lombok.javac.JavacAST.Node;
 
 import org.mangosdk.spi.ProviderFor;
 
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -21,35 +24,59 @@ import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleGetter implements JavacAnnotationHandler<Getter> {
-	@Override public boolean handle(AnnotationValues<Getter> annotation, JCAnnotation ast, JavacAST.Node annotationNode) {
-		if ( annotationNode.up().getKind() != Kind.FIELD ) {
-			annotationNode.addError("@Getter is only supported on a field.");
+	public void generateGetterForField(Node fieldNode, DiagnosticPosition pos) {
+		AccessLevel level = Getter.DEFAULT_ACCESS_LEVEL;
+		Node errorNode = fieldNode;
+		
+		for ( Node child : fieldNode.down() ) {
+			if ( child.getKind() == Kind.ANNOTATION ) {
+				if ( Javac.annotationTypeMatches(Getter.class, child) ) {
+					level = Javac.createAnnotation(Getter.class, child).getInstance().value();
+					errorNode = child;
+					pos = child.get();
+					break;
+				}
+			}
+		}
+		
+		createGetterForField(level, fieldNode, errorNode, pos);
+	}
+	
+	@Override public boolean handle(AnnotationValues<Getter> annotation, JCAnnotation ast, Node annotationNode) {
+		Node fieldNode = annotationNode.up();
+		AccessLevel level = annotation.getInstance().value();
+		return createGetterForField(level, fieldNode, annotationNode, annotationNode.get());
+	}
+	
+	private boolean createGetterForField(AccessLevel level, Node fieldNode, Node errorNode, DiagnosticPosition pos) {
+		if ( fieldNode.getKind() != Kind.FIELD ) {
+			errorNode.addError("@Getter is only supported on a field.");
 			return false;
 		}
 		
-		String methodName = toGetterName((JCVariableDecl) annotationNode.up().get());
+		JCVariableDecl fieldDecl = (JCVariableDecl)fieldNode.get();
+		String methodName = toGetterName(fieldDecl);
 		
-		if ( methodExists(methodName, annotationNode.up()) ) {
-			annotationNode.addWarning(
+		if ( methodExists(methodName, fieldNode) ) {
+			errorNode.addWarning(
 					String.format("Not generating %s(): A method with that name already exists",  methodName));
 			return false;
 		}
 		
-		Getter getter = annotation.getInstance();
+		JCClassDecl javacClassTree = (JCClassDecl) fieldNode.up().get();
 		
-		JCClassDecl javacClassTree = (JCClassDecl) annotationNode.up().up().get();
+		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
 		
-		int access = toJavacModifier(getter.value());
-		
-		JCMethodDecl getterMethod = createGetter(access, annotationNode.up(), annotationNode.getTreeMaker());
+		JCMethodDecl getterMethod = createGetter(access, fieldNode, fieldNode.getTreeMaker());
 		javacClassTree.defs = javacClassTree.defs.append(getterMethod);
 		return true;
 	}
 	
-	private JCMethodDecl createGetter(int access, JavacAST.Node field, TreeMaker treeMaker) {
+	private JCMethodDecl createGetter(long access, Node field, TreeMaker treeMaker) {
 		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
 		JCStatement returnStatement = treeMaker.Return(treeMaker.Ident(fieldNode.getName()));
 		

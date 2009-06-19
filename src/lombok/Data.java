@@ -5,10 +5,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.FIELD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
-public @interface Getter {
-	lombok.AccessLevel DEFAULT_ACCESS_LEVEL = lombok.AccessLevel.PUBLIC;
-	
-	lombok.AccessLevel value() default lombok.AccessLevel.PUBLIC;
+public @interface Data {
+	String staticConstructor() default "";
+	int hashCodePrime() default 31;
 }

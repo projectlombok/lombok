@@ -15,36 +15,65 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.mangosdk.spi.ProviderFor;
 
+import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
+import lombok.core.AST.Kind;
+import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
 
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleSetter implements EclipseAnnotationHandler<Setter> {
+	public void generateSetterForField(Node fieldNode, ASTNode pos) {
+		AccessLevel level = Setter.DEFAULT_ACCESS_LEVEL;
+		Node errorNode = fieldNode;
+		
+		for ( Node child : fieldNode.down() ) {
+			if ( child.getKind() == Kind.ANNOTATION ) {
+				if ( Eclipse.annotationTypeMatches(Setter.class, child) ) {
+					level = Eclipse.createAnnotation(Setter.class, child).getInstance().value();
+					errorNode = child;
+					pos = child.get();
+					break;
+				}
+			}
+		}
+		
+		createSetterForField(level, fieldNode, errorNode, pos);
+	}
+	
 	@Override public boolean handle(AnnotationValues<Setter> annotation, Annotation ast, Node annotationNode) {
-		if ( !(annotationNode.up().get() instanceof FieldDeclaration) ) return false;
-		FieldDeclaration field = (FieldDeclaration) annotationNode.up().get();
+		Node fieldNode = annotationNode.up();
+		if ( fieldNode.getKind() != Kind.FIELD ) return false;
+		AccessLevel level = annotation.getInstance().value();
+		return createSetterForField(level, fieldNode, annotationNode, annotationNode.get());
+	}
+	
+	private boolean createSetterForField(AccessLevel level, Node fieldNode, Node errorNode, ASTNode pos) {
+		if ( fieldNode.getKind() != Kind.FIELD ) return false;
+		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		String setterName = TransformationsUtil.toSetterName(new String(field.name));
 		
-		TypeDeclaration parent = (TypeDeclaration) annotationNode.up().up().get();
+		TypeDeclaration parent = (TypeDeclaration) fieldNode.up().get();
 		if ( parent.methods != null ) for ( AbstractMethodDeclaration method : parent.methods ) {
 			if ( method.selector != null && new String(method.selector).equals(setterName) ) {
-				annotationNode.addWarning(String.format(
+				errorNode.addWarning(String.format(
 						"Not generating %s(%s %s): A method with that name already exists",
 						setterName, field.type, new String(field.name)));
 				return false;
 			}
 		}
 		
-		int modifier = toModifier(annotation.getInstance().value());
+		int modifier = toModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		
-		MethodDeclaration method = generateSetter(parent, field, setterName, modifier, ast);
+		MethodDeclaration method = generateSetter(parent, field, setterName, modifier, pos);
 		
 		if ( parent.methods == null ) {
 			parent.methods = new AbstractMethodDeclaration[1];
@@ -60,7 +89,7 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 	}
 	
 	private MethodDeclaration generateSetter(TypeDeclaration parent, FieldDeclaration field, String name,
-			int modifier, Annotation ast) {
+			int modifier, ASTNode ast) {
 		long pos = (((long)ast.sourceStart) << 32) | ast.sourceEnd;
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
 		method.modifiers = modifier;
