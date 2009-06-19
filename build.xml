@@ -78,7 +78,7 @@
 		</jar>
 		<jar basedir="build/eclipse.agent" destfile="dist/lombok.eclipse.agent-${lombok.version}.jar">
 			<manifest>
-				<attribute name="Premain-Class" value="lombok.eclipse.agent.EclipseParserPatcher" />
+				<attribute name="Premain-Class" value="lombok.eclipse.agent.EclipsePatcher" />
 				<attribute name="Can-Redefine-Classes" value="true" />
 			</manifest>
 		</jar>

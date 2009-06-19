@@ -14,8 +14,8 @@ import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class EclipseParserPatcher {
-	private EclipseParserPatcher() {}
+public class EclipsePatcher {
+	private EclipsePatcher() {}
 	
 	private static class Patcher implements ClassFileTransformer {
 		@Override public byte[] transform(ClassLoader loader, String className,
@@ -71,10 +71,10 @@ public class EclipseParserPatcher {
 	}
 	
 	private static String findPathOfOurClassloader() throws Exception {
-		ClassLoader loader = EclipseParserPatcher.class.getClassLoader();
+		ClassLoader loader = EclipsePatcher.class.getClassLoader();
 		if ( loader == null ) loader = ClassLoader.getSystemClassLoader();
 		
-		URI uri = loader.getResource(EclipseParserPatcher.class.getName().replace('.', '/') + ".class").toURI();
+		URI uri = loader.getResource(EclipsePatcher.class.getName().replace('.', '/') + ".class").toURI();
 		Pattern p = Pattern.compile("^jar:file:([^\\!]+)\\!.*\\.class$");
 		Matcher m = p.matcher(uri.toString());
 		if ( !m.matches() ) return ".";
