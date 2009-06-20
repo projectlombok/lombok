@@ -70,21 +70,19 @@ public class EclipseAST extends AST<ASTNode> {
 	private class ParseProblem {
 		final boolean isWarning;
 		final String message;
-		final Node node;
 		final int sourceStart;
 		final int sourceEnd;
 		
-		public ParseProblem(boolean isWarning, String message, Node node, int sourceStart, int sourceEnd) {
+		public ParseProblem(boolean isWarning, String message, int sourceStart, int sourceEnd) {
 			this.isWarning = isWarning;
 			this.message = message;
-			this.node = node;
 			this.sourceStart = sourceStart;
 			this.sourceEnd = sourceEnd;
 		}
 		
 		void addToCompilationResult() {
-			addProblemToCompilationResult(getFileName(), (CompilationUnitDeclaration) top().get(),
-					isWarning, message, node.get(), sourceStart, sourceEnd);
+			addProblemToCompilationResult((CompilationUnitDeclaration) top().get(),
+					isWarning, message, sourceStart, sourceEnd);
 		}
 	}
 	
@@ -103,9 +101,11 @@ public class EclipseAST extends AST<ASTNode> {
 		propagateProblems();
 	}
 	
-	static void addProblemToCompilationResult(String fileName, CompilationUnitDeclaration ast,
-			boolean isWarning, String message, ASTNode node, int sourceStart, int sourceEnd) {
-		char[] fileNameArray = fileName.toCharArray();
+	static void addProblemToCompilationResult(CompilationUnitDeclaration ast,
+			boolean isWarning, String message, int sourceStart, int sourceEnd) {
+		if ( ast.compilationResult == null ) return;
+		char[] fileNameArray = ast.getFileName();
+		if ( fileNameArray == null ) fileNameArray = "(unknown).java".toCharArray();
 		int lineNumber = 0;
 		int columnNumber = 1;
 		CompilationResult result = ast.compilationResult;
@@ -218,7 +218,7 @@ public class EclipseAST extends AST<ASTNode> {
 		}
 		
 		public void addError(String message, int sourceStart, int sourceEnd) {
-			addProblem(new ParseProblem(false, message, this, sourceStart, sourceEnd));
+			addProblem(new ParseProblem(false, message, sourceStart, sourceEnd));
 		}
 		
 		@Override public void addWarning(String message) {
@@ -226,7 +226,7 @@ public class EclipseAST extends AST<ASTNode> {
 		}
 		
 		public void addWarning(String message, int sourceStart, int sourceEnd) {
-			addProblem(new ParseProblem(true, message, this, sourceStart, sourceEnd));
+			addProblem(new ParseProblem(true, message, sourceStart, sourceEnd));
 		}
 		
 		/** {@inheritDoc} */
@@ -241,6 +241,11 @@ public class EclipseAST extends AST<ASTNode> {
 			if ( node instanceof LocalDeclaration ) return true;
 			if ( node instanceof CompilationUnitDeclaration ) return true;
 			return false;
+		}
+		
+		/** {@inheritDoc} */
+		@Override public Node getNodeFor(ASTNode obj) {
+			return (Node) super.getNodeFor(obj);
 		}
 		
 		/** {@inheritDoc} */
@@ -298,6 +303,31 @@ public class EclipseAST extends AST<ASTNode> {
 	
 	private static boolean isComplete(CompilationUnitDeclaration unit) {
 		return (unit.bits & ASTNode.HasAllMethodBodies) > 0;
+	}
+	
+	@Override protected Node buildTree(ASTNode node, Kind kind) {
+		switch ( kind ) {
+		case COMPILATION_UNIT:
+			return buildCompilationUnit((CompilationUnitDeclaration) node);
+		case TYPE:
+			return buildType((TypeDeclaration) node);
+		case FIELD:
+			return buildField((FieldDeclaration) node);
+		case INITIALIZER:
+			return buildInitializer((Initializer) node);
+		case METHOD:
+			return buildMethod((AbstractMethodDeclaration) node);
+		case ARGUMENT:
+			return buildLocal((Argument) node, kind);
+		case LOCAL:
+			return buildLocal((LocalDeclaration) node, kind);
+		case STATEMENT:
+			return buildStatement((Statement) node);
+		case ANNOTATION:
+			return buildAnnotation((Annotation) node);
+		default:
+			throw new AssertionError("Did not expect to arrive here: " + kind);
+		}
 	}
 	
 	private Node buildCompilationUnit(CompilationUnitDeclaration top) {
@@ -373,28 +403,30 @@ public class EclipseAST extends AST<ASTNode> {
 		if ( children == null ) return Collections.emptyList();
 		List<Node> childNodes = new ArrayList<Node>();
 		for ( LocalDeclaration local : children ) {
-			addIfNotNull(childNodes, buildLocal(local));
+			addIfNotNull(childNodes, buildLocal(local, Kind.ARGUMENT));
 		}
 		return childNodes;
 	}
 	
-	private Node buildLocal(LocalDeclaration local) {
+	private Node buildLocal(LocalDeclaration local, Kind kind) {
 		if ( alreadyHandled(local) ) return null;
 		List<Node> childNodes = new ArrayList<Node>();
 		addIfNotNull(childNodes, buildStatement(local.initialization));
 		childNodes.addAll(buildAnnotations(local.annotations));
-		return putInMap(new Node(local, childNodes, Kind.LOCAL));
+		return putInMap(new Node(local, childNodes, kind));
 	}
 	
 	private Collection<Node> buildAnnotations(Annotation[] annotations) {
 		if ( annotations == null ) return Collections.emptyList();
 		List<Node> elements = new ArrayList<Node>();
-		for ( Annotation an : annotations ) {
-			if ( an == null ) continue;
-			if ( alreadyHandled(an) ) continue;
-			elements.add(putInMap(new Node(an, null, Kind.ANNOTATION)));
-		}
+		for ( Annotation an : annotations ) addIfNotNull(elements, buildAnnotation(an));
 		return elements;
+	}
+	
+	private Node buildAnnotation(Annotation annotation) {
+		if ( annotation == null ) return null;
+		if ( alreadyHandled(annotation) ) return null;
+		return putInMap(new Node(annotation, null, Kind.ANNOTATION));
 	}
 	
 	private Collection<Node> buildStatements(Statement[] children) {
@@ -409,7 +441,7 @@ public class EclipseAST extends AST<ASTNode> {
 		if ( child == null || alreadyHandled(child) ) return null;
 		if ( child instanceof TypeDeclaration ) return buildType((TypeDeclaration)child);
 		
-		if ( child instanceof LocalDeclaration ) return buildLocal((LocalDeclaration)child);
+		if ( child instanceof LocalDeclaration ) return buildLocal((LocalDeclaration)child, Kind.LOCAL);
 		
 		//We drill down because LocalDeclarations and TypeDeclarations can occur anywhere, even in, say,
 		//an if block, or even the expression on an assert statement!

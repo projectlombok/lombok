@@ -1,9 +1,16 @@
 package lombok.eclipse.handlers;
 
 import static lombok.eclipse.handlers.PKG.*;
+import lombok.AccessLevel;
+import lombok.Setter;
+import lombok.core.AnnotationValues;
+import lombok.core.TransformationsUtil;
+import lombok.core.AST.Kind;
+import lombok.eclipse.Eclipse;
+import lombok.eclipse.EclipseAnnotationHandler;
+import lombok.eclipse.EclipseAST.Node;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
-import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
@@ -16,24 +23,19 @@ import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
+import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.mangosdk.spi.ProviderFor;
-
-import lombok.AccessLevel;
-import lombok.Setter;
-import lombok.core.AnnotationValues;
-import lombok.core.TransformationsUtil;
-import lombok.core.AST.Kind;
-import lombok.eclipse.Eclipse;
-import lombok.eclipse.EclipseAnnotationHandler;
-import lombok.eclipse.EclipseAST.Node;
 
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 	public void generateSetterForField(Node fieldNode, ASTNode pos) {
-		AccessLevel level = Setter.DEFAULT_ACCESS_LEVEL;
+		AccessLevel level = AccessLevel.PUBLIC;
 		Node errorNode = fieldNode;
+		boolean whineIfExists = false;
 		
 		for ( Node child : fieldNode.down() ) {
 			if ( child.getKind() == Kind.ANNOTATION ) {
@@ -41,51 +43,68 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 					level = Eclipse.createAnnotation(Setter.class, child).getInstance().value();
 					errorNode = child;
 					pos = child.get();
+					whineIfExists = true;
 					break;
 				}
 			}
 		}
 		
-		createSetterForField(level, fieldNode, errorNode, pos);
+		createSetterForField(level, fieldNode, errorNode, pos, whineIfExists);
 	}
 	
 	@Override public boolean handle(AnnotationValues<Setter> annotation, Annotation ast, Node annotationNode) {
 		Node fieldNode = annotationNode.up();
 		if ( fieldNode.getKind() != Kind.FIELD ) return false;
 		AccessLevel level = annotation.getInstance().value();
-		return createSetterForField(level, fieldNode, annotationNode, annotationNode.get());
+		return createSetterForField(level, fieldNode, annotationNode, annotationNode.get(), true);
 	}
 	
-	private boolean createSetterForField(AccessLevel level, Node fieldNode, Node errorNode, ASTNode pos) {
-		if ( fieldNode.getKind() != Kind.FIELD ) return false;
+	private boolean createSetterForField(AccessLevel level, Node fieldNode, Node errorNode, ASTNode pos, boolean whineIfExists) {
+		if ( fieldNode.getKind() != Kind.FIELD ) {
+			errorNode.addError("@Setter is only supported on a field.");
+			return false;
+		}
+		
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		String setterName = TransformationsUtil.toSetterName(new String(field.name));
 		
-		TypeDeclaration parent = (TypeDeclaration) fieldNode.up().get();
-		if ( parent.methods != null ) for ( AbstractMethodDeclaration method : parent.methods ) {
-			if ( method.selector != null && new String(method.selector).equals(setterName) ) {
-				errorNode.addWarning(String.format(
-						"Not generating %s(%s %s): A method with that name already exists",
-						setterName, field.type, new String(field.name)));
-				return false;
-			}
-		}
-		
 		int modifier = toModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		
-		MethodDeclaration method = generateSetter(parent, field, setterName, modifier, pos);
-		
-		if ( parent.methods == null ) {
-			parent.methods = new AbstractMethodDeclaration[1];
-			parent.methods[0] = method;
-		} else {
-			AbstractMethodDeclaration[] newArray = new AbstractMethodDeclaration[parent.methods.length + 1];
-			System.arraycopy(parent.methods, 0, newArray, 0, parent.methods.length);
-			newArray[parent.methods.length] = method;
-			parent.methods = newArray;
+		switch ( methodExists(setterName, fieldNode) ) {
+		case EXISTS_BY_LOMBOK:
+			Node methodNode = getExistingLombokMethod(setterName, fieldNode);
+			injectScopeIntoSetter(modifier, field, (MethodDeclaration)methodNode.get(), (TypeDeclaration) methodNode.up().get());
+			return false;
+		case EXISTS_BY_USER:
+			if ( whineIfExists ) errorNode.addWarning(
+					String.format("Not generating %s(%s %s): A method with that name already exists",
+					setterName, field.type, new String(field.name)));
+			return false;
+		default:
+		case NOT_EXISTS:
+			//continue with creating the setter
 		}
 		
-		return true;
+		
+		MethodDeclaration method = generateSetter((TypeDeclaration) fieldNode.up().get(), field, setterName, modifier, pos);
+		
+		injectMethod(fieldNode.up(), method);
+		
+		return false;
+	}
+	
+	private void injectScopeIntoSetter(int modifier, FieldDeclaration field, MethodDeclaration method, TypeDeclaration parent) {
+		if ( parent.scope != null ) {
+			TypeBinding[] params = new TypeBinding[] { field.type.resolvedType };
+			
+			if ( method.binding == null ) {
+				method.scope = new MethodScope(parent.scope, method, false);
+				method.binding = new MethodBinding(modifier, method.selector, BaseTypeBinding.VOID, params, null, parent.binding);
+			}
+			method.binding.parameters = params;
+			method.binding.returnType = BaseTypeBinding.VOID;
+			method.returnType.resolvedType = BaseTypeBinding.VOID;
+		}
 	}
 	
 	private MethodDeclaration generateSetter(TypeDeclaration parent, FieldDeclaration field, String name,
@@ -102,7 +121,8 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		method.thrownExceptions = null;
 		method.typeParameters = null;
 		method.scope = parent.scope == null ? null : new MethodScope(parent.scope, method, false);
-		method.bits |= ASTNode.Bit24;
+		method.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
+		injectScopeIntoSetter(modifier, field, method, parent);
 		FieldReference thisX = new FieldReference(("this." + new String(field.name)).toCharArray(), pos);
 		thisX.receiver = new ThisReference(ast.sourceStart, ast.sourceEnd);
 		thisX.token = field.name;

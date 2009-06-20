@@ -19,37 +19,45 @@ import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
+import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.Literal;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.osgi.framework.Bundle;
 
 public class Eclipse {
+	public static final int ECLIPSE_DO_NOT_TOUCH_FLAG = ASTNode.Bit24;
 	private Eclipse() {
 		//Prevent instantiation
 	}
 	
 	private static final String DEFAULT_BUNDLE = "org.eclipse.jdt.core";
-	public static void error(String message) {
-		error(message, DEFAULT_BUNDLE, null);
+	public static final TypeReference TYPEREF_JAVA_LANG_STRING = new QualifiedTypeReference(
+			TypeConstants.JAVA_LANG_STRING, new long[] {0, 0, 0});
+	
+	public static void error(CompilationUnitDeclaration cud, String message) {
+		error(cud, message, DEFAULT_BUNDLE, null);
 	}
 	
-	public static void error(String message, Throwable error) {
-		error(message, DEFAULT_BUNDLE, error);
+	public static void error(CompilationUnitDeclaration cud, String message, Throwable error) {
+		error(cud, message, DEFAULT_BUNDLE, error);
 	}
 	
-	public static void error(String message, String bundleName) {
-		error(message, bundleName, null);
+	public static void error(CompilationUnitDeclaration cud, String message, String bundleName) {
+		error(cud, message, bundleName, null);
 	}
 	
-	public static void error(String message, String bundleName, Throwable error) {
+	public static void error(CompilationUnitDeclaration cud, String message, String bundleName, Throwable error) {
 		Bundle bundle = Platform.getBundle(bundleName);
 		if ( bundle == null ) {
 			System.err.printf("Can't find bundle %s while trying to report error:\n%s\n", bundleName, message);
@@ -59,6 +67,7 @@ public class Eclipse {
 		ILog log = Platform.getLog(bundle);
 		
 		log.log(new Status(IStatus.ERROR, bundleName, message, error));
+		if ( cud != null ) EclipseAST.addProblemToCompilationResult(cud, false, message + " - See error log.", 0, 0);
 	}
 	
 	static String toQualifiedName(char[][] typeName) {

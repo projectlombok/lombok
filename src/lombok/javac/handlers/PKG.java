@@ -28,7 +28,11 @@ class PKG {
 		return TransformationsUtil.toSetterName(fieldName);
 	}
 	
-	static boolean methodExists(String methodName, JavacAST.Node node) {
+	enum MethodExistsResult {
+		NOT_EXISTS, EXISTS_BY_USER, EXISTS_BY_LOMBOK;
+	}
+	
+	static MethodExistsResult methodExists(String methodName, JavacAST.Node node) {
 		while ( node != null && !(node.get() instanceof JCClassDecl) ) {
 			node = node.up();
 		}
@@ -37,13 +41,15 @@ class PKG {
 			for ( JCTree def : ((JCClassDecl)node.get()).defs ) {
 				if ( def instanceof JCMethodDecl ) {
 					if ( ((JCMethodDecl)def).name.contentEquals(methodName) ) {
-						return true;
+						JavacAST.Node existing = node.getNodeFor(def);
+						if ( existing == null || !existing.isHandled() ) return MethodExistsResult.EXISTS_BY_USER;
+						return MethodExistsResult.EXISTS_BY_LOMBOK;
 					}
 				}
 			}
 		}
 		
-		return false;
+		return MethodExistsResult.NOT_EXISTS;
 	}
 	
 	static int toJavacModifier(AccessLevel accessLevel) {

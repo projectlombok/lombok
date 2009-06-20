@@ -29,8 +29,9 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleGetter implements JavacAnnotationHandler<Getter> {
 	public void generateGetterForField(Node fieldNode, DiagnosticPosition pos) {
-		AccessLevel level = Getter.DEFAULT_ACCESS_LEVEL;
+		AccessLevel level = AccessLevel.PUBLIC;
 		Node errorNode = fieldNode;
+		boolean whineIfExists = false;
 		
 		for ( Node child : fieldNode.down() ) {
 			if ( child.getKind() == Kind.ANNOTATION ) {
@@ -38,21 +39,22 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 					level = Javac.createAnnotation(Getter.class, child).getInstance().value();
 					errorNode = child;
 					pos = child.get();
+					whineIfExists = true;
 					break;
 				}
 			}
 		}
 		
-		createGetterForField(level, fieldNode, errorNode, pos);
+		createGetterForField(level, fieldNode, errorNode, pos, whineIfExists);
 	}
 	
 	@Override public boolean handle(AnnotationValues<Getter> annotation, JCAnnotation ast, Node annotationNode) {
 		Node fieldNode = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
-		return createGetterForField(level, fieldNode, annotationNode, annotationNode.get());
+		return createGetterForField(level, fieldNode, annotationNode, annotationNode.get(), true);
 	}
 	
-	private boolean createGetterForField(AccessLevel level, Node fieldNode, Node errorNode, DiagnosticPosition pos) {
+	private boolean createGetterForField(AccessLevel level, Node fieldNode, Node errorNode, DiagnosticPosition pos, boolean whineIfExists) {
 		if ( fieldNode.getKind() != Kind.FIELD ) {
 			errorNode.addError("@Getter is only supported on a field.");
 			return false;
@@ -61,10 +63,16 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		JCVariableDecl fieldDecl = (JCVariableDecl)fieldNode.get();
 		String methodName = toGetterName(fieldDecl);
 		
-		if ( methodExists(methodName, fieldNode) ) {
-			errorNode.addWarning(
+		switch ( methodExists(methodName, fieldNode) ) {
+		case EXISTS_BY_LOMBOK:
+			return true;
+		case EXISTS_BY_USER:
+			if ( whineIfExists ) errorNode.addWarning(
 					String.format("Not generating %s(): A method with that name already exists",  methodName));
 			return false;
+		default:
+		case NOT_EXISTS:
+			//continue with creating the getter
 		}
 		
 		JCClassDecl javacClassTree = (JCClassDecl) fieldNode.up().get();
@@ -73,6 +81,9 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		
 		JCMethodDecl getterMethod = createGetter(access, fieldNode, fieldNode.getTreeMaker());
 		javacClassTree.defs = javacClassTree.defs.append(getterMethod);
+		
+		fieldNode.up().add(getterMethod, Kind.METHOD).recursiveSetHandled();
+		
 		return true;
 	}
 	

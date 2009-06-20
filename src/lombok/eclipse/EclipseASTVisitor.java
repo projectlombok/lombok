@@ -122,8 +122,8 @@ public interface EclipseASTVisitor {
 		}
 		
 		@Override public void visitCompilationUnit(Node node, CompilationUnitDeclaration unit) {
-			System.out.println("---------------------------------------------------------");
-			System.out.println(node.isCompleteParse() ? "COMPLETE" : "incomplete");
+			out.println("---------------------------------------------------------");
+			out.println(node.isCompleteParse() ? "COMPLETE" : "incomplete");
 			
 			print("<CUD %s>", node.getFileName());
 			indent++;

@@ -41,7 +41,7 @@ public class TransformEclipseAST {
 			l = HandlerLibrary.load();
 			f = CompilationUnitDeclaration.class.getDeclaredField("$lombokAST");
 		} catch ( Throwable t ) {
-			Eclipse.error("Problem initializing lombok", t);
+			Eclipse.error(null, "Problem initializing lombok", t);
 			disableLombok = true;
 		}
 		astCacheField = f;
@@ -70,17 +70,12 @@ public class TransformEclipseAST {
 			new TransformEclipseAST(existing).go();
 		} catch ( Throwable t ) {
 			try {
-				String fileName = "(unknown)";
-				if ( ast.compilationResult != null && ast.compilationResult.fileName != null ) {
-					fileName = new String(ast.compilationResult.fileName);
-				}
-				
 				String message = "Lombok can't parse this source: " + t.toString();
 				
-				EclipseAST.addProblemToCompilationResult(fileName, ast, false, message, ast, 0, 0);
+				EclipseAST.addProblemToCompilationResult(ast, false, message, 0, 0);
 				t.printStackTrace();
 			} catch ( Throwable t2 ) {
-				Eclipse.error("Can't create an error in the problems dialog while adding: " + t.toString(), t2);
+				Eclipse.error(ast, "Can't create an error in the problems dialog while adding: " + t.toString(), t2);
 			}
 		}
 	}

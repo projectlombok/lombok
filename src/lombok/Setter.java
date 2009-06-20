@@ -8,7 +8,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.SOURCE)
 public @interface Setter {
-	lombok.AccessLevel DEFAULT_ACCESS_LEVEL = lombok.AccessLevel.PUBLIC;
-	
 	lombok.AccessLevel value() default lombok.AccessLevel.PUBLIC;
 }

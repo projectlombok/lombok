@@ -1,18 +1,17 @@
 package lombok.eclipse.handlers;
 
 import static lombok.eclipse.handlers.PKG.*;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
+import lombok.eclipse.EclipseASTVisitor;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
-import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
@@ -23,14 +22,16 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
 import org.mangosdk.spi.ProviderFor;
 
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 	public void generateGetterForField(Node fieldNode, ASTNode pos) {
-		AccessLevel level = Getter.DEFAULT_ACCESS_LEVEL;
+		AccessLevel level = AccessLevel.PUBLIC;
 		Node errorNode = fieldNode;
+		boolean whineIfExists = false;
 		
 		for ( Node child : fieldNode.down() ) {
 			if ( child.getKind() == Kind.ANNOTATION ) {
@@ -38,21 +39,22 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 					level = Eclipse.createAnnotation(Getter.class, child).getInstance().value();
 					errorNode = child;
 					pos = child.get();
+					whineIfExists = true;
 					break;
 				}
 			}
 		}
 		
-		createGetterForField(level, fieldNode, errorNode, pos);
+		createGetterForField(level, fieldNode, errorNode, pos, whineIfExists);
 	}
 	
 	@Override public boolean handle(AnnotationValues<Getter> annotation, Annotation ast, Node annotationNode) {
 		Node fieldNode = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
-		return createGetterForField(level, fieldNode, annotationNode, annotationNode.get());
+		return createGetterForField(level, fieldNode, annotationNode, annotationNode.get(), true);
 	}
 	
-	private boolean createGetterForField(AccessLevel level, Node fieldNode, Node errorNode, ASTNode pos) {
+	private boolean createGetterForField(AccessLevel level, Node fieldNode, Node errorNode, ASTNode pos, boolean whineIfExists) {
 		if ( fieldNode.getKind() != Kind.FIELD ) {
 			errorNode.addError("@Getter is only supported on a field.");
 			return false;
@@ -63,30 +65,40 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		String getterName = TransformationsUtil.toGetterName(
 				new String(field.name), nameEquals(fieldType.getTypeName(), "boolean"));
 		
-		TypeDeclaration parent = (TypeDeclaration) fieldNode.up().get();
-		if ( parent.methods != null ) for ( AbstractMethodDeclaration method : parent.methods ) {
-			if ( method.selector != null && new String(method.selector).equals(getterName) ) {
-				errorNode.addWarning(String.format(
-						"Not generating %s(): A method with that name already exists",  getterName));
-				return false;
-			}
-		}
-		
 		int modifier = toModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		
-		MethodDeclaration method = generateGetter(parent, field, getterName, modifier, pos);
-		
-		if ( parent.methods == null ) {
-			parent.methods = new AbstractMethodDeclaration[1];
-			parent.methods[0] = method;
-		} else {
-			AbstractMethodDeclaration[] newArray = new AbstractMethodDeclaration[parent.methods.length + 1];
-			System.arraycopy(parent.methods, 0, newArray, 0, parent.methods.length);
-			newArray[parent.methods.length] = method;
-			parent.methods = newArray;
+		switch ( methodExists(getterName, fieldNode) ) {
+		case EXISTS_BY_LOMBOK:
+			Node methodNode = getExistingLombokMethod(getterName, fieldNode);
+			injectScopeIntoGetter(modifier, field, (MethodDeclaration)methodNode.get(), (TypeDeclaration) methodNode.up().get());
+			return false;
+		case EXISTS_BY_USER:
+			if ( whineIfExists ) errorNode.addWarning(
+					String.format("Not generating %s(): A method with that name already exists",  getterName));
+			return false;
+		default:
+		case NOT_EXISTS:
+			//continue with creating the getter
 		}
 		
-		return true;
+		if ( new String(field.name).equals("a") ) fieldNode.up().traverse(new EclipseASTVisitor.Printer());
+		MethodDeclaration method = generateGetter((TypeDeclaration) fieldNode.up().get(), field, getterName, modifier, pos);
+		
+		injectMethod(fieldNode.up(), method);
+		
+		return false;
+	}
+	
+	private void injectScopeIntoGetter(int modifier, FieldDeclaration field, MethodDeclaration method, TypeDeclaration parent) {
+		if ( parent.scope != null ) {
+			if ( method.binding != null ) {
+				method.binding.returnType = field.type.resolvedType;
+			} else {
+				method.scope = new MethodScope(parent.scope, method, false);
+				method.returnType.resolvedType = field.type.resolvedType;
+				method.binding = new MethodBinding(modifier, method.selector, method.returnType.resolvedType, null, null, parent.binding);
+			}
+		}
 	}
 	
 	private MethodDeclaration generateGetter(TypeDeclaration parent, FieldDeclaration field, String name,
@@ -100,8 +112,8 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		method.binding = null;
 		method.thrownExceptions = null;
 		method.typeParameters = null;
-		method.scope = parent.scope == null ? null : new MethodScope(parent.scope, method, false);
-		method.bits |= ASTNode.Bit24;
+		injectScopeIntoGetter(modifier, field, method, parent);
+		method.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
 		Expression fieldExpression = new SingleNameReference(field.name, (field.declarationSourceStart << 32) | field.declarationSourceEnd);
 		Statement returnStatement = new ReturnStatement(fieldExpression, field.sourceStart, field.sourceEnd);
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = pos.sourceStart;

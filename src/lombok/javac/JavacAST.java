@@ -94,6 +94,31 @@ public class JavacAST extends AST<JCTree> {
 		return symtab;
 	}
 	
+	@Override protected Node buildTree(JCTree node, Kind kind) {
+		switch ( kind ) {
+		case COMPILATION_UNIT:
+			return buildCompilationUnit((JCCompilationUnit) node);
+		case TYPE:
+			return buildType((JCClassDecl) node);
+		case FIELD:
+			return buildField((JCVariableDecl) node);
+		case INITIALIZER:
+			return buildInitializer((JCBlock) node);
+		case METHOD:
+			return buildMethod((JCMethodDecl) node);
+		case ARGUMENT:
+			return buildLocalVar((JCVariableDecl) node, kind);
+		case LOCAL:
+			return buildLocalVar((JCVariableDecl) node, kind);
+		case STATEMENT:
+			return buildStatementOrExpression(node);
+		case ANNOTATION:
+			return buildAnnotation((JCAnnotation) node);
+		default:
+			throw new AssertionError("Did not expect: " + kind);
+		}
+	}
+	
 	private Node buildCompilationUnit(JCCompilationUnit top) {
 		List<Node> childNodes = new ArrayList<Node>();
 		for ( JCTree s : top.defs ) {
@@ -307,6 +332,11 @@ public class JavacAST extends AST<JCTree> {
 		
 		public Name toName(String name) {
 			return JavacAST.this.toName(name);
+		}
+		
+		/** {@inheritDoc} */
+		@Override public Node getNodeFor(JCTree obj) {
+			return (Node) super.getNodeFor(obj);
 		}
 		
 		/** {@inheritDoc} */

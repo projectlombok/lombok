@@ -97,6 +97,10 @@ public abstract class AST<N> {
 		
 		protected abstract boolean calculateIsStructurallySignificant();
 		
+		public Node getNodeFor(N obj) {
+			return AST.this.get(obj);
+		}
+		
 		public N get() {
 			return node;
 		}
@@ -150,6 +154,19 @@ public abstract class AST<N> {
 			return fileName;
 		}
 		
+		public Node add(N newChild, Kind kind) {
+			Node n = buildTree(newChild, kind);
+			if ( n == null ) return null;
+			n.parent = this;
+			return n;
+		}
+		
+		public Node recursiveSetHandled() {
+			this.handled = true;
+			for ( Node child : children ) child.recursiveSetHandled();
+			return this;
+		}
+		
 		public abstract void addError(String message);
 		
 		public abstract void addWarning(String message);
@@ -163,6 +180,8 @@ public abstract class AST<N> {
 			return isStructurallySignificant;
 		}
 	}
+	
+	protected abstract Node buildTree(N item, Kind kind);
 	
 	protected static class FieldAccess {
 		public final Field field;
