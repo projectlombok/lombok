@@ -15,27 +15,36 @@ import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
+import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.Argument;
+import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.BinaryExpression;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.ExplicitConstructorCall;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
+import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
+import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
+import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.mangosdk.spi.ProviderFor;
 
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleData implements EclipseAnnotationHandler<Data> {
 	@Override public boolean handle(AnnotationValues<Data> annotation, Annotation ast, Node annotationNode) {
+		Data ann = annotation.getInstance();
 		Node typeNode = annotationNode.up();
 		
 		TypeDeclaration typeDecl = null;
@@ -72,7 +81,29 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			injectScopeIntoToString((MethodDeclaration) getExistingLombokMethod("toString", typeNode).get(), typeDecl);
 		}
 		
-		//TODO generate constructor, hashCode, equals.
+		switch ( constructorExists(typeNode) ) {
+		case NOT_EXISTS:
+			ConstructorDeclaration constructor = createConstructor(
+					ann.staticConstructor().isEmpty(), typeNode, nodesForConstructorAndToString, ast);
+			injectMethod(typeNode, constructor);
+			break;
+		}
+		
+		if ( !ann.staticConstructor().isEmpty() ) {
+			switch ( methodExists("of", typeNode) ) {
+			case NOT_EXISTS:
+				MethodDeclaration staticConstructor = createStaticConstructor(
+						ann.staticConstructor(), typeNode, nodesForConstructorAndToString, ast);
+				injectMethod(typeNode, staticConstructor);
+				break;
+			case EXISTS_BY_LOMBOK:
+				injectScopeIntoStaticConstructor((MethodDeclaration) getExistingLombokMethod(
+						ann.staticConstructor(), typeNode).get(),
+						nodesForConstructorAndToString, typeDecl);
+			}
+		}
+		
+		//TODO generate hashCode, equals.
 		return false;
 	}
 	
@@ -126,19 +157,93 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		return method;
 	}
 	
-	private MethodDeclaration createEquals(Collection<Node> fields) {
-		return null;
+	private ConstructorDeclaration createConstructor(boolean isPublic, Node type, Collection<Node> fields, ASTNode pos) {
+		long p = (long)pos.sourceStart << 32 | pos.sourceEnd;
+		
+		ConstructorDeclaration constructor = new ConstructorDeclaration(
+				((CompilationUnitDeclaration) type.top().get()).compilationResult);
+		
+		constructor.modifiers = PKG.toModifier(isPublic ? AccessLevel.PUBLIC : AccessLevel.PRIVATE);
+		constructor.annotations = null;
+		constructor.selector = ((TypeDeclaration)type.get()).name;
+		constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
+		constructor.thrownExceptions = null;
+		constructor.typeParameters = null;
+		constructor.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
+		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = pos.sourceStart;
+		constructor.bodyEnd = constructor.declarationSourceEnd = constructor.sourceEnd = pos.sourceEnd;
+		constructor.arguments = null;
+		
+		List<Argument> args = new ArrayList<Argument>();
+		List<Statement> assigns = new ArrayList<Statement>();
+		
+		for ( Node fieldNode : fields ) {
+			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
+			FieldReference thisX = new FieldReference(("this." + new String(field.name)).toCharArray(), p);
+			thisX.receiver = new ThisReference((int)(p >> 32), (int)p);
+			thisX.token = field.name;
+			assigns.add(new Assignment(thisX, new SingleNameReference(field.name, p), (int)p));
+			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
+			args.add(new Argument(field.name, fieldPos, field.type, 0));
+		}
+		
+		constructor.statements = assigns.toArray(new Statement[assigns.size()]);
+		constructor.arguments = args.toArray(new Argument[args.size()]);
+		return constructor;
 	}
 	
-	private ConstructorDeclaration createConstructor(Collection<Node> fields) {
+	private void injectScopeIntoStaticConstructor(MethodDeclaration constructor, Collection<Node> fields, TypeDeclaration typeDecl) {
+		if ( typeDecl.scope != null ) {
+			constructor.scope = new MethodScope(typeDecl.scope, constructor, false);
+//			constructor.binding = new MethodBinding(constructor.modifiers,
+//					constructor.selector, null, null, null, typeDecl.binding);
+			constructor.returnType.resolvedType = typeDecl.binding;
+//			TypeBinding[] bindings = new TypeBinding[fields.size()];
+//			int idx = 0;
+//			for ( Node field : fields ) bindings[idx++] = ((FieldDeclaration)field.get()).type.resolvedType;
+//			constructor.binding.parameters = bindings;
+		}
+	}
+	
+	private MethodDeclaration createStaticConstructor(String name, Node type, Collection<Node> fields, ASTNode pos) {
+		long p = (long)pos.sourceStart << 32 | pos.sourceEnd;
+		
+		MethodDeclaration constructor = new MethodDeclaration(
+				((CompilationUnitDeclaration) type.top().get()).compilationResult);
+		
+		constructor.modifiers = PKG.toModifier(AccessLevel.PUBLIC);
+		constructor.returnType = new SingleTypeReference(((TypeDeclaration)type.get()).name, p);
+		constructor.annotations = null;
+		constructor.selector = name.toCharArray();
+		constructor.thrownExceptions = null;
+		constructor.typeParameters = null;
+		injectScopeIntoStaticConstructor(constructor, fields, (TypeDeclaration) type.get());
+		constructor.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
+		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = pos.sourceStart;
+		constructor.bodyEnd = constructor.declarationSourceEnd = constructor.sourceEnd = pos.sourceEnd;
+		
+		List<Argument> args = new ArrayList<Argument>();
+		List<Expression> assigns = new ArrayList<Expression>();
+		AllocationExpression statement = new AllocationExpression();
+		statement.type = constructor.returnType;
+		
+		for ( Node fieldNode : fields ) {
+			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
+			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
+			assigns.add(new SingleNameReference(field.name, fieldPos));
+			args.add(new Argument(field.name, fieldPos, field.type, 0));
+		}
+		
+		statement.arguments = assigns.toArray(new Expression[assigns.size()]);
+		constructor.arguments = args.toArray(new Argument[args.size()]);
+		constructor.statements = new Statement[] { statement };
+		return constructor;
+	}
+	
+	private MethodDeclaration createEquals(Collection<Node> fields) {
 		//If using an of() constructor, make private.
 		//method params
 		//on loop: Assignment(FieldReference(ThisReference, "x"), SingleNameReference("x"))
-		return null;
-	}
-	
-	private MethodDeclaration createStaticConstructor(Collection<Node> fields) {
-		//Return(AllocationExpression(SingleTypeReference("Bar"), namesOfFields);
 		return null;
 	}
 	

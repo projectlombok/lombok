@@ -6,7 +6,9 @@ import lombok.AccessLevel;
 import lombok.core.AST.Kind;
 import lombok.eclipse.EclipseAST;
 
+import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 
 class PKG {
@@ -64,6 +66,44 @@ class PKG {
 		return MethodExistsResult.NOT_EXISTS;
 	}
 	
+	static MethodExistsResult constructorExists(EclipseAST.Node node) {
+		while ( node != null && !(node.get() instanceof TypeDeclaration) ) {
+			node = node.up();
+		}
+		
+		if ( node.get() instanceof TypeDeclaration ) {
+			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
+			if ( typeDecl.methods != null ) for ( AbstractMethodDeclaration def : typeDecl.methods ) {
+				if ( def instanceof ConstructorDeclaration ) {
+					if ( (def.bits & ASTNode.IsDefaultConstructor) != 0 ) continue;
+					EclipseAST.Node existing = node.getNodeFor(def);
+					if ( existing == null || !existing.isHandled() ) return MethodExistsResult.EXISTS_BY_USER;
+					return MethodExistsResult.EXISTS_BY_LOMBOK;
+				}
+			}
+		}
+		
+		return MethodExistsResult.NOT_EXISTS;
+	}
+	
+	static EclipseAST.Node getExistingLombokConstructor(EclipseAST.Node node) {
+		while ( node != null && !(node.get() instanceof TypeDeclaration) ) {
+			node = node.up();
+		}
+		
+		if ( node.get() instanceof TypeDeclaration ) {
+			for ( AbstractMethodDeclaration def : ((TypeDeclaration)node.get()).methods ) {
+				if ( def instanceof ConstructorDeclaration ) {
+					if ( (def.bits & ASTNode.IsDefaultConstructor) != 0 ) continue;
+					EclipseAST.Node existing = node.getNodeFor(def);
+					if ( existing.isHandled() ) return existing;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
 	static EclipseAST.Node getExistingLombokMethod(String methodName, EclipseAST.Node node) {
 		while ( node != null && !(node.get() instanceof TypeDeclaration) ) {
 			node = node.up();
@@ -85,14 +125,28 @@ class PKG {
 	
 	static void injectMethod(EclipseAST.Node type, AbstractMethodDeclaration method) {
 		TypeDeclaration parent = (TypeDeclaration) type.get();
+		
 		if ( parent.methods == null ) {
 			parent.methods = new AbstractMethodDeclaration[1];
 			parent.methods[0] = method;
 		} else {
-			AbstractMethodDeclaration[] newArray = new AbstractMethodDeclaration[parent.methods.length + 1];
-			System.arraycopy(parent.methods, 0, newArray, 0, parent.methods.length);
-			newArray[parent.methods.length] = method;
-			parent.methods = newArray;
+			boolean injectionComplete = false;
+			if ( method instanceof ConstructorDeclaration ) {
+				for ( int i = 0 ; i < parent.methods.length ; i++ ) {
+					if ( parent.methods[i] instanceof ConstructorDeclaration &&
+							(parent.methods[i].bits & ASTNode.IsDefaultConstructor) != 0 ) {
+						parent.methods[i] = method;
+						injectionComplete = true;
+						break;
+					}
+				}
+			}
+			if ( !injectionComplete ) {
+				AbstractMethodDeclaration[] newArray = new AbstractMethodDeclaration[parent.methods.length + 1];
+				System.arraycopy(parent.methods, 0, newArray, 0, parent.methods.length);
+				newArray[parent.methods.length] = method;
+				parent.methods = newArray;
+			}
 		}
 		
 		type.add(method, Kind.METHOD).recursiveSetHandled();
