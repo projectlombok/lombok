@@ -302,7 +302,7 @@ public class EclipseAST extends AST<ASTNode> {
 	}
 	
 	private static boolean isComplete(CompilationUnitDeclaration unit) {
-		return (unit.bits & ASTNode.HasAllMethodBodies) > 0;
+		return (unit.bits & ASTNode.HasAllMethodBodies) != 0;
 	}
 	
 	@Override protected Node buildTree(ASTNode node, Kind kind) {

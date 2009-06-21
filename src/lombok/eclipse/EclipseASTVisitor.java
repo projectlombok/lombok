@@ -152,14 +152,14 @@ public interface EclipseASTVisitor {
 			Block block = initializer.block;
 			boolean s = (block != null && block.statements != null);
 			print("<%s INITIALIZER: %s>",
-					(initializer.modifiers & Modifier.STATIC) > 0 ? "static" : "instance",
+					(initializer.modifiers & Modifier.STATIC) != 0 ? "static" : "instance",
 							s ? "filled" : "blank");
 			indent++;
 		}
 		
 		@Override public void endVisitInitializer(Node node, Initializer initializer) {
 			indent--;
-			print("</%s INITIALIZER>", (initializer.modifiers & Modifier.STATIC) > 0 ? "static" : "instance");
+			print("</%s INITIALIZER>", (initializer.modifiers & Modifier.STATIC) != 0 ? "static" : "instance");
 		}
 		
 		@Override public void visitField(Node node, FieldDeclaration field) {
