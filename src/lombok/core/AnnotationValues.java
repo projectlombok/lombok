@@ -183,7 +183,7 @@ public class AnnotationValues<A extends Annotation> {
 		}
 		
 		if ( expected == String.class ) {
-			if ( guess instanceof String ) return expected;
+			if ( guess instanceof String ) return guess;
 		}
 		
 		if ( Enum.class.isAssignableFrom(expected) ) {
