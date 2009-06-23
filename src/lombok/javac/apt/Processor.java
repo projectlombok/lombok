@@ -56,9 +56,15 @@ public class Processor extends AbstractProcessor {
 		
 		for ( JCCompilationUnit unit : units.keySet() ) asts.add(new JavacAST(trees, processingEnv, unit));
 		
+		handlers.skipPrintAST();
 		for ( JavacAST ast : asts ) {
 			ast.traverse(new AnnotationVisitor());
 			handlers.callASTVisitors(ast);
+		}
+		
+		handlers.skipAllButPrintAST();
+		for ( JavacAST ast : asts ) {
+			ast.traverse(new AnnotationVisitor());
 		}
 		return false;
 	}

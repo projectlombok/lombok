@@ -2,13 +2,16 @@ package lombok.javac.handlers;
 
 import java.lang.reflect.Modifier;
 
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.util.List;
 
 import lombok.AccessLevel;
 import lombok.core.TransformationsUtil;
+import lombok.core.AST.Kind;
 import lombok.javac.JavacAST;
 
 class PKG {
@@ -65,5 +68,38 @@ class PKG {
 		case PROTECTED:
 			return Modifier.PROTECTED;
 		}
+	}
+	
+	static void injectMethod(JavacAST.Node typeNode, JCMethodDecl method) {
+		JCClassDecl type = (JCClassDecl) typeNode.get();
+		
+		if ( method.getName().contentEquals("<init>") ) {
+			//Scan for default constructor, and remove it.
+			int idx = 0;
+			for ( JCTree def : type.defs ) {
+				if ( def instanceof JCMethodDecl ) {
+					if ( (((JCMethodDecl)def).mods.flags & Flags.GENERATEDCONSTR) != 0 ) {
+						JavacAST.Node tossMe = typeNode.getNodeFor(def);
+						if ( tossMe != null ) tossMe.up().removeChild(tossMe);
+						type.defs = addAllButOne(type.defs, idx);
+						break;
+					}
+				}
+				idx++;
+			}
+		}
+		
+		type.defs = type.defs.append(method);
+		
+		typeNode.add(method, Kind.METHOD).recursiveSetHandled();
+	}
+	
+	private static List<JCTree> addAllButOne(List<JCTree> defs, int idx) {
+		List<JCTree> out = List.nil();
+		int i = 0;
+		for ( JCTree def : defs ) {
+			if ( i++ != idx ) out = out.append(def);
+		}
+		return out;
 	}
 }

@@ -1,7 +1,6 @@
 package lombok.javac.handlers;
 
 import static lombok.javac.handlers.PKG.*;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.core.AnnotationValues;
@@ -16,7 +15,6 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
@@ -75,14 +73,9 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 			//continue with creating the getter
 		}
 		
-		JCClassDecl javacClassTree = (JCClassDecl) fieldNode.up().get();
-		
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
 		
-		JCMethodDecl getterMethod = createGetter(access, fieldNode, fieldNode.getTreeMaker());
-		javacClassTree.defs = javacClassTree.defs.append(getterMethod);
-		
-		fieldNode.up().add(getterMethod, Kind.METHOD).recursiveSetHandled();
+		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker()));
 		
 		return true;
 	}

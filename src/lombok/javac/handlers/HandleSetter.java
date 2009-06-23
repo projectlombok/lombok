@@ -17,7 +17,6 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
@@ -78,14 +77,9 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 			//continue with creating the setter
 		}
 		
-		JCClassDecl javacClassTree = (JCClassDecl) fieldNode.up().get();
-		
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
 		
-		JCMethodDecl setterMethod = createSetter(access, fieldNode, fieldNode.getTreeMaker());
-		javacClassTree.defs = javacClassTree.defs.append(setterMethod);
-		
-		fieldNode.up().add(setterMethod, Kind.METHOD).recursiveSetHandled();
+		injectMethod(fieldNode.up(), createSetter(access, fieldNode, fieldNode.getTreeMaker()));
 		
 		return true;
 	}
@@ -98,7 +92,7 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		
 		JCBlock methodBody = treeMaker.Block(0, List.<JCStatement>of(treeMaker.Exec(assign)));
 		Name methodName = field.toName(toSetterName(fieldDecl));
-		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(0, List.<JCAnnotation>nil()), fieldDecl.name, fieldDecl.vartype, null);
+		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(0), fieldDecl.name, fieldDecl.vartype, null);
 		JCExpression methodType = treeMaker.Type(field.getSymbolTable().voidType);
 		
 		List<JCTypeParameter> methodGenericParams = List.nil();

@@ -13,6 +13,7 @@ import javax.annotation.processing.Messager;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 
+import lombok.core.PrintAST;
 import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
@@ -27,6 +28,7 @@ public class HandlerLibrary {
 	private final Map<String, AnnotationHandlerContainer<?>> annotationHandlers = new HashMap<String, AnnotationHandlerContainer<?>>();
 	private final Collection<JavacASTVisitor> visitorHandlers = new ArrayList<JavacASTVisitor>();
 	private final Messager messager;
+	private boolean skipPrintAST = true;
 	
 	public HandlerLibrary(Messager messager) {
 		this.messager = messager;
@@ -111,6 +113,8 @@ public class HandlerLibrary {
 		String rawType = annotation.annotationType.toString();
 		boolean handled = false;
 		for ( String fqn : resolver.findTypeMatches(node, rawType) ) {
+			boolean isPrintAST = fqn.equals(PrintAST.class.getName());
+			if ( isPrintAST == skipPrintAST ) continue;
 			AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
 			if ( container == null ) continue;
 			
@@ -136,5 +140,13 @@ public class HandlerLibrary {
 	
 	public boolean hasHandlerFor(TypeElement annotationType) {
 		return annotationHandlers.containsKey(annotationType.getQualifiedName().toString());
+	}
+	
+	public void skipPrintAST() {
+		skipPrintAST = true;
+	}
+	
+	public void skipAllButPrintAST() {
+		skipPrintAST = false;
 	}
 }
