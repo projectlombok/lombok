@@ -1,3 +1,10 @@
+## Eclipse insertion point for newly generated code
+
+We need to figure out which of the bodyStart/bodyDeclarationStart/sourceStart blocks are used as where insertions happen, and set it to the entire line of a field and not just the annotation.
+
+Don't forget to extend past the opening brace for @Data!
+
+
 ## javadoc
 
 Either just let people run lombokc and javadoc that, -or-, use a doclet and presumptively cast our way into javadoc's AST.
