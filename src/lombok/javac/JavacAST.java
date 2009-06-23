@@ -69,7 +69,7 @@ public class JavacAST extends AST<JCTree> {
 	}
 	
 	private void traverseChildren(JavacASTVisitor visitor, Node node) {
-		for ( Node child : node.down() ) {
+		for ( Node child : new ArrayList<Node>(node.down()) ) {
 			child.traverse(visitor);
 		}
 	}
@@ -357,7 +357,7 @@ public class JavacAST extends AST<JCTree> {
 		/** {@inheritDoc} */
 		@SuppressWarnings("unchecked")
 		@Override public Collection<Node> down() {
-			return (Collection<Node>) children;
+			return (Collection<Node>) super.down();
 		}
 		
 		public void addError(String message) {

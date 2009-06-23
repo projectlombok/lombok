@@ -134,7 +134,7 @@ public abstract class AST<N> {
 		}
 		
 		public Collection<? extends Node> down() {
-			return children;
+			return new ArrayList<Node>(children);
 		}
 		
 		public boolean isHandled() {
@@ -154,11 +154,16 @@ public abstract class AST<N> {
 			return fileName;
 		}
 		
-		public Node add(N newChild, Kind kind) {
+		@SuppressWarnings("unchecked") public Node add(N newChild, Kind kind) {
 			Node n = buildTree(newChild, kind);
 			if ( n == null ) return null;
 			n.parent = this;
+			((List)children).add(n);
 			return n;
+		}
+		
+		public void removeChild(Node child) {
+			children.remove(child);
 		}
 		
 		public Node recursiveSetHandled() {

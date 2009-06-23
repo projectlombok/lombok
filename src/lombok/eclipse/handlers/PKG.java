@@ -135,7 +135,9 @@ class PKG {
 				for ( int i = 0 ; i < parent.methods.length ; i++ ) {
 					if ( parent.methods[i] instanceof ConstructorDeclaration &&
 							(parent.methods[i].bits & ASTNode.IsDefaultConstructor) != 0 ) {
+						EclipseAST.Node tossMe = type.getNodeFor(parent.methods[i]);
 						parent.methods[i] = method;
+						if ( tossMe != null ) tossMe.up().removeChild(tossMe);
 						injectionComplete = true;
 						break;
 					}

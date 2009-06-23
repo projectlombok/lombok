@@ -256,7 +256,7 @@ public class EclipseAST extends AST<ASTNode> {
 		/** {@inheritDoc} */
 		@SuppressWarnings("unchecked")
 		@Override public Collection<Node> down() {
-			return (Collection<Node>) children;
+			return (Collection<Node>) super.down();
 		}
 		
 		/** {@inheritDoc} */
