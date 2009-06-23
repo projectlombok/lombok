@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if [ "$1" == "run" ]; then
+	javac -cp ~/foo/lombok.jar ~/foo/*.java
+else
+	ant && cp dist/lombok.jar ~/foo && javac -cp ~/foo/lombok.jar ~/foo/*.java
+fi
+
+
+
