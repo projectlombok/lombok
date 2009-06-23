@@ -2,8 +2,10 @@ package lombok.eclipse.handlers;
 
 import static lombok.eclipse.handlers.PKG.*;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import lombok.AccessLevel;
@@ -15,6 +17,8 @@ import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
+import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
@@ -28,6 +32,7 @@ import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
@@ -35,10 +40,14 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
+import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
 import org.mangosdk.spi.ProviderFor;
 
 @ProviderFor(EclipseAnnotationHandler.class)
@@ -76,9 +85,11 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		case NOT_EXISTS:
 			MethodDeclaration toString = createToString(typeNode, nodesForConstructorAndToString, ast);
 			injectMethod(typeNode, toString);
-			break;
+			//fallthrough
 		case EXISTS_BY_LOMBOK:
-			injectScopeIntoToString((MethodDeclaration) getExistingLombokMethod("toString", typeNode).get(), typeDecl);
+//			TypeBinding javaLangString = null;
+//			if ( typeDecl.scope != null ) javaLangString = typeDecl.scope.getJavaLangString();
+//			fixMethodBinding(getExistingLombokMethod("toString", typeNode), javaLangString, Collections.<Node>emptyList());
 		}
 		
 		switch ( constructorExists(typeNode) ) {
@@ -86,7 +97,12 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			ConstructorDeclaration constructor = createConstructor(
 					ann.staticConstructor().isEmpty(), typeNode, nodesForConstructorAndToString, ast);
 			injectMethod(typeNode, constructor);
-			break;
+			//fallthrough
+		case EXISTS_BY_LOMBOK:
+//			constructor = createConstructor(
+//					ann.staticConstructor().isEmpty(), typeNode, nodesForConstructorAndToString, ast);
+//			injectScopeIntoConstructor(constructor, nodesForConstructorAndToString, typeDecl);
+//			fixMethodBinding(getExistingLombokConstructor(typeNode), typeDecl.binding, nodesForConstructorAndToString);
 		}
 		
 		if ( !ann.staticConstructor().isEmpty() ) {
@@ -95,25 +111,17 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 				MethodDeclaration staticConstructor = createStaticConstructor(
 						ann.staticConstructor(), typeNode, nodesForConstructorAndToString, ast);
 				injectMethod(typeNode, staticConstructor);
-				break;
+				//fallthrough
 			case EXISTS_BY_LOMBOK:
-				injectScopeIntoStaticConstructor((MethodDeclaration) getExistingLombokMethod(
-						ann.staticConstructor(), typeNode).get(),
-						nodesForConstructorAndToString, typeDecl);
+//				fixMethodBinding(getExistingLombokMethod(ann.staticConstructor(), typeNode), typeDecl.binding, nodesForConstructorAndToString);
+//				injectScopeIntoStaticConstructor((MethodDeclaration) getExistingLombokMethod(
+//						ann.staticConstructor(), typeNode).get(),
+//						nodesForConstructorAndToString, typeDecl);
 			}
 		}
 		
 		//TODO generate hashCode, equals.
 		return false;
-	}
-	
-	private void injectScopeIntoToString(MethodDeclaration method, TypeDeclaration typeDecl) {
-		if ( typeDecl.scope != null ) {
-			method.scope = new MethodScope(typeDecl.scope, method, false);
-			method.returnType.resolvedType = typeDecl.scope.getJavaLangString();
-			method.binding = new MethodBinding(method.modifiers,
-					method.selector, typeDecl.scope.getJavaLangString(), null, null, typeDecl.binding);
-		}
 	}
 	
 	private MethodDeclaration createToString(Node type, Collection<Node> fields, ASTNode pos) {
@@ -142,14 +150,12 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		
 		MethodDeclaration method = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		method.modifiers = PKG.toModifier(AccessLevel.PUBLIC);
-		method.returnType = Eclipse.TYPEREF_JAVA_LANG_STRING;
+		method.returnType = new QualifiedTypeReference(TypeConstants.JAVA_LANG_STRING, new long[] {0, 0, 0});
 		method.annotations = null;
 		method.arguments = null;
 		method.selector = "toString".toCharArray();
-		method.binding = null;
 		method.thrownExceptions = null;
 		method.typeParameters = null;
-		injectScopeIntoToString(method, (TypeDeclaration) type.get());
 		method.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = pos.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = pos.sourceEnd;
@@ -192,32 +198,18 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		return constructor;
 	}
 	
-	private void injectScopeIntoStaticConstructor(MethodDeclaration constructor, Collection<Node> fields, TypeDeclaration typeDecl) {
-		if ( typeDecl.scope != null ) {
-			constructor.scope = new MethodScope(typeDecl.scope, constructor, false);
-//			constructor.binding = new MethodBinding(constructor.modifiers,
-//					constructor.selector, null, null, null, typeDecl.binding);
-			constructor.returnType.resolvedType = typeDecl.binding;
-//			TypeBinding[] bindings = new TypeBinding[fields.size()];
-//			int idx = 0;
-//			for ( Node field : fields ) bindings[idx++] = ((FieldDeclaration)field.get()).type.resolvedType;
-//			constructor.binding.parameters = bindings;
-		}
-	}
-	
 	private MethodDeclaration createStaticConstructor(String name, Node type, Collection<Node> fields, ASTNode pos) {
 		long p = (long)pos.sourceStart << 32 | pos.sourceEnd;
 		
 		MethodDeclaration constructor = new MethodDeclaration(
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		
-		constructor.modifiers = PKG.toModifier(AccessLevel.PUBLIC);
+		constructor.modifiers = PKG.toModifier(AccessLevel.PUBLIC) | Modifier.STATIC;
 		constructor.returnType = new SingleTypeReference(((TypeDeclaration)type.get()).name, p);
 		constructor.annotations = null;
 		constructor.selector = name.toCharArray();
 		constructor.thrownExceptions = null;
 		constructor.typeParameters = null;
-		injectScopeIntoStaticConstructor(constructor, fields, (TypeDeclaration) type.get());
 		constructor.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
 		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = pos.sourceStart;
 		constructor.bodyEnd = constructor.declarationSourceEnd = constructor.sourceEnd = pos.sourceEnd;
@@ -236,7 +228,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		
 		statement.arguments = assigns.toArray(new Expression[assigns.size()]);
 		constructor.arguments = args.toArray(new Argument[args.size()]);
-		constructor.statements = new Statement[] { statement };
+		constructor.statements = new Statement[] { new ReturnStatement(statement, (int)(p >> 32), (int)p) };
 		return constructor;
 	}
 	

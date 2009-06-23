@@ -28,10 +28,8 @@ import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.Literal;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
-import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
-import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.osgi.framework.Bundle;
 
@@ -42,8 +40,6 @@ public class Eclipse {
 	}
 	
 	private static final String DEFAULT_BUNDLE = "org.eclipse.jdt.core";
-	public static final TypeReference TYPEREF_JAVA_LANG_STRING = new QualifiedTypeReference(
-			TypeConstants.JAVA_LANG_STRING, new long[] {0, 0, 0});
 	
 	public static void error(CompilationUnitDeclaration cud, String message) {
 		error(cud, message, DEFAULT_BUNDLE, null);

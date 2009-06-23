@@ -22,8 +22,6 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
-import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
 import org.mangosdk.spi.ProviderFor;
 
 @ProviderFor(EclipseAnnotationHandler.class)
@@ -69,9 +67,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		
 		switch ( methodExists(getterName, fieldNode) ) {
 		case EXISTS_BY_LOMBOK:
-			Node methodNode = getExistingLombokMethod(getterName, fieldNode);
-			injectScopeIntoGetter(modifier, field, (MethodDeclaration)methodNode.get(), (TypeDeclaration) methodNode.up().get());
-			return false;
+			return true;
 		case EXISTS_BY_USER:
 			if ( whineIfExists ) errorNode.addWarning(
 					String.format("Not generating %s(): A method with that name already exists",  getterName));
@@ -86,19 +82,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		
 		injectMethod(fieldNode.up(), method);
 		
-		return false;
-	}
-	
-	private void injectScopeIntoGetter(int modifier, FieldDeclaration field, MethodDeclaration method, TypeDeclaration parent) {
-		if ( parent.scope != null ) {
-			if ( method.binding != null ) {
-				method.binding.returnType = field.type.resolvedType;
-			} else {
-				method.scope = new MethodScope(parent.scope, method, false);
-				method.returnType.resolvedType = field.type.resolvedType;
-				method.binding = new MethodBinding(modifier, method.selector, method.returnType.resolvedType, null, null, parent.binding);
-			}
-		}
+		return true;
 	}
 	
 	private MethodDeclaration generateGetter(TypeDeclaration parent, FieldDeclaration field, String name,
@@ -112,7 +96,6 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		method.binding = null;
 		method.thrownExceptions = null;
 		method.typeParameters = null;
-		injectScopeIntoGetter(modifier, field, method, parent);
 		method.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
 		Expression fieldExpression = new SingleNameReference(field.name, (field.declarationSourceStart << 32) | field.declarationSourceEnd);
 		Statement returnStatement = new ReturnStatement(fieldExpression, field.sourceStart, field.sourceEnd);
