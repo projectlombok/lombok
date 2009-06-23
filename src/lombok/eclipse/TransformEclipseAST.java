@@ -21,7 +21,7 @@ import org.eclipse.jdt.internal.compiler.parser.Parser;
  * Note that, for any Method body, if Bit24 is set, the eclipse parser has been patched to never attempt to
  * (re)parse it. You should set Bit24 on any MethodDeclaration object you inject into the AST:
  * 
- * <code>methodDeclaration.bits |= 0x80000;</code>
+ * <code>methodDeclaration.bits |= ASTNode.Bit24; //0x800000</code>
  * 
  * @author rzwitserloot
  * @author rspilker
