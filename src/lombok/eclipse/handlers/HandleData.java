@@ -40,13 +40,16 @@ import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.IntLiteral;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.NameReference;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.Reference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
@@ -119,7 +122,11 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			injectMethod(typeNode, equals);
 		}
 		
-		//TODO generate hashCode, equals.
+		if ( methodExists("hashCode", typeNode) == MethodExistsResult.NOT_EXISTS ) {
+			MethodDeclaration hashCode = createHashCode(typeNode, nodesForEquality, ast);
+			injectMethod(typeNode, hashCode);
+		}
+		
 		return false;
 	}
 	
@@ -135,13 +142,27 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		boolean first = true;
 		Expression current = new StringLiteral(prefix, 0, 0, 0);
 		for ( Node field : fields ) {
-			char[] fName = ((FieldDeclaration)field.get()).name;
-			if ( fName == null ) continue;
+			FieldDeclaration f = (FieldDeclaration)field.get();
+			if ( f.name == null || f.type == null ) continue;
 			if ( !first ) {
 				current = new BinaryExpression(current, new StringLiteral(infix, 0, 0, 0), PLUS);
 			}
 			else first = false;
-			current = new BinaryExpression(current, new SingleNameReference(fName, p), PLUS);
+			
+			Expression ex;
+			if ( f.type.dimensions() > 0 ) {
+				MessageSend arrayToString = new MessageSend();
+				arrayToString.receiver = generateQualifiedNameRef(TypeConstants.JAVA, TypeConstants.UTIL, "Arrays".toCharArray());
+				arrayToString.arguments = new Expression[] { new SingleNameReference(f.name, p) };
+				if ( f.type.dimensions() > 1 || !BUILT_IN_TYPES.contains(new String(f.type.getLastToken())) ) {
+					arrayToString.selector = "deepToString".toCharArray();
+				} else {
+					arrayToString.selector = "toString".toCharArray();
+				}
+				ex = arrayToString;
+			} else ex = new SingleNameReference(f.name, p);
+			
+			current = new BinaryExpression(current, ex, PLUS);
 		}
 		current = new BinaryExpression(current, new StringLiteral(suffix, 0, 0, 0), PLUS);
 		
@@ -150,7 +171,9 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		MethodDeclaration method = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		method.modifiers = PKG.toModifier(AccessLevel.PUBLIC);
 		method.returnType = new QualifiedTypeReference(TypeConstants.JAVA_LANG_STRING, new long[] {0, 0, 0});
-		method.annotations = null;
+		method.annotations = new Annotation[] {
+				new MarkerAnnotation(new QualifiedTypeReference(TypeConstants.JAVA_LANG_OVERRIDE, new long[] { 0, 0, 0}), 0)
+		};
 		method.arguments = null;
 		method.selector = "toString".toCharArray();
 		method.thrownExceptions = null;
@@ -243,13 +266,14 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			"byte", "short", "int", "long", "char", "boolean", "double", "float")));
 	
 	private MethodDeclaration createEquals(Node type, Collection<Node> fields, ASTNode pos) {
-		long p = (long)pos.sourceStart << 32 | pos.sourceEnd;
 		MethodDeclaration method = new MethodDeclaration(
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		
 		method.modifiers = PKG.toModifier(AccessLevel.PUBLIC);
 		method.returnType = TypeReference.baseTypeReference(TypeIds.T_boolean, 0);
-		method.annotations = null;
+		method.annotations = new Annotation[] {
+				new MarkerAnnotation(new QualifiedTypeReference(TypeConstants.JAVA_LANG_OVERRIDE, new long[] { 0, 0, 0}), 0)
+		};
 		method.selector = "equals".toCharArray();
 		method.thrownExceptions = null;
 		method.typeParameters = null;
@@ -390,23 +414,145 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		return new IfStatement(ifFloatCompareIsNot0, returnFalse, 0, 0);
 	}
 	
-	private QualifiedNameReference generateQualifiedNameRef(char[]... varNames) {
-		return new QualifiedNameReference(varNames, new long[varNames.length], 0, 0);
+	private Reference generateFieldReference(char[] fieldName) {
+		FieldReference thisX = new FieldReference(("this." + new String(fieldName)).toCharArray(), 0);
+		thisX.receiver = new ThisReference(0, 0);
+		thisX.token = fieldName;
+		return thisX;
+	}
+	
+	private NameReference generateQualifiedNameRef(char[]... varNames) {
+		if ( varNames.length > 1 )
+			return new QualifiedNameReference(varNames, new long[varNames.length], 0, 0);
+		else return new SingleNameReference(varNames[0], 0);
 	}
 	
 	private MethodDeclaration createHashCode(Node type, Collection<Node> fields, ASTNode pos) {
-		//booleans: conditionalexpression that bounces between 1231 and 1237.
-		//longs: (int) (lng ^ (lng >>> 32));
-		//doubles and floats: Double.doubleToLongBits, then as long.
+		MethodDeclaration method = new MethodDeclaration(
+				((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		
-		//local final var PRIME = IntLiteral(primeNumber)
-		//local final var RESULT = IntLiteral(1)
+		method.modifiers = PKG.toModifier(AccessLevel.PUBLIC);
+		method.returnType = TypeReference.baseTypeReference(TypeIds.T_int, 0);
+		method.annotations = new Annotation[] {
+				new MarkerAnnotation(new QualifiedTypeReference(TypeConstants.JAVA_LANG_OVERRIDE, new long[] { 0, 0, 0}), 0)
+		};
+		method.selector = "hashCode".toCharArray();
+		method.thrownExceptions = null;
+		method.typeParameters = null;
+		method.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
+		method.bodyStart = method.declarationSourceStart = method.sourceStart = pos.sourceStart;
+		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = pos.sourceEnd;
+		method.arguments = null;
 		
-		//    Assignment("RESULT", BinaryExpression("+", BinaryExpression("*", "PRIME", "RESULT"), "name")
+		List<Statement> statements = new ArrayList<Statement>();
+		List<Expression> intoResult = new ArrayList<Expression>();
 		
-		//    add = ConditionalExpression(EqualExpression("name", NullLiteral), IntLiteral(0), MessageSend("name", "hashCode()"))
-		//    Assignment("RESULT", BinaryExpression("+", BinaryExpression("*", "PRIME", "RESULT"), add);
+		final char[] PRIME = "PRIME".toCharArray();
+		final char[] RESULT = "result".toCharArray();
 		
-		return null;
+		/* final int PRIME = 31; */ {
+			LocalDeclaration primeDecl = new LocalDeclaration(PRIME, 0 ,0);
+			primeDecl.modifiers = Modifier.FINAL;
+			primeDecl.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
+			primeDecl.initialization = new IntLiteral("31".toCharArray(), 0, 0);
+			statements.add(primeDecl);
+		}
+		
+		/* int result = 1; */ {
+			LocalDeclaration resultDecl = new LocalDeclaration(RESULT, 0, 0);
+			resultDecl.initialization = new IntLiteral("1".toCharArray(), 0, 0);
+			resultDecl.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
+			statements.add(resultDecl);
+		}
+		
+		int tempCounter = 0;
+		for ( Node field : fields ) {
+			FieldDeclaration f = (FieldDeclaration) field.get();
+			char[] token = f.type.getLastToken();
+			if ( f.type.dimensions() == 0 && token != null ) {
+				if ( Arrays.equals(TypeConstants.FLOAT, token) ) {
+					/* Float.floatToIntBits(fieldName) */
+					MessageSend floatToIntBits = new MessageSend();
+					floatToIntBits.receiver = generateQualifiedNameRef(TypeConstants.JAVA_LANG_FLOAT);
+					floatToIntBits.selector = "floatToIntBits".toCharArray();
+					floatToIntBits.arguments = new Expression[] { generateFieldReference(f.name) };
+					intoResult.add(floatToIntBits);
+				} else if ( Arrays.equals(TypeConstants.DOUBLE, token) ) {
+					/* longToIntForHashCode(Double.doubleToLongBits(fieldName)) */
+					MessageSend doubleToLongBits = new MessageSend();
+					doubleToLongBits.receiver = generateQualifiedNameRef(TypeConstants.JAVA_LANG_DOUBLE);
+					doubleToLongBits.selector = "doubleToLongBits".toCharArray();
+					doubleToLongBits.arguments = new Expression[] { generateFieldReference(f.name) };
+					final char[] tempName = ("temp" + ++tempCounter).toCharArray();
+					LocalDeclaration tempVar = new LocalDeclaration(tempName, 0, 0);
+					tempVar.initialization = doubleToLongBits;
+					tempVar.type = TypeReference.baseTypeReference(TypeIds.T_long, 0);
+					tempVar.modifiers = Modifier.FINAL;
+					statements.add(tempVar);
+					intoResult.add(longToIntForHashCode(
+							new SingleNameReference(tempName, 0), new SingleNameReference(tempName, 0)));
+				} else if ( Arrays.equals(TypeConstants.BOOLEAN, token) ) {
+					/* booleanField ? 1231 : 1237 */
+					intoResult.add(new ConditionalExpression(
+							generateFieldReference(f.name),
+							new IntLiteral("1231".toCharArray(), 0, 0),
+							new IntLiteral("1237".toCharArray(), 0 ,0)));
+				} else if ( Arrays.equals(TypeConstants.LONG, token) ) {
+					intoResult.add(longToIntForHashCode(generateFieldReference(f.name), generateFieldReference(f.name)));
+				} else if ( BUILT_IN_TYPES.contains(new String(token)) ) {
+					intoResult.add(generateFieldReference(f.name));
+				} else /* objects */ {
+					/* this.fieldName == null ? 0 : this.fieldName.hashCode() */
+					MessageSend hashCodeCall = new MessageSend();
+					hashCodeCall.receiver = generateFieldReference(f.name);
+					hashCodeCall.selector = "hashCode".toCharArray();
+					EqualExpression objIsNull = new EqualExpression(
+							generateFieldReference(f.name),
+							new NullLiteral(0, 0),
+							OperatorIds.EQUAL_EQUAL);
+					ConditionalExpression nullOrHashCode = new ConditionalExpression(
+							objIsNull,
+							new IntLiteral("0".toCharArray(), 0, 0),
+							hashCodeCall);
+					intoResult.add(nullOrHashCode);
+				}
+			} else if ( f.type.dimensions() > 0 && token != null ) {
+				/* Arrays.deepHashCode(array)  //just hashCode for simple arrays */
+				MessageSend arraysHashCodeCall = new MessageSend();
+				arraysHashCodeCall.receiver = generateQualifiedNameRef(TypeConstants.JAVA, TypeConstants.UTIL, "Arrays".toCharArray());
+				if ( f.type.dimensions() > 1 || !BUILT_IN_TYPES.contains(new String(token)) ) {
+					arraysHashCodeCall.selector = "deepHashCode".toCharArray();
+				} else {
+					arraysHashCodeCall.selector = "hashCode".toCharArray();
+				}
+				arraysHashCodeCall.arguments = new Expression[] { generateFieldReference(f.name) };
+				intoResult.add(arraysHashCodeCall);
+			}
+		}
+		
+		/* fold each intoResult entry into:
+		   result = result * PRIME + (item); */ {
+			for ( Expression ex : intoResult ) {
+				BinaryExpression multiplyByPrime = new BinaryExpression(new SingleNameReference(RESULT, 0),
+						new SingleNameReference(PRIME, 0), OperatorIds.MULTIPLY);
+				BinaryExpression addItem = new BinaryExpression(multiplyByPrime, ex, OperatorIds.PLUS);
+				statements.add(new Assignment(new SingleNameReference(RESULT, 0), addItem, 0));
+			}
+		}
+		
+		/* return result; */ {
+			statements.add(new ReturnStatement(new SingleNameReference(RESULT, 0), 0, 0));
+		}
+		method.statements = statements.toArray(new Statement[statements.size()]);
+		return method;
+	}
+	
+	/** Give 2 clones! */
+	private Expression longToIntForHashCode(Reference ref1, Reference ref2) {
+		BinaryExpression higherBits = new BinaryExpression(
+				ref1, new IntLiteral("32".toCharArray(), 0, 0),
+				OperatorIds.UNSIGNED_RIGHT_SHIFT);
+		BinaryExpression xorParts = new BinaryExpression(ref2, higherBits, OperatorIds.XOR);
+		return new CastExpression(xorParts, TypeReference.baseTypeReference(TypeIds.T_int, 0));
 	}
 }
