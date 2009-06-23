@@ -6,6 +6,7 @@ import java.io.PrintStream;
 
 import lombok.javac.JavacAST.Node;
 
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -145,8 +146,13 @@ public interface JavacASTVisitor {
 		}
 		
 		@Override public void visitMethod(Node node, JCMethodDecl method) {
-			String type = method.name.contentEquals("<init>") ? "CONSTRUCTOR" : "METHOD";
-			print("<%s %s>", type, method.name);
+			final String type;
+			if ( method.name.contentEquals("<init>") ) {
+				if ( (method.mods.flags & Flags.GENERATEDCONSTR) != 0 ) {
+					type = "DEFAULTCONSTRUCTOR";
+				} else type = "CONSTRUCTOR";
+			} else type = "METHOD";
+			print("<%s %s> returns: %s", type, method.name, method.restype);
 			indent++;
 		}
 		
@@ -155,9 +161,8 @@ public interface JavacASTVisitor {
 		}
 		
 		@Override public void endVisitMethod(Node node, JCMethodDecl method) {
-			String type = method.name.contentEquals("<init>") ? "CONSTRUCTOR" : "METHOD";
 			indent--;
-			print("</%s %s>", type, method.name);
+			print("</%s %s>", "XMETHOD", method.name);
 		}
 		
 		@Override public void visitMethodArgument(Node node, JCVariableDecl arg, JCMethodDecl method) {
