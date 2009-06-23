@@ -59,7 +59,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		}
 		
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
-		TypeReference fieldType = field.type;
+		TypeReference fieldType = Eclipse.copyType(field.type);
 		String getterName = TransformationsUtil.toGetterName(
 				new String(field.name), nameEquals(fieldType.getTypeName(), "boolean"));
 		
@@ -89,7 +89,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 			int modifier, ASTNode pos) {
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
 		method.modifiers = modifier;
-		method.returnType = field.type;
+		method.returnType = Eclipse.copyType(field.type);
 		method.annotations = null;
 		method.arguments = null;
 		method.selector = name.toCharArray();

@@ -22,14 +22,22 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
+import org.eclipse.jdt.internal.compiler.ast.ArrayQualifiedTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.ArrayTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.Literal;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
+import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
+import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.osgi.framework.Bundle;
 
@@ -74,6 +82,91 @@ public class Eclipse {
 			first = false;
 		}
 		return sb.toString();
+	}
+	
+	public static TypeParameter[] copyTypeParams(TypeParameter[] params) {
+		if ( params == null ) return null;
+		TypeParameter[] out = new TypeParameter[params.length];
+		int idx = 0;
+		for ( TypeParameter param : params ) {
+			TypeParameter o = new TypeParameter();
+			o.annotations = param.annotations;
+			o.bits = param.bits;
+			o.modifiers = param.modifiers;
+			o.name = param.name;
+			o.type = copyType(param.type);
+			if ( param.bounds != null ) {
+				TypeReference[] b = new TypeReference[param.bounds.length];
+				int idx2 = 0;
+				for ( TypeReference ref : param.bounds ) b[idx2++] = copyType(ref);
+				o.bounds = b;
+			}
+			out[idx++] = o;
+		}
+		return out;
+	}
+	
+	public static TypeReference copyType(TypeReference ref) {
+		if ( ref instanceof QualifiedTypeReference ) {
+			QualifiedTypeReference iRef = (QualifiedTypeReference) ref;
+			return new QualifiedTypeReference(iRef.tokens, iRef.sourcePositions);
+		}
+		
+		if ( ref instanceof ArrayQualifiedTypeReference ) {
+			ArrayQualifiedTypeReference iRef = (ArrayQualifiedTypeReference) ref;
+			return new ArrayQualifiedTypeReference(iRef.tokens, iRef.dimensions(), iRef.sourcePositions);
+		}
+		
+		if ( ref instanceof ParameterizedQualifiedTypeReference ) {
+			ParameterizedQualifiedTypeReference iRef = (ParameterizedQualifiedTypeReference) ref;
+			TypeReference[][] args = null;
+			if ( iRef.typeArguments != null ) {
+				args = new TypeReference[iRef.typeArguments.length][];
+				int idx = 0;
+				for ( TypeReference[] inRefArray : iRef.typeArguments ) {
+					if ( inRefArray == null ) args[idx++] = null;
+					else {
+						TypeReference[] outRefArray = new TypeReference[inRefArray.length];
+						int idx2 = 0;
+						for ( TypeReference inRef : inRefArray ) {
+							outRefArray[idx2++] = copyType(inRef);
+						}
+						args[idx++] = outRefArray;
+					}
+				}
+			}
+			return new ParameterizedQualifiedTypeReference(iRef.tokens, args, iRef.dimensions(), iRef.sourcePositions);
+		}
+		
+		if ( ref instanceof SingleTypeReference ) {
+			SingleTypeReference iRef = (SingleTypeReference) ref;
+			return new SingleTypeReference(iRef.token, (long)iRef.sourceStart << 32 | iRef.sourceEnd);
+		}
+		
+		if ( ref instanceof ArrayTypeReference ) {
+			ArrayTypeReference iRef = (ArrayTypeReference) ref;
+			return new ArrayTypeReference(iRef.token, iRef.dimensions(), (long)iRef.sourceStart << 32 | iRef.sourceEnd);
+		}
+		
+		if ( ref instanceof ParameterizedSingleTypeReference ) {
+			ParameterizedSingleTypeReference iRef = (ParameterizedSingleTypeReference) ref;
+			TypeReference[] args = null;
+			if ( iRef.typeArguments != null ) {
+				args = new TypeReference[iRef.typeArguments.length];
+				int idx = 0;
+				for ( TypeReference inRef : iRef.typeArguments ) {
+					if ( inRef == null ) args[idx++] = null;
+					else args[idx++] = copyType(inRef);
+				}
+			}
+			return new ParameterizedSingleTypeReference(iRef.token, args, iRef.dimensions(), (long)iRef.sourceStart << 32 | iRef.sourceEnd);
+		}
+		
+		if ( ref instanceof Wildcard ) {
+			return new Wildcard(((Wildcard)ref).kind);
+		}
+		
+		return ref;
 	}
 	
 	public static boolean annotationTypeMatches(Class<? extends java.lang.annotation.Annotation> type, Node node) {

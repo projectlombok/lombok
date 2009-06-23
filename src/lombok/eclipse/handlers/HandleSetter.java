@@ -95,7 +95,7 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		method.modifiers = modifier;
 		method.returnType = TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		method.annotations = null;
-		Argument param = new Argument(field.name, pos, field.type, 0);
+		Argument param = new Argument(field.name, pos, Eclipse.copyType(field.type), 0);
 		method.arguments = new Argument[] { param };
 		method.selector = name.toCharArray();
 		method.binding = null;
