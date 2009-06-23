@@ -215,8 +215,8 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			args.add(new Argument(field.name, fieldPos, copyType(field.type), 0));
 		}
 		
-		constructor.statements = assigns.toArray(new Statement[assigns.size()]);
-		constructor.arguments = args.toArray(new Argument[args.size()]);
+		constructor.statements = assigns.isEmpty() ? null : assigns.toArray(new Statement[assigns.size()]);
+		constructor.arguments = args.isEmpty() ? null : args.toArray(new Argument[args.size()]);
 		return constructor;
 	}
 	
@@ -256,8 +256,8 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			args.add(new Argument(field.name, fieldPos, copyType(field.type), 0));
 		}
 		
-		statement.arguments = assigns.toArray(new Expression[assigns.size()]);
-		constructor.arguments = args.toArray(new Argument[args.size()]);
+		statement.arguments = assigns.isEmpty() ? null : assigns.toArray(new Expression[assigns.size()]);
+		constructor.arguments = args.isEmpty() ? null : args.toArray(new Argument[args.size()]);
 		constructor.statements = new Statement[] { new ReturnStatement(statement, (int)(p >> 32), (int)p) };
 		return constructor;
 	}
