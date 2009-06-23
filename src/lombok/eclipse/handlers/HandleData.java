@@ -38,6 +38,7 @@ import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
+import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
@@ -47,6 +48,7 @@ import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TrueLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
@@ -188,7 +190,15 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		
 		constructor.modifiers = PKG.toModifier(AccessLevel.PUBLIC) | Modifier.STATIC;
-		constructor.returnType = new SingleTypeReference(((TypeDeclaration)type.get()).name, p);
+		TypeDeclaration typeDecl = (TypeDeclaration) type.get();
+		if ( typeDecl.typeParameters != null && typeDecl.typeParameters.length > 0 ) {
+			TypeReference[] refs = new TypeReference[typeDecl.typeParameters.length];
+			int idx = 0;
+			for ( TypeParameter param : typeDecl.typeParameters ) {
+				refs[idx++] = new SingleTypeReference(param.name, 0);
+			}
+			constructor.returnType = new ParameterizedSingleTypeReference(typeDecl.name, refs, 0, p);
+		} else constructor.returnType = new SingleTypeReference(((TypeDeclaration)type.get()).name, p);
 		constructor.annotations = null;
 		constructor.selector = name.toCharArray();
 		constructor.thrownExceptions = null;

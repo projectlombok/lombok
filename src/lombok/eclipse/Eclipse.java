@@ -106,17 +106,17 @@ public class Eclipse {
 		return out;
 	}
 	
+	public static TypeReference[] copyTypes(TypeReference[] refs) {
+		if ( refs == null ) return null;
+		TypeReference[] outs = new TypeReference[refs.length];
+		int idx = 0;
+		for ( TypeReference ref : refs ) {
+			outs[idx++] = copyType(ref);
+		}
+		return outs;
+	}
+	
 	public static TypeReference copyType(TypeReference ref) {
-		if ( ref instanceof QualifiedTypeReference ) {
-			QualifiedTypeReference iRef = (QualifiedTypeReference) ref;
-			return new QualifiedTypeReference(iRef.tokens, iRef.sourcePositions);
-		}
-		
-		if ( ref instanceof ArrayQualifiedTypeReference ) {
-			ArrayQualifiedTypeReference iRef = (ArrayQualifiedTypeReference) ref;
-			return new ArrayQualifiedTypeReference(iRef.tokens, iRef.dimensions(), iRef.sourcePositions);
-		}
-		
 		if ( ref instanceof ParameterizedQualifiedTypeReference ) {
 			ParameterizedQualifiedTypeReference iRef = (ParameterizedQualifiedTypeReference) ref;
 			TypeReference[][] args = null;
@@ -138,14 +138,14 @@ public class Eclipse {
 			return new ParameterizedQualifiedTypeReference(iRef.tokens, args, iRef.dimensions(), iRef.sourcePositions);
 		}
 		
-		if ( ref instanceof SingleTypeReference ) {
-			SingleTypeReference iRef = (SingleTypeReference) ref;
-			return new SingleTypeReference(iRef.token, (long)iRef.sourceStart << 32 | iRef.sourceEnd);
+		if ( ref instanceof ArrayQualifiedTypeReference ) {
+			ArrayQualifiedTypeReference iRef = (ArrayQualifiedTypeReference) ref;
+			return new ArrayQualifiedTypeReference(iRef.tokens, iRef.dimensions(), iRef.sourcePositions);
 		}
 		
-		if ( ref instanceof ArrayTypeReference ) {
-			ArrayTypeReference iRef = (ArrayTypeReference) ref;
-			return new ArrayTypeReference(iRef.token, iRef.dimensions(), (long)iRef.sourceStart << 32 | iRef.sourceEnd);
+		if ( ref instanceof QualifiedTypeReference ) {
+			QualifiedTypeReference iRef = (QualifiedTypeReference) ref;
+			return new QualifiedTypeReference(iRef.tokens, iRef.sourcePositions);
 		}
 		
 		if ( ref instanceof ParameterizedSingleTypeReference ) {
@@ -162,8 +162,18 @@ public class Eclipse {
 			return new ParameterizedSingleTypeReference(iRef.token, args, iRef.dimensions(), (long)iRef.sourceStart << 32 | iRef.sourceEnd);
 		}
 		
+		if ( ref instanceof ArrayTypeReference ) {
+			ArrayTypeReference iRef = (ArrayTypeReference) ref;
+			return new ArrayTypeReference(iRef.token, iRef.dimensions(), (long)iRef.sourceStart << 32 | iRef.sourceEnd);
+		}
+		
 		if ( ref instanceof Wildcard ) {
 			return new Wildcard(((Wildcard)ref).kind);
+		}
+		
+		if ( ref instanceof SingleTypeReference ) {
+			SingleTypeReference iRef = (SingleTypeReference) ref;
+			return new SingleTypeReference(iRef.token, (long)iRef.sourceStart << 32 | iRef.sourceEnd);
 		}
 		
 		return ref;
