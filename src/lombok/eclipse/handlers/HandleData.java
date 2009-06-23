@@ -5,8 +5,12 @@ import static lombok.eclipse.handlers.PKG.*;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -25,6 +29,7 @@ import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.BinaryExpression;
 import org.eclipse.jdt.internal.compiler.ast.CastExpression;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.ExplicitConstructorCall;
@@ -33,12 +38,14 @@ import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
+import org.eclipse.jdt.internal.compiler.ast.IntLiteral;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
@@ -50,6 +57,8 @@ import org.eclipse.jdt.internal.compiler.ast.TrueLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.ast.UnaryExpression;
+import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
@@ -103,6 +112,11 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 						ann.staticConstructor(), typeNode, nodesForConstructorAndToString, ast);
 				injectMethod(typeNode, staticConstructor);
 			}
+		}
+		
+		if ( methodExists("equals", typeNode) == MethodExistsResult.NOT_EXISTS ) {
+			MethodDeclaration equals = createEquals(typeNode, nodesForEquality, ast);
+			injectMethod(typeNode, equals);
 		}
 		
 		//TODO generate hashCode, equals.
@@ -225,6 +239,9 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		return constructor;
 	}
 	
+	private static final Set<String> BUILT_IN_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
+			"byte", "short", "int", "long", "char", "boolean", "double", "float")));
+	
 	private MethodDeclaration createEquals(Node type, Collection<Node> fields, ASTNode pos) {
 		long p = (long)pos.sourceStart << 32 | pos.sourceEnd;
 		MethodDeclaration method = new MethodDeclaration(
@@ -281,20 +298,75 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		
 		char[] otherN = "other".toCharArray();
 		
-		//TODO fix generics raw type warnings by inserting Wildcards.
-		/* MyType other = (MyType) o; */ {
+		
+		TypeDeclaration typeDecl = (TypeDeclaration)type.get();
+		/* MyType<?> other = (MyType<?>) o; */ {
 			if ( !fields.isEmpty() ) {
 				LocalDeclaration other = new LocalDeclaration(otherN, 0, 0);
+				char[] typeName = typeDecl.name;
+				Expression targetType;
+				if ( typeDecl.typeParameters == null || typeDecl.typeParameters.length == 0 ) {
+					targetType = new SingleNameReference(((TypeDeclaration)type.get()).name, 0);
+					other.type = new SingleTypeReference(typeName, 0);
+				} else {
+					TypeReference[] typeArgs = new TypeReference[typeDecl.typeParameters.length];
+					for ( int i = 0 ; i < typeArgs.length ; i++ ) typeArgs[i] = new Wildcard(Wildcard.UNBOUND);
+					targetType = new ParameterizedSingleTypeReference(typeName, typeArgs, 0, 0);
+					other.type = new ParameterizedSingleTypeReference(typeName, copyTypes(typeArgs), 0, 0);
+				}
 				other.initialization = new CastExpression(
 						new SingleNameReference(new char[] { 'o' }, 0),
-						new SingleNameReference(((TypeDeclaration)type.get()).name, 0));
+						targetType);
+				statements.add(other);
 			}
 		}
 		
 		for ( Node field : fields ) {
 			FieldDeclaration f = (FieldDeclaration) field.get();
-			//compare if primitive, write per-primitive special code, otherwise use == null ? other == null ? .equals(other).
-			//TODO I LEFT IT HERE
+			char[] token = f.type.getLastToken();
+			if ( f.type.dimensions() == 0 && token != null ) {
+				if ( Arrays.equals(TypeConstants.FLOAT, token) ) {
+					statements.add(generateCompareFloatOrDouble(otherN, "Float".toCharArray(), f.name));
+				} else if ( Arrays.equals(TypeConstants.DOUBLE, token) ) {
+					statements.add(generateCompareFloatOrDouble(otherN, "Double".toCharArray(), f.name));
+				} else if ( BUILT_IN_TYPES.contains(new String(token)) ) {
+					EqualExpression fieldsNotEqual = new EqualExpression(
+							new SingleNameReference(f.name, 0),
+							generateQualifiedNameRef(otherN, f.name),
+							OperatorIds.NOT_EQUAL);
+					ReturnStatement returnStatement = new ReturnStatement(new FalseLiteral(0, 0), 0, 0);
+					statements.add(new IfStatement(fieldsNotEqual, returnStatement, 0, 0));
+				} else /* objects */ {
+					EqualExpression fieldIsNull = new EqualExpression(
+							new SingleNameReference(f.name, 0),
+							new NullLiteral(0, 0), OperatorIds.EQUAL_EQUAL);
+					EqualExpression otherFieldIsntNull = new EqualExpression(
+							generateQualifiedNameRef(otherN, f.name),
+							new NullLiteral(0, 0), OperatorIds.NOT_EQUAL);
+					MessageSend equalsCall = new MessageSend();
+					equalsCall.receiver = new SingleNameReference(f.name, 0);
+					equalsCall.selector = "equals".toCharArray();
+					equalsCall.arguments = new Expression[] { generateQualifiedNameRef(otherN, f.name) };
+					UnaryExpression fieldsNotEqual = new UnaryExpression(equalsCall, OperatorIds.NOT);
+					ConditionalExpression fullEquals = new ConditionalExpression(fieldIsNull, otherFieldIsntNull, fieldsNotEqual);
+					ReturnStatement returnStatement = new ReturnStatement(new FalseLiteral(0, 0), 0, 0);
+					statements.add(new IfStatement(fullEquals, returnStatement, 0, 0));
+				}
+			} else if ( f.type.dimensions() > 0 && token != null ) {
+				MessageSend arraysEqualCall = new MessageSend();
+				arraysEqualCall.receiver = generateQualifiedNameRef(TypeConstants.JAVA, TypeConstants.UTIL, "Arrays".toCharArray());
+				if ( f.type.dimensions() > 1 || !BUILT_IN_TYPES.contains(new String(token)) ) {
+					arraysEqualCall.selector = "deepEquals".toCharArray();
+				} else {
+					arraysEqualCall.selector = "equals".toCharArray();
+				}
+				arraysEqualCall.arguments = new Expression[] {
+						new SingleNameReference(f.name, 0),
+						generateQualifiedNameRef(otherN, f.name) };
+				UnaryExpression arraysNotEqual = new UnaryExpression(arraysEqualCall, OperatorIds.NOT);
+				ReturnStatement returnStatement = new ReturnStatement(new FalseLiteral(0, 0), 0, 0);
+				statements.add(new IfStatement(arraysNotEqual, returnStatement, 0, 0));
+			}
 		}
 		
 		/* return true; */ {
@@ -302,6 +374,24 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		}
 		method.statements = statements.toArray(new Statement[statements.size()]);
 		return method;
+	}
+	
+	private IfStatement generateCompareFloatOrDouble(char[] otherN, char[] floatOrDouble, char[] fieldName) {
+		/* if ( Float.compare(fieldName, other.fieldName) != 0 ) return false */
+		MessageSend floatCompare = new MessageSend();
+		floatCompare.receiver = generateQualifiedNameRef(TypeConstants.JAVA, TypeConstants.LANG, floatOrDouble);
+		floatCompare.selector = "compare".toCharArray();
+		floatCompare.arguments = new Expression[] {
+				new SingleNameReference(fieldName, 0),
+				generateQualifiedNameRef(otherN, fieldName)
+		};
+		EqualExpression ifFloatCompareIsNot0 = new EqualExpression(floatCompare, new IntLiteral(new char[] {'0'}, 0, 0), OperatorIds.NOT_EQUAL);
+		ReturnStatement returnFalse = new ReturnStatement(new FalseLiteral(0, 0), 0, 0);
+		return new IfStatement(ifFloatCompareIsNot0, returnFalse, 0, 0);
+	}
+	
+	private QualifiedNameReference generateQualifiedNameRef(char[]... varNames) {
+		return new QualifiedNameReference(varNames, new long[varNames.length], 0, 0);
 	}
 	
 	private MethodDeclaration createHashCode(Node type, Collection<Node> fields, ASTNode pos) {
