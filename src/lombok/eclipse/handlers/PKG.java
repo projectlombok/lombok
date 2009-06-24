@@ -50,7 +50,7 @@ class PKG {
 			node = node.up();
 		}
 		
-		if ( node.get() instanceof TypeDeclaration ) {
+		if ( node != null && node.get() instanceof TypeDeclaration ) {
 			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
 			if ( typeDecl.methods != null ) for ( AbstractMethodDeclaration def : typeDecl.methods ) {
 				char[] mName = ((AbstractMethodDeclaration)def).selector;
@@ -71,7 +71,7 @@ class PKG {
 			node = node.up();
 		}
 		
-		if ( node.get() instanceof TypeDeclaration ) {
+		if ( node != null && node.get() instanceof TypeDeclaration ) {
 			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
 			if ( typeDecl.methods != null ) for ( AbstractMethodDeclaration def : typeDecl.methods ) {
 				if ( def instanceof ConstructorDeclaration ) {

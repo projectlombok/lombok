@@ -40,10 +40,31 @@ class PKG {
 			node = node.up();
 		}
 		
-		if ( node.get() instanceof JCClassDecl ) {
+		if ( node != null && node.get() instanceof JCClassDecl ) {
 			for ( JCTree def : ((JCClassDecl)node.get()).defs ) {
 				if ( def instanceof JCMethodDecl ) {
 					if ( ((JCMethodDecl)def).name.contentEquals(methodName) ) {
+						JavacAST.Node existing = node.getNodeFor(def);
+						if ( existing == null || !existing.isHandled() ) return MethodExistsResult.EXISTS_BY_USER;
+						return MethodExistsResult.EXISTS_BY_LOMBOK;
+					}
+				}
+			}
+		}
+		
+		return MethodExistsResult.NOT_EXISTS;
+	}
+	
+	static MethodExistsResult constructorExists(JavacAST.Node node) {
+		while ( node != null && !(node.get() instanceof JCClassDecl) ) {
+			node = node.up();
+		}
+		
+		if ( node != null && node.get() instanceof JCClassDecl ) {
+			for ( JCTree def : ((JCClassDecl)node.get()).defs ) {
+				if ( def instanceof JCMethodDecl ) {
+					if ( ((JCMethodDecl)def).name.contentEquals("<init>") ) {
+						if ( (((JCMethodDecl)def).mods.flags & Flags.GENERATEDCONSTR) != 0 ) continue;
 						JavacAST.Node existing = node.getNodeFor(def);
 						if ( existing == null || !existing.isHandled() ) return MethodExistsResult.EXISTS_BY_USER;
 						return MethodExistsResult.EXISTS_BY_LOMBOK;

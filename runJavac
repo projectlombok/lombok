@@ -1,10 +1,29 @@
 #!/bin/sh
 
-if [ "$1" == "run" ]; then
-	javac -cp ~/foo/lombok.jar ~/foo/*.java
-else
-	ant && cp dist/lombok.jar ~/foo && javac -cp ~/foo/lombok.jar ~/foo/*.java
+CONTINUE=0
+if [ "$1" != "run" ]; then
+	echo BUILDING...
+	ant && cp dist/lombok.jar ~/foo
+	CONTINUE=$?
 fi
 
+if [ $CONTINUE -eq 0 ]; then
+	echo COMPILING...
+	javac -cp ~/foo/lombok.jar ~/foo/*.java
+	CONTINUE=$?
+fi
 
-
+if [ "$2" == "javap" ]; then
+	if [ $CONTINUE -eq 0 ]; then
+		echo DECOMPILING...
+		shift
+		shift
+		javap -classpath /Users/rzwitserloot/foo/lombok.jar:/Users/rzwitserloot/foo $@
+	fi
+elif [ "$2" != "" ]; then
+	if [ $CONTINUE -eq 0 ]; then
+		echo RUNNING...
+		shift
+		java -cp /Users/rzwitserloot/foo/lombok.jar:/Users/rzwitserloot/foo $@
+	fi
+fi
