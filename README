@@ -1,0 +1,14 @@
+projectlombok makes java a spicier language by adding 'handlers' that know how to build and compile simple, boilerplate-free, not-quite-java code.
+
+Using lombok is made as simple as possible, and aims to work on all major java IDEs as well as javac itself.
+
+projectlombok is open source under the Creative Commons - free to share, free to remix, provided you attribute the authors licence, as shown here: http://creativecommons.org/licenses/by/3.0/us/
+
+Project Authors:
+
+Reinier Zwitserloot
+twitter: @surial
+home: http://zwitserloot.com/
+
+Roel Spilker
+twitter: @rspilker
