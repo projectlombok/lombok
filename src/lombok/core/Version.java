@@ -1,7 +1,7 @@
 package lombok.core;
 
 public class Version {
-	private static final String VERSION = "0.3.0";
+	private static final String VERSION = "0.3.5";
 	
 	private Version() {
 		//Prevent instantiation
