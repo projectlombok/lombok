@@ -4,7 +4,9 @@ import java.lang.reflect.Modifier;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
@@ -122,5 +124,17 @@ class PKG {
 			if ( i++ != idx ) out = out.append(def);
 		}
 		return out;
+	}
+	
+	static JCExpression chainDots(TreeMaker maker, JavacAST.Node node, String... elems) {
+		assert elems != null;
+		assert elems.length > 0;
+		
+		JCExpression e = maker.Ident(node.toName(elems[0]));
+		for ( int i = 1 ; i < elems.length ; i++ ) {
+			e = maker.Select(e, node.toName(elems[i]));
+		}
+		
+		return e;
 	}
 }
