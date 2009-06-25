@@ -83,7 +83,7 @@ public class HandlerLibrary {
 	}
 	
 	public void javacWarning(String message, Throwable t) {
-		messager.printMessage(Diagnostic.Kind.WARNING, message + t == null ? "" : (": " + t));
+		messager.printMessage(Diagnostic.Kind.WARNING, message + (t == null ? "" : (": " + t)));
 	}
 	
 	public void javacError(String message) {
@@ -91,7 +91,7 @@ public class HandlerLibrary {
 	}
 	
 	public void javacError(String message, Throwable t) {
-		messager.printMessage(Diagnostic.Kind.ERROR, message + t == null ? "" : (": " + t));
+		messager.printMessage(Diagnostic.Kind.ERROR, message + (t == null ? "" : (": " + t)));
 	}
 	
 	private static void loadVisitorHandlers(HandlerLibrary lib) {
