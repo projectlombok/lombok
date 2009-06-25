@@ -449,13 +449,16 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		
 		final char[] PRIME = "PRIME".toCharArray();
 		final char[] RESULT = "result".toCharArray();
+		final boolean isEmpty = fields.isEmpty();
 		
 		/* final int PRIME = 31; */ {
-			LocalDeclaration primeDecl = new LocalDeclaration(PRIME, 0 ,0);
-			primeDecl.modifiers = Modifier.FINAL;
-			primeDecl.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
-			primeDecl.initialization = new IntLiteral("31".toCharArray(), 0, 0);
-			statements.add(primeDecl);
+			if ( !isEmpty ) { /* Without fields, PRIME isn't used, and that would trigger a 'local variable not used' warning. */
+				LocalDeclaration primeDecl = new LocalDeclaration(PRIME, 0 ,0);
+				primeDecl.modifiers = Modifier.FINAL;
+				primeDecl.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
+				primeDecl.initialization = new IntLiteral("31".toCharArray(), 0, 0);
+				statements.add(primeDecl);
+			}
 		}
 		
 		/* int result = 1; */ {
