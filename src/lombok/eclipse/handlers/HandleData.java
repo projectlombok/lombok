@@ -552,6 +552,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 	
 	/** Give 2 clones! */
 	private Expression longToIntForHashCode(Reference ref1, Reference ref2) {
+		/* (int)(ref >>> 32 ^ ref) */
 		BinaryExpression higherBits = new BinaryExpression(
 				ref1, new IntLiteral("32".toCharArray(), 0, 0),
 				OperatorIds.UNSIGNED_RIGHT_SHIFT);
