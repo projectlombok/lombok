@@ -1,3 +1,15 @@
+## Fix Eclipse's HandleCleanup
+
+* Fix the AST.Node view of the innards of the method. Now nested applications of @Cleanup blow everything up.
+
+* Replace the multi-catch block strategy at least with more catch blocks (all encapsulating try/catch blocks' caught types as well), or use sneakyThrow, which is even better.
+
+* Fix PrintAST to always run at the very very very end.
+
+## Fix eclipse's pointers
+
+* We really need to do more work on setting positions properly.
+
 ## Eclipse insertion point for newly generated code
 
 We need to figure out which of the bodyStart/bodyDeclarationStart/sourceStart blocks are used as where insertions happen, and set it to the entire line of a field and not just the annotation.
