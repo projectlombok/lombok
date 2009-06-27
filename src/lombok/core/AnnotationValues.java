@@ -77,8 +77,11 @@ public class AnnotationValues<A extends Annotation> {
 				"No value supplied but " + method.getName() + " has no default either.", -1);
 	}
 	
+	private A cachedInstance = null;
+	
 	@SuppressWarnings("unchecked")
 	public A getInstance() throws AnnotationValueDecodeFail {
+		if ( cachedInstance != null ) return cachedInstance;
 		InvocationHandler invocations = new InvocationHandler() {
 			@Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 				AnnotationValue v = values.get(method.getName());
@@ -134,7 +137,7 @@ public class AnnotationValues<A extends Annotation> {
 			}
 		};
 		
-		return (A) Proxy.newProxyInstance(type.getClassLoader(), new Class[] { type }, invocations);
+		return cachedInstance = (A) Proxy.newProxyInstance(type.getClassLoader(), new Class[] { type }, invocations);
 	}
 	
 	private Object guessToType(Object guess, Class<?> expected, AnnotationValue v, int pos) {
