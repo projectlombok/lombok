@@ -199,7 +199,7 @@ public class Eclipse {
 	
 	public static <A extends java.lang.annotation.Annotation> AnnotationValues<A>
 			createAnnotation(Class<A> type, final Node annotationNode) {
-		Annotation annotation = (Annotation) annotationNode.get();
+		final Annotation annotation = (Annotation) annotationNode.get();
 		Map<String, AnnotationValue> values = new HashMap<String, AnnotationValue>();
 		
 		final MemberValuePair[] pairs = annotation.memberValuePairs();
@@ -213,9 +213,8 @@ public class Eclipse {
 			
 			if ( pairs != null ) for ( MemberValuePair pair : pairs ) {
 				char[] n = pair.name;
-				String mName = n == null ? "value" : new String(name);
-				if ( !mName.equals(name) ) continue;
-				fullExpression = pair.value;
+				String mName = n == null ? "value" : new String(pair.name);
+				if ( mName.equals(name) ) fullExpression = pair.value;
 			}
 			
 			if ( fullExpression != null ) {
@@ -237,7 +236,9 @@ public class Eclipse {
 				@Override public void setError(String message, int valueIdx) {
 					Expression ex;
 					if ( valueIdx == -1 ) ex = fullExpr;
-					else ex = exprs[valueIdx];
+					else ex = exprs != null ? exprs[valueIdx] : null;
+					
+					if ( ex == null ) ex = annotation;
 					
 					int sourceStart = ex.sourceStart;
 					int sourceEnd = ex.sourceEnd;
