@@ -12,6 +12,7 @@ import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
 import lombok.core.AnnotationValues;
+import lombok.core.PrintAST;
 import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
@@ -44,6 +45,8 @@ public class HandlerLibrary {
 		new HashMap<String, AnnotationHandlerContainer<?>>();
 	
 	private Collection<EclipseASTVisitor> visitorHandlers = new ArrayList<EclipseASTVisitor>();
+
+	private boolean skipPrintAST;
 	
 	public static HandlerLibrary load() {
 		HandlerLibrary lib = new HandlerLibrary();
@@ -93,6 +96,8 @@ public class HandlerLibrary {
 		if ( rawType == null ) return false;
 		boolean handled = false;
 		for ( String fqn : resolver.findTypeMatches(annotationNode, toQualifiedName(annotation.type.getTypeName())) ) {
+			boolean isPrintAST = fqn.equals(PrintAST.class.getName());
+			if ( isPrintAST == skipPrintAST ) continue;
 			AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
 			
 			if ( container == null ) continue;
@@ -100,6 +105,7 @@ public class HandlerLibrary {
 			try {
 				handled |= container.handle(annotation, annotationNode);
 			} catch ( AnnotationValueDecodeFail fail ) {
+				fail.printStackTrace(); //TODO debug!
 				fail.owner.setError(fail.getMessage(), fail.idx);
 			} catch ( Throwable t ) {
 				Eclipse.error(ast, String.format("Lombok annotation handler %s failed", container.handler.getClass()), t);
@@ -116,5 +122,13 @@ public class HandlerLibrary {
 			Eclipse.error((CompilationUnitDeclaration) ast.top().get(),
 					String.format("Lombok visitor handler %s failed", visitor.getClass()), t);
 		}
+	}
+	
+	public void skipPrintAST() {
+		skipPrintAST = true;
+	}
+	
+	public void skipAllButPrintAST() {
+		skipPrintAST = false;
 	}
 }

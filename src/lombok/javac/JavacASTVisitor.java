@@ -73,25 +73,32 @@ public interface JavacASTVisitor {
 	
 	public static class Printer implements JavacASTVisitor {
 		private final PrintStream out;
+		private final boolean printContent;
+		private int disablePrinting = 0;
+		private int indent = 0;
 		
-		public Printer() {
-			this(System.out);
+		public Printer(boolean printContent) {
+			this(printContent, System.out);
 		}
 		
-		public Printer(File file) throws FileNotFoundException {
-			this(new PrintStream(file));
+		public Printer(boolean printContent, File file) throws FileNotFoundException {
+			this(printContent, new PrintStream(file));
 		}
 		
-		public Printer(PrintStream out) {
+		public Printer(boolean printContent, PrintStream out) {
+			this.printContent = printContent;
 			this.out = out;
 		}
 		
-		int indent = 0;
-		private void print(String text, Object... params) {
+		private void forcePrint(String text, Object... params) {
 			StringBuilder sb = new StringBuilder();
 			for ( int i = 0 ; i < indent ; i++ ) sb.append("  ");
 			out.printf(sb.append(text).append('\n').toString(), params);
 			out.flush();
+		}
+		
+		private void print(String text, Object... params) {
+			if ( disablePrinting == 0 ) forcePrint(text, params);
 		}
 		
 		@Override public void visitCompilationUnit(Node Node, JCCompilationUnit unit) {
@@ -112,7 +119,7 @@ public interface JavacASTVisitor {
 		}
 		
 		@Override public void visitAnnotationOnType(JCClassDecl type, Node node, JCAnnotation annotation) {
-			print("<ANNOTATION: %s />", annotation);
+			forcePrint("<ANNOTATION: %s />", annotation);
 		}
 		
 		@Override public void endVisitType(Node node, JCClassDecl type) {
@@ -124,9 +131,14 @@ public interface JavacASTVisitor {
 			print("<%s INITIALIZER>",
 					initializer.isStatic() ? "static" : "instance");
 			indent++;
+			if ( printContent ) {
+				print("%s", initializer);
+				disablePrinting++;
+			}
 		}
 		
 		@Override public void endVisitInitializer(Node node, JCBlock initializer) {
+			if ( printContent ) disablePrinting--;
 			indent--;
 			print("</%s INITIALIZER>", initializer.isStatic() ? "static" : "instance");
 		}
@@ -134,13 +146,18 @@ public interface JavacASTVisitor {
 		@Override public void visitField(Node node, JCVariableDecl field) {
 			print("<FIELD %s %s>", field.vartype, field.name);
 			indent++;
+			if ( printContent ) {
+				if ( field.init != null ) print("%s", field.init);
+				disablePrinting++;
+			}
 		}
 		
 		@Override public void visitAnnotationOnField(JCVariableDecl field, Node node, JCAnnotation annotation) {
-			print("<ANNOTATION: %s />", annotation);
+			forcePrint("<ANNOTATION: %s />", annotation);
 		}
 		
 		@Override public void endVisitField(Node node, JCVariableDecl field) {
+			if ( printContent ) disablePrinting--;
 			indent--;
 			print("</FIELD %s %s>", field.vartype, field.name);
 		}
@@ -154,13 +171,19 @@ public interface JavacASTVisitor {
 			} else type = "METHOD";
 			print("<%s %s> returns: %s", type, method.name, method.restype);
 			indent++;
+			if ( printContent ) {
+				if ( method.body == null ) print("(ABSTRACT)");
+				else print("%s", method.body);
+				disablePrinting++;
+			}
 		}
 		
 		@Override public void visitAnnotationOnMethod(JCMethodDecl method, Node node, JCAnnotation annotation) {
-			print("<ANNOTATION: %s />", annotation);
+			forcePrint("<ANNOTATION: %s />", annotation);
 		}
 		
 		@Override public void endVisitMethod(Node node, JCMethodDecl method) {
+			if ( printContent ) disablePrinting--;
 			indent--;
 			print("</%s %s>", "XMETHOD", method.name);
 		}
@@ -171,7 +194,7 @@ public interface JavacASTVisitor {
 		}
 		
 		@Override public void visitAnnotationOnMethodArgument(JCVariableDecl arg, JCMethodDecl method, Node nodeAnnotation, JCAnnotation annotation) {
-			print("<ANNOTATION: %s />", annotation);
+			forcePrint("<ANNOTATION: %s />", annotation);
 		}
 		
 		@Override public void endVisitMethodArgument(Node node, JCVariableDecl arg, JCMethodDecl method) {

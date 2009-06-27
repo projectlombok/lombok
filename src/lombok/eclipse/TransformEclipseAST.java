@@ -103,8 +103,11 @@ public class TransformEclipseAST {
 	}
 	
 	public void go() {
+		handlers.skipPrintAST();
 		ast.traverse(new AnnotationVisitor());
 		handlers.callASTVisitors(ast);
+		handlers.skipAllButPrintAST();
+		ast.traverse(new AnnotationVisitor());
 	}
 	
 	private static class AnnotationVisitor extends EclipseASTAdapter {

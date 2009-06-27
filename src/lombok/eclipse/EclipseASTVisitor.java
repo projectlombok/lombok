@@ -84,24 +84,32 @@ public interface EclipseASTVisitor {
 	
 	public static class Printer implements EclipseASTVisitor {
 		private final PrintStream out;
-		public Printer() {
-			this(System.out);
+		private final boolean printContent;
+		private int disablePrinting = 0;
+		private int indent = 0;
+		
+		public Printer(boolean printContent) {
+			this(printContent, System.out);
 		}
 		
-		public Printer(File file) throws FileNotFoundException {
-			this(new PrintStream(file));
+		public Printer(boolean printContent, File file) throws FileNotFoundException {
+			this(printContent, new PrintStream(file));
 		}
 		
-		public Printer(PrintStream out) {
+		public Printer(boolean printContent, PrintStream out) {
+			this.printContent = printContent;
 			this.out = out;
 		}
 		
-		int indent = 0;
-		private void print(String text, Object... params) {
+		private void forcePrint(String text, Object... params) {
 			StringBuilder sb = new StringBuilder();
 			for ( int i = 0 ; i < indent ; i++ ) sb.append("  ");
 			out.printf(sb.append(text).append('\n').toString(), params);
 			out.flush();
+		}
+		
+		private void print(String text, Object... params) {
+			if ( disablePrinting == 0 ) forcePrint(text, params);
 		}
 		
 		private String str(char[] c) {
@@ -140,7 +148,7 @@ public interface EclipseASTVisitor {
 		}
 		
 		@Override public void visitAnnotationOnType(TypeDeclaration type, Node node, Annotation annotation) {
-			print("<ANNOTATION: %s />", annotation);
+			forcePrint("<ANNOTATION: %s />", annotation);
 		}
 		
 		@Override public void endVisitType(Node node, TypeDeclaration type) {
@@ -155,9 +163,14 @@ public interface EclipseASTVisitor {
 					(initializer.modifiers & Modifier.STATIC) != 0 ? "static" : "instance",
 							s ? "filled" : "blank");
 			indent++;
+			if ( printContent ) {
+				if ( initializer.block != null ) print("%s", initializer.block);
+				disablePrinting++;
+			}
 		}
 		
 		@Override public void endVisitInitializer(Node node, Initializer initializer) {
+			if ( printContent ) disablePrinting--;
 			indent--;
 			print("</%s INITIALIZER>", (initializer.modifiers & Modifier.STATIC) != 0 ? "static" : "instance");
 		}
@@ -165,13 +178,18 @@ public interface EclipseASTVisitor {
 		@Override public void visitField(Node node, FieldDeclaration field) {
 			print("<FIELD %s %s = %s>", str(field.type), str(field.name), field.initialization);
 			indent++;
+			if ( printContent ) {
+				if ( field.initialization != null ) print("%s", field.initialization);
+				disablePrinting++;
+			}
 		}
 		
 		@Override public void visitAnnotationOnField(FieldDeclaration field, Node node, Annotation annotation) {
-			print("<ANNOTATION: %s />", annotation);
+			forcePrint("<ANNOTATION: %s />", annotation);
 		}
 		
 		@Override public void endVisitField(Node node, FieldDeclaration field) {
+			if ( printContent ) disablePrinting--;
 			indent--;
 			print("</FIELD %s %s>", str(field.type), str(field.name));
 		}
@@ -180,13 +198,18 @@ public interface EclipseASTVisitor {
 			String type = method instanceof ConstructorDeclaration ? "CONSTRUCTOR" : "METHOD";
 			print("<%s %s: %s>", type, str(method.selector), method.statements != null ? "filled" : "blank");
 			indent++;
+			if ( printContent ) {
+				if ( method.statements != null ) print("%s", method);
+				disablePrinting++;
+			}
 		}
 		
 		@Override public void visitAnnotationOnMethod(AbstractMethodDeclaration method, Node node, Annotation annotation) {
-			print("<ANNOTATION: %s />", annotation);
+			forcePrint("<ANNOTATION: %s />", annotation);
 		}
 		
 		@Override public void endVisitMethod(Node node, AbstractMethodDeclaration method) {
+			if ( printContent ) disablePrinting--;
 			String type = method instanceof ConstructorDeclaration ? "CONSTRUCTOR" : "METHOD";
 			indent--;
 			print("</%s %s>", type, str(method.selector));

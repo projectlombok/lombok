@@ -27,7 +27,7 @@ public class HandlePrintAST implements EclipseAnnotationHandler<PrintAST> {
 			Lombok.sneakyThrow(e);
 		}
 		
-		annotationNode.up().traverse(new EclipseASTVisitor.Printer(stream));
+		annotationNode.up().traverse(new EclipseASTVisitor.Printer(annotation.getInstance().printContent(), stream));
 		return true;
 	}
 }

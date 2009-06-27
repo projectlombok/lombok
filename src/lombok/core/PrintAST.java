@@ -9,4 +9,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 public @interface PrintAST {
 	String outfile() default "";
+	
+	/**
+	 * Normally, the printer will print each node focusing on the node (E.g. classname, and such). By setting printContent to true,
+	 * methods, initializers, and other statement-containing elements actually print their java code instead of element class names.
+	 */
+	boolean printContent() default false;
 }

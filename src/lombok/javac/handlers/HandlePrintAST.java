@@ -26,7 +26,7 @@ public class HandlePrintAST implements JavacAnnotationHandler<PrintAST> {
 			Lombok.sneakyThrow(e);
 		}
 		
-		annotationNode.up().traverse(new JavacASTVisitor.Printer(stream));
+		annotationNode.up().traverse(new JavacASTVisitor.Printer(annotation.getInstance().printContent(), stream));
 		
 		return true;
 	}
