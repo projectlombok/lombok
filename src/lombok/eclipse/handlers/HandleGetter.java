@@ -7,7 +7,6 @@ import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
-import lombok.eclipse.EclipseASTVisitor;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
 
@@ -77,7 +76,6 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 			//continue with creating the getter
 		}
 		
-		if ( new String(field.name).equals("a") ) fieldNode.up().traverse(new EclipseASTVisitor.Printer());
 		MethodDeclaration method = generateGetter((TypeDeclaration) fieldNode.up().get(), field, getterName, modifier, pos);
 		
 		injectMethod(fieldNode.up(), method);
