@@ -88,7 +88,11 @@ public class Javac {
 	
 	private static Object calculateGuess(JCExpression expr) {
 		if ( expr instanceof JCLiteral ) {
-			return ((JCLiteral)expr).value;
+			JCLiteral lit = (JCLiteral)expr;
+			if ( lit.getKind() == com.sun.source.tree.Tree.Kind.BOOLEAN_LITERAL ) {
+				return ((Number)lit.value).intValue() == 0 ? false : true;
+			}
+			return lit.value;
 		} else if ( expr instanceof JCIdent || expr instanceof JCFieldAccess ) {
 			String x = expr.toString();
 			if ( x.endsWith(".class") ) x = x.substring(0, x.length() - 6);
