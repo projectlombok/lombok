@@ -51,6 +51,10 @@ public class AnnotationValues<A extends Annotation> {
 		public void setError(String message, int valueIdx) {
 			node.addError(message);
 		}
+		
+		@Override public String toString() {
+			return "raws: " + raws + " valueGuesses: " + valueGuesses;
+		}
 	}
 	
 	public AnnotationValues(Class<A> type, Map<String, AnnotationValue> values, AST<?>.Node ast) {
