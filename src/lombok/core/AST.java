@@ -71,6 +71,25 @@ public abstract class AST<N> {
 		return nodeMap.get(node);
 	}
 	
+	@SuppressWarnings("unchecked")
+	private Node replaceNewWithExistingOld(Map<N, Node> oldNodes, Node newNode) {
+		Node oldNode = oldNodes.get(newNode.get());
+		if ( oldNode == null ) return newNode;
+		
+		List<Object> oldChildren = new ArrayList<Object>();
+		for ( Node child : newNode.children ) {
+			Node oldChild = replaceNewWithExistingOld(oldNodes, child);
+			if ( oldChild == null ) oldChildren.add(child);
+			else {
+				oldChildren.add(oldChild);
+				oldChild.parent = oldNode;
+			}
+		}
+		
+		oldNode.children.addAll((Collection) oldChildren);
+		return oldNode;
+	}
+	
 	public abstract class Node {
 		protected final Kind kind;
 		protected final N node;
@@ -85,6 +104,11 @@ public abstract class AST<N> {
 			this.children = children == null ? Collections.<Node>emptyList() : children;
 			for ( Node child : this.children ) child.parent = this;
 			this.isStructurallySignificant = calculateIsStructurallySignificant();
+		}
+		
+		@Override public String toString() {
+			return String.format("NODE %s (%s) %s%s",
+					kind, node == null ? "(NULL)" : node.getClass(), handled ? "[HANDLED]" : "", node == null ? "" : node);
 		}
 		
 		public String getPackageDeclaration() {
@@ -160,6 +184,29 @@ public abstract class AST<N> {
 			n.parent = this;
 			((List)children).add(n);
 			return n;
+		}
+		
+		/**
+		 * Reparses the AST node represented by this node. Any existing nodes that occupy a different space in the AST are rehomed, any
+		 * nodes that no longer exist are removed, and new nodes are created.
+		 * 
+		 * Careful - the node you call this on must not itself have been removed or rehomed - it rebuilds <i>all children</i>.
+		 */
+		public void rebuild() {
+			Map<N, Node> oldNodes = new HashMap<N, Node>();
+			gatherAndRemoveChildren(oldNodes);
+			
+			Node newNode = buildTree(get(), kind);
+			
+			replaceNewWithExistingOld(oldNodes, newNode);
+		}
+		
+		private void gatherAndRemoveChildren(Map<N, Node> map) {
+			for ( Node child : children ) child.gatherAndRemoveChildren(map);
+			map.put(get(), this);
+			children.clear();
+			identityDetector.remove(get());
+			nodeMap.remove(get());
 		}
 		
 		public void removeChild(Node child) {
@@ -254,12 +301,13 @@ public abstract class AST<N> {
 		return list;
 	}
 	
+	@SuppressWarnings("unchecked")
 	private <T extends Node> void buildWithField0(Class<T> nodeType, N child, FieldAccess fa, Collection<T> list) {
 		try {
 			Object o = fa.field.get(child);
 			if ( o == null ) return;
 			if ( fa.dim == 0 ) {
-				Node node = buildStatement(o);
+				Node node = buildTree((N)o, Kind.STATEMENT);
 				if ( node != null ) list.add(nodeType.cast(node));
 			} else if ( o.getClass().isArray() ) buildWithArray(nodeType, o, list, fa.dim);
 			else if ( Collection.class.isInstance(o) ) buildWithCollection(nodeType, o, list, fa.dim);
@@ -268,10 +316,11 @@ public abstract class AST<N> {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	private <T extends Node> void buildWithArray(Class<T> nodeType, Object array, Collection<T> list, int dim) {
 		if ( dim == 1 ) for ( Object v : (Object[])array ) {
 			if ( v == null ) continue;
-			Node node = buildStatement(v);
+			Node node = buildTree((N)v, Kind.STATEMENT);
 			if ( node != null ) list.add(nodeType.cast(node));
 		} else for ( Object v : (Object[])array ) {
 			if ( v == null ) return;
@@ -279,15 +328,14 @@ public abstract class AST<N> {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	private <T extends Node> void buildWithCollection(Class<T> nodeType, Object collection, Collection<T> list, int dim) {
 		if ( dim == 1 ) for ( Object v : (Collection<?>)collection ) {
 			if ( v == null ) continue;
-			Node node = buildStatement(v);
+			Node node = buildTree((N)v, Kind.STATEMENT);
 			if ( node != null ) list.add(nodeType.cast(node));
 		} else for ( Object v : (Collection<?>)collection ) {
 			buildWithCollection(nodeType, v, list, dim-1);
 		}
 	}
-	
-	protected abstract Node buildStatement(Object statement);
 }
