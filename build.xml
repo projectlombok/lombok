@@ -29,7 +29,14 @@
 	
 	<target name="compile">
 		<mkdir dir="build/lombok" />
-		<javac srcdir="src" debug="on" destdir="build/lombok">
+		<!-- This version trickery is so that an eclipse running in a JVM 1.5 will run properly (It'll never touch the javac files and hence never trigger a Bad Class Version Number error
+		     but for javac we definitely cannot support javac 1.5, partly because they completely rewrote large swaths of javac, and partly because our injection mechanism (annotations)
+		     doesn't work very well on javac 1.5, hence, when using javac, we do demand you're on 1.6. -->
+		<javac srcdir="src" debug="on" destdir="build/lombok" target="1.5" excludes="lombok/javac/**">
+			<classpath refid="lombok.deps.path" />
+			<classpath refid="lombok.libs.path" />
+		</javac>
+		<javac srcdir="src" debug="on" destdir="build/lombok" target="1.6" includes="lombok/javac/**">
 			<classpath refid="lombok.deps.path" />
 			<classpath refid="lombok.libs.path" />
 		</javac>
@@ -38,7 +45,7 @@
 		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.javac.apt.Processor</echo>
 		
 		<mkdir dir="build/eclipse.agent" />
-		<javac srcdir="src_eclipseagent" debug="on" destdir="build/eclipse.agent">
+		<javac srcdir="src_eclipseagent" debug="on" destdir="build/eclipse.agent" target="1.5">
 			<classpath refid="eclipse.agent.deps.path" />
 			<classpath refid="eclipse.agent.libs.path" />
 		</javac>
