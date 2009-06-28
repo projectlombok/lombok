@@ -8,9 +8,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
 
+import lombok.Lombok;
 import lombok.core.AnnotationValues;
 import lombok.core.PrintAST;
 import lombok.core.SpiLoadUtil;
@@ -58,7 +57,13 @@ public class HandlerLibrary {
 	}
 	
 	@SuppressWarnings("unchecked") private static void loadAnnotationHandlers(HandlerLibrary lib) {
-		Iterator<EclipseAnnotationHandler> it = ServiceLoader.load(EclipseAnnotationHandler.class).iterator();
+		Iterator<EclipseAnnotationHandler> it;
+		try {
+			it = SpiLoadUtil.findServices(EclipseAnnotationHandler.class);
+		} catch ( Throwable t ) {
+			throw Lombok.sneakyThrow(t);
+		}
+		
 		while ( it.hasNext() ) {
 			try {
 				EclipseAnnotationHandler<?> handler = it.next();
@@ -69,19 +74,24 @@ public class HandlerLibrary {
 					Eclipse.error(null, "Duplicate handlers for annotation type: " + container.annotationClass.getName());
 				}
 				lib.typeLibrary.addType(container.annotationClass.getName());
-			} catch ( ServiceConfigurationError e ) {
-				Eclipse.error(null, "Can't load Lombok annotation handler for eclipse: ", e);
+			} catch ( Throwable t ) {
+				Eclipse.error(null, "Can't load Lombok annotation handler for eclipse: ", t);
 			}
 		}
 	}
 	
 	private static void loadVisitorHandlers(HandlerLibrary lib) {
-		Iterator<EclipseASTVisitor> it = ServiceLoader.load(EclipseASTVisitor.class).iterator();
+		Iterator<EclipseASTVisitor> it;
+		try {
+			it = SpiLoadUtil.findServices(EclipseASTVisitor.class);
+		} catch ( Throwable t ) {
+			throw Lombok.sneakyThrow(t);
+		}
 		while ( it.hasNext() ) {
 			try {
 				lib.visitorHandlers.add(it.next());
-			} catch ( ServiceConfigurationError e ) {
-				Eclipse.error(null, "Can't load Lombok visitor handler for eclipse: ", e);
+			} catch ( Throwable t ) {
+				Eclipse.error(null, "Can't load Lombok visitor handler for eclipse: ", t);
 			}
 		}
 	}
@@ -105,7 +115,6 @@ public class HandlerLibrary {
 			try {
 				handled |= container.handle(annotation, annotationNode);
 			} catch ( AnnotationValueDecodeFail fail ) {
-				fail.printStackTrace(); //TODO debug!
 				fail.owner.setError(fail.getMessage(), fail.idx);
 			} catch ( Throwable t ) {
 				Eclipse.error(ast, String.format("Lombok annotation handler %s failed", container.handler.getClass()), t);
