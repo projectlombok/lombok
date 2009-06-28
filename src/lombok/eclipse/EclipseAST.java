@@ -10,11 +10,11 @@ import lombok.core.AST;
 
 import org.eclipse.jdt.core.compiler.CategorizedProblem;
 import org.eclipse.jdt.internal.compiler.CompilationResult;
-import org.eclipse.jdt.internal.compiler.apt.dispatch.AptProblem;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
+import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.Clinit;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
@@ -22,7 +22,9 @@ import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
+import org.eclipse.jdt.internal.compiler.ast.TryStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.problem.DefaultProblem;
 import org.eclipse.jdt.internal.compiler.problem.ProblemSeverities;
 import org.eclipse.jdt.internal.compiler.util.Util;
 
@@ -117,16 +119,51 @@ public class EclipseAST extends AST<ASTNode> {
 				? Util.searchColumnNumber(result.getLineSeparatorPositions(), lineNumber,sourceStart)
 				: 0;
 		
-		CategorizedProblem ecProblem = new AptProblem(null, 
+		CategorizedProblem ecProblem = new LombokProblem(
 				fileNameArray, message, 0, new String[0],
 				isWarning ? ProblemSeverities.Warning : ProblemSeverities.Error,
 				sourceStart, sourceEnd, lineNumber, columnNumber);
 		ast.compilationResult.record(ecProblem, null);
 	}
 	
+	private static class LombokProblem extends DefaultProblem {
+		private static final String MARKER_ID = "org.eclipse.jdt.apt.pluggable.core.compileProblem";  //$NON-NLS-1$
+		
+		public LombokProblem(char[] originatingFileName, String message, int id,
+				String[] stringArguments, int severity,
+				int startPosition, int endPosition, int line, int column) {
+			super(originatingFileName, message, id, stringArguments, severity, startPosition, endPosition, line, column);
+		}
+		
+		@Override public int getCategoryID() {
+			return CAT_UNSPECIFIED;
+		}
+		
+		@Override public String getMarkerType() {
+			return MARKER_ID;
+		}
+	}
+	
 	public final class Node extends AST<ASTNode>.Node {
 		Node(ASTNode node, Collection<Node> children, Kind kind) {
 			super(node, children, kind);
+		}
+		
+		public void rebuild() {
+			super.rebuild();
+			System.out.println("REBUILD COMPLETE");
+			AbstractMethodDeclaration me = (AbstractMethodDeclaration) get();
+			for ( Statement outer : me.statements ) {
+				System.out.println("OUTER: "+ outer);
+				if ( outer instanceof TryStatement ) {
+					TryStatement ts = (TryStatement)outer;
+					Block tb = ((TryStatement) outer).tryBlock;
+					for ( Statement inner : tb.statements ) {
+						System.out.println("INNER: " + inner);
+					}
+				}
+			}
+			System.out.println("/REBUILD COMPLETE");
 		}
 		
 		public void traverse(EclipseASTVisitor visitor) {
@@ -458,9 +495,5 @@ public class EclipseAST extends AST<ASTNode> {
 	
 	@Override protected Collection<Class<? extends ASTNode>> getStatementTypes() {
 		return Collections.<Class<? extends ASTNode>>singleton(Statement.class);
-	}
-	
-	@Override protected Node buildStatement(Object node) {
-		return buildStatement((Statement)node);
 	}
 }
