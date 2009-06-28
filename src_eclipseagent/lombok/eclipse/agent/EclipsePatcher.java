@@ -93,7 +93,6 @@ public class EclipsePatcher {
 	}
 	
 	public static void premain(String agentArgs, Instrumentation instrumentation) throws Exception {
-		System.out.println("JAVA.VERSION: " + System.getProperty("java.version", "unknown"));
 		registerPatcher(instrumentation, false);
 		addLombokToSearchPaths(instrumentation);
 	}
