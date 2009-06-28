@@ -16,6 +16,11 @@ We need to figure out which of the bodyStart/bodyDeclarationStart/sourceStart bl
 
 Don't forget to extend past the opening brace for @Data!
 
+## Website
+
+See the following for CC licences:
+
+http://creativecommons.org/license/results-one?q_1=2&q_1=1&field_commercial=yes&field_derivatives=yes&field_jurisdiction=us&field_format=&field_worktitle=lombok&field_attribute_to_name=&field_attribute_to_url=&field_sourceurl=&field_morepermissionsurl=&lang=en_US&language=en_US&n_questions=3
 
 ## javadoc
 
