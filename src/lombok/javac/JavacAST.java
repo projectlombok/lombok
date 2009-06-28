@@ -423,8 +423,4 @@ public class JavacAST extends AST<JCTree> {
 			//Very unfortunate, but in most cases it still works fine, so we'll silently swallow it.
 		}
 	}
-	
-	@Override protected Node buildStatement(Object statement) {
-		return buildStatementOrExpression((JCTree) statement);
-	}
 }

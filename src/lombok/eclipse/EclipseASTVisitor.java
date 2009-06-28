@@ -129,7 +129,7 @@ public interface EclipseASTVisitor {
 			return sb.toString();
 		}
 		
-		@Override public void visitCompilationUnit(Node node, CompilationUnitDeclaration unit) {
+		public void visitCompilationUnit(Node node, CompilationUnitDeclaration unit) {
 			out.println("---------------------------------------------------------");
 			out.println(node.isCompleteParse() ? "COMPLETE" : "incomplete");
 			
@@ -137,26 +137,26 @@ public interface EclipseASTVisitor {
 			indent++;
 		}
 		
-		@Override public void endVisitCompilationUnit(Node node, CompilationUnitDeclaration unit) {
+		public void endVisitCompilationUnit(Node node, CompilationUnitDeclaration unit) {
 			indent--;
 			print("</CUD>");
 		}
 		
-		@Override public void visitType(Node node, TypeDeclaration type) {
+		public void visitType(Node node, TypeDeclaration type) {
 			print("<TYPE %s>", str(type.name));
 			indent++;
 		}
 		
-		@Override public void visitAnnotationOnType(TypeDeclaration type, Node node, Annotation annotation) {
+		public void visitAnnotationOnType(TypeDeclaration type, Node node, Annotation annotation) {
 			forcePrint("<ANNOTATION: %s />", annotation);
 		}
 		
-		@Override public void endVisitType(Node node, TypeDeclaration type) {
+		public void endVisitType(Node node, TypeDeclaration type) {
 			indent--;
 			print("</TYPE %s>", str(type.name));
 		}
 		
-		@Override public void visitInitializer(Node node, Initializer initializer) {
+		public void visitInitializer(Node node, Initializer initializer) {
 			Block block = initializer.block;
 			boolean s = (block != null && block.statements != null);
 			print("<%s INITIALIZER: %s>",
@@ -169,13 +169,13 @@ public interface EclipseASTVisitor {
 			}
 		}
 		
-		@Override public void endVisitInitializer(Node node, Initializer initializer) {
+		public void endVisitInitializer(Node node, Initializer initializer) {
 			if ( printContent ) disablePrinting--;
 			indent--;
 			print("</%s INITIALIZER>", (initializer.modifiers & Modifier.STATIC) != 0 ? "static" : "instance");
 		}
 		
-		@Override public void visitField(Node node, FieldDeclaration field) {
+		public void visitField(Node node, FieldDeclaration field) {
 			print("<FIELD %s %s = %s>", str(field.type), str(field.name), field.initialization);
 			indent++;
 			if ( printContent ) {
@@ -184,17 +184,17 @@ public interface EclipseASTVisitor {
 			}
 		}
 		
-		@Override public void visitAnnotationOnField(FieldDeclaration field, Node node, Annotation annotation) {
+		public void visitAnnotationOnField(FieldDeclaration field, Node node, Annotation annotation) {
 			forcePrint("<ANNOTATION: %s />", annotation);
 		}
 		
-		@Override public void endVisitField(Node node, FieldDeclaration field) {
+		public void endVisitField(Node node, FieldDeclaration field) {
 			if ( printContent ) disablePrinting--;
 			indent--;
 			print("</FIELD %s %s>", str(field.type), str(field.name));
 		}
 		
-		@Override public void visitMethod(Node node, AbstractMethodDeclaration method) {
+		public void visitMethod(Node node, AbstractMethodDeclaration method) {
 			String type = method instanceof ConstructorDeclaration ? "CONSTRUCTOR" : "METHOD";
 			print("<%s %s: %s>", type, str(method.selector), method.statements != null ? "filled" : "blank");
 			indent++;
@@ -204,52 +204,52 @@ public interface EclipseASTVisitor {
 			}
 		}
 		
-		@Override public void visitAnnotationOnMethod(AbstractMethodDeclaration method, Node node, Annotation annotation) {
+		public void visitAnnotationOnMethod(AbstractMethodDeclaration method, Node node, Annotation annotation) {
 			forcePrint("<ANNOTATION: %s />", annotation);
 		}
 		
-		@Override public void endVisitMethod(Node node, AbstractMethodDeclaration method) {
+		public void endVisitMethod(Node node, AbstractMethodDeclaration method) {
 			if ( printContent ) disablePrinting--;
 			String type = method instanceof ConstructorDeclaration ? "CONSTRUCTOR" : "METHOD";
 			indent--;
 			print("</%s %s>", type, str(method.selector));
 		}
 		
-		@Override public void visitMethodArgument(Node node, Argument arg, AbstractMethodDeclaration method) {
+		public void visitMethodArgument(Node node, Argument arg, AbstractMethodDeclaration method) {
 			print("<METHODARG %s %s = %s>", str(arg.type), str(arg.name), arg.initialization);
 			indent++;
 		}
 		
-		@Override public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, Node node, Annotation annotation) {
+		public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, Node node, Annotation annotation) {
 			print("<ANNOTATION: %s />", annotation);
 		}
 		
-		@Override public void endVisitMethodArgument(Node node, Argument arg, AbstractMethodDeclaration method) {
+		public void endVisitMethodArgument(Node node, Argument arg, AbstractMethodDeclaration method) {
 			indent--;
 			print("</METHODARG %s %s>", str(arg.type), str(arg.name));
 		}
 		
-		@Override public void visitLocal(Node node, LocalDeclaration local) {
+		public void visitLocal(Node node, LocalDeclaration local) {
 			print("<LOCAL %s %s = %s>", str(local.type), str(local.name), local.initialization);
 			indent++;
 		}
 		
-		@Override public void visitAnnotationOnLocal(LocalDeclaration local, Node node, Annotation annotation) {
+		public void visitAnnotationOnLocal(LocalDeclaration local, Node node, Annotation annotation) {
 			print("<ANNOTATION: %s />", annotation);
 		}
 		
-		@Override public void endVisitLocal(Node node, LocalDeclaration local) {
+		public void endVisitLocal(Node node, LocalDeclaration local) {
 			indent--;
 			print("</LOCAL %s %s>", str(local.type), str(local.name));
 		}
 		
-		@Override public void visitStatement(Node node, Statement statement) {
+		public void visitStatement(Node node, Statement statement) {
 			print("<%s>", statement.getClass());
 			indent++;
 			print("%s", statement);
 		}
 		
-		@Override public void endVisitStatement(Node node, Statement statement) {
+		public void endVisitStatement(Node node, Statement statement) {
 			indent--;
 			print("</%s>", statement.getClass());
 		}

@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
-import java.lang.instrument.UnmodifiableClassException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URLDecoder;
@@ -20,7 +20,7 @@ public class EclipsePatcher {
 	private EclipsePatcher() {}
 	
 	private static class Patcher implements ClassFileTransformer {
-		@Override public byte[] transform(ClassLoader loader, String className,
+		public byte[] transform(ClassLoader loader, String className,
 				Class<?> classBeingRedefined,
 				ProtectionDomain protectionDomain, byte[] classfileBuffer)
 				throws IllegalClassFormatException {
@@ -67,9 +67,17 @@ public class EclipsePatcher {
 	
 	private static void addLombokToSearchPaths(Instrumentation instrumentation) throws Exception {
 		String path = findPathOfOurClassloader();
-		instrumentation.appendToSystemClassLoaderSearch(new JarFile(path + "/lombok.jar"));
-		instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(path + "/lombok.eclipse.agent.jar"));
-		
+		//On java 1.5, you don't have these methods, so you'll be forced to manually -Xbootclasspath/a them in.
+//		instrumentation.appendToSystemClassLoaderSearch(new JarFile(path + "/lombok.jar"));
+//		instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(path + "/lombok.eclipse.agent.jar"));
+		tryCallMethod(instrumentation, "appendToSystemClassLoaderSearch", path + "/lombok.jar");
+		tryCallMethod(instrumentation, "appendToBootstrapClassLoaderSearch", path + "/lombok.eclipse.agent.jar");
+	}
+	
+	private static void tryCallMethod(Object o, String methodName, String path) {
+		try {
+			Instrumentation.class.getMethod(methodName, JarFile.class).invoke(o, new JarFile(path));
+		} catch ( Throwable ignore ) {}
 	}
 	
 	private static String findPathOfOurClassloader() throws Exception {
@@ -85,21 +93,28 @@ public class EclipsePatcher {
 	}
 	
 	public static void premain(String agentArgs, Instrumentation instrumentation) throws Exception {
+		System.out.println("JAVA.VERSION: " + System.getProperty("java.version", "unknown"));
 		registerPatcher(instrumentation, false);
 		addLombokToSearchPaths(instrumentation);
 	}
 	
 	private static void registerPatcher(Instrumentation instrumentation, boolean transformExisting) throws IOException {
-		instrumentation.addTransformer(new Patcher(), true);
+		instrumentation.addTransformer(new Patcher()/*, true*/);
 		
 		if ( transformExisting ) for ( Class<?> c : instrumentation.getAllLoadedClasses() ) {
 			if ( c.getName().equals(ECLIPSE_PARSER_CLASS_NAME) || c.getName().equals(ECLIPSE_CUD_CLASS_NAME) ) {
 				try {
-					instrumentation.retransformClasses(c);
-				} catch ( UnmodifiableClassException ex ) {
+					//instrumentation.retransformClasses(c); - //not in java 1.5.
+					Instrumentation.class.getMethod("retransformClasses", Class[].class).invoke(instrumentation,
+							new Object[] { new Class[] {c }});
+				} catch ( InvocationTargetException e ) {
 					throw new UnsupportedOperationException(
 							"The eclipse parser class is already loaded and cannot be modified. " +
 							"You'll have to restart eclipse in order to use Lombok in eclipse.");
+				} catch ( Throwable t ) {
+					throw new UnsupportedOperationException(
+							"This appears to be a java 1.5 instance, which cannot reload already loaded classes. " +
+					"You'll have to restart eclipse in order to use Lombok in eclipse.");
 				}
 			}
 		}

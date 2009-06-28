@@ -14,7 +14,6 @@ import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
-import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.Clinit;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
@@ -22,7 +21,6 @@ import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
-import org.eclipse.jdt.internal.compiler.ast.TryStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblem;
 import org.eclipse.jdt.internal.compiler.problem.ProblemSeverities;
@@ -147,23 +145,6 @@ public class EclipseAST extends AST<ASTNode> {
 	public final class Node extends AST<ASTNode>.Node {
 		Node(ASTNode node, Collection<Node> children, Kind kind) {
 			super(node, children, kind);
-		}
-		
-		public void rebuild() {
-			super.rebuild();
-			System.out.println("REBUILD COMPLETE");
-			AbstractMethodDeclaration me = (AbstractMethodDeclaration) get();
-			for ( Statement outer : me.statements ) {
-				System.out.println("OUTER: "+ outer);
-				if ( outer instanceof TryStatement ) {
-					TryStatement ts = (TryStatement)outer;
-					Block tb = ((TryStatement) outer).tryBlock;
-					for ( Statement inner : tb.statements ) {
-						System.out.println("INNER: " + inner);
-					}
-				}
-			}
-			System.out.println("/REBUILD COMPLETE");
 		}
 		
 		public void traverse(EclipseASTVisitor visitor) {

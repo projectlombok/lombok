@@ -69,7 +69,7 @@ import org.mangosdk.spi.ProviderFor;
 
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleData implements EclipseAnnotationHandler<Data> {
-	@Override public boolean handle(AnnotationValues<Data> annotation, Annotation ast, Node annotationNode) {
+	public boolean handle(AnnotationValues<Data> annotation, Annotation ast, Node annotationNode) {
 		Data ann = annotation.getInstance();
 		Node typeNode = annotationNode.up();
 		
@@ -105,11 +105,11 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		
 		if ( constructorExists(typeNode) == MethodExistsResult.NOT_EXISTS ) {
 			ConstructorDeclaration constructor = createConstructor(
-					ann.staticConstructor().isEmpty(), typeNode, nodesForConstructorAndToString, ast);
+					ann.staticConstructor().length() == 0, typeNode, nodesForConstructorAndToString, ast);
 			injectMethod(typeNode, constructor);
 		}
 		
-		if ( !ann.staticConstructor().isEmpty() ) {
+		if ( ann.staticConstructor().length() > 0 ) {
 			if ( methodExists("of", typeNode) == MethodExistsResult.NOT_EXISTS ) {
 				MethodDeclaration staticConstructor = createStaticConstructor(
 						ann.staticConstructor(), typeNode, nodesForConstructorAndToString, ast);

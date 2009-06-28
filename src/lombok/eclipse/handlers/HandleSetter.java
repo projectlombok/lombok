@@ -49,7 +49,7 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		createSetterForField(level, fieldNode, errorNode, pos, whineIfExists);
 	}
 	
-	@Override public boolean handle(AnnotationValues<Setter> annotation, Annotation ast, Node annotationNode) {
+	public boolean handle(AnnotationValues<Setter> annotation, Annotation ast, Node annotationNode) {
 		Node fieldNode = annotationNode.up();
 		if ( fieldNode.getKind() != Kind.FIELD ) return false;
 		AccessLevel level = annotation.getInstance().value();

@@ -87,7 +87,7 @@ public class AnnotationValues<A extends Annotation> {
 	public A getInstance() throws AnnotationValueDecodeFail {
 		if ( cachedInstance != null ) return cachedInstance;
 		InvocationHandler invocations = new InvocationHandler() {
-			@Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 				AnnotationValue v = values.get(method.getName());
 				if ( v == null ) {
 					Object defaultValue = method.getDefaultValue();

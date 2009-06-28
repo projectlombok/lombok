@@ -35,9 +35,9 @@ import org.mangosdk.spi.ProviderFor;
 
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
-	@Override public boolean handle(AnnotationValues<Cleanup> annotation, Annotation ast, Node annotationNode) {
+	public boolean handle(AnnotationValues<Cleanup> annotation, Annotation ast, Node annotationNode) {
 		String cleanupName = annotation.getInstance().cleanupMethod();
-		if ( cleanupName.isEmpty() ) {
+		if ( cleanupName.length() == 0 ) {
 			annotationNode.addError("cleanupName cannot be the empty string.");
 			return true;
 		}
@@ -49,6 +49,7 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		
 		LocalDeclaration decl = (LocalDeclaration)annotationNode.up().get();
 		
+		Node ancestor = annotationNode.up().directUp();
 		ASTNode blockNode = annotationNode.up().directUp().get();
 		
 		final boolean isSwitch;
@@ -124,7 +125,7 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		//Remove the stuff we just dumped into the tryBlock, AND the close() call, and then leave room for the try node and the unique name.
 		Statement[] newStatements = new Statement[statements.length - (end-start) +1];
 		System.arraycopy(statements, 0, newStatements, 0, start);
-		if ( statements.length - end > 0 ) System.arraycopy(statements, end+1, newStatements, start+2, statements.length - end -1);
+		System.arraycopy(statements, end+1, newStatements, start+2, statements.length - end -1);
 		TryStatement tryStatement = new TryStatement();
 		newStatements[start+1] = tryStatement;
 		LocalDeclaration tempVar = new LocalDeclaration(("$lombok$cleanup$" + new String(decl.name)).toCharArray(), 0, 0);
@@ -199,6 +200,8 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		} else if ( blockNode instanceof SwitchStatement ) {
 			((SwitchStatement)blockNode).statements = newStatements;
 		}
+		
+		ancestor.rebuild();
 		
 		return true;
 	}

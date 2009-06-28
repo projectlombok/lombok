@@ -1,6 +1,5 @@
 package lombok.core;
 
-import java.awt.Desktop;
 import java.net.URI;
 
 /**
@@ -13,7 +12,9 @@ public class ShowUserHelp {
 	public static void main(String[] args) {
 		boolean browserOpened = false;
 		try {
-			Desktop.getDesktop().browse(ABOUT_LOMBOK_URL);
+			//java.awt.Desktop doesn't exist in 1.5, and for IDE's sakes, we may want to work in java1.5 someday, so...
+			Object desktop = Class.forName("java.awt.Desktop").getMethod("getDesktop").invoke(null);
+			Class.forName("java.awt.Desktop").getMethod("browse", URI.class).invoke(desktop, ABOUT_LOMBOK_URL);
 			browserOpened = true;
 		} catch ( Exception ignore ) {}
 		
