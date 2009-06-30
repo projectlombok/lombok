@@ -2,6 +2,7 @@ package lombok.core;
 
 import static lombok.Lombok.sneakyThrow;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -93,12 +94,12 @@ public abstract class AST<N> {
 	public abstract class Node {
 		protected final Kind kind;
 		protected final N node;
-		protected final Collection<? extends Node> children;
+		protected final List<? extends Node> children;
 		protected Node parent;
 		protected boolean handled;
 		protected boolean isStructurallySignificant;
 		
-		protected Node(N node, Collection<? extends Node> children, Kind kind) {
+		protected Node(N node, List<? extends Node> children, Kind kind) {
 			this.kind = kind;
 			this.node = node;
 			this.children = children == null ? Collections.<Node>emptyList() : children;
@@ -127,6 +128,22 @@ public abstract class AST<N> {
 		
 		public N get() {
 			return node;
+		}
+		
+		@SuppressWarnings("unchecked")
+		public Node replaceWith(N newN, Kind kind) {
+			Node newNode = buildTree(newN, kind);
+			newNode.parent = parent;
+			for ( int i = 0 ; i < parent.children.size() ; i++ ) {
+				if ( parent.children.get(i) == this ) ((List)parent.children).set(i, newNode);
+			}
+			
+			parent.replaceChildNode(get(), newN);
+			return newNode;
+		}
+		
+		public void replaceChildNode(N oldN, N newN) {
+			replaceStatementInNode(get(), oldN, newN);
 		}
 		
 		public Kind getKind() {
@@ -204,7 +221,6 @@ public abstract class AST<N> {
 		private void gatherAndRemoveChildren(Map<N, Node> map) {
 			for ( Node child : children ) child.gatherAndRemoveChildren(map);
 			map.put(get(), this);
-			children.clear();
 			identityDetector.remove(get());
 			nodeMap.remove(get());
 		}
@@ -299,6 +315,87 @@ public abstract class AST<N> {
 		List<T> list = new ArrayList<T>();
 		buildWithField0(nodeType, statement, fa, list);
 		return list;
+	}
+	
+	protected boolean replaceStatementInNode(N statement, N oldN, N newN) {
+		for ( FieldAccess fa : fieldsOf(statement.getClass()) ) {
+			if ( replaceStatementInField(fa, statement, oldN, newN) ) return true;
+		}
+		
+		return false;
+	}
+	
+	private boolean replaceStatementInField(FieldAccess fa, N statement, N oldN, N newN) {
+		try {
+			Object o = fa.field.get(statement);
+			if ( o == null ) return false;
+			
+			if ( o == oldN ) {
+				fa.field.set(statement, newN);
+				return true;
+			}
+			
+			if ( fa.dim > 0 ) {
+				if ( o.getClass().isArray() ) {
+					return replaceStatementInArray(o, oldN, newN);
+				} else if ( Collection.class.isInstance(o) ) {
+					return replaceStatementInCollection(fa.field, statement, new ArrayList<Collection<?>>(), (Collection<?>)o, oldN, newN);
+				}
+			}
+			
+			return false;
+		} catch ( IllegalAccessException e ) {
+			throw sneakyThrow(e);
+		}
+		
+	}
+	
+	private boolean replaceStatementInCollection(Field field, Object fieldRef, List<Collection<?>> chain, Collection<?> collection, N oldN, N newN) throws IllegalAccessException {
+		if ( collection == null ) return false;
+		
+		int idx = -1;
+		for ( Object o : collection ) {
+			idx++;
+			if ( o == null ) continue;
+			if ( Collection.class.isInstance(o) ) {
+				Collection<?> newC = (Collection<?>)o;
+				List<Collection<?>> newChain = new ArrayList<Collection<?>>(chain);
+				newChain.add(newC);
+				if ( replaceStatementInCollection(field, fieldRef, newChain, newC, oldN, newN) ) return true;
+			}
+			if ( o == oldN ) {
+				setElementInASTCollection(field, fieldRef, chain, collection, idx, newN);
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/** Override if your AST collection does not support the set method. Javac's for example, does not. */
+	@SuppressWarnings("unchecked")
+	protected void setElementInASTCollection(Field field, Object fieldRef, List<Collection<?>> chain, Collection<?> collection, int idx, N newN) throws IllegalAccessException {
+		if ( collection instanceof List<?> ) {
+			((List)collection).set(idx, newN);
+		}
+	}
+	
+	private boolean replaceStatementInArray(Object array, N oldN, N newN) {
+		if ( array == null ) return false;
+		
+		int len = Array.getLength(array);
+		for ( int i = 0 ; i < len ; i++ ) {
+			Object o = Array.get(array, i);
+			if ( o == null ) continue;
+			if ( o.getClass().isArray() ) {
+				if ( replaceStatementInArray(o, oldN, newN) ) return true;
+			} else if ( o == oldN ) {
+				Array.set(array, i, newN);
+				return true;
+			}
+		}
+		
+		return false;
 	}
 	
 	@SuppressWarnings("unchecked")

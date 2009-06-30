@@ -228,7 +228,7 @@ public class JavacAST extends AST<JCTree> {
 	}
 	
 	public class Node extends AST<JCTree>.Node {
-		public Node(JCTree node, Collection<Node> children, Kind kind) {
+		public Node(JCTree node, List<Node> children, Kind kind) {
 			super(node, children, kind);
 		}
 		
@@ -411,6 +411,37 @@ public class JavacAST extends AST<JCTree> {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
+	@Override protected void setElementInASTCollection(Field field, Object refField, List<Collection<?>> chain, Collection<?> collection, int idx, JCTree newN) throws IllegalAccessException {
+		com.sun.tools.javac.util.List<?> list = setElementInConsList(chain, collection, ((List)collection).get(idx), newN);
+		field.set(refField, list);
+	}
+	
+	private com.sun.tools.javac.util.List<?> setElementInConsList(List<Collection<?>> chain, Collection<?> current, Object oldO, Object newO) {
+		com.sun.tools.javac.util.List<?> oldL = (com.sun.tools.javac.util.List<?>) current;
+		com.sun.tools.javac.util.List<?> newL = replaceInConsList(oldL, oldO, newO);
+		if ( chain.isEmpty() ) return newL;
+		else {
+			List<Collection<?>> reducedChain = new ArrayList<Collection<?>>(chain);
+			Collection<?> newCurrent = reducedChain.remove(reducedChain.size() -1);
+			return setElementInConsList(reducedChain, newCurrent, oldL, newL);
+		}
+	}
+	
+	private com.sun.tools.javac.util.List<?> replaceInConsList(com.sun.tools.javac.util.List<?> oldL, Object oldO, Object newO) {
+		boolean repl = false;
+		Object[] a = oldL.toArray();
+		for ( int i = 0 ; i < a.length ; i++ ) {
+			if ( a[i] == oldO ) {
+				a[i] = newO;
+				repl = true;
+			}
+		}
+		
+		if ( repl ) return com.sun.tools.javac.util.List.<Object>from(a);
+		else return oldL;
+	}
+
 	private void increaseErrorCount(Messager messager) {
 		try {
 			Field f = messager.getClass().getDeclaredField("errorCount");

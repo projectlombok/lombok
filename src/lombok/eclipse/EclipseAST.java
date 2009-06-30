@@ -143,7 +143,7 @@ public class EclipseAST extends AST<ASTNode> {
 	}
 	
 	public final class Node extends AST<ASTNode>.Node {
-		Node(ASTNode node, Collection<Node> children, Kind kind) {
+		Node(ASTNode node, List<Node> children, Kind kind) {
 			super(node, children, kind);
 		}
 		
@@ -300,7 +300,7 @@ public class EclipseAST extends AST<ASTNode> {
 	private static String toFileName(CompilationUnitDeclaration ast) {
 		return ast.compilationResult.fileName == null ? null : new String(ast.compilationResult.fileName);
 	}
-
+	
 	public void reparse() {
 		propagateProblems();
 		if ( completeParse ) return;
@@ -349,7 +349,7 @@ public class EclipseAST extends AST<ASTNode> {
 	}
 	
 	private Node buildCompilationUnit(CompilationUnitDeclaration top) {
-		Collection<Node> children = buildTypes(top.types);
+		List<Node> children = buildTypes(top.types);
 		return putInMap(new Node(top, children, Kind.COMPILATION_UNIT));
 	}
 	
@@ -357,7 +357,7 @@ public class EclipseAST extends AST<ASTNode> {
 		if ( n != null ) collection.add(n);
 	}
 	
-	private Collection<Node> buildTypes(TypeDeclaration[] children) {
+	private List<Node> buildTypes(TypeDeclaration[] children) {
 		if ( children == null ) return Collections.emptyList();
 		List<Node> childNodes = new ArrayList<Node>();
 		for ( TypeDeclaration type : children ) addIfNotNull(childNodes, buildType(type));
@@ -381,9 +381,9 @@ public class EclipseAST extends AST<ASTNode> {
 		return childNodes;
 	}
 	
-	private static <T> Collection<T> singleton(T item) {
+	private static <T> List<T> singleton(T item) {
 		if ( item == null ) return Collections.emptyList();
-		else return Collections.singleton(item);
+		else return Collections.singletonList(item);
 	}
 	
 	private Node buildField(FieldDeclaration field) {
@@ -454,21 +454,17 @@ public class EclipseAST extends AST<ASTNode> {
 		return childNodes;
 	}
 	
-	//Almost anything is a statement, so this method has a different name to avoid overloading confusion
 	private Node buildStatement(Statement child) {
 		if ( child == null || alreadyHandled(child) ) return null;
 		if ( child instanceof TypeDeclaration ) return buildType((TypeDeclaration)child);
 		
 		if ( child instanceof LocalDeclaration ) return buildLocal((LocalDeclaration)child, Kind.LOCAL);
 		
-		//We drill down because LocalDeclarations and TypeDeclarations can occur anywhere, even in, say,
-		//an if block, or even the expression on an assert statement!
-		
 		setAsHandled(child);
 		return drill(child);
 	}
 	
-	protected Node drill(Statement statement) {
+	private Node drill(Statement statement) {
 		List<Node> childNodes = new ArrayList<Node>();
 		for ( FieldAccess fa : fieldsOf(statement.getClass()) ) childNodes.addAll(buildWithField(Node.class, statement, fa));
 		return putInMap(new Node(statement, childNodes, Kind.STATEMENT));
