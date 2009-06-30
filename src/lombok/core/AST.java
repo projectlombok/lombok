@@ -75,20 +75,18 @@ public abstract class AST<N> {
 	@SuppressWarnings("unchecked")
 	private Node replaceNewWithExistingOld(Map<N, Node> oldNodes, Node newNode) {
 		Node oldNode = oldNodes.get(newNode.get());
-		if ( oldNode == null ) return newNode;
+		Node targetNode = oldNode == null ? newNode : oldNode;
 		
-		List<Object> oldChildren = new ArrayList<Object>();
+		List children = new ArrayList();
 		for ( Node child : newNode.children ) {
 			Node oldChild = replaceNewWithExistingOld(oldNodes, child);
-			if ( oldChild == null ) oldChildren.add(child);
-			else {
-				oldChildren.add(oldChild);
-				oldChild.parent = oldNode;
-			}
+			children.add(oldChild);
+			oldChild.parent = targetNode;
 		}
 		
-		oldNode.children.addAll((Collection) oldChildren);
-		return oldNode;
+		targetNode.children.clear();
+		((List)targetNode.children).addAll(children);
+		return targetNode;
 	}
 	
 	public abstract class Node {
@@ -210,7 +208,7 @@ public abstract class AST<N> {
 		 * Careful - the node you call this on must not itself have been removed or rehomed - it rebuilds <i>all children</i>.
 		 */
 		public void rebuild() {
-			Map<N, Node> oldNodes = new HashMap<N, Node>();
+			Map<N, Node> oldNodes = new IdentityHashMap<N, Node>();
 			gatherAndRemoveChildren(oldNodes);
 			
 			Node newNode = buildTree(get(), kind);
@@ -222,6 +220,7 @@ public abstract class AST<N> {
 			for ( Node child : children ) child.gatherAndRemoveChildren(map);
 			map.put(get(), this);
 			identityDetector.remove(get());
+			children.clear();
 			nodeMap.remove(get());
 		}
 		

@@ -1,0 +1,90 @@
+package lombok.javac.handlers;
+
+import lombok.Cleanup;
+import lombok.core.AnnotationValues;
+import lombok.core.AST.Kind;
+import lombok.javac.JavacAnnotationHandler;
+import lombok.javac.JavacAST.Node;
+
+import org.mangosdk.spi.ProviderFor;
+
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCBlock;
+import com.sun.tools.javac.tree.JCTree.JCCase;
+import com.sun.tools.javac.tree.JCTree.JCCatch;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCStatement;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.util.List;
+
+@ProviderFor(JavacAnnotationHandler.class)
+public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
+	@Override public boolean handle(AnnotationValues<Cleanup> annotation, JCAnnotation ast, Node annotationNode) {
+		String cleanupName = annotation.getInstance().cleanupMethod();
+		if ( cleanupName.length() == 0 ) {
+			annotationNode.addError("cleanupName cannot be the empty string.");
+			return true;
+		}
+		
+		if ( annotationNode.up().getKind() != Kind.LOCAL ) {
+			annotationNode.addError("@Cleanup is legal only on local variable declarations.");
+			return true;
+		}
+		
+		JCVariableDecl decl = (JCVariableDecl)annotationNode.up().get();
+		
+		Node ancestor = annotationNode.up().directUp();
+		JCTree blockNode = ancestor.get();
+		
+		final List<JCStatement> statements;
+		if ( blockNode instanceof JCBlock ) {
+			statements = ((JCBlock)blockNode).stats;
+		} else if ( blockNode instanceof JCCase ) {
+			statements = ((JCCase)blockNode).stats;
+		} else if ( blockNode instanceof JCMethodDecl ) {
+			statements = ((JCMethodDecl)blockNode).body.stats;
+		} else {
+			annotationNode.addError("@Cleanup is legal only on a local variable declaration inside a block.");
+			return true;
+		}
+		
+		boolean seenDeclaration = false;
+		List<JCStatement> tryBlock = List.nil();
+		List<JCStatement> newStatements = List.nil();
+		for ( JCStatement statement : statements ) {
+			if ( !seenDeclaration ) {
+				if ( statement == decl ) seenDeclaration = true;
+				newStatements = newStatements.append(statement);
+			} else tryBlock = tryBlock.append(statement);
+		}
+		
+		if ( !seenDeclaration ) {
+			annotationNode.addError("LOMBOK BUG: Can't find this local variable declaration inside its parent.");
+			return true;
+		}
+		
+		TreeMaker maker = annotationNode.getTreeMaker();
+		JCFieldAccess cleanupCall = maker.Select(maker.Ident(decl.name), annotationNode.toName(cleanupName));
+		List<JCStatement> finalizerBlock = List.<JCStatement>of(maker.Exec(
+				maker.Apply(List.<JCExpression>nil(), cleanupCall, List.<JCExpression>nil())));
+		
+		JCBlock finalizer = maker.Block(0, finalizerBlock);
+		newStatements = newStatements.append(maker.Try(maker.Block(0, tryBlock), List.<JCCatch>nil(), finalizer));
+		
+		if ( blockNode instanceof JCBlock ) {
+			((JCBlock)blockNode).stats = newStatements;
+		} else if ( blockNode instanceof JCCase ) {
+			((JCCase)blockNode).stats = newStatements;
+		} else if ( blockNode instanceof JCMethodDecl ) {
+			((JCMethodDecl)blockNode).body.stats = newStatements;
+		} else throw new AssertionError("Should not get here");
+		
+		ancestor.rebuild();
+		
+		return true;
+	}
+}

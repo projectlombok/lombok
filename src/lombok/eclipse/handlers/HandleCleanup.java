@@ -36,7 +36,7 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		LocalDeclaration decl = (LocalDeclaration)annotationNode.up().get();
 		
 		Node ancestor = annotationNode.up().directUp();
-		ASTNode blockNode = annotationNode.up().directUp().get();
+		ASTNode blockNode = ancestor.get();
 		
 		final boolean isSwitch;
 		final Statement[] statements;
@@ -69,7 +69,7 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 			return true;
 		}
 		
-		start++;
+		start++;  //We start with try{} *AFTER* the var declaration.
 		
 		int end;
 		if ( isSwitch ) {
