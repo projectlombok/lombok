@@ -1,10 +1,45 @@
 ## Fix Eclipse's HandleCleanup
 
-* Fix the AST.Node view of the innards of the method. Now nested applications of @Cleanup blow everything up.
+Right now exceptions thrown by the cleanup method will mask any exceptions thrown in the main body, which is not wanted. This does not appear to be doable without java 7 features or very extensive additions to the lombok framework.
 
-* Replace the multi-catch block strategy at least with more catch blocks (all encapsulating try/catch blocks' caught types as well), or use sneakyThrow, which is even better.
+A lot has been tried:
 
-* Fix PrintAST to always run at the very very very end.
+    Tried tactics, and why they won't work:
+    
+     - Replace every 'return', 'break', and 'continue' statement (for the latter 2, only if they break/continue out of the try block) with a block that first sets a uniquely named flag before doing the operati
+       Then, check that flag in the finally block to see if the cleanup call should be guarded by a try/catchThrowable. This doesn't work, because its not possible to instrument the 4th way out of a try block 
+    
+     - Put catch blocks in for all relevant exceptions (RuntimeException, Error, all exceptions declared as thrown by the method, and all types of exceptions of the catch blocks of encapsulating try blocks.
+       This doesn't work, partly because it'll fail for sneakily thrown exceptions, but mostly because you can't just catch an exception listed in the 'throws' clause of the method body; catching an exception
+       that no statement in the try block can throw is a compile time error, but it is perfectly allright to declare these as 'thrown'.
+    
+     - Put in a blanket catch Throwable to set the flag. Two problems with this:
+       First, sneaky throw can't be done. Thread.stop invokes a security manager and triggers a warning, Calling a sneakyThrow method creates a runtime dependency on lombok, constructing a sneakyThrow in-class
+       Secondly, this would mean that any statements in the try body that throw an exception aren't flagged to the user as needing to be handled. Unacceptable.
+    
+    The Cleanup annotation now also calls the cleanup method for you, and will call it at the END of the current scope. The following plans have been tried and abandoned:
+    
+     - Cleanup right after the final mention. This doesn't work, because the final mention may not be the final use-place. Example:
+       @Cleanup InputStream in = new FileInputStream(someFile);
+       InputStreamReader reader = new InputStreamReader(in);
+       reader.read(); //oops - in is already closed by now.
+    
+     - Require an explicit var.cleanup() call and consider that the cue to close off the try block.
+       This doesn't work either, because now variables set in between the @Cleanup declaration and the var.cleanup() call become invisible to following statements. Example:
+       @Cleanup InputStream in = new FileInputStream(someFile);
+       int i = in.read();
+       in.close();
+       System.out.println(i); //fail - i is inside the generated try block but this isn't, so 'i' is not visible from here.
+    
+    By running to the end of visible scope, all these problems are avoided. This does remove the flexibility of declaring where you want a close call to be executed, but there are two mitigating factors availa
+    
+     1) Create an explicit scope block. You can just stick { code } in any place where you can legally write a statement, in java. This is relatively unknown, so I expect most users will go for:
+    
+     2) Just call close explicitly. I've yet to see a cleanup method which isn't idempotent anyway (calling it multiple times is no different than calling it once).
+    
+    During the course of investigating these options, the AST code has been extended to support live replacement of any child node, including updating the actual underlying system AST as well as our own.
+    Unfortunately, this code has NOT been tested. It was rather a lot of work so I'm leaving it in, and at least for eclipse it even seemed to work.
+
 
 ## Fix eclipse's pointers
 
