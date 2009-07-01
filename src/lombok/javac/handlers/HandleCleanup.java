@@ -42,6 +42,11 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 		
 		JCVariableDecl decl = (JCVariableDecl)annotationNode.up().get();
 		
+		if ( decl.init == null ) {
+			annotationNode.addError("@Cleanup variable declarations need to be initialized.");
+			return true;
+		}
+		
 		Node ancestor = annotationNode.up().directUp();
 		JCTree blockNode = ancestor.get();
 		
@@ -109,7 +114,7 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 			if ( ((JCIdent)statement).name.contentEquals(name) ) {
 				Node problemNode = node.getNodeFor(statement);
 				if ( problemNode != null ) problemNode.addWarning(
-				"You're assigning a guarded variable to something else. This is a bad idea.");
+				"You're assigning an auto-cleanup variable to something else. This is a bad idea.");
 			}
 		}
 	}

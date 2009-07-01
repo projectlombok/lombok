@@ -41,7 +41,8 @@ public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> 
 			return true;
 		}
 		boolean isStatic = (method.mods.flags & Flags.STATIC) != 0;
-		String lockName = isStatic ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
+		String lockName = annotation.getInstance().value();
+		if ( lockName.length() == 0 ) lockName = isStatic ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
 		
 		TreeMaker maker = methodNode.getTreeMaker();
 		

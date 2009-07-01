@@ -7,4 +7,6 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.SOURCE)
-public @interface Synchronized {}
+public @interface Synchronized {
+	String value() default "";
+}

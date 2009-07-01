@@ -1,5 +1,7 @@
 ## Fix Eclipse's HandleCleanup
 
+Consider requiring an initializer and warn when the varname gets reassigned, if the declaration wasn't already final. Think about this more.
+
 Right now exceptions thrown by the cleanup method will mask any exceptions thrown in the main body, which is not wanted. This does not appear to be doable without java 7 features or very extensive additions to the lombok framework.
 
 A lot has been tried:

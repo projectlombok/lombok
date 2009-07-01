@@ -48,7 +48,8 @@ public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized
 			return true;
 		}
 		
-		char[] lockName = method.isStatic() ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
+		char[] lockName = annotation.getInstance().value().toCharArray();
+		if ( lockName.length == 0 ) lockName = method.isStatic() ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
 		
 		if ( fieldExists(new String(lockName), methodNode) == MemberExistsResult.NOT_EXISTS ) {
 			FieldDeclaration fieldDecl = new FieldDeclaration(lockName, 0, -1);

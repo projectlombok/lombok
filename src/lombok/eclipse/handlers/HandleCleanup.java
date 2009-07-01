@@ -16,6 +16,7 @@ import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.CaseStatement;
 import org.eclipse.jdt.internal.compiler.ast.CastExpression;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
@@ -38,6 +39,11 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		}
 		
 		LocalDeclaration decl = (LocalDeclaration)annotationNode.up().get();
+		
+		if ( decl.initialization == null ) {
+			annotationNode.addError("@Cleanup variable declarations need to be initialized.");
+			return true;
+		}
 		
 		Node ancestor = annotationNode.up().directUp();
 		ASTNode blockNode = ancestor.get();
@@ -110,7 +116,18 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		
 		Statement[] finallyBlock = new Statement[1];
 		MessageSend unsafeClose = new MessageSend();
-		unsafeClose.receiver = new SingleNameReference(decl.name, 0);
+		unsafeClose.sourceStart = ast.sourceStart;
+		unsafeClose.sourceEnd = ast.sourceEnd;
+		SingleNameReference receiver = new SingleNameReference(decl.name, 0);
+		unsafeClose.receiver = receiver;
+		long nameSourcePosition = (long)ast.sourceStart << 32 | ast.sourceEnd;
+		if ( ast.memberValuePairs() != null ) for ( MemberValuePair pair : ast.memberValuePairs() ) {
+			if ( pair.name != null && new String(pair.name).equals("cleanupMethod") ) {
+				nameSourcePosition = (long)pair.value.sourceStart << 32 | pair.value.sourceEnd;
+				break;
+			}
+		}
+		unsafeClose.nameSourcePosition = nameSourcePosition;
 		unsafeClose.selector = cleanupName.toCharArray();
 		finallyBlock[0] = unsafeClose;
 		tryStatement.finallyBlock = new Block(0);
@@ -148,7 +165,7 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 			if ( Arrays.equals(((SingleNameReference)statement).token, varName) ) {
 				Node problemNode = node.getNodeFor(statement);
 				if ( problemNode != null ) problemNode.addWarning(
-						"You're assigning a guarded variable to something else. This is a bad idea.");
+						"You're assigning an auto-cleanup variable to something else. This is a bad idea.");
 			}
 		}
 	}
