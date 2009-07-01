@@ -1,3 +1,5 @@
+## Add support for Fields and Local Declarations for @SneakyThrows (sneakythrows on the initializer)
+
 ## Fix Eclipse's HandleCleanup
 
 Consider requiring an initializer and warn when the varname gets reassigned, if the declaration wasn't already final. Think about this more.
