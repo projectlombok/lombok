@@ -1,5 +1,7 @@
 package lombok.eclipse.handlers;
 
+import java.util.Arrays;
+
 import lombok.Cleanup;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
@@ -9,8 +11,10 @@ import lombok.eclipse.EclipseAST.Node;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.CaseStatement;
+import org.eclipse.jdt.internal.compiler.ast.CastExpression;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
@@ -97,6 +101,8 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		System.arraycopy(statements, 0, newStatements, 0, start); //copy all statements before the try block verbatim.
 		System.arraycopy(statements, end, newStatements, start+1, statements.length - end); //For switch statements.
 		
+		doAssignmentCheck(annotationNode, tryBlock, decl.name);
+		
 		TryStatement tryStatement = new TryStatement();
 		tryStatement.tryBlock = new Block(0);
 		tryStatement.tryBlock.statements = tryBlock;
@@ -125,5 +131,25 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		
 		
 		return true;
+	}
+	
+	private void doAssignmentCheck(Node node, Statement[] tryBlock, char[] varName) {
+		for ( Statement statement : tryBlock ) doAssignmentCheck0(node, statement, varName);
+	}
+	
+	private void doAssignmentCheck0(Node node, Statement statement, char[] varName) {
+		if ( statement instanceof Assignment )
+			doAssignmentCheck0(node, ((Assignment)statement).expression, varName);
+		else if ( statement instanceof LocalDeclaration )
+			doAssignmentCheck0(node, ((LocalDeclaration)statement).initialization, varName);
+		else if ( statement instanceof CastExpression )
+			doAssignmentCheck0(node, ((CastExpression)statement).expression, varName);
+		else if ( statement instanceof SingleNameReference ) {
+			if ( Arrays.equals(((SingleNameReference)statement).token, varName) ) {
+				Node problemNode = node.getNodeFor(statement);
+				if ( problemNode != null ) problemNode.addWarning(
+						"You're assigning a guarded variable to something else. This is a bad idea.");
+			}
+		}
 	}
 }

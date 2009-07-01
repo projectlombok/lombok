@@ -11,15 +11,20 @@ import org.mangosdk.spi.ProviderFor;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
+import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Name;
 
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
@@ -67,6 +72,8 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 			return true;
 		}
 		
+		doAssignmentCheck(annotationNode, tryBlock, decl.name);
+		
 		TreeMaker maker = annotationNode.getTreeMaker();
 		JCFieldAccess cleanupCall = maker.Select(maker.Ident(decl.name), annotationNode.toName(cleanupName));
 		List<JCStatement> finalizerBlock = List.<JCStatement>of(maker.Exec(
@@ -86,5 +93,24 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 		ancestor.rebuild();
 		
 		return true;
+	}
+	
+	private void doAssignmentCheck(Node node, List<JCStatement> statements, Name name) {
+		for ( JCStatement statement : statements ) doAssignmentCheck0(node, statement, name);
+	}
+	
+	private void doAssignmentCheck0(Node node, JCTree statement, Name name) {
+		if ( statement instanceof JCAssign ) doAssignmentCheck0(node, ((JCAssign)statement).rhs, name);
+		if ( statement instanceof JCExpressionStatement ) doAssignmentCheck0(node,
+				((JCExpressionStatement)statement).expr, name);
+		if ( statement instanceof JCVariableDecl ) doAssignmentCheck0(node, ((JCVariableDecl)statement).init, name);
+		if ( statement instanceof JCTypeCast ) doAssignmentCheck0(node, ((JCTypeCast)statement).expr, name);
+		if ( statement instanceof JCIdent ) {
+			if ( ((JCIdent)statement).name.contentEquals(name) ) {
+				Node problemNode = node.getNodeFor(statement);
+				if ( problemNode != null ) problemNode.addWarning(
+				"You're assigning a guarded variable to something else. This is a bad idea.");
+			}
+		}
 	}
 }
