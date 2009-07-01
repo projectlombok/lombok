@@ -68,27 +68,27 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		
 		String staticConstructorName = annotation.getInstance().staticConstructor();
 		
-		if ( constructorExists(typeNode) == MethodExistsResult.NOT_EXISTS ) {
+		if ( constructorExists(typeNode) == MemberExistsResult.NOT_EXISTS ) {
 			JCMethodDecl constructor = createConstructor(staticConstructorName.equals(""), typeNode, nodesForConstructorAndToString);
 			injectMethod(typeNode, constructor);
 		}
 		
-		if ( !staticConstructorName.isEmpty() && methodExists("of", typeNode) == MethodExistsResult.NOT_EXISTS ) {
+		if ( !staticConstructorName.isEmpty() && methodExists("of", typeNode) == MemberExistsResult.NOT_EXISTS ) {
 			JCMethodDecl staticConstructor = createStaticConstructor(staticConstructorName, typeNode, nodesForConstructorAndToString);
 			injectMethod(typeNode, staticConstructor);
 		}
 		
-		if ( methodExists("equals", typeNode) == MethodExistsResult.NOT_EXISTS ) {
+		if ( methodExists("equals", typeNode) == MemberExistsResult.NOT_EXISTS ) {
 			JCMethodDecl method = createEquals(typeNode, nodesForEquality);
 			injectMethod(typeNode, method);
 		}
 		
-		if ( methodExists("hashCode", typeNode) == MethodExistsResult.NOT_EXISTS ) {
+		if ( methodExists("hashCode", typeNode) == MemberExistsResult.NOT_EXISTS ) {
 			JCMethodDecl method = createHashCode(typeNode, nodesForEquality);
 			injectMethod(typeNode, method);
 		}
 		
-		if ( methodExists("toString", typeNode) == MethodExistsResult.NOT_EXISTS ) {
+		if ( methodExists("toString", typeNode) == MemberExistsResult.NOT_EXISTS ) {
 			JCMethodDecl method = createToString(typeNode, nodesForEquality);
 			injectMethod(typeNode, method);
 		}

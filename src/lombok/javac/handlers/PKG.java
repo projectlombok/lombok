@@ -33,11 +33,31 @@ class PKG {
 		return TransformationsUtil.toSetterName(fieldName);
 	}
 	
-	enum MethodExistsResult {
+	enum MemberExistsResult {
 		NOT_EXISTS, EXISTS_BY_USER, EXISTS_BY_LOMBOK;
 	}
 	
-	static MethodExistsResult methodExists(String methodName, JavacAST.Node node) {
+	static MemberExistsResult fieldExists(String fieldName, JavacAST.Node node) {
+		while ( node != null && !(node.get() instanceof JCClassDecl) ) {
+			node = node.up();
+		}
+		
+		if ( node != null && node.get() instanceof JCClassDecl ) {
+			for ( JCTree def : ((JCClassDecl)node.get()).defs ) {
+				if ( def instanceof JCVariableDecl ) {
+					if ( ((JCVariableDecl)def).name.contentEquals(fieldName) ) {
+						JavacAST.Node existing = node.getNodeFor(def);
+						if ( existing == null || !existing.isHandled() ) return MemberExistsResult.EXISTS_BY_USER;
+						return MemberExistsResult.EXISTS_BY_LOMBOK;
+					}
+				}
+			}
+		}
+		
+		return MemberExistsResult.NOT_EXISTS;
+	}
+	
+	static MemberExistsResult methodExists(String methodName, JavacAST.Node node) {
 		while ( node != null && !(node.get() instanceof JCClassDecl) ) {
 			node = node.up();
 		}
@@ -47,17 +67,17 @@ class PKG {
 				if ( def instanceof JCMethodDecl ) {
 					if ( ((JCMethodDecl)def).name.contentEquals(methodName) ) {
 						JavacAST.Node existing = node.getNodeFor(def);
-						if ( existing == null || !existing.isHandled() ) return MethodExistsResult.EXISTS_BY_USER;
-						return MethodExistsResult.EXISTS_BY_LOMBOK;
+						if ( existing == null || !existing.isHandled() ) return MemberExistsResult.EXISTS_BY_USER;
+						return MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
 				}
 			}
 		}
 		
-		return MethodExistsResult.NOT_EXISTS;
+		return MemberExistsResult.NOT_EXISTS;
 	}
 	
-	static MethodExistsResult constructorExists(JavacAST.Node node) {
+	static MemberExistsResult constructorExists(JavacAST.Node node) {
 		while ( node != null && !(node.get() instanceof JCClassDecl) ) {
 			node = node.up();
 		}
@@ -68,14 +88,14 @@ class PKG {
 					if ( ((JCMethodDecl)def).name.contentEquals("<init>") ) {
 						if ( (((JCMethodDecl)def).mods.flags & Flags.GENERATEDCONSTR) != 0 ) continue;
 						JavacAST.Node existing = node.getNodeFor(def);
-						if ( existing == null || !existing.isHandled() ) return MethodExistsResult.EXISTS_BY_USER;
-						return MethodExistsResult.EXISTS_BY_LOMBOK;
+						if ( existing == null || !existing.isHandled() ) return MemberExistsResult.EXISTS_BY_USER;
+						return MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
 				}
 			}
 		}
 		
-		return MethodExistsResult.NOT_EXISTS;
+		return MemberExistsResult.NOT_EXISTS;
 	}
 	
 	static int toJavacModifier(AccessLevel accessLevel) {
@@ -91,6 +111,14 @@ class PKG {
 		case PROTECTED:
 			return Modifier.PROTECTED;
 		}
+	}
+	
+	static void injectField(JavacAST.Node typeNode, JCVariableDecl field) {
+		JCClassDecl type = (JCClassDecl) typeNode.get();
+		
+		type.defs = type.defs.append(field);
+		
+		typeNode.add(field, Kind.FIELD).recursiveSetHandled();
 	}
 	
 	static void injectMethod(JavacAST.Node typeNode, JCMethodDecl method) {

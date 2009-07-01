@@ -82,6 +82,7 @@ public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized
 		};
 		
 		methodNode.rebuild();
+		
 		return true;
 	}
 }
