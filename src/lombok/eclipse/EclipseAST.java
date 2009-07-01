@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import lombok.core.AST;
 
@@ -49,7 +48,7 @@ public class EclipseAST extends AST<ASTNode> {
 		top().traverse(visitor);
 	}
 	
-	private void traverseChildren(EclipseASTVisitor visitor, Node node) {
+	void traverseChildren(EclipseASTVisitor visitor, Node node) {
 		for ( Node child : node.down() ) {
 			child.traverse(visitor);
 		}
@@ -306,15 +305,8 @@ public class EclipseAST extends AST<ASTNode> {
 		if ( completeParse ) return;
 		boolean newCompleteParse = isComplete(compilationUnitDeclaration);
 		if ( !newCompleteParse ) return;
-		Map<ASTNode, AST<ASTNode>.Node> oldMap = getNodeMap();
-		clearState();
-		setTop(buildCompilationUnit(compilationUnitDeclaration));
 		
-		//Retain 'handled' flags.
-		for ( Map.Entry<ASTNode, AST<ASTNode>.Node> e : getNodeMap().entrySet() ) {
-			Node oldEntry = (Node) oldMap.get(e.getKey());
-			if ( oldEntry != null && oldEntry.isHandled() ) e.getValue().setHandled();
-		}
+		top().rebuild();
 		
 		this.completeParse = true;
 	}
@@ -349,6 +341,7 @@ public class EclipseAST extends AST<ASTNode> {
 	}
 	
 	private Node buildCompilationUnit(CompilationUnitDeclaration top) {
+		if ( setAndGetAsHandled(top) ) return null;
 		List<Node> children = buildTypes(top.types);
 		return putInMap(new Node(top, children, Kind.COMPILATION_UNIT));
 	}
@@ -358,14 +351,13 @@ public class EclipseAST extends AST<ASTNode> {
 	}
 	
 	private List<Node> buildTypes(TypeDeclaration[] children) {
-		if ( children == null ) return Collections.emptyList();
 		List<Node> childNodes = new ArrayList<Node>();
-		for ( TypeDeclaration type : children ) addIfNotNull(childNodes, buildType(type));
+		if ( children != null ) for ( TypeDeclaration type : children ) addIfNotNull(childNodes, buildType(type));
 		return childNodes;
 	}
 	
 	private Node buildType(TypeDeclaration type) {
-		if ( alreadyHandled(type) ) return null;
+		if ( setAndGetAsHandled(type) ) return null;
 		List<Node> childNodes = new ArrayList<Node>();
 		childNodes.addAll(buildFields(type.fields));
 		childNodes.addAll(buildTypes(type.memberTypes));
@@ -375,20 +367,20 @@ public class EclipseAST extends AST<ASTNode> {
 	}
 	
 	private Collection<Node> buildFields(FieldDeclaration[] children) {
-		if ( children == null ) return Collections.emptyList();
 		List<Node> childNodes = new ArrayList<Node>();
-		for ( FieldDeclaration child : children ) addIfNotNull(childNodes, buildField(child));
+		if ( children != null ) for ( FieldDeclaration child : children ) addIfNotNull(childNodes, buildField(child));
 		return childNodes;
 	}
 	
 	private static <T> List<T> singleton(T item) {
-		if ( item == null ) return Collections.emptyList();
-		else return Collections.singletonList(item);
+		List<T> list = new ArrayList<T>();
+		if ( item != null ) list.add(item);
+		return list;
 	}
 	
 	private Node buildField(FieldDeclaration field) {
 		if ( field instanceof Initializer ) return buildInitializer((Initializer)field);
-		if ( alreadyHandled(field) ) return null;
+		if ( setAndGetAsHandled(field) ) return null;
 		List<Node> childNodes = new ArrayList<Node>();
 		addIfNotNull(childNodes, buildStatement(field.initialization));
 		childNodes.addAll(buildAnnotations(field.annotations));
@@ -396,19 +388,18 @@ public class EclipseAST extends AST<ASTNode> {
 	}
 	
 	private Node buildInitializer(Initializer initializer) {
-		if ( alreadyHandled(initializer) ) return null;
+		if ( setAndGetAsHandled(initializer) ) return null;
 		return putInMap(new Node(initializer, singleton(buildStatement(initializer.block)), Kind.INITIALIZER));
 	}
 	
 	private Collection<Node> buildMethods(AbstractMethodDeclaration[] children) {
-		if ( children == null ) return Collections.emptyList();
 		List<Node> childNodes = new ArrayList<Node>();
-		for (AbstractMethodDeclaration method : children ) addIfNotNull(childNodes, buildMethod(method));
+		if ( children != null ) for (AbstractMethodDeclaration method : children ) addIfNotNull(childNodes, buildMethod(method));
 		return childNodes;
 	}
 	
 	private Node buildMethod(AbstractMethodDeclaration method) {
-		if ( alreadyHandled(method) ) return null;
+		if ( setAndGetAsHandled(method) ) return null;
 		List<Node> childNodes = new ArrayList<Node>();
 		childNodes.addAll(buildArguments(method.arguments));
 		childNodes.addAll(buildStatements(method.statements));
@@ -418,16 +409,15 @@ public class EclipseAST extends AST<ASTNode> {
 	
 	//Arguments are a kind of LocalDeclaration. They can definitely contain lombok annotations, so we care about them.
 	private Collection<Node> buildArguments(Argument[] children) {
-		if ( children == null ) return Collections.emptyList();
 		List<Node> childNodes = new ArrayList<Node>();
-		for ( LocalDeclaration local : children ) {
+		if ( children != null ) for ( LocalDeclaration local : children ) {
 			addIfNotNull(childNodes, buildLocal(local, Kind.ARGUMENT));
 		}
 		return childNodes;
 	}
 	
 	private Node buildLocal(LocalDeclaration local, Kind kind) {
-		if ( alreadyHandled(local) ) return null;
+		if ( setAndGetAsHandled(local) ) return null;
 		List<Node> childNodes = new ArrayList<Node>();
 		addIfNotNull(childNodes, buildStatement(local.initialization));
 		childNodes.addAll(buildAnnotations(local.annotations));
@@ -435,32 +425,31 @@ public class EclipseAST extends AST<ASTNode> {
 	}
 	
 	private Collection<Node> buildAnnotations(Annotation[] annotations) {
-		if ( annotations == null ) return Collections.emptyList();
 		List<Node> elements = new ArrayList<Node>();
-		for ( Annotation an : annotations ) addIfNotNull(elements, buildAnnotation(an));
+		if ( annotations != null ) for ( Annotation an : annotations ) addIfNotNull(elements, buildAnnotation(an));
 		return elements;
 	}
 	
 	private Node buildAnnotation(Annotation annotation) {
 		if ( annotation == null ) return null;
-		if ( alreadyHandled(annotation) ) return null;
+		if ( setAndGetAsHandled(annotation) ) return null;
 		return putInMap(new Node(annotation, null, Kind.ANNOTATION));
 	}
 	
 	private Collection<Node> buildStatements(Statement[] children) {
-		if ( children == null ) return Collections.emptyList();
 		List<Node> childNodes = new ArrayList<Node>();
-		for ( Statement child  : children ) addIfNotNull(childNodes, buildStatement(child));
+		if ( children != null ) for ( Statement child  : children ) addIfNotNull(childNodes, buildStatement(child));
 		return childNodes;
 	}
 	
 	private Node buildStatement(Statement child) {
-		if ( child == null || alreadyHandled(child) ) return null;
+		if ( child == null ) return null;
 		if ( child instanceof TypeDeclaration ) return buildType((TypeDeclaration)child);
 		
 		if ( child instanceof LocalDeclaration ) return buildLocal((LocalDeclaration)child, Kind.LOCAL);
 		
-		setAsHandled(child);
+		if ( setAndGetAsHandled(child) ) return null;
+		
 		return drill(child);
 	}
 	

@@ -131,7 +131,7 @@ public class JavacAST extends AST<JCTree> {
 	}
 	
 	private Node buildType(JCClassDecl type) {
-		if ( alreadyHandled(type) ) return null;
+		if ( setAndGetAsHandled(type) ) return null;
 		List<Node> childNodes = new ArrayList<Node>();
 		
 		for ( JCTree def : type.defs ) {
@@ -152,7 +152,7 @@ public class JavacAST extends AST<JCTree> {
 	}
 	
 	private Node buildField(JCVariableDecl field) {
-		if ( alreadyHandled(field) ) return null;
+		if ( setAndGetAsHandled(field) ) return null;
 		List<Node> childNodes = new ArrayList<Node>();
 		for ( JCAnnotation annotation : field.mods.annotations ) addIfNotNull(childNodes, buildAnnotation(annotation));
 		addIfNotNull(childNodes, buildExpression(field.init));
@@ -160,7 +160,7 @@ public class JavacAST extends AST<JCTree> {
 	}
 	
 	private Node buildLocalVar(JCVariableDecl local, Kind kind) {
-		if ( alreadyHandled(local) ) return null;
+		if ( setAndGetAsHandled(local) ) return null;
 		List<Node> childNodes = new ArrayList<Node>();
 		for ( JCAnnotation annotation : local.mods.annotations ) addIfNotNull(childNodes, buildAnnotation(annotation));
 		addIfNotNull(childNodes, buildExpression(local.init));
@@ -168,14 +168,14 @@ public class JavacAST extends AST<JCTree> {
 	}
 	
 	private Node buildInitializer(JCBlock initializer) {
-		if ( alreadyHandled(initializer) ) return null;
+		if ( setAndGetAsHandled(initializer) ) return null;
 		List<Node> childNodes = new ArrayList<Node>();
 		for ( JCStatement statement: initializer.stats ) addIfNotNull(childNodes, buildStatement(statement));
 		return putInMap(new Node(initializer, childNodes, Kind.INITIALIZER));
 	}
 	
 	private Node buildMethod(JCMethodDecl method) {
-		if ( alreadyHandled(method) ) return null;
+		if ( setAndGetAsHandled(method) ) return null;
 		List<Node> childNodes = new ArrayList<Node>();
 		for ( JCAnnotation annotation : method.mods.annotations ) addIfNotNull(childNodes, buildAnnotation(annotation));
 		for ( JCVariableDecl param : method.params ) addIfNotNull(childNodes, buildLocalVar(param, Kind.ARGUMENT));
@@ -185,7 +185,7 @@ public class JavacAST extends AST<JCTree> {
 	}
 	
 	private Node buildAnnotation(JCAnnotation annotation) {
-		if ( alreadyHandled(annotation) ) return null;
+		if ( setAndGetAsHandled(annotation) ) return null;
 		return putInMap(new Node(annotation, null, Kind.ANNOTATION));
 	}
 	
@@ -198,15 +198,13 @@ public class JavacAST extends AST<JCTree> {
 	}
 	
 	private Node buildStatementOrExpression(JCTree statement) {
-		if ( statement == null || alreadyHandled(statement) ) return null;
+		if ( statement == null ) return null;
 		if ( statement instanceof JCAnnotation ) return null;
 		if ( statement instanceof JCClassDecl ) return buildType((JCClassDecl)statement);
 		if ( statement instanceof JCVariableDecl ) return buildLocalVar((JCVariableDecl)statement, Kind.LOCAL);
 		
-		//We drill down because LocalDeclarations and TypeDeclarations can occur anywhere, even in, say,
-		//an if block, or even the expression on an assert statement!
+		if ( setAndGetAsHandled(statement) ) return null;
 		
-		setAsHandled(statement);
 		return drill(statement);
 	}
 	

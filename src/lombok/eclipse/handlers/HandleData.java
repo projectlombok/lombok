@@ -19,7 +19,7 @@ import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
-import lombok.eclipse.handlers.PKG.MethodExistsResult;
+import lombok.eclipse.handlers.PKG.MemberExistsResult;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
@@ -98,31 +98,31 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 				new HandleSetter().generateSetterForField(child, annotationNode.get());
 		}
 		
-		if ( methodExists("toString", typeNode) == MethodExistsResult.NOT_EXISTS ) {
+		if ( methodExists("toString", typeNode) == MemberExistsResult.NOT_EXISTS ) {
 			MethodDeclaration toString = createToString(typeNode, nodesForConstructorAndToString, ast);
 			injectMethod(typeNode, toString);
 		}
 		
-		if ( constructorExists(typeNode) == MethodExistsResult.NOT_EXISTS ) {
+		if ( constructorExists(typeNode) == MemberExistsResult.NOT_EXISTS ) {
 			ConstructorDeclaration constructor = createConstructor(
 					ann.staticConstructor().length() == 0, typeNode, nodesForConstructorAndToString, ast);
 			injectMethod(typeNode, constructor);
 		}
 		
 		if ( ann.staticConstructor().length() > 0 ) {
-			if ( methodExists("of", typeNode) == MethodExistsResult.NOT_EXISTS ) {
+			if ( methodExists("of", typeNode) == MemberExistsResult.NOT_EXISTS ) {
 				MethodDeclaration staticConstructor = createStaticConstructor(
 						ann.staticConstructor(), typeNode, nodesForConstructorAndToString, ast);
 				injectMethod(typeNode, staticConstructor);
 			}
 		}
 		
-		if ( methodExists("equals", typeNode) == MethodExistsResult.NOT_EXISTS ) {
+		if ( methodExists("equals", typeNode) == MemberExistsResult.NOT_EXISTS ) {
 			MethodDeclaration equals = createEquals(typeNode, nodesForEquality, ast);
 			injectMethod(typeNode, equals);
 		}
 		
-		if ( methodExists("hashCode", typeNode) == MethodExistsResult.NOT_EXISTS ) {
+		if ( methodExists("hashCode", typeNode) == MemberExistsResult.NOT_EXISTS ) {
 			MethodDeclaration hashCode = createHashCode(typeNode, nodesForEquality, ast);
 			injectMethod(typeNode, hashCode);
 		}

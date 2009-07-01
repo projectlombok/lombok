@@ -103,9 +103,8 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		method.typeParameters = null;
 		method.scope = parent.scope == null ? null : new MethodScope(parent.scope, method, false);
 		method.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
-		FieldReference thisX = new FieldReference(("this." + new String(field.name)).toCharArray(), pos);
+		FieldReference thisX = new FieldReference(field.name, pos);
 		thisX.receiver = new ThisReference(ast.sourceStart, ast.sourceEnd);
-		thisX.token = field.name;
 		Assignment assignment = new Assignment(thisX, new SingleNameReference(field.name, pos), (int)pos);
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = ast.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = ast.sourceEnd;

@@ -9,7 +9,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -52,12 +51,10 @@ public abstract class AST<N> {
 		nodeMap = new IdentityHashMap<N, Node>();
 	}
 	
-	protected boolean alreadyHandled(N node) {
-		return identityDetector.containsKey(node);
-	}
-	
-	protected void setAsHandled(N node) {
+	protected boolean setAndGetAsHandled(N node) {
+		if ( identityDetector.containsKey(node) ) return true;
 		identityDetector.put(node, null);
+		return false;
 	}
 	
 	public String getFileName() {
@@ -100,7 +97,7 @@ public abstract class AST<N> {
 		protected Node(N node, List<? extends Node> children, Kind kind) {
 			this.kind = kind;
 			this.node = node;
-			this.children = children == null ? Collections.<Node>emptyList() : children;
+			this.children = children == null ? new ArrayList<Node>() : children;
 			for ( Node child : this.children ) child.parent = this;
 			this.isStructurallySignificant = calculateIsStructurallySignificant();
 		}
@@ -218,8 +215,8 @@ public abstract class AST<N> {
 		
 		private void gatherAndRemoveChildren(Map<N, Node> map) {
 			for ( Node child : children ) child.gatherAndRemoveChildren(map);
-			map.put(get(), this);
 			identityDetector.remove(get());
+			map.put(get(), this);
 			children.clear();
 			nodeMap.remove(get());
 		}

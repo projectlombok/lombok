@@ -9,6 +9,7 @@ import lombok.eclipse.EclipseAST;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 
 class PKG {
@@ -41,11 +42,32 @@ class PKG {
 		return string.contentEquals(sb);
 	}
 	
-	enum MethodExistsResult {
+	enum MemberExistsResult {
 		NOT_EXISTS, EXISTS_BY_USER, EXISTS_BY_LOMBOK;
 	}
 	
-	static MethodExistsResult methodExists(String methodName, EclipseAST.Node node) {
+	static MemberExistsResult fieldExists(String fieldName, EclipseAST.Node node) {
+		while ( node != null && !(node.get() instanceof TypeDeclaration) ) {
+			node = node.up();
+		}
+		
+		if ( node != null && node.get() instanceof TypeDeclaration ) {
+			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
+			if ( typeDecl.fields != null ) for ( FieldDeclaration def : typeDecl.fields ) {
+				char[] fName = def.name;
+				if ( fName == null ) continue;
+				if ( fieldName.equals(new String(fName)) ) {
+					EclipseAST.Node existing = node.getNodeFor(def);
+					if ( existing == null || !existing.isHandled() ) return MemberExistsResult.EXISTS_BY_USER;
+					return MemberExistsResult.EXISTS_BY_LOMBOK;
+				}
+			}
+		}
+		
+		return MemberExistsResult.NOT_EXISTS;
+	}
+	
+	static MemberExistsResult methodExists(String methodName, EclipseAST.Node node) {
 		while ( node != null && !(node.get() instanceof TypeDeclaration) ) {
 			node = node.up();
 		}
@@ -53,20 +75,20 @@ class PKG {
 		if ( node != null && node.get() instanceof TypeDeclaration ) {
 			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
 			if ( typeDecl.methods != null ) for ( AbstractMethodDeclaration def : typeDecl.methods ) {
-				char[] mName = ((AbstractMethodDeclaration)def).selector;
+				char[] mName = def.selector;
 				if ( mName == null ) continue;
 				if ( methodName.equals(new String(mName)) ) {
 					EclipseAST.Node existing = node.getNodeFor(def);
-					if ( existing == null || !existing.isHandled() ) return MethodExistsResult.EXISTS_BY_USER;
-					return MethodExistsResult.EXISTS_BY_LOMBOK;
+					if ( existing == null || !existing.isHandled() ) return MemberExistsResult.EXISTS_BY_USER;
+					return MemberExistsResult.EXISTS_BY_LOMBOK;
 				}
 			}
 		}
 		
-		return MethodExistsResult.NOT_EXISTS;
+		return MemberExistsResult.NOT_EXISTS;
 	}
 	
-	static MethodExistsResult constructorExists(EclipseAST.Node node) {
+	static MemberExistsResult constructorExists(EclipseAST.Node node) {
 		while ( node != null && !(node.get() instanceof TypeDeclaration) ) {
 			node = node.up();
 		}
@@ -77,13 +99,13 @@ class PKG {
 				if ( def instanceof ConstructorDeclaration ) {
 					if ( (def.bits & ASTNode.IsDefaultConstructor) != 0 ) continue;
 					EclipseAST.Node existing = node.getNodeFor(def);
-					if ( existing == null || !existing.isHandled() ) return MethodExistsResult.EXISTS_BY_USER;
-					return MethodExistsResult.EXISTS_BY_LOMBOK;
+					if ( existing == null || !existing.isHandled() ) return MemberExistsResult.EXISTS_BY_USER;
+					return MemberExistsResult.EXISTS_BY_LOMBOK;
 				}
 			}
 		}
 		
-		return MethodExistsResult.NOT_EXISTS;
+		return MemberExistsResult.NOT_EXISTS;
 	}
 	
 	static EclipseAST.Node getExistingLombokConstructor(EclipseAST.Node node) {
@@ -121,6 +143,22 @@ class PKG {
 		}
 		
 		return null;
+	}
+	
+	static void injectField(EclipseAST.Node type, FieldDeclaration field) {
+		TypeDeclaration parent = (TypeDeclaration) type.get();
+		
+		if ( parent.fields == null ) {
+			parent.fields = new FieldDeclaration[1];
+			parent.fields[0] = field;
+		} else {
+			FieldDeclaration[] newArray = new FieldDeclaration[parent.fields.length + 1];
+			System.arraycopy(parent.fields, 0, newArray, 0, parent.fields.length);
+			newArray[parent.fields.length] = field;
+			parent.fields = newArray;
+		}
+		
+		type.add(field, Kind.FIELD).recursiveSetHandled();
 	}
 	
 	static void injectMethod(EclipseAST.Node type, AbstractMethodDeclaration method) {
