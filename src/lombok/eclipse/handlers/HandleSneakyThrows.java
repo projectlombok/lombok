@@ -29,7 +29,6 @@ import org.mangosdk.spi.ProviderFor;
 
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows> {
-	
 	private static class DeclaredException {
 		final String exceptionName;
 		final ASTNode node;
@@ -43,6 +42,7 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 			return (long)node.sourceStart << 32 | node.sourceEnd;
 		}
 	}
+	
 	@Override public boolean handle(AnnotationValues<SneakyThrows> annotation, Annotation ast, Node annotationNode) {
 		List<String> exceptionNames = annotation.getRawExpressions("value");
 		
