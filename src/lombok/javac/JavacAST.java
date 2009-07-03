@@ -269,9 +269,9 @@ public class JavacAST extends AST<JCTree> {
 				visitor.endVisitLocal(this, (JCVariableDecl)get());
 				break;
 			case STATEMENT:
-				visitor.visitStatement(this, (JCTree)get());
+				visitor.visitStatement(this, get());
 				traverseChildren(visitor, this);
-				visitor.endVisitStatement(this, (JCTree)get());
+				visitor.endVisitStatement(this, get());
 				break;
 			case ANNOTATION:
 				switch ( up().getKind() ) {

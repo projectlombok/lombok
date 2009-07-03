@@ -156,8 +156,8 @@ public abstract class AST<N> {
 		 * @see #isStructurallySignificant()
 		 */
 		public Node up() {
-			Node result = (Node)parent;
-			while ( result != null && !result.isStructurallySignificant ) result = (Node)result.parent;
+			Node result = parent;
+			while ( result != null && !result.isStructurallySignificant ) result = result.parent;
 			return result;
 		}
 		

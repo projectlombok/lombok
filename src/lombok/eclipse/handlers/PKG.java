@@ -133,7 +133,7 @@ class PKG {
 		
 		if ( node.get() instanceof TypeDeclaration ) {
 			for ( AbstractMethodDeclaration def : ((TypeDeclaration)node.get()).methods ) {
-				char[] mName = ((AbstractMethodDeclaration)def).selector;
+				char[] mName = def.selector;
 				if ( mName == null ) continue;
 				if ( methodName.equals(new String(mName)) ) {
 					EclipseAST.Node existing = node.getNodeFor(def);

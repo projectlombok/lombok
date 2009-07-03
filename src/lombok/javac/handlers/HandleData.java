@@ -43,7 +43,7 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		Node typeNode = annotationNode.up();
 		JCClassDecl typeDecl = null;
 		if ( typeNode.get() instanceof JCClassDecl ) typeDecl = (JCClassDecl)typeNode.get();
-		long flags = typeDecl.mods.flags;
+		long flags = typeDecl == null ? 0 : typeDecl.mods.flags;
 		boolean notAClass = (flags & (Flags.INTERFACE | Flags.ENUM | Flags.ANNOTATION)) != 0;
 		
 		if ( typeDecl == null || notAClass ) {
