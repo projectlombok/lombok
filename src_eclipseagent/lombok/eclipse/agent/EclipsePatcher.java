@@ -81,10 +81,7 @@ public class EclipsePatcher {
 	}
 	
 	private static String findPathOfOurClassloader() throws Exception {
-		ClassLoader loader = EclipsePatcher.class.getClassLoader();
-		if ( loader == null ) loader = ClassLoader.getSystemClassLoader();
-		
-		URI uri = loader.getResource(EclipsePatcher.class.getName().replace('.', '/') + ".class").toURI();
+		URI uri = EclipsePatcher.class.getResource("/" + EclipsePatcher.class.getName().replace('.', '/') + ".class").toURI();
 		Pattern p = Pattern.compile("^jar:file:([^\\!]+)\\!.*\\.class$");
 		Matcher m = p.matcher(uri.toString());
 		if ( !m.matches() ) return ".";
