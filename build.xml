@@ -40,6 +40,14 @@
 			<classpath refid="lombok.deps.path" />
 			<classpath refid="lombok.libs.path" />
 		</javac>
+		<copy todir="build/lombok">
+			<fileset dir="src">
+				<exclude name="**/*.java" />
+				<exclude name="**/*.class" />
+				<exclude name="**/*.svg" />
+			</fileset>
+		</copy>
+
 		<mkdir dir="build/lombok/META-INF" />
 		<mkdir dir="build/lombok/META-INF/services" />
 		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.javac.apt.Processor</echo>
@@ -78,18 +86,21 @@
 	
 	<target name="dist" depends="clean, compile, getVersion, unpackLibs">
 		<mkdir dir="dist" />
-		<jar basedir="build/lombok" destfile="dist/lombok-${lombok.version}.jar">
-			<manifest>
-				<attribute name="Main-Class" value="lombok.core.ShowUserHelp" />
-			</manifest>
-		</jar>
 		<jar basedir="build/eclipse.agent" destfile="dist/lombok.eclipse.agent-${lombok.version}.jar">
 			<manifest>
 				<attribute name="Premain-Class" value="lombok.eclipse.agent.EclipsePatcher" />
 				<attribute name="Can-Redefine-Classes" value="true" />
 			</manifest>
 		</jar>
-		<copy file="dist/lombok-${lombok.version}.jar" tofile="dist/lombok.jar" />
 		<copy file="dist/lombok.eclipse.agent-${lombok.version}.jar" tofile="dist/lombok.eclipse.agent.jar" />
+		<jar destfile="dist/lombok-${lombok.version}.jar">
+			<fileset dir="build/lombok" />
+			<fileset dir="dist" includes="lombok.eclipse.agent.jar" />
+				
+			<manifest>
+				<attribute name="Main-Class" value="lombok.installer.InstallerWindow" />
+			</manifest>
+		</jar>
+		<copy file="dist/lombok-${lombok.version}.jar" tofile="dist/lombok.jar" />
 	</target>
 </project>
