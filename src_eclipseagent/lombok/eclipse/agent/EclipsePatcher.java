@@ -1,3 +1,24 @@
+/*
+ * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package lombok.eclipse.agent;
 
 import java.io.File;
@@ -16,6 +37,13 @@ import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * This is a java-agent that patches some of eclipse's classes so AST Nodes are handed off to Lombok
+ * for modification before Eclipse actually uses them to compile, render errors, show code outlines,
+ * create auto-completion dialogs, and anything else eclipse does with java code. See the *Transformer
+ * classes in this package for more information about which classes are transformed and how they are
+ * transformed.
+ */
 public class EclipsePatcher {
 	private EclipsePatcher() {}
 	
@@ -68,8 +96,6 @@ public class EclipsePatcher {
 	private static void addLombokToSearchPaths(Instrumentation instrumentation) throws Exception {
 		String path = findPathOfOurClassloader();
 		//On java 1.5, you don't have these methods, so you'll be forced to manually -Xbootclasspath/a them in.
-//		instrumentation.appendToSystemClassLoaderSearch(new JarFile(path + "/lombok.jar"));
-//		instrumentation.appendToBootstrapClassLoaderSearch(new JarFile(path + "/lombok.eclipse.agent.jar"));
 		tryCallMethod(instrumentation, "appendToSystemClassLoaderSearch", path + "/lombok.jar");
 		tryCallMethod(instrumentation, "appendToBootstrapClassLoaderSearch", path + "/lombok.eclipse.agent.jar");
 	}

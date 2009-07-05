@@ -1,3 +1,24 @@
+/*
+ * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package lombok.eclipse.agent;
 
 import java.lang.reflect.Constructor;
@@ -15,6 +36,22 @@ import org.objectweb.asm.MethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+/**
+ * Transforms Eclipse's <code>org.eclipse.jdt.internal.compiler.parser.Parser</code> class,
+ * which handles all the actual java source to AST tree conversion in eclipse.
+ * 
+ * Transformations applied:<ul>
+ * <li>The <code>CompilationUnitDeclaration endParse(int)</code> method is instrumented to call
+ * the lombok framework via ClassLoaderWorkaround to TransformEclipseAST with the CompilationUnitDeclaration
+ * right before it returns the CompilationUnitDeclaration.</li>
+ * <li>The <code>getMethodBodies(CompilationUnitDeclaration)</code> is similarly instrumented; eclipse uses a
+ * 2-step parsing system, where the bodies of methods aren't filled in until its actually neccessary. Lombok
+ * gets a chance to change the AST immediately after either step.</li>
+ * <li>The <code>parse(MethodDeclaration, CUD)</code>, <code>parse(ConstructorDeclaration, CUD)</code> and
+ * <code>parse(Initializer, TypeDeclaration, CUD)</code> methods could all be theoretically called to
+ * flesh out just one part of a half-finished AST tree. These methods are all instrumented to call Lombok
+ * with the CUD before returning it to whomever wanted it filled out.</li>
+ */
 class EclipseParserTransformer {
 	private static final String COMPILER_PKG =
 		"Lorg/eclipse/jdt/internal/compiler/ast/";
@@ -34,7 +71,7 @@ class EclipseParserTransformer {
 		rewriters = Collections.unmodifiableMap(map);
 	}
 	
-	public byte[] transform(byte[] classfileBuffer) {
+	byte[] transform(byte[] classfileBuffer) {
 		ClassReader reader = new ClassReader(classfileBuffer);
 		ClassWriter writer = new ClassWriter(reader, 0);
 		
@@ -43,7 +80,7 @@ class EclipseParserTransformer {
 		return writer.toByteArray();
 	}
 	
-	public static RuntimeException sneakyThrow(Throwable t) {
+	static RuntimeException sneakyThrow(Throwable t) {
 		if ( t == null ) throw new NullPointerException("t");
 		EclipseParserTransformer.<RuntimeException>sneakyThrow0(t);
 		return null;
