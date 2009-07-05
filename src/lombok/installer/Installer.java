@@ -1,3 +1,24 @@
+/*
+ * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package lombok.installer;
 
 import java.awt.Color;
@@ -5,6 +26,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FileDialog;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -16,6 +38,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.font.TextAttribute;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -37,14 +60,22 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 
 import lombok.core.Version;
+import lombok.installer.EclipseFinder.OS;
 import lombok.installer.EclipseLocation.InstallException;
 import lombok.installer.EclipseLocation.NotAnEclipseException;
 import lombok.installer.EclipseLocation.UninstallException;
 
-public class InstallerWindow {
+/**
+ * The lombok installer proper.
+ * Uses swing to show a simple GUI that can add and remove the java agent to eclipse installations.
+ * Also offers info on what this installer does in case people want to instrument their eclipse manually,
+ * and looks in some common places on Mac OS X and Windows.
+ */
+public class Installer {
 	private static final URI ABOUT_LOMBOK_URL = URI.create("http://projectlombok.org");
 	
 	private JFrame appWindow;
@@ -57,15 +88,26 @@ public class InstallerWindow {
 	private Component howIWorkArea;
 
 	private Box uninstallBox;
-
 	private List<EclipseLocation> toUninstall;
 	
+	private JHyperLink uninstallButton;
+	private JButton installButton;
+	
 	public static void main(String[] args) {
+		if ( EclipseFinder.getOS() == OS.MAC_OS_X ) {
+			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Lombok Installer");
+			System.setProperty("com.apple.macos.use-file-dialog-packages", "true");
+		}
+		
 		try {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
 					try {
-						new InstallerWindow().show();
+						try {
+							UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+						} catch ( Exception ignore ) {}
+						
+						new Installer().show();
 					} catch ( HeadlessException e ) {
 						printHeadlessInfo();
 					}
@@ -76,6 +118,11 @@ public class InstallerWindow {
 		}
 	}
 	
+	/**
+	 * If run in headless mode, the installer can't show its fancy GUI. There's little point in running
+	 * the installer without a GUI environment, as eclipse doesn't run in headless mode either, so
+	 * we'll make do with showing some basic info on Lombok as well as instructions for using lombok with javac.
+	 */
 	private static void printHeadlessInfo() {
 		System.out.printf("About lombok v%s\n" +
 				"Lombok makes java better by providing very spicy additions to the Java programming language," +
@@ -87,7 +134,11 @@ public class InstallerWindow {
 				"   java -cp lombok.jar MyCode.java", Version.getVersion(), ABOUT_LOMBOK_URL);
 	}
 	
-	public InstallerWindow() {
+	/**
+	 * Creates a new installer that starts out invisible.
+	 * Call the {@see #show()} method on a freshly created installer to render it.
+	 */
+	public Installer() {
 		appWindow = new JFrame(String.format("Project Lombok v%s - Installer", Version.getVersion()));
 		
 		appWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -111,6 +162,7 @@ public class InstallerWindow {
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override public void run() {
 				JOptionPane.showMessageDialog(appWindow, "There was a problem during the installation process:\n" + t, "Uh Oh!", JOptionPane.ERROR_MESSAGE);
+				t.printStackTrace();
 				System.exit(1);
 			}
 		});
@@ -250,7 +302,7 @@ public class InstallerWindow {
 		
 		constraints.gridy = 2;
 		loadingExpl = Box.createHorizontalBox();
-		loadingExpl.add(new JLabel(new ImageIcon(InstallerWindow.class.getResource("/lombok/installer/loading.gif"))));
+		loadingExpl.add(new JLabel(new ImageIcon(Installer.class.getResource("/lombok/installer/loading.gif"))));
 		loadingExpl.add(new JLabel(ECLIPSE_LOADING_EXPLANATION));
 		container.add(loadingExpl, constraints);
 		
@@ -270,10 +322,12 @@ public class InstallerWindow {
 					final List<EclipseLocation> locations = new ArrayList<EclipseLocation>();
 					final List<NotAnEclipseException> problems = new ArrayList<NotAnEclipseException>();
 					
-					for ( String eclipse : eclipses ) try {
-						locations.add(new EclipseLocation(eclipse));
-					} catch ( NotAnEclipseException e ) {
-						problems.add(e);
+					if ( eclipses != null ) {
+						for ( String eclipse : eclipses ) try {
+							locations.add(new EclipseLocation(eclipse));
+						} catch ( NotAnEclipseException e ) {
+							problems.add(e);
+						}
 					}
 					
 					SwingUtilities.invokeLater(new Runnable() {
@@ -291,6 +345,13 @@ public class InstallerWindow {
 							}
 							
 							loadingExpl.setVisible(false);
+							
+							if ( eclipses == null ) {
+								JOptionPane.showMessageDialog(appWindow,
+										"I don't know how to automatically find eclipse installations on this platform.\n" +
+										"Please use the 'Specify Eclipse Location...' button to manually point out the\n" +
+										"location of your eclipse installation to me. Thanks!", "Can't find eclipse", JOptionPane.INFORMATION_MESSAGE);
+							}
 						}
 					});
 				} catch ( Throwable t ) {
@@ -306,38 +367,59 @@ public class InstallerWindow {
 		buttonBar.add(specifyEclipseLocationButton);
 		specifyEclipseLocationButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent event) {
-				JFileChooser chooser = new JFileChooser();
+				final String name = EclipseFinder.getEclipseExecutableName();
+				String file = null;
 				
-				chooser.setAcceptAllFileFilterUsed(false);
-				chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-				chooser.setFileFilter(new FileFilter() {
-					private final String name = EclipseFinder.getEclipseExecutableName();
-					@Override public boolean accept(File f) {
-						if ( f.getName().equalsIgnoreCase(name) ) return true;
-						if ( f.isDirectory() ) return true;
-						
-						return false;
-					}
-					
-					@Override public String getDescription() {
-						return "Eclipse Installation";
-					}
-				});
-				
-				switch ( chooser.showDialog(appWindow, "Select") ) {
-				case JFileChooser.APPROVE_OPTION:
-					try {
-						try {
-							eclipsesList.addEclipse(new EclipseLocation(chooser.getSelectedFile().getAbsolutePath()));
-						} catch ( NotAnEclipseException e ) {
-							e.showDialog(appWindow);
+				if ( EclipseFinder.getOS() == OS.MAC_OS_X ) {
+					FileDialog chooser = new FileDialog(appWindow);
+					chooser.setMode(FileDialog.LOAD);
+					chooser.setFilenameFilter(new FilenameFilter() {
+						@Override public boolean accept(File dir, String name) {
+							if ( name.equalsIgnoreCase(name) ) return true;
+							if ( new File(dir, name).isDirectory() ) return true;
+							
+							return false;
 						}
+					});
+					
+					chooser.setVisible(true);
+					file = new File(chooser.getDirectory(), chooser.getFile()).getAbsolutePath();
+				} else {
+					JFileChooser chooser = new JFileChooser();
+					
+					chooser.setAcceptAllFileFilterUsed(false);
+					chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+					chooser.setFileFilter(new FileFilter() {
+						@Override public boolean accept(File f) {
+							if ( f.getName().equalsIgnoreCase(name) ) return true;
+							if ( f.isDirectory() ) return true;
+							
+							return false;
+						}
+						
+						@Override public String getDescription() {
+							return "Eclipse Installation";
+						}
+					});
+					
+					switch ( chooser.showDialog(appWindow, "Select") ) {
+					case JFileChooser.APPROVE_OPTION:
+						file = chooser.getSelectedFile().getAbsolutePath();
+					}
+				}
+				
+				if ( file != null ) {
+					try {
+						eclipsesList.addEclipse(new EclipseLocation(file));
+					} catch ( NotAnEclipseException e ) {
+						e.showDialog(appWindow);
 					} catch ( Throwable t ) {
 						handleException(t);
 					}
 				}
 			}
 		});
+		
 		buttonBar.add(Box.createHorizontalGlue());
 		installButton = new JButton("Install / Update");
 		buttonBar.add(installButton);
@@ -420,7 +502,7 @@ public class InstallerWindow {
 		JPanel spinner = new JPanel();
 		spinner.setOpaque(true);
 		spinner.setLayout(new FlowLayout());
-		spinner.add(new JLabel(new ImageIcon(InstallerWindow.class.getResource("/lombok/installer/loading.gif"))));
+		spinner.add(new JLabel(new ImageIcon(Installer.class.getResource("/lombok/installer/loading.gif"))));
 		appWindow.setContentPane(spinner);
 		
 		final AtomicReference<Boolean> success = new AtomicReference<Boolean>(true);
@@ -461,7 +543,7 @@ public class InstallerWindow {
 		JPanel spinner = new JPanel();
 		spinner.setOpaque(true);
 		spinner.setLayout(new FlowLayout());
-		spinner.add(new JLabel(new ImageIcon(InstallerWindow.class.getResource("/lombok/installer/loading.gif"))));
+		spinner.add(new JLabel(new ImageIcon(Installer.class.getResource("/lombok/installer/loading.gif"))));
 		
 		appWindow.setContentPane(spinner);
 		
@@ -562,7 +644,7 @@ public class InstallerWindow {
 			});
 			
 			if ( location.hasLombok() ) {
-				box.add(new JLabel(new ImageIcon(InstallerWindow.class.getResource("/lombok/installer/lombokIcon.png"))));
+				box.add(new JLabel(new ImageIcon(Installer.class.getResource("/lombok/installer/lombokIcon.png"))));
 			}
 			box.add(Box.createHorizontalGlue());
 			locations.add(location);
@@ -593,8 +675,8 @@ public class InstallerWindow {
 	};
 	
 	private void buildChrome(Container appWindowContainer) {
-		JLabel leftGraphic = new JLabel(new ImageIcon(InstallerWindow.class.getResource("/lombok/installer/lombok.png")));
-		JLabel topGraphic = new JLabel(new ImageIcon(InstallerWindow.class.getResource("/lombok/installer/lombokText.png")));
+		JLabel leftGraphic = new JLabel(new ImageIcon(Installer.class.getResource("/lombok/installer/lombok.png")));
+		JLabel topGraphic = new JLabel(new ImageIcon(Installer.class.getResource("/lombok/installer/lombokText.png")));
 		
 		GridBagConstraints constraints = new GridBagConstraints();
 		
@@ -656,20 +738,24 @@ public class InstallerWindow {
 					Object desktop = Class.forName("java.awt.Desktop").getMethod("getDesktop").invoke(null);
 					Class.forName("java.awt.Desktop").getMethod("browse", URI.class).invoke(desktop, ABOUT_LOMBOK_URL);
 				} catch ( Exception e ) {
-					String os = System.getProperty("os.name").toLowerCase();
 					Runtime rt = Runtime.getRuntime();
 					try {
-						if ( os.indexOf( "win" ) > -1 ) {
+						switch ( EclipseFinder.getOS() ) {
+						case WINDOWS:
 							String[] cmd = new String[4];
 							cmd[0] = "cmd.exe";
 							cmd[1] = "/C";
 							cmd[2] = "start";
 							cmd[3] = ABOUT_LOMBOK_URL.toString();
 							rt.exec(cmd);
-						} else if ( os.indexOf( "mac" ) >= 0 ) {
+							break;
+						case MAC_OS_X:
 							rt.exec( "open " + ABOUT_LOMBOK_URL.toString());
-						} else {
+							break;
+						default:
+						case UNIX:
 							rt.exec("firefox " + ABOUT_LOMBOK_URL.toString());
+							break;
 						}
 					} catch ( Exception e2 ) {
 						JOptionPane.showMessageDialog(appWindow,
@@ -690,8 +776,18 @@ public class InstallerWindow {
 		appWindow.add(buttonBar, constraints);
 	}
 	
+	/**
+	 * Makes the installer window visible.
+	 */
 	public void show() {
 		appWindow.setVisible(true);
+		if ( EclipseFinder.getOS() == OS.MAC_OS_X ) {
+			try {
+				AppleNativeLook.go();
+			} catch ( Throwable ignore ) {
+				//We're just prettying up the app. If it fails, meh.
+			}
+		}
 	}
 	
 	private static final String ECLIPSE_TITLE =
@@ -733,8 +829,4 @@ public class InstallerWindow {
 		"<br>" +
 		"That's all there is to it. Note that on Mac OS X, eclipse.ini is hidden in<br>" +
 		"<code>Eclipse.app/Contents/MacOS</code> so that's where I place the jar files.</html>";
-	
-	private JHyperLink uninstallButton;
-
-	private JButton installButton;
 }
