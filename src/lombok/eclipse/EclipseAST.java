@@ -1,3 +1,24 @@
+/*
+ * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package lombok.eclipse;
 
 import java.util.ArrayList;
@@ -25,13 +46,31 @@ import org.eclipse.jdt.internal.compiler.problem.DefaultProblem;
 import org.eclipse.jdt.internal.compiler.problem.ProblemSeverities;
 import org.eclipse.jdt.internal.compiler.util.Util;
 
+/**
+ * Wraps around eclipse's internal AST view to add useful features as well as the ability to visit parents from children,
+ * something eclipse's own AST system does not offer.
+ */
 public class EclipseAST extends AST<ASTNode> {
+	/**
+	 * Creates a new EclipseAST of the provided Compilation Unit.
+	 * 
+	 * @param ast The compilation unit, which serves as the top level node in the tree to be built.
+	 */
+	public EclipseAST(CompilationUnitDeclaration ast) {
+		super(toFileName(ast));
+		this.compilationUnitDeclaration = ast;
+		setTop(buildCompilationUnit(ast));
+		this.completeParse = isComplete(ast);
+	}
+	
+	/** {@inheritDoc} */
 	@Override public String getPackageDeclaration() {
 		CompilationUnitDeclaration cud = (CompilationUnitDeclaration) top().get();
 		ImportReference pkg = cud.currentPackage;
 		return pkg == null ? null : Eclipse.toQualifiedName(pkg.getImportName());
 	}
 	
+	/** {@inheritDoc} */
 	@Override public Collection<String> getImportStatements() {
 		List<String> imports = new ArrayList<String>();
 		CompilationUnitDeclaration cud = (CompilationUnitDeclaration) top().get();
@@ -44,25 +83,38 @@ public class EclipseAST extends AST<ASTNode> {
 		return imports;
 	}
 	
+	/**
+	 * Runs through the entire AST, starting at the compilation unit, calling the provided visitor's visit methods
+	 * for each node, depth first.
+	 */
 	public void traverse(EclipseASTVisitor visitor) {
 		top().traverse(visitor);
 	}
 	
-	void traverseChildren(EclipseASTVisitor visitor, Node node) {
+	private void traverseChildren(EclipseASTVisitor visitor, Node node) {
 		for ( Node child : node.down() ) {
 			child.traverse(visitor);
 		}
 	}
 	
+	/**
+	 * Eclipse starts off with a 'diet' parse which leaves method bodies blank, amongst other shortcuts.
+	 * 
+	 * For such diet parses, this method returns false, otherwise it returns true. Any lombok processor
+	 * that needs the contents of methods should just do nothing (and return false so it gets another shot later!)
+	 * when this is false.
+	 */
 	public boolean isCompleteParse() {
 		return completeParse;
 	}
 	
+	/** {@inheritDoc} */
 	@Override public Node top() {
 		return (Node) super.top();
 	}
 	
-	public Node get(ASTNode node) {
+	/** {@inheritDoc} */
+	@Override public Node get(ASTNode node) {
 		return (Node) super.get(node);
 	}
 	
@@ -72,7 +124,7 @@ public class EclipseAST extends AST<ASTNode> {
 		final int sourceStart;
 		final int sourceEnd;
 		
-		public ParseProblem(boolean isWarning, String message, int sourceStart, int sourceEnd) {
+		ParseProblem(boolean isWarning, String message, int sourceStart, int sourceEnd) {
 			this.isWarning = isWarning;
 			this.message = message;
 			this.sourceStart = sourceStart;
@@ -100,6 +152,10 @@ public class EclipseAST extends AST<ASTNode> {
 		propagateProblems();
 	}
 	
+	/**
+	 * Adds a problem to the provided CompilationResult object so that it will show up
+	 * in the Problems/Warnings view.
+	 */
 	static void addProblemToCompilationResult(CompilationUnitDeclaration ast,
 			boolean isWarning, String message, int sourceStart, int sourceEnd) {
 		if ( ast.compilationResult == null ) return;
@@ -141,11 +197,20 @@ public class EclipseAST extends AST<ASTNode> {
 		}
 	}
 	
+	/**
+	 * Eclipse specific version of the AST.Node class.
+	 */
 	public final class Node extends AST<ASTNode>.Node {
+		/**
+		 * See the {@link AST.Node} constructor for information.
+		 */
 		Node(ASTNode node, List<Node> children, Kind kind) {
 			super(node, children, kind);
 		}
 		
+		/**
+		 * Visits this node and all child nodes depth-first, calling the provided visitor's visit methods.
+		 */
 		public void traverse(EclipseASTVisitor visitor) {
 			switch ( getKind() ) {
 			case COMPILATION_UNIT:
@@ -219,6 +284,7 @@ public class EclipseAST extends AST<ASTNode> {
 			}
 		}
 		
+		/** {@inheritDoc} */
 		@Override public String getName() {
 			final char[] n;
 			if ( node instanceof TypeDeclaration ) n = ((TypeDeclaration)node).name;
@@ -230,18 +296,22 @@ public class EclipseAST extends AST<ASTNode> {
 			return n == null ? null : new String(n);
 		}
 		
+		/** {@inheritDoc} */
 		@Override public void addError(String message) {
 			this.addError(message, this.get().sourceStart, this.get().sourceEnd);
 		}
 		
+		/** Generate a compiler error that shows the wavy underline from-to the stated character positions. */
 		public void addError(String message, int sourceStart, int sourceEnd) {
 			addProblem(new ParseProblem(false, message, sourceStart, sourceEnd));
 		}
 		
+		/** {@inheritDoc} */
 		@Override public void addWarning(String message) {
 			this.addWarning(message, this.get().sourceStart, this.get().sourceEnd);
 		}
 		
+		/** Generate a compiler warning that shows the wavy underline from-to the stated character positions. */
 		public void addWarning(String message, int sourceStart, int sourceEnd) {
 			addProblem(new ParseProblem(true, message, sourceStart, sourceEnd));
 		}
@@ -251,6 +321,7 @@ public class EclipseAST extends AST<ASTNode> {
 			return (Node) super.up();
 		}
 		
+		/** {@inheritDoc} */
 		@Override protected boolean calculateIsStructurallySignificant() {
 			if ( node instanceof TypeDeclaration ) return true;
 			if ( node instanceof AbstractMethodDeclaration ) return true;
@@ -281,6 +352,11 @@ public class EclipseAST extends AST<ASTNode> {
 			return (Node) super.top();
 		}
 		
+		/**
+		 * Convenient shortcut to the owning EclipseAST object's isCompleteParse method.
+		 * 
+		 * @see JavacAST#isCompleteParse()
+		 */
 		public boolean isCompleteParse() {
 			return completeParse;
 		}
@@ -289,17 +365,15 @@ public class EclipseAST extends AST<ASTNode> {
 	private final CompilationUnitDeclaration compilationUnitDeclaration;
 	private boolean completeParse;
 	
-	public EclipseAST(CompilationUnitDeclaration ast) {
-		super(toFileName(ast));
-		this.compilationUnitDeclaration = ast;
-		setTop(buildCompilationUnit(ast));
-		this.completeParse = isComplete(ast);
-	}
-	
 	private static String toFileName(CompilationUnitDeclaration ast) {
 		return ast.compilationResult.fileName == null ? null : new String(ast.compilationResult.fileName);
 	}
 	
+	/**
+	 * Call to move an EclipseAST generated for a diet parse to rebuild itself for the full parse -
+	 * with filled in method bodies and such. Also propagates problems and errors, which in diet parse
+	 * mode can't be reliably added to the problems/warnings view.
+	 */
 	public void reparse() {
 		propagateProblems();
 		if ( completeParse ) return;
@@ -315,6 +389,7 @@ public class EclipseAST extends AST<ASTNode> {
 		return (unit.bits & ASTNode.HasAllMethodBodies) != 0;
 	}
 	
+	/** {@inheritDoc} */
 	@Override protected Node buildTree(ASTNode node, Kind kind) {
 		switch ( kind ) {
 		case COMPILATION_UNIT:
@@ -459,6 +534,8 @@ public class EclipseAST extends AST<ASTNode> {
 		return putInMap(new Node(statement, childNodes, Kind.STATEMENT));
 	}
 	
+	/** For eclipse, only Statement counts, as Expression is a subclass of it, eventhough this isn't
+	 * entirely correct according to the JLS spec (only some expressions can be used as statements, not all of them). */
 	@Override protected Collection<Class<? extends ASTNode>> getStatementTypes() {
 		return Collections.<Class<? extends ASTNode>>singleton(Statement.class);
 	}

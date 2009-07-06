@@ -1,3 +1,24 @@
+/*
+ * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package lombok.javac.handlers;
 
 import java.lang.reflect.Modifier;
@@ -16,9 +37,17 @@ import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
 import lombok.javac.JavacAST;
 
+/**
+ * Container for static utility methods relevant to this package.
+ */
 class PKG {
-	private PKG() {}
+	private PKG() {
+		//Prevent instantiation
+	}
 	
+	/**
+	 * @return the likely getter name for the stated field. (e.g. private boolean foo; to isFoo).
+	 */
 	static String toGetterName(JCVariableDecl field) {
 		CharSequence fieldName = field.name;
 		
@@ -27,16 +56,26 @@ class PKG {
 		return TransformationsUtil.toGetterName(fieldName, isBoolean);
 	}
 	
+	/**
+	 * @return the likely setter name for the stated field. (e.g. private boolean foo; to setFoo).
+	 */
 	static String toSetterName(JCVariableDecl field) {
 		CharSequence fieldName = field.name;
 		
 		return TransformationsUtil.toSetterName(fieldName);
 	}
 	
+	/** Serves as return value for the methods that check for the existence of fields and methods. */
 	enum MemberExistsResult {
 		NOT_EXISTS, EXISTS_BY_USER, EXISTS_BY_LOMBOK;
 	}
 	
+	/**
+	 * Checks if there is a field with the provided name.
+	 * 
+	 * @param fieldName the field name to check for.
+	 * @param node Any node that represents the Type (JCClassDecl) to check for, or any child node thereof.
+	 */
 	static MemberExistsResult fieldExists(String fieldName, JavacAST.Node node) {
 		while ( node != null && !(node.get() instanceof JCClassDecl) ) {
 			node = node.up();
@@ -57,6 +96,13 @@ class PKG {
 		return MemberExistsResult.NOT_EXISTS;
 	}
 	
+	/**
+	 * Checks if there is a method with the provided name. In case of multiple methods (overloading), only
+	 * the first method decides if EXISTS_BY_USER or EXISTS_BY_LOMBOK is returned.
+	 * 
+	 * @param methodName the method name to check for.
+	 * @param node Any node that represents the Type (JCClassDecl) to check for, or any child node thereof.
+	 */
 	static MemberExistsResult methodExists(String methodName, JavacAST.Node node) {
 		while ( node != null && !(node.get() instanceof JCClassDecl) ) {
 			node = node.up();
@@ -77,6 +123,12 @@ class PKG {
 		return MemberExistsResult.NOT_EXISTS;
 	}
 	
+	/**
+	 * Checks if there is a (non-default) constructor. In case of multiple constructors (overloading), only
+	 * the first constructor decides if EXISTS_BY_USER or EXISTS_BY_LOMBOK is returned.
+	 * 
+	 * @param node Any node that represents the Type (JCClassDecl) to check for, or any child node thereof.
+	 */
 	static MemberExistsResult constructorExists(JavacAST.Node node) {
 		while ( node != null && !(node.get() instanceof JCClassDecl) ) {
 			node = node.up();
@@ -98,6 +150,11 @@ class PKG {
 		return MemberExistsResult.NOT_EXISTS;
 	}
 	
+	/**
+	 * Turns an <code>AccessLevel<code> instance into the flag bit used by javac.
+	 * 
+	 * @see java.lang.Modifier
+	 */
 	static int toJavacModifier(AccessLevel accessLevel) {
 		switch ( accessLevel ) {
 		case MODULE:
@@ -113,6 +170,11 @@ class PKG {
 		}
 	}
 	
+	/**
+	 * Adds the given new field declaration to the provided type AST Node.
+	 * 
+	 * Also takes care of updating the JavacAST.
+	 */
 	static void injectField(JavacAST.Node typeNode, JCVariableDecl field) {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
@@ -121,6 +183,12 @@ class PKG {
 		typeNode.add(field, Kind.FIELD).recursiveSetHandled();
 	}
 	
+	/**
+	 * Adds the given new method declaration to the provided type AST Node.
+	 * Can also inject constructors.
+	 * 
+	 * Also takes care of updating the JavacAST.
+	 */
 	static void injectMethod(JavacAST.Node typeNode, JCMethodDecl method) {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
@@ -154,6 +222,16 @@ class PKG {
 		return out;
 	}
 	
+	/**
+	 * In javac, dotted access of any kind, from <code>java.lang.String</code> to <code>var.methodName</code>
+	 * is represented by a fold-left of <code>Select</code> nodes with the leftmost string represented by
+	 * a <code>Ident</code> node. This method generates such an expression.
+	 * 
+	 * For example, maker.Select(maker.Select(maker.Ident(NAME[java]), NAME[lang]), NAME[String]).
+	 * 
+	 * @see com.sun.tools.javac.tree.JCTree.JCIdent
+	 * @see com.sun.tools.javac.tree.JCTree.JCFieldAccess
+	 */
 	static JCExpression chainDots(TreeMaker maker, JavacAST.Node node, String... elems) {
 		assert elems != null;
 		assert elems.length > 0;

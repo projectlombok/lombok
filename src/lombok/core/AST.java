@@ -1,3 +1,24 @@
+/*
+ * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package lombok.core;
 
 import static lombok.Lombok.sneakyThrow;
@@ -14,7 +35,15 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Lombok wraps the AST produced by a target platform into its own AST system, mostly because both eclipse and javac
+ * do not allow upward traversal (from a method to its owning type, for example).
+ * 
+ * @param N The common type of all AST nodes in the internal representation of the target platform.
+ *   For example, JCTree for javac, and ASTNode for eclipse.
+ */
 public abstract class AST<N> {
+	/** The kind of node represented by a given AST.Node object. */
 	public enum Kind {
 		COMPILATION_UNIT, TYPE, FIELD, INITIALIZER, METHOD, ANNOTATION, ARGUMENT, LOCAL, STATEMENT;
 	}
@@ -28,29 +57,52 @@ public abstract class AST<N> {
 		this.fileName = fileName == null ? "(unknown).java" : fileName;
 	}
 	
+	/** Set the node object that wraps the internal Compilation Unit node. */
 	protected void setTop(Node top) {
 		this.top = top;
 	}
 	
+	/**
+	 * Return the content of the package declaration on this AST's top (Compilation Unit) node.
+	 * 
+	 * Example: "java.util".
+	 */
 	public abstract String getPackageDeclaration();
 	
+	/**
+	 * Return the contents of each non-static import statement on this AST's top (Compilation Unit) node.
+	 * 
+	 * Example: "java.util.IOException".
+	 */
 	public abstract Collection<String> getImportStatements();
 	
-	protected <T extends Node> T putInMap(T parent) {
-		nodeMap.put(parent.get(), parent);
-		identityDetector.put(parent.get(), null);
-		return parent;
+	/**
+	 * Puts the given node in the map so that javac/eclipse's own internal AST object can be translated to
+	 * an AST.Node object. Also registers the object as visited to avoid endless loops.
+	 */
+	protected <T extends Node> T putInMap(T node) {
+		nodeMap.put(node.get(), node);
+		identityDetector.put(node.get(), null);
+		return node;
 	}
 	
+	/** Returns the node map, that can map javac/eclipse internal AST objects to AST.Node objects. */
 	protected Map<N, Node> getNodeMap() {
 		return nodeMap;
 	}
 	
+	/** Clears the registry that avoids endless loops, and empties the node map. The existing node map
+	 * object is left untouched, and instead a new map is created. */
 	protected void clearState() {
 		identityDetector = new IdentityHashMap<N, Void>();
 		nodeMap = new IdentityHashMap<N, Node>();
 	}
 	
+	/**
+	 * Marks the stated node as handled (to avoid endless loops if 2 nodes refer to each other, or a node
+	 * refers to itself). Will then return true if it was already set as handled before this call - in which
+	 * case you should do nothing lest the AST build process loops endlessly.
+	 */
 	protected boolean setAndGetAsHandled(N node) {
 		if ( identityDetector.containsKey(node) ) return true;
 		identityDetector.put(node, null);
@@ -61,10 +113,12 @@ public abstract class AST<N> {
 		return fileName;
 	}
 	
+	/** The AST.Node object representing the Compilation Unit. */
 	public Node top() {
 		return top;
 	}
 	
+	/** Maps a javac/eclipse internal AST Node to the appropriate AST.Node object. */
 	public Node get(N node) {
 		return nodeMap.get(node);
 	}
@@ -86,14 +140,33 @@ public abstract class AST<N> {
 		return targetNode;
 	}
 	
+	/** An instance of this class wraps an eclipse/javac internal node object. */
 	public abstract class Node {
 		protected final Kind kind;
 		protected final N node;
 		protected final List<? extends Node> children;
 		protected Node parent;
+		
+		/** This flag has no specified meaning; you can set and retrieve it.
+		 * 
+		 * In practice, for annotation nodes it means: Some AnnotationHandler finished whatever changes were required,
+		 * and for all other nodes it means: This node was made by a lombok operation.
+		 */
 		protected boolean handled;
+		
+		/** structurally significant are those nodes that can be annotated in java 1.6 or are method-like toplevels,
+		 * so fields, local declarations, method arguments, methods, types, the Compilation Unit itself, and initializers. */
 		protected boolean isStructurallySignificant;
 		
+		/**
+		 * Creates a new Node object that represents the provided node.
+		 * 
+		 * Make sure you manually set the parent correctly.
+		 * 
+		 * @param node The AST object in the target parser's own internal AST tree that this node object will represent.
+		 * @param children A list of child nodes. Passing in null results in the children list being empty, not null.
+		 * @param kind The kind of node represented by this object.
+		 */
 		protected Node(N node, List<? extends Node> children, Kind kind) {
 			this.kind = kind;
 			this.node = node;
@@ -102,29 +175,57 @@ public abstract class AST<N> {
 			this.isStructurallySignificant = calculateIsStructurallySignificant();
 		}
 		
+		/** {@inheritDoc} */
 		@Override public String toString() {
 			return String.format("NODE %s (%s) %s%s",
 					kind, node == null ? "(NULL)" : node.getClass(), handled ? "[HANDLED]" : "", node == null ? "" : node);
 		}
 		
+		/**
+		 * Convenient shortcut to the owning JavacAST object's getPackageDeclaration method.
+		 * 
+		 * @see AST#getPackageDeclaration()
+		 */
 		public String getPackageDeclaration() {
 			return AST.this.getPackageDeclaration();
 		}
 		
+		/**
+		 * Convenient shortcut to the owning JavacAST object's getImportStatements method.
+		 * 
+		 * @see AST#getImportStatements()
+		 */
 		public Collection<String> getImportStatements() {
 			return AST.this.getImportStatements();
 		}
 		
+		/**
+		 * See {@link #isStructurallySignificant}.
+		 */
 		protected abstract boolean calculateIsStructurallySignificant();
 		
+		/**
+		 * Convenient shortcut to the owning JavacAST object's getNodeFor method.
+		 * 
+		 * @see AST#getNodeFor()
+		 */
 		public Node getNodeFor(N obj) {
 			return AST.this.get(obj);
 		}
 		
+		/**
+		 * @return The javac/eclipse internal AST object wrapped by this AST.Node object.
+		 */
 		public N get() {
 			return node;
 		}
 		
+		/**
+		 * Replaces the AST node represented by this node object with the provided node. This node must
+		 * have a parent, obviously, for this to work.
+		 * 
+		 * Also affects the underlying (eclipse/javac) AST.
+		 */
 		@SuppressWarnings("unchecked")
 		public Node replaceWith(N newN, Kind kind) {
 			Node newNode = buildTree(newN, kind);
@@ -137,6 +238,11 @@ public abstract class AST<N> {
 			return newNode;
 		}
 		
+		/**
+		 * Replaces the stated node with a new one. The old node must be a direct child of this node.
+		 * 
+		 * Also affects the underlying (eclipse/javac) AST.
+		 */
 		public void replaceChildNode(N oldN, N newN) {
 			replaceStatementInNode(get(), oldN, newN);
 		}
@@ -169,27 +275,58 @@ public abstract class AST<N> {
 			return parent;
 		}
 		
+		/**
+		 * Returns all children nodes.
+		 * 
+		 * A copy is created, so changing the list has no effect. Also, while iterating through this list,
+		 * you may add, remove, or replace children without causing ConcurrentModificationExceptions.
+		 */
 		public Collection<? extends Node> down() {
 			return new ArrayList<Node>(children);
 		}
 		
+		/**
+		 * returns the value of the 'handled' flag.
+		 * 
+		 * @see #handled
+		 */
 		public boolean isHandled() {
 			return handled;
 		}
 		
+		/**
+		 * Sets the handled flag, then returns 'this'.
+		 * 
+		 * @see #handled
+		 */
 		public Node setHandled() {
 			this.handled = true;
 			return this;
 		}
 		
+		/**
+		 * Convenient shortcut to the owning JavacAST object's top method.
+		 * 
+		 * @see AST#top()
+		 */
 		public Node top() {
 			return top;
 		}
 		
+		/**
+		 * Convenient shortcut to the owning JavacAST object's getFileName method.
+		 * 
+		 * @see AST#getFileName()
+		 */
 		public String getFileName() {
 			return fileName;
 		}
 		
+		/**
+		 * Adds the stated node as a direct child of this node.
+		 * 
+		 * Does not change the underlying (javac/eclipse) AST, only the wrapped view.
+		 */
 		@SuppressWarnings("unchecked") public Node add(N newChild, Kind kind) {
 			Node n = buildTree(newChild, kind);
 			if ( n == null ) return null;
@@ -221,18 +358,30 @@ public abstract class AST<N> {
 			nodeMap.remove(get());
 		}
 		
+		/**
+		 * Removes the stated node, which must be a direct child of this node, from the AST.
+		 * 
+		 * Does not change the underlying (javac/eclipse) AST, only the wrapped view.
+		 */
 		public void removeChild(Node child) {
 			children.remove(child);
 		}
 		
+		/**
+		 * Sets the handled flag on this node, and all child nodes, then returns this.
+		 * 
+		 * @see #handled
+		 */
 		public Node recursiveSetHandled() {
 			this.handled = true;
 			for ( Node child : children ) child.recursiveSetHandled();
 			return this;
 		}
 		
+		/** Generate a compiler error on this node. */
 		public abstract void addError(String message);
 		
+		/** Generate a compiler warning on this node. */
 		public abstract void addWarning(String message);
 		
 		/**
@@ -245,10 +394,16 @@ public abstract class AST<N> {
 		}
 	}
 	
+	/** Build an AST.Node object for the stated internal (javac/eclipse) AST Node object. */
 	protected abstract Node buildTree(N item, Kind kind);
 	
+	/**
+	 * Represents a field that contains AST children.
+	 */
 	protected static class FieldAccess {
+		/** The actual field. */
 		public final Field field;
+		/** Dimensions of the field. Works for arrays, or for java.util.collections. */
 		public final int dim;
 		
 		FieldAccess(Field field, int dim) {
@@ -258,6 +413,11 @@ public abstract class AST<N> {
 	}
 	
 	private static Map<Class<?>, Collection<FieldAccess>> fieldsOfASTClasses = new HashMap<Class<?>, Collection<FieldAccess>>();
+	
+	/** Returns FieldAccess objects for the stated class. Each field that contains objects of the kind returned by
+	 * {@link #getStatementTypes()}, either directly or inside of an array or java.util.collection (or array-of-arrays,
+	 * or collection-of-collections, etcetera), is returned.
+	 */
 	protected Collection<FieldAccess> fieldsOf(Class<?> c) {
 		Collection<FieldAccess> fields = fieldsOfASTClasses.get(c);
 		if ( fields != null ) return fields;
@@ -305,14 +465,23 @@ public abstract class AST<N> {
 		} else return Object.class;
 	}
 	
+	/**
+	 * The supertypes which are considered AST Node children. Usually, the Statement, and the Expression,
+	 * though some platforms (such as eclipse) group these under one common supertype. */
 	protected abstract Collection<Class<? extends N>> getStatementTypes();
 	
+	/**
+	 * buildTree implementation that uses reflection to find all child nodes by way of inspecting
+	 * the fields. */
 	protected <T extends Node> Collection<T> buildWithField(Class<T> nodeType, N statement, FieldAccess fa) {
 		List<T> list = new ArrayList<T>();
 		buildWithField0(nodeType, statement, fa, list);
 		return list;
 	}
 	
+	/**
+	 * Uses reflection to find the given direct child on the given statement, and replace it with a new child.
+	 */
 	protected boolean replaceStatementInNode(N statement, N oldN, N newN) {
 		for ( FieldAccess fa : fieldsOf(statement.getClass()) ) {
 			if ( replaceStatementInField(fa, statement, oldN, newN) ) return true;

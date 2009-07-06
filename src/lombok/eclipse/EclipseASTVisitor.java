@@ -1,7 +1,26 @@
+/*
+ * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package lombok.eclipse;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintStream;
 import java.lang.reflect.Modifier;
 
@@ -20,7 +39,10 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 
-//TODO expand javadoc
+/**
+ * Implement so you can ask any JavacAST.Node to traverse depth-first through all children,
+ * calling the appropriate visit and endVisit methods.
+ */
 public interface EclipseASTVisitor {
 	/**
 	 * Called at the very beginning and end.
@@ -82,20 +104,30 @@ public interface EclipseASTVisitor {
 	void visitStatement(Node statementNode, Statement statement);
 	void endVisitStatement(Node statementNode, Statement statement);
 	
+	/**
+	 * Prints the structure of an AST.
+	 */
 	public static class Printer implements EclipseASTVisitor {
 		private final PrintStream out;
 		private final boolean printContent;
 		private int disablePrinting = 0;
 		private int indent = 0;
 		
+		/**
+		 * @param printContent if true, method and initializer bodies are printed directly, as java code,
+		 * instead of a tree listing of every AST node inside it.
+		 */
 		public Printer(boolean printContent) {
 			this(printContent, System.out);
 		}
 		
-		public Printer(boolean printContent, File file) throws FileNotFoundException {
-			this(printContent, new PrintStream(file));
-		}
-		
+		/**
+		 * @param printContent if true, method and initializer bodies are printed directly, as java code,
+		 * instead of a tree listing of every AST node inside it.
+		 * @param PrintStream write output to this stream. You must close it yourself. flush() is called after every line.
+		 * 
+		 * @see java.io.PrintStream#flush()
+		 */
 		public Printer(boolean printContent, PrintStream out) {
 			this.printContent = printContent;
 			this.out = out;

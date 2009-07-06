@@ -1,3 +1,24 @@
+/*
+ * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package lombok.eclipse;
 
 import java.lang.reflect.Method;
@@ -42,25 +63,43 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.osgi.framework.Bundle;
 
 public class Eclipse {
+	/**
+	 * Eclipse's Parser class is instrumented to not attempt to fill in the body of any method or initializer
+	 * or field initialization if this flag is set. Set it on the flag field of
+	 * any method, field, or initializer you create!
+	 */
 	public static final int ECLIPSE_DO_NOT_TOUCH_FLAG = ASTNode.Bit24;
+	
 	private Eclipse() {
 		//Prevent instantiation
 	}
 	
 	private static final String DEFAULT_BUNDLE = "org.eclipse.jdt.core";
 	
+	/**
+	 * Generates an error in the eclipse error log. Note that most people never look at it!
+	 */
 	public static void error(CompilationUnitDeclaration cud, String message) {
 		error(cud, message, DEFAULT_BUNDLE, null);
 	}
 	
+	/**
+	 * Generates an error in the eclipse error log. Note that most people never look at it!
+	 */
 	public static void error(CompilationUnitDeclaration cud, String message, Throwable error) {
 		error(cud, message, DEFAULT_BUNDLE, error);
 	}
 	
+	/**
+	 * Generates an error in the eclipse error log. Note that most people never look at it!
+	 */
 	public static void error(CompilationUnitDeclaration cud, String message, String bundleName) {
 		error(cud, message, bundleName, null);
 	}
 	
+	/**
+	 * Generates an error in the eclipse error log. Note that most people never look at it!
+	 */
 	public static void error(CompilationUnitDeclaration cud, String message, String bundleName, Throwable error) {
 		Bundle bundle = Platform.getBundle(bundleName);
 		if ( bundle == null ) {
@@ -74,6 +113,10 @@ public class Eclipse {
 		if ( cud != null ) EclipseAST.addProblemToCompilationResult(cud, false, message + " - See error log.", 0, 0);
 	}
 	
+	/**
+	 * For 'speed' reasons, eclipse works a lot with char arrays. I have my doubts this was a fruitful exercise,
+	 * but we need to deal with it. This turns [[java][lang][String]] into "java.lang.String".
+	 */
 	static String toQualifiedName(char[][] typeName) {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
@@ -84,6 +127,11 @@ public class Eclipse {
 		return sb.toString();
 	}
 	
+	/**
+	 * You can't share TypeParameter objects or bad things happen; for example, one 'T' resolves differently
+	 * from another 'T', even for the same T in a single class file. Unfortunately the TypeParameter type hierarchy
+	 * is complicated and there's no clone method on TypeParameter itself. This method can clone them.
+	 */
 	public static TypeParameter[] copyTypeParams(TypeParameter[] params) {
 		if ( params == null ) return null;
 		TypeParameter[] out = new TypeParameter[params.length];
@@ -106,6 +154,10 @@ public class Eclipse {
 		return out;
 	}
 	
+	/**
+	 * Convenience method that creates a new array and copies each TypeReference in the source array via
+	 * {@link #copyType(TypeReference)}.
+	 */
 	public static TypeReference[] copyTypes(TypeReference[] refs) {
 		if ( refs == null ) return null;
 		TypeReference[] outs = new TypeReference[refs.length];
@@ -116,6 +168,11 @@ public class Eclipse {
 		return outs;
 	}
 	
+	/**
+	 * You can't share TypeReference objects or subtle errors start happening.
+	 * Unfortunately the TypeReference type hierarchy is complicated and there's no clone
+	 * method on TypeReference itself. This method can clone them.
+	 */
 	public static TypeReference copyType(TypeReference ref) {
 		if ( ref instanceof ParameterizedQualifiedTypeReference ) {
 			ParameterizedQualifiedTypeReference iRef = (ParameterizedQualifiedTypeReference) ref;
@@ -179,6 +236,11 @@ public class Eclipse {
 		return ref;
 	}
 	
+	/**
+	 * Checks if the provided annotation type is likely to be the intended type for the given annotation node.
+	 * 
+	 * This is a guess, but a decent one.
+	 */
 	public static boolean annotationTypeMatches(Class<? extends java.lang.annotation.Annotation> type, Node node) {
 		if ( node.getKind() != Kind.ANNOTATION ) return false;
 		TypeReference typeRef = ((Annotation)node.get()).type;
@@ -197,6 +259,9 @@ public class Eclipse {
 		return false;
 	}
 	
+	/**
+	 * Provides AnnotationValues with the data it needs to do its thing.
+	 */
 	public static <A extends java.lang.annotation.Annotation> AnnotationValues<A>
 			createAnnotation(Class<A> type, final Node annotationNode) {
 		final Annotation annotation = (Annotation) annotationNode.get();

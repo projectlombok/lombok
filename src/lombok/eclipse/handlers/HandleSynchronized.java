@@ -1,3 +1,24 @@
+/*
+ * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package lombok.eclipse.handlers;
 
 import static lombok.eclipse.handlers.PKG.*;
@@ -27,6 +48,9 @@ import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.mangosdk.spi.ProviderFor;
 
+/**
+ * Handles the <code>lombok.Synchronized</code> annotation for javac.
+ */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized> {
 	private static final char[] INSTANCE_LOCK_NAME = "$lock".toCharArray();
@@ -49,9 +73,17 @@ public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized
 		}
 		
 		char[] lockName = annotation.getInstance().value().toCharArray();
-		if ( lockName.length == 0 ) lockName = method.isStatic() ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
+		boolean autoMake = false;
+		if ( lockName.length == 0 ) {
+			autoMake = true;
+			lockName = method.isStatic() ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
+		}
 		
 		if ( fieldExists(new String(lockName), methodNode) == MemberExistsResult.NOT_EXISTS ) {
+			if ( !autoMake ) {
+				annotationNode.addError("The field " + new String(lockName) + " does not exist.");
+				return true;
+			}
 			FieldDeclaration fieldDecl = new FieldDeclaration(lockName, 0, -1);
 			fieldDecl.declarationSourceEnd = -1;
 			

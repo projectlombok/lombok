@@ -50,7 +50,7 @@ public interface JavacAnnotationHandler<T extends Annotation> {
 	 * @param ast The javac AST node representing the annotation.
 	 * @param annotationNode The Lombok AST wrapper around the 'ast' parameter. You can use this object
 	 * to travel back up the chain (something javac AST can't do) to the parent of the annotation, as well
-	 * as access useful methods such as generating warnings or errors focussed on the annotation.
+	 * as access useful methods such as generating warnings or errors focused on the annotation.
 	 * @return <code>true</code> if you don't want to be called again about this annotation during this
 	 * compile session (you've handled it), or <code>false</code> to indicate you aren't done yet.
 	 */

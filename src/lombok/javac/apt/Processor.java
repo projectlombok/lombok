@@ -66,6 +66,7 @@ public class Processor extends AbstractProcessor {
 	private HandlerLibrary handlers;
 	private Trees trees;
 	
+	/** {@inheritDoc} */
 	@Override public void init(ProcessingEnvironment processingEnv) {
 		super.init(processingEnv);
 		if ( !(processingEnv instanceof JavacProcessingEnvironment) ) this.processingEnv = null;
@@ -76,6 +77,7 @@ public class Processor extends AbstractProcessor {
 		}
 	}
 	
+	/** {@inheritDoc} */
 	@Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		if ( processingEnv == null ) return false;
 		

@@ -1,3 +1,24 @@
+/*
+ * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package lombok.javac;
 
 import java.lang.reflect.Field;
@@ -30,6 +51,10 @@ import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
+/**
+ * Wraps around javac's internal AST view to add useful features as well as the ability to visit parents from children,
+ * something javac's own AST system does not offer.
+ */
 public class JavacAST extends AST<JCTree> {
 	private final Messager messager;
 	private final Name.Table nameTable;
@@ -37,6 +62,14 @@ public class JavacAST extends AST<JCTree> {
 	private final Symtab symtab;
 	private final Log log;
 	
+	/**
+	 * Creates a new JavacAST of the provided Compilation Unit.
+	 * 
+	 * @param trees The trees instance to use to inspect the compilation unit. Generate via:
+	 *   <code>Trees.getInstance(env)</code>
+	 * @param env The ProcessingEnvironment object passed e.g. to an annotation processor.
+	 * @param top The compilation unit, which serves as the top level node in the tree to be built.
+	 */
 	public JavacAST(Trees trees, JavacProcessingEnvironment env, JCCompilationUnit top) {
 		super(top.sourcefile == null ? null : top.sourcefile.toString());
 		setTop(buildCompilationUnit(top));
@@ -47,11 +80,13 @@ public class JavacAST extends AST<JCTree> {
 		this.symtab = Symtab.instance(env.getContext());
 	}
 	
+	/** {@inheritDoc} */
 	@Override public String getPackageDeclaration() {
 		JCCompilationUnit unit = (JCCompilationUnit)top().get();
 		return unit.pid instanceof JCFieldAccess ? unit.pid.toString() : null;
 	}
 	
+	/** {@inheritDoc} */
 	@Override public Collection<String> getImportStatements() {
 		List<String> imports = new ArrayList<String>();
 		JCCompilationUnit unit = (JCCompilationUnit)top().get();
@@ -64,6 +99,10 @@ public class JavacAST extends AST<JCTree> {
 		return imports;
 	}
 	
+	/**
+	 * Runs through the entire AST, starting at the compilation unit, calling the provided visitor's visit methods
+	 * for each node, depth first.
+	 */
 	public void traverse(JavacASTVisitor visitor) {
 		top().traverse(visitor);
 	}
@@ -74,26 +113,32 @@ public class JavacAST extends AST<JCTree> {
 		}
 	}
 	
+	/** {@inheritDoc} */
 	@Override public Node top() {
 		return (Node) super.top();
 	}
 	
+	/** {@inheritDoc} */
 	@Override public Node get(JCTree astNode) {
 		return (Node) super.get(astNode);
 	}
 	
+	/** @return A Name object generated for the proper name table belonging to this AST. */
 	public Name toName(String name) {
 		return nameTable.fromString(name);
 	}
 	
+	/** @return A TreeMaker instance that you can use to create new AST nodes. */
 	public TreeMaker getTreeMaker() {
 		return treeMaker;
 	}
 	
+	/** @return The symbol table used by this AST for symbols. */
 	public Symtab getSymbolTable() {
 		return symtab;
 	}
 	
+	/** {@inheritDoc} */
 	@Override protected Node buildTree(JCTree node, Kind kind) {
 		switch ( kind ) {
 		case COMPILATION_UNIT:
@@ -214,6 +259,7 @@ public class JavacAST extends AST<JCTree> {
 		return putInMap(new Node(statement, childNodes, Kind.STATEMENT));
 	}
 	
+	/** For javac, both JCExpression and JCStatement are considered as valid children types. */
 	protected Collection<Class<? extends JCTree>> getStatementTypes() {
 		Collection<Class<? extends JCTree>> collection = new ArrayList<Class<? extends JCTree>>(2);
 		collection.add(JCStatement.class);
@@ -225,11 +271,20 @@ public class JavacAST extends AST<JCTree> {
 		if ( node != null ) nodes.add(node);
 	}
 	
+	/**
+	 * Javac specific version of the AST.Node class.
+	 */
 	public class Node extends AST<JCTree>.Node {
+		/**
+		 * See the {@link AST.Node} constructor for information.
+		 */
 		public Node(JCTree node, List<Node> children, Kind kind) {
 			super(node, children, kind);
 		}
 		
+		/**
+		 * Visits this node and all child nodes depth-first, calling the provided visitor's visit methods.
+		 */
 		public void traverse(JavacASTVisitor visitor) {
 			switch ( this.getKind() ) {
 			case COMPILATION_UNIT:
@@ -301,6 +356,7 @@ public class JavacAST extends AST<JCTree> {
 			}
 		}
 		
+		/** {@inheritDoc} */
 		@Override public String getName() {
 			final Name n;
 			
@@ -312,6 +368,7 @@ public class JavacAST extends AST<JCTree> {
 			return n == null ? null : n.toString();
 		}
 		
+		/** {@inheritDoc} */
 		@Override protected boolean calculateIsStructurallySignificant() {
 			if ( node instanceof JCClassDecl ) return true;
 			if ( node instanceof JCMethodDecl ) return true;
@@ -320,14 +377,29 @@ public class JavacAST extends AST<JCTree> {
 			return false;
 		}
 		
+		/**
+		 * Convenient shortcut to the owning JavacAST object's getTreeMaker method.
+		 * 
+		 * @see JavacAST#getTreeMaker()
+		 */
 		public TreeMaker getTreeMaker() {
 			return treeMaker;
 		}
 		
+		/**
+		 * Convenient shortcut to the owning JavacAST object's getSymbolTable method.
+		 * 
+		 * @see JavacAST#getSymbolTable()
+		 */
 		public Symtab getSymbolTable() {
 			return symtab;
 		}
 		
+		/**
+		 * Convenient shortcut to the owning JavacAST object's toName method.
+		 * 
+		 * @see JavacAST#toName(String)
+		 */
 		public Name toName(String name) {
 			return JavacAST.this.toName(name);
 		}
@@ -358,18 +430,30 @@ public class JavacAST extends AST<JCTree> {
 			return (Collection<Node>) super.down();
 		}
 		
+		/**
+		 * Generates an compiler error focused on the AST node represented by this node object.
+		 */
 		public void addError(String message) {
 			printMessage(Diagnostic.Kind.ERROR, message, this, null);
 		}
 		
+		/**
+		 * Generates an compiler error focused on the AST node represented by this node object.
+		 */
 		public void addError(String message, DiagnosticPosition pos) {
 			printMessage(Diagnostic.Kind.ERROR, message, null, pos);
 		}
 		
+		/**
+		 * Generates a compiler warning focused on the AST node represented by this node object.
+		 */
 		public void addWarning(String message) {
 			printMessage(Diagnostic.Kind.WARNING, message, this, null);
 		}
 		
+		/**
+		 * Generates a compiler warning focused on the AST node represented by this node object.
+		 */
 		public void addWarning(String message, DiagnosticPosition pos) {
 			printMessage(Diagnostic.Kind.WARNING, message, null, pos);
 		}
@@ -409,6 +493,7 @@ public class JavacAST extends AST<JCTree> {
 		}
 	}
 	
+	/** {@inheritDoc} */
 	@SuppressWarnings("unchecked")
 	@Override protected void setElementInASTCollection(Field field, Object refField, List<Collection<?>> chain, Collection<?> collection, int idx, JCTree newN) throws IllegalAccessException {
 		com.sun.tools.javac.util.List<?> list = setElementInConsList(chain, collection, ((List)collection).get(idx), newN);
@@ -439,7 +524,7 @@ public class JavacAST extends AST<JCTree> {
 		if ( repl ) return com.sun.tools.javac.util.List.<Object>from(a);
 		else return oldL;
 	}
-
+	
 	private void increaseErrorCount(Messager messager) {
 		try {
 			Field f = messager.getClass().getDeclaredField("errorCount");
