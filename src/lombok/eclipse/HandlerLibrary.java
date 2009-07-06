@@ -146,11 +146,11 @@ public class HandlerLibrary {
 	 * 
 	 * The HandlerLibrary will attempt to guess if the given annotation node represents a lombok annotation.
 	 * For example, if <code>lombok.*</code> is in the import list, then this method will guess that
-	 * <code>Getter</code> refers to <code>lombok.Getter</code>, presuming that {@link lombok.javac.handlers.HandleGetter}
+	 * <code>Getter</code> refers to <code>lombok.Getter</code>, presuming that {@link lombok.eclipse.handlers.HandleGetter}
 	 * has been loaded.
 	 * 
-	 * @param unit The Compilation Unit that contains the Annotation AST Node.
-	 * @param node The Lombok AST Node representing the Annotation AST Node.
+	 * @param ast The Compilation Unit that contains the Annotation AST Node.
+	 * @param annotationNode The Lombok AST Node representing the Annotation AST Node.
 	 * @param annotation 'node.get()' - convenience parameter.
 	 */
 	public boolean handle(CompilationUnitDeclaration ast, EclipseAST.Node annotationNode,
@@ -198,13 +198,13 @@ public class HandlerLibrary {
 	 * random right now. This lack of order is particularly annoying for the <code>PrintAST</code> annotation,
 	 * which is almost always intended to run last. Hence, this hack, which lets it in fact run last.
 	 * 
-	 * {@see #skipAllButPrintAST}
+	 * @see #skipAllButPrintAST()
 	 */
 	public void skipPrintAST() {
 		skipPrintAST = true;
 	}
 	
-	/** {@see #skipPrintAST} */
+	/** @see #skipPrintAST() */
 	public void skipAllButPrintAST() {
 		skipPrintAST = false;
 	}

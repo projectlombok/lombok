@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  * Almost exactly like putting the 'synchronized' keyword on a method, except will synchronize on a private internal
  * Object, so that other code not under your control doesn't meddle with your thread management by locking on
  * your own instance.
- * 
+ * <p>
  * For non-static methods, a field named <code>$lock</code> is used, and for static methods,
  * <code>$LOCK</code> is used. These will be generated if needed and if they aren't already present. The contents
  * of the fields will be serializable.

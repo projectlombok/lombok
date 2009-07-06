@@ -151,7 +151,7 @@ public class HandlerLibrary {
 	/**
 	 * Handles the provided annotation node by first finding a qualifying instance of
 	 * {@link JavacAnnotationHandler} and if one exists, calling it with a freshly cooked up
-	 * instance of {@link AnnotationValues}.
+	 * instance of {@link lombok.core.AnnotationValues}.
 	 * 
 	 * Note that depending on the printASTOnly flag, the {@link lombok.core.PrintAST} annotation
 	 * will either be silently skipped, or everything that isn't <code>PrintAST</code> will be skipped.
@@ -203,13 +203,13 @@ public class HandlerLibrary {
 	 * random right now. This lack of order is particularly annoying for the <code>PrintAST</code> annotation,
 	 * which is almost always intended to run last. Hence, this hack, which lets it in fact run last.
 	 * 
-	 * {@see #skipAllButPrintAST}
+	 * @see #skipAllButPrintAST()
 	 */
 	public void skipPrintAST() {
 		skipPrintAST = true;
 	}
 	
-	/** {@see #skipPrintAST} */
+	/** @see #skipPrintAST() */
 	public void skipAllButPrintAST() {
 		skipPrintAST = false;
 	}

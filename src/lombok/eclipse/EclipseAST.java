@@ -355,7 +355,7 @@ public class EclipseAST extends AST<ASTNode> {
 		/**
 		 * Convenient shortcut to the owning EclipseAST object's isCompleteParse method.
 		 * 
-		 * @see JavacAST#isCompleteParse()
+		 * @see EclipseAST#isCompleteParse()
 		 */
 		public boolean isCompleteParse() {
 			return completeParse;

@@ -30,12 +30,12 @@ import java.lang.annotation.Target;
  * Ensures the variable declaration that you annotate will be cleaned up by calling its close method, regardless
  * of what happens. Implemented by wrapping all statements following the local variable declaration to the
  * end of your scope into a try block that, as a finally action, closes the resource.
- * 
+ * <p>
  * Example:
  * <pre>
  * public void copyFile(String in, String out) throws IOException {
- *     @Cleanup FileInputStream inStream = new FileInputStream(in);
- *     @Cleamup FileOutputStream outStream = new FileOutputStream(out);
+ *     &#64;Cleanup FileInputStream inStream = new FileInputStream(in);
+ *     &#64;Cleanup FileOutputStream outStream = new FileOutputStream(out);
  *     byte[] b = new byte[65536];
  *     while (true) {
  *         int r = inStream.read(b);
@@ -48,9 +48,9 @@ import java.lang.annotation.Target;
  * Will generate:
  * <pre>
  * public void copyFile(String in, String out) throws IOException {
- *     @Cleanup FileInputStream inStream = new FileInputStream(in);
+ *     &#64;Cleanup FileInputStream inStream = new FileInputStream(in);
  *     try {
- *         @Cleamup FileOutputStream outStream = new FileOutputStream(out);
+ *         &#64;Cleanup FileOutputStream outStream = new FileOutputStream(out);
  *         try {
  *             byte[] b = new byte[65536];
  *             while (true) {
@@ -71,7 +71,7 @@ import java.lang.annotation.Target;
  * in the main body of the generated try block. You should NOT rely on this behaviour - future versions of
  * lombok intend to silently swallow any exception thrown by the cleanup method <i>_IF</i> the main body
  * throws an exception as well, as the earlier exception is usually far more useful.
- * 
+ * <p>
  * However, in java 1.6, generating the code to do this is prohibitively complicated.
  */
 @Target(ElementType.LOCAL_VARIABLE)

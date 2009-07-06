@@ -124,7 +124,7 @@ public interface EclipseASTVisitor {
 		/**
 		 * @param printContent if true, method and initializer bodies are printed directly, as java code,
 		 * instead of a tree listing of every AST node inside it.
-		 * @param PrintStream write output to this stream. You must close it yourself. flush() is called after every line.
+		 * @param out write output to this stream. You must close it yourself. flush() is called after every line.
 		 * 
 		 * @see java.io.PrintStream#flush()
 		 */

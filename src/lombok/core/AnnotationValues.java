@@ -287,7 +287,7 @@ public class AnnotationValues<A extends Annotation> {
 	}
 	
 	/**
-	 * Convenience method to return the first result in a {@link getRawExpressions(String)} call.
+	 * Convenience method to return the first result in a {@link #getRawExpressions(String)} call.
 	 * 
 	 * You should use this method if the annotation method is not an array type.
 	 */
@@ -311,7 +311,7 @@ public class AnnotationValues<A extends Annotation> {
 	}
 	
 	/**
-	 * Convenience method to return the first result in a {@link getProbableFQType(String)} call.
+	 * Convenience method to return the first result in a {@link #getProbableFQType(String)} call.
 	 * 
 	 * You should use this method if the annotation method is not an array type.
 	 */

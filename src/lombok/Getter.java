@@ -44,7 +44,7 @@ import java.lang.annotation.Target;
  * 
  * Note that fields of type <code>boolean</code> (but not <code>java.lang.Boolean</code>) will result in an
  * <code>isFoo</code> name instead of <code>getFoo</code>.
- * 
+ * <p>
  * If any method named <code>getFoo</code>/<code>isFoo</code> exists, regardless of return type or parameters, no method is generated,
  * and instead a compiler warning is emitted.
  */

@@ -136,7 +136,7 @@ public class Installer {
 	
 	/**
 	 * Creates a new installer that starts out invisible.
-	 * Call the {@see #show()} method on a freshly created installer to render it.
+	 * Call the {@link #show()} method on a freshly created installer to render it.
 	 */
 	public Installer() {
 		appWindow = new JFrame(String.format("Project Lombok v%s - Installer", Version.getVersion()));

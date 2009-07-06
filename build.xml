@@ -105,6 +105,16 @@
 		<echo level="info">Lombok version: ${lombok.version}</echo>
 	</target>
 	
+	<target name="javadoc">
+		<delete dir="doc/api" quiet="true" />
+		<mkdir dir="doc/api" />
+		<javadoc sourcepath="src" defaultexcludes="yes" destdir="doc/api" windowtitle="Lombok">
+			<classpath refid="lombok.deps.path" />
+			<classpath refid="lombok.libs.path" />
+			<bottom><![CDATA[<i>Copyright &#169; 2009 Reinier Zwitserloot and Roel Spilker. See LICENCE for more information.]]></bottom>
+		</javadoc>
+	</target>
+	
 	<target name="dist" depends="clean, compile, getVersion, unpackLibs">
 		<mkdir dir="dist" />
 		<jar basedir="build/eclipse.agent" destfile="dist/lombok.eclipse.agent-${lombok.version}.jar">

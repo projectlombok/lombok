@@ -27,13 +27,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Sneaky throw will avoid javac's insistence that you either catch or throw onward any checked exceptions that
+ * &#64;SneakyThrow will avoid javac's insistence that you either catch or throw onward any checked exceptions that
  * statements in your method body declare they generate.
- * 
- * Sneaky throw does not silently swallow, wrap into RuntimeException, or otherwise modify any exceptions of the listed
+ * <p>
+ * &#64;SneakyThrow does not silently swallow, wrap into RuntimeException, or otherwise modify any exceptions of the listed
  * checked exception types. The JVM does not check for the consistency of the checked exception system; javac does,
  * and this annotation lets you opt out of its mechanism.
- * 
+ * <p>
  * You should use this annotation ONLY in the following two cases:<ol>
  * <li>You are certain the listed exception can't actually ever happen, or only in vanishingly rare situations.
  * You don't try to catch OutOfMemoryError on every statement either. Examples:<br>
@@ -42,23 +42,23 @@ import java.lang.annotation.Target;
  * <li>You know for certain the caller can handle the exception (for example, because the caller is
  * an app manager that will handle all throwables that fall out of your method the same way), but due
  * to interface restrictions you can't just add these exceptions to your 'throws' clause.
- * 
+ * <p>
  * Note that, as SneakyThrow is an implementation detail and <i>NOT</i> part of your method signature, it is
  * a compile time error if none of the statements in your method body can throw a listed exception.
- * 
+ * <p>
  * <b><i>WARNING: </b></i>You must have lombok.jar available at the runtime of your app if you use SneakyThrows,
- * because your code is rewritten to use {@link Lombok.sneakyThrow(Throwable)}. 
- * 
- * 
+ * because your code is rewritten to use {@link Lombok#sneakyThrow(Throwable)}. 
+ * <p>
+ * <p>
  * Example:
  * <pre>
- * @SneakyThrows(UnsupportedEncodingException.class)
+ * &#64;SneakyThrows(UnsupportedEncodingException.class)
  * public void utf8ToString(byte[] bytes) {
  *     return new String(bytes, "UTF-8");
  * }
  * </pre>
  * 
- * @see Lombok.sneakyThrow(Throwable)
+ * @see Lombok#sneakyThrow(Throwable)
  */
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @Retention(RetentionPolicy.SOURCE)

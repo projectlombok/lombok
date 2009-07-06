@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
 
 /**
  * Put on any field to make lombok build a standard setter.
- * 
+ * <p>
  * Example:
  * <pre>
  *     private @Setter int foo;

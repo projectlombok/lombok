@@ -205,9 +205,9 @@ public abstract class AST<N> {
 		protected abstract boolean calculateIsStructurallySignificant();
 		
 		/**
-		 * Convenient shortcut to the owning JavacAST object's getNodeFor method.
+		 * Convenient shortcut to the owning JavacAST object's get method.
 		 * 
-		 * @see AST#getNodeFor()
+		 * @see AST#get(Object)
 		 */
 		public Node getNodeFor(N obj) {
 			return AST.this.get(obj);
