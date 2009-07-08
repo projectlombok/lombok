@@ -58,11 +58,14 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * 
+ * <code>&#64;SneakyThrows</code> without a parameter defaults to allowing <i>every</i> checked exception.
+ * (The default is <code>Throwable.class</code>).
+ * 
  * @see Lombok#sneakyThrow(Throwable)
  */
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @Retention(RetentionPolicy.SOURCE)
 public @interface SneakyThrows {
 	/** The exception type(s) you want to sneakily throw onward. */
-	Class<? extends Throwable>[] value();
+	Class<? extends Throwable>[] value() default Throwable.class;
 }
