@@ -23,7 +23,7 @@ package lombok.core;
 
 /**
  * Container for static utility methods useful for some of the standard lombok transformations, regardless of
- * target platform (e.g. useful for both javac and eclipse lombok implementations).
+ * target platform (e.g. useful for both javac and Eclipse lombok implementations).
  */
 public class TransformationsUtil {
 	private TransformationsUtil() {

@@ -38,7 +38,7 @@ import java.util.Set;
 import lombok.Lombok;
 
 /**
- * The java core libraries have a SPI discovery system, but it works only in Java 1.6 and up. For at least eclipse,
+ * The java core libraries have a SPI discovery system, but it works only in Java 1.6 and up. For at least Eclipse,
  * lombok actually works in java 1.5, so we've rolled our own SPI discovery system.
  * 
  * It is not API compatible with <code>ServiceLoader</code>.

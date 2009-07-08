@@ -59,7 +59,7 @@ public interface EclipseASTVisitor {
 	
 	/**
 	 * Called when visiting a field of a class.
-	 * Even though in eclipse initializers (both instance and static) are represented as Initializer objects,
+	 * Even though in Eclipse initializers (both instance and static) are represented as Initializer objects,
 	 * which are a subclass of FieldDeclaration, those do NOT result in a call to this method. They result
 	 * in a call to the visitInitializer method.
 	 */
@@ -77,7 +77,7 @@ public interface EclipseASTVisitor {
 	
 	/**
 	 * Called for both methods (MethodDeclaration) and constructors (ConstructorDeclaration), but not for
-	 * Clinit objects, which are a vestigial eclipse thing that never contain anything. Static initializers
+	 * Clinit objects, which are a vestigial Eclipse thing that never contain anything. Static initializers
 	 * show up as 'Initializer', in the visitInitializer method, with modifier bit STATIC set.
 	 */
 	void visitMethod(Node methodNode, AbstractMethodDeclaration method);

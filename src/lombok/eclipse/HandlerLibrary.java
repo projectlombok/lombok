@@ -50,7 +50,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
  */
 public class HandlerLibrary {
 	/**
-	 * Creates a new HandlerLibrary. Errors will be reported to the eclipse Error log.
+	 * Creates a new HandlerLibrary. Errors will be reported to the Eclipse Error log.
 	 * You probably want to use {@link #load()} instead.
 	 */
 	public HandlerLibrary() {}
@@ -81,7 +81,7 @@ public class HandlerLibrary {
 	private boolean skipPrintAST;
 	
 	/**
-	 * Creates a new HandlerLibrary.  Errors will be reported to the eclipse Error log.
+	 * Creates a new HandlerLibrary.  Errors will be reported to the Eclipse Error log.
 	 * then uses SPI discovery to load all annotation and visitor based handlers so that future calls
 	 * to the handle methods will defer to these handlers.
 	 */
@@ -114,7 +114,7 @@ public class HandlerLibrary {
 				}
 				lib.typeLibrary.addType(container.annotationClass.getName());
 			} catch ( Throwable t ) {
-				Eclipse.error(null, "Can't load Lombok annotation handler for eclipse: ", t);
+				Eclipse.error(null, "Can't load Lombok annotation handler for Eclipse: ", t);
 			}
 		}
 	}
@@ -131,7 +131,7 @@ public class HandlerLibrary {
 			try {
 				lib.visitorHandlers.add(it.next());
 			} catch ( Throwable t ) {
-				Eclipse.error(null, "Can't load Lombok visitor handler for eclipse: ", t);
+				Eclipse.error(null, "Can't load Lombok visitor handler for Eclipse: ", t);
 			}
 		}
 	}

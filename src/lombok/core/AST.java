@@ -36,11 +36,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Lombok wraps the AST produced by a target platform into its own AST system, mostly because both eclipse and javac
+ * Lombok wraps the AST produced by a target platform into its own AST system, mostly because both Eclipse and javac
  * do not allow upward traversal (from a method to its owning type, for example).
  * 
  * @param N The common type of all AST nodes in the internal representation of the target platform.
- *   For example, JCTree for javac, and ASTNode for eclipse.
+ *   For example, JCTree for javac, and ASTNode for Eclipse.
  */
 public abstract class AST<N> {
 	/** The kind of node represented by a given AST.Node object. */
@@ -77,7 +77,7 @@ public abstract class AST<N> {
 	public abstract Collection<String> getImportStatements();
 	
 	/**
-	 * Puts the given node in the map so that javac/eclipse's own internal AST object can be translated to
+	 * Puts the given node in the map so that javac/Eclipse's own internal AST object can be translated to
 	 * an AST.Node object. Also registers the object as visited to avoid endless loops.
 	 */
 	protected <T extends Node> T putInMap(T node) {
@@ -86,7 +86,7 @@ public abstract class AST<N> {
 		return node;
 	}
 	
-	/** Returns the node map, that can map javac/eclipse internal AST objects to AST.Node objects. */
+	/** Returns the node map, that can map javac/Eclipse internal AST objects to AST.Node objects. */
 	protected Map<N, Node> getNodeMap() {
 		return nodeMap;
 	}
@@ -118,7 +118,7 @@ public abstract class AST<N> {
 		return top;
 	}
 	
-	/** Maps a javac/eclipse internal AST Node to the appropriate AST.Node object. */
+	/** Maps a javac/Eclipse internal AST Node to the appropriate AST.Node object. */
 	public Node get(N node) {
 		return nodeMap.get(node);
 	}
@@ -140,7 +140,7 @@ public abstract class AST<N> {
 		return targetNode;
 	}
 	
-	/** An instance of this class wraps an eclipse/javac internal node object. */
+	/** An instance of this class wraps an Eclipse/javac internal node object. */
 	public abstract class Node {
 		protected final Kind kind;
 		protected final N node;
@@ -214,7 +214,7 @@ public abstract class AST<N> {
 		}
 		
 		/**
-		 * @return The javac/eclipse internal AST object wrapped by this AST.Node object.
+		 * @return The javac/Eclipse internal AST object wrapped by this AST.Node object.
 		 */
 		public N get() {
 			return node;
@@ -224,7 +224,7 @@ public abstract class AST<N> {
 		 * Replaces the AST node represented by this node object with the provided node. This node must
 		 * have a parent, obviously, for this to work.
 		 * 
-		 * Also affects the underlying (eclipse/javac) AST.
+		 * Also affects the underlying (Eclipse/javac) AST.
 		 */
 		@SuppressWarnings("unchecked")
 		public Node replaceWith(N newN, Kind kind) {
@@ -241,7 +241,7 @@ public abstract class AST<N> {
 		/**
 		 * Replaces the stated node with a new one. The old node must be a direct child of this node.
 		 * 
-		 * Also affects the underlying (eclipse/javac) AST.
+		 * Also affects the underlying (Eclipse/javac) AST.
 		 */
 		public void replaceChildNode(N oldN, N newN) {
 			replaceStatementInNode(get(), oldN, newN);
@@ -325,7 +325,7 @@ public abstract class AST<N> {
 		/**
 		 * Adds the stated node as a direct child of this node.
 		 * 
-		 * Does not change the underlying (javac/eclipse) AST, only the wrapped view.
+		 * Does not change the underlying (javac/Eclipse) AST, only the wrapped view.
 		 */
 		@SuppressWarnings("unchecked") public Node add(N newChild, Kind kind) {
 			Node n = buildTree(newChild, kind);
@@ -361,7 +361,7 @@ public abstract class AST<N> {
 		/**
 		 * Removes the stated node, which must be a direct child of this node, from the AST.
 		 * 
-		 * Does not change the underlying (javac/eclipse) AST, only the wrapped view.
+		 * Does not change the underlying (javac/Eclipse) AST, only the wrapped view.
 		 */
 		public void removeChild(Node child) {
 			children.remove(child);
@@ -394,7 +394,7 @@ public abstract class AST<N> {
 		}
 	}
 	
-	/** Build an AST.Node object for the stated internal (javac/eclipse) AST Node object. */
+	/** Build an AST.Node object for the stated internal (javac/Eclipse) AST Node object. */
 	protected abstract Node buildTree(N item, Kind kind);
 	
 	/**
@@ -467,7 +467,7 @@ public abstract class AST<N> {
 	
 	/**
 	 * The supertypes which are considered AST Node children. Usually, the Statement, and the Expression,
-	 * though some platforms (such as eclipse) group these under one common supertype. */
+	 * though some platforms (such as Eclipse) group these under one common supertype. */
 	protected abstract Collection<Class<? extends N>> getStatementTypes();
 	
 	/**

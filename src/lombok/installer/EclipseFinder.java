@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
 
 import lombok.Lombok;
 
-/** Utility class for doing various OS-specific operations related to finding eclipse installations. */
+/** Utility class for doing various OS-specific operations related to finding Eclipse installations. */
 class EclipseFinder {
 	private EclipseFinder() {
 		//Prevent instantiation.
@@ -122,7 +122,7 @@ class EclipseFinder {
 	}
 	
 	/**
-	 * Returns a list of paths of eclipse installations.
+	 * Returns a list of paths of Eclipse installations.
 	 * Eclipse installations are found by checking for the existence of 'eclipse.exe' in the following locations:
 	 * 
 	 * X:\*Program Files*\*Eclipse*
@@ -171,10 +171,10 @@ class EclipseFinder {
 	}
 	
 	/**
-	 * Calls the OS-dependent 'find eclipse' routine. If the local OS doesn't have a routine written for it,
+	 * Calls the OS-dependent 'find Eclipse' routine. If the local OS doesn't have a routine written for it,
 	 * null is returned.
 	 * 
-	 * @return List of directories that contain the eclipse executable.
+	 * @return List of directories that contain the Eclipse executable.
 	 */
 	static List<String> findEclipses() {
 		switch ( getOS() ) {
@@ -225,7 +225,7 @@ class EclipseFinder {
 		for ( File dir : new File("/Applications").listFiles() ) {
 			if ( !dir.isDirectory() ) continue;
 			if ( dir.getName().toLowerCase().equals("eclipse.app") ) {
-				//This would be kind of an unorthodox eclipse installation, but if eclipse ever
+				//This would be kind of an unorthodox Eclipse installation, but if Eclipse ever
 				//moves to this more maclike installation concept, our installer can still handle it.
 				eclipses.add("/Applications");
 			}

@@ -43,7 +43,7 @@ public interface EclipseAnnotationHandler<T extends java.lang.annotation.Annotat
 	 * TargetType in the annotation to methods only.
 	 * 
 	 * @param annotation The actual annotation - use this object to retrieve the annotation parameters.
-	 * @param ast The eclipse AST node representing the annotation.
+	 * @param ast The Eclipse AST node representing the annotation.
 	 * @param annotationNode The Lombok AST wrapper around the 'ast' parameter. You can use this object
 	 * to travel back up the chain (something javac AST can't do) to the parent of the annotation, as well
 	 * as access useful methods such as generating warnings or errors focused on the annotation.

@@ -71,8 +71,8 @@ import lombok.installer.EclipseLocation.UninstallException;
 
 /**
  * The lombok installer proper.
- * Uses swing to show a simple GUI that can add and remove the java agent to eclipse installations.
- * Also offers info on what this installer does in case people want to instrument their eclipse manually,
+ * Uses swing to show a simple GUI that can add and remove the java agent to Eclipse installations.
+ * Also offers info on what this installer does in case people want to instrument their Eclipse manually,
  * and looks in some common places on Mac OS X and Windows.
  */
 public class Installer {
@@ -120,14 +120,14 @@ public class Installer {
 	
 	/**
 	 * If run in headless mode, the installer can't show its fancy GUI. There's little point in running
-	 * the installer without a GUI environment, as eclipse doesn't run in headless mode either, so
+	 * the installer without a GUI environment, as Eclipse doesn't run in headless mode either, so
 	 * we'll make do with showing some basic info on Lombok as well as instructions for using lombok with javac.
 	 */
 	private static void printHeadlessInfo() {
 		System.out.printf("About lombok v%s\n" +
 				"Lombok makes java better by providing very spicy additions to the Java programming language," +
 				"such as using @Getter to automatically generate a getter method for any field.\n\n" +
-				"Browse to %s for more information. To install lombok on eclipse, re-run this jar file on a " +
+				"Browse to %s for more information. To install lombok on Eclipse, re-run this jar file on a " +
 				"graphical computer system - this message is being shown because your terminal is not graphics capable." +
 				"If you are just using 'javac' or a tool that calls on javac, no installation is neccessary; just " +
 				"make sure lombok.jar is in the classpath when you compile. Example:\n\n" +
@@ -273,21 +273,6 @@ public class Installer {
 	}
 	
 	private Component buildEclipseArea() throws IOException {
-		//   "Or:" [I'll tell you where eclipse is] [Tell me how to install lombok manually]
-		
-		//Mode 2 (manual):
-		//   Replace the entirety of the content (javac+eclipse) with an explanation about what to do:
-		//      - copy lombok.jar to your eclipse directory.
-		//      - jar xvf lombok.jar lombok.eclipse.agent.jar
-		//      - edit eclipse.ini with:
-		//          -javaagent:../../../lombok.eclipse.agent.jar
-		//          -Xbootclasspath/a:../../../lombok.eclipse.agent.jar:../../../lombok.jar
-		
-		//Mode 3 (let me choose):
-		//   pop up a file chooser. Make sure we don't care what you pick - eclipse.ini, eclipse.exe, eclipse.app, or dir.
-		//     empty the list, remove the spinner and the [let me find eclipse on my own] button, and put the chosen
-		//     eclipse in the list.
-		
 		JPanel container = new JPanel();
 		
 		container.setLayout(new GridBagLayout());
@@ -348,9 +333,9 @@ public class Installer {
 							
 							if ( eclipses == null ) {
 								JOptionPane.showMessageDialog(appWindow,
-										"I don't know how to automatically find eclipse installations on this platform.\n" +
+										"I don't know how to automatically find Eclipse installations on this platform.\n" +
 										"Please use the 'Specify Eclipse Location...' button to manually point out the\n" +
-										"location of your eclipse installation to me. Thanks!", "Can't find eclipse", JOptionPane.INFORMATION_MESSAGE);
+										"location of your Eclipse installation to me. Thanks!", "Can't find Eclipse", JOptionPane.INFORMATION_MESSAGE);
 							}
 						}
 					});
@@ -363,7 +348,7 @@ public class Installer {
 		findEclipsesThread.start();
 		
 		Box buttonBar = Box.createHorizontalBox();
-		JButton specifyEclipseLocationButton = new JButton("Specify eclipse location...");
+		JButton specifyEclipseLocationButton = new JButton("Specify Eclipse location...");
 		buttonBar.add(specifyEclipseLocationButton);
 		specifyEclipseLocationButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent event) {
@@ -428,7 +413,7 @@ public class Installer {
 			@Override public void actionPerformed(ActionEvent e) {
 				List<EclipseLocation> locationsToInstall = new ArrayList<EclipseLocation>(eclipsesList.getSelectedEclipses());
 				if ( locationsToInstall.isEmpty() ) {
-					JOptionPane.showMessageDialog(appWindow, "You haven't selected any eclipse installations!.", "No Selection", JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(appWindow, "You haven't selected any Eclipse installations!.", "No Selection", JOptionPane.WARNING_MESSAGE);
 					return;
 				}
 				
@@ -442,7 +427,7 @@ public class Installer {
 		
 		constraints.gridy = 5;
 		constraints.fill = GridBagConstraints.NONE;
-		uninstallButton = new JHyperLink("Uninstall lombok from selected eclipse installations.");
+		uninstallButton = new JHyperLink("Uninstall lombok from selected Eclipse installations.");
 		uninstallButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent e) {
 				List<EclipseLocation> locationsToUninstall = new ArrayList<EclipseLocation>();
@@ -451,7 +436,7 @@ public class Installer {
 				}
 				
 				if ( locationsToUninstall.isEmpty() ) {
-					JOptionPane.showMessageDialog(appWindow, "You haven't selected any eclipse installations that have been lombok-enabled.", "No Selection", JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(appWindow, "You haven't selected any Eclipse installations that have been lombok-enabled.", "No Selection", JOptionPane.WARNING_MESSAGE);
 					return;
 				}
 				
@@ -462,7 +447,7 @@ public class Installer {
 		container.add(uninstallButton, constraints);
 		
 		constraints.gridy = 6;
-		JHyperLink showMe = new JHyperLink("Show me what this installer will do to my eclipse installation.");
+		JHyperLink showMe = new JHyperLink("Show me what this installer will do to my Eclipse installation.");
 		container.add(showMe, constraints);
 		showMe.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent e) {
@@ -530,7 +515,7 @@ public class Installer {
 				
 				if ( success.get() ) SwingUtilities.invokeLater(new Runnable() {
 					@Override public void run() {
-						JOptionPane.showMessageDialog(appWindow, "Lombok has been installed on the selected eclipse installations.", "Install successful", JOptionPane.INFORMATION_MESSAGE);
+						JOptionPane.showMessageDialog(appWindow, "Lombok has been installed on the selected Eclipse installations.", "Install successful", JOptionPane.INFORMATION_MESSAGE);
 						appWindow.setVisible(false);
 						System.exit(0);
 					}
@@ -571,7 +556,7 @@ public class Installer {
 				
 				if ( success.get() ) SwingUtilities.invokeLater(new Runnable() {
 					@Override public void run() {
-						JOptionPane.showMessageDialog(appWindow, "Lombok has been removed from the selected eclipse installations.", "Uninstall successful", JOptionPane.INFORMATION_MESSAGE);
+						JOptionPane.showMessageDialog(appWindow, "Lombok has been removed from the selected Eclipse installations.", "Uninstall successful", JOptionPane.INFORMATION_MESSAGE);
 						appWindow.setVisible(false);
 						System.exit(0);
 					}
@@ -794,11 +779,11 @@ public class Installer {
 		"<html><font size=\"+1\"><b><i>Eclipse</i></b></font></html>";
 	
 	private static final String ECLIPSE_EXPLANATION =
-		"<html>Lombok can update your eclipse to fully support all Lombok features.<br>" +
-		"Select eclipse installations below and hit 'Install/Update'.</html>";
+		"<html>Lombok can update your Eclipse to fully support all Lombok features.<br>" +
+		"Select Eclipse installations below and hit 'Install/Update'.</html>";
 	
 	private static final String ECLIPSE_LOADING_EXPLANATION =
-		"Scanning your drives for eclipse installations...";
+		"Scanning your drives for Eclipse installations...";
 	
 	private static final String JAVAC_TITLE =
 		"<html><font size=\"+1\"><b><i>Javac</i></b></font> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (and tools that invoke javac such as <i>ant</i> and <i>maven</i>)</html>";
@@ -820,7 +805,7 @@ public class Installer {
 	
 	private static final String HOW_I_WORK_EXPLANATION =
 		"<html><ol>" +
-		"<li>First, I copy myself (lombok.jar) to your eclipse install directory.</li>" +
+		"<li>First, I copy myself (lombok.jar) to your Eclipse install directory.</li>" +
 		"<li>Then, I unpack lombok.eclipse.agent.jar like so:<br>" +
 		"<pre>jar xvf lombok.jar lombok.eclipse.agent.jar</pre></li>" +
 		"<li>Then, I edit the eclipse.ini file to add the following two entries:<br>" +

@@ -77,28 +77,28 @@ public class Eclipse {
 	private static final String DEFAULT_BUNDLE = "org.eclipse.jdt.core";
 	
 	/**
-	 * Generates an error in the eclipse error log. Note that most people never look at it!
+	 * Generates an error in the Eclipse error log. Note that most people never look at it!
 	 */
 	public static void error(CompilationUnitDeclaration cud, String message) {
 		error(cud, message, DEFAULT_BUNDLE, null);
 	}
 	
 	/**
-	 * Generates an error in the eclipse error log. Note that most people never look at it!
+	 * Generates an error in the Eclipse error log. Note that most people never look at it!
 	 */
 	public static void error(CompilationUnitDeclaration cud, String message, Throwable error) {
 		error(cud, message, DEFAULT_BUNDLE, error);
 	}
 	
 	/**
-	 * Generates an error in the eclipse error log. Note that most people never look at it!
+	 * Generates an error in the Eclipse error log. Note that most people never look at it!
 	 */
 	public static void error(CompilationUnitDeclaration cud, String message, String bundleName) {
 		error(cud, message, bundleName, null);
 	}
 	
 	/**
-	 * Generates an error in the eclipse error log. Note that most people never look at it!
+	 * Generates an error in the Eclipse error log. Note that most people never look at it!
 	 */
 	public static void error(CompilationUnitDeclaration cud, String message, String bundleName, Throwable error) {
 		Bundle bundle = Platform.getBundle(bundleName);
@@ -114,7 +114,7 @@ public class Eclipse {
 	}
 	
 	/**
-	 * For 'speed' reasons, eclipse works a lot with char arrays. I have my doubts this was a fruitful exercise,
+	 * For 'speed' reasons, Eclipse works a lot with char arrays. I have my doubts this was a fruitful exercise,
 	 * but we need to deal with it. This turns [[java][lang][String]] into "java.lang.String".
 	 */
 	static String toQualifiedName(char[][] typeName) {

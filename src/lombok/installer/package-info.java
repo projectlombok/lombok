@@ -23,6 +23,6 @@
 /**
  * This package contains the lombok installer. It explains to any user that double-clicks the lombok.jar what
  * lombok is about, and has the ability to instrument (or remove existing Lombok instrumentation) from any
- * eclipse installation. This package also contains the graphics uses in the installer in SVG format.
+ * Eclipse installation. This package also contains the graphics uses in the installer in SVG format.
  */
 package lombok.installer;

@@ -40,9 +40,9 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 /**
- * Represents an eclipse installation.
- * An instance can figure out if an eclipse installation has been lombok-ified, and can
- * install and uninstall lombok from the eclipse installation.
+ * Represents an Eclipse installation.
+ * An instance can figure out if an Eclipse installation has been lombok-ified, and can
+ * install and uninstall lombok from the Eclipse installation.
  */
 final class EclipseLocation {
 	private static final String OS_NEWLINE;
@@ -63,7 +63,7 @@ final class EclipseLocation {
 	
 	/**
 	 * Thrown when creating a new EclipseLocation with a path object that doesn't, in fact,
-	 * point at an eclipse installation.
+	 * point at an Eclipse installation.
 	 */
 	final class NotAnEclipseException extends Exception {
 		private static final long serialVersionUID = 1L;
@@ -76,14 +76,14 @@ final class EclipseLocation {
 		 * Renders a message dialog with information about what went wrong.
 		 */
 		void showDialog(JFrame appWindow) {
-			JOptionPane.showMessageDialog(appWindow, getMessage(), "Cannot configure eclipse installation", JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(appWindow, getMessage(), "Cannot configure Eclipse installation", JOptionPane.WARNING_MESSAGE);
 		}
 	}
 	
 	/**
-	 * Create a new EclipseLocation by pointing at either the directory contain the eclipse executable, or the executable itself.
+	 * Create a new EclipseLocation by pointing at either the directory contain the Eclipse executable, or the executable itself.
 	 * 
-	 * @throws NotAnEclipseException If this isn't an eclipse executable or a directory with an eclipse executable.
+	 * @throws NotAnEclipseException If this isn't an Eclipse executable or a directory with an Eclipse executable.
 	 */
 	EclipseLocation(String path) throws NotAnEclipseException {
 		if ( path == null ) throw new NullPointerException("path");
@@ -101,7 +101,7 @@ final class EclipseLocation {
 		}
 		
 		if ( !p.exists() || !p.getName().equalsIgnoreCase(execName) ) {
-			throw new NotAnEclipseException("This path does not appear to contain an eclipse installation: " + p, null);
+			throw new NotAnEclipseException("This path does not appear to contain an Eclipse installation: " + p, null);
 		}
 		
 		this.path = p;
@@ -109,8 +109,8 @@ final class EclipseLocation {
 			this.hasLombok = checkForLombok();
 		} catch ( IOException e ) {
 			throw new NotAnEclipseException(
-					"I can't read the configuration file of the eclipse installed at " + this.path.getAbsolutePath() + "\n" +
-					"You may need to run this installer with root privileges if you want to modify that eclipse.", e);
+					"I can't read the configuration file of the Eclipse installed at " + this.path.getAbsolutePath() + "\n" +
+					"You may need to run this installer with root privileges if you want to modify that Eclipse.", e);
 		}
 	}
 	
@@ -124,7 +124,7 @@ final class EclipseLocation {
 	}
 	
 	/**
-	 * Returns the absolute path to the eclipse executable.
+	 * Returns the absolute path to the Eclipse executable.
 	 * 
 	 * Executables: "eclipse.exe" (Windows), "Eclipse.app" (Mac OS X), "eclipse" (Linux and other unixes).
 	 */
@@ -133,7 +133,7 @@ final class EclipseLocation {
 	}
 	
 	/**
-	 * @return true if the eclipse installation has been instrumented with lombok.
+	 * @return true if the Eclipse installation has been instrumented with lombok.
 	 */
 	boolean hasLombok() {
 		return hasLombok;
@@ -141,7 +141,7 @@ final class EclipseLocation {
 	
 	/**
 	 * Returns the various directories that can contain the 'eclipse.ini' file.
-	 * Returns multiple directories because there are a few different ways eclipse is packaged.
+	 * Returns multiple directories because there are a few different ways Eclipse is packaged.
 	 */
 	private List<File> getTargetDirs() {
 		return Arrays.asList(path.getParentFile(), new File(new File(path, "Contents"), "MacOS"));
@@ -270,7 +270,7 @@ final class EclipseLocation {
 	}
 	
 	/**
-	 * Install lombok into the eclipse at this location.
+	 * Install lombok into the Eclipse at this location.
 	 * If lombok is already there, it is overwritten neatly (upgrade mode).
 	 * 
 	 * @throws InstallException If there's an obvious I/O problem that is preventing installation.
@@ -334,7 +334,7 @@ final class EclipseLocation {
 					} catch ( Throwable ignore ) {}
 					if ( !readSucceeded ) throw new InstallException("I can't read my own jar file. I think you've found a bug in this installer! I suggest you restart it " +
 							"and use the 'what do I do' link, to manually install lombok. And tell us about this. Thanks!", e);
-					throw new InstallException("I can't write to your eclipse directory, probably because this installer does not have the access rights.", e);
+					throw new InstallException("I can't write to your Eclipse directory, probably because this installer does not have the access rights.", e);
 				}
 				
 				try {
@@ -367,7 +367,7 @@ final class EclipseLocation {
 						fis.close();
 					}
 					
-					newContents.append("-javaagent:lombok.jar").append(OS_NEWLINE);
+					newContents.append("-javaagent:lombok.eclipse.agent.jar").append(OS_NEWLINE);
 					newContents.append("-Xbootclasspath/a:lombok.jar" + File.pathSeparator + "lombok.eclipse.agent.jar").append(OS_NEWLINE);
 					
 					FileOutputStream fos = new FileOutputStream(iniFile);
@@ -390,7 +390,7 @@ final class EclipseLocation {
 		}
 		
 		if ( !installSucceeded ) {
-			throw new InstallException("I can't find the eclipse.ini file. Is this a real eclipse installation?", null);
+			throw new InstallException("I can't find the eclipse.ini file. Is this a real Eclipse installation?", null);
 		}
 		
 		for ( File dir : failedDirs ) {

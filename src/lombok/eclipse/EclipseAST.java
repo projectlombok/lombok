@@ -47,8 +47,8 @@ import org.eclipse.jdt.internal.compiler.problem.ProblemSeverities;
 import org.eclipse.jdt.internal.compiler.util.Util;
 
 /**
- * Wraps around eclipse's internal AST view to add useful features as well as the ability to visit parents from children,
- * something eclipse's own AST system does not offer.
+ * Wraps around Eclipse's internal AST view to add useful features as well as the ability to visit parents from children,
+ * something Eclipse own AST system does not offer.
  */
 public class EclipseAST extends AST<ASTNode> {
 	/**
@@ -534,7 +534,7 @@ public class EclipseAST extends AST<ASTNode> {
 		return putInMap(new Node(statement, childNodes, Kind.STATEMENT));
 	}
 	
-	/** For eclipse, only Statement counts, as Expression is a subclass of it, eventhough this isn't
+	/** For Eclipse, only Statement counts, as Expression is a subclass of it, eventhough this isn't
 	 * entirely correct according to the JLS spec (only some expressions can be used as statements, not all of them). */
 	@Override protected Collection<Class<? extends ASTNode>> getStatementTypes() {
 		return Collections.<Class<? extends ASTNode>>singleton(Statement.class);
