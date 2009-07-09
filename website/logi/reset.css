@@ -1,0 +1,71 @@
+html,body,div,span,applet,object,iframe,
+pre,abbr,address,cite,code,del,dfn,em,img,
+ins,kbd,q,strong,tt,var,dl,dt,dd,blockquote,
+fieldset,form,i,b,caption,tbody,tfoot,thead,tr,th,td{
+	margin:0;
+	padding:0;
+	vertical-align:baseline;
+}
+
+body{
+	background:#fff;
+	color:#000;
+	font:75%/1.5em Verdana, Helvetica, Arial, sans-serif;
+	position:relative;
+}
+
+:focus{
+	outline:0;
+}
+
+code,kbd,tt{
+	font-family:"Courier New", Courier, monospace;
+	line-height:1;
+	*line-height:1.5;
+}
+
+del{
+	text-decoration:line-through;
+}
+
+*::-moz-focus-inner {
+	border: 0;
+}
+
+img{
+	display:inline-block;
+	vertical-align:bottom;
+}
+
+ol{
+	list-style:inside decimal;
+}
+
+ul{
+	list-style:inside disc;
+}
+
+pre{
+	font-family:"Courier New", Courier, monospace;
+	margin:0 0 1.5em;
+}
+
+sub{
+	top:0.4em;
+	font-size:0.85em;
+	line-height:1;
+	position:relative;
+	vertical-align:baseline;
+}
+
+sup{
+	font-size:0.85em;
+	line-height:1;
+	position:relative;
+	bottom:0.5em;
+	vertical-align:baseline;
+}
+
+img,div,a,input,button,.pngfix {
+	behavior: url(logi/iepngfix.htc);
+}

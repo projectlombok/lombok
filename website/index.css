@@ -1,0 +1,98 @@
+body {
+	font-family: Verdana;
+}
+
+.meat {
+	width: 800px;
+	margin: 0 auto 0 auto;
+}
+
+h1 {
+	margin: 8px 0 16px 0;
+	width: 100%;
+	text-align: center;
+}
+
+.buttonBar a {
+	color: black;
+	text-decoration: none;
+}
+
+.buttonBar {
+	-webkit-border-top-right-radius: 15px 15px;
+	-webkit-border-top-left-radius: 15px 15px;
+	background-image: url(buttonbar.jpg);
+	width: 800px;
+	height: 170px;
+}
+
+.endBar {
+	-webkit-border-bottom-right-radius: 15px 15px;
+	-webkit-border-bottom-left-radius: 15px 15px;
+	background-image: url(buttonbar.jpg);
+	width: 800px;
+	height: 30px;
+	line-height: 30px;
+	font-size: 14px;
+	text-align: center
+}
+
+.button {
+	margin: 30px 16px auto 16px;
+	float: left;
+	width: 80px;
+	height: 100px;
+}
+
+.button:first-child {
+	margin-left: 64px;
+}
+
+.button img {
+	padding: 0 8px 0 8px;
+	display: block;
+}
+
+.button span {
+	display: block;
+	width: 80px;
+	text-align: center;
+	font-size: 14px;
+}
+
+.download {
+	float: left;
+	margin: 34px 8px 57px 40px;
+	background-image: url(downloadButton.png);
+	line-height: 56px;
+	width: 225px;
+	height: 56px;
+}
+
+.download img {
+	margin: 4px 20px 4px 16px;
+	float: left;
+	width: 48px;
+}
+
+.download span {
+	display: block;
+	font-size: 16px;
+	font-weight: bold;
+}
+
+.proxyVideo {
+	width: 800px;
+	height: 480px;
+	background-color: #888;
+}
+
+footer {
+	margin-top: 8px;
+	display: block;
+	color: #333;
+	font-style: italic;
+	font-size: 11px;
+	width: 100%;
+	text-align: center;
+}
