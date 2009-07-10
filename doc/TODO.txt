@@ -1,4 +1,10 @@
-## Add support for Fields and Local Declarations for @SneakyThrows (sneakythrows on the initializer)
+## Fix Getter and Setter
+
+static fields.
+
+##Fix data
+
+the constructor generation is just not that useful as is. Consider generating a constructor with only all final variables.
 
 ## Fix Eclipse's HandleCleanup
 
@@ -53,17 +59,17 @@ A lot has been tried:
 
 We need to figure out which of the bodyStart/bodyDeclarationStart/sourceStart blocks are used as where insertions happen, and set it to the entire line of a field and not just the annotation.
 
-Don't forget to extend past the opening brace for @Data!
-
-## Website
-
-See the following for CC licences:
-
-http://creativecommons.org/license/results-one?q_1=2&q_1=1&field_commercial=yes&field_derivatives=yes&field_jurisdiction=us&field_format=&field_worktitle=lombok&field_attribute_to_name=&field_attribute_to_url=&field_sourceurl=&field_morepermissionsurl=&lang=en_US&language=en_US&n_questions=3
+Don't forget to extend past the opening brace for @Data - so eclipse puts generated methods in the right place!
 
 ## javadoc
 
-Either just let people run lombokc and javadoc that, -or-, use a doclet and presumptively cast our way into javadoc's AST.
+Either just let people run lombokc and javadoc that, -or-, hack javadoc.
+
+Using either a taglet to cast our way into Javadoc's AST, or a doclet are both bad ideas:
+
+It does not appear possible to get there from a taglet, and a doclet replaces most of javadoc's functionality -
+exactly the functionality we DONT want. (Doclets convert a structural set of classes to HTML. We want to change
+the classes offered, not how the HTML is generated!)
 
 ## lombokc
 
@@ -92,17 +98,5 @@ Possible work-around: Rewrite the entire JavacTaskImpl.class file on disk. It's 
 /NetBeans 6.7 RC3.app/Contents/Resources/NetBeans/java2/modules/ext/javac-impl-nb-7.0-b07.jar
 
 Some work has been done in the addNetbeans branch.
-
-## website
-
-## javadoc
-
-## screencasts
-
-## installers
-
-## hook into class file writing
-
-on javac: com.sun.tools.javac.jvm.ClassWriter.writeClassFile(OutputStream out, ClassSymbol c) - hack the one line where out.write() is called.
 
 

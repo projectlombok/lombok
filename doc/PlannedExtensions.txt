@@ -1,56 +1,191 @@
 Planned lombok features
 =======================
 
-## @Getter
+## more hooks
 
-Put on any field; like so:
+The parse and compilation process looks roughly like this:
 
-    private @Getter AnyType foo;
+* raw text
+* list of tokens
+* Abstract Syntax Tree
+* Bound AST (a.k.a. LST)
+* bytecode
+* file on disk
 
-This will generate the following method:
+Currently lombok hooks right after the AST is built. It would be nice if you can also hook post binding,
+for modifying how types work. That way you could for example add a 'sort' method to List, or some such.
 
-    public AnyType getFoo() {
-        return foo;
-    }
+It would also be nice if lombok can hook right after the bytecode is built, so bytecode-level rewriters such
+as generators can have a go, as well as cleanup some of the work lombok did in an earlier phase (such as just
+replacing try { /* block */ } catch ( Throwable t ) { throw sneakyThow(t); } with just 'block' - on the JVM
+level it boils down to the same thing in faster and smaller code.
 
-Optionally you can generate a different access level by specifying the `AccessLevel` in the annotation, like so:
+It may even be interesting to hook into the parser right at the raw text phase, not to modify the raw text,
+but to add more tokens and tree building primitives to the parser, such as closures, but that would probably
+be extremely complicated.
 
-    private @Getter(AccessLevel.PROTECTED) AnyType foo;
+## Package level annotations and world awareness
 
-Don't forget to allow use on static fields!
+Lombok cannot currently figure out where sibling source files are, and it cannot for example find package-info.java or
+module-info.java (looking ahead to java7). Package-level or module-level annotations to enable or disable certain
+behaviours would probably be nice to be able to do. Javac has the filer, and eclipse has the IProject, so we ought to
+be able to hack something together.
 
-## @Setter
+To hook after bytecode generation in javac:
+com.sun.tools.javac.jvm.ClassWriter.writeClassFile(OutputStream out, ClassSymbol c) - hack the one line where out.write() is called.
 
-Like @Getter, but creates setters.
-Don't forget to allow use on static fields!
 
-## @Data
+## Netbeans support
 
-Creates getters, setters (for non-final fields), toString, equals, and hashCode, as well as a constructor, or, if you wish,
-a 'static factory method'.
+Netbeans uses a slightly modified version of javac internally. This version seems compatible with everything
+the lombok.javac package does, however it is started specifically without annotation processors which is why
+lombok can't hook into netbeans that way. Using an agent failed because somehow the agent stops getting called on
+to instrument class files. Possibly netbeans is starting a new JVM under the hood and we need to instrument THAT
+call to add our agent? We may have to look into how netbeans' classloading works and hook there to load modified classes.
+
+## IDEA support
+
+It's not open source and I've heard that they don't use javac under the hood but some sort of ANTLR based parser.
+If that is true, IDEA will need a dedicated lombok/IDEA afficionado to write and maintain an IDEA version of lombok,
+because that's far too much effort for Roel or Reinier, who don't own an IDEA copy and weren't planning to switch IDEs.
+
+Planned transformations
+=======================
 
 ## @Property
 
-http://today.java.net/pub/a/today/2009/06/02/hacking-javafx-binding.html
+Basic needs:
+ - generate a getter and a setter. The setter needs to fire notification handlers.
+ - bind 2 properties together, with an optional value mapper. The utility of binding with mapping is too low to consider
+  that 'too complicated, just write it out' territory. Note that conversion is 2-way, the slew of Mapping interfaces in
+  functionaljava and similar libraries are all one-way.
+ - add/remove a property change listeners.
+ - optional: Support an 'invalid' state. Any 'get' operation must first update (re-validate) the value. This way
+   properties backed by expensive operations can be lazily queried.
 
-## @AutoClose
+### JSR295 and JGoodies binding
 
-## @Synchronized
+JSR295 has a Property class that is capable of getting/setting/notifying for a wide range of string-based
+properties, which seems like needlessly dumb design (Never use (non-compile-time checked) string literals for this stuff!)
+Being compatible with it can be done if specifically asked for, but using that as the default seems like a bad idea.
+JSR295 seems like it won't make it into java7.
+
+String literals completely eliminate the ability to have some sort of static type checking for the actual type of
+object that you need to set/get, and for properties that only expose one value, this string is usually ignored, and
+ignored variables are an obvious indicator of bad API design.
+
+JGoodies binding has made the similar fatal mistake of using a string literal.
+
+### JavaFX binding
+
+See [Hacking JavaFX Binding](http://today.java.net/pub/a/today/2009/06/02/hacking-javafx-binding.html) for source on this info.
+
+See also [FishEye browser for the JavaFX's com.sun.javafx.runtime.location package](http://fisheye4.atlassian.com/browse/openjfx-compiler/trunk/src/share/classes/com/sun/javafx/runtime/location)
+
+JavaFX actually uses `$foo` as a field that holds a Location object (JavaFX's take on properties).
+
+In JavaFX's internals, a property is called a Location, and it has the methods:
+* `isMutable()`
+* `isValid()` / `invalidate()` / `update()`
+* `addChangeListener()` / `removeChangeListener()`
+
+The actual set and get methods are implemented via dynamically generated subtypes, in order for the return/param type
+on the methods to be properly typed. These methods also have unique names; the `IntVariable` class has methods named
+`getAsInt()` and `setAsInt(int)` for example. Each type comes in `xxxConstant` and `xxxVariable` variants, for
+mutable and immutable. Having an immutable property in java seems overkill. Change
+
+ChangeListener just contains an onChange() method; the listener is evidently supposed to both hold a reference to
+the actual Location to get the change/interact, AND to be registered on only one Location as there's no way to
+differentiate the onChange() calls if you're listening to more than 1 property. There's also a getDependencyKind()
+method which seems more related to JavaFX's internal workings. There are generated unique subclasses per type which
+add more methods to do retrieval.
+
+Using this system directly also seems problematic:
+
+* All this auto-generation really isn't helping - lombok is a compile-time device. We'd have to roll specific subclasses.
+* There's quite a bit of javafx-specific stuff going on which we'd have to leave blank.
+* This is all in a com.sun.javafx.runtime.location package.
+
+However, we could use it as inspiration, and strive to be as API compatible with it as seems reasonable, without of
+course the package name. At some point we might introduce a module/package level annotation to state that all lombok
+properties need to be generated as JavaFX properties.
+
+
+
+
 
 ## @Generator
 
+There are bytecode rewriters out there, though technically it may be possible to do this on the source level.
+The idea behind @Generator is that all method local state is retained when you return, so this:
+
+    @Generator public int return0Through9() {
+        for ( int i = 0 ; i < 10 ; i++ ) return i;
+    }
+
+would actually do what it says, instead of returning 0 every time you call it.
+
+The return type should probably be `Iterable<Integer>` instead, which would work well with a source-level rewrite.
+bytecode rewrite based generators use a superclass type named 'Generator' and use this to support a method that returns X,
+but which when called from the outside returns Iterable<X>.
+
 ## @SneakyThrows
 
+We currently generate:
+    try { /* method body */ } catch ( SneakyThrownType t ) { throw Lombok.sneakyThrow(t); }
+
+Which also means that usage of SneakyThrows creates a runtime dependency on lombok.jar. When lombok supports
+class file rewriting, we should replace the entire try statement with just 'method body' again, as the JVM
+does not care about checked exceptions. This also removes the runtime dependency.
+
+SneakyThrows also needs to be extended to fields and local variable declarations (it would apply to the initialization).
+
 ## @Finalizer
+
+Creates a new unique (serializable?) anonymous inner class based object that has a finalizer which will call the
+annotated method.
 
 # Maybes:
 
 ## @RunInEDT
 
+Automatically wraps the method in a SwingUtilities.invoke(andWait/later).
+
 ## @SaneEquals
+
+Finds all instances of `a == b` where both a and b are non-primitive types, and replaces it with:
+`a == null ? b == null : a.equals(b)` - this is dangerous new territory where we change the semantics of legal
+java code into different java code, but it is admittedly a lot more useful than what `a == b` does now.
 
 ## List Comprehensions
 
+Something like:
+
+    List<Integer> lengths = build; for ( String s : list ) toInt().filter(s != null).select(s.length());
+
+issues: Ugly; what happens if you use 'for' as an expression? Does the AST still contain a ForStatement, or
+does the parser just give up at that point?
+
+Can the toInt() bit be eliminated somehow, inferencing the type from the parameter in s.length()?
+
+Auto-formatters will screw this up.
+
+The biggest advantage of list comprehensions is that you can use them in-place as an expression instead of adding
+a bunch of code lines to first create a new list and then fill it. However, the above is only going to work when
+assigning to a new variable, which defeats a lot of the purpose!
+
 ## Dodge access restrictions (call method private stuff, recompile to reflection).
 
+An annotation on a local variable declaration or field that states that any method calls to non-accessible methods
+gets rewritten to reflective calls. Would require knowledge of the depedencies which lombok does not currently have.
+
 ## @ReturnThis
+
+Enforces that 'this' is returned, or if missing, adds 'return this' to the end of the method and any return statements.
+Figuring out where to put statements is _very_ hard, because sticking a 'return this;' at the end of a method that consists
+of an endless while loop is illegal java code (unreachable code), and without auto-generating the 'return this' statements,
+the utility of this annotation seems too low to bother with it. It would also be nice if extending classes automatically
+generated a new method with itself as return type - THAT would be worth it, but requires knowledge of the world and sets
+a precedent where annotations in a supertype have an effect on compilation, which is not java-esque.
+
+## 
