@@ -1,7 +1,3 @@
-## Fix Getter and Setter
-
-static fields.
-
 ##Fix data
 
 the constructor generation is just not that useful as is. Consider generating a constructor with only all final variables.
