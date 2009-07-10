@@ -5,31 +5,38 @@
 	<script src="index.js" type="text/javascript"></script>
 	<link rel="stylesheet" type="text/css" href="logi/reset.css" />
 	<link rel="stylesheet" type="text/css" href="index.css" />
-	<link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 	<meta name="description" content="Spice up your java" />
 	<title>Project Lombok</title>
 	<!--[if lt IE 7]><script type="text/javascript" src="logi/iepngfix_tilebg.js"></script><![endif]--> 
 </head><body>
+	<div id="downloadInfo" class="buttonBar" style="display: none;">
+		<span></span>
+		<div class="downloadActions">
+			<a class="backToBar" href="http://projectlombok.googlecode.com/files/lombok.jar">Okay, download <strong>lombok</strong></a>
+			<a href="#" class="backToBar">No, don't</a>
+		</div>
+	</div>
 	<div class="meat">
 		<h1>Project Lombok</h1>
-		<div class="buttonBar">
-			<a class="button" href="overview.html">
+		<div id="buttonBar" class="buttonBar">
+			<a class="button" href="http://wiki.github.com/rzwitserloot/lombok/features">
 				<img src="icon_overview.png" />
 				<span>Feature Overview</span>
 			</a>
-			<a class="button" href="mailinglist.html">
+			<a class="button" href="http://groups.google.com/group/project-lombok">
 				<img src="icon_discussion.png" />
-				<span>Mailing List</span>
+				<span>Discuss / Help</span>
 			</a>
-			<a class="button" href="contribute.html">
+			<a class="button" href="http://wiki.github.com/rzwitserloot/lombok/contributing">
 				<img src="icon_contribute.png" />
 				<span>Contribute</span>
 			</a>
-			<a class="button" href="bugs.html">
+			<a class="button" href="http://code.google.com/p/projectlombok/issues/list">
 				<img src="icon_bugs.png" />
-				<span>Report a Bug</span>
+				<span>Report an issue</span>
 			</a>
-			<a class="download" href="download.html">
+			<a class="download" id="downloadLink" href="download.html">
 				<img src="icon_download.png" />
 				<span>Download!</span>
 			</a>
