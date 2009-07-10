@@ -67,5 +67,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 public @interface SneakyThrows {
 	/** The exception type(s) you want to sneakily throw onward. */
-	Class<? extends Throwable>[] value() default Throwable.class;
+	Class<? extends Throwable>[] value() default java.lang.Throwable.class;
+	
+	//The package is mentioned in java.lang due to a bug in javac (presence of an annotation processor throws off the type resolver for some reason).
 }
