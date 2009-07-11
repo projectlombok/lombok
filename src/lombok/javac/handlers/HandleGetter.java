@@ -63,23 +63,16 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 	 * be a warning if its already there. The default access level is used.
 	 */
 	public void generateGetterForField(Node fieldNode, DiagnosticPosition pos) {
-		AccessLevel level = AccessLevel.PUBLIC;
-		Node errorNode = fieldNode;
-		boolean whineIfExists = false;
-		
 		for ( Node child : fieldNode.down() ) {
 			if ( child.getKind() == Kind.ANNOTATION ) {
 				if ( Javac.annotationTypeMatches(Getter.class, child) ) {
-					level = Javac.createAnnotation(Getter.class, child).getInstance().value();
-					errorNode = child;
-					pos = child.get();
-					whineIfExists = true;
-					break;
+					//The annotation will make it happen, so we can skip it.
+					return;
 				}
 			}
 		}
 		
-		createGetterForField(level, fieldNode, errorNode, pos, whineIfExists);
+		createGetterForField(AccessLevel.PUBLIC, fieldNode, fieldNode, pos, false);
 	}
 	
 	@Override public boolean handle(AnnotationValues<Getter> annotation, JCAnnotation ast, Node annotationNode) {

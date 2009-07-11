@@ -62,23 +62,16 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 	 * be a warning if its already there. The default access level is used.
 	 */
 	public void generateGetterForField(Node fieldNode, ASTNode pos) {
-		AccessLevel level = AccessLevel.PUBLIC;
-		Node errorNode = fieldNode;
-		boolean whineIfExists = false;
-		
 		for ( Node child : fieldNode.down() ) {
 			if ( child.getKind() == Kind.ANNOTATION ) {
 				if ( Eclipse.annotationTypeMatches(Getter.class, child) ) {
-					level = Eclipse.createAnnotation(Getter.class, child).getInstance().value();
-					errorNode = child;
-					pos = child.get();
-					whineIfExists = true;
-					break;
+					//The annotation will make it happen, so we can skip it.
+					return;
 				}
 			}
 		}
 		
-		createGetterForField(level, fieldNode, errorNode, pos, whineIfExists);
+		createGetterForField(AccessLevel.PUBLIC, fieldNode, fieldNode, pos, false);
 	}
 	
 	public boolean handle(AnnotationValues<Getter> annotation, Annotation ast, Node annotationNode) {
@@ -96,7 +89,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		TypeReference fieldType = Eclipse.copyType(field.type);
 		String getterName = TransformationsUtil.toGetterName(
-				new String(field.name), nameEquals(fieldType.getTypeName(), "boolean"));
+				new String(field.name), nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0);
 		
 		int modifier = toModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		

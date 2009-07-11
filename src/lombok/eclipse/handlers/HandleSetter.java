@@ -66,23 +66,16 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 	 * be a warning if its already there. The default access level is used.
 	 */
 	public void generateSetterForField(Node fieldNode, ASTNode pos) {
-		AccessLevel level = AccessLevel.PUBLIC;
-		Node errorNode = fieldNode;
-		boolean whineIfExists = false;
-		
 		for ( Node child : fieldNode.down() ) {
 			if ( child.getKind() == Kind.ANNOTATION ) {
 				if ( Eclipse.annotationTypeMatches(Setter.class, child) ) {
-					level = Eclipse.createAnnotation(Setter.class, child).getInstance().value();
-					errorNode = child;
-					pos = child.get();
-					whineIfExists = true;
-					break;
+					//The annotation will make it happen, so we can skip it.
+					return;
 				}
 			}
 		}
 		
-		createSetterForField(level, fieldNode, errorNode, pos, whineIfExists);
+		createSetterForField(AccessLevel.PUBLIC, fieldNode, fieldNode, pos, false);
 	}
 	
 	public boolean handle(AnnotationValues<Setter> annotation, Annotation ast, Node annotationNode) {
