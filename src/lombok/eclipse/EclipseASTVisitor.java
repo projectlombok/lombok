@@ -114,7 +114,7 @@ public interface EclipseASTVisitor {
 		private int indent = 0;
 		
 		/**
-		 * @param printContent if true, method and initializer bodies are printed directly, as java code,
+		 * @param printContent if true, bodies are printed directly, as java code,
 		 * instead of a tree listing of every AST node inside it.
 		 */
 		public Printer(boolean printContent) {
@@ -122,7 +122,7 @@ public interface EclipseASTVisitor {
 		}
 		
 		/**
-		 * @param printContent if true, method and initializer bodies are printed directly, as java code,
+		 * @param printContent if true, bodies are printed directly, as java code,
 		 * instead of a tree listing of every AST node inside it.
 		 * @param out write output to this stream. You must close it yourself. flush() is called after every line.
 		 * 
@@ -177,6 +177,10 @@ public interface EclipseASTVisitor {
 		public void visitType(Node node, TypeDeclaration type) {
 			print("<TYPE %s>", str(type.name));
 			indent++;
+			if ( printContent ) {
+				print("%s", type);
+				disablePrinting++;
+			}
 		}
 		
 		public void visitAnnotationOnType(TypeDeclaration type, Node node, Annotation annotation) {
@@ -184,6 +188,7 @@ public interface EclipseASTVisitor {
 		}
 		
 		public void endVisitType(Node node, TypeDeclaration type) {
+			if ( printContent ) disablePrinting--;
 			indent--;
 			print("</TYPE %s>", str(type.name));
 		}

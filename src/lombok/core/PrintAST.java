@@ -42,9 +42,10 @@ public @interface PrintAST {
 	String outfile() default "";
 	
 	/**
-	 * Normally, the printer will print each node focusing on the node (E.g. classname, and such).
-	 * By setting printContent to true, methods, initializers, and other statement-containing elements
-	 * actually print their java code instead of a tree view of internal AST nodes.
+	 * Sets whether to print node structure (false) or generated java code (true).
+	 * 
+	 * By setting printContent to true, the annotated element's java code representation is printed. If false,
+	 * its node structure (e.g. node classname) is printed, and this process is repeated for all children.
 	 */
 	boolean printContent() default false;
 }

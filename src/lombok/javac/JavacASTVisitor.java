@@ -104,7 +104,7 @@ public interface JavacASTVisitor {
 		private int indent = 0;
 		
 		/**
-		 * @param printContent if true, method and initializer bodies are printed directly, as java code,
+		 * @param printContent if true, bodies are printed directly, as java code,
 		 * instead of a tree listing of every AST node inside it.
 		 */
 		public Printer(boolean printContent) {
@@ -112,7 +112,7 @@ public interface JavacASTVisitor {
 		}
 		
 		/**
-		 * @param printContent if true, method and initializer bodies are printed directly, as java code,
+		 * @param printContent if true, bodies are printed directly, as java code,
 		 * instead of a tree listing of every AST node inside it.
 		 * @param out write output to this stream. You must close it yourself. flush() is called after every line.
 		 * 
@@ -149,6 +149,10 @@ public interface JavacASTVisitor {
 		@Override public void visitType(Node node, JCClassDecl type) {
 			print("<TYPE %s>", type.name);
 			indent++;
+			if ( printContent ) {
+				print("%s", type);
+				disablePrinting++;
+			}
 		}
 		
 		@Override public void visitAnnotationOnType(JCClassDecl type, Node node, JCAnnotation annotation) {
@@ -156,6 +160,7 @@ public interface JavacASTVisitor {
 		}
 		
 		@Override public void endVisitType(Node node, JCClassDecl type) {
+			if ( printContent ) disablePrinting--;
 			indent--;
 			print("</TYPE %s>", type.name);
 		}
