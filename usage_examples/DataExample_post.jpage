@@ -1,0 +1,111 @@
+import java.util.Arrays;
+
+public class DataExample {
+	private final String name;
+	private int age;
+	private double score;
+	private String[] tags;
+	
+	public DataExample(String name) {
+		this.name = name;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	void setAge(int age) {
+		this.age = age;
+	}
+	
+	public int getAge() {
+		return age;
+	}
+	
+	public void setScore(double score) {
+		this.score = score;
+	}
+	
+	public double getScore() {
+		return score;
+	}
+	
+	public String[] getTags() {
+		return tags;
+	}
+	
+	public void setTags(String[] tags) {
+		this.tags = tags;
+	}
+	
+	@Override public String toString() {
+		return "DataExample(" + name + ", " + age + ", " + score + ", " + Arrays.deepToString(tags) + ")";
+	}
+	
+	@Override public boolean equals(Object o) {
+		if (o == this) return true;
+		if (o == null) return false;
+		if (o.getClass() != this.getClass()) return false;
+		DataExample other = (DataExample) o;
+		if (name == null ? other.name != null : !name.equals(other.name)) return false;
+		if (age != other.age) return false;
+		if (Double.compare(score, other.score) != 0) return false;
+		if (!Arrays.deepEquals(tags, other.tags)) return false;
+		return true;
+	}
+	
+	@Override public int hashCode() {
+		final int PRIME = 31;
+		int result = 1;
+		final long temp1 = Double.doubleToLongBits(score);
+		result = (result*PRIME) + (name == null ? 0 : name.hashCode());
+		result = (result*PRIME) + age;
+		result = (result*PRIME) + (int)(temp1 ^ (temp1 >>> 32));
+		result = (result*PRIME) + Arrays.deepHashCode(tags);
+		return result;
+	}
+	
+	public static class Exercise<T> {
+		private final String name;
+		private final T value;
+		
+		private Exercise(String name, T value) {
+			this.name = name;
+			this.value = value;
+		}
+		
+		public static <T> Exercise<T> of(String name, T value) {
+			return new Exercise<T>(name, value);
+		}
+		
+		public String getName() {
+			return name;
+		}
+		
+		public T getValue() {
+			return value;
+		}
+		
+		@Override public String toString() {
+			return "Exercise(" + name + ", " + value + ")";
+		}
+		
+		@Override public boolean equals(Object o) {
+			if (o == this) return true;
+			if (o == null) return false;
+			if (o.getClass() != this.getClass()) return false;
+			Exercise<?> other = (Exercise<?>) o;
+			if (name == null ? other.name != null : !name.equals(other.name)) return false;
+			if (value == null ? other.value != null : !value.equals(other.value)) return false;
+			return true;
+		}
+		
+		@Override public int hashCode() {
+			final int PRIME = 31;
+			int result = 1;
+			result = (result*PRIME) + (name == null ? 0 : name.hashCode());
+			result = (result*PRIME) + (value == null ? 0 : value.hashCode());
+			return result;
+		}
+	}
+}
