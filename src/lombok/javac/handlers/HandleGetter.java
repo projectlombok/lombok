@@ -91,7 +91,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 	private boolean createGetterForField(AccessLevel level, Node fieldNode, Node errorNode, DiagnosticPosition pos, boolean whineIfExists) {
 		if ( fieldNode.getKind() != Kind.FIELD ) {
 			errorNode.addError("@Getter is only supported on a field.");
-			return false;
+			return true;
 		}
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl)fieldNode.get();
@@ -103,7 +103,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		case EXISTS_BY_USER:
 			if ( whineIfExists ) errorNode.addWarning(
 					String.format("Not generating %s(): A method with that name already exists",  methodName));
-			return false;
+			return true;
 		default:
 		case NOT_EXISTS:
 			//continue with creating the getter

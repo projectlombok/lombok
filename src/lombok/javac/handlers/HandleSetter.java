@@ -94,7 +94,7 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 	private boolean createSetterForField(AccessLevel level, Node fieldNode, Node errorNode, DiagnosticPosition pos, boolean whineIfExists) {
 		if ( fieldNode.getKind() != Kind.FIELD ) {
 			fieldNode.addError("@Setter is only supported on a field.");
-			return false;
+			return true;
 		}
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl)fieldNode.get();
@@ -107,7 +107,7 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 			if ( whineIfExists ) errorNode.addWarning(
 					String.format("Not generating %s(%s %s): A method with that name already exists",
 					methodName, fieldDecl.vartype, fieldDecl.name));
-			return false;
+			return true;
 		default:
 		case NOT_EXISTS:
 			//continue with creating the setter

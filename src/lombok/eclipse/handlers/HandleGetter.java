@@ -90,7 +90,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 	private boolean createGetterForField(AccessLevel level, Node fieldNode, Node errorNode, ASTNode pos, boolean whineIfExists) {
 		if ( fieldNode.getKind() != Kind.FIELD ) {
 			errorNode.addError("@Getter is only supported on a field.");
-			return false;
+			return true;
 		}
 		
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
@@ -106,7 +106,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		case EXISTS_BY_USER:
 			if ( whineIfExists ) errorNode.addWarning(
 					String.format("Not generating %s(): A method with that name already exists",  getterName));
-			return false;
+			return true;
 		default:
 		case NOT_EXISTS:
 			//continue with creating the getter
