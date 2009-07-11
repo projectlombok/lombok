@@ -76,7 +76,8 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		}
 		
 		List<Node> nodesForEquality = List.nil();
-		List<Node> nodesForConstructorAndToString = List.nil();
+		List<Node> nodesForConstructor = List.nil();
+		List<Node> nodesForToString = List.nil();
 		for ( Node child : typeNode.down() ) {
 			if ( child.getKind() != Kind.FIELD ) continue;
 			JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
@@ -84,21 +85,22 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 			//Skip static fields.
 			if ( (fieldFlags & Flags.STATIC) != 0 ) continue;
 			if ( (fieldFlags & Flags.TRANSIENT) == 0 ) nodesForEquality = nodesForEquality.append(child);
-			nodesForConstructorAndToString = nodesForConstructorAndToString.append(child);
+			boolean isFinal = (fieldFlags & Flags.FINAL) != 0;
+			nodesForToString = nodesForToString.append(child);
+			if ( isFinal ) nodesForConstructor = nodesForConstructor.append(child);
 			new HandleGetter().generateGetterForField(child, annotationNode.get());
-			if ( (fieldFlags & Flags.FINAL) == 0 )
-				new HandleSetter().generateSetterForField(child, annotationNode.get());
+			if ( !isFinal ) new HandleSetter().generateSetterForField(child, annotationNode.get());
 		}
 		
 		String staticConstructorName = annotation.getInstance().staticConstructor();
 		
 		if ( constructorExists(typeNode) == MemberExistsResult.NOT_EXISTS ) {
-			JCMethodDecl constructor = createConstructor(staticConstructorName.equals(""), typeNode, nodesForConstructorAndToString);
+			JCMethodDecl constructor = createConstructor(staticConstructorName.equals(""), typeNode, nodesForConstructor);
 			injectMethod(typeNode, constructor);
 		}
 		
 		if ( !staticConstructorName.isEmpty() && methodExists("of", typeNode) == MemberExistsResult.NOT_EXISTS ) {
-			JCMethodDecl staticConstructor = createStaticConstructor(staticConstructorName, typeNode, nodesForConstructorAndToString);
+			JCMethodDecl staticConstructor = createStaticConstructor(staticConstructorName, typeNode, nodesForConstructor);
 			injectMethod(typeNode, staticConstructor);
 		}
 		
@@ -113,7 +115,7 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		}
 		
 		if ( methodExists("toString", typeNode) == MemberExistsResult.NOT_EXISTS ) {
-			JCMethodDecl method = createToString(typeNode, nodesForEquality);
+			JCMethodDecl method = createToString(typeNode, nodesForToString);
 			injectMethod(typeNode, method);
 		}
 		

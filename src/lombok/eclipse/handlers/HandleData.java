@@ -109,34 +109,36 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		}
 		
 		List<Node> nodesForEquality = new ArrayList<Node>();
-		List<Node> nodesForConstructorAndToString = new ArrayList<Node>();
+		List<Node> nodesForConstructor = new ArrayList<Node>();
+		List<Node> nodesForToString = new ArrayList<Node>();
 		for ( Node child : typeNode.down() ) {
 			if ( child.getKind() != Kind.FIELD ) continue;
 			FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
 			//Skip static fields.
 			if ( (fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0 ) continue;
 			if ( (fieldDecl.modifiers & ClassFileConstants.AccTransient) == 0 ) nodesForEquality.add(child);
-			nodesForConstructorAndToString.add(child);
+			boolean isFinal = (fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0;
+			nodesForToString.add(child);
+			if ( isFinal ) nodesForConstructor.add(child);
 			new HandleGetter().generateGetterForField(child, annotationNode.get());
-			if ( (fieldDecl.modifiers & ClassFileConstants.AccFinal) == 0 )
-				new HandleSetter().generateSetterForField(child, annotationNode.get());
+			if ( !isFinal ) new HandleSetter().generateSetterForField(child, annotationNode.get());
 		}
 		
 		if ( methodExists("toString", typeNode) == MemberExistsResult.NOT_EXISTS ) {
-			MethodDeclaration toString = createToString(typeNode, nodesForConstructorAndToString, ast);
+			MethodDeclaration toString = createToString(typeNode, nodesForToString, ast);
 			injectMethod(typeNode, toString);
 		}
 		
 		if ( constructorExists(typeNode) == MemberExistsResult.NOT_EXISTS ) {
 			ConstructorDeclaration constructor = createConstructor(
-					ann.staticConstructor().length() == 0, typeNode, nodesForConstructorAndToString, ast);
+					ann.staticConstructor().length() == 0, typeNode, nodesForConstructor, ast);
 			injectMethod(typeNode, constructor);
 		}
 		
 		if ( ann.staticConstructor().length() > 0 ) {
 			if ( methodExists("of", typeNode) == MemberExistsResult.NOT_EXISTS ) {
 				MethodDeclaration staticConstructor = createStaticConstructor(
-						ann.staticConstructor(), typeNode, nodesForConstructorAndToString, ast);
+						ann.staticConstructor(), typeNode, nodesForConstructor, ast);
 				injectMethod(typeNode, staticConstructor);
 			}
 		}
