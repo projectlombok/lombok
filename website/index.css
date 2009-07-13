@@ -94,16 +94,11 @@ code {
 }
 
 #downloadInfo {
-	display: block;
-	position: absolute;
-	left: 50%;
-	top: 35px;
 	font-size: 16px;
-	margin-left: -400px;
 }
 
 #downloadInfo p {
-	margin: 12px;
+	padding: 12px;
 }
 
 .downloadActions {

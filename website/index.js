@@ -11,7 +11,7 @@ function fixDownloadLink() {
 	});
 	
 	$(".backToBar").click(function(event) {
-		$("#downloadInfo").hide();
+		toggleButtonBar(true);
 	});
 }
 
@@ -31,11 +31,21 @@ function showDownloadInfo() {
 				html = html.substring(0, pos);
 				var p = $("<p>").html(html).append($("#downloadInfo .downloadActions"));
 				$("#downloadInfo span:first-child").replaceWith(p);
-				$("#downloadInfo").show();
+				toggleButtonBar(false);
 			}
 		});
 	} else {
+		toggleButtonBar(false);
+	}
+}
+
+function toggleButtonBar(showOriginal) {
+	if ( showOriginal ) {
+		$("#downloadInfo").hide();
+		$("#buttonBar").show();
+	} else {
 		$("#downloadInfo").show();
+		$("#buttonBar").hide();
 	}
 }
 
