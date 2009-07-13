@@ -143,6 +143,11 @@ public class Eclipse {
 			o.modifiers = param.modifiers;
 			o.name = param.name;
 			o.type = copyType(param.type);
+			o.sourceStart = param.sourceStart;
+			o.sourceEnd = param.sourceEnd;
+			o.declarationEnd = param.declarationEnd;
+			o.declarationSourceStart = param.declarationSourceStart;
+			o.declarationSourceEnd = param.declarationSourceEnd;
 			if ( param.bounds != null ) {
 				TypeReference[] b = new TypeReference[param.bounds.length];
 				int idx2 = 0;

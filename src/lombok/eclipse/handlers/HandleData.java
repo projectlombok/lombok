@@ -258,7 +258,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			TypeReference[] refs = new TypeReference[typeDecl.typeParameters.length];
 			int idx = 0;
 			for ( TypeParameter param : typeDecl.typeParameters ) {
-				refs[idx++] = new SingleTypeReference(param.name, 0);
+				refs[idx++] = new SingleTypeReference(param.name, (long)param.sourceStart << 32 | param.sourceEnd);
 			}
 			constructor.returnType = new ParameterizedSingleTypeReference(typeDecl.name, refs, 0, p);
 		} else constructor.returnType = new SingleTypeReference(((TypeDeclaration)type.get()).name, p);
