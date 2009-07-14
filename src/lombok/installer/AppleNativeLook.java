@@ -21,21 +21,23 @@
  */
 package lombok.installer;
 
-import java.io.IOException;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 
 import javax.imageio.ImageIO;
-
-import com.apple.eawt.Application;
 
 /**
  * Mac OS X specific code to gussy up the GUI a little bit, mostly with a nice dock icon. Well, nicer than
  * the standard icon, at any rate.
  */
 class AppleNativeLook {
-	public static void go() throws IOException {
-		Application app = Application.getApplication();
-		app.removeAboutMenuItem();
-		app.removePreferencesMenuItem();
-		app.setDockIconImage(ImageIO.read(AppleNativeLook.class.getResource("lombokIcon.png")));
+	public static void go() throws Exception {
+		Class<?> appClass = Class.forName("com.apple.eawt.Application");
+		Object app = appClass.getMethod("getApplication").invoke(null);
+		appClass.getMethod("removeAboutMenuItem").invoke(app);
+		appClass.getMethod("removePreferencesMenuItem").invoke(app);
+
+		BufferedImage image = ImageIO.read(AppleNativeLook.class.getResource("lombokIcon.png"));
+		appClass.getMethod("setDockIconImage", Image.class).invoke(app, image);
 	}
 }
