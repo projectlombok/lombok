@@ -53,7 +53,6 @@ class EclipseFinder {
 		try {
 			URI uri = EclipseFinder.class.getResource("/" + EclipseFinder.class.getName().replace('.', '/') + ".class").toURI();
 			Pattern p = Pattern.compile("^jar:file:([^\\!]+)\\!.*\\.class$");
-			System.out.println(uri.toString());
 			Matcher m = p.matcher(uri.toString());
 			if ( !m.matches() ) return new File("lombok.jar");
 			String rawUri = m.group(1);
