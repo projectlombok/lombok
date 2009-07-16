@@ -13,9 +13,14 @@ h1 {
 	text-align: center;
 }
 
-#buttonBar a.js {
-	color: black;
+#buttonBar a {
 	text-decoration: none;
+	color: black;
+}
+
+#buttonBar a:hover {
+	text-decoration: underline;
+	color: blue;
 }
 
 .buttonBar {
@@ -94,15 +99,15 @@ code {
 }
 
 #downloadInfo {
-	font-size: 16px;
+	font-size: 14px;
 }
 
 #downloadInfo p {
-	padding: 12px;
+	padding: 8px;
 }
 
 .downloadActions {
-	margin-top: 16px;
+	margin-top: 8px;
 	margin-left: 32px;
 }
 .downloadActions a {

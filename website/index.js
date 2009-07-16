@@ -1,5 +1,4 @@
 $(function() {
-	addGlow();
 	fixDownloadLink();
 });
 
@@ -47,14 +46,4 @@ function toggleButtonBar(showOriginal) {
 		$("#downloadInfo").show();
 		$("#buttonBar").hide();
 	}
-}
-
-function addGlow() {
-	$("a").addClass("js");
-	$(".button,.download").addGlow({
-		radius: 20,
-		textColor: '#00f',
-		haloColor: '#00f',
-		duration: 500
-	});
 }
