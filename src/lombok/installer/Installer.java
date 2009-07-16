@@ -34,6 +34,7 @@ import java.awt.GridBagLayout;
 import java.awt.HeadlessException;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.font.TextAttribute;
@@ -143,6 +144,7 @@ public class Installer {
 		
 		appWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		appWindow.setResizable(false);
+		appWindow.setIconImage(Toolkit.getDefaultToolkit().getImage(Installer.class.getResource("lombokIcon.png")));
 		
 		try {
 			javacArea = buildJavacArea();
@@ -179,7 +181,7 @@ public class Installer {
 		
 		constraints.gridy = 1;
 		constraints.insets = new Insets(8, 0, 0, 16);
-		container.add(new JLabel(HOW_I_WORK_EXPLANATION), constraints);
+		container.add(new JLabel(String.format(HOW_I_WORK_EXPLANATION, File.pathSeparator)), constraints);
 		
 		Box buttonBar = Box.createHorizontalBox();
 		JButton backButton = new JButton("Okay - Good to know!");
@@ -619,6 +621,7 @@ public class Installer {
 			Box box = Box.createHorizontalBox();
 			box.setBackground(Color.WHITE);
 			final JCheckBox checkbox = new JCheckBox(location.getPath());
+			checkbox.setBackground(Color.WHITE);
 			box.add(checkbox);
 			checkbox.setSelected(true);
 			checkbox.addActionListener(new ActionListener() {
@@ -809,7 +812,7 @@ public class Installer {
 		"<li>Then, I unpack lombok.eclipse.agent.jar like so:<br>" +
 		"<pre>jar xvf lombok.jar lombok.eclipse.agent.jar</pre></li>" +
 		"<li>Then, I edit the eclipse.ini file to add the following two entries:<br>" +
-		"<pre>-Xbootclasspath/a:lombok.jar:lombok.eclipse.agent.jar<br>" +
+		"<pre>-Xbootclasspath/a:lombok.jar%1$slombok.eclipse.agent.jar<br>" +
 		"-javaagent:lombok.jar</pre></li></ol>" +
 		"<br>" +
 		"That's all there is to it. Note that on Mac OS X, eclipse.ini is hidden in<br>" +
