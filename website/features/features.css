@@ -1,0 +1,51 @@
+body {
+	font-family: Verdana;
+	background-image: url(gradient.png);
+	background-repeat: repeat-x;
+	background-attachment: fixed;
+}
+
+#pepper {
+	background-image: url(lombok-background.png);
+	background-repeat: no-repeat;
+	background-attachment: fixed;
+	background-position: 50px 20px;
+}
+
+.meat {
+	padding: 0px 48px;
+}
+
+.meat .header {
+	position: absolute;
+	top: 10px;
+	left: 30px;
+}
+
+.meat .minimumHeight {
+	height: 700px;
+	width: 5px;
+	float: left;
+}
+
+h1 {
+	width: 100%;
+	text-align: center;
+}
+
+footer {
+	margin: 64px auto 0 auto;
+	padding-bottom: 16px;
+	display: block;
+	text-align: center;
+}
+
+footer .disabled {
+	color: #aaa;
+}
+
+footer .copyright {
+	color: #555;
+	font-size: 11px;
+	font-style: italic;
+}
