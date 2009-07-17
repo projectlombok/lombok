@@ -51,7 +51,7 @@ import org.mangosdk.spi.ProviderFor;
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 	public boolean handle(AnnotationValues<Cleanup> annotation, Annotation ast, Node annotationNode) {
-		String cleanupName = annotation.getInstance().cleanupMethod();
+		String cleanupName = annotation.getInstance().value();
 		if ( cleanupName.length() == 0 ) {
 			annotationNode.addError("cleanupName cannot be the empty string.");
 			return true;
@@ -146,7 +146,7 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		unsafeClose.receiver = receiver;
 		long nameSourcePosition = (long)ast.sourceStart << 32 | ast.sourceEnd;
 		if ( ast.memberValuePairs() != null ) for ( MemberValuePair pair : ast.memberValuePairs() ) {
-			if ( pair.name != null && new String(pair.name).equals("cleanupMethod") ) {
+			if ( pair.name != null && new String(pair.name).equals("value") ) {
 				nameSourcePosition = (long)pair.value.sourceStart << 32 | pair.value.sourceEnd;
 				break;
 			}

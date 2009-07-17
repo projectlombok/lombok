@@ -53,7 +53,7 @@ import com.sun.tools.javac.util.Name;
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 	@Override public boolean handle(AnnotationValues<Cleanup> annotation, JCAnnotation ast, Node annotationNode) {
-		String cleanupName = annotation.getInstance().cleanupMethod();
+		String cleanupName = annotation.getInstance().value();
 		if ( cleanupName.length() == 0 ) {
 			annotationNode.addError("cleanupName cannot be the empty string.");
 			return true;
