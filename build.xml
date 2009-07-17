@@ -181,6 +181,7 @@
 		<javadoc sourcepath="src" defaultexcludes="yes" destdir="doc/api" windowtitle="Lombok">
 			<classpath refid="lombok.deps.path" />
 			<classpath refid="lombok.libs.path" />
+			<link href="http://java.sun.com/javase/6/docs/api/" offline="true" packagelistLoc="./lib/javadoc/java6"/>
 			<bottom><![CDATA[<i>Copyright &#169; 2009 Reinier Zwitserloot and Roel Spilker. See LICENCE for more information.]]></bottom>
 		</javadoc>
 	</target>

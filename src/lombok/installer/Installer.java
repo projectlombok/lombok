@@ -300,6 +300,7 @@ public class Installer {
 		
 		JScrollPane eclipsesListScroll = new JScrollPane(eclipsesList);
 		eclipsesListScroll.setBackground(Color.WHITE);
+		eclipsesListScroll.getViewport().setBackground(Color.WHITE);
 		container.add(eclipsesListScroll, constraints);
 		
 		Thread findEclipsesThread = new Thread() {
