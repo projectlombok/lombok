@@ -5,8 +5,8 @@ if [ ! -e src/lombok/core/Version.java ]; then
 	exit
 fi
 
-if [ ! -e dist/website.zip ]; then
-	echo There is no dist/website.zip file! Run:
+if [ ! -e dist/website.tar ]; then
+	echo There is no dist/website.tar file! Run:
 	echo ant website
 	echo then restart this script
 	exit
