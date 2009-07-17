@@ -13,7 +13,7 @@ IEPNGFix.data = IEPNGFix.data || {};
 
 // This must be a path to a blank image, relative to the HTML document(s).
 // In production use I suggest '/images/blankImg' or similar. That's all!
-IEPNGFix.blankImg = 'logi-img/clear.gif';
+IEPNGFix.blankImg = 'clear.gif';
 
 
 IEPNGFix.fix = function(elm, src, t) {
