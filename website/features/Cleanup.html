@@ -12,12 +12,13 @@
 		<div class="minimumHeight"></div>
 		<div class="header"><a href="../index.html">Project Lombok</a></div>
 		<h1>@Cleanup</h1>
+		<div class="byline">Automatic resource management: Call your <code>close()</code> methods safely with no hassle.</div>
 		<div class="overview">
 			<h3>Overview</h3>
 			<p>
 			You can use <code>@Cleanup</code> to ensure a given resource is automatically cleaned up before the code execution path exits your
 			current scope. You do this by annotating any local variable declaration with the <code>@Cleanup</code> annotation like so:<br />
-			<code>@Cleanup InputStream in = new FileInputStream("some/file");</code></br />
+			<code>@Cleanup InputStream in = new FileInputStream("some/file");</code><br />
 			As a result, at the end of the scope you're in, <code>in.close()</code> is called. This call is guaranteed to run by way of a
 			try/finally construct. Look at the example below to see how this works.
 			</p><p>

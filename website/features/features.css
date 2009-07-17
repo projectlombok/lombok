@@ -33,6 +33,13 @@ h1 {
 	text-align: center;
 }
 
+.byline {
+	width: 100%;
+	text-align: center;
+	font-style: italic;
+	font-size: 1.3em;
+}
+
 .index {
 	font-size: 1.2em;
 	margin: 64px 0px 32px 64px;
