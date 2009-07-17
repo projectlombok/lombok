@@ -48,11 +48,82 @@
 		<delete dir="dist" quiet="true" />
 	</target>
 	
+	<target name="website">
+		<mkdir dir="build/website" />
+		<copy todir="build/website">
+			<fileset dir="website">
+				<exclude name="**/*.jpage" />
+				<exclude name="**/*.svg" />
+				<exclude name="**/*.psd" />
+				<exclude name="**/*.ai" />
+				<exclude name="**/*unused*" />
+			</fileset>
+		</copy>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="GetterSetter" />
+		</antcall>
+<!--
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="Data" />
+		</antcall>
+-->
+	</target>
+	
+	<target name="-integrateSnippet">
+		<mkdir dir="build/website" />
+		<property name="prefile" location="usage_examples/${transformationName}Example_pre.jpage" />
+		<property name="postfile" location="usage_examples/${transformationName}Example_post.jpage" />
+		<property name="htmlfile" location="website/features/${transformationName}.html" />
+		<mkdir dir="build/temp" />
+		<property name="preout" location="build/temp/pre.html" />
+		<property name="postout" location="build/temp/post.html" />
+		<java jar="deps/build/java2html.jar" fork="true">
+			<arg value="-srcfile" />
+			<arg value="${prefile}" />
+			<arg value="-targetfile" />
+			<arg value="${preout}" />
+			<arg line="-style Eclipse -converter html -tabs 4" />
+		</java>
+		<java jar="deps/build/java2html.jar" fork="true">
+			<arg value="-srcfile" />
+			<arg value="${postfile}" />
+			<arg value="-targetfile" />
+			<arg value="${postout}" />
+			<arg line="-style Eclipse -converter html -tabs 4" />
+		</java>
+		<loadfile property="pre" encoding="UTF-8" srcFile="${preout}">
+			<filterchain>
+				<linecontainsregexp>
+					<regexp pattern="(code>)|(font>)" />
+				</linecontainsregexp>
+			</filterchain>
+		</loadfile>
+		<loadfile property="post" encoding="UTF-8" srcFile="${postout}">
+			<filterchain>
+				<linecontainsregexp>
+					<regexp pattern="(code>)|(font>)" />
+				</linecontainsregexp>
+			</filterchain>
+		</loadfile>
+		<delete dir="build/temp" quiet="true" />
+		<copy file="${htmlfile}" todir="build/website/features" overwrite="true">
+			<filterchain>
+				<replacetokens>
+					<token key="HTML_PRE" value="${pre}" />
+					<token key="HTML_POST" value="${post}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
+	</target>
+	
 	<target name="compile">
 		<mkdir dir="build/lombok" />
-		<!-- This version trickery is so that an eclipse running in a JVM 1.5 will run properly (It'll never touch the javac files and hence never trigger a Bad Class Version Number error
-		     but for javac we definitely cannot support javac 1.5, partly because they completely rewrote large swaths of javac, and partly because our injection mechanism (annotations)
-		     doesn't work very well on javac 1.5, hence, when using javac, we do demand you're on 1.6. -->
+		<!-- This version trickery is so that an eclipse running in a JVM 1.5 will run
+		     properly (It'll never touch the javac files and hence never trigger a
+		     Bad Class Version Number error, but for javac we definitely cannot support
+		     javac 1.5, partly because they completely rewrote large swaths of javac,
+		     and partly because our injection mechanism (annotations) doesn't work very
+		     well on javac 1.5, hence, when using javac, we do demand you're on 1.6. -->
 		<javac srcdir="src" debug="on" destdir="build/lombok" target="1.5" excludes="lombok/javac/**">
 			<classpath refid="lombok.deps.path" />
 			<classpath refid="lombok.libs.path" />

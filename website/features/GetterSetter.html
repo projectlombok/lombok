@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html><head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<script src="../logi/jQuery-all.js" type="text/javascript"></script>
-	<script src="features.js" type="text/javascript"></script>
 	<link rel="stylesheet" type="text/css" href="../logi/reset.css" />
 	<link rel="stylesheet" type="text/css" href="features.css" />
 	<link rel="shortcut icon" href="../favicon.ico" type="image/x-icon" />
@@ -15,6 +13,40 @@
 		<div class="header"><a href="../index.html">Project Lombok</a></div>
 		<h1>@Getter and @Setter</h1>
 		<div class="overview">
+			<h3>Overview</h3>
+			<p>
+			You can annotate any field with <code>@Getter</code> and/or <code>@Setter</code>, to let lombok generate the default getter/setter automatically.<br />
+			A default getter simply returns the field, and is named <code>getFoo</code> if the field is called <code>foo</code> (or <code>isFoo</code>)
+			if the field's type is <code>boolean</code>. A default setter is named <code>setFoo</code> if the field is called <code>foo</code>, returns <code>void</code>,
+			and takes 1 parameter of the same type as the field. It simply sets the field to this value.
+			</p><p>
+			The generated getter/setter method will be <code>public</code> unless you explicitly specify an <code>AccessLevel</code>, as shown in the example below.
+			Legal access levels are <code>PUBLIC</code>, <code>PROTECTED</code>, <code>PACKAGE</code>, and <code>PRIVATE</code>.
+			</p>
+			<h3>Small print</h3><div class="smallprint">
+				<p>
+				For generating the method names, the first character of the field, if it is a lowercase character, is title-cased, otherwise, it is left unmodified.
+				Then, get/set/is is prefixed.
+				</p><p>
+				No method is generated if any method already exists with the same name, even if the parameter list is different. For example, <code>getFoo()</code>
+				will not be generated if there's already a method <code>getFoo(int x)</code> even though it is technically possible to make the method. This caveat
+				exists to prevent confusion. If the generation of a method is skipped for this reason, a warning is emitted instead.
+				</p><p>
+				Any variation on <code>boolean</code> will <em>not</em> result in using the <code>is</code> prefix instead of the <code>get</code> prefix; for example,
+				returning <code>java.lang.Boolean</code> results in a <code>get</code> prefix, not an <code>is</code> prefix.
+				</p>
+			</div>
+		</div>
+		<div class="snippets">
+			<div class="pre">
+				<h3>With Lombok</h3>
+				<div class="snippet">@HTML_PRE@</div>
+			</div>
+			<div class="sep"></div>
+			<div class="post">
+				<h3>Vanilla Java</h3>
+				<div class="snippet">@HTML_POST@</div>
+			</div>
 		</div>
 		<footer>
 			<a href="features.html">Back to features</a> | <span class="disabled">Previous feature</span> | <a href="Data.html">Next feature (@Data)</a><br />

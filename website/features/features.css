@@ -25,7 +25,7 @@ body {
 .meat .minimumHeight {
 	height: 700px;
 	width: 5px;
-	float: left;
+	float: right;
 }
 
 h1 {
@@ -33,9 +33,45 @@ h1 {
 	text-align: center;
 }
 
+.snippets {
+	margin-top: 32px;
+}
+
+.snippets .pre {
+	float: left;
+	width: 45%;
+}
+
+.snippet {
+	overflow: auto;
+	padding: 4px;
+	border: 1px dotted #888;
+}
+
+.snippets .sep {
+	display: block;
+	width: 5%;
+	height: 1px;
+	float: left;
+}
+
+.snippets .post {
+	float: left;
+	width: 45%;
+}
+
+.snippets .end {
+	clear: both;
+}
+
+.snippet code {
+	font-size: 14px;
+}
+
 footer {
-	margin: 64px auto 0 auto;
-	padding-bottom: 16px;
+	clear: left;
+	margin: 0 auto 0 auto;
+	padding: 16px 0 16px 0;
 	display: block;
 	text-align: center;
 }
