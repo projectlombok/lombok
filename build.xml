@@ -49,7 +49,7 @@
 		<delete dir="dist" quiet="true" />
 	</target>
 	
-	<target name="website">
+	<target name="website" depends="javadoc">
 		<taskdef classpath="deps/build/java2html.jar" name="java2html" classname="de.java2html.anttasks.Java2HtmlTask" />
 		<mkdir dir="build/website" />
 		<copy todir="build/website">
@@ -67,6 +67,10 @@
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="Data" />
 		</antcall>
+		<zip destfile="dist/website.zip">
+			<zipfileset dir="build/website" />
+			<zipfileset dir="doc/api" prefix="api" />
+		</zip>
 	</target>
 	
 	<target name="-integrateSnippet">
