@@ -33,8 +33,31 @@ h1 {
 	text-align: center;
 }
 
-.overview code {
+.index {
 	font-size: 1.2em;
+	margin: 64px 0px 32px 64px;
+}
+
+.index dt {
+	margin-top: 8px;
+	font-size: 1.2em;
+}
+
+.index dd {
+	margin-left: 32px;
+}
+
+.overview code {
+	font-size: 1.1em;
+}
+
+.smallprint {
+	font-size: 0.8em;
+	color: #444;
+}
+
+.smallprint code {
+	font-size: 1em;
 }
 
 .snippets {

@@ -18,7 +18,7 @@ body{
 }
 
 code,kbd,tt{
-	font-family:"Courier New", Courier, monospace;
+	font-family: "Courier new", Courier;
 	line-height:1;
 	*line-height:1.5;
 }

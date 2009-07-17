@@ -41,21 +41,6 @@
 			instance. This way, javac will infer the variable name. Thus, by declaring like so: <code>@Data(staticConstructor="of") class Foo&lt;T&gt; { private T x;}</code>
 			you can create new instances of <code>Foo</code> by writing: <code>Foo.of(5);</code> instead of having to write: <code>new Foo&lt;Integer&gt;(5);</code>.
 			</p>
-			<h3>Small print</h3><div class="smallprint">
-				<p>
-				Arrays are 'deep' compared/printed/hashCoded, which means that arrays that contain themselves will result in <code>StackOverflowError</code>s. However,
-				this behaviour is no different from e.g. <code>ArrayList</code>.
-				</p><p>
-				You may safely presume that the hashCode implementation used will not change between versions of lombok, however this guarantee is not set in stone;
-				if there's a significant performance improvement to be gained from using an alternate hash algorithm, that will be substituted in a future version.
-				</p><p>
-				For a general idea of how lombok generated the <code>equals</code>, <code>hashCode</code>, and <code>toString</code> methods, check the example below.
-				</p><p>
-				For the purposes of equality, 2 <code>NaN</code> (not a number) values for floats and doubles are considered equal, eventhough 'NaN == NaN' would
-				return false. This is analogous to <code>java.lang.Double</code>'s equals method, and is in fact required to ensure that comparing an object
-				to an exact copy of itself returns <code>true</code> for equality.
-				</p>
-			</div>
 		</div>
 		<div class="snippets">
 			<div class="pre">
@@ -68,8 +53,26 @@
 				<div class="snippet">@HTML_POST@</div>
 			</div>
 		</div>
+		<div style="clear: left;"></div>
+		<div class="overview">
+			<h3>Small print</h3><div class="smallprint">
+				<p>
+				Arrays are 'deep' compared/printed/hashCoded, which means that arrays that contain themselves will result in <code>StackOverflowError</code>s. However,
+				this behaviour is no different from e.g. <code>ArrayList</code>.
+				</p><p>
+				You may safely presume that the hashCode implementation used will not change between versions of lombok, however this guarantee is not set in stone;
+				if there's a significant performance improvement to be gained from using an alternate hash algorithm, that will be substituted in a future version.
+				</p><p>
+				For a general idea of how lombok generated the <code>equals</code>, <code>hashCode</code>, and <code>toString</code> methods, check the example after.
+				</p><p>
+				For the purposes of equality, 2 <code>NaN</code> (not a number) values for floats and doubles are considered equal, eventhough 'NaN == NaN' would
+				return false. This is analogous to <code>java.lang.Double</code>'s equals method, and is in fact required to ensure that comparing an object
+				to an exact copy of itself returns <code>true</code> for equality.
+				</p>
+			</div>
+		</div>
 		<footer>
-			<a href="features.html">Back to features</a> | <a href="GetterSetter.html">Previous feature (@Getter / @Setter)</a> | <a href="Cleanup.html">Next feature (@Cleanup)</a><br />
+			<a href="index.html">Back to features</a> | <a href="GetterSetter.html">Previous feature (@Getter / @Setter)</a> | <a href="Cleanup.html">Next feature (@Cleanup)</a><br />
 			<span class="copyright">Copyright &copy; 2009 Reinier Zwitserloot and Roel Spilker, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT licence</a>.</span>
 		</footer>
 		<div style="clear: both;"></div>
