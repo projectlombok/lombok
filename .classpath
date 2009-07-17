@@ -17,5 +17,6 @@
 	<classpathentry kind="lib" path="deps/lombok/org.eclipse.osgi_3.5.0.v20090520.jar"/>
 	<classpathentry kind="lib" path="deps/lombok/org.eclipse.equinox.common_3.5.0.v20090520-1800.jar"/>
 	<classpathentry kind="lib" path="deps/lombok/spi-0.2.3-pre.jar"/>
+	<classpathentry kind="lib" path="deps/tools.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
