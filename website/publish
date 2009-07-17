@@ -19,7 +19,7 @@ cd websitegit || exit
 git branch gh-pages origin/gh-pages || exit
 git checkout gh-pages || exit
 rm -r * || exit
-unzip ../../../dist/website.zip || exit
+tar xf ../../../dist/website.tar || exit
 git add . || exit
 git commit -a -m website || exit
 git push origin gh-pages || exit
