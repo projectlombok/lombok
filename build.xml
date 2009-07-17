@@ -50,7 +50,7 @@
 	</target>
 	
 	<target name="website" depends="javadoc">
-		<taskdef classpath="deps/build/java2html.jar" name="java2html" classname="de.java2html.anttasks.Java2HtmlTask" />
+		<taskdef classpath="deps/website/java2html.jar" name="java2html" classname="de.java2html.anttasks.Java2HtmlTask" />
 		<mkdir dir="build/website" />
 		<copy todir="build/website">
 			<fileset dir="website">
