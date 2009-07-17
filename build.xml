@@ -79,6 +79,7 @@
 			<tarfileset dir="build/website" />
 			<tarfileset dir="doc/api" prefix="api" />
 		</tar>
+		<echo>If you want to publish the website to the web, run the website/publish script.</echo>
 	</target>
 	
 	<target name="-integrateSnippet">
