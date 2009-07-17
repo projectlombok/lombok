@@ -74,6 +74,9 @@
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="Data" />
 		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="Cleanup" />
+		</antcall>
 		<mkdir dir="dist" />
 		<tar destfile="dist/website.tar">
 			<tarfileset dir="build/website" />
