@@ -23,6 +23,9 @@
 	<property name="SNIPPET_TAB_STOP" value="2" />
 	<property name="build.compiler" value="javac1.6" />
 	<path id="lombok.deps.path">
+		<fileset dir="deps">
+			<include name="*.jar" />
+		</fileset>
 		<fileset dir="deps/lombok">
 			<include name="**/*.jar" />
 		</fileset>
@@ -34,6 +37,9 @@
 	</path>
 
 	<path id="eclipse.agent.deps.path">
+		<fileset dir="deps">
+			<include name="*.jar" />
+		</fileset>
 		<fileset dir="deps/eclipse.agent">
 			<include name="**/*.jar" />
 		</fileset>
