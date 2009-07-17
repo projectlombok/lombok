@@ -16,10 +16,17 @@ mkdir -p build/temp || exit
 cd build/temp || exit
 git clone -l -n ../.. websitegit || exit
 cd websitegit || exit
-git branch gh-pages origin/gh-pages || exit
+BRANCHOK="foo"
+git branch gh-pages origin/gh-pages || BRANCHOK="bar"
+if [ $BRANCHOK == "bar" ]; then
+echo If you get error fatal: Not a valid object name: origin/gh-pages.
+echo then run: git branch gh-pages origin/gh-pages
+echo first before running this script
+    exit
+fi
 git checkout gh-pages || exit
 rm -r * || exit
-unzip ../../../dist/website.zip || exit
+tar xf ../../../dist/website.tar || exit
 git add . || exit
 git commit -a -m website || exit
 git push origin gh-pages || exit
