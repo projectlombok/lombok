@@ -69,10 +69,10 @@
 			<param name="transformationName" value="Data" />
 		</antcall>
 		<mkdir dir="dist" />
-		<zip destfile="dist/website.zip">
-			<zipfileset dir="build/website" />
-			<zipfileset dir="doc/api" prefix="api" />
-		</zip>
+		<tar destfile="dist/website.tar">
+			<tarfileset dir="build/website" />
+			<tarfileset dir="doc/api" prefix="api" />
+		</tar>
 	</target>
 	
 	<target name="-integrateSnippet">
