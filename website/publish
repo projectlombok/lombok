@@ -1,10 +1,9 @@
 #!/bin/bash
 
-CURDIR=`pwd`
-
-
-cd `dirname $0` || exit
-cd .. || exit
+if [ ! -e src/lombok/core/Version.java ]; then
+	echo Run this script from the lombok project home directory.
+	exit
+fi
 
 if [ ! -e dist/website.zip ]; then
 	echo There is no dist/website.zip file! Run:
@@ -26,8 +25,6 @@ git commit -a -m website || exit
 git push origin gh-pages || exit
 cd .. || exit
 rm -rf websitegit || exit
-
-cd "$CURDIR"
 
 echo Your gh-pages branch has been updated. Do not forget to run:
 echo git push origin gh-pages
