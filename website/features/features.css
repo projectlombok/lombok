@@ -33,11 +33,16 @@ h1 {
 	text-align: center;
 }
 
+.overview code {
+	font-size: 1.2em;
+}
+
 .snippets {
 	margin-top: 32px;
 }
 
 .snippets .pre {
+	white-space: pre;
 	float: left;
 	width: 45%;
 }
@@ -56,6 +61,7 @@ h1 {
 }
 
 .snippets .post {
+	white-space: pre;
 	float: left;
 	width: 45%;
 }
@@ -66,6 +72,10 @@ h1 {
 
 .snippet code {
 	font-size: 14px;
+}
+
+.snippet br {
+	display: none;
 }
 
 footer {

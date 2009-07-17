@@ -2,7 +2,6 @@ import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.Data;
 
-@lombok.core.PrintAST(printContent=true)
 public @Data class DataExample {
 	private final String name;
 	private @Setter(AccessLevel.PACKAGE) int age;

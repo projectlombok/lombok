@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html><head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="../logi/reset.css" />
+	<link rel="stylesheet" type="text/css" href="features.css" />
+	<link rel="shortcut icon" href="../favicon.ico" type="image/x-icon" />
+	<meta name="description" content="Spice up your java" />
+	<title>@Data</title>
+	<!--[if lt IE 7]><script type="text/javascript" src="logi/iepngfix_tilebg.js"></script><![endif]--> 
+</head><body><div id="pepper">
+	<div class="meat">
+		<div class="minimumHeight"></div>
+		<div class="header"><a href="../index.html">Project Lombok</a></div>
+		<h1>@Data</h1>
+		<div class="overview">
+			<h3>Overview</h3>
+			<p>
+			Any class definition may be annotated with <code>@Data</code> to let lombok generate all the boilerplate that is associated with simple POJOs
+			(Plain Old Java Objects) and beans: getters for all fields, setters for all non-final fields, a useful <code>toString</code>, and implementations
+			of <code>hashCode</code> and <code>equals</code> which consider any two objects of this type with the same values for each field as equal. A
+			constructor is also generated containing 1 parameter for each final field, in the order the fields are defined. This constructor simply assigns
+			each parameter to the appropriate field.
+			</p>
+			<p>
+			To override the access level of any getter/setter for any field, annotate the field with a <code>@Setter</code> or <code>@Getter</code> annotation
+			with the appropriate <code>AccessLevel</code> value. See the example below. For more information on how the getters/setters are generated,
+			see the documentation for <a href="GetterSetter.html"><code>@Getter</code> and <code>@Setter</code></a>.
+			</p><p>
+			All fields marked as <code>transient</code> will not be considered for <code>hashCode</code> and <code>equals</code>. All static fields will be
+			skipped entirely (not considered for any of the generated methods, and no setter/getter will be made for them).
+			The generated getter/setter method will be <code>public</code> unless you explicitly specify an <code>AccessLevel</code>, as shown in the example below.
+			Legal access levels are <code>PUBLIC</code>, <code>PROTECTED</code>, <code>PACKAGE</code>, and <code>PRIVATE</code>.
+			</p><p>
+			If any method that would normally be generated exists <em>in name</em> that method will not be generated, and no warning or error is emitted. For example,
+			if you already have a method with signature <code>void hashCode(int a, int b, int c)</code>, no <code>int hashCode()</code> method will be generated,
+			even though technically <code>int hashCode()</code> is an entirely different method. The same rule applies to the constructor, <code>toString</code>,
+			<code>hashCode</code>, and all getters and setters.
+			</p><p>
+			<code>@Data</code> can handle generics parameters for fields just fine. In order to reduce the boilerplate when constructing objects for classes with
+			generics, you can use the <code>staticConstructor</code> parameter to generate a private constructor, as well as a static method that returns a new
+			instance. This way, javac will infer the variable name. Thus, by declaring like so: <code>@Data(staticConstructor="of") class Foo&lt;T&gt; { private T x;}</code>
+			you can create new instances of <code>Foo</code> by writing: <code>Foo.of(5);</code> instead of having to write: <code>new Foo&lt;Integer&gt;(5);</code>.
+			</p>
+			<h3>Small print</h3><div class="smallprint">
+				<p>
+				Arrays are 'deep' compared/printed/hashCoded, which means that arrays that contain themselves will result in <code>StackOverflowError</code>s. However,
+				this behaviour is no different from e.g. <code>ArrayList</code>.
+				</p><p>
+				You may safely presume that the hashCode implementation used will not change between versions of lombok, however this guarantee is not set in stone;
+				if there's a significant performance improvement to be gained from using an alternate hash algorithm, that will be substituted in a future version.
+				</p><p>
+				For a general idea of how lombok generated the <code>equals</code>, <code>hashCode</code>, and <code>toString</code> methods, check the example below.
+				</p><p>
+				For the purposes of equality, 2 <code>NaN</code> (not a number) values for floats and doubles are considered equal, eventhough 'NaN == NaN' would
+				return false. This is analogous to <code>java.lang.Double</code>'s equals method, and is in fact required to ensure that comparing an object
+				to an exact copy of itself returns <code>true</code> for equality.
+				</p>
+			</div>
+		</div>
+		<div class="snippets">
+			<div class="pre">
+				<h3>With Lombok</h3>
+				<div class="snippet">@HTML_PRE@</div>
+			</div>
+			<div class="sep"></div>
+			<div class="post">
+				<h3>Vanilla Java</h3>
+				<div class="snippet">@HTML_POST@</div>
+			</div>
+		</div>
+		<footer>
+			<a href="features.html">Back to features</a> | <a href="GetterSetter.html">Previous feature (@Getter / @Setter)</a> | <a href="Cleanup.html">Next feature (@Cleanup)</a><br />
+			<span class="copyright">Copyright &copy; 2009 Reinier Zwitserloot and Roel Spilker, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT licence</a>.</span>
+		</footer>
+		<div style="clear: both;"></div>
+	</div>
+</div></body></html>

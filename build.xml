@@ -20,6 +20,7 @@
   THE SOFTWARE.
 -->
 <project name="lombok" default="dist">
+	<property name="SNIPPET_TAB_STOP" value="2" />
 	<property name="build.compiler" value="javac1.6" />
 	<path id="lombok.deps.path">
 		<fileset dir="deps/lombok">
@@ -62,11 +63,9 @@
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="GetterSetter" />
 		</antcall>
-<!--
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="Data" />
 		</antcall>
--->
 	</target>
 	
 	<target name="-integrateSnippet">
@@ -82,14 +81,14 @@
 			<arg value="${prefile}" />
 			<arg value="-targetfile" />
 			<arg value="${preout}" />
-			<arg line="-style Eclipse -converter html -tabs 4" />
+			<arg line="-style Eclipse -converter html -tabs ${SNIPPET_TAB_STOP}" />
 		</java>
 		<java jar="deps/build/java2html.jar" fork="true">
 			<arg value="-srcfile" />
 			<arg value="${postfile}" />
 			<arg value="-targetfile" />
 			<arg value="${postout}" />
-			<arg line="-style Eclipse -converter html -tabs 4" />
+			<arg line="-style Eclipse -converter html -tabs ${SNIPPET_TAB_STOP}" />
 		</java>
 		<loadfile property="pre" encoding="UTF-8" srcFile="${preout}">
 			<filterchain>
