@@ -78,5 +78,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 public @interface Cleanup {
 	/** The name of the method that cleans up the resource. By default, 'close'. The method must not have any parameters. */
-	String cleanupMethod() default "close";
+	String value() default "close";
 }

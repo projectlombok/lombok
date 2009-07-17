@@ -74,11 +74,15 @@
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="Data" />
 		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="Cleanup" />
+		</antcall>
 		<mkdir dir="dist" />
 		<tar destfile="dist/website.tar">
 			<tarfileset dir="build/website" />
 			<tarfileset dir="doc/api" prefix="api" />
 		</tar>
+		<echo>If you want to publish the website to the web, run the website/publish script.</echo>
 	</target>
 	
 	<target name="-integrateSnippet">

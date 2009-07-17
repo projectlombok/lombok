@@ -8,7 +8,8 @@ body {
 }
 
 h1 {
-	margin: 8px 0 16px 0;
+	padding: 8px 0 10px 0;
+	font-size: 20px;
 	width: 100%;
 	text-align: center;
 }
@@ -120,7 +121,7 @@ code {
 	background-color: #888;
 }
 
-footer {
+.footer {
 	margin-top: 8px;
 	display: block;
 	color: #555;

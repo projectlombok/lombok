@@ -12,6 +12,10 @@ body {
 	background-position: 50px 20px;
 }
 
+* html #pepper {
+	background: none;
+}
+
 .meat {
 	padding: 0px 48px;
 }
@@ -22,20 +26,33 @@ body {
 	left: 30px;
 }
 
-.meat .minimumHeight {
+.minimumHeight {
 	height: 700px;
-	width: 5px;
+	width: 1px;
 	float: right;
 }
 
+* html .minimumHeight {
+	height: 0px;
+}
+
 h1 {
+	padding: 8px 0 10px 0;
+	font-size: 20px;
 	width: 100%;
 	text-align: center;
 }
 
+.byline {
+	width: 100%;
+	text-align: center;
+	font-style: italic;
+	font-size: 1.3em;
+}
+
 .index {
 	font-size: 1.2em;
-	margin: 64px 0px 32px 64px;
+	margin: 48px 0px 32px 64px;
 }
 
 .index dt {
@@ -101,7 +118,7 @@ h1 {
 	display: none;
 }
 
-footer {
+.footer {
 	clear: left;
 	margin: 0 auto 0 auto;
 	padding: 16px 0 16px 0;
@@ -109,11 +126,11 @@ footer {
 	text-align: center;
 }
 
-footer .disabled {
+.footer .disabled {
 	color: #aaa;
 }
 
-footer .copyright {
+.footer .copyright {
 	color: #555;
 	font-size: 11px;
 	font-style: italic;
