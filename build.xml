@@ -219,4 +219,40 @@
 		</jar>
 		<copy file="dist/lombok-${lombok.version}.jar" tofile="dist/lombok.jar" />
 	</target>
+	
+
+	<property name="credentialsFile" value="google.properties" />
+
+	<target name="-credentials">
+		<available property="hasCredentialsFile" file="${credentialsFile}"/>
+	</target>
+	
+	<target name="-checkCredentialsFile" depends="-credentials" unless="hasCredentialsFile">
+		<echo file="${credentialsFile}">#username=[your google account name without @gmail.com]
+#password=[your googlecode password, is NOT your gmail password]</echo>
+		<fail message="fill in ${credentialsFile} to provide your credentials"/>
+	</target>
+	
+	<target name="publish" depends="-checkCredentialsFile, dist">
+		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="deps/website/ant-googlecode-0.0.2.jar" name="gcupload"/>
+		<property file="${credentialsFile}" prefix="google" />
+		<gcupload 
+		        username="${google.username}"
+		        password="${google.password}" 
+		        projectname="projectlombok" 
+		        filename="dist/lombok.jar" 
+		        targetfilename="lombok-${lombok.version}.jar"
+		        summary="Version ${lombok.version}"
+		        labels=""
+				verbose="true" />
+		<gcupload 
+		        username="${google.username}"
+		        password="${google.password}" 
+		        projectname="projectlombok" 
+		        filename="dist/lombok.jar" 
+		        targetfilename="lombok.jar"
+		        summary="Version ${lombok.version} - The everything jar - doubleclick it to install, or just include it in your projects."
+		        labels="Featured" 
+				verbose="true" />
+	</target>
 </project>
