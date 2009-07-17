@@ -71,7 +71,7 @@ class EclipseFinder {
 	 * @return A List of drive letters, such as ["A", "C", "D", "X"].
 	 */
 	static List<String> getDrivesOnWindows() throws IOException {
-		ProcessBuilder builder = new ProcessBuilder("c:\\windows\\system32\\fsutil.exe", "fsinfo", "drives");
+		ProcessBuilder builder = new ProcessBuilder("fsutil.exe", "fsinfo", "drives");
 		builder.redirectErrorStream(true);
 		Process process = builder.start();
 		InputStream in = process.getInputStream();
@@ -81,9 +81,15 @@ class EclipseFinder {
 		
 		String line;
 		while ( (line = br.readLine()) != null ) {
-			if ( line.startsWith("Drives: ") ) {
-				line = line.substring(8);
-				for ( String driveLetter : line.split("\\:\\\\\\s*") ) drives.add(driveLetter.trim());
+			if (line.startsWith("Drives:")) {
+				line = line.substring(7);
+			}
+			line = line.trim();
+			if (line.isEmpty()) {
+				continue;
+			}
+			for ( String driveLetter : line.split("\\:\\\\\\s*") ) {
+				drives.add(driveLetter.trim());
 			}
 		}
 		
@@ -135,7 +141,6 @@ class EclipseFinder {
 	static List<String> findEclipseOnWindows() {
 		List<String> eclipses = new ArrayList<String>();
 		List<String> driveLetters = asList("C");
-		
 		try {
 			driveLetters = getDrivesOnWindows();
 		} catch ( IOException ignore ) {}
