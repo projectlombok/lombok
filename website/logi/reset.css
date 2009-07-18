@@ -65,7 +65,3 @@ sup{
 	bottom:0.5em;
 	vertical-align:baseline;
 }
-
-img,div,a,input,button,.pngfix {
-	behavior: url(logi/iepngfix.htc);
-}

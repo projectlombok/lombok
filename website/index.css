@@ -1,3 +1,7 @@
+img,div,a,input,button,.pngfix {
+	behavior: url(logi/iepngfix.htc);
+}
+
 body {
 	font-family: Verdana;
 }
