@@ -119,7 +119,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			if ( (fieldDecl.modifiers & ClassFileConstants.AccTransient) == 0 ) nodesForEquality.add(child);
 			boolean isFinal = (fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0;
 			nodesForToString.add(child);
-			if ( isFinal ) nodesForConstructor.add(child);
+			if ( isFinal && fieldDecl.initialization == null ) nodesForConstructor.add(child);
 			new HandleGetter().generateGetterForField(child, annotationNode.get());
 			if ( !isFinal ) new HandleSetter().generateSetterForField(child, annotationNode.get());
 		}
