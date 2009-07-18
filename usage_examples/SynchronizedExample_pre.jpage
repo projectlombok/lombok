@@ -1,7 +1,7 @@
 import lombok.Synchronized;
 
 public class SynchronizedExample {
-	private final Object myLock = new Object();
+	private final Object readLock = new Object();
 	
 	@Synchronized
 	public static void hello() {
@@ -13,7 +13,7 @@ public class SynchronizedExample {
 		return 42;
 	}
 	
-	@Synchronized("myLock")
+	@Synchronized("readLock")
 	public void foo() {
 		System.out.println("bar");
 	}

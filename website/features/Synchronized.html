@@ -23,8 +23,8 @@
 			named <code>$LOCK</code> instead.
 			</p><p>
 			If you want, you can create these locks yourself. The <code>$lock</code> and <code>$LOCK</code> fields will of course not be generated if you
-			already created them yourself. You can also choose to lock on another field, by using specifying it as parameter to the <code>@Synchronized</code>
-			annotation. In this usage variant, the fields will not be created automatically, and you must explicitly create them yourself.
+			already created them yourself. You can also choose to lock on another field, by specifying it as parameter to the <code>@Synchronized</code>
+			annotation. In this usage variant, the fields will not be created automatically, and you must explicitly create them yourself, or an error will be emitted.
 			</p><p>
 			Locking on <code>this</code> or your own class object can have unfortunate side-effects, as other code not under your control can lock on these
 			objects as well, which can cause race conditions and other nasty threading-related bugs.
@@ -48,6 +48,9 @@
 				If <code>$lock</code> and/or <code>$LOCK</code> are auto-generated, the fields are initialized with an empty <code>Object[]</code> array, and not
 				just a <code>new Object()</code> as most snippets showing this pattern in action use. Lombok does this because a new object is <em>NOT</em>
 				serializable, but 0-size array is. Therefore, using <code>@Synchronized</code> will not prevent your object from being serialized.
+				</p><p>
+				If you'd like to know why a field is not automatically generated when you choose your own name for the lock object: Because otherwise making a typo
+				in the field name will result in a <em>very</em> hard to find bug!
 				</p>
 			</div>
 		</div>

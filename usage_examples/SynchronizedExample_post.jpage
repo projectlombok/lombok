@@ -1,7 +1,7 @@
 public class SynchronizedExample {
 	private static final Object $LOCK = new Object[0];
 	private final Object $lock = new Object[0];
-	private final Object myLock = new Object();
+	private final Object readLock = new Object();
 	
 	public static void hello() {
 		synchronized($LOCK) {
@@ -16,7 +16,7 @@ public class SynchronizedExample {
 	}
 	
 	public void foo() {
-		synchronized(myLock) {
+		synchronized(readLock) {
 			System.out.println("bar");
 		}
 	}
