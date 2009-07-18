@@ -74,7 +74,7 @@ public class AnnotationValues<A extends Annotation> {
 		}
 		
 		/**
-		 *  Override this if you want more specific behaviour (e.g. get the source position just right).
+		 *  Override this if you want more specific behaviour (to get the source position just right).
 		 * 
 		 * @param message English message with the problem.
 		 * @param valueIdx The index into the values for this annotation key that caused the problem.
