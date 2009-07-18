@@ -21,17 +21,17 @@
 			or otherwise modify the thrown checked exception; it simply fakes out the compiler. On the JVM (class file) level, all exceptions, checked or not,
 			can be thrown regardless of the <code>throws</code> clause of your methods, which is why this works.
 			</p><p>
-			<em><strong>CAREFUL: </strong><em>Unlike other lombok transformations, you need to put <strong>lombok.jar</strong> on your classpath when
+			<em><strong>CAREFUL: </strong></em>Unlike other lombok transformations, you need to put <strong>lombok.jar</strong> on your classpath when
 			you run your program.
 			</p><p>
-			Common use cases for when you want to opt out of the checked exception mechanism center around 2 situations:<br /><li>
-			<ul>A needlessly strict interface, such as <code>Runnable</code> - whatever exception propagates out of your <code>run()</code> method,
+			Common use cases for when you want to opt out of the checked exception mechanism center around 2 situations:<br /><ul>
+			<li>A needlessly strict interface, such as <code>Runnable</code> - whatever exception propagates out of your <code>run()</code> method,
 				checked or not, it will be passed to the <code>Thread</code>'s unhandled exception handler. Catching a checked exception and wrapping it
-				in some sort of <code>RuntimeException</code> is only obscuring the real cause of the issue.</ul>
-			<ul>An 'impossible' exception. For example, <code>new String(someByteArray, "UTF-8");</code> declares that it can throw an
+				in some sort of <code>RuntimeException</code> is only obscuring the real cause of the issue.</li>
+			<li>An 'impossible' exception. For example, <code>new String(someByteArray, "UTF-8");</code> declares that it can throw an
 				<code>UnsupportedEncodingException</code> but according to the JVM specification, UTF-8 <em>must</em> always be available. An
 				<code>UnsupportedEncodingException</code> here is about as likely as a <code>ClassNotFoundError</code> when you use a String object,
-				and you don't catch those either!</ul>
+				and you don't catch those either!</li></ul>
 			</p><p>
 			Be aware that it is <em>impossible</em> to catch sneakily thrown checked types directly, as javac will not let you write a catch block
 			for an exception type that no method call in the try body declares as thrown. This problem is not relevant in either of the use cases listed
