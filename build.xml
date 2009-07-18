@@ -50,12 +50,12 @@
 		</fileset>
 	</path>
 	
-	<target name="clean">
+	<target name="clean" description="Removes all generated files">
 		<delete dir="build" quiet="true" />
 		<delete dir="dist" quiet="true" />
 	</target>
 	
-	<target name="website" depends="javadoc">
+	<target name="website" description="Prepares the website for distribution" depends="javadoc">
 		<taskdef classpath="deps/website/java2html.jar" name="java2html" classname="de.java2html.anttasks.Java2HtmlTask" />
 		<mkdir dir="build/website" />
 		<copy todir="build/website">
@@ -120,7 +120,7 @@
 		</copy>
 	</target>
 	
-	<target name="compile">
+	<target name="compile" description="Compiles the code">
 		<mkdir dir="build/lombok" />
 		<!-- This version trickery is so that an eclipse running in a JVM 1.5 will run
 		     properly (It'll never touch the javac files and hence never trigger a
@@ -155,7 +155,7 @@
 		</javac>
 	</target>
 	
-	<target name="unpackLibs">
+	<target name="-unpackLibs">
 		<unjar dest="build/lombok">
 			<path refid="lombok.libs.path" />
 		</unjar>
@@ -164,7 +164,7 @@
 		</unjar>
 	</target>
 	
-	<target name="getVersion" depends="compile">
+	<target name="version" description="Shows the version number" depends="compile">
 		<java
 			classname="lombok.core.Version"
 			classpath="build/lombok"
@@ -180,7 +180,7 @@
 		<echo level="info">Lombok version: ${lombok.version}</echo>
 	</target>
 	
-	<target name="javadoc">
+	<target name="javadoc" description="Generates the javadoc">
 		<delete dir="build/api" quiet="true" />
 		<delete dir="doc/api" quiet="true" />
 		<mkdir dir="build/api" />
@@ -204,7 +204,7 @@
 		</copy>
 	</target>
 	
-	<target name="dist" depends="clean, compile, getVersion, unpackLibs">
+	<target name="dist" description="Builds THE lombok.jar file which contains everything " depends="clean, compile, version, -unpackLibs">
 		<mkdir dir="dist" />
 		<jar basedir="build/eclipse.agent" destfile="dist/lombok.eclipse.agent-${lombok.version}.jar">
 			<manifest>
@@ -237,7 +237,7 @@
 		<fail message="fill in ${credentialsFile} to provide your credentials"/>
 	</target>
 	
-	<target name="publish" depends="-checkCredentialsFile, dist">
+	<target name="publish" description="Publishes the latest build to googlecode" depends="-checkCredentialsFile, dist">
 		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="deps/website/ant-googlecode-0.0.2.jar" name="gcupload"/>
 		<property file="${credentialsFile}" prefix="google" />
 		<gcupload 
