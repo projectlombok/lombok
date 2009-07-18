@@ -80,6 +80,9 @@
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="Synchronized" />
 		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="SneakyThrows" />
+		</antcall>
 		<mkdir dir="dist" />
 		<tar destfile="dist/website.tar">
 			<tarfileset dir="build/website" />
