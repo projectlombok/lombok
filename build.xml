@@ -77,6 +77,9 @@
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="Cleanup" />
 		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="Synchronized" />
+		</antcall>
 		<mkdir dir="dist" />
 		<tar destfile="dist/website.tar">
 			<tarfileset dir="build/website" />
@@ -100,6 +103,7 @@
 				<linecontainsregexp>
 					<regexp pattern="(code>)|(font>)" />
 				</linecontainsregexp>
+				<striplinebreaks />
 			</filterchain>
 		</loadfile>
 		<loadfile property="post" encoding="UTF-8" srcFile="${postout}">
@@ -107,6 +111,7 @@
 				<linecontainsregexp>
 					<regexp pattern="(code>)|(font>)" />
 				</linecontainsregexp>
+				<striplinebreaks />
 			</filterchain>
 		</loadfile>
 		<delete dir="build/temp" quiet="true" />

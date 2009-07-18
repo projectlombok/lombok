@@ -78,11 +78,10 @@ h1 {
 }
 
 .snippets {
-	margin-top: 32px;
+	margin-top: 0px;
 }
 
 .snippets .pre {
-	white-space: pre;
 	float: left;
 	width: 45%;
 }
@@ -93,6 +92,10 @@ h1 {
 	border: 1px dotted #888;
 }
 
+.snippet font {
+	white-space: pre;
+}
+
 .snippets .sep {
 	display: block;
 	width: 5%;
@@ -101,7 +104,6 @@ h1 {
 }
 
 .snippets .post {
-	white-space: pre;
 	float: left;
 	width: 45%;
 }
@@ -112,10 +114,6 @@ h1 {
 
 .snippet code {
 	font-size: 14px;
-}
-
-.snippet br {
-	display: none;
 }
 
 .footer {
