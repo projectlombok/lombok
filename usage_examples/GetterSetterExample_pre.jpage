@@ -7,6 +7,6 @@ public class GetterSetterExample {
 	private @Setter(AccessLevel.PROTECTED) String name;
 	
 	@Override public String toString() {
-		return String.format("%s (age: %d)", age, name);
+		return String.format("%s (age: %d)", name, age);
 	}
 }
