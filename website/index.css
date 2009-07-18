@@ -134,3 +134,8 @@ code {
 	width: 100%;
 	text-align: center;
 }
+
+.creditsLink {
+	font-style: normal;
+	font-weight: bold;
+}
