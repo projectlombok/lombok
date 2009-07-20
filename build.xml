@@ -88,7 +88,8 @@
 			<tarfileset dir="build/website" />
 			<tarfileset dir="doc/api" prefix="api" />
 		</tar>
-		<echo>If you want to publish the website to the web, run the website/publish script.</echo>
+		<echo>Now upload dist/website.tar to the webserver.</echo>
+		<echo>If you want to host projectlombok.org on github, run the website/publish script, but this is not where the site is currently hosted.</echo>
 	</target>
 	
 	<target name="-integrateSnippet">
