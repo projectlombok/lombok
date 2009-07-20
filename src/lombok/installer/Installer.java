@@ -92,6 +92,7 @@ public class Installer {
 	private List<EclipseLocation> toUninstall;
 	
 	private JHyperLink uninstallButton;
+	private JLabel uninstallPlaceholder;
 	private JButton installButton;
 	
 	public static void main(String[] args) {
@@ -259,17 +260,18 @@ public class Installer {
 		container.setLayout(new GridBagLayout());
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.anchor = GridBagConstraints.WEST;
+		constraints.insets = new Insets(8, 0, 0, 16);
 		
 		container.add(new JLabel(JAVAC_TITLE), constraints);
 		
 		constraints.gridy = 1;
-		constraints.insets = new Insets(8, 0, 0, 16);
+		constraints.weightx = 1.0;
+		constraints.fill = GridBagConstraints.HORIZONTAL;
 		container.add(new JLabel(JAVAC_EXPLANATION), constraints);
 		
 		JLabel example = new JLabel(JAVAC_EXAMPLE);
 		
 		constraints.gridy = 2;
-		constraints.insets = new Insets(8, 0, 0, 16);
 		container.add(example, constraints);
 		return container;
 	}
@@ -281,10 +283,10 @@ public class Installer {
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.anchor = GridBagConstraints.WEST;
 		
+		constraints.insets = new Insets(8, 0, 0, 16);
 		container.add(new JLabel(ECLIPSE_TITLE), constraints);
 		
 		constraints.gridy = 1;
-		constraints.insets = new Insets(8, 0, 0, 16);
 		container.add(new JLabel(ECLIPSE_EXPLANATION), constraints);
 		
 		constraints.gridy = 2;
@@ -430,7 +432,17 @@ public class Installer {
 		
 		constraints.gridy = 5;
 		constraints.fill = GridBagConstraints.NONE;
+		JHyperLink showMe = new JHyperLink("Show me what this installer will do to my Eclipse installation.");
+		container.add(showMe, constraints);
+		showMe.addActionListener(new ActionListener() {
+			@Override public void actionPerformed(ActionEvent e) {
+				showWhatIDo();
+			}
+		});
+		
+		constraints.gridy = 6;
 		uninstallButton = new JHyperLink("Uninstall lombok from selected Eclipse installations.");
+		uninstallPlaceholder = new JLabel("<html>&nbsp;</html>");
 		uninstallButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent e) {
 				List<EclipseLocation> locationsToUninstall = new ArrayList<EclipseLocation>();
@@ -448,15 +460,9 @@ public class Installer {
 			}
 		});
 		container.add(uninstallButton, constraints);
+		uninstallPlaceholder.setVisible(false);
+		container.add(uninstallPlaceholder, constraints);
 		
-		constraints.gridy = 6;
-		JHyperLink showMe = new JHyperLink("Show me what this installer will do to my Eclipse installation.");
-		container.add(showMe, constraints);
-		showMe.addActionListener(new ActionListener() {
-			@Override public void actionPerformed(ActionEvent e) {
-				showWhatIDo();
-			}
-		});
 		
 		return container;
 	}
@@ -594,6 +600,7 @@ public class Installer {
 		}
 		
 		uninstallButton.setVisible(uninstallAvailable);
+		uninstallPlaceholder.setVisible(!uninstallAvailable);
 		installButton.setEnabled(installAvailable);
 	}
 	
@@ -665,7 +672,6 @@ public class Installer {
 	
 	private void buildChrome(Container appWindowContainer) {
 		JLabel leftGraphic = new JLabel(new ImageIcon(Installer.class.getResource("/lombok/installer/lombok.png")));
-		JLabel topGraphic = new JLabel(new ImageIcon(Installer.class.getResource("/lombok/installer/lombokText.png")));
 		
 		GridBagConstraints constraints = new GridBagConstraints();
 		
@@ -677,23 +683,17 @@ public class Installer {
 		constraints.gridy = 0;
 		constraints.insets = new Insets(8, 8, 8, 8);
 		appWindowContainer.add(leftGraphic,constraints);
+		constraints.insets = new Insets(0, 0, 0, 0);
 		
 		constraints.gridx++;
-		constraints.gridheight = 1;
-		constraints.fill = GridBagConstraints.NONE;
-		constraints.ipadx = 40;
-		constraints.ipady = 64;
-		appWindowContainer.add(topGraphic, constraints);
-		
 		constraints.gridy++;
+		constraints.gridheight = 1;
+		constraints.fill = GridBagConstraints.HORIZONTAL;
 		constraints.ipadx = 16;
-		constraints.ipady = 16;
+		constraints.ipady = 14	;
 		appWindowContainer.add(javacArea, constraints);
 		
 		constraints.gridy++;
-		constraints.weightx = 1;
-		constraints.weighty = 1;
-		constraints.fill = GridBagConstraints.BOTH;
 		appWindowContainer.add(eclipseArea, constraints);
 		
 		appWindowContainer.add(uninstallArea, constraints);
