@@ -42,8 +42,44 @@
 				<span>Download!</span>
 			</a>
 		</div>
-		<div class="proxyVideo">
-			<object width="800" height="480"><param name="allowfullscreen" value="true" /><param name="allowscriptaccess" value="always" /><param name="movie" value="http://vimeo.com/moogaloop.swf?clip_id=5583664&amp;server=vimeo.com&amp;show_title=1&amp;show_byline=1&amp;show_portrait=0&amp;color=&amp;fullscreen=1" /><embed src="http://vimeo.com/moogaloop.swf?clip_id=5583664&amp;server=vimeo.com&amp;show_title=1&amp;show_byline=1&amp;show_portrait=0&amp;color=&amp;fullscreen=1" type="application/x-shockwave-flash" allowfullscreen="true" allowscriptaccess="always" width="800" height="480"></embed></object>
+		<div class="video">
+			<video width="800" height="480" controls="controls">
+				<source src="videos/lombok.ogv" type="video/ogg" />
+				<source src="videos/lombok.mp4" type="video/mp4" />
+				<source src="videos/iPhone.m4v" type="video/mp4" />
+				<object width="800" height="480" type="application/x-shockwave-flash" data="videos/player.swf" flashvars="file=videos/flash.mp4" allowfullscreen="true"
+				>
+					<param name="movie" value="videos/player.swf" />
+					<param name="flashvars" value="file=videos/flash.mp4" />
+					<param name="allowfullscreen" value="true" />
+					<!--[if gt IE 6]>
+					<object width="800" height="480" classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B">
+						<param name="src" value="videos/flash.mp4" />
+						<param name="allowfullscreen" value="true" /><!
+						[endif]-->
+						<!--[if gt IE 6]><!-->
+							<object width="480" height="375" type="video/quicktime" data="videos/iPhone.m4v"
+ 							>
+								<param name="src" value="videos/iPhone.m4v" />         
+						<!--<![endif]-->
+						<h3>Video: Lombok Demo</h3>
+						<p>
+							<strong>No video playback capabilities detected.</strong>
+							Why not download it instead?<br />
+							<a href="videos/lombok.mov">MPEG4 / H.264 (Windows / Mac)</a> |
+							<a href="videos/lombok.ogv">Ogg Theora &amp; Vorbis ".ogv" (Linux)</a>
+						</p><p>
+							To play the video in the webpage, please do one of the following:
+						</p><ul>
+							<li>Upgrade to <a href="http://getfirefox.com/">Firefox v3.5</a>,
+								or <a href="http://apple.com/safari">Safari v4</a></li>
+								<li>Install <a href="http://get.adobe.com/flashplayer/">Adobe Flash</a></li>
+								<li>Install <a href="http://apple.com/quicktime/download/">QuickTime</a></li>
+							</ul>
+						<!--[if gt IE 6]><!--></object><!--<![endif]-->
+					<!--[if gt IE 6]></object><![endif]-->
+				</object>
+			</video>
 		</div>
 		<div class="endBar">
 			<a href="slideshow.html">I don't want to see a video - show me a slideshow instead!</a>
