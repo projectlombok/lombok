@@ -1,0 +1,15 @@
+
+.para {
+	margin: 4px 0 4px 0;
+}
+
+.screenshot {
+	margin: 4px 0 4px 0;
+}
+.snippet {
+	font-family: "Courier New", Courier;
+	font-weight: bold;
+	white-space: pre;
+	padding: 4px 16px 4px 16px;
+	border: 1px #888 dashed;
+}
