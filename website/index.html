@@ -43,25 +43,20 @@
 			</a>
 		</div>
 		<div class="video">
-			<video width="800" height="480" controls="controls">
+			<video width="800" height="480" poster="videos/poster.png" controls="controls">
 				<source src="videos/lombok.ogv" type="video/ogg" />
 				<source src="videos/lombok.mp4" type="video/mp4" />
-				<source src="videos/iPhone.m4v" type="video/mp4" />
-				<object width="800" height="480" type="application/x-shockwave-flash" data="videos/player.swf" flashvars="file=videos/flash.mp4" allowfullscreen="true"
-				>
-					<param name="movie" value="videos/player.swf" />
-					<param name="flashvars" value="file=videos/flash.mp4" />
-					<param name="allowfullscreen" value="true" />
-					<!--[if gt IE 6]>
-					<object width="800" height="480" classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B">
-						<param name="src" value="videos/flash.mp4" />
-						<param name="allowfullscreen" value="true" /><!
-						[endif]-->
-						<!--[if gt IE 6]><!-->
-							<object width="480" height="375" type="video/quicktime" data="videos/iPhone.m4v"
- 							>
-								<param name="src" value="videos/iPhone.m4v" />         
-						<!--<![endif]-->
+				<source src="videos/lombok-iPhone.m4v" type="video/mp4" /><!--[if gt IE 6]>
+				<object width="800" height="500" classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B"><!
+				[endif]--><!--[if !IE]><!-->
+				<object width="800" height="480" type="video/quicktime" data="videos/lombok.mp4"><!--<![endif]-->
+					<param name="src" value="videos/lombok.mp4" />
+					<param name="autoplay" value="false" />
+					<param name="showlogo" value="false" />
+					<object width="800" height="480" type="application/x-shockwave-flash"
+						data="videos/player.swf?image=poster.png&amp;file=lombok.mp4" allowfullscreen="true">
+						<param name="movie" value="videos/player.swf?image=poster.png&amp;file=lombok.mp4" />
+						<param name="allowfullscreen" value="true" />
 						<h3>Video: Lombok Demo</h3>
 						<p>
 							<strong>No video playback capabilities detected.</strong>
@@ -75,9 +70,8 @@
 								or <a href="http://apple.com/safari">Safari v4</a></li>
 								<li>Install <a href="http://get.adobe.com/flashplayer/">Adobe Flash</a></li>
 								<li>Install <a href="http://apple.com/quicktime/download/">QuickTime</a></li>
-							</ul>
-						<!--[if gt IE 6]><!--></object><!--<![endif]-->
-					<!--[if gt IE 6]></object><![endif]-->
+						</ul>
+					</object><!--[if gt IE 6]><!-->
 				</object>
 			</video>
 		</div>
