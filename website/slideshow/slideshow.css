@@ -5,7 +5,10 @@
 
 .screenshot {
 	margin: 4px 0 4px 0;
+	width: 800px;
+	height: 480px;
 }
+
 .snippet {
 	font-family: "Courier New", Courier;
 	font-weight: bold;
