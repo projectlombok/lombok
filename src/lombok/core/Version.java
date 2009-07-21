@@ -25,7 +25,7 @@ package lombok.core;
  * This class just holds lombok's current version.
  */
 public class Version {
-	private static final String VERSION = "0.4";
+	private static final String VERSION = "0.8";
 	
 	private Version() {
 		//Prevent instantiation
