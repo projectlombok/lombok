@@ -8,6 +8,10 @@
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 	<meta name="description" content="Spice up your java" />
 	<title>Project Lombok</title>
+	<script type="text/javascript" src="videos/swfobject.js"></script>
+	<script type="text/javascript">
+		swfobject.registerObject("player","9.0.98","videos/expressInstall.swf");
+	</script>
 	<!--[if lt IE 7]><script type="text/javascript" src="logi/iepngfix_tilebg.js"></script><![endif]--> 
 </head><body>
 	<a id="forkMe" href="http://github.com/rzwitserloot/lombok"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
@@ -46,33 +50,41 @@
 			<video width="800" height="480" poster="videos/poster.png" controls="controls">
 				<source src="videos/lombok.ogv" type="video/ogg" />
 				<source src="videos/lombok.mp4" type="video/mp4" />
-				<source src="videos/lombok-iPhone.m4v" type="video/mp4" /><!--[if gt IE 6]>
-				<object width="800" height="500" classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B"><!
-				[endif]--><!--[if !IE]><!-->
-				<object width="800" height="500" type="application/x-shockwave-flash"
-					data="videos/player.swf?image=poster.png&amp;file=lombok.mp4" allowfullscreen="true"><!--<![endif]-->
+				<source src="videos/lombok-iPhone.m4v" type="video/mp4" />
+				<object id="player" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="800" height="500">
 					<param name="movie" value="videos/player.swf?image=poster.png&amp;file=lombok.mp4" />
 					<param name="allowfullscreen" value="true" />
-					<object width="800" height="500" type="video/quicktime" data="videos/lombok.mp4">
-						<param name="src" value="videos/lombok.mp4" />
-						<param name="autoplay" value="false" />
-						<param name="showlogo" value="false" />
-						<h3>Video: Lombok Demo</h3>
-						<p>
-							<strong>No video playback capabilities detected.</strong>
-							Why not download it instead?<br />
-							<a href="videos/lombok.mov">MPEG4 / H.264 (Windows / Mac)</a> |
-							<a href="videos/lombok.ogv">Ogg Theora &amp; Vorbis ".ogv" (Linux)</a>
-						</p><p>
-							To play the video in the webpage, please do one of the following:
-						</p><ul>
-							<li>Upgrade to <a href="http://getfirefox.com/">Firefox v3.5</a>,
-								or <a href="http://apple.com/safari">Safari v4</a></li>
-								<li>Install <a href="http://get.adobe.com/flashplayer/">Adobe Flash</a></li>
-								<li>Install <a href="http://apple.com/quicktime/download/">QuickTime</a></li>
-						</ul>
-					</object><!--[if gt IE 6]><!-->
-				</object>
+					<!--[if !IE]>-->
+					<object width="800" height="500" type="application/x-shockwave-flash"
+						data="videos/player.swf?image=poster.png&amp;file=lombok.mp4" allowfullscreen="true">
+					<!--<![endif]-->
+					<!--[if gt IE 6]>
+						<object width="800" height="500" classid="clsid:02BF25D5-8C17-4B23-BC80-D3488ABDDC6B">
+							<param name="src" value="videos/lombok.mp4" />
+							<param name="autoplay" value="false" />
+							<param name="showlogo" value="false" /><!
+					[endif]-->
+					<!--[if !IE]>-->
+						<object width="800" height="500" type="video/quicktime" data="videos/lombok.mp4">
+							<param name="src" value="videos/lombok.mp4" />
+							<param name="autoplay" value="false" />
+							<param name="showlogo" value="false" />
+					<!--<![endif]-->
+							<h3>Video: Lombok Demo</h3>
+							<p>
+								<strong>No video playback capabilities detected.</strong>
+								Why not download it instead?<br />
+								<a href="videos/lombok.mov">MPEG4 / H.264 (Windows / Mac)</a> |
+								<a href="videos/lombok.ogv">Ogg Theora &amp; Vorbis ".ogv" (Linux)</a>
+							</p><p>
+								To play the video in the webpage, please do one of the following:
+							</p><ul>
+								<li>Upgrade to <a href="http://getfirefox.com/">Firefox v3.5</a>,
+									or <a href="http://apple.com/safari">Safari v4</a></li>
+									<li>Install <a href="http://get.adobe.com/flashplayer/">Adobe Flash</a></li>
+									<li>Install <a href="http://apple.com/quicktime/download/">QuickTime</a></li>
+							</ul>
+					</object></object></object></object>
 			</video>
 		</div>
 		<div class="endBar">
