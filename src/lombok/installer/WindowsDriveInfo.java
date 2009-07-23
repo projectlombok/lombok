@@ -45,19 +45,29 @@ import java.util.List;
  * your git bash prompt's path (/etc/profile) and then run:
  * 
  * $ gcc -c \
- *     -I "/c/Program Files/Java/jdk1.6.0_14/include" \
- *     -I "/c/Program Files/Java/jdk1.6.0_14/include/win32" \
- *     -D__int64="long long" lombok_installer_WindowsDriveInfo.c
+      -I "/c/Program Files/Java/jdk1.6.0_14/include" \
+     -I "/c/Program Files/Java/jdk1.6.0_14/include/win32" \
+     -D__int64="long long" lombok_installer_WindowsDriveInfo.c
  * 
  * $ dllwrap.exe --add-stdcall-alias \
- *     -o WindowsDriveInfo.dll \
- *     lombok_installer_WindowsDriveInfo.o
+      -o WindowsDriveInfo-i386.dll \
+      lombok_installer_WindowsDriveInfo.o
  * 
  * You may get a warning along the lines of "Creating an export definition".
  * This is expected behaviour.
  * 
- * The DLL produced has been checked into the git repository so you won't
- * need to build this file again unless you make some changes to it.
+ * <p>
+ * Now download MinGW-w64 to build the 64-bit version of the dll (you thought you were done, weren't you?)
+ * from: http://sourceforge.net/projects/mingw-w64/files/
+ *  (under toolchains targetting Win64 / Release for GCC 4.4.0 (or later) / the version for your OS.)
+ * 
+ * Then, do this all over again, but this time with the  x86_64-w64-mingw32-gcc and
+ *  x86_64-w64-mingw32-dllwrap versions that are part of the MinGW-w64 distribution.
+ *  Name the dll 'WindowsDriveInfo-x86_64.dll'.
+ * 
+ * Both the 32-bit and 64-bit DLLs that this produces have been checked into the git repository
+ * under src/lombok/installer so you won't need to build them again unless you make some changes to
+ * the code in the winsrc directory.
  */
 public class WindowsDriveInfo {
 	/**

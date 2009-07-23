@@ -1,2 +1,4 @@
 lombok_installer_WindowsDriveInfo.o
 WindowsDriveInfo.dll
+WindowsDriveInfo-x86_64.dll
+WindowsDriveInfo-i386.dll

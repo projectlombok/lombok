@@ -24,7 +24,6 @@ package lombok.installer;
 import static java.util.Arrays.asList;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +37,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lombok.Lombok;
+import lombok.core.Version;
 
 /** Utility class for doing various OS-specific operations related to finding Eclipse installations. */
 class EclipseFinder {
@@ -63,18 +63,36 @@ class EclipseFinder {
 	}
 	
 	private static final AtomicBoolean windowsDriveInfoLibLoaded = new AtomicBoolean(false);
-	private static void loadWindowsDriveInfoLib() throws IOException, FileNotFoundException {
+	private static void loadWindowsDriveInfoLib() throws IOException {
 		if ( !windowsDriveInfoLibLoaded.compareAndSet(false, true) ) return;
 		
-		InputStream in = EclipseFinder.class.getResourceAsStream("WindowsDriveInfo.dll");
-		File dllFile;
+		final String prefix = "lombok-" + Version.getVersion() + "-";
+		
+		File temp = File.createTempFile("lombok", ".mark");
+		File dll1 = new File(temp.getParentFile(), prefix + "WindowsDriveInfo-i386.dll");
+		File dll2 = new File(temp.getParentFile(), prefix + "WindowsDriveInfo-x86_64.dll");
+		temp.delete();
+		dll1.deleteOnExit();
+		dll2.deleteOnExit();
 		try {
-			File temp = File.createTempFile("lombok", ".mark");
-			dllFile = new File(temp.getParentFile(), "lombok-WindowsDriveInfo.dll");
-			temp.delete();
-			dllFile.deleteOnExit();
+			if ( unpackDLL("WindowsDriveInfo-i386.dll", dll1) ) {
+				System.load(dll1.getAbsolutePath());
+				return;
+			}
+		} catch ( Throwable ignore ) {}
+		
+		try {
+			if ( unpackDLL("WindowsDriveInfo-x64_64.dll", dll1) ) {
+				System.load(dll2.getAbsolutePath());
+			}
+		} catch ( Throwable ignore ) {}
+	}
+	
+	private static boolean unpackDLL(String dllName, File target) throws IOException {
+		InputStream in = EclipseFinder.class.getResourceAsStream(dllName);
+		try {
 			try {
-				FileOutputStream out = new FileOutputStream(dllFile);
+				FileOutputStream out = new FileOutputStream(target);
 				try {
 					byte[] b = new byte[32000];
 					while ( true ) {
@@ -86,15 +104,14 @@ class EclipseFinder {
 					out.close();
 				}
 			} catch ( IOException e ) {
-				if ( dllFile.exists() && dllFile.canRead() ) {
-					//Fall through - if there is a file named lombok-WindowsDriveInfo.dll, we'll try it.
-				} else throw e;
+				//Fall through - if there is a file named lombok-WindowsDriveInfo-arch.dll, we'll try it.
+				return target.exists() && target.canRead();
 			}
 		} finally {
 			in.close();
 		}
 		
-		System.load(dllFile.getAbsolutePath());
+		return true;
 	}
 	
 	/**
