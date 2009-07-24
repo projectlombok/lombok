@@ -82,7 +82,7 @@ class EclipseFinder {
 		} catch ( Throwable ignore ) {}
 		
 		try {
-			if ( unpackDLL("WindowsDriveInfo-x64_64.dll", dll1) ) {
+			if ( unpackDLL("WindowsDriveInfo-x86_64.dll", dll2) ) {
 				System.load(dll2.getAbsolutePath());
 			}
 		} catch ( Throwable ignore ) {}
