@@ -55,7 +55,7 @@
 		<delete dir="dist" quiet="true" />
 	</target>
 	
-	<target name="website" description="Prepares the website for distribution" depends="javadoc">
+	<target name="website" description="Prepares the website for distribution" depends="javadoc, changelogToHtml">
 		<taskdef classpath="deps/website/java2html.jar" name="java2html" classname="de.java2html.anttasks.Java2HtmlTask" />
 		<mkdir dir="build/website" />
 		<copy todir="build/website">
@@ -222,10 +222,11 @@
 			</manifest>
 		</jar>
 		<copy file="dist/lombok.eclipse.agent-${lombok.version}.jar" tofile="dist/lombok.eclipse.agent.jar" />
+		<copy file="doc/changelog.markdown" tofile="build/changelog.txt" />
 		<jar destfile="dist/lombok-${lombok.version}.jar">
 			<fileset dir="build/lombok" />
 			<fileset dir="dist" includes="lombok.eclipse.agent.jar" />
-				
+			<fileset dir="build" includes="changelog.txt" />
 			<manifest>
 				<attribute name="Main-Class" value="lombok.installer.Installer" />
 			</manifest>
@@ -267,5 +268,50 @@
 		        summary="Version ${lombok.version} - The everything jar - doubleclick it to install, or just include it in your projects."
 		        labels="Featured" 
 				verbose="true" />
+	</target>
+	
+	<target name="changelogToHtml">
+		<mkdir dir="build/changelog" />
+		<echo file="build/changelog/CompileChangelog.java"><![CDATA[
+import com.petebevin.markdown.MarkdownProcessor;
+import java.io.*;
+			
+public class CompileChangelog {
+	public static void main(String[] args) {
+		try {
+			FileInputStream in = new FileInputStream(args[0]);
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			byte[] b = new byte[65536];
+			while ( true ) {
+				int r = in.read(b);
+				if ( r == -1 ) break;
+				out.write(b, 0, r);
+			}
+			in.close();
+			String markdown = new String(out.toByteArray(), "UTF-8");
+			String html = new MarkdownProcessor().markdown(markdown);
+			FileOutputStream file = new FileOutputStream(args[1]);
+			file.write(html.getBytes("UTF-8"));
+			file.close();
+			System.exit(0);
+		} catch ( Throwable e ) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
+}
+]]></echo>
+		<mkdir dir="build/website" />
+		<javac srcdir="build/changelog" destdir="build/changelog" classpath="deps/website/markdownj.jar" debug="on" />
+		<property name="CHANGELOG_FILE" location="doc/changelog.markdown" />
+		<property name="CHANGELOG_HTML" location="build/website/changelog.html" />
+		<java fork="true" classname="CompileChangelog" failonerror="true">
+			<classpath>
+				<pathelement location="deps/website/markdownj.jar" />
+				<pathelement location="build/changelog" />
+			</classpath>
+			<arg value="${CHANGELOG_FILE}" />
+			<arg value="${CHANGELOG_HTML}" />
+		</java>
 	</target>
 </project>
