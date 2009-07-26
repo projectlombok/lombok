@@ -1,0 +1,7 @@
+To publish:
+
+Make sure you up the version number, then, assuming the version number is now '0.8.1':
+git tag v0.8.1
+git push
+git push --tags
+ant publish
