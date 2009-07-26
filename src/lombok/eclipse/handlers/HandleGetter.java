@@ -88,21 +88,28 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		TypeReference fieldType = Eclipse.copyType(field.type);
-		String getterName = TransformationsUtil.toGetterName(
-				new String(field.name), nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0);
+		String fieldName = new String(field.name);
+		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
+		String getterName = TransformationsUtil.toGetterName(fieldName, isBoolean);
 		
 		int modifier = toModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		
-		switch ( methodExists(getterName, fieldNode) ) {
-		case EXISTS_BY_LOMBOK:
-			return true;
-		case EXISTS_BY_USER:
-			if ( whineIfExists ) errorNode.addWarning(
-					String.format("Not generating %s(): A method with that name already exists",  getterName));
-			return true;
-		default:
-		case NOT_EXISTS:
-			//continue with creating the getter
+		for ( String altName : TransformationsUtil.toAllGetterNames(fieldName, isBoolean) ) {
+			switch ( methodExists(altName, fieldNode) ) {
+			case EXISTS_BY_LOMBOK:
+				return true;
+			case EXISTS_BY_USER:
+				if ( whineIfExists ) {
+					String altNameExpl = "";
+					if ( !altName.equals(getterName) ) altNameExpl = String.format("(%s)", altName);
+					errorNode.addWarning(
+						String.format("Not generating %s(): A method with that name already exists%s",  getterName, altNameExpl));
+				}
+				return true;
+			default:
+			case NOT_EXISTS:
+				//continue scanning the other alt names.
+			}
 		}
 		
 		MethodDeclaration method = generateGetter((TypeDeclaration) fieldNode.up().get(), field, getterName, modifier, pos);

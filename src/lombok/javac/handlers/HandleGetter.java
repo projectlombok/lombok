@@ -90,16 +90,22 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		JCVariableDecl fieldDecl = (JCVariableDecl)fieldNode.get();
 		String methodName = toGetterName(fieldDecl);
 		
-		switch ( methodExists(methodName, fieldNode) ) {
-		case EXISTS_BY_LOMBOK:
-			return true;
-		case EXISTS_BY_USER:
-			if ( whineIfExists ) errorNode.addWarning(
-					String.format("Not generating %s(): A method with that name already exists",  methodName));
-			return true;
-		default:
-		case NOT_EXISTS:
-			//continue with creating the getter
+		for ( String altName : toAllGetterNames(fieldDecl) ) {
+			switch ( methodExists(altName, fieldNode) ) {
+			case EXISTS_BY_LOMBOK:
+				return true;
+			case EXISTS_BY_USER:
+				if ( whineIfExists ) {
+					String altNameExpl = "";
+					if ( !altName.equals(methodName) ) altNameExpl = String.format("(%s)", altName);
+					errorNode.addWarning(
+						String.format("Not generating %s(): A method with that name already exists%s", methodName, altNameExpl));
+				}
+				return true;
+			default:
+			case NOT_EXISTS:
+				//continue scanning the other alt names.
+			}
 		}
 		
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);

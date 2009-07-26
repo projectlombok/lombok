@@ -45,6 +45,14 @@ class PKG {
 		//Prevent instantiation
 	}
 	
+	static java.util.List<String> toAllGetterNames(JCVariableDecl field) {
+		CharSequence fieldName = field.name;
+		
+		boolean isBoolean = field.vartype.toString().equals("boolean");
+		
+		return TransformationsUtil.toAllGetterNames(fieldName, isBoolean);
+	}
+	
 	/**
 	 * @return the likely getter name for the stated field. (e.g. private boolean foo; to isFoo).
 	 */

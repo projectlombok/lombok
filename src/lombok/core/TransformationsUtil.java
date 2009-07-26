@@ -21,6 +21,13 @@
  */
 package lombok.core;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
  * Container for static utility methods useful for some of the standard lombok transformations, regardless of
  * target platform (e.g. useful for both javac and Eclipse lombok implementations).
@@ -29,6 +36,10 @@ public class TransformationsUtil {
 	private TransformationsUtil() {
 		//Prevent instantiation
 	}
+	
+	private static final List<String> KNOWN_BOOLEAN_PREFIXES = Collections.unmodifiableList(Arrays.asList(
+			"is", "has", "get"
+			));
 	
 	/**
 	 * Generates a getter name from a given field name.
@@ -42,6 +53,10 @@ public class TransformationsUtil {
 	 * 
 	 * return the prefix plus the possibly title/uppercased first character, and the rest of the field name.
 	 * 
+	 * Note that for boolean fields, if the field starts with 'has', 'get', or 'is', and the character after that is
+	 * <b>not</b> a lowercase character, the field name is returned without changing any character's case and without
+	 * any prefix.
+	 * 
 	 * @param fieldName the name of the field.
 	 * @param isBoolean if the field is of type 'boolean'. For fields of type 'java.lang.Boolean', you should provide <code>false</code>.
 	 */
@@ -49,6 +64,17 @@ public class TransformationsUtil {
 		final String prefix = isBoolean ? "is" : "get";
 		
 		if ( fieldName.length() == 0 ) return prefix;
+		
+		for ( String knownBooleanPrefix : KNOWN_BOOLEAN_PREFIXES ) {
+			if ( !fieldName.toString().startsWith(knownBooleanPrefix) ) continue;
+			if ( fieldName.length() > knownBooleanPrefix.length() && 
+					!Character.isLowerCase(fieldName.charAt(knownBooleanPrefix.length())) ) {
+				//The field is called something like 'isFoo' or 'hasFoo' or 'getFoo', so we shouldn't
+				//prefix with 'is' but instead just use the field name as is. The isLowerCase check is so we don't turn
+				//hashCodeGenerated, which so happens to start with 'has', into hasHCodeGenerated instead of isHashCodeGenerated.
+				return fieldName.toString();
+			}
+		}
 		
 		return buildName(prefix, fieldName.toString());
 	}
@@ -81,5 +107,36 @@ public class TransformationsUtil {
 					suffix.subSequence(1, suffix.length()));
 		}
 		return String.format("%s%s", prefix, suffix);
+	}
+	
+	public static List<String> toAllGetterNames(CharSequence fieldName, boolean isBoolean) {
+		if ( !isBoolean ) return Collections.singletonList(toGetterName(fieldName, false));
+		
+		List<String> baseNames = new ArrayList<String>();
+		baseNames.add(fieldName.toString());
+		for ( String knownBooleanPrefix : KNOWN_BOOLEAN_PREFIXES ) {
+			if ( !fieldName.toString().startsWith(knownBooleanPrefix) ) continue;
+			if ( fieldName.length() > knownBooleanPrefix.length() && 
+					!Character.isLowerCase(fieldName.charAt(knownBooleanPrefix.length())) ) {
+				//The field is called something like 'isFoo' or 'hasFoo' or 'getFoo', so the practical fieldname
+				//could also be 'foo'.
+				baseNames.add(fieldName.toString().substring(knownBooleanPrefix.length()));
+				//prefix with 'is' but instead just use the field name as is. The isLowerCase check is so we don't turn
+				//hashCodeGenerated, which so happens to start with 'has', into hasHCodeGenerated instead of isHashCodeGenerated.
+			}
+		}
+		
+		Set<String> names = new HashSet<String>();
+		for ( String baseName : baseNames ) {
+			if ( baseName.length() > 0 && Character.isLowerCase(baseName.charAt(0)) ) {
+				baseName = Character.toTitleCase(baseName.charAt(0)) + baseName.substring(1);
+			}
+			
+			for ( String prefix : KNOWN_BOOLEAN_PREFIXES ) {
+				names.add(prefix + baseName);
+			}
+		}
+		
+		return new ArrayList<String>(names);
 	}
 }
