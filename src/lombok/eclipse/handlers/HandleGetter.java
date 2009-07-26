@@ -101,7 +101,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 			case EXISTS_BY_USER:
 				if ( whineIfExists ) {
 					String altNameExpl = "";
-					if ( !altName.equals(getterName) ) altNameExpl = String.format("(%s)", altName);
+					if ( !altName.equals(getterName) ) altNameExpl = String.format(" (%s)", altName);
 					errorNode.addWarning(
 						String.format("Not generating %s(): A method with that name already exists%s",  getterName, altNameExpl));
 				}

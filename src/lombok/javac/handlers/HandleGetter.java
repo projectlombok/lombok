@@ -97,7 +97,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 			case EXISTS_BY_USER:
 				if ( whineIfExists ) {
 					String altNameExpl = "";
-					if ( !altName.equals(methodName) ) altNameExpl = String.format("(%s)", altName);
+					if ( !altName.equals(methodName) ) altNameExpl = String.format(" (%s)", altName);
 					errorNode.addWarning(
 						String.format("Not generating %s(): A method with that name already exists%s", methodName, altNameExpl));
 				}
