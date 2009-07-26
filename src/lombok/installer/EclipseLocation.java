@@ -279,6 +279,12 @@ final class EclipseLocation {
 	void install() throws InstallException {
 		List<File> failedDirs = new ArrayList<File>();
 		
+		// For whatever reason, relative paths in your eclipse.ini file don't work on linux, but only for -javaagent.
+		// If someone knows how to fix this, please do so, as this current hack solution (putting the absolute path
+		// to the jar files in your eclipse.ini) means you can't move your eclipse around on linux without lombok
+		// breaking it. NB: rerunning lombok.jar installer and hitting 'update' will fix it if you do that.
+		boolean fullPathRequired = EclipseFinder.getOS() == EclipseFinder.OS.UNIX;
+		
 		boolean installSucceeded = false;
 		for ( File dir : getTargetDirs() ) {
 			File iniFile = new File(dir, "eclipse.ini");
@@ -367,8 +373,14 @@ final class EclipseLocation {
 						fis.close();
 					}
 					
-					newContents.append("-javaagent:lombok.eclipse.agent.jar").append(OS_NEWLINE);
-					newContents.append("-Xbootclasspath/a:lombok.jar" + File.pathSeparator + "lombok.eclipse.agent.jar").append(OS_NEWLINE);
+					String fullPathToLombok = fullPathRequired ? (lombokJar.getParentFile().getCanonicalPath() + File.separator) : "";
+					String fullPathToAgent = fullPathRequired ? (agentJar.getParentFile().getCanonicalPath() + File.separator) : "";
+					
+					newContents.append(String.format(
+							"-javaagent:%slombok.eclipse.agent.jar", fullPathToLombok)).append(OS_NEWLINE);
+					newContents.append(String.format(
+							"-Xbootclasspath/a:%slombok.jar" + File.pathSeparator + "%slombok.eclipse.agent.jar",
+							fullPathToLombok, fullPathToAgent)).append(OS_NEWLINE);
 					
 					FileOutputStream fos = new FileOutputStream(iniFile);
 					try {
