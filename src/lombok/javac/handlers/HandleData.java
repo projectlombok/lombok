@@ -92,18 +92,6 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 			if ( !isFinal ) new HandleSetter().generateSetterForField(child, annotationNode.get());
 		}
 		
-		String staticConstructorName = annotation.getInstance().staticConstructor();
-		
-		if ( constructorExists(typeNode) == MemberExistsResult.NOT_EXISTS ) {
-			JCMethodDecl constructor = createConstructor(staticConstructorName.equals(""), typeNode, nodesForConstructor);
-			injectMethod(typeNode, constructor);
-		}
-		
-		if ( !staticConstructorName.isEmpty() && methodExists("of", typeNode) == MemberExistsResult.NOT_EXISTS ) {
-			JCMethodDecl staticConstructor = createStaticConstructor(staticConstructorName, typeNode, nodesForConstructor);
-			injectMethod(typeNode, staticConstructor);
-		}
-		
 		if ( methodExists("equals", typeNode) == MemberExistsResult.NOT_EXISTS ) {
 			JCMethodDecl method = createEquals(typeNode, nodesForEquality);
 			injectMethod(typeNode, method);
@@ -117,6 +105,18 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		if ( methodExists("toString", typeNode) == MemberExistsResult.NOT_EXISTS ) {
 			JCMethodDecl method = createToString(typeNode, nodesForToString);
 			injectMethod(typeNode, method);
+		}
+		
+		String staticConstructorName = annotation.getInstance().staticConstructor();
+		
+		if ( constructorExists(typeNode) == MemberExistsResult.NOT_EXISTS ) {
+			JCMethodDecl constructor = createConstructor(staticConstructorName.equals(""), typeNode, nodesForConstructor);
+			injectMethod(typeNode, constructor);
+		}
+		
+		if ( !staticConstructorName.isEmpty() && methodExists("of", typeNode) == MemberExistsResult.NOT_EXISTS ) {
+			JCMethodDecl staticConstructor = createStaticConstructor(staticConstructorName, typeNode, nodesForConstructor);
+			injectMethod(typeNode, staticConstructor);
 		}
 		
 		return true;

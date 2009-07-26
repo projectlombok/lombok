@@ -129,6 +129,22 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			injectMethod(typeNode, toString);
 		}
 		
+		if ( methodExists("equals", typeNode) == MemberExistsResult.NOT_EXISTS ) {
+			MethodDeclaration equals = createEquals(typeNode, nodesForEquality, ast);
+			injectMethod(typeNode, equals);
+		}
+		
+		if ( methodExists("hashCode", typeNode) == MemberExistsResult.NOT_EXISTS ) {
+			MethodDeclaration hashCode = createHashCode(typeNode, nodesForEquality, ast);
+			injectMethod(typeNode, hashCode);
+		}
+		
+		//Careful: Generate the public static constructor (if there is one) LAST, so that any attempt to
+		//'find callers' on the annotation node will find callers of the constructor, which is by far the
+		//most useful of the many methods built by @Data. This trick won't work for the non-static constructor,
+		//for whatever reason, though you can find callers of that one by focussing on the class name itself
+		//and hitting 'find callers'.
+		
 		if ( constructorExists(typeNode) == MemberExistsResult.NOT_EXISTS ) {
 			ConstructorDeclaration constructor = createConstructor(
 					ann.staticConstructor().length() == 0, typeNode, nodesForConstructor, ast);
@@ -141,16 +157,6 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 						ann.staticConstructor(), typeNode, nodesForConstructor, ast);
 				injectMethod(typeNode, staticConstructor);
 			}
-		}
-		
-		if ( methodExists("equals", typeNode) == MemberExistsResult.NOT_EXISTS ) {
-			MethodDeclaration equals = createEquals(typeNode, nodesForEquality, ast);
-			injectMethod(typeNode, equals);
-		}
-		
-		if ( methodExists("hashCode", typeNode) == MemberExistsResult.NOT_EXISTS ) {
-			MethodDeclaration hashCode = createHashCode(typeNode, nodesForEquality, ast);
-			injectMethod(typeNode, hashCode);
 		}
 		
 		return false;
