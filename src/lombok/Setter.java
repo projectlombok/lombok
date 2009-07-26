@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
  * <p>
  * Example:
  * <pre>
- *     private @Setter int foo;
+ *     private &#64;Setter int foo;
  * </pre>
  * 
  * will generate:

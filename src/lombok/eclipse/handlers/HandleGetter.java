@@ -45,7 +45,7 @@ import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.mangosdk.spi.ProviderFor;
 
 /**
- * Handles the <code>lombok.Getter</code> annotation for javac.
+ * Handles the <code>lombok.Getter</code> annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleGetter implements EclipseAnnotationHandler<Getter> {

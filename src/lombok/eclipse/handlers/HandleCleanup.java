@@ -46,7 +46,7 @@ import org.eclipse.jdt.internal.compiler.ast.TryStatement;
 import org.mangosdk.spi.ProviderFor;
 
 /**
- * Handles the <code>lombok.Cleanup</code> annotation for javac.
+ * Handles the <code>lombok.Cleanup</code> annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {

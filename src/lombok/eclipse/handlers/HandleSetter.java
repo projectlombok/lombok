@@ -49,7 +49,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.mangosdk.spi.ProviderFor;
 
 /**
- * Handles the <code>lombok.Setter</code> annotation for javac.
+ * Handles the <code>lombok.Setter</code> annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleSetter implements EclipseAnnotationHandler<Setter> {

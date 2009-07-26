@@ -89,7 +89,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.mangosdk.spi.ProviderFor;
 
 /**
- * Handles the <code>lombok.Data</code> annotation for javac.
+ * Handles the <code>lombok.Data</code> annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleData implements EclipseAnnotationHandler<Data> {
