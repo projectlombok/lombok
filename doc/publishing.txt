@@ -5,3 +5,11 @@ git tag v0.8.1
 git push
 git push --tags
 ant publish
+
+Then, up the version number again, to v0.8.2-HEAD, and run:
+ant website
+
+and publish the website. Or, at least:
+ant changelogToHtml
+
+and publish build/website/changelog.html
