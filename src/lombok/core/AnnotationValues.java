@@ -85,6 +85,18 @@ public class AnnotationValues<A extends Annotation> {
 			node.addError(message);
 		}
 		
+		/**
+		 *  Override this if you want more specific behaviour (to get the source position just right).
+		 * 
+		 * @param message English message with the problem.
+		 * @param valueIdx The index into the values for this annotation key that caused the problem.
+		 *   -1 for a problem that applies to all values, otherwise the 0-based index into an array of values.
+		 *   If there is no array for this value (e.g. value=1 instead of value={1,2}), then always -1 or 0.
+		 */
+		public void setWarning(String message, int valueIdx) {
+			node.addError(message);
+		}
+		
 		/** {@inheritDoc} */
 		@Override public String toString() {
 			return "raws: " + raws + " valueGuesses: " + valueGuesses;
@@ -159,7 +171,7 @@ public class AnnotationValues<A extends Annotation> {
 				if ( expected.isArray() ) {
 					isArray = true;
 					expected = expected.getComponentType();
-					array = Array.newInstance(expected, 1);
+					array = Array.newInstance(expected, v.valueGuesses.size());
 				}
 				
 				if ( !isArray && v.valueGuesses.size() > 1 ) {
@@ -294,6 +306,32 @@ public class AnnotationValues<A extends Annotation> {
 	public String getRawExpression(String annotationMethodName) {
 		List<String> l = getRawExpressions(annotationMethodName);
 		return l.isEmpty() ? null : l.get(0);
+	}
+	
+	/** Generates an error message on the stated annotation value (you should only call this method if you know it's there!) */
+	public void setError(String annotationMethodName, String message) {
+		setError(annotationMethodName, message, -1);
+	}
+	
+	/** Generates a warning message on the stated annotation value (you should only call this method if you know it's there!) */
+	public void setWarning(String annotationMethodName, String message) {
+		setWarning(annotationMethodName, message, -1);
+	}
+	
+	/** Generates an error message on the stated annotation value, which must have an array initializer.
+	 * The index-th item in the initializer will carry the error (you should only call this method if you know it's there!) */
+	public void setError(String annotationMethodName, String message, int index) {
+		AnnotationValue v = values.get(annotationMethodName);
+		if ( v == null ) return;
+		v.setError(message, index);
+	}
+	
+	/** Generates a warning message on the stated annotation value, which must have an array initializer.
+	 * The index-th item in the initializer will carry the error (you should only call this method if you know it's there!) */
+	public void setWarning(String annotationMethodName, String message, int index) {
+		AnnotationValue v = values.get(annotationMethodName);
+		if ( v == null ) return;
+		v.setWarning(message, index);
 	}
 	
 	/**

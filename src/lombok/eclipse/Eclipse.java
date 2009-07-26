@@ -315,6 +315,19 @@ public class Eclipse {
 					
 					annotationNode.addError(message, sourceStart, sourceEnd);
 				}
+				
+				@Override public void setWarning(String message, int valueIdx) {
+					Expression ex;
+					if ( valueIdx == -1 ) ex = fullExpr;
+					else ex = exprs != null ? exprs[valueIdx] : null;
+					
+					if ( ex == null ) ex = annotation;
+					
+					int sourceStart = ex.sourceStart;
+					int sourceEnd = ex.sourceEnd;
+					
+					annotationNode.addWarning(message, sourceStart, sourceEnd);
+				}
 			});
 		}
 		
