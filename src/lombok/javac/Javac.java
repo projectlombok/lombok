@@ -116,6 +116,9 @@ public class Javac {
 				@Override public void setError(String message, int valueIdx) {
 					node.addError(message, positions.get(valueIdx));
 				}
+				@Override public void setWarning(String message, int valueIdx) {
+					node.addWarning(message, positions.get(valueIdx));
+				}
 			});
 		}
 		
