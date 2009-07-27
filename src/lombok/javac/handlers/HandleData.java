@@ -92,6 +92,8 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 			if ( !isFinal ) new HandleSetter().generateSetterForField(child, annotationNode.get());
 		}
 		
+		new HandleToString().generateToStringForType(typeNode, annotationNode);
+		
 		if ( methodExists("equals", typeNode) == MemberExistsResult.NOT_EXISTS ) {
 			JCMethodDecl method = createEquals(typeNode, nodesForEquality);
 			injectMethod(typeNode, method);
@@ -99,11 +101,6 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		
 		if ( methodExists("hashCode", typeNode) == MemberExistsResult.NOT_EXISTS ) {
 			JCMethodDecl method = createHashCode(typeNode, nodesForEquality);
-			injectMethod(typeNode, method);
-		}
-		
-		if ( methodExists("toString", typeNode) == MemberExistsResult.NOT_EXISTS ) {
-			JCMethodDecl method = createToString(typeNode, nodesForToString);
 			injectMethod(typeNode, method);
 		}
 		
@@ -120,41 +117,6 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		}
 		
 		return true;
-	}
-	
-	private JCMethodDecl createToString(Node typeNode, List<Node> fields) {
-		TreeMaker maker = typeNode.getTreeMaker();
-		
-		JCAnnotation overrideAnnotation = maker.Annotation(chainDots(maker, typeNode, "java", "lang", "Override"), List.<JCExpression>nil());
-		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
-		JCExpression returnType = chainDots(maker, typeNode, "java", "lang", "String");
-		
-		JCExpression current = maker.Literal(((JCClassDecl) typeNode.get()).name.toString() + "(");
-		boolean first = true;
-		
-		for ( Node fieldNode : fields ) {
-			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
-			if ( !first ) current = maker.Binary(JCTree.PLUS, current, maker.Literal(", "));
-			first = false;
-			if ( field.vartype instanceof JCArrayTypeTree ) {
-				boolean multiDim = ((JCArrayTypeTree)field.vartype).elemtype instanceof JCArrayTypeTree;
-				boolean primitiveArray = ((JCArrayTypeTree)field.vartype).elemtype instanceof JCPrimitiveTypeTree;
-				boolean useDeepTS = multiDim || !primitiveArray;
-				
-				JCExpression hcMethod = chainDots(maker, typeNode, "java", "util", "Arrays", useDeepTS ? "deepToString" : "toString");
-				current = maker.Binary(JCTree.PLUS, current, maker.Apply(
-						List.<JCExpression>nil(), hcMethod, List.<JCExpression>of(maker.Ident(field.name))));
-			} else current = maker.Binary(JCTree.PLUS, current, maker.Ident(field.name));
-		}
-		
-		current = maker.Binary(JCTree.PLUS, current, maker.Literal(")"));
-		
-		JCStatement returnStatement = maker.Return(current);
-		
-		JCBlock body = maker.Block(0, List.of(returnStatement));
-		
-		return maker.MethodDef(mods, typeNode.toName("toString"), returnType,
-				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 	}
 	
 	private JCMethodDecl createHashCode(Node typeNode, List<Node> fields) {

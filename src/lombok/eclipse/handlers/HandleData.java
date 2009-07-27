@@ -75,7 +75,6 @@ import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
-import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TrueLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
@@ -110,7 +109,6 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		
 		List<Node> nodesForEquality = new ArrayList<Node>();
 		List<Node> nodesForConstructor = new ArrayList<Node>();
-		List<Node> nodesForToString = new ArrayList<Node>();
 		for ( Node child : typeNode.down() ) {
 			if ( child.getKind() != Kind.FIELD ) continue;
 			FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
@@ -118,16 +116,12 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			if ( (fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0 ) continue;
 			if ( (fieldDecl.modifiers & ClassFileConstants.AccTransient) == 0 ) nodesForEquality.add(child);
 			boolean isFinal = (fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0;
-			nodesForToString.add(child);
 			if ( isFinal && fieldDecl.initialization == null ) nodesForConstructor.add(child);
 			new HandleGetter().generateGetterForField(child, annotationNode.get());
 			if ( !isFinal ) new HandleSetter().generateSetterForField(child, annotationNode.get());
 		}
 		
-		if ( methodExists("toString", typeNode) == MemberExistsResult.NOT_EXISTS ) {
-			MethodDeclaration toString = createToString(typeNode, nodesForToString, ast);
-			injectMethod(typeNode, toString);
-		}
+		new HandleToString().generateToStringForType(typeNode, annotationNode);
 		
 		if ( methodExists("equals", typeNode) == MemberExistsResult.NOT_EXISTS ) {
 			MethodDeclaration equals = createEquals(typeNode, nodesForEquality, ast);
@@ -160,61 +154,6 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		}
 		
 		return false;
-	}
-	
-	private MethodDeclaration createToString(Node type, Collection<Node> fields, ASTNode pos) {
-		char[] rawTypeName = ((TypeDeclaration)type.get()).name;
-		String typeName = rawTypeName == null ? "" : new String(rawTypeName);
-		char[] prefix = (typeName + "(").toCharArray();
-		char[] suffix = ")".toCharArray();
-		char[] infix = ", ".toCharArray();
-		long p = (long)pos.sourceStart << 32 | pos.sourceEnd;
-		final int PLUS = OperatorIds.PLUS;
-		
-		boolean first = true;
-		Expression current = new StringLiteral(prefix, 0, 0, 0);
-		for ( Node field : fields ) {
-			FieldDeclaration f = (FieldDeclaration)field.get();
-			if ( f.name == null || f.type == null ) continue;
-			if ( !first ) {
-				current = new BinaryExpression(current, new StringLiteral(infix, 0, 0, 0), PLUS);
-			}
-			else first = false;
-			
-			Expression ex;
-			if ( f.type.dimensions() > 0 ) {
-				MessageSend arrayToString = new MessageSend();
-				arrayToString.receiver = generateQualifiedNameRef(TypeConstants.JAVA, TypeConstants.UTIL, "Arrays".toCharArray());
-				arrayToString.arguments = new Expression[] { new SingleNameReference(f.name, p) };
-				if ( f.type.dimensions() > 1 || !BUILT_IN_TYPES.contains(new String(f.type.getLastToken())) ) {
-					arrayToString.selector = "deepToString".toCharArray();
-				} else {
-					arrayToString.selector = "toString".toCharArray();
-				}
-				ex = arrayToString;
-			} else ex = new SingleNameReference(f.name, p);
-			
-			current = new BinaryExpression(current, ex, PLUS);
-		}
-		current = new BinaryExpression(current, new StringLiteral(suffix, 0, 0, 0), PLUS);
-		
-		ReturnStatement returnStatement = new ReturnStatement(current, (int)(p >> 32), (int)p);
-		
-		MethodDeclaration method = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
-		method.modifiers = PKG.toModifier(AccessLevel.PUBLIC);
-		method.returnType = new QualifiedTypeReference(TypeConstants.JAVA_LANG_STRING, new long[] {0, 0, 0});
-		method.annotations = new Annotation[] {
-				new MarkerAnnotation(new QualifiedTypeReference(TypeConstants.JAVA_LANG_OVERRIDE, new long[] { 0, 0, 0}), 0)
-		};
-		method.arguments = null;
-		method.selector = "toString".toCharArray();
-		method.thrownExceptions = null;
-		method.typeParameters = null;
-		method.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
-		method.bodyStart = method.declarationSourceStart = method.sourceStart = pos.sourceStart;
-		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = pos.sourceEnd;
-		method.statements = new Statement[] { returnStatement };
-		return method;
 	}
 	
 	private ConstructorDeclaration createConstructor(boolean isPublic, Node type, Collection<Node> fields, ASTNode pos) {
