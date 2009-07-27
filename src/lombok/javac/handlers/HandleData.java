@@ -77,7 +77,6 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		
 		List<Node> nodesForEquality = List.nil();
 		List<Node> nodesForConstructor = List.nil();
-		List<Node> nodesForToString = List.nil();
 		for ( Node child : typeNode.down() ) {
 			if ( child.getKind() != Kind.FIELD ) continue;
 			JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
@@ -86,7 +85,6 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 			if ( (fieldFlags & Flags.STATIC) != 0 ) continue;
 			if ( (fieldFlags & Flags.TRANSIENT) == 0 ) nodesForEquality = nodesForEquality.append(child);
 			boolean isFinal = (fieldFlags & Flags.FINAL) != 0;
-			nodesForToString = nodesForToString.append(child);
 			if ( isFinal && fieldDecl.init == null ) nodesForConstructor = nodesForConstructor.append(child);
 			new HandleGetter().generateGetterForField(child, annotationNode.get());
 			if ( !isFinal ) new HandleSetter().generateSetterForField(child, annotationNode.get());
