@@ -1,6 +1,11 @@
 Lombok Changelog
 ----------------
 
+### v0.8.2
+
+* @EqualsAndHashCode and @ToString created; these are subsets of what @Data does (namely: generate toString(), and generate equals() and hashCode() implementations). @Data will still generate these methods, but you can now generate them separately if you wish. As part of this split off, you can now specify for toString generation to include the field names in the produced toString method, and for all 3 methods: You can choose to involve the implementation of the superclass, and you can choose to exclude certain fields. [link to issue](http://code.google.com/p/projectlombok/issues/detail?id=8)
+* when compiling with javac: warnings on specific entries of an annotation parameter (such as non-existent fields in a @EqualsAndHashCode exclude parameter) now show up on the problematic parameter and not on the entire annotation. [link to issue](http://code.google.com/p/projectlombok/issues/detail?id=11)
+
 ### v0.8.1
 
 * Changelog tracking from this version on.
