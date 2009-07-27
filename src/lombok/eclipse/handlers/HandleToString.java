@@ -104,7 +104,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		try {
 			callSuper = ((Boolean)ToString.class.getMethod("callSuper").getDefaultValue()).booleanValue();
 		} catch ( Exception ignore ) {}
-		generateToString(typeNode, errorNode, Collections.<String>emptyList(),includeFieldNames, callSuper, false);
+		generateToString(typeNode, errorNode, Collections.<String>emptyList(), includeFieldNames, callSuper, false);
 	}
 	
 	public boolean handle(AnnotationValues<ToString> annotation, Annotation ast, Node annotationNode) {
@@ -137,7 +137,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 			FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
 			//Skip static fields.
 			if ( (fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0 ) continue;
-			//Skip excluded fields
+			//Skip excluded fields.
 			if ( excludes.contains(new String(fieldDecl.name)) ) continue;
 			nodesForToString.add(child);
 		}

@@ -101,7 +101,7 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		try {
 			callSuper = ((Boolean)ToString.class.getMethod("callSuper").getDefaultValue()).booleanValue();
 		} catch ( Exception ignore ) {}
-		generateToString(typeNode, errorNode, List.<String>nil(),includeFieldNames, callSuper, false);
+		generateToString(typeNode, errorNode, List.<String>nil(), includeFieldNames, callSuper, false);
 	}
 	
 	private boolean generateToString(Node typeNode, Node errorNode, List<String> excludes, 
@@ -123,7 +123,7 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 			JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
 			//Skip static fields.
 			if ( (fieldDecl.mods.flags & Flags.STATIC) != 0 ) continue;
-			//Skip excluded fields
+			//Skip excluded fields.
 			if ( excludes.contains(fieldDecl.name.toString()) ) continue;
 			nodesForToString = nodesForToString.append(child);
 		}
