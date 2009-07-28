@@ -46,6 +46,9 @@
 				will not be generated if there's already a method <code>getFoo(int x)</code> even though it is technically possible to make the method. This caveat
 				exists to prevent confusion. If the generation of a method is skipped for this reason, a warning is emitted instead.
 				</p><p>
+				For <code>boolean</code> fields that start with <code>is</code> or <code>has</code> immediately followed by a title-case letter, nothing is prefixed
+				to generate the getter name.
+				</p><p>
 				Any variation on <code>boolean</code> will <em>not</em> result in using the <code>is</code> prefix instead of the <code>get</code> prefix; for example,
 				returning <code>java.lang.Boolean</code> results in a <code>get</code> prefix, not an <code>is</code> prefix.
 				</p>

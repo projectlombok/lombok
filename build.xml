@@ -233,7 +233,7 @@
 			<classpath refid="lombok.deps.path" />
 			<classpath refid="lombok.libs.path" />
 			<link href="http://java.sun.com/javase/6/docs/api/" offline="true" packagelistLoc="./deps/javadoc/java6"/>
-			<header><![CDATA[<a href="http://projectlombok.org/">Lombok</a> - ]]>v${lombok.version}</header>
+			<header><![CDATA[<a href='http://projectlombok.org/'>Lombok</a> - ]]>v${lombok.version}</header>
 			<bottom><![CDATA[<i>Copyright &#169; 2009 Reinier Zwitserloot and Roel Spilker, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php'>MIT licence</a>.]]></bottom>
 		</javadoc>
 		<mkdir dir="doc/api" />
