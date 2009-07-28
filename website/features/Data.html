@@ -60,16 +60,8 @@
 		<div style="clear: left;"></div>
 		<div class="overview">
 			<h3>Small print</h3><div class="smallprint">
-				<p>
-				Arrays are 'deep' compared/printed/hashCoded, which means that arrays that contain themselves will result in <code>StackOverflowError</code>s. However,
-				this behaviour is no different from e.g. <code>ArrayList</code>.
-				</p><p>
-				For a general idea of how lombok generated the <code>equals</code>, <code>hashCode</code>, and <code>toString</code> methods, check the example after.
-				</p><p>
-				For the purposes of equality, 2 <code>NaN</code> (not a number) values for floats and doubles are considered equal, eventhough 'NaN == NaN' would
-				return false. This is analogous to <code>java.lang.Double</code>'s equals method, and is in fact required to ensure that comparing an object
-				to an exact copy of itself returns <code>true</code> for equality.
-				</p>
+				<p>See the small print of <a href="ToString.html"><code>@ToString</code></a>, <a href="EqualsAndHashCode.html"><code>@EqualsAndHashCode</code></a> and
+					<a href="GetterSetter.html"><code>@Getter / @Setter</code></a>.
 			</div>
 		</div>
 		<div class="footer">
