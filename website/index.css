@@ -18,12 +18,12 @@ h1 {
 	text-align: center;
 }
 
-#buttonBar a {
+#buttonBar a.button, a.downloadLink {
 	text-decoration: none;
 	color: black;
 }
 
-#buttonBar a:hover {
+#buttonBar a.button:hover, a.downloadLink:hover {
 	text-decoration: underline;
 	color: blue;
 }
@@ -78,29 +78,41 @@ h1 {
 	font-size: 14px;
 }
 
-.download {
+.downloadContainer {
 	float: left;
 	margin: 34px 8px 57px 40px;
-	background-image: url(downloadButton.png);
-	line-height: 56px;
-	width: 225px;
-	height: 56px;
 }
 
 code {
 	font-weight: bold;
 }
 
-.download img {
+.downloadLink {
+	background-image: url(downloadButton.png);
+	display: block;
+	line-height: 56px;
+	width: 225px;
+	height: 56px;
+}
+
+.downloadLink img {
 	margin: 4px 20px 4px 16px;
 	float: left;
 	width: 48px;
 }
 
-.download span {
+.downloadLink span {
 	display: block;
 	font-size: 16px;
 	font-weight: bold;
+}
+
+.versionInfo {
+	font-size: 12px;
+	margin-top: 4px;
+	font-weight: normal;
+	width: 100%;
+	text-align: center;
 }
 
 #downloadInfo {

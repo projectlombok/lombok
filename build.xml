@@ -69,7 +69,7 @@
 		</copy>
 	</target>
 	
-	<target name="-website-main" depends="-website-clean, javadoc, changelogToHtml">
+	<target name="-website-main" depends="-website-clean, version, javadoc, changelogToHtml">
 		<taskdef classpath="deps/website/java2html.jar" name="java2html" classname="de.java2html.anttasks.Java2HtmlTask" />
 		<mkdir dir="build/website" />
 		<copy todir="build/website">
@@ -82,6 +82,17 @@
 				<exclude name="**/*unused*" />
 				<exclude name="videos/**" />
 			</fileset>
+		</copy>
+		<copy todir="build/website" overwrite="true">
+			<fileset dir="website">
+				<include name="index.html" />
+				<include name="download.html" />
+			</fileset>
+			<filterchain>
+				<replacetokens>
+					<token key="VERSION" value="${lombok.version}" />
+				</replacetokens>
+			</filterchain>
 		</copy>
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="GetterSetter" />
@@ -194,7 +205,9 @@
 		</unjar>
 	</target>
 	
-	<target name="version" description="Shows the version number" depends="compile">
+	<target name="version" description="Shows the version number">
+		<mkdir dir="build/lombok" />
+		<javac srcdir="src" debug="on" destdir="build/lombok" target="1.5" includes="lombok/core/Version.java" />
 		<java
 			classname="lombok.core.Version"
 			classpath="build/lombok"
@@ -206,11 +219,10 @@
 				<striplinebreaks />
 			</filterchain>
 		</loadresource>
-		<delete file="build/version.txt" quiet="true" />
 		<echo level="info">Lombok version: ${lombok.version}</echo>
 	</target>
 	
-	<target name="javadoc" description="Generates the javadoc">
+	<target name="javadoc" description="Generates the javadoc" depends="version">
 		<delete dir="build/api" quiet="true" />
 		<delete dir="doc/api" quiet="true" />
 		<mkdir dir="build/api" />
@@ -218,6 +230,7 @@
 			<classpath refid="lombok.deps.path" />
 			<classpath refid="lombok.libs.path" />
 			<link href="http://java.sun.com/javase/6/docs/api/" offline="true" packagelistLoc="./deps/javadoc/java6"/>
+			<header><![CDATA[<a href="http://projectlombok.org/">Lombok</a> - ]]>v${lombok.version}</header>
 			<bottom><![CDATA[<i>Copyright &#169; 2009 Reinier Zwitserloot and Roel Spilker, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php'>MIT licence</a>.]]></bottom>
 		</javadoc>
 		<mkdir dir="doc/api" />
@@ -250,6 +263,7 @@
 			<fileset dir="build" includes="changelog.txt" />
 			<manifest>
 				<attribute name="Main-Class" value="lombok.installer.Installer" />
+				<attribute name="Lombok-Version" value="${lombok.version}" />
 			</manifest>
 		</jar>
 		<copy file="dist/lombok-${lombok.version}.jar" tofile="dist/lombok.jar" />
