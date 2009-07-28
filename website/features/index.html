@@ -15,9 +15,14 @@
 			<dl>
 				<dt><a href="GetterSetter.html"><code>@Getter</code> / <code>@Setter</code></a></dt>
 				<dd>Never write <code>public int getFoo() {return foo;}</code> again.</dd>
+				<dt><a href="ToString.html"><code>@ToString</code></a></dt>
+				<dd>No need to start a debugger to see your fields: Just let lombok generate a <code>toString</code> for you!</dd>
+				<dt><a href="EqualsAndHashCode.html"><code>@EqualsAndHashCode</code></a></dt>
+				<dd>Equality made easy: Generates <code>hashCode</code> and <code>equals</code> implementations from the fields of your object.</dd>
 				<dt><a href="Data.html"><code>@Data</code></a></dt>
-				<dd>'struct' for java: Automatically generate <code>toString</code>, <code>hashCode</code>, <code>equals</code>, a constructor, and getters and setters
-					from just the fields in your class.</dd>
+				<dd>All together now: A shortcut for <code>@ToString</code>, <code>@EqualsAndHashCode</code>,
+					<code>@Getter</code> on all fields, and <code>@Setter</code> on all non-final fields. You even
+					get a free constructor to initialize your final fields!</dd>
 				<dt><a href="Cleanup.html"><code>@Cleanup</code></a></dt>
 				<dd>Automatic resource management: Call your <code>close()</code> methods safely with no hassle.</dd>
 				<dt><a href="Synchronized.html"><code>@Synchronized</code></a></dt>

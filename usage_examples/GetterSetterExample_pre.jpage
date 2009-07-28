@@ -3,8 +3,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class GetterSetterExample {
-	private @Getter @Setter int age = 10;
-	private @Setter(AccessLevel.PROTECTED) String name;
+	@Getter @Setter private int age = 10;
+	@Setter(AccessLevel.PROTECTED) private String name;
 	
 	@Override public String toString() {
 		return String.format("%s (age: %d)", name, age);

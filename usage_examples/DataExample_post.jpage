@@ -87,7 +87,7 @@ public class DataExample {
 		}
 		
 		@Override public String toString() {
-			return "Exercise(" + name + ", " + value + ")";
+			return "Exercise(name=" + name + ", value=" + value + ")";
 		}
 		
 		@Override public boolean equals(Object o) {

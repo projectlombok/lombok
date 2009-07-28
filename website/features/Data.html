@@ -11,31 +11,34 @@
 	<div class="meat">
 		<div class="header"><a href="../index.html">Project Lombok</a></div>
 		<h1>@Data</h1>
-		<div class="byline">'struct' for java: Automatically generate <code>toString</code>, <code>hashCode</code>, <code>equals</code>, a constructor, and getters and setters
-			from just the fields in your class.</div>
+		<div class="byline">All together now: A shortcut for <code>@ToString</code>, <code>@EqualsAndHashCode</code>,
+			<code>@Getter</code> on all fields, and <code>@Setter</code> on all non-final fields. You even
+			get a free constructor to initialize your final fields!</div>
 		<div class="overview">
 			<h3>Overview</h3>
 			<p>
-			Any class definition may be annotated with <code>@Data</code> to let lombok generate all the boilerplate that is associated with simple POJOs
-			(Plain Old Java Objects) and beans: getters for all fields, setters for all non-final fields, a useful <code>toString</code>, and implementations
-			of <code>hashCode</code> and <code>equals</code> which consider any two objects of this type with the same values for each field as equal. A
-			constructor is also generated containing 1 parameter for each final field, in the order the fields are defined. This constructor simply assigns
-			each parameter to the appropriate field.
-			</p>
-			<p>
-			To override the access level of any getter/setter for any field, annotate the field with a <code>@Setter</code> or <code>@Getter</code> annotation
-			with the appropriate <code>AccessLevel</code> value. See the example below. For more information on how the getters/setters are generated,
-			see the documentation for <a href="GetterSetter.html"><code>@Getter</code> and <code>@Setter</code></a>.
+			<code>@Data</code> is a convenient shortcut annotation that bundles the features of <a href="ToString.html"><code>@ToString</code></a>,
+			<a href="EqualsAndHashCode.html">@EqualsAndHashCode</code></a> and <a href="GetterSetter.html"><code>@Getter</code> / <code>@Setter</code></a>
+			together: In other words, <code>@Data</code> generates <em>all</em> the boilerplate that is normally associated with simple POJOs
+			(Plain Old Java Objects) and beans: getters for all fields, setters for all non-final fields, and appropriate <code>toString</code>, <code>equals</code>
+			and <code>hashCode</code> implementations that involve the fields of the class. In addition, <code>@Data</code> generates a constructor that
+			initialized all final fields.
+			</p><p>
+			<code>@Data</code> is like having implicit <code>@ToString</code> and <code>@EqualsAndHashCode</code> annotations on the class.
+			However, the parameters of <code>@ToString</code> and <code>@EqualsAndHashCode</code> (such as <code>callSuper</code>, <code>includeFieldNames</code> and
+			<code>exclude</code>) cannot be set with <code>@Data</code>. If you need to set non-default values for any of these parameters, just add those annotations
+			explicitly; <code>@Data</code> is smart enough to defer to those annotations.
+			</p><p>
+			All generated getters and setters will be <code>public</code>. To override the access level, annotate the field with an explicit <code>@Setter</code> and/or
+			<code>@Getter</code> annotation.
 			</p><p>
 			All fields marked as <code>transient</code> will not be considered for <code>hashCode</code> and <code>equals</code>. All static fields will be
 			skipped entirely (not considered for any of the generated methods, and no setter/getter will be made for them).
-			The generated getter/setter method will be <code>public</code> unless you explicitly specify an <code>AccessLevel</code>, as shown in the example below.
-			Legal access levels are <code>PUBLIC</code>, <code>PROTECTED</code>, <code>PACKAGE</code>, and <code>PRIVATE</code>.
 			</p><p>
-			If any method that would normally be generated exists <em>in name</em> that method will not be generated, and no warning or error is emitted. For example,
-			if you already have a method with signature <code>void hashCode(int a, int b, int c)</code>, no <code>int hashCode()</code> method will be generated,
-			even though technically <code>int hashCode()</code> is an entirely different method. The same rule applies to the constructor, <code>toString</code>,
-			<code>hashCode</code>, and all getters and setters.
+			If the class already contains a method with the same name as any method that would normally be generated, that method is not generated, and no warning or
+			error is emitted. For example, if you already have a method with signature <code>void hashCode(int a, int b, int c)</code>, no <code>int hashCode()</code>
+			method will be generated, even though technically <code>int hashCode()</code> is an entirely different method. The same rule applies to the constructor,
+			<code>toString</code>, <code>equals</code>, and all getters and setters.
 			</p><p>
 			<code>@Data</code> can handle generics parameters for fields just fine. In order to reduce the boilerplate when constructing objects for classes with
 			generics, you can use the <code>staticConstructor</code> parameter to generate a private constructor, as well as a static method that returns a new
@@ -61,9 +64,6 @@
 				Arrays are 'deep' compared/printed/hashCoded, which means that arrays that contain themselves will result in <code>StackOverflowError</code>s. However,
 				this behaviour is no different from e.g. <code>ArrayList</code>.
 				</p><p>
-				You may safely presume that the hashCode implementation used will not change between versions of lombok, however this guarantee is not set in stone;
-				if there's a significant performance improvement to be gained from using an alternate hash algorithm, that will be substituted in a future version.
-				</p><p>
 				For a general idea of how lombok generated the <code>equals</code>, <code>hashCode</code>, and <code>toString</code> methods, check the example after.
 				</p><p>
 				For the purposes of equality, 2 <code>NaN</code> (not a number) values for floats and doubles are considered equal, eventhough 'NaN == NaN' would
@@ -73,7 +73,7 @@
 			</div>
 		</div>
 		<div class="footer">
-			<a href="index.html">Back to features</a> | <a href="GetterSetter.html">Previous feature (@Getter / @Setter)</a> | <a href="Cleanup.html">Next feature (@Cleanup)</a><br />
+			<a href="index.html">Back to features</a> | <a href="EqualsAndHashCode.html">Previous feature (@EqualsAndHashCode)</a> | <a href="Cleanup.html">Next feature (@Cleanup)</a><br />
 			<a href="../credits.html" class="creditsLink">credits</a> | <span class="copyright">Copyright &copy; 2009 Reinier Zwitserloot and Roel Spilker, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT licence</a>.</span>
 		</div>
 		<div style="clear: both;"></div>
