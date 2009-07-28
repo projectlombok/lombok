@@ -161,11 +161,23 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 	private MethodDeclaration createToString(Node type, Collection<Node> fields, boolean includeFieldNames, boolean callSuper, ASTNode pos) {
 		char[] rawTypeName = ((TypeDeclaration)type.get()).name;
 		String typeName = rawTypeName == null ? "" : new String(rawTypeName);
-		char[] prefix = (typeName + "(").toCharArray();
 		char[] suffix = ")".toCharArray();
-		char[] infix = ", ".toCharArray();
+		String infixS = ", ";
+		char[] infix = infixS.toCharArray();
 		long p = (long)pos.sourceStart << 32 | pos.sourceEnd;
 		final int PLUS = OperatorIds.PLUS;
+		
+		char[] prefix;
+		
+		if ( callSuper ) {
+			prefix = (typeName + "(super=").toCharArray();
+		} else if ( fields.isEmpty() ) {
+			prefix = (typeName + "()").toCharArray();
+		} else if ( includeFieldNames ) {
+			prefix = (typeName + "(" + new String(((FieldDeclaration)fields.iterator().next().get()).name) + "=").toCharArray();
+		} else {
+			prefix = (typeName + "(").toCharArray();
+		}
 		
 		boolean first = true;
 		Expression current = new StringLiteral(prefix, 0, 0, 0);
@@ -173,19 +185,13 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 			MessageSend callToSuper = new MessageSend();
 			callToSuper.receiver = new SuperReference(0, 0);
 			callToSuper.selector = "toString".toCharArray();
-			current = new BinaryExpression(current, new StringLiteral("super=[".toCharArray(), 0, 0, 0), PLUS);
 			current = new BinaryExpression(current, callToSuper, PLUS);
-			current = new BinaryExpression(current, new StringLiteral(new char[] { ']' }, 0, 0, 0), PLUS);
 			first = false;
 		}
 		
 		for ( Node field : fields ) {
 			FieldDeclaration f = (FieldDeclaration)field.get();
 			if ( f.name == null || f.type == null ) continue;
-			if ( !first ) {
-				current = new BinaryExpression(current, new StringLiteral(infix, 0, 0, 0), PLUS);
-			}
-			else first = false;
 			
 			Expression ex;
 			if ( f.type.dimensions() > 0 ) {
@@ -200,13 +206,21 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 				ex = arrayToString;
 			} else ex = new SingleNameReference(f.name, p);
 			
+			if ( first ) {
+				current = new BinaryExpression(current, ex, PLUS);
+				first = false;
+				continue;
+			}
+			
 			if ( includeFieldNames ) {
-				char[] namePlusEqualsSign = (new String(f.name) + "=").toCharArray();
+				char[] namePlusEqualsSign = (infixS + new String(f.name) + "=").toCharArray();
 				current = new BinaryExpression(current, new StringLiteral(namePlusEqualsSign, 0, 0, 0), PLUS);
+			} else {
+				current = new BinaryExpression(current, new StringLiteral(infix, 0, 0, 0), PLUS);
 			}
 			current = new BinaryExpression(current, ex, PLUS);
 		}
-		current = new BinaryExpression(current, new StringLiteral(suffix, 0, 0, 0), PLUS);
+		if ( !first ) current = new BinaryExpression(current, new StringLiteral(suffix, 0, 0, 0), PLUS);
 		
 		ReturnStatement returnStatement = new ReturnStatement(current, (int)(p >> 32), (int)p);
 		

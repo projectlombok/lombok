@@ -152,38 +152,61 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
 		JCExpression returnType = chainDots(maker, typeNode, "java", "lang", "String");
 		
-		JCExpression current = maker.Literal(((JCClassDecl) typeNode.get()).name.toString() + "(");
 		boolean first = true;
 		
+		String typeName = ((JCClassDecl) typeNode.get()).name.toString();
+		String infix = ", ";
+		String suffix = ")";
+		String prefix;
 		if ( callSuper ) {
-			current = maker.Binary(JCTree.PLUS, current, maker.Literal("super=["));
+			prefix = typeName + "(super=";
+		} else if ( fields.isEmpty() ) {
+			prefix = typeName + "()";
+		} else if ( includeFieldNames ) {
+			prefix = typeName + "(" + ((JCVariableDecl)fields.iterator().next().get()).name.toString() + "=";
+		} else {
+			prefix = typeName + "(";
+		}
+		
+		JCExpression current = maker.Literal(prefix);
+		
+		if ( callSuper ) {
 			JCMethodInvocation callToSuper = maker.Apply(List.<JCExpression>nil(),
 					maker.Select(maker.Ident(typeNode.toName("super")), typeNode.toName("toString")),
 					List.<JCExpression>nil());
 			current = maker.Binary(JCTree.PLUS, current, callToSuper);
-			current = maker.Binary(JCTree.PLUS, current, maker.Literal("]"));
 			first = false;
 		}
 		
 		for ( Node fieldNode : fields ) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
-			if ( !first ) current = maker.Binary(JCTree.PLUS, current, maker.Literal(", "));
-			first = false;
-			if ( includeFieldNames ) {
-				current = maker.Binary(JCTree.PLUS, current, maker.Literal(fieldNode.getName() + "="));
-			}
+			JCExpression expr;
+			
 			if ( field.vartype instanceof JCArrayTypeTree ) {
 				boolean multiDim = ((JCArrayTypeTree)field.vartype).elemtype instanceof JCArrayTypeTree;
 				boolean primitiveArray = ((JCArrayTypeTree)field.vartype).elemtype instanceof JCPrimitiveTypeTree;
 				boolean useDeepTS = multiDim || !primitiveArray;
 				
 				JCExpression hcMethod = chainDots(maker, typeNode, "java", "util", "Arrays", useDeepTS ? "deepToString" : "toString");
-				current = maker.Binary(JCTree.PLUS, current, maker.Apply(
-						List.<JCExpression>nil(), hcMethod, List.<JCExpression>of(maker.Ident(field.name))));
-			} else current = maker.Binary(JCTree.PLUS, current, maker.Ident(field.name));
+				expr = maker.Apply(List.<JCExpression>nil(), hcMethod, List.<JCExpression>of(maker.Ident(field.name)));
+			} else expr = maker.Ident(field.name);
+			
+			if ( first ) {
+				current = maker.Binary(JCTree.PLUS, current, expr);
+				first = false;
+				continue;
+			}
+			
+			if ( includeFieldNames ) {
+				current = maker.Binary(JCTree.PLUS, current, maker.Literal(infix + fieldNode.getName() + "="));
+			} else {
+				current = maker.Binary(JCTree.PLUS, current, maker.Literal(infix));
+			}
+			
+			current = maker.Binary(JCTree.PLUS, current, expr);
 		}
 		
-		current = maker.Binary(JCTree.PLUS, current, maker.Literal(")"));
+		if ( !first ) current = maker.Binary(JCTree.PLUS, current, maker.Literal(suffix));
 		
 		JCStatement returnStatement = maker.Return(current);
 		
