@@ -64,6 +64,7 @@ public @interface EqualsAndHashCode {
 	/**
 	 * Call on the superclass's implementations of <code>equals</code> and <code>hashCode</code> before calculating
 	 * for the fields in this class.
+	 * <strong>default: false</strong>
 	 */
 	boolean callSuper() default false;
 }

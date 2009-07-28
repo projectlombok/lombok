@@ -36,7 +36,7 @@ import java.lang.annotation.Target;
  * All fields that are non-static are used in the toString generation. You can exclude fields by specifying them
  * in the <code>exclude</code> parameter.
  * <p>
- * Array fields are handled by way of {@link java.util.Arrays#deepToString(Object[], Object[])} where necessary.
+ * Array fields are handled by way of {@link java.util.Arrays#deepToString(Object[])} where necessary.
  * The downside is that arrays with circular references (arrays that contain themselves,
  * possibly indirectly) results in calls to <code>toString</code> throwing a
  * {@link java.lang.StackOverflowError}. However, the implementations for java's own {@link java.util.ArrayList} suffer
@@ -51,7 +51,20 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface ToString {
+	/**
+	 * Include the name of each field when printing it.
+	 * <strong>default: false</strong>
+	 */
 	boolean includeFieldNames() default false;
-	boolean callSuper() default false;
+	
+	/**
+	 * Any fields listed here will not be printed in the generated <code>toString</code> implementation.
+	 */
 	String[] exclude() default {};
+	
+	/**
+	 * Include the result of the superclass's implementation of <code>toString</code> in the output.
+	 * <strong>default: false</strong>
+	 */
+	boolean callSuper() default false;
 }
