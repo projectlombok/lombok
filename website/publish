@@ -5,8 +5,8 @@ if [ ! -e src/lombok/core/Version.java ]; then
 	exit
 fi
 
-if [ ! -e dist/website.tar ]; then
-	echo There is no dist/website.tar file! Run:
+if [ ! -e dist/website.tar.bz2 ]; then
+	echo There is no dist/website.tar.bz2 file! Run:
 	echo ant website
 	echo then restart this script
 	exit
@@ -26,7 +26,7 @@ echo first before running this script
 fi
 git checkout gh-pages || exit
 rm -r * || exit
-tar xf ../../../dist/website.tar || exit
+tar xfj ../../../dist/website.tar.bz2 || exit
 git add . || exit
 git commit -a -m website || exit
 git push origin gh-pages || exit

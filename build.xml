@@ -116,11 +116,11 @@
 			<param name="transformationName" value="SneakyThrows" />
 		</antcall>
 		<mkdir dir="dist" />
-		<tar destfile="dist/website.tar">
+		<tar destfile="dist/website.tar.bz2" compression="bzip2">
 			<tarfileset dir="build/website" />
 			<tarfileset dir="doc/api" prefix="api" />
 		</tar>
-		<echo>Now upload dist/website.tar to the webserver.</echo>
+		<echo>Now upload dist/website.tar.bz2 to the webserver.</echo>
 		<echo>If you want to host projectlombok.org on github, run the website/publish script, but this is not where the site is currently hosted.</echo>
 	</target>
 	
