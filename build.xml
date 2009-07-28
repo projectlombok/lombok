@@ -59,8 +59,8 @@
 		<delete dir="build/website" quiet="true" />
 	</target>
 	
-	<target name="website" description="Prepares the website for distribution" depends="-website-main, -website-videos" />
-	<target name="website-novideo" description="Prepares the website for distribution, but does not add the videos to the zip." depends="-website-main" />
+	<target name="website" description="Prepares the website for distribution" depends="-website-main, -website-videos, -website-dist" />
+	<target name="website-novideo" description="Prepares the website for distribution, but does not add the videos to the zip." depends="-website-main, -website-dist" />
 	
 	<target name="-website-videos" depends="-website-clean">
 		<mkdir dir="build/website/videos" />
@@ -116,6 +116,9 @@
 			<param name="transformationName" value="SneakyThrows" />
 		</antcall>
 		<mkdir dir="dist" />
+	</target>
+	
+	<target name="-website-dist">
 		<tar destfile="dist/website.tar.bz2" compression="bzip2">
 			<tarfileset dir="build/website" />
 			<tarfileset dir="doc/api" prefix="api" />
