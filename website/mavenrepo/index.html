@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html><head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="logi/reset.css" />
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+	<meta name="description" content="Spice up your java" />
+	<title>Project Lombok</title>
+	<style type="text/css">
+		code {
+			font-size: 12px;
+			font-family: monospaced;
+		}
+		
+		.snippet {
+			white-space: pre;
+			border: 1px dashed #888;
+			margin: 8px 8px 8px 0px;
+			padding: 8px;
+			font-family: "Courier New", Courier;
+		}
+		
+		.meat {
+			margin: 16px auto 0 auto;
+			width: 800px;
+		}
+		
+		.backLink {
+			padding-top: 100px;
+			width: 100%;
+			text-align: right;
+		}
+		
+		h1 {
+			padding-bottom: 0;
+			margin-bottom: 4px;
+		}
+	</style>
+</head><body>
+	<div class="meat">
+		<h1>Use Lombok via Maven</h1>
+		<div>
+			You can use lombok with maven by adding the following to your <strong>pom.xml</strong>:
+			<div class="snippet">&lt;dependencies&gt;
+	&lt;dependency&gt;
+		&lt;groupId&gt;org.projectlombok&lt;/groupId&gt;
+		&lt;artifactId&gt;lombok&lt;/artifactId&gt;
+		&lt;version&gt;@VERSION@&lt;/version&gt;
+	&lt;/dependency&gt;
+&lt;/dependencies&gt;</div>
+			For now you also need to add the following repository, though we've put in a request at apache to add lombok to
+			the central maven repository, so you may want to try it without this extra block first and see if it works. If not, also add:
+			<div class="snippet">&lt;repositories&gt;
+	&lt;repository&gt;
+		&lt;id&gt;projectlombok.org&lt;/id&gt;
+		&lt;url&gt;http://projectlombok.org/mavenrepo&lt;/url&gt;
+	&lt;/repository&gt;
+&lt;/repositories&gt;</div>
+		That's all there is to it!
+		</div>
+		<div class="backLink">
+			<a href="index.html">back to the project homepage</a>
+		</div>
+	</div>
+	<script type="text/javascript">
+		var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+		document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+	</script>
+	<script type="text/javascript">
+		try {
+			var pageTracker = _gat._getTracker("UA-9884254-1");
+			pageTracker._trackPageview();
+		} catch(err) {}
+	</script>
+</body></html>
