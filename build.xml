@@ -87,7 +87,7 @@
 			<fileset dir="website">
 				<include name="index.html" />
 				<include name="download.html" />
-				<incldue name="mavenrepo/index.html" />
+				<include name="mavenrepo/index.html" />
 			</fileset>
 			<filterchain>
 				<replacetokens>
