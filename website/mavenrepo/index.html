@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html><head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<link rel="stylesheet" type="text/css" href="logi/reset.css" />
+	<link rel="stylesheet" type="text/css" href="../logi/reset.css" />
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 	<meta name="description" content="Spice up your java" />
 	<title>Project Lombok</title>
@@ -32,7 +32,13 @@
 		
 		h1 {
 			padding-bottom: 0;
-			margin-bottom: 4px;
+			margin-bottom: 8px;
+		}
+		
+		#downloadLink {
+			display: block;
+			margin-top: 32px;
+			font-size: 14px;
 		}
 	</style>
 </head><body>
@@ -46,19 +52,19 @@
 		&lt;artifactId&gt;lombok&lt;/artifactId&gt;
 		&lt;version&gt;@VERSION@&lt;/version&gt;
 	&lt;/dependency&gt;
-&lt;/dependencies&gt;</div>
-			For now you also need to add the following repository, though we've put in a request at apache to add lombok to
-			the central maven repository, so you may want to try it without this extra block first and see if it works. If not, also add:
-			<div class="snippet">&lt;repositories&gt;
+&lt;/dependencies&gt;
+&lt;repositories&gt;
 	&lt;repository&gt;
 		&lt;id&gt;projectlombok.org&lt;/id&gt;
 		&lt;url&gt;http://projectlombok.org/mavenrepo&lt;/url&gt;
 	&lt;/repository&gt;
 &lt;/repositories&gt;</div>
-		That's all there is to it!
+		That's all there is to it!<br />
+		<em>note:</em> You'll still need to download lombok, or doubleclick on the lombok.jar file downloaded by maven, to install lombok into your eclipse installation.<br />
+		<a id="downloadLink" href="http://projectlombok.googlecode.com/files/lombok.jar">Download lombok.jar</a>
 		</div>
 		<div class="backLink">
-			<a href="index.html">back to the project homepage</a>
+			<a href="../index.html">back to the project homepage</a>
 		</div>
 	</div>
 	<script type="text/javascript">

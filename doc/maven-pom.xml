@@ -1,0 +1,31 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.projectlombok</groupId>
+	<artifactId>lombok</artifactId>
+	<packaging>jar</packaging>
+	<version>@VERSION@</version>
+	<name>Project Lombok</name>
+	<url>http://projectlombok.org</url>
+	<description>Spice up your java: Automatic Resource Management, automatic generation of getters, setters, equals, hashCode and toString, and more!</description>
+	<dependencies></dependencies>
+	<licenses>
+		<license>
+			<name>The MIT License</name>
+			<url>http://www.opensource.org/licenses/mit-license.php</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<scm>
+		<connection>scm:git:git://github.com/rzwitserloot/lombok.git</connection>
+		<url>scm:git:git://github.com/rzwitserloot/lombok.git</url>
+	</scm>
+	<!--
+		For auto-syncing to the main maven repository:
+		"org.projectlombok","mavensync@projectlombok.org:/home/mavensync/public_html/m2repo","rsync_ssh","Reinier Zwitserloot", "reinier@projectlombok.org",,
+		
+		For deploying to the remote repo on projectlombok.org:
+		mvn deploy:deploy-file -DrepositoryId=projectlombok.org url=scp://reinier@projectlombok.org/home/mavensync/public_html/m2repo -Dfile=dist/lombok.jar -DpomFile=doc/maven-pom.xml
+	-->
+</project>
+

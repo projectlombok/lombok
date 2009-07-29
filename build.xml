@@ -87,6 +87,7 @@
 			<fileset dir="website">
 				<include name="index.html" />
 				<include name="download.html" />
+				<incldue name="mavenrepo/index.html" />
 			</fileset>
 			<filterchain>
 				<replacetokens>
@@ -351,5 +352,71 @@ public class CompileChangelog {
 			<arg value="${CHANGELOG_FILE}" />
 			<arg value="${CHANGELOG_HTML}" />
 		</java>
+	</target>
+	
+	<target name="maven" depends="version, dist">
+		<loadresource property="mvn.oldversions">
+			<url url="http://projectlombok.org/mavenrepo/org/projectlombok/lombok/maven-metadata.xml" />
+			<filterchain>
+				<linecontains><contains value="/version>" /></linecontains>
+				<headfilter lines="-1" skip="1" />
+			</filterchain>
+		</loadresource>
+		<mkdir dir="build" />
+		<echo file="build/version.tagged.tmp">&lt;version&gt;${lombok.version}&lt;/version&gt;</echo>
+		<loadfile srcFile="build/version.tagged.tmp" property="lombok.version.tagged" />
+		<delete file="build/version.tagged.tmp" />
+		<fail message="You already created a maven target for this version.  You'll have to update the version to something new!">
+			<condition>
+				<contains string="${mvn.oldversions}" substring="${lombok.version.tagged}" />
+			</condition>
+		</fail>
+		
+		<delete dir="build/maven" quiet="true" />
+		<property name="mvn.dir" value="build/maven/org/projectlombok/lombok" />
+		<property name="mvn.bin" value="${mvn.dir}/${lombok.version}" />
+		<property name="mvn.pom" value="${mvn.bin}/lombok-${lombok.version}.pom" />
+		<mkdir dir="${mvn.bin}" />
+		<tstamp>
+			<format property="now.millis" pattern="yyyyMMddHHmmss" timezone="UTC" />
+		</tstamp>
+		<copy todir="${mvn.bin}" file="dist/lombok-${lombok.version}.jar" />
+		<checksum property="mvn.bin.md5" file="${mvn.bin}/lombok-${lombok.version}.jar" algorithm="MD5" />
+		<checksum property="mvn.bin.sha1" file="${mvn.bin}/lombok-${lombok.version}.jar" algorithm="SHA1" />
+		<echo file="${mvn.bin}/lombok-${lombok.version}.jar.md5">${mvn.bin.md5}</echo>
+		<echo file="${mvn.bin}/lombok-${lombok.version}.jar.sha1">${mvn.bin.sha1}</echo>
+		<copy tofile="${mvn.pom}" file="doc/maven-pom.xml">
+			<filterchain>
+				<replacetokens>
+					<token key="VERSION" value="${lombok.version}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
+		<checksum property="mvn.pom.md5" file="${mvn.pom}" algorithm="MD5" />
+		<checksum property="mvn.pom.sha1" file="${mvn.pom}" algorithm="SHA1" />
+		<echo file="${mvn.pom}.md5">${mvn.pom.md5}</echo>
+		<echo file="${mvn.pom}.sha1">${mvn.pom.sha1}</echo>
+		<echo file="${mvn.dir}/maven-metadata.xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+	<groupId>org.projectlombok</groupId>
+	<artifactId>lombok</artifactId>
+	<version>${lombok.version}</version>
+	<versioning>
+		<versions>
+			<version>${lombok.version}</version>
+${mvn.oldversions}
+		</versions>
+		<lastUpdated>${now.millis}</lastUpdated>
+	</versioning>
+</metadata>
+]]></echo>
+		<checksum property="mvn.manifest.md5" file="${mvn.dir}/maven-metadata.xml" algorithm="MD5" />
+		<checksum property="mvn.manifest.sha1" file="${mvn.dir}/maven-metadata.xml" algorithm="SHA1" />
+		<echo file="${mvn.dir}/maven-metadata.xml.md5">${mvn.manifest.md5}</echo>
+		<echo file="${mvn.dir}/maven-metadata.xml.sha1">${mvn.manifest.sha1}</echo>
+		<tar destfile="dist/maven.tar.bz2" compression="bzip2">
+			<tarfileset dir="build/maven" />
+		</tar>
+		<echo>Now copy maven.tar.bz2 to the website and unpack it in the mavenrepo directory, overwriting whatever's there.</echo>
 	</target>
 </project>
