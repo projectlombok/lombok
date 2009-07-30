@@ -17,8 +17,8 @@
 		<div id="downloadInfo" class="buttonBar" style="display: none;">
 			<span></span>
 			<div class="downloadActions">
-				<a class="backToBar" href="http://projectlombok.googlecode.com/files/lombok.jar">Okay, download <strong>lombok</strong></a>
-				<a href="#" class="backToBar">No, don't</a>
+				<a class="backToBar" href="http://projectlombok.googlecode.com/files/lombok.jar">Okay, download <strong>lombok</strong></a> | <a href="mavenrepo/index.html">I use maven</a><br />
+				<a href="#" class="backToBar">Cancel</a>
 			</div>
 		</div>
 		<div id="buttonBar" class="buttonBar">
@@ -38,10 +38,15 @@
 				<img src="icon_bugs.png" />
 				<span>Report an issue</span>
 			</a>
-			<a class="download" id="downloadLink" href="download.html">
-				<img src="icon_download.png" />
-				<span>Download!</span>
-			</a>
+			<div class="downloadContainer">
+				<a class="downloadLink" id="downloadLink" href="download.html">
+					<img src="icon_download.png" />
+					<span>Download!</span>
+				</a>
+				<div class="versionInfo">
+					Version: @VERSION@ | <a href="changelog.html">changelog</a>
+				</div>
+			</div>
 		</div>
 		<div class="slideshow">
 			<div class="para">

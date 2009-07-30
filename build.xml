@@ -87,6 +87,7 @@
 			<fileset dir="website">
 				<include name="index.html" />
 				<include name="download.html" />
+				<include name="slideshow.html" />
 				<include name="mavenrepo/index.html" />
 			</fileset>
 			<filterchain>
