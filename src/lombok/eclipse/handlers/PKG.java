@@ -22,6 +22,8 @@
 package lombok.eclipse.handlers;
 
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 import lombok.AccessLevel;
 import lombok.core.AST.Kind;
@@ -215,16 +217,18 @@ class PKG {
 		type.add(method, Kind.METHOD).recursiveSetHandled();
 	}
 	
-	static Annotation findNonNullannotation(FieldDeclaration field) {
+	static Annotation[] findNonNullAnnotations(FieldDeclaration field) {
+		List<Annotation> result = new ArrayList<Annotation>();
 		for (Annotation annotation : field.annotations) {
 			TypeReference typeRef = annotation.type;
 			if ( typeRef != null && typeRef.getTypeName()!= null ) {
 				char[][] typeName = typeRef.getTypeName();
-				if (new String(typeName[typeName.length - 1]).equals("NonNull")) {
-					return annotation;
+				String suspect = new String(typeName[typeName.length - 1]);
+				if (suspect.equalsIgnoreCase("NonNull") || suspect.equalsIgnoreCase("NotNull")) {
+					result.add(annotation);
 				}
 			}
 		}	
-		return null;
+		return result.toArray(new Annotation[0]);
 	}
 }

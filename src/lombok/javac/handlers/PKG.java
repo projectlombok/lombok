@@ -254,16 +254,19 @@ class PKG {
 		return e;
 	}
 	
-	static JCAnnotation findNonNullAnnotation(Node fieldNode) {
+	static List<JCAnnotation> findNonNullAnnotations(Node fieldNode) {
+		List<JCAnnotation> result = List.nil();
 		for ( Node child : fieldNode.down() ) {
 			if ( child.getKind() == Kind.ANNOTATION ) {
 				JCAnnotation annotation = (JCAnnotation) child.get();
 				String name = annotation.annotationType.toString();
-				if (name.equals("NonNull") || name.endsWith(".NonNull")) {
-					return annotation;
+				int idx = name.lastIndexOf(".");
+				String suspect = idx == -1 ? name : name.substring(idx + 1);
+				if (suspect.equalsIgnoreCase("NonNull") || suspect.equalsIgnoreCase("NotNull")) {
+					result = result.append(annotation);
 				}
 			}
 		}	
-		return null;
+		return result;
 	}	
 }

@@ -22,12 +22,13 @@
 package lombok.eclipse.handlers;
 
 import static lombok.eclipse.handlers.PKG.*;
+
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
-import lombok.eclipse.Eclipse;
+import static lombok.eclipse.Eclipse.*;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
 
@@ -77,7 +78,7 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 	public void generateSetterForField(Node fieldNode, ASTNode pos) {
 		for ( Node child : fieldNode.down() ) {
 			if ( child.getKind() == Kind.ANNOTATION ) {
-				if ( Eclipse.annotationTypeMatches(Setter.class, child) ) {
+				if ( annotationTypeMatches(Setter.class, child) ) {
 					//The annotation will make it happen, so we can skip it.
 					return;
 				}
@@ -134,27 +135,29 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		method.modifiers = modifier;
 		method.returnType = TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		method.annotations = null;
-		Argument param = new Argument(field.name, pos, Eclipse.copyType(field.type), 0);
+		Argument param = new Argument(field.name, pos, copyType(field.type), 0);
 		method.arguments = new Argument[] { param };
 		method.selector = name.toCharArray();
 		method.binding = null;
 		method.thrownExceptions = null;
 		method.typeParameters = null;
 		method.scope = parent.scope == null ? null : new MethodScope(parent.scope, method, false);
-		method.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
+		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		FieldReference thisX = new FieldReference(field.name, pos);
 		thisX.receiver = new ThisReference(ast.sourceStart, ast.sourceEnd);
 		Assignment assignment = new Assignment(thisX, new SingleNameReference(field.name, pos), (int)pos);
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = ast.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = ast.sourceEnd;
 		
-		Annotation nonNull = findNonNullannotation(field);
-		if (nonNull == null) {
+		Annotation[] nonNulls = findNonNullAnnotations(field);
+		if (nonNulls.length == 0) {
 			method.statements = new Statement[] { assignment };
 		}
 		else {
+			param.annotations = copyAnnotations(nonNulls);
+			
 			AllocationExpression exception = new AllocationExpression();
-			exception.type = new QualifiedTypeReference(Eclipse.fromQualifiedName("java.lang.NullPointerException"), new long[]{0, 0, 0});
+			exception.type = new QualifiedTypeReference(fromQualifiedName("java.lang.NullPointerException"), new long[]{0, 0, 0});
 			exception.arguments = new Expression[] { new StringLiteral(field.name, 0, field.name.length - 1, 0)};
 			ThrowStatement throwStatement = new ThrowStatement(exception, 0, 0);
 			

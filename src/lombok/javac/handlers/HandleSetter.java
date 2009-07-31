@@ -121,10 +121,9 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		JCFieldAccess thisX = treeMaker.Select(treeMaker.Ident(field.toName("this")), fieldDecl.name);
 		JCAssign assign = treeMaker.Assign(thisX, treeMaker.Ident(fieldDecl.name));
 		
-		
 		List<JCStatement> statements;
-		JCAnnotation nonNull = findNonNullAnnotation(field);
-		if (nonNull == null) {
+		List<JCAnnotation> nonNulls = findNonNullAnnotations(field);
+		if (nonNulls.isEmpty()) {
 			statements = List.<JCStatement>of(treeMaker.Exec(assign));
 		}
 		else {
@@ -137,7 +136,8 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		
 		JCBlock methodBody = treeMaker.Block(0, statements);
 		Name methodName = field.toName(toSetterName(fieldDecl));
-		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(0), fieldDecl.name, fieldDecl.vartype, null);
+		
+		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(0, nonNulls), fieldDecl.name, fieldDecl.vartype, null);
 		JCExpression methodType = treeMaker.Type(field.getSymbolTable().voidType);
 		
 		List<JCTypeParameter> methodGenericParams = List.nil();

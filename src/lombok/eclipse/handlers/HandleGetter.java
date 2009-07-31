@@ -27,7 +27,7 @@ import lombok.Getter;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
-import lombok.eclipse.Eclipse;
+import static lombok.eclipse.Eclipse.*;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
 
@@ -64,7 +64,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 	public void generateGetterForField(Node fieldNode, ASTNode pos) {
 		for ( Node child : fieldNode.down() ) {
 			if ( child.getKind() == Kind.ANNOTATION ) {
-				if ( Eclipse.annotationTypeMatches(Getter.class, child) ) {
+				if ( annotationTypeMatches(Getter.class, child) ) {
 					//The annotation will make it happen, so we can skip it.
 					return;
 				}
@@ -87,7 +87,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		}
 		
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
-		TypeReference fieldType = Eclipse.copyType(field.type);
+		TypeReference fieldType = copyType(field.type);
 		String fieldName = new String(field.name);
 		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
 		String getterName = TransformationsUtil.toGetterName(fieldName, isBoolean);
@@ -113,6 +113,10 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		}
 		
 		MethodDeclaration method = generateGetter((TypeDeclaration) fieldNode.up().get(), field, getterName, modifier, pos);
+		Annotation[] nonNulls = findNonNullAnnotations(field);
+		if (nonNulls.length != 0) {
+			method.annotations = copyAnnotations(nonNulls);
+		}
 		
 		injectMethod(fieldNode.up(), method);
 		
@@ -123,14 +127,14 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 			int modifier, ASTNode pos) {
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
 		method.modifiers = modifier;
-		method.returnType = Eclipse.copyType(field.type);
+		method.returnType = copyType(field.type);
 		method.annotations = null;
 		method.arguments = null;
 		method.selector = name.toCharArray();
 		method.binding = null;
 		method.thrownExceptions = null;
 		method.typeParameters = null;
-		method.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
+		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		Expression fieldExpression = new SingleNameReference(field.name, (field.declarationSourceStart << 32) | field.declarationSourceEnd);
 		Statement returnStatement = new ReturnStatement(fieldExpression, field.sourceStart, field.sourceEnd);
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = pos.sourceStart;

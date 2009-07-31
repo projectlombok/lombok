@@ -49,11 +49,14 @@ import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.Literal;
+import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
+import org.eclipse.jdt.internal.compiler.ast.NormalAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
@@ -249,6 +252,34 @@ public class Eclipse {
 		}
 		
 		return ref;
+	}
+	
+	public static Annotation[] copyAnnotations(Annotation[] annotations) {
+		if (annotations == null) return null;
+		Annotation[] outs = new Annotation[annotations.length];
+		int idx = 0;
+		for ( Annotation annotation : annotations ) {
+			outs[idx++] = copyAnnotation(annotation);
+		}
+		return outs;
+	}
+	
+	public static Annotation copyAnnotation(Annotation annotation) {
+		if (annotation instanceof MarkerAnnotation) {
+			return new MarkerAnnotation(copyType(annotation.type), annotation.sourceStart);
+		}
+		
+		if (annotation instanceof SingleMemberAnnotation) {
+			SingleMemberAnnotation result = new SingleMemberAnnotation(copyType(annotation.type), annotation.sourceStart);
+			result.memberValue = ((SingleMemberAnnotation)annotation).memberValue;
+		}
+		
+		if (annotation instanceof NormalAnnotation) {
+			NormalAnnotation result = new NormalAnnotation(copyType(annotation.type), annotation.sourceStart);
+			result.memberValuePairs = ((NormalAnnotation)annotation).memberValuePairs;
+		}
+		
+		return annotation;
 	}
 	
 	/**
