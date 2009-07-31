@@ -386,6 +386,11 @@ public class CompileChangelog {
 		<checksum property="mvn.bin.sha1" file="${mvn.bin}/lombok-${lombok.version}.jar" algorithm="SHA1" />
 		<echo file="${mvn.bin}/lombok-${lombok.version}.jar.md5">${mvn.bin.md5}</echo>
 		<echo file="${mvn.bin}/lombok-${lombok.version}.jar.sha1">${mvn.bin.sha1}</echo>
+		<jar destfile="${mvn.bin}/lombok-${lombok.version}-sources.jar" basedir="src" excludes="**/.DS_Store" />
+		<checksum property="mvn.src.md5" file="${mvn.bin}/lombok-${lombok.version}-sources.jar" algorithm="MD5" />
+		<checksum property="mvn.src.sha1" file="${mvn.bin}/lombok-${lombok.version}-sources.jar" algorithm="SHA1" />
+		<echo file="${mvn.bin}/lombok-${lombok.version}-sources.jar.md5">${mvn.src.md5}</echo>
+		<echo file="${mvn.bin}/lombok-${lombok.version}-sources.jar.sha1">${mvn.src.sha1}</echo>
 		<copy tofile="${mvn.pom}" file="doc/maven-pom.xml">
 			<filterchain>
 				<replacetokens>
