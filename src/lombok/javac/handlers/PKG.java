@@ -23,19 +23,21 @@ package lombok.javac.handlers;
 
 import java.lang.reflect.Modifier;
 
+import lombok.AccessLevel;
+import lombok.core.TransformationsUtil;
+import lombok.core.AST.Kind;
+import lombok.javac.JavacAST;
+import lombok.javac.JavacAST.Node;
+
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
-
-import lombok.AccessLevel;
-import lombok.core.TransformationsUtil;
-import lombok.core.AST.Kind;
-import lombok.javac.JavacAST;
 
 /**
  * Container for static utility methods relevant to this package.
@@ -251,4 +253,17 @@ class PKG {
 		
 		return e;
 	}
+	
+	static JCAnnotation findNonNullAnnotation(Node fieldNode) {
+		for ( Node child : fieldNode.down() ) {
+			if ( child.getKind() == Kind.ANNOTATION ) {
+				JCAnnotation annotation = (JCAnnotation) child.get();
+				String name = annotation.annotationType.toString();
+				if (name.equals("NonNull") || name.endsWith(".NonNull")) {
+					return annotation;
+				}
+			}
+		}	
+		return null;
+	}	
 }

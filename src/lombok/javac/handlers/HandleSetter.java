@@ -34,6 +34,8 @@ import lombok.javac.JavacAST.Node;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.TypeTags;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
@@ -119,7 +121,21 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		JCFieldAccess thisX = treeMaker.Select(treeMaker.Ident(field.toName("this")), fieldDecl.name);
 		JCAssign assign = treeMaker.Assign(thisX, treeMaker.Ident(fieldDecl.name));
 		
-		JCBlock methodBody = treeMaker.Block(0, List.<JCStatement>of(treeMaker.Exec(assign)));
+		
+		List<JCStatement> statements;
+		JCAnnotation nonNull = findNonNullAnnotation(field);
+		if (nonNull == null) {
+			statements = List.<JCStatement>of(treeMaker.Exec(assign));
+		}
+		else {
+			JCExpression npe = chainDots(treeMaker, field, "java", "lang", "NullPointerException");
+			JCTree exception = treeMaker.NewClass(null, List.<JCExpression>nil(), npe, List.<JCExpression>of(treeMaker.Literal(fieldDecl.name.toString())), null);
+			JCStatement throwStatement = treeMaker.Throw(exception);
+			JCStatement nullCheck = treeMaker.If(treeMaker.Binary(JCTree.EQ, treeMaker.Ident(fieldDecl.name), treeMaker.Literal(TypeTags.BOT, null)), throwStatement, null);
+			statements = List.<JCStatement>of(nullCheck, treeMaker.Exec(assign));
+		}
+		
+		JCBlock methodBody = treeMaker.Block(0, statements);
 		Name methodName = field.toName(toSetterName(fieldDecl));
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(0), fieldDecl.name, fieldDecl.vartype, null);
 		JCExpression methodType = treeMaker.Type(field.getSymbolTable().voidType);

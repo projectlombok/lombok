@@ -29,9 +29,11 @@ import lombok.eclipse.EclipseAST;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 
 class PKG {
 	private PKG() {}
@@ -211,5 +213,18 @@ class PKG {
 		}
 		
 		type.add(method, Kind.METHOD).recursiveSetHandled();
+	}
+	
+	static Annotation findNonNullannotation(FieldDeclaration field) {
+		for (Annotation annotation : field.annotations) {
+			TypeReference typeRef = annotation.type;
+			if ( typeRef != null && typeRef.getTypeName()!= null ) {
+				char[][] typeName = typeRef.getTypeName();
+				if (new String(typeName[typeName.length - 1]).equals("NonNull")) {
+					return annotation;
+				}
+			}
+		}	
+		return null;
 	}
 }

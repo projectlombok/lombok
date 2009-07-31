@@ -117,7 +117,7 @@ public class Eclipse {
 	 * For 'speed' reasons, Eclipse works a lot with char arrays. I have my doubts this was a fruitful exercise,
 	 * but we need to deal with it. This turns [[java][lang][String]] into "java.lang.String".
 	 */
-	static String toQualifiedName(char[][] typeName) {
+	public static String toQualifiedName(char[][] typeName) {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
 		for ( char[] c : typeName ) {
@@ -126,6 +126,16 @@ public class Eclipse {
 		}
 		return sb.toString();
 	}
+	
+	public static char[][] fromQualifiedName(String typeName) {
+		String[] split = typeName.split("\\.");
+		char[][] result = new char[split.length][];
+		for (int i = 0; i < split.length; i++) {
+			result[i] = split[i].toCharArray();
+		}
+		return result;
+	}
+	
 	
 	/**
 	 * You can't share TypeParameter objects or bad things happen; for example, one 'T' resolves differently
