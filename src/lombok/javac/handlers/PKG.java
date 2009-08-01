@@ -30,14 +30,17 @@ import lombok.javac.JavacAST;
 import lombok.javac.JavacAST.Node;
 
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Name;
 
 /**
  * Container for static utility methods relevant to this package.
@@ -269,4 +272,12 @@ class PKG {
 		}	
 		return result;
 	}	
+	
+	static JCStatement generateNullCheck(TreeMaker treeMaker, JavacAST.Node variable) {
+		Name fieldName = ((JCVariableDecl) variable.get()).name;
+		JCExpression npe = chainDots(treeMaker, variable, "java", "lang", "NullPointerException");
+		JCTree exception = treeMaker.NewClass(null, List.<JCExpression>nil(), npe, List.<JCExpression>of(treeMaker.Literal(fieldName.toString())), null);
+		JCStatement throwStatement = treeMaker.Throw(exception);
+		return treeMaker.If(treeMaker.Binary(JCTree.EQ, treeMaker.Ident(fieldName), treeMaker.Literal(TypeTags.BOT, null)), throwStatement, null);
+	}
 }

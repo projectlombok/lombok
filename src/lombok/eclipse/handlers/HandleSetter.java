@@ -21,36 +21,33 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.eclipse.handlers.PKG.*;
-
+import static lombok.eclipse.Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
+import static lombok.eclipse.Eclipse.annotationTypeMatches;
+import static lombok.eclipse.Eclipse.copyAnnotations;
+import static lombok.eclipse.Eclipse.copyType;
+import static lombok.eclipse.handlers.PKG.findNonNullAnnotations;
+import static lombok.eclipse.handlers.PKG.generateNullCheck;
+import static lombok.eclipse.handlers.PKG.injectMethod;
+import static lombok.eclipse.handlers.PKG.methodExists;
+import static lombok.eclipse.handlers.PKG.toModifier;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
-import static lombok.eclipse.Eclipse.*;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
-import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
-import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
-import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
-import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
-import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
-import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
-import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
-import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
@@ -155,16 +152,7 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		}
 		else {
 			param.annotations = copyAnnotations(nonNulls);
-			
-			AllocationExpression exception = new AllocationExpression();
-			exception.type = new QualifiedTypeReference(fromQualifiedName("java.lang.NullPointerException"), new long[]{0, 0, 0});
-			exception.arguments = new Expression[] { new StringLiteral(field.name, 0, field.name.length - 1, 0)};
-			ThrowStatement throwStatement = new ThrowStatement(exception, 0, 0);
-			
-			IfStatement nullCheck = new IfStatement(new EqualExpression(new SingleNameReference(field.name, 0),
-					new NullLiteral(0, 0), OperatorIds.EQUAL_EQUAL), throwStatement, 0, 0);
-			
-			method.statements = new Statement[] { nullCheck, assignment };
+			method.statements = new Statement[] { generateNullCheck(field), assignment };
 		}
 		return method;
 	}

@@ -21,6 +21,8 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.eclipse.Eclipse.fromQualifiedName;
+
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,9 +33,21 @@ import lombok.eclipse.EclipseAST;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
+import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.IfStatement;
+import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
+import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
+import org.eclipse.jdt.internal.compiler.ast.Statement;
+import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
+import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 
@@ -230,5 +244,16 @@ class PKG {
 			}
 		}	
 		return result.toArray(new Annotation[0]);
+	}
+	
+
+	static Statement generateNullCheck(AbstractVariableDeclaration variable) {
+		AllocationExpression exception = new AllocationExpression();
+		exception.type = new QualifiedTypeReference(fromQualifiedName("java.lang.NullPointerException"), new long[]{0, 0, 0});
+		exception.arguments = new Expression[] { new StringLiteral(variable.name, 0, variable.name.length - 1, 0)};
+		ThrowStatement throwStatement = new ThrowStatement(exception, 0, 0);
+		
+		return new IfStatement(new EqualExpression(new SingleNameReference(variable.name, 0),
+				new NullLiteral(0, 0), OperatorIds.EQUAL_EQUAL), throwStatement, 0, 0);
 	}
 }
