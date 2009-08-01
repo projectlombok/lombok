@@ -86,7 +86,8 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		
 		checkForBogusExcludes(typeNode, annotation);
 		
-		return generateMethods(typeNode, annotationNode, excludes, ann.callSuper(), true);
+		return generateMethods(typeNode, annotationNode, excludes,
+				ann.callSuper(), annotation.getRawExpression("callSuper") == null, true);
 	}
 	
 	public void generateEqualsAndHashCodeForType(Node typeNode, Node errorNode) {
@@ -103,11 +104,11 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		try {
 			callSuper = ((Boolean)EqualsAndHashCode.class.getMethod("callSuper").getDefaultValue()).booleanValue();
 		} catch ( Exception ignore ) {}
-		generateMethods(typeNode, errorNode, List.<String>nil(), callSuper, false);
+		generateMethods(typeNode, errorNode, List.<String>nil(), callSuper, true, false);
 	}
 	
 	private boolean generateMethods(Node typeNode, Node errorNode, List<String> excludes, 
-			boolean callSuper, boolean whineIfExists) {
+			boolean callSuper, boolean implicit, boolean whineIfExists) {
 		boolean notAClass = true;
 		if ( typeNode.get() instanceof JCClassDecl ) {
 			long flags = ((JCClassDecl)typeNode.get()).mods.flags;
@@ -132,8 +133,8 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 			return true;
 		}
 		
-		if ( !isDirectDescendentOfObject && !callSuper ) {
-			errorNode.addWarning("Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object.");
+		if ( !isDirectDescendentOfObject && !callSuper && implicit ) {
+			errorNode.addWarning("Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.");
 		}
 		
 		List<Node> nodesForEquality = List.nil();

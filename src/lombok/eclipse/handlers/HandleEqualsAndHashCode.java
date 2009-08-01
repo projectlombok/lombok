@@ -126,7 +126,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		try {
 			callSuper = ((Boolean)EqualsAndHashCode.class.getMethod("callSuper").getDefaultValue()).booleanValue();
 		} catch ( Exception ignore ) {}
-		generateMethods(typeNode, errorNode, Collections.<String>emptyList(), callSuper, false);
+		generateMethods(typeNode, errorNode, Collections.<String>emptyList(), callSuper, true, false);
 	}
 	
 	@Override public boolean handle(AnnotationValues<EqualsAndHashCode> annotation, Annotation ast, Node annotationNode) {
@@ -136,11 +136,12 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		
 		checkForBogusExcludes(typeNode, annotation);
 		
-		return generateMethods(typeNode, annotationNode, excludes, ann.callSuper(), true);
+		return generateMethods(typeNode, annotationNode, excludes,
+				ann.callSuper(), annotation.getRawExpression("callSuper") == null, true);
 	}
 	
 	public boolean generateMethods(Node typeNode, Node errorNode, List<String> excludes,
-			boolean callSuper, boolean whineIfExists) {
+			boolean callSuper, boolean implicit, boolean whineIfExists) {
 		TypeDeclaration typeDecl = null;
 		
 		if ( typeNode.get() instanceof TypeDeclaration ) typeDecl = (TypeDeclaration) typeNode.get();
@@ -165,8 +166,8 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 			return true;
 		}
 		
-		if ( !isDirectDescendentOfObject && !callSuper ) {
-			errorNode.addWarning("Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object.");
+		if ( !isDirectDescendentOfObject && !callSuper && implicit ) {
+			errorNode.addWarning("Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.");
 		}
 		
 		List<Node> nodesForEquality = new ArrayList<Node>();
