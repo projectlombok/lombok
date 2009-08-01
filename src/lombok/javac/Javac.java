@@ -94,10 +94,19 @@ public class Javac {
 			final List<DiagnosticPosition> positions = new ArrayList<DiagnosticPosition>();
 			
 			for ( JCExpression arg : arguments ) {
-				JCAssign assign = (JCAssign) arg;
-				String mName = assign.lhs.toString();
+				String mName;
+				JCExpression rhs;
+				
+				if ( arg instanceof JCAssign ) {
+					JCAssign assign = (JCAssign) arg;
+					mName = assign.lhs.toString();
+					rhs = assign.rhs;
+				} else {
+					rhs = arg;
+					mName = "value";
+				}
+				
 				if ( !mName.equals(name) ) continue;
-				JCExpression rhs = assign.rhs;
 				if ( rhs instanceof JCNewArray ) {
 					List<JCExpression> elems = ((JCNewArray)rhs).elems;
 					for  ( JCExpression inner : elems ) {

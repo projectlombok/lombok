@@ -146,6 +146,7 @@ public class HandlerLibrary {
 	/** Generates an error in the Messager that was used to initialize this HandlerLibrary. */
 	public void javacError(String message, Throwable t) {
 		messager.printMessage(Diagnostic.Kind.ERROR, message + (t == null ? "" : (": " + t)));
+		if ( t != null ) t.printStackTrace();
 	}
 	
 	/**
@@ -180,7 +181,9 @@ public class HandlerLibrary {
 			} catch ( AnnotationValueDecodeFail fail ) {
 				fail.owner.setError(fail.getMessage(), fail.idx);
 			} catch ( Throwable t ) {
-				javacError(String.format("Lombok annotation handler %s failed", container.handler.getClass()), t);
+				String sourceName = "(unknown).java";
+				if ( unit != null && unit.sourcefile != null ) sourceName = unit.sourcefile.getName();
+				javacError(String.format("Lombok annotation handler %s failed on " + sourceName, container.handler.getClass()), t);
 			}
 		}
 		
