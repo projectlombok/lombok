@@ -524,7 +524,7 @@ public class Installer {
 				
 				if ( success.get() ) SwingUtilities.invokeLater(new Runnable() {
 					@Override public void run() {
-						JOptionPane.showMessageDialog(appWindow, "<html>Lombok has been installed on the selected Eclipse installations.<br>Don't forget to add <code>lombok.jar</code> to your projects!</html>", "Install successful", JOptionPane.INFORMATION_MESSAGE);
+						JOptionPane.showMessageDialog(appWindow, "<html>Lombok has been installed on the selected Eclipse installations.<br>Don't forget to add <code>lombok.jar</code> to your projects, and restart your eclipse!</html>", "Install successful", JOptionPane.INFORMATION_MESSAGE);
 						appWindow.setVisible(false);
 						System.exit(0);
 					}
