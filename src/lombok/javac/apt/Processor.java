@@ -41,6 +41,7 @@ import lombok.javac.JavacAST;
 import lombok.javac.JavacASTAdapter;
 import lombok.javac.JavacAST.Node;
 
+import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -86,7 +87,10 @@ public class Processor extends AbstractProcessor {
 		
 		
 		IdentityHashMap<JCCompilationUnit, Void> units = new IdentityHashMap<JCCompilationUnit, Void>();
-		for ( Element element : roundEnv.getRootElements() ) units.put(toUnit(element), null);
+		for ( Element element : roundEnv.getRootElements() ) {
+			JCCompilationUnit unit = toUnit(element);
+			if ( unit != null ) units.put(unit, null);
+		}
 		
 		List<JavacAST> asts = new ArrayList<JavacAST>();
 		
@@ -143,6 +147,16 @@ public class Processor extends AbstractProcessor {
 	}
 	
 	private JCCompilationUnit toUnit(Element element) {
-		return (JCCompilationUnit) trees.getPath(element).getCompilationUnit();
+		TreePath path = trees.getPath(element);
+		if ( path != null ) return (JCCompilationUnit) path.getCompilationUnit();
+		else {
+			if ( element == null ) {
+				processingEnv.getMessager().printMessage(Kind.WARNING, "LOMBOK DIAGNOSTIC: no TreePath returned for element, " +
+						"probably because element is null!");
+			}
+			processingEnv.getMessager().printMessage(Kind.WARNING, "LOMBOK DIAGNOSTIC: no TreePath returned for element of type: " +
+					element.getClass() + "with toString: " + element);
+			return null;
+		}
 	}
 }
