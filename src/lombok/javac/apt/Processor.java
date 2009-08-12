@@ -34,6 +34,7 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic.Kind;
 
 import lombok.javac.HandlerLibrary;
 import lombok.javac.JavacAST;
@@ -69,8 +70,10 @@ public class Processor extends AbstractProcessor {
 	/** {@inheritDoc} */
 	@Override public void init(ProcessingEnvironment processingEnv) {
 		super.init(processingEnv);
-		if ( !(processingEnv instanceof JavacProcessingEnvironment) ) this.processingEnv = null;
-		else {
+		if ( !(processingEnv instanceof JavacProcessingEnvironment) ) {
+			processingEnv.getMessager().printMessage(Kind.WARNING, "You aren't using a compiler based around javac v1.6, so lombok will not work properly.");
+			this.processingEnv = null;
+		} else {
 			this.processingEnv = (JavacProcessingEnvironment) processingEnv;
 			handlers = HandlerLibrary.load(processingEnv.getMessager());
 			trees = Trees.instance(processingEnv);
