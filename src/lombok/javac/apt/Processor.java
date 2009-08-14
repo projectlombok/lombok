@@ -147,16 +147,9 @@ public class Processor extends AbstractProcessor {
 	}
 	
 	private JCCompilationUnit toUnit(Element element) {
-		TreePath path = trees.getPath(element);
-		if ( path != null ) return (JCCompilationUnit) path.getCompilationUnit();
-		else {
-			if ( element == null ) {
-				processingEnv.getMessager().printMessage(Kind.WARNING, "LOMBOK DIAGNOSTIC: no TreePath returned for element, " +
-						"probably because element is null!");
-			}
-			processingEnv.getMessager().printMessage(Kind.WARNING, "LOMBOK DIAGNOSTIC: no TreePath returned for element of type: " +
-					element.getClass() + "with toString: " + element);
-			return null;
-		}
+		TreePath path = trees == null ? null : trees.getPath(element);
+		if ( path == null ) return null;
+		
+		return (JCCompilationUnit) path.getCompilationUnit();
 	}
 }
