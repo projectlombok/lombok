@@ -54,6 +54,8 @@
 		<div class="overview">
 			<h3>Small print</h3><div class="smallprint">
 				<p>
+				<code>@SneakyThrows</code> is an implementation of this feature request: <a href="http://bugs.sun.com/view_bug.do?bug_id=6534270">http://bugs.sun.com/view_bug.do?bug_id=6534270</a>.
+				</p><p>
 				Because <code>@SneakyThrows</code> is an implementation detail and not part of your method signature, it is an error if you try to
 				declare a checked exception as sneakily thrown when you don't call any methods that throw this exception. (Doing so is perfectly legal
 				for <code>throws</code> statements to accomodate subclasses). Similarly, <code>@SneakyThrows</code> does not inherit.
