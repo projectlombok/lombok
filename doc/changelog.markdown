@@ -4,6 +4,9 @@ Lombok Changelog
 ### v0.8.3
 
 * @EqualsAndHashCode (and, indirectly, @Data) generate a warning when overriding a class other than java.lang.Object but not setting EqualsAndHashCode's callSuper to true. There are, however, legitimate reasons to do this, so this warning is now no longer generated if you explicitly set callSuper to false. The warning text now also refers to this action if not calling super is intentional.
+* If your fields have @NonNull or @NotNull annotations, then generated setters are generated with a null check, and the
+annotation is copied to the setter's parameter, and the getter's method.
+* An annoying bug that usually showed up if you had package-info.java files has been fixed. It would cause a `NullPointerException` at lombok.javac.apt.Processor.toUnit(Processor.java:143)
 
 ### v0.8.2
 

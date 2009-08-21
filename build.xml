@@ -355,7 +355,7 @@ public class CompileChangelog {
 		</java>
 	</target>
 	
-	<target name="maven" depends="version, dist">
+	<target name="maven" depends="version, dist" description="Build a maven repository.">
 		<loadresource property="mvn.oldversions">
 			<url url="http://projectlombok.org/mavenrepo/org/projectlombok/lombok/maven-metadata.xml" />
 			<filterchain>
