@@ -22,20 +22,26 @@
 package lombok.javac.handlers;
 
 import java.lang.reflect.Modifier;
-
-import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeMaker;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.util.List;
+import java.util.regex.Pattern;
 
 import lombok.AccessLevel;
 import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
 import lombok.javac.JavacAST;
+import lombok.javac.JavacAST.Node;
+
+import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.TypeTags;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCStatement;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Name;
 
 /**
  * Container for static utility methods relevant to this package.
@@ -250,5 +256,32 @@ class PKG {
 		}
 		
 		return e;
+	}
+	
+	static final Pattern NON_NULL_PATTERN = Pattern.compile("^no[tn]null$", Pattern.CASE_INSENSITIVE);
+	static final Pattern NULLABLE_PATTERN = Pattern.compile("^nullable$", Pattern.CASE_INSENSITIVE);
+	
+	static List<JCAnnotation> findAnnotations(Node fieldNode, Pattern namePattern) {
+		List<JCAnnotation> result = List.nil();
+		for ( Node child : fieldNode.down() ) {
+			if ( child.getKind() == Kind.ANNOTATION ) {
+				JCAnnotation annotation = (JCAnnotation) child.get();
+				String name = annotation.annotationType.toString();
+				int idx = name.lastIndexOf(".");
+				String suspect = idx == -1 ? name : name.substring(idx + 1);
+				if (namePattern.matcher(suspect).matches()) {
+					result = result.append(annotation);
+				}
+			}
+		}	
+		return result;
+	}	
+	
+	static JCStatement generateNullCheck(TreeMaker treeMaker, JavacAST.Node variable) {
+		Name fieldName = ((JCVariableDecl) variable.get()).name;
+		JCExpression npe = chainDots(treeMaker, variable, "java", "lang", "NullPointerException");
+		JCTree exception = treeMaker.NewClass(null, List.<JCExpression>nil(), npe, List.<JCExpression>of(treeMaker.Literal(fieldName.toString())), null);
+		JCStatement throwStatement = treeMaker.Throw(exception);
+		return treeMaker.If(treeMaker.Binary(JCTree.EQ, treeMaker.Ident(fieldName), treeMaker.Literal(TypeTags.BOT, null)), throwStatement, null);
 	}
 }

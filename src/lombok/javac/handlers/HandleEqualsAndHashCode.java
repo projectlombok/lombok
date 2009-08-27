@@ -120,20 +120,20 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 			return false;
 		}
 		
-		boolean isDirectDescendentOfObject = true;
+		boolean isDirectDescendantOfObject = true;
 		
 		JCTree extending = ((JCClassDecl)typeNode.get()).extending;
 		if ( extending != null ) {
 			String p = extending.toString();
-			isDirectDescendentOfObject = p.equals("Object") || p.equals("java.lang.Object");
+			isDirectDescendantOfObject = p.equals("Object") || p.equals("java.lang.Object");
 		}
 		
-		if ( isDirectDescendentOfObject && callSuper ) {
+		if ( isDirectDescendantOfObject && callSuper ) {
 			errorNode.addError("Generating equals/hashCode with a supercall to java.lang.Object is pointless.");
 			return true;
 		}
 		
-		if ( !isDirectDescendentOfObject && !callSuper && implicit ) {
+		if ( !isDirectDescendantOfObject && !callSuper && implicit ) {
 			errorNode.addWarning("Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.");
 		}
 		

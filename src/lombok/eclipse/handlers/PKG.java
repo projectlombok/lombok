@@ -21,7 +21,12 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.eclipse.Eclipse.fromQualifiedName;
+
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import lombok.AccessLevel;
 import lombok.core.AST.Kind;
@@ -29,9 +34,23 @@ import lombok.eclipse.EclipseAST;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
+import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
+import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.IfStatement;
+import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
+import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
+import org.eclipse.jdt.internal.compiler.ast.Statement;
+import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
+import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 
 class PKG {
 	private PKG() {}
@@ -211,5 +230,33 @@ class PKG {
 		}
 		
 		type.add(method, Kind.METHOD).recursiveSetHandled();
+	}
+	
+	static final Pattern NON_NULL_PATTERN = Pattern.compile("^no[tn]null$", Pattern.CASE_INSENSITIVE);
+	static final Pattern NULLABLE_PATTERN = Pattern.compile("^nullable$", Pattern.CASE_INSENSITIVE);
+	
+	static Annotation[] findAnnotations(FieldDeclaration field, Pattern namePattern) {
+		List<Annotation> result = new ArrayList<Annotation>();
+		for (Annotation annotation : field.annotations) {
+			TypeReference typeRef = annotation.type;
+			if ( typeRef != null && typeRef.getTypeName()!= null ) {
+				char[][] typeName = typeRef.getTypeName();
+				String suspect = new String(typeName[typeName.length - 1]);
+				if ( namePattern.matcher(suspect).matches() ) {
+					result.add(annotation);
+				}
+			}
+		}	
+		return result.toArray(new Annotation[0]);
+	}
+	
+	static Statement generateNullCheck(AbstractVariableDeclaration variable) {
+		AllocationExpression exception = new AllocationExpression();
+		exception.type = new QualifiedTypeReference(fromQualifiedName("java.lang.NullPointerException"), new long[]{0, 0, 0});
+		exception.arguments = new Expression[] { new StringLiteral(variable.name, 0, variable.name.length - 1, 0)};
+		ThrowStatement throwStatement = new ThrowStatement(exception, 0, 0);
+		
+		return new IfStatement(new EqualExpression(new SingleNameReference(variable.name, 0),
+				new NullLiteral(0, 0), OperatorIds.EQUAL_EQUAL), throwStatement, 0, 0);
 	}
 }

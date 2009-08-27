@@ -79,7 +79,8 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 			if ( (fieldFlags & Flags.STATIC) != 0 ) continue;
 			if ( (fieldFlags & Flags.TRANSIENT) == 0 ) nodesForEquality = nodesForEquality.append(child);
 			boolean isFinal = (fieldFlags & Flags.FINAL) != 0;
-			if ( isFinal && fieldDecl.init == null ) nodesForConstructor = nodesForConstructor.append(child);
+			boolean isNonNull = !findAnnotations(child, NON_NULL_PATTERN).isEmpty();
+			if ( (isFinal || isNonNull) && fieldDecl.init == null ) nodesForConstructor = nodesForConstructor.append(child);
 			new HandleGetter().generateGetterForField(child, annotationNode.get());
 			if ( !isFinal ) new HandleSetter().generateSetterForField(child, annotationNode.get());
 		}
@@ -106,21 +107,28 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		TreeMaker maker = typeNode.getTreeMaker();
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
+		List<JCStatement> nullChecks = List.nil();
 		List<JCStatement> assigns = List.nil();
 		List<JCVariableDecl> params = List.nil();
 		
 		for ( Node fieldNode : fields ) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL), field.name, field.vartype, null);
+			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, NON_NULL_PATTERN);
+			List<JCAnnotation> nullables = findAnnotations(fieldNode, NULLABLE_PATTERN);
+			JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL, nonNulls.appendList(nullables)), field.name, field.vartype, null);
 			params = params.append(param);
 			JCFieldAccess thisX = maker.Select(maker.Ident(fieldNode.toName("this")), field.name);
 			JCAssign assign = maker.Assign(thisX, maker.Ident(field.name));
 			assigns = assigns.append(maker.Exec(assign));
+			
+			if (!nonNulls.isEmpty()) {
+				nullChecks = nullChecks.append(generateNullCheck(maker, fieldNode));
+			}
 		}
 		
 		JCModifiers mods = maker.Modifiers(isPublic ? Modifier.PUBLIC : Modifier.PRIVATE);
 		return maker.MethodDef(mods, typeNode.toName("<init>"),
-				null, type.typarams, params, List.<JCExpression>nil(), maker.Block(0L, assigns), null);
+				null, type.typarams, params, List.<JCExpression>nil(), maker.Block(0L, nullChecks.appendList(assigns)), null);
 	}
 	
 	private JCMethodDecl createStaticConstructor(String name, Node typeNode, List<Node> fields) {
@@ -160,7 +168,9 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 				for ( JCExpression arg : typeApply.arguments ) tArgs = tArgs.append(arg);
 				pType = maker.TypeApply(typeApply.clazz, tArgs);
 			} else pType = field.vartype;
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL), field.name, pType, null);
+			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, NON_NULL_PATTERN);
+			List<JCAnnotation> nullables = findAnnotations(fieldNode, NULLABLE_PATTERN);
+			JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL, nonNulls.appendList(nullables)), field.name, pType, null);
 			params = params.append(param);
 			args = args.append(maker.Ident(field.name));
 		}

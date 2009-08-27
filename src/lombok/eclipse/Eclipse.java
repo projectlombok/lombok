@@ -49,11 +49,14 @@ import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.Literal;
+import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
+import org.eclipse.jdt.internal.compiler.ast.NormalAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
@@ -117,7 +120,7 @@ public class Eclipse {
 	 * For 'speed' reasons, Eclipse works a lot with char arrays. I have my doubts this was a fruitful exercise,
 	 * but we need to deal with it. This turns [[java][lang][String]] into "java.lang.String".
 	 */
-	static String toQualifiedName(char[][] typeName) {
+	public static String toQualifiedName(char[][] typeName) {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
 		for ( char[] c : typeName ) {
@@ -126,6 +129,16 @@ public class Eclipse {
 		}
 		return sb.toString();
 	}
+	
+	public static char[][] fromQualifiedName(String typeName) {
+		String[] split = typeName.split("\\.");
+		char[][] result = new char[split.length][];
+		for (int i = 0; i < split.length; i++) {
+			result[i] = split[i].toCharArray();
+		}
+		return result;
+	}
+	
 	
 	/**
 	 * You can't share TypeParameter objects or bad things happen; for example, one 'T' resolves differently
@@ -239,6 +252,43 @@ public class Eclipse {
 		}
 		
 		return ref;
+	}
+	
+	public static Annotation[] copyAnnotations(Annotation[] annotations) {
+		return copyAnnotations(annotations, null);
+	}
+	
+	public static Annotation[] copyAnnotations(Annotation[] annotations1, Annotation[] annotations2) {
+		if (annotations1 == null && annotations2 == null) return null;
+		if (annotations1 == null) annotations1 = new Annotation[0];
+		if (annotations2 == null) annotations2 = new Annotation[0];
+		Annotation[] outs = new Annotation[annotations1.length + annotations2.length];
+		int idx = 0;
+		for ( Annotation annotation : annotations1 ) {
+			outs[idx++] = copyAnnotation(annotation);
+		}
+		for ( Annotation annotation : annotations2 ) {
+			outs[idx++] = copyAnnotation(annotation);
+		}
+		return outs;
+	}
+	
+	public static Annotation copyAnnotation(Annotation annotation) {
+		if (annotation instanceof MarkerAnnotation) {
+			return new MarkerAnnotation(copyType(annotation.type), annotation.sourceStart);
+		}
+		
+		if (annotation instanceof SingleMemberAnnotation) {
+			SingleMemberAnnotation result = new SingleMemberAnnotation(copyType(annotation.type), annotation.sourceStart);
+			result.memberValue = ((SingleMemberAnnotation)annotation).memberValue;
+		}
+		
+		if (annotation instanceof NormalAnnotation) {
+			NormalAnnotation result = new NormalAnnotation(copyType(annotation.type), annotation.sourceStart);
+			result.memberValuePairs = ((NormalAnnotation)annotation).memberValuePairs;
+		}
+		
+		return annotation;
 	}
 	
 	/**

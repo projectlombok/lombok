@@ -89,7 +89,8 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			//Skip static fields.
 			if ( (fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0 ) continue;
 			boolean isFinal = (fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0;
-			if ( isFinal && fieldDecl.initialization == null ) nodesForConstructor.add(child);
+			boolean isNonNull = findAnnotations(fieldDecl, NON_NULL_PATTERN).length != 0;
+			if ( (isFinal || isNonNull) && fieldDecl.initialization == null ) nodesForConstructor.add(child);
 			new HandleGetter().generateGetterForField(child, annotationNode.get());
 			if ( !isFinal ) new HandleSetter().generateSetterForField(child, annotationNode.get());
 		}
@@ -139,18 +140,27 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		
 		List<Argument> args = new ArrayList<Argument>();
 		List<Statement> assigns = new ArrayList<Statement>();
+		List<Statement> nullChecks = new ArrayList<Statement>();
 		
 		for ( Node fieldNode : fields ) {
 			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 			FieldReference thisX = new FieldReference(("this." + new String(field.name)).toCharArray(), p);
 			thisX.receiver = new ThisReference((int)(p >> 32), (int)p);
 			thisX.token = field.name;
+			
 			assigns.add(new Assignment(thisX, new SingleNameReference(field.name, p), (int)p));
 			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
-			args.add(new Argument(field.name, fieldPos, copyType(field.type), Modifier.FINAL));
+			Argument argument = new Argument(field.name, fieldPos, copyType(field.type), Modifier.FINAL);
+			Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
+			Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
+			if (nonNulls.length != 0) nullChecks.add(generateNullCheck(field));
+			Annotation[] copiedAnnotations = copyAnnotations(nonNulls, nullables);
+			if (copiedAnnotations.length != 0) argument.annotations = copiedAnnotations;
+			args.add(argument);
 		}
 		
-		constructor.statements = assigns.isEmpty() ? null : assigns.toArray(new Statement[assigns.size()]);
+		nullChecks.addAll(assigns);
+		constructor.statements = nullChecks.isEmpty() ? null : nullChecks.toArray(new Statement[nullChecks.size()]);
 		constructor.arguments = args.isEmpty() ? null : args.toArray(new Argument[args.size()]);
 		return constructor;
 	}
@@ -188,6 +198,11 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
 			assigns.add(new SingleNameReference(field.name, fieldPos));
+			
+			Argument argument = new Argument(field.name, fieldPos, copyType(field.type), 0);
+			Annotation[] copiedAnnotations = copyAnnotations(
+					findAnnotations(field, NON_NULL_PATTERN), findAnnotations(field, NULLABLE_PATTERN));
+			if (copiedAnnotations.length != 0) argument.annotations = copiedAnnotations;
 			args.add(new Argument(field.name, fieldPos, copyType(field.type), Modifier.FINAL));
 		}
 		

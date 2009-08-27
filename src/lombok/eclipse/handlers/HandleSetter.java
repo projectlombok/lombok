@@ -21,6 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.PKG.*;
 
 import java.lang.reflect.Modifier;
@@ -30,7 +31,6 @@ import lombok.Setter;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
-import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
 
@@ -71,7 +71,7 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 	public void generateSetterForField(Node fieldNode, ASTNode pos) {
 		for ( Node child : fieldNode.down() ) {
 			if ( child.getKind() == Kind.ANNOTATION ) {
-				if ( Eclipse.annotationTypeMatches(Setter.class, child) ) {
+				if ( annotationTypeMatches(Setter.class, child) ) {
 					//The annotation will make it happen, so we can skip it.
 					return;
 				}
@@ -122,25 +122,35 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 	
 	private MethodDeclaration generateSetter(TypeDeclaration parent, FieldDeclaration field, String name,
 			int modifier, ASTNode ast) {
+		
 		long pos = (((long)ast.sourceStart) << 32) | ast.sourceEnd;
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
 		method.modifiers = modifier;
 		method.returnType = TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		method.annotations = null;
-		Argument param = new Argument(field.name, pos, Eclipse.copyType(field.type), Modifier.FINAL);
+		Argument param = new Argument(field.name, pos, copyType(field.type), Modifier.FINAL);
 		method.arguments = new Argument[] { param };
 		method.selector = name.toCharArray();
 		method.binding = null;
 		method.thrownExceptions = null;
 		method.typeParameters = null;
 		method.scope = parent.scope == null ? null : new MethodScope(parent.scope, method, false);
-		method.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
+		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		FieldReference thisX = new FieldReference(field.name, pos);
 		thisX.receiver = new ThisReference(ast.sourceStart, ast.sourceEnd);
 		Assignment assignment = new Assignment(thisX, new SingleNameReference(field.name, pos), (int)pos);
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = ast.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = ast.sourceEnd;
-		method.statements = new Statement[] { assignment };
+		
+		Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
+		Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
+		if (nonNulls.length == 0) {
+			method.statements = new Statement[] { assignment };
+		} else {
+			method.statements = new Statement[] { generateNullCheck(field), assignment };
+		}
+		Annotation[] copiedAnnotations = copyAnnotations(nonNulls, nullables);
+		if (copiedAnnotations.length != 0) param.annotations = copiedAnnotations;
 		return method;
 	}
 }
