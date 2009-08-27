@@ -33,6 +33,10 @@ import java.lang.annotation.Target;
  * 
  * You can use this annotation for the purpose, though you can also use JSR305's annotation, findbugs's, pmd's, or IDEA's, or just
  * about anyone elses. As long as it is named <code>@NonNull</code> or <code>@NotNull</code>.
+ * 
+ * WARNING: If the java community ever does decide on supporting a single @NonNull annotation (for example via JSR305), then
+ * this annotation will <strong>be deleted</strong> from the lombok package. If the need to update an import statement scares
+ * you, you should use your own annotation named <code>@NonNull</code> instead of this one.
  */
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
 @Retention(RetentionPolicy.CLASS)
