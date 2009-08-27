@@ -1,6 +1,10 @@
 Lombok Changelog
 ----------------
 
+### v0.8.4
+
+* All generated methods now make their parameters (if they have any) final. This should help avoid problems with the 'make all parameters final' save action in eclipse. [Issue #40](http://code.google.com/p/projectlombok/issues/detail?id=40)
+
 ### v0.8.3
 
 * @EqualsAndHashCode (and, indirectly, @Data) generate a warning when overriding a class other than java.lang.Object but not setting EqualsAndHashCode's callSuper to true. There are, however, legitimate reasons to do this, so this warning is now no longer generated if you explicitly set callSuper to false. The warning text now also refers to this action if not calling super is intentional.
