@@ -79,7 +79,7 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 			if ( (fieldFlags & Flags.STATIC) != 0 ) continue;
 			if ( (fieldFlags & Flags.TRANSIENT) == 0 ) nodesForEquality = nodesForEquality.append(child);
 			boolean isFinal = (fieldFlags & Flags.FINAL) != 0;
-			boolean isNonNull = !findNonNullAnnotations(child).isEmpty();
+			boolean isNonNull = !findAnnotations(child, NON_NULL_PATTERN).isEmpty();
 			if ( (isFinal || isNonNull) && fieldDecl.init == null ) nodesForConstructor = nodesForConstructor.append(child);
 			new HandleGetter().generateGetterForField(child, annotationNode.get());
 			if ( !isFinal ) new HandleSetter().generateSetterForField(child, annotationNode.get());
@@ -114,8 +114,9 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		for ( Node fieldNode : fields ) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			
-			List<JCAnnotation> nonNulls = findNonNullAnnotations(fieldNode);
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(0, nonNulls), field.name, field.vartype, null);
+			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, NON_NULL_PATTERN);
+			List<JCAnnotation> nullables = findAnnotations(fieldNode, NULLABLE_PATTERN);
+			JCVariableDecl param = maker.VarDef(maker.Modifiers(0, nonNulls.appendList(nullables)), field.name, field.vartype, null);
 			
 			params = params.append(param);
 			JCFieldAccess thisX = maker.Select(maker.Ident(fieldNode.toName("this")), field.name);
@@ -169,7 +170,10 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 				for ( JCExpression arg : typeApply.arguments ) tArgs = tArgs.append(arg);
 				pType = maker.TypeApply(typeApply.clazz, tArgs);
 			} else pType = field.vartype;
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(0, findNonNullAnnotations(fieldNode)), field.name, pType, null);
+			
+			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, NON_NULL_PATTERN);
+			List<JCAnnotation> nullables = findAnnotations(fieldNode, NULLABLE_PATTERN);
+			JCVariableDecl param = maker.VarDef(maker.Modifiers(0, nonNulls.appendList(nullables)), field.name, pType, null);
 			params = params.append(param);
 			args = args.append(maker.Ident(field.name));
 		}

@@ -21,15 +21,8 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.eclipse.Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
-import static lombok.eclipse.Eclipse.annotationTypeMatches;
-import static lombok.eclipse.Eclipse.copyAnnotations;
-import static lombok.eclipse.Eclipse.copyType;
-import static lombok.eclipse.handlers.PKG.findNonNullAnnotations;
-import static lombok.eclipse.handlers.PKG.generateNullCheck;
-import static lombok.eclipse.handlers.PKG.injectMethod;
-import static lombok.eclipse.handlers.PKG.methodExists;
-import static lombok.eclipse.handlers.PKG.toModifier;
+import static lombok.eclipse.Eclipse.*;
+import static lombok.eclipse.handlers.PKG.*;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.core.AnnotationValues;
@@ -146,14 +139,15 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = ast.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = ast.sourceEnd;
 		
-		Annotation[] nonNulls = findNonNullAnnotations(field);
+		Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
+		Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
 		if (nonNulls.length == 0) {
 			method.statements = new Statement[] { assignment };
-		}
-		else {
-			param.annotations = copyAnnotations(nonNulls);
+		} else {
 			method.statements = new Statement[] { generateNullCheck(field), assignment };
 		}
+		Annotation[] copiedAnnotations = copyAnnotations(nonNulls, nullables);
+		if (copiedAnnotations.length != 0) param.annotations = copiedAnnotations;
 		return method;
 	}
 }

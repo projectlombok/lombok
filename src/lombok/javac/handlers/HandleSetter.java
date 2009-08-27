@@ -21,12 +21,7 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.handlers.PKG.findNonNullAnnotations;
-import static lombok.javac.handlers.PKG.generateNullCheck;
-import static lombok.javac.handlers.PKG.injectMethod;
-import static lombok.javac.handlers.PKG.methodExists;
-import static lombok.javac.handlers.PKG.toJavacModifier;
-import static lombok.javac.handlers.PKG.toSetterName;
+import static lombok.javac.handlers.PKG.*;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.core.AnnotationValues;
@@ -125,7 +120,8 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		JCAssign assign = treeMaker.Assign(thisX, treeMaker.Ident(fieldDecl.name));
 		
 		List<JCStatement> statements;
-		List<JCAnnotation> nonNulls = findNonNullAnnotations(field);
+		List<JCAnnotation> nonNulls = findAnnotations(field, NON_NULL_PATTERN);
+		List<JCAnnotation> nullables = findAnnotations(field, NULLABLE_PATTERN);
 		if (nonNulls.isEmpty()) {
 			statements = List.<JCStatement>of(treeMaker.Exec(assign));
 		}
@@ -136,7 +132,7 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		JCBlock methodBody = treeMaker.Block(0, statements);
 		Name methodName = field.toName(toSetterName(fieldDecl));
 		
-		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(0, nonNulls), fieldDecl.name, fieldDecl.vartype, null);
+		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(0, nonNulls.appendList(nullables)), fieldDecl.name, fieldDecl.vartype, null);
 		JCExpression methodType = treeMaker.Type(field.getSymbolTable().voidType);
 		
 		List<JCTypeParameter> methodGenericParams = List.nil();

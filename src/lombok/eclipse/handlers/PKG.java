@@ -26,6 +26,7 @@ import static lombok.eclipse.Eclipse.fromQualifiedName;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import lombok.AccessLevel;
 import lombok.core.AST.Kind;
@@ -231,14 +232,17 @@ class PKG {
 		type.add(method, Kind.METHOD).recursiveSetHandled();
 	}
 	
-	static Annotation[] findNonNullAnnotations(FieldDeclaration field) {
+	static final Pattern NON_NULL_PATTERN = Pattern.compile("^no[tn]null$", Pattern.CASE_INSENSITIVE);
+	static final Pattern NULLABLE_PATTERN = Pattern.compile("^nullable$", Pattern.CASE_INSENSITIVE);
+	
+	static Annotation[] findAnnotations(FieldDeclaration field, Pattern namePattern) {
 		List<Annotation> result = new ArrayList<Annotation>();
 		for (Annotation annotation : field.annotations) {
 			TypeReference typeRef = annotation.type;
 			if ( typeRef != null && typeRef.getTypeName()!= null ) {
 				char[][] typeName = typeRef.getTypeName();
 				String suspect = new String(typeName[typeName.length - 1]);
-				if (suspect.equalsIgnoreCase("NonNull") || suspect.equalsIgnoreCase("NotNull")) {
+				if ( namePattern.matcher(suspect).matches() ) {
 					result.add(annotation);
 				}
 			}
@@ -246,7 +250,6 @@ class PKG {
 		return result.toArray(new Annotation[0]);
 	}
 	
-
 	static Statement generateNullCheck(AbstractVariableDeclaration variable) {
 		AllocationExpression exception = new AllocationExpression();
 		exception.type = new QualifiedTypeReference(fromQualifiedName("java.lang.NullPointerException"), new long[]{0, 0, 0});

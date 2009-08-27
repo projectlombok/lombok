@@ -128,8 +128,9 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		List<JCExpression> throwsClauses = List.nil();
 		JCExpression annotationMethodDefaultValue = null;
 		
-		List<JCAnnotation> annotations = findNonNullAnnotations(field);
-		return treeMaker.MethodDef(treeMaker.Modifiers(access, annotations), methodName, methodType,
+		List<JCAnnotation> nonNulls = findAnnotations(field, NON_NULL_PATTERN);
+		List<JCAnnotation> nullables = findAnnotations(field, NULLABLE_PATTERN);
+		return treeMaker.MethodDef(treeMaker.Modifiers(access, nonNulls.appendList(nullables)), methodName, methodType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue);
 	}
 }

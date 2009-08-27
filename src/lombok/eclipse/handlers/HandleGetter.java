@@ -113,9 +113,10 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		}
 		
 		MethodDeclaration method = generateGetter((TypeDeclaration) fieldNode.up().get(), field, getterName, modifier, pos);
-		Annotation[] nonNulls = findNonNullAnnotations(field);
-		if (nonNulls.length != 0) {
-			method.annotations = copyAnnotations(nonNulls);
+		Annotation[] copiedAnnotations = copyAnnotations(
+				findAnnotations(field, NON_NULL_PATTERN), findAnnotations(field, NULLABLE_PATTERN));
+		if (copiedAnnotations.length != 0) {
+			method.annotations = copiedAnnotations;
 		}
 		
 		injectMethod(fieldNode.up(), method);

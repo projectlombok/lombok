@@ -255,10 +255,19 @@ public class Eclipse {
 	}
 	
 	public static Annotation[] copyAnnotations(Annotation[] annotations) {
-		if (annotations == null) return null;
-		Annotation[] outs = new Annotation[annotations.length];
+		return copyAnnotations(annotations, null);
+	}
+	
+	public static Annotation[] copyAnnotations(Annotation[] annotations1, Annotation[] annotations2) {
+		if (annotations1 == null && annotations2 == null) return null;
+		if (annotations1 == null) annotations1 = new Annotation[0];
+		if (annotations2 == null) annotations2 = new Annotation[0];
+		Annotation[] outs = new Annotation[annotations1.length + annotations2.length];
 		int idx = 0;
-		for ( Annotation annotation : annotations ) {
+		for ( Annotation annotation : annotations1 ) {
+			outs[idx++] = copyAnnotation(annotation);
+		}
+		for ( Annotation annotation : annotations2 ) {
 			outs[idx++] = copyAnnotation(annotation);
 		}
 		return outs;

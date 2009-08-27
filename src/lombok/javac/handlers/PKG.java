@@ -22,6 +22,7 @@
 package lombok.javac.handlers;
 
 import java.lang.reflect.Modifier;
+import java.util.regex.Pattern;
 
 import lombok.AccessLevel;
 import lombok.core.TransformationsUtil;
@@ -257,7 +258,10 @@ class PKG {
 		return e;
 	}
 	
-	static List<JCAnnotation> findNonNullAnnotations(Node fieldNode) {
+	static final Pattern NON_NULL_PATTERN = Pattern.compile("^no[tn]null$", Pattern.CASE_INSENSITIVE);
+	static final Pattern NULLABLE_PATTERN = Pattern.compile("^nullable$", Pattern.CASE_INSENSITIVE);
+	
+	static List<JCAnnotation> findAnnotations(Node fieldNode, Pattern namePattern) {
 		List<JCAnnotation> result = List.nil();
 		for ( Node child : fieldNode.down() ) {
 			if ( child.getKind() == Kind.ANNOTATION ) {
@@ -265,7 +269,7 @@ class PKG {
 				String name = annotation.annotationType.toString();
 				int idx = name.lastIndexOf(".");
 				String suspect = idx == -1 ? name : name.substring(idx + 1);
-				if (suspect.equalsIgnoreCase("NonNull") || suspect.equalsIgnoreCase("NotNull")) {
+				if (namePattern.matcher(suspect).matches()) {
 					result = result.append(annotation);
 				}
 			}
