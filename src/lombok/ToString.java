@@ -42,8 +42,9 @@ import java.lang.annotation.Target;
  * {@link java.lang.StackOverflowError}. However, the implementations for java's own {@link java.util.ArrayList} suffer
  * from the same flaw.
  * <p>
- * The <code>toString</code> method that is generated will print the class name as well as each field. You can optionally
- * also print the names of each field, by setting the <code>includeFieldNames</code> flag to <em>true</em>.
+ * The <code>toString</code> method that is generated will print the class name as well as each field (both the name
+ * and the value). You can optionally choose to suppress the printing of the field name, by setting the
+ * <code>includeFieldNames</code> flag to <em>false</em>.
  * <p>
  * You can also choose to include the result of <code>toString</code> in your class's superclass by setting the
  * <code>callSuper</code> to <em>true</em>.
@@ -53,9 +54,9 @@ import java.lang.annotation.Target;
 public @interface ToString {
 	/**
 	 * Include the name of each field when printing it.
-	 * <strong>default: false</strong>
+	 * <strong>default: true</strong>
 	 */
-	boolean includeFieldNames() default false;
+	boolean includeFieldNames() default true;
 	
 	/**
 	 * Any fields listed here will not be printed in the generated <code>toString</code> implementation.
