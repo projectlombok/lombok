@@ -223,7 +223,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		method.modifiers = PKG.toModifier(AccessLevel.PUBLIC);
 		method.returnType = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 		method.annotations = new Annotation[] {
-				new MarkerAnnotation(new QualifiedTypeReference(TypeConstants.JAVA_LANG_OVERRIDE, new long[] { 0, 0, 0}), 0)
+				new MarkerAnnotation(new QualifiedTypeReference(TypeConstants.JAVA_LANG_OVERRIDE, new long[] {0, 0, 0}), 0)
 		};
 		method.selector = "hashCode".toCharArray();
 		method.thrownExceptions = null;

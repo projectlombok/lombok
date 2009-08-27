@@ -275,16 +275,16 @@ public class Eclipse {
 	
 	public static Annotation copyAnnotation(Annotation annotation) {
 		if (annotation instanceof MarkerAnnotation) {
-			return new MarkerAnnotation(copyType(annotation.type), annotation.sourceStart);
+			return new MarkerAnnotation(copyType(annotation.type), 0);
 		}
 		
 		if (annotation instanceof SingleMemberAnnotation) {
-			SingleMemberAnnotation result = new SingleMemberAnnotation(copyType(annotation.type), annotation.sourceStart);
+			SingleMemberAnnotation result = new SingleMemberAnnotation(copyType(annotation.type), 0);
 			result.memberValue = ((SingleMemberAnnotation)annotation).memberValue;
 		}
 		
 		if (annotation instanceof NormalAnnotation) {
-			NormalAnnotation result = new NormalAnnotation(copyType(annotation.type), annotation.sourceStart);
+			NormalAnnotation result = new NormalAnnotation(copyType(annotation.type), 0);
 			result.memberValuePairs = ((NormalAnnotation)annotation).memberValuePairs;
 		}
 		
