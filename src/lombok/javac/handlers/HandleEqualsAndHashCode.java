@@ -313,7 +313,7 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		JCExpression returnType = maker.TypeIdent(TypeTags.BOOLEAN);
 		
 		List<JCStatement> statements = List.nil();
-		List<JCVariableDecl> params = List.of(maker.VarDef(maker.Modifiers(0), oName, objectType, null));
+		List<JCVariableDecl> params = List.of(maker.VarDef(maker.Modifiers(Flags.FINAL), oName, objectType, null));
 		
 		/* if ( o == this ) return true; */ {
 			statements = statements.append(

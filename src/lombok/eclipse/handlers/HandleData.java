@@ -147,7 +147,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			thisX.token = field.name;
 			assigns.add(new Assignment(thisX, new SingleNameReference(field.name, p), (int)p));
 			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
-			args.add(new Argument(field.name, fieldPos, copyType(field.type), 0));
+			args.add(new Argument(field.name, fieldPos, copyType(field.type), Modifier.FINAL));
 		}
 		
 		constructor.statements = assigns.isEmpty() ? null : assigns.toArray(new Statement[assigns.size()]);
@@ -188,7 +188,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
 			assigns.add(new SingleNameReference(field.name, fieldPos));
-			args.add(new Argument(field.name, fieldPos, copyType(field.type), 0));
+			args.add(new Argument(field.name, fieldPos, copyType(field.type), Modifier.FINAL));
 		}
 		
 		statement.arguments = assigns.isEmpty() ? null : assigns.toArray(new Expression[assigns.size()]);

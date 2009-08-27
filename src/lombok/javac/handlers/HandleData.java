@@ -111,7 +111,7 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		
 		for ( Node fieldNode : fields ) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(0), field.name, field.vartype, null);
+			JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL), field.name, field.vartype, null);
 			params = params.append(param);
 			JCFieldAccess thisX = maker.Select(maker.Ident(fieldNode.toName("this")), field.name);
 			JCAssign assign = maker.Assign(thisX, maker.Ident(field.name));
@@ -160,7 +160,7 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 				for ( JCExpression arg : typeApply.arguments ) tArgs = tArgs.append(arg);
 				pType = maker.TypeApply(typeApply.clazz, tArgs);
 			} else pType = field.vartype;
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(0), field.name, pType, null);
+			JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL), field.name, pType, null);
 			params = params.append(param);
 			args = args.append(maker.Ident(field.name));
 		}

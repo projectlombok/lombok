@@ -244,7 +244,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 			/* Without fields, PRIME isn't used, and that would trigger a 'local variable not used' warning. */
 			if ( !isEmpty || callSuper ) {
 				LocalDeclaration primeDecl = new LocalDeclaration(PRIME, 0 ,0);
-				primeDecl.modifiers = Modifier.FINAL;
+				primeDecl.modifiers |= Modifier.FINAL;
 				primeDecl.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 				primeDecl.initialization = new IntLiteral("31".toCharArray(), 0, 0);
 				statements.add(primeDecl);
@@ -364,7 +364,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = pos.sourceEnd;
 		method.arguments = new Argument[] {
 				new Argument(new char[] { 'o' }, 0,
-						new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { 0, 0, 0 }), 0)
+						new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { 0, 0, 0 }), Modifier.FINAL)
 		};
 		
 		List<Statement> statements = new ArrayList<Statement>();
