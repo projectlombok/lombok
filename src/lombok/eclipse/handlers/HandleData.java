@@ -32,6 +32,7 @@ import java.util.List;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.core.AnnotationValues;
+import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
@@ -89,7 +90,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			//Skip static fields.
 			if ( (fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0 ) continue;
 			boolean isFinal = (fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0;
-			boolean isNonNull = findAnnotations(fieldDecl, NON_NULL_PATTERN).length != 0;
+			boolean isNonNull = findAnnotations(fieldDecl, TransformationsUtil.NON_NULL_PATTERN).length != 0;
 			if ( (isFinal || isNonNull) && fieldDecl.initialization == null ) nodesForConstructor.add(child);
 			new HandleGetter().generateGetterForField(child, annotationNode.get());
 			if ( !isFinal ) new HandleSetter().generateSetterForField(child, annotationNode.get());
@@ -151,9 +152,12 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			assigns.add(new Assignment(thisX, new SingleNameReference(field.name, p), (int)p));
 			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
 			Argument argument = new Argument(field.name, fieldPos, copyType(field.type), Modifier.FINAL);
-			Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
-			Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
-			if (nonNulls.length != 0) nullChecks.add(generateNullCheck(field));
+			Annotation[] nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
+			Annotation[] nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
+			if (nonNulls.length != 0) {
+				Statement nullCheck = generateNullCheck(field);
+				if (nullCheck != null) nullChecks.add(nullCheck);
+			}
 			Annotation[] copiedAnnotations = copyAnnotations(nonNulls, nullables);
 			if (copiedAnnotations.length != 0) argument.annotations = copiedAnnotations;
 			args.add(argument);
@@ -201,7 +205,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			
 			Argument argument = new Argument(field.name, fieldPos, copyType(field.type), 0);
 			Annotation[] copiedAnnotations = copyAnnotations(
-					findAnnotations(field, NON_NULL_PATTERN), findAnnotations(field, NULLABLE_PATTERN));
+					findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN));
 			if (copiedAnnotations.length != 0) argument.annotations = copiedAnnotations;
 			args.add(new Argument(field.name, fieldPos, copyType(field.type), Modifier.FINAL));
 		}

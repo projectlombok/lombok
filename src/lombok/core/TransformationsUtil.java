@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * Container for static utility methods useful for some of the standard lombok transformations, regardless of
@@ -78,6 +79,12 @@ public class TransformationsUtil {
 		
 		return buildName(prefix, fieldName.toString());
 	}
+	
+	public static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern.compile(
+			"^(boolean|byte|short|int|long|float|double|char)$");
+	
+	public static final Pattern NON_NULL_PATTERN = Pattern.compile("^no[tn]null$", Pattern.CASE_INSENSITIVE);
+	public static final Pattern NULLABLE_PATTERN = Pattern.compile("^nullable$", Pattern.CASE_INSENSITIVE);
 	
 	/**
 	 * Generates a getter name from a given field name.

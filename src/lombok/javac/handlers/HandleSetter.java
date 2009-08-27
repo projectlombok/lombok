@@ -25,6 +25,7 @@ import static lombok.javac.handlers.PKG.*;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.core.AnnotationValues;
+import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
 import lombok.javac.Javac;
 import lombok.javac.JavacAST;
@@ -120,13 +121,15 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		JCAssign assign = treeMaker.Assign(thisX, treeMaker.Ident(fieldDecl.name));
 		
 		List<JCStatement> statements;
-		List<JCAnnotation> nonNulls = findAnnotations(field, NON_NULL_PATTERN);
-		List<JCAnnotation> nullables = findAnnotations(field, NULLABLE_PATTERN);
+		List<JCAnnotation> nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
+		List<JCAnnotation> nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
+		
 		if (nonNulls.isEmpty()) {
 			statements = List.<JCStatement>of(treeMaker.Exec(assign));
-		}
-		else {
-			statements = List.<JCStatement>of(generateNullCheck(treeMaker, field), treeMaker.Exec(assign));
+		} else {
+			JCStatement nullCheck = generateNullCheck(treeMaker, field);
+			if (nullCheck != null) statements = List.<JCStatement>of(nullCheck, treeMaker.Exec(assign));
+			else statements = List.<JCStatement>of(treeMaker.Exec(assign));
 		}
 		
 		JCBlock methodBody = treeMaker.Block(0, statements);

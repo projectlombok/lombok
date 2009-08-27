@@ -21,13 +21,13 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.PKG.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
-import static lombok.eclipse.Eclipse.*;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
 
@@ -114,7 +114,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		
 		MethodDeclaration method = generateGetter((TypeDeclaration) fieldNode.up().get(), field, getterName, modifier, pos);
 		Annotation[] copiedAnnotations = copyAnnotations(
-				findAnnotations(field, NON_NULL_PATTERN), findAnnotations(field, NULLABLE_PATTERN));
+				findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN));
 		if (copiedAnnotations.length != 0) {
 			method.annotations = copiedAnnotations;
 		}

@@ -29,7 +29,9 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import lombok.AccessLevel;
+import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
+import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAST;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
@@ -54,6 +56,11 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 
 class PKG {
 	private PKG() {}
+	
+	static boolean isPrimitive(TypeReference ref) {
+		if (ref.dimensions() > 0) return false;
+		return TransformationsUtil.PRIMITIVE_TYPE_NAME_PATTERN.matcher(Eclipse.toQualifiedName(ref.getTypeName())).matches();
+	}
 	
 	static int toModifier(AccessLevel value) {
 		switch ( value ) {
@@ -232,9 +239,6 @@ class PKG {
 		type.add(method, Kind.METHOD).recursiveSetHandled();
 	}
 	
-	static final Pattern NON_NULL_PATTERN = Pattern.compile("^no[tn]null$", Pattern.CASE_INSENSITIVE);
-	static final Pattern NULLABLE_PATTERN = Pattern.compile("^nullable$", Pattern.CASE_INSENSITIVE);
-	
 	static Annotation[] findAnnotations(FieldDeclaration field, Pattern namePattern) {
 		List<Annotation> result = new ArrayList<Annotation>();
 		for (Annotation annotation : field.annotations) {
@@ -251,6 +255,7 @@ class PKG {
 	}
 	
 	static Statement generateNullCheck(AbstractVariableDeclaration variable) {
+		if (isPrimitive(variable.type)) return null;
 		AllocationExpression exception = new AllocationExpression();
 		exception.type = new QualifiedTypeReference(fromQualifiedName("java.lang.NullPointerException"), new long[]{0, 0, 0});
 		exception.arguments = new Expression[] { new StringLiteral(variable.name, 0, variable.name.length - 1, 0)};

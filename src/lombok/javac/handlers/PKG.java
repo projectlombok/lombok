@@ -51,6 +51,11 @@ class PKG {
 		//Prevent instantiation
 	}
 	
+	static boolean isPrimitive(JCExpression ref) {
+		String typeName = ref.toString();
+		return TransformationsUtil.PRIMITIVE_TYPE_NAME_PATTERN.matcher(typeName).matches();
+	}
+	
 	static java.util.List<String> toAllGetterNames(JCVariableDecl field) {
 		CharSequence fieldName = field.name;
 		
@@ -258,9 +263,6 @@ class PKG {
 		return e;
 	}
 	
-	static final Pattern NON_NULL_PATTERN = Pattern.compile("^no[tn]null$", Pattern.CASE_INSENSITIVE);
-	static final Pattern NULLABLE_PATTERN = Pattern.compile("^nullable$", Pattern.CASE_INSENSITIVE);
-	
 	static List<JCAnnotation> findAnnotations(Node fieldNode, Pattern namePattern) {
 		List<JCAnnotation> result = List.nil();
 		for ( Node child : fieldNode.down() ) {
@@ -278,7 +280,9 @@ class PKG {
 	}	
 	
 	static JCStatement generateNullCheck(TreeMaker treeMaker, JavacAST.Node variable) {
-		Name fieldName = ((JCVariableDecl) variable.get()).name;
+		JCVariableDecl varDecl = (JCVariableDecl) variable.get();
+		if (isPrimitive(varDecl.vartype)) return null;
+		Name fieldName = varDecl.name;
 		JCExpression npe = chainDots(treeMaker, variable, "java", "lang", "NullPointerException");
 		JCTree exception = treeMaker.NewClass(null, List.<JCExpression>nil(), npe, List.<JCExpression>of(treeMaker.Literal(fieldName.toString())), null);
 		JCStatement throwStatement = treeMaker.Throw(exception);

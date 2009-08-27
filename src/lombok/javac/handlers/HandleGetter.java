@@ -25,6 +25,7 @@ import static lombok.javac.handlers.PKG.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.core.AnnotationValues;
+import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
@@ -128,8 +129,8 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		List<JCExpression> throwsClauses = List.nil();
 		JCExpression annotationMethodDefaultValue = null;
 		
-		List<JCAnnotation> nonNulls = findAnnotations(field, NON_NULL_PATTERN);
-		List<JCAnnotation> nullables = findAnnotations(field, NULLABLE_PATTERN);
+		List<JCAnnotation> nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
+		List<JCAnnotation> nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
 		return treeMaker.MethodDef(treeMaker.Modifiers(access, nonNulls.appendList(nullables)), methodName, methodType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue);
 	}

@@ -142,12 +142,14 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = ast.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = ast.sourceEnd;
 		
-		Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
-		Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
+		Annotation[] nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
+		Annotation[] nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
 		if (nonNulls.length == 0) {
 			method.statements = new Statement[] { assignment };
 		} else {
-			method.statements = new Statement[] { generateNullCheck(field), assignment };
+			Statement nullCheck = generateNullCheck(field);
+			if (nullCheck != null) method.statements = new Statement[] { nullCheck, assignment };
+			else method.statements = new Statement[] { assignment };
 		}
 		Annotation[] copiedAnnotations = copyAnnotations(nonNulls, nullables);
 		if (copiedAnnotations.length != 0) param.annotations = copiedAnnotations;

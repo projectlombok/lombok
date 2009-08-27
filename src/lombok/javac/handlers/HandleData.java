@@ -27,6 +27,7 @@ import java.lang.reflect.Modifier;
 
 import lombok.Data;
 import lombok.core.AnnotationValues;
+import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacAST.Node;
@@ -79,7 +80,7 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 			if ( (fieldFlags & Flags.STATIC) != 0 ) continue;
 			if ( (fieldFlags & Flags.TRANSIENT) == 0 ) nodesForEquality = nodesForEquality.append(child);
 			boolean isFinal = (fieldFlags & Flags.FINAL) != 0;
-			boolean isNonNull = !findAnnotations(child, NON_NULL_PATTERN).isEmpty();
+			boolean isNonNull = !findAnnotations(child, TransformationsUtil.NON_NULL_PATTERN).isEmpty();
 			if ( (isFinal || isNonNull) && fieldDecl.init == null ) nodesForConstructor = nodesForConstructor.append(child);
 			new HandleGetter().generateGetterForField(child, annotationNode.get());
 			if ( !isFinal ) new HandleSetter().generateSetterForField(child, annotationNode.get());
@@ -113,8 +114,8 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		
 		for ( Node fieldNode : fields ) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
-			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, NON_NULL_PATTERN);
-			List<JCAnnotation> nullables = findAnnotations(fieldNode, NULLABLE_PATTERN);
+			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, TransformationsUtil.NON_NULL_PATTERN);
+			List<JCAnnotation> nullables = findAnnotations(fieldNode, TransformationsUtil.NULLABLE_PATTERN);
 			JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL, nonNulls.appendList(nullables)), field.name, field.vartype, null);
 			params = params.append(param);
 			JCFieldAccess thisX = maker.Select(maker.Ident(fieldNode.toName("this")), field.name);
@@ -122,7 +123,8 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 			assigns = assigns.append(maker.Exec(assign));
 			
 			if (!nonNulls.isEmpty()) {
-				nullChecks = nullChecks.append(generateNullCheck(maker, fieldNode));
+				JCStatement nullCheck = generateNullCheck(maker, fieldNode);
+				if (nullCheck != null) nullChecks = nullChecks.append(nullCheck);
 			}
 		}
 		
@@ -168,8 +170,8 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 				for ( JCExpression arg : typeApply.arguments ) tArgs = tArgs.append(arg);
 				pType = maker.TypeApply(typeApply.clazz, tArgs);
 			} else pType = field.vartype;
-			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, NON_NULL_PATTERN);
-			List<JCAnnotation> nullables = findAnnotations(fieldNode, NULLABLE_PATTERN);
+			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, TransformationsUtil.NON_NULL_PATTERN);
+			List<JCAnnotation> nullables = findAnnotations(fieldNode, TransformationsUtil.NULLABLE_PATTERN);
 			JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL, nonNulls.appendList(nullables)), field.name, pType, null);
 			params = params.append(param);
 			args = args.append(maker.Ident(field.name));
