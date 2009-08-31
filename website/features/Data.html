@@ -22,7 +22,8 @@
 			together: In other words, <code>@Data</code> generates <em>all</em> the boilerplate that is normally associated with simple POJOs
 			(Plain Old Java Objects) and beans: getters for all fields, setters for all non-final fields, and appropriate <code>toString</code>, <code>equals</code>
 			and <code>hashCode</code> implementations that involve the fields of the class. In addition, <code>@Data</code> generates a constructor that
-			initialized all final fields.
+			initializes all final fields, as well as all non-final fields with no initializer that have been marked with <code>@NonNull</code> or <code>@NotNull</code>,
+			in order to ensure the field is never null.
 			</p><p>
 			<code>@Data</code> is like having implicit <code>@ToString</code> and <code>@EqualsAndHashCode</code> annotations on the class.
 			However, the parameters of <code>@ToString</code> and <code>@EqualsAndHashCode</code> (such as <code>callSuper</code>, <code>includeFieldNames</code> and
@@ -62,6 +63,12 @@
 			<h3>Small print</h3><div class="smallprint">
 				<p>See the small print of <a href="ToString.html"><code>@ToString</code></a>, <a href="EqualsAndHashCode.html"><code>@EqualsAndHashCode</code></a> and
 					<a href="GetterSetter.html"><code>@Getter / @Setter</code></a>.
+				</p><p>
+					Any annotations named <code>@NonNull</code> or <code>@NotNull</code> (case insensitive) on a field are interpreted as: This field must not ever hold
+					<em>null</em>. Therefore, these annotations result in an explicit null check in the generated constructor for the provided field. Also, these
+					annotations (as well as any annotation named <code>@Nullable</code>) are copied to the constructor parameter, in both the true constructor and
+					any static constructor. The same principle applies to generated getters and setters (see the documentation for <a href="GetterSetter.html">@Getter / @Setter</a>)
+				</p>
 			</div>
 		</div>
 		<div class="footer">
