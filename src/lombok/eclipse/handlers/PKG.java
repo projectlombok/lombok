@@ -241,6 +241,7 @@ class PKG {
 	
 	static Annotation[] findAnnotations(FieldDeclaration field, Pattern namePattern) {
 		List<Annotation> result = new ArrayList<Annotation>();
+		if ( field.annotations == null ) return new Annotation[0];
 		for (Annotation annotation : field.annotations) {
 			TypeReference typeRef = annotation.type;
 			if ( typeRef != null && typeRef.getTypeName()!= null ) {
