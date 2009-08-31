@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -48,24 +50,65 @@ public class ClassLoaderWorkaround {
 		throw (T)t;
 	}
 	
-	private static boolean initialized;
-	private static Method transform;
+	private static final Map<ClassLoader, Method> transform = new HashMap<ClassLoader, Method>();
 	
 	public static void transformCompilationUnitDeclaration(Object parser, Object cud) throws Exception {
-		initialize(cud);
+		Method transformMethod = getTransformMethod(cud);
 		try {
-			transform.invoke(null, parser, cud);
+			checkTypeCompatible(parser.getClass(), "org.eclipse.jdt.internal.compiler.parser.Parser");
+			checkTypeCompatible(cud.getClass(), "org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration");
+			try {
+				transformMethod.invoke(null, parser, cud);
+			} catch ( IllegalArgumentException ex ) {
+				checkTypeCompatible2(parser.getClass(), "org.eclipse.jdt.internal.compiler.parser.Parser");
+				checkTypeCompatible2(cud.getClass(), "org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration");
+				throw ex;
+			}
 		} catch ( InvocationTargetException e ) {
 			throw sneakyThrow(e.getCause());
 		}
 	}
 	
-	private static void initialize(Object cud) throws ClassNotFoundException {
-		if ( initialized ) {
-			if ( transform == null ) throw new ClassNotFoundException("lombok.eclipse.TransformEclipseAST");
-			return;
+	private static void checkTypeCompatible(Class<? extends Object> c, String expected) {
+		StringBuilder sb = new StringBuilder();
+		while ( c != null ) {
+			if ( c.getName().equals(expected) ) return;
+			sb.append("  ").append(c.getName());
+			c = c.getSuperclass();
 		}
 		
+		System.err.println("Not a match to " + expected);
+		System.err.println(sb.toString());
+	}
+	
+	private static void checkTypeCompatible2(Class<? extends Object> c, String expected) {
+		StringBuilder sb = new StringBuilder();
+		while ( c != null ) {
+			sb.append("  ").append(c.getName());
+			c = c.getSuperclass();
+		}
+		
+		System.err.println("Expecting " + expected);
+		System.err.println(sb.toString());
+	}
+	
+	private static Method getTransformMethod(Object cud) throws ClassNotFoundException {
+		ClassLoader contextLoader = Thread.currentThread().getContextClassLoader();
+		
+		synchronized ( transform ) {
+			if ( !transform.containsKey(contextLoader)) {
+				System.out.println("Creating classloader: " + Thread.currentThread());
+				transform.put(contextLoader, findTransformMethod(cud));
+			}
+			
+			Method m = transform.get(contextLoader);
+			if ( m == null ) throw new ClassNotFoundException("lombok.eclipse.TransformEclipseAST");
+			return m;
+			
+		}
+	}
+
+	private static Method findTransformMethod(Object cud) throws ClassNotFoundException {
 		final ClassLoader parent = cud.getClass().getClassLoader();
 		ClassLoader loader = new ClassLoader() {
 			@Override public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
@@ -103,19 +146,17 @@ public class ClassLoaderWorkaround {
 			}
 		};
 		
-		try {
-			Class<?> c = loader.loadClass("lombok.eclipse.TransformEclipseAST");
-			for ( Method m : c.getMethods() ) {
-				if ( m.getName().equals("transform") ) {
-					Class<?>[] types = m.getParameterTypes();
-					if ( types.length != 2 ) continue;
-					if ( !types[0].getName().equals("org.eclipse.jdt.internal.compiler.parser.Parser") ) continue;
-					if ( !types[1].getName().equals("org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration") ) continue;
-					transform = m;
-					break;
-				}
+		Class<?> c = loader.loadClass("lombok.eclipse.TransformEclipseAST");
+		for ( Method method : c.getMethods() ) {
+			if ( method.getName().equals("transform") ) {
+				Class<?>[] types = method.getParameterTypes();
+				if ( types.length != 2 ) continue;
+				if ( !types[0].getName().equals("org.eclipse.jdt.internal.compiler.parser.Parser") ) continue;
+				if ( !types[1].getName().equals("org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration") ) continue;
+				return method;
 			}
-		} catch ( ClassNotFoundException ignore ) {}
-		initialized = true;
+		}
+		
+		throw new ClassNotFoundException("lombok.eclipse.TransformEclipseAST");
 	}
 }

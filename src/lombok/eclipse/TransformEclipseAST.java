@@ -96,7 +96,17 @@ public class TransformEclipseAST {
 				EclipseAST.addProblemToCompilationResult(ast, false, message, 0, 0);
 				t.printStackTrace();
 			} catch ( Throwable t2 ) {
-				Eclipse.error(ast, "Can't create an error in the problems dialog while adding: " + t.toString(), t2);
+				try {
+					Eclipse.error(ast, "Can't create an error in the problems dialog while adding: " + t.toString(), t2);
+				} catch ( Throwable t3 ) {
+					//This seems risky to just silently turn off lombok, but if we get this far, something pretty
+					//drastic went wrong. For example, the eclipse help system's JSP compiler will trigger a lombok call,
+					//but due to class loader shenanigans we'll actually get here due to a cascade of
+					//ClassNotFoundErrors. This is the right action for the help system (no lombok needed for that JSP compiler,
+					//of course). 'disableLombok' is static, but each context classloader (e.g. each eclipse OSGi plugin) has
+					//it's own edition of this class, so this won't turn off lombok everywhere.
+					disableLombok = true;
+				}
 			}
 		}
 	}
