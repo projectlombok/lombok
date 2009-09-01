@@ -55,41 +55,10 @@ public class ClassLoaderWorkaround {
 	public static void transformCompilationUnitDeclaration(Object parser, Object cud) throws Exception {
 		Method transformMethod = getTransformMethod(cud);
 		try {
-			checkTypeCompatible(parser.getClass(), "org.eclipse.jdt.internal.compiler.parser.Parser");
-			checkTypeCompatible(cud.getClass(), "org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration");
-			try {
-				transformMethod.invoke(null, parser, cud);
-			} catch ( IllegalArgumentException ex ) {
-				checkTypeCompatible2(parser.getClass(), "org.eclipse.jdt.internal.compiler.parser.Parser");
-				checkTypeCompatible2(cud.getClass(), "org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration");
-				throw ex;
-			}
+			transformMethod.invoke(null, parser, cud);
 		} catch ( InvocationTargetException e ) {
 			throw sneakyThrow(e.getCause());
 		}
-	}
-	
-	private static void checkTypeCompatible(Class<? extends Object> c, String expected) {
-		StringBuilder sb = new StringBuilder();
-		while ( c != null ) {
-			if ( c.getName().equals(expected) ) return;
-			sb.append("  ").append(c.getName());
-			c = c.getSuperclass();
-		}
-		
-		System.err.println("Not a match to " + expected);
-		System.err.println(sb.toString());
-	}
-	
-	private static void checkTypeCompatible2(Class<? extends Object> c, String expected) {
-		StringBuilder sb = new StringBuilder();
-		while ( c != null ) {
-			sb.append("  ").append(c.getName());
-			c = c.getSuperclass();
-		}
-		
-		System.err.println("Expecting " + expected);
-		System.err.println(sb.toString());
 	}
 	
 	private static Method getTransformMethod(Object cud) throws ClassNotFoundException {
@@ -97,7 +66,6 @@ public class ClassLoaderWorkaround {
 		
 		synchronized ( transform ) {
 			if ( !transform.containsKey(contextLoader)) {
-				System.out.println("Creating classloader: " + Thread.currentThread());
 				transform.put(contextLoader, findTransformMethod(cud));
 			}
 			
