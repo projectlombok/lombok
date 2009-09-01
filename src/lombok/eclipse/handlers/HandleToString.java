@@ -159,7 +159,8 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 	}
 	
 	private MethodDeclaration createToString(Node type, Collection<Node> fields, boolean includeFieldNames, boolean callSuper, ASTNode pos) {
-		char[] rawTypeName = ((TypeDeclaration)type.get()).name;
+		TypeDeclaration typeDeclaration = (TypeDeclaration)type.get();
+		char[] rawTypeName = typeDeclaration.name;
 		String typeName = rawTypeName == null ? "" : new String(rawTypeName);
 		char[] suffix = ")".toCharArray();
 		String infixS = ", ";
@@ -227,9 +228,10 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		MethodDeclaration method = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		method.modifiers = PKG.toModifier(AccessLevel.PUBLIC);
 		method.returnType = new QualifiedTypeReference(TypeConstants.JAVA_LANG_STRING, new long[] {0, 0, 0});
-		method.annotations = new Annotation[] {
-				new MarkerAnnotation(new QualifiedTypeReference(TypeConstants.JAVA_LANG_OVERRIDE, new long[] { 0, 0, 0}), 0)
-		};
+		MarkerAnnotation overrideAnnotation = new MarkerAnnotation(new QualifiedTypeReference(TypeConstants.JAVA_LANG_OVERRIDE, new long[] {p, p, p}), (int)(p >> 32));
+		overrideAnnotation.declarationSourceEnd = overrideAnnotation.sourceEnd = overrideAnnotation.statementEnd = (int)p;
+		overrideAnnotation.bits |= ASTNode.HasBeenGenerated;
+		method.annotations = new Annotation[] {overrideAnnotation};
 		method.arguments = null;
 		method.selector = "toString".toCharArray();
 		method.thrownExceptions = null;
