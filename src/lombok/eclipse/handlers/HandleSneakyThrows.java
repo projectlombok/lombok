@@ -154,19 +154,24 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 		
 		return true;
 	}
-
+	
 	private Statement buildTryCatchBlock(Statement[] contents, DeclaredException exception) {
+		long p = exception.getPos();
+		int pS = (int)(p >> 32), pE = (int)p;
+		
 		TryStatement tryStatement = new TryStatement();
 		tryStatement.tryBlock = new Block(0);
+		tryStatement.tryBlock.sourceStart = pS;
+		tryStatement.tryBlock.sourceEnd = pE;
 		tryStatement.tryBlock.statements = contents;
 		TypeReference typeReference;
 		if ( exception.exceptionName.indexOf('.') == -1 ) {
-			typeReference = new SingleTypeReference(exception.exceptionName.toCharArray(), exception.getPos());
+			typeReference = new SingleTypeReference(exception.exceptionName.toCharArray(), p);
 		} else {
 			String[] x = exception.exceptionName.split("\\.");
 			char[][] elems = new char[x.length][];
 			long[] poss = new long[x.length];
-			int start = (int)(exception.getPos() >> 32);
+			int start = pS;
 			for ( int i = 0 ; i < x.length ; i++ ) {
 				elems[i] = x[i].trim().toCharArray();
 				int end = start + x[i].length();
@@ -176,19 +181,26 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 			typeReference = new QualifiedTypeReference(elems, poss);
 		}
 		
-		Argument catchArg = new Argument("$ex".toCharArray(), exception.getPos(), typeReference, 0);
+		Argument catchArg = new Argument("$ex".toCharArray(), p, typeReference, 0);
+		catchArg.declarationSourceEnd = catchArg.declarationEnd = catchArg.sourceEnd = pE;
+		catchArg.declarationSourceStart = catchArg.modifiersSourceStart = catchArg.sourceStart = pS;
 		
 		tryStatement.catchArguments = new Argument[] { catchArg };
 		
 		MessageSend sneakyThrowStatement = new MessageSend();
-		sneakyThrowStatement.receiver = new QualifiedNameReference(new char[][] { "lombok".toCharArray(), "Lombok".toCharArray() }, new long[] { 0, 0 }, 0, 0);
+		sneakyThrowStatement.receiver = new QualifiedNameReference(new char[][] { "lombok".toCharArray(), "Lombok".toCharArray() }, new long[] { p, p }, pS, pE);
 		sneakyThrowStatement.selector = "sneakyThrow".toCharArray();
-		sneakyThrowStatement.arguments = new Expression[] { new SingleNameReference("$ex".toCharArray(), 0) };
-		Statement rethrowStatement = new ThrowStatement(sneakyThrowStatement, 0, 0);
+		sneakyThrowStatement.arguments = new Expression[] { new SingleNameReference("$ex".toCharArray(), p) };
+		sneakyThrowStatement.sourceStart = pS;
+		sneakyThrowStatement.sourceEnd = sneakyThrowStatement.statementEnd = pE;
+		Statement rethrowStatement = new ThrowStatement(sneakyThrowStatement, pS, pE);
 		Block block = new Block(0);
+		block.sourceStart = pS;
+		block.sourceEnd = pE;
 		block.statements = new Statement[] { rethrowStatement };
-		block.sourceStart = block.sourceEnd = -2;
 		tryStatement.catchBlocks = new Block[] { block };
+		tryStatement.sourceStart = pS;
+		tryStatement.sourceEnd = pE;
 		return tryStatement;
 	}
 }
