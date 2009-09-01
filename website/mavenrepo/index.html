@@ -59,6 +59,19 @@
 		&lt;url&gt;http://projectlombok.org/mavenrepo&lt;/url&gt;
 	&lt;/repository&gt;
 &lt;/repositories&gt;</div>
+		<div>
+			<em><strong>CAREFUL:</strong></em> lombok requires using the javac v1.6 compiler. If this is not your default compiler, you'll need to add the following to your
+			pom file to explicitly set the java compiler version to use:
+			<div class="snippet">&lt;plugin&gt;
+	&lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+	&lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+	&lt;configuration&gt;
+		&lt;compilerVersion&gt;1.6&lt;/compilerVersion&gt;
+		&lt;source&gt;1.6&lt;/source&gt;
+		&lt;target&gt;1.6&lt;/target&gt;
+	&lt;/configuration&gt;
+&lt;/plugin&gt;</div>
+		</div>
 		That's all there is to it!<br />
 		<em>note:</em> You'll still need to download lombok, or doubleclick on the lombok.jar file downloaded by maven, to install lombok into your eclipse installation.<br />
 		<a id="downloadLink" href="http://projectlombok.googlecode.com/files/lombok.jar">Download lombok.jar</a>
