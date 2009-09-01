@@ -50,7 +50,6 @@ import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.IntLiteral;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
@@ -217,14 +216,15 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 	}
 	
 	private MethodDeclaration createHashCode(Node type, Collection<Node> fields, boolean callSuper, ASTNode pos) {
+		int pS = pos.sourceStart, pE = pos.sourceEnd;
+		long p = (long)pS << 32 | pE;
+		
 		MethodDeclaration method = new MethodDeclaration(
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		
 		method.modifiers = PKG.toModifier(AccessLevel.PUBLIC);
 		method.returnType = TypeReference.baseTypeReference(TypeIds.T_int, 0);
-		method.annotations = new Annotation[] {
-				new MarkerAnnotation(new QualifiedTypeReference(TypeConstants.JAVA_LANG_OVERRIDE, new long[] {0, 0, 0}), 0)
-		};
+		method.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, p)};
 		method.selector = "hashCode".toCharArray();
 		method.thrownExceptions = null;
 		method.typeParameters = null;
@@ -243,24 +243,24 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		/* final int PRIME = 31; */ {
 			/* Without fields, PRIME isn't used, and that would trigger a 'local variable not used' warning. */
 			if ( !isEmpty || callSuper ) {
-				LocalDeclaration primeDecl = new LocalDeclaration(PRIME, 0 ,0);
+				LocalDeclaration primeDecl = new LocalDeclaration(PRIME, pS, pE);
 				primeDecl.modifiers |= Modifier.FINAL;
 				primeDecl.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
-				primeDecl.initialization = new IntLiteral("31".toCharArray(), 0, 0);
+				primeDecl.initialization = new IntLiteral("31".toCharArray(), pS, pE);
 				statements.add(primeDecl);
 			}
 		}
 		
 		/* int result = 1; */ {
-			LocalDeclaration resultDecl = new LocalDeclaration(RESULT, 0, 0);
-			resultDecl.initialization = new IntLiteral("1".toCharArray(), 0, 0);
+			LocalDeclaration resultDecl = new LocalDeclaration(RESULT, pS, pE);
+			resultDecl.initialization = new IntLiteral("1".toCharArray(), pS, pE);
 			resultDecl.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 			statements.add(resultDecl);
 		}
 		
 		if ( callSuper ) {
 			MessageSend callToSuper = new MessageSend();
-			callToSuper.receiver = new SuperReference(0, 0);
+			callToSuper.receiver = new SuperReference(pS, pE);
 			callToSuper.selector = "hashCode".toCharArray();
 			intoResult.add(callToSuper);
 		}
@@ -273,59 +273,59 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 				if ( Arrays.equals(TypeConstants.FLOAT, token) ) {
 					/* Float.floatToIntBits(fieldName) */
 					MessageSend floatToIntBits = new MessageSend();
-					floatToIntBits.receiver = generateQualifiedNameRef(TypeConstants.JAVA_LANG_FLOAT);
+					floatToIntBits.receiver = generateQualifiedNameRef(p, TypeConstants.JAVA_LANG_FLOAT);
 					floatToIntBits.selector = "floatToIntBits".toCharArray();
-					floatToIntBits.arguments = new Expression[] { generateFieldReference(f.name) };
+					floatToIntBits.arguments = new Expression[] { generateFieldReference(f.name, p) };
 					intoResult.add(floatToIntBits);
 				} else if ( Arrays.equals(TypeConstants.DOUBLE, token) ) {
 					/* longToIntForHashCode(Double.doubleToLongBits(fieldName)) */
 					MessageSend doubleToLongBits = new MessageSend();
-					doubleToLongBits.receiver = generateQualifiedNameRef(TypeConstants.JAVA_LANG_DOUBLE);
+					doubleToLongBits.receiver = generateQualifiedNameRef(p, TypeConstants.JAVA_LANG_DOUBLE);
 					doubleToLongBits.selector = "doubleToLongBits".toCharArray();
-					doubleToLongBits.arguments = new Expression[] { generateFieldReference(f.name) };
+					doubleToLongBits.arguments = new Expression[] { generateFieldReference(f.name, p) };
 					final char[] tempName = ("temp" + ++tempCounter).toCharArray();
-					LocalDeclaration tempVar = new LocalDeclaration(tempName, 0, 0);
+					LocalDeclaration tempVar = new LocalDeclaration(tempName, pS, pE);
 					tempVar.initialization = doubleToLongBits;
 					tempVar.type = TypeReference.baseTypeReference(TypeIds.T_long, 0);
 					tempVar.modifiers = Modifier.FINAL;
 					statements.add(tempVar);
 					intoResult.add(longToIntForHashCode(
-							new SingleNameReference(tempName, 0), new SingleNameReference(tempName, 0)));
+							new SingleNameReference(tempName, p), new SingleNameReference(tempName, p), p));
 				} else if ( Arrays.equals(TypeConstants.BOOLEAN, token) ) {
 					/* booleanField ? 1231 : 1237 */
 					intoResult.add(new ConditionalExpression(
-							generateFieldReference(f.name),
-							new IntLiteral("1231".toCharArray(), 0, 0),
-							new IntLiteral("1237".toCharArray(), 0 ,0)));
+							generateFieldReference(f.name, p),
+							new IntLiteral("1231".toCharArray(), pS, pE),
+							new IntLiteral("1237".toCharArray(), pS, pE)));
 				} else if ( Arrays.equals(TypeConstants.LONG, token) ) {
-					intoResult.add(longToIntForHashCode(generateFieldReference(f.name), generateFieldReference(f.name)));
+					intoResult.add(longToIntForHashCode(generateFieldReference(f.name, p), generateFieldReference(f.name, p), p));
 				} else if ( BUILT_IN_TYPES.contains(new String(token)) ) {
-					intoResult.add(generateFieldReference(f.name));
+					intoResult.add(generateFieldReference(f.name, p));
 				} else /* objects */ {
 					/* this.fieldName == null ? 0 : this.fieldName.hashCode() */
 					MessageSend hashCodeCall = new MessageSend();
-					hashCodeCall.receiver = generateFieldReference(f.name);
+					hashCodeCall.receiver = generateFieldReference(f.name, p);
 					hashCodeCall.selector = "hashCode".toCharArray();
 					EqualExpression objIsNull = new EqualExpression(
-							generateFieldReference(f.name),
-							new NullLiteral(0, 0),
+							generateFieldReference(f.name, p),
+							new NullLiteral(pS, pE),
 							OperatorIds.EQUAL_EQUAL);
 					ConditionalExpression nullOrHashCode = new ConditionalExpression(
 							objIsNull,
-							new IntLiteral("0".toCharArray(), 0, 0),
+							new IntLiteral("0".toCharArray(), pS, pE),
 							hashCodeCall);
 					intoResult.add(nullOrHashCode);
 				}
 			} else if ( f.type.dimensions() > 0 && token != null ) {
 				/* Arrays.deepHashCode(array)  //just hashCode for simple arrays */
 				MessageSend arraysHashCodeCall = new MessageSend();
-				arraysHashCodeCall.receiver = generateQualifiedNameRef(TypeConstants.JAVA, TypeConstants.UTIL, "Arrays".toCharArray());
+				arraysHashCodeCall.receiver = generateQualifiedNameRef(p, TypeConstants.JAVA, TypeConstants.UTIL, "Arrays".toCharArray());
 				if ( f.type.dimensions() > 1 || !BUILT_IN_TYPES.contains(new String(token)) ) {
 					arraysHashCodeCall.selector = "deepHashCode".toCharArray();
 				} else {
 					arraysHashCodeCall.selector = "hashCode".toCharArray();
 				}
-				arraysHashCodeCall.arguments = new Expression[] { generateFieldReference(f.name) };
+				arraysHashCodeCall.arguments = new Expression[] { generateFieldReference(f.name, p) };
 				intoResult.add(arraysHashCodeCall);
 			}
 		}
@@ -333,29 +333,30 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		/* fold each intoResult entry into:
 		   result = result * PRIME + (item); */ {
 			for ( Expression ex : intoResult ) {
-				BinaryExpression multiplyByPrime = new BinaryExpression(new SingleNameReference(RESULT, 0),
+				BinaryExpression multiplyByPrime = new BinaryExpression(new SingleNameReference(RESULT, p),
 						new SingleNameReference(PRIME, 0), OperatorIds.MULTIPLY);
 				BinaryExpression addItem = new BinaryExpression(multiplyByPrime, ex, OperatorIds.PLUS);
-				statements.add(new Assignment(new SingleNameReference(RESULT, 0), addItem, 0));
+				statements.add(new Assignment(new SingleNameReference(RESULT, p), addItem, pE));
 			}
 		}
 		
 		/* return result; */ {
-			statements.add(new ReturnStatement(new SingleNameReference(RESULT, 0), 0, 0));
+			statements.add(new ReturnStatement(new SingleNameReference(RESULT, p), pS, pE));
 		}
 		method.statements = statements.toArray(new Statement[statements.size()]);
 		return method;
 	}
 	
 	private MethodDeclaration createEquals(Node type, Collection<Node> fields, boolean callSuper, ASTNode pos) {
+		int pS = pos.sourceStart; int pE = pos.sourceEnd;
+		long p = (long)pS << 32 | pE;
+		
 		MethodDeclaration method = new MethodDeclaration(
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		
 		method.modifiers = PKG.toModifier(AccessLevel.PUBLIC);
 		method.returnType = TypeReference.baseTypeReference(TypeIds.T_boolean, 0);
-		method.annotations = new Annotation[] {
-				new MarkerAnnotation(new QualifiedTypeReference(TypeConstants.JAVA_LANG_OVERRIDE, new long[] { 0, 0, 0}), 0)
-		};
+		method.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, p)};
 		method.selector = "equals".toCharArray();
 		method.thrownExceptions = null;
 		method.typeParameters = null;
@@ -364,41 +365,41 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = pos.sourceEnd;
 		method.arguments = new Argument[] {
 				new Argument(new char[] { 'o' }, 0,
-						new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { 0, 0, 0 }), Modifier.FINAL)
+						new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { p, p, p }), Modifier.FINAL)
 		};
 		
 		List<Statement> statements = new ArrayList<Statement>();
 		
 		/* if ( o == this ) return true; */ {
 			EqualExpression otherEqualsThis = new EqualExpression(
-					new SingleNameReference(new char[] { 'o' }, 0),
-					new ThisReference(0, 0), OperatorIds.EQUAL_EQUAL);
+					new SingleNameReference(new char[] { 'o' }, p),
+					new ThisReference(pS, pE), OperatorIds.EQUAL_EQUAL);
 			
-			ReturnStatement returnTrue = new ReturnStatement(new TrueLiteral(0, 0), 0, 0);
-			IfStatement ifOtherEqualsThis = new IfStatement(otherEqualsThis, returnTrue, 0, 0);
+			ReturnStatement returnTrue = new ReturnStatement(new TrueLiteral(pS, pE), pS, pE);
+			IfStatement ifOtherEqualsThis = new IfStatement(otherEqualsThis, returnTrue, pS, pE);
 			statements.add(ifOtherEqualsThis);
 		}
 		
 		/* if ( o == null ) return false; */ {
 			EqualExpression otherEqualsNull = new EqualExpression(
-					new SingleNameReference(new char[] { 'o' }, 0),
-					new NullLiteral(0, 0), OperatorIds.EQUAL_EQUAL);
+					new SingleNameReference(new char[] { 'o' }, p),
+					new NullLiteral(pS, pE), OperatorIds.EQUAL_EQUAL);
 			
-			ReturnStatement returnFalse = new ReturnStatement(new FalseLiteral(0, 0), 0, 0);
-			IfStatement ifOtherEqualsNull = new IfStatement(otherEqualsNull, returnFalse, 0, 0);
+			ReturnStatement returnFalse = new ReturnStatement(new FalseLiteral(pS, pE), pS, pE);
+			IfStatement ifOtherEqualsNull = new IfStatement(otherEqualsNull, returnFalse, pS, pE);
 			statements.add(ifOtherEqualsNull);
 		}
 		
 		/* if ( o.getClass() != getClass() ) return false; */ {
 			MessageSend otherGetClass = new MessageSend();
-			otherGetClass.receiver = new SingleNameReference(new char[] { 'o' }, 0);
+			otherGetClass.receiver = new SingleNameReference(new char[] { 'o' }, p);
 			otherGetClass.selector = "getClass".toCharArray();
 			MessageSend thisGetClass = new MessageSend();
-			thisGetClass.receiver = new ThisReference(0, 0);
+			thisGetClass.receiver = new ThisReference(pS, pE);
 			thisGetClass.selector = "getClass".toCharArray();
 			EqualExpression classesNotEqual = new EqualExpression(otherGetClass, thisGetClass, OperatorIds.NOT_EQUAL);
-			ReturnStatement returnFalse = new ReturnStatement(new FalseLiteral(0, 0), 0, 0);
-			IfStatement ifClassesNotEqual = new IfStatement(classesNotEqual, returnFalse, 0, 0);
+			ReturnStatement returnFalse = new ReturnStatement(new FalseLiteral(pS, pE), pS, pE);
+			IfStatement ifClassesNotEqual = new IfStatement(classesNotEqual, returnFalse, pS, pE);
 			statements.add(ifClassesNotEqual);
 		}
 		
@@ -407,32 +408,32 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		/* if ( !super.equals(o) ) return false; */
 		if ( callSuper ) {
 			MessageSend callToSuper = new MessageSend();
-			callToSuper.receiver = new SuperReference(0, 0);
+			callToSuper.receiver = new SuperReference(pS, pE);
 			callToSuper.selector = "equals".toCharArray();
-			callToSuper.arguments = new Expression[] {new SingleNameReference(new char[] { 'o' }, 0) };
+			callToSuper.arguments = new Expression[] {new SingleNameReference(new char[] { 'o' }, p) };
 			Expression superNotEqual = new UnaryExpression(callToSuper, OperatorIds.NOT);
-			ReturnStatement returnFalse = new ReturnStatement(new FalseLiteral(0, 0), 0, 0);
-			IfStatement ifSuperEquals = new IfStatement(superNotEqual, returnFalse, 0, 0);
+			ReturnStatement returnFalse = new ReturnStatement(new FalseLiteral(pS, pE), pS, pE);
+			IfStatement ifSuperEquals = new IfStatement(superNotEqual, returnFalse, pS, pE);
 			statements.add(ifSuperEquals);
 		}
 		
 		TypeDeclaration typeDecl = (TypeDeclaration)type.get();
 		/* MyType<?> other = (MyType<?>) o; */ {
 			if ( !fields.isEmpty() ) {
-				LocalDeclaration other = new LocalDeclaration(otherN, 0, 0);
+				LocalDeclaration other = new LocalDeclaration(otherN, pS, pE);
 				char[] typeName = typeDecl.name;
 				Expression targetType;
 				if ( typeDecl.typeParameters == null || typeDecl.typeParameters.length == 0 ) {
-					targetType = new SingleNameReference(((TypeDeclaration)type.get()).name, 0);
-					other.type = new SingleTypeReference(typeName, 0);
+					targetType = new SingleNameReference(((TypeDeclaration)type.get()).name, p);
+					other.type = new SingleTypeReference(typeName, p);
 				} else {
 					TypeReference[] typeArgs = new TypeReference[typeDecl.typeParameters.length];
 					for ( int i = 0 ; i < typeArgs.length ; i++ ) typeArgs[i] = new Wildcard(Wildcard.UNBOUND);
-					targetType = new ParameterizedSingleTypeReference(typeName, typeArgs, 0, 0);
-					other.type = new ParameterizedSingleTypeReference(typeName, copyTypes(typeArgs), 0, 0);
+					targetType = new ParameterizedSingleTypeReference(typeName, typeArgs, 0, p);
+					other.type = new ParameterizedSingleTypeReference(typeName, copyTypes(typeArgs), 0, p);
 				}
 				other.initialization = new CastExpression(
-						new SingleNameReference(new char[] { 'o' }, 0),
+						new SingleNameReference(new char[] { 'o' }, p),
 						targetType);
 				statements.add(other);
 			}
@@ -443,90 +444,92 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 			char[] token = f.type.getLastToken();
 			if ( f.type.dimensions() == 0 && token != null ) {
 				if ( Arrays.equals(TypeConstants.FLOAT, token) ) {
-					statements.add(generateCompareFloatOrDouble(otherN, "Float".toCharArray(), f.name));
+					statements.add(generateCompareFloatOrDouble(otherN, "Float".toCharArray(), f.name, p));
 				} else if ( Arrays.equals(TypeConstants.DOUBLE, token) ) {
-					statements.add(generateCompareFloatOrDouble(otherN, "Double".toCharArray(), f.name));
+					statements.add(generateCompareFloatOrDouble(otherN, "Double".toCharArray(), f.name, p));
 				} else if ( BUILT_IN_TYPES.contains(new String(token)) ) {
 					EqualExpression fieldsNotEqual = new EqualExpression(
-							new SingleNameReference(f.name, 0),
-							generateQualifiedNameRef(otherN, f.name),
+							new SingleNameReference(f.name, p),
+							generateQualifiedNameRef(p, otherN, f.name),
 							OperatorIds.NOT_EQUAL);
-					ReturnStatement returnStatement = new ReturnStatement(new FalseLiteral(0, 0), 0, 0);
-					statements.add(new IfStatement(fieldsNotEqual, returnStatement, 0, 0));
+					ReturnStatement returnStatement = new ReturnStatement(new FalseLiteral(pS, pE), pS, pE);
+					statements.add(new IfStatement(fieldsNotEqual, returnStatement, pS, pE));
 				} else /* objects */ {
 					EqualExpression fieldIsNull = new EqualExpression(
-							new SingleNameReference(f.name, 0),
-							new NullLiteral(0, 0), OperatorIds.EQUAL_EQUAL);
+							new SingleNameReference(f.name, p),
+							new NullLiteral(pS, pE), OperatorIds.EQUAL_EQUAL);
 					EqualExpression otherFieldIsntNull = new EqualExpression(
-							generateQualifiedNameRef(otherN, f.name),
-							new NullLiteral(0, 0), OperatorIds.NOT_EQUAL);
+							generateQualifiedNameRef(p, otherN, f.name),
+							new NullLiteral(pS, pE), OperatorIds.NOT_EQUAL);
 					MessageSend equalsCall = new MessageSend();
-					equalsCall.receiver = new SingleNameReference(f.name, 0);
+					equalsCall.receiver = new SingleNameReference(f.name, p);
 					equalsCall.selector = "equals".toCharArray();
-					equalsCall.arguments = new Expression[] { generateQualifiedNameRef(otherN, f.name) };
+					equalsCall.arguments = new Expression[] { generateQualifiedNameRef(p, otherN, f.name) };
 					UnaryExpression fieldsNotEqual = new UnaryExpression(equalsCall, OperatorIds.NOT);
 					ConditionalExpression fullEquals = new ConditionalExpression(fieldIsNull, otherFieldIsntNull, fieldsNotEqual);
-					ReturnStatement returnStatement = new ReturnStatement(new FalseLiteral(0, 0), 0, 0);
-					statements.add(new IfStatement(fullEquals, returnStatement, 0, 0));
+					ReturnStatement returnStatement = new ReturnStatement(new FalseLiteral(pS, pE), pS, pE);
+					statements.add(new IfStatement(fullEquals, returnStatement, pS, pE));
 				}
 			} else if ( f.type.dimensions() > 0 && token != null ) {
 				MessageSend arraysEqualCall = new MessageSend();
-				arraysEqualCall.receiver = generateQualifiedNameRef(TypeConstants.JAVA, TypeConstants.UTIL, "Arrays".toCharArray());
+				arraysEqualCall.receiver = generateQualifiedNameRef(p, TypeConstants.JAVA, TypeConstants.UTIL, "Arrays".toCharArray());
 				if ( f.type.dimensions() > 1 || !BUILT_IN_TYPES.contains(new String(token)) ) {
 					arraysEqualCall.selector = "deepEquals".toCharArray();
 				} else {
 					arraysEqualCall.selector = "equals".toCharArray();
 				}
 				arraysEqualCall.arguments = new Expression[] {
-						new SingleNameReference(f.name, 0),
-						generateQualifiedNameRef(otherN, f.name) };
+						new SingleNameReference(f.name, p),
+						generateQualifiedNameRef(p, otherN, f.name) };
 				UnaryExpression arraysNotEqual = new UnaryExpression(arraysEqualCall, OperatorIds.NOT);
-				ReturnStatement returnStatement = new ReturnStatement(new FalseLiteral(0, 0), 0, 0);
-				statements.add(new IfStatement(arraysNotEqual, returnStatement, 0, 0));
+				ReturnStatement returnStatement = new ReturnStatement(new FalseLiteral(pS, pE), pS, pE);
+				statements.add(new IfStatement(arraysNotEqual, returnStatement, pS, pE));
 			}
 		}
 		
 		/* return true; */ {
-			statements.add(new ReturnStatement(new TrueLiteral(0, 0), 0, 0));
+			statements.add(new ReturnStatement(new TrueLiteral(pS, pE), pS, pE));
 		}
 		method.statements = statements.toArray(new Statement[statements.size()]);
 		return method;
 	}
 	
-	private IfStatement generateCompareFloatOrDouble(char[] otherN, char[] floatOrDouble, char[] fieldName) {
+	private IfStatement generateCompareFloatOrDouble(char[] otherN, char[] floatOrDouble, char[] fieldName, long p) {
+		int pS = (int)(p >> 32), pE = (int)p;
 		/* if ( Float.compare(fieldName, other.fieldName) != 0 ) return false */
 		MessageSend floatCompare = new MessageSend();
-		floatCompare.receiver = generateQualifiedNameRef(TypeConstants.JAVA, TypeConstants.LANG, floatOrDouble);
+		floatCompare.receiver = generateQualifiedNameRef(p, TypeConstants.JAVA, TypeConstants.LANG, floatOrDouble);
 		floatCompare.selector = "compare".toCharArray();
 		floatCompare.arguments = new Expression[] {
-				new SingleNameReference(fieldName, 0),
-				generateQualifiedNameRef(otherN, fieldName)
+				new SingleNameReference(fieldName, p),
+				generateQualifiedNameRef(p, otherN, fieldName)
 		};
-		EqualExpression ifFloatCompareIsNot0 = new EqualExpression(floatCompare, new IntLiteral(new char[] {'0'}, 0, 0), OperatorIds.NOT_EQUAL);
-		ReturnStatement returnFalse = new ReturnStatement(new FalseLiteral(0, 0), 0, 0);
-		return new IfStatement(ifFloatCompareIsNot0, returnFalse, 0, 0);
+		EqualExpression ifFloatCompareIsNot0 = new EqualExpression(floatCompare, new IntLiteral(new char[] {'0'}, pS, pE), OperatorIds.NOT_EQUAL);
+		ReturnStatement returnFalse = new ReturnStatement(new FalseLiteral(pS, pE), pS, pE);
+		return new IfStatement(ifFloatCompareIsNot0, returnFalse, pS, pE);
 	}
 	
 	/** Give 2 clones! */
-	private Expression longToIntForHashCode(Reference ref1, Reference ref2) {
+	private Expression longToIntForHashCode(Reference ref1, Reference ref2, long p) {
+		int pS = (int)(p >> 32), pE = (int)p;
 		/* (int)(ref >>> 32 ^ ref) */
 		BinaryExpression higherBits = new BinaryExpression(
-				ref1, new IntLiteral("32".toCharArray(), 0, 0),
+				ref1, new IntLiteral("32".toCharArray(), pS, pE),
 				OperatorIds.UNSIGNED_RIGHT_SHIFT);
 		BinaryExpression xorParts = new BinaryExpression(ref2, higherBits, OperatorIds.XOR);
 		return new CastExpression(xorParts, TypeReference.baseTypeReference(TypeIds.T_int, 0));
 	}
 	
-	private Reference generateFieldReference(char[] fieldName) {
-		FieldReference thisX = new FieldReference(("this." + new String(fieldName)).toCharArray(), 0);
-		thisX.receiver = new ThisReference(0, 0);
+	private Reference generateFieldReference(char[] fieldName, long p) {
+		FieldReference thisX = new FieldReference(("this." + new String(fieldName)).toCharArray(), p);
+		thisX.receiver = new ThisReference((int)(p >> 32), (int)p);
 		thisX.token = fieldName;
 		return thisX;
 	}
 	
-	private NameReference generateQualifiedNameRef(char[]... varNames) {
+	private NameReference generateQualifiedNameRef(long p, char[]... varNames) {
 		if ( varNames.length > 1 )
-			return new QualifiedNameReference(varNames, new long[varNames.length], 0, 0);
-		else return new SingleNameReference(varNames[0], 0);
+			return new QualifiedNameReference(varNames, new long[varNames.length], (int)(p >> 32), (int)p);
+		else return new SingleNameReference(varNames[0], p);
 	}
 }

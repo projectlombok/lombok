@@ -45,7 +45,6 @@ import org.eclipse.jdt.internal.compiler.ast.BinaryExpression;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
@@ -226,12 +225,9 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		ReturnStatement returnStatement = new ReturnStatement(current, (int)(p >> 32), (int)p);
 		
 		MethodDeclaration method = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
-		method.modifiers = PKG.toModifier(AccessLevel.PUBLIC);
+		method.modifiers = toModifier(AccessLevel.PUBLIC);
 		method.returnType = new QualifiedTypeReference(TypeConstants.JAVA_LANG_STRING, new long[] {0, 0, 0});
-		MarkerAnnotation overrideAnnotation = new MarkerAnnotation(new QualifiedTypeReference(TypeConstants.JAVA_LANG_OVERRIDE, new long[] {p, p, p}), (int)(p >> 32));
-		overrideAnnotation.declarationSourceEnd = overrideAnnotation.sourceEnd = overrideAnnotation.statementEnd = (int)p;
-		overrideAnnotation.bits |= ASTNode.HasBeenGenerated;
-		method.annotations = new Annotation[] {overrideAnnotation};
+		method.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, p)};
 		method.arguments = null;
 		method.selector = "toString".toCharArray();
 		method.thrownExceptions = null;

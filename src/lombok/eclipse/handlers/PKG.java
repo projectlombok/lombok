@@ -44,6 +44,7 @@ import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
+import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
@@ -264,5 +265,12 @@ class PKG {
 		
 		return new IfStatement(new EqualExpression(new SingleNameReference(variable.name, 0),
 				new NullLiteral(0, 0), OperatorIds.EQUAL_EQUAL), throwStatement, 0, 0);
+	}
+	
+	static MarkerAnnotation makeMarkerAnnotation(char[][] name, long pos) {
+		MarkerAnnotation ann = new MarkerAnnotation(new QualifiedTypeReference(name, new long[] {pos, pos, pos}), (int)(pos >> 32));
+		ann.declarationSourceEnd = ann.sourceEnd = ann.statementEnd = (int)pos;
+		ann.bits |= ASTNode.HasBeenGenerated;
+		return ann;
 	}
 }
