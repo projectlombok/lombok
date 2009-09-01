@@ -254,38 +254,47 @@ public class Eclipse {
 		return ref;
 	}
 	
-	public static Annotation[] copyAnnotations(Annotation[] annotations) {
-		return copyAnnotations(annotations, null);
+	public static Annotation[] copyAnnotations(Annotation[] annotations, long p) {
+		return copyAnnotations(annotations, null, p);
 	}
 	
-	public static Annotation[] copyAnnotations(Annotation[] annotations1, Annotation[] annotations2) {
+	public static Annotation[] copyAnnotations(Annotation[] annotations1, Annotation[] annotations2, long p) {
 		if (annotations1 == null && annotations2 == null) return null;
 		if (annotations1 == null) annotations1 = new Annotation[0];
 		if (annotations2 == null) annotations2 = new Annotation[0];
 		Annotation[] outs = new Annotation[annotations1.length + annotations2.length];
 		int idx = 0;
 		for ( Annotation annotation : annotations1 ) {
-			outs[idx++] = copyAnnotation(annotation);
+			outs[idx++] = copyAnnotation(annotation, p);
 		}
 		for ( Annotation annotation : annotations2 ) {
-			outs[idx++] = copyAnnotation(annotation);
+			outs[idx++] = copyAnnotation(annotation, p);
 		}
 		return outs;
 	}
 	
-	public static Annotation copyAnnotation(Annotation annotation) {
+	public static Annotation copyAnnotation(Annotation annotation, long p) {
+		int pS = (int)(p >> 32), pE = (int)p;
+		
 		if (annotation instanceof MarkerAnnotation) {
-			return new MarkerAnnotation(copyType(annotation.type), 0);
+			MarkerAnnotation ann = new MarkerAnnotation(copyType(annotation.type), pS);
+			ann.declarationSourceEnd = ann.sourceEnd = ann.statementEnd = pE;
+			return ann;
 		}
 		
 		if (annotation instanceof SingleMemberAnnotation) {
-			SingleMemberAnnotation result = new SingleMemberAnnotation(copyType(annotation.type), 0);
-			result.memberValue = ((SingleMemberAnnotation)annotation).memberValue;
+			SingleMemberAnnotation ann = new SingleMemberAnnotation(copyType(annotation.type), pS);
+			ann.declarationSourceEnd = ann.sourceEnd = ann.statementEnd = pE;
+			//TODO memberValue(s) need to be copied as well (same for copying a NormalAnnotation as below).
+			ann.memberValue = ((SingleMemberAnnotation)annotation).memberValue;
+			return ann;
 		}
 		
 		if (annotation instanceof NormalAnnotation) {
-			NormalAnnotation result = new NormalAnnotation(copyType(annotation.type), 0);
-			result.memberValuePairs = ((NormalAnnotation)annotation).memberValuePairs;
+			NormalAnnotation ann = new NormalAnnotation(copyType(annotation.type), pS);
+			ann.declarationSourceEnd = ann.statementEnd = ann.sourceEnd = pE;
+			ann.memberValuePairs = ((NormalAnnotation)annotation).memberValuePairs;
+			return ann;
 		}
 		
 		return annotation;

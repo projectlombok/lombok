@@ -81,6 +81,8 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 	}
 	
 	private boolean createGetterForField(AccessLevel level, Node fieldNode, Node errorNode, ASTNode pos, boolean whineIfExists) {
+		int pS = pos.sourceStart(), pE = pos.sourceEnd();
+		long p = (long)pS << 32 | pE;
 		if ( fieldNode.getKind() != Kind.FIELD ) {
 			errorNode.addError("@Getter is only supported on a field.");
 			return true;
@@ -103,7 +105,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 					String altNameExpl = "";
 					if ( !altName.equals(getterName) ) altNameExpl = String.format(" (%s)", altName);
 					errorNode.addWarning(
-						String.format("Not generating %s(): A method with that name already exists%s",  getterName, altNameExpl));
+						String.format("Not generating %s(): A method with that name already exists%s", getterName, altNameExpl));
 				}
 				return true;
 			default:
@@ -114,7 +116,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		
 		MethodDeclaration method = generateGetter((TypeDeclaration) fieldNode.up().get(), field, getterName, modifier, pos);
 		Annotation[] copiedAnnotations = copyAnnotations(
-				findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN));
+				findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN), p);
 		if (copiedAnnotations.length != 0) {
 			method.annotations = copiedAnnotations;
 		}

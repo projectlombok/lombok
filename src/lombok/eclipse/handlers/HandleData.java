@@ -158,7 +158,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 				Statement nullCheck = generateNullCheck(field);
 				if (nullCheck != null) nullChecks.add(nullCheck);
 			}
-			Annotation[] copiedAnnotations = copyAnnotations(nonNulls, nullables);
+			Annotation[] copiedAnnotations = copyAnnotations(nonNulls, nullables, p);
 			if (copiedAnnotations.length != 0) argument.annotations = copiedAnnotations;
 			args.add(argument);
 		}
@@ -205,7 +205,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			
 			Argument argument = new Argument(field.name, fieldPos, copyType(field.type), 0);
 			Annotation[] copiedAnnotations = copyAnnotations(
-					findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN));
+					findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN), p);
 			if (copiedAnnotations.length != 0) argument.annotations = copiedAnnotations;
 			args.add(new Argument(field.name, fieldPos, copyType(field.type), Modifier.FINAL));
 		}

@@ -151,7 +151,7 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 			if (nullCheck != null) method.statements = new Statement[] { nullCheck, assignment };
 			else method.statements = new Statement[] { assignment };
 		}
-		Annotation[] copiedAnnotations = copyAnnotations(nonNulls, nullables);
+		Annotation[] copiedAnnotations = copyAnnotations(nonNulls, nullables, pos);
 		if (copiedAnnotations.length != 0) param.annotations = copiedAnnotations;
 		return method;
 	}
