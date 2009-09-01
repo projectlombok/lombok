@@ -3,6 +3,8 @@ Lombok Changelog
 
 ### v0.8.4
 
+* Fixed many issues with `@SneakyThrows` - in previous versions, using it would sometimes confuse the syntax colouring, and various constructs in the annotated method would cause outright eclipse errors, such as beginning the method with a try block. This also fixes [Issue #30](http://code.google.com/p/projectlombok/issues/detail?id=30)
+* Fixed the David Lynch bug - in eclipse, classes with lombok features used in them would sometimes appear invisible from other source files. It's described in more detail on [Issue #41](http://code.google.com/p/projectlombok/issues/detail?id=41). If you suffered from it, you'll know what this is about.
 * Fixed the problem where eclipse's help system did not start up on lombokized eclipses. [Issue #26](http://code.google.com/p/projectlombok/issues/detail?id=26)
 * All generated methods now make their parameters (if they have any) final. This should help avoid problems with the 'make all parameters final' save action in eclipse. [Issue #40](http://code.google.com/p/projectlombok/issues/detail?id=40)
 * Okay, this time _really_ added support for @NonNull and @NotNull annotations. It was reported for v0.8.3 but it wasn't actually in that release. @Nullable annotations are now also copied over to the getter's return type and the setter and constructor's parameters (but, obviously, no check is added). Any @NonNull annotated non-final fields that are not initialized are now also added to the generated constructor by @Data in order to ensure via an explicit null check that they contain a legal value.
