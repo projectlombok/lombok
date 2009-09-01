@@ -71,6 +71,15 @@ public class EclipsePatcher {
 				}
 			}
 			
+			if ( ECLIPSE_ASTCONVERTER_CLASS_NAME.equals(className) ) {
+				try {
+					return runTransform("lombok.eclipse.agent.EclipseASTConverterTransformer", classfileBuffer);
+				} catch ( Throwable t ) {
+					System.err.println("Wasn't able to patch eclipse's ASTConverter class:");
+					t.printStackTrace();
+				}
+			}
+			
 			return null;
 		}
 	}
@@ -87,6 +96,7 @@ public class EclipsePatcher {
 	
 	static final String ECLIPSE_CUD_CLASS_NAME = "org/eclipse/jdt/internal/compiler/ast/CompilationUnitDeclaration";
 	static final String ECLIPSE_PARSER_CLASS_NAME = "org/eclipse/jdt/internal/compiler/parser/Parser";
+	static final String ECLIPSE_ASTCONVERTER_CLASS_NAME = "org/eclipse/jdt/core/dom/ASTConverter";
 	
 	public static void agentmain(String agentArgs, Instrumentation instrumentation) throws Exception {
 		registerPatcher(instrumentation, true);
