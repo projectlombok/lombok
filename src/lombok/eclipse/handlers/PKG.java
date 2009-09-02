@@ -33,6 +33,7 @@ import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAST;
+import lombok.eclipse.EclipseAST.Node;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -54,6 +55,7 @@ import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 
 class PKG {
 	private PKG() {}
@@ -272,5 +274,28 @@ class PKG {
 		ann.declarationSourceEnd = ann.sourceEnd = ann.statementEnd = (int)pos;
 		ann.bits |= ASTNode.HasBeenGenerated;
 		return ann;
+	}
+	
+	static List<Integer> createListOfNonExistentFields(List<String> list, Node type, boolean excludeStandard, boolean excludeTransient) {
+		boolean[] matched = new boolean[list.size()];
+		
+		for ( Node child : type.down() ) {
+			if ( list.isEmpty() ) break;
+			if ( child.getKind() != Kind.FIELD ) continue;
+			if ( excludeStandard ) {
+				if ( (((FieldDeclaration)child.get()).modifiers & ClassFileConstants.AccStatic) != 0 ) continue;
+				if ( child.getName().startsWith("$") ) continue;
+			}
+			if ( excludeTransient && (((FieldDeclaration)child.get()).modifiers & ClassFileConstants.AccTransient) != 0 ) continue;
+			int idx = list.indexOf(child.getName());
+			if ( idx > -1 ) matched[idx] = true;
+		}
+		
+		List<Integer> problematic = new ArrayList<Integer>();
+		for ( int i = 0 ; i < list.size() ; i++ ) {
+			if ( !matched[i] ) problematic.add(i);
+		}
+		
+		return problematic;
 	}
 }

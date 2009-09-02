@@ -66,24 +66,19 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleToString implements EclipseAnnotationHandler<ToString> {
-	private void checkForBogusExcludes(Node type, AnnotationValues<ToString> annotation) {
-		List<String> list = Arrays.asList(annotation.getInstance().exclude());
-		boolean[] matched = new boolean[list.size()];
-		
-		for ( Node child : type.down() ) {
-			if ( list.isEmpty() ) break;
-			if ( child.getKind() != Kind.FIELD ) continue;
-			if ( (((FieldDeclaration)child.get()).modifiers & ClassFileConstants.AccStatic) != 0 ) continue;
-			int idx = list.indexOf(child.getName());
-			if ( idx > -1 ) matched[idx] = true;
-		}
-		
-		for ( int i = 0 ; i < list.size() ; i++ ) {
-			if ( !matched[i] ) {
+	private void checkForBogusFieldNames(Node type, AnnotationValues<ToString> annotation) {
+		if ( annotation.isExplicit("exclude") ) {
+			for ( int i : createListOfNonExistentFields(Arrays.asList(annotation.getInstance().exclude()), type, true, false) ) {
 				annotation.setWarning("exclude", "This field does not exist, or would have been excluded anyway.", i);
 			}
 		}
+		if ( annotation.isExplicit("of") ) {
+			for ( int i : createListOfNonExistentFields(Arrays.asList(annotation.getInstance().of()), type, false, false) ) {
+				annotation.setWarning("of", "This field does not exist.", i);
+			}
+		}
 	}
+	
 	
 	public void generateToStringForType(Node typeNode, Node errorNode) {
 		for ( Node child : typeNode.down() ) {
@@ -95,29 +90,31 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 			}
 		}
 		
-		boolean includeFieldNames = false;
-		boolean callSuper = false;
+		boolean includeFieldNames = true;
 		try {
 			includeFieldNames = ((Boolean)ToString.class.getMethod("includeFieldNames").getDefaultValue()).booleanValue();
 		} catch ( Exception ignore ) {}
-		try {
-			callSuper = ((Boolean)ToString.class.getMethod("callSuper").getDefaultValue()).booleanValue();
-		} catch ( Exception ignore ) {}
-		generateToString(typeNode, errorNode, Collections.<String>emptyList(), includeFieldNames, callSuper, false);
+		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false);
 	}
 	
 	public boolean handle(AnnotationValues<ToString> annotation, Annotation ast, Node annotationNode) {
 		ToString ann = annotation.getInstance();
 		List<String> excludes = Arrays.asList(ann.exclude());
+		List<String> includes = Arrays.asList(ann.of());
 		Node typeNode = annotationNode.up();
+		Boolean callSuper = ann.callSuper();
 		
-		checkForBogusExcludes(typeNode, annotation);
+		if ( !annotation.isExplicit("callSuper") ) callSuper = null;
+		if ( !annotation.isExplicit("exclude") ) excludes = null;
+		if ( !annotation.isExplicit("of") ) includes = null;
 		
-		return generateToString(typeNode, annotationNode, excludes, ann.includeFieldNames(), ann.callSuper(), true);
+		checkForBogusFieldNames(typeNode, annotation);
+		
+		return generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true);
 	}
 	
-	public boolean generateToString(Node typeNode, Node errorNode, List<String> excludes,
-			boolean includeFieldNames, boolean callSuper, boolean whineIfExists) {
+	public boolean generateToString(Node typeNode, Node errorNode, List<String> excludes, List<String> includes,
+			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists) {
 		TypeDeclaration typeDecl = null;
 		
 		if ( typeNode.get() instanceof TypeDeclaration ) typeDecl = (TypeDeclaration) typeNode.get();
@@ -130,15 +127,31 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 			return false;
 		}
 		
+		if ( callSuper == null ) {
+			try {
+				callSuper = ((Boolean)ToString.class.getMethod("callSuper").getDefaultValue()).booleanValue();
+			} catch ( Exception ignore ) {}
+		}
+		
 		List<Node> nodesForToString = new ArrayList<Node>();
-		for ( Node child : typeNode.down() ) {
-			if ( child.getKind() != Kind.FIELD ) continue;
-			FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
-			//Skip static fields.
-			if ( (fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0 ) continue;
-			//Skip excluded fields.
-			if ( excludes.contains(new String(fieldDecl.name)) ) continue;
-			nodesForToString.add(child);
+		if ( includes != null ) {
+			for ( Node child : typeNode.down() ) {
+				if ( child.getKind() != Kind.FIELD ) continue;
+				FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
+				if ( includes.contains(new String(fieldDecl.name)) ) nodesForToString.add(child);
+			}
+		} else {
+			for ( Node child : typeNode.down() ) {
+				if ( child.getKind() != Kind.FIELD ) continue;
+				FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
+				//Skip static fields.
+				if ( (fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0 ) continue;
+				//Skip excluded fields.
+				if ( excludes.contains(new String(fieldDecl.name)) ) continue;
+				//Skip fields that start with $
+				if ( fieldDecl.name.length > 0 && fieldDecl.name[0] == '$' ) continue;
+				nodesForToString.add(child);
+			}
 		}
 		
 		switch ( methodExists("toString", typeNode) ) {

@@ -91,22 +91,15 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 	private static final Set<String> BUILT_IN_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
 			"byte", "short", "int", "long", "char", "boolean", "double", "float")));
 	
-	private void checkForBogusExcludes(Node type, AnnotationValues<EqualsAndHashCode> annotation) {
-		List<String> list = Arrays.asList(annotation.getInstance().exclude());
-		boolean[] matched = new boolean[list.size()];
-		
-		for ( Node child : type.down() ) {
-			if ( list.isEmpty() ) break;
-			if ( child.getKind() != Kind.FIELD ) continue;
-			if ( (((FieldDeclaration)child.get()).modifiers & ClassFileConstants.AccStatic) != 0 ) continue;
-			if ( (((FieldDeclaration)child.get()).modifiers & ClassFileConstants.AccTransient) != 0 ) continue;
-			int idx = list.indexOf(child.getName());
-			if ( idx > -1 ) matched[idx] = true;
-		}
-		
-		for ( int i = 0 ; i < list.size() ; i++ ) {
-			if ( !matched[i] ) {
+	private void checkForBogusFieldNames(Node type, AnnotationValues<EqualsAndHashCode> annotation) {
+		if ( annotation.isExplicit("exclude") ) {
+			for ( int i : createListOfNonExistentFields(Arrays.asList(annotation.getInstance().exclude()), type, true, true) ) {
 				annotation.setWarning("exclude", "This field does not exist, or would have been excluded anyway.", i);
+			}
+		}
+		if ( annotation.isExplicit("of") ) {
+			for ( int i : createListOfNonExistentFields(Arrays.asList(annotation.getInstance().of()), type, false, false) ) {
+				annotation.setWarning("of", "This field does not exist.", i);
 			}
 		}
 	}
@@ -121,26 +114,34 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 			}
 		}
 		
-		boolean callSuper = false;
-		try {
-			callSuper = ((Boolean)EqualsAndHashCode.class.getMethod("callSuper").getDefaultValue()).booleanValue();
-		} catch ( Exception ignore ) {}
-		generateMethods(typeNode, errorNode, Collections.<String>emptyList(), callSuper, true, false);
+		generateMethods(typeNode, errorNode, null, null, null, false);
 	}
 	
 	@Override public boolean handle(AnnotationValues<EqualsAndHashCode> annotation, Annotation ast, Node annotationNode) {
 		EqualsAndHashCode ann = annotation.getInstance();
 		List<String> excludes = Arrays.asList(ann.exclude());
+		List<String> includes = Arrays.asList(ann.of());
 		Node typeNode = annotationNode.up();
 		
-		checkForBogusExcludes(typeNode, annotation);
+		checkForBogusFieldNames(typeNode, annotation);
 		
-		return generateMethods(typeNode, annotationNode, excludes,
-				ann.callSuper(), annotation.getRawExpression("callSuper") == null, true);
+		Boolean callSuper = ann.callSuper();
+		if ( !annotation.isExplicit("callSuper") ) callSuper = null;
+		if ( !annotation.isExplicit("exclude") ) excludes = null;
+		if ( !annotation.isExplicit("of") ) includes = null;
+		
+		if ( excludes != null && includes != null ) {
+			excludes = null;
+			annotation.setWarning("exclude", "exclude and of are mutually exclusive; the 'exclude' parameter will be ignored.");
+		}
+		
+		return generateMethods(typeNode, annotationNode, excludes, includes, callSuper, true);
 	}
 	
-	public boolean generateMethods(Node typeNode, Node errorNode, List<String> excludes,
-			boolean callSuper, boolean implicit, boolean whineIfExists) {
+	public boolean generateMethods(Node typeNode, Node errorNode, List<String> excludes, List<String> includes,
+			Boolean callSuper, boolean whineIfExists) {
+		assert excludes == null || includes == null;
+		
 		TypeDeclaration typeDecl = null;
 		
 		if ( typeNode.get() instanceof TypeDeclaration ) typeDecl = (TypeDeclaration) typeNode.get();
@@ -151,6 +152,14 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		if ( typeDecl == null || notAClass ) {
 			errorNode.addError("@EqualsAndHashCode is only supported on a class.");
 			return false;
+		}
+		
+		boolean implicitCallSuper = callSuper == null;
+		
+		if ( callSuper == null ) {
+			try {
+				callSuper = ((Boolean)EqualsAndHashCode.class.getMethod("callSuper").getDefaultValue()).booleanValue();
+			} catch ( Exception ignore ) {}
 		}
 		
 		boolean isDirectDescendantOfObject = true;
@@ -165,21 +174,31 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 			return true;
 		}
 		
-		if ( !isDirectDescendantOfObject && !callSuper && implicit ) {
+		if ( !isDirectDescendantOfObject && !callSuper && implicitCallSuper ) {
 			errorNode.addWarning("Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.");
 		}
 		
 		List<Node> nodesForEquality = new ArrayList<Node>();
-		for ( Node child : typeNode.down() ) {
-			if ( child.getKind() != Kind.FIELD ) continue;
-			FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
-			//Skip static fields.
-			if ( (fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0 ) continue;
-			//Skip transient fields.
-			if ( (fieldDecl.modifiers & ClassFileConstants.AccTransient) != 0 ) continue;
-			//Skip excluded fields.
-			if ( excludes.contains(new String(fieldDecl.name)) ) continue;
-			nodesForEquality.add(child);
+		if ( includes != null ) {
+			for ( Node child : typeNode.down() ) {
+				if ( child.getKind() != Kind.FIELD ) continue;
+				FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
+				if ( includes.contains(new String(fieldDecl.name)) ) nodesForEquality.add(child);
+			}
+		} else {
+			for ( Node child : typeNode.down() ) {
+				if ( child.getKind() != Kind.FIELD ) continue;
+				FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
+				//Skip static fields.
+				if ( (fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0 ) continue;
+				//Skip transient fields.
+				if ( (fieldDecl.modifiers & ClassFileConstants.AccTransient) != 0 ) continue;
+				//Skip excluded fields.
+				if ( excludes != null && excludes.contains(new String(fieldDecl.name)) ) continue;
+				//Skip fields that start with $.
+				if ( fieldDecl.name.length > 0 && fieldDecl.name[0] == '$' ) continue;
+				nodesForEquality.add(child);
+			}
 		}
 		
 		switch ( methodExists("hashCode", typeNode) ) {

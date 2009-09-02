@@ -288,4 +288,30 @@ class PKG {
 		JCStatement throwStatement = treeMaker.Throw(exception);
 		return treeMaker.If(treeMaker.Binary(JCTree.EQ, treeMaker.Ident(fieldName), treeMaker.Literal(TypeTags.BOT, null)), throwStatement, null);
 	}
+	
+	static List<Integer> createListOfNonExistentFields(List<String> list, Node type, boolean excludeStandard, boolean excludeTransient) {
+		boolean[] matched = new boolean[list.size()];
+		
+		for ( Node child : type.down() ) {
+			if ( list.isEmpty() ) break;
+			if ( child.getKind() != Kind.FIELD ) continue;
+			JCVariableDecl field = (JCVariableDecl)child.get();
+			if ( excludeStandard ) {
+				if ( (field.mods.flags & Flags.STATIC) != 0 ) continue;
+				if ( field.name.toString().startsWith("$") ) continue;
+			}
+			if ( excludeTransient && (field.mods.flags & Flags.TRANSIENT) != 0 ) continue;
+
+			int idx = list.indexOf(child.getName());
+			if ( idx > -1 ) matched[idx] = true;
+		}
+		
+		List<Integer> problematic = List.nil();
+		for ( int i = 0 ; i < list.size() ; i++ ) {
+			if ( !matched[i] ) problematic = problematic.append(i);
+		}
+		
+		return problematic;
+	}
+
 }

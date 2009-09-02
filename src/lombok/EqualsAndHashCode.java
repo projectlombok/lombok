@@ -35,8 +35,9 @@ import java.lang.annotation.Target;
  * a method; any method named <code>hashCode</code> will make <code>&#64;EqualsAndHashCode</code> not generate that method,
  * for example.
  * <p>
- * All fields that are non-static and non-transient are used in the equality check and hashCode generation. You can exclude
- * more fields by specifying them in the <code>exclude</code> parameter.
+ * By default, all fields that are non-static and non-transient are used in the equality check and hashCode generation.
+ * You can exclude more fields by specifying them in the <code>exclude</code> parameter. You can also explicitly specify
+ * the fields that are to be used by specifying them in the <code>of</code> parameter.
  * <p>
  * Normally, auto-generating <code>hashCode</code> and <code>equals</code> implementations in a subclass is a bad idea, as
  * the superclass also defines fields, for which equality checks/hashcodes won't be auto-generated. Therefore, a warning
@@ -58,8 +59,17 @@ public @interface EqualsAndHashCode {
 	/**
 	 * Any fields listed here will not be taken into account in the generated
 	 * <code>equals</code> and <code>hashCode</code> implementations.
+	 * Mutually exclusive with {@link #of()}.
 	 */
 	String[] exclude() default {};
+	
+	/**
+	 * If present, explicitly lists the fields that are to be printed.
+	 * Normally, all non-static, non-transient fields are printed.
+	 * <p>
+	 * Mutually exclusive with {@link #exclude()}.
+	 */
+	String[] of() default {};
 	
 	/**
 	 * Call on the superclass's implementations of <code>equals</code> and <code>hashCode</code> before calculating

@@ -18,6 +18,7 @@
 			Any class definition may be annotated with <code>@EqualsAndHashCode</code> to let lombok generate implementations of the
 			<code>equals(Object other)</code> and <code>hashCode()</code> methods. By default, it'll use all non-static, non-transient
 			fields, but you can exclude more fields by naming them in the optional <code>exclude</code> parameter to the annotation.
+			Alternatively, you can specify exactly which fields you wish to be used by naming them in the <code>of</code> parameter.
 			</p><p>
 			By setting <code>callSuper</code> to <em>true</em>, you can include the <code>equals</code> and <code>hashCode</code> methods of your superclass in the generated methods.
 			For <code>hashCode</code>, the result of <code>super.hashCode()</code> is included in the hash algorithm, and for <code>equals</code>, the generated method will return
@@ -65,6 +66,10 @@
 				</p><p>
 				Attempting to exclude fields that don't exist or would have been excluded anyway (because they are static or transient) results in warnings on the named fields.
 				You therefore don't have to worry about typos.
+				</p><p>
+				Having both <code>exclude</code> and <code>of</code> generates a warning; the <code>exclude</code> parameter will be ignored in that case.
+				</p><p>
+				By default, any variables that start with a $ symbol are excluded automatically. You can only include them by using the 'of' parameter.
 				</p>
 			</div>
 		</div>

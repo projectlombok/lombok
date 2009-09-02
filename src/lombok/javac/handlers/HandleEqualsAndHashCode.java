@@ -22,7 +22,6 @@
 package lombok.javac.handlers;
 
 import static lombok.javac.handlers.PKG.*;
-
 import lombok.EqualsAndHashCode;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
@@ -59,22 +58,15 @@ import com.sun.tools.javac.util.Name;
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAndHashCode> {
-	private void checkForBogusExcludes(Node type, AnnotationValues<EqualsAndHashCode> annotation) {
-		List<String> list = List.from(annotation.getInstance().exclude());
-		boolean[] matched = new boolean[list.size()];
-		
-		for ( Node child : type.down() ) {
-			if ( list.isEmpty() ) break;
-			if ( child.getKind() != Kind.FIELD ) continue;
-			if ( (((JCVariableDecl)child.get()).mods.flags & Flags.STATIC) != 0 ) continue;
-			if ( (((JCVariableDecl)child.get()).mods.flags & Flags.TRANSIENT) != 0 ) continue;
-			int idx = list.indexOf(child.getName());
-			if ( idx > -1 ) matched[idx] = true;
-		}
-		
-		for ( int i = 0 ; i < list.size() ; i++ ) {
-			if ( !matched[i] ) {
+	private void checkForBogusFieldNames(Node type, AnnotationValues<EqualsAndHashCode> annotation) {
+		if ( annotation.isExplicit("exclude") ) {
+			for ( int i : createListOfNonExistentFields(List.from(annotation.getInstance().exclude()), type, true, true) ) {
 				annotation.setWarning("exclude", "This field does not exist, or would have been excluded anyway.", i);
+			}
+		}
+		if ( annotation.isExplicit("of") ) {
+			for ( int i : createListOfNonExistentFields(List.from(annotation.getInstance().of()), type, false, false) ) {
+				annotation.setWarning("of", "This field does not exist.", i);
 			}
 		}
 	}
@@ -82,12 +74,17 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 	@Override public boolean handle(AnnotationValues<EqualsAndHashCode> annotation, JCAnnotation ast, Node annotationNode) {
 		EqualsAndHashCode ann = annotation.getInstance();
 		List<String> excludes = List.from(ann.exclude());
+		List<String> includes = List.from(ann.of());
 		Node typeNode = annotationNode.up();
 		
-		checkForBogusExcludes(typeNode, annotation);
+		checkForBogusFieldNames(typeNode, annotation);
 		
-		return generateMethods(typeNode, annotationNode, excludes,
-				ann.callSuper(), annotation.getRawExpression("callSuper") == null, true);
+		Boolean callSuper = ann.callSuper();
+		if ( !annotation.isExplicit("callSuper") ) callSuper = null;
+		if ( !annotation.isExplicit("exclude") ) excludes = null;
+		if ( !annotation.isExplicit("of") ) includes = null;
+		
+		return generateMethods(typeNode, annotationNode, excludes, includes, callSuper, true);
 	}
 	
 	public void generateEqualsAndHashCodeForType(Node typeNode, Node errorNode) {
@@ -100,15 +97,11 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 			}
 		}
 		
-		boolean callSuper = false;
-		try {
-			callSuper = ((Boolean)EqualsAndHashCode.class.getMethod("callSuper").getDefaultValue()).booleanValue();
-		} catch ( Exception ignore ) {}
-		generateMethods(typeNode, errorNode, List.<String>nil(), callSuper, true, false);
+		generateMethods(typeNode, errorNode, null, null, null, false);
 	}
 	
-	private boolean generateMethods(Node typeNode, Node errorNode, List<String> excludes, 
-			boolean callSuper, boolean implicit, boolean whineIfExists) {
+	private boolean generateMethods(Node typeNode, Node errorNode, List<String> excludes, List<String> includes,
+			Boolean callSuper, boolean whineIfExists) {
 		boolean notAClass = true;
 		if ( typeNode.get() instanceof JCClassDecl ) {
 			long flags = ((JCClassDecl)typeNode.get()).mods.flags;
@@ -121,6 +114,12 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		}
 		
 		boolean isDirectDescendantOfObject = true;
+		boolean implicitCallSuper = callSuper == null;
+		if ( callSuper == null ) {
+			try {
+				callSuper = ((Boolean)EqualsAndHashCode.class.getMethod("callSuper").getDefaultValue()).booleanValue();
+			} catch ( Exception ignore ) {}
+		}
 		
 		JCTree extending = ((JCClassDecl)typeNode.get()).extending;
 		if ( extending != null ) {
@@ -133,21 +132,31 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 			return true;
 		}
 		
-		if ( !isDirectDescendantOfObject && !callSuper && implicit ) {
+		if ( !isDirectDescendantOfObject && !callSuper && implicitCallSuper ) {
 			errorNode.addWarning("Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.");
 		}
 		
 		List<Node> nodesForEquality = List.nil();
-		for ( Node child : typeNode.down() ) {
-			if ( child.getKind() != Kind.FIELD ) continue;
-			JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
-			//Skip static fields.
-			if ( (fieldDecl.mods.flags & Flags.STATIC) != 0 ) continue;
-			//Skip transient fields.
-			if ( (fieldDecl.mods.flags & Flags.TRANSIENT) != 0 ) continue;
-			//Skip excluded fields.
-			if ( excludes.contains(fieldDecl.name.toString()) ) continue;
-			nodesForEquality = nodesForEquality.append(child);
+		if ( includes != null ) {
+			for ( Node child : typeNode.down() ) {
+				if ( child.getKind() != Kind.FIELD ) continue;
+				JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
+				if ( includes.contains(fieldDecl.name.toString()) ) nodesForEquality = nodesForEquality.append(child);
+			}
+		} else {
+			for ( Node child : typeNode.down() ) {
+				if ( child.getKind() != Kind.FIELD ) continue;
+				JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
+				//Skip static fields.
+				if ( (fieldDecl.mods.flags & Flags.STATIC) != 0 ) continue;
+				//Skip transient fields.
+				if ( (fieldDecl.mods.flags & Flags.TRANSIENT) != 0 ) continue;
+				//Skip excluded fields.
+				if ( excludes != null && excludes.contains(fieldDecl.name.toString()) ) continue;
+				//Skip fields that start with $
+				if ( fieldDecl.name.toString().startsWith("$") ) continue;
+				nodesForEquality = nodesForEquality.append(child);
+			}
 		}
 		
 		switch ( methodExists("hashCode", typeNode) ) {

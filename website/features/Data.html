@@ -64,7 +64,7 @@
 				<p>See the small print of <a href="ToString.html"><code>@ToString</code></a>, <a href="EqualsAndHashCode.html"><code>@EqualsAndHashCode</code></a> and
 					<a href="GetterSetter.html"><code>@Getter / @Setter</code></a>.
 				</p><p>
-					Any annotations named <code>@NonNull</code> or <code>@NotNull</code> (case insensitive) on a field are interpreted as: This field must not ever hold
+					Any annotations named <code>@NonNull</code> (case insensitive) on a field are interpreted as: This field must not ever hold
 					<em>null</em>. Therefore, these annotations result in an explicit null check in the generated constructor for the provided field. Also, these
 					annotations (as well as any annotation named <code>@Nullable</code>) are copied to the constructor parameter, in both the true constructor and
 					any static constructor. The same principle applies to generated getters and setters (see the documentation for <a href="GetterSetter.html">@Getter / @Setter</a>)
