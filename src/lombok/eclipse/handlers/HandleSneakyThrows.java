@@ -21,6 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -167,6 +168,7 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 		TypeReference typeReference;
 		if ( exception.exceptionName.indexOf('.') == -1 ) {
 			typeReference = new SingleTypeReference(exception.exceptionName.toCharArray(), p);
+			typeReference.statementEnd = pE;
 		} else {
 			String[] x = exception.exceptionName.split("\\.");
 			char[][] elems = new char[x.length][];
@@ -181,7 +183,7 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 			typeReference = new QualifiedTypeReference(elems, poss);
 		}
 		
-		Argument catchArg = new Argument("$ex".toCharArray(), p, typeReference, 0);
+		Argument catchArg = new Argument("$ex".toCharArray(), p, typeReference, Modifier.FINAL);
 		catchArg.declarationSourceEnd = catchArg.declarationEnd = catchArg.sourceEnd = pE;
 		catchArg.declarationSourceStart = catchArg.modifiersSourceStart = catchArg.sourceStart = pS;
 		
@@ -189,8 +191,12 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 		
 		MessageSend sneakyThrowStatement = new MessageSend();
 		sneakyThrowStatement.receiver = new QualifiedNameReference(new char[][] { "lombok".toCharArray(), "Lombok".toCharArray() }, new long[] { p, p }, pS, pE);
+		sneakyThrowStatement.receiver.statementEnd = pE;
 		sneakyThrowStatement.selector = "sneakyThrow".toCharArray();
-		sneakyThrowStatement.arguments = new Expression[] { new SingleNameReference("$ex".toCharArray(), p) };
+		SingleNameReference exRef = new SingleNameReference("$ex".toCharArray(), p);
+		exRef.statementEnd = pE;
+		sneakyThrowStatement.arguments = new Expression[] { exRef };
+		sneakyThrowStatement.nameSourcePosition = p;
 		sneakyThrowStatement.sourceStart = pS;
 		sneakyThrowStatement.sourceEnd = sneakyThrowStatement.statementEnd = pE;
 		Statement rethrowStatement = new ThrowStatement(sneakyThrowStatement, pS, pE);

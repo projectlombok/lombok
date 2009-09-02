@@ -1,6 +1,11 @@
 Lombok Changelog
 ----------------
 
+### v0.8.5
+
+* Fixed yet another issue with `@SneakyThrows`. This was reported fixed in v0.8.4. but it still didn't work quite as it should. Still falls under the bailiwick of
+[Issue #30](http://code.google.com/p/projectlombok/issues/detail?id=30)
+
 ### v0.8.4
 
 * Fixed many issues with `@SneakyThrows` - in previous versions, using it would sometimes confuse the syntax colouring, and various constructs in the annotated method would cause outright eclipse errors, such as beginning the method with a try block. This also fixes [Issue #30](http://code.google.com/p/projectlombok/issues/detail?id=30)
