@@ -298,6 +298,10 @@ public class AnnotationValues<A extends Annotation> {
 		return v == null ? Collections.<String>emptyList() : v.raws;
 	}
 	
+	public boolean isExplicit(String annotationMethodName) {
+		return values.get(annotationMethodName) != null;
+	}
+	
 	/**
 	 * Convenience method to return the first result in a {@link #getRawExpressions(String)} call.
 	 * 
