@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v0.8.5
 
+* There's a commonly used `@NotNull` annotation, from javax.validation (and in earlier versions of hibernate, which is the origin of javax.validation) which does not quite mean what we want it to mean: It is not legal on parameters, and it is checked at runtime after an explicit request for validation. As a workaround, we've removed checking for any annotation named `NotNull` from the nonnull support of lombok's generated Getters, Setters, and constructors. [Issue #43](http://code.google.com/p/projectlombok/issues/detail?id=43)
 * Fixed yet another issue with `@SneakyThrows`. This was reported fixed in v0.8.4. but it still didn't work quite as it should. Still falls under the bailiwick of
 [Issue #30](http://code.google.com/p/projectlombok/issues/detail?id=30)
 
