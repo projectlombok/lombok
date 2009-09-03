@@ -125,10 +125,12 @@ public class Javac {
 			
 			values.put(name, new AnnotationValue(node, raws, guesses, isExplicit) {
 				@Override public void setError(String message, int valueIdx) {
-					node.addError(message, positions.get(valueIdx));
+					if ( valueIdx < 0 ) node.addError(message);
+					else node.addError(message, positions.get(valueIdx));
 				}
 				@Override public void setWarning(String message, int valueIdx) {
-					node.addWarning(message, positions.get(valueIdx));
+					if ( valueIdx < 0 ) node.addWarning(message);
+					else node.addWarning(message, positions.get(valueIdx));
 				}
 			});
 		}
