@@ -55,6 +55,9 @@
 				Any annotations named <code>@NonNull</code> (case insensitive) on the field are interpreted as: This field must not ever hold
 				<em>null</em>. Therefore, these annotations result in an explicit null check in the generated setter. Also, these
 				annotations (as well as any annotation named <code>@Nullable</code>) are copied to setter parameter and getter method
+				</p><p>
+				Using the <code>AccessLevel.NONE</code> access level simply generates nothing. It's useful only in combination with
+				<a href="Data.html"><code>@Data</code></a>.
 				</p>
 			</div>
 		</div>

@@ -31,7 +31,8 @@
 			explicitly; <code>@Data</code> is smart enough to defer to those annotations.
 			</p><p>
 			All generated getters and setters will be <code>public</code>. To override the access level, annotate the field with an explicit <code>@Setter</code> and/or
-			<code>@Getter</code> annotation.
+			<code>@Getter</code> annotation. You can also use this annotation (by combining it with <code>AccessLevel.NONE</code>) to suppress generating a getter and/or setter
+			altogether.
 			</p><p>
 			All fields marked as <code>transient</code> will not be considered for <code>hashCode</code> and <code>equals</code>. All static fields will be
 			skipped entirely (not considered for any of the generated methods, and no setter/getter will be made for them).
