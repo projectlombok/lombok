@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v0.8.5
 
+* There's now an `AccessLevel.NONE` that you can use for your `@Getter` and `@Setter` annotations to suppress generating setters and getters when you're using the `@Data` annotation. Address [Issue #37](http://code.google.com/p/projectlombok/issues/detail?id=37)
 * Both `@EqualsAndHashCode` and `@ToString` now support explicitly specifying the fields to use, via the new 'of' parameter. Fields that begin with a '$' are now also excluded by default from equals, hashCode, and toString generation, unless of course you explicitly mention them in the 'of' parameter. Addresses [Issue #32](http://code.google.com/p/projectlombok/issues/detail?id=32)
 * There's a commonly used `@NotNull` annotation, from javax.validation (and in earlier versions of hibernate, which is the origin of javax.validation) which does not quite mean what we want it to mean: It is not legal on parameters, and it is checked at runtime after an explicit request for validation. As a workaround, we've removed checking for any annotation named `NotNull` from the nonnull support of lombok's generated Getters, Setters, and constructors. [Issue #43](http://code.google.com/p/projectlombok/issues/detail?id=43)
 * Fixed yet another issue with `@SneakyThrows`. This was reported fixed in v0.8.4. but it still didn't work quite as it should. Still falls under the bailiwick of
