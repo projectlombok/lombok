@@ -64,8 +64,8 @@ public @interface EqualsAndHashCode {
 	String[] exclude() default {};
 	
 	/**
-	 * If present, explicitly lists the fields that are to be printed.
-	 * Normally, all non-static, non-transient fields are printed.
+	 * If present, explicitly lists the fields that are to be used for identity.
+	 * Normally, all non-static, non-transient fields are used for identity.
 	 * <p>
 	 * Mutually exclusive with {@link #exclude()}.
 	 */

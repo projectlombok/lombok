@@ -231,7 +231,14 @@
 		<delete dir="build/api" quiet="true" />
 		<delete dir="doc/api" quiet="true" />
 		<mkdir dir="build/api" />
-		<javadoc sourcepath="src" defaultexcludes="yes" destdir="build/api" windowtitle="Lombok">
+		<property name="javadoc.overview.html" location="build/javadoc.overview.html" />
+		<echo file="${javadoc.overview.html}"><![CDATA[<html><body>
+			Welcome to the lombok javadoc.&nbsp;If you're just looking to learn more about using lombok
+			You probably want to look at <a href="http://projectlombok.org/features/index.html">the feature documentation</a>.&nbsp;Otherwise,
+			check the <a href="lombok/package-summary.html">lombok</a> package.&nbsp;If you're trying to extend lombok or
+			write your own plugins, the other packages are what you're looking for.</body></html>
+		]]></echo>
+		<javadoc sourcepath="src" defaultexcludes="yes" destdir="build/api" windowtitle="Lombok" Overview="${javadoc.overview.html}">
 			<classpath refid="lombok.deps.path" />
 			<classpath refid="lombok.libs.path" />
 			<link href="http://java.sun.com/javase/6/docs/api/" offline="true" packagelistLoc="./deps/javadoc/java6"/>
