@@ -85,6 +85,8 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		Node fieldNode = annotationNode.up();
 		if ( fieldNode.getKind() != Kind.FIELD ) return false;
 		AccessLevel level = annotation.getInstance().value();
+		if ( level == AccessLevel.NONE ) return true;
+		
 		return createSetterForField(level, fieldNode, annotationNode, annotationNode.get(), true);
 	}
 	

@@ -77,6 +77,8 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 	public boolean handle(AnnotationValues<Getter> annotation, Annotation ast, Node annotationNode) {
 		Node fieldNode = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
+		if ( level == AccessLevel.NONE ) return true;
+		
 		return createGetterForField(level, fieldNode, annotationNode, annotationNode.get(), true);
 	}
 	

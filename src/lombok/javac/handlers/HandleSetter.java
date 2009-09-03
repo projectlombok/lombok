@@ -82,6 +82,8 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 	@Override public boolean handle(AnnotationValues<Setter> annotation, JCAnnotation ast, Node annotationNode) {
 		Node fieldNode = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
+		if ( level == AccessLevel.NONE ) return true;
+		
 		return createSetterForField(level, fieldNode, annotationNode, annotationNode.get(), true);
 	}
 	
