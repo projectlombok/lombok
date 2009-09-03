@@ -50,6 +50,7 @@ public class AnnotationValues<A extends Annotation> {
 		 * likely be right. If not, it'll be wrong. */
 		public final List<Object> valueGuesses;
 		private final AST<?>.Node node;
+		private final boolean isExplicit;
 		
 		/**
 		 * 'raw' should be the exact expression, for example '5+7', 'AccessLevel.PUBLIC', or 'int.class'.
@@ -58,19 +59,21 @@ public class AnnotationValues<A extends Annotation> {
 		 * For classes, supply the class name (qualified or not) as a string.<br />
 		 * For enums, supply the simple name part (everything after the last dot) as a string.<br />
 		 */
-		public AnnotationValue(AST<?>.Node node, String raw, Object valueGuess) {
+		public AnnotationValue(AST<?>.Node node, String raw, Object valueGuess, boolean isExplicit) {
 			this.node = node;
 			this.raws = Collections.singletonList(raw);
 			this.valueGuesses = Collections.singletonList(valueGuess);
+			this.isExplicit = isExplicit;
 		}
 		
 		/**
 		 * Like the other constructor, but used for when the annotation method is initialized with an array value.
 		 */
-		public AnnotationValue(AST<?>.Node node, List<String> raws, List<Object> valueGuesses) {
+		public AnnotationValue(AST<?>.Node node, List<String> raws, List<Object> valueGuesses, boolean isExplicit) {
 			this.node = node;
 			this.raws = raws;
 			this.valueGuesses = valueGuesses;
+			this.isExplicit = isExplicit;
 		}
 		
 		/**
@@ -100,6 +103,10 @@ public class AnnotationValues<A extends Annotation> {
 		/** {@inheritDoc} */
 		@Override public String toString() {
 			return "raws: " + raws + " valueGuesses: " + valueGuesses;
+		}
+		
+		public boolean isExplicit() {
+			return isExplicit;
 		}
 	}
 	
@@ -299,7 +306,8 @@ public class AnnotationValues<A extends Annotation> {
 	}
 	
 	public boolean isExplicit(String annotationMethodName) {
-		return values.get(annotationMethodName) != null;
+		AnnotationValue annotationValue = values.get(annotationMethodName);
+		return annotationValue != null && annotationValue.isExplicit();
 	}
 	
 	/**

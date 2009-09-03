@@ -346,11 +346,13 @@ public class Eclipse {
 				if ( mName.equals(name) ) fullExpression = pair.value;
 			}
 			
-			if ( fullExpression != null ) {
+			boolean isExplicit = fullExpression != null;
+			
+			if ( isExplicit ) {
 				if ( fullExpression instanceof ArrayInitializer ) {
 					expressions = ((ArrayInitializer)fullExpression).expressions;
 				} else expressions = new Expression[] { fullExpression };
-				for ( Expression ex : expressions ) {
+				if ( expressions != null ) for ( Expression ex : expressions ) {
 					StringBuffer sb = new StringBuffer();
 					ex.print(0, sb);
 					raws.add(sb.toString());
@@ -361,7 +363,7 @@ public class Eclipse {
 			final Expression fullExpr = fullExpression;
 			final Expression[] exprs = expressions;
 			
-			values.put(name, new AnnotationValue(annotationNode, raws, guesses) {
+			values.put(name, new AnnotationValue(annotationNode, raws, guesses, isExplicit) {
 				@Override public void setError(String message, int valueIdx) {
 					Expression ex;
 					if ( valueIdx == -1 ) ex = fullExpr;

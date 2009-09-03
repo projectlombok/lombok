@@ -81,6 +81,11 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		if ( !annotation.isExplicit("exclude") ) excludes = null;
 		if ( !annotation.isExplicit("of") ) includes = null;
 		
+		if ( excludes != null && includes != null ) {
+			excludes = null;
+			annotation.setWarning("exclude", "exclude and of are mutually exclusive; the 'exclude' parameter will be ignored.");
+		}
+		
 		return generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true);
 	}
 	

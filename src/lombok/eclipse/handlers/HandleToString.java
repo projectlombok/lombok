@@ -108,6 +108,11 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		if ( !annotation.isExplicit("exclude") ) excludes = null;
 		if ( !annotation.isExplicit("of") ) includes = null;
 		
+		if ( excludes != null && includes != null ) {
+			excludes = null;
+			annotation.setWarning("exclude", "exclude and of are mutually exclusive; the 'exclude' parameter will be ignored.");
+		}
+		
 		checkForBogusFieldNames(typeNode, annotation);
 		
 		return generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true);
@@ -147,7 +152,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 				//Skip static fields.
 				if ( (fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0 ) continue;
 				//Skip excluded fields.
-				if ( excludes.contains(new String(fieldDecl.name)) ) continue;
+				if ( excludes != null && excludes.contains(new String(fieldDecl.name)) ) continue;
 				//Skip fields that start with $
 				if ( fieldDecl.name.length > 0 && fieldDecl.name[0] == '$' ) continue;
 				nodesForToString.add(child);

@@ -92,6 +92,7 @@ public class Javac {
 			List<String> raws = new ArrayList<String>();
 			List<Object> guesses = new ArrayList<Object>();
 			final List<DiagnosticPosition> positions = new ArrayList<DiagnosticPosition>();
+			boolean isExplicit = false;
 			
 			for ( JCExpression arg : arguments ) {
 				String mName;
@@ -107,6 +108,7 @@ public class Javac {
 				}
 				
 				if ( !mName.equals(name) ) continue;
+				isExplicit = true;
 				if ( rhs instanceof JCNewArray ) {
 					List<JCExpression> elems = ((JCNewArray)rhs).elems;
 					for  ( JCExpression inner : elems ) {
@@ -121,7 +123,7 @@ public class Javac {
 				}
 			}
 			
-			values.put(name, new AnnotationValue(node, raws, guesses) {
+			values.put(name, new AnnotationValue(node, raws, guesses, isExplicit) {
 				@Override public void setError(String message, int valueIdx) {
 					node.addError(message, positions.get(valueIdx));
 				}
