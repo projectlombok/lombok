@@ -140,7 +140,7 @@ public class HandlerLibrary {
 	
 	/** Generates an error in the Messager that was used to initialize this HandlerLibrary. */
 	public void javacError(String message) {
-		javacWarning(message, null);
+		javacError(message, null);
 	}
 	
 	/** Generates an error in the Messager that was used to initialize this HandlerLibrary. */
