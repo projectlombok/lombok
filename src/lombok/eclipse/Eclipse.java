@@ -243,7 +243,10 @@ public class Eclipse {
 		}
 		
 		if ( ref instanceof Wildcard ) {
-			return new Wildcard(((Wildcard)ref).kind);
+			Wildcard wildcard = new Wildcard(((Wildcard)ref).kind);
+			wildcard.sourceStart = ref.sourceStart;
+			wildcard.sourceEnd = ref.sourceEnd;
+			return wildcard;
 		}
 		
 		if ( ref instanceof SingleTypeReference ) {
