@@ -22,6 +22,9 @@
 package lombok.eclipse;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 import lombok.eclipse.EclipseAST.Node;
 
@@ -69,6 +72,24 @@ public class TransformEclipseAST {
 		handlers = l;
 	}
 	
+	private static final List<String> DONT_RUN_LIST = Collections.unmodifiableList(Arrays.asList(
+			"org.eclipse.jdt.internal.corext.util.CodeFormatterUtil."
+			));
+	
+	
+	/**
+	 * Returns 'true' if the stack trace indicates lombok definitely SHOULD run for this parse job, by checking the context,
+	 * and returns 'false' if the stack trace indicates lombok should definitely NOT run.
+	 * 
+	 * Returns null if it can't tell (you probably should default to running lombok if you don't know).
+	 */
+	private static Boolean analyzeStackTrace(StackTraceElement[] trace) {
+		for ( StackTraceElement e : trace )
+			if ( e.toString().contains(DONT_RUN_LIST.get(0)) ) return false;
+		return null;
+		//potential speedup: if trace contains org.eclipse.swt.widgets. -> stop - nothing interesting ever follows that. I think.
+	}
+	
 	/**
 	 * This method is called immediately after Eclipse finishes building a CompilationUnitDeclaration, which is
 	 * the top-level AST node when Eclipse parses a source file. The signature is 'magic' - you should not
@@ -82,6 +103,11 @@ public class TransformEclipseAST {
 	 */
 	public static void transform(Parser parser, CompilationUnitDeclaration ast) {
 		if ( disableLombok ) return;
+		
+		Boolean parse = analyzeStackTrace(new Throwable().getStackTrace());
+		
+		if ( parse != null && parse == false ) return;
+		
 		try {
 			EclipseAST existing = getCache(ast);
 			if ( existing == null ) {
