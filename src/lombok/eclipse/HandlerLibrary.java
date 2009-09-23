@@ -23,11 +23,11 @@ package lombok.eclipse;
 
 import static lombok.eclipse.Eclipse.toQualifiedName;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import lombok.Lombok;
@@ -96,43 +96,33 @@ public class HandlerLibrary {
 	
 	/** Uses SPI Discovery to find implementations of {@link EclipseAnnotationHandler}. */
 	@SuppressWarnings("unchecked") private static void loadAnnotationHandlers(HandlerLibrary lib) {
-		Iterator<EclipseAnnotationHandler> it;
 		try {
-			it = SpiLoadUtil.findServices(EclipseAnnotationHandler.class);
-		} catch ( Throwable t ) {
-			throw Lombok.sneakyThrow(t);
-		}
-		
-		while ( it.hasNext() ) {
-			try {
-				EclipseAnnotationHandler<?> handler = it.next();
-				Class<? extends Annotation> annotationClass =
-					SpiLoadUtil.findAnnotationClass(handler.getClass(), EclipseAnnotationHandler.class);
-				AnnotationHandlerContainer<?> container = new AnnotationHandlerContainer(handler, annotationClass);
-				if ( lib.annotationHandlers.put(container.annotationClass.getName(), container) != null ) {
-					Eclipse.error(null, "Duplicate handlers for annotation type: " + container.annotationClass.getName());
+			for (EclipseAnnotationHandler<?> handler : SpiLoadUtil.findServices(EclipseAnnotationHandler.class)) {
+				try {
+					Class<? extends Annotation> annotationClass =
+						SpiLoadUtil.findAnnotationClass(handler.getClass(), EclipseAnnotationHandler.class);
+					AnnotationHandlerContainer<?> container = new AnnotationHandlerContainer(handler, annotationClass);
+					if (lib.annotationHandlers.put(container.annotationClass.getName(), container) != null) {
+						Eclipse.error(null, "Duplicate handlers for annotation type: " + container.annotationClass.getName());
+					}
+					lib.typeLibrary.addType(container.annotationClass.getName());
+				} catch (Throwable t) {
+					Eclipse.error(null, "Can't load Lombok annotation handler for Eclipse: ", t);
 				}
-				lib.typeLibrary.addType(container.annotationClass.getName());
-			} catch ( Throwable t ) {
-				Eclipse.error(null, "Can't load Lombok annotation handler for Eclipse: ", t);
 			}
+		} catch ( IOException e ) {
+			Lombok.sneakyThrow(e);
 		}
 	}
 	
 	/** Uses SPI Discovery to find implementations of {@link EclipseASTVisitor}. */
 	private static void loadVisitorHandlers(HandlerLibrary lib) {
-		Iterator<EclipseASTVisitor> it;
 		try {
-			it = SpiLoadUtil.findServices(EclipseASTVisitor.class);
+			for (EclipseASTVisitor visitor : SpiLoadUtil.findServices(EclipseASTVisitor.class)) {
+				lib.visitorHandlers.add(visitor);
+			}
 		} catch ( Throwable t ) {
 			throw Lombok.sneakyThrow(t);
-		}
-		while ( it.hasNext() ) {
-			try {
-				lib.visitorHandlers.add(it.next());
-			} catch ( Throwable t ) {
-				Eclipse.error(null, "Can't load Lombok visitor handler for Eclipse: ", t);
-			}
 		}
 	}
 	

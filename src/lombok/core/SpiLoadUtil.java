@@ -61,7 +61,7 @@ public class SpiLoadUtil {
 	 * 
 	 * @param target class to find implementations for.
 	 */
-	public static <C> Iterator<C> findServices(Class<C> target) throws IOException {
+	public static <C> Iterable<C> findServices(Class<C> target) throws IOException {
 		return findServices(target, Thread.currentThread().getContextClassLoader());
 	}
 	
@@ -75,7 +75,7 @@ public class SpiLoadUtil {
 	 * @param loader The classloader object to use to both the spi discovery files, as well as the loader to use
 	 * to make the returned instances.
 	 */
-	public static <C> Iterator<C> findServices(final Class<C> target, final ClassLoader loader) throws IOException {
+	public static <C> Iterable<C> findServices(final Class<C> target, final ClassLoader loader) throws IOException {
 		Enumeration<URL> resources = loader.getResources("META-INF/services/" + target.getName());
 		final Set<String> entries = new LinkedHashSet<String>();
 		while ( resources.hasMoreElements() ) {
@@ -84,21 +84,25 @@ public class SpiLoadUtil {
 		}
 		
 		final Iterator<String> names = entries.iterator();
-		return new Iterator<C>() {
-			public boolean hasNext() {
-				return names.hasNext();
-			}
-			
-			public C next() {
-				try {
-					return target.cast(Class.forName(names.next(), true, loader).newInstance());
-				} catch ( Throwable t ) {
-					throw Lombok.sneakyThrow(t);
-				}
-			}
-			
-			public void remove() {
-				throw new UnsupportedOperationException();
+		return new Iterable<C> () {
+			@Override public Iterator<C> iterator() {
+				return new Iterator<C>() {
+					@Override public boolean hasNext() {
+						return names.hasNext();
+					}
+					
+					@Override public C next() {
+						try {
+							return target.cast(Class.forName(names.next(), true, loader).newInstance());
+						} catch ( Throwable t ) {
+							throw Lombok.sneakyThrow(t);
+						}
+					}
+					
+					@Override public void remove() {
+						throw new UnsupportedOperationException();
+					}
+				};
 			}
 		};
 	}
