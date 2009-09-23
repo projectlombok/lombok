@@ -165,7 +165,7 @@ public interface EclipseASTVisitor {
 			out.println("---------------------------------------------------------");
 			out.println(node.isCompleteParse() ? "COMPLETE" : "incomplete");
 			
-			print("<CUD %s>", node.getFileName());
+			print("<CUD %s%s>", node.getFileName(), Eclipse.isGenerated(unit) ? " (GENERATED)" : "");
 			indent++;
 		}
 		
@@ -175,7 +175,7 @@ public interface EclipseASTVisitor {
 		}
 		
 		public void visitType(Node node, TypeDeclaration type) {
-			print("<TYPE %s>", str(type.name));
+			print("<TYPE %s%s>", str(type.name), Eclipse.isGenerated(type) ? " (GENERATED)" : "");
 			indent++;
 			if ( printContent ) {
 				print("%s", type);
@@ -184,7 +184,7 @@ public interface EclipseASTVisitor {
 		}
 		
 		public void visitAnnotationOnType(TypeDeclaration type, Node node, Annotation annotation) {
-			forcePrint("<ANNOTATION: %s />", annotation);
+			forcePrint("<ANNOTATION%s: %s />", Eclipse.isGenerated(annotation) ? " (GENERATED)" : "", annotation);
 		}
 		
 		public void endVisitType(Node node, TypeDeclaration type) {
@@ -196,9 +196,10 @@ public interface EclipseASTVisitor {
 		public void visitInitializer(Node node, Initializer initializer) {
 			Block block = initializer.block;
 			boolean s = (block != null && block.statements != null);
-			print("<%s INITIALIZER: %s>",
+			print("<%s INITIALIZER: %s%s>",
 					(initializer.modifiers & Modifier.STATIC) != 0 ? "static" : "instance",
-							s ? "filled" : "blank");
+							s ? "filled" : "blank",
+							Eclipse.isGenerated(initializer) ? " (GENERATED)" : "");
 			indent++;
 			if ( printContent ) {
 				if ( initializer.block != null ) print("%s", initializer.block);
@@ -213,7 +214,8 @@ public interface EclipseASTVisitor {
 		}
 		
 		public void visitField(Node node, FieldDeclaration field) {
-			print("<FIELD %s %s = %s>", str(field.type), str(field.name), field.initialization);
+			print("<FIELD%s %s %s = %s>", Eclipse.isGenerated(field) ? " (GENERATED)" : "",
+					str(field.type), str(field.name), field.initialization);
 			indent++;
 			if ( printContent ) {
 				if ( field.initialization != null ) print("%s", field.initialization);
@@ -222,7 +224,7 @@ public interface EclipseASTVisitor {
 		}
 		
 		public void visitAnnotationOnField(FieldDeclaration field, Node node, Annotation annotation) {
-			forcePrint("<ANNOTATION: %s />", annotation);
+			forcePrint("<ANNOTATION%s: %s />", Eclipse.isGenerated(annotation) ? " (GENERATED)" : "", annotation);
 		}
 		
 		public void endVisitField(Node node, FieldDeclaration field) {
@@ -233,7 +235,8 @@ public interface EclipseASTVisitor {
 		
 		public void visitMethod(Node node, AbstractMethodDeclaration method) {
 			String type = method instanceof ConstructorDeclaration ? "CONSTRUCTOR" : "METHOD";
-			print("<%s %s: %s>", type, str(method.selector), method.statements != null ? "filled" : "blank");
+			print("<%s %s: %s%s>", type, str(method.selector), method.statements != null ? "filled" : "blank",
+					Eclipse.isGenerated(method) ? " (GENERATED)" : "");
 			indent++;
 			if ( printContent ) {
 				if ( method.statements != null ) print("%s", method);
@@ -242,7 +245,7 @@ public interface EclipseASTVisitor {
 		}
 		
 		public void visitAnnotationOnMethod(AbstractMethodDeclaration method, Node node, Annotation annotation) {
-			forcePrint("<ANNOTATION: %s />", annotation);
+			forcePrint("<ANNOTATION%s: %s />", Eclipse.isGenerated(method) ? " (GENERATED)" : "", annotation);
 		}
 		
 		public void endVisitMethod(Node node, AbstractMethodDeclaration method) {
@@ -253,12 +256,12 @@ public interface EclipseASTVisitor {
 		}
 		
 		public void visitMethodArgument(Node node, Argument arg, AbstractMethodDeclaration method) {
-			print("<METHODARG %s %s = %s>", str(arg.type), str(arg.name), arg.initialization);
+			print("<METHODARG%s %s %s = %s>", Eclipse.isGenerated(arg) ? " (GENERATED)" : "", str(arg.type), str(arg.name), arg.initialization);
 			indent++;
 		}
 		
 		public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, Node node, Annotation annotation) {
-			print("<ANNOTATION: %s />", annotation);
+			print("<ANNOTATION%s: %s />", Eclipse.isGenerated(annotation) ? " (GENERATED)" : "", annotation);
 		}
 		
 		public void endVisitMethodArgument(Node node, Argument arg, AbstractMethodDeclaration method) {
@@ -267,12 +270,12 @@ public interface EclipseASTVisitor {
 		}
 		
 		public void visitLocal(Node node, LocalDeclaration local) {
-			print("<LOCAL %s %s = %s>", str(local.type), str(local.name), local.initialization);
+			print("<LOCAL%s %s %s = %s>", Eclipse.isGenerated(local) ? " (GENERATED)" : "", str(local.type), str(local.name), local.initialization);
 			indent++;
 		}
 		
 		public void visitAnnotationOnLocal(LocalDeclaration local, Node node, Annotation annotation) {
-			print("<ANNOTATION: %s />", annotation);
+			print("<ANNOTATION%s: %s />", Eclipse.isGenerated(annotation) ? " (GENERATED)" : "", annotation);
 		}
 		
 		public void endVisitLocal(Node node, LocalDeclaration local) {
@@ -281,7 +284,7 @@ public interface EclipseASTVisitor {
 		}
 		
 		public void visitStatement(Node node, Statement statement) {
-			print("<%s>", statement.getClass());
+			print("<%s%s>", statement.getClass(), Eclipse.isGenerated(statement) ? " (GENERATED)" : "");
 			indent++;
 			print("%s", statement);
 		}

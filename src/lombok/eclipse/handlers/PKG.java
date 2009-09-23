@@ -258,21 +258,39 @@ class PKG {
 		return result.toArray(new Annotation[0]);
 	}
 	
-	static Statement generateNullCheck(AbstractVariableDeclaration variable) {
+	static Statement generateNullCheck(AbstractVariableDeclaration variable, ASTNode source) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long)pS << 32 | pE;
+		
 		if (isPrimitive(variable.type)) return null;
 		AllocationExpression exception = new AllocationExpression();
-		exception.type = new QualifiedTypeReference(fromQualifiedName("java.lang.NullPointerException"), new long[]{0, 0, 0});
-		exception.arguments = new Expression[] { new StringLiteral(variable.name, 0, variable.name.length - 1, 0)};
-		ThrowStatement throwStatement = new ThrowStatement(exception, 0, 0);
+		Eclipse.setGeneratedBy(exception, source);
+		exception.type = new QualifiedTypeReference(fromQualifiedName("java.lang.NullPointerException"), new long[]{p, p, p});
+		Eclipse.setGeneratedBy(exception.type, source);
+		exception.arguments = new Expression[] { new StringLiteral(variable.name, pS, pE, 0)};
+		Eclipse.setGeneratedBy(exception.arguments[0], source);
+		ThrowStatement throwStatement = new ThrowStatement(exception, pS, pE);
+		Eclipse.setGeneratedBy(throwStatement, source);
 		
-		return new IfStatement(new EqualExpression(new SingleNameReference(variable.name, 0),
-				new NullLiteral(0, 0), OperatorIds.EQUAL_EQUAL), throwStatement, 0, 0);
+		SingleNameReference varName = new SingleNameReference(variable.name, p);
+		Eclipse.setGeneratedBy(varName, source);
+		NullLiteral nullLiteral = new NullLiteral(pS, pE);
+		Eclipse.setGeneratedBy(nullLiteral, source);
+		EqualExpression equalExpression = new EqualExpression(varName, nullLiteral, OperatorIds.EQUAL_EQUAL);
+		equalExpression.sourceStart = pS; equalExpression.sourceEnd = pE;
+		Eclipse.setGeneratedBy(equalExpression, source);
+		IfStatement ifStatement = new IfStatement(equalExpression, throwStatement, 0, 0);
+		Eclipse.setGeneratedBy(ifStatement, source);
+		return ifStatement;
 	}
 	
-	static MarkerAnnotation makeMarkerAnnotation(char[][] name, long pos) {
-		MarkerAnnotation ann = new MarkerAnnotation(new QualifiedTypeReference(name, new long[] {pos, pos, pos}), (int)(pos >> 32));
+	static MarkerAnnotation makeMarkerAnnotation(char[][] name, ASTNode source) {
+		long pos = source.sourceStart << 32 | source.sourceEnd;
+		TypeReference typeRef = new QualifiedTypeReference(name, new long[] {pos, pos, pos});
+		Eclipse.setGeneratedBy(typeRef, source);
+		MarkerAnnotation ann = new MarkerAnnotation(typeRef, (int)(pos >> 32));
 		ann.declarationSourceEnd = ann.sourceEnd = ann.statementEnd = (int)pos;
-		ann.bits |= ASTNode.HasBeenGenerated;
+		Eclipse.setGeneratedBy(ann, source);
 		return ann;
 	}
 	

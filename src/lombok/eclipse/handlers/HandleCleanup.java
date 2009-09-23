@@ -26,6 +26,7 @@ import java.util.Arrays;
 import lombok.Cleanup;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
+import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
 
@@ -134,15 +135,18 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		doAssignmentCheck(annotationNode, tryBlock, decl.name);
 		
 		TryStatement tryStatement = new TryStatement();
+		Eclipse.setGeneratedBy(tryStatement, ast);
 		tryStatement.tryBlock = new Block(0);
 		tryStatement.tryBlock.statements = tryBlock;
 		newStatements[start] = tryStatement;
 		
 		Statement[] finallyBlock = new Statement[1];
 		MessageSend unsafeClose = new MessageSend();
+		Eclipse.setGeneratedBy(unsafeClose, ast);
 		unsafeClose.sourceStart = ast.sourceStart;
 		unsafeClose.sourceEnd = ast.sourceEnd;
 		SingleNameReference receiver = new SingleNameReference(decl.name, 0);
+		Eclipse.setGeneratedBy(receiver, ast);
 		unsafeClose.receiver = receiver;
 		long nameSourcePosition = (long)ast.sourceStart << 32 | ast.sourceEnd;
 		if ( ast.memberValuePairs() != null ) for ( MemberValuePair pair : ast.memberValuePairs() ) {
@@ -155,6 +159,7 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		unsafeClose.selector = cleanupName.toCharArray();
 		finallyBlock[0] = unsafeClose;
 		tryStatement.finallyBlock = new Block(0);
+		Eclipse.setGeneratedBy(tryStatement.finallyBlock, ast);
 		tryStatement.finallyBlock.statements = finallyBlock;
 		
 		tryStatement.catchArguments = null;
@@ -169,7 +174,6 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		}
 		
 		ancestor.rebuild();
-		
 		
 		return true;
 	}

@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
+import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
 
@@ -82,16 +83,14 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		return createGetterForField(level, fieldNode, annotationNode, annotationNode.get(), true);
 	}
 	
-	private boolean createGetterForField(AccessLevel level, Node fieldNode, Node errorNode, ASTNode pos, boolean whineIfExists) {
-		int pS = pos.sourceStart(), pE = pos.sourceEnd();
-		long p = (long)pS << 32 | pE;
+	private boolean createGetterForField(AccessLevel level, Node fieldNode, Node errorNode, ASTNode source, boolean whineIfExists) {
 		if ( fieldNode.getKind() != Kind.FIELD ) {
 			errorNode.addError("@Getter is only supported on a field.");
 			return true;
 		}
 		
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
-		TypeReference fieldType = copyType(field.type);
+		TypeReference fieldType = copyType(field.type, source);
 		String fieldName = new String(field.name);
 		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
 		String getterName = TransformationsUtil.toGetterName(fieldName, isBoolean);
@@ -116,9 +115,10 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 			}
 		}
 		
-		MethodDeclaration method = generateGetter((TypeDeclaration) fieldNode.up().get(), field, getterName, modifier, pos);
+		MethodDeclaration method = generateGetter((TypeDeclaration) fieldNode.up().get(), field, getterName, modifier, source);
 		Annotation[] copiedAnnotations = copyAnnotations(
-				findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN), p);
+				findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN),
+				findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN), source);
 		if (copiedAnnotations.length != 0) {
 			method.annotations = copiedAnnotations;
 		}
@@ -129,10 +129,11 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 	}
 	
 	private MethodDeclaration generateGetter(TypeDeclaration parent, FieldDeclaration field, String name,
-			int modifier, ASTNode pos) {
+			int modifier, ASTNode source) {
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
+		Eclipse.setGeneratedBy(method, source);
 		method.modifiers = modifier;
-		method.returnType = copyType(field.type);
+		method.returnType = copyType(field.type, source);
 		method.annotations = null;
 		method.arguments = null;
 		method.selector = name.toCharArray();
@@ -141,9 +142,11 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		method.typeParameters = null;
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		Expression fieldExpression = new SingleNameReference(field.name, (field.declarationSourceStart << 32) | field.declarationSourceEnd);
+		Eclipse.setGeneratedBy(fieldExpression, source);
 		Statement returnStatement = new ReturnStatement(fieldExpression, field.sourceStart, field.sourceEnd);
-		method.bodyStart = method.declarationSourceStart = method.sourceStart = pos.sourceStart;
-		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = pos.sourceEnd;
+		Eclipse.setGeneratedBy(returnStatement, source);
+		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
+		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
 		method.statements = new Statement[] { returnStatement };
 		return method;
 	}

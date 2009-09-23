@@ -45,6 +45,7 @@ import org.eclipse.jdt.internal.compiler.ast.BinaryExpression;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
@@ -56,6 +57,7 @@ import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.SuperReference;
+import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
@@ -175,14 +177,15 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		}
 	}
 	
-	private MethodDeclaration createToString(Node type, Collection<Node> fields, boolean includeFieldNames, boolean callSuper, ASTNode pos) {
+	private MethodDeclaration createToString(Node type, Collection<Node> fields, boolean includeFieldNames, boolean callSuper, ASTNode source) {
 		TypeDeclaration typeDeclaration = (TypeDeclaration)type.get();
 		char[] rawTypeName = typeDeclaration.name;
 		String typeName = rawTypeName == null ? "" : new String(rawTypeName);
 		char[] suffix = ")".toCharArray();
 		String infixS = ", ";
 		char[] infix = infixS.toCharArray();
-		long p = (long)pos.sourceStart << 32 | pos.sourceEnd;
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long)pS << 32 | pE;
 		final int PLUS = OperatorIds.PLUS;
 		
 		char[] prefix;
@@ -198,12 +201,18 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		}
 		
 		boolean first = true;
-		Expression current = new StringLiteral(prefix, 0, 0, 0);
+		Expression current = new StringLiteral(prefix, pS, pE, 0);
+		Eclipse.setGeneratedBy(current, source);
+		
 		if ( callSuper ) {
 			MessageSend callToSuper = new MessageSend();
-			callToSuper.receiver = new SuperReference(0, 0);
+			callToSuper.sourceStart = pS; callToSuper.sourceEnd = pE;
+			Eclipse.setGeneratedBy(callToSuper, source);
+			callToSuper.receiver = new SuperReference(pS, pE);
+			Eclipse.setGeneratedBy(callToSuper, source);
 			callToSuper.selector = "toString".toCharArray();
 			current = new BinaryExpression(current, callToSuper, PLUS);
+			Eclipse.setGeneratedBy(current, source);
 			first = false;
 		}
 		
@@ -214,45 +223,68 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 			Expression ex;
 			if ( f.type.dimensions() > 0 ) {
 				MessageSend arrayToString = new MessageSend();
-				arrayToString.receiver = generateQualifiedNameRef(TypeConstants.JAVA, TypeConstants.UTIL, "Arrays".toCharArray());
+				arrayToString.sourceStart = pS; arrayToString.sourceEnd = pE;
+				arrayToString.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA, TypeConstants.UTIL, "Arrays".toCharArray());
 				arrayToString.arguments = new Expression[] { new SingleNameReference(f.name, p) };
+				Eclipse.setGeneratedBy(arrayToString.arguments[0], source);
 				if ( f.type.dimensions() > 1 || !BUILT_IN_TYPES.contains(new String(f.type.getLastToken())) ) {
 					arrayToString.selector = "deepToString".toCharArray();
 				} else {
 					arrayToString.selector = "toString".toCharArray();
 				}
 				ex = arrayToString;
-			} else ex = new SingleNameReference(f.name, p);
+			} else {
+				FieldReference thisX = new FieldReference(f.name, p);
+				thisX.receiver = new ThisReference(source.sourceStart, source.sourceEnd);
+				Eclipse.setGeneratedBy(thisX.receiver, source);
+				ex = thisX;
+			}
+			Eclipse.setGeneratedBy(ex, source);
 			
 			if ( first ) {
 				current = new BinaryExpression(current, ex, PLUS);
+				current.sourceStart = pS; current.sourceEnd = pE;
+				Eclipse.setGeneratedBy(current, source);
 				first = false;
 				continue;
 			}
 			
+			StringLiteral fieldNameLiteral;
 			if ( includeFieldNames ) {
 				char[] namePlusEqualsSign = (infixS + new String(f.name) + "=").toCharArray();
-				current = new BinaryExpression(current, new StringLiteral(namePlusEqualsSign, 0, 0, 0), PLUS);
+				fieldNameLiteral = new StringLiteral(namePlusEqualsSign, pS, pE, 0);
 			} else {
-				current = new BinaryExpression(current, new StringLiteral(infix, 0, 0, 0), PLUS);
+				fieldNameLiteral = new StringLiteral(infix, pS, pE, 0);
 			}
+			Eclipse.setGeneratedBy(fieldNameLiteral, source);
+			current = new BinaryExpression(current, fieldNameLiteral, PLUS);
+			Eclipse.setGeneratedBy(current, source);
 			current = new BinaryExpression(current, ex, PLUS);
+			Eclipse.setGeneratedBy(current, source);
 		}
-		if ( !first ) current = new BinaryExpression(current, new StringLiteral(suffix, 0, 0, 0), PLUS);
+		if ( !first ) {
+			StringLiteral suffixLiteral = new StringLiteral(suffix, pS, pE, 0);
+			Eclipse.setGeneratedBy(suffixLiteral, source);
+			current = new BinaryExpression(current, suffixLiteral, PLUS);
+			Eclipse.setGeneratedBy(current, source);
+		}
 		
-		ReturnStatement returnStatement = new ReturnStatement(current, (int)(p >> 32), (int)p);
+		ReturnStatement returnStatement = new ReturnStatement(current, pS, pE);
+		Eclipse.setGeneratedBy(returnStatement, source);
 		
 		MethodDeclaration method = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
+		Eclipse.setGeneratedBy(method, source);
 		method.modifiers = toModifier(AccessLevel.PUBLIC);
-		method.returnType = new QualifiedTypeReference(TypeConstants.JAVA_LANG_STRING, new long[] {0, 0, 0});
-		method.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, p)};
+		method.returnType = new QualifiedTypeReference(TypeConstants.JAVA_LANG_STRING, new long[] {p, p, p});
+		Eclipse.setGeneratedBy(method.returnType, source);
+		method.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, source)};
 		method.arguments = null;
 		method.selector = "toString".toCharArray();
 		method.thrownExceptions = null;
 		method.typeParameters = null;
 		method.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
-		method.bodyStart = method.declarationSourceStart = method.sourceStart = pos.sourceStart;
-		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = pos.sourceEnd;
+		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
+		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
 		method.statements = new Statement[] { returnStatement };
 		return method;
 	}
@@ -260,9 +292,13 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 	private static final Set<String> BUILT_IN_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
 			"byte", "short", "int", "long", "char", "boolean", "double", "float")));
 	
-	private NameReference generateQualifiedNameRef(char[]... varNames) {
-		if ( varNames.length > 1 )
-			return new QualifiedNameReference(varNames, new long[varNames.length], 0, 0);
-		else return new SingleNameReference(varNames[0], 0);
+	private NameReference generateQualifiedNameRef(ASTNode source, char[]... varNames) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long)pS << 32 | pE;
+		NameReference ref;
+		if ( varNames.length > 1 ) ref = new QualifiedNameReference(varNames, new long[varNames.length], pS, pE);
+		else ref = new SingleNameReference(varNames[0], p);
+		Eclipse.setGeneratedBy(ref, source);
+		return ref;
 	}
 }

@@ -21,6 +21,7 @@
  */
 package lombok.eclipse;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.Lombok;
 import lombok.core.AnnotationValues;
 import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
@@ -145,17 +147,18 @@ public class Eclipse {
 	 * from another 'T', even for the same T in a single class file. Unfortunately the TypeParameter type hierarchy
 	 * is complicated and there's no clone method on TypeParameter itself. This method can clone them.
 	 */
-	public static TypeParameter[] copyTypeParams(TypeParameter[] params) {
+	public static TypeParameter[] copyTypeParams(TypeParameter[] params, ASTNode source) {
 		if ( params == null ) return null;
 		TypeParameter[] out = new TypeParameter[params.length];
 		int idx = 0;
 		for ( TypeParameter param : params ) {
 			TypeParameter o = new TypeParameter();
+			setGeneratedBy(o, source);
 			o.annotations = param.annotations;
 			o.bits = param.bits;
 			o.modifiers = param.modifiers;
 			o.name = param.name;
-			o.type = copyType(param.type);
+			o.type = copyType(param.type, source);
 			o.sourceStart = param.sourceStart;
 			o.sourceEnd = param.sourceEnd;
 			o.declarationEnd = param.declarationEnd;
@@ -164,7 +167,7 @@ public class Eclipse {
 			if ( param.bounds != null ) {
 				TypeReference[] b = new TypeReference[param.bounds.length];
 				int idx2 = 0;
-				for ( TypeReference ref : param.bounds ) b[idx2++] = copyType(ref);
+				for ( TypeReference ref : param.bounds ) b[idx2++] = copyType(ref, source);
 				o.bounds = b;
 			}
 			out[idx++] = o;
@@ -176,12 +179,12 @@ public class Eclipse {
 	 * Convenience method that creates a new array and copies each TypeReference in the source array via
 	 * {@link #copyType(TypeReference)}.
 	 */
-	public static TypeReference[] copyTypes(TypeReference[] refs) {
+	public static TypeReference[] copyTypes(TypeReference[] refs, ASTNode source) {
 		if ( refs == null ) return null;
 		TypeReference[] outs = new TypeReference[refs.length];
 		int idx = 0;
 		for ( TypeReference ref : refs ) {
-			outs[idx++] = copyType(ref);
+			outs[idx++] = copyType(ref, source);
 		}
 		return outs;
 	}
@@ -191,7 +194,7 @@ public class Eclipse {
 	 * Unfortunately the TypeReference type hierarchy is complicated and there's no clone
 	 * method on TypeReference itself. This method can clone them.
 	 */
-	public static TypeReference copyType(TypeReference ref) {
+	public static TypeReference copyType(TypeReference ref, ASTNode source) {
 		if ( ref instanceof ParameterizedQualifiedTypeReference ) {
 			ParameterizedQualifiedTypeReference iRef = (ParameterizedQualifiedTypeReference) ref;
 			TypeReference[][] args = null;
@@ -204,23 +207,29 @@ public class Eclipse {
 						TypeReference[] outRefArray = new TypeReference[inRefArray.length];
 						int idx2 = 0;
 						for ( TypeReference inRef : inRefArray ) {
-							outRefArray[idx2++] = copyType(inRef);
+							outRefArray[idx2++] = copyType(inRef, source);
 						}
 						args[idx++] = outRefArray;
 					}
 				}
 			}
-			return new ParameterizedQualifiedTypeReference(iRef.tokens, args, iRef.dimensions(), iRef.sourcePositions);
+			TypeReference typeRef = new ParameterizedQualifiedTypeReference(iRef.tokens, args, iRef.dimensions(), iRef.sourcePositions);
+			setGeneratedBy(typeRef, source);
+			return typeRef;
 		}
 		
 		if ( ref instanceof ArrayQualifiedTypeReference ) {
 			ArrayQualifiedTypeReference iRef = (ArrayQualifiedTypeReference) ref;
-			return new ArrayQualifiedTypeReference(iRef.tokens, iRef.dimensions(), iRef.sourcePositions);
+			TypeReference typeRef = new ArrayQualifiedTypeReference(iRef.tokens, iRef.dimensions(), iRef.sourcePositions);
+			setGeneratedBy(typeRef, source);
+			return typeRef;
 		}
 		
 		if ( ref instanceof QualifiedTypeReference ) {
 			QualifiedTypeReference iRef = (QualifiedTypeReference) ref;
-			return new QualifiedTypeReference(iRef.tokens, iRef.sourcePositions);
+			TypeReference typeRef = new QualifiedTypeReference(iRef.tokens, iRef.sourcePositions);
+			setGeneratedBy(typeRef, source);
+			return typeRef;
 		}
 		
 		if ( ref instanceof ParameterizedSingleTypeReference ) {
@@ -231,62 +240,72 @@ public class Eclipse {
 				int idx = 0;
 				for ( TypeReference inRef : iRef.typeArguments ) {
 					if ( inRef == null ) args[idx++] = null;
-					else args[idx++] = copyType(inRef);
+					else args[idx++] = copyType(inRef, source);
 				}
 			}
-			return new ParameterizedSingleTypeReference(iRef.token, args, iRef.dimensions(), (long)iRef.sourceStart << 32 | iRef.sourceEnd);
+			
+			TypeReference typeRef = new ParameterizedSingleTypeReference(iRef.token, args, iRef.dimensions(), (long)iRef.sourceStart << 32 | iRef.sourceEnd);
+			setGeneratedBy(typeRef, source);
+			return typeRef;
 		}
 		
 		if ( ref instanceof ArrayTypeReference ) {
 			ArrayTypeReference iRef = (ArrayTypeReference) ref;
-			return new ArrayTypeReference(iRef.token, iRef.dimensions(), (long)iRef.sourceStart << 32 | iRef.sourceEnd);
+			TypeReference typeRef = new ArrayTypeReference(iRef.token, iRef.dimensions(), (long)iRef.sourceStart << 32 | iRef.sourceEnd);
+			setGeneratedBy(typeRef, source);
+			return typeRef;
 		}
 		
 		if ( ref instanceof Wildcard ) {
 			Wildcard wildcard = new Wildcard(((Wildcard)ref).kind);
 			wildcard.sourceStart = ref.sourceStart;
 			wildcard.sourceEnd = ref.sourceEnd;
+			setGeneratedBy(wildcard, source);
 			return wildcard;
 		}
 		
 		if ( ref instanceof SingleTypeReference ) {
 			SingleTypeReference iRef = (SingleTypeReference) ref;
-			return new SingleTypeReference(iRef.token, (long)iRef.sourceStart << 32 | iRef.sourceEnd);
+			TypeReference typeRef = new SingleTypeReference(iRef.token, (long)iRef.sourceStart << 32 | iRef.sourceEnd);
+			setGeneratedBy(typeRef, source);
+			return typeRef;
 		}
 		
 		return ref;
 	}
 	
-	public static Annotation[] copyAnnotations(Annotation[] annotations, long p) {
-		return copyAnnotations(annotations, null, p);
+	public static Annotation[] copyAnnotations(Annotation[] annotations, ASTNode source) {
+		return copyAnnotations(annotations, null, source);
 	}
 	
-	public static Annotation[] copyAnnotations(Annotation[] annotations1, Annotation[] annotations2, long p) {
+	public static Annotation[] copyAnnotations(Annotation[] annotations1, Annotation[] annotations2, ASTNode source) {
 		if (annotations1 == null && annotations2 == null) return null;
 		if (annotations1 == null) annotations1 = new Annotation[0];
 		if (annotations2 == null) annotations2 = new Annotation[0];
 		Annotation[] outs = new Annotation[annotations1.length + annotations2.length];
 		int idx = 0;
 		for ( Annotation annotation : annotations1 ) {
-			outs[idx++] = copyAnnotation(annotation, p);
+			outs[idx++] = copyAnnotation(annotation, source);
 		}
 		for ( Annotation annotation : annotations2 ) {
-			outs[idx++] = copyAnnotation(annotation, p);
+			outs[idx++] = copyAnnotation(annotation, source);
 		}
 		return outs;
 	}
 	
-	public static Annotation copyAnnotation(Annotation annotation, long p) {
-		int pS = (int)(p >> 32), pE = (int)p;
+	public static Annotation copyAnnotation(Annotation annotation, ASTNode source) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
 		
 		if (annotation instanceof MarkerAnnotation) {
-			MarkerAnnotation ann = new MarkerAnnotation(copyType(annotation.type), pS);
+			MarkerAnnotation ann = new MarkerAnnotation(copyType(annotation.type, source), pS);
+			setGeneratedBy(ann, source);
 			ann.declarationSourceEnd = ann.sourceEnd = ann.statementEnd = pE;
 			return ann;
 		}
 		
 		if (annotation instanceof SingleMemberAnnotation) {
-			SingleMemberAnnotation ann = new SingleMemberAnnotation(copyType(annotation.type), pS);
+			SingleMemberAnnotation ann = new SingleMemberAnnotation(copyType(annotation.type, source), pS);
+			setGeneratedBy(ann, source);
 			ann.declarationSourceEnd = ann.sourceEnd = ann.statementEnd = pE;
 			//TODO memberValue(s) need to be copied as well (same for copying a NormalAnnotation as below).
 			ann.memberValue = ((SingleMemberAnnotation)annotation).memberValue;
@@ -294,7 +313,8 @@ public class Eclipse {
 		}
 		
 		if (annotation instanceof NormalAnnotation) {
-			NormalAnnotation ann = new NormalAnnotation(copyType(annotation.type), pS);
+			NormalAnnotation ann = new NormalAnnotation(copyType(annotation.type, source), pS);
+			setGeneratedBy(ann, source);
 			ann.declarationSourceEnd = ann.statementEnd = ann.sourceEnd = pE;
 			ann.memberValuePairs = ((NormalAnnotation)annotation).memberValuePairs;
 			return ann;
@@ -424,5 +444,37 @@ public class Eclipse {
 		}
 		
 		return null;
+	}
+	
+	private static Field generatedByField;
+	
+	static {
+		try {
+			generatedByField = ASTNode.class.getDeclaredField("$generatedBy");
+		} catch ( Throwable t ) {
+			throw Lombok.sneakyThrow(t);
+		}
+	}
+	
+	public static ASTNode getGeneratedBy(ASTNode node) {
+		try {
+			return (ASTNode) generatedByField.get(node);
+		} catch ( Exception t ) {
+			throw Lombok.sneakyThrow(t);
+		}
+	}
+	
+	public static boolean isGenerated(ASTNode node) {
+		return getGeneratedBy(node) != null;
+	}
+	
+	public static ASTNode setGeneratedBy(ASTNode node, ASTNode source) {
+		try {
+			generatedByField.set(node, source);
+		} catch ( Exception t ) {
+			throw Lombok.sneakyThrow(t);
+		}
+		
+		return node;
 	}
 }

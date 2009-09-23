@@ -28,6 +28,7 @@ import java.lang.reflect.Modifier;
 import lombok.Synchronized;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
+import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
 import lombok.eclipse.handlers.PKG.MemberExistsResult;
@@ -56,9 +57,9 @@ public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized
 	private static final char[] INSTANCE_LOCK_NAME = "$lock".toCharArray();
 	private static final char[] STATIC_LOCK_NAME = "$LOCK".toCharArray();
 	
-	@Override public boolean handle(AnnotationValues<Synchronized> annotation, Annotation ast, Node annotationNode) {
-		int p1 = ast.sourceStart -1;
-		int p2 = ast.sourceStart -2;
+	@Override public boolean handle(AnnotationValues<Synchronized> annotation, Annotation source, Node annotationNode) {
+		int p1 = source.sourceStart -1;
+		int p2 = source.sourceStart -2;
 		long pos = (((long)p1) << 32) | p2;
 		Node methodNode = annotationNode.up();
 		if ( methodNode == null || methodNode.getKind() != Kind.METHOD || !(methodNode.get() instanceof MethodDeclaration) ) {
@@ -85,15 +86,20 @@ public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized
 				return true;
 			}
 			FieldDeclaration fieldDecl = new FieldDeclaration(lockName, 0, -1);
+			Eclipse.setGeneratedBy(fieldDecl, source);
 			fieldDecl.declarationSourceEnd = -1;
 			
 			fieldDecl.modifiers = (method.isStatic() ? Modifier.STATIC : 0) | Modifier.FINAL | Modifier.PRIVATE;
 			
 			//We use 'new Object[0];' because quite unlike 'new Object();', empty arrays *ARE* serializable!
 			ArrayAllocationExpression arrayAlloc = new ArrayAllocationExpression();
+			Eclipse.setGeneratedBy(arrayAlloc, source);
 			arrayAlloc.dimensions = new Expression[] { new IntLiteral(new char[] { '0' }, 0, 0) };
+			Eclipse.setGeneratedBy(arrayAlloc.dimensions[0], source);
 			arrayAlloc.type = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { 0, 0, 0 });
+			Eclipse.setGeneratedBy(arrayAlloc.type, source);
 			fieldDecl.type = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { 0, 0, 0 });
+			Eclipse.setGeneratedBy(fieldDecl.type, source);
 			fieldDecl.initialization = arrayAlloc;
 			injectField(annotationNode.up().up(), fieldDecl);
 		}
@@ -101,18 +107,23 @@ public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized
 		if ( method.statements == null ) return false;
 		
 		Block block = new Block(0);
+		Eclipse.setGeneratedBy(block, source);
 		block.statements = method.statements;
 		Expression lockVariable;
 		if ( method.isStatic() ) lockVariable = new QualifiedNameReference(new char[][] {
 				methodNode.up().getName().toCharArray(), lockName }, new long[] { pos, pos }, p1, p2);
 		else {
 			lockVariable = new FieldReference(lockName, pos);
-			((FieldReference)lockVariable).receiver = new ThisReference(p1, p2);
+			ThisReference thisReference = new ThisReference(p1, p2);
+			Eclipse.setGeneratedBy(thisReference, source);
+			((FieldReference)lockVariable).receiver = thisReference;
 		}
+		Eclipse.setGeneratedBy(lockVariable, source);
 		
 		method.statements = new Statement[] {
 				new SynchronizedStatement(lockVariable, block, 0, 0)
 		};
+		Eclipse.setGeneratedBy(method.statements[0], source);
 		
 		methodNode.rebuild();
 		

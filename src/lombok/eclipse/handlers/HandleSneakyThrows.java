@@ -27,6 +27,7 @@ import java.util.List;
 
 import lombok.SneakyThrows;
 import lombok.core.AnnotationValues;
+import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
 
@@ -68,29 +69,32 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 		}
 	}
 	
-	@Override public boolean handle(AnnotationValues<SneakyThrows> annotation, Annotation ast, Node annotationNode) {
+	@Override public boolean handle(AnnotationValues<SneakyThrows> annotation, Annotation source, Node annotationNode) {
 		List<String> exceptionNames = annotation.getRawExpressions("value");
-		
-		MemberValuePair[] memberValuePairs = ast.memberValuePairs();
-		if ( memberValuePairs == null || memberValuePairs.length == 0 ) return false;
-		
-		Expression arrayOrSingle = memberValuePairs[0].value;
-		final Expression[] exceptionNameNodes;
-		if ( arrayOrSingle instanceof ArrayInitializer ) {
-			exceptionNameNodes = ((ArrayInitializer)arrayOrSingle).expressions;
-		} else exceptionNameNodes = new Expression[] { arrayOrSingle };
-		
-		if ( exceptionNames.size() != exceptionNameNodes.length ) {
-			annotationNode.addError(
-					"LOMBOK BUG: The number of exception classes in the annotation isn't the same pre- and post- guessing.");
-		}
-		
 		List<DeclaredException> exceptions = new ArrayList<DeclaredException>();
-		int idx = 0;
-		for ( String exceptionName : exceptionNames ) {
-			if ( exceptionName.endsWith(".class") ) exceptionName = exceptionName.substring(0, exceptionName.length() - 6);
-			exceptions.add(new DeclaredException(exceptionName, exceptionNameNodes[idx++]));
+		
+		MemberValuePair[] memberValuePairs = source.memberValuePairs();
+		if ( memberValuePairs == null || memberValuePairs.length == 0 ) {
+			exceptions.add(new DeclaredException("java.lang.Throwable", source));
+		} else {
+			Expression arrayOrSingle = memberValuePairs[0].value;
+			final Expression[] exceptionNameNodes;
+			if ( arrayOrSingle instanceof ArrayInitializer ) {
+				exceptionNameNodes = ((ArrayInitializer)arrayOrSingle).expressions;
+			} else exceptionNameNodes = new Expression[] { arrayOrSingle };
+			
+			if ( exceptionNames.size() != exceptionNameNodes.length ) {
+				annotationNode.addError(
+						"LOMBOK BUG: The number of exception classes in the annotation isn't the same pre- and post- guessing.");
+			}
+			
+			int idx = 0;
+			for ( String exceptionName : exceptionNames ) {
+				if ( exceptionName.endsWith(".class") ) exceptionName = exceptionName.substring(0, exceptionName.length() - 6);
+				exceptions.add(new DeclaredException(exceptionName, exceptionNameNodes[idx++]));
+			}
 		}
+		
 		
 		Node owner = annotationNode.up();
 		switch ( owner.getKind() ) {
@@ -147,7 +151,7 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 		Statement[] contents = method.statements;
 		
 		for ( DeclaredException exception : exceptions ) {
-			contents = new Statement[] { buildTryCatchBlock(contents, exception) };
+			contents = new Statement[] { buildTryCatchBlock(contents, exception, exception.node) };
 		}
 		
 		method.statements = contents;
@@ -156,14 +160,15 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 		return true;
 	}
 	
-	private Statement buildTryCatchBlock(Statement[] contents, DeclaredException exception) {
+	private Statement buildTryCatchBlock(Statement[] contents, DeclaredException exception, ASTNode source) {
 		long p = exception.getPos();
 		int pS = (int)(p >> 32), pE = (int)p;
 		
 		TryStatement tryStatement = new TryStatement();
+		Eclipse.setGeneratedBy(tryStatement, source);
 		tryStatement.tryBlock = new Block(0);
-		tryStatement.tryBlock.sourceStart = pS;
-		tryStatement.tryBlock.sourceEnd = pE;
+		tryStatement.tryBlock.sourceStart = pS; tryStatement.tryBlock.sourceEnd = pE;
+		Eclipse.setGeneratedBy(tryStatement.tryBlock, source);
 		tryStatement.tryBlock.statements = contents;
 		TypeReference typeReference;
 		if ( exception.exceptionName.indexOf('.') == -1 ) {
@@ -182,27 +187,34 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 			}
 			typeReference = new QualifiedTypeReference(elems, poss);
 		}
+		Eclipse.setGeneratedBy(typeReference, source);
 		
 		Argument catchArg = new Argument("$ex".toCharArray(), p, typeReference, Modifier.FINAL);
+		Eclipse.setGeneratedBy(catchArg, source);
 		catchArg.declarationSourceEnd = catchArg.declarationEnd = catchArg.sourceEnd = pE;
 		catchArg.declarationSourceStart = catchArg.modifiersSourceStart = catchArg.sourceStart = pS;
 		
 		tryStatement.catchArguments = new Argument[] { catchArg };
 		
 		MessageSend sneakyThrowStatement = new MessageSend();
+		Eclipse.setGeneratedBy(sneakyThrowStatement, source);
 		sneakyThrowStatement.receiver = new QualifiedNameReference(new char[][] { "lombok".toCharArray(), "Lombok".toCharArray() }, new long[] { p, p }, pS, pE);
+		Eclipse.setGeneratedBy(sneakyThrowStatement.receiver, source);
 		sneakyThrowStatement.receiver.statementEnd = pE;
 		sneakyThrowStatement.selector = "sneakyThrow".toCharArray();
 		SingleNameReference exRef = new SingleNameReference("$ex".toCharArray(), p);
+		Eclipse.setGeneratedBy(exRef, source);
 		exRef.statementEnd = pE;
 		sneakyThrowStatement.arguments = new Expression[] { exRef };
 		sneakyThrowStatement.nameSourcePosition = p;
 		sneakyThrowStatement.sourceStart = pS;
 		sneakyThrowStatement.sourceEnd = sneakyThrowStatement.statementEnd = pE;
 		Statement rethrowStatement = new ThrowStatement(sneakyThrowStatement, pS, pE);
+		Eclipse.setGeneratedBy(rethrowStatement, source);
 		Block block = new Block(0);
 		block.sourceStart = pS;
 		block.sourceEnd = pE;
+		Eclipse.setGeneratedBy(block, source);
 		block.statements = new Statement[] { rethrowStatement };
 		tryStatement.catchBlocks = new Block[] { block };
 		tryStatement.sourceStart = pS;

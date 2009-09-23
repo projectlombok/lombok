@@ -31,6 +31,7 @@ import lombok.Setter;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
+import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseAST.Node;
 
@@ -41,13 +42,13 @@ import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.NameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.mangosdk.spi.ProviderFor;
 
@@ -123,37 +124,48 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 	}
 	
 	private MethodDeclaration generateSetter(TypeDeclaration parent, FieldDeclaration field, String name,
-			int modifier, ASTNode ast) {
+			int modifier, ASTNode source) {
 		
-		long pos = (((long)ast.sourceStart) << 32) | ast.sourceEnd;
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long)pS << 32 | pE;
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
+		Eclipse.setGeneratedBy(method, source);
 		method.modifiers = modifier;
 		method.returnType = TypeReference.baseTypeReference(TypeIds.T_void, 0);
+		method.returnType.sourceStart = pS; method.returnType.sourceEnd = pE;
+		Eclipse.setGeneratedBy(method.returnType, source);
 		method.annotations = null;
-		Argument param = new Argument(field.name, pos, copyType(field.type), Modifier.FINAL);
+		Argument param = new Argument(field.name, p, copyType(field.type, source), Modifier.FINAL);
+		param.sourceStart = pS; param.sourceEnd = pE;
+		Eclipse.setGeneratedBy(param, source);
 		method.arguments = new Argument[] { param };
 		method.selector = name.toCharArray();
 		method.binding = null;
 		method.thrownExceptions = null;
 		method.typeParameters = null;
-		method.scope = parent.scope == null ? null : new MethodScope(parent.scope, method, false);
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		FieldReference thisX = new FieldReference(field.name, pos);
-		thisX.receiver = new ThisReference(ast.sourceStart, ast.sourceEnd);
-		Assignment assignment = new Assignment(thisX, new SingleNameReference(field.name, pos), (int)pos);
-		method.bodyStart = method.declarationSourceStart = method.sourceStart = ast.sourceStart;
-		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = ast.sourceEnd;
+		FieldReference thisX = new FieldReference(field.name, p);
+		Eclipse.setGeneratedBy(thisX, source);
+		thisX.receiver = new ThisReference(source.sourceStart, source.sourceEnd);
+		Eclipse.setGeneratedBy(thisX.receiver, source);
+		NameReference fieldNameRef = new SingleNameReference(field.name, p);
+		Eclipse.setGeneratedBy(fieldNameRef, source);
+		Assignment assignment = new Assignment(thisX, fieldNameRef, (int)p);
+		assignment.sourceStart = pS; assignment.sourceEnd = pE;
+		Eclipse.setGeneratedBy(assignment, source);
+		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
+		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
 		
 		Annotation[] nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
 		Annotation[] nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
 		if (nonNulls.length == 0) {
 			method.statements = new Statement[] { assignment };
 		} else {
-			Statement nullCheck = generateNullCheck(field);
+			Statement nullCheck = generateNullCheck(field, source);
 			if (nullCheck != null) method.statements = new Statement[] { nullCheck, assignment };
 			else method.statements = new Statement[] { assignment };
 		}
-		Annotation[] copiedAnnotations = copyAnnotations(nonNulls, nullables, pos);
+		Annotation[] copiedAnnotations = copyAnnotations(nonNulls, nullables, source);
 		if (copiedAnnotations.length != 0) param.annotations = copiedAnnotations;
 		return method;
 	}

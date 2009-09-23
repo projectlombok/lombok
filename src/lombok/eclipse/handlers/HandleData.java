@@ -122,21 +122,23 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		return false;
 	}
 	
-	private ConstructorDeclaration createConstructor(boolean isPublic, Node type, Collection<Node> fields, ASTNode pos) {
-		long p = (long)pos.sourceStart << 32 | pos.sourceEnd;
+	private ConstructorDeclaration createConstructor(boolean isPublic, Node type, Collection<Node> fields, ASTNode source) {
+		long p = (long)source.sourceStart << 32 | source.sourceEnd;
 		
 		ConstructorDeclaration constructor = new ConstructorDeclaration(
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
+		Eclipse.setGeneratedBy(constructor, source);
 		
 		constructor.modifiers = PKG.toModifier(isPublic ? AccessLevel.PUBLIC : AccessLevel.PRIVATE);
 		constructor.annotations = null;
 		constructor.selector = ((TypeDeclaration)type.get()).name;
 		constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
+		Eclipse.setGeneratedBy(constructor.constructorCall, source);
 		constructor.thrownExceptions = null;
 		constructor.typeParameters = null;
 		constructor.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
-		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = pos.sourceStart;
-		constructor.bodyEnd = constructor.declarationSourceEnd = constructor.sourceEnd = pos.sourceEnd;
+		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = source.sourceStart;
+		constructor.bodyEnd = constructor.declarationSourceEnd = constructor.sourceEnd = source.sourceEnd;
 		constructor.arguments = null;
 		
 		List<Argument> args = new ArrayList<Argument>();
@@ -146,19 +148,26 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		for ( Node fieldNode : fields ) {
 			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 			FieldReference thisX = new FieldReference(("this." + new String(field.name)).toCharArray(), p);
+			Eclipse.setGeneratedBy(thisX, source);
 			thisX.receiver = new ThisReference((int)(p >> 32), (int)p);
+			Eclipse.setGeneratedBy(thisX.receiver, source);
 			thisX.token = field.name;
 			
-			assigns.add(new Assignment(thisX, new SingleNameReference(field.name, p), (int)p));
+			SingleNameReference assignmentNameRef = new SingleNameReference(field.name, p);
+			Eclipse.setGeneratedBy(assignmentNameRef, source);
+			Assignment assignment = new Assignment(thisX, assignmentNameRef, (int)p);
+			Eclipse.setGeneratedBy(assignment, source);
+			assigns.add(assignment);
 			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
-			Argument argument = new Argument(field.name, fieldPos, copyType(field.type), Modifier.FINAL);
+			Argument argument = new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL);
+			Eclipse.setGeneratedBy(argument, source);
 			Annotation[] nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
 			Annotation[] nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
 			if (nonNulls.length != 0) {
-				Statement nullCheck = generateNullCheck(field);
+				Statement nullCheck = generateNullCheck(field, source);
 				if (nullCheck != null) nullChecks.add(nullCheck);
 			}
-			Annotation[] copiedAnnotations = copyAnnotations(nonNulls, nullables, p);
+			Annotation[] copiedAnnotations = copyAnnotations(nonNulls, nullables, source);
 			if (copiedAnnotations.length != 0) argument.annotations = copiedAnnotations;
 			args.add(argument);
 		}
@@ -169,11 +178,13 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		return constructor;
 	}
 	
-	private MethodDeclaration createStaticConstructor(String name, Node type, Collection<Node> fields, ASTNode pos) {
-		long p = (long)pos.sourceStart << 32 | pos.sourceEnd;
+	private MethodDeclaration createStaticConstructor(String name, Node type, Collection<Node> fields, ASTNode source) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long)pS << 32 | pE;
 		
 		MethodDeclaration constructor = new MethodDeclaration(
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
+		Eclipse.setGeneratedBy(constructor, source);
 		
 		constructor.modifiers = PKG.toModifier(AccessLevel.PUBLIC) | Modifier.STATIC;
 		TypeDeclaration typeDecl = (TypeDeclaration) type.get();
@@ -181,38 +192,49 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			TypeReference[] refs = new TypeReference[typeDecl.typeParameters.length];
 			int idx = 0;
 			for ( TypeParameter param : typeDecl.typeParameters ) {
-				refs[idx++] = new SingleTypeReference(param.name, (long)param.sourceStart << 32 | param.sourceEnd);
+				TypeReference typeRef = new SingleTypeReference(param.name, (long)param.sourceStart << 32 | param.sourceEnd);
+				Eclipse.setGeneratedBy(typeRef, source);
+				refs[idx++] = typeRef;
 			}
 			constructor.returnType = new ParameterizedSingleTypeReference(typeDecl.name, refs, 0, p);
 		} else constructor.returnType = new SingleTypeReference(((TypeDeclaration)type.get()).name, p);
+		Eclipse.setGeneratedBy(constructor.returnType, source);
 		constructor.annotations = null;
 		constructor.selector = name.toCharArray();
 		constructor.thrownExceptions = null;
-		constructor.typeParameters = copyTypeParams(((TypeDeclaration)type.get()).typeParameters);
+		constructor.typeParameters = copyTypeParams(((TypeDeclaration)type.get()).typeParameters, source);
 		constructor.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
-		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = pos.sourceStart;
-		constructor.bodyEnd = constructor.declarationSourceEnd = constructor.sourceEnd = pos.sourceEnd;
+		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = source.sourceStart;
+		constructor.bodyEnd = constructor.declarationSourceEnd = constructor.sourceEnd = source.sourceEnd;
 		
 		List<Argument> args = new ArrayList<Argument>();
 		List<Expression> assigns = new ArrayList<Expression>();
 		AllocationExpression statement = new AllocationExpression();
-		statement.type = copyType(constructor.returnType);
+		statement.sourceStart = pS; statement.sourceEnd = pE;
+		Eclipse.setGeneratedBy(statement, source);
+		statement.type = copyType(constructor.returnType, source);
 		
 		for ( Node fieldNode : fields ) {
 			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
-			assigns.add(new SingleNameReference(field.name, fieldPos));
+			SingleNameReference nameRef = new SingleNameReference(field.name, fieldPos);
+			Eclipse.setGeneratedBy(nameRef, source);
+			assigns.add(nameRef);
 			
-			Argument argument = new Argument(field.name, fieldPos, copyType(field.type), 0);
+			Argument argument = new Argument(field.name, fieldPos, copyType(field.type, source), 0);
+			Eclipse.setGeneratedBy(argument, source);
+
 			Annotation[] copiedAnnotations = copyAnnotations(
-					findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN), p);
+					findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN),
+					findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN), source);
 			if (copiedAnnotations.length != 0) argument.annotations = copiedAnnotations;
-			args.add(new Argument(field.name, fieldPos, copyType(field.type), Modifier.FINAL));
+			args.add(new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL));
 		}
 		
 		statement.arguments = assigns.isEmpty() ? null : assigns.toArray(new Expression[assigns.size()]);
 		constructor.arguments = args.isEmpty() ? null : args.toArray(new Argument[args.size()]);
 		constructor.statements = new Statement[] { new ReturnStatement(statement, (int)(p >> 32), (int)p) };
+		Eclipse.setGeneratedBy(constructor.statements[0], source);
 		return constructor;
 	}
 }
