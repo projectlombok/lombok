@@ -27,6 +27,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.Lombok;
+
+import org.mangosdk.spi.ProviderFor;
 import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -54,7 +57,8 @@ import org.objectweb.asm.Opcodes;
  * 
  * Bit24 on the flags field on all ASTNode objects is used as a marker.</li></ul>
  */
-class EclipseParserTransformer {
+@ProviderFor(EclipseTransformer.class)
+public class EclipseParserTransformer implements EclipseTransformer {
 	private static final String COMPILER_PKG =
 		"Lorg/eclipse/jdt/internal/compiler/ast/";
 	private static final String TARGET_STATIC_CLASS = "java/lombok/eclipse/ClassLoaderWorkaround";
@@ -73,24 +77,13 @@ class EclipseParserTransformer {
 		rewriters = Collections.unmodifiableMap(map);
 	}
 	
-	byte[] transform(byte[] classfileBuffer) {
+	public byte[] transform(byte[] classfileBuffer) {
 		ClassReader reader = new ClassReader(classfileBuffer);
 		ClassWriter writer = new ClassWriter(reader, 0);
 		
 		ClassAdapter adapter = new ParserPatcherAdapter(writer);
 		reader.accept(adapter, 0);
 		return writer.toByteArray();
-	}
-	
-	static RuntimeException sneakyThrow(Throwable t) {
-		if ( t == null ) throw new NullPointerException("t");
-		EclipseParserTransformer.<RuntimeException>sneakyThrow0(t);
-		return null;
-	}
-	
-	@SuppressWarnings("unchecked")
-	private static <T extends Throwable> void sneakyThrow0(Throwable t) throws T {
-		throw (T)t;
 	}
 	
 	private static class ParserPatcherAdapter extends ClassAdapter {
@@ -109,12 +102,12 @@ class EclipseParserTransformer {
 				c.setAccessible(true);
 				return c.newInstance(writerVisitor);
 			} catch ( InvocationTargetException e ) {
-				throw sneakyThrow(e.getCause());
+				throw Lombok.sneakyThrow(e.getCause());
 			} catch ( Exception e ) {
 				//NoSuchMethodException: We know they exist.
 				//IllegalAccessException: We called setAccessible.
 				//InstantiationException: None of these classes are abstract.
-				throw sneakyThrow(e);
+				throw Lombok.sneakyThrow(e);
 			}
 		}
 	}
@@ -177,5 +170,9 @@ class EclipseParserTransformer {
 			
 			super.visitInsn(opcode);
 		}
+	}
+	
+	@Override public String getTargetClassName() {
+		return "org/eclipse/jdt/internal/compiler/parser/Parser";
 	}
 }

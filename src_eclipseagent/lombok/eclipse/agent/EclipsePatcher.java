@@ -26,16 +26,19 @@ import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.security.ProtectionDomain;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import lombok.Lombok;
+import lombok.core.SpiLoadUtil;
 
 /**
  * This is a java-agent that patches some of eclipse's classes so AST Nodes are handed off to Lombok
@@ -47,56 +50,33 @@ import java.util.regex.Pattern;
 public class EclipsePatcher {
 	private EclipsePatcher() {}
 	
+	private static Map<String, EclipseTransformer> transformers = new HashMap<String, EclipseTransformer>();
+	static {
+		try {
+			for ( EclipseTransformer transformer : SpiLoadUtil.findServices(EclipseTransformer.class) ) {
+				String targetClassName = transformer.getTargetClassName();
+				transformers.put(targetClassName, transformer);
+			}
+		} catch ( Throwable t ) {
+			throw Lombok.sneakyThrow(t);
+		}
+	}
+	
 	private static class Patcher implements ClassFileTransformer {
 		public byte[] transform(ClassLoader loader, String className,
 				Class<?> classBeingRedefined,
 				ProtectionDomain protectionDomain, byte[] classfileBuffer)
 				throws IllegalClassFormatException {
 			
-			if ( ECLIPSE_PARSER_CLASS_NAME.equals(className) ) {
-				try {
-					return runTransform("lombok.eclipse.agent.EclipseParserTransformer", classfileBuffer);
-				} catch ( Throwable t ) {
-					System.err.println("Wasn't able to patch eclipse's Parser class:");
-					t.printStackTrace();
-				}
-			}
+//			ClassLoader classLoader = Patcher.class.getClassLoader();
+//			if ( classLoader == null ) classLoader = ClassLoader.getSystemClassLoader();
 			
-			if ( ECLIPSE_CUD_CLASS_NAME.equals(className) ) {
-				try {
-					return runTransform("lombok.eclipse.agent.EclipseCUDTransformer", classfileBuffer);
-				} catch ( Throwable t ) {
-					System.err.println("Wasn't able to patch eclipse's CompilationUnitDeclaration class:");
-					t.printStackTrace();
-				}
-			}
-			
-			if ( ECLIPSE_ASTCONVERTER_CLASS_NAME.equals(className) ) {
-				try {
-					return runTransform("lombok.eclipse.agent.EclipseASTConverterTransformer", classfileBuffer);
-				} catch ( Throwable t ) {
-					System.err.println("Wasn't able to patch eclipse's ASTConverter class:");
-					t.printStackTrace();
-				}
-			}
+			EclipseTransformer transformer = transformers.get(className);
+			if ( transformer != null ) return transformer.transform(classfileBuffer);
 			
 			return null;
 		}
 	}
-	
-	private static byte[] runTransform(String className, byte[] classfileBuffer) throws Exception {
-		Class<?> transformerClass = Class.forName(className);
-		Constructor<?> constructor = transformerClass.getDeclaredConstructor();
-		constructor.setAccessible(true);
-		Object instance = constructor.newInstance();
-		Method m = transformerClass.getDeclaredMethod("transform", byte[].class);
-		m.setAccessible(true);
-		return (byte[])m.invoke(instance, classfileBuffer);
-	}
-	
-	static final String ECLIPSE_CUD_CLASS_NAME = "org/eclipse/jdt/internal/compiler/ast/CompilationUnitDeclaration";
-	static final String ECLIPSE_PARSER_CLASS_NAME = "org/eclipse/jdt/internal/compiler/parser/Parser";
-	static final String ECLIPSE_ASTCONVERTER_CLASS_NAME = "org/eclipse/jdt/core/dom/ASTConverter";
 	
 	public static void agentmain(String agentArgs, Instrumentation instrumentation) throws Exception {
 		registerPatcher(instrumentation, true);
@@ -134,7 +114,7 @@ public class EclipsePatcher {
 		instrumentation.addTransformer(new Patcher()/*, true*/);
 		
 		if ( transformExisting ) for ( Class<?> c : instrumentation.getAllLoadedClasses() ) {
-			if ( c.getName().equals(ECLIPSE_PARSER_CLASS_NAME) || c.getName().equals(ECLIPSE_CUD_CLASS_NAME) ) {
+			if ( transformers.containsKey(c.getName()) ) {
 				try {
 					//instrumentation.retransformClasses(c); - //not in java 1.5.
 					Instrumentation.class.getMethod("retransformClasses", Class[].class).invoke(instrumentation,

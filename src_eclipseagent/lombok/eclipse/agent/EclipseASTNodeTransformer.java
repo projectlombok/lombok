@@ -30,37 +30,39 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Opcodes;
 
 /**
- * Transforms Eclipse's <code>org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration</code> class,
- * which is the top-level AST Node class for Eclipse.
+ * Transforms Eclipse's {@code org.eclipse.jdt.internal.compiler.ast.ASTNode} class,
+ * which is the super-class of all AST Node class for Eclipse.
  * 
  * Transformations applied:<ul>
- * <li>A field is added: 'public transient Object $lombokAST = null;'. We use it to cache our own AST object,
- * usually of type <code>lombok.eclipse.EclipseAST.</code></li></ul>
+ * <li>A field is added: 'public transient ASTNode $generatedBy = null;'. It is set to something other than {@code null} if
+ * this node is generated; the reference then points at the node that is responsible for its generation (example: a {@code @Data} annotation).</li></ul>
  */
 @ProviderFor(EclipseTransformer.class)
-public class EclipseCUDTransformer implements EclipseTransformer {
+public class EclipseASTNodeTransformer implements EclipseTransformer {
+	private static final String ASTNODE = "org/eclipse/jdt/internal/compiler/ast/ASTNode";
+
 	public byte[] transform(byte[] classfileBuffer) {
 		ClassReader reader = new ClassReader(classfileBuffer);
 		ClassWriter writer = new ClassWriter(reader, 0);
 	
-		ClassAdapter adapter = new CUDPatcherAdapter(writer);
+		ClassAdapter adapter = new ASTNodePatcherAdapter(writer);
 		reader.accept(adapter, 0);
 		return writer.toByteArray();
 	}
 	
-	private static class CUDPatcherAdapter extends ClassAdapter {
-		CUDPatcherAdapter(ClassVisitor cv) {
+	private static class ASTNodePatcherAdapter extends ClassAdapter {
+		ASTNodePatcherAdapter(ClassVisitor cv) {
 			super(cv);
 		}
 		
 		@Override public void visitEnd() {
-			FieldVisitor fv = cv.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_TRANSIENT, "$lombokAST", "Ljava/lang/Object;", null, null);
+			FieldVisitor fv = cv.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_TRANSIENT, "$generatedBy", "L" + ASTNODE + ";", null, null);
 			fv.visitEnd();
 			cv.visitEnd();
 		}
 	}
 	
 	@Override public String getTargetClassName() {
-		return "org/eclipse/jdt/internal/compiler/ast/CompilationUnitDeclaration";
+		return ASTNODE;
 	}
 }

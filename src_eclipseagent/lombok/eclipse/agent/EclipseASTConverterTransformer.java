@@ -21,6 +21,7 @@
  */
 package lombok.eclipse.agent;
 
+import org.mangosdk.spi.ProviderFor;
 import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -41,25 +42,15 @@ import org.objectweb.asm.Opcodes;
  * <li>The <code>retrieveStartingCatchPosition(int, int)</code> method is instrumented to return its first parameter
  * instead of the constant -1.</li></ul>
  */
-class EclipseASTConverterTransformer {
-	byte[] transform(byte[] classfileBuffer) {
+@ProviderFor(EclipseTransformer.class)
+public class EclipseASTConverterTransformer implements EclipseTransformer {
+	public byte[] transform(byte[] classfileBuffer) {
 		ClassReader reader = new ClassReader(classfileBuffer);
 		ClassWriter writer = new ClassWriter(reader, 0);
 		
 		ClassAdapter adapter = new ASTConverterPatcherAdapter(writer);
 		reader.accept(adapter, 0);
 		return writer.toByteArray();
-	}
-	
-	static RuntimeException sneakyThrow(Throwable t) {
-		if ( t == null ) throw new NullPointerException("t");
-		EclipseASTConverterTransformer.<RuntimeException>sneakyThrow0(t);
-		return null;
-	}
-	
-	@SuppressWarnings("unchecked")
-	private static <T extends Throwable> void sneakyThrow0(Throwable t) throws T {
-		throw (T)t;
 	}
 	
 	private static class ASTConverterPatcherAdapter extends ClassAdapter {
@@ -96,5 +87,9 @@ class EclipseASTConverterTransformer {
 				super.visitInsn(opcode);
 			}
 		}
+	}
+	
+	@Override public String getTargetClassName() {
+		return "org/eclipse/jdt/core/dom/ASTConverter";
 	}
 }
