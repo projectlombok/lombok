@@ -22,6 +22,11 @@
 <project name="lombok" default="dist">
 	<property name="SNIPPET_TAB_STOP" value="2" />
 	<property name="build.compiler" value="javac1.6" />
+		<fileset dir="src" id="eclipse.agent.main.deps">
+			<include name="lombok/core/SpiLoadUtil.java" />
+			<include name="lombok/Lombok.java" />
+		</fileset>
+	
 	<path id="lombok.deps.path">
 		<fileset dir="deps">
 			<include name="*.jar" />
@@ -195,7 +200,13 @@
 		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.javac.apt.Processor</echo>
 		
 		<mkdir dir="build/eclipse.agent" />
-		<javac srcdir="src_eclipseagent" debug="on" destdir="build/eclipse.agent" target="1.5">
+		<mkdir dir="build/eclipse.agent.src" />
+		<copy todir="build/eclipse.agent.src">
+			<fileset dir="src_eclipseagent" />
+			<fileset refid="eclipse.agent.main.deps" />
+		</copy>
+		
+		<javac debug="on" destdir="build/eclipse.agent" target="1.5" srcdir="build/eclipse.agent.src">
 			<classpath refid="eclipse.agent.deps.path" />
 			<classpath refid="eclipse.agent.libs.path" />
 		</javac>
