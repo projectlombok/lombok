@@ -37,8 +37,17 @@ import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.objectweb.asm.Opcodes;
+
 import lombok.Lombok;
 import lombok.core.SpiLoadUtil;
+import lombok.patcher.Hook;
+import lombok.patcher.MethodTarget;
+import lombok.patcher.ScriptManager;
+import lombok.patcher.StackRequest;
+import lombok.patcher.scripts.AddFieldScript;
+import lombok.patcher.scripts.ExitFromMethodEarlyScript;
+import lombok.patcher.scripts.WrapReturnValuesScript;
 
 /**
  * This is a java-agent that patches some of eclipse's classes so AST Nodes are handed off to Lombok
@@ -108,6 +117,56 @@ public class EclipsePatcher {
 	public static void premain(String agentArgs, Instrumentation instrumentation) throws Exception {
 		registerPatcher(instrumentation, false);
 		addLombokToSearchPaths(instrumentation);
+		ScriptManager sm = new ScriptManager();
+		sm.registerTransformer(instrumentation);
+		
+		sm.addScript(new WrapReturnValuesScript(
+				new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveStartingCatchPosition"),
+				new Hook("java/lombok/eclipse/PatchFixes", "fixRetrieveStartingCatchPosition", "(I)I"),
+				StackRequest.PARAM1));
+		
+		sm.addScript(new AddFieldScript("org.eclipse.jdt.internal.compiler.ast.ASTNode",
+				Opcodes.ACC_PUBLIC | Opcodes.ACC_TRANSIENT, "$generatedBy", "Lorg/eclipse/jdt/internal/compiler/ast/ASTNode;"));
+		
+		sm.addScript(new AddFieldScript("org.eclipse.jdt.core.dom.ASTNode",
+				Opcodes.ACC_PUBLIC | Opcodes.ACC_TRANSIENT, "$isGenerated", "Z"));
+		
+		sm.addScript(new AddFieldScript("org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration",
+				Opcodes.ACC_PUBLIC | Opcodes.ACC_TRANSIENT, "$lombokAST", "Ljava/lang/Object;"));
+		
+		sm.addScript(new WrapReturnValuesScript(
+				new MethodTarget("org.eclipse.jdt.internal.compiler.parser.Parser", "getMethodBodies", "void",
+						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration"),
+						new Hook("java/lombok/eclipse/ClassLoaderWorkaround", "transformCompilationUnitDeclaration",
+								"(Ljava/lang/Object;Ljava/lang/Object;)V"), StackRequest.THIS, StackRequest.PARAM1));
+		
+		sm.addScript(new WrapReturnValuesScript(
+				new MethodTarget("org.eclipse.jdt.internal.compiler.parser.Parser", "endParse",
+						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration", "int"),
+						new Hook("java/lombok/eclipse/ClassLoaderWorkaround", "transformCompilationUnitDeclarationSwapped",
+								"(Ljava/lang/Object;Ljava/lang/Object;)V"), StackRequest.THIS, StackRequest.RETURN_VALUE));
+		
+		sm.addScript(new ExitFromMethodEarlyScript(
+				new MethodTarget("org.eclipse.jdt.internal.compiler.parser.Parser", "parse", "void",
+						"org.eclipse.jdt.internal.compiler.ast.MethodDeclaration",
+						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration"),
+						new Hook("java/lombok/eclipse/PatchFixes", "checkBit24",
+								"(Ljava/lang/Object;)Z"), null, StackRequest.PARAM1));
+		
+		sm.addScript(new ExitFromMethodEarlyScript(
+				new MethodTarget("org.eclipse.jdt.internal.compiler.parser.Parser", "parse", "void",
+						"org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration",
+						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration", "boolean"),
+						new Hook("java/lombok/eclipse/PatchFixes", "checkBit24",
+								"(Ljava/lang/Object;)Z"), null, StackRequest.PARAM1));
+		
+		sm.addScript(new ExitFromMethodEarlyScript(
+				new MethodTarget("org.eclipse.jdt.internal.compiler.parser.Parser", "parse", "void",
+						"org.eclipse.jdt.internal.compiler.ast.Initializer",
+						"org.eclipse.jdt.internal.compiler.ast.TypeDeclaration",
+						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration"),
+						new Hook("java/lombok/eclipse/PatchFixes", "checkBit24",
+								"(Ljava/lang/Object;)Z"), null, StackRequest.PARAM1));
 	}
 	
 	private static void registerPatcher(Instrumentation instrumentation, boolean transformExisting) throws IOException {

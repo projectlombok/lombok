@@ -52,6 +52,10 @@ public class ClassLoaderWorkaround {
 	
 	private static final Map<ClassLoader, Method> transform = new HashMap<ClassLoader, Method>();
 	
+	public static void transformCompilationUnitDeclarationSwapped(Object cud, Object parser) throws Exception {
+		transformCompilationUnitDeclaration(parser, cud);
+	}
+	
 	public static void transformCompilationUnitDeclaration(Object parser, Object cud) throws Exception {
 		Method transformMethod = getTransformMethod(cud);
 		try {
