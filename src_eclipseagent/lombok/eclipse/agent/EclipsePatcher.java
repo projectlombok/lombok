@@ -71,7 +71,7 @@ public class EclipsePatcher {
 				.setPublic().setTransient().build());
 		
 		sm.addScript(ScriptBuilder.addField()
-				.targetClass("org.eclipse.jdt.internal.compiler.CompilationUnitDeclaration")
+				.targetClass("org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration")
 				.fieldName("$lombokAST").fieldType("Ljava/lang/Object;")
 				.setPublic().setTransient().build());
 		
