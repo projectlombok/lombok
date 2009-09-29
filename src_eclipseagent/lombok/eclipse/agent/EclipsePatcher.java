@@ -21,33 +21,14 @@
  */
 package lombok.eclipse.agent;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-import java.net.URLDecoder;
-import java.nio.charset.Charset;
-import java.security.ProtectionDomain;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.jar.JarFile;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.objectweb.asm.Opcodes;
-
-import lombok.Lombok;
-import lombok.core.SpiLoadUtil;
 import lombok.patcher.Hook;
 import lombok.patcher.MethodTarget;
 import lombok.patcher.ScriptManager;
 import lombok.patcher.StackRequest;
-import lombok.patcher.scripts.AddFieldScript;
-import lombok.patcher.scripts.ExitFromMethodEarlyScript;
-import lombok.patcher.scripts.WrapReturnValuesScript;
+import lombok.patcher.equinox.EquinoxClassLoader;
+import lombok.patcher.scripts.ScriptBuilder;
 
 /**
  * This is a java-agent that patches some of eclipse's classes so AST Nodes are handed off to Lombok
@@ -59,135 +40,80 @@ import lombok.patcher.scripts.WrapReturnValuesScript;
 public class EclipsePatcher {
 	private EclipsePatcher() {}
 	
-	private static Map<String, EclipseTransformer> transformers = new HashMap<String, EclipseTransformer>();
-	static {
-		try {
-			for ( EclipseTransformer transformer : SpiLoadUtil.findServices(EclipseTransformer.class) ) {
-				String targetClassName = transformer.getTargetClassName();
-				transformers.put(targetClassName, transformer);
-			}
-		} catch ( Throwable t ) {
-			throw Lombok.sneakyThrow(t);
-		}
-	}
-	
-	private static class Patcher implements ClassFileTransformer {
-		public byte[] transform(ClassLoader loader, String className,
-				Class<?> classBeingRedefined,
-				ProtectionDomain protectionDomain, byte[] classfileBuffer)
-				throws IllegalClassFormatException {
-			
-//			ClassLoader classLoader = Patcher.class.getClassLoader();
-//			if ( classLoader == null ) classLoader = ClassLoader.getSystemClassLoader();
-			
-			EclipseTransformer transformer = transformers.get(className);
-			if ( transformer != null ) return transformer.transform(classfileBuffer);
-			
-			return null;
-		}
-	}
-	
 	public static void agentmain(String agentArgs, Instrumentation instrumentation) throws Exception {
-		registerPatcher(instrumentation, true);
-		addLombokToSearchPaths(instrumentation);
-	}
-	
-	private static void addLombokToSearchPaths(Instrumentation instrumentation) throws Exception {
-		String path = findPathOfOurClassloader();
-		//On java 1.5, you don't have these methods, so you'll be forced to manually -Xbootclasspath/a them in.
-		tryCallMethod(instrumentation, "appendToSystemClassLoaderSearch", path + "/lombok.jar");
-		tryCallMethod(instrumentation, "appendToBootstrapClassLoaderSearch", path + "/lombok.eclipse.agent.jar");
-	}
-	
-	private static void tryCallMethod(Object o, String methodName, String path) {
-		try {
-			Instrumentation.class.getMethod(methodName, JarFile.class).invoke(o, new JarFile(path));
-		} catch ( Throwable ignore ) {}
-	}
-	
-	private static String findPathOfOurClassloader() throws Exception {
-		URI uri = EclipsePatcher.class.getResource("/" + EclipsePatcher.class.getName().replace('.', '/') + ".class").toURI();
-		Pattern p = Pattern.compile("^jar:file:([^\\!]+)\\!.*\\.class$");
-		Matcher m = p.matcher(uri.toString());
-		if ( !m.matches() ) return ".";
-		String rawUri = m.group(1);
-		return new File(URLDecoder.decode(rawUri, Charset.defaultCharset().name())).getParent();
+		registerPatchScripts(instrumentation, true);
 	}
 	
 	public static void premain(String agentArgs, Instrumentation instrumentation) throws Exception {
-		registerPatcher(instrumentation, false);
-		addLombokToSearchPaths(instrumentation);
-		ScriptManager sm = new ScriptManager();
-		sm.registerTransformer(instrumentation);
-		
-		sm.addScript(new WrapReturnValuesScript(
-				new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveStartingCatchPosition"),
-				new Hook("java/lombok/eclipse/PatchFixes", "fixRetrieveStartingCatchPosition", "(I)I"),
-				StackRequest.PARAM1));
-		
-		sm.addScript(new AddFieldScript("org.eclipse.jdt.internal.compiler.ast.ASTNode",
-				Opcodes.ACC_PUBLIC | Opcodes.ACC_TRANSIENT, "$generatedBy", "Lorg/eclipse/jdt/internal/compiler/ast/ASTNode;"));
-		
-		sm.addScript(new AddFieldScript("org.eclipse.jdt.core.dom.ASTNode",
-				Opcodes.ACC_PUBLIC | Opcodes.ACC_TRANSIENT, "$isGenerated", "Z"));
-		
-		sm.addScript(new AddFieldScript("org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration",
-				Opcodes.ACC_PUBLIC | Opcodes.ACC_TRANSIENT, "$lombokAST", "Ljava/lang/Object;"));
-		
-		sm.addScript(new WrapReturnValuesScript(
-				new MethodTarget("org.eclipse.jdt.internal.compiler.parser.Parser", "getMethodBodies", "void",
-						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration"),
-						new Hook("java/lombok/eclipse/ClassLoaderWorkaround", "transformCompilationUnitDeclaration",
-								"(Ljava/lang/Object;Ljava/lang/Object;)V"), StackRequest.THIS, StackRequest.PARAM1));
-		
-		sm.addScript(new WrapReturnValuesScript(
-				new MethodTarget("org.eclipse.jdt.internal.compiler.parser.Parser", "endParse",
-						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration", "int"),
-						new Hook("java/lombok/eclipse/ClassLoaderWorkaround", "transformCompilationUnitDeclarationSwapped",
-								"(Ljava/lang/Object;Ljava/lang/Object;)V"), StackRequest.THIS, StackRequest.RETURN_VALUE));
-		
-		sm.addScript(new ExitFromMethodEarlyScript(
-				new MethodTarget("org.eclipse.jdt.internal.compiler.parser.Parser", "parse", "void",
-						"org.eclipse.jdt.internal.compiler.ast.MethodDeclaration",
-						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration"),
-						new Hook("java/lombok/eclipse/PatchFixes", "checkBit24",
-								"(Ljava/lang/Object;)Z"), null, StackRequest.PARAM1));
-		
-		sm.addScript(new ExitFromMethodEarlyScript(
-				new MethodTarget("org.eclipse.jdt.internal.compiler.parser.Parser", "parse", "void",
-						"org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration",
-						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration", "boolean"),
-						new Hook("java/lombok/eclipse/PatchFixes", "checkBit24",
-								"(Ljava/lang/Object;)Z"), null, StackRequest.PARAM1));
-		
-		sm.addScript(new ExitFromMethodEarlyScript(
-				new MethodTarget("org.eclipse.jdt.internal.compiler.parser.Parser", "parse", "void",
-						"org.eclipse.jdt.internal.compiler.ast.Initializer",
-						"org.eclipse.jdt.internal.compiler.ast.TypeDeclaration",
-						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration"),
-						new Hook("java/lombok/eclipse/PatchFixes", "checkBit24",
-								"(Ljava/lang/Object;)Z"), null, StackRequest.PARAM1));
+		registerPatchScripts(instrumentation, false);
 	}
 	
-	private static void registerPatcher(Instrumentation instrumentation, boolean transformExisting) throws IOException {
-		instrumentation.addTransformer(new Patcher()/*, true*/);
+	private static void registerPatchScripts(Instrumentation instrumentation, boolean reloadExistingClasses) {
+		ScriptManager sm = new ScriptManager();
+		sm.registerTransformer(instrumentation);
+		EquinoxClassLoader.getInstance().addPrefix("lombok.");
+		EquinoxClassLoader.getInstance().registerScripts(sm);
 		
-		if ( transformExisting ) for ( Class<?> c : instrumentation.getAllLoadedClasses() ) {
-			if ( transformers.containsKey(c.getName()) ) {
-				try {
-					//instrumentation.retransformClasses(c); - //not in java 1.5.
-					Instrumentation.class.getMethod("retransformClasses", Class[].class).invoke(instrumentation,
-							new Object[] { new Class[] {c }});
-				} catch ( InvocationTargetException e ) {
-					throw new UnsupportedOperationException(
-							"The eclipse parser class is already loaded and cannot be modified. " +
-							"You'll have to restart eclipse in order to use Lombok in eclipse.");
-				} catch ( Throwable t ) {
-					throw new UnsupportedOperationException(
-							"This appears to be a java 1.5 instance, which cannot reload already loaded classes. " +
-					"You'll have to restart eclipse in order to use Lombok in eclipse.");
-				}
-			}
-		}
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveStartingCatchPosition"))
+				.wrapMethod(new Hook("lombok/eclipse/agent/PatchFixes", "fixRetrieveStartingCatchPosition", "(I)I"))
+				.transplant().request(StackRequest.PARAM1).build());
+		
+		sm.addScript(ScriptBuilder.addField()
+				.targetClass("org.eclipse.jdt.internal.compiler.ast.ASTNode")
+				.fieldName("$generatedBy")
+				.fieldType("Lorg/eclipse/jdt/internal/compiler/ast/ASTNode;")
+				.setPublic().setTransient().build());
+		
+		sm.addScript(ScriptBuilder.addField()
+				.targetClass("org.eclipse.jdt.core.dom.ASTNode")
+				.fieldName("$isGenerated").fieldType("Z")
+				.setPublic().setTransient().build());
+		
+		sm.addScript(ScriptBuilder.addField()
+				.targetClass("org.eclipse.jdt.internal.compiler.CompilationUnitDeclaration")
+				.fieldName("$lombokAST").fieldType("Ljava/lang/Object;")
+				.setPublic().setTransient().build());
+		
+		final String PARSER_SIG1 = "org.eclipse.jdt.internal.compiler.parser.Parser";
+		final String PARSER_SIG2 = "Lorg/eclipse/jdt/internal/compiler/parser/Parser;";
+		final String CUD_SIG1 = "org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration";
+		final String CUD_SIG2 = "Lorg/eclipse/jdt/internal/compiler/ast/CompilationUnitDeclaration;";
+		
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget(PARSER_SIG1, "getMethodBodies", "void", CUD_SIG1))
+				.wrapMethod(new Hook("lombok/eclipse/TransformEclipseAST", "transform",
+						"(" + PARSER_SIG2 + CUD_SIG2 + ")V"))
+				.request(StackRequest.THIS, StackRequest.PARAM1).build());
+		
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget(PARSER_SIG1, "endParse", CUD_SIG1, "int"))
+				.wrapMethod(new Hook("lombok/eclipse/TransformEclipseAST", "transform_swapped",
+						"(" + CUD_SIG2 + PARSER_SIG2 + ")V"))
+				.request(StackRequest.THIS, StackRequest.RETURN_VALUE).build());
+		
+		sm.addScript(ScriptBuilder.exitEarly()
+				.target(new MethodTarget(PARSER_SIG1, "parse", "void",
+						"org.eclipse.jdt.internal.compiler.ast.MethodDeclaration",
+						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration"))
+				.decisionMethod(new Hook("lombok/eclipse/agent/PatchFixes", "checkBit24", "(Ljava/lang/Object;)Z"))
+				.transplant().request(StackRequest.PARAM1).build());
+		
+		sm.addScript(ScriptBuilder.exitEarly()
+				.target(new MethodTarget(PARSER_SIG1, "parse", "void",
+						"org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration",
+						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration", "boolean"))
+				.decisionMethod(new Hook("lombok/eclipse/agent/PatchFixes", "checkBit24", "(Ljava/lang/Object;)Z"))
+				.transplant().request(StackRequest.PARAM1).build());
+		
+		sm.addScript(ScriptBuilder.exitEarly()
+				.target(new MethodTarget(PARSER_SIG1, "parse", "void",
+						"org.eclipse.jdt.internal.compiler.ast.Initializer",
+						"org.eclipse.jdt.internal.compiler.ast.TypeDeclaration",
+						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration"))
+				.decisionMethod(new Hook("lombok/eclipse/agent/PatchFixes", "checkBit24", "(Ljava/lang/Object;)Z"))
+				.transplant().request(StackRequest.PARAM1).build());
+		
+		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
 	}
 }

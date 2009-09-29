@@ -90,6 +90,10 @@ public class TransformEclipseAST {
 		//potential speedup: if trace contains org.eclipse.swt.widgets. -> stop - nothing interesting ever follows that. I think.
 	}
 	
+	public static void transform_swapped(CompilationUnitDeclaration ast, Parser parser) {
+		transform(parser, ast);
+	}
+	
 	/**
 	 * This method is called immediately after Eclipse finishes building a CompilationUnitDeclaration, which is
 	 * the top-level AST node when Eclipse parses a source file. The signature is 'magic' - you should not

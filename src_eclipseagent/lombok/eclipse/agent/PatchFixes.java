@@ -1,4 +1,4 @@
-package java.lombok.eclipse;
+package lombok.eclipse.agent;
 
 public class PatchFixes {
 	public static int fixRetrieveStartingCatchPosition(int in) {
