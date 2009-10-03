@@ -65,7 +65,12 @@ public class TransformEclipseAST {
 			l = HandlerLibrary.load();
 			f = CompilationUnitDeclaration.class.getDeclaredField("$lombokAST");
 		} catch ( Throwable t ) {
-			Eclipse.error(null, "Problem initializing lombok", t);
+			try {
+				Eclipse.error(null, "Problem initializing lombok", t);
+			} catch ( Throwable t2) {
+				System.err.println("Problem initializing lombok");
+				t.printStackTrace();
+			}
 			disableLombok = true;
 		}
 		astCacheField = f;
