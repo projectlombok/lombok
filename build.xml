@@ -20,208 +20,14 @@
   THE SOFTWARE.
 -->
 <project name="lombok" default="dist">
-	<property name="SNIPPET_TAB_STOP" value="2" />
-	<property name="build.compiler" value="javac1.6" />
-		<fileset dir="src" id="eclipse.agent.main.deps">
-			<include name="lombok/core/SpiLoadUtil.java" />
-			<include name="lombok/Lombok.java" />
-		</fileset>
-	
-	<path id="lombok.deps.path">
-		<fileset dir="deps">
-			<include name="*.jar" />
-		</fileset>
-		<fileset dir="deps/lombok">
-			<include name="**/*.jar" />
-		</fileset>
-	</path>
-	<path id="lombok.libs.path">
-		<fileset dir="lib/lombok">
-			<include name="**/*.jar" />
-		</fileset>
-	</path>
-
-	<path id="eclipse.agent.deps.path">
-		<fileset dir="deps">
-			<include name="*.jar" />
-		</fileset>
-		<fileset dir="deps/eclipse.agent">
-			<include name="**/*.jar" />
-		</fileset>
-	</path>
-	<path id="eclipse.agent.libs.path">
-		<fileset dir="lib/eclipse.agent">
-			<include name="**/*.jar" />
-		</fileset>
-	</path>
-	
+			<description>This buildfile is part of projectlombok.org. It is the main entry point that contains
+the common tasks and can be called on to run the main aspects of all the sub-scripts.</description>
 	<target name="clean" description="Removes all generated files">
 		<delete dir="build" quiet="true" />
 		<delete dir="dist" quiet="true" />
 	</target>
 	
-	<target name="-website-clean">
-		<delete dir="build/website" quiet="true" />
-	</target>
-	
-	<target name="website" description="Prepares the website for distribution" depends="-website-main, -website-videos, -website-dist" />
-	<target name="website-novideo" description="Prepares the website for distribution, but does not add the videos to the zip." depends="-website-main, -website-dist" />
-	
-	<target name="-website-videos" depends="-website-clean">
-		<mkdir dir="build/website/videos" />
-		<copy todir="build/website/videos">
-			<fileset dir="website/videos" />
-		</copy>
-	</target>
-	
-	<target name="-website-main" depends="-website-clean, version, javadoc, changelogToHtml">
-		<taskdef classpath="deps/website/java2html.jar" name="java2html" classname="de.java2html.anttasks.Java2HtmlTask" />
-		<mkdir dir="build/website" />
-		<copy todir="build/website">
-			<fileset dir="website">
-				<exclude name="**/*.jpage" />
-				<exclude name="**/*.svg" />
-				<exclude name="**/*.psd" />
-				<exclude name="**/*.ai" />
-				<exclude name="**/publish" />
-				<exclude name="**/*unused*" />
-				<exclude name="videos/**" />
-			</fileset>
-		</copy>
-		<copy todir="build/website" overwrite="true">
-			<fileset dir="website">
-				<include name="index.html" />
-				<include name="download.html" />
-				<include name="slideshow.html" />
-				<include name="mavenrepo/index.html" />
-			</fileset>
-			<filterchain>
-				<replacetokens>
-					<token key="VERSION" value="${lombok.version}" />
-				</replacetokens>
-			</filterchain>
-		</copy>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="GetterSetter" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="ToString" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="EqualsAndHashCode" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Data" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Cleanup" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Synchronized" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="SneakyThrows" />
-		</antcall>
-		<mkdir dir="dist" />
-	</target>
-	
-	<target name="-website-dist">
-		<tar destfile="dist/website.tar.bz2" compression="bzip2">
-			<tarfileset dir="build/website" />
-			<tarfileset dir="doc/api" prefix="api" />
-		</tar>
-		<echo>Now upload dist/website.tar.bz2 to the webserver.</echo>
-		<echo>If you want to host projectlombok.org on github, run the website/publish script, but this is not where the site is currently hosted.</echo>
-	</target>
-	
-	<target name="-integrateSnippet">
-		<mkdir dir="build/website" />
-		<property name="prefile" location="usage_examples/${transformationName}Example_pre.jpage" />
-		<property name="postfile" location="usage_examples/${transformationName}Example_post.jpage" />
-		<property name="htmlfile" location="website/features/${transformationName}.html" />
-		<mkdir dir="build/temp" />
-		<property name="preout" location="build/temp/${transformationName}Example_pre.jpage.html" />
-		<property name="postout" location="build/temp/${transformationName}Example_post.jpage.html" />
-		<java2html srcdir="usage_examples" includes="${transformationName}Example_*.jpage" destdir="build/temp" tabs="${SNIPPET_TAB_STOP}"
-			showLineNumbers="true" overwrite="true" />
-		<loadfile property="pre" encoding="UTF-8" srcFile="${preout}">
-			<filterchain>
-				<linecontainsregexp>
-					<regexp pattern="(code>)|(font>)" />
-				</linecontainsregexp>
-				<striplinebreaks />
-			</filterchain>
-		</loadfile>
-		<loadfile property="post" encoding="UTF-8" srcFile="${postout}">
-			<filterchain>
-				<linecontainsregexp>
-					<regexp pattern="(code>)|(font>)" />
-				</linecontainsregexp>
-				<striplinebreaks />
-			</filterchain>
-		</loadfile>
-		<delete dir="build/temp" quiet="true" />
-		<copy file="${htmlfile}" todir="build/website/features" overwrite="true">
-			<filterchain>
-				<replacetokens>
-					<token key="HTML_PRE" value="${pre}" />
-					<token key="HTML_POST" value="${post}" />
-				</replacetokens>
-			</filterchain>
-		</copy>
-	</target>
-	
-	<target name="compile" description="Compiles the code">
-		<mkdir dir="build/lombok" />
-		<!-- This version trickery is so that an eclipse running in a JVM 1.5 will run
-		     properly (It'll never touch the javac files and hence never trigger a
-		     Bad Class Version Number error, but for javac we definitely cannot support
-		     javac 1.5, partly because they completely rewrote large swaths of javac,
-		     and partly because our injection mechanism (annotations) doesn't work very
-		     well on javac 1.5, hence, when using javac, we do demand you're on 1.6. -->
-		<javac srcdir="src" debug="on" destdir="build/lombok" target="1.5" excludes="lombok/javac/**">
-			<classpath refid="lombok.deps.path" />
-			<classpath refid="lombok.libs.path" />
-		</javac>
-		<javac srcdir="src" debug="on" destdir="build/lombok" target="1.6" includes="lombok/javac/**">
-			<classpath refid="lombok.deps.path" />
-			<classpath refid="lombok.libs.path" />
-		</javac>
-		<copy todir="build/lombok">
-			<fileset dir="src">
-				<exclude name="**/*.java" />
-				<exclude name="**/*.class" />
-				<exclude name="**/*.svg" />
-			</fileset>
-		</copy>
-
-		<mkdir dir="build/lombok/META-INF" />
-		<mkdir dir="build/lombok/META-INF/services" />
-		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.javac.apt.Processor</echo>
-		
-		<mkdir dir="build/eclipse.agent" />
-		<mkdir dir="build/eclipse.agent.src" />
-		<copy todir="build/eclipse.agent.src">
-			<fileset dir="src_eclipseagent" />
-			<fileset refid="eclipse.agent.main.deps" />
-		</copy>
-		
-		<javac debug="on" destdir="build/eclipse.agent" target="1.5" srcdir="build/eclipse.agent.src">
-			<classpath refid="eclipse.agent.deps.path" />
-			<classpath refid="eclipse.agent.libs.path" />
-		</javac>
-	</target>
-	
-	<target name="-unpackLibs">
-		<unjar dest="build/lombok">
-			<path refid="lombok.libs.path" />
-		</unjar>
-		<unjar dest="build/eclipse.agent">
-			<path refid="eclipse.agent.libs.path" />
-		</unjar>
-	</target>
-	
-	<target name="version" description="Shows the version number">
+	<target name="version" description="Shows the version number" unless="lombok.version">
 		<mkdir dir="build/lombok" />
 		<javac srcdir="src" debug="on" destdir="build/lombok" target="1.5" includes="lombok/core/Version.java" />
 		<java
@@ -238,209 +44,44 @@
 		<echo level="info">Lombok version: ${lombok.version}</echo>
 	</target>
 	
-	<target name="javadoc" description="Generates the javadoc" depends="version">
-		<delete dir="build/api" quiet="true" />
-		<delete dir="doc/api" quiet="true" />
-		<mkdir dir="build/api" />
-		<property name="javadoc.overview.html" location="build/javadoc.overview.html" />
-		<echo file="${javadoc.overview.html}"><![CDATA[<html><body>
-			Welcome to the lombok javadoc.&nbsp;If you're just looking to learn more about using lombok
-			You probably want to look at <a href="http://projectlombok.org/features/index.html">the feature documentation</a>.&nbsp;Otherwise,
-			check the <a href="lombok/package-summary.html">lombok</a> package.&nbsp;If you're trying to extend lombok or
-			write your own plugins, the other packages are what you're looking for.</body></html>
-		]]></echo>
-		<javadoc sourcepath="src" defaultexcludes="yes" destdir="build/api" windowtitle="Lombok" Overview="${javadoc.overview.html}">
-			<classpath refid="lombok.deps.path" />
-			<classpath refid="lombok.libs.path" />
-			<link href="http://java.sun.com/javase/6/docs/api/" offline="true" packagelistLoc="./deps/javadoc/java6"/>
-			<header><![CDATA[<a href='http://projectlombok.org/'>Lombok</a> - ]]>v${lombok.version}</header>
-			<bottom><![CDATA[<i>Copyright &#169; 2009 Reinier Zwitserloot and Roel Spilker, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php'>MIT licence</a>.]]></bottom>
-		</javadoc>
-		<mkdir dir="doc/api" />
-		<copy todir="doc/api">
-			<fileset dir="build/api" includes="**/*.html" />
-			<filterchain>
-				<linecontainsregexp negate="true">
-					<regexp pattern="(Generated by javadoc)|(.META NAME=.date.)" />
-				</linecontainsregexp>
-			</filterchain>
-		</copy>
-		<copy todir="doc/api">
-			<fileset dir="build/api" excludes="**/*.html" />
-		</copy>
+	<target name="buildDeps" description="Builds dependencies">
+		<ant antfile="buildScripts/deps.ant.xml" target="buildDeps" inheritAll="false" />
 	</target>
 	
-	<target name="dist" description="Builds THE lombok.jar file which contains everything " depends="clean, compile, version, -unpackLibs">
-		<mkdir dir="dist" />
-		<jar basedir="build/eclipse.agent" destfile="dist/lombok.eclipse.agent-${lombok.version}.jar">
-			<manifest>
-				<attribute name="Premain-Class" value="lombok.eclipse.agent.EclipsePatcher" />
-				<attribute name="Can-Redefine-Classes" value="true" />
-			</manifest>
-		</jar>
-		<copy file="dist/lombok.eclipse.agent-${lombok.version}.jar" tofile="dist/lombok.eclipse.agent.jar" />
-		<copy file="doc/changelog.markdown" tofile="build/changelog.txt" />
-		<jar destfile="dist/lombok-${lombok.version}.jar">
-			<fileset dir="build/lombok" />
-			<fileset dir="dist" includes="lombok.eclipse.agent.jar" />
-			<fileset dir="build" includes="changelog.txt" />
-			<manifest>
-				<attribute name="Main-Class" value="lombok.installer.Installer" />
-				<attribute name="Lombok-Version" value="${lombok.version}" />
-			</manifest>
-		</jar>
-		<copy file="dist/lombok-${lombok.version}.jar" tofile="dist/lombok.jar" />
+	<target name="dist" depends="version, buildDeps" description="Builds THE lombok.jar file which contains everything">
+		<ant antfile="buildScripts/compile.ant.xml" target="dist" inheritAll="false">
+			<property name="lombok.version" value="${lombok.version}" />
+		</ant>
+		<property name="lombok.dist.built" value="true" />
 	</target>
 	
-
-	<property name="credentialsFile" value="google.properties" />
-
-	<target name="-credentials">
-		<available property="hasCredentialsFile" file="${credentialsFile}"/>
+	<target name="compile" description="Compiles the code">
+		<ant antfile="buildScripts/compile.ant.xml" target="compile" inheritAll="false">
+			<property name="lombok.version" value="${lombok.version}" />
+		</ant>
 	</target>
 	
-	<target name="-checkCredentialsFile" depends="-credentials" unless="hasCredentialsFile">
-		<echo file="${credentialsFile}">#username=[your google account name without @gmail.com]
-#password=[your googlecode password, is NOT your gmail password]</echo>
-		<fail message="fill in ${credentialsFile} to provide your credentials"/>
+	<target name="maven" description="Build a maven repository">
+		<ant antfile="buildScripts/maven.ant.xml" target="maven" inheritAll="false">
+			<property name="lombok.version" value="${lombok.version}" />
+		</ant>
 	</target>
 	
-	<target name="publish" description="Publishes the latest build to googlecode" depends="-checkCredentialsFile, dist">
-		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="deps/website/ant-googlecode-0.0.2.jar" name="gcupload"/>
-		<property file="${credentialsFile}" prefix="google" />
-		<gcupload 
-		        username="${google.username}"
-		        password="${google.password}" 
-		        projectname="projectlombok" 
-		        filename="dist/lombok.jar" 
-		        targetfilename="lombok-${lombok.version}.jar"
-		        summary="Version ${lombok.version}"
-		        labels=""
-				verbose="true" />
-		<gcupload 
-		        username="${google.username}"
-		        password="${google.password}" 
-		        projectname="projectlombok" 
-		        filename="dist/lombok.jar" 
-		        targetfilename="lombok.jar"
-		        summary="Version ${lombok.version} - The everything jar - doubleclick it to install, or just include it in your projects."
-		        labels="Featured" 
-				verbose="true" />
+	<target name="publish" description="Publishes the latest build to googlecode">
+		<ant antfile="buildScripts/publish.ant.xml" target="publish" inheritAll="false">
+			<property name="lombok.version" value="${lombok.version}" />
+		</ant>
 	</target>
 	
-	<target name="changelogToHtml">
-		<mkdir dir="build/changelog" />
-		<echo file="build/changelog/CompileChangelog.java"><![CDATA[
-import com.petebevin.markdown.MarkdownProcessor;
-import java.io.*;
-			
-public class CompileChangelog {
-	public static void main(String[] args) {
-		try {
-			FileInputStream in = new FileInputStream(args[0]);
-			ByteArrayOutputStream out = new ByteArrayOutputStream();
-			byte[] b = new byte[65536];
-			while ( true ) {
-				int r = in.read(b);
-				if ( r == -1 ) break;
-				out.write(b, 0, r);
-			}
-			in.close();
-			String markdown = new String(out.toByteArray(), "UTF-8");
-			String html = new MarkdownProcessor().markdown(markdown);
-			FileOutputStream file = new FileOutputStream(args[1]);
-			file.write(html.getBytes("UTF-8"));
-			file.close();
-			System.exit(0);
-		} catch ( Throwable e ) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
-}
-]]></echo>
-		<mkdir dir="build/website" />
-		<javac srcdir="build/changelog" destdir="build/changelog" classpath="deps/website/markdownj.jar" debug="on" />
-		<property name="CHANGELOG_FILE" location="doc/changelog.markdown" />
-		<property name="CHANGELOG_HTML" location="build/website/changelog.html" />
-		<java fork="true" classname="CompileChangelog" failonerror="true">
-			<classpath>
-				<pathelement location="deps/website/markdownj.jar" />
-				<pathelement location="build/changelog" />
-			</classpath>
-			<arg value="${CHANGELOG_FILE}" />
-			<arg value="${CHANGELOG_HTML}" />
-		</java>
+	<target name="website" description="Prepares the website for distribution">
+		<ant antfile="buildScripts/website.ant.xml" target="website" inheritAll="false">
+			<property name="lombok.version" value="${lombok.version}" />
+		</ant>
 	</target>
 	
-	<target name="maven" depends="version, dist" description="Build a maven repository.">
-		<loadresource property="mvn.oldversions">
-			<url url="http://projectlombok.org/mavenrepo/org/projectlombok/lombok/maven-metadata.xml" />
-			<filterchain>
-				<linecontains><contains value="/version>" /></linecontains>
-				<headfilter lines="-1" skip="1" />
-			</filterchain>
-		</loadresource>
-		<mkdir dir="build" />
-		<echo file="build/version.tagged.tmp">&lt;version&gt;${lombok.version}&lt;/version&gt;</echo>
-		<loadfile srcFile="build/version.tagged.tmp" property="lombok.version.tagged" />
-		<delete file="build/version.tagged.tmp" />
-		<fail message="You already created a maven target for this version.  You'll have to update the version to something new!">
-			<condition>
-				<contains string="${mvn.oldversions}" substring="${lombok.version.tagged}" />
-			</condition>
-		</fail>
-		
-		<delete dir="build/maven" quiet="true" />
-		<property name="mvn.dir" value="build/maven/org/projectlombok/lombok" />
-		<property name="mvn.bin" value="${mvn.dir}/${lombok.version}" />
-		<property name="mvn.pom" value="${mvn.bin}/lombok-${lombok.version}.pom" />
-		<mkdir dir="${mvn.bin}" />
-		<tstamp>
-			<format property="now.millis" pattern="yyyyMMddHHmmss" timezone="UTC" />
-		</tstamp>
-		<copy todir="${mvn.bin}" file="dist/lombok-${lombok.version}.jar" />
-		<checksum property="mvn.bin.md5" file="${mvn.bin}/lombok-${lombok.version}.jar" algorithm="MD5" />
-		<checksum property="mvn.bin.sha1" file="${mvn.bin}/lombok-${lombok.version}.jar" algorithm="SHA1" />
-		<echo file="${mvn.bin}/lombok-${lombok.version}.jar.md5">${mvn.bin.md5}</echo>
-		<echo file="${mvn.bin}/lombok-${lombok.version}.jar.sha1">${mvn.bin.sha1}</echo>
-		<jar destfile="${mvn.bin}/lombok-${lombok.version}-sources.jar" basedir="src" excludes="**/.DS_Store" />
-		<checksum property="mvn.src.md5" file="${mvn.bin}/lombok-${lombok.version}-sources.jar" algorithm="MD5" />
-		<checksum property="mvn.src.sha1" file="${mvn.bin}/lombok-${lombok.version}-sources.jar" algorithm="SHA1" />
-		<echo file="${mvn.bin}/lombok-${lombok.version}-sources.jar.md5">${mvn.src.md5}</echo>
-		<echo file="${mvn.bin}/lombok-${lombok.version}-sources.jar.sha1">${mvn.src.sha1}</echo>
-		<copy tofile="${mvn.pom}" file="doc/maven-pom.xml">
-			<filterchain>
-				<replacetokens>
-					<token key="VERSION" value="${lombok.version}" />
-				</replacetokens>
-			</filterchain>
-		</copy>
-		<checksum property="mvn.pom.md5" file="${mvn.pom}" algorithm="MD5" />
-		<checksum property="mvn.pom.sha1" file="${mvn.pom}" algorithm="SHA1" />
-		<echo file="${mvn.pom}.md5">${mvn.pom.md5}</echo>
-		<echo file="${mvn.pom}.sha1">${mvn.pom.sha1}</echo>
-		<echo file="${mvn.dir}/maven-metadata.xml"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
-<metadata>
-	<groupId>org.projectlombok</groupId>
-	<artifactId>lombok</artifactId>
-	<version>${lombok.version}</version>
-	<versioning>
-		<versions>
-			<version>${lombok.version}</version>
-${mvn.oldversions}
-		</versions>
-		<lastUpdated>${now.millis}</lastUpdated>
-	</versioning>
-</metadata>
-]]></echo>
-		<checksum property="mvn.manifest.md5" file="${mvn.dir}/maven-metadata.xml" algorithm="MD5" />
-		<checksum property="mvn.manifest.sha1" file="${mvn.dir}/maven-metadata.xml" algorithm="SHA1" />
-		<echo file="${mvn.dir}/maven-metadata.xml.md5">${mvn.manifest.md5}</echo>
-		<echo file="${mvn.dir}/maven-metadata.xml.sha1">${mvn.manifest.sha1}</echo>
-		<tar destfile="dist/maven.tar.bz2" compression="bzip2">
-			<tarfileset dir="build/maven" />
-		</tar>
-		<echo>Now copy maven.tar.bz2 to the website and unpack it in the mavenrepo directory, overwriting whatever's there.</echo>
+	<target name="website-novideo" description="Prepares the website for distribution, but does not add the videos to the zip.">
+		<ant antfile="buildScripts/website.ant.xml" target="website-novideo" inheritAll="false">
+			<property name="lombok.version" value="${lombok.version}" />
+		</ant>
 	</target>
 </project>

@@ -1,5 +1,4 @@
 'deps' are defined as those things which are required to compile or develop lombok, but which aren't required when
-actually running lombok. The main lombok code is dependent on all libraries in the 'lombok' directory, whilst the agents
-are dependent on both the contents of the 'agent' directory and the agent's specific directory (e.g. 'eclipse.agent').
+actually running lombok.
 
 For dependencies which need to be available at runtime, see the 'lib' directory.
