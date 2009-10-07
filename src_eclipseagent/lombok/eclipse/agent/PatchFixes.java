@@ -23,7 +23,6 @@ public class PatchFixes {
 	}
 	
 	public static void setIsGeneratedFlagForSimpleName(SimpleName name, Object internalNode) throws Exception {
-		System.out.println("Setting isGenerated on SimpleName");
 		if (internalNode instanceof org.eclipse.jdt.internal.compiler.ast.ASTNode) {
 			if (internalNode.getClass().getField("$generatedBy").get(internalNode) != null) {
 				name.getClass().getField("$isGenerated").set(name, true);
@@ -32,14 +31,12 @@ public class PatchFixes {
 	}
 	
 	public static SimpleName[] removeGeneratedSimpleNames(SimpleName[] in) throws Exception {
-		System.out.print("Removing is generated...");
 		Field f = SimpleName.class.getField("$isGenerated");
 		
 		int count = 0;
 		for (int i = 0; i < in.length; i++) {
 			if ( in[i] == null || !((Boolean)f.get(in[i])).booleanValue() ) count++;
 		}
-		System.out.println("" + (in.length - count));
 		if (count == in.length) return in;
 		SimpleName[] newSimpleNames = new SimpleName[count];
 		count = 0;
