@@ -125,7 +125,9 @@ public class EclipsePatcher {
 						
 						List<String> fullDesc = MethodTarget.decomposeFullDesc(descriptor);
 						if ("V".equals(fullDesc.get(0))) return false;
-						return fullDesc.size() == 2;
+						if (fullDesc.size() < 2) return false;
+						if (!fullDesc.get(1).startsWith("Lorg/eclipse/jdt/internal/compiler/ast/")) return false;
+						return true;
 					}
 					
 					@Override public Collection<String> getAffectedClasses() {
