@@ -58,55 +58,31 @@ public class EclipsePatcher {
 		EquinoxClassLoader.getInstance().addPrefix("lombok.");
 		EquinoxClassLoader.getInstance().registerScripts(sm);
 		
+		patchLombokizeAST(sm);
+		patchAvoidReparsingGeneratedCode(sm);
+		patchCatchReparse(sm);
+		patchSetGeneratedFlag(sm);
+		patchHideGeneratedNodes(sm);
+		
+		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
+	}
+
+	private static void patchHideGeneratedNodes(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget("org.eclipse.jdt.internal.corext.dom.LinkedNodeFinder", "findByNode"))
+				.wrapMethod(new Hook("lombok/eclipse/agent/PatchFixes", "removeGeneratedSimpleNames",
+						"([Lorg/eclipse/jdt/core/dom/SimpleName;)[Lorg/eclipse/jdt/core/dom/SimpleName;"))
+				.request(StackRequest.RETURN_VALUE).build());
+	}
+
+	private static void patchCatchReparse(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveStartingCatchPosition"))
 				.wrapMethod(new Hook("lombok/eclipse/agent/PatchFixes", "fixRetrieveStartingCatchPosition", "(I)I"))
 				.transplant().request(StackRequest.PARAM1).build());
-		
-		sm.addScript(ScriptBuilder.addField()
-				.targetClass("org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration")
-				.fieldName("$lombokAST").fieldType("Ljava/lang/Object;")
-				.setPublic().setTransient().build());
-		
-		final String PARSER_SIG1 = "org.eclipse.jdt.internal.compiler.parser.Parser";
-		final String PARSER_SIG2 = "Lorg/eclipse/jdt/internal/compiler/parser/Parser;";
-		final String CUD_SIG1 = "org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration";
-		final String CUD_SIG2 = "Lorg/eclipse/jdt/internal/compiler/ast/CompilationUnitDeclaration;";
-		
-		sm.addScript(ScriptBuilder.wrapReturnValue()
-				.target(new MethodTarget(PARSER_SIG1, "getMethodBodies", "void", CUD_SIG1))
-				.wrapMethod(new Hook("lombok/eclipse/TransformEclipseAST", "transform",
-						"(" + PARSER_SIG2 + CUD_SIG2 + ")V"))
-				.request(StackRequest.THIS, StackRequest.PARAM1).build());
-		
-		sm.addScript(ScriptBuilder.wrapReturnValue()
-				.target(new MethodTarget(PARSER_SIG1, "endParse", CUD_SIG1, "int"))
-				.wrapMethod(new Hook("lombok/eclipse/TransformEclipseAST", "transform_swapped",
-						"(" + CUD_SIG2 + PARSER_SIG2 + ")V"))
-				.request(StackRequest.THIS, StackRequest.RETURN_VALUE).build());
-		
-		sm.addScript(ScriptBuilder.exitEarly()
-				.target(new MethodTarget(PARSER_SIG1, "parse", "void",
-						"org.eclipse.jdt.internal.compiler.ast.MethodDeclaration",
-						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration"))
-				.decisionMethod(new Hook("lombok/eclipse/agent/PatchFixes", "checkBit24", "(Ljava/lang/Object;)Z"))
-				.transplant().request(StackRequest.PARAM1).build());
-		
-		sm.addScript(ScriptBuilder.exitEarly()
-				.target(new MethodTarget(PARSER_SIG1, "parse", "void",
-						"org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration",
-						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration", "boolean"))
-				.decisionMethod(new Hook("lombok/eclipse/agent/PatchFixes", "checkBit24", "(Ljava/lang/Object;)Z"))
-				.transplant().request(StackRequest.PARAM1).build());
-		
-		sm.addScript(ScriptBuilder.exitEarly()
-				.target(new MethodTarget(PARSER_SIG1, "parse", "void",
-						"org.eclipse.jdt.internal.compiler.ast.Initializer",
-						"org.eclipse.jdt.internal.compiler.ast.TypeDeclaration",
-						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration"))
-				.decisionMethod(new Hook("lombok/eclipse/agent/PatchFixes", "checkBit24", "(Ljava/lang/Object;)Z"))
-				.transplant().request(StackRequest.PARAM1).build());
-		
+	}
+
+	private static void patchSetGeneratedFlag(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.addField()
 				.targetClass("org.eclipse.jdt.internal.compiler.ast.ASTNode")
 				.fieldName("$generatedBy")
@@ -158,13 +134,54 @@ public class EclipsePatcher {
 				.replacementMethod(new Hook("lombok/eclipse/agent/PatchFixes", "setIsGeneratedFlagForSimpleName",
 						"(Lorg/eclipse/jdt/core/dom/SimpleName;Ljava/lang/Object;)V"))
 				.transplant().build());
+	}
+
+	private static void patchAvoidReparsingGeneratedCode(ScriptManager sm) {
+		final String PARSER_SIG1 = "org.eclipse.jdt.internal.compiler.parser.Parser";
+		sm.addScript(ScriptBuilder.exitEarly()
+				.target(new MethodTarget(PARSER_SIG1, "parse", "void",
+						"org.eclipse.jdt.internal.compiler.ast.MethodDeclaration",
+						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration"))
+				.decisionMethod(new Hook("lombok/eclipse/agent/PatchFixes", "checkBit24", "(Ljava/lang/Object;)Z"))
+				.transplant().request(StackRequest.PARAM1).build());
+		
+		sm.addScript(ScriptBuilder.exitEarly()
+				.target(new MethodTarget(PARSER_SIG1, "parse", "void",
+						"org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration",
+						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration", "boolean"))
+				.decisionMethod(new Hook("lombok/eclipse/agent/PatchFixes", "checkBit24", "(Ljava/lang/Object;)Z"))
+				.transplant().request(StackRequest.PARAM1).build());
+		
+		sm.addScript(ScriptBuilder.exitEarly()
+				.target(new MethodTarget(PARSER_SIG1, "parse", "void",
+						"org.eclipse.jdt.internal.compiler.ast.Initializer",
+						"org.eclipse.jdt.internal.compiler.ast.TypeDeclaration",
+						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration"))
+				.decisionMethod(new Hook("lombok/eclipse/agent/PatchFixes", "checkBit24", "(Ljava/lang/Object;)Z"))
+				.transplant().request(StackRequest.PARAM1).build());
+	}
+
+	private static void patchLombokizeAST(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.addField()
+				.targetClass("org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration")
+				.fieldName("$lombokAST").fieldType("Ljava/lang/Object;")
+				.setPublic().setTransient().build());
+		
+		final String PARSER_SIG1 = "org.eclipse.jdt.internal.compiler.parser.Parser";
+		final String PARSER_SIG2 = "Lorg/eclipse/jdt/internal/compiler/parser/Parser;";
+		final String CUD_SIG1 = "org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration";
+		final String CUD_SIG2 = "Lorg/eclipse/jdt/internal/compiler/ast/CompilationUnitDeclaration;";
 		
 		sm.addScript(ScriptBuilder.wrapReturnValue()
-				.target(new MethodTarget("org.eclipse.jdt.internal.corext.dom.LinkedNodeFinder", "findByNode"))
-				.wrapMethod(new Hook("lombok/eclipse/agent/PatchFixes", "removeGeneratedSimpleNames",
-						"([Lorg/eclipse/jdt/core/dom/SimpleName;)[Lorg/eclipse/jdt/core/dom/SimpleName;"))
-				.request(StackRequest.RETURN_VALUE).build());
+				.target(new MethodTarget(PARSER_SIG1, "getMethodBodies", "void", CUD_SIG1))
+				.wrapMethod(new Hook("lombok/eclipse/TransformEclipseAST", "transform",
+						"(" + PARSER_SIG2 + CUD_SIG2 + ")V"))
+				.request(StackRequest.THIS, StackRequest.PARAM1).build());
 		
-		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget(PARSER_SIG1, "endParse", CUD_SIG1, "int"))
+				.wrapMethod(new Hook("lombok/eclipse/TransformEclipseAST", "transform_swapped",
+						"(" + CUD_SIG2 + PARSER_SIG2 + ")V"))
+				.request(StackRequest.THIS, StackRequest.RETURN_VALUE).build());
 	}
 }
