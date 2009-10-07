@@ -22,11 +22,15 @@
 package lombok.eclipse.agent;
 
 import java.lang.instrument.Instrumentation;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import lombok.patcher.Hook;
 import lombok.patcher.MethodTarget;
 import lombok.patcher.ScriptManager;
 import lombok.patcher.StackRequest;
+import lombok.patcher.TargetMatcher;
 import lombok.patcher.equinox.EquinoxClassLoader;
 import lombok.patcher.scripts.ScriptBuilder;
 
@@ -58,17 +62,6 @@ public class EclipsePatcher {
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveStartingCatchPosition"))
 				.wrapMethod(new Hook("lombok/eclipse/agent/PatchFixes", "fixRetrieveStartingCatchPosition", "(I)I"))
 				.transplant().request(StackRequest.PARAM1).build());
-		
-		sm.addScript(ScriptBuilder.addField()
-				.targetClass("org.eclipse.jdt.internal.compiler.ast.ASTNode")
-				.fieldName("$generatedBy")
-				.fieldType("Lorg/eclipse/jdt/internal/compiler/ast/ASTNode;")
-				.setPublic().setTransient().build());
-		
-		sm.addScript(ScriptBuilder.addField()
-				.targetClass("org.eclipse.jdt.core.dom.ASTNode")
-				.fieldName("$isGenerated").fieldType("Z")
-				.setPublic().setTransient().build());
 		
 		sm.addScript(ScriptBuilder.addField()
 				.targetClass("org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration")
@@ -113,6 +106,62 @@ public class EclipsePatcher {
 						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration"))
 				.decisionMethod(new Hook("lombok/eclipse/agent/PatchFixes", "checkBit24", "(Ljava/lang/Object;)Z"))
 				.transplant().request(StackRequest.PARAM1).build());
+		
+		sm.addScript(ScriptBuilder.addField()
+				.targetClass("org.eclipse.jdt.internal.compiler.ast.ASTNode")
+				.fieldName("$generatedBy")
+				.fieldType("Lorg/eclipse/jdt/internal/compiler/ast/ASTNode;")
+				.setPublic().setTransient().build());
+		
+		sm.addScript(ScriptBuilder.addField()
+				.targetClass("org.eclipse.jdt.core.dom.ASTNode")
+				.fieldName("$isGenerated").fieldType("Z")
+				.setPublic().setTransient().build());
+		
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new TargetMatcher() {
+					@Override public boolean matches(String classSpec, String methodName, String descriptor) {
+						if (!"convert".equals(methodName)) return false;
+						
+						List<String> fullDesc = MethodTarget.decomposeFullDesc(descriptor);
+						if ("V".equals(fullDesc.get(0))) return false;
+						return fullDesc.size() == 2;
+					}
+					
+					@Override public Collection<String> getAffectedClasses() {
+						return Collections.singleton("org.eclipse.jdt.core.dom.ASTConverter");
+					}
+				}).request(StackRequest.PARAM1, StackRequest.RETURN_VALUE)
+				.wrapMethod(new Hook("lombok/eclipse/agent/PatchFixes", "setIsGeneratedFlag",
+						"(Lorg/eclipse/jdt/core/dom/ASTNode;Lorg/eclipse/jdt/internal/compiler/ast/ASTNode;)V"))
+				.transplant().build());
+		
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new TargetMatcher() {
+					@Override public boolean matches(String classSpec, String methodName, String descriptor) {
+						if (!methodName.startsWith("convert")) return false;
+						
+						List<String> fullDesc = MethodTarget.decomposeFullDesc(descriptor);
+						if (fullDesc.size() < 2) return false;
+						if (!fullDesc.get(1).startsWith("Lorg/eclipse/jdt/internal/compiler/ast/")) return false;
+						
+						return true;
+					}
+					
+					@Override public Collection<String> getAffectedClasses() {
+						return Collections.singleton("org.eclipse.jdt.core.dom.ASTConverter");
+					}
+				}).methodToWrap(new Hook("org/eclipse/jdt/core/dom/SimpleName", "<init>", "(Lorg/eclipse/jdt/core/dom/AST;)V"))
+				.requestExtra(StackRequest.PARAM1)
+				.replacementMethod(new Hook("lombok/eclipse/agent/PatchFixes", "setIsGeneratedFlagForSimpleName",
+						"(Lorg/eclipse/jdt/core/dom/SimpleName;Ljava/lang/Object;)V"))
+				.transplant().build());
+		
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget("org.eclipse.jdt.internal.corext.dom.LinkedNodeFinder", "findByNode"))
+				.wrapMethod(new Hook("lombok/eclipse/agent/PatchFixes", "removeGeneratedSimpleNames",
+						"([Lorg/eclipse/jdt/core/dom/SimpleName;)[Lorg/eclipse/jdt/core/dom/SimpleName;"))
+				.request(StackRequest.RETURN_VALUE).build());
 		
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
 	}
