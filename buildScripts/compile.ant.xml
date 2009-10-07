@@ -1,0 +1,131 @@
+<!--
+  Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+-->
+<project name="lombok-compile" basedir=".." default="dist">
+	<description>This buildfile is part of projectlombok.org. It responsible for compiling the main
+lombok code including the various agents.</description>
+	<property name="build.compiler" value="javac1.6" />
+	
+	<target name="version" unless="lombok.version">
+		<ant antfile="build.xml" target="version" inheritAll="false" />
+		<loadresource property="lombok.version">
+			<file file="build/version.txt" />
+			<filterchain>
+				<striplinebreaks />
+			</filterchain>
+		</loadresource>
+	</target>
+	
+	<fileset dir="src" id="eclipse.agent.main.deps">
+		<include name="lombok/core/SpiLoadUtil.java" />
+		<include name="lombok/Lombok.java" />
+	</fileset>
+	
+	<path id="deps.path">
+		<fileset dir="deps/lombok">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
+	<path id="lombok.libs.path">
+		<fileset dir="lib/lombok">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
+	<path id="eclipse.agent.libs.path">
+		<fileset dir="lib/eclipse.agent">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
+	<target name="-unpackLibs">
+		<unjar dest="build/lombok">
+			<path refid="lombok.libs.path" />
+		</unjar>
+		<unjar dest="build/eclipse.agent">
+			<path refid="eclipse.agent.libs.path" />
+		</unjar>
+	</target>
+	
+	<target name="compile" description="Compiles the code">
+		<mkdir dir="build/lombok" />
+		<!-- This version trickery is so that an eclipse running in a JVM 1.5 will run
+		     properly (It'll never touch the javac files and hence never trigger a
+		     Bad Class Version Number error, but for javac we definitely cannot support
+		     javac 1.5, partly because they completely rewrote large swaths of javac,
+		     and partly because our injection mechanism (annotations) doesn't work very
+		     well on javac 1.5, hence, when using javac, we do demand you're on 1.6. -->
+		<javac srcdir="src" debug="on" destdir="build/lombok" target="1.5" excludes="lombok/javac/**">
+			<classpath refid="deps.path" />
+			<classpath refid="lombok.libs.path" />
+		</javac>
+		<javac srcdir="src" debug="on" destdir="build/lombok" target="1.6" includes="lombok/javac/**">
+			<classpath refid="deps.path" />
+			<classpath refid="lombok.libs.path" />
+		</javac>
+		<copy todir="build/lombok">
+			<fileset dir="src">
+				<exclude name="**/*.java" />
+				<exclude name="**/*.class" />
+				<exclude name="**/*.svg" />
+			</fileset>
+		</copy>
+		
+		<mkdir dir="build/lombok/META-INF" />
+		<mkdir dir="build/lombok/META-INF/services" />
+		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.javac.apt.Processor</echo>
+		
+		<mkdir dir="build/eclipse.agent" />
+		<mkdir dir="build/eclipse.agent.src" />
+		<copy todir="build/eclipse.agent.src">
+			<fileset dir="src_eclipseagent" />
+			<fileset refid="eclipse.agent.main.deps" />
+		</copy>
+		
+		<javac debug="on" destdir="build/eclipse.agent" target="1.5" srcdir="build/eclipse.agent.src">
+			<classpath refid="deps.path" />
+			<classpath refid="eclipse.agent.libs.path" />
+		</javac>
+	</target>
+	
+	<target name="dist" description="Builds THE lombok.jar file which contains everything" depends="compile, version, -unpackLibs">
+		<mkdir dir="dist" />
+		<jar basedir="build/eclipse.agent" destfile="dist/lombok.eclipse.agent-${lombok.version}.jar">
+			<manifest>
+				<attribute name="Premain-Class" value="lombok.eclipse.agent.EclipsePatcher" />
+				<attribute name="Can-Redefine-Classes" value="true" />
+			</manifest>
+		</jar>
+		<copy file="dist/lombok.eclipse.agent-${lombok.version}.jar" tofile="dist/lombok.eclipse.agent.jar" />
+		<copy file="doc/changelog.markdown" tofile="build/changelog.txt" />
+		<jar destfile="dist/lombok-${lombok.version}.jar">
+			<fileset dir="build/lombok" />
+			<fileset dir="dist" includes="lombok.eclipse.agent.jar" />
+			<fileset dir="build" includes="changelog.txt" />
+			<manifest>
+				<attribute name="Main-Class" value="lombok.installer.Installer" />
+				<attribute name="Lombok-Version" value="${lombok.version}" />
+			</manifest>
+		</jar>
+		<copy file="dist/lombok-${lombok.version}.jar" tofile="dist/lombok.jar" />
+	</target>
+</project>

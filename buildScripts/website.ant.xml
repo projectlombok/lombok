@@ -1,0 +1,224 @@
+<!--
+  Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+-->
+<project name="lombok-website" basedir=".." default="website">
+	<description>
+This buildfile is part of projectlombok.org. It is responsible for building the website and all website-related aspects,
+such as converting the changelog into HTML, and creating javadoc.</description>
+	<property name="SNIPPET_TAB_STOP" value="2" />
+	
+	<target name="-website-clean">
+		<delete dir="build/website" quiet="true" />
+	</target>
+	
+	<target name="website" description="Prepares the website for distribution" depends="-website-main, -website-videos, -website-dist" />
+	<target name="website-novideo" description="Prepares the website for distribution, but does not add the videos to the zip." depends="-website-main, -website-dist" />
+	
+	<target name="version" unless="lombok.version">
+		<ant antfile="build.xml" target="version" inheritAll="false" />
+		<loadresource property="lombok.version">
+			<file file="build/version.txt" />
+			<filterchain>
+				<striplinebreaks />
+			</filterchain>
+		</loadresource>
+	</target>
+	
+	<target name="-website-videos" depends="-website-clean">
+		<mkdir dir="build/website/videos" />
+		<copy todir="build/website/videos">
+			<fileset dir="website/videos" />
+		</copy>
+	</target>
+	
+	<target name="-website-main" depends="-website-clean, version, javadoc, changelogToHtml">
+		<taskdef classpath="deps/website/java2html.jar" name="java2html" classname="de.java2html.anttasks.Java2HtmlTask" />
+		<mkdir dir="build/website" />
+		<copy todir="build/website">
+			<fileset dir="website">
+				<exclude name="**/*.jpage" />
+				<exclude name="**/*.svg" />
+				<exclude name="**/*.psd" />
+				<exclude name="**/*.ai" />
+				<exclude name="**/publish" />
+				<exclude name="**/*unused*" />
+				<exclude name="videos/**" />
+			</fileset>
+		</copy>
+		<copy todir="build/website" overwrite="true">
+			<fileset dir="website">
+				<include name="index.html" />
+				<include name="download.html" />
+				<include name="slideshow.html" />
+				<include name="mavenrepo/index.html" />
+			</fileset>
+			<filterchain>
+				<replacetokens>
+					<token key="VERSION" value="${lombok.version}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="GetterSetter" />
+		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="ToString" />
+		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="EqualsAndHashCode" />
+		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="Data" />
+		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="Cleanup" />
+		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="Synchronized" />
+		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="SneakyThrows" />
+		</antcall>
+		<mkdir dir="dist" />
+	</target>
+	
+	<target name="-website-dist">
+		<tar destfile="dist/website.tar.bz2" compression="bzip2">
+			<tarfileset dir="build/website" />
+			<tarfileset dir="doc/api" prefix="api" />
+		</tar>
+		<echo>Now upload dist/website.tar.bz2 to the webserver.</echo>
+	</target>
+	
+	<target name="-integrateSnippet">
+		<mkdir dir="build/website" />
+		<property name="prefile" location="usage_examples/${transformationName}Example_pre.jpage" />
+		<property name="postfile" location="usage_examples/${transformationName}Example_post.jpage" />
+		<property name="htmlfile" location="website/features/${transformationName}.html" />
+		<mkdir dir="build/temp" />
+		<property name="preout" location="build/temp/${transformationName}Example_pre.jpage.html" />
+		<property name="postout" location="build/temp/${transformationName}Example_post.jpage.html" />
+		<java2html srcdir="usage_examples" includes="${transformationName}Example_*.jpage" destdir="build/temp" tabs="${SNIPPET_TAB_STOP}"
+			showLineNumbers="true" overwrite="true" />
+		<loadfile property="pre" encoding="UTF-8" srcFile="${preout}">
+			<filterchain>
+				<linecontainsregexp>
+					<regexp pattern="(code>)|(font>)" />
+				</linecontainsregexp>
+				<striplinebreaks />
+			</filterchain>
+		</loadfile>
+		<loadfile property="post" encoding="UTF-8" srcFile="${postout}">
+			<filterchain>
+				<linecontainsregexp>
+					<regexp pattern="(code>)|(font>)" />
+				</linecontainsregexp>
+				<striplinebreaks />
+			</filterchain>
+		</loadfile>
+		<delete dir="build/temp" quiet="true" />
+		<copy file="${htmlfile}" todir="build/website/features" overwrite="true">
+			<filterchain>
+				<replacetokens>
+					<token key="HTML_PRE" value="${pre}" />
+					<token key="HTML_POST" value="${post}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
+	</target>
+	
+		<target name="changelogToHtml">
+			<mkdir dir="build/changelog" />
+			<echo file="build/changelog/CompileChangelog.java"><![CDATA[
+	import com.petebevin.markdown.MarkdownProcessor;
+	import java.io.*;
+
+	public class CompileChangelog {
+		public static void main(String[] args) {
+			try {
+				FileInputStream in = new FileInputStream(args[0]);
+				ByteArrayOutputStream out = new ByteArrayOutputStream();
+				byte[] b = new byte[65536];
+				while ( true ) {
+					int r = in.read(b);
+					if ( r == -1 ) break;
+					out.write(b, 0, r);
+				}
+				in.close();
+				String markdown = new String(out.toByteArray(), "UTF-8");
+				String html = new MarkdownProcessor().markdown(markdown);
+				FileOutputStream file = new FileOutputStream(args[1]);
+				file.write(html.getBytes("UTF-8"));
+				file.close();
+				System.exit(0);
+			} catch ( Throwable e ) {
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
+	}
+	]]></echo>
+			<mkdir dir="build/website" />
+			<javac srcdir="build/changelog" destdir="build/changelog" classpath="deps/website/markdownj.jar" debug="on" />
+			<property name="CHANGELOG_FILE" location="doc/changelog.markdown" />
+			<property name="CHANGELOG_HTML" location="build/website/changelog.html" />
+			<java fork="true" classname="CompileChangelog" failonerror="true">
+				<classpath>
+					<pathelement location="deps/website/markdownj.jar" />
+					<pathelement location="build/changelog" />
+				</classpath>
+				<arg value="${CHANGELOG_FILE}" />
+				<arg value="${CHANGELOG_HTML}" />
+			</java>
+		</target>
+		
+		<target name="javadoc" description="Generates the javadoc" depends="version">
+			<delete dir="build/api" quiet="true" />
+			<delete dir="doc/api" quiet="true" />
+			<mkdir dir="build/api" />
+			<property name="javadoc.overview.html" location="build/javadoc.overview.html" />
+			<echo file="${javadoc.overview.html}"><![CDATA[<html><body>
+				Welcome to the lombok javadoc.&nbsp;If you're just looking to learn more about using lombok
+				You probably want to look at <a href="http://projectlombok.org/features/index.html">the feature documentation</a>.&nbsp;Otherwise,
+				check the <a href="lombok/package-summary.html">lombok</a> package.&nbsp;If you're trying to extend lombok or
+				write your own plugins, the other packages are what you're looking for.</body></html>
+			]]></echo>
+			<javadoc sourcepath="src" defaultexcludes="yes" destdir="build/api" windowtitle="Lombok" Overview="${javadoc.overview.html}">
+				<classpath refid="lombok.deps.path" />
+				<classpath refid="lombok.libs.path" />
+				<link href="http://java.sun.com/javase/6/docs/api/" offline="true" packagelistLoc="./deps/javadoc/java6"/>
+				<header><![CDATA[<a href='http://projectlombok.org/'>Lombok</a> - ]]>v${lombok.version}</header>
+				<bottom><![CDATA[<i>Copyright &#169; 2009 Reinier Zwitserloot and Roel Spilker, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php'>MIT licence</a>.]]></bottom>
+			</javadoc>
+			<mkdir dir="doc/api" />
+			<copy todir="doc/api">
+				<fileset dir="build/api" includes="**/*.html" />
+				<filterchain>
+					<linecontainsregexp negate="true">
+						<regexp pattern="(Generated by javadoc)|(.META NAME=.date.)" />
+					</linecontainsregexp>
+				</filterchain>
+			</copy>
+			<copy todir="doc/api">
+				<fileset dir="build/api" excludes="**/*.html" />
+			</copy>
+		</target>
+</project>
