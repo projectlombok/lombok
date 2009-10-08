@@ -131,7 +131,7 @@ public class EclipsePatcher {
 					}
 				}).methodToWrap(new Hook("org/eclipse/jdt/core/dom/SimpleName", "<init>", "(Lorg/eclipse/jdt/core/dom/AST;)V"))
 				.requestExtra(StackRequest.PARAM1)
-				.replacementMethod(new Hook("lombok/eclipse/agent/PatchFixes", "setIsGeneratedFlagForSimpleName",
+				.wrapMethod(new Hook("lombok/eclipse/agent/PatchFixes", "setIsGeneratedFlagForSimpleName",
 						"(Lorg/eclipse/jdt/core/dom/SimpleName;Ljava/lang/Object;)V"))
 				.transplant().build());
 	}
