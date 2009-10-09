@@ -16,6 +16,10 @@ public class PatchFixes {
 		return (bits & BIT24) != 0;
 	}
 	
+	public static boolean skipRewritingGeneratedNodes(org.eclipse.jdt.core.dom.ASTNode node) throws Exception {
+		return ((Boolean)node.getClass().getField("$isGenerated").get(node)).booleanValue();
+	}
+	
 	public static void setIsGeneratedFlag(org.eclipse.jdt.core.dom.ASTNode domNode,
 			org.eclipse.jdt.internal.compiler.ast.ASTNode internalNode) throws Exception {
 		boolean isGenerated = internalNode.getClass().getField("$generatedBy").get(internalNode) != null;

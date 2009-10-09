@@ -70,9 +70,16 @@ public class EclipsePatcher {
 	private static void patchHideGeneratedNodes(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.dom.LinkedNodeFinder", "findByNode"))
+				.target(new MethodTarget("org.eclipse.jdt.internal.corext.dom.LinkedNodeFinder", "findByBinding"))
 				.wrapMethod(new Hook("lombok/eclipse/agent/PatchFixes", "removeGeneratedSimpleNames",
 						"([Lorg/eclipse/jdt/core/dom/SimpleName;)[Lorg/eclipse/jdt/core/dom/SimpleName;"))
 				.request(StackRequest.RETURN_VALUE).build());
+		
+		sm.addScript(ScriptBuilder.exitEarly()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.rewrite.ASTRewrite", "replace"))
+				.decisionMethod(new Hook("lombok/eclipse/agent/PatchFixes", "skipRewritingGeneratedNodes",
+						"(Lorg/eclipse/jdt/core/dom/ASTNode;)Z"))
+				.transplant().request(StackRequest.PARAM1).build());
 	}
 
 	private static void patchCatchReparse(ScriptManager sm) {
