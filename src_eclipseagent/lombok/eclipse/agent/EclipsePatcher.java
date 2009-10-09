@@ -77,6 +77,7 @@ public class EclipsePatcher {
 		
 		sm.addScript(ScriptBuilder.exitEarly()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.rewrite.ASTRewrite", "replace"))
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.rewrite.ASTRewrite", "remove"))
 				.decisionMethod(new Hook("lombok/eclipse/agent/PatchFixes", "skipRewritingGeneratedNodes",
 						"(Lorg/eclipse/jdt/core/dom/ASTNode;)Z"))
 				.transplant().request(StackRequest.PARAM1).build());
