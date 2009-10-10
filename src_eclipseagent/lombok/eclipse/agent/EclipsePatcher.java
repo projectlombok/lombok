@@ -81,6 +81,13 @@ public class EclipsePatcher {
 				.decisionMethod(new Hook("lombok/eclipse/agent/PatchFixes", "skipRewritingGeneratedNodes",
 						"(Lorg/eclipse/jdt/core/dom/ASTNode;)Z"))
 				.transplant().request(StackRequest.PARAM1).build());
+		
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.rename.RenameTypeProcessor", "addConstructorRenames"))
+				.methodToWrap(new Hook("org/eclipse/jdt/core/IType", "getMethods", "()[Lorg/eclipse/jdt/core/IMethod;"))
+				.wrapMethod(new Hook("lombok/eclipse/agent/PatchFixes", "removeGeneratedMethods", 
+						"([Lorg/eclipse/jdt/core/IMethod;)[Lorg/eclipse/jdt/core/IMethod;"))
+				.transplant().build());
 	}
 
 	private static void patchCatchReparse(ScriptManager sm) {

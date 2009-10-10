@@ -1,7 +1,10 @@
 package lombok.eclipse.agent;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.dom.SimpleName;
 
 public class PatchFixes {
@@ -32,6 +35,14 @@ public class PatchFixes {
 				name.getClass().getField("$isGenerated").set(name, true);
 			}
 		}
+	}
+	
+	public static IMethod[] removeGeneratedMethods(IMethod[] methods) throws Exception {
+		List<IMethod> result = new ArrayList<IMethod>();
+		for (IMethod m : methods) {
+			if (m.getNameRange().getLength() > 0) result.add(m);
+		}
+		return result.size() == methods.length ? methods : result.toArray(new IMethod[0]);
 	}
 	
 	public static SimpleName[] removeGeneratedSimpleNames(SimpleName[] in) throws Exception {
