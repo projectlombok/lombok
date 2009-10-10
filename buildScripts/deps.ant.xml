@@ -23,24 +23,29 @@
 	<description>This buildfile is part of projectlombok.org. It responsible for finding, downloading,
 and building dependencies.</description>
 	
-	<property name="dir.lombok.patcher" location="../lombok.patcher" />
+	<property name="lombok.patcher.dir" location="../lombok.patcher" />
+	<available file="${lombok.patcher.dir}/build.xml" property="lombok.patcher.available" />
 	
 	<target name="buildDeps" description="Builds dependencies" depends="build-lombok.patcher" />
 	
-	<target name="-check-lombok.patcher">
-		<ant dir="${dir.lombok.patcher}" target="dist" inheritAll="false" />
-		<condition property="replace-lombok.patcher">
+	<target name="-warn-lombok.patcher" unless="lombok.patcher.available">
+		<echo>Skipping lombok.patcher. clone from: http://github.com/rzwitserloot/lombok.patcher</echo>
+	</target>
+	
+	<target name="-check-lombok.patcher" depends="-warn-lombok.patcher" if="lombok.patcher.available">
+		<ant dir="${lombok.patcher.dir}" target="dist" inheritAll="false" />
+		<condition property="lombok.patcher.replace">
 			<or>
 				<not><available file="lib/eclipse.agent/lombok-patcher.jar" /></not>
 				<not><uptodate
-						srcfile="${dir.lombok.patcher}/dist/lombok-patcher.jar"
+						srcfile="${lombok.patcher.dir}/dist/lombok-patcher.jar"
 						targetfile="lib/eclipse.agent/lombok-patcher.jar" /></not>
 			</or>
 		</condition>
 	</target>
 	
-	<target name="build-lombok.patcher" depends="-check-lombok.patcher" if="replace-lombok.patcher">
-		<copy file="${dir.lombok.patcher}/dist/lombok-patcher.jar" todir="lib/eclipse.agent" />
-		<echo>** UPDATED: lib/eclipse.agent/lombok-patcher.jar</echo>
+	<target name="build-lombok.patcher" depends="-check-lombok.patcher" if="lombok.patcher.replace">
+		<copy file="${lombok.patcher.dir}/dist/lombok-patcher.jar" todir="lib/eclipse.agent" />
+		<echo level="info">** UPDATED: lib/eclipse.agent/lombok-patcher.jar</echo>
 	</target>
 </project>
