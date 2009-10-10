@@ -1,4 +1,4 @@
-SET ECLIPSEDIR=e:\eclipse-34-rc3
+SET ECLIPSEDIR=c:\eclipse
 CALL ant
 COPY dist\lombok.jar %ECLIPSEDIR%\*.*
 SET curdir=%CD%
