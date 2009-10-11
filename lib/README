@@ -1,5 +1,4 @@
 'lib' is defined as those things which are required when actually running lombok.
-The main lombok code requires all libraries in the 'lombok' directory, whilst the agents
-require the contents of both the 'agent' directory and the agent's specific directory (e.g. 'eclipse.agent').
+The main lombok code requires all libraries in the 'lombok' directory.
 
 For dependencies which are required only at compile time, see the 'deps' directory.

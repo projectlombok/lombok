@@ -36,16 +36,16 @@ and building dependencies.</description>
 		<ant dir="${lombok.patcher.dir}" target="dist" inheritAll="false" />
 		<condition property="lombok.patcher.replace">
 			<or>
-				<not><available file="lib/eclipse.agent/lombok-patcher.jar" /></not>
+				<not><available file="lib/lombok/lombok-patcher.jar" /></not>
 				<not><uptodate
 						srcfile="${lombok.patcher.dir}/dist/lombok-patcher.jar"
-						targetfile="lib/eclipse.agent/lombok-patcher.jar" /></not>
+						targetfile="lib/lombok/lombok-patcher.jar" /></not>
 			</or>
 		</condition>
 	</target>
 	
 	<target name="build-lombok.patcher" depends="-check-lombok.patcher" if="lombok.patcher.replace">
-		<copy file="${lombok.patcher.dir}/dist/lombok-patcher.jar" todir="lib/eclipse.agent" />
-		<echo level="info">** UPDATED: lib/eclipse.agent/lombok-patcher.jar</echo>
+		<copy file="${lombok.patcher.dir}/dist/lombok-patcher.jar" todir="lib/lombok" />
+		<echo level="info">** UPDATED: lib/lombok/lombok-patcher.jar</echo>
 	</target>
 </project>

@@ -22,11 +22,9 @@
 package lombok.eclipse;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 import lombok.eclipse.EclipseAST.Node;
+import lombok.patcher.Symbols;
 
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -77,24 +75,6 @@ public class TransformEclipseAST {
 		handlers = l;
 	}
 	
-	private static final List<String> DONT_RUN_LIST = Collections.unmodifiableList(Arrays.asList(
-			"org.eclipse.jdt.internal.corext.util.CodeFormatterUtil."
-			));
-	
-	
-	/**
-	 * Returns 'true' if the stack trace indicates lombok definitely SHOULD run for this parse job, by checking the context,
-	 * and returns 'false' if the stack trace indicates lombok should definitely NOT run.
-	 * 
-	 * Returns null if it can't tell (you probably should default to running lombok if you don't know).
-	 */
-	private static Boolean analyzeStackTrace(StackTraceElement[] trace) {
-		for ( StackTraceElement e : trace )
-			if ( e.toString().contains(DONT_RUN_LIST.get(0)) ) return false;
-		return null;
-		//potential speedup: if trace contains org.eclipse.swt.widgets. -> stop - nothing interesting ever follows that. I think.
-	}
-	
 	public static void transform_swapped(CompilationUnitDeclaration ast, Parser parser) {
 		transform(parser, ast);
 	}
@@ -111,29 +91,27 @@ public class TransformEclipseAST {
 	 * @param ast The AST node belonging to the compilation unit (java speak for a single source file).
 	 */
 	public static void transform(Parser parser, CompilationUnitDeclaration ast) {
-		if ( disableLombok ) return;
+		if (disableLombok) return;
 		
-		Boolean parse = analyzeStackTrace(new Throwable().getStackTrace());
-		
-		if ( parse != null && parse == false ) return;
+		if (Symbols.hasSymbol("lombok.disable")) return;
 		
 		try {
 			EclipseAST existing = getCache(ast);
-			if ( existing == null ) {
+			if (existing == null) {
 				existing = new EclipseAST(ast);
 				setCache(ast, existing);
 			} else existing.reparse();
 			new TransformEclipseAST(existing).go();
-		} catch ( Throwable t ) {
+		} catch (Throwable t) {
 			try {
 				String message = "Lombok can't parse this source: " + t.toString();
 				
 				EclipseAST.addProblemToCompilationResult(ast, false, message, 0, 0);
 				t.printStackTrace();
-			} catch ( Throwable t2 ) {
+			} catch (Throwable t2) {
 				try {
 					Eclipse.error(ast, "Can't create an error in the problems dialog while adding: " + t.toString(), t2);
-				} catch ( Throwable t3 ) {
+				} catch (Throwable t3) {
 					//This seems risky to just silently turn off lombok, but if we get this far, something pretty
 					//drastic went wrong. For example, the eclipse help system's JSP compiler will trigger a lombok call,
 					//but due to class loader shenanigans we'll actually get here due to a cascade of

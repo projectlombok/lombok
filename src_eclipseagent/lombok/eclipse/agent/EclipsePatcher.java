@@ -56,7 +56,7 @@ public class EclipsePatcher {
 		ScriptManager sm = new ScriptManager();
 		sm.registerTransformer(instrumentation);
 		EquinoxClassLoader.getInstance().addPrefix("lombok.");
-		EquinoxClassLoader.getInstance().registerScripts(sm);
+		EquinoxClassLoader.registerScripts(sm);
 		
 		patchLombokizeAST(sm);
 		patchAvoidReparsingGeneratedCode(sm);
@@ -66,7 +66,7 @@ public class EclipsePatcher {
 		
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
 	}
-
+	
 	private static void patchHideGeneratedNodes(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.dom.LinkedNodeFinder", "findByNode"))
@@ -75,6 +75,19 @@ public class EclipsePatcher {
 						"([Lorg/eclipse/jdt/core/dom/SimpleName;)[Lorg/eclipse/jdt/core/dom/SimpleName;"))
 				.request(StackRequest.RETURN_VALUE).build());
 		
+		patchRefactorScripts(sm);
+		patchFormatters(sm);
+	}
+	
+	private static void patchFormatters(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.setSymbolDuringMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.ui.text.java.JavaFormattingStrategy", "format", "void"))
+				.callToWrap(new Hook("org/eclipse/jdt/internal/corext/util/CodeFormatterUtil", "reformat",
+						"(ILjava/lang/String;IIILjava/lang/String;Ljava/util/Map;)Lorg/eclipse/text/edits/TextEdit;"))
+				.symbol("lombok.disable").build());
+	}
+	
+	private static void patchRefactorScripts(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.exitEarly()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.rewrite.ASTRewrite", "replace"))
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.rewrite.ASTRewrite", "remove"))
@@ -89,14 +102,14 @@ public class EclipsePatcher {
 						"([Lorg/eclipse/jdt/core/IMethod;)[Lorg/eclipse/jdt/core/IMethod;"))
 				.transplant().build());
 	}
-
+	
 	private static void patchCatchReparse(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveStartingCatchPosition"))
 				.wrapMethod(new Hook("lombok/eclipse/agent/PatchFixes", "fixRetrieveStartingCatchPosition", "(I)I"))
 				.transplant().request(StackRequest.PARAM1).build());
 	}
-
+	
 	private static void patchSetGeneratedFlag(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.addField()
 				.targetClass("org.eclipse.jdt.internal.compiler.ast.ASTNode")
@@ -150,7 +163,7 @@ public class EclipsePatcher {
 						"(Lorg/eclipse/jdt/core/dom/SimpleName;Ljava/lang/Object;)V"))
 				.transplant().build());
 	}
-
+	
 	private static void patchAvoidReparsingGeneratedCode(ScriptManager sm) {
 		final String PARSER_SIG1 = "org.eclipse.jdt.internal.compiler.parser.Parser";
 		sm.addScript(ScriptBuilder.exitEarly()
@@ -175,7 +188,7 @@ public class EclipsePatcher {
 				.decisionMethod(new Hook("lombok/eclipse/agent/PatchFixes", "checkBit24", "(Ljava/lang/Object;)Z"))
 				.transplant().request(StackRequest.PARAM1).build());
 	}
-
+	
 	private static void patchLombokizeAST(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.addField()
 				.targetClass("org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration")

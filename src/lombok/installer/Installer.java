@@ -810,10 +810,8 @@ public class Installer {
 	private static final String HOW_I_WORK_EXPLANATION =
 		"<html><ol>" +
 		"<li>First, I copy myself (lombok.jar) to your Eclipse install directory.</li>" +
-		"<li>Then, I unpack lombok.eclipse.agent.jar like so:<br>" +
-		"<pre>jar xvf lombok.jar lombok.eclipse.agent.jar</pre></li>" +
 		"<li>Then, I edit the eclipse.ini file to add the following two entries:<br>" +
-		"<pre>-Xbootclasspath/a:lombok.jar%1$slombok.eclipse.agent.jar<br>" +
+		"<pre>-Xbootclasspath/a:lombok.jar<br>" +
 		"-javaagent:lombok.jar</pre></li></ol>" +
 		"<br>" +
 		"That's all there is to it. Note that on Mac OS X, eclipse.ini is hidden in<br>" +

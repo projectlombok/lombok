@@ -31,10 +31,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -205,12 +203,15 @@ final class EclipseLocation {
 						null);
 			}
 			
-			File agentJar = new File(dir, "lombok.eclipse.agent.jar");
-			if ( agentJar.exists() ) {
-				if ( !agentJar.delete() ) throw new UninstallException(
-						"Can't delete " + agentJar.getAbsolutePath() +
-						" - perhaps the installer does not have the access rights to do so.",
-						null);
+			/* legacy code - lombok at one point used to have a separate jar for the eclipse agent.
+			 * Leave this code in to delete it for those upgrading from an old version. */ {
+				File agentJar = new File(dir, "lombok.eclipse.agent.jar");
+				if ( agentJar.exists() ) {
+					if ( !agentJar.delete() ) throw new UninstallException(
+							"Can't delete " + agentJar.getAbsolutePath() +
+							" - perhaps the installer does not have the access rights to do so.",
+							null);
+				}
 			}
 			
 			File iniFile = new File(dir, "eclipse.ini");
@@ -230,7 +231,9 @@ final class EclipseLocation {
 								boolean first = true;
 								for ( String elem : m.group(1).split(Pattern.quote(File.pathSeparator)) ) {
 									if ( elem.toLowerCase().endsWith("lombok.jar") ) continue;
-									if ( elem.toLowerCase().endsWith("lombok.eclipse.agent.jar") ) continue;
+									/* legacy code -see previous comment that starts with 'legacy' */ {
+										if ( elem.toLowerCase().endsWith("lombok.eclipse.agent.jar") ) continue;
+									}
 									if ( first ) first = false;
 									else elemBuilder.append(File.pathSeparator);
 									elemBuilder.append(elem);
@@ -295,33 +298,11 @@ final class EclipseLocation {
 				//is no less bad than aborting, and this situation should be rare to the point of non-existence.
 				
 				File lombokJar = new File(iniFile.getParentFile(), "lombok.jar");
-				File agentJar = new File(iniFile.getParentFile(), "lombok.eclipse.agent.jar");
 				
 				File ourJar = EclipseFinder.findOurJar();
 				byte[] b = new byte[524288];
 				boolean readSucceeded = false;
 				try {
-					JarFile jar = new JarFile(ourJar);
-					
-					try {
-						ZipEntry entry = jar.getEntry("lombok.eclipse.agent.jar");
-						InputStream in = jar.getInputStream(entry);
-						FileOutputStream out = new FileOutputStream(agentJar);
-						try {
-							while ( true ) {
-								int r = in.read(b);
-								if ( r == -1 ) break;
-								readSucceeded = true;
-								out.write(b, 0, r);
-							}
-						} finally {
-							out.close();
-						}
-					} finally {
-						jar.close();
-						
-					}
-					
 					FileOutputStream out = new FileOutputStream(lombokJar);
 					InputStream in = new FileInputStream(ourJar);
 					try {
@@ -336,11 +317,14 @@ final class EclipseLocation {
 				} catch ( IOException e ) {
 					try {
 						lombokJar.delete();
-						agentJar.delete();
 					} catch ( Throwable ignore ) {}
 					if ( !readSucceeded ) throw new InstallException("I can't read my own jar file. I think you've found a bug in this installer! I suggest you restart it " +
 							"and use the 'what do I do' link, to manually install lombok. And tell us about this. Thanks!", e);
 					throw new InstallException("I can't write to your Eclipse directory, probably because this installer does not have the access rights.", e);
+				}
+				
+				/* legacy - delete lombok.eclipse.agent.jar if its there, which lombok no longer uses. */ {
+					new File(lombokJar.getParentFile(), "lombok.eclipse.agent.jar").delete();
 				}
 				
 				try {
@@ -357,7 +341,9 @@ final class EclipseLocation {
 								boolean first = true;
 								for ( String elem : m.group(1).split(Pattern.quote(File.pathSeparator)) ) {
 									if ( elem.toLowerCase().endsWith("lombok.jar") ) continue;
-									if ( elem.toLowerCase().endsWith("lombok.eclipse.agent.jar") ) continue;
+									/* legacy code -see previous comment that starts with 'legacy' */ {
+										if ( elem.toLowerCase().endsWith("lombok.eclipse.agent.jar") ) continue;
+									}
 									if ( first ) first = false;
 									else elemBuilder.append(File.pathSeparator);
 									elemBuilder.append(elem);
@@ -374,13 +360,11 @@ final class EclipseLocation {
 					}
 					
 					String fullPathToLombok = fullPathRequired ? (lombokJar.getParentFile().getCanonicalPath() + File.separator) : "";
-					String fullPathToAgent = fullPathRequired ? (agentJar.getParentFile().getCanonicalPath() + File.separator) : "";
 					
 					newContents.append(String.format(
-							"-javaagent:%slombok.eclipse.agent.jar", fullPathToLombok)).append(OS_NEWLINE);
+							"-javaagent:%slombok.jar", fullPathToLombok)).append(OS_NEWLINE);
 					newContents.append(String.format(
-							"-Xbootclasspath/a:%slombok.jar" + File.pathSeparator + "%slombok.eclipse.agent.jar",
-							fullPathToLombok, fullPathToAgent)).append(OS_NEWLINE);
+							"-Xbootclasspath/a:%slombok.jar", fullPathToLombok)).append(OS_NEWLINE);
 					
 					FileOutputStream fos = new FileOutputStream(iniFile);
 					try {
@@ -395,7 +379,6 @@ final class EclipseLocation {
 				} finally {
 					if ( !installSucceeded ) try {
 						lombokJar.delete();
-						agentJar.delete();
 					} catch ( Throwable ignore ) {}
 				}
 			}
@@ -406,12 +389,12 @@ final class EclipseLocation {
 		}
 		
 		for ( File dir : failedDirs ) {
-			//If we're updating the old installation might have worked by putting the lombok jars in a different place.
-			//We'll delete these old files.
-			try {
-				new File(dir, "lombok.jar").delete();
-				new File(dir, "lombok.eclipse.agent.jar").delete();
-			} catch ( Throwable ignore ) {}
+			/* Legacy code - lombok's installer used to install in other places. To keep the user's eclipse dir clean, we'll delete these. */ {
+				try {
+					new File(dir, "lombok.jar").delete();
+					new File(dir, "lombok.eclipse.agent.jar").delete();
+				} catch ( Throwable ignore ) {}
+			}
 		}
 	}
 }
