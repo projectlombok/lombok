@@ -1,5 +1,0 @@
-#!/bin/sh
-
-ant && cp dist/lombok.jar dist/lombok.eclipse.agent.jar /Applications/eclipse/Eclipse.app/Contents/MacOS && /Applications/eclipse/eclipse 
-
-
