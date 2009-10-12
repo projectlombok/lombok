@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.SimpleName;
 
 public class PatchFixes {
@@ -26,7 +27,10 @@ public class PatchFixes {
 	public static void setIsGeneratedFlag(org.eclipse.jdt.core.dom.ASTNode domNode,
 			org.eclipse.jdt.internal.compiler.ast.ASTNode internalNode) throws Exception {
 		boolean isGenerated = internalNode.getClass().getField("$generatedBy").get(internalNode) != null;
-		if (isGenerated) domNode.getClass().getField("$isGenerated").set(domNode, true);
+		if (isGenerated) {
+			domNode.getClass().getField("$isGenerated").set(domNode, true);
+			domNode.setFlags(domNode.getFlags() & ~ASTNode.ORIGINAL);
+		}
 	}
 	
 	public static void setIsGeneratedFlagForSimpleName(SimpleName name, Object internalNode) throws Exception {
