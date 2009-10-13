@@ -19,33 +19,33 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 -->
-<project name="lombok-deps" basedir=".." default="buildDeps">
-	<description>This buildfile is part of projectlombok.org. It responsible for finding, downloading,
-and building dependencies.</description>
+<project name="lombok-deps" basedir=".." default="install">
+	<description>
+This buildfile is part of projectlombok.org. It responsible for finding, downloading,
+and building dependencies.
+	</description>
 	
-	<property name="lombok.patcher.dir" location="../lombok.patcher" />
-	<available file="${lombok.patcher.dir}/build.xml" property="lombok.patcher.available" />
-	
-	<target name="buildDeps" description="Builds dependencies" depends="build-lombok.patcher" />
-	
-	<target name="-warn-lombok.patcher" unless="lombok.patcher.available">
-		<echo>Skipping lombok.patcher. clone from: http://github.com/rzwitserloot/lombok.patcher</echo>
+	<target name="install" description="Gets all dependencies, including optional ones, interactively (asks you)">
+		<subant target="install">
+			<fileset dir="buildScripts/deps" includes="*.ant.xml" />
+		</subant>
 	</target>
 	
-	<target name="-check-lombok.patcher" depends="-warn-lombok.patcher" if="lombok.patcher.available">
-		<ant dir="${lombok.patcher.dir}" target="dist" inheritAll="false" />
-		<condition property="lombok.patcher.replace">
-			<or>
-				<not><available file="lib/lombok/lombok-patcher.jar" /></not>
-				<not><uptodate
-						srcfile="${lombok.patcher.dir}/dist/lombok-patcher.jar"
-						targetfile="lib/lombok/lombok-patcher.jar" /></not>
-			</or>
-		</condition>
+	<target name="install-silent" description="Gets all dependencies, including optional ones, assuming you want everything.">
+		<subant target="install-silent">
+			<fileset dir="buildScripts/deps" includes="*.ant.xml" />
+		</subant>
 	</target>
 	
-	<target name="build-lombok.patcher" depends="-check-lombok.patcher" if="lombok.patcher.replace">
-		<copy file="${lombok.patcher.dir}/dist/lombok-patcher.jar" todir="lib/lombok" />
-		<echo level="info">** UPDATED: lib/lombok/lombok-patcher.jar</echo>
+	<target name="update" description="Updates without interaction those deps you already have.">
+		<subant target="update">
+			<fileset dir="buildScripts/deps" includes="*.ant.xml" />
+		</subant>
+	</target>
+	
+	<target name="build" description="Builds all dependencies for which you've installed the source version.">
+		<subant target="build">
+			<fileset dir="buildScripts/deps" includes="*.ant.xml" />
+		</subant>
 	</target>
 </project>

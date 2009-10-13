@@ -20,8 +20,10 @@
   THE SOFTWARE.
 -->
 <project name="lombok-compile" basedir=".." default="dist">
-	<description>This buildfile is part of projectlombok.org. It responsible for compiling the main
-lombok code including the various agents.</description>
+	<description>
+This buildfile is part of projectlombok.org. It responsible for compiling the main
+lombok code including the various agents.
+	</description>
 	<property name="build.compiler" value="javac1.6" />
 	
 	<target name="version" unless="lombok.version">

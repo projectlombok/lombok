@@ -22,7 +22,8 @@
 <project name="lombok-website" basedir=".." default="website">
 	<description>
 This buildfile is part of projectlombok.org. It is responsible for building the website and all website-related aspects,
-such as converting the changelog into HTML, and creating javadoc.</description>
+such as converting the changelog into HTML, and creating javadoc.
+	</description>
 	<property name="SNIPPET_TAB_STOP" value="2" />
 	
 	<target name="-website-clean">

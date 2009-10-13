@@ -20,8 +20,10 @@
   THE SOFTWARE.
 -->
 <project name="lombok-maven" basedir=".." default="maven">
-		<description>This buildfile is part of projectlombok.org. It is responsible for creating and maintaining
-the maven repository that contains lombok's deliverables for those using maven.</description>
+	<description>
+This buildfile is part of projectlombok.org. It is responsible for creating and maintaining
+the maven repository that contains lombok's deliverables for those using maven.
+	</description>
 	<target name="version" unless="lombok.version">
 		<ant antfile="build.xml" target="version" inheritAll="false" />
 		<loadresource property="lombok.version">

@@ -20,8 +20,10 @@
   THE SOFTWARE.
 -->
 <project name="lombok" default="dist">
-			<description>This buildfile is part of projectlombok.org. It is the main entry point that contains
-the common tasks and can be called on to run the main aspects of all the sub-scripts.</description>
+	<description>
+This buildfile is part of projectlombok.org. It is the main entry point that contains
+the common tasks and can be called on to run the main aspects of all the sub-scripts.
+	</description>
 	<target name="clean" description="Removes all generated files">
 		<delete dir="build" quiet="true" />
 		<delete dir="dist" quiet="true" />
@@ -44,8 +46,16 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<echo level="info">Lombok version: ${lombok.version}</echo>
 	</target>
 	
-	<target name="buildDeps" description="Builds dependencies">
-		<ant antfile="buildScripts/deps.ant.xml" target="buildDeps" inheritAll="false" />
+	<target name="buildDeps" description="Builds buildable dependencies">
+		<ant antfile="buildScripts/deps.ant.xml" target="build" inheritAll="false" />
+	</target>
+	
+	<target name="updateDeps" description="Updates existing dependencies">
+		<ant antfile="buildScripts/deps.ant.xml" target="update" inheritAll="false" />
+	</target>
+	
+	<target name="installDeps" description="Interactively asks you which dependencies you want, and installs them.">
+		<ant antfile="buildScripts/deps.ant.xml" target="install" inheritAll="false" />
 	</target>
 	
 	<target name="dist" depends="version, buildDeps" description="Builds THE lombok.jar file which contains everything">
