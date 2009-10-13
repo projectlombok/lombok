@@ -141,7 +141,7 @@ Unless you're going to work on lombok.patcher's OSGi integration, you won't need
 				cvsRoot="${repository.eclipse.org-eclipse}"
 				dest="${eclipse.org.contrib.base}"
 				package="org.eclipse.jdt.core"
-				tag="TR3_5_Maintenance"
+				tag="R3_5_maintenance"
 				failonerror="true" />
 		<echo level="info">eclipse module checked out in a sibling directory to the lombok project directory. You may want to add the project to your eclipse workspace.</echo>
 	</target>
@@ -155,7 +155,7 @@ Unless you're going to work on lombok.patcher's OSGi integration, you won't need
 				cvsRoot="${repository.eclipse.org-eclipse}"
 				dest="${eclipse.org.contrib.base}"
 				package="org.eclipse.jdt.ui"
-				tag="TR3_5_Maintenance"
+				tag="R3_5_maintenance"
 				failonerror="true" />
 		<echo level="info">eclipse module checked out in a sibling directory to the lombok project directory. You may want to add the project to your eclipse workspace.</echo>
 	</target>
@@ -183,7 +183,7 @@ Unless you're going to work on lombok.patcher's OSGi integration, you won't need
 				cvsRoot="${repository.eclipse.org-eclipse}"
 				dest="${eclipse.org.contrib.base}"
 				package="org.eclipse.ltk.core.refactoring"
-				tag="NR3_5_1"
+				tag="R3_5_1"
 				failonerror="true" />
 		<echo level="info">eclipse module checked out in a sibling directory to the lombok project directory. You may want to add the project to your eclipse workspace.</echo>
 	</target>

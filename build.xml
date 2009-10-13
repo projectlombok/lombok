@@ -58,6 +58,10 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<ant antfile="buildScripts/deps.ant.xml" target="install" inheritAll="false" />
 	</target>
 	
+	<target name="installDeps-silent" description="Installs ALL dependencies, optional or not.">
+		<ant antfile="buildScripts/deps.ant.xml" target="install-silent" inheritAll="false" />
+	</target>
+	
 	<target name="dist" depends="version, buildDeps" description="Builds THE lombok.jar file which contains everything">
 		<ant antfile="buildScripts/compile.ant.xml" target="dist" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
