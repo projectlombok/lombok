@@ -28,13 +28,13 @@ This buildfile is part of projectlombok.org. It responsible for downloading, upd
 	<property name="repository.eclipse.org-rt" value=":pserver:anonymous@dev.eclipse.org/cvsroot/rt" />
 	<property name="eclipse.org.contrib.base" location=".." />
 	
+	<!-- Skips equinox because it's ENORMOUS and rarely needed. -->
 	<target name="install-silent" depends="-check-eclipse.org,
 		-force-eclipse.debug.target, install-eclipse.debug.target, update-eclipse.debug.target,
 		-force-org.eclipse.jdt.core, checkout-org.eclipse.jdt.core, update-org.eclipse.jdt.core,
 		-force-org.eclipse.jdt.ui, checkout-org.eclipse.jdt.ui, update-org.eclipse.jdt.ui,
 		-force-org.eclipse.core.runtime, checkout-org.eclipse.core.runtime, update-org.eclipse.core.runtime,
-		-force-org.eclipse.ltk.core.refactoring, checkout-org.eclipse.ltk.core.refactoring,  update-org.eclipse.ltk.core.refactoring,
-		-force-org.eclipse.equinox, checkout-org.eclipse.equinox, update-org.eclipse.equinox" />
+		-force-org.eclipse.ltk.core.refactoring, checkout-org.eclipse.ltk.core.refactoring,  update-org.eclipse.ltk.core.refactoring" />
 	
 	<target name="install" depends="-check-eclipse.org,
 		-ask-eclipse.debug.target, install-eclipse.debug.target, update-eclipse.debug.target,
@@ -120,6 +120,8 @@ Unless you're going to work with lombok's patching of the refactor scripts, you 
 		<input validargs="n,N,no,No,NO,y,Y,yes,Yes,YES" defaultvalue="no" addproperty="org.eclipse.equinox.response">
 Do you want me to grab from CVS the 3.5 version of org.eclipse.equinox?
 Unless you're going to work on lombok.patcher's OSGi integration, you won't need this.
+
+WARNING: This project is enormous (350MB) and takes like an hour to check out. You should answer no unless you _really_ want it.
 		</input>
 		<condition property="org.eclipse.equinox.checkout">
 			<matches string="${org.eclipse.equinox.response}" casesensitive="false" pattern="^y(es)?$" />
