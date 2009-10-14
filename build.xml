@@ -69,32 +69,33 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<property name="lombok.dist.built" value="true" />
 	</target>
 	
-	<target name="compile" description="Compiles the code">
+	<target name="compile" depends="version" description="Compiles the code">
 		<ant antfile="buildScripts/compile.ant.xml" target="compile" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
 		</ant>
 	</target>
 	
-	<target name="maven" description="Build a maven repository">
+	<target name="maven" depends="version" description="Build a maven repository">
 		<ant antfile="buildScripts/maven.ant.xml" target="maven" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
 		</ant>
 	</target>
 	
-	<target name="publish" description="Publishes the latest build to googlecode">
+	<target name="publish" depends="version" description="Publishes the latest build to googlecode">
 		<ant antfile="buildScripts/publish.ant.xml" target="publish" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
 		</ant>
 	</target>
 	
-	<target name="website" description="Prepares the website for distribution">
+	<target name="website" depends="version" description="Prepares the website for distribution">
 		<ant antfile="buildScripts/website.ant.xml" target="website" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
 		</ant>
 	</target>
 	
-	<target name="website-novideo" description="Prepares the website for distribution, but does not add the videos to the zip.">
-		<ant antfile="buildScripts/website.ant.xml" target="website-novideo" inheritAll="false">
+	<target name="website-publish" depends="version"
+			description="Prepares the website for distribution and then publishes it to projectlombok.org">
+		<ant antfile="buildScripts/website.ant.xml" target="website-publish" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
 		</ant>
 	</target>

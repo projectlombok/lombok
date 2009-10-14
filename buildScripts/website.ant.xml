@@ -24,6 +24,25 @@
 This buildfile is part of projectlombok.org. It is responsible for building the website and all website-related aspects,
 such as converting the changelog into HTML, and creating javadoc.
 	</description>
+	
+	<path id="deps.path">
+		<fileset dir="deps/lombok">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
+	<path id="libs.path">
+		<fileset dir="lib/lombok">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
+	<path id="webclasses.deps.path">
+		<fileset dir="deps/website">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
 	<property name="SNIPPET_TAB_STOP" value="2" />
 	
 	<target name="-website-clean">
@@ -31,7 +50,6 @@ such as converting the changelog into HTML, and creating javadoc.
 	</target>
 	
 	<target name="website" description="Prepares the website for distribution" depends="-website-main, -website-videos, -website-dist" />
-	<target name="website-novideo" description="Prepares the website for distribution, but does not add the videos to the zip." depends="-website-main, -website-dist" />
 	
 	<target name="version" unless="lombok.version">
 		<ant antfile="build.xml" target="version" inheritAll="false" />
@@ -43,7 +61,32 @@ such as converting the changelog into HTML, and creating javadoc.
 		</loadresource>
 	</target>
 	
-	<target name="-website-videos" depends="-website-clean">
+	<target name="-compile-webclasses">
+		<mkdir dir="build/webclasses" />
+		<javac destdir="build/webclasses" debug="on" source="1.4" target="1.4">
+			<classpath refid="webclasses.deps.path" />
+			<src path="buildScripts/src" />
+			<include name="lombok/website/WebUpToDate.java" />
+		</javac>
+		<javac destdir="build/webclasses" debug="on" source="1.5">
+			<classpath refid="webclasses.deps.path" />
+			<src path="buildScripts/src" />
+			<include name="lombok/website/CompileChangelog.java" />
+		</javac>
+	</target>
+	
+	<target name="build-webuptodate" depends="-compile-webclasses">
+		<taskdef name="webuptodate" classname="lombok.website.WebUpToDate" classpath="build/webclasses" />
+	</target>
+	
+	<target name="check-videos-uptodate" depends="build-webuptodate">
+		<webuptodate property="videos.uptodate" urlbase="http://projectlombok.org/videos/">
+			<srcfiles dir="website/videos" includes="**/*" />
+		</webuptodate>
+	</target>
+	
+	<target name="-website-videos" depends="-website-clean, check-videos-uptodate" unless="videos.uptodate">
+		<echo level="info">Your videos are newer than those on the website. They will be included too.</echo>
 		<mkdir dir="build/website/videos" />
 		<copy todir="build/website/videos">
 			<fileset dir="website/videos" />
@@ -106,7 +149,23 @@ such as converting the changelog into HTML, and creating javadoc.
 			<tarfileset dir="build/website" />
 			<tarfileset dir="doc/api" prefix="api" />
 		</tar>
-		<echo>Now upload dist/website.tar.bz2 to the webserver.</echo>
+	</target>
+	
+	<taskdef name="scp" classname="org.apache.tools.ant.taskdefs.optional.ssh.Scp" classpathref="webclasses.deps.path" />
+	<taskdef name="sshexec" classname="org.apache.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="webclasses.deps.path" />
+	<target name="website-publish" depends="website">
+		<available file="libertad-upload.key" property="libertad.key.available" />
+		<fail unless="libertad.key.available">You don't have the libertad-upload.key; you'll need it to get write access to the server.</fail>
+		<scp
+			localFile="dist/website.tar.bz2"
+			todir="lombokup@projectlombok.org:/staging"
+			keyfile="libertad-upload.key" passphrase=""
+			sftp="true" verbose="true" trust="true" />
+		<sshexec
+			host="projectlombok.org"
+			username="lombokup"
+			keyfile="libertad-upload.key" passphrase=""
+			trust="true" command="./deployWebsite" />
 	</target>
 	
 	<target name="-integrateSnippet">
@@ -146,80 +205,49 @@ such as converting the changelog into HTML, and creating javadoc.
 		</copy>
 	</target>
 	
-		<target name="changelogToHtml">
-			<mkdir dir="build/changelog" />
-			<echo file="build/changelog/CompileChangelog.java"><![CDATA[
-	import com.petebevin.markdown.MarkdownProcessor;
-	import java.io.*;
-
-	public class CompileChangelog {
-		public static void main(String[] args) {
-			try {
-				FileInputStream in = new FileInputStream(args[0]);
-				ByteArrayOutputStream out = new ByteArrayOutputStream();
-				byte[] b = new byte[65536];
-				while ( true ) {
-					int r = in.read(b);
-					if ( r == -1 ) break;
-					out.write(b, 0, r);
-				}
-				in.close();
-				String markdown = new String(out.toByteArray(), "UTF-8");
-				String html = new MarkdownProcessor().markdown(markdown);
-				FileOutputStream file = new FileOutputStream(args[1]);
-				file.write(html.getBytes("UTF-8"));
-				file.close();
-				System.exit(0);
-			} catch ( Throwable e ) {
-				e.printStackTrace();
-				System.exit(1);
-			}
-		}
-	}
-	]]></echo>
-			<mkdir dir="build/website" />
-			<javac srcdir="build/changelog" destdir="build/changelog" classpath="deps/website/markdownj.jar" debug="on" />
-			<property name="CHANGELOG_FILE" location="doc/changelog.markdown" />
-			<property name="CHANGELOG_HTML" location="build/website/changelog.html" />
-			<java fork="true" classname="CompileChangelog" failonerror="true">
-				<classpath>
-					<pathelement location="deps/website/markdownj.jar" />
-					<pathelement location="build/changelog" />
-				</classpath>
-				<arg value="${CHANGELOG_FILE}" />
-				<arg value="${CHANGELOG_HTML}" />
-			</java>
-		</target>
-		
-		<target name="javadoc" description="Generates the javadoc" depends="version">
-			<delete dir="build/api" quiet="true" />
-			<delete dir="doc/api" quiet="true" />
-			<mkdir dir="build/api" />
-			<property name="javadoc.overview.html" location="build/javadoc.overview.html" />
-			<echo file="${javadoc.overview.html}"><![CDATA[<html><body>
-				Welcome to the lombok javadoc.&nbsp;If you're just looking to learn more about using lombok
-				You probably want to look at <a href="http://projectlombok.org/features/index.html">the feature documentation</a>.&nbsp;Otherwise,
-				check the <a href="lombok/package-summary.html">lombok</a> package.&nbsp;If you're trying to extend lombok or
-				write your own plugins, the other packages are what you're looking for.</body></html>
-			]]></echo>
-			<javadoc sourcepath="src" defaultexcludes="yes" destdir="build/api" windowtitle="Lombok" Overview="${javadoc.overview.html}">
-				<classpath refid="lombok.deps.path" />
-				<classpath refid="lombok.libs.path" />
-				<link href="http://java.sun.com/javase/6/docs/api/" offline="true" packagelistLoc="./deps/javadoc/java6"/>
-				<header><![CDATA[<a href='http://projectlombok.org/'>Lombok</a> - ]]>v${lombok.version}</header>
-				<bottom><![CDATA[<i>Copyright &#169; 2009 Reinier Zwitserloot and Roel Spilker, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php'>MIT licence</a>.]]></bottom>
-			</javadoc>
-			<mkdir dir="doc/api" />
-			<copy todir="doc/api">
-				<fileset dir="build/api" includes="**/*.html" />
-				<filterchain>
-					<linecontainsregexp negate="true">
-						<regexp pattern="(Generated by javadoc)|(.META NAME=.date.)" />
-					</linecontainsregexp>
-				</filterchain>
-			</copy>
-			<copy todir="doc/api">
-				<fileset dir="build/api" excludes="**/*.html" />
-			</copy>
-		</target>
+	<target name="changelogToHtml" depends="-compile-webclasses">
+		<mkdir dir="build/website" />
+		<property name="CHANGELOG_FILE" location="doc/changelog.markdown" />
+		<property name="CHANGELOG_HTML" location="build/website/changelog.html" />
+		<java fork="true" classname="lombok.website.CompileChangelog" failonerror="true">
+			<classpath>
+				<path refid="webclasses.deps.path" />
+				<pathelement location="build/webclasses" />
+			</classpath>
+			<arg value="${CHANGELOG_FILE}" />
+			<arg value="${CHANGELOG_HTML}" />
+		</java>
+	</target>
+	
+	<target name="javadoc" description="Generates the javadoc" depends="version">
+		<delete dir="build/api" quiet="true" />
+		<delete dir="doc/api" quiet="true" />
+		<mkdir dir="build/api" />
+		<property name="javadoc.overview.html" location="build/javadoc.overview.html" />
+		<echo file="${javadoc.overview.html}"><![CDATA[<html><body>
+			Welcome to the lombok javadoc.&nbsp;If you're just looking to learn more about using lombok
+			You probably want to look at <a href="http://projectlombok.org/features/index.html">the feature documentation</a>.&nbsp;Otherwise,
+			check the <a href="lombok/package-summary.html">lombok</a> package.&nbsp;If you're trying to extend lombok or
+			write your own plugins, the other packages are what you're looking for.</body></html>
+		]]></echo>
+		<javadoc sourcepath="src" defaultexcludes="yes" destdir="build/api" windowtitle="Lombok" Overview="${javadoc.overview.html}">
+			<classpath refid="deps.path" />
+			<classpath refid="libs.path" />
+			<link href="http://java.sun.com/javase/6/docs/api/" offline="true" packagelistLoc="./deps/javadoc/java6"/>
+			<header><![CDATA[<a href='http://projectlombok.org/'>Lombok</a> - ]]>v${lombok.version}</header>
+			<bottom><![CDATA[<i>Copyright &#169; 2009 Reinier Zwitserloot and Roel Spilker, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php'>MIT licence</a>.]]></bottom>
+		</javadoc>
+		<mkdir dir="doc/api" />
+		<copy todir="doc/api">
+			<fileset dir="build/api" includes="**/*.html" />
+			<filterchain>
+				<linecontainsregexp negate="true">
+					<regexp pattern="(Generated by javadoc)|(.META NAME=.date.)" />
+				</linecontainsregexp>
+			</filterchain>
+		</copy>
+		<copy todir="doc/api">
+			<fileset dir="build/api" excludes="**/*.html" />
+		</copy>
+	</target>
 </project>
