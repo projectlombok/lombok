@@ -81,6 +81,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ant>
 	</target>
 	
+	<target name="maven-publish" depends="version" description="Build a maven repository then upload it to projectlombok.org">
+		<ant antfile="buildScripts/maven.ant.xml" target="maven-publish" inheritAll="false">
+			<property name="lombok.version" value="${lombok.version}" />
+		</ant>
+	</target>
+	
 	<target name="publish" depends="version" description="Publishes the latest build to googlecode">
 		<ant antfile="buildScripts/publish.ant.xml" target="publish" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />

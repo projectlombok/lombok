@@ -37,8 +37,8 @@ such as converting the changelog into HTML, and creating javadoc.
 		</fileset>
 	</path>
 	
-	<path id="webclasses.deps.path">
-		<fileset dir="deps/website">
+	<path id="buildScripts.deps.path">
+		<fileset dir="deps/buildScripts">
 			<include name="**/*.jar" />
 		</fileset>
 	</path>
@@ -64,12 +64,12 @@ such as converting the changelog into HTML, and creating javadoc.
 	<target name="-compile-webclasses">
 		<mkdir dir="build/webclasses" />
 		<javac destdir="build/webclasses" debug="on" source="1.4" target="1.4">
-			<classpath refid="webclasses.deps.path" />
+			<classpath refid="buildScripts.deps.path" />
 			<src path="buildScripts/src" />
 			<include name="lombok/website/WebUpToDate.java" />
 		</javac>
 		<javac destdir="build/webclasses" debug="on" source="1.5">
-			<classpath refid="webclasses.deps.path" />
+			<classpath refid="buildScripts.deps.path" />
 			<src path="buildScripts/src" />
 			<include name="lombok/website/CompileChangelog.java" />
 		</javac>
@@ -151,8 +151,8 @@ such as converting the changelog into HTML, and creating javadoc.
 		</tar>
 	</target>
 	
-	<taskdef name="scp" classname="org.apache.tools.ant.taskdefs.optional.ssh.Scp" classpathref="webclasses.deps.path" />
-	<taskdef name="sshexec" classname="org.apache.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="webclasses.deps.path" />
+	<taskdef name="scp" classname="org.apache.tools.ant.taskdefs.optional.ssh.Scp" classpathref="buildScripts.deps.path" />
+	<taskdef name="sshexec" classname="org.apache.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="buildScripts.deps.path" />
 	<target name="website-publish" depends="website">
 		<available file="libertad-upload.key" property="libertad.key.available" />
 		<fail unless="libertad.key.available">You don't have the libertad-upload.key; you'll need it to get write access to the server.</fail>
@@ -211,7 +211,7 @@ such as converting the changelog into HTML, and creating javadoc.
 		<property name="CHANGELOG_HTML" location="build/website/changelog.html" />
 		<java fork="true" classname="lombok.website.CompileChangelog" failonerror="true">
 			<classpath>
-				<path refid="webclasses.deps.path" />
+				<path refid="buildScripts.deps.path" />
 				<pathelement location="build/webclasses" />
 			</classpath>
 			<arg value="${CHANGELOG_FILE}" />

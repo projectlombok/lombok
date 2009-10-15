@@ -24,6 +24,13 @@
 This buildfile is part of projectlombok.org. It is responsible for creating and maintaining
 the maven repository that contains lombok's deliverables for those using maven.
 	</description>
+	
+	<path id="buildScripts.deps.path">
+		<fileset dir="deps/buildScripts">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
 	<target name="version" unless="lombok.version">
 		<ant antfile="build.xml" target="version" inheritAll="false" />
 		<loadresource property="lombok.version">
@@ -35,7 +42,7 @@ the maven repository that contains lombok's deliverables for those using maven.
 	</target>
 	
 	<target name="dist" unless="lombok.dist.built" depends="version">
-		<ant antfile="buildScripts/compile.xml" target="dist" inheritAll="false">
+		<ant antfile="buildScripts/compile.ant.xml" target="dist" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
 		</ant>
 	</target>
@@ -108,6 +115,30 @@ the maven repository that contains lombok's deliverables for those using maven.
 		<tar destfile="dist/maven.tar.bz2" compression="bzip2">
 			<tarfileset dir="build/maven" />
 		</tar>
-		<echo>Now copy maven.tar.bz2 to the website and unpack it in the mavenrepo directory. Let it overwrite files.</echo>
+	</target>
+	
+	<taskdef name="scp" classname="org.apache.tools.ant.taskdefs.optional.ssh.Scp" classpathref="buildScripts.deps.path" />
+	<taskdef name="sshexec" classname="org.apache.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="buildScripts.deps.path" />
+	<target name="maven-publish" depends="maven">
+		<available file="libertad-upload.key" property="libertad.key.available" />
+		<fail unless="libertad.key.available">You don't have the libertad-upload.key; you'll need it to get write access to the server.</fail>
+		<scp
+			localFile="dist/maven.tar.bz2"
+			todir="lombokup@projectlombok.org:/staging"
+			keyfile="libertad-upload.key" passphrase=""
+			sftp="true" verbose="true" trust="true" />
+		<sshexec
+			host="projectlombok.org"
+			username="lombokup"
+			keyfile="libertad-upload.key" passphrase=""
+			trust="true" command="./deployMavenRepo" />
+	</target>
+	
+	<target name="FOO">
+		<sshexec
+			host="projectlombok.org"
+			username="lombokup"
+			keyfile="libertad-upload.key" passphrase=""
+			trust="true" command="./deployMavenRepo" />
 	</target>
 </project>
