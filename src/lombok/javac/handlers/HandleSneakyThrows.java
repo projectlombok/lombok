@@ -36,11 +36,9 @@ import org.mangosdk.spi.ProviderFor;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
-import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
@@ -55,17 +53,6 @@ public class HandleSneakyThrows implements JavacAnnotationHandler<SneakyThrows> 
 		
 		List<JCExpression> memberValuePairs = ast.getArguments();
 		if (memberValuePairs == null || memberValuePairs.size() == 0) return false;
-		
-		JCExpression arrayOrSingle = ((JCAssign)memberValuePairs.get(0)).rhs;
-		final List<JCExpression> exceptionNameNodes;
-		if (arrayOrSingle instanceof JCNewArray) {
-			exceptionNameNodes = ((JCNewArray)arrayOrSingle).elems;
-		} else exceptionNameNodes = List.of(arrayOrSingle);
-		
-		if (exceptionNames.size() != exceptionNameNodes.size()) {
-			annotationNode.addError(
-					"LOMBOK BUG: The number of exception classes in the annotation isn't the same pre- and post- guessing.");
-		}
 		
 		java.util.List<String> exceptions = new ArrayList<String>();
 		for (String exception : exceptionNames) {

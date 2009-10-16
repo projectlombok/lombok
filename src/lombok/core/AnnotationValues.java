@@ -33,6 +33,8 @@ import java.util.Map;
 
 /**
  * Represents a single annotation in a source file and can be used to query the parameters present on it.
+ * 
+ * @param A The annotation that this class represents, such as {@code lombok.Getter}
  */
 public class AnnotationValues<A extends Annotation> {
 	private final Class<A> type;
@@ -295,9 +297,9 @@ public class AnnotationValues<A extends Annotation> {
 	}
 	
 	/**
-	 * Returns the raw expressions used for the provided annotationMethodName.
+	 * Returns the raw expressions used for the provided {@code annotationMethodName}.
 	 * 
-	 * You should use this method for annotation methods that return Class objects. Remember that
+	 * You should use this method for annotation methods that return {@code Class} objects. Remember that
 	 * class literals end in ".class" which you probably want to strip off.
 	 */
 	public List<String> getRawExpressions(String annotationMethodName) {
