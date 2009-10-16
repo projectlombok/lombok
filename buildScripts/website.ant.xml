@@ -151,8 +151,8 @@ such as converting the changelog into HTML, and creating javadoc.
 		</tar>
 	</target>
 	
-	<taskdef name="scp" classname="org.apache.tools.ant.taskdefs.optional.ssh.Scp" classpathref="buildScripts.deps.path" />
-	<taskdef name="sshexec" classname="org.apache.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="buildScripts.deps.path" />
+	<taskdef name="scp" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.Scp" classpathref="buildScripts.deps.path" />
+	<taskdef name="sshexec" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="buildScripts.deps.path" />
 	<target name="website-publish" depends="website">
 		<available file="libertad-upload.key" property="libertad.key.available" />
 		<fail unless="libertad.key.available">You don't have the libertad-upload.key; you'll need it to get write access to the server.</fail>
