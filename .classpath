@@ -3,9 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="src_eclipseagent"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="deps/lombok/org.eclipse.jdt.apt.core_3.3.200.v20090528-1135.jar"/>
-	<classpathentry kind="lib" path="deps/lombok/org.eclipse.jdt.apt.pluggable.core_1.0.200.v20090526-2130.jar"/>
-	<classpathentry kind="lib" path="deps/lombok/org.eclipse.jdt.compiler.apt_1.0.200.v20090528-1135.jar"/>
 	<classpathentry kind="lib" path="deps/lombok/org.eclipse.jdt.core_3.5.0.v_963.jar"/>
 	<classpathentry kind="lib" path="deps/lombok/org.eclipse.jdt.ui_3.5.1.r351_v20090821-0800.jar"/>
 	<classpathentry kind="src" path=".apt_generated">
