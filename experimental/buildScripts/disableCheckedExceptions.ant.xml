@@ -1,0 +1,75 @@
+<!--
+  Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+  
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+  
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+  THE SOFTWARE.
+-->
+<project name="lombok-experimental-disableCheckedExceptions" basedir="../.." default="dist">
+	<description>
+		This buildfile is part of projectlombok.org. It controls building and packaging of the disableCheckedExceptions feature.
+	</description>
+	
+	<path id="deps.path">
+		<fileset dir="deps/lombok">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="experimental">
+			<include name="deps/**/*.jar" />
+		</fileset>
+	</path>
+	
+	<path id="libs.path">
+		<fileset dir="lib/lombok">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="experimental">
+			<include name="lib/**/*.jar" />
+		</fileset>
+	</path>
+	
+	<target name="-unpackLibs">
+		<mkdir dir="build/experimental/disableCheckedExceptions" />
+		<unjar dest="build/experimental/disableCheckedExceptions">
+			<path refid="libs.path" />
+		</unjar>
+	</target>
+	
+	<target name="compile" description="Compiles disableCheckedExceptions.">
+		<mkdir dir="build/experimental/disableCheckedExceptions" />
+		<javac debug="on" destdir="build/experimental/disableCheckedExceptions" target="1.6">
+			<src path="experimental/src" />
+			<include name="**/disableCheckedExceptions/**/*.java" />
+			<classpath refid="deps.path" />
+			<classpath refid="libs.path" />
+		</javac>
+	</target>
+	
+	<target name="dist" description="Creates the disable checked exceptions jar" depends="compile, -unpackLibs">
+		<mkdir dir="build/experimental/disableCheckedExceptions/META-INF" />
+		<mkdir dir="build/experimental/disableCheckedExceptions/META-INF/services" />
+		<echo file="build/experimental/disableCheckedExceptions/META-INF/services/javax.annotation.processor">lombok.javac.disableCheckedExceptions.DynamicAgent</echo>
+		<jar destfile="dist/disableCheckedExceptions-alpha.jar">
+			<fileset dir="build/experimental/disableCheckedExceptions" />
+			<manifest>
+				<attribute name="Agent-Class" value="lombok.javac.disableCheckedExceptions.DynamicAgent" />
+				<attribute name="Can-Redefine-Classes" value="true" />
+				<attribute name="Can-Retransform-Classes" value="true" />
+			</manifest>
+		</jar>
+	</target>
+</project>
