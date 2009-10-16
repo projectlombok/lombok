@@ -43,7 +43,7 @@ import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 
 /**
- * Handles the <code>lombok.Synchronized</code> annotation for javac.
+ * Handles the {@code lombok.Synchronized} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> {

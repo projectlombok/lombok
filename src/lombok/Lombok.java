@@ -39,9 +39,9 @@ public class Lombok {
 	 * about the concept of a 'checked exception'. All this method does is hide the act of throwing a checked exception
 	 * from the java compiler.
 	 * <p>
-	 * Note that this method has a return type of <code>RuntimeException</code> it is advised you always call this
-	 * method as argument to the <code>throw</code> statement to avoid compiler errors regarding no return
-	 * statement and similar problems. This method won't of course return an actual <code>RuntimeException</code> -
+	 * Note that this method has a return type of {@code RuntimeException} it is advised you always call this
+	 * method as argument to the {@code throw} statement to avoid compiler errors regarding no return
+	 * statement and similar problems. This method won't of course return an actual {@code RuntimeException} -
 	 * it never returns, it always throws the provided exception.
 	 * 
 	 * @param t The throwable to throw without requiring you to catch its type.

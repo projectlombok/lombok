@@ -50,7 +50,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.mangosdk.spi.ProviderFor;
 
 /**
- * Handles the <code>lombok.Synchronized</code> annotation for eclipse.
+ * Handles the {@code lombok.Synchronized} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized> {

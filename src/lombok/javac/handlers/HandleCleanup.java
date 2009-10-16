@@ -48,7 +48,7 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 
 /**
- * Handles the <code>lombok.Cleanup</code> annotation for javac.
+ * Handles the {@code lombok.Cleanup} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {

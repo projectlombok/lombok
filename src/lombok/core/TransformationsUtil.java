@@ -47,7 +47,7 @@ public class TransformationsUtil {
 	 * 
 	 * Strategy:
 	 * 
-	 * First, pick a prefix. 'get' normally, but 'is' if <code>isBoolean</code> is true.
+	 * First, pick a prefix. 'get' normally, but 'is' if {@code isBoolean} is true.
 	 * 
 	 * Then, check if the first character of the field is lowercase. If so, check if the second character
 	 * exists and is title or upper case. If so, uppercase the first character. If not, titlecase the first character.
@@ -59,7 +59,7 @@ public class TransformationsUtil {
 	 * any prefix.
 	 * 
 	 * @param fieldName the name of the field.
-	 * @param isBoolean if the field is of type 'boolean'. For fields of type 'java.lang.Boolean', you should provide <code>false</code>.
+	 * @param isBoolean if the field is of type 'boolean'. For fields of type 'java.lang.Boolean', you should provide {@code false}.
 	 */
 	public static String toGetterName(CharSequence fieldName, boolean isBoolean) {
 		final String prefix = isBoolean ? "is" : "get";

@@ -66,7 +66,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	 * Creates a new JavacAST of the provided Compilation Unit.
 	 * 
 	 * @param trees The trees instance to use to inspect the compilation unit. Generate via:
-	 *   <code>Trees.getInstance(env)</code>
+	 *   {@code Trees.getInstance(env)}
 	 * @param env The ProcessingEnvironment object passed e.g. to an annotation processor.
 	 * @param top The compilation unit, which serves as the top level node in the tree to be built.
 	 */

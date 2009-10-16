@@ -46,7 +46,7 @@ import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.mangosdk.spi.ProviderFor;
 
 /**
- * Handles the <code>lombok.Getter</code> annotation for eclipse.
+ * Handles the {@code lombok.Getter} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleGetter implements EclipseAnnotationHandler<Getter> {
@@ -57,7 +57,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 	 * 
 	 * The difference between this call and the handle method is as follows:
 	 * 
-	 * If there is a <code>lombok.Getter</code> annotation on the field, it is used and the
+	 * If there is a {@code lombok.Getter} annotation on the field, it is used and the
 	 * same rules apply (e.g. warning if the method already exists, stated access level applies).
 	 * If not, the getter is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.

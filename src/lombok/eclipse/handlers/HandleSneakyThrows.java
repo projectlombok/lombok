@@ -51,7 +51,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.mangosdk.spi.ProviderFor;
 
 /**
- * Handles the <code>lombok.HandleSneakyThrows</code> annotation for eclipse.
+ * Handles the {@code lombok.HandleSneakyThrows} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows> {

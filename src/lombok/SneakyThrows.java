@@ -37,8 +37,8 @@ import java.lang.annotation.Target;
  * You should use this annotation ONLY in the following two cases:<ol>
  * <li>You are certain the listed exception can't actually ever happen, or only in vanishingly rare situations.
  * You don't try to catch OutOfMemoryError on every statement either. Examples:<br>
- * <code>IOException</code> in <code>ByteArrayOutputStream</code><br>
- * <code>UnsupportedEncodingException</code> in new String(byteArray, "UTF-8").</li>
+ * {@code IOException} in {@code ByteArrayOutputStream}<br>
+ * {@code UnsupportedEncodingException} in new String(byteArray, "UTF-8").</li>
  * <li>You know for certain the caller can handle the exception (for example, because the caller is
  * an app manager that will handle all throwables that fall out of your method the same way), but due
  * to interface restrictions you can't just add these exceptions to your 'throws' clause.
@@ -58,8 +58,8 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * 
- * <code>&#64;SneakyThrows</code> without a parameter defaults to allowing <i>every</i> checked exception.
- * (The default is <code>Throwable.class</code>).
+ * {@code @SneakyThrows} without a parameter defaults to allowing <i>every</i> checked exception.
+ * (The default is {@code Throwable.class}).
  * 
  * @see Lombok#sneakyThrow(Throwable)
  */

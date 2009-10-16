@@ -36,7 +36,7 @@ import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 
 /**
- * Handles the <code>lombok.core.PrintAST</code> annotation for eclipse.
+ * Handles the {@code lombok.core.PrintAST} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandlePrintAST implements EclipseAnnotationHandler<PrintAST> {

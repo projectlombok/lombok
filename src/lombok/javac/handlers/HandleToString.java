@@ -50,7 +50,7 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 
 /**
- * Handles the <code>ToString</code> annotation for javac.
+ * Handles the {@code ToString} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleToString implements JavacAnnotationHandler<ToString> {

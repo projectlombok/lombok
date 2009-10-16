@@ -37,10 +37,10 @@ import java.lang.annotation.Target;
  * while the generated hashCode and equals take into account all non-transient fields.<br>
  * Static fields are skipped (no getter or setter, and they are not included in toString, equals, hashCode, or the constructor).
  * <p>
- * <code>toString</code>, <code>equals</code>, and <code>hashCode</code> use the deepX variants in the
- * <code>java.util.Arrays</code> utility class. Therefore, if your class has arrays that contain themselves,
- * these methods will just loop endlessly until the inevitable <code>StackOverflowError</code>. This behaviour
- * is no different from <code>java.util.ArrayList</code>, though.
+ * {@code toString}, {@code equals}, and {@code hashCode} use the deepX variants in the
+ * {@code java.util.Arrays} utility class. Therefore, if your class has arrays that contain themselves,
+ * these methods will just loop endlessly until the inevitable {@code StackOverflowError}. This behaviour
+ * is no different from {@code java.util.ArrayList}, though.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)

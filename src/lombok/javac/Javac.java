@@ -56,7 +56,7 @@ public class Javac {
 	/**
 	 * Checks if the Annotation AST Node provided is likely to be an instance of the provided annotation type.
 	 * 
-	 * @param type An actual annotation type, such as <code>lombok.Getter.class</code>.
+	 * @param type An actual annotation type, such as {@code lombok.Getter.class}.
 	 * @param node A Lombok AST node representing an annotation in source code.
 	 */
 	public static boolean annotationTypeMatches(Class<? extends Annotation> type, JavacNode node) {
@@ -76,9 +76,9 @@ public class Javac {
 	}
 	
 	/**
-	 * Creates an instance of <code>AnnotationValues</code> for the provided AST Node.
+	 * Creates an instance of {@code AnnotationValues} for the provided AST Node.
 	 * 
-	 * @param type An annotation class type, such as <code>lombok.Getter.class</code>.
+	 * @param type An annotation class type, such as {@code lombok.Getter.class}.
 	 * @param node A Lombok AST node representing an annotation in source code.
 	 */
 	public static <A extends Annotation> AnnotationValues<A> createAnnotation(Class<A> type, final JavacNode node) {

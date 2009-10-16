@@ -42,7 +42,7 @@ import java.lang.annotation.Target;
  *     }
  * </pre>
  * 
- * If any method named <code>setFoo</code> exists, regardless of return type or parameters, no method is generated,
+ * If any method named {@code setFoo} exists, regardless of return type or parameters, no method is generated,
  * and instead a compiler warning is emitted.
  */
 @Target(ElementType.FIELD)

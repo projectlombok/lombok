@@ -84,7 +84,7 @@ import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 
 /**
- * Handles the <code>EqualsAndHashCode</code> annotation for eclipse.
+ * Handles the {@code EqualsAndHashCode} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsAndHashCode> {

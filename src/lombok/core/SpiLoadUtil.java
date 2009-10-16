@@ -41,7 +41,7 @@ import lombok.Lombok;
  * The java core libraries have a SPI discovery system, but it works only in Java 1.6 and up. For at least Eclipse,
  * lombok actually works in java 1.5, so we've rolled our own SPI discovery system.
  * 
- * It is not API compatible with <code>ServiceLoader</code>.
+ * It is not API compatible with {@code ServiceLoader}.
  * 
  * @see java.util.ServiceLoader
  */
@@ -57,7 +57,7 @@ public class SpiLoadUtil {
 	 * Like ServiceLoader, each listed class is turned into an instance by calling the public no-args constructor.
 	 * 
 	 * Convenience method that calls the more elaborate {@link #findServices(Class, ClassLoader)} method with
-	 * this {@link java.lang.Thread}'s context class loader as <code>ClassLoader</code>.
+	 * this {@link java.lang.Thread}'s context class loader as {@code ClassLoader}.
 	 * 
 	 * @param target class to find implementations for.
 	 */
@@ -129,7 +129,7 @@ public class SpiLoadUtil {
 	}
 	
 	/**
-	 * This method will find the <code>T</code> in <code>public class Foo extends BaseType&lt;T&gt;.
+	 * This method will find the @{code T} in {@code public class Foo extends BaseType<T>}.
 	 * 
 	 * It returns an annotation type because it is used exclusively to figure out which annotations are
 	 * being handled by {@link lombok.eclipse.EclipseAnnotationHandler} and {@link lombok.javac.JavacAnnotationHandler}.

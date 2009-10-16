@@ -169,7 +169,7 @@ class PKG {
 	}
 	
 	/**
-	 * Turns an <code>AccessLevel<code> instance into the flag bit used by javac.
+	 * Turns an {@code AccessLevel} instance into the flag bit used by javac.
 	 * 
 	 * @see java.lang.Modifier
 	 */
@@ -241,9 +241,9 @@ class PKG {
 	}
 	
 	/**
-	 * In javac, dotted access of any kind, from <code>java.lang.String</code> to <code>var.methodName</code>
-	 * is represented by a fold-left of <code>Select</code> nodes with the leftmost string represented by
-	 * a <code>Ident</code> node. This method generates such an expression.
+	 * In javac, dotted access of any kind, from {@code java.lang.String} to {@code var.methodName}
+	 * is represented by a fold-left of {@code Select} nodes with the leftmost string represented by
+	 * a {@code Ident} node. This method generates such an expression.
 	 * 
 	 * For example, maker.Select(maker.Select(maker.Ident(NAME[java]), NAME[lang]), NAME[String]).
 	 * 

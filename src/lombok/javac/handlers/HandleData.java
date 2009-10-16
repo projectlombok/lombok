@@ -54,7 +54,7 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 
 /**
- * Handles the <code>lombok.Data</code> annotation for javac.
+ * Handles the {@code lombok.Data} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleData implements JavacAnnotationHandler<Data> {

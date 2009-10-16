@@ -64,7 +64,7 @@ import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.mangosdk.spi.ProviderFor;
 
 /**
- * Handles the <code>lombok.Data</code> annotation for eclipse.
+ * Handles the {@code lombok.Data} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleData implements EclipseAnnotationHandler<Data> {

@@ -54,7 +54,7 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 
 /**
- * Handles the <code>lombok.EqualsAndHashCode</code> annotation for javac.
+ * Handles the {@code lombok.EqualsAndHashCode} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAndHashCode> {

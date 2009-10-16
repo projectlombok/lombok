@@ -46,7 +46,7 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 
 /**
- * Handles the <code>lombok.SneakyThrows</code> annotation for javac.
+ * Handles the {@code lombok.SneakyThrows} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleSneakyThrows implements JavacAnnotationHandler<SneakyThrows> {

@@ -27,28 +27,28 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Generates an implementation for the <code>toString</code> method inherited by all objects.
+ * Generates an implementation for the {@code toString} method inherited by all objects.
  * <p>
- * If the method already exists, then <code>&#64;ToString</code> will not generate any method, and instead warns
+ * If the method already exists, then {@code ToString} will not generate any method, and instead warns
  * that it's doing nothing at all. The parameter list and return type are not relevant when deciding to skip generation of
- * the method; any method named <code>toString</code> will make <code>&#64;ToString</code> not generate anything.
+ * the method; any method named {@code toString} will make {@code ToString} not generate anything.
  * <p>
  * By default, all fields that are non-static are used in the toString generation. You can exclude fields by specifying them
- * in the <code>exclude</code> parameter. You can also explicitly specify the fields that
- * are to be used by specifying them in the <code>of</code> parameter.
+ * in the {@code exclude} parameter. You can also explicitly specify the fields that
+ * are to be used by specifying them in the {@code of} parameter.
  * <p>
  * Array fields are handled by way of {@link java.util.Arrays#deepToString(Object[])} where necessary.
  * The downside is that arrays with circular references (arrays that contain themselves,
- * possibly indirectly) results in calls to <code>toString</code> throwing a
+ * possibly indirectly) results in calls to {@code toString} throwing a
  * {@link java.lang.StackOverflowError}. However, the implementations for java's own {@link java.util.ArrayList} suffer
  * from the same flaw.
  * <p>
- * The <code>toString</code> method that is generated will print the class name as well as each field (both the name
+ * The {@code toString} method that is generated will print the class name as well as each field (both the name
  * and the value). You can optionally choose to suppress the printing of the field name, by setting the
- * <code>includeFieldNames</code> flag to <em>false</em>.
+ * {@code includeFieldNames} flag to <em>false</em>.
  * <p>
- * You can also choose to include the result of <code>toString</code> in your class's superclass by setting the
- * <code>callSuper</code> to <em>true</em>.
+ * You can also choose to include the result of {@code toString} in your class's superclass by setting the
+ * {@code callSuper} to <em>true</em>.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
@@ -60,7 +60,7 @@ public @interface ToString {
 	boolean includeFieldNames() default true;
 	
 	/**
-	 * Any fields listed here will not be printed in the generated <code>toString</code> implementation.
+	 * Any fields listed here will not be printed in the generated {@code toString} implementation.
 	 * Mutually exclusive with {@link #of()}.
 	 */
 	String[] exclude() default {};
@@ -74,7 +74,7 @@ public @interface ToString {
 	String[] of() default {};
 	
 	/**
-	 * Include the result of the superclass's implementation of <code>toString</code> in the output.
+	 * Include the result of the superclass's implementation of {@code toString} in the output.
 	 * <strong>default: false</strong>
 	 */
 	boolean callSuper() default false;

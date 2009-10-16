@@ -155,11 +155,11 @@ public class HandlerLibrary {
 	 * instance of {@link lombok.core.AnnotationValues}.
 	 * 
 	 * Note that depending on the printASTOnly flag, the {@link lombok.core.PrintAST} annotation
-	 * will either be silently skipped, or everything that isn't <code>PrintAST</code> will be skipped.
+	 * will either be silently skipped, or everything that isn't {@code PrintAST} will be skipped.
 	 * 
 	 * The HandlerLibrary will attempt to guess if the given annotation node represents a lombok annotation.
-	 * For example, if <code>lombok.*</code> is in the import list, then this method will guess that
-	 * <code>Getter</code> refers to <code>lombok.Getter</code>, presuming that {@link lombok.javac.handlers.HandleGetter}
+	 * For example, if {@code lombok.*} is in the import list, then this method will guess that
+	 * {@code Getter} refers to {@code lombok.Getter}, presuming that {@link lombok.javac.handlers.HandleGetter}
 	 * has been loaded.
 	 * 
 	 * @param unit The Compilation Unit that contains the Annotation AST Node.
@@ -203,7 +203,7 @@ public class HandlerLibrary {
 	
 	/**
 	 * Lombok does not currently support triggering annotations in a specified order; the order is essentially
-	 * random right now. This lack of order is particularly annoying for the <code>PrintAST</code> annotation,
+	 * random right now. This lack of order is particularly annoying for the {@code PrintAST} annotation,
 	 * which is almost always intended to run last. Hence, this hack, which lets it in fact run last.
 	 * 
 	 * @see #skipAllButPrintAST()

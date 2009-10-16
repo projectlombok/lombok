@@ -64,7 +64,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.mangosdk.spi.ProviderFor;
 
 /**
- * Handles the <code>ToString</code> annotation for eclipse.
+ * Handles the {@code ToString} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleToString implements EclipseAnnotationHandler<ToString> {

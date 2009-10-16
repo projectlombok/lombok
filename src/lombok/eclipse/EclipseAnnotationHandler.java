@@ -28,11 +28,11 @@ import lombok.core.AnnotationValues;
  * 
  * You MUST replace 'T' with a specific annotation type, such as:
  * 
- * <code>public class HandleGetter implements EclipseAnnotationHandler&lt;<b>Getter</b>&gt;</code>
+ * {@code public class HandleGetter implements EclipseAnnotationHandler<Getter>}
  * 
  * Because this generics parameter is inspected to figure out which class you're interested in.
  * 
- * You also need to register yourself via SPI discovery as being an implementation of <code>EclipseAnnotationHandler</code>.
+ * You also need to register yourself via SPI discovery as being an implementation of {@code EclipseAnnotationHandler}.
  */
 public interface EclipseAnnotationHandler<T extends java.lang.annotation.Annotation> {
 	/**
@@ -47,8 +47,8 @@ public interface EclipseAnnotationHandler<T extends java.lang.annotation.Annotat
 	 * @param annotationNode The Lombok AST wrapper around the 'ast' parameter. You can use this object
 	 * to travel back up the chain (something javac AST can't do) to the parent of the annotation, as well
 	 * as access useful methods such as generating warnings or errors focused on the annotation.
-	 * @return <code>true</code> if you don't want to be called again about this annotation during this
-	 * compile session (you've handled it), or <code>false</code> to indicate you aren't done yet.
+	 * @return {@code true} if you don't want to be called again about this annotation during this
+	 * compile session (you've handled it), or {@code false} to indicate you aren't done yet.
 	 */
 	boolean handle(AnnotationValues<T> annotation, org.eclipse.jdt.internal.compiler.ast.Annotation ast, EclipseNode annotationNode);
 }

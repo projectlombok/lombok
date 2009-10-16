@@ -53,7 +53,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.mangosdk.spi.ProviderFor;
 
 /**
- * Handles the <code>lombok.Setter</code> annotation for eclipse.
+ * Handles the {@code lombok.Setter} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleSetter implements EclipseAnnotationHandler<Setter> {
@@ -64,7 +64,7 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 	 * 
 	 * The difference between this call and the handle method is as follows:
 	 * 
-	 * If there is a <code>lombok.Setter</code> annotation on the field, it is used and the
+	 * If there is a {@code lombok.Setter} annotation on the field, it is used and the
 	 * same rules apply (e.g. warning if the method already exists, stated access level applies).
 	 * If not, the setter is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.

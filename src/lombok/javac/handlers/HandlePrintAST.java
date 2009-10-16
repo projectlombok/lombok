@@ -37,7 +37,7 @@ import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 
 /**
- * Handles the <code>lombok.core.PrintAST</code> annotation for javac.
+ * Handles the {@code lombok.core.PrintAST} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandlePrintAST implements JavacAnnotationHandler<PrintAST> {

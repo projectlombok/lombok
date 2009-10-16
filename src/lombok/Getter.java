@@ -42,10 +42,10 @@ import java.lang.annotation.Target;
  *     }
  * </pre>
  * 
- * Note that fields of type <code>boolean</code> (but not <code>java.lang.Boolean</code>) will result in an
- * <code>isFoo</code> name instead of <code>getFoo</code>.
+ * Note that fields of type {@code boolean} (but not {@code java.lang.Boolean}) will result in an
+ * {@code isFoo} name instead of {@code getFoo}.
  * <p>
- * If any method named <code>getFoo</code>/<code>isFoo</code> exists, regardless of return type or parameters, no method is generated,
+ * If any method named {@code getFoo}/{@code isFoo} exists, regardless of return type or parameters, no method is generated,
  * and instead a compiler warning is emitted.
  */
 @Target(ElementType.FIELD)
