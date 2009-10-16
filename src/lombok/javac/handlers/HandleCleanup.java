@@ -25,7 +25,7 @@ import lombok.Cleanup;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
 import lombok.javac.JavacAnnotationHandler;
-import lombok.javac.JavacAST.Node;
+import lombok.javac.JavacNode;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -52,34 +52,34 @@ import com.sun.tools.javac.util.Name;
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
-	@Override public boolean handle(AnnotationValues<Cleanup> annotation, JCAnnotation ast, Node annotationNode) {
+	@Override public boolean handle(AnnotationValues<Cleanup> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		String cleanupName = annotation.getInstance().value();
-		if ( cleanupName.length() == 0 ) {
+		if (cleanupName.length() == 0) {
 			annotationNode.addError("cleanupName cannot be the empty string.");
 			return true;
 		}
 		
-		if ( annotationNode.up().getKind() != Kind.LOCAL ) {
+		if (annotationNode.up().getKind() != Kind.LOCAL) {
 			annotationNode.addError("@Cleanup is legal only on local variable declarations.");
 			return true;
 		}
 		
 		JCVariableDecl decl = (JCVariableDecl)annotationNode.up().get();
 		
-		if ( decl.init == null ) {
+		if (decl.init == null) {
 			annotationNode.addError("@Cleanup variable declarations need to be initialized.");
 			return true;
 		}
 		
-		Node ancestor = annotationNode.up().directUp();
+		JavacNode ancestor = annotationNode.up().directUp();
 		JCTree blockNode = ancestor.get();
 		
 		final List<JCStatement> statements;
-		if ( blockNode instanceof JCBlock ) {
+		if (blockNode instanceof JCBlock) {
 			statements = ((JCBlock)blockNode).stats;
-		} else if ( blockNode instanceof JCCase ) {
+		} else if (blockNode instanceof JCCase) {
 			statements = ((JCCase)blockNode).stats;
-		} else if ( blockNode instanceof JCMethodDecl ) {
+		} else if (blockNode instanceof JCMethodDecl) {
 			statements = ((JCMethodDecl)blockNode).body.stats;
 		} else {
 			annotationNode.addError("@Cleanup is legal only on a local variable declaration inside a block.");
@@ -89,14 +89,16 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 		boolean seenDeclaration = false;
 		List<JCStatement> tryBlock = List.nil();
 		List<JCStatement> newStatements = List.nil();
-		for ( JCStatement statement : statements ) {
-			if ( !seenDeclaration ) {
-				if ( statement == decl ) seenDeclaration = true;
+		for (JCStatement statement : statements) {
+			if (!seenDeclaration) {
+				if (statement == decl) seenDeclaration = true;
 				newStatements = newStatements.append(statement);
-			} else tryBlock = tryBlock.append(statement);
+			} else {
+				tryBlock = tryBlock.append(statement);
+			}
 		}
 		
-		if ( !seenDeclaration ) {
+		if (!seenDeclaration) {
 			annotationNode.addError("LOMBOK BUG: Can't find this local variable declaration inside its parent.");
 			return true;
 		}
@@ -111,11 +113,11 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 		JCBlock finalizer = maker.Block(0, finalizerBlock);
 		newStatements = newStatements.append(maker.Try(maker.Block(0, tryBlock), List.<JCCatch>nil(), finalizer));
 		
-		if ( blockNode instanceof JCBlock ) {
+		if (blockNode instanceof JCBlock) {
 			((JCBlock)blockNode).stats = newStatements;
-		} else if ( blockNode instanceof JCCase ) {
+		} else if (blockNode instanceof JCCase) {
 			((JCCase)blockNode).stats = newStatements;
-		} else if ( blockNode instanceof JCMethodDecl ) {
+		} else if (blockNode instanceof JCMethodDecl) {
 			((JCMethodDecl)blockNode).body.stats = newStatements;
 		} else throw new AssertionError("Should not get here");
 		
@@ -124,20 +126,20 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 		return true;
 	}
 	
-	private void doAssignmentCheck(Node node, List<JCStatement> statements, Name name) {
-		for ( JCStatement statement : statements ) doAssignmentCheck0(node, statement, name);
+	private void doAssignmentCheck(JavacNode node, List<JCStatement> statements, Name name) {
+		for (JCStatement statement : statements) doAssignmentCheck0(node, statement, name);
 	}
 	
-	private void doAssignmentCheck0(Node node, JCTree statement, Name name) {
-		if ( statement instanceof JCAssign ) doAssignmentCheck0(node, ((JCAssign)statement).rhs, name);
-		if ( statement instanceof JCExpressionStatement ) doAssignmentCheck0(node,
+	private void doAssignmentCheck0(JavacNode node, JCTree statement, Name name) {
+		if (statement instanceof JCAssign) doAssignmentCheck0(node, ((JCAssign)statement).rhs, name);
+		if (statement instanceof JCExpressionStatement) doAssignmentCheck0(node,
 				((JCExpressionStatement)statement).expr, name);
-		if ( statement instanceof JCVariableDecl ) doAssignmentCheck0(node, ((JCVariableDecl)statement).init, name);
-		if ( statement instanceof JCTypeCast ) doAssignmentCheck0(node, ((JCTypeCast)statement).expr, name);
-		if ( statement instanceof JCIdent ) {
-			if ( ((JCIdent)statement).name.contentEquals(name) ) {
-				Node problemNode = node.getNodeFor(statement);
-				if ( problemNode != null ) problemNode.addWarning(
+		if (statement instanceof JCVariableDecl) doAssignmentCheck0(node, ((JCVariableDecl)statement).init, name);
+		if (statement instanceof JCTypeCast) doAssignmentCheck0(node, ((JCTypeCast)statement).expr, name);
+		if (statement instanceof JCIdent) {
+			if (((JCIdent)statement).name.contentEquals(name)) {
+				JavacNode problemNode = node.getNodeFor(statement);
+				if (problemNode != null) problemNode.addWarning(
 				"You're assigning an auto-cleanup variable to something else. This is a bad idea.");
 			}
 		}

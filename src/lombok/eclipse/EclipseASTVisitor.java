@@ -24,8 +24,6 @@ package lombok.eclipse;
 import java.io.PrintStream;
 import java.lang.reflect.Modifier;
 
-import lombok.eclipse.EclipseAST.Node;
-
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
@@ -47,15 +45,15 @@ public interface EclipseASTVisitor {
 	/**
 	 * Called at the very beginning and end.
 	 */
-	void visitCompilationUnit(Node top, CompilationUnitDeclaration unit);
-	void endVisitCompilationUnit(Node top, CompilationUnitDeclaration unit);
+	void visitCompilationUnit(EclipseNode top, CompilationUnitDeclaration unit);
+	void endVisitCompilationUnit(EclipseNode top, CompilationUnitDeclaration unit);
 	
 	/**
 	 * Called when visiting a type (a class, interface, annotation, enum, etcetera).
 	 */
-	void visitType(Node typeNode, TypeDeclaration type);
-	void visitAnnotationOnType(TypeDeclaration type, Node annotationNode, Annotation annotation);
-	void endVisitType(Node typeNode, TypeDeclaration type);
+	void visitType(EclipseNode typeNode, TypeDeclaration type);
+	void visitAnnotationOnType(TypeDeclaration type, EclipseNode annotationNode, Annotation annotation);
+	void endVisitType(EclipseNode typeNode, TypeDeclaration type);
 	
 	/**
 	 * Called when visiting a field of a class.
@@ -63,46 +61,46 @@ public interface EclipseASTVisitor {
 	 * which are a subclass of FieldDeclaration, those do NOT result in a call to this method. They result
 	 * in a call to the visitInitializer method.
 	 */
-	void visitField(Node fieldNode, FieldDeclaration field);
-	void visitAnnotationOnField(FieldDeclaration field, Node annotationNode, Annotation annotation);
-	void endVisitField(Node fieldNode, FieldDeclaration field);
+	void visitField(EclipseNode fieldNode, FieldDeclaration field);
+	void visitAnnotationOnField(FieldDeclaration field, EclipseNode annotationNode, Annotation annotation);
+	void endVisitField(EclipseNode fieldNode, FieldDeclaration field);
 	
 	/**
 	 * Called for static and instance initializers. You can tell the difference via the modifier flag on the
 	 * ASTNode (8 for static, 0 for not static). The content is in the 'block', not in the 'initialization',
 	 * which would always be null for an initializer instance.
 	 */
-	void visitInitializer(Node initializerNode, Initializer initializer);
-	void endVisitInitializer(Node initializerNode, Initializer initializer);
+	void visitInitializer(EclipseNode initializerNode, Initializer initializer);
+	void endVisitInitializer(EclipseNode initializerNode, Initializer initializer);
 	
 	/**
 	 * Called for both methods (MethodDeclaration) and constructors (ConstructorDeclaration), but not for
 	 * Clinit objects, which are a vestigial Eclipse thing that never contain anything. Static initializers
 	 * show up as 'Initializer', in the visitInitializer method, with modifier bit STATIC set.
 	 */
-	void visitMethod(Node methodNode, AbstractMethodDeclaration method);
-	void visitAnnotationOnMethod(AbstractMethodDeclaration method, Node annotationNode, Annotation annotation);
-	void endVisitMethod(Node methodNode, AbstractMethodDeclaration method);
+	void visitMethod(EclipseNode methodNode, AbstractMethodDeclaration method);
+	void visitAnnotationOnMethod(AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation);
+	void endVisitMethod(EclipseNode methodNode, AbstractMethodDeclaration method);
 	
 	/**
 	 * Visits a method argument
 	 */
-	void visitMethodArgument(Node argNode, Argument arg, AbstractMethodDeclaration method);
-	void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, Node annotationNode, Annotation annotation);
-	void endVisitMethodArgument(Node argNode, Argument arg, AbstractMethodDeclaration method);
+	void visitMethodArgument(EclipseNode argNode, Argument arg, AbstractMethodDeclaration method);
+	void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation);
+	void endVisitMethodArgument(EclipseNode argNode, Argument arg, AbstractMethodDeclaration method);
 	
 	/**
 	 * Visits a local declaration - that is, something like 'int x = 10;' on the method level.
 	 */
-	void visitLocal(Node localNode, LocalDeclaration local);
-	void visitAnnotationOnLocal(LocalDeclaration local, Node annotationNode, Annotation annotation);
-	void endVisitLocal(Node localNode, LocalDeclaration local);
+	void visitLocal(EclipseNode localNode, LocalDeclaration local);
+	void visitAnnotationOnLocal(LocalDeclaration local, EclipseNode annotationNode, Annotation annotation);
+	void endVisitLocal(EclipseNode localNode, LocalDeclaration local);
 	
 	/**
 	 * Visits a statement that isn't any of the other visit methods (e.g. TypeDeclaration).
 	 */
-	void visitStatement(Node statementNode, Statement statement);
-	void endVisitStatement(Node statementNode, Statement statement);
+	void visitStatement(EclipseNode statementNode, Statement statement);
+	void endVisitStatement(EclipseNode statementNode, Statement statement);
 	
 	/**
 	 * Prints the structure of an AST.
@@ -135,33 +133,33 @@ public interface EclipseASTVisitor {
 		
 		private void forcePrint(String text, Object... params) {
 			StringBuilder sb = new StringBuilder();
-			for ( int i = 0 ; i < indent ; i++ ) sb.append("  ");
+			for (int i = 0; i < indent; i++) sb.append("  ");
 			out.printf(sb.append(text).append('\n').toString(), params);
 			out.flush();
 		}
 		
 		private void print(String text, Object... params) {
-			if ( disablePrinting == 0 ) forcePrint(text, params);
+			if (disablePrinting == 0) forcePrint(text, params);
 		}
 		
 		private String str(char[] c) {
-			if ( c == null ) return "(NULL)";
+			if (c == null) return "(NULL)";
 			else return new String(c);
 		}
 		
 		private String str(TypeReference type) {
-			if ( type == null ) return "(NULL)";
+			if (type == null) return "(NULL)";
 			char[][] c = type.getTypeName();
 			StringBuilder sb = new StringBuilder();
 			boolean first = true;
-			for ( char[] d : c ) {
+			for (char[] d : c) {
 				sb.append(first ? "" : ".").append(new String(d));
 				first = false;
 			}
 			return sb.toString();
 		}
 		
-		public void visitCompilationUnit(Node node, CompilationUnitDeclaration unit) {
+		public void visitCompilationUnit(EclipseNode node, CompilationUnitDeclaration unit) {
 			out.println("---------------------------------------------------------");
 			out.println(node.isCompleteParse() ? "COMPLETE" : "incomplete");
 			
@@ -169,31 +167,31 @@ public interface EclipseASTVisitor {
 			indent++;
 		}
 		
-		public void endVisitCompilationUnit(Node node, CompilationUnitDeclaration unit) {
+		public void endVisitCompilationUnit(EclipseNode node, CompilationUnitDeclaration unit) {
 			indent--;
 			print("</CUD>");
 		}
 		
-		public void visitType(Node node, TypeDeclaration type) {
+		public void visitType(EclipseNode node, TypeDeclaration type) {
 			print("<TYPE %s%s>", str(type.name), Eclipse.isGenerated(type) ? " (GENERATED)" : "");
 			indent++;
-			if ( printContent ) {
+			if (printContent) {
 				print("%s", type);
 				disablePrinting++;
 			}
 		}
 		
-		public void visitAnnotationOnType(TypeDeclaration type, Node node, Annotation annotation) {
+		public void visitAnnotationOnType(TypeDeclaration type, EclipseNode node, Annotation annotation) {
 			forcePrint("<ANNOTATION%s: %s />", Eclipse.isGenerated(annotation) ? " (GENERATED)" : "", annotation);
 		}
 		
-		public void endVisitType(Node node, TypeDeclaration type) {
-			if ( printContent ) disablePrinting--;
+		public void endVisitType(EclipseNode node, TypeDeclaration type) {
+			if (printContent) disablePrinting--;
 			indent--;
 			print("</TYPE %s>", str(type.name));
 		}
 		
-		public void visitInitializer(Node node, Initializer initializer) {
+		public void visitInitializer(EclipseNode node, Initializer initializer) {
 			Block block = initializer.block;
 			boolean s = (block != null && block.statements != null);
 			print("<%s INITIALIZER: %s%s>",
@@ -201,95 +199,95 @@ public interface EclipseASTVisitor {
 							s ? "filled" : "blank",
 							Eclipse.isGenerated(initializer) ? " (GENERATED)" : "");
 			indent++;
-			if ( printContent ) {
-				if ( initializer.block != null ) print("%s", initializer.block);
+			if (printContent) {
+				if (initializer.block != null) print("%s", initializer.block);
 				disablePrinting++;
 			}
 		}
 		
-		public void endVisitInitializer(Node node, Initializer initializer) {
-			if ( printContent ) disablePrinting--;
+		public void endVisitInitializer(EclipseNode node, Initializer initializer) {
+			if (printContent) disablePrinting--;
 			indent--;
 			print("</%s INITIALIZER>", (initializer.modifiers & Modifier.STATIC) != 0 ? "static" : "instance");
 		}
 		
-		public void visitField(Node node, FieldDeclaration field) {
+		public void visitField(EclipseNode node, FieldDeclaration field) {
 			print("<FIELD%s %s %s = %s>", Eclipse.isGenerated(field) ? " (GENERATED)" : "",
 					str(field.type), str(field.name), field.initialization);
 			indent++;
-			if ( printContent ) {
-				if ( field.initialization != null ) print("%s", field.initialization);
+			if (printContent) {
+				if (field.initialization != null) print("%s", field.initialization);
 				disablePrinting++;
 			}
 		}
 		
-		public void visitAnnotationOnField(FieldDeclaration field, Node node, Annotation annotation) {
+		public void visitAnnotationOnField(FieldDeclaration field, EclipseNode node, Annotation annotation) {
 			forcePrint("<ANNOTATION%s: %s />", Eclipse.isGenerated(annotation) ? " (GENERATED)" : "", annotation);
 		}
 		
-		public void endVisitField(Node node, FieldDeclaration field) {
-			if ( printContent ) disablePrinting--;
+		public void endVisitField(EclipseNode node, FieldDeclaration field) {
+			if (printContent) disablePrinting--;
 			indent--;
 			print("</FIELD %s %s>", str(field.type), str(field.name));
 		}
 		
-		public void visitMethod(Node node, AbstractMethodDeclaration method) {
+		public void visitMethod(EclipseNode node, AbstractMethodDeclaration method) {
 			String type = method instanceof ConstructorDeclaration ? "CONSTRUCTOR" : "METHOD";
 			print("<%s %s: %s%s>", type, str(method.selector), method.statements != null ? "filled" : "blank",
 					Eclipse.isGenerated(method) ? " (GENERATED)" : "");
 			indent++;
-			if ( printContent ) {
-				if ( method.statements != null ) print("%s", method);
+			if (printContent) {
+				if (method.statements != null) print("%s", method);
 				disablePrinting++;
 			}
 		}
 		
-		public void visitAnnotationOnMethod(AbstractMethodDeclaration method, Node node, Annotation annotation) {
+		public void visitAnnotationOnMethod(AbstractMethodDeclaration method, EclipseNode node, Annotation annotation) {
 			forcePrint("<ANNOTATION%s: %s />", Eclipse.isGenerated(method) ? " (GENERATED)" : "", annotation);
 		}
 		
-		public void endVisitMethod(Node node, AbstractMethodDeclaration method) {
-			if ( printContent ) disablePrinting--;
+		public void endVisitMethod(EclipseNode node, AbstractMethodDeclaration method) {
+			if (printContent) disablePrinting--;
 			String type = method instanceof ConstructorDeclaration ? "CONSTRUCTOR" : "METHOD";
 			indent--;
 			print("</%s %s>", type, str(method.selector));
 		}
 		
-		public void visitMethodArgument(Node node, Argument arg, AbstractMethodDeclaration method) {
+		public void visitMethodArgument(EclipseNode node, Argument arg, AbstractMethodDeclaration method) {
 			print("<METHODARG%s %s %s = %s>", Eclipse.isGenerated(arg) ? " (GENERATED)" : "", str(arg.type), str(arg.name), arg.initialization);
 			indent++;
 		}
 		
-		public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, Node node, Annotation annotation) {
+		public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, EclipseNode node, Annotation annotation) {
 			print("<ANNOTATION%s: %s />", Eclipse.isGenerated(annotation) ? " (GENERATED)" : "", annotation);
 		}
 		
-		public void endVisitMethodArgument(Node node, Argument arg, AbstractMethodDeclaration method) {
+		public void endVisitMethodArgument(EclipseNode node, Argument arg, AbstractMethodDeclaration method) {
 			indent--;
 			print("</METHODARG %s %s>", str(arg.type), str(arg.name));
 		}
 		
-		public void visitLocal(Node node, LocalDeclaration local) {
+		public void visitLocal(EclipseNode node, LocalDeclaration local) {
 			print("<LOCAL%s %s %s = %s>", Eclipse.isGenerated(local) ? " (GENERATED)" : "", str(local.type), str(local.name), local.initialization);
 			indent++;
 		}
 		
-		public void visitAnnotationOnLocal(LocalDeclaration local, Node node, Annotation annotation) {
+		public void visitAnnotationOnLocal(LocalDeclaration local, EclipseNode node, Annotation annotation) {
 			print("<ANNOTATION%s: %s />", Eclipse.isGenerated(annotation) ? " (GENERATED)" : "", annotation);
 		}
 		
-		public void endVisitLocal(Node node, LocalDeclaration local) {
+		public void endVisitLocal(EclipseNode node, LocalDeclaration local) {
 			indent--;
 			print("</LOCAL %s %s>", str(local.type), str(local.name));
 		}
 		
-		public void visitStatement(Node node, Statement statement) {
+		public void visitStatement(EclipseNode node, Statement statement) {
 			print("<%s%s>", statement.getClass(), Eclipse.isGenerated(statement) ? " (GENERATED)" : "");
 			indent++;
 			print("%s", statement);
 		}
 		
-		public void endVisitStatement(Node node, Statement statement) {
+		public void endVisitStatement(EclipseNode node, Statement statement) {
 			indent--;
 			print("</%s>", statement.getClass());
 		}

@@ -21,8 +21,6 @@
  */
 package lombok.eclipse;
 
-import lombok.eclipse.EclipseAST.Node;
-
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
@@ -39,65 +37,65 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
  */
 public abstract class EclipseASTAdapter implements EclipseASTVisitor {
 	/** {@inheritDoc} */
-	public void visitCompilationUnit(Node top, CompilationUnitDeclaration unit) {}
+	public void visitCompilationUnit(EclipseNode top, CompilationUnitDeclaration unit) {}
 	
 	/** {@inheritDoc} */
-	public void endVisitCompilationUnit(Node top, CompilationUnitDeclaration unit) {}
+	public void endVisitCompilationUnit(EclipseNode top, CompilationUnitDeclaration unit) {}
 	
 	/** {@inheritDoc} */
-	public void visitType(Node typeNode, TypeDeclaration type) {}
+	public void visitType(EclipseNode typeNode, TypeDeclaration type) {}
 	
 	/** {@inheritDoc} */
-	public void visitAnnotationOnType(TypeDeclaration type, Node annotationNode, Annotation annotation) {}
+	public void visitAnnotationOnType(TypeDeclaration type, EclipseNode annotationNode, Annotation annotation) {}
 	
 	/** {@inheritDoc} */
-	public void endVisitType(Node typeNode, TypeDeclaration type) {}
+	public void endVisitType(EclipseNode typeNode, TypeDeclaration type) {}
 	
 	/** {@inheritDoc} */
-	public void visitInitializer(Node initializerNode, Initializer initializer) {}
+	public void visitInitializer(EclipseNode initializerNode, Initializer initializer) {}
 	
 	/** {@inheritDoc} */
-	public void endVisitInitializer(Node initializerNode, Initializer initializer) {}
+	public void endVisitInitializer(EclipseNode initializerNode, Initializer initializer) {}
 	
 	/** {@inheritDoc} */
-	public void visitField(Node fieldNode, FieldDeclaration field) {}
+	public void visitField(EclipseNode fieldNode, FieldDeclaration field) {}
 	
 	/** {@inheritDoc} */
-	public void visitAnnotationOnField(FieldDeclaration field, Node annotationNode, Annotation annotation) {}
+	public void visitAnnotationOnField(FieldDeclaration field, EclipseNode annotationNode, Annotation annotation) {}
 	
 	/** {@inheritDoc} */
-	public void endVisitField(Node fieldNode, FieldDeclaration field) {}
+	public void endVisitField(EclipseNode fieldNode, FieldDeclaration field) {}
 	
 	/** {@inheritDoc} */
-	public void visitMethod(Node methodNode, AbstractMethodDeclaration method) {}
+	public void visitMethod(EclipseNode methodNode, AbstractMethodDeclaration method) {}
 	
 	/** {@inheritDoc} */
-	public void visitAnnotationOnMethod(AbstractMethodDeclaration method, Node annotationNode, Annotation annotation) {}
+	public void visitAnnotationOnMethod(AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation) {}
 	
 	/** {@inheritDoc} */
-	public void endVisitMethod(Node methodNode, AbstractMethodDeclaration method) {}
+	public void endVisitMethod(EclipseNode methodNode, AbstractMethodDeclaration method) {}
 	
 	/** {@inheritDoc} */
-	public void visitMethodArgument(Node argNode, Argument arg, AbstractMethodDeclaration method) {}
+	public void visitMethodArgument(EclipseNode argNode, Argument arg, AbstractMethodDeclaration method) {}
 	
 	/** {@inheritDoc} */
-	public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, Node annotationNode, Annotation annotation) {}
+	public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation) {}
 	
 	/** {@inheritDoc} */
-	public void endVisitMethodArgument(Node argNode, Argument arg, AbstractMethodDeclaration method) {}
+	public void endVisitMethodArgument(EclipseNode argNode, Argument arg, AbstractMethodDeclaration method) {}
 	
 	/** {@inheritDoc} */
-	public void visitLocal(Node localNode, LocalDeclaration local) {}
+	public void visitLocal(EclipseNode localNode, LocalDeclaration local) {}
 	
 	/** {@inheritDoc} */
-	public void visitAnnotationOnLocal(LocalDeclaration local, Node annotationNode, Annotation annotation) {}
+	public void visitAnnotationOnLocal(LocalDeclaration local, EclipseNode annotationNode, Annotation annotation) {}
 	
 	/** {@inheritDoc} */
-	public void endVisitLocal(Node localNode, LocalDeclaration local) {}
+	public void endVisitLocal(EclipseNode localNode, LocalDeclaration local) {}
 	
 	/** {@inheritDoc} */
-	public void visitStatement(Node statementNode, Statement statement) {}
+	public void visitStatement(EclipseNode statementNode, Statement statement) {}
 	
 	/** {@inheritDoc} */
-	public void endVisitStatement(Node statementNode, Statement statement) {}
+	public void endVisitStatement(EclipseNode statementNode, Statement statement) {}
 }

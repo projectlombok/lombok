@@ -48,8 +48,8 @@ final class EclipseLocation {
 	static {
 		String os = System.getProperty("os.name", "");
 		
-		if ( "Mac OS".equals(os) ) OS_NEWLINE = "\r";
-		else if ( os.toLowerCase().contains("windows") ) OS_NEWLINE = "\r\n";
+		if ("Mac OS".equals(os)) OS_NEWLINE = "\r";
+		else if (os.toLowerCase().contains("windows")) OS_NEWLINE = "\r\n";
 		else OS_NEWLINE = "\n";
 	}
 	
@@ -84,28 +84,28 @@ final class EclipseLocation {
 	 * @throws NotAnEclipseException If this isn't an Eclipse executable or a directory with an Eclipse executable.
 	 */
 	EclipseLocation(String path) throws NotAnEclipseException {
-		if ( path == null ) throw new NullPointerException("path");
+		if (path == null) throw new NullPointerException("path");
 		File p = new File(path);
-		if ( !p.exists() ) throw new NotAnEclipseException("File does not exist: " + path, null);
+		if (!p.exists()) throw new NotAnEclipseException("File does not exist: " + path, null);
 		
 		final String execName = EclipseFinder.getEclipseExecutableName();
-		if ( p.isDirectory() ) {
-			for ( File f : p.listFiles() ) {
-				if ( f.getName().equalsIgnoreCase(execName) ) {
+		if (p.isDirectory()) {
+			for (File f : p.listFiles()) {
+				if (f.getName().equalsIgnoreCase(execName)) {
 					p = f;
 					break;
 				}
 			}
 		}
 		
-		if ( !p.exists() || !p.getName().equalsIgnoreCase(execName) ) {
+		if (!p.exists() || !p.getName().equalsIgnoreCase(execName)) {
 			throw new NotAnEclipseException("This path does not appear to contain an Eclipse installation: " + p, null);
 		}
 		
 		this.path = p;
 		try {
 			this.hasLombok = checkForLombok();
-		} catch ( IOException e ) {
+		} catch (IOException e) {
 			throw new NotAnEclipseException(
 					"I can't read the configuration file of the Eclipse installed at " + this.path.getAbsolutePath() + "\n" +
 					"You may need to run this installer with root privileges if you want to modify that Eclipse.", e);
@@ -117,7 +117,7 @@ final class EclipseLocation {
 	}
 	
 	@Override public boolean equals(Object o) {
-		if ( !(o instanceof EclipseLocation) ) return false;
+		if (!(o instanceof EclipseLocation)) return false;
 		return ((EclipseLocation)o).path.equals(path);
 	}
 	
@@ -146,8 +146,8 @@ final class EclipseLocation {
 	}
 	
 	private boolean checkForLombok() throws IOException {
-		for ( File targetDir : getTargetDirs() ) {
-			if ( checkForLombok0(targetDir) ) return true;
+		for (File targetDir : getTargetDirs()) {
+			if (checkForLombok0(targetDir)) return true;
 		}
 		
 		return false;
@@ -161,13 +161,13 @@ final class EclipseLocation {
 	
 	private boolean checkForLombok0(File dir) throws IOException {
 		File iniFile = new File(dir, "eclipse.ini");
-		if ( !iniFile.exists() ) return false;
+		if (!iniFile.exists()) return false;
 		FileInputStream fis = new FileInputStream(iniFile);
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(fis));
 			String line;
-			while ( (line = br.readLine()) != null ) {
-				if ( JAVA_AGENT_LINE_MATCHER.matcher(line.trim()).matches() ) return true;
+			while ((line = br.readLine()) != null) {
+				if (JAVA_AGENT_LINE_MATCHER.matcher(line.trim()).matches()) return true;
 			}
 			
 			return false;
@@ -194,10 +194,10 @@ final class EclipseLocation {
 	 *   bugs in the uninstall code will probably throw other exceptions; this is intentional.
 	 */
 	void uninstall() throws UninstallException {
-		for ( File dir : getTargetDirs() ) {
+		for (File dir : getTargetDirs()) {
 			File lombokJar = new File(dir, "lombok.jar");
-			if ( lombokJar.exists() ) {
-				if ( !lombokJar.delete() ) throw new UninstallException(
+			if (lombokJar.exists()) {
+				if (!lombokJar.delete()) throw new UninstallException(
 						"Can't delete " + lombokJar.getAbsolutePath() +
 						" - perhaps the installer does not have the access rights to do so.",
 						null);
@@ -206,8 +206,8 @@ final class EclipseLocation {
 			/* legacy code - lombok at one point used to have a separate jar for the eclipse agent.
 			 * Leave this code in to delete it for those upgrading from an old version. */ {
 				File agentJar = new File(dir, "lombok.eclipse.agent.jar");
-				if ( agentJar.exists() ) {
-					if ( !agentJar.delete() ) throw new UninstallException(
+				if (agentJar.exists()) {
+					if (!agentJar.delete()) throw new UninstallException(
 							"Can't delete " + agentJar.getAbsolutePath() +
 							" - perhaps the installer does not have the access rights to do so.",
 							null);
@@ -216,29 +216,29 @@ final class EclipseLocation {
 			
 			File iniFile = new File(dir, "eclipse.ini");
 			StringBuilder newContents = new StringBuilder();
-			if ( iniFile.exists() ) {
+			if (iniFile.exists()) {
 				try {
 					FileInputStream fis = new FileInputStream(iniFile);
 					try {
 						BufferedReader br = new BufferedReader(new InputStreamReader(fis));
 						String line;
-						while ( (line = br.readLine()) != null ) {
-							if ( JAVA_AGENT_LINE_MATCHER.matcher(line).matches() ) continue;
+						while ((line = br.readLine()) != null) {
+							if (JAVA_AGENT_LINE_MATCHER.matcher(line).matches()) continue;
 							Matcher m = BOOTCLASSPATH_LINE_MATCHER.matcher(line);
-							if ( m.matches() ) {
+							if (m.matches()) {
 								StringBuilder elemBuilder = new StringBuilder();
 								elemBuilder.append("-Xbootclasspath/a:");
 								boolean first = true;
-								for ( String elem : m.group(1).split(Pattern.quote(File.pathSeparator)) ) {
-									if ( elem.toLowerCase().endsWith("lombok.jar") ) continue;
+								for (String elem : m.group(1).split(Pattern.quote(File.pathSeparator))) {
+									if (elem.toLowerCase().endsWith("lombok.jar")) continue;
 									/* legacy code -see previous comment that starts with 'legacy' */ {
-										if ( elem.toLowerCase().endsWith("lombok.eclipse.agent.jar") ) continue;
+										if (elem.toLowerCase().endsWith("lombok.eclipse.agent.jar")) continue;
 									}
-									if ( first ) first = false;
+									if (first) first = false;
 									else elemBuilder.append(File.pathSeparator);
 									elemBuilder.append(elem);
 								}
-								if ( !first ) newContents.append(elemBuilder.toString()).append(OS_NEWLINE);
+								if (!first) newContents.append(elemBuilder.toString()).append(OS_NEWLINE);
 								continue;
 							}
 							
@@ -255,7 +255,7 @@ final class EclipseLocation {
 					} finally {
 						fos.close();
 					}
-				} catch ( IOException e ) {
+				} catch (IOException e) {
 					throw new UninstallException("Cannot uninstall lombok from " + path.getAbsolutePath() +
 							" probably because this installer does not have the access rights to do so.", e);
 				}
@@ -289,10 +289,10 @@ final class EclipseLocation {
 		boolean fullPathRequired = EclipseFinder.getOS() == EclipseFinder.OS.UNIX;
 		
 		boolean installSucceeded = false;
-		for ( File dir : getTargetDirs() ) {
+		for (File dir : getTargetDirs()) {
 			File iniFile = new File(dir, "eclipse.ini");
 			StringBuilder newContents = new StringBuilder();
-			if ( !iniFile.exists() ) failedDirs.add(dir);
+			if (!iniFile.exists()) failedDirs.add(dir);
 			else {
 				//If 'installSucceeded' is true here, something very weird is going on, but instrumenting all of them
 				//is no less bad than aborting, and this situation should be rare to the point of non-existence.
@@ -306,19 +306,19 @@ final class EclipseLocation {
 					FileOutputStream out = new FileOutputStream(lombokJar);
 					InputStream in = new FileInputStream(ourJar);
 					try {
-						while ( true ) {
+						while (true) {
 							int r = in.read(b);
-							if ( r == -1 ) break;
+							if (r == -1) break;
 							out.write(b, 0, r);
 						}
 					} finally {
 						out.close();
 					}
-				} catch ( IOException e ) {
+				} catch (IOException e) {
 					try {
 						lombokJar.delete();
-					} catch ( Throwable ignore ) {}
-					if ( !readSucceeded ) throw new InstallException("I can't read my own jar file. I think you've found a bug in this installer! I suggest you restart it " +
+					} catch (Throwable ignore) {}
+					if (!readSucceeded) throw new InstallException("I can't read my own jar file. I think you've found a bug in this installer! I suggest you restart it " +
 							"and use the 'what do I do' link, to manually install lombok. And tell us about this. Thanks!", e);
 					throw new InstallException("I can't write to your Eclipse directory, probably because this installer does not have the access rights.", e);
 				}
@@ -332,23 +332,23 @@ final class EclipseLocation {
 					try {
 						BufferedReader br = new BufferedReader(new InputStreamReader(fis));
 						String line;
-						while ( (line = br.readLine()) != null ) {
-							if ( JAVA_AGENT_LINE_MATCHER.matcher(line).matches() ) continue;
+						while ((line = br.readLine()) != null) {
+							if (JAVA_AGENT_LINE_MATCHER.matcher(line).matches()) continue;
 							Matcher m = BOOTCLASSPATH_LINE_MATCHER.matcher(line);
-							if ( m.matches() ) {
+							if (m.matches()) {
 								StringBuilder elemBuilder = new StringBuilder();
 								elemBuilder.append("-Xbootclasspath/a:");
 								boolean first = true;
-								for ( String elem : m.group(1).split(Pattern.quote(File.pathSeparator)) ) {
-									if ( elem.toLowerCase().endsWith("lombok.jar") ) continue;
+								for (String elem : m.group(1).split(Pattern.quote(File.pathSeparator))) {
+									if (elem.toLowerCase().endsWith("lombok.jar")) continue;
 									/* legacy code -see previous comment that starts with 'legacy' */ {
-										if ( elem.toLowerCase().endsWith("lombok.eclipse.agent.jar") ) continue;
+										if (elem.toLowerCase().endsWith("lombok.eclipse.agent.jar")) continue;
 									}
-									if ( first ) first = false;
+									if (first) first = false;
 									else elemBuilder.append(File.pathSeparator);
 									elemBuilder.append(elem);
 								}
-								if ( !first ) newContents.append(elemBuilder.toString()).append(OS_NEWLINE);
+								if (!first) newContents.append(elemBuilder.toString()).append(OS_NEWLINE);
 								continue;
 							}
 							
@@ -373,27 +373,27 @@ final class EclipseLocation {
 						fos.close();
 					}
 					installSucceeded = true;
-				} catch ( IOException e ) {
+				} catch (IOException e) {
 					throw new InstallException("Cannot install lombok at " + path.getAbsolutePath() +
 							" probably because this installer does not have the access rights to do so.", e);
 				} finally {
-					if ( !installSucceeded ) try {
+					if (!installSucceeded) try {
 						lombokJar.delete();
-					} catch ( Throwable ignore ) {}
+					} catch (Throwable ignore) {}
 				}
 			}
 		}
 		
-		if ( !installSucceeded ) {
+		if (!installSucceeded) {
 			throw new InstallException("I can't find the eclipse.ini file. Is this a real Eclipse installation?", null);
 		}
 		
-		for ( File dir : failedDirs ) {
+		for (File dir : failedDirs) {
 			/* Legacy code - lombok's installer used to install in other places. To keep the user's eclipse dir clean, we'll delete these. */ {
 				try {
 					new File(dir, "lombok.jar").delete();
 					new File(dir, "lombok.eclipse.agent.jar").delete();
-				} catch ( Throwable ignore ) {}
+				} catch (Throwable ignore) {}
 			}
 		}
 	}

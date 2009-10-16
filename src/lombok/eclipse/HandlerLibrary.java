@@ -37,7 +37,6 @@ import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
 import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
-import lombok.eclipse.EclipseAST.Node;
 
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
@@ -67,7 +66,7 @@ public class HandlerLibrary {
 		}
 		
 		public boolean handle(org.eclipse.jdt.internal.compiler.ast.Annotation annotation,
-				final Node annotationNode) {
+				final EclipseNode annotationNode) {
 			AnnotationValues<T> annValues = Eclipse.createAnnotation(annotationClass, annotationNode);
 			return handler.handle(annValues, annotation, annotationNode);
 		}
@@ -110,7 +109,7 @@ public class HandlerLibrary {
 					Eclipse.error(null, "Can't load Lombok annotation handler for Eclipse: ", t);
 				}
 			}
-		} catch ( IOException e ) {
+		} catch (IOException e) {
 			Lombok.sneakyThrow(e);
 		}
 	}
@@ -121,7 +120,7 @@ public class HandlerLibrary {
 			for (EclipseASTVisitor visitor : SpiLoadUtil.findServices(EclipseASTVisitor.class)) {
 				lib.visitorHandlers.add(visitor);
 			}
-		} catch ( Throwable t ) {
+		} catch (Throwable t) {
 			throw Lombok.sneakyThrow(t);
 		}
 	}
@@ -143,27 +142,27 @@ public class HandlerLibrary {
 	 * @param annotationNode The Lombok AST Node representing the Annotation AST Node.
 	 * @param annotation 'node.get()' - convenience parameter.
 	 */
-	public boolean handle(CompilationUnitDeclaration ast, EclipseAST.Node annotationNode,
+	public boolean handle(CompilationUnitDeclaration ast, EclipseNode annotationNode,
 			org.eclipse.jdt.internal.compiler.ast.Annotation annotation) {
 		String pkgName = annotationNode.getPackageDeclaration();
 		Collection<String> imports = annotationNode.getImportStatements();
 		
 		TypeResolver resolver = new TypeResolver(typeLibrary, pkgName, imports);
 		TypeReference rawType = annotation.type;
-		if ( rawType == null ) return false;
+		if (rawType == null) return false;
 		boolean handled = false;
-		for ( String fqn : resolver.findTypeMatches(annotationNode, toQualifiedName(annotation.type.getTypeName())) ) {
+		for (String fqn : resolver.findTypeMatches(annotationNode, toQualifiedName(annotation.type.getTypeName()))) {
 			boolean isPrintAST = fqn.equals(PrintAST.class.getName());
-			if ( isPrintAST == skipPrintAST ) continue;
+			if (isPrintAST == skipPrintAST) continue;
 			AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
 			
-			if ( container == null ) continue;
+			if (container == null) continue;
 			
 			try {
 				handled |= container.handle(annotation, annotationNode);
-			} catch ( AnnotationValueDecodeFail fail ) {
+			} catch (AnnotationValueDecodeFail fail) {
 				fail.owner.setError(fail.getMessage(), fail.idx);
-			} catch ( Throwable t ) {
+			} catch (Throwable t) {
 				Eclipse.error(ast, String.format("Lombok annotation handler %s failed", container.handler.getClass()), t);
 			}
 		}
@@ -175,9 +174,9 @@ public class HandlerLibrary {
 	 * Will call all registered {@link EclipseASTVisitor} instances.
 	 */
 	public void callASTVisitors(EclipseAST ast) {
-		for ( EclipseASTVisitor visitor : visitorHandlers ) try {
+		for (EclipseASTVisitor visitor : visitorHandlers) try {
 			ast.traverse(visitor);
-		} catch ( Throwable t ) {
+		} catch (Throwable t) {
 			Eclipse.error((CompilationUnitDeclaration) ast.top().get(),
 					String.format("Lombok visitor handler %s failed", visitor.getClass()), t);
 		}

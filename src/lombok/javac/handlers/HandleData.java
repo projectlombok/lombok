@@ -30,7 +30,7 @@ import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
 import lombok.javac.JavacAnnotationHandler;
-import lombok.javac.JavacAST.Node;
+import lombok.javac.JavacNode;
 import lombok.javac.handlers.PKG.MemberExistsResult;
 
 import org.mangosdk.spi.ProviderFor;
@@ -58,32 +58,32 @@ import com.sun.tools.javac.util.List;
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleData implements JavacAnnotationHandler<Data> {
-	@Override public boolean handle(AnnotationValues<Data> annotation, JCAnnotation ast, Node annotationNode) {
-		Node typeNode = annotationNode.up();
+	@Override public boolean handle(AnnotationValues<Data> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		JavacNode typeNode = annotationNode.up();
 		JCClassDecl typeDecl = null;
-		if ( typeNode.get() instanceof JCClassDecl ) typeDecl = (JCClassDecl)typeNode.get();
+		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl)typeNode.get();
 		long flags = typeDecl == null ? 0 : typeDecl.mods.flags;
 		boolean notAClass = (flags & (Flags.INTERFACE | Flags.ENUM | Flags.ANNOTATION)) != 0;
 		
-		if ( typeDecl == null || notAClass ) {
+		if (typeDecl == null || notAClass) {
 			annotationNode.addError("@Data is only supported on a class.");
 			return false;
 		}
 		
-		List<Node> nodesForEquality = List.nil();
-		List<Node> nodesForConstructor = List.nil();
-		for ( Node child : typeNode.down() ) {
-			if ( child.getKind() != Kind.FIELD ) continue;
+		List<JavacNode> nodesForEquality = List.nil();
+		List<JavacNode> nodesForConstructor = List.nil();
+		for (JavacNode child : typeNode.down()) {
+			if (child.getKind() != Kind.FIELD) continue;
 			JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
 			long fieldFlags = fieldDecl.mods.flags;
 			//Skip static fields.
-			if ( (fieldFlags & Flags.STATIC) != 0 ) continue;
-			if ( (fieldFlags & Flags.TRANSIENT) == 0 ) nodesForEquality = nodesForEquality.append(child);
+			if ((fieldFlags & Flags.STATIC) != 0) continue;
+			if ((fieldFlags & Flags.TRANSIENT) == 0) nodesForEquality = nodesForEquality.append(child);
 			boolean isFinal = (fieldFlags & Flags.FINAL) != 0;
 			boolean isNonNull = !findAnnotations(child, TransformationsUtil.NON_NULL_PATTERN).isEmpty();
-			if ( (isFinal || isNonNull) && fieldDecl.init == null ) nodesForConstructor = nodesForConstructor.append(child);
+			if ((isFinal || isNonNull) && fieldDecl.init == null) nodesForConstructor = nodesForConstructor.append(child);
 			new HandleGetter().generateGetterForField(child, annotationNode.get());
-			if ( !isFinal ) new HandleSetter().generateSetterForField(child, annotationNode.get());
+			if (!isFinal) new HandleSetter().generateSetterForField(child, annotationNode.get());
 		}
 		
 		new HandleToString().generateToStringForType(typeNode, annotationNode);
@@ -91,12 +91,12 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		
 		String staticConstructorName = annotation.getInstance().staticConstructor();
 		
-		if ( constructorExists(typeNode) == MemberExistsResult.NOT_EXISTS ) {
+		if (constructorExists(typeNode) == MemberExistsResult.NOT_EXISTS) {
 			JCMethodDecl constructor = createConstructor(staticConstructorName.equals(""), typeNode, nodesForConstructor);
 			injectMethod(typeNode, constructor);
 		}
 		
-		if ( !staticConstructorName.isEmpty() && methodExists("of", typeNode) == MemberExistsResult.NOT_EXISTS ) {
+		if (!staticConstructorName.isEmpty() && methodExists("of", typeNode) == MemberExistsResult.NOT_EXISTS) {
 			JCMethodDecl staticConstructor = createStaticConstructor(staticConstructorName, typeNode, nodesForConstructor);
 			injectMethod(typeNode, staticConstructor);
 		}
@@ -104,7 +104,7 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		return true;
 	}
 	
-	private JCMethodDecl createConstructor(boolean isPublic, Node typeNode, List<Node> fields) {
+	private JCMethodDecl createConstructor(boolean isPublic, JavacNode typeNode, List<JavacNode> fields) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
@@ -112,7 +112,7 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		List<JCStatement> assigns = List.nil();
 		List<JCVariableDecl> params = List.nil();
 		
-		for ( Node fieldNode : fields ) {
+		for (JavacNode fieldNode : fields) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, TransformationsUtil.NON_NULL_PATTERN);
 			List<JCAnnotation> nullables = findAnnotations(fieldNode, TransformationsUtil.NULLABLE_PATTERN);
@@ -133,7 +133,7 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 				null, type.typarams, params, List.<JCExpression>nil(), maker.Block(0L, nullChecks.appendList(assigns)), null);
 	}
 	
-	private JCMethodDecl createStaticConstructor(String name, Node typeNode, List<Node> fields) {
+	private JCMethodDecl createStaticConstructor(String name, JavacNode typeNode, List<JavacNode> fields) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
@@ -147,8 +147,8 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		List<JCExpression> typeArgs2 = List.nil();
 		List<JCExpression> args = List.nil();
 		
-		if ( !type.typarams.isEmpty() ) {
-			for ( JCTypeParameter param : type.typarams ) {
+		if (!type.typarams.isEmpty()) {
+			for (JCTypeParameter param : type.typarams) {
 				typeArgs1 = typeArgs1.append(maker.Ident(param.name));
 				typeArgs2 = typeArgs2.append(maker.Ident(param.name));
 				typeParams = typeParams.append(maker.TypeParameter(param.name, param.bounds));
@@ -160,16 +160,18 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 			constructorType = maker.Ident(type.name);
 		}
 		
-		for ( Node fieldNode : fields ) {
+		for (JavacNode fieldNode : fields) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			JCExpression pType;
-			if ( field.vartype instanceof JCIdent ) pType = maker.Ident(((JCIdent)field.vartype).name);
-			else if ( field.vartype instanceof JCTypeApply ) {
+			if (field.vartype instanceof JCIdent) pType = maker.Ident(((JCIdent)field.vartype).name);
+			else if (field.vartype instanceof JCTypeApply) {
 				JCTypeApply typeApply = (JCTypeApply) field.vartype;
 				List<JCExpression> tArgs = List.nil();
-				for ( JCExpression arg : typeApply.arguments ) tArgs = tArgs.append(arg);
+				for (JCExpression arg : typeApply.arguments) tArgs = tArgs.append(arg);
 				pType = maker.TypeApply(typeApply.clazz, tArgs);
-			} else pType = field.vartype;
+			} else {
+				pType = field.vartype;
+			}
 			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, TransformationsUtil.NON_NULL_PATTERN);
 			List<JCAnnotation> nullables = findAnnotations(fieldNode, TransformationsUtil.NULLABLE_PATTERN);
 			JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL, nonNulls.appendList(nullables)), field.name, pType, null);

@@ -72,7 +72,7 @@ public class HandlerLibrary {
 			this.annotationClass = annotationClass;
 		}
 		
-		public boolean handle(final JavacAST.Node node) {
+		public boolean handle(final JavacNode node) {
 			return handler.handle(Javac.createAnnotation(annotationClass, node), (JCAnnotation)node.get(), node);
 		}
 	}
@@ -97,17 +97,17 @@ public class HandlerLibrary {
 		//No, that seemingly superfluous reference to JavacAnnotationHandler's classloader is not in fact superfluous!
 		Iterator<JavacAnnotationHandler> it = ServiceLoader.load(JavacAnnotationHandler.class,
 				JavacAnnotationHandler.class.getClassLoader()).iterator();
-		while ( it.hasNext() ) {
+		while (it.hasNext()) {
 			try {
 				JavacAnnotationHandler<?> handler = it.next();
 				Class<? extends Annotation> annotationClass =
 					SpiLoadUtil.findAnnotationClass(handler.getClass(), JavacAnnotationHandler.class);
 				AnnotationHandlerContainer<?> container = new AnnotationHandlerContainer(handler, annotationClass);
-				if ( lib.annotationHandlers.put(container.annotationClass.getName(), container) != null ) {
+				if (lib.annotationHandlers.put(container.annotationClass.getName(), container) != null) {
 					lib.javacWarning("Duplicate handlers for annotation type: " + container.annotationClass.getName());
 				}
 				lib.typeLibrary.addType(container.annotationClass.getName());
-			} catch ( ServiceConfigurationError e ) {
+			} catch (ServiceConfigurationError e) {
 				lib.javacWarning("Can't load Lombok annotation handler for javac", e);
 			}
 		}
@@ -118,11 +118,11 @@ public class HandlerLibrary {
 		//No, that seemingly superfluous reference to JavacASTVisitor's classloader is not in fact superfluous!
 		Iterator<JavacASTVisitor> it = ServiceLoader.load(JavacASTVisitor.class,
 				JavacASTVisitor.class.getClassLoader()).iterator();
-		while ( it.hasNext() ) {
+		while (it.hasNext()) {
 			try {
 				JavacASTVisitor handler = it.next();
 				lib.visitorHandlers.add(handler);
-			} catch ( ServiceConfigurationError e ) {
+			} catch (ServiceConfigurationError e) {
 				lib.javacWarning("Can't load Lombok visitor handler for javac", e);
 			}
 		}
@@ -146,7 +146,7 @@ public class HandlerLibrary {
 	/** Generates an error in the Messager that was used to initialize this HandlerLibrary. */
 	public void javacError(String message, Throwable t) {
 		messager.printMessage(Diagnostic.Kind.ERROR, message + (t == null ? "" : (": " + t)));
-		if ( t != null ) t.printStackTrace();
+		if (t != null) t.printStackTrace();
 	}
 	
 	/**
@@ -166,23 +166,23 @@ public class HandlerLibrary {
 	 * @param node The Lombok AST Node representing the Annotation AST Node.
 	 * @param annotation 'node.get()' - convenience parameter.
 	 */
-	public boolean handleAnnotation(JCCompilationUnit unit, JavacAST.Node node, JCAnnotation annotation) {
+	public boolean handleAnnotation(JCCompilationUnit unit, JavacNode node, JCAnnotation annotation) {
 		TypeResolver resolver = new TypeResolver(typeLibrary, node.getPackageDeclaration(), node.getImportStatements());
 		String rawType = annotation.annotationType.toString();
 		boolean handled = false;
-		for ( String fqn : resolver.findTypeMatches(node, rawType) ) {
+		for (String fqn : resolver.findTypeMatches(node, rawType)) {
 			boolean isPrintAST = fqn.equals(PrintAST.class.getName());
-			if ( isPrintAST == skipPrintAST ) continue;
+			if (isPrintAST == skipPrintAST) continue;
 			AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
-			if ( container == null ) continue;
+			if (container == null) continue;
 			
 			try {
 				handled |= container.handle(node);
-			} catch ( AnnotationValueDecodeFail fail ) {
+			} catch (AnnotationValueDecodeFail fail) {
 				fail.owner.setError(fail.getMessage(), fail.idx);
-			} catch ( Throwable t ) {
+			} catch (Throwable t) {
 				String sourceName = "(unknown).java";
-				if ( unit != null && unit.sourcefile != null ) sourceName = unit.sourcefile.getName();
+				if (unit != null && unit.sourcefile != null) sourceName = unit.sourcefile.getName();
 				javacError(String.format("Lombok annotation handler %s failed on " + sourceName, container.handler.getClass()), t);
 			}
 		}
@@ -194,9 +194,9 @@ public class HandlerLibrary {
 	 * Will call all registered {@link JavacASTVisitor} instances.
 	 */
 	public void callASTVisitors(JavacAST ast) {
-		for ( JavacASTVisitor visitor : visitorHandlers ) try {
+		for (JavacASTVisitor visitor : visitorHandlers) try {
 			ast.traverse(visitor);
-		} catch ( Throwable t ) {
+		} catch (Throwable t) {
 			javacError(String.format("Lombok visitor handler %s failed", visitor.getClass()), t);
 		}
 	}

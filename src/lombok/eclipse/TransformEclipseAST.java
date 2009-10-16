@@ -23,7 +23,6 @@ package lombok.eclipse;
 
 import java.lang.reflect.Field;
 
-import lombok.eclipse.EclipseAST.Node;
 import lombok.patcher.Symbols;
 
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -62,10 +61,10 @@ public class TransformEclipseAST {
 		try {
 			l = HandlerLibrary.load();
 			f = CompilationUnitDeclaration.class.getDeclaredField("$lombokAST");
-		} catch ( Throwable t ) {
+		} catch (Throwable t) {
 			try {
 				Eclipse.error(null, "Problem initializing lombok", t);
-			} catch ( Throwable t2) {
+			} catch (Throwable t2) {
 				System.err.println("Problem initializing lombok");
 				t.printStackTrace();
 			}
@@ -125,19 +124,19 @@ public class TransformEclipseAST {
 	}
 	
 	private static EclipseAST getCache(CompilationUnitDeclaration ast) {
-		if ( astCacheField == null ) return null;
+		if (astCacheField == null) return null;
 		try {
 			return (EclipseAST)astCacheField.get(ast);
-		} catch ( Exception e ) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
 	}
 	
 	private static void setCache(CompilationUnitDeclaration ast, EclipseAST cache) {
-		if ( astCacheField != null ) try {
+		if (astCacheField != null) try {
 			astCacheField.set(ast, cache);
-		} catch ( Exception ignore ) {
+		} catch (Exception ignore) {
 			ignore.printStackTrace();
 		}
 	}
@@ -159,39 +158,39 @@ public class TransformEclipseAST {
 	}
 	
 	private static class AnnotationVisitor extends EclipseASTAdapter {
-		@Override public void visitAnnotationOnField(FieldDeclaration field, Node annotationNode, Annotation annotation) {
-			if ( annotationNode.isHandled() ) return;
+		@Override public void visitAnnotationOnField(FieldDeclaration field, EclipseNode annotationNode, Annotation annotation) {
+			if (annotationNode.isHandled()) return;
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
 			boolean handled = handlers.handle(top, annotationNode, annotation);
-			if ( handled ) annotationNode.setHandled();
+			if (handled) annotationNode.setHandled();
 		}
 		
-		@Override public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, Node annotationNode, Annotation annotation) {
-			if ( annotationNode.isHandled() ) return;
+		@Override public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation) {
+			if (annotationNode.isHandled()) return;
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
 			boolean handled = handlers.handle(top, annotationNode, annotation);
-			if ( handled ) annotationNode.setHandled();
+			if (handled) annotationNode.setHandled();
 		}
 		
-		@Override public void visitAnnotationOnLocal(LocalDeclaration local, Node annotationNode, Annotation annotation) {
-			if ( annotationNode.isHandled() ) return;
+		@Override public void visitAnnotationOnLocal(LocalDeclaration local, EclipseNode annotationNode, Annotation annotation) {
+			if (annotationNode.isHandled()) return;
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
 			boolean handled = handlers.handle(top, annotationNode, annotation);
-			if ( handled ) annotationNode.setHandled();
+			if (handled) annotationNode.setHandled();
 		}
 		
-		@Override public void visitAnnotationOnMethod(AbstractMethodDeclaration method, Node annotationNode, Annotation annotation) {
-			if ( annotationNode.isHandled() ) return;
+		@Override public void visitAnnotationOnMethod(AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation) {
+			if (annotationNode.isHandled()) return;
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
 			boolean handled = handlers.handle(top, annotationNode, annotation);
-			if ( handled ) annotationNode.setHandled();
+			if (handled) annotationNode.setHandled();
 		}
 		
-		@Override public void visitAnnotationOnType(TypeDeclaration type, Node annotationNode, Annotation annotation) {
-			if ( annotationNode.isHandled() ) return;
+		@Override public void visitAnnotationOnType(TypeDeclaration type, EclipseNode annotationNode, Annotation annotation) {
+			if (annotationNode.isHandled()) return;
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
 			boolean handled = handlers.handle(top, annotationNode, annotation);
-			if ( handled ) annotationNode.setHandled();
+			if (handled) annotationNode.setHandled();
 		}
 	}
 }

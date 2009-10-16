@@ -47,13 +47,13 @@ public class TypeLibrary {
 	 */
 	public void addType(String fullyQualifiedTypeName) {
 		int idx = fullyQualifiedTypeName.lastIndexOf('.');
-		if ( idx == -1 ) throw new IllegalArgumentException(
+		if (idx == -1) throw new IllegalArgumentException(
 				"Only fully qualified types are allowed (and stuff in the default package is not palatable to us either!)");
 		
 		final String simpleName = fullyQualifiedTypeName.substring(idx +1);
 		final String packageName = fullyQualifiedTypeName.substring(0, idx);
 		
-		if ( simpleToQualifiedMap.put(fullyQualifiedTypeName, Collections.singleton(fullyQualifiedTypeName)) != null ) return;
+		if (simpleToQualifiedMap.put(fullyQualifiedTypeName, Collections.singleton(fullyQualifiedTypeName)) != null) return;
 		
 		addToMap(simpleName, fullyQualifiedTypeName);
 		addToMap(packageName + ".*", fullyQualifiedTypeName);

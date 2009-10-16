@@ -35,7 +35,6 @@ import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues.AnnotationValue;
-import lombok.javac.JavacAST.Node;
 
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
@@ -60,8 +59,8 @@ public class Javac {
 	 * @param type An actual annotation type, such as <code>lombok.Getter.class</code>.
 	 * @param node A Lombok AST node representing an annotation in source code.
 	 */
-	public static boolean annotationTypeMatches(Class<? extends Annotation> type, Node node) {
-		if ( node.getKind() != Kind.ANNOTATION ) return false;
+	public static boolean annotationTypeMatches(Class<? extends Annotation> type, JavacNode node) {
+		if (node.getKind() != Kind.ANNOTATION) return false;
 		String typeName = ((JCAnnotation)node.get()).annotationType.toString();
 		
 		TypeLibrary library = new TypeLibrary();
@@ -69,8 +68,8 @@ public class Javac {
 		TypeResolver resolver = new TypeResolver(library, node.getPackageDeclaration(), node.getImportStatements());
 		Collection<String> typeMatches = resolver.findTypeMatches(node, typeName);
 		
-		for ( String match : typeMatches ) {
-			if ( match.equals(type.getName()) ) return true;
+		for (String match : typeMatches) {
+			if (match.equals(type.getName())) return true;
 		}
 		
 		return false;
@@ -82,23 +81,23 @@ public class Javac {
 	 * @param type An annotation class type, such as <code>lombok.Getter.class</code>.
 	 * @param node A Lombok AST node representing an annotation in source code.
 	 */
-	public static <A extends Annotation> AnnotationValues<A> createAnnotation(Class<A> type, final Node node) {
+	public static <A extends Annotation> AnnotationValues<A> createAnnotation(Class<A> type, final JavacNode node) {
 		Map<String, AnnotationValue> values = new HashMap<String, AnnotationValue>();
 		JCAnnotation anno = (JCAnnotation) node.get();
 		List<JCExpression> arguments = anno.getArguments();
-		for ( Method m : type.getDeclaredMethods() ) {
-			if ( !Modifier.isPublic(m.getModifiers()) ) continue;
+		for (Method m : type.getDeclaredMethods()) {
+			if (!Modifier.isPublic(m.getModifiers())) continue;
 			String name = m.getName();
 			List<String> raws = new ArrayList<String>();
 			List<Object> guesses = new ArrayList<Object>();
 			final List<DiagnosticPosition> positions = new ArrayList<DiagnosticPosition>();
 			boolean isExplicit = false;
 			
-			for ( JCExpression arg : arguments ) {
+			for (JCExpression arg : arguments) {
 				String mName;
 				JCExpression rhs;
 				
-				if ( arg instanceof JCAssign ) {
+				if (arg instanceof JCAssign) {
 					JCAssign assign = (JCAssign) arg;
 					mName = assign.lhs.toString();
 					rhs = assign.rhs;
@@ -107,11 +106,11 @@ public class Javac {
 					mName = "value";
 				}
 				
-				if ( !mName.equals(name) ) continue;
+				if (!mName.equals(name)) continue;
 				isExplicit = true;
-				if ( rhs instanceof JCNewArray ) {
+				if (rhs instanceof JCNewArray) {
 					List<JCExpression> elems = ((JCNewArray)rhs).elems;
-					for  ( JCExpression inner : elems ) {
+					for (JCExpression inner : elems) {
 						raws.add(inner.toString());
 						guesses.add(calculateGuess(inner));
 						positions.add(inner.pos());
@@ -125,11 +124,11 @@ public class Javac {
 			
 			values.put(name, new AnnotationValue(node, raws, guesses, isExplicit) {
 				@Override public void setError(String message, int valueIdx) {
-					if ( valueIdx < 0 ) node.addError(message);
+					if (valueIdx < 0) node.addError(message);
 					else node.addError(message, positions.get(valueIdx));
 				}
 				@Override public void setWarning(String message, int valueIdx) {
-					if ( valueIdx < 0 ) node.addWarning(message);
+					if (valueIdx < 0) node.addWarning(message);
 					else node.addWarning(message, positions.get(valueIdx));
 				}
 			});
@@ -144,18 +143,18 @@ public class Javac {
 	 * Will for example turn a TrueLiteral into 'Boolean.valueOf(true)'.
 	 */
 	private static Object calculateGuess(JCExpression expr) {
-		if ( expr instanceof JCLiteral ) {
+		if (expr instanceof JCLiteral) {
 			JCLiteral lit = (JCLiteral)expr;
-			if ( lit.getKind() == com.sun.source.tree.Tree.Kind.BOOLEAN_LITERAL ) {
+			if (lit.getKind() == com.sun.source.tree.Tree.Kind.BOOLEAN_LITERAL) {
 				return ((Number)lit.value).intValue() == 0 ? false : true;
 			}
 			return lit.value;
-		} else if ( expr instanceof JCIdent || expr instanceof JCFieldAccess ) {
+		} else if (expr instanceof JCIdent || expr instanceof JCFieldAccess) {
 			String x = expr.toString();
-			if ( x.endsWith(".class") ) x = x.substring(0, x.length() - 6);
+			if (x.endsWith(".class")) x = x.substring(0, x.length() - 6);
 			else {
 				int idx = x.lastIndexOf('.');
-				if ( idx > -1 ) x = x.substring(idx + 1);
+				if (idx > -1) x = x.substring(idx + 1);
 			}
 			return x;
 		} else return null;

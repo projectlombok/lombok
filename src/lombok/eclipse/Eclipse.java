@@ -36,7 +36,6 @@ import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues.AnnotationValue;
-import lombok.eclipse.EclipseAST.Node;
 
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
@@ -107,7 +106,7 @@ public class Eclipse {
 	 */
 	public static void error(CompilationUnitDeclaration cud, String message, String bundleName, Throwable error) {
 		Bundle bundle = Platform.getBundle(bundleName);
-		if ( bundle == null ) {
+		if (bundle == null) {
 			System.err.printf("Can't find bundle %s while trying to report error:\n%s\n", bundleName, message);
 			return;
 		}
@@ -115,7 +114,7 @@ public class Eclipse {
 		ILog log = Platform.getLog(bundle);
 		
 		log.log(new Status(IStatus.ERROR, bundleName, message, error));
-		if ( cud != null ) EclipseAST.addProblemToCompilationResult(cud, false, message + " - See error log.", 0, 0);
+		if (cud != null) EclipseAST.addProblemToCompilationResult(cud, false, message + " - See error log.", 0, 0);
 	}
 	
 	/**
@@ -125,7 +124,7 @@ public class Eclipse {
 	public static String toQualifiedName(char[][] typeName) {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
-		for ( char[] c : typeName ) {
+		for (char[] c : typeName) {
 			sb.append(first ? "" : ".").append(c);
 			first = false;
 		}
@@ -148,10 +147,10 @@ public class Eclipse {
 	 * is complicated and there's no clone method on TypeParameter itself. This method can clone them.
 	 */
 	public static TypeParameter[] copyTypeParams(TypeParameter[] params, ASTNode source) {
-		if ( params == null ) return null;
+		if (params == null) return null;
 		TypeParameter[] out = new TypeParameter[params.length];
 		int idx = 0;
-		for ( TypeParameter param : params ) {
+		for (TypeParameter param : params) {
 			TypeParameter o = new TypeParameter();
 			setGeneratedBy(o, source);
 			o.annotations = param.annotations;
@@ -164,10 +163,10 @@ public class Eclipse {
 			o.declarationEnd = param.declarationEnd;
 			o.declarationSourceStart = param.declarationSourceStart;
 			o.declarationSourceEnd = param.declarationSourceEnd;
-			if ( param.bounds != null ) {
+			if (param.bounds != null) {
 				TypeReference[] b = new TypeReference[param.bounds.length];
 				int idx2 = 0;
-				for ( TypeReference ref : param.bounds ) b[idx2++] = copyType(ref, source);
+				for (TypeReference ref : param.bounds) b[idx2++] = copyType(ref, source);
 				o.bounds = b;
 			}
 			out[idx++] = o;
@@ -180,10 +179,10 @@ public class Eclipse {
 	 * {@link #copyType(TypeReference)}.
 	 */
 	public static TypeReference[] copyTypes(TypeReference[] refs, ASTNode source) {
-		if ( refs == null ) return null;
+		if (refs == null) return null;
 		TypeReference[] outs = new TypeReference[refs.length];
 		int idx = 0;
-		for ( TypeReference ref : refs ) {
+		for (TypeReference ref : refs) {
 			outs[idx++] = copyType(ref, source);
 		}
 		return outs;
@@ -195,18 +194,18 @@ public class Eclipse {
 	 * method on TypeReference itself. This method can clone them.
 	 */
 	public static TypeReference copyType(TypeReference ref, ASTNode source) {
-		if ( ref instanceof ParameterizedQualifiedTypeReference ) {
+		if (ref instanceof ParameterizedQualifiedTypeReference) {
 			ParameterizedQualifiedTypeReference iRef = (ParameterizedQualifiedTypeReference) ref;
 			TypeReference[][] args = null;
-			if ( iRef.typeArguments != null ) {
+			if (iRef.typeArguments != null) {
 				args = new TypeReference[iRef.typeArguments.length][];
 				int idx = 0;
-				for ( TypeReference[] inRefArray : iRef.typeArguments ) {
-					if ( inRefArray == null ) args[idx++] = null;
+				for (TypeReference[] inRefArray : iRef.typeArguments) {
+					if (inRefArray == null) args[idx++] = null;
 					else {
 						TypeReference[] outRefArray = new TypeReference[inRefArray.length];
 						int idx2 = 0;
-						for ( TypeReference inRef : inRefArray ) {
+						for (TypeReference inRef : inRefArray) {
 							outRefArray[idx2++] = copyType(inRef, source);
 						}
 						args[idx++] = outRefArray;
@@ -218,28 +217,28 @@ public class Eclipse {
 			return typeRef;
 		}
 		
-		if ( ref instanceof ArrayQualifiedTypeReference ) {
+		if (ref instanceof ArrayQualifiedTypeReference) {
 			ArrayQualifiedTypeReference iRef = (ArrayQualifiedTypeReference) ref;
 			TypeReference typeRef = new ArrayQualifiedTypeReference(iRef.tokens, iRef.dimensions(), iRef.sourcePositions);
 			setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
 		
-		if ( ref instanceof QualifiedTypeReference ) {
+		if (ref instanceof QualifiedTypeReference) {
 			QualifiedTypeReference iRef = (QualifiedTypeReference) ref;
 			TypeReference typeRef = new QualifiedTypeReference(iRef.tokens, iRef.sourcePositions);
 			setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
 		
-		if ( ref instanceof ParameterizedSingleTypeReference ) {
+		if (ref instanceof ParameterizedSingleTypeReference) {
 			ParameterizedSingleTypeReference iRef = (ParameterizedSingleTypeReference) ref;
 			TypeReference[] args = null;
-			if ( iRef.typeArguments != null ) {
+			if (iRef.typeArguments != null) {
 				args = new TypeReference[iRef.typeArguments.length];
 				int idx = 0;
-				for ( TypeReference inRef : iRef.typeArguments ) {
-					if ( inRef == null ) args[idx++] = null;
+				for (TypeReference inRef : iRef.typeArguments) {
+					if (inRef == null) args[idx++] = null;
 					else args[idx++] = copyType(inRef, source);
 				}
 			}
@@ -249,14 +248,14 @@ public class Eclipse {
 			return typeRef;
 		}
 		
-		if ( ref instanceof ArrayTypeReference ) {
+		if (ref instanceof ArrayTypeReference) {
 			ArrayTypeReference iRef = (ArrayTypeReference) ref;
 			TypeReference typeRef = new ArrayTypeReference(iRef.token, iRef.dimensions(), (long)iRef.sourceStart << 32 | iRef.sourceEnd);
 			setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
 		
-		if ( ref instanceof Wildcard ) {
+		if (ref instanceof Wildcard) {
 			Wildcard wildcard = new Wildcard(((Wildcard)ref).kind);
 			wildcard.sourceStart = ref.sourceStart;
 			wildcard.sourceEnd = ref.sourceEnd;
@@ -264,7 +263,7 @@ public class Eclipse {
 			return wildcard;
 		}
 		
-		if ( ref instanceof SingleTypeReference ) {
+		if (ref instanceof SingleTypeReference) {
 			SingleTypeReference iRef = (SingleTypeReference) ref;
 			TypeReference typeRef = new SingleTypeReference(iRef.token, (long)iRef.sourceStart << 32 | iRef.sourceEnd);
 			setGeneratedBy(typeRef, source);
@@ -284,10 +283,10 @@ public class Eclipse {
 		if (annotations2 == null) annotations2 = new Annotation[0];
 		Annotation[] outs = new Annotation[annotations1.length + annotations2.length];
 		int idx = 0;
-		for ( Annotation annotation : annotations1 ) {
+		for (Annotation annotation : annotations1) {
 			outs[idx++] = copyAnnotation(annotation, source);
 		}
-		for ( Annotation annotation : annotations2 ) {
+		for (Annotation annotation : annotations2) {
 			outs[idx++] = copyAnnotation(annotation, source);
 		}
 		return outs;
@@ -328,10 +327,10 @@ public class Eclipse {
 	 * 
 	 * This is a guess, but a decent one.
 	 */
-	public static boolean annotationTypeMatches(Class<? extends java.lang.annotation.Annotation> type, Node node) {
-		if ( node.getKind() != Kind.ANNOTATION ) return false;
+	public static boolean annotationTypeMatches(Class<? extends java.lang.annotation.Annotation> type, EclipseNode node) {
+		if (node.getKind() != Kind.ANNOTATION) return false;
 		TypeReference typeRef = ((Annotation)node.get()).type;
-		if ( typeRef == null || typeRef.getTypeName() == null ) return false;
+		if (typeRef == null || typeRef.getTypeName() == null) return false;
 		String typeName = toQualifiedName(typeRef.getTypeName());
 		
 		TypeLibrary library = new TypeLibrary();
@@ -339,8 +338,8 @@ public class Eclipse {
 		TypeResolver resolver = new TypeResolver(library, node.getPackageDeclaration(), node.getImportStatements());
 		Collection<String> typeMatches = resolver.findTypeMatches(node, typeName);
 		
-		for ( String match : typeMatches ) {
-			if ( match.equals(type.getName()) ) return true;
+		for (String match : typeMatches) {
+			if (match.equals(type.getName())) return true;
 		}
 		
 		return false;
@@ -350,32 +349,32 @@ public class Eclipse {
 	 * Provides AnnotationValues with the data it needs to do its thing.
 	 */
 	public static <A extends java.lang.annotation.Annotation> AnnotationValues<A>
-			createAnnotation(Class<A> type, final Node annotationNode) {
+			createAnnotation(Class<A> type, final EclipseNode annotationNode) {
 		final Annotation annotation = (Annotation) annotationNode.get();
 		Map<String, AnnotationValue> values = new HashMap<String, AnnotationValue>();
 		
 		final MemberValuePair[] pairs = annotation.memberValuePairs();
-		for ( Method m : type.getDeclaredMethods() ) {
-			if ( !Modifier.isPublic(m.getModifiers()) ) continue;
+		for (Method m : type.getDeclaredMethods()) {
+			if (!Modifier.isPublic(m.getModifiers())) continue;
 			String name = m.getName();
 			List<String> raws = new ArrayList<String>();
 			List<Object> guesses = new ArrayList<Object>();
 			Expression fullExpression = null;
 			Expression[] expressions = null;
 			
-			if ( pairs != null ) for ( MemberValuePair pair : pairs ) {
+			if (pairs != null) for (MemberValuePair pair : pairs) {
 				char[] n = pair.name;
 				String mName = n == null ? "value" : new String(pair.name);
-				if ( mName.equals(name) ) fullExpression = pair.value;
+				if (mName.equals(name)) fullExpression = pair.value;
 			}
 			
 			boolean isExplicit = fullExpression != null;
 			
-			if ( isExplicit ) {
-				if ( fullExpression instanceof ArrayInitializer ) {
+			if (isExplicit) {
+				if (fullExpression instanceof ArrayInitializer) {
 					expressions = ((ArrayInitializer)fullExpression).expressions;
 				} else expressions = new Expression[] { fullExpression };
-				if ( expressions != null ) for ( Expression ex : expressions ) {
+				if (expressions != null) for (Expression ex : expressions) {
 					StringBuffer sb = new StringBuffer();
 					ex.print(0, sb);
 					raws.add(sb.toString());
@@ -389,10 +388,10 @@ public class Eclipse {
 			values.put(name, new AnnotationValue(annotationNode, raws, guesses, isExplicit) {
 				@Override public void setError(String message, int valueIdx) {
 					Expression ex;
-					if ( valueIdx == -1 ) ex = fullExpr;
+					if (valueIdx == -1) ex = fullExpr;
 					else ex = exprs != null ? exprs[valueIdx] : null;
 					
-					if ( ex == null ) ex = annotation;
+					if (ex == null) ex = annotation;
 					
 					int sourceStart = ex.sourceStart;
 					int sourceEnd = ex.sourceEnd;
@@ -402,10 +401,10 @@ public class Eclipse {
 				
 				@Override public void setWarning(String message, int valueIdx) {
 					Expression ex;
-					if ( valueIdx == -1 ) ex = fullExpr;
+					if (valueIdx == -1) ex = fullExpr;
 					else ex = exprs != null ? exprs[valueIdx] : null;
 					
-					if ( ex == null ) ex = annotation;
+					if (ex == null) ex = annotation;
 					
 					int sourceStart = ex.sourceStart;
 					int sourceEnd = ex.sourceEnd;
@@ -419,9 +418,9 @@ public class Eclipse {
 	}
 	
 	private static Object calculateValue(Expression e) {
-		if ( e instanceof Literal ) {
+		if (e instanceof Literal) {
 			((Literal)e).computeConstant();
-			switch ( e.constant.typeID() ) {
+			switch (e.constant.typeID()) {
 			case TypeIds.T_int: return e.constant.intValue();
 			case TypeIds.T_byte: return e.constant.byteValue();
 			case TypeIds.T_short: return e.constant.shortValue();
@@ -433,11 +432,11 @@ public class Eclipse {
 			case TypeIds.T_JavaLangString: return e.constant.stringValue();
 			default: return null;
 			}
-		} else if ( e instanceof ClassLiteralAccess ) {
+		} else if (e instanceof ClassLiteralAccess) {
 			return Eclipse.toQualifiedName(((ClassLiteralAccess)e).type.getTypeName());
-		} else if ( e instanceof SingleNameReference ) {
+		} else if (e instanceof SingleNameReference) {
 			return new String(((SingleNameReference)e).token);
-		} else if ( e instanceof QualifiedNameReference ) {
+		} else if (e instanceof QualifiedNameReference) {
 			String qName = Eclipse.toQualifiedName(((QualifiedNameReference)e).tokens);
 			int idx = qName.lastIndexOf('.');
 			return idx == -1 ? qName : qName.substring(idx+1);
@@ -451,7 +450,7 @@ public class Eclipse {
 	static {
 		try {
 			generatedByField = ASTNode.class.getDeclaredField("$generatedBy");
-		} catch ( Throwable t ) {
+		} catch (Throwable t) {
 			throw Lombok.sneakyThrow(t);
 		}
 	}
@@ -459,7 +458,7 @@ public class Eclipse {
 	public static ASTNode getGeneratedBy(ASTNode node) {
 		try {
 			return (ASTNode) generatedByField.get(node);
-		} catch ( Exception t ) {
+		} catch (Exception t) {
 			throw Lombok.sneakyThrow(t);
 		}
 	}
@@ -471,7 +470,7 @@ public class Eclipse {
 	public static ASTNode setGeneratedBy(ASTNode node, ASTNode source) {
 		try {
 			generatedByField.set(node, source);
-		} catch ( Exception t ) {
+		} catch (Exception t) {
 			throw Lombok.sneakyThrow(t);
 		}
 		

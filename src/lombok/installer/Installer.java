@@ -96,7 +96,7 @@ public class Installer {
 	private JButton installButton;
 	
 	public static void main(String[] args) {
-		if ( EclipseFinder.getOS() == OS.MAC_OS_X ) {
+		if (EclipseFinder.getOS() == OS.MAC_OS_X) {
 			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Lombok Installer");
 			System.setProperty("com.apple.macos.use-file-dialog-packages", "true");
 		}
@@ -107,15 +107,15 @@ public class Installer {
 					try {
 						try {
 							UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-						} catch ( Exception ignore ) {}
+						} catch (Exception ignore) {}
 						
 						new Installer().show();
-					} catch ( HeadlessException e ) {
+					} catch (HeadlessException e) {
 						printHeadlessInfo();
 					}
 				}
 			});
-		} catch ( HeadlessException e ) {
+		} catch (HeadlessException e) {
 			printHeadlessInfo();
 		}
 	}
@@ -156,7 +156,7 @@ public class Installer {
 			howIWorkArea.setVisible(false);
 			buildChrome(appWindow.getContentPane());
 			appWindow.pack();
-		} catch ( Throwable t ) {
+		} catch (Throwable t) {
 			handleException(t);
 		}
 	}
@@ -312,31 +312,31 @@ public class Installer {
 					final List<EclipseLocation> locations = new ArrayList<EclipseLocation>();
 					final List<NotAnEclipseException> problems = new ArrayList<NotAnEclipseException>();
 					
-					if ( eclipses != null ) {
-						for ( String eclipse : eclipses ) try {
+					if (eclipses != null) {
+						for (String eclipse : eclipses) try {
 							locations.add(new EclipseLocation(eclipse));
-						} catch ( NotAnEclipseException e ) {
+						} catch (NotAnEclipseException e) {
 							problems.add(e);
 						}
 					}
 					
 					SwingUtilities.invokeLater(new Runnable() {
 						@Override public void run() {
-							for ( EclipseLocation location : locations ) {
+							for (EclipseLocation location : locations) {
 								try {
 									eclipsesList.addEclipse(location);
-								} catch ( Throwable t ) {
+								} catch (Throwable t) {
 									handleException(t);
 								}
 							}
 							
-							for ( NotAnEclipseException problem : problems ) {
+							for (NotAnEclipseException problem : problems) {
 								problem.showDialog(appWindow);
 							}
 							
 							loadingExpl.setVisible(false);
 							
-							if ( eclipses == null ) {
+							if (eclipses == null) {
 								JOptionPane.showMessageDialog(appWindow,
 										"I don't know how to automatically find Eclipse installations on this platform.\n" +
 										"Please use the 'Specify Eclipse Location...' button to manually point out the\n" +
@@ -344,7 +344,7 @@ public class Installer {
 							}
 						}
 					});
-				} catch ( Throwable t ) {
+				} catch (Throwable t) {
 					handleException(t);
 				}
 			}
@@ -360,13 +360,13 @@ public class Installer {
 				final String name = EclipseFinder.getEclipseExecutableName();
 				String file = null;
 				
-				if ( EclipseFinder.getOS() == OS.MAC_OS_X ) {
+				if (EclipseFinder.getOS() == OS.MAC_OS_X) {
 					FileDialog chooser = new FileDialog(appWindow);
 					chooser.setMode(FileDialog.LOAD);
 					chooser.setFilenameFilter(new FilenameFilter() {
 						@Override public boolean accept(File dir, String name) {
-							if ( name.equalsIgnoreCase(name) ) return true;
-							if ( new File(dir, name).isDirectory() ) return true;
+							if (name.equalsIgnoreCase(name)) return true;
+							if (new File(dir, name).isDirectory()) return true;
 							
 							return false;
 						}
@@ -381,8 +381,8 @@ public class Installer {
 					chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 					chooser.setFileFilter(new FileFilter() {
 						@Override public boolean accept(File f) {
-							if ( f.getName().equalsIgnoreCase(name) ) return true;
-							if ( f.isDirectory() ) return true;
+							if (f.getName().equalsIgnoreCase(name)) return true;
+							if (f.isDirectory()) return true;
 							
 							return false;
 						}
@@ -392,18 +392,18 @@ public class Installer {
 						}
 					});
 					
-					switch ( chooser.showDialog(appWindow, "Select") ) {
+					switch (chooser.showDialog(appWindow, "Select")) {
 					case JFileChooser.APPROVE_OPTION:
 						file = chooser.getSelectedFile().getAbsolutePath();
 					}
 				}
 				
-				if ( file != null ) {
+				if (file != null) {
 					try {
 						eclipsesList.addEclipse(new EclipseLocation(file));
-					} catch ( NotAnEclipseException e ) {
+					} catch (NotAnEclipseException e) {
 						e.showDialog(appWindow);
-					} catch ( Throwable t ) {
+					} catch (Throwable t) {
 						handleException(t);
 					}
 				}
@@ -417,7 +417,7 @@ public class Installer {
 		installButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent e) {
 				List<EclipseLocation> locationsToInstall = new ArrayList<EclipseLocation>(eclipsesList.getSelectedEclipses());
-				if ( locationsToInstall.isEmpty() ) {
+				if (locationsToInstall.isEmpty()) {
 					JOptionPane.showMessageDialog(appWindow, "You haven't selected any Eclipse installations!.", "No Selection", JOptionPane.WARNING_MESSAGE);
 					return;
 				}
@@ -446,11 +446,11 @@ public class Installer {
 		uninstallButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent e) {
 				List<EclipseLocation> locationsToUninstall = new ArrayList<EclipseLocation>();
-				for ( EclipseLocation location : eclipsesList.getSelectedEclipses() ) {
-					if ( location.hasLombok() ) locationsToUninstall.add(location);
+				for (EclipseLocation location : eclipsesList.getSelectedEclipses()) {
+					if (location.hasLombok()) locationsToUninstall.add(location);
 				}
 				
-				if ( locationsToUninstall.isEmpty() ) {
+				if (locationsToUninstall.isEmpty()) {
 					JOptionPane.showMessageDialog(appWindow, "You haven't selected any Eclipse installations that have been lombok-enabled.", "No Selection", JOptionPane.WARNING_MESSAGE);
 					return;
 				}
@@ -480,7 +480,7 @@ public class Installer {
 		
 		uninstallBox.removeAll();
 		uninstallBox.add(Box.createRigidArea(new Dimension(1, 16)));
-		for ( EclipseLocation location : locations ) {
+		for (EclipseLocation location : locations) {
 			JLabel label = new JLabel(location.getPath());
 			label.setFont(label.getFont().deriveFont(Font.BOLD));
 			uninstallBox.add(label);
@@ -503,10 +503,10 @@ public class Installer {
 		
 		new Thread() {
 			@Override public void run() {
-				for ( EclipseLocation loc : toInstall ) {
+				for (EclipseLocation loc : toInstall) {
 					try {
 						loc.install();
-					} catch ( final InstallException e ) {
+					} catch (final InstallException e) {
 						success.set(false);
 						try {
 							SwingUtilities.invokeAndWait(new Runnable() {
@@ -515,14 +515,14 @@ public class Installer {
 											e.getMessage(), "Install Problem", JOptionPane.ERROR_MESSAGE);
 								}
 							});
-						} catch ( Exception e2 ) {
+						} catch (Exception e2) {
 							//Shouldn't happen.
 							throw new RuntimeException(e2);
 						}
 					}
 				}
 				
-				if ( success.get() ) SwingUtilities.invokeLater(new Runnable() {
+				if (success.get()) SwingUtilities.invokeLater(new Runnable() {
 					@Override public void run() {
 						JOptionPane.showMessageDialog(appWindow, "<html>Lombok has been installed on the selected Eclipse installations.<br>Don't forget to add <code>lombok.jar</code> to your projects, and restart your eclipse!</html>", "Install successful", JOptionPane.INFORMATION_MESSAGE);
 						appWindow.setVisible(false);
@@ -544,10 +544,10 @@ public class Installer {
 		final AtomicReference<Boolean> success = new AtomicReference<Boolean>(true);
 		new Thread() {
 			@Override public void run() {
-				for ( EclipseLocation loc : toUninstall ) {
+				for (EclipseLocation loc : toUninstall) {
 					try {
 						loc.uninstall();
-					} catch ( final UninstallException e ) {
+					} catch (final UninstallException e) {
 						success.set(false);
 						try {
 							SwingUtilities.invokeAndWait(new Runnable() {
@@ -556,14 +556,14 @@ public class Installer {
 											e.getMessage(), "Uninstall Problem", JOptionPane.ERROR_MESSAGE);
 								}
 							});
-						} catch ( Exception e2 ) {
+						} catch (Exception e2) {
 							//Shouldn't happen.
 							throw new RuntimeException(e2);
 						}
 					}
 				}
 				
-				if ( success.get() ) SwingUtilities.invokeLater(new Runnable() {
+				if (success.get()) SwingUtilities.invokeLater(new Runnable() {
 					@Override public void run() {
 						JOptionPane.showMessageDialog(appWindow, "Lombok has been removed from the selected Eclipse installations.", "Uninstall successful", JOptionPane.INFORMATION_MESSAGE);
 						appWindow.setVisible(false);
@@ -594,8 +594,8 @@ public class Installer {
 	void selectedLomboksChanged(List<EclipseLocation> selectedEclipses) {
 		boolean uninstallAvailable = false;
 		boolean installAvailable = false;
-		for ( EclipseLocation loc : selectedEclipses ) {
-			if ( loc.hasLombok() ) uninstallAvailable = true;
+		for (EclipseLocation loc : selectedEclipses) {
+			if (loc.hasLombok()) uninstallAvailable = true;
 			installAvailable = true;
 		}
 		
@@ -616,7 +616,7 @@ public class Installer {
 		
 		List<EclipseLocation> getSelectedEclipses() {
 			List<EclipseLocation> list = new ArrayList<EclipseLocation>();
-			for ( EclipseLocation loc : locations ) if ( loc.selected ) list.add(loc);
+			for (EclipseLocation loc : locations) if (loc.selected) list.add(loc);
 			return list;
 		}
 		
@@ -625,7 +625,7 @@ public class Installer {
 		}
 		
 		void addEclipse(final EclipseLocation location) {
-			if ( locations.contains(location) ) return;
+			if (locations.contains(location)) return;
 			Box box = Box.createHorizontalBox();
 			box.setBackground(Color.WHITE);
 			final JCheckBox checkbox = new JCheckBox(location.getPath());
@@ -639,7 +639,7 @@ public class Installer {
 				}
 			});
 			
-			if ( location.hasLombok() ) {
+			if (location.hasLombok()) {
 				box.add(new JLabel(new ImageIcon(Installer.class.getResource("/lombok/installer/lombokIcon.png"))));
 			}
 			box.add(Box.createHorizontalGlue());
@@ -726,10 +726,10 @@ public class Installer {
 					//java.awt.Desktop doesn't exist in 1.5.
 					Object desktop = Class.forName("java.awt.Desktop").getMethod("getDesktop").invoke(null);
 					Class.forName("java.awt.Desktop").getMethod("browse", URI.class).invoke(desktop, ABOUT_LOMBOK_URL);
-				} catch ( Exception e ) {
+				} catch (Exception e) {
 					Runtime rt = Runtime.getRuntime();
 					try {
-						switch ( EclipseFinder.getOS() ) {
+						switch (EclipseFinder.getOS()) {
 						case WINDOWS:
 							String[] cmd = new String[4];
 							cmd[0] = "cmd.exe";
@@ -746,7 +746,7 @@ public class Installer {
 							rt.exec("firefox " + ABOUT_LOMBOK_URL.toString());
 							break;
 						}
-					} catch ( Exception e2 ) {
+					} catch (Exception e2) {
 						JOptionPane.showMessageDialog(appWindow,
 								"Well, this is embarrassing. I don't know how to open a webbrowser.\n" +
 								"I guess you'll have to open it. Browse to:\n" +
@@ -770,10 +770,10 @@ public class Installer {
 	 */
 	public void show() {
 		appWindow.setVisible(true);
-		if ( EclipseFinder.getOS() == OS.MAC_OS_X ) {
+		if (EclipseFinder.getOS() == OS.MAC_OS_X) {
 			try {
 				AppleNativeLook.go();
-			} catch ( Throwable ignore ) {
+			} catch (Throwable ignore) {
 				//We're just prettying up the app. If it fails, meh.
 			}
 		}

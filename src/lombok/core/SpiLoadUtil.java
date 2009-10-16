@@ -78,7 +78,7 @@ public class SpiLoadUtil {
 	public static <C> Iterable<C> findServices(final Class<C> target, final ClassLoader loader) throws IOException {
 		Enumeration<URL> resources = loader.getResources("META-INF/services/" + target.getName());
 		final Set<String> entries = new LinkedHashSet<String>();
-		while ( resources.hasMoreElements() ) {
+		while (resources.hasMoreElements()) {
 			URL url = resources.nextElement();
 			readServicesFromUrl(entries, url);
 		}
@@ -94,7 +94,7 @@ public class SpiLoadUtil {
 					@Override public C next() {
 						try {
 							return target.cast(Class.forName(names.next(), true, loader).newInstance());
-						} catch ( Throwable t ) {
+						} catch (Throwable t) {
 							throw Lombok.sneakyThrow(t);
 						}
 					}
@@ -110,19 +110,21 @@ public class SpiLoadUtil {
 	private static void readServicesFromUrl(Collection<String> list, URL url) throws IOException {
 		InputStream in = url.openStream();
 		try {
-			if ( in == null ) return;
+			if (in == null) return;
 			BufferedReader r = new BufferedReader(new InputStreamReader(in, "UTF-8"));
-			while ( true ) {
+			while (true) {
 				String line = r.readLine();
-				if ( line == null ) break;
+				if (line == null) break;
 				int idx = line.indexOf('#');
-				if ( idx != -1 ) line = line.substring(0, idx);
+				if (idx != -1) line = line.substring(0, idx);
 				line = line.trim();
-				if ( line.length() == 0 ) continue;
+				if (line.length() == 0) continue;
 				list.add(line);
 			}
 		} finally {
-			try { in.close(); } catch ( Throwable ignore ) {}
+			try {
+				in.close();
+			} catch (Throwable ignore) {}
 		}
 	}
 	
@@ -134,14 +136,14 @@ public class SpiLoadUtil {
 	 */
 	@SuppressWarnings("unchecked")
 	public static Class<? extends Annotation> findAnnotationClass(Class<?> c, Class<?> base) {
-		if ( c == Object.class || c == null ) return null;
-		for ( Type iface : c.getGenericInterfaces() ) {
-			if ( iface instanceof ParameterizedType ) {
+		if (c == Object.class || c == null) return null;
+		for (Type iface : c.getGenericInterfaces()) {
+			if (iface instanceof ParameterizedType) {
 				ParameterizedType p = (ParameterizedType)iface;
-				if ( !base.equals(p.getRawType()) ) continue;
+				if (!base.equals(p.getRawType())) continue;
 				Type target = p.getActualTypeArguments()[0];
-				if ( target instanceof Class<?> ) {
-					if ( Annotation.class.isAssignableFrom((Class<?>) target) ) {
+				if (target instanceof Class<?>) {
+					if (Annotation.class.isAssignableFrom((Class<?>) target)) {
 						return (Class<? extends Annotation>) target;
 					}
 				}
@@ -151,10 +153,10 @@ public class SpiLoadUtil {
 		}
 		
 		Class<? extends Annotation> potential = findAnnotationClass(c.getSuperclass(), base);
-		if ( potential != null ) return potential;
-		for ( Class<?> iface : c.getInterfaces() ) {
+		if (potential != null) return potential;
+		for (Class<?> iface : c.getInterfaces()) {
 			potential = findAnnotationClass(iface, base);
-			if ( potential != null ) return potential;
+			if (potential != null) return potential;
 		}
 		
 		return null;

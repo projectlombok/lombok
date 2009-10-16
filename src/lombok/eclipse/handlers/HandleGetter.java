@@ -30,7 +30,7 @@ import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
-import lombok.eclipse.EclipseAST.Node;
+import lombok.eclipse.EclipseNode;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -62,10 +62,10 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 	 * If not, the getter is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
 	 */
-	public void generateGetterForField(Node fieldNode, ASTNode pos) {
-		for ( Node child : fieldNode.down() ) {
-			if ( child.getKind() == Kind.ANNOTATION ) {
-				if ( annotationTypeMatches(Getter.class, child) ) {
+	public void generateGetterForField(EclipseNode fieldNode, ASTNode pos) {
+		for (EclipseNode child : fieldNode.down()) {
+			if (child.getKind() == Kind.ANNOTATION) {
+				if (annotationTypeMatches(Getter.class, child)) {
 					//The annotation will make it happen, so we can skip it.
 					return;
 				}
@@ -75,16 +75,17 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		createGetterForField(AccessLevel.PUBLIC, fieldNode, fieldNode, pos, false);
 	}
 	
-	public boolean handle(AnnotationValues<Getter> annotation, Annotation ast, Node annotationNode) {
-		Node fieldNode = annotationNode.up();
+	public boolean handle(AnnotationValues<Getter> annotation, Annotation ast, EclipseNode annotationNode) {
+		EclipseNode fieldNode = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
-		if ( level == AccessLevel.NONE ) return true;
+		if (level == AccessLevel.NONE) return true;
 		
 		return createGetterForField(level, fieldNode, annotationNode, annotationNode.get(), true);
 	}
 	
-	private boolean createGetterForField(AccessLevel level, Node fieldNode, Node errorNode, ASTNode source, boolean whineIfExists) {
-		if ( fieldNode.getKind() != Kind.FIELD ) {
+	private boolean createGetterForField(AccessLevel level,
+			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists) {
+		if (fieldNode.getKind() != Kind.FIELD) {
 			errorNode.addError("@Getter is only supported on a field.");
 			return true;
 		}
@@ -97,14 +98,14 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		
 		int modifier = toModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		
-		for ( String altName : TransformationsUtil.toAllGetterNames(fieldName, isBoolean) ) {
-			switch ( methodExists(altName, fieldNode) ) {
+		for (String altName : TransformationsUtil.toAllGetterNames(fieldName, isBoolean)) {
+			switch (methodExists(altName, fieldNode)) {
 			case EXISTS_BY_LOMBOK:
 				return true;
 			case EXISTS_BY_USER:
-				if ( whineIfExists ) {
+				if (whineIfExists) {
 					String altNameExpl = "";
-					if ( !altName.equals(getterName) ) altNameExpl = String.format(" (%s)", altName);
+					if (!altName.equals(getterName)) altNameExpl = String.format(" (%s)", altName);
 					errorNode.addWarning(
 						String.format("Not generating %s(): A method with that name already exists%s", getterName, altNameExpl));
 				}

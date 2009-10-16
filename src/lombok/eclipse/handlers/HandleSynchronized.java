@@ -30,7 +30,7 @@ import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
-import lombok.eclipse.EclipseAST.Node;
+import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.PKG.MemberExistsResult;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -57,31 +57,31 @@ public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized
 	private static final char[] INSTANCE_LOCK_NAME = "$lock".toCharArray();
 	private static final char[] STATIC_LOCK_NAME = "$LOCK".toCharArray();
 	
-	@Override public boolean handle(AnnotationValues<Synchronized> annotation, Annotation source, Node annotationNode) {
+	@Override public boolean handle(AnnotationValues<Synchronized> annotation, Annotation source, EclipseNode annotationNode) {
 		int p1 = source.sourceStart -1;
 		int p2 = source.sourceStart -2;
 		long pos = (((long)p1) << 32) | p2;
-		Node methodNode = annotationNode.up();
-		if ( methodNode == null || methodNode.getKind() != Kind.METHOD || !(methodNode.get() instanceof MethodDeclaration) ) {
+		EclipseNode methodNode = annotationNode.up();
+		if (methodNode == null || methodNode.getKind() != Kind.METHOD || !(methodNode.get() instanceof MethodDeclaration)) {
 			annotationNode.addError("@Synchronized is legal only on methods.");
 			return true;
 		}
 		
 		MethodDeclaration method = (MethodDeclaration)methodNode.get();
-		if ( method.isAbstract() ) {
+		if (method.isAbstract()) {
 			annotationNode.addError("@Synchronized is legal only on concrete methods.");
 			return true;
 		}
 		
 		char[] lockName = annotation.getInstance().value().toCharArray();
 		boolean autoMake = false;
-		if ( lockName.length == 0 ) {
+		if (lockName.length == 0) {
 			autoMake = true;
 			lockName = method.isStatic() ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
 		}
 		
-		if ( fieldExists(new String(lockName), methodNode) == MemberExistsResult.NOT_EXISTS ) {
-			if ( !autoMake ) {
+		if (fieldExists(new String(lockName), methodNode) == MemberExistsResult.NOT_EXISTS) {
+			if (!autoMake) {
 				annotationNode.addError("The field " + new String(lockName) + " does not exist.");
 				return true;
 			}
@@ -104,13 +104,13 @@ public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized
 			injectField(annotationNode.up().up(), fieldDecl);
 		}
 		
-		if ( method.statements == null ) return false;
+		if (method.statements == null) return false;
 		
 		Block block = new Block(0);
 		Eclipse.setGeneratedBy(block, source);
 		block.statements = method.statements;
 		Expression lockVariable;
-		if ( method.isStatic() ) lockVariable = new QualifiedNameReference(new char[][] {
+		if (method.isStatic()) lockVariable = new QualifiedNameReference(new char[][] {
 				methodNode.up().getName().toCharArray(), lockName }, new long[] { pos, pos }, p1, p2);
 		else {
 			lockVariable = new FieldReference(lockName, pos);

@@ -36,7 +36,7 @@ import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
-import lombok.eclipse.EclipseAST.Node;
+import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.PKG.MemberExistsResult;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
@@ -68,32 +68,32 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleData implements EclipseAnnotationHandler<Data> {
-	public boolean handle(AnnotationValues<Data> annotation, Annotation ast, Node annotationNode) {
+	public boolean handle(AnnotationValues<Data> annotation, Annotation ast, EclipseNode annotationNode) {
 		Data ann = annotation.getInstance();
-		Node typeNode = annotationNode.up();
+		EclipseNode typeNode = annotationNode.up();
 		
 		TypeDeclaration typeDecl = null;
-		if ( typeNode.get() instanceof TypeDeclaration ) typeDecl = (TypeDeclaration) typeNode.get();
+		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
 		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
 		boolean notAClass = (modifiers &
 				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0;
 		
-		if ( typeDecl == null || notAClass ) {
+		if (typeDecl == null || notAClass) {
 			annotationNode.addError("@Data is only supported on a class.");
 			return false;
 		}
 		
-		List<Node> nodesForConstructor = new ArrayList<Node>();
-		for ( Node child : typeNode.down() ) {
-			if ( child.getKind() != Kind.FIELD ) continue;
+		List<EclipseNode> nodesForConstructor = new ArrayList<EclipseNode>();
+		for (EclipseNode child : typeNode.down()) {
+			if (child.getKind() != Kind.FIELD) continue;
 			FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
 			//Skip static fields.
-			if ( (fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0 ) continue;
+			if ((fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0) continue;
 			boolean isFinal = (fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0;
 			boolean isNonNull = findAnnotations(fieldDecl, TransformationsUtil.NON_NULL_PATTERN).length != 0;
-			if ( (isFinal || isNonNull) && fieldDecl.initialization == null ) nodesForConstructor.add(child);
+			if ((isFinal || isNonNull) && fieldDecl.initialization == null) nodesForConstructor.add(child);
 			new HandleGetter().generateGetterForField(child, annotationNode.get());
-			if ( !isFinal ) new HandleSetter().generateSetterForField(child, annotationNode.get());
+			if (!isFinal) new HandleSetter().generateSetterForField(child, annotationNode.get());
 		}
 		
 		new HandleToString().generateToStringForType(typeNode, annotationNode);
@@ -102,17 +102,17 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		//Careful: Generate the public static constructor (if there is one) LAST, so that any attempt to
 		//'find callers' on the annotation node will find callers of the constructor, which is by far the
 		//most useful of the many methods built by @Data. This trick won't work for the non-static constructor,
-		//for whatever reason, though you can find callers of that one by focussing on the class name itself
+		//for whatever reason, though you can find callers of that one by focusing on the class name itself
 		//and hitting 'find callers'.
 		
-		if ( constructorExists(typeNode) == MemberExistsResult.NOT_EXISTS ) {
+		if (constructorExists(typeNode) == MemberExistsResult.NOT_EXISTS) {
 			ConstructorDeclaration constructor = createConstructor(
 					ann.staticConstructor().length() == 0, typeNode, nodesForConstructor, ast);
 			injectMethod(typeNode, constructor);
 		}
 		
-		if ( ann.staticConstructor().length() > 0 ) {
-			if ( methodExists("of", typeNode) == MemberExistsResult.NOT_EXISTS ) {
+		if (ann.staticConstructor().length() > 0) {
+			if (methodExists("of", typeNode) == MemberExistsResult.NOT_EXISTS) {
 				MethodDeclaration staticConstructor = createStaticConstructor(
 						ann.staticConstructor(), typeNode, nodesForConstructor, ast);
 				injectMethod(typeNode, staticConstructor);
@@ -122,7 +122,8 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		return false;
 	}
 	
-	private ConstructorDeclaration createConstructor(boolean isPublic, Node type, Collection<Node> fields, ASTNode source) {
+	private ConstructorDeclaration createConstructor(boolean isPublic,
+			EclipseNode type, Collection<EclipseNode> fields, ASTNode source) {
 		long p = (long)source.sourceStart << 32 | source.sourceEnd;
 		
 		ConstructorDeclaration constructor = new ConstructorDeclaration(
@@ -145,7 +146,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		List<Statement> assigns = new ArrayList<Statement>();
 		List<Statement> nullChecks = new ArrayList<Statement>();
 		
-		for ( Node fieldNode : fields ) {
+		for (EclipseNode fieldNode : fields) {
 			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 			FieldReference thisX = new FieldReference(("this." + new String(field.name)).toCharArray(), p);
 			Eclipse.setGeneratedBy(thisX, source);
@@ -178,7 +179,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		return constructor;
 	}
 	
-	private MethodDeclaration createStaticConstructor(String name, Node type, Collection<Node> fields, ASTNode source) {
+	private MethodDeclaration createStaticConstructor(String name, EclipseNode type, Collection<EclipseNode> fields, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
@@ -188,10 +189,10 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		
 		constructor.modifiers = PKG.toModifier(AccessLevel.PUBLIC) | Modifier.STATIC;
 		TypeDeclaration typeDecl = (TypeDeclaration) type.get();
-		if ( typeDecl.typeParameters != null && typeDecl.typeParameters.length > 0 ) {
+		if (typeDecl.typeParameters != null && typeDecl.typeParameters.length > 0) {
 			TypeReference[] refs = new TypeReference[typeDecl.typeParameters.length];
 			int idx = 0;
-			for ( TypeParameter param : typeDecl.typeParameters ) {
+			for (TypeParameter param : typeDecl.typeParameters) {
 				TypeReference typeRef = new SingleTypeReference(param.name, (long)param.sourceStart << 32 | param.sourceEnd);
 				Eclipse.setGeneratedBy(typeRef, source);
 				refs[idx++] = typeRef;
@@ -214,7 +215,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		Eclipse.setGeneratedBy(statement, source);
 		statement.type = copyType(constructor.returnType, source);
 		
-		for ( Node fieldNode : fields ) {
+		for (EclipseNode fieldNode : fields) {
 			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
 			SingleNameReference nameRef = new SingleNameReference(field.name, fieldPos);

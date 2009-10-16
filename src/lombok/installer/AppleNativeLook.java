@@ -36,7 +36,7 @@ class AppleNativeLook {
 		Object app = appClass.getMethod("getApplication").invoke(null);
 		appClass.getMethod("removeAboutMenuItem").invoke(app);
 		appClass.getMethod("removePreferencesMenuItem").invoke(app);
-
+		
 		BufferedImage image = ImageIO.read(AppleNativeLook.class.getResource("lombokIcon.png"));
 		appClass.getMethod("setDockIconImage", Image.class).invoke(app, image);
 	}

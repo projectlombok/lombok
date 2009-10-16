@@ -37,7 +37,7 @@ import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
-import lombok.eclipse.EclipseAST.Node;
+import lombok.eclipse.EclipseNode;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -68,24 +68,23 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleToString implements EclipseAnnotationHandler<ToString> {
-	private void checkForBogusFieldNames(Node type, AnnotationValues<ToString> annotation) {
-		if ( annotation.isExplicit("exclude") ) {
-			for ( int i : createListOfNonExistentFields(Arrays.asList(annotation.getInstance().exclude()), type, true, false) ) {
+	private void checkForBogusFieldNames(EclipseNode type, AnnotationValues<ToString> annotation) {
+		if (annotation.isExplicit("exclude")) {
+			for (int i : createListOfNonExistentFields(Arrays.asList(annotation.getInstance().exclude()), type, true, false)) {
 				annotation.setWarning("exclude", "This field does not exist, or would have been excluded anyway.", i);
 			}
 		}
-		if ( annotation.isExplicit("of") ) {
-			for ( int i : createListOfNonExistentFields(Arrays.asList(annotation.getInstance().of()), type, false, false) ) {
+		if (annotation.isExplicit("of")) {
+			for (int i : createListOfNonExistentFields(Arrays.asList(annotation.getInstance().of()), type, false, false)) {
 				annotation.setWarning("of", "This field does not exist.", i);
 			}
 		}
 	}
 	
-	
-	public void generateToStringForType(Node typeNode, Node errorNode) {
-		for ( Node child : typeNode.down() ) {
-			if ( child.getKind() == Kind.ANNOTATION ) {
-				if ( Eclipse.annotationTypeMatches(ToString.class, child) ) {
+	public void generateToStringForType(EclipseNode typeNode, EclipseNode errorNode) {
+		for (EclipseNode child : typeNode.down()) {
+			if (child.getKind() == Kind.ANNOTATION) {
+				if (Eclipse.annotationTypeMatches(ToString.class, child)) {
 					//The annotation will make it happen, so we can skip it.
 					return;
 				}
@@ -95,22 +94,22 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		boolean includeFieldNames = true;
 		try {
 			includeFieldNames = ((Boolean)ToString.class.getMethod("includeFieldNames").getDefaultValue()).booleanValue();
-		} catch ( Exception ignore ) {}
+		} catch (Exception ignore) {}
 		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false);
 	}
 	
-	public boolean handle(AnnotationValues<ToString> annotation, Annotation ast, Node annotationNode) {
+	public boolean handle(AnnotationValues<ToString> annotation, Annotation ast, EclipseNode annotationNode) {
 		ToString ann = annotation.getInstance();
 		List<String> excludes = Arrays.asList(ann.exclude());
 		List<String> includes = Arrays.asList(ann.of());
-		Node typeNode = annotationNode.up();
+		EclipseNode typeNode = annotationNode.up();
 		Boolean callSuper = ann.callSuper();
 		
-		if ( !annotation.isExplicit("callSuper") ) callSuper = null;
-		if ( !annotation.isExplicit("exclude") ) excludes = null;
-		if ( !annotation.isExplicit("of") ) includes = null;
+		if (!annotation.isExplicit("callSuper")) callSuper = null;
+		if (!annotation.isExplicit("exclude")) excludes = null;
+		if (!annotation.isExplicit("of")) includes = null;
 		
-		if ( excludes != null && includes != null ) {
+		if (excludes != null && includes != null) {
 			excludes = null;
 			annotation.setWarning("exclude", "exclude and of are mutually exclusive; the 'exclude' parameter will be ignored.");
 		}
@@ -120,48 +119,48 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		return generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true);
 	}
 	
-	public boolean generateToString(Node typeNode, Node errorNode, List<String> excludes, List<String> includes,
+	public boolean generateToString(EclipseNode typeNode, EclipseNode errorNode, List<String> excludes, List<String> includes,
 			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists) {
 		TypeDeclaration typeDecl = null;
 		
-		if ( typeNode.get() instanceof TypeDeclaration ) typeDecl = (TypeDeclaration) typeNode.get();
+		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
 		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
 		boolean notAClass = (modifiers &
 				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0;
 		
-		if ( typeDecl == null || notAClass ) {
+		if (typeDecl == null || notAClass) {
 			errorNode.addError("@ToString is only supported on a class.");
 			return false;
 		}
 		
-		if ( callSuper == null ) {
+		if (callSuper == null) {
 			try {
 				callSuper = ((Boolean)ToString.class.getMethod("callSuper").getDefaultValue()).booleanValue();
-			} catch ( Exception ignore ) {}
+			} catch (Exception ignore) {}
 		}
 		
-		List<Node> nodesForToString = new ArrayList<Node>();
-		if ( includes != null ) {
-			for ( Node child : typeNode.down() ) {
-				if ( child.getKind() != Kind.FIELD ) continue;
+		List<EclipseNode> nodesForToString = new ArrayList<EclipseNode>();
+		if (includes != null) {
+			for (EclipseNode child : typeNode.down()) {
+				if (child.getKind() != Kind.FIELD) continue;
 				FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
-				if ( includes.contains(new String(fieldDecl.name)) ) nodesForToString.add(child);
+				if (includes.contains(new String(fieldDecl.name))) nodesForToString.add(child);
 			}
 		} else {
-			for ( Node child : typeNode.down() ) {
-				if ( child.getKind() != Kind.FIELD ) continue;
+			for (EclipseNode child : typeNode.down()) {
+				if (child.getKind() != Kind.FIELD) continue;
 				FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
 				//Skip static fields.
-				if ( (fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0 ) continue;
+				if ((fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0) continue;
 				//Skip excluded fields.
-				if ( excludes != null && excludes.contains(new String(fieldDecl.name)) ) continue;
+				if (excludes != null && excludes.contains(new String(fieldDecl.name))) continue;
 				//Skip fields that start with $
-				if ( fieldDecl.name.length > 0 && fieldDecl.name[0] == '$' ) continue;
+				if (fieldDecl.name.length > 0 && fieldDecl.name[0] == '$') continue;
 				nodesForToString.add(child);
 			}
 		}
 		
-		switch ( methodExists("toString", typeNode) ) {
+		switch (methodExists("toString", typeNode)) {
 		case NOT_EXISTS:
 			MethodDeclaration toString = createToString(typeNode, nodesForToString, includeFieldNames, callSuper, errorNode.get());
 			injectMethod(typeNode, toString);
@@ -170,14 +169,15 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 			return true;
 		default:
 		case EXISTS_BY_USER:
-			if ( whineIfExists ) {
+			if (whineIfExists) {
 				errorNode.addWarning("Not generating toString(): A method with that name already exists");
 			}
 			return true;
 		}
 	}
 	
-	private MethodDeclaration createToString(Node type, Collection<Node> fields, boolean includeFieldNames, boolean callSuper, ASTNode source) {
+	private MethodDeclaration createToString(EclipseNode type, Collection<EclipseNode> fields,
+			boolean includeFieldNames, boolean callSuper, ASTNode source) {
 		TypeDeclaration typeDeclaration = (TypeDeclaration)type.get();
 		char[] rawTypeName = typeDeclaration.name;
 		String typeName = rawTypeName == null ? "" : new String(rawTypeName);
@@ -190,11 +190,11 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		
 		char[] prefix;
 		
-		if ( callSuper ) {
+		if (callSuper) {
 			prefix = (typeName + "(super=").toCharArray();
-		} else if ( fields.isEmpty() ) {
+		} else if (fields.isEmpty()) {
 			prefix = (typeName + "()").toCharArray();
-		} else if ( includeFieldNames ) {
+		} else if (includeFieldNames) {
 			prefix = (typeName + "(" + new String(((FieldDeclaration)fields.iterator().next().get()).name) + "=").toCharArray();
 		} else {
 			prefix = (typeName + "(").toCharArray();
@@ -204,7 +204,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		Expression current = new StringLiteral(prefix, pS, pE, 0);
 		Eclipse.setGeneratedBy(current, source);
 		
-		if ( callSuper ) {
+		if (callSuper) {
 			MessageSend callToSuper = new MessageSend();
 			callToSuper.sourceStart = pS; callToSuper.sourceEnd = pE;
 			Eclipse.setGeneratedBy(callToSuper, source);
@@ -216,18 +216,18 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 			first = false;
 		}
 		
-		for ( Node field : fields ) {
+		for (EclipseNode field : fields) {
 			FieldDeclaration f = (FieldDeclaration)field.get();
-			if ( f.name == null || f.type == null ) continue;
+			if (f.name == null || f.type == null) continue;
 			
 			Expression ex;
-			if ( f.type.dimensions() > 0 ) {
+			if (f.type.dimensions() > 0) {
 				MessageSend arrayToString = new MessageSend();
 				arrayToString.sourceStart = pS; arrayToString.sourceEnd = pE;
 				arrayToString.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA, TypeConstants.UTIL, "Arrays".toCharArray());
 				arrayToString.arguments = new Expression[] { new SingleNameReference(f.name, p) };
 				Eclipse.setGeneratedBy(arrayToString.arguments[0], source);
-				if ( f.type.dimensions() > 1 || !BUILT_IN_TYPES.contains(new String(f.type.getLastToken())) ) {
+				if (f.type.dimensions() > 1 || !BUILT_IN_TYPES.contains(new String(f.type.getLastToken()))) {
 					arrayToString.selector = "deepToString".toCharArray();
 				} else {
 					arrayToString.selector = "toString".toCharArray();
@@ -241,7 +241,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 			}
 			Eclipse.setGeneratedBy(ex, source);
 			
-			if ( first ) {
+			if (first) {
 				current = new BinaryExpression(current, ex, PLUS);
 				current.sourceStart = pS; current.sourceEnd = pE;
 				Eclipse.setGeneratedBy(current, source);
@@ -250,7 +250,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 			}
 			
 			StringLiteral fieldNameLiteral;
-			if ( includeFieldNames ) {
+			if (includeFieldNames) {
 				char[] namePlusEqualsSign = (infixS + new String(f.name) + "=").toCharArray();
 				fieldNameLiteral = new StringLiteral(namePlusEqualsSign, pS, pE, 0);
 			} else {
@@ -262,7 +262,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 			current = new BinaryExpression(current, ex, PLUS);
 			Eclipse.setGeneratedBy(current, source);
 		}
-		if ( !first ) {
+		if (!first) {
 			StringLiteral suffixLiteral = new StringLiteral(suffix, pS, pE, 0);
 			Eclipse.setGeneratedBy(suffixLiteral, source);
 			current = new BinaryExpression(current, suffixLiteral, PLUS);
@@ -296,7 +296,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		NameReference ref;
-		if ( varNames.length > 1 ) ref = new QualifiedNameReference(varNames, new long[varNames.length], pS, pE);
+		if (varNames.length > 1) ref = new QualifiedNameReference(varNames, new long[varNames.length], pS, pE);
 		else ref = new SingleNameReference(varNames[0], p);
 		Eclipse.setGeneratedBy(ref, source);
 		return ref;

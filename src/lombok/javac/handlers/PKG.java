@@ -27,8 +27,7 @@ import java.util.regex.Pattern;
 import lombok.AccessLevel;
 import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
-import lombok.javac.JavacAST;
-import lombok.javac.JavacAST.Node;
+import lombok.javac.JavacNode;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.TypeTags;
@@ -95,17 +94,17 @@ class PKG {
 	 * @param fieldName the field name to check for.
 	 * @param node Any node that represents the Type (JCClassDecl) to check for, or any child node thereof.
 	 */
-	static MemberExistsResult fieldExists(String fieldName, JavacAST.Node node) {
-		while ( node != null && !(node.get() instanceof JCClassDecl) ) {
+	static MemberExistsResult fieldExists(String fieldName, JavacNode node) {
+		while (node != null && !(node.get() instanceof JCClassDecl)) {
 			node = node.up();
 		}
 		
-		if ( node != null && node.get() instanceof JCClassDecl ) {
-			for ( JCTree def : ((JCClassDecl)node.get()).defs ) {
-				if ( def instanceof JCVariableDecl ) {
-					if ( ((JCVariableDecl)def).name.contentEquals(fieldName) ) {
-						JavacAST.Node existing = node.getNodeFor(def);
-						if ( existing == null || !existing.isHandled() ) return MemberExistsResult.EXISTS_BY_USER;
+		if (node != null && node.get() instanceof JCClassDecl) {
+			for (JCTree def : ((JCClassDecl)node.get()).defs) {
+				if (def instanceof JCVariableDecl) {
+					if (((JCVariableDecl)def).name.contentEquals(fieldName)) {
+						JavacNode existing = node.getNodeFor(def);
+						if (existing == null || !existing.isHandled()) return MemberExistsResult.EXISTS_BY_USER;
 						return MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
 				}
@@ -122,17 +121,17 @@ class PKG {
 	 * @param methodName the method name to check for.
 	 * @param node Any node that represents the Type (JCClassDecl) to check for, or any child node thereof.
 	 */
-	static MemberExistsResult methodExists(String methodName, JavacAST.Node node) {
-		while ( node != null && !(node.get() instanceof JCClassDecl) ) {
+	static MemberExistsResult methodExists(String methodName, JavacNode node) {
+		while (node != null && !(node.get() instanceof JCClassDecl)) {
 			node = node.up();
 		}
 		
-		if ( node != null && node.get() instanceof JCClassDecl ) {
-			for ( JCTree def : ((JCClassDecl)node.get()).defs ) {
-				if ( def instanceof JCMethodDecl ) {
-					if ( ((JCMethodDecl)def).name.contentEquals(methodName) ) {
-						JavacAST.Node existing = node.getNodeFor(def);
-						if ( existing == null || !existing.isHandled() ) return MemberExistsResult.EXISTS_BY_USER;
+		if (node != null && node.get() instanceof JCClassDecl) {
+			for (JCTree def : ((JCClassDecl)node.get()).defs) {
+				if (def instanceof JCMethodDecl) {
+					if (((JCMethodDecl)def).name.contentEquals(methodName)) {
+						JavacNode existing = node.getNodeFor(def);
+						if (existing == null || !existing.isHandled()) return MemberExistsResult.EXISTS_BY_USER;
 						return MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
 				}
@@ -148,18 +147,18 @@ class PKG {
 	 * 
 	 * @param node Any node that represents the Type (JCClassDecl) to check for, or any child node thereof.
 	 */
-	static MemberExistsResult constructorExists(JavacAST.Node node) {
-		while ( node != null && !(node.get() instanceof JCClassDecl) ) {
+	static MemberExistsResult constructorExists(JavacNode node) {
+		while (node != null && !(node.get() instanceof JCClassDecl)) {
 			node = node.up();
 		}
 		
-		if ( node != null && node.get() instanceof JCClassDecl ) {
-			for ( JCTree def : ((JCClassDecl)node.get()).defs ) {
-				if ( def instanceof JCMethodDecl ) {
-					if ( ((JCMethodDecl)def).name.contentEquals("<init>") ) {
-						if ( (((JCMethodDecl)def).mods.flags & Flags.GENERATEDCONSTR) != 0 ) continue;
-						JavacAST.Node existing = node.getNodeFor(def);
-						if ( existing == null || !existing.isHandled() ) return MemberExistsResult.EXISTS_BY_USER;
+		if (node != null && node.get() instanceof JCClassDecl) {
+			for (JCTree def : ((JCClassDecl)node.get()).defs) {
+				if (def instanceof JCMethodDecl) {
+					if (((JCMethodDecl)def).name.contentEquals("<init>")) {
+						if ((((JCMethodDecl)def).mods.flags & Flags.GENERATEDCONSTR) != 0) continue;
+						JavacNode existing = node.getNodeFor(def);
+						if (existing == null || !existing.isHandled()) return MemberExistsResult.EXISTS_BY_USER;
 						return MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
 				}
@@ -175,7 +174,7 @@ class PKG {
 	 * @see java.lang.Modifier
 	 */
 	static int toJavacModifier(AccessLevel accessLevel) {
-		switch ( accessLevel ) {
+		switch (accessLevel) {
 		case MODULE:
 		case PACKAGE:
 			return 0;
@@ -194,7 +193,7 @@ class PKG {
 	 * 
 	 * Also takes care of updating the JavacAST.
 	 */
-	static void injectField(JavacAST.Node typeNode, JCVariableDecl field) {
+	static void injectField(JavacNode typeNode, JCVariableDecl field) {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
 		type.defs = type.defs.append(field);
@@ -208,17 +207,17 @@ class PKG {
 	 * 
 	 * Also takes care of updating the JavacAST.
 	 */
-	static void injectMethod(JavacAST.Node typeNode, JCMethodDecl method) {
+	static void injectMethod(JavacNode typeNode, JCMethodDecl method) {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
-		if ( method.getName().contentEquals("<init>") ) {
+		if (method.getName().contentEquals("<init>")) {
 			//Scan for default constructor, and remove it.
 			int idx = 0;
-			for ( JCTree def : type.defs ) {
-				if ( def instanceof JCMethodDecl ) {
-					if ( (((JCMethodDecl)def).mods.flags & Flags.GENERATEDCONSTR) != 0 ) {
-						JavacAST.Node tossMe = typeNode.getNodeFor(def);
-						if ( tossMe != null ) tossMe.up().removeChild(tossMe);
+			for (JCTree def : type.defs) {
+				if (def instanceof JCMethodDecl) {
+					if ((((JCMethodDecl)def).mods.flags & Flags.GENERATEDCONSTR) != 0) {
+						JavacNode tossMe = typeNode.getNodeFor(def);
+						if (tossMe != null) tossMe.up().removeChild(tossMe);
 						type.defs = addAllButOne(type.defs, idx);
 						break;
 					}
@@ -235,8 +234,8 @@ class PKG {
 	private static List<JCTree> addAllButOne(List<JCTree> defs, int idx) {
 		List<JCTree> out = List.nil();
 		int i = 0;
-		for ( JCTree def : defs ) {
-			if ( i++ != idx ) out = out.append(def);
+		for (JCTree def : defs) {
+			if (i++ != idx) out = out.append(def);
 		}
 		return out;
 	}
@@ -251,22 +250,22 @@ class PKG {
 	 * @see com.sun.tools.javac.tree.JCTree.JCIdent
 	 * @see com.sun.tools.javac.tree.JCTree.JCFieldAccess
 	 */
-	static JCExpression chainDots(TreeMaker maker, JavacAST.Node node, String... elems) {
+	static JCExpression chainDots(TreeMaker maker, JavacNode node, String... elems) {
 		assert elems != null;
 		assert elems.length > 0;
 		
 		JCExpression e = maker.Ident(node.toName(elems[0]));
-		for ( int i = 1 ; i < elems.length ; i++ ) {
+		for (int i = 1 ; i < elems.length ; i++) {
 			e = maker.Select(e, node.toName(elems[i]));
 		}
 		
 		return e;
 	}
 	
-	static List<JCAnnotation> findAnnotations(Node fieldNode, Pattern namePattern) {
+	static List<JCAnnotation> findAnnotations(JavacNode fieldNode, Pattern namePattern) {
 		List<JCAnnotation> result = List.nil();
-		for ( Node child : fieldNode.down() ) {
-			if ( child.getKind() == Kind.ANNOTATION ) {
+		for (JavacNode child : fieldNode.down()) {
+			if (child.getKind() == Kind.ANNOTATION) {
 				JCAnnotation annotation = (JCAnnotation) child.get();
 				String name = annotation.annotationType.toString();
 				int idx = name.lastIndexOf(".");
@@ -279,7 +278,7 @@ class PKG {
 		return result;
 	}	
 	
-	static JCStatement generateNullCheck(TreeMaker treeMaker, JavacAST.Node variable) {
+	static JCStatement generateNullCheck(TreeMaker treeMaker, JavacNode variable) {
 		JCVariableDecl varDecl = (JCVariableDecl) variable.get();
 		if (isPrimitive(varDecl.vartype)) return null;
 		Name fieldName = varDecl.name;
@@ -289,29 +288,28 @@ class PKG {
 		return treeMaker.If(treeMaker.Binary(JCTree.EQ, treeMaker.Ident(fieldName), treeMaker.Literal(TypeTags.BOT, null)), throwStatement, null);
 	}
 	
-	static List<Integer> createListOfNonExistentFields(List<String> list, Node type, boolean excludeStandard, boolean excludeTransient) {
+	static List<Integer> createListOfNonExistentFields(List<String> list, JavacNode type, boolean excludeStandard, boolean excludeTransient) {
 		boolean[] matched = new boolean[list.size()];
 		
-		for ( Node child : type.down() ) {
-			if ( list.isEmpty() ) break;
-			if ( child.getKind() != Kind.FIELD ) continue;
+		for (JavacNode child : type.down()) {
+			if (list.isEmpty()) break;
+			if (child.getKind() != Kind.FIELD) continue;
 			JCVariableDecl field = (JCVariableDecl)child.get();
-			if ( excludeStandard ) {
-				if ( (field.mods.flags & Flags.STATIC) != 0 ) continue;
-				if ( field.name.toString().startsWith("$") ) continue;
+			if (excludeStandard) {
+				if ((field.mods.flags & Flags.STATIC) != 0) continue;
+				if (field.name.toString().startsWith("$")) continue;
 			}
-			if ( excludeTransient && (field.mods.flags & Flags.TRANSIENT) != 0 ) continue;
-
+			if (excludeTransient && (field.mods.flags & Flags.TRANSIENT) != 0) continue;
+			
 			int idx = list.indexOf(child.getName());
-			if ( idx > -1 ) matched[idx] = true;
+			if (idx > -1) matched[idx] = true;
 		}
 		
 		List<Integer> problematic = List.nil();
-		for ( int i = 0 ; i < list.size() ; i++ ) {
-			if ( !matched[i] ) problematic = problematic.append(i);
+		for (int i = 0 ; i < list.size() ; i++) {
+			if (!matched[i]) problematic = problematic.append(i);
 		}
 		
 		return problematic;
 	}
-
 }

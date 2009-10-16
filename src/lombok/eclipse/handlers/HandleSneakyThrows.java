@@ -29,7 +29,7 @@ import lombok.SneakyThrows;
 import lombok.core.AnnotationValues;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
-import lombok.eclipse.EclipseAST.Node;
+import lombok.eclipse.EclipseNode;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -69,35 +69,35 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 		}
 	}
 	
-	@Override public boolean handle(AnnotationValues<SneakyThrows> annotation, Annotation source, Node annotationNode) {
+	@Override public boolean handle(AnnotationValues<SneakyThrows> annotation, Annotation source, EclipseNode annotationNode) {
 		List<String> exceptionNames = annotation.getRawExpressions("value");
 		List<DeclaredException> exceptions = new ArrayList<DeclaredException>();
 		
 		MemberValuePair[] memberValuePairs = source.memberValuePairs();
-		if ( memberValuePairs == null || memberValuePairs.length == 0 ) {
+		if (memberValuePairs == null || memberValuePairs.length == 0) {
 			exceptions.add(new DeclaredException("java.lang.Throwable", source));
 		} else {
 			Expression arrayOrSingle = memberValuePairs[0].value;
 			final Expression[] exceptionNameNodes;
-			if ( arrayOrSingle instanceof ArrayInitializer ) {
+			if (arrayOrSingle instanceof ArrayInitializer) {
 				exceptionNameNodes = ((ArrayInitializer)arrayOrSingle).expressions;
 			} else exceptionNameNodes = new Expression[] { arrayOrSingle };
 			
-			if ( exceptionNames.size() != exceptionNameNodes.length ) {
+			if (exceptionNames.size() != exceptionNameNodes.length) {
 				annotationNode.addError(
 						"LOMBOK BUG: The number of exception classes in the annotation isn't the same pre- and post- guessing.");
 			}
 			
 			int idx = 0;
-			for ( String exceptionName : exceptionNames ) {
-				if ( exceptionName.endsWith(".class") ) exceptionName = exceptionName.substring(0, exceptionName.length() - 6);
+			for (String exceptionName : exceptionNames) {
+				if (exceptionName.endsWith(".class")) exceptionName = exceptionName.substring(0, exceptionName.length() - 6);
 				exceptions.add(new DeclaredException(exceptionName, exceptionNameNodes[idx++]));
 			}
 		}
 		
 		
-		Node owner = annotationNode.up();
-		switch ( owner.getKind() ) {
+		EclipseNode owner = annotationNode.up();
+		switch (owner.getKind()) {
 //		case FIELD:
 //			return handleField(annotationNode, (FieldDeclaration)owner.get(), exceptions);
 		case METHOD:
@@ -109,7 +109,7 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 	}
 	
 //	private boolean handleField(Node annotation, FieldDeclaration field, List<DeclaredException> exceptions) {
-//		if ( field.initialization == null ) {
+//		if (field.initialization == null) {
 //			annotation.addError("@SneakyThrows can only be used on fields with an initialization statement.");
 //			return true;
 //		}
@@ -119,7 +119,7 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 //				new SingleNameReference(field.name, 0), expression, 0)};
 //		field.initialization = null;
 //		
-//		for ( DeclaredException exception : exceptions ) {
+//		for (DeclaredException exception : exceptions) {
 //			content = new Statement[] { buildTryCatchBlock(content, exception) };
 //		}
 //		
@@ -140,17 +140,17 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 //		return true;
 //	}
 	
-	private boolean handleMethod(Node annotation, AbstractMethodDeclaration method, List<DeclaredException> exceptions) {
-		if ( method.isAbstract() ) {
+	private boolean handleMethod(EclipseNode annotation, AbstractMethodDeclaration method, List<DeclaredException> exceptions) {
+		if (method.isAbstract()) {
 			annotation.addError("@SneakyThrows can only be used on concrete methods.");
 			return true;
 		}
 		
-		if ( method.statements == null ) return false;
+		if (method.statements == null) return false;
 		
 		Statement[] contents = method.statements;
 		
-		for ( DeclaredException exception : exceptions ) {
+		for (DeclaredException exception : exceptions) {
 			contents = new Statement[] { buildTryCatchBlock(contents, exception, exception.node) };
 		}
 		
@@ -171,7 +171,7 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 		Eclipse.setGeneratedBy(tryStatement.tryBlock, source);
 		tryStatement.tryBlock.statements = contents;
 		TypeReference typeReference;
-		if ( exception.exceptionName.indexOf('.') == -1 ) {
+		if (exception.exceptionName.indexOf('.') == -1) {
 			typeReference = new SingleTypeReference(exception.exceptionName.toCharArray(), p);
 			typeReference.statementEnd = pE;
 		} else {
@@ -179,7 +179,7 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 			char[][] elems = new char[x.length][];
 			long[] poss = new long[x.length];
 			int start = pS;
-			for ( int i = 0 ; i < x.length ; i++ ) {
+			for (int i = 0; i < x.length; i++) {
 				elems[i] = x[i].trim().toCharArray();
 				int end = start + x[i].length();
 				poss[i] = (long)start << 32 | end;

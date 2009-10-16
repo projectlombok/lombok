@@ -54,13 +54,13 @@ public class PatchFixes {
 		
 		int count = 0;
 		for (int i = 0; i < in.length; i++) {
-			if ( in[i] == null || !((Boolean)f.get(in[i])).booleanValue() ) count++;
+			if (in[i] == null || !((Boolean)f.get(in[i])).booleanValue()) count++;
 		}
 		if (count == in.length) return in;
 		SimpleName[] newSimpleNames = new SimpleName[count];
 		count = 0;
 		for (int i = 0; i < in.length; i++) {
-			if ( in[i] == null || !((Boolean)f.get(in[i])).booleanValue() ) newSimpleNames[count++] = in[i];
+			if (in[i] == null || !((Boolean)f.get(in[i])).booleanValue()) newSimpleNames[count++] = in[i];
 		}
 		return newSimpleNames;
 	}

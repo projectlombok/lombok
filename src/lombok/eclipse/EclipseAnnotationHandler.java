@@ -50,5 +50,5 @@ public interface EclipseAnnotationHandler<T extends java.lang.annotation.Annotat
 	 * @return <code>true</code> if you don't want to be called again about this annotation during this
 	 * compile session (you've handled it), or <code>false</code> to indicate you aren't done yet.
 	 */
-	boolean handle(AnnotationValues<T> annotation, org.eclipse.jdt.internal.compiler.ast.Annotation ast, EclipseAST.Node annotationNode);
+	boolean handle(AnnotationValues<T> annotation, org.eclipse.jdt.internal.compiler.ast.Annotation ast, EclipseNode annotationNode);
 }

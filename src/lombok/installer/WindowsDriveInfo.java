@@ -77,8 +77,8 @@ public class WindowsDriveInfo {
 		int flags = getLogicalDrives0();
 		
 		List<String> letters = new ArrayList<String>();
-		for ( int i = 0 ; i < 26 ; i++ ) {
-			if ( (flags & (1 << i)) != 0 ) letters.add(Character.toString((char)('A' + i)));
+		for (int i = 0; i < 26; i++) {
+			if ((flags & (1 << i)) != 0) letters.add(Character.toString((char)('A' + i)));
 		}
 		
 		return letters;
@@ -94,9 +94,9 @@ public class WindowsDriveInfo {
 	 * Feed it a drive letter (such as 'A') to see if it is a fixed disk.
 	 */
 	public boolean isFixedDisk(String letter) {
-		if ( letter.length() != 1 ) throw new IllegalArgumentException("Supply 1 letter, not: " + letter);
+		if (letter.length() != 1) throw new IllegalArgumentException("Supply 1 letter, not: " + letter);
 		char drive = Character.toUpperCase(letter.charAt(0));
-		if ( drive < 'A' || drive > 'Z' ) throw new IllegalArgumentException(
+		if (drive < 'A' || drive > 'Z') throw new IllegalArgumentException(
 				"A drive is indicated by a letter, so A-Z inclusive. Not " + drive);
 		return getDriveType(drive + ":\\") == 3L;
 	}
@@ -119,7 +119,7 @@ public class WindowsDriveInfo {
 		System.loadLibrary("WindowsDriveInfo");
 		WindowsDriveInfo info = new WindowsDriveInfo();
 		
-		for ( String letter : info.getLogicalDrives() ) {
+		for (String letter : info.getLogicalDrives()) {
 			System.out.printf("Drive %s: - %s\n", letter,
 					info.isFixedDisk(letter) ? "Fixed Disk" : "Not Fixed Disk");
 		}

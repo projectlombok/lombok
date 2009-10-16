@@ -54,17 +54,17 @@ class EclipseFinder {
 			URI uri = EclipseFinder.class.getResource("/" + EclipseFinder.class.getName().replace('.', '/') + ".class").toURI();
 			Pattern p = Pattern.compile("^jar:file:([^\\!]+)\\!.*\\.class$");
 			Matcher m = p.matcher(uri.toString());
-			if ( !m.matches() ) return new File("lombok.jar");
+			if (!m.matches()) return new File("lombok.jar");
 			String rawUri = m.group(1);
 			return new File(URLDecoder.decode(rawUri, Charset.defaultCharset().name()));
-		} catch ( Exception e ) {
+		} catch (Exception e) {
 			throw Lombok.sneakyThrow(e);
 		}
 	}
 	
 	private static final AtomicBoolean windowsDriveInfoLibLoaded = new AtomicBoolean(false);
 	private static void loadWindowsDriveInfoLib() throws IOException {
-		if ( !windowsDriveInfoLibLoaded.compareAndSet(false, true) ) return;
+		if (!windowsDriveInfoLibLoaded.compareAndSet(false, true)) return;
 		
 		final String prefix = "lombok-" + Version.getVersion() + "-";
 		
@@ -75,17 +75,17 @@ class EclipseFinder {
 		dll1.deleteOnExit();
 		dll2.deleteOnExit();
 		try {
-			if ( unpackDLL("WindowsDriveInfo-i386.dll", dll1) ) {
+			if (unpackDLL("WindowsDriveInfo-i386.dll", dll1)) {
 				System.load(dll1.getAbsolutePath());
 				return;
 			}
-		} catch ( Throwable ignore ) {}
+		} catch (Throwable ignore) {}
 		
 		try {
-			if ( unpackDLL("WindowsDriveInfo-x86_64.dll", dll2) ) {
+			if (unpackDLL("WindowsDriveInfo-x86_64.dll", dll2)) {
 				System.load(dll2.getAbsolutePath());
 			}
-		} catch ( Throwable ignore ) {}
+		} catch (Throwable ignore) {}
 	}
 	
 	private static boolean unpackDLL(String dllName, File target) throws IOException {
@@ -95,15 +95,15 @@ class EclipseFinder {
 				FileOutputStream out = new FileOutputStream(target);
 				try {
 					byte[] b = new byte[32000];
-					while ( true ) {
+					while (true) {
 						int r = in.read(b);
-						if ( r == -1 ) break;
+						if (r == -1) break;
 						out.write(b, 0, r);
 					}
 				} finally {
 					out.close();
 				}
-			} catch ( IOException e ) {
+			} catch (IOException e) {
 				//Fall through - if there is a file named lombok-WindowsDriveInfo-arch.dll, we'll try it.
 				return target.exists() && target.canRead();
 			}
@@ -125,8 +125,8 @@ class EclipseFinder {
 		List<String> drives = new ArrayList<String>();
 		
 		WindowsDriveInfo info = new WindowsDriveInfo();
-		for ( String drive : info.getLogicalDrives() ) {
-			if ( info.isFixedDisk(drive) ) drives.add(drive);
+		for (String drive : info.getLogicalDrives()) {
+			if (info.isFixedDisk(drive)) drives.add(drive);
 		}
 		
 		return drives;
@@ -149,24 +149,24 @@ class EclipseFinder {
 		List<String> driveLetters = asList("C");
 		try {
 			driveLetters = getDrivesOnWindows();
-		} catch ( Throwable ignore ) {
+		} catch (Throwable ignore) {
 			ignore.printStackTrace();
 		}
 		
-		for ( String letter : driveLetters ) {
+		for (String letter : driveLetters) {
 			File f = new File(letter + ":\\");
-			for ( File dir : f.listFiles() ) {
-				if ( !dir.isDirectory() ) continue;
-				if ( dir.getName().toLowerCase().contains("eclipse") ) {
+			for (File dir : f.listFiles()) {
+				if (!dir.isDirectory()) continue;
+				if (dir.getName().toLowerCase().contains("eclipse")) {
 					String eclipseLocation = findEclipseOnWindows1(dir);
-					if ( eclipseLocation != null ) eclipses.add(eclipseLocation);
+					if (eclipseLocation != null) eclipses.add(eclipseLocation);
 				}
-				if ( dir.getName().toLowerCase().contains("program files") ) {
-					for ( File dir2 : dir.listFiles() ) {
-						if ( !dir2.isDirectory() ) continue;
-						if ( dir.getName().toLowerCase().contains("eclipse") ) {
+				if (dir.getName().toLowerCase().contains("program files")) {
+					for (File dir2 : dir.listFiles()) {
+						if (!dir2.isDirectory()) continue;
+						if (dir.getName().toLowerCase().contains("eclipse")) {
 							String eclipseLocation = findEclipseOnWindows1(dir);
-							if ( eclipseLocation != null ) eclipses.add(eclipseLocation);
+							if (eclipseLocation != null) eclipses.add(eclipseLocation);
 						}
 					}
 				}
@@ -178,7 +178,7 @@ class EclipseFinder {
 	
 	/** Checks if the provided directory contains 'eclipse.exe', and if so, returns the directory, otherwise null. */
 	private static String findEclipseOnWindows1(File dir) {
-		if ( new File(dir, "eclipse.exe").isFile() ) return dir.getAbsolutePath();
+		if (new File(dir, "eclipse.exe").isFile()) return dir.getAbsolutePath();
 		return null;
 	}
 	
@@ -189,7 +189,7 @@ class EclipseFinder {
 	 * @return List of directories that contain the Eclipse executable.
 	 */
 	static List<String> findEclipses() {
-		switch ( getOS() ) {
+		switch (getOS()) {
 		case WINDOWS:
 			return findEclipseOnWindows();
 		case MAC_OS_X:
@@ -206,9 +206,9 @@ class EclipseFinder {
 	
 	static OS getOS() {
 		String prop = System.getProperty("os.name", "").toLowerCase();
-		if ( prop.matches("^.*\\bmac\\b.*$") ) return OS.MAC_OS_X;
-		if ( prop.matches("^.*\\bdarwin\\b.*$") ) return OS.MAC_OS_X;
-		if ( prop.matches("^.*\\bwin(dows)\\b.*$") ) return OS.WINDOWS;
+		if (prop.matches("^.*\\bmac\\b.*$")) return OS.MAC_OS_X;
+		if (prop.matches("^.*\\bdarwin\\b.*$")) return OS.MAC_OS_X;
+		if (prop.matches("^.*\\bwin(dows)\\b.*$")) return OS.WINDOWS;
 		
 		return OS.UNIX;
 	}
@@ -219,7 +219,7 @@ class EclipseFinder {
 	 * @return 'Eclipse.app' on OS X, 'eclipse.exe' on Windows, and 'eclipse' on other OSes.
 	 */
 	static String getEclipseExecutableName() {
-		switch ( getOS() ) {
+		switch (getOS()) {
 		case WINDOWS:
 			return "eclipse.exe";
 		case MAC_OS_X:
@@ -235,15 +235,15 @@ class EclipseFinder {
 	 */
 	static List<String> findEclipseOnMac() {
 		List<String> eclipses = new ArrayList<String>();
-		for ( File dir : new File("/Applications").listFiles() ) {
-			if ( !dir.isDirectory() ) continue;
-			if ( dir.getName().toLowerCase().equals("eclipse.app") ) {
+		for (File dir : new File("/Applications").listFiles()) {
+			if (!dir.isDirectory()) continue;
+			if (dir.getName().toLowerCase().equals("eclipse.app")) {
 				//This would be kind of an unorthodox Eclipse installation, but if Eclipse ever
 				//moves to this more maclike installation concept, our installer can still handle it.
 				eclipses.add("/Applications");
 			}
-			if ( dir.getName().toLowerCase().contains("eclipse") ) {
-				if ( new File(dir, "Eclipse.app").exists() ) eclipses.add(dir.toString());
+			if (dir.getName().toLowerCase().contains("eclipse")) {
+				if (new File(dir, "Eclipse.app").exists()) eclipses.add(dir.toString());
 			}
 		}
 		return eclipses;

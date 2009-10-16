@@ -33,7 +33,7 @@ import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
-import lombok.eclipse.EclipseAST.Node;
+import lombok.eclipse.EclipseNode;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -69,10 +69,10 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 	 * If not, the setter is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
 	 */
-	public void generateSetterForField(Node fieldNode, ASTNode pos) {
-		for ( Node child : fieldNode.down() ) {
-			if ( child.getKind() == Kind.ANNOTATION ) {
-				if ( annotationTypeMatches(Setter.class, child) ) {
+	public void generateSetterForField(EclipseNode fieldNode, ASTNode pos) {
+		for (EclipseNode child : fieldNode.down()) {
+			if (child.getKind() == Kind.ANNOTATION) {
+				if (annotationTypeMatches(Setter.class, child)) {
 					//The annotation will make it happen, so we can skip it.
 					return;
 				}
@@ -82,17 +82,18 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		createSetterForField(AccessLevel.PUBLIC, fieldNode, fieldNode, pos, false);
 	}
 	
-	public boolean handle(AnnotationValues<Setter> annotation, Annotation ast, Node annotationNode) {
-		Node fieldNode = annotationNode.up();
-		if ( fieldNode.getKind() != Kind.FIELD ) return false;
+	public boolean handle(AnnotationValues<Setter> annotation, Annotation ast, EclipseNode annotationNode) {
+		EclipseNode fieldNode = annotationNode.up();
+		if (fieldNode.getKind() != Kind.FIELD) return false;
 		AccessLevel level = annotation.getInstance().value();
-		if ( level == AccessLevel.NONE ) return true;
+		if (level == AccessLevel.NONE) return true;
 		
 		return createSetterForField(level, fieldNode, annotationNode, annotationNode.get(), true);
 	}
 	
-	private boolean createSetterForField(AccessLevel level, Node fieldNode, Node errorNode, ASTNode pos, boolean whineIfExists) {
-		if ( fieldNode.getKind() != Kind.FIELD ) {
+	private boolean createSetterForField(AccessLevel level,
+			EclipseNode fieldNode, EclipseNode errorNode, ASTNode pos, boolean whineIfExists) {
+		if (fieldNode.getKind() != Kind.FIELD) {
 			errorNode.addError("@Setter is only supported on a field.");
 			return true;
 		}
@@ -102,11 +103,11 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		
 		int modifier = toModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		
-		switch ( methodExists(setterName, fieldNode) ) {
+		switch (methodExists(setterName, fieldNode)) {
 		case EXISTS_BY_LOMBOK:
 			return true;
 		case EXISTS_BY_USER:
-			if ( whineIfExists ) errorNode.addWarning(
+			if (whineIfExists) errorNode.addWarning(
 					String.format("Not generating %s(%s %s): A method with that name already exists",
 					setterName, field.type, new String(field.name)));
 			return true;
@@ -114,7 +115,6 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		case NOT_EXISTS:
 			//continue with creating the setter
 		}
-		
 		
 		MethodDeclaration method = generateSetter((TypeDeclaration) fieldNode.up().get(), field, setterName, modifier, pos);
 		

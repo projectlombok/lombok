@@ -64,12 +64,12 @@ public class TransformationsUtil {
 	public static String toGetterName(CharSequence fieldName, boolean isBoolean) {
 		final String prefix = isBoolean ? "is" : "get";
 		
-		if ( fieldName.length() == 0 ) return prefix;
+		if (fieldName.length() == 0) return prefix;
 		
-		for ( String knownBooleanPrefix : KNOWN_BOOLEAN_PREFIXES ) {
-			if ( !fieldName.toString().startsWith(knownBooleanPrefix) ) continue;
-			if ( fieldName.length() > knownBooleanPrefix.length() && 
-					!Character.isLowerCase(fieldName.charAt(knownBooleanPrefix.length())) ) {
+		for (String knownBooleanPrefix : KNOWN_BOOLEAN_PREFIXES) {
+			if (!fieldName.toString().startsWith(knownBooleanPrefix)) continue;
+			if (fieldName.length() > knownBooleanPrefix.length() && 
+					!Character.isLowerCase(fieldName.charAt(knownBooleanPrefix.length()))) {
 				//The field is called something like 'isFoo' or 'hasFoo' or 'getFoo', so we shouldn't
 				//prefix with 'is' but instead just use the field name as is. The isLowerCase check is so we don't turn
 				//hashCodeGenerated, which so happens to start with 'has', into hasHCodeGenerated instead of isHashCodeGenerated.
@@ -103,10 +103,10 @@ public class TransformationsUtil {
 	}
 	
 	private static String buildName(String prefix, String suffix) {
-		if ( suffix.length() == 0 ) return prefix;
+		if (suffix.length() == 0) return prefix;
 		
 		char first = suffix.charAt(0);
-		if ( Character.isLowerCase(first) ) {
+		if (Character.isLowerCase(first)) {
 			boolean useUpperCase = suffix.length() > 2 &&
 				(Character.isTitleCase(suffix.charAt(1)) || Character.isUpperCase(suffix.charAt(1)));
 			suffix = String.format("%s%s",
@@ -117,14 +117,14 @@ public class TransformationsUtil {
 	}
 	
 	public static List<String> toAllGetterNames(CharSequence fieldName, boolean isBoolean) {
-		if ( !isBoolean ) return Collections.singletonList(toGetterName(fieldName, false));
+		if (!isBoolean) return Collections.singletonList(toGetterName(fieldName, false));
 		
 		List<String> baseNames = new ArrayList<String>();
 		baseNames.add(fieldName.toString());
-		for ( String knownBooleanPrefix : KNOWN_BOOLEAN_PREFIXES ) {
-			if ( !fieldName.toString().startsWith(knownBooleanPrefix) ) continue;
-			if ( fieldName.length() > knownBooleanPrefix.length() && 
-					!Character.isLowerCase(fieldName.charAt(knownBooleanPrefix.length())) ) {
+		for (String knownBooleanPrefix : KNOWN_BOOLEAN_PREFIXES) {
+			if (!fieldName.toString().startsWith(knownBooleanPrefix)) continue;
+			if (fieldName.length() > knownBooleanPrefix.length() && 
+					!Character.isLowerCase(fieldName.charAt(knownBooleanPrefix.length()))) {
 				//The field is called something like 'isFoo' or 'hasFoo' or 'getFoo', so the practical fieldname
 				//could also be 'foo'.
 				baseNames.add(fieldName.toString().substring(knownBooleanPrefix.length()));
@@ -134,12 +134,12 @@ public class TransformationsUtil {
 		}
 		
 		Set<String> names = new HashSet<String>();
-		for ( String baseName : baseNames ) {
-			if ( baseName.length() > 0 && Character.isLowerCase(baseName.charAt(0)) ) {
+		for (String baseName : baseNames) {
+			if (baseName.length() > 0 && Character.isLowerCase(baseName.charAt(0))) {
 				baseName = Character.toTitleCase(baseName.charAt(0)) + baseName.substring(1);
 			}
 			
-			for ( String prefix : KNOWN_BOOLEAN_PREFIXES ) {
+			for (String prefix : KNOWN_BOOLEAN_PREFIXES) {
 				names.add(prefix + baseName);
 			}
 		}

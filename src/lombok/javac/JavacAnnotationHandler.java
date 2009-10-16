@@ -54,5 +54,5 @@ public interface JavacAnnotationHandler<T extends Annotation> {
 	 * @return <code>true</code> if you don't want to be called again about this annotation during this
 	 * compile session (you've handled it), or <code>false</code> to indicate you aren't done yet.
 	 */
-	boolean handle(AnnotationValues<T> annotation, JCAnnotation ast, JavacAST.Node annotationNode);
+	boolean handle(AnnotationValues<T> annotation, JCAnnotation ast, JavacNode annotationNode);
 }

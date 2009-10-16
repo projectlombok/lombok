@@ -32,8 +32,7 @@ import lombok.AccessLevel;
 import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
-import lombok.eclipse.EclipseAST;
-import lombok.eclipse.EclipseAST.Node;
+import lombok.eclipse.EclipseNode;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -66,7 +65,7 @@ class PKG {
 	}
 	
 	static int toModifier(AccessLevel value) {
-		switch ( value ) {
+		switch (value) {
 		case MODULE:
 		case PACKAGE:
 			return 0;
@@ -83,8 +82,8 @@ class PKG {
 	static boolean nameEquals(char[][] typeName, String string) {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
-		for ( char[] elem : typeName ) {
-			if ( first ) first = false;
+		for (char[] elem : typeName) {
+			if (first) first = false;
 			else sb.append('.');
 			sb.append(elem);
 		}
@@ -96,19 +95,19 @@ class PKG {
 		NOT_EXISTS, EXISTS_BY_USER, EXISTS_BY_LOMBOK;
 	}
 	
-	static MemberExistsResult fieldExists(String fieldName, EclipseAST.Node node) {
-		while ( node != null && !(node.get() instanceof TypeDeclaration) ) {
+	static MemberExistsResult fieldExists(String fieldName, EclipseNode node) {
+		while (node != null && !(node.get() instanceof TypeDeclaration)) {
 			node = node.up();
 		}
 		
-		if ( node != null && node.get() instanceof TypeDeclaration ) {
+		if (node != null && node.get() instanceof TypeDeclaration) {
 			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
-			if ( typeDecl.fields != null ) for ( FieldDeclaration def : typeDecl.fields ) {
+			if (typeDecl.fields != null) for (FieldDeclaration def : typeDecl.fields) {
 				char[] fName = def.name;
-				if ( fName == null ) continue;
-				if ( fieldName.equals(new String(fName)) ) {
-					EclipseAST.Node existing = node.getNodeFor(def);
-					if ( existing == null || !existing.isHandled() ) return MemberExistsResult.EXISTS_BY_USER;
+				if (fName == null) continue;
+				if (fieldName.equals(new String(fName))) {
+					EclipseNode existing = node.getNodeFor(def);
+					if (existing == null || !existing.isHandled()) return MemberExistsResult.EXISTS_BY_USER;
 					return MemberExistsResult.EXISTS_BY_LOMBOK;
 				}
 			}
@@ -117,19 +116,19 @@ class PKG {
 		return MemberExistsResult.NOT_EXISTS;
 	}
 	
-	static MemberExistsResult methodExists(String methodName, EclipseAST.Node node) {
-		while ( node != null && !(node.get() instanceof TypeDeclaration) ) {
+	static MemberExistsResult methodExists(String methodName, EclipseNode node) {
+		while (node != null && !(node.get() instanceof TypeDeclaration)) {
 			node = node.up();
 		}
 		
-		if ( node != null && node.get() instanceof TypeDeclaration ) {
+		if (node != null && node.get() instanceof TypeDeclaration) {
 			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
-			if ( typeDecl.methods != null ) for ( AbstractMethodDeclaration def : typeDecl.methods ) {
+			if (typeDecl.methods != null) for (AbstractMethodDeclaration def : typeDecl.methods) {
 				char[] mName = def.selector;
-				if ( mName == null ) continue;
-				if ( methodName.equals(new String(mName)) ) {
-					EclipseAST.Node existing = node.getNodeFor(def);
-					if ( existing == null || !existing.isHandled() ) return MemberExistsResult.EXISTS_BY_USER;
+				if (mName == null) continue;
+				if (methodName.equals(new String(mName))) {
+					EclipseNode existing = node.getNodeFor(def);
+					if (existing == null || !existing.isHandled()) return MemberExistsResult.EXISTS_BY_USER;
 					return MemberExistsResult.EXISTS_BY_LOMBOK;
 				}
 			}
@@ -138,18 +137,18 @@ class PKG {
 		return MemberExistsResult.NOT_EXISTS;
 	}
 	
-	static MemberExistsResult constructorExists(EclipseAST.Node node) {
-		while ( node != null && !(node.get() instanceof TypeDeclaration) ) {
+	static MemberExistsResult constructorExists(EclipseNode node) {
+		while (node != null && !(node.get() instanceof TypeDeclaration)) {
 			node = node.up();
 		}
 		
-		if ( node != null && node.get() instanceof TypeDeclaration ) {
+		if (node != null && node.get() instanceof TypeDeclaration) {
 			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
-			if ( typeDecl.methods != null ) for ( AbstractMethodDeclaration def : typeDecl.methods ) {
-				if ( def instanceof ConstructorDeclaration ) {
-					if ( (def.bits & ASTNode.IsDefaultConstructor) != 0 ) continue;
-					EclipseAST.Node existing = node.getNodeFor(def);
-					if ( existing == null || !existing.isHandled() ) return MemberExistsResult.EXISTS_BY_USER;
+			if (typeDecl.methods != null) for (AbstractMethodDeclaration def : typeDecl.methods) {
+				if (def instanceof ConstructorDeclaration) {
+					if ((def.bits & ASTNode.IsDefaultConstructor) != 0) continue;
+					EclipseNode existing = node.getNodeFor(def);
+					if (existing == null || !existing.isHandled()) return MemberExistsResult.EXISTS_BY_USER;
 					return MemberExistsResult.EXISTS_BY_LOMBOK;
 				}
 			}
@@ -158,17 +157,17 @@ class PKG {
 		return MemberExistsResult.NOT_EXISTS;
 	}
 	
-	static EclipseAST.Node getExistingLombokConstructor(EclipseAST.Node node) {
-		while ( node != null && !(node.get() instanceof TypeDeclaration) ) {
+	static EclipseNode getExistingLombokConstructor(EclipseNode node) {
+		while (node != null && !(node.get() instanceof TypeDeclaration)) {
 			node = node.up();
 		}
 		
-		if ( node.get() instanceof TypeDeclaration ) {
-			for ( AbstractMethodDeclaration def : ((TypeDeclaration)node.get()).methods ) {
-				if ( def instanceof ConstructorDeclaration ) {
-					if ( (def.bits & ASTNode.IsDefaultConstructor) != 0 ) continue;
-					EclipseAST.Node existing = node.getNodeFor(def);
-					if ( existing.isHandled() ) return existing;
+		if (node.get() instanceof TypeDeclaration) {
+			for (AbstractMethodDeclaration def : ((TypeDeclaration)node.get()).methods) {
+				if (def instanceof ConstructorDeclaration) {
+					if ((def.bits & ASTNode.IsDefaultConstructor) != 0) continue;
+					EclipseNode existing = node.getNodeFor(def);
+					if (existing.isHandled()) return existing;
 				}
 			}
 		}
@@ -176,18 +175,18 @@ class PKG {
 		return null;
 	}
 	
-	static EclipseAST.Node getExistingLombokMethod(String methodName, EclipseAST.Node node) {
-		while ( node != null && !(node.get() instanceof TypeDeclaration) ) {
+	static EclipseNode getExistingLombokMethod(String methodName, EclipseNode node) {
+		while (node != null && !(node.get() instanceof TypeDeclaration)) {
 			node = node.up();
 		}
 		
-		if ( node.get() instanceof TypeDeclaration ) {
-			for ( AbstractMethodDeclaration def : ((TypeDeclaration)node.get()).methods ) {
+		if (node.get() instanceof TypeDeclaration) {
+			for (AbstractMethodDeclaration def : ((TypeDeclaration)node.get()).methods) {
 				char[] mName = def.selector;
-				if ( mName == null ) continue;
-				if ( methodName.equals(new String(mName)) ) {
-					EclipseAST.Node existing = node.getNodeFor(def);
-					if ( existing.isHandled() ) return existing;
+				if (mName == null) continue;
+				if (methodName.equals(new String(mName))) {
+					EclipseNode existing = node.getNodeFor(def);
+					if (existing.isHandled()) return existing;
 				}
 			}
 		}
@@ -195,10 +194,10 @@ class PKG {
 		return null;
 	}
 	
-	static void injectField(EclipseAST.Node type, FieldDeclaration field) {
+	static void injectField(EclipseNode type, FieldDeclaration field) {
 		TypeDeclaration parent = (TypeDeclaration) type.get();
 		
-		if ( parent.fields == null ) {
+		if (parent.fields == null) {
 			parent.fields = new FieldDeclaration[1];
 			parent.fields[0] = field;
 		} else {
@@ -211,27 +210,27 @@ class PKG {
 		type.add(field, Kind.FIELD).recursiveSetHandled();
 	}
 	
-	static void injectMethod(EclipseAST.Node type, AbstractMethodDeclaration method) {
+	static void injectMethod(EclipseNode type, AbstractMethodDeclaration method) {
 		TypeDeclaration parent = (TypeDeclaration) type.get();
 		
-		if ( parent.methods == null ) {
+		if (parent.methods == null) {
 			parent.methods = new AbstractMethodDeclaration[1];
 			parent.methods[0] = method;
 		} else {
 			boolean injectionComplete = false;
-			if ( method instanceof ConstructorDeclaration ) {
-				for ( int i = 0 ; i < parent.methods.length ; i++ ) {
-					if ( parent.methods[i] instanceof ConstructorDeclaration &&
-							(parent.methods[i].bits & ASTNode.IsDefaultConstructor) != 0 ) {
-						EclipseAST.Node tossMe = type.getNodeFor(parent.methods[i]);
+			if (method instanceof ConstructorDeclaration) {
+				for (int i = 0 ; i < parent.methods.length ; i++) {
+					if (parent.methods[i] instanceof ConstructorDeclaration &&
+							(parent.methods[i].bits & ASTNode.IsDefaultConstructor) != 0) {
+						EclipseNode tossMe = type.getNodeFor(parent.methods[i]);
 						parent.methods[i] = method;
-						if ( tossMe != null ) tossMe.up().removeChild(tossMe);
+						if (tossMe != null) tossMe.up().removeChild(tossMe);
 						injectionComplete = true;
 						break;
 					}
 				}
 			}
-			if ( !injectionComplete ) {
+			if (!injectionComplete) {
 				AbstractMethodDeclaration[] newArray = new AbstractMethodDeclaration[parent.methods.length + 1];
 				System.arraycopy(parent.methods, 0, newArray, 0, parent.methods.length);
 				newArray[parent.methods.length] = method;
@@ -244,13 +243,13 @@ class PKG {
 	
 	static Annotation[] findAnnotations(FieldDeclaration field, Pattern namePattern) {
 		List<Annotation> result = new ArrayList<Annotation>();
-		if ( field.annotations == null ) return new Annotation[0];
+		if (field.annotations == null) return new Annotation[0];
 		for (Annotation annotation : field.annotations) {
 			TypeReference typeRef = annotation.type;
-			if ( typeRef != null && typeRef.getTypeName()!= null ) {
+			if (typeRef != null && typeRef.getTypeName()!= null) {
 				char[][] typeName = typeRef.getTypeName();
 				String suspect = new String(typeName[typeName.length - 1]);
-				if ( namePattern.matcher(suspect).matches() ) {
+				if (namePattern.matcher(suspect).matches()) {
 					result.add(annotation);
 				}
 			}
@@ -294,24 +293,24 @@ class PKG {
 		return ann;
 	}
 	
-	static List<Integer> createListOfNonExistentFields(List<String> list, Node type, boolean excludeStandard, boolean excludeTransient) {
+	static List<Integer> createListOfNonExistentFields(List<String> list, EclipseNode type, boolean excludeStandard, boolean excludeTransient) {
 		boolean[] matched = new boolean[list.size()];
 		
-		for ( Node child : type.down() ) {
-			if ( list.isEmpty() ) break;
-			if ( child.getKind() != Kind.FIELD ) continue;
-			if ( excludeStandard ) {
-				if ( (((FieldDeclaration)child.get()).modifiers & ClassFileConstants.AccStatic) != 0 ) continue;
-				if ( child.getName().startsWith("$") ) continue;
+		for (EclipseNode child : type.down()) {
+			if (list.isEmpty()) break;
+			if (child.getKind() != Kind.FIELD) continue;
+			if (excludeStandard) {
+				if ((((FieldDeclaration)child.get()).modifiers & ClassFileConstants.AccStatic) != 0) continue;
+				if (child.getName().startsWith("$")) continue;
 			}
-			if ( excludeTransient && (((FieldDeclaration)child.get()).modifiers & ClassFileConstants.AccTransient) != 0 ) continue;
+			if (excludeTransient && (((FieldDeclaration)child.get()).modifiers & ClassFileConstants.AccTransient) != 0) continue;
 			int idx = list.indexOf(child.getName());
-			if ( idx > -1 ) matched[idx] = true;
+			if (idx > -1) matched[idx] = true;
 		}
 		
 		List<Integer> problematic = new ArrayList<Integer>();
-		for ( int i = 0 ; i < list.size() ; i++ ) {
-			if ( !matched[i] ) problematic.add(i);
+		for (int i = 0 ; i < list.size() ; i++) {
+			if (!matched[i]) problematic.add(i);
 		}
 		
 		return problematic;

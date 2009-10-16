@@ -55,7 +55,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
  * Wraps around javac's internal AST view to add useful features as well as the ability to visit parents from children,
  * something javac's own AST system does not offer.
  */
-public class JavacAST extends AST<JCTree> {
+public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	private final Messager messager;
 	private final Name.Table nameTable;
 	private final TreeMaker treeMaker;
@@ -90,8 +90,8 @@ public class JavacAST extends AST<JCTree> {
 	@Override public Collection<String> getImportStatements() {
 		List<String> imports = new ArrayList<String>();
 		JCCompilationUnit unit = (JCCompilationUnit)top().get();
-		for ( JCTree def : unit.defs ) {
-			if ( def instanceof JCImport ) {
+		for (JCTree def : unit.defs) {
+			if (def instanceof JCImport) {
 				imports.add(((JCImport)def).qualid.toString());
 			}
 		}
@@ -107,20 +107,10 @@ public class JavacAST extends AST<JCTree> {
 		top().traverse(visitor);
 	}
 	
-	private void traverseChildren(JavacASTVisitor visitor, Node node) {
-		for ( Node child : new ArrayList<Node>(node.down()) ) {
+	void traverseChildren(JavacASTVisitor visitor, JavacNode node) {
+		for (JavacNode child : new ArrayList<JavacNode>(node.down())) {
 			child.traverse(visitor);
 		}
-	}
-	
-	/** {@inheritDoc} */
-	@Override public Node top() {
-		return (Node) super.top();
-	}
-	
-	/** {@inheritDoc} */
-	@Override public Node get(JCTree astNode) {
-		return (Node) super.get(astNode);
 	}
 	
 	/** @return A Name object generated for the proper name table belonging to this AST. */
@@ -139,8 +129,8 @@ public class JavacAST extends AST<JCTree> {
 	}
 	
 	/** {@inheritDoc} */
-	@Override protected Node buildTree(JCTree node, Kind kind) {
-		switch ( kind ) {
+	@Override protected JavacNode buildTree(JCTree node, Kind kind) {
+		switch (kind) {
 		case COMPILATION_UNIT:
 			return buildCompilationUnit((JCCompilationUnit) node);
 		case TYPE:
@@ -164,99 +154,100 @@ public class JavacAST extends AST<JCTree> {
 		}
 	}
 	
-	private Node buildCompilationUnit(JCCompilationUnit top) {
-		List<Node> childNodes = new ArrayList<Node>();
-		for ( JCTree s : top.defs ) {
-			if ( s instanceof JCClassDecl ) {
+	private JavacNode buildCompilationUnit(JCCompilationUnit top) {
+		List<JavacNode> childNodes = new ArrayList<JavacNode>();
+		for (JCTree s : top.defs) {
+			if (s instanceof JCClassDecl) {
 				addIfNotNull(childNodes, buildType((JCClassDecl)s));
 			} // else they are import statements, which we don't care about. Or Skip objects, whatever those are.
 		}
 		
-		return new Node(top, childNodes, Kind.COMPILATION_UNIT);
+		return new JavacNode(this, top, childNodes, Kind.COMPILATION_UNIT);
 	}
 	
-	private Node buildType(JCClassDecl type) {
-		if ( setAndGetAsHandled(type) ) return null;
-		List<Node> childNodes = new ArrayList<Node>();
+	private JavacNode buildType(JCClassDecl type) {
+		if (setAndGetAsHandled(type)) return null;
+		List<JavacNode> childNodes = new ArrayList<JavacNode>();
 		
-		for ( JCTree def : type.defs ) {
-			for ( JCAnnotation annotation : type.mods.annotations ) addIfNotNull(childNodes, buildAnnotation(annotation));
+		for (JCTree def : type.defs) {
+			for (JCAnnotation annotation : type.mods.annotations) addIfNotNull(childNodes, buildAnnotation(annotation));
 			/* A def can be:
 			 *   JCClassDecl for inner types
 			 *   JCMethodDecl for constructors and methods
 			 *   JCVariableDecl for fields
 			 *   JCBlock for (static) initializers
 			 */
-			if ( def instanceof JCMethodDecl ) addIfNotNull(childNodes, buildMethod((JCMethodDecl)def));
-			else if ( def instanceof JCClassDecl ) addIfNotNull(childNodes, buildType((JCClassDecl)def));
-			else if ( def instanceof JCVariableDecl ) addIfNotNull(childNodes, buildField((JCVariableDecl)def));
-			else if ( def instanceof JCBlock ) addIfNotNull(childNodes, buildInitializer((JCBlock)def));
+			if (def instanceof JCMethodDecl) addIfNotNull(childNodes, buildMethod((JCMethodDecl)def));
+			else if (def instanceof JCClassDecl) addIfNotNull(childNodes, buildType((JCClassDecl)def));
+			else if (def instanceof JCVariableDecl) addIfNotNull(childNodes, buildField((JCVariableDecl)def));
+			else if (def instanceof JCBlock) addIfNotNull(childNodes, buildInitializer((JCBlock)def));
 		}
 		
-		return putInMap(new Node(type, childNodes, Kind.TYPE));
+		return putInMap(new JavacNode(this, type, childNodes, Kind.TYPE));
 	}
 	
-	private Node buildField(JCVariableDecl field) {
-		if ( setAndGetAsHandled(field) ) return null;
-		List<Node> childNodes = new ArrayList<Node>();
-		for ( JCAnnotation annotation : field.mods.annotations ) addIfNotNull(childNodes, buildAnnotation(annotation));
+	private JavacNode buildField(JCVariableDecl field) {
+		if (setAndGetAsHandled(field)) return null;
+		List<JavacNode> childNodes = new ArrayList<JavacNode>();
+		for (JCAnnotation annotation : field.mods.annotations) addIfNotNull(childNodes, buildAnnotation(annotation));
 		addIfNotNull(childNodes, buildExpression(field.init));
-		return putInMap(new Node(field, childNodes, Kind.FIELD));
+		return putInMap(new JavacNode(this, field, childNodes, Kind.FIELD));
 	}
 	
-	private Node buildLocalVar(JCVariableDecl local, Kind kind) {
-		if ( setAndGetAsHandled(local) ) return null;
-		List<Node> childNodes = new ArrayList<Node>();
-		for ( JCAnnotation annotation : local.mods.annotations ) addIfNotNull(childNodes, buildAnnotation(annotation));
+	private JavacNode buildLocalVar(JCVariableDecl local, Kind kind) {
+		if (setAndGetAsHandled(local)) return null;
+		List<JavacNode> childNodes = new ArrayList<JavacNode>();
+		for (JCAnnotation annotation : local.mods.annotations) addIfNotNull(childNodes, buildAnnotation(annotation));
 		addIfNotNull(childNodes, buildExpression(local.init));
-		return putInMap(new Node(local, childNodes, kind));
+		return putInMap(new JavacNode(this, local, childNodes, kind));
 	}
 	
-	private Node buildInitializer(JCBlock initializer) {
-		if ( setAndGetAsHandled(initializer) ) return null;
-		List<Node> childNodes = new ArrayList<Node>();
-		for ( JCStatement statement: initializer.stats ) addIfNotNull(childNodes, buildStatement(statement));
-		return putInMap(new Node(initializer, childNodes, Kind.INITIALIZER));
+	private JavacNode buildInitializer(JCBlock initializer) {
+		if (setAndGetAsHandled(initializer)) return null;
+		List<JavacNode> childNodes = new ArrayList<JavacNode>();
+		for (JCStatement statement: initializer.stats) addIfNotNull(childNodes, buildStatement(statement));
+		return putInMap(new JavacNode(this, initializer, childNodes, Kind.INITIALIZER));
 	}
 	
-	private Node buildMethod(JCMethodDecl method) {
-		if ( setAndGetAsHandled(method) ) return null;
-		List<Node> childNodes = new ArrayList<Node>();
-		for ( JCAnnotation annotation : method.mods.annotations ) addIfNotNull(childNodes, buildAnnotation(annotation));
-		for ( JCVariableDecl param : method.params ) addIfNotNull(childNodes, buildLocalVar(param, Kind.ARGUMENT));
-		if ( method.body != null && method.body.stats != null )
-			for ( JCStatement statement : method.body.stats ) addIfNotNull(childNodes, buildStatement(statement));
-		return putInMap(new Node(method, childNodes, Kind.METHOD));
+	private JavacNode buildMethod(JCMethodDecl method) {
+		if (setAndGetAsHandled(method)) return null;
+		List<JavacNode> childNodes = new ArrayList<JavacNode>();
+		for (JCAnnotation annotation : method.mods.annotations) addIfNotNull(childNodes, buildAnnotation(annotation));
+		for (JCVariableDecl param : method.params) addIfNotNull(childNodes, buildLocalVar(param, Kind.ARGUMENT));
+		if (method.body != null && method.body.stats != null) {
+			for (JCStatement statement : method.body.stats) addIfNotNull(childNodes, buildStatement(statement));
+		}
+		return putInMap(new JavacNode(this, method, childNodes, Kind.METHOD));
 	}
 	
-	private Node buildAnnotation(JCAnnotation annotation) {
-		if ( setAndGetAsHandled(annotation) ) return null;
-		return putInMap(new Node(annotation, null, Kind.ANNOTATION));
+	private JavacNode buildAnnotation(JCAnnotation annotation) {
+		if (setAndGetAsHandled(annotation)) return null;
+		return putInMap(new JavacNode(this, annotation, null, Kind.ANNOTATION));
 	}
 	
-	private Node buildExpression(JCExpression expression) {
+	private JavacNode buildExpression(JCExpression expression) {
 		return buildStatementOrExpression(expression);
 	}
 	
-	private Node buildStatement(JCStatement statement) {
+	private JavacNode buildStatement(JCStatement statement) {
 		return buildStatementOrExpression(statement);
 	}
 	
-	private Node buildStatementOrExpression(JCTree statement) {
-		if ( statement == null ) return null;
-		if ( statement instanceof JCAnnotation ) return null;
-		if ( statement instanceof JCClassDecl ) return buildType((JCClassDecl)statement);
-		if ( statement instanceof JCVariableDecl ) return buildLocalVar((JCVariableDecl)statement, Kind.LOCAL);
+	private JavacNode buildStatementOrExpression(JCTree statement) {
+		if (statement == null) return null;
+		if (statement instanceof JCAnnotation) return null;
+		if (statement instanceof JCClassDecl) return buildType((JCClassDecl)statement);
+		if (statement instanceof JCVariableDecl) return buildLocalVar((JCVariableDecl)statement, Kind.LOCAL);
 		
-		if ( setAndGetAsHandled(statement) ) return null;
+		if (setAndGetAsHandled(statement)) return null;
 		
 		return drill(statement);
 	}
 	
-	private Node drill(JCTree statement) {
-		List<Node> childNodes = new ArrayList<Node>();
-		for ( FieldAccess fa : fieldsOf(statement.getClass()) ) childNodes.addAll(buildWithField(Node.class, statement, fa));
-		return putInMap(new Node(statement, childNodes, Kind.STATEMENT));
+	private JavacNode drill(JCTree statement) {
+		List<JavacNode> childNodes = new ArrayList<JavacNode>();
+		for (FieldAccess fa : fieldsOf(statement.getClass())) childNodes.addAll(buildWithField(JavacNode.class, statement, fa));
+		return putInMap(new JavacNode(this, statement, childNodes, Kind.STATEMENT));
 	}
 	
 	/** For javac, both JCExpression and JCStatement are considered as valid children types. */
@@ -267,200 +258,12 @@ public class JavacAST extends AST<JCTree> {
 		return collection;
 	}
 	
-	private static void addIfNotNull(Collection<Node> nodes, Node node) {
-		if ( node != null ) nodes.add(node);
-	}
-	
-	/**
-	 * Javac specific version of the AST.Node class.
-	 */
-	public class Node extends AST<JCTree>.Node {
-		/**
-		 * See the {@link AST.Node} constructor for information.
-		 */
-		public Node(JCTree node, List<Node> children, Kind kind) {
-			super(node, children, kind);
-		}
-		
-		/**
-		 * Visits this node and all child nodes depth-first, calling the provided visitor's visit methods.
-		 */
-		public void traverse(JavacASTVisitor visitor) {
-			switch ( this.getKind() ) {
-			case COMPILATION_UNIT:
-				visitor.visitCompilationUnit(this, (JCCompilationUnit)get());
-				traverseChildren(visitor, this);
-				visitor.endVisitCompilationUnit(this, (JCCompilationUnit)get());
-				break;
-			case TYPE:
-				visitor.visitType(this, (JCClassDecl)get());
-				traverseChildren(visitor, this);
-				visitor.endVisitType(this, (JCClassDecl)get());
-				break;
-			case FIELD:
-				visitor.visitField(this, (JCVariableDecl)get());
-				traverseChildren(visitor, this);
-				visitor.endVisitField(this, (JCVariableDecl)get());
-				break;
-			case METHOD:
-				visitor.visitMethod(this, (JCMethodDecl)get());
-				traverseChildren(visitor, this);
-				visitor.endVisitMethod(this, (JCMethodDecl)get());
-				break;
-			case INITIALIZER:
-				visitor.visitInitializer(this, (JCBlock)get());
-				traverseChildren(visitor, this);
-				visitor.endVisitInitializer(this, (JCBlock)get());
-				break;
-			case ARGUMENT:
-				JCMethodDecl parent = (JCMethodDecl) up().get();
-				visitor.visitMethodArgument(this, (JCVariableDecl)get(), parent);
-				traverseChildren(visitor, this);
-				visitor.endVisitMethodArgument(this, (JCVariableDecl)get(), parent);
-				break;
-			case LOCAL:
-				visitor.visitLocal(this, (JCVariableDecl)get());
-				traverseChildren(visitor, this);
-				visitor.endVisitLocal(this, (JCVariableDecl)get());
-				break;
-			case STATEMENT:
-				visitor.visitStatement(this, get());
-				traverseChildren(visitor, this);
-				visitor.endVisitStatement(this, get());
-				break;
-			case ANNOTATION:
-				switch ( up().getKind() ) {
-				case TYPE:
-					visitor.visitAnnotationOnType((JCClassDecl)up().get(), this, (JCAnnotation)get());
-					break;
-				case FIELD:
-					visitor.visitAnnotationOnField((JCVariableDecl)up().get(), this, (JCAnnotation)get());
-					break;
-				case METHOD:
-					visitor.visitAnnotationOnMethod((JCMethodDecl)up().get(), this, (JCAnnotation)get());
-					break;
-				case ARGUMENT:
-					JCVariableDecl argument = (JCVariableDecl)up().get();
-					JCMethodDecl method = (JCMethodDecl)up().up().get();
-					visitor.visitAnnotationOnMethodArgument(argument, method, this, (JCAnnotation)get());
-					break;
-				case LOCAL:
-					visitor.visitAnnotationOnLocal((JCVariableDecl)up().get(), this, (JCAnnotation)get());
-					break;
-				default:
-					throw new AssertionError("Annotion not expected as child of a " + up().getKind());
-				}
-				break;
-			default:
-				throw new AssertionError("Unexpected kind during node traversal: " + getKind());
-			}
-		}
-		
-		/** {@inheritDoc} */
-		@Override public String getName() {
-			final Name n;
-			
-			if ( node instanceof JCClassDecl ) n = ((JCClassDecl)node).name;
-			else if ( node instanceof JCMethodDecl ) n = ((JCMethodDecl)node).name;
-			else if ( node instanceof JCVariableDecl ) n = ((JCVariableDecl)node).name;
-			else n = null;
-			
-			return n == null ? null : n.toString();
-		}
-		
-		/** {@inheritDoc} */
-		@Override protected boolean calculateIsStructurallySignificant() {
-			if ( node instanceof JCClassDecl ) return true;
-			if ( node instanceof JCMethodDecl ) return true;
-			if ( node instanceof JCVariableDecl ) return true;
-			if ( node instanceof JCCompilationUnit ) return true;
-			return false;
-		}
-		
-		/**
-		 * Convenient shortcut to the owning JavacAST object's getTreeMaker method.
-		 * 
-		 * @see JavacAST#getTreeMaker()
-		 */
-		public TreeMaker getTreeMaker() {
-			return treeMaker;
-		}
-		
-		/**
-		 * Convenient shortcut to the owning JavacAST object's getSymbolTable method.
-		 * 
-		 * @see JavacAST#getSymbolTable()
-		 */
-		public Symtab getSymbolTable() {
-			return symtab;
-		}
-		
-		/**
-		 * Convenient shortcut to the owning JavacAST object's toName method.
-		 * 
-		 * @see JavacAST#toName(String)
-		 */
-		public Name toName(String name) {
-			return JavacAST.this.toName(name);
-		}
-		
-		/** {@inheritDoc} */
-		@Override public Node getNodeFor(JCTree obj) {
-			return (Node) super.getNodeFor(obj);
-		}
-		
-		/** {@inheritDoc} */
-		@Override public Node directUp() {
-			return (Node) super.directUp();
-		}
-		
-		/** {@inheritDoc} */
-		@Override public Node up() {
-			return (Node) super.up();
-		}
-		
-		/** {@inheritDoc} */
-		@Override public Node top() {
-			return (Node) super.top();
-		}
-		
-		/** {@inheritDoc} */
-		@SuppressWarnings("unchecked")
-		@Override public Collection<Node> down() {
-			return (Collection<Node>) super.down();
-		}
-		
-		/**
-		 * Generates an compiler error focused on the AST node represented by this node object.
-		 */
-		public void addError(String message) {
-			printMessage(Diagnostic.Kind.ERROR, message, this, null);
-		}
-		
-		/**
-		 * Generates an compiler error focused on the AST node represented by this node object.
-		 */
-		public void addError(String message, DiagnosticPosition pos) {
-			printMessage(Diagnostic.Kind.ERROR, message, null, pos);
-		}
-		
-		/**
-		 * Generates a compiler warning focused on the AST node represented by this node object.
-		 */
-		public void addWarning(String message) {
-			printMessage(Diagnostic.Kind.WARNING, message, this, null);
-		}
-		
-		/**
-		 * Generates a compiler warning focused on the AST node represented by this node object.
-		 */
-		public void addWarning(String message, DiagnosticPosition pos) {
-			printMessage(Diagnostic.Kind.WARNING, message, null, pos);
-		}
+	private static void addIfNotNull(Collection<JavacNode> nodes, JavacNode node) {
+		if (node != null) nodes.add(node);
 	}
 	
 	/** Supply either a position or a node (in that case, position of the node is used) */
-	private void printMessage(Diagnostic.Kind kind, String message, Node node, DiagnosticPosition pos) {
+	void printMessage(Diagnostic.Kind kind, String message, JavacNode node, DiagnosticPosition pos) {
 		JavaFileObject oldSource = null;
 		JavaFileObject newSource = null;
 		JCTree astObject = node == null ? null : node.get();
@@ -468,7 +271,7 @@ public class JavacAST extends AST<JCTree> {
 		newSource = top.sourcefile;
 		if (newSource != null) {
 			oldSource = log.useSource(newSource);
-			if ( pos == null ) pos = astObject.pos();
+			if (pos == null) pos = astObject.pos();
 		}
 		try {
 			switch (kind) {
@@ -488,22 +291,20 @@ public class JavacAST extends AST<JCTree> {
 				break;
 			}
 		} finally {
-			if (oldSource != null)
-				log.useSource(oldSource);
+			if (oldSource != null) log.useSource(oldSource);
 		}
 	}
 	
 	/** {@inheritDoc} */
-	@SuppressWarnings("unchecked")
 	@Override protected void setElementInASTCollection(Field field, Object refField, List<Collection<?>> chain, Collection<?> collection, int idx, JCTree newN) throws IllegalAccessException {
-		com.sun.tools.javac.util.List<?> list = setElementInConsList(chain, collection, ((List)collection).get(idx), newN);
+		com.sun.tools.javac.util.List<?> list = setElementInConsList(chain, collection, ((List<?>)collection).get(idx), newN);
 		field.set(refField, list);
 	}
 	
 	private com.sun.tools.javac.util.List<?> setElementInConsList(List<Collection<?>> chain, Collection<?> current, Object oldO, Object newO) {
 		com.sun.tools.javac.util.List<?> oldL = (com.sun.tools.javac.util.List<?>) current;
 		com.sun.tools.javac.util.List<?> newL = replaceInConsList(oldL, oldO, newO);
-		if ( chain.isEmpty() ) return newL;
+		if (chain.isEmpty()) return newL;
 		else {
 			List<Collection<?>> reducedChain = new ArrayList<Collection<?>>(chain);
 			Collection<?> newCurrent = reducedChain.remove(reducedChain.size() -1);
@@ -514,14 +315,14 @@ public class JavacAST extends AST<JCTree> {
 	private com.sun.tools.javac.util.List<?> replaceInConsList(com.sun.tools.javac.util.List<?> oldL, Object oldO, Object newO) {
 		boolean repl = false;
 		Object[] a = oldL.toArray();
-		for ( int i = 0 ; i < a.length ; i++ ) {
-			if ( a[i] == oldO ) {
+		for (int i = 0; i < a.length; i++) {
+			if (a[i] == oldO) {
 				a[i] = newO;
 				repl = true;
 			}
 		}
 		
-		if ( repl ) return com.sun.tools.javac.util.List.<Object>from(a);
+		if (repl) return com.sun.tools.javac.util.List.<Object>from(a);
 		else return oldL;
 	}
 	
@@ -529,11 +330,11 @@ public class JavacAST extends AST<JCTree> {
 		try {
 			Field f = messager.getClass().getDeclaredField("errorCount");
 			f.setAccessible(true);
-			if ( f.getType() == int.class ) {
+			if (f.getType() == int.class) {
 				int val = ((Number)f.get(messager)).intValue();
 				f.set(messager, val +1);
 			}
-		} catch ( Throwable t ) {
+		} catch (Throwable t) {
 			//Very unfortunate, but in most cases it still works fine, so we'll silently swallow it.
 		}
 	}

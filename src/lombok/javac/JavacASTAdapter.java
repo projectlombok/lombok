@@ -21,8 +21,6 @@
  */
 package lombok.javac;
 
-import lombok.javac.JavacAST.Node;
-
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -37,64 +35,64 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
  */
 public class JavacASTAdapter implements JavacASTVisitor {
 	/** {@inheritDoc} */
-	@Override public void visitCompilationUnit(Node top, JCCompilationUnit unit) {}
+	@Override public void visitCompilationUnit(JavacNode top, JCCompilationUnit unit) {}
 	
 	/** {@inheritDoc} */
-	@Override public void endVisitCompilationUnit(Node top, JCCompilationUnit unit) {}
+	@Override public void endVisitCompilationUnit(JavacNode top, JCCompilationUnit unit) {}
 	
 	/** {@inheritDoc} */
-	@Override public void visitType(Node typeNode, JCClassDecl type) {}
+	@Override public void visitType(JavacNode typeNode, JCClassDecl type) {}
 	
 	/** {@inheritDoc} */
-	@Override public void visitAnnotationOnType(JCClassDecl type, Node annotationNode, JCAnnotation annotation) {}
+	@Override public void visitAnnotationOnType(JCClassDecl type, JavacNode annotationNode, JCAnnotation annotation) {}
 	
 	/** {@inheritDoc} */
-	@Override public void endVisitType(Node typeNode, JCClassDecl type) {}
+	@Override public void endVisitType(JavacNode typeNode, JCClassDecl type) {}
 	
 	/** {@inheritDoc} */
-	@Override public void visitField(Node fieldNode, JCVariableDecl field) {}
+	@Override public void visitField(JavacNode fieldNode, JCVariableDecl field) {}
 	
 	/** {@inheritDoc} */
-	@Override public void visitAnnotationOnField(JCVariableDecl field, Node annotationNode, JCAnnotation annotation) {}
+	@Override public void visitAnnotationOnField(JCVariableDecl field, JavacNode annotationNode, JCAnnotation annotation) {}
 	
 	/** {@inheritDoc} */
-	@Override public void endVisitField(Node fieldNode, JCVariableDecl field) {}
+	@Override public void endVisitField(JavacNode fieldNode, JCVariableDecl field) {}
 	
 	/** {@inheritDoc} */
-	@Override public void visitInitializer(Node initializerNode, JCBlock initializer) {}
+	@Override public void visitInitializer(JavacNode initializerNode, JCBlock initializer) {}
 	
 	/** {@inheritDoc} */
-	@Override public void endVisitInitializer(Node initializerNode, JCBlock initializer) {}
+	@Override public void endVisitInitializer(JavacNode initializerNode, JCBlock initializer) {}
 	
 	/** {@inheritDoc} */
-	@Override public void visitMethod(Node methodNode, JCMethodDecl method) {}
+	@Override public void visitMethod(JavacNode methodNode, JCMethodDecl method) {}
 	
 	/** {@inheritDoc} */
-	@Override public void visitAnnotationOnMethod(JCMethodDecl method, Node annotationNode, JCAnnotation annotation) {}
+	@Override public void visitAnnotationOnMethod(JCMethodDecl method, JavacNode annotationNode, JCAnnotation annotation) {}
 	
 	/** {@inheritDoc} */
-	@Override public void endVisitMethod(Node methodNode, JCMethodDecl method) {}
+	@Override public void endVisitMethod(JavacNode methodNode, JCMethodDecl method) {}
 	
 	/** {@inheritDoc} */
-	@Override public void visitMethodArgument(Node argumentNode, JCVariableDecl argument, JCMethodDecl method) {}
+	@Override public void visitMethodArgument(JavacNode argumentNode, JCVariableDecl argument, JCMethodDecl method) {}
 	
 	/** {@inheritDoc} */
-	@Override public void visitAnnotationOnMethodArgument(JCVariableDecl argument, JCMethodDecl method, Node annotationNode, JCAnnotation annotation) {}
+	@Override public void visitAnnotationOnMethodArgument(JCVariableDecl argument, JCMethodDecl method, JavacNode annotationNode, JCAnnotation annotation) {}
 	/** {@inheritDoc} */
-	@Override public void endVisitMethodArgument(Node argumentNode, JCVariableDecl argument, JCMethodDecl method) {}
+	@Override public void endVisitMethodArgument(JavacNode argumentNode, JCVariableDecl argument, JCMethodDecl method) {}
 	
 	/** {@inheritDoc} */
-	@Override public void visitLocal(Node localNode, JCVariableDecl local) {}
+	@Override public void visitLocal(JavacNode localNode, JCVariableDecl local) {}
 	
 	/** {@inheritDoc} */
-	@Override public void visitAnnotationOnLocal(JCVariableDecl local, Node annotationNode, JCAnnotation annotation) {}
+	@Override public void visitAnnotationOnLocal(JCVariableDecl local, JavacNode annotationNode, JCAnnotation annotation) {}
 	
 	/** {@inheritDoc} */
-	@Override public void endVisitLocal(Node localNode, JCVariableDecl local) {}
+	@Override public void endVisitLocal(JavacNode localNode, JCVariableDecl local) {}
 	
 	/** {@inheritDoc} */
-	@Override public void visitStatement(Node statementNode, JCTree statement) {}
+	@Override public void visitStatement(JavacNode statementNode, JCTree statement) {}
 	
 	/** {@inheritDoc} */
-	@Override public void endVisitStatement(Node statementNode, JCTree statement) {}
+	@Override public void endVisitStatement(JavacNode statementNode, JCTree statement) {}
 }

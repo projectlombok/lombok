@@ -48,7 +48,7 @@ public class Lombok {
 	 * @return A dummy RuntimeException; this method never returns normally, it <em>always</em> throws an exception!
 	 */
 	public static RuntimeException sneakyThrow(Throwable t) {
-		if ( t == null ) throw new NullPointerException("t");
+		if (t == null) throw new NullPointerException("t");
 		Lombok.<RuntimeException>sneakyThrow0(t);
 		return null;
 	}

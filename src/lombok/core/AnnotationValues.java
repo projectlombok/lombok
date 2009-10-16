@@ -37,7 +37,7 @@ import java.util.Map;
 public class AnnotationValues<A extends Annotation> {
 	private final Class<A> type;
 	private final Map<String, AnnotationValue> values;
-	private final AST<?>.Node ast;
+	private final LombokNode<?, ?, ?> ast;
 	
 	/**
 	 * Represents a single method on the annotation class. For example, the value() method on the Getter annotation.
@@ -49,7 +49,7 @@ public class AnnotationValues<A extends Annotation> {
 		/** Guesses for each raw expression. If the raw expression is a literal expression, the guess will
 		 * likely be right. If not, it'll be wrong. */
 		public final List<Object> valueGuesses;
-		private final AST<?>.Node node;
+		private final LombokNode<?, ?, ?> node;
 		private final boolean isExplicit;
 		
 		/**
@@ -59,7 +59,7 @@ public class AnnotationValues<A extends Annotation> {
 		 * For classes, supply the class name (qualified or not) as a string.<br />
 		 * For enums, supply the simple name part (everything after the last dot) as a string.<br />
 		 */
-		public AnnotationValue(AST<?>.Node node, String raw, Object valueGuess, boolean isExplicit) {
+		public AnnotationValue(LombokNode<?, ?, ?> node, String raw, Object valueGuess, boolean isExplicit) {
 			this.node = node;
 			this.raws = Collections.singletonList(raw);
 			this.valueGuesses = Collections.singletonList(valueGuess);
@@ -69,7 +69,7 @@ public class AnnotationValues<A extends Annotation> {
 		/**
 		 * Like the other constructor, but used for when the annotation method is initialized with an array value.
 		 */
-		public AnnotationValue(AST<?>.Node node, List<String> raws, List<Object> valueGuesses, boolean isExplicit) {
+		public AnnotationValue(LombokNode<?, ?, ?> node, List<String> raws, List<Object> valueGuesses, boolean isExplicit) {
 			this.node = node;
 			this.raws = raws;
 			this.valueGuesses = valueGuesses;
@@ -117,7 +117,7 @@ public class AnnotationValues<A extends Annotation> {
 	 * @param values a Map of method names to AnnotationValue instances, for example 'value -> annotationValue instance'.
 	 * @param ast The Annotation node.
 	 */
-	public AnnotationValues(Class<A> type, Map<String, AnnotationValue> values, AST<?>.Node ast) {
+	public AnnotationValues(Class<A> type, Map<String, AnnotationValue> values, LombokNode<?, ?, ?> ast) {
 		this.type = type;
 		this.values = values;
 		this.ast = ast;
@@ -162,50 +162,50 @@ public class AnnotationValues<A extends Annotation> {
 	 */
 	@SuppressWarnings("unchecked")
 	public A getInstance() {
-		if ( cachedInstance != null ) return cachedInstance;
+		if (cachedInstance != null) return cachedInstance;
 		InvocationHandler invocations = new InvocationHandler() {
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 				AnnotationValue v = values.get(method.getName());
-				if ( v == null ) {
+				if (v == null) {
 					Object defaultValue = method.getDefaultValue();
-					if ( defaultValue != null ) return defaultValue;
+					if (defaultValue != null) return defaultValue;
 					throw makeNoDefaultFail(v, method);
 				}
 				
 				boolean isArray = false;
 				Class<?> expected = method.getReturnType();
 				Object array = null;
-				if ( expected.isArray() ) {
+				if (expected.isArray()) {
 					isArray = true;
 					expected = expected.getComponentType();
 					array = Array.newInstance(expected, v.valueGuesses.size());
 				}
 				
-				if ( !isArray && v.valueGuesses.size() > 1 ) {
+				if (!isArray && v.valueGuesses.size() > 1) {
 					throw new AnnotationValueDecodeFail(v, 
 							"Expected a single value, but " + method.getName() + " has an array of values", -1);
 				}
 				
-				if ( v.valueGuesses.size() == 0 && !isArray ) {
+				if (v.valueGuesses.size() == 0 && !isArray) {
 					Object defaultValue = method.getDefaultValue();
-					if ( defaultValue == null ) throw makeNoDefaultFail(v, method);
+					if (defaultValue == null) throw makeNoDefaultFail(v, method);
 					return defaultValue;
 				}
 				
 				int idx = 0;
-				for ( Object guess : v.valueGuesses ) {
+				for (Object guess : v.valueGuesses) {
 					Object result = guess == null ? null : guessToType(guess, expected, v, idx);
-					if ( !isArray ) {
-						if ( result == null ) {
+					if (!isArray) {
+						if (result == null) {
 							Object defaultValue = method.getDefaultValue();
-							if ( defaultValue == null ) throw makeNoDefaultFail(v, method);
+							if (defaultValue == null) throw makeNoDefaultFail(v, method);
 							return defaultValue;
 						} else return result;
 					} else {
-						if ( result == null ) {
-							if ( v.valueGuesses.size() == 1 ) {
+						if (result == null) {
+							if (v.valueGuesses.size() == 1) {
 								Object defaultValue = method.getDefaultValue();
-								if ( defaultValue == null ) throw makeNoDefaultFail(v, method);
+								if (defaultValue == null) throw makeNoDefaultFail(v, method);
 								return defaultValue;
 							} else throw new AnnotationValueDecodeFail(v, 
 									"I can't make sense of this annotation value. Try using a fully qualified literal.", idx);
@@ -222,69 +222,69 @@ public class AnnotationValues<A extends Annotation> {
 	}
 	
 	private Object guessToType(Object guess, Class<?> expected, AnnotationValue v, int pos) {
-		if ( expected == int.class ) {
-			if ( guess instanceof Integer || guess instanceof Short || guess instanceof Byte ) {
+		if (expected == int.class) {
+			if (guess instanceof Integer || guess instanceof Short || guess instanceof Byte) {
 				return ((Number)guess).intValue();
 			}
 		}
 		
-		if ( expected == long.class ) {
-			if ( guess instanceof Long || guess instanceof Integer || guess instanceof Short || guess instanceof Byte ) {
+		if (expected == long.class) {
+			if (guess instanceof Long || guess instanceof Integer || guess instanceof Short || guess instanceof Byte) {
 				return ((Number)guess).longValue();
 			}
 		}
 		
-		if ( expected == short.class ) {
-			if ( guess instanceof Integer || guess instanceof Short || guess instanceof Byte ) {
+		if (expected == short.class) {
+			if (guess instanceof Integer || guess instanceof Short || guess instanceof Byte) {
 				int intVal = ((Number)guess).intValue();
 				int shortVal = ((Number)guess).shortValue();
-				if ( shortVal == intVal ) return shortVal;
+				if (shortVal == intVal) return shortVal;
 			}
 		}
 		
-		if ( expected == byte.class ) {
-			if ( guess instanceof Integer || guess instanceof Short || guess instanceof Byte ) {
+		if (expected == byte.class) {
+			if (guess instanceof Integer || guess instanceof Short || guess instanceof Byte) {
 				int intVal = ((Number)guess).intValue();
 				int byteVal = ((Number)guess).byteValue();
-				if ( byteVal == intVal ) return byteVal;
+				if (byteVal == intVal) return byteVal;
 			}
 		}
 		
-		if ( expected == double.class ) {
-			if ( guess instanceof Number ) return ((Number)guess).doubleValue();
+		if (expected == double.class) {
+			if (guess instanceof Number) return ((Number)guess).doubleValue();
 		}
 		
-		if ( expected == float.class ) {
-			if ( guess instanceof Number ) return ((Number)guess).floatValue();
+		if (expected == float.class) {
+			if (guess instanceof Number) return ((Number)guess).floatValue();
 		}
 		
-		if ( expected == boolean.class ) {
-			if ( guess instanceof Boolean ) return ((Boolean)guess).booleanValue();
+		if (expected == boolean.class) {
+			if (guess instanceof Boolean) return ((Boolean)guess).booleanValue();
 		}
 		
-		if ( expected == char.class ) {
-			if ( guess instanceof Character ) return ((Character)guess).charValue();
+		if (expected == char.class) {
+			if (guess instanceof Character) return ((Character)guess).charValue();
 		}
 		
-		if ( expected == String.class ) {
-			if ( guess instanceof String ) return guess;
+		if (expected == String.class) {
+			if (guess instanceof String) return guess;
 		}
 		
-		if ( Enum.class.isAssignableFrom(expected) ) {
-			if ( guess instanceof String ) {
-				for ( Object enumConstant : expected.getEnumConstants() ) {
+		if (Enum.class.isAssignableFrom(expected) ) {
+			if (guess instanceof String) {
+				for (Object enumConstant : expected.getEnumConstants()) {
 					String target = ((Enum<?>)enumConstant).name();
-					if ( target.equals(guess) ) return enumConstant;
+					if (target.equals(guess)) return enumConstant;
 				}
 				throw new AnnotationValueDecodeFail(v,
 						"Can't translate " + guess + " to an enum of type " + expected, pos);
 			}
 		}
 		
-		if ( Class.class == expected ) {
-			if ( guess instanceof String ) try {
+		if (Class.class == expected) {
+			if (guess instanceof String) try {
 				return Class.forName(toFQ((String)guess));
-			} catch ( ClassNotFoundException e ) {
+			} catch (ClassNotFoundException e) {
 				throw new AnnotationValueDecodeFail(v,
 						"Can't translate " + guess + " to a class object.", pos);
 			}
@@ -334,7 +334,7 @@ public class AnnotationValues<A extends Annotation> {
 	 * The index-th item in the initializer will carry the error (you should only call this method if you know it's there!) */
 	public void setError(String annotationMethodName, String message, int index) {
 		AnnotationValue v = values.get(annotationMethodName);
-		if ( v == null ) return;
+		if (v == null) return;
 		v.setError(message, index);
 	}
 	
@@ -342,7 +342,7 @@ public class AnnotationValues<A extends Annotation> {
 	 * The index-th item in the initializer will carry the error (you should only call this method if you know it's there!) */
 	public void setWarning(String annotationMethodName, String message, int index) {
 		AnnotationValue v = values.get(annotationMethodName);
-		if ( v == null ) return;
+		if (v == null) return;
 		v.setWarning(message, index);
 	}
 	
@@ -354,9 +354,9 @@ public class AnnotationValues<A extends Annotation> {
 	public List<String> getProbableFQTypes(String annotationMethodName) {
 		List<String> result = new ArrayList<String>();
 		AnnotationValue v = values.get(annotationMethodName);
-		if ( v == null ) return Collections.emptyList();
+		if (v == null) return Collections.emptyList();
 		
-		for ( Object o : v.valueGuesses ) result.add(o == null ? null : toFQ(o.toString()));
+		for (Object o : v.valueGuesses) result.add(o == null ? null : toFQ(o.toString()));
 		return result;
 	}
 	
@@ -375,32 +375,32 @@ public class AnnotationValues<A extends Annotation> {
 		boolean fqn = typeName.indexOf('.') > -1;
 		String prefix = fqn ? typeName.substring(0, typeName.indexOf('.')) : typeName;
 		
-		for ( String im : ast.getImportStatements() ) {
+		for (String im : ast.getImportStatements()) {
 			int idx = im.lastIndexOf('.');
 			String simple = im;
-			if ( idx > -1 ) simple = im.substring(idx+1);
-			if ( simple.equals(prefix) ) {
+			if (idx > -1) simple = im.substring(idx+1);
+			if (simple.equals(prefix)) {
 				return im + typeName.substring(prefix.length());
 			}
 		}
 		
 		c = tryClass(typeName);
-		if ( c != null ) return c.getName();
+		if (c != null) return c.getName();
 		
 		c = tryClass("java.lang." + typeName);
-		if ( c != null ) return c.getName();
+		if (c != null) return c.getName();
 		
 		//Try star imports
-		for ( String im : ast.getImportStatements() ) {
-			if ( im.endsWith(".*") ) {
+		for (String im : ast.getImportStatements()) {
+			if (im.endsWith(".*")) {
 				c = tryClass(im.substring(0, im.length() -1) + typeName);
-				if ( c != null ) return c.getName();
+				if (c != null) return c.getName();
 			}
 		}
 		
-		if ( !fqn ) {
+		if (!fqn) {
 			String pkg = ast.getPackageDeclaration();
-			if ( pkg != null ) return pkg + "." + typeName;
+			if (pkg != null) return pkg + "." + typeName;
 		}
 		
 		return null;
@@ -409,7 +409,7 @@ public class AnnotationValues<A extends Annotation> {
 	private Class<?> tryClass(String name) {
 		try {
 			return Class.forName(name);
-		} catch ( ClassNotFoundException e ) {
+		} catch (ClassNotFoundException e) {
 			return null;
 		}
 	}

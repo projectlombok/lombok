@@ -33,21 +33,21 @@ import lombok.core.AnnotationValues;
 import lombok.core.PrintAST;
 import lombok.eclipse.EclipseASTVisitor;
 import lombok.eclipse.EclipseAnnotationHandler;
-import lombok.eclipse.EclipseAST.Node;
+import lombok.eclipse.EclipseNode;
 
 /**
  * Handles the <code>lombok.core.PrintAST</code> annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandlePrintAST implements EclipseAnnotationHandler<PrintAST> {
-	public boolean handle(AnnotationValues<PrintAST> annotation, Annotation ast, Node annotationNode) {
-		if ( !annotationNode.isCompleteParse() ) return false;
+	public boolean handle(AnnotationValues<PrintAST> annotation, Annotation ast, EclipseNode annotationNode) {
+		if (!annotationNode.isCompleteParse()) return false;
 		
 		PrintStream stream = System.out;
 		String fileName = annotation.getInstance().outfile();
-		if ( fileName.length() > 0 ) try {
+		if (fileName.length() > 0) try {
 			stream = new PrintStream(new File(fileName));
-		} catch ( FileNotFoundException e ) {
+		} catch (FileNotFoundException e) {
 			Lombok.sneakyThrow(e);
 		}
 		

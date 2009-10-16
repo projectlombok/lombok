@@ -34,7 +34,6 @@ import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
-import org.eclipse.jdt.internal.compiler.ast.Clinit;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ImportReference;
@@ -50,7 +49,7 @@ import org.eclipse.jdt.internal.compiler.util.Util;
  * Wraps around Eclipse's internal AST view to add useful features as well as the ability to visit parents from children,
  * something Eclipse own AST system does not offer.
  */
-public class EclipseAST extends AST<ASTNode> {
+public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	/**
 	 * Creates a new EclipseAST of the provided Compilation Unit.
 	 * 
@@ -74,9 +73,9 @@ public class EclipseAST extends AST<ASTNode> {
 	@Override public Collection<String> getImportStatements() {
 		List<String> imports = new ArrayList<String>();
 		CompilationUnitDeclaration cud = (CompilationUnitDeclaration) top().get();
-		if ( cud.imports == null ) return imports;
-		for ( ImportReference imp : cud.imports ) {
-			if ( imp == null ) continue;
+		if (cud.imports == null) return imports;
+		for (ImportReference imp : cud.imports) {
+			if (imp == null) continue;
 			imports.add(Eclipse.toQualifiedName(imp.getImportName()));
 		}
 		
@@ -91,8 +90,8 @@ public class EclipseAST extends AST<ASTNode> {
 		top().traverse(visitor);
 	}
 	
-	private void traverseChildren(EclipseASTVisitor visitor, Node node) {
-		for ( Node child : node.down() ) {
+	void traverseChildren(EclipseASTVisitor visitor, EclipseNode node) {
+		for (EclipseNode child : node.down()) {
 			child.traverse(visitor);
 		}
 	}
@@ -108,17 +107,7 @@ public class EclipseAST extends AST<ASTNode> {
 		return completeParse;
 	}
 	
-	/** {@inheritDoc} */
-	@Override public Node top() {
-		return (Node) super.top();
-	}
-	
-	/** {@inheritDoc} */
-	@Override public Node get(ASTNode node) {
-		return (Node) super.get(node);
-	}
-	
-	private class ParseProblem {
+	class ParseProblem {
 		final boolean isWarning;
 		final String message;
 		final int sourceStart;
@@ -138,16 +127,16 @@ public class EclipseAST extends AST<ASTNode> {
 	}
 	
 	private void propagateProblems() {
-		if ( queuedProblems.isEmpty() ) return;
+		if (queuedProblems.isEmpty()) return;
 		CompilationUnitDeclaration cud = (CompilationUnitDeclaration) top().get();
-		if ( cud.compilationResult == null ) return;
-		for ( ParseProblem problem : queuedProblems ) problem.addToCompilationResult();
+		if (cud.compilationResult == null) return;
+		for (ParseProblem problem : queuedProblems) problem.addToCompilationResult();
 		queuedProblems.clear();
 	}
 	
 	private final List<ParseProblem> queuedProblems = new ArrayList<ParseProblem>();
 	
-	private void addProblem(ParseProblem problem) {
+	void addProblem(ParseProblem problem) {
 		queuedProblems.add(problem);
 		propagateProblems();
 	}
@@ -158,9 +147,9 @@ public class EclipseAST extends AST<ASTNode> {
 	 */
 	static void addProblemToCompilationResult(CompilationUnitDeclaration ast,
 			boolean isWarning, String message, int sourceStart, int sourceEnd) {
-		if ( ast.compilationResult == null ) return;
+		if (ast.compilationResult == null) return;
 		char[] fileNameArray = ast.getFileName();
-		if ( fileNameArray == null ) fileNameArray = "(unknown).java".toCharArray();
+		if (fileNameArray == null) fileNameArray = "(unknown).java".toCharArray();
 		int lineNumber = 0;
 		int columnNumber = 1;
 		CompilationResult result = ast.compilationResult;
@@ -197,171 +186,6 @@ public class EclipseAST extends AST<ASTNode> {
 		}
 	}
 	
-	/**
-	 * Eclipse specific version of the AST.Node class.
-	 */
-	public final class Node extends AST<ASTNode>.Node {
-		/**
-		 * See the {@link AST.Node} constructor for information.
-		 */
-		Node(ASTNode node, List<Node> children, Kind kind) {
-			super(node, children, kind);
-		}
-		
-		/**
-		 * Visits this node and all child nodes depth-first, calling the provided visitor's visit methods.
-		 */
-		public void traverse(EclipseASTVisitor visitor) {
-			switch ( getKind() ) {
-			case COMPILATION_UNIT:
-				visitor.visitCompilationUnit(this, (CompilationUnitDeclaration)get());
-				traverseChildren(visitor, this);
-				visitor.endVisitCompilationUnit(this, (CompilationUnitDeclaration)get());
-				break;
-			case TYPE:
-				visitor.visitType(this, (TypeDeclaration)get());
-				traverseChildren(visitor, this);
-				visitor.endVisitType(this, (TypeDeclaration)get());
-				break;
-			case FIELD:
-				visitor.visitField(this, (FieldDeclaration)get());
-				traverseChildren(visitor, this);
-				visitor.endVisitField(this, (FieldDeclaration)get());
-				break;
-			case INITIALIZER:
-				visitor.visitInitializer(this, (Initializer)get());
-				traverseChildren(visitor, this);
-				visitor.endVisitInitializer(this, (Initializer)get());
-				break;
-			case METHOD:
-				if ( get() instanceof Clinit ) return;
-				visitor.visitMethod(this, (AbstractMethodDeclaration)get());
-				traverseChildren(visitor, this);
-				visitor.endVisitMethod(this, (AbstractMethodDeclaration)get());
-				break;
-			case ARGUMENT:
-				AbstractMethodDeclaration method = (AbstractMethodDeclaration)up().get();
-				visitor.visitMethodArgument(this, (Argument)get(), method);
-				traverseChildren(visitor, this);
-				visitor.endVisitMethodArgument(this, (Argument)get(), method);
-				break;
-			case LOCAL:
-				visitor.visitLocal(this, (LocalDeclaration)get());
-				traverseChildren(visitor, this);
-				visitor.endVisitLocal(this, (LocalDeclaration)get());
-				break;
-			case ANNOTATION:
-				switch ( up().getKind() ) {
-				case TYPE:
-					visitor.visitAnnotationOnType((TypeDeclaration)up().get(), this, (Annotation)get());
-					break;
-				case FIELD:
-					visitor.visitAnnotationOnField((FieldDeclaration)up().get(), this, (Annotation)get());
-					break;
-				case METHOD:
-					visitor.visitAnnotationOnMethod((AbstractMethodDeclaration)up().get(), this, (Annotation)get());
-					break;
-				case ARGUMENT:
-					visitor.visitAnnotationOnMethodArgument(
-							(Argument)parent.get(),
-							(AbstractMethodDeclaration)parent.directUp().get(),
-							this, (Annotation)get());
-					break;
-				case LOCAL:
-					visitor.visitAnnotationOnLocal((LocalDeclaration)parent.get(), this, (Annotation)get());
-					break;
-				default:
-					throw new AssertionError("Annotion not expected as child of a " + up().getKind());
-				}
-				break;
-			case STATEMENT:
-				visitor.visitStatement(this, (Statement)get());
-				traverseChildren(visitor, this);
-				visitor.endVisitStatement(this, (Statement)get());
-				break;
-			default:
-				throw new AssertionError("Unexpected kind during node traversal: " + getKind());
-			}
-		}
-		
-		/** {@inheritDoc} */
-		@Override public String getName() {
-			final char[] n;
-			if ( node instanceof TypeDeclaration ) n = ((TypeDeclaration)node).name;
-			else if ( node instanceof FieldDeclaration ) n = ((FieldDeclaration)node).name;
-			else if ( node instanceof AbstractMethodDeclaration ) n = ((AbstractMethodDeclaration)node).selector;
-			else if ( node instanceof LocalDeclaration ) n = ((LocalDeclaration)node).name;
-			else n = null;
-			
-			return n == null ? null : new String(n);
-		}
-		
-		/** {@inheritDoc} */
-		@Override public void addError(String message) {
-			this.addError(message, this.get().sourceStart, this.get().sourceEnd);
-		}
-		
-		/** Generate a compiler error that shows the wavy underline from-to the stated character positions. */
-		public void addError(String message, int sourceStart, int sourceEnd) {
-			addProblem(new ParseProblem(false, message, sourceStart, sourceEnd));
-		}
-		
-		/** {@inheritDoc} */
-		@Override public void addWarning(String message) {
-			this.addWarning(message, this.get().sourceStart, this.get().sourceEnd);
-		}
-		
-		/** Generate a compiler warning that shows the wavy underline from-to the stated character positions. */
-		public void addWarning(String message, int sourceStart, int sourceEnd) {
-			addProblem(new ParseProblem(true, message, sourceStart, sourceEnd));
-		}
-		
-		/** {@inheritDoc} */
-		@Override public Node up() {
-			return (Node) super.up();
-		}
-		
-		/** {@inheritDoc} */
-		@Override protected boolean calculateIsStructurallySignificant() {
-			if ( node instanceof TypeDeclaration ) return true;
-			if ( node instanceof AbstractMethodDeclaration ) return true;
-			if ( node instanceof FieldDeclaration ) return true;
-			if ( node instanceof LocalDeclaration ) return true;
-			if ( node instanceof CompilationUnitDeclaration ) return true;
-			return false;
-		}
-		
-		/** {@inheritDoc} */
-		@Override public Node getNodeFor(ASTNode obj) {
-			return (Node) super.getNodeFor(obj);
-		}
-		
-		/** {@inheritDoc} */
-		public Node directUp() {
-			return (Node) super.directUp();
-		}
-		
-		/** {@inheritDoc} */
-		@SuppressWarnings("unchecked")
-		@Override public Collection<Node> down() {
-			return (Collection<Node>) super.down();
-		}
-		
-		/** {@inheritDoc} */
-		@Override public Node top() {
-			return (Node) super.top();
-		}
-		
-		/**
-		 * Convenient shortcut to the owning EclipseAST object's isCompleteParse method.
-		 * 
-		 * @see EclipseAST#isCompleteParse()
-		 */
-		public boolean isCompleteParse() {
-			return completeParse;
-		}
-	}
-	
 	private final CompilationUnitDeclaration compilationUnitDeclaration;
 	private boolean completeParse;
 	
@@ -370,15 +194,15 @@ public class EclipseAST extends AST<ASTNode> {
 	}
 	
 	/**
-	 * Call to move an EclipseAST generated for a diet parse to rebuild itself for the full parse -
+	 * Call this method to move an EclipseAST generated for a diet parse to rebuild itself for the full parse -
 	 * with filled in method bodies and such. Also propagates problems and errors, which in diet parse
 	 * mode can't be reliably added to the problems/warnings view.
 	 */
 	public void reparse() {
 		propagateProblems();
-		if ( completeParse ) return;
+		if (completeParse) return;
 		boolean newCompleteParse = isComplete(compilationUnitDeclaration);
-		if ( !newCompleteParse ) return;
+		if (!newCompleteParse) return;
 		
 		top().rebuild();
 		
@@ -390,8 +214,8 @@ public class EclipseAST extends AST<ASTNode> {
 	}
 	
 	/** {@inheritDoc} */
-	@Override protected Node buildTree(ASTNode node, Kind kind) {
-		switch ( kind ) {
+	@Override protected EclipseNode buildTree(ASTNode node, Kind kind) {
+		switch (kind) {
 		case COMPILATION_UNIT:
 			return buildCompilationUnit((CompilationUnitDeclaration) node);
 		case TYPE:
@@ -415,126 +239,126 @@ public class EclipseAST extends AST<ASTNode> {
 		}
 	}
 	
-	private Node buildCompilationUnit(CompilationUnitDeclaration top) {
-		if ( setAndGetAsHandled(top) ) return null;
-		List<Node> children = buildTypes(top.types);
-		return putInMap(new Node(top, children, Kind.COMPILATION_UNIT));
+	private EclipseNode buildCompilationUnit(CompilationUnitDeclaration top) {
+		if (setAndGetAsHandled(top)) return null;
+		List<EclipseNode> children = buildTypes(top.types);
+		return putInMap(new EclipseNode(this, top, children, Kind.COMPILATION_UNIT));
 	}
 	
-	private void addIfNotNull(Collection<Node> collection, Node n) {
-		if ( n != null ) collection.add(n);
+	private void addIfNotNull(Collection<EclipseNode> collection, EclipseNode n) {
+		if (n != null) collection.add(n);
 	}
 	
-	private List<Node> buildTypes(TypeDeclaration[] children) {
-		List<Node> childNodes = new ArrayList<Node>();
-		if ( children != null ) for ( TypeDeclaration type : children ) addIfNotNull(childNodes, buildType(type));
+	private List<EclipseNode> buildTypes(TypeDeclaration[] children) {
+		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
+		if (children != null) for (TypeDeclaration type : children) addIfNotNull(childNodes, buildType(type));
 		return childNodes;
 	}
 	
-	private Node buildType(TypeDeclaration type) {
-		if ( setAndGetAsHandled(type) ) return null;
-		List<Node> childNodes = new ArrayList<Node>();
+	private EclipseNode buildType(TypeDeclaration type) {
+		if (setAndGetAsHandled(type)) return null;
+		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
 		childNodes.addAll(buildFields(type.fields));
 		childNodes.addAll(buildTypes(type.memberTypes));
 		childNodes.addAll(buildMethods(type.methods));
 		childNodes.addAll(buildAnnotations(type.annotations));
-		return putInMap(new Node(type, childNodes, Kind.TYPE));
+		return putInMap(new EclipseNode(this, type, childNodes, Kind.TYPE));
 	}
 	
-	private Collection<Node> buildFields(FieldDeclaration[] children) {
-		List<Node> childNodes = new ArrayList<Node>();
-		if ( children != null ) for ( FieldDeclaration child : children ) addIfNotNull(childNodes, buildField(child));
+	private Collection<EclipseNode> buildFields(FieldDeclaration[] children) {
+		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
+		if (children != null) for (FieldDeclaration child : children) addIfNotNull(childNodes, buildField(child));
 		return childNodes;
 	}
 	
 	private static <T> List<T> singleton(T item) {
 		List<T> list = new ArrayList<T>();
-		if ( item != null ) list.add(item);
+		if (item != null) list.add(item);
 		return list;
 	}
 	
-	private Node buildField(FieldDeclaration field) {
-		if ( field instanceof Initializer ) return buildInitializer((Initializer)field);
-		if ( setAndGetAsHandled(field) ) return null;
-		List<Node> childNodes = new ArrayList<Node>();
+	private EclipseNode buildField(FieldDeclaration field) {
+		if (field instanceof Initializer) return buildInitializer((Initializer)field);
+		if (setAndGetAsHandled(field)) return null;
+		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
 		addIfNotNull(childNodes, buildStatement(field.initialization));
 		childNodes.addAll(buildAnnotations(field.annotations));
-		return putInMap(new Node(field, childNodes, Kind.FIELD));
+		return putInMap(new EclipseNode(this, field, childNodes, Kind.FIELD));
 	}
 	
-	private Node buildInitializer(Initializer initializer) {
-		if ( setAndGetAsHandled(initializer) ) return null;
-		return putInMap(new Node(initializer, singleton(buildStatement(initializer.block)), Kind.INITIALIZER));
+	private EclipseNode buildInitializer(Initializer initializer) {
+		if (setAndGetAsHandled(initializer)) return null;
+		return putInMap(new EclipseNode(this, initializer, singleton(buildStatement(initializer.block)), Kind.INITIALIZER));
 	}
 	
-	private Collection<Node> buildMethods(AbstractMethodDeclaration[] children) {
-		List<Node> childNodes = new ArrayList<Node>();
-		if ( children != null ) for (AbstractMethodDeclaration method : children ) addIfNotNull(childNodes, buildMethod(method));
+	private Collection<EclipseNode> buildMethods(AbstractMethodDeclaration[] children) {
+		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
+		if (children != null) for (AbstractMethodDeclaration method : children) addIfNotNull(childNodes, buildMethod(method));
 		return childNodes;
 	}
 	
-	private Node buildMethod(AbstractMethodDeclaration method) {
-		if ( setAndGetAsHandled(method) ) return null;
-		List<Node> childNodes = new ArrayList<Node>();
+	private EclipseNode buildMethod(AbstractMethodDeclaration method) {
+		if (setAndGetAsHandled(method)) return null;
+		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
 		childNodes.addAll(buildArguments(method.arguments));
 		childNodes.addAll(buildStatements(method.statements));
 		childNodes.addAll(buildAnnotations(method.annotations));
-		return putInMap(new Node(method, childNodes, Kind.METHOD));
+		return putInMap(new EclipseNode(this, method, childNodes, Kind.METHOD));
 	}
 	
 	//Arguments are a kind of LocalDeclaration. They can definitely contain lombok annotations, so we care about them.
-	private Collection<Node> buildArguments(Argument[] children) {
-		List<Node> childNodes = new ArrayList<Node>();
-		if ( children != null ) for ( LocalDeclaration local : children ) {
+	private Collection<EclipseNode> buildArguments(Argument[] children) {
+		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
+		if (children != null) for (LocalDeclaration local : children) {
 			addIfNotNull(childNodes, buildLocal(local, Kind.ARGUMENT));
 		}
 		return childNodes;
 	}
 	
-	private Node buildLocal(LocalDeclaration local, Kind kind) {
-		if ( setAndGetAsHandled(local) ) return null;
-		List<Node> childNodes = new ArrayList<Node>();
+	private EclipseNode buildLocal(LocalDeclaration local, Kind kind) {
+		if (setAndGetAsHandled(local)) return null;
+		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
 		addIfNotNull(childNodes, buildStatement(local.initialization));
 		childNodes.addAll(buildAnnotations(local.annotations));
-		return putInMap(new Node(local, childNodes, kind));
+		return putInMap(new EclipseNode(this, local, childNodes, kind));
 	}
 	
-	private Collection<Node> buildAnnotations(Annotation[] annotations) {
-		List<Node> elements = new ArrayList<Node>();
-		if ( annotations != null ) for ( Annotation an : annotations ) addIfNotNull(elements, buildAnnotation(an));
+	private Collection<EclipseNode> buildAnnotations(Annotation[] annotations) {
+		List<EclipseNode> elements = new ArrayList<EclipseNode>();
+		if (annotations != null) for (Annotation an : annotations) addIfNotNull(elements, buildAnnotation(an));
 		return elements;
 	}
 	
-	private Node buildAnnotation(Annotation annotation) {
-		if ( annotation == null ) return null;
-		if ( setAndGetAsHandled(annotation) ) return null;
-		return putInMap(new Node(annotation, null, Kind.ANNOTATION));
+	private EclipseNode buildAnnotation(Annotation annotation) {
+		if (annotation == null) return null;
+		if (setAndGetAsHandled(annotation)) return null;
+		return putInMap(new EclipseNode(this, annotation, null, Kind.ANNOTATION));
 	}
 	
-	private Collection<Node> buildStatements(Statement[] children) {
-		List<Node> childNodes = new ArrayList<Node>();
-		if ( children != null ) for ( Statement child  : children ) addIfNotNull(childNodes, buildStatement(child));
+	private Collection<EclipseNode> buildStatements(Statement[] children) {
+		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
+		if (children != null) for (Statement child  : children) addIfNotNull(childNodes, buildStatement(child));
 		return childNodes;
 	}
 	
-	private Node buildStatement(Statement child) {
-		if ( child == null ) return null;
-		if ( child instanceof TypeDeclaration ) return buildType((TypeDeclaration)child);
+	private EclipseNode buildStatement(Statement child) {
+		if (child == null) return null;
+		if (child instanceof TypeDeclaration) return buildType((TypeDeclaration)child);
 		
-		if ( child instanceof LocalDeclaration ) return buildLocal((LocalDeclaration)child, Kind.LOCAL);
+		if (child instanceof LocalDeclaration) return buildLocal((LocalDeclaration)child, Kind.LOCAL);
 		
-		if ( setAndGetAsHandled(child) ) return null;
+		if (setAndGetAsHandled(child)) return null;
 		
 		return drill(child);
 	}
 	
-	private Node drill(Statement statement) {
-		List<Node> childNodes = new ArrayList<Node>();
-		for ( FieldAccess fa : fieldsOf(statement.getClass()) ) childNodes.addAll(buildWithField(Node.class, statement, fa));
-		return putInMap(new Node(statement, childNodes, Kind.STATEMENT));
+	private EclipseNode drill(Statement statement) {
+		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
+		for (FieldAccess fa : fieldsOf(statement.getClass())) childNodes.addAll(buildWithField(EclipseNode.class, statement, fa));
+		return putInMap(new EclipseNode(this, statement, childNodes, Kind.STATEMENT));
 	}
 	
-	/** For Eclipse, only Statement counts, as Expression is a subclass of it, eventhough this isn't
+	/** For Eclipse, only Statement counts, as Expression is a subclass of it, even though this isn't
 	 * entirely correct according to the JLS spec (only some expressions can be used as statements, not all of them). */
 	@Override protected Collection<Class<? extends ASTNode>> getStatementTypes() {
 		return Collections.<Class<? extends ASTNode>>singleton(Statement.class);

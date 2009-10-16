@@ -28,7 +28,7 @@ import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
-import lombok.eclipse.EclipseAST.Node;
+import lombok.eclipse.EclipseNode;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -51,37 +51,37 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
-	public boolean handle(AnnotationValues<Cleanup> annotation, Annotation ast, Node annotationNode) {
+	public boolean handle(AnnotationValues<Cleanup> annotation, Annotation ast, EclipseNode annotationNode) {
 		String cleanupName = annotation.getInstance().value();
-		if ( cleanupName.length() == 0 ) {
+		if (cleanupName.length() == 0) {
 			annotationNode.addError("cleanupName cannot be the empty string.");
 			return true;
 		}
 		
-		if ( annotationNode.up().getKind() != Kind.LOCAL ) {
+		if (annotationNode.up().getKind() != Kind.LOCAL) {
 			annotationNode.addError("@Cleanup is legal only on local variable declarations.");
 			return true;
 		}
 		
 		LocalDeclaration decl = (LocalDeclaration)annotationNode.up().get();
 		
-		if ( decl.initialization == null ) {
+		if (decl.initialization == null) {
 			annotationNode.addError("@Cleanup variable declarations need to be initialized.");
 			return true;
 		}
 		
-		Node ancestor = annotationNode.up().directUp();
+		EclipseNode ancestor = annotationNode.up().directUp();
 		ASTNode blockNode = ancestor.get();
 		
 		final boolean isSwitch;
 		final Statement[] statements;
-		if ( blockNode instanceof AbstractMethodDeclaration ) {
+		if (blockNode instanceof AbstractMethodDeclaration) {
 			isSwitch = false;
 			statements = ((AbstractMethodDeclaration)blockNode).statements;
-		} else if ( blockNode instanceof Block ) {
+		} else if (blockNode instanceof Block) {
 			isSwitch = false;
 			statements = ((Block)blockNode).statements;
-		} else if ( blockNode instanceof SwitchStatement ) {
+		} else if (blockNode instanceof SwitchStatement) {
 			isSwitch = true;
 			statements = ((SwitchStatement)blockNode).statements;
 		} else {
@@ -89,17 +89,17 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 			return true;
 		}
 		
-		if ( statements == null ) {
+		if (statements == null) {
 			annotationNode.addError("LOMBOK BUG: Parent block does not contain any statements.");
 			return true;
 		}
 		
 		int start = 0;
-		for ( ; start < statements.length ; start++ ) {
-			if ( statements[start] == decl ) break;
+		for (; start < statements.length ; start++) {
+			if (statements[start] == decl) break;
 		}
 		
-		if ( start == statements.length ) {
+		if (start == statements.length) {
 			annotationNode.addError("LOMBOK BUG: Can't find this local variable declaration inside its parent.");
 			return true;
 		}
@@ -107,10 +107,10 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		start++;  //We start with try{} *AFTER* the var declaration.
 		
 		int end;
-		if ( isSwitch ) {
+		if (isSwitch) {
 			end = start + 1;
-			for ( ; end < statements.length ; end++ ) {
-				if ( statements[end] instanceof CaseStatement ) {
+			for (; end < statements.length ; end++) {
+				if (statements[end] instanceof CaseStatement) {
 					break;
 				}
 			}
@@ -149,8 +149,8 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		Eclipse.setGeneratedBy(receiver, ast);
 		unsafeClose.receiver = receiver;
 		long nameSourcePosition = (long)ast.sourceStart << 32 | ast.sourceEnd;
-		if ( ast.memberValuePairs() != null ) for ( MemberValuePair pair : ast.memberValuePairs() ) {
-			if ( pair.name != null && new String(pair.name).equals("value") ) {
+		if (ast.memberValuePairs() != null) for (MemberValuePair pair : ast.memberValuePairs()) {
+			if (pair.name != null && new String(pair.name).equals("value")) {
 				nameSourcePosition = (long)pair.value.sourceStart << 32 | pair.value.sourceEnd;
 				break;
 			}
@@ -165,11 +165,11 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		tryStatement.catchArguments = null;
 		tryStatement.catchBlocks = null;
 		
-		if ( blockNode instanceof AbstractMethodDeclaration ) {
+		if (blockNode instanceof AbstractMethodDeclaration) {
 			((AbstractMethodDeclaration)blockNode).statements = newStatements;
-		} else if ( blockNode instanceof Block ) {
+		} else if (blockNode instanceof Block) {
 			((Block)blockNode).statements = newStatements;
-		} else if ( blockNode instanceof SwitchStatement ) {
+		} else if (blockNode instanceof SwitchStatement) {
 			((SwitchStatement)blockNode).statements = newStatements;
 		}
 		
@@ -178,21 +178,21 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		return true;
 	}
 	
-	private void doAssignmentCheck(Node node, Statement[] tryBlock, char[] varName) {
-		for ( Statement statement : tryBlock ) doAssignmentCheck0(node, statement, varName);
+	private void doAssignmentCheck(EclipseNode node, Statement[] tryBlock, char[] varName) {
+		for (Statement statement : tryBlock) doAssignmentCheck0(node, statement, varName);
 	}
 	
-	private void doAssignmentCheck0(Node node, Statement statement, char[] varName) {
-		if ( statement instanceof Assignment )
+	private void doAssignmentCheck0(EclipseNode node, Statement statement, char[] varName) {
+		if (statement instanceof Assignment)
 			doAssignmentCheck0(node, ((Assignment)statement).expression, varName);
-		else if ( statement instanceof LocalDeclaration )
+		else if (statement instanceof LocalDeclaration)
 			doAssignmentCheck0(node, ((LocalDeclaration)statement).initialization, varName);
-		else if ( statement instanceof CastExpression )
+		else if (statement instanceof CastExpression)
 			doAssignmentCheck0(node, ((CastExpression)statement).expression, varName);
-		else if ( statement instanceof SingleNameReference ) {
-			if ( Arrays.equals(((SingleNameReference)statement).token, varName) ) {
-				Node problemNode = node.getNodeFor(statement);
-				if ( problemNode != null ) problemNode.addWarning(
+		else if (statement instanceof SingleNameReference) {
+			if (Arrays.equals(((SingleNameReference)statement).token, varName)) {
+				EclipseNode problemNode = node.getNodeFor(statement);
+				if (problemNode != null) problemNode.addWarning(
 						"You're assigning an auto-cleanup variable to something else. This is a bad idea.");
 			}
 		}

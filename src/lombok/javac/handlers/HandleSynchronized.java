@@ -40,7 +40,7 @@ import lombok.Synchronized;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
 import lombok.javac.JavacAnnotationHandler;
-import lombok.javac.JavacAST.Node;
+import lombok.javac.JavacNode;
 
 /**
  * Handles the <code>lombok.Synchronized</code> annotation for javac.
@@ -50,32 +50,32 @@ public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> 
 	private static final String INSTANCE_LOCK_NAME = "$lock";
 	private static final String STATIC_LOCK_NAME = "$LOCK";
 	
-	@Override public boolean handle(AnnotationValues<Synchronized> annotation, JCAnnotation ast, Node annotationNode) {
-		Node methodNode = annotationNode.up();
+	@Override public boolean handle(AnnotationValues<Synchronized> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		JavacNode methodNode = annotationNode.up();
 		
-		if ( methodNode == null || methodNode.getKind() != Kind.METHOD || !(methodNode.get() instanceof JCMethodDecl) ) {
+		if (methodNode == null || methodNode.getKind() != Kind.METHOD || !(methodNode.get() instanceof JCMethodDecl)) {
 			annotationNode.addError("@Synchronized is legal only on methods.");
 			return true;
 		}
 		
 		JCMethodDecl method = (JCMethodDecl)methodNode.get();
 		
-		if ( (method.mods.flags & Flags.ABSTRACT) != 0 ) {
+		if ((method.mods.flags & Flags.ABSTRACT) != 0) {
 			annotationNode.addError("@Synchronized is legal only on concrete methods.");
 			return true;
 		}
 		boolean isStatic = (method.mods.flags & Flags.STATIC) != 0;
 		String lockName = annotation.getInstance().value();
 		boolean autoMake = false;
-		if ( lockName.length() == 0 ) {
+		if (lockName.length() == 0) {
 			autoMake = true;
 			lockName = isStatic ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
 		}
 		
 		TreeMaker maker = methodNode.getTreeMaker();
 		
-		if ( fieldExists(lockName, methodNode) == MemberExistsResult.NOT_EXISTS ) {
-			if ( !autoMake ) {
+		if (fieldExists(lockName, methodNode) == MemberExistsResult.NOT_EXISTS) {
+			if (!autoMake) {
 				annotationNode.addError("The field " + new String(lockName) + " does not exist.");
 				return true;
 			}
@@ -89,7 +89,7 @@ public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> 
 			injectField(methodNode.up(), fieldDecl);
 		}
 		
-		if ( method.body == null ) return false;
+		if (method.body == null) return false;
 		
 		JCExpression lockNode = maker.Ident(methodNode.toName(lockName));
 		
