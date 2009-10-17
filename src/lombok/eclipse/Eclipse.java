@@ -176,7 +176,7 @@ public class Eclipse {
 	
 	/**
 	 * Convenience method that creates a new array and copies each TypeReference in the source array via
-	 * {@link #copyType(TypeReference)}.
+	 * {@link #copyType(TypeReference, ASTNode)}.
 	 */
 	public static TypeReference[] copyTypes(TypeReference[] refs, ASTNode source) {
 		if (refs == null) return null;
