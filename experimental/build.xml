@@ -27,7 +27,7 @@
 	<target name="info">
 		<echo>
 Does the build and packaging work on experimental features. Currently available:
-	disableCheckedExceptions
+	disableCheckedExceptions(-publish)
 		</echo>
 	</target>
 	
