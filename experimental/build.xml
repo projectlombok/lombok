@@ -36,6 +36,11 @@ Does the build and packaging work on experimental features. Currently available:
 		<ant antfile="experimental/buildScripts/disableCheckedExceptions.ant.xml" target="dist" />
 	</target>
 	
+	<target name="disableCheckedExceptions-publish" depends="buildDeps"
+			description="Creates the disableCheckedExceptions experimental jar, and uploads it.">
+		<ant antfile="experimental/buildScripts/disableCheckedExceptions.ant.xml" target="publish" />
+	</target>
+	
 	<target name="buildDeps">
 		<ant antfile="buildScripts/deps.ant.xml" target="build" inheritAll="false" />
 	</target>

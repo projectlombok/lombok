@@ -63,12 +63,12 @@ such as converting the changelog into HTML, and creating javadoc.
 	
 	<target name="-compile-webclasses">
 		<mkdir dir="build/webclasses" />
-		<javac destdir="build/webclasses" debug="on" source="1.4" target="1.4">
+		<javac includeDestClasses="false" destdir="build/webclasses" debug="on" source="1.4" target="1.4">
 			<classpath refid="buildScripts.deps.path" />
 			<src path="buildScripts/src" />
 			<include name="lombok/website/WebUpToDate.java" />
 		</javac>
-		<javac destdir="build/webclasses" debug="on" source="1.5">
+		<javac includeDestClasses="false" destdir="build/webclasses" debug="on" source="1.5">
 			<classpath refid="buildScripts.deps.path" />
 			<src path="buildScripts/src" />
 			<include name="lombok/website/CompileChangelog.java" />
@@ -94,7 +94,7 @@ such as converting the changelog into HTML, and creating javadoc.
 	</target>
 	
 	<target name="-website-main" depends="-website-clean, version, javadoc, changelogToHtml">
-		<taskdef classpath="deps/website/java2html.jar" name="java2html" classname="de.java2html.anttasks.Java2HtmlTask" />
+		<taskdef classpath="deps/buildScripts/java2html.jar" name="java2html" classname="de.java2html.anttasks.Java2HtmlTask" />
 		<mkdir dir="build/website" />
 		<copy todir="build/website">
 			<fileset dir="website">

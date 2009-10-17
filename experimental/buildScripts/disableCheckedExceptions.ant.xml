@@ -42,6 +42,12 @@
 		</fileset>
 	</path>
 	
+	<path id="buildScripts.deps.path">
+		<fileset dir="deps/buildScripts">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
 	<target name="-unpackLibs">
 		<mkdir dir="build/experimental/disableCheckedExceptions" />
 		<unjar dest="build/experimental/disableCheckedExceptions">
@@ -51,7 +57,7 @@
 	
 	<target name="compile" description="Compiles disableCheckedExceptions.">
 		<mkdir dir="build/experimental/disableCheckedExceptions" />
-		<javac debug="on" destdir="build/experimental/disableCheckedExceptions" target="1.6">
+		<javac includeDestClasses="false" debug="on" destdir="build/experimental/disableCheckedExceptions" target="1.6">
 			<src path="experimental/src" />
 			<include name="**/disableCheckedExceptions/**/*.java" />
 			<classpath refid="deps.path" />
@@ -62,14 +68,23 @@
 	<target name="dist" description="Creates the disable checked exceptions jar" depends="compile, -unpackLibs">
 		<mkdir dir="build/experimental/disableCheckedExceptions/META-INF" />
 		<mkdir dir="build/experimental/disableCheckedExceptions/META-INF/services" />
-		<echo file="build/experimental/disableCheckedExceptions/META-INF/services/javax.annotation.processor">lombok.javac.disableCheckedExceptions.DynamicAgent</echo>
+		<echo file="build/experimental/disableCheckedExceptions/META-INF/services/javax.annotation.processing.Processor">lombok.javac.disableCheckedExceptions.DisableCheckedExceptionsAgent</echo>
 		<jar destfile="dist/disableCheckedExceptions-alpha.jar">
 			<fileset dir="build/experimental/disableCheckedExceptions" />
 			<manifest>
-				<attribute name="Agent-Class" value="lombok.javac.disableCheckedExceptions.DynamicAgent" />
+				<attribute name="Agent-Class" value="lombok.javac.disableCheckedExceptions.DisableCheckedExceptionsAgent" />
 				<attribute name="Can-Redefine-Classes" value="true" />
 				<attribute name="Can-Retransform-Classes" value="true" />
 			</manifest>
 		</jar>
+	</target>
+	
+	<taskdef name="scp" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.Scp" classpathref="buildScripts.deps.path" />
+	<target name="publish" description="Creates the disable checked exceptions jar, and uploads it" depends="dist">
+		<scp
+			localFile="dist/disableCheckedExceptions-alpha.jar"
+			todir="lombokup@projectlombok.org:/web/downloads"
+			keyfile="libertad-upload.key" passphrase=""
+			sftp="true" verbose="true" trust="true" />
 	</target>
 </project>

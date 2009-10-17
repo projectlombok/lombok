@@ -52,7 +52,7 @@ public class DisableCheckedExceptionsAgent extends AbstractProcessor {
 			this.processingEnv = null;
 		}
 		
-		new LiveInjector().injectSelf();
+		new LiveInjector().inject(LiveInjector.findPathJar(DisableCheckedExceptionsAgent.class));
 	}
 	
 	/** Does nothing - we just wanted the init method so we can inject an agent. */
@@ -81,10 +81,9 @@ public class DisableCheckedExceptionsAgent extends AbstractProcessor {
 		sm.addScript(ScriptBuilder.exitEarly()
 				.target(new MethodTarget("com.sun.tools.javac.comp.Check", "isUnchecked",
 						"boolean", "com.sun.tools.javac.code.Symbol$ClassSymbol"))
-				.transplant()
 				.decisionMethod(new Hook("lombok/javac/disableCheckedExceptions/DisableCheckedExceptionsAgent", "retTrue", "()Z"))
 				.valueMethod(new Hook("lombok/javac/disableCheckedExceptions/DisableCheckedExceptionsAgent", "retTrue", "()Z"))
-				.build());
+				.insert().build());
 	}
 	
 	public static boolean retTrue() {
