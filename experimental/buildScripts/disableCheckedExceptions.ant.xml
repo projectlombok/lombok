@@ -81,10 +81,11 @@
 	
 	<taskdef name="scp" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.Scp" classpathref="buildScripts.deps.path" />
 	<target name="publish" description="Creates the disable checked exceptions jar, and uploads it" depends="dist">
+		<property name="publish.key.location" location="libertad-upload.key" />
 		<scp
 			localFile="dist/disableCheckedExceptions-alpha.jar"
 			todir="lombokup@projectlombok.org:/web/downloads"
-			keyfile="libertad-upload.key" passphrase=""
+			keyfile="${publish.key.location}" passphrase=""
 			sftp="true" verbose="true" trust="true" />
 	</target>
 </project>
