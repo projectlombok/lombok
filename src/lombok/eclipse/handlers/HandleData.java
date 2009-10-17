@@ -87,6 +87,8 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		for (EclipseNode child : typeNode.down()) {
 			if (child.getKind() != Kind.FIELD) continue;
 			FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
+			//Skip fields that start with $
+			if (fieldDecl.name.length > 0 && fieldDecl.name[0] == '$') continue;
 			//Skip static fields.
 			if ((fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0) continue;
 			boolean isFinal = (fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0;

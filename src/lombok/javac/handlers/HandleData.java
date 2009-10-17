@@ -70,15 +70,15 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 			return false;
 		}
 		
-		List<JavacNode> nodesForEquality = List.nil();
 		List<JavacNode> nodesForConstructor = List.nil();
 		for (JavacNode child : typeNode.down()) {
 			if (child.getKind() != Kind.FIELD) continue;
 			JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
+			//Skip fields that start with $
+			if (fieldDecl.name.toString().startsWith("$")) continue;
 			long fieldFlags = fieldDecl.mods.flags;
 			//Skip static fields.
 			if ((fieldFlags & Flags.STATIC) != 0) continue;
-			if ((fieldFlags & Flags.TRANSIENT) == 0) nodesForEquality = nodesForEquality.append(child);
 			boolean isFinal = (fieldFlags & Flags.FINAL) != 0;
 			boolean isNonNull = !findAnnotations(child, TransformationsUtil.NON_NULL_PATTERN).isEmpty();
 			if ((isFinal || isNonNull) && fieldDecl.init == null) nodesForConstructor = nodesForConstructor.append(child);

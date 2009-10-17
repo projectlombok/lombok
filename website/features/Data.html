@@ -69,6 +69,9 @@
 					<em>null</em>. Therefore, these annotations result in an explicit null check in the generated constructor for the provided field. Also, these
 					annotations (as well as any annotation named <code>@Nullable</code>) are copied to the constructor parameter, in both the true constructor and
 					any static constructor. The same principle applies to generated getters and setters (see the documentation for <a href="GetterSetter.html">@Getter / @Setter</a>)
+				</p><p>
+					By default, any variables that start with a $ symbol are excluded automatically.
+					You can include them by specifying an explicit annotation (<code>@Getter</code> or <code>@ToString</code>, for example) and using the 'of' parameter.
 				</p>
 			</div>
 		</div>
