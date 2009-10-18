@@ -34,7 +34,6 @@ import lombok.core.AST;
 
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symtab;
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -47,6 +46,7 @@ import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
@@ -61,23 +61,30 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	private final TreeMaker treeMaker;
 	private final Symtab symtab;
 	private final Log log;
+	private final Context context;
 	
 	/**
 	 * Creates a new JavacAST of the provided Compilation Unit.
 	 * 
 	 * @param trees The trees instance to use to inspect the compilation unit. Generate via:
 	 *   {@code Trees.getInstance(env)}
-	 * @param env The ProcessingEnvironment object passed e.g. to an annotation processor.
+	 * @param messager A Messager for warning and error reporting.
+	 * @param context A Context object for interfacing with the compiler.
 	 * @param top The compilation unit, which serves as the top level node in the tree to be built.
 	 */
-	public JavacAST(Trees trees, JavacProcessingEnvironment env, JCCompilationUnit top) {
+	public JavacAST(Trees trees, Messager messager, Context context, JCCompilationUnit top) {
 		super(top.sourcefile == null ? null : top.sourcefile.toString());
 		setTop(buildCompilationUnit(top));
-		this.messager = env.getMessager();
-		this.log = Log.instance(env.getContext());
-		this.nameTable = Name.Table.instance(env.getContext());
-		this.treeMaker = TreeMaker.instance(env.getContext());
-		this.symtab = Symtab.instance(env.getContext());
+		this.context = context;
+		this.messager = messager;
+		this.log = Log.instance(context);
+		this.nameTable = Name.Table.instance(context);
+		this.treeMaker = TreeMaker.instance(context);
+		this.symtab = Symtab.instance(context);
+	}
+	
+	public Context getContext() {
+		return context;
 	}
 	
 	/** {@inheritDoc} */

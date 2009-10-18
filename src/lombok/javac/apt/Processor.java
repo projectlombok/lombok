@@ -93,7 +93,8 @@ public class Processor extends AbstractProcessor {
 		
 		List<JavacAST> asts = new ArrayList<JavacAST>();
 		
-		for (JCCompilationUnit unit : units.keySet()) asts.add(new JavacAST(trees, processingEnv, unit));
+		for (JCCompilationUnit unit : units.keySet()) asts.add(
+				new JavacAST(trees, processingEnv.getMessager(), processingEnv.getContext(), unit));
 		
 		handlers.skipPrintAST();
 		for (JavacAST ast : asts) {

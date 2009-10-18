@@ -36,6 +36,7 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
@@ -161,6 +162,15 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 	 */
 	public Symtab getSymbolTable() {
 		return ast.getSymbolTable();
+	}
+	
+	/**
+	 * Convenient shortcut to the owning JavacAST object's getContext method.
+	 * 
+	 * @see JavacAST#getContext()
+	 */
+	public Context getContext() {
+		return ast.getContext();
 	}
 	
 	/**
