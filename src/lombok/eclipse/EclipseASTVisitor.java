@@ -144,7 +144,7 @@ public interface EclipseASTVisitor {
 		
 		private String str(char[] c) {
 			if (c == null) return "(NULL)";
-			else return new String(c);
+			return new String(c);
 		}
 		
 		private String str(TypeReference type) {

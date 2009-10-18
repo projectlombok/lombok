@@ -202,18 +202,19 @@ public class AnnotationValues<A extends Annotation> {
 							Object defaultValue = method.getDefaultValue();
 							if (defaultValue == null) throw makeNoDefaultFail(v, method);
 							return defaultValue;
-						} else return result;
-					} else {
-						if (result == null) {
-							if (v.valueGuesses.size() == 1) {
-								Object defaultValue = method.getDefaultValue();
-								if (defaultValue == null) throw makeNoDefaultFail(v, method);
-								return defaultValue;
-							} else throw new AnnotationValueDecodeFail(v, 
-									"I can't make sense of this annotation value. Try using a fully qualified literal.", idx);
 						}
-						Array.set(array, idx++, result);
+						return result;
+					} 
+					if (result == null) {
+						if (v.valueGuesses.size() == 1) {
+							Object defaultValue = method.getDefaultValue();
+							if (defaultValue == null) throw makeNoDefaultFail(v, method);
+							return defaultValue;
+						} 
+						throw new AnnotationValueDecodeFail(v, 
+								"I can't make sense of this annotation value. Try using a fully qualified literal.", idx);
 					}
+					Array.set(array, idx++, result);
 				}
 				
 				return array;

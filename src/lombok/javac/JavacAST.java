@@ -251,6 +251,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	}
 	
 	/** For javac, both JCExpression and JCStatement are considered as valid children types. */
+	@Override
 	protected Collection<Class<? extends JCTree>> getStatementTypes() {
 		Collection<Class<? extends JCTree>> collection = new ArrayList<Class<? extends JCTree>>(2);
 		collection.add(JCStatement.class);
@@ -305,11 +306,9 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		com.sun.tools.javac.util.List<?> oldL = (com.sun.tools.javac.util.List<?>) current;
 		com.sun.tools.javac.util.List<?> newL = replaceInConsList(oldL, oldO, newO);
 		if (chain.isEmpty()) return newL;
-		else {
-			List<Collection<?>> reducedChain = new ArrayList<Collection<?>>(chain);
-			Collection<?> newCurrent = reducedChain.remove(reducedChain.size() -1);
-			return setElementInConsList(reducedChain, newCurrent, oldL, newL);
-		}
+		List<Collection<?>> reducedChain = new ArrayList<Collection<?>>(chain);
+		Collection<?> newCurrent = reducedChain.remove(reducedChain.size() -1);
+		return setElementInConsList(reducedChain, newCurrent, oldL, newL);
 	}
 	
 	private com.sun.tools.javac.util.List<?> replaceInConsList(com.sun.tools.javac.util.List<?> oldL, Object oldO, Object newO) {
@@ -323,16 +322,16 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		}
 		
 		if (repl) return com.sun.tools.javac.util.List.<Object>from(a);
-		else return oldL;
+		return oldL;
 	}
 	
-	private void increaseErrorCount(Messager messager) {
+	private void increaseErrorCount(Messager m) {
 		try {
-			Field f = messager.getClass().getDeclaredField("errorCount");
+			Field f = m.getClass().getDeclaredField("errorCount");
 			f.setAccessible(true);
 			if (f.getType() == int.class) {
-				int val = ((Number)f.get(messager)).intValue();
-				f.set(messager, val +1);
+				int val = ((Number)f.get(m)).intValue();
+				f.set(m, val +1);
 			}
 		} catch (Throwable t) {
 			//Very unfortunate, but in most cases it still works fine, so we'll silently swallow it.

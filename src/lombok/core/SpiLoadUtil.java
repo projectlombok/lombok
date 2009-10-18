@@ -123,7 +123,7 @@ public class SpiLoadUtil {
 			}
 		} finally {
 			try {
-				in.close();
+				if (in != null) in.close();
 			} catch (Throwable ignore) {}
 		}
 	}
