@@ -286,7 +286,15 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 		return false;
 	}
 	
-	/** Override if your AST collection does not support the set method. Javac's for example, does not. */
+	/**
+	 * Override if your AST collection does not support the set method. Javac's for example, does not.
+	 * 
+	 * @param field The field that contains the array or list of AST nodes.
+	 * @param fieldRef The object that you can supply to the field's {@code get} method.
+	 * @param chain If the collection is immutable, you need to update the pointer to the collection in each element in the chain.
+	 * 
+	 * @throws IllegalAccessException This exception won't happen, but we allow you to throw it so you can avoid having to catch it.
+	 */
 	@SuppressWarnings("unchecked")
 	protected void setElementInASTCollection(Field field, Object fieldRef, List<Collection<?>> chain, Collection<?> collection, int idx, N newN) throws IllegalAccessException {
 		if (collection instanceof List<?>) {

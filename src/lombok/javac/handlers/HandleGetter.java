@@ -62,6 +62,9 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 	 * same rules apply (e.g. warning if the method already exists, stated access level applies).
 	 * If not, the getter is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
+	 * 
+	 * @param fieldNode The node representing the field you want a getter for.
+	 * @param pos The node responsible for generating the getter (the {@code @Data} or {@code @Getter} annotation).
 	 */
 	public void generateGetterForField(JavacNode fieldNode, DiagnosticPosition pos) {
 		for (JavacNode child : fieldNode.down()) {
@@ -73,7 +76,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 			}
 		}
 		
-		createGetterForField(AccessLevel.PUBLIC, fieldNode, fieldNode, pos, false);
+		createGetterForField(AccessLevel.PUBLIC, fieldNode, fieldNode, false);
 	}
 	
 	@Override public boolean handle(AnnotationValues<Getter> annotation, JCAnnotation ast, JavacNode annotationNode) {
@@ -81,11 +84,11 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		AccessLevel level = annotation.getInstance().value();
 		if (level == AccessLevel.NONE) return true;
 		
-		return createGetterForField(level, fieldNode, annotationNode, annotationNode.get(), true);
+		return createGetterForField(level, fieldNode, annotationNode, true);
 	}
 	
 	private boolean createGetterForField(AccessLevel level,
-			JavacNode fieldNode, JavacNode errorNode, DiagnosticPosition pos, boolean whineIfExists) {
+			JavacNode fieldNode, JavacNode errorNode, boolean whineIfExists) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			errorNode.addError("@Getter is only supported on a field.");
 			return true;

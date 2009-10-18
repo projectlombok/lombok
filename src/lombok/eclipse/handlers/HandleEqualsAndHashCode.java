@@ -160,7 +160,9 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		if (callSuper == null) {
 			try {
 				callSuper = ((Boolean)EqualsAndHashCode.class.getMethod("callSuper").getDefaultValue()).booleanValue();
-			} catch (Exception ignore) {}
+			} catch (Exception ignore) {
+				throw new InternalError("Lombok bug - this cannot happen - can't find callSuper field in EqualsAndHashCode annotation.");
+			}
 		}
 		
 		boolean isDirectDescendantOfObject = true;

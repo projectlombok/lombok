@@ -64,6 +64,9 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 	 * same rules apply (e.g. warning if the method already exists, stated access level applies).
 	 * If not, the setter is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
+	 * 
+	 * @param fieldNode The node representing the field you want a setter for.
+	 * @param pos The node responsible for generating the setter (the {@code @Data} or {@code @Setter} annotation).
 	 */
 	public void generateSetterForField(JavacNode fieldNode, DiagnosticPosition pos) {
 		for (JavacNode child : fieldNode.down()) {
@@ -75,7 +78,7 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 			}
 		}
 		
-		createSetterForField(AccessLevel.PUBLIC, fieldNode, fieldNode, pos, false);
+		createSetterForField(AccessLevel.PUBLIC, fieldNode, fieldNode, false);
 	}
 	
 	@Override public boolean handle(AnnotationValues<Setter> annotation, JCAnnotation ast, JavacNode annotationNode) {
@@ -83,11 +86,11 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		AccessLevel level = annotation.getInstance().value();
 		if (level == AccessLevel.NONE) return true;
 		
-		return createSetterForField(level, fieldNode, annotationNode, annotationNode.get(), true);
+		return createSetterForField(level, fieldNode, annotationNode, true);
 	}
 	
 	private boolean createSetterForField(AccessLevel level,
-			JavacNode fieldNode, JavacNode errorNode, DiagnosticPosition pos, boolean whineIfExists) {
+			JavacNode fieldNode, JavacNode errorNode, boolean whineIfExists) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			fieldNode.addError("@Setter is only supported on a field.");
 			return true;
