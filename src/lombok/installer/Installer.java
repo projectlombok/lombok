@@ -40,7 +40,6 @@ import java.awt.event.ActionListener;
 import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -276,7 +275,7 @@ public class Installer {
 		return container;
 	}
 	
-	private Component buildEclipseArea() throws IOException {
+	private Component buildEclipseArea() {
 		JPanel container = new JPanel();
 		
 		container.setLayout(new GridBagLayout());
@@ -357,17 +356,16 @@ public class Installer {
 		buttonBar.add(specifyEclipseLocationButton);
 		specifyEclipseLocationButton.addActionListener(new ActionListener() {
 			@Override public void actionPerformed(ActionEvent event) {
-				final String name = EclipseFinder.getEclipseExecutableName();
+				final String exeName = EclipseFinder.getEclipseExecutableName();
 				String file = null;
 				
 				if (EclipseFinder.getOS() == OS.MAC_OS_X) {
 					FileDialog chooser = new FileDialog(appWindow);
 					chooser.setMode(FileDialog.LOAD);
 					chooser.setFilenameFilter(new FilenameFilter() {
-						@Override public boolean accept(File dir, String name) {
-							if (name.equalsIgnoreCase(name)) return true;
-							if (new File(dir, name).isDirectory()) return true;
-							
+						@Override public boolean accept(File dir, String fileName) {
+							if (exeName.equalsIgnoreCase(fileName)) return true;
+							if (new File(dir, fileName).isDirectory()) return true;
 							return false;
 						}
 					});
@@ -381,7 +379,7 @@ public class Installer {
 					chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 					chooser.setFileFilter(new FileFilter() {
 						@Override public boolean accept(File f) {
-							if (f.getName().equalsIgnoreCase(name)) return true;
+							if (f.getName().equalsIgnoreCase(exeName)) return true;
 							if (f.isDirectory()) return true;
 							
 							return false;
@@ -668,7 +666,7 @@ public class Installer {
 		@Override public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
 			return 1;
 		}
-	};
+	}
 	
 	private void buildChrome(Container appWindowContainer) {
 		JLabel leftGraphic = new JLabel(new ImageIcon(Installer.class.getResource("/lombok/installer/lombok.png")));

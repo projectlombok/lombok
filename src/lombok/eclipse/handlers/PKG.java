@@ -162,6 +162,8 @@ class PKG {
 			node = node.up();
 		}
 		
+		if (node == null) return null;
+		
 		if (node.get() instanceof TypeDeclaration) {
 			for (AbstractMethodDeclaration def : ((TypeDeclaration)node.get()).methods) {
 				if (def instanceof ConstructorDeclaration) {
@@ -179,6 +181,8 @@ class PKG {
 		while (node != null && !(node.get() instanceof TypeDeclaration)) {
 			node = node.up();
 		}
+		
+		if (node == null) return null;
 		
 		if (node.get() instanceof TypeDeclaration) {
 			for (AbstractMethodDeclaration def : ((TypeDeclaration)node.get()).methods) {

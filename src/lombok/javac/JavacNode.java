@@ -81,10 +81,10 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 			visitor.endVisitInitializer(this, (JCBlock)get());
 			break;
 		case ARGUMENT:
-			JCMethodDecl parent = (JCMethodDecl) up().get();
-			visitor.visitMethodArgument(this, (JCVariableDecl)get(), parent);
+			JCMethodDecl parentMethod = (JCMethodDecl) up().get();
+			visitor.visitMethodArgument(this, (JCVariableDecl)get(), parentMethod);
 			ast.traverseChildren(visitor, this);
-			visitor.endVisitMethodArgument(this, (JCVariableDecl)get(), parent);
+			visitor.endVisitMethodArgument(this, (JCVariableDecl)get(), parentMethod);
 			break;
 		case LOCAL:
 			visitor.visitLocal(this, (JCVariableDecl)get());
@@ -175,7 +175,7 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 	/**
 	 * Generates an compiler error focused on the AST node represented by this node object.
 	 */
-	public void addError(String message) {
+	@Override public void addError(String message) {
 		ast.printMessage(Diagnostic.Kind.ERROR, message, this, null);
 	}
 	
@@ -189,7 +189,7 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 	/**
 	 * Generates a compiler warning focused on the AST node represented by this node object.
 	 */
-	public void addWarning(String message) {
+	@Override public void addWarning(String message) {
 		ast.printMessage(Diagnostic.Kind.WARNING, message, this, null);
 	}
 	

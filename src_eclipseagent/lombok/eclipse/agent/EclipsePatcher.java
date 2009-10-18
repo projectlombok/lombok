@@ -44,11 +44,11 @@ import lombok.patcher.scripts.ScriptBuilder;
 public class EclipsePatcher {
 	private EclipsePatcher() {}
 	
-	public static void agentmain(String agentArgs, Instrumentation instrumentation) throws Exception {
+	public static void agentmain(@SuppressWarnings("unused") String agentArgs, Instrumentation instrumentation) throws Exception {
 		registerPatchScripts(instrumentation, true);
 	}
 	
-	public static void premain(String agentArgs, Instrumentation instrumentation) throws Exception {
+	public static void premain(@SuppressWarnings("unused") String agentArgs, Instrumentation instrumentation) throws Exception {
 		registerPatchScripts(instrumentation, false);
 	}
 	

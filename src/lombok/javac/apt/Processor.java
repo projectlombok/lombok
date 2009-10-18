@@ -69,15 +69,15 @@ public class Processor extends AbstractProcessor {
 	private Trees trees;
 	
 	/** {@inheritDoc} */
-	@Override public void init(ProcessingEnvironment processingEnv) {
-		super.init(processingEnv);
-		if (!(processingEnv instanceof JavacProcessingEnvironment)) {
-			processingEnv.getMessager().printMessage(Kind.WARNING, "You aren't using a compiler based around javac v1.6, so lombok will not work properly.");
+	@Override public void init(ProcessingEnvironment procEnv) {
+		super.init(procEnv);
+		if (!(procEnv instanceof JavacProcessingEnvironment)) {
+			procEnv.getMessager().printMessage(Kind.WARNING, "You aren't using a compiler based around javac v1.6, so lombok will not work properly.");
 			this.processingEnv = null;
 		} else {
-			this.processingEnv = (JavacProcessingEnvironment) processingEnv;
-			handlers = HandlerLibrary.load(processingEnv.getMessager());
-			trees = Trees.instance(processingEnv);
+			this.processingEnv = (JavacProcessingEnvironment) procEnv;
+			handlers = HandlerLibrary.load(procEnv.getMessager());
+			trees = Trees.instance(procEnv);
 		}
 	}
 	

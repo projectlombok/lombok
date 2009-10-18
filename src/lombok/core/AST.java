@@ -210,9 +210,8 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 		if (type instanceof ParameterizedType) {
 			Type component = ((ParameterizedType)type).getActualTypeArguments()[0];
 			return component instanceof Class<?> ? (Class<?>)component : Object.class;
-		} else {
-			return Object.class;
 		}
+		return Object.class;
 	}
 	
 	/**

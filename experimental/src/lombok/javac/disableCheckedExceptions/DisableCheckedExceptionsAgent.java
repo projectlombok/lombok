@@ -45,10 +45,10 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class DisableCheckedExceptionsAgent extends AbstractProcessor {
 	/** Inject an agent if we're on a sun-esque JVM. */
-	@Override public void init(ProcessingEnvironment processingEnv) {
-		super.init(processingEnv);
-		if (!(processingEnv instanceof JavacProcessingEnvironment)) {
-			processingEnv.getMessager().printMessage(Kind.WARNING, "You aren't using a compiler based around javac v1.6, so lombok will not work properly.");
+	@Override public void init(ProcessingEnvironment procEnv) {
+		super.init(procEnv);
+		if (!(procEnv instanceof JavacProcessingEnvironment)) {
+			procEnv.getMessager().printMessage(Kind.WARNING, "You aren't using a compiler based around javac v1.6, so lombok will not work properly.");
 			this.processingEnv = null;
 		}
 		
@@ -60,11 +60,11 @@ public class DisableCheckedExceptionsAgent extends AbstractProcessor {
 		return false;
 	}
 	
-	public static void agentmain(String agentArgs, Instrumentation instrumentation) throws Exception {
+	public static void agentmain(@SuppressWarnings("unused") String agentArgs, Instrumentation instrumentation) throws Exception {
 		registerPatchScripts(instrumentation, true);
 	}
 	
-	public static void premain(String agentArgs, Instrumentation instrumentation) throws Exception {
+	public static void premain(@SuppressWarnings("unused") String agentArgs, Instrumentation instrumentation) throws Exception {
 		registerPatchScripts(instrumentation, false);
 	}
 	
