@@ -56,22 +56,26 @@ lombok code including the various agents.
 	
 	<target name="compile" description="Compiles the code">
 		<mkdir dir="build/lombok" />
+		<!-- ant includes the destination dir on the classpath (and there are good reason to do this), but that also means
+		 the bleeding edge lombok from the previous build is run, which means if there are bugs in it, you can't compile
+		anymore until you 'ant clean'. That's very much not desired, so we kill the processor, which stops lombok from running.
+		We re-create the file at the end of this target. -->
+		<delete file="build/lombok/META-INF/services/javax.annotation.processing.Processor" quiet="true" />
+		
 		<!-- This version trickery is so that an eclipse running in a JVM 1.5 will run
 		     properly (It'll never touch the javac files and hence never trigger a
 		     Bad Class Version Number error, but for javac we definitely cannot support
 		     javac 1.5, partly because they completely rewrote large swaths of javac,
 		     and partly because our injection mechanism (annotations) doesn't work very
 		     well on javac 1.5, hence, when using javac, we do demand you're on 1.6. -->
-		<javac includeDestClasses="false" debug="on" destdir="build/lombok" target="1.5">
-			<compilerarg value="-implicit:class" />
+		<javac debug="on" destdir="build/lombok" target="1.5">
 			<src path="src" />
 			<src path="src_eclipseagent" />
 			<exclude name="lombok/javac/**" />
 			<classpath refid="deps.path" />
 			<classpath refid="libs.path" />
 		</javac>
-		<javac includeDestClasses="false" srcdir="src" debug="on" destdir="build/lombok" target="1.6" includes="lombok/javac/**">
-			<compilerarg value="-implicit:class" />
+		<javac srcdir="src" debug="on" destdir="build/lombok" target="1.6" includes="lombok/javac/**">
 			<classpath refid="deps.path" />
 			<classpath refid="libs.path" />
 		</javac>
