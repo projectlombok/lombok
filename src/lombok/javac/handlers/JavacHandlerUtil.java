@@ -21,7 +21,6 @@
  */
 package lombok.javac.handlers;
 
-import java.lang.reflect.Modifier;
 import java.util.regex.Pattern;
 
 import lombok.AccessLevel;
@@ -43,19 +42,26 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 
 /**
- * Container for static utility methods relevant to this package.
+ * Container for static utility methods useful to handlers written for javac.
  */
-class PKG {
-	private PKG() {
+public class JavacHandlerUtil {
+	private JavacHandlerUtil() {
 		//Prevent instantiation
 	}
 	
-	static boolean isPrimitive(JCExpression ref) {
+	/**
+	 * Checks if the given expression (that really ought to refer to a type expression) represents a primitive type.
+	 */
+	public static boolean isPrimitive(JCExpression ref) {
 		String typeName = ref.toString();
 		return TransformationsUtil.PRIMITIVE_TYPE_NAME_PATTERN.matcher(typeName).matches();
 	}
 	
-	static java.util.List<String> toAllGetterNames(JCVariableDecl field) {
+	/**
+	 * Translates the given field into all possible getter names.
+	 * Convenient wrapper around {@link TransformationsUtil#toAllGetterNames(String, boolean)}.
+	 */
+	public static java.util.List<String> toAllGetterNames(JCVariableDecl field) {
 		CharSequence fieldName = field.name;
 		
 		boolean isBoolean = field.vartype.toString().equals("boolean");
@@ -65,8 +71,10 @@ class PKG {
 	
 	/**
 	 * @return the likely getter name for the stated field. (e.g. private boolean foo; to isFoo).
+	 * 
+	 * Convenient wrapper around {@link TransformationsUtil#toGetterName(String, boolean)}.
 	 */
-	static String toGetterName(JCVariableDecl field) {
+	public static String toGetterName(JCVariableDecl field) {
 		CharSequence fieldName = field.name;
 		
 		boolean isBoolean = field.vartype.toString().equals("boolean");
@@ -76,15 +84,17 @@ class PKG {
 	
 	/**
 	 * @return the likely setter name for the stated field. (e.g. private boolean foo; to setFoo).
+	 * 
+	 * Convenient wrapper around {@link TransformationsUtil.toSetterName(String)}.
 	 */
-	static String toSetterName(JCVariableDecl field) {
+	public static String toSetterName(JCVariableDecl field) {
 		CharSequence fieldName = field.name;
 		
 		return TransformationsUtil.toSetterName(fieldName);
 	}
 	
 	/** Serves as return value for the methods that check for the existence of fields and methods. */
-	enum MemberExistsResult {
+	public enum MemberExistsResult {
 		NOT_EXISTS, EXISTS_BY_USER, EXISTS_BY_LOMBOK;
 	}
 	
@@ -92,9 +102,9 @@ class PKG {
 	 * Checks if there is a field with the provided name.
 	 * 
 	 * @param fieldName the field name to check for.
-	 * @param node Any node that represents the Type (JCClassDecl) to check for, or any child node thereof.
+	 * @param node Any node that represents the Type (JCClassDecl) to look in, or any child node thereof.
 	 */
-	static MemberExistsResult fieldExists(String fieldName, JavacNode node) {
+	public static MemberExistsResult fieldExists(String fieldName, JavacNode node) {
 		while (node != null && !(node.get() instanceof JCClassDecl)) {
 			node = node.up();
 		}
@@ -119,9 +129,9 @@ class PKG {
 	 * the first method decides if EXISTS_BY_USER or EXISTS_BY_LOMBOK is returned.
 	 * 
 	 * @param methodName the method name to check for.
-	 * @param node Any node that represents the Type (JCClassDecl) to check for, or any child node thereof.
+	 * @param node Any node that represents the Type (JCClassDecl) to look in, or any child node thereof.
 	 */
-	static MemberExistsResult methodExists(String methodName, JavacNode node) {
+	public static MemberExistsResult methodExists(String methodName, JavacNode node) {
 		while (node != null && !(node.get() instanceof JCClassDecl)) {
 			node = node.up();
 		}
@@ -145,9 +155,9 @@ class PKG {
 	 * Checks if there is a (non-default) constructor. In case of multiple constructors (overloading), only
 	 * the first constructor decides if EXISTS_BY_USER or EXISTS_BY_LOMBOK is returned.
 	 * 
-	 * @param node Any node that represents the Type (JCClassDecl) to check for, or any child node thereof.
+	 * @param node Any node that represents the Type (JCClassDecl) to look in, or any child node thereof.
 	 */
-	static MemberExistsResult constructorExists(JavacNode node) {
+	public static MemberExistsResult constructorExists(JavacNode node) {
 		while (node != null && !(node.get() instanceof JCClassDecl)) {
 			node = node.up();
 		}
@@ -170,21 +180,19 @@ class PKG {
 	
 	/**
 	 * Turns an {@code AccessLevel} instance into the flag bit used by javac.
-	 * 
-	 * @see java.lang.Modifier
 	 */
-	static int toJavacModifier(AccessLevel accessLevel) {
+	public static int toJavacModifier(AccessLevel accessLevel) {
 		switch (accessLevel) {
 		case MODULE:
 		case PACKAGE:
 			return 0;
 		default:
 		case PUBLIC:
-			return Modifier.PUBLIC;
+			return Flags.PUBLIC;
 		case PRIVATE:
-			return Modifier.PRIVATE;
+			return Flags.PRIVATE;
 		case PROTECTED:
-			return Modifier.PROTECTED;
+			return Flags.PROTECTED;
 		}
 	}
 	
@@ -193,7 +201,7 @@ class PKG {
 	 * 
 	 * Also takes care of updating the JavacAST.
 	 */
-	static void injectField(JavacNode typeNode, JCVariableDecl field) {
+	public static void injectField(JavacNode typeNode, JCVariableDecl field) {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
 		type.defs = type.defs.append(field);
@@ -207,7 +215,7 @@ class PKG {
 	 * 
 	 * Also takes care of updating the JavacAST.
 	 */
-	static void injectMethod(JavacNode typeNode, JCMethodDecl method) {
+	public static void injectMethod(JavacNode typeNode, JCMethodDecl method) {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
 		if (method.getName().contentEquals("<init>")) {
@@ -250,7 +258,7 @@ class PKG {
 	 * @see com.sun.tools.javac.tree.JCTree.JCIdent
 	 * @see com.sun.tools.javac.tree.JCTree.JCFieldAccess
 	 */
-	static JCExpression chainDots(TreeMaker maker, JavacNode node, String... elems) {
+	public static JCExpression chainDots(TreeMaker maker, JavacNode node, String... elems) {
 		assert elems != null;
 		assert elems.length > 0;
 		
@@ -262,7 +270,12 @@ class PKG {
 		return e;
 	}
 	
-	static List<JCAnnotation> findAnnotations(JavacNode fieldNode, Pattern namePattern) {
+	/**
+	 * Searches the given field node for annotations and returns each one that matches the provided regular expression pattern.
+	 * 
+	 * Only the simple name is checked - the package and any containing class are ignored.
+	 */
+	public static List<JCAnnotation> findAnnotations(JavacNode fieldNode, Pattern namePattern) {
 		List<JCAnnotation> result = List.nil();
 		for (JavacNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
@@ -276,9 +289,13 @@ class PKG {
 			}
 		}	
 		return result;
-	}	
+	}
 	
-	static JCStatement generateNullCheck(TreeMaker treeMaker, JavacNode variable) {
+	/**
+	 * Generates a new statement that checks if the given variable is null, and if so, throws a {@code NullPointerException} with the
+	 * variable name as message.
+	 */
+	public static JCStatement generateNullCheck(TreeMaker treeMaker, JavacNode variable) {
 		JCVariableDecl varDecl = (JCVariableDecl) variable.get();
 		if (isPrimitive(varDecl.vartype)) return null;
 		Name fieldName = varDecl.name;
@@ -288,7 +305,10 @@ class PKG {
 		return treeMaker.If(treeMaker.Binary(JCTree.EQ, treeMaker.Ident(fieldName), treeMaker.Literal(TypeTags.BOT, null)), throwStatement, null);
 	}
 	
-	static List<Integer> createListOfNonExistentFields(List<String> list, JavacNode type, boolean excludeStandard, boolean excludeTransient) {
+	/**
+	 * Given a list of field names and a node referring to a type, finds each name in the list that does not match a field within the type.
+	 */
+	public static List<Integer> createListOfNonExistentFields(List<String> list, JavacNode type, boolean excludeStandard, boolean excludeTransient) {
 		boolean[] matched = new boolean[list.size()];
 		
 		for (JavacNode child : type.down()) {

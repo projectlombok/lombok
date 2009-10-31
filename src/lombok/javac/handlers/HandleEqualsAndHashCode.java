@@ -21,7 +21,7 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.handlers.PKG.*;
+import static lombok.javac.handlers.JavacHandlerUtil.*;
 import lombok.EqualsAndHashCode;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;

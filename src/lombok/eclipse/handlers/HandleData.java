@@ -22,7 +22,7 @@
 package lombok.eclipse.handlers;
 
 import static lombok.eclipse.Eclipse.*;
-import static lombok.eclipse.handlers.PKG.*;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -37,7 +37,7 @@ import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
-import lombok.eclipse.handlers.PKG.MemberExistsResult;
+import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
@@ -132,7 +132,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		Eclipse.setGeneratedBy(constructor, source);
 		
-		constructor.modifiers = PKG.toModifier(isPublic ? AccessLevel.PUBLIC : AccessLevel.PRIVATE);
+		constructor.modifiers = EclipseHandlerUtil.toEclipseModifier(isPublic ? AccessLevel.PUBLIC : AccessLevel.PRIVATE);
 		constructor.annotations = null;
 		constructor.selector = ((TypeDeclaration)type.get()).name;
 		constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
@@ -189,7 +189,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		Eclipse.setGeneratedBy(constructor, source);
 		
-		constructor.modifiers = PKG.toModifier(AccessLevel.PUBLIC) | Modifier.STATIC;
+		constructor.modifiers = EclipseHandlerUtil.toEclipseModifier(AccessLevel.PUBLIC) | Modifier.STATIC;
 		TypeDeclaration typeDecl = (TypeDeclaration) type.get();
 		if (typeDecl.typeParameters != null && typeDecl.typeParameters.length > 0) {
 			TypeReference[] refs = new TypeReference[typeDecl.typeParameters.length];

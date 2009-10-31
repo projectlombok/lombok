@@ -22,7 +22,7 @@
 package lombok.eclipse.handlers;
 
 import static lombok.eclipse.Eclipse.*;
-import static lombok.eclipse.handlers.PKG.*;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.core.AnnotationValues;
@@ -96,7 +96,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
 		String getterName = TransformationsUtil.toGetterName(fieldName, isBoolean);
 		
-		int modifier = toModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
+		int modifier = toEclipseModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		
 		for (String altName : TransformationsUtil.toAllGetterNames(fieldName, isBoolean)) {
 			switch (methodExists(altName, fieldNode)) {

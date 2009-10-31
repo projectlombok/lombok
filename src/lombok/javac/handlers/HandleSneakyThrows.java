@@ -21,7 +21,7 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.handlers.PKG.chainDots;
+import static lombok.javac.handlers.JavacHandlerUtil.chainDots;
 
 import java.util.ArrayList;
 import java.util.Collection;

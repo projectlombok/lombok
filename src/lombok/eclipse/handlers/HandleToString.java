@@ -21,7 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.eclipse.handlers.PKG.*;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -274,7 +274,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		
 		MethodDeclaration method = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		Eclipse.setGeneratedBy(method, source);
-		method.modifiers = toModifier(AccessLevel.PUBLIC);
+		method.modifiers = toEclipseModifier(AccessLevel.PUBLIC);
 		method.returnType = new QualifiedTypeReference(TypeConstants.JAVA_LANG_STRING, new long[] {p, p, p});
 		Eclipse.setGeneratedBy(method.returnType, source);
 		method.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, source)};

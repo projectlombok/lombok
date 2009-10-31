@@ -21,7 +21,7 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.handlers.PKG.*;
+import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
 
@@ -31,7 +31,7 @@ import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
-import lombok.javac.handlers.PKG.MemberExistsResult;
+import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 
 import org.mangosdk.spi.ProviderFor;
 

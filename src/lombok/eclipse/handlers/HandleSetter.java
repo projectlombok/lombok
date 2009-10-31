@@ -22,7 +22,7 @@
 package lombok.eclipse.handlers;
 
 import static lombok.eclipse.Eclipse.*;
-import static lombok.eclipse.handlers.PKG.*;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
 
@@ -101,7 +101,7 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		String setterName = TransformationsUtil.toSetterName(new String(field.name));
 		
-		int modifier = toModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
+		int modifier = toEclipseModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		
 		switch (methodExists(setterName, fieldNode)) {
 		case EXISTS_BY_LOMBOK:

@@ -21,7 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.eclipse.handlers.PKG.*;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import static lombok.eclipse.Eclipse.copyTypes;
 
@@ -245,7 +245,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		Eclipse.setGeneratedBy(method, source);
 		
-		method.modifiers = PKG.toModifier(AccessLevel.PUBLIC);
+		method.modifiers = EclipseHandlerUtil.toEclipseModifier(AccessLevel.PUBLIC);
 		method.returnType = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 		Eclipse.setGeneratedBy(method.returnType, source);
 		method.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, source)};
@@ -425,7 +425,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		MethodDeclaration method = new MethodDeclaration(
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		Eclipse.setGeneratedBy(method, source);
-		method.modifiers = PKG.toModifier(AccessLevel.PUBLIC);
+		method.modifiers = EclipseHandlerUtil.toEclipseModifier(AccessLevel.PUBLIC);
 		method.returnType = TypeReference.baseTypeReference(TypeIds.T_boolean, 0);
 		method.returnType.sourceStart = pS; method.returnType.sourceEnd = pE;
 		Eclipse.setGeneratedBy(method.returnType, source);
