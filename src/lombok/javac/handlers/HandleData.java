@@ -137,7 +137,7 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		TreeMaker maker = typeNode.getTreeMaker();
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
-		JCModifiers mods = maker.Modifiers(Flags.STATIC);
+		JCModifiers mods = maker.Modifiers(Flags.STATIC | Flags.PUBLIC);
 		
 		JCExpression returnType, constructorType;
 		
