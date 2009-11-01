@@ -153,24 +153,34 @@ class EclipseFinder {
 			ignore.printStackTrace();
 		}
 		
+		//Various try/catch/ignore statements are in this for loop. Weird conditions on the disk can cause exceptions,
+		//such as an unformatted drive causing a NullPointerException on listFiles. Best action is almost invariably to just
+		//continue onwards.
 		for (String letter : driveLetters) {
-			File f = new File(letter + ":\\");
-			for (File dir : f.listFiles()) {
-				if (!dir.isDirectory()) continue;
-				if (dir.getName().toLowerCase().contains("eclipse")) {
-					String eclipseLocation = findEclipseOnWindows1(dir);
-					if (eclipseLocation != null) eclipses.add(eclipseLocation);
-				}
-				if (dir.getName().toLowerCase().contains("program files")) {
-					for (File dir2 : dir.listFiles()) {
-						if (!dir2.isDirectory()) continue;
+			try {
+				File f = new File(letter + ":\\");
+				for (File dir : f.listFiles()) {
+					if (!dir.isDirectory()) continue;
+					try {
 						if (dir.getName().toLowerCase().contains("eclipse")) {
 							String eclipseLocation = findEclipseOnWindows1(dir);
 							if (eclipseLocation != null) eclipses.add(eclipseLocation);
 						}
-					}
+					} catch (Exception ignore) {}
+					
+					try {
+						if (dir.getName().toLowerCase().contains("program files")) {
+							for (File dir2 : dir.listFiles()) {
+								if (!dir2.isDirectory()) continue;
+								if (dir.getName().toLowerCase().contains("eclipse")) {
+									String eclipseLocation = findEclipseOnWindows1(dir);
+									if (eclipseLocation != null) eclipses.add(eclipseLocation);
+								}
+							}
+						}
+					} catch (Exception ignore) {}
 				}
-			}
+			} catch (Exception ignore) {}
 		}
 		
 		return eclipses;
