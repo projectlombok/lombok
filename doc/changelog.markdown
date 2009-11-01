@@ -4,7 +4,12 @@ Lombok Changelog
 ### v0.9.0
 
 * The lombok class patching system has been completely revamped; the core business of patching class files has been offloaded in an independent project called 'lombok.patcher', which is now used to patch lombok into eclipse.
+* Many behind-the-scenes changes to improve lombok's stability and flexibility on eclipse.
+* Changes to the lombok core API which aren't backwards compatible with lombok series v0.8 but which were necessary to make writing third party processors for lombok a lot easier.
+* Minor version number bumped due to the above 3 issues.
 * Eclipse's "rename" refactor script, invoked by pressing CMD/CTRL+SHIFT+R, now works on `@Data` annotated classes.
+* The windows installer would fail on boot if you have unformatted drives. [Issue #65](http://code.google.com/p/projectlombok/issues/detail?id=65)
+* The static constructor that `@Data` can make was being generated as package private when compiling with javac. [Issue #63](http://code.google.com/p/projectlombok/issues/detail?id=63)
 
 ### v0.8.5
 
