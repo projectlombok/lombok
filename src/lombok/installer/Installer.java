@@ -527,6 +527,12 @@ public class Installer {
 						System.exit(0);
 					}
 				});
+				
+				if (!success.get()) SwingUtilities.invokeLater(new Runnable() {
+					@Override public void run() {
+						System.exit(0);
+					}
+				});
 			}
 		}.start();
 	}

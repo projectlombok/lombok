@@ -198,9 +198,7 @@ final class EclipseLocation {
 			File lombokJar = new File(dir, "lombok.jar");
 			if (lombokJar.exists()) {
 				if (!lombokJar.delete()) throw new UninstallException(
-						"Can't delete " + lombokJar.getAbsolutePath() +
-						" - perhaps the installer does not have the access rights to do so.",
-						null);
+						"Can't delete " + lombokJar.getAbsolutePath() + generateWriteErrorMessage(), null);
 			}
 			
 			/* legacy code - lombok at one point used to have a separate jar for the eclipse agent.
@@ -208,9 +206,7 @@ final class EclipseLocation {
 				File agentJar = new File(dir, "lombok.eclipse.agent.jar");
 				if (agentJar.exists()) {
 					if (!agentJar.delete()) throw new UninstallException(
-							"Can't delete " + agentJar.getAbsolutePath() +
-							" - perhaps the installer does not have the access rights to do so.",
-							null);
+							"Can't delete " + agentJar.getAbsolutePath() + generateWriteErrorMessage(), null);
 				}
 			}
 			
@@ -257,7 +253,7 @@ final class EclipseLocation {
 					}
 				} catch (IOException e) {
 					throw new UninstallException("Cannot uninstall lombok from " + path.getAbsolutePath() +
-							" probably because this installer does not have the access rights to do so.", e);
+							generateWriteErrorMessage(), e);
 				}
 			}
 		}
@@ -270,6 +266,24 @@ final class EclipseLocation {
 		public InstallException(String message, Throwable cause) {
 			super(message, cause);
 		}
+	}
+	
+	private static String generateWriteErrorMessage() {
+		String osSpecificError;
+		
+		switch (EclipseFinder.getOS()) {
+		default:
+		case MAC_OS_X:
+		case UNIX:
+			osSpecificError = ":\nStart terminal, go to the directory with lombok.jar, and run: sudo java -jar lombok.jar";
+			break;
+		case WINDOWS:
+			osSpecificError = ":\nStart a new cmd (dos box) with admin privileges, go to the directory with lombok.jar, and run: java -jar lombok.jar";
+			break;
+		}
+		
+		return ", probably because this installer does not have the access rights.\n" +
+		"Try re-running the installer with administrative privileges" + osSpecificError;
 	}
 	
 	/**
@@ -309,6 +323,7 @@ final class EclipseLocation {
 						while (true) {
 							int r = in.read(b);
 							if (r == -1) break;
+							if (r > 0) readSucceeded = true;
 							out.write(b, 0, r);
 						}
 					} finally {
@@ -320,7 +335,9 @@ final class EclipseLocation {
 					} catch (Throwable ignore) {}
 					if (!readSucceeded) throw new InstallException("I can't read my own jar file. I think you've found a bug in this installer! I suggest you restart it " +
 							"and use the 'what do I do' link, to manually install lombok. And tell us about this. Thanks!", e);
-					throw new InstallException("I can't write to your Eclipse directory, probably because this installer does not have the access rights.", e);
+					throw new InstallException("I can't write to your Eclipse directory at " +
+							iniFile.getParentFile().getAbsolutePath() +
+							generateWriteErrorMessage(), e);
 				}
 				
 				/* legacy - delete lombok.eclipse.agent.jar if its there, which lombok no longer uses. */ {
@@ -374,8 +391,7 @@ final class EclipseLocation {
 					}
 					installSucceeded = true;
 				} catch (IOException e) {
-					throw new InstallException("Cannot install lombok at " + path.getAbsolutePath() +
-							" probably because this installer does not have the access rights to do so.", e);
+					throw new InstallException("Cannot install lombok at " + path.getAbsolutePath() + generateWriteErrorMessage(), e);
 				} finally {
 					if (!installSucceeded) try {
 						lombokJar.delete();
