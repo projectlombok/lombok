@@ -37,7 +37,7 @@ into the actual deliverable form, and uploading it to the distribution websites.
 	</target>
 	
 	<target name="dist" unless="lombok.dist.built" depends="version">
-		<ant antfile="buildScripts/compile.xml" target="dist" inheritAll="false">
+		<ant antfile="buildScripts/compile.ant.xml" target="dist" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
 		</ant>
 	</target>
@@ -55,7 +55,7 @@ into the actual deliverable form, and uploading it to the distribution websites.
 	</target>
 	
 	<target name="publish" description="Publishes the latest build to googlecode" depends="version, -checkCredentialsFile, dist">
-		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="deps/website/ant-googlecode-0.0.2.jar" name="gcupload" />
+		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="deps/buildScripts/ant-googlecode-0.0.2.jar" name="gcupload" />
 		<property file="${credentialsFile}" prefix="google" />
 		<gcupload 
 				username="${google.username}"
