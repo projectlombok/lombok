@@ -93,6 +93,9 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ant>
 	</target>
 	
+	<target name="publish-all" depends="version, website-publish, maven-publish, publish"
+		description="Publishes lombok itself, updates the maven repository, and the website" />
+	
 	<target name="website" depends="version" description="Prepares the website for distribution">
 		<ant antfile="buildScripts/website.ant.xml" target="website" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
