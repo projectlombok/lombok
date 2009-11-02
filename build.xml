@@ -81,19 +81,19 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ant>
 	</target>
 	
-	<target name="maven-publish" depends="version" description="Build a maven repository then upload it to projectlombok.org">
+	<target name="maven-publish" depends="clean, version" description="Build a maven repository then upload it to projectlombok.org">
 		<ant antfile="buildScripts/maven.ant.xml" target="maven-publish" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
 		</ant>
 	</target>
 	
-	<target name="publish" depends="version" description="Publishes the latest build to googlecode">
+	<target name="publish" depends="clean, version" description="Publishes the latest build to googlecode">
 		<ant antfile="buildScripts/publish.ant.xml" target="publish" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
 		</ant>
 	</target>
 	
-	<target name="publish-all" depends="version, website-publish, maven-publish, publish"
+	<target name="publish-all" depends="clean, version, website-publish, maven-publish, publish"
 		description="Publishes lombok itself, updates the maven repository, and the website" />
 	
 	<target name="website" depends="version" description="Prepares the website for distribution">
@@ -102,7 +102,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ant>
 	</target>
 	
-	<target name="website-publish" depends="version"
+	<target name="website-publish" depends="clean, version"
 			description="Prepares the website for distribution and then publishes it to projectlombok.org">
 		<ant antfile="buildScripts/website.ant.xml" target="website-publish" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
