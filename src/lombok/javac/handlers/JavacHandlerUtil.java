@@ -59,7 +59,7 @@ public class JavacHandlerUtil {
 	
 	/**
 	 * Translates the given field into all possible getter names.
-	 * Convenient wrapper around {@link TransformationsUtil#toAllGetterNames(String, boolean)}.
+	 * Convenient wrapper around {@link TransformationsUtil#toAllGetterNames(CharSequence, boolean)}.
 	 */
 	public static java.util.List<String> toAllGetterNames(JCVariableDecl field) {
 		CharSequence fieldName = field.name;
@@ -72,7 +72,7 @@ public class JavacHandlerUtil {
 	/**
 	 * @return the likely getter name for the stated field. (e.g. private boolean foo; to isFoo).
 	 * 
-	 * Convenient wrapper around {@link TransformationsUtil#toGetterName(String, boolean)}.
+	 * Convenient wrapper around {@link TransformationsUtil#toGetterName(CharSequence, boolean)}.
 	 */
 	public static String toGetterName(JCVariableDecl field) {
 		CharSequence fieldName = field.name;
@@ -85,7 +85,7 @@ public class JavacHandlerUtil {
 	/**
 	 * @return the likely setter name for the stated field. (e.g. private boolean foo; to setFoo).
 	 * 
-	 * Convenient wrapper around {@link TransformationsUtil.toSetterName(String)}.
+	 * Convenient wrapper around {@link TransformationsUtil#toSetterName(CharSequence)}.
 	 */
 	public static String toSetterName(JCVariableDecl field) {
 		CharSequence fieldName = field.name;
