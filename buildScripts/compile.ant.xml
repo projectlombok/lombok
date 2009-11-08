@@ -48,10 +48,42 @@ lombok code including the various agents.
 		</fileset>
 	</path>
 	
+	<path id="findbugs_deps.path">
+		<fileset dir="deps/buildScripts/findbugs">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	
 	<target name="-unpackLibs">
 		<unjar dest="build/lombok">
 			<path refid="libs.path" />
 		</unjar>
+	</target>
+	
+	<target name="-check-findbugs">
+		<available property="findbugs.available" file="deps/buildScripts/findbugs/bin/findbugs" />
+		<fail unless="findbugs.available" message="You don't have findbugs available. Run 'ant installDeps' to fetch it." />
+	</target>
+	
+	<target name="findbugs" depends="-check-findbugs, dist" description="Runs findbugs on the lombok sources">
+		<taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpathref="findbugs_deps.path" />
+		<mkdir dir="build/lombok_aux" />
+		<!-- This ridiculous waste of time (unpacking ALL deps, which is a lot of data!) is done because the ant findbugs task is
+		a retarded stepchild; it does not understand either pathrefs or wildcards (*.jar), and hardcoding the names of the various
+		eclipse module jars would be even worse. -->
+		<unjar dest="build/lombok_aux">
+			<fileset dir="deps/lombok">
+				<include name="**/*.jar" />
+			</fileset>
+		</unjar>
+		
+		<findbugs home="deps/buildScripts/findBugs" output="html" outputFile="findbugsReport.html" jvmargs="-Xmx512m">
+			<auxClasspath path="build/lombok" />
+			<auxClasspath path="build/lombok_aux" />
+			<sourcePath path="src" />
+			<sourcePath path="src_eclipseagent" />
+			<class location="build/lombok/lombok" />
+		</findbugs>
 	</target>
 	
 	<target name="compile" description="Compiles the code">

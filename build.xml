@@ -75,6 +75,10 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ant>
 	</target>
 	
+	<target name="findbugs" description="Runs findbugs on the code">
+		<ant antfile="buildScripts/compile.ant.xml" target="findbugs" inheritAll="false" />
+	</target>
+	
 	<target name="maven" depends="version" description="Build a maven repository">
 		<ant antfile="buildScripts/maven.ant.xml" target="maven" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
