@@ -76,7 +76,7 @@ public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> 
 		
 		if (fieldExists(lockName, methodNode) == MemberExistsResult.NOT_EXISTS) {
 			if (!autoMake) {
-				annotationNode.addError("The field " + new String(lockName) + " does not exist.");
+				annotationNode.addError("The field " + lockName + " does not exist.");
 				return true;
 			}
 			JCExpression objectType = chainDots(maker, methodNode, "java", "lang", "Object");

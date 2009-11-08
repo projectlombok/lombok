@@ -63,7 +63,7 @@ final class EclipseLocation {
 	 * Thrown when creating a new EclipseLocation with a path object that doesn't, in fact,
 	 * point at an Eclipse installation.
 	 */
-	final class NotAnEclipseException extends Exception {
+	static final class NotAnEclipseException extends Exception {
 		private static final long serialVersionUID = 1L;
 		
 		public NotAnEclipseException(String message, Throwable cause) {
@@ -177,7 +177,7 @@ final class EclipseLocation {
 	}
 	
 	/** Thrown when uninstalling lombok fails. */
-	class UninstallException extends Exception {
+	static class UninstallException extends Exception {
 		private static final long serialVersionUID = 1L;
 		
 		public UninstallException(String message, Throwable cause) {
@@ -260,7 +260,7 @@ final class EclipseLocation {
 	}
 	
 	/** Thrown when installing lombok fails. */
-	class InstallException extends Exception {
+	static class InstallException extends Exception {
 		private static final long serialVersionUID = 1L;
 		
 		public InstallException(String message, Throwable cause) {
@@ -318,13 +318,17 @@ final class EclipseLocation {
 				boolean readSucceeded = false;
 				try {
 					FileOutputStream out = new FileOutputStream(lombokJar);
-					InputStream in = new FileInputStream(ourJar);
 					try {
-						while (true) {
-							int r = in.read(b);
-							if (r == -1) break;
-							if (r > 0) readSucceeded = true;
-							out.write(b, 0, r);
+						InputStream in = new FileInputStream(ourJar);
+						try {
+							while (true) {
+								int r = in.read(b);
+								if (r == -1) break;
+								if (r > 0) readSucceeded = true;
+								out.write(b, 0, r);
+							}
+						} finally {
+							in.close();
 						}
 					} finally {
 						out.close();

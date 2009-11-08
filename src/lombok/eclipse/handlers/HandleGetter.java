@@ -142,7 +142,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		method.thrownExceptions = null;
 		method.typeParameters = null;
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		Expression fieldExpression = new SingleNameReference(field.name, (field.declarationSourceStart << 32) | field.declarationSourceEnd);
+		Expression fieldExpression = new SingleNameReference(field.name, ((long)field.declarationSourceStart << 32) | field.declarationSourceEnd);
 		Eclipse.setGeneratedBy(fieldExpression, source);
 		Statement returnStatement = new ReturnStatement(fieldExpression, field.sourceStart, field.sourceEnd);
 		Eclipse.setGeneratedBy(returnStatement, source);
