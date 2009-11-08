@@ -522,7 +522,13 @@ public class Installer {
 				
 				if (success.get()) SwingUtilities.invokeLater(new Runnable() {
 					@Override public void run() {
-						JOptionPane.showMessageDialog(appWindow, "<html>Lombok has been installed on the selected Eclipse installations.<br>Don't forget to add <code>lombok.jar</code> to your projects, and restart your eclipse!</html>", "Install successful", JOptionPane.INFORMATION_MESSAGE);
+						JOptionPane.showMessageDialog(appWindow,
+								"<html>Lombok has been installed on the selected Eclipse installations.<br>" +
+								"Don't forget to add <code>lombok.jar</code> to your projects, and restart your eclipse!<br>" +
+								"If you start eclipse with a custom -vm parameter, you'll need to add:<br>" +
+								"<code>-vmargs -Xbootclasspath/a:lombok.jar -javaagent:lombok.jar</code><br>" +
+								"as parameter as well.</html>", "Install successful",
+								JOptionPane.INFORMATION_MESSAGE);
 						appWindow.setVisible(false);
 						System.exit(0);
 					}
@@ -819,5 +825,5 @@ public class Installer {
 		"-javaagent:lombok.jar</pre></li></ol>" +
 		"<br>" +
 		"That's all there is to it. Note that on Mac OS X, eclipse.ini is hidden in<br>" +
-		"<code>Eclipse.app/Contents/MacOS</code> so that's where I place the jar files.</html>";
+		"<code>Eclipse.app%1$sContents%1$sMacOS</code> so that's where I place the jar files.</html>";
 }
