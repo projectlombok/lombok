@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 
 import lombok.Lombok;
 import lombok.core.Version;
+import lombok.installer.EclipseLocation.NotAnEclipseException;
 
 /** Utility class for doing various OS-specific operations related to finding Eclipse installations. */
 class EclipseFinder {
@@ -141,11 +142,8 @@ class EclipseFinder {
 	 * 
 	 * Where 'X' is tried for all local disk drives, unless there's a problem calling fsutil, in which case only
 	 * C: is tried.
-	 * 
-	 * @return A List of directories that contain 'eclipse.exe'.
 	 */
-	static List<String> findEclipseOnWindows() {
-		List<String> eclipses = new ArrayList<String>();
+	private static void findEclipseOnWindows(List<EclipseLocation> locations, List<NotAnEclipseException> problems) {
 		List<String> driveLetters = asList("C");
 		try {
 			driveLetters = getDrivesOnWindows();
@@ -164,7 +162,13 @@ class EclipseFinder {
 					try {
 						if (dir.getName().toLowerCase().contains("eclipse")) {
 							String eclipseLocation = findEclipseOnWindows1(dir);
-							if (eclipseLocation != null) eclipses.add(eclipseLocation);
+							if (eclipseLocation != null) {
+								try {
+									locations.add(EclipseLocation.create(eclipseLocation));
+								} catch (NotAnEclipseException e) {
+									problems.add(e);
+								}
+							}
 						}
 					} catch (Exception ignore) {}
 					
@@ -174,7 +178,13 @@ class EclipseFinder {
 								if (!dir2.isDirectory()) continue;
 								if (dir.getName().toLowerCase().contains("eclipse")) {
 									String eclipseLocation = findEclipseOnWindows1(dir);
-									if (eclipseLocation != null) eclipses.add(eclipseLocation);
+									if (eclipseLocation != null) {
+										try {
+											locations.add(EclipseLocation.create(eclipseLocation));
+										} catch (NotAnEclipseException e) {
+											problems.add(e);
+										}
+									}
 								}
 							}
 						}
@@ -182,8 +192,6 @@ class EclipseFinder {
 				}
 			} catch (Exception ignore) {}
 		}
-		
-		return eclipses;
 	}
 	
 	/** Checks if the provided directory contains 'eclipse.exe', and if so, returns the directory, otherwise null. */
@@ -196,17 +204,22 @@ class EclipseFinder {
 	 * Calls the OS-dependent 'find Eclipse' routine. If the local OS doesn't have a routine written for it,
 	 * null is returned.
 	 * 
-	 * @return List of directories that contain the Eclipse executable.
+	 * @param locations List of valid eclipse locations - provide an empty list; this method will fill it.
+	 * @param problems List of eclipse locations that seem to contain half-baked eclipses that can't be installed.
+	 *                 Provide an empty list; this method will fill it.
 	 */
-	static List<String> findEclipses() {
+	static void findEclipses(List<EclipseLocation> locations, List<NotAnEclipseException> problems) {
 		switch (getOS()) {
 		case WINDOWS:
-			return findEclipseOnWindows();
+			findEclipseOnWindows(locations, problems);
+			break;
 		case MAC_OS_X:
-			return findEclipseOnMac();
+			findEclipseOnMac(locations, problems);
+			break;
 		default:
 		case UNIX:
-			return null;
+			findEclipseOnUnix(locations, problems);
+			break;
 		}
 	}
 	
@@ -240,22 +253,68 @@ class EclipseFinder {
 		}
 	}
 	
+	/** Scans a couple of likely locations on linux. */
+	private static void findEclipseOnUnix(List<EclipseLocation> locations, List<NotAnEclipseException> problems) {
+		List<String> guesses = new ArrayList<String>();
+		
+		File d;
+		
+		d = new File("/usr/bin/eclipse");
+		if (d.exists()) guesses.add(d.getPath());
+		d = new File("/usr/local/bin/eclipse");
+		if (d.exists()) guesses.add(d.getPath());
+		d = new File(System.getProperty("user.home", "."), "bin/eclipse");
+		if (d.exists()) guesses.add(d.getPath());
+		
+		findEclipseInSubDir("/usr/local/share", guesses);
+		findEclipseInSubDir("/usr/local", guesses);
+		findEclipseInSubDir("/usr/share", guesses);
+		findEclipseInSubDir(System.getProperty("user.home", "."), guesses);
+		
+		for (String guess : guesses) {
+			try {
+				locations.add(EclipseLocation.create(guess));
+			} catch (NotAnEclipseException e) {
+				problems.add(e);
+			}
+		}
+	}
+	
+	private static void findEclipseInSubDir(String dir, List<String> guesses) {
+		File d = new File(dir);
+		if (!d.isDirectory()) return;
+		for (File f : d.listFiles()) {
+			if (f.isDirectory() && f.getName().toLowerCase().contains("eclipse")) {
+				File possible = new File(f, "eclipse");
+				if (possible.exists()) guesses.add(possible.getAbsolutePath());
+			}
+		}
+	}
+	
 	/**
 	 * Scans /Applications for any folder named 'Eclipse'
 	 */
-	static List<String> findEclipseOnMac() {
-		List<String> eclipses = new ArrayList<String>();
+	private static void findEclipseOnMac(List<EclipseLocation> locations, List<NotAnEclipseException> problems) {
 		for (File dir : new File("/Applications").listFiles()) {
 			if (!dir.isDirectory()) continue;
 			if (dir.getName().toLowerCase().equals("eclipse.app")) {
 				//This would be kind of an unorthodox Eclipse installation, but if Eclipse ever
 				//moves to this more maclike installation concept, our installer can still handle it.
-				eclipses.add("/Applications");
+				try {
+					locations.add(EclipseLocation.create("/Applications"));
+				} catch (NotAnEclipseException e) {
+					problems.add(e);
+				}
 			}
 			if (dir.getName().toLowerCase().contains("eclipse")) {
-				if (new File(dir, "Eclipse.app").exists()) eclipses.add(dir.toString());
+				if (new File(dir, "Eclipse.app").exists()) {
+					try {
+						locations.add(EclipseLocation.create(dir.toString()));
+					} catch (NotAnEclipseException e) {
+						problems.add(e);
+					}
+				}
 			}
 		}
-		return eclipses;
 	}
 }

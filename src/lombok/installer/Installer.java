@@ -95,6 +95,50 @@ public class Installer {
 	private JButton installButton;
 	
 	public static void main(String[] args) {
+		if (args.length > 0 && args[0].equals("install")) {
+			if (args.length < 3 || !args[1].equals("eclipse")) {
+				System.err.println("Run java -jar lombok.jar install eclipse path/to/eclipse/executable");
+				System.exit(1);
+			}
+			String path = args[2];
+			try {
+				EclipseLocation loc = EclipseLocation.create(path);
+				loc.install();
+				System.out.println("Installed to: " + loc.getName());
+				System.exit(0);
+			} catch (NotAnEclipseException e) {
+				System.err.println("Not a valid eclipse location:");
+				System.err.println(e.getMessage());
+				System.exit(2);
+			} catch (InstallException e) {
+				System.err.println("Installation failed:");
+				System.err.println(e.getMessage());
+				System.exit(1);
+			}
+		}
+		
+		if (args.length > 0 && args[0].equals("uninstall")) {
+			if (args.length < 3 || !args[1].equals("eclipse")) {
+				System.err.println("Run java -jar lombok.jar uninstall eclipse path/to/eclipse/executable");
+				System.exit(1);
+			}
+			String path = args[2];
+			try {
+				EclipseLocation loc = EclipseLocation.create(path);
+				loc.uninstall();
+				System.out.println("Uninstalled from: " + loc.getName());
+				System.exit(0);
+			} catch (NotAnEclipseException e) {
+				System.err.println("Not a valid eclipse location:");
+				System.err.println(e.getMessage());
+				System.exit(2);
+			} catch (UninstallException e) {
+				System.err.println("Uninstall failed:");
+				System.err.println(e.getMessage());
+				System.exit(1);
+			}
+		}
+		
 		if (EclipseFinder.getOS() == OS.MAC_OS_X) {
 			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Lombok Installer");
 			System.setProperty("com.apple.macos.use-file-dialog-packages", "true");
@@ -132,7 +176,10 @@ public class Installer {
 				"graphical computer system - this message is being shown because your terminal is not graphics capable." +
 				"If you are just using 'javac' or a tool that calls on javac, no installation is neccessary; just " +
 				"make sure lombok.jar is in the classpath when you compile. Example:\n\n" +
-				"   java -cp lombok.jar MyCode.java", Version.getVersion(), ABOUT_LOMBOK_URL);
+				"   java -cp lombok.jar MyCode.java\n\n\n" +
+				"If for whatever reason you can't run the graphical installer but you do want to install lombok into eclipse," +
+				"start this jar with the following syntax:\n\n" +
+				"   java -jar lombok.jar install eclipse path/to/your/eclipse/executable", Version.getVersion(), ABOUT_LOMBOK_URL);
 	}
 	
 	/**
@@ -307,17 +354,9 @@ public class Installer {
 		Thread findEclipsesThread = new Thread() {
 			@Override public void run() {
 				try {
-					final List<String> eclipses = EclipseFinder.findEclipses();
 					final List<EclipseLocation> locations = new ArrayList<EclipseLocation>();
 					final List<NotAnEclipseException> problems = new ArrayList<NotAnEclipseException>();
-					
-					if (eclipses != null) {
-						for (String eclipse : eclipses) try {
-							locations.add(new EclipseLocation(eclipse));
-						} catch (NotAnEclipseException e) {
-							problems.add(e);
-						}
-					}
+					EclipseFinder.findEclipses(locations, problems);
 					
 					SwingUtilities.invokeLater(new Runnable() {
 						@Override public void run() {
@@ -335,7 +374,7 @@ public class Installer {
 							
 							loadingExpl.setVisible(false);
 							
-							if (eclipses == null) {
+							if (locations.size() + problems.size() == 0) {
 								JOptionPane.showMessageDialog(appWindow,
 										"I don't know how to automatically find Eclipse installations on this platform.\n" +
 										"Please use the 'Specify Eclipse Location...' button to manually point out the\n" +
@@ -380,6 +419,7 @@ public class Installer {
 					chooser.setFileFilter(new FileFilter() {
 						@Override public boolean accept(File f) {
 							if (f.getName().equalsIgnoreCase(exeName)) return true;
+							if (f.getName().equalsIgnoreCase("eclipse.ini")) return true;
 							if (f.isDirectory()) return true;
 							
 							return false;
@@ -398,7 +438,7 @@ public class Installer {
 				
 				if (file != null) {
 					try {
-						eclipsesList.addEclipse(new EclipseLocation(file));
+						eclipsesList.addEclipse(EclipseLocation.create(file));
 					} catch (NotAnEclipseException e) {
 						e.showDialog(appWindow);
 					} catch (Throwable t) {
@@ -479,7 +519,7 @@ public class Installer {
 		uninstallBox.removeAll();
 		uninstallBox.add(Box.createRigidArea(new Dimension(1, 16)));
 		for (EclipseLocation location : locations) {
-			JLabel label = new JLabel(location.getPath());
+			JLabel label = new JLabel(location.getName());
 			label.setFont(label.getFont().deriveFont(Font.BOLD));
 			uninstallBox.add(label);
 		}
@@ -638,7 +678,7 @@ public class Installer {
 			if (locations.contains(location)) return;
 			Box box = Box.createHorizontalBox();
 			box.setBackground(Color.WHITE);
-			final JCheckBox checkbox = new JCheckBox(location.getPath());
+			final JCheckBox checkbox = new JCheckBox(location.getName());
 			checkbox.setBackground(Color.WHITE);
 			box.add(checkbox);
 			checkbox.setSelected(true);
