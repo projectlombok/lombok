@@ -1,6 +1,11 @@
 Lombok Changelog
 ----------------
 
+### v0.9.1
+
+* The installer now works much better on linux, in that it auto-finds eclipse in most locations linux users tend to put their eclipse installs, and it can now handle apt-get installed eclipses, which previously didn't work well at all. There's also a hidden feature where the installer can work as a command-line only tool (`java -jar lombok.jar install eclipse path/to/eclipse`) which also supports `uninstall` of course. You can now also point at `eclipse.ini` in case you have a really odd eclipse install, which should always work.
+* For lombok developers, the eclipse launch target now works out-of-the-box on snow leopard [Issue #66](http://code.google.com/p/projectlombok/issues/detail?id=66)
+
 ### v0.9.0
 
 * The lombok class patching system has been completely revamped; the core business of patching class files has been offloaded in an independent project called 'lombok.patcher', which is now used to patch lombok into eclipse.
