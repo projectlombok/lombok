@@ -227,7 +227,10 @@ WARNING: This project is enormous (350MB) and takes like an hour to check out. Y
 		<condition property="startOnFirstThread" value="-XstartOnFirstThread">
 			<os family="mac" />
 		</condition>
-		<condition property="startOnFirstThread" value="">
+		<condition property="d32" value="-d32">
+			<os family="mac" />
+		</condition>
+		<condition property="d32" value="">
 			<not><os family="mac" /></not>
 		</condition>
 	</target>
@@ -240,6 +243,7 @@ WARNING: This project is enormous (350MB) and takes like an hour to check out. Y
 				overwrite="true">
 			<filterset>
 				<filter token="START_ON_FIRST_THREAD" value="${startOnFirstThread}" />
+				<filter token="D32" value="${d32}" />
 			</filterset>
 		</copy>
 	</target>
