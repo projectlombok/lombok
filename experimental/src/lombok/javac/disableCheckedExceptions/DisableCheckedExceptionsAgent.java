@@ -30,6 +30,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 
@@ -39,24 +40,37 @@ import lombok.patcher.ScriptManager;
 import lombok.patcher.inject.LiveInjector;
 import lombok.patcher.scripts.ScriptBuilder;
 
-import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-
 @SupportedAnnotationTypes("*")
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class DisableCheckedExceptionsAgent extends AbstractProcessor {
+	private String errorToShow;
+	
 	/** Inject an agent if we're on a sun-esque JVM. */
 	@Override public void init(ProcessingEnvironment procEnv) {
 		super.init(procEnv);
-		if (!(procEnv instanceof JavacProcessingEnvironment)) {
-			procEnv.getMessager().printMessage(Kind.WARNING, "You aren't using a compiler based around javac v1.6, so lombok will not work properly.");
-			this.processingEnv = null;
+		String className = procEnv.getClass().getName();
+		if (className.startsWith("org.eclipse.jdt.")) {
+			errorToShow = "This version of disableCheckedExceptions is not compatible with eclipse. javac only; sorry.";
+			procEnv.getMessager().printMessage(Kind.WARNING, errorToShow);
+		} else if (!procEnv.getClass().getName().equals("com.sun.tools.javac.processing.JavacProcessingEnvironment")) {
+			procEnv.getMessager().printMessage(Kind.WARNING, "You aren't using a compiler based around javac v1.6, so disableCheckedExceptions will not work.\n" +
+					"Your processor class is: " + className);
+		} else {
+			new LiveInjector().inject(LiveInjector.findPathJar(DisableCheckedExceptionsAgent.class));
 		}
-		
-		new LiveInjector().inject(LiveInjector.findPathJar(DisableCheckedExceptionsAgent.class));
 	}
 	
 	/** Does nothing - we just wanted the init method so we can inject an agent. */
 	@Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+		if (errorToShow != null) {
+			if (errorToShow != null) {
+				Set<? extends Element> rootElements = roundEnv.getRootElements();
+				if (!rootElements.isEmpty()) {
+					processingEnv.getMessager().printMessage(Kind.WARNING, errorToShow, rootElements.iterator().next());
+					errorToShow = null;
+				}
+			}
+		}
 		return false;
 	}
 	
