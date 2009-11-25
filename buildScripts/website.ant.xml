@@ -230,7 +230,7 @@ such as converting the changelog into HTML, and creating javadoc.
 			check the <a href="lombok/package-summary.html">lombok</a> package.&nbsp;If you're trying to extend lombok or
 			write your own plugins, the other packages are what you're looking for.</body></html>
 		]]></echo>
-		<javadoc sourcepath="src" defaultexcludes="yes" destdir="build/api" windowtitle="Lombok" Overview="${javadoc.overview.html}">
+		<javadoc sourcepath="src/core" defaultexcludes="yes" destdir="build/api" windowtitle="Lombok" Overview="${javadoc.overview.html}">
 			<classpath refid="deps.path" />
 			<classpath refid="libs.path" />
 			<link href="http://java.sun.com/javase/6/docs/api/" offline="true" packagelistLoc="./deps/javadoc/java6"/>

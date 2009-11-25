@@ -31,7 +31,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	
 	<target name="version" description="Shows the version number" unless="lombok.version">
 		<mkdir dir="build/lombok" />
-		<javac includeDestClasses="false" srcdir="src" debug="on" destdir="build/lombok" target="1.5" includes="lombok/core/Version.java" />
+		<javac includeDestClasses="false" srcdir="src/core" debug="on" destdir="build/lombok" target="1.5" includes="lombok/core/Version.java" />
 		<java
 			classname="lombok.core.Version"
 			classpath="build/lombok"

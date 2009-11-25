@@ -80,11 +80,18 @@ lombok code including the various agents.
 		<findbugs home="deps/buildScripts/findBugs" output="html" outputFile="findbugsReport.html" jvmargs="-Xmx512m">
 			<auxClasspath path="build/lombok" />
 			<auxClasspath path="build/lombok_aux" />
-			<sourcePath path="src" />
-			<sourcePath path="src_eclipseagent" />
+			<sourcePath path="src/core" />
+			<sourcePath path="src/installer" />
+			<sourcePath path="src/eclipseAgent" />
 			<class location="build/lombok/lombok" />
 		</findbugs>
 	</target>
+	
+	<patternset id="copyables">
+		<exclude name="**/*.java" />
+		<exclude name="**/*.class" />
+		<exclude name="**/*.svg" />
+	</patternset>
 	
 	<target name="compile" description="Compiles the code">
 		<mkdir dir="build/lombok" />
@@ -101,21 +108,30 @@ lombok code including the various agents.
 		     and partly because our injection mechanism (annotations) doesn't work very
 		     well on javac 1.5, hence, when using javac, we do demand you're on 1.6. -->
 		<javac debug="on" destdir="build/lombok" target="1.5">
-			<src path="src" />
-			<src path="src_eclipseagent" />
+			<src path="src/core" />
+			<src path="src/installer" />
+			<src path="src/eclipseAgent" />
 			<exclude name="lombok/javac/**" />
 			<classpath refid="deps.path" />
 			<classpath refid="libs.path" />
 		</javac>
-		<javac srcdir="src" debug="on" destdir="build/lombok" target="1.6" includes="lombok/javac/**">
+		<javac debug="on" destdir="build/lombok" target="1.6">
+			<src path="src/core" />
+			<src path="src/installer" />
+			<src path="src/eclipseAgent" />
+			<include name="lombok/javac/**" />
 			<classpath refid="deps.path" />
 			<classpath refid="libs.path" />
 		</javac>
 		<copy todir="build/lombok">
-			<fileset dir="src">
-				<exclude name="**/*.java" />
-				<exclude name="**/*.class" />
-				<exclude name="**/*.svg" />
+			<fileset dir="src/installer">
+				<patternset refid="copyables" />
+			</fileset>
+			<fileset dir="src/core">
+				<patternset refid="copyables" />
+			</fileset>
+			<fileset dir="src/eclipseAgent">
+				<patternset refid="copyables" />
 			</fileset>
 		</copy>
 		
