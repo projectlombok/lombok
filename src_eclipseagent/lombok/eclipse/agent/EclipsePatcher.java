@@ -55,7 +55,7 @@ public class EclipsePatcher {
 	private static void registerPatchScripts(Instrumentation instrumentation, boolean reloadExistingClasses) {
 		ScriptManager sm = new ScriptManager();
 		sm.registerTransformer(instrumentation);
-		EquinoxClassLoader.getInstance().addPrefix("lombok.");
+		EquinoxClassLoader.addPrefix("lombok.");
 		EquinoxClassLoader.registerScripts(sm);
 		
 		patchLombokizeAST(sm);
