@@ -3,6 +3,7 @@
 	<classpathentry kind="src" path="src/core"/>
 	<classpathentry kind="src" path="src/eclipseAgent"/>
 	<classpathentry kind="src" path="src/installer"/>
+	<classpathentry kind="src" path="src/delombok"/>
 	<classpathentry kind="src" path="experimental/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="deps/lombok/org.eclipse.jdt.core_3.5.0.v_963.jar"/>
