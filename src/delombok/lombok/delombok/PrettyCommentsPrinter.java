@@ -107,6 +107,7 @@ import com.sun.tools.javac.util.Name;
  *  This code and its internal interfaces are subject to change or
  *  deletion without notice.</b>
  */
+@SuppressWarnings("all") // Mainly sun code that has other warning settings
 public class PrettyCommentsPrinter extends JCTree.Visitor {
 
     private static final Method GET_TAG_METHOD;

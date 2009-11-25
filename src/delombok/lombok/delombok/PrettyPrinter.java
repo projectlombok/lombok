@@ -115,12 +115,13 @@ public class PrettyPrinter {
 					return null;
 				}
 				node.accept(new SimpleTreeVisitor<Void, Void>(){
+					@SuppressWarnings("incomplete-switch")
 					@Override
-					protected Void defaultAction(Tree node, Void p) {
-						if (node == null) {
+					protected Void defaultAction(Tree treeNode, Void r) {
+						if (treeNode == null) {
 							return null;
 						}
-						JCTree tree = (JCTree)node;
+						JCTree tree = (JCTree)treeNode;
 						Kind kind = tree.getKind();
 						System.out.print(kind.toString() + " " + tree.pos + " - "  + tree.getEndPosition(cu.endPositions));
 						switch (kind) {
@@ -167,10 +168,8 @@ public class PrettyPrinter {
 	            if (input instanceof CharBuffer) {
 	            	return new PrettyDocCommentScanner(this, (CharBuffer)input, context.get(Comments.class));
 	            } 
-	            else {
-	                char[] array = input.toString().toCharArray();
-	                return newScanner(array, array.length);
-	            }
+                char[] array = input.toString().toCharArray();
+                return newScanner(array, array.length);
 	        }
 		
 	        @Override
