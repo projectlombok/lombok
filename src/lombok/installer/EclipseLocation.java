@@ -99,7 +99,9 @@ final class EclipseLocation {
 	 * Create a new EclipseLocation by pointing at either the directory contain the Eclipse executable, or the executable itself,
 	 * or an eclipse.ini file.
 	 * 
-	 * @throws NotAnEclipseException If this isn't an Eclipse executable or a directory with an Eclipse executable.
+	 * @throws NotAnEclipseException
+	 *             If this isn't an Eclipse executable or a directory with an
+	 *             Eclipse executable.
 	 */
 	public static EclipseLocation create(String path) throws NotAnEclipseException {
 		if (path == null) throw new NullPointerException("path");
@@ -130,7 +132,6 @@ final class EclipseLocation {
 	}
 	
 	private static EclipseLocation findEclipseIniFromExe(File exePath, int loopCounter) throws NotAnEclipseException {
-		System.out.println(exePath);
 		/* Try looking for eclipse.ini as sibling to the executable */ {
 			File ini = new File(exePath.getParentFile(), "eclipse.ini");
 			if (ini.isFile()) return new EclipseLocation(getFilePath(exePath), ini);
@@ -147,7 +148,7 @@ final class EclipseLocation {
 					String oPath = exePath.getAbsolutePath();
 					String nPath = exePath.getCanonicalPath();
 					if (!oPath.equals(nPath)) try {
-						return findEclipseIniFromExe(new File(nPath), loopCounter +1);
+						return findEclipseIniFromExe(new File(nPath), loopCounter + 1);
 					} catch (NotAnEclipseException ignore) {
 						// Unlinking didn't help find an eclipse, so continue.
 					}
@@ -215,7 +216,7 @@ final class EclipseLocation {
 			"^\\-javaagent\\:.*lombok.*\\.jar$", Pattern.CASE_INSENSITIVE);
 	
 	private final Pattern BOOTCLASSPATH_LINE_MATCHER = Pattern.compile(
-	"^\\-Xbootclasspath\\/a\\:(.*lombok.*\\.jar.*)$", Pattern.CASE_INSENSITIVE);
+			"^\\-Xbootclasspath\\/a\\:(.*lombok.*\\.jar.*)$", Pattern.CASE_INSENSITIVE);
 	
 	private boolean checkForLombok(File iniFile) throws IOException {
 		if (!iniFile.exists()) return false;
@@ -257,8 +258,10 @@ final class EclipseLocation {
 	 * It's a no-op if lombok wasn't there in the first place,
 	 * and it will remove a half-succeeded lombok installation as well.
 	 * 
-	 * @throws UninstallException If there's an obvious I/O problem that is preventing installation.
-	 *   bugs in the uninstall code will probably throw other exceptions; this is intentional.
+	 * @throws UninstallException
+	 *             If there's an obvious I/O problem that is preventing
+	 *             installation. bugs in the uninstall code will probably throw
+	 *             other exceptions; this is intentional.
 	 */
 	void uninstall() throws UninstallException {
 		for (File dir : getUninstallDirs()) {
@@ -319,8 +322,7 @@ final class EclipseLocation {
 					fos.close();
 				}
 			} catch (IOException e) {
-				throw new UninstallException("Cannot uninstall lombok from " + name +
-					generateWriteErrorMessage(), e);
+				throw new UninstallException("Cannot uninstall lombok from " + name + generateWriteErrorMessage(), e);
 			}
 		}
 	}
@@ -356,8 +358,10 @@ final class EclipseLocation {
 	 * Install lombok into the Eclipse at this location.
 	 * If lombok is already there, it is overwritten neatly (upgrade mode).
 	 * 
-	 * @throws InstallException If there's an obvious I/O problem that is preventing installation.
-	 *   bugs in the install code will probably throw other exceptions; this is intentional.
+	 * @throws InstallException
+	 *             If there's an obvious I/O problem that is preventing
+	 *             installation. bugs in the install code will probably throw
+	 *             other exceptions; this is intentional.
 	 */
 	void install() throws InstallException {
 		// For whatever reason, relative paths in your eclipse.ini file don't work on linux, but only for -javaagent.

@@ -132,13 +132,14 @@ class EclipseFinder {
 		
 		return drives;
 	}
-
+	
 	/**
 	 * Returns a list of paths of Eclipse installations.
 	 * Eclipse installations are found by checking for the existence of 'eclipse.exe' in the following locations:
-	 * 
-	 * X:\*Program Files*\*Eclipse*
-	 * X:\*Eclipse*
+	 * <ul>
+	 * <li>X:\*Program Files*\*Eclipse*</li>
+	 * <li>X:\*Eclipse*</li>
+	 * </ul>
 	 * 
 	 * Where 'X' is tried for all local disk drives, unless there's a problem calling fsutil, in which case only
 	 * C: is tried.
@@ -204,9 +205,13 @@ class EclipseFinder {
 	 * Calls the OS-dependent 'find Eclipse' routine. If the local OS doesn't have a routine written for it,
 	 * null is returned.
 	 * 
-	 * @param locations List of valid eclipse locations - provide an empty list; this method will fill it.
-	 * @param problems List of eclipse locations that seem to contain half-baked eclipses that can't be installed.
-	 *                 Provide an empty list; this method will fill it.
+	 * @param locations
+	 *            List of valid eclipse locations - provide an empty list; this
+	 *            method will fill it.
+	 * @param problems
+	 *            List of eclipse locations that seem to contain half-baked
+	 *            eclipses that can't be installed. Provide an empty list; this
+	 *            method will fill it.
 	 */
 	static void findEclipses(List<EclipseLocation> locations, List<NotAnEclipseException> problems) {
 		switch (getOS()) {

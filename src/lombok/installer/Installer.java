@@ -95,31 +95,57 @@ public class Installer {
 	private JButton installButton;
 	
 	public static void main(String[] args) {
-		if (args.length > 0 && args[0].equals("install")) {
+		if (args.length > 0 && (args[0].equals("install") || args[0].equals("uninstall"))) {
+			boolean uninstall = args[0].equals("uninstall");
 			if (args.length < 3 || !args[1].equals("eclipse")) {
-				System.err.println("Run java -jar lombok.jar install eclipse path/to/eclipse/executable");
+				System.err.printf("Run java -jar lombok.jar %1$s eclipse path/to/eclipse/executable (or 'auto' to %1$s to all auto-discovered eclipse locations)\n", uninstall ? "uninstall" : "install");
 				System.exit(1);
 			}
 			String path = args[2];
 			try {
-				EclipseLocation loc = EclipseLocation.create(path);
-				loc.install();
-				System.out.println("Installed to: " + loc.getName());
+				final List<EclipseLocation> locations = new ArrayList<EclipseLocation>();
+				final List<NotAnEclipseException> problems = new ArrayList<NotAnEclipseException>();
+				if (path.equals("auto")) {
+					EclipseFinder.findEclipses(locations, problems);
+				} else {
+					locations.add(EclipseLocation.create(path));
+				}
+				int validLocations = locations.size();
+				for (EclipseLocation loc : locations) {
+					try {
+						if (uninstall) {
+							loc.uninstall();
+						} else {
+							loc.install();
+						}
+						System.out.printf("Lombok %s %s: %s\n", uninstall ? "uninstalled" : "installed", uninstall ? "from" : "to", loc.getName());
+					} catch (InstallException e) {
+						System.err.printf("Installation at %s failed:\n", loc.getName());
+						System.err.println(e.getMessage());
+						validLocations--;
+					} catch (UninstallException e) {
+						System.err.printf("Uninstall at %s failed:\n", loc.getName());
+						System.err.println(e.getMessage());
+						validLocations--;
+					}
+				}
+				for (NotAnEclipseException problem : problems) {
+					System.err.println("WARNING: " + problem.getMessage());
+				}
+				if (validLocations == 0) {
+					System.err.println("WARNING: Zero valid locations found; so nothing was done.");
+				}
 				System.exit(0);
 			} catch (NotAnEclipseException e) {
 				System.err.println("Not a valid eclipse location:");
 				System.err.println(e.getMessage());
 				System.exit(2);
-			} catch (InstallException e) {
-				System.err.println("Installation failed:");
-				System.err.println(e.getMessage());
-				System.exit(1);
 			}
 		}
 		
 		if (args.length > 0 && args[0].equals("uninstall")) {
 			if (args.length < 3 || !args[1].equals("eclipse")) {
-				System.err.println("Run java -jar lombok.jar uninstall eclipse path/to/eclipse/executable");
+				System.err.println("Run java -jar lombok.jar uninstall eclipse path/to/eclipse/executable (or 'auto' to uninstall all auto-discovered eclipse locations)");
 				System.exit(1);
 			}
 			String path = args[2];
@@ -732,7 +758,7 @@ public class Installer {
 		constraints.gridx = 0;
 		constraints.gridy = 0;
 		constraints.insets = new Insets(8, 8, 8, 8);
-		appWindowContainer.add(leftGraphic,constraints);
+		appWindowContainer.add(leftGraphic, constraints);
 		constraints.insets = new Insets(0, 0, 0, 0);
 		
 		constraints.gridx++;
@@ -740,7 +766,7 @@ public class Installer {
 		constraints.gridheight = 1;
 		constraints.fill = GridBagConstraints.HORIZONTAL;
 		constraints.ipadx = 16;
-		constraints.ipady = 14	;
+		constraints.ipady = 14;
 		appWindowContainer.add(javacArea, constraints);
 		
 		constraints.gridy++;
@@ -789,7 +815,7 @@ public class Installer {
 							rt.exec(cmd);
 							break;
 						case MAC_OS_X:
-							rt.exec( "open " + ABOUT_LOMBOK_URL.toString());
+							rt.exec("open " + ABOUT_LOMBOK_URL.toString());
 							break;
 						default:
 						case UNIX:
