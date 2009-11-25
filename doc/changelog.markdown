@@ -1,10 +1,15 @@
 Lombok Changelog
 ----------------
 
+### v0.9.2
+* The installer command-line mode now supports installing/uninstalling all eclipses that can be found via auto-discovery. Just use 'auto' instead of a path.
+* Erroneous use of lombok in eclipse (adding it to a project as an annotation processor, which is not how lombok is to be used on eclipse) now generates a useful warning message with helpful information, instead of a confusing error hidden in the logs. [Issue #53](http://code.google.com/p/projectlombok/issues/detail?id=53)
+* Solved a regression bug where you would occasionally see errors with the gist 'loader constraint violation: when resolving...', such as when opening the help system, starting the diff editor, or, rarely, opening any java source file. [Issue #68](http://code.google.com/p/projectlombok/issues/detail?id=68)
+
 ### v0.9.1
 
 * The installer now works much better on linux, in that it auto-finds eclipse in most locations linux users tend to put their eclipse installs, and it can now handle apt-get installed eclipses, which previously didn't work well at all. There's also a hidden feature where the installer can work as a command-line only tool (`java -jar lombok.jar install eclipse path/to/eclipse`) which also supports `uninstall` of course. You can now also point at `eclipse.ini` in case you have a really odd eclipse install, which should always work.
-* For lombok developers, the eclipse launch target now works out-of-the-box on snow leopard [Issue #66](http://code.google.com/p/projectlombok/issues/detail?id=66)
+* For lombok developers, the eclipse launch target now works out-of-the-box on snow leopard. [Issue #66](http://code.google.com/p/projectlombok/issues/detail?id=66)
 
 ### v0.9.0
 
