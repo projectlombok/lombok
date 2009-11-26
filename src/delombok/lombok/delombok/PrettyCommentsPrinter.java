@@ -112,17 +112,16 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 
     private static final Method GET_TAG_METHOD;
     private static final Field TAG_FIELD; 
+
     static {
     	Method m = null;
     	Field f = null;
     	try {
     		m = JCTree.class.getDeclaredMethod("getTag");
-    		System.out.println("Using getTag method");
 		} 
 		catch (NoSuchMethodException e) {
 			try {
 				f = JCTree.class.getDeclaredField("tag");
-				System.out.println("Using tag field");
 			} 
 			catch (NoSuchFieldException e1) {
 				e1.printStackTrace();
@@ -152,12 +151,11 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 		}
     }
 	
-
 	private List<Comment> comments;
 	private final JCCompilationUnit cu;
 	private boolean newLine = true;
     
-    public PrettyCommentsPrinter(Writer out, List<Comment> comments, JCCompilationUnit cu) {
+    public PrettyCommentsPrinter(Writer out, JCCompilationUnit cu, List<Comment> comments) {
         this.out = out;
 		this.comments = comments;
 		this.cu = cu;

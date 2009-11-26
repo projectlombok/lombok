@@ -21,11 +21,11 @@
  */
 package lombok.delombok;
 
-class Comment {
+public final class Comment {
 	final int pos;
 	final String content;
 	
-	Comment(int pos, String content) {
+	public Comment(int pos, String content) {
 		this.pos = pos;
 		this.content = content;
 	}
