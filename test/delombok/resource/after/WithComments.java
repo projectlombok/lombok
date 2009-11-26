@@ -1,5 +1,5 @@
 // Cool Comments
 
 public class WithComments {
-    // Also inside the body
+	// Also inside the body
 }

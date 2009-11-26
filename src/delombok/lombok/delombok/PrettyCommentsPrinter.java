@@ -184,10 +184,6 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
      */
     Writer out;
 
-    /** Indentation width (can be reassigned from outside).
-     */
-    public int width = 4;
-
     /** The current left margin.
      */
     int lmargin = 0;
@@ -205,19 +201,19 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
      */
     void align() throws IOException {
     	newLine = false;
-        for (int i = 0; i < lmargin; i++) out.write(" ");
+        for (int i = 0; i < lmargin; i++) out.write("\t");
     }
 
     /** Increase left margin by indentation width.
      */
     void indent() {
-        lmargin = lmargin + width;
+        lmargin++;
     }
 
     /** Decrease left margin by indentation width.
      */
     void undent() {
-        lmargin = lmargin - width;
+        lmargin--;
     }
 
     /** Enter a new precedence level. Emit a `(' if new precedence level

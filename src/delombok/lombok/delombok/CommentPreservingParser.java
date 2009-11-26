@@ -25,29 +25,43 @@ import java.io.IOException;
 import java.io.Writer;
 
 import com.sun.tools.javac.main.JavaCompiler;
+import com.sun.tools.javac.main.OptionName;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Options;
 
 public class CommentPreservingParser {
-	private final JavaCompiler compiler;
-	private final Context context;
 	
-	public CommentPreservingParser(Context context) {
-		this.context = context;
+	private final String encoding;
+
+	public CommentPreservingParser() {
+		this("utf-8");
+	}
+	
+	public CommentPreservingParser(String encoding) {
+		this.encoding = encoding;
+	}
+	
+	public ParseResult parseFile(String fileName) throws IOException {
+		Context context = new Context();
+		
+		Options.instance(context).put(OptionName.ENCODING, encoding);
+		
 		CommentCollectingScanner.Factory.preRegister(context);
-		compiler = new JavaCompiler(context) {
+		
+		JavaCompiler compiler = new JavaCompiler(context) {
 			@Override
 			protected boolean keepComments() {
 				return true;
 			}
 		};
 		compiler.genEndPos = true;
-	}
-	
-	public ParseResult parseFile(String fileName) throws IOException {
+		
 		Comments comments = new Comments();
 		context.put(Comments.class, comments);
+
+		comments.comments = List.nil();
 		@SuppressWarnings("deprecation")
 		JCCompilationUnit cu = compiler.parse(fileName);
 		return new ParseResult(comments.comments, cu);

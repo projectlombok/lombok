@@ -21,6 +21,8 @@
  */
 package lombok.delombok;
 
+import static org.junit.Assert.fail;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -31,11 +33,6 @@ import lombok.delombok.CommentPreservingParser.ParseResult;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
-
-import com.sun.tools.javac.main.OptionName;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Options;
 
 public class TestSourceFiles {
 	
@@ -48,9 +45,7 @@ public class TestSourceFiles {
 
 	@BeforeClass
 	public static void init() {
-		Context c = new Context();
-		Options.instance(c).put(OptionName.ENCODING, "utf-8");
-		parser = new CommentPreservingParser(c);
+		parser = new CommentPreservingParser();
 	}
 	
 	@Test
