@@ -23,6 +23,15 @@ package lombok.delombok;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Collections;
+
+import javax.annotation.processing.Messager;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
+import javax.tools.Diagnostic.Kind;
+
+import lombok.javac.JavacTransformer;
 
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.main.OptionName;
@@ -64,9 +73,30 @@ public class CommentPreservingParser {
 		comments.comments = List.nil();
 		@SuppressWarnings("deprecation")
 		JCCompilationUnit cu = compiler.parse(fileName);
+		
+		new JavacTransformer(messager).transform(context, Collections.singleton(cu));
+		
 		return new ParseResult(comments.comments, cu);
 	}
-
+	
+	private static final Messager messager = new Messager() {
+		@Override public void printMessage(Kind kind, CharSequence msg) {
+			System.out.printf("M: %s: %s\n", kind, msg);
+		}
+		
+		@Override public void printMessage(Kind kind, CharSequence msg, Element e) {
+			System.out.printf("E: %s: %s\n", kind, msg);
+		}
+		
+		@Override public void printMessage(Kind kind, CharSequence msg, Element e, AnnotationMirror a) {
+			System.out.printf("A: %s: %s\n", kind, msg);
+		}
+		
+		@Override public void printMessage(Kind kind, CharSequence msg, Element e, AnnotationMirror a, AnnotationValue v) {
+			System.out.printf("V: %s: %s\n", kind, msg);
+		}
+	};
+	
 	static class Comments {
 		List<Comment> comments = List.nil();
 		

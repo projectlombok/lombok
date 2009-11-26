@@ -22,25 +22,24 @@
 package lombok.delombok;
 
 import static org.junit.Assert.fail;
+import static lombok.delombok.TestSourceFiles.removeBlanks;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
 
 import lombok.delombok.CommentPreservingParser.ParseResult;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class TestSourceFiles {
+public class TestLombokFiles {
 	private static CommentPreservingParser parser;
 	
-	private static final File BEFORE_FOLDER = new File("test/delombok/resource/before");
-	private static final File AFTER_FOLDER = new File("test/delombok/resource/after");
+	private static final File BEFORE_FOLDER = new File("test/lombok/resource/before");
+	private static final File AFTER_FOLDER = new File("test/lombok/resource/after");
 	
 	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 	
@@ -56,16 +55,9 @@ public class TestSourceFiles {
 			ParseResult parseResult = parser.parseFile(file.toString());
 			StringWriter writer = new StringWriter();
 			parseResult.print(writer);
+			System.out.println(writer);
 			compare(file.getName(), readAfter(file), writer.toString());
 		}
-	}
-	
-	static String[] removeBlanks(String[] in) {
-		List<String> out = new ArrayList<String>();
-		for (String s : in) {
-			if (!s.trim().isEmpty()) out.add(s);
-		}
-		return out.toArray(new String[0]);
 	}
 	
 	private void compare(String name, String expectedFile, String actualFile) {
