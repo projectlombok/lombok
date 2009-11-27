@@ -14,6 +14,7 @@
 	<classpathentry kind="lib" path="deps/lombok/org.eclipse.osgi_3.5.0.v20090520.jar"/>
 	<classpathentry kind="lib" path="deps/lombok/org.eclipse.equinox.common_3.5.0.v20090520-1800.jar"/>
 	<classpathentry kind="lib" path="deps/junit-4.7.jar"/>
+	<classpathentry kind="lib" path="deps/lombok/ant.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lombok.patcher"/>
 	<classpathentry kind="lib" path="deps/lombok/tools.jar" sourcepath="C:/javasource/javasources.zip"/>
 	<classpathentry kind="lib" path="deps/lombok/spi-0.2.4.jar"/>
