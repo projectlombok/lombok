@@ -83,6 +83,7 @@ lombok code including the various agents.
 			<sourcePath path="src/core" />
 			<sourcePath path="src/installer" />
 			<sourcePath path="src/eclipseAgent" />
+			<sourcePath path="src/delombok" />
 			<class location="build/lombok/lombok" />
 		</findbugs>
 	</target>
@@ -111,6 +112,7 @@ lombok code including the various agents.
 			<src path="src/core" />
 			<src path="src/installer" />
 			<src path="src/eclipseAgent" />
+			<src path="src/delombok" />
 			<exclude name="lombok/javac/**" />
 			<classpath refid="deps.path" />
 			<classpath refid="libs.path" />
@@ -119,6 +121,7 @@ lombok code including the various agents.
 			<src path="src/core" />
 			<src path="src/installer" />
 			<src path="src/eclipseAgent" />
+			<src path="src/delombok" />
 			<include name="lombok/javac/**" />
 			<classpath refid="deps.path" />
 			<classpath refid="libs.path" />
@@ -131,6 +134,9 @@ lombok code including the various agents.
 				<patternset refid="copyables" />
 			</fileset>
 			<fileset dir="src/eclipseAgent">
+				<patternset refid="copyables" />
+			</fileset>
+			<fileset dir="src/delombok">
 				<patternset refid="copyables" />
 			</fileset>
 		</copy>
