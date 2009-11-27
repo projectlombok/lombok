@@ -35,9 +35,6 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.mangosdk.spi.ProviderFor;
-
-import lombok.core.LombokApp;
 import lombok.delombok.CommentPreservingParser.ParseResult;
 
 import com.zwitserloot.cmdreader.CmdReader;
@@ -58,17 +55,6 @@ public class Delombok {
 	
 	/** If null, output to standard out. */
 	private File output = null;
-	
-	@ProviderFor(LombokApp.class)
-	public static class DelombokApp implements LombokApp {
-		@Override public void runApp(String[] args) {
-			Delombok.main(args);
-		}
-		
-		@Override public String getAppName() {
-			return "delombok";
-		}
-	}
 	
 	private static class CmdArgs {
 		@Shorthand("v")

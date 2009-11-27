@@ -113,7 +113,13 @@ public class Installer {
 			}
 			for (LombokApp app : services) {
 				if (appName.equals(app.getAppName())) {
-					app.runApp(newArgs);
+					try {
+						int returnCode = app.runApp(newArgs);
+						System.exit(returnCode);
+					} catch (Exception e) {
+						e.printStackTrace();
+						System.exit(10);
+					}
 					return;
 				}
 			}
