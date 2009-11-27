@@ -77,8 +77,17 @@ public class JavacHandlerUtil {
 			JCMethodDecl method = (JCMethodDecl) parentNode.get();
 			method.mods.annotations = filterList(method.mods.annotations, annotation.get());
 			break;
+		case TYPE:
+			try {
+				JCClassDecl type = (JCClassDecl) parentNode.get();
+				type.mods.annotations = filterList(type.mods.annotations, annotation.get());
+			} catch (ClassCastException e) {
+				//something rather odd has been annotated. Better to just break only delombok instead of everything.
+			}
+			break;
 		default:
-			throw new IllegalStateException("Don't know how to remove annotations from: " + parentNode.getKind());
+			//This really shouldn't happen, but if it does, better just break delombok instead of breaking everything.
+			return;
 		}
 		parentNode.removeChild(annotation);
 		
