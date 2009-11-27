@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v0.9.2
 * lombok now ships with the delombok tool, which copies an entire directory filled with sources to a new directory, desugaring any java files to what it would look like without lombok's transformations. Compiling the sources in this new directory without lombok support should result in the same class files as compiling the original with lombok support. Great to double check on what lombok is doing, and for chaining the delombok-ed sources to source-based java tools such as Google Web Toolkit or javadoc.
+* Lombok now works on openjdk7 (tested with JDK7m5)! For all the folks on the cutting edge, this should be very good news. [Issue #61](http://code.google.com/p/projectlombok/issues/detail?id=61)
 * The installer command-line mode now supports installing/uninstalling all eclipses that can be found via auto-discovery. Just use 'auto' instead of a path.
 * Erroneous use of lombok in eclipse (adding it to a project as an annotation processor, which is not how lombok is to be used on eclipse) now generates a useful warning message with helpful information, instead of a confusing error hidden in the logs. [Issue #53](http://code.google.com/p/projectlombok/issues/detail?id=53)
 * Solved a regression bug where you would occasionally see errors with the gist 'loader constraint violation: when resolving...', such as when opening the help system, starting the diff editor, or, rarely, opening any java source file. [Issue #68](http://code.google.com/p/projectlombok/issues/detail?id=68)
