@@ -78,7 +78,7 @@ public class Delombok {
 		
 		@Shorthand("d")
 		@Description("Directory to save delomboked files to")
-		@Mandatory(onlyIfNot="print")
+		@Mandatory(onlyIfNot={"print", "help"})
 		@Parameterized
 		private String target;
 		
@@ -103,9 +103,9 @@ public class Delombok {
 		}
 		
 		if (args.help || args.input.isEmpty()) {
-			if (args.input.isEmpty()) System.err.println("ERROR: no files or directories to delombok specified.");
+			if (!args.help) System.err.println("ERROR: no files or directories to delombok specified.");
 			System.err.println(reader.generateCommandLineHelp("delombok"));
-			System.exit(args.input.isEmpty() ? 1 : 0);
+			System.exit(args.help ? 0 : 1);
 			return;
 		}
 		
