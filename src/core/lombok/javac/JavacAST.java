@@ -33,6 +33,7 @@ import javax.tools.JavaFileObject;
 import lombok.core.AST;
 
 import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -56,7 +57,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
  */
 public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	private final Messager messager;
-	private final Name.Table nameTable;
+	private final JavacElements elements;
 	private final TreeMaker treeMaker;
 	private final Symtab symtab;
 	private final Log log;
@@ -75,7 +76,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		this.context = context;
 		this.messager = messager;
 		this.log = Log.instance(context);
-		this.nameTable = Name.Table.instance(context);
+		this.elements = JavacElements.instance(context);
 		this.treeMaker = TreeMaker.instance(context);
 		this.symtab = Symtab.instance(context);
 		clearChanged();
@@ -120,7 +121,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	
 	/** @return A Name object generated for the proper name table belonging to this AST. */
 	public Name toName(String name) {
-		return nameTable.fromString(name);
+		return elements.getName(name);
 	}
 	
 	/** @return A TreeMaker instance that you can use to create new AST nodes. */
