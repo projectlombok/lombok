@@ -64,7 +64,7 @@ public class TestViaDelombok {
 			String expected = expectedLines[i];
 			String actual = actualLines[i];
 			if (!expected.equals(actual)) {
-				fail(String.format("Difference in line %s(%d):\n`%s`\n`%s`\n", name, i, expected, actual));
+				fail(String.format("Difference in line %s(%d):\nExpected `%s`\nGot `%s`\n", name, i, expected, actual));
 			}
 		}
 		if (expectedLines.length > actualLines.length) {
