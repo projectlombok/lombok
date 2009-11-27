@@ -203,9 +203,22 @@ public class Delombok {
 		delombok0(base, "", 0);
 	}
 	
+	public void process(File base, String name) throws IOException {
+		File f = new File(base, name);
+		if (f.isFile()) {
+			String extension = getExtension(f);
+			if (extension.equals("java")) delombok(base, name);
+			else if (extension.equals("class")) skipClass(name);
+			else copy(base, name);
+		} else if (!f.exists()) {
+			feedback.printf("Skipping %s because it does not exist.\n", canonical(f));
+		} else if (!f.isDirectory()) {
+			feedback.printf("Skipping %s because it is a special file type.\n", canonical(f));
+		}
+	}
+	
 	private void delombok0(File base, String suffix, int loop) throws IOException {
 		File dir = suffix.isEmpty() ? base : new File(base, suffix);
-		String name = suffix;
 		
 		if (dir.isDirectory()) {
 			if (loop >= 100) {
@@ -215,15 +228,8 @@ public class Delombok {
 					delombok0(base, suffix + (suffix.isEmpty() ? "" : File.separator) + f.getName(), loop + 1);
 				}
 			}
-		} else if (dir.isFile()) {
-			String extension = getExtension(dir);
-			if (extension.equals("java")) delombok(base, name);
-			else if (extension.equals("class")) skipClass(name);
-			else copy(base, name);
-		} else if (!dir.exists()) {
-			feedback.printf("Skipping %s because it does not exist.\n", canonical(dir));
 		} else {
-			feedback.printf("Skipping %s because it is a special file type.\n", canonical(dir));
+			process(base, suffix);
 		}
 	}
 	
