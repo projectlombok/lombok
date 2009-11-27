@@ -35,6 +35,20 @@
 			The documentation above is a lot easier to follow, but if you want to build your own transformations,
 			or you want to add javadoc to <code>lombok.jar</code> in your IDE, you can also check out <a href="../api/index.html">the javadoc</a>.
 		</div>
+		<h1>Running Lombok</h1>
+		<h3>On eclipse</h3>
+			Execute lombok.jar (doubleclick it, or run java -jar lombok.jar). Follow instructions.
+		<h3>On javac (and maven, ant, and other build tools)</h3>
+			Include lombok.jar on the classpath as you compile. That's all there is to it!<br />
+			Lombok hosts its own maven repository, so adding lombok to maven is very simple. <a href="/mavenrepo/index.html">full instructions are here</a>.
+		<h3>On GWT (Google Widget Toolkit), javadoc, and other source-based tools</h3>
+			Use <a href="delombok.html">delombok</a> first, then run javadoc or GWT on the delombok-ed code.
+		<h1>Running delombok</h1>
+			<div>Delombok copies your source files to another directory, replacing all lombok annotations with their desugared form. So, it'll turn <code>@Getter</code>
+				back into the actual getter. It then removes the annotation. This is useful for all sorts of reasons; you can check out what's happening under the hood,
+				if the unthinkable happens and you want to stop using lombok, you can easily remove all traces of it in your source, and you can use delombok to preprocess
+				your source files for source-level tools such as javadoc and GWT. More information about how to run delombok, including instructions for build tools
+				can be found at the <a href="delombok.html">delombok page</a>.</div>
 		<div class="footer">
 			<a href="../credits.html" class="creditsLink">credits</a> | <span class="copyright">Copyright &copy; 2009 Reinier Zwitserloot and Roel Spilker, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.</span>
 		</div>
