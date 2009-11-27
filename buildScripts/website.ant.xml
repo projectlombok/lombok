@@ -68,7 +68,7 @@ such as converting the changelog into HTML, and creating javadoc.
 			<src path="buildScripts/src" />
 			<include name="lombok/website/WebUpToDate.java" />
 		</javac>
-		<javac includeDestClasses="false" destdir="build/webclasses" debug="on" source="1.5">
+		<javac includeDestClasses="false" destdir="build/webclasses" debug="on" source="1.5" target="1.5">
 			<classpath refid="buildScripts.deps.path" />
 			<src path="buildScripts/src" />
 			<include name="lombok/website/CompileChangelog.java" />
