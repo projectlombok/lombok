@@ -6,6 +6,7 @@
 	<classpathentry kind="src" path="src/delombok"/>
 	<classpathentry kind="src" path="experimental/src"/>
 	<classpathentry kind="src" path="test/delombok/src"/>
+	<classpathentry kind="src" path="test/core/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="deps/lombok/org.eclipse.jdt.core_3.5.0.v_963.jar"/>
 	<classpathentry kind="lib" path="deps/lombok/org.eclipse.jdt.ui_3.5.1.r351_v20090821-0800.jar"/>
