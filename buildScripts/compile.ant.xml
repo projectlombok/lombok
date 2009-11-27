@@ -108,7 +108,6 @@ lombok code including the various agents.
 		     javac 1.5, partly because they completely rewrote large swaths of javac,
 		     and partly because our injection mechanism (annotations) doesn't work very
 		     well on javac 1.5, hence, when using javac, we do demand you're on 1.6. -->
-		<echo>s1</echo>
 		<javac debug="on" destdir="build/lombok" target="1.5" source="1.5">
 			<src path="src/core" />
 			<src path="src/installer" />
@@ -117,11 +116,11 @@ lombok code including the various agents.
 			<classpath refid="deps.path" />
 			<classpath refid="libs.path" />
 		</javac>
-		<echo>s2</echo>
 		<javac debug="on" destdir="build/lombok" target="1.6" source="1.6">
 			<src path="src/core" />
 			<src path="src/delombok" />
 			<include name="lombok/javac/**" />
+			<include name="lombok/delombok/**" />
 			<classpath location="build/lombok" />
 			<classpath refid="deps.path" />
 			<classpath refid="libs.path" />
