@@ -54,9 +54,22 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	private final String fileName;
 	Map<N, Void> identityDetector = new IdentityHashMap<N, Void>();
 	private Map<N, L> nodeMap = new IdentityHashMap<N, L>();
+	private boolean changed = false;
 	
 	protected AST(String fileName) {
 		this.fileName = fileName == null ? "(unknown).java" : fileName;
+	}
+	
+	protected void setChanged() {
+		this.changed = true;
+	}
+	
+	protected void clearChanged() {
+		this.changed = false;
+	}
+	
+	public boolean isChanged() {
+		return changed;
 	}
 	
 	/** Set the node object that wraps the internal Compilation Unit node. */

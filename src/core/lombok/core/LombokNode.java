@@ -126,6 +126,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 */
 	@SuppressWarnings("unchecked")
 	public L replaceWith(N newN, Kind newNodeKind) {
+		ast.setChanged();
 		L newNode = ast.buildTree(newN, newNodeKind);
 		newNode.parent = parent;
 		for (int i = 0; i < parent.children.size(); i++) {
@@ -142,6 +143,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 * Also affects the underlying (Eclipse/javac) AST.
 	 */
 	public void replaceChildNode(N oldN, N newN) {
+		ast.setChanged();
 		ast.replaceStatementInNode(get(), oldN, newN);
 	}
 	
@@ -228,6 +230,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 */
 	@SuppressWarnings("unchecked")
 	public L add(N newChild, Kind newChildKind) {
+		ast.setChanged();
 		L n = ast.buildTree(newChild, newChildKind);
 		if (n == null) return null;
 		n.parent = (L) this;
@@ -247,6 +250,8 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 		
 		L newNode = ast.buildTree(get(), kind);
 		
+		ast.setChanged();
+		
 		ast.replaceNewWithExistingOld(oldNodes, newNode);
 	}
 	
@@ -265,6 +270,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 * Does not change the underlying (javac/Eclipse) AST, only the wrapped view.
 	 */
 	public void removeChild(L child) {
+		ast.setChanged();
 		children.remove(child);
 	}
 	

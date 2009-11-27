@@ -32,7 +32,6 @@ import javax.tools.JavaFileObject;
 
 import lombok.core.AST;
 
-import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
@@ -66,13 +65,11 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	/**
 	 * Creates a new JavacAST of the provided Compilation Unit.
 	 * 
-	 * @param trees The trees instance to use to inspect the compilation unit. Generate via:
-	 *   {@code Trees.getInstance(env)}
 	 * @param messager A Messager for warning and error reporting.
 	 * @param context A Context object for interfacing with the compiler.
 	 * @param top The compilation unit, which serves as the top level node in the tree to be built.
 	 */
-	public JavacAST(Trees trees, Messager messager, Context context, JCCompilationUnit top) {
+	public JavacAST(Messager messager, Context context, JCCompilationUnit top) {
 		super(top.sourcefile == null ? null : top.sourcefile.toString());
 		setTop(buildCompilationUnit(top));
 		this.context = context;
@@ -81,6 +78,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		this.nameTable = Name.Table.instance(context);
 		this.treeMaker = TreeMaker.instance(context);
 		this.symtab = Symtab.instance(context);
+		clearChanged();
 	}
 	
 	public Context getContext() {

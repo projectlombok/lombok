@@ -21,6 +21,7 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.javac.handlers.JavacHandlerUtil.markAnnotationAsProcessed;
 import lombok.Cleanup;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
@@ -53,6 +54,7 @@ import com.sun.tools.javac.util.Name;
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 	@Override public boolean handle(AnnotationValues<Cleanup> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		markAnnotationAsProcessed(annotationNode, Cleanup.class);
 		String cleanupName = annotation.getInstance().value();
 		if (cleanupName.length() == 0) {
 			annotationNode.addError("cleanupName cannot be the empty string.");

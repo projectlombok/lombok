@@ -59,6 +59,7 @@ import com.sun.tools.javac.util.List;
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleData implements JavacAnnotationHandler<Data> {
 	@Override public boolean handle(AnnotationValues<Data> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		markAnnotationAsProcessed(annotationNode, Data.class);
 		JavacNode typeNode = annotationNode.up();
 		JCClassDecl typeDecl = null;
 		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl)typeNode.get();

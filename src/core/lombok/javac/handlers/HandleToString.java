@@ -68,6 +68,8 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 	}
 	
 	@Override public boolean handle(AnnotationValues<ToString> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		markAnnotationAsProcessed(annotationNode, ToString.class);
+		
 		ToString ann = annotation.getInstance();
 		List<String> excludes = List.from(ann.exclude());
 		List<String> includes = List.from(ann.of());

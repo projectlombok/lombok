@@ -21,9 +21,7 @@
  */
 package lombok.javac.apt;
 
-import java.util.ArrayList;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -36,19 +34,12 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 
-import lombok.javac.HandlerLibrary;
-import lombok.javac.JavacAST;
-import lombok.javac.JavacASTAdapter;
-import lombok.javac.JavacNode;
+import lombok.javac.JavacTransformer;
 
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
-import com.sun.tools.javac.tree.JCTree.JCAnnotation;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
 
 /**
@@ -66,7 +57,7 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 public class Processor extends AbstractProcessor {
 	private ProcessingEnvironment rawProcessingEnv;
 	private JavacProcessingEnvironment processingEnv;
-	private HandlerLibrary handlers;
+	private JavacTransformer transformer;
 	private Trees trees;
 	private String errorToShow;
 	
@@ -86,7 +77,7 @@ public class Processor extends AbstractProcessor {
 			this.errorToShow = null;
 		} else {
 			this.processingEnv = (JavacProcessingEnvironment) procEnv;
-			handlers = HandlerLibrary.load(procEnv.getMessager());
+			transformer = new JavacTransformer(procEnv.getMessager());
 			trees = Trees.instance(procEnv);
 			this.errorToShow = null;
 		}
@@ -111,59 +102,9 @@ public class Processor extends AbstractProcessor {
 			if (unit != null) units.put(unit, null);
 		}
 		
-		List<JavacAST> asts = new ArrayList<JavacAST>();
+		transformer.transform(processingEnv.getContext(), units.keySet());
 		
-		for (JCCompilationUnit unit : units.keySet()) asts.add(
-				new JavacAST(trees, processingEnv.getMessager(), processingEnv.getContext(), unit));
-		
-		handlers.skipPrintAST();
-		for (JavacAST ast : asts) {
-			ast.traverse(new AnnotationVisitor());
-			handlers.callASTVisitors(ast);
-		}
-		
-		handlers.skipAllButPrintAST();
-		for (JavacAST ast : asts) {
-			ast.traverse(new AnnotationVisitor());
-		}
 		return false;
-	}
-	
-	private class AnnotationVisitor extends JavacASTAdapter {
-		@Override public void visitAnnotationOnType(JCClassDecl type, JavacNode annotationNode, JCAnnotation annotation) {
-			if (annotationNode.isHandled()) return;
-			JCCompilationUnit top = (JCCompilationUnit) annotationNode.top().get();
-			boolean handled = handlers.handleAnnotation(top, annotationNode, annotation);
-			if (handled) annotationNode.setHandled();
-		}
-		
-		@Override public void visitAnnotationOnField(JCVariableDecl field, JavacNode annotationNode, JCAnnotation annotation) {
-			if (annotationNode.isHandled()) return;
-			JCCompilationUnit top = (JCCompilationUnit) annotationNode.top().get();
-			boolean handled = handlers.handleAnnotation(top, annotationNode, annotation);
-			if (handled) annotationNode.setHandled();
-		}
-		
-		@Override public void visitAnnotationOnMethod(JCMethodDecl method, JavacNode annotationNode, JCAnnotation annotation) {
-			if (annotationNode.isHandled()) return;
-			JCCompilationUnit top = (JCCompilationUnit) annotationNode.top().get();
-			boolean handled = handlers.handleAnnotation(top, annotationNode, annotation);
-			if (handled) annotationNode.setHandled();
-		}
-		
-		@Override public void visitAnnotationOnMethodArgument(JCVariableDecl argument, JCMethodDecl method, JavacNode annotationNode, JCAnnotation annotation) {
-			if (annotationNode.isHandled()) return;
-			JCCompilationUnit top = (JCCompilationUnit) annotationNode.top().get();
-			boolean handled = handlers.handleAnnotation(top, annotationNode, annotation);
-			if (handled) annotationNode.setHandled();
-		}
-		
-		@Override public void visitAnnotationOnLocal(JCVariableDecl local, JavacNode annotationNode, JCAnnotation annotation) {
-			if (annotationNode.isHandled()) return;
-			JCCompilationUnit top = (JCCompilationUnit) annotationNode.top().get();
-			boolean handled = handlers.handleAnnotation(top, annotationNode, annotation);
-			if (handled) annotationNode.setHandled();
-		}
 	}
 	
 	private JCCompilationUnit toUnit(Element element) {

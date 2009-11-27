@@ -80,8 +80,10 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 	}
 	
 	@Override public boolean handle(AnnotationValues<Getter> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		markAnnotationAsProcessed(annotationNode, Getter.class);
 		JavacNode fieldNode = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
+		
 		if (level == AccessLevel.NONE) return true;
 		
 		return createGetterForField(level, fieldNode, annotationNode, true);

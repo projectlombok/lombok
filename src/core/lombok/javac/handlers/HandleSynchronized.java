@@ -51,10 +51,12 @@ public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> 
 	private static final String STATIC_LOCK_NAME = "$LOCK";
 	
 	@Override public boolean handle(AnnotationValues<Synchronized> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		markAnnotationAsProcessed(annotationNode, Synchronized.class);
 		JavacNode methodNode = annotationNode.up();
 		
 		if (methodNode == null || methodNode.getKind() != Kind.METHOD || !(methodNode.get() instanceof JCMethodDecl)) {
 			annotationNode.addError("@Synchronized is legal only on methods.");
+			
 			return true;
 		}
 		
@@ -62,6 +64,7 @@ public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> 
 		
 		if ((method.mods.flags & Flags.ABSTRACT) != 0) {
 			annotationNode.addError("@Synchronized is legal only on concrete methods.");
+			
 			return true;
 		}
 		boolean isStatic = (method.mods.flags & Flags.STATIC) != 0;
