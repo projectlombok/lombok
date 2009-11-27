@@ -40,12 +40,11 @@ import java.awt.event.ActionListener;
 import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.swing.Box;
@@ -65,6 +64,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 
+import lombok.core.LombokApp;
+import lombok.core.SpiLoadUtil;
 import lombok.core.Version;
 import lombok.installer.EclipseFinder.OS;
 import lombok.installer.EclipseLocation.InstallException;
@@ -96,26 +97,26 @@ public class Installer {
 	private JLabel uninstallPlaceholder;
 	private JButton installButton;
 	
-	private static final Map<String, String> APPS;
-	static {
-		Map<String, String> m = new HashMap<String, String>();
-		m.put("delombok", "lombok.delombok.Delombok");
-		APPS = Collections.unmodifiableMap(m);
-	}
-	
 	public static void main(String[] args) {
 		if (args.length > 0) {
-			String className = APPS.get(args[0]);
-			if (className != null) {
-				String[] newArgs = new String[args.length-1];
-				System.arraycopy(args, 1, newArgs, 0, newArgs.length);
-				try {
-					Class.forName(className).getMethod("main", String[].class).invoke(newArgs);
-				} catch (Exception e) {
-					System.err.println("Lombok bug: Can't find application main class: " + className);
+			String appName = args[0];
+			String[] newArgs = new String[args.length-1];
+			System.arraycopy(args, 1, newArgs, 0, newArgs.length);
+			Iterable<LombokApp> services;
+			try {
+				services = SpiLoadUtil.findServices(LombokApp.class);
+			} catch (IOException e) {
+				System.err.println("Your lombok installation appears to be corrupted! Please let us know by clicking 'report bugs' on projectlombok.org. Include this stack trace:");
+				e.printStackTrace();
+				System.exit(2);
+				return;
+			}
+			for (LombokApp app : services) {
+				if (appName.equals(app.getAppName())) {
+					app.runApp(newArgs);
+					return;
 				}
 			}
-			return;
 		}
 		if (args.length > 0 && (args[0].equals("install") || args[0].equals("uninstall"))) {
 			boolean uninstall = args[0].equals("uninstall");
