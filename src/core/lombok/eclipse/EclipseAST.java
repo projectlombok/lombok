@@ -60,6 +60,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		this.compilationUnitDeclaration = ast;
 		setTop(buildCompilationUnit(ast));
 		this.completeParse = isComplete(ast);
+		clearChanged();
 	}
 	
 	/** {@inheritDoc} */
@@ -201,12 +202,14 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	public void reparse() {
 		propagateProblems();
 		if (completeParse) return;
+		boolean changed = isChanged();
 		boolean newCompleteParse = isComplete(compilationUnitDeclaration);
 		if (!newCompleteParse) return;
 		
 		top().rebuild();
 		
 		this.completeParse = true;
+		if (!changed) clearChanged();
 	}
 	
 	private static boolean isComplete(CompilationUnitDeclaration unit) {

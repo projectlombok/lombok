@@ -78,6 +78,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		this.nameTable = Name.Table.instance(context);
 		this.treeMaker = TreeMaker.instance(context);
 		this.symtab = Symtab.instance(context);
+		clearChanged();
 	}
 	
 	public Context getContext() {
