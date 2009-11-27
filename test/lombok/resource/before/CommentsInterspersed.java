@@ -1,4 +1,4 @@
-import lombok.Getter;
+import  /* cmt */   lombok./* cmt2 */Getter   /* cmt3 */   ;
 
 public /*bla */ class CommentsInterspersed {
 	/** javadoc for field */

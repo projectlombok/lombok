@@ -1,26 +1,20 @@
-import lombok.Getter;
-
+/* cmt */
+/* cmt2 */
+/* cmt3 */
 /*bla */
 public class CommentsInterspersed {
 	/** javadoc for field */
 	private int x;
 	
 	/* bla2 */
-	@Getter()
-	private String test = "foo";
-	//$NON-NLS-1$
+	private String test = "foo"; //$NON-NLS-1$
 	
 	/** Javadoc on method */
-	public native void gwtTest();
-	/*-{
+	public native void gwtTest(); /*-{
 		javascript;
 	}-*/
 	
-	public CommentsInterspersed() {
-	}
-	
 	public String getTest() {
-		return this.test;
+		return test;
 	}
-}
-//haha!
+} //haha!

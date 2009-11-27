@@ -23,11 +23,21 @@ package lombok.delombok;
 
 public final class Comment {
 	final int pos;
+	final int prevEndPos;
 	final String content;
+	final int endPos;
+	final boolean newLine;
 	
-	public Comment(int pos, String content) {
+	public Comment(int prevEndPos, int pos, int endPos, String content, boolean newLine) {
 		this.pos = pos;
+		this.prevEndPos = prevEndPos;
+		this.endPos = endPos;
 		this.content = content;
+		this.newLine = newLine;
+	}
+	
+	public boolean isConnected() {
+		return !newLine && prevEndPos == pos;
 	}
 	
 	public String summary() {

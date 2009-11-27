@@ -42,7 +42,7 @@ public class JavacTransformer {
 		this.handlers = HandlerLibrary.load(messager);
 	}
 	
-	public void transform(Context context, Iterable<JCCompilationUnit> compilationUnits) {
+	public boolean transform(Context context, Iterable<JCCompilationUnit> compilationUnits) {
 		List<JavacAST> asts = new ArrayList<JavacAST>();
 		
 		for (JCCompilationUnit unit : compilationUnits) asts.add(new JavacAST(messager, context, unit));
@@ -57,6 +57,11 @@ public class JavacTransformer {
 		for (JavacAST ast : asts) {
 			ast.traverse(new AnnotationVisitor());
 		}
+		
+		for (JavacAST ast : asts) {
+			if (ast.isChanged()) return true;
+		}
+		return false;
 	}
 	
 	private class AnnotationVisitor extends JavacASTAdapter {

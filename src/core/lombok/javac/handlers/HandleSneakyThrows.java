@@ -22,6 +22,7 @@
 package lombok.javac.handlers;
 
 import static lombok.javac.handlers.JavacHandlerUtil.chainDots;
+import static lombok.javac.handlers.JavacHandlerUtil.markAnnotationAsProcessed;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,6 +50,7 @@ import com.sun.tools.javac.util.List;
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleSneakyThrows implements JavacAnnotationHandler<SneakyThrows> {
 	@Override public boolean handle(AnnotationValues<SneakyThrows> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		markAnnotationAsProcessed(annotationNode, SneakyThrows.class);
 		Collection<String> exceptionNames = annotation.getRawExpressions("value");
 		
 		List<JCExpression> memberValuePairs = ast.getArguments();

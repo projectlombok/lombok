@@ -72,6 +72,7 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 	}
 	
 	@Override public boolean handle(AnnotationValues<EqualsAndHashCode> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		markAnnotationAsProcessed(annotationNode, EqualsAndHashCode.class);
 		EqualsAndHashCode ann = annotation.getInstance();
 		List<String> excludes = List.from(ann.exclude());
 		List<String> includes = List.from(ann.of());

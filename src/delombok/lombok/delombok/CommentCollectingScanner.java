@@ -80,6 +80,20 @@ public class CommentCollectingScanner extends Scanner {
 
 	@Override
 	protected void processComment(CommentStyle style) {
-		comments.add(pos(), new String(getRawCharacters(pos(), endPos())));
+		int prevEndPos = prevEndPos();
+		int pos = pos();
+		boolean newLine = containsNewLine(prevEndPos, pos);
+		String content = new String(getRawCharacters(pos, endPos()));
+		comments.add(prevEndPos, pos, endPos(), content, newLine);
+	}
+
+
+	private boolean containsNewLine(int from, int to) {
+		for (char c : getRawCharacters(from, to)) {
+			if (c == '\n' || c == '\r') {
+				return true;
+			}
+		}
+		return false;
 	}
 }

@@ -179,7 +179,32 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 			align();
 		}
 	}
-	
+
+    private void consumeTrailingComments(int from) throws IOException {
+    	boolean shouldIndent = !newLine;
+		Comment head = comments.head;
+		while (comments.nonEmpty() && head.prevEndPos == from) {
+			from = head.endPos;
+			if (!head.isConnected()) {
+				if (head.newLine) {
+					if (!newLine) {
+						println();
+						align();
+					}
+				}
+				else {
+					print(" ");
+				}
+			}
+			print(head.content);
+			comments = comments.tail;
+			head = comments.head;
+		}
+		if (newLine && shouldIndent) {
+			align();
+		}
+	}
+    
     /** The output stream on which trees are printed.
      */
     Writer out;
@@ -277,15 +302,17 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
             if (tree == null) print("/*missing*/");
             else {
             	consumeComments(tree.pos);
-                tree.accept(this);
-                consumeComments(endPos(tree));
+               	tree.accept(this);
+               	int endPos = endPos(tree);
+				consumeTrailingComments(endPos);
+               	consumeComments(endPos);
             }
         } catch (UncheckedIOException ex) {
             IOException e = new IOException(ex.getMessage());
             e.initCause(ex);
             throw e;
         } finally {
-            this.prec = prevPrec;
+        	this.prec = prevPrec;
         }
     }
 
@@ -301,7 +328,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void printStat(JCTree tree) throws IOException {
         printExpr(tree, TreeInfo.notExpression);
     }
-
+    
     /** Derived visitor method: print list of expression trees, separated by given string.
      *  @param sep the separator string
      */

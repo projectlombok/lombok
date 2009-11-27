@@ -21,6 +21,7 @@
  */
 package lombok.javac.handlers;
 
+import java.lang.annotation.Annotation;
 import java.util.regex.Pattern;
 
 import lombok.AccessLevel;
@@ -34,7 +35,9 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
@@ -55,6 +58,54 @@ public class JavacHandlerUtil {
 	public static boolean isPrimitive(JCExpression ref) {
 		String typeName = ref.toString();
 		return TransformationsUtil.PRIMITIVE_TYPE_NAME_PATTERN.matcher(typeName).matches();
+	}
+	
+	/**
+	 * Removes the annotation from javac's AST, then removes it from lombok's AST,
+	 * then removes any import statement that imports this exact annotation (not star imports).
+	 */
+	public static void markAnnotationAsProcessed(JavacNode annotation, Class<? extends Annotation> annotationType) {
+		JavacNode parentNode = annotation.directUp();
+		switch (parentNode.getKind()) {
+		case FIELD:
+		case ARGUMENT:
+		case LOCAL:
+			JCVariableDecl variable = (JCVariableDecl) parentNode.get();
+			variable.mods.annotations = filterList(variable.mods.annotations, annotation.get());
+			break;
+		case METHOD:
+			JCMethodDecl method = (JCMethodDecl) parentNode.get();
+			method.mods.annotations = filterList(method.mods.annotations, annotation.get());
+			break;
+		default:
+			throw new IllegalStateException("Don't know how to remove annotations from: " + parentNode.getKind());
+		}
+		parentNode.removeChild(annotation);
+		
+		JCCompilationUnit unit = (JCCompilationUnit) annotation.top().get();
+		deleteImportFromCompilationUnit(unit, annotationType.getName());
+	}
+	
+	private static void deleteImportFromCompilationUnit(JCCompilationUnit unit, String name) {
+		List<JCTree> newDefs = List.nil();
+		
+		for (JCTree def : unit.defs) {
+			boolean delete = false;
+			if (def instanceof JCImport) {
+				JCImport imp0rt = (JCImport)def;
+				delete = (!imp0rt.staticImport && imp0rt.qualid.toString().equals(name));
+			}
+			if (!delete) newDefs = newDefs.append(def);
+		}
+		unit.defs = newDefs;
+	}
+
+	private static List<JCAnnotation> filterList(List<JCAnnotation> annotations, JCTree jcTree) {
+		List<JCAnnotation> newAnnotations = List.nil();
+		for (JCAnnotation ann : annotations) {
+			if (jcTree != ann) newAnnotations = newAnnotations.append(ann);
+		}
+		return newAnnotations;
 	}
 	
 	/**
