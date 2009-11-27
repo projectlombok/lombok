@@ -18,6 +18,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/lombok.patcher"/>
 	<classpathentry kind="lib" path="deps/lombok/tools.jar" sourcepath="C:/javasource/javasources.zip"/>
 	<classpathentry kind="lib" path="deps/lombok/spi-0.2.4.jar"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/com.zwitserloot.cmdreader"/>
+	<classpathentry kind="lib" path="lib/lombok/com.zwitserloot.cmdreader.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
