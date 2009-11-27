@@ -82,19 +82,19 @@ public class CommentPreservingParser {
 	
 	private static final Messager messager = new Messager() {
 		@Override public void printMessage(Kind kind, CharSequence msg) {
-			System.out.printf("M: %s: %s\n", kind, msg);
+			System.out.printf("%s: %s\n", kind, msg);
 		}
 		
 		@Override public void printMessage(Kind kind, CharSequence msg, Element e) {
-			System.out.printf("E: %s: %s\n", kind, msg);
+			System.out.printf("%s: %s\n", kind, msg);
 		}
 		
 		@Override public void printMessage(Kind kind, CharSequence msg, Element e, AnnotationMirror a) {
-			System.out.printf("A: %s: %s\n", kind, msg);
+			System.out.printf("%s: %s\n", kind, msg);
 		}
 		
 		@Override public void printMessage(Kind kind, CharSequence msg, Element e, AnnotationMirror a, AnnotationValue v) {
-			System.out.printf("V: %s: %s\n", kind, msg);
+			System.out.printf("%s: %s\n", kind, msg);
 		}
 	};
 	
@@ -122,7 +122,6 @@ public class CommentPreservingParser {
 				JavaFileObject sourceFile = compilationUnit.getSourceFile();
 				if (sourceFile != null) {
 					out.write(sourceFile.getCharContent(true).toString());
-					System.out.println(out.toString());
 					return;
 				}
 			}

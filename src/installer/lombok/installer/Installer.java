@@ -64,6 +64,7 @@ import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 
 import lombok.core.Version;
+import lombok.delombok.Delombok;
 import lombok.installer.EclipseFinder.OS;
 import lombok.installer.EclipseLocation.InstallException;
 import lombok.installer.EclipseLocation.NotAnEclipseException;
@@ -95,6 +96,12 @@ public class Installer {
 	private JButton installButton;
 	
 	public static void main(String[] args) {
+		if (args.length > 0 && args[0].equals("delombok")) {
+			String[] newArgs = new String[args.length-1];
+			System.arraycopy(args, 1, newArgs, 0, newArgs.length);
+			Delombok.main(newArgs);
+			return;
+		}
 		if (args.length > 0 && (args[0].equals("install") || args[0].equals("uninstall"))) {
 			boolean uninstall = args[0].equals("uninstall");
 			if (args.length < 3 || !args[1].equals("eclipse")) {
