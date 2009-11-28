@@ -21,7 +21,7 @@
  */
 package lombok;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -42,13 +42,17 @@ public class TestViaDelombok {
 		File[] listFiles = beforeDir.listFiles();
 		
 		for (File file : listFiles) {
-			delombok.setVerbose(false);
-			delombok.setForceProcess(true);
-			delombok.setCharset("UTF-8");
-			StringWriter writer = new StringWriter();
-			delombok.delombok(file.getAbsolutePath(), writer);
-			compare(file.getName(), readAfter(afterDir, file), writer.toString());
+			compareFile(afterDir, file);
 		}
+	}
+
+	public static void compareFile(File afterDir, File file) throws IOException {
+		delombok.setVerbose(false);
+		delombok.setForceProcess(true);
+		delombok.setCharset("UTF-8");
+		StringWriter writer = new StringWriter();
+		delombok.delombok(file.getAbsolutePath(), writer);
+		compare(file.getName(), readAfter(afterDir, file), writer.toString());
 	}
 	
 	private static void compare(String name, String expectedFile, String actualFile) {
@@ -63,15 +67,13 @@ public class TestViaDelombok {
 		for (int i = 0; i < size; i++) {
 			String expected = expectedLines[i];
 			String actual = actualLines[i];
-			if (!expected.equals(actual)) {
-				fail(String.format("Difference in line %s(%d):\n`%s`\n`%s`\n", name, i, expected, actual));
-			}
+			assertEquals(String.format("Difference in %s on line %d", name, i + 1), expected, actual);
 		}
 		if (expectedLines.length > actualLines.length) {
-			fail(String.format("Missing line %s(%d): %s\n", name, size, expectedLines[size]));
+			fail(String.format("Missing line %d in generated %s: %s", size + 1, name, expectedLines[size]));
 		}
 		if (expectedLines.length < actualLines.length) {
-			fail(String.format("Extra line %s(%d): %s\n", name, size, actualLines[size]));
+			fail(String.format("Extra line %d in generated %s: %s", size + 1, name, actualLines[size]));
 		}
 	}
 	

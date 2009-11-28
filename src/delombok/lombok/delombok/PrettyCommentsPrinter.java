@@ -1358,9 +1358,11 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         try {
             print("@");
             printExpr(tree.annotationType);
-            print("(");
-            printExprs(tree.args);
-            print(")");
+            if (tree.args.nonEmpty()) {
+	            print("(");
+	            printExprs(tree.args);
+	            print(")");
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
