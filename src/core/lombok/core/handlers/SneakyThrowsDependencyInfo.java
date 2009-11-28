@@ -19,34 +19,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.core;
+package lombok.core.handlers;
 
+import java.util.Arrays;
 import java.util.List;
 
-/**
- * Implement this class, and add yourself as a provider for it, to become an app runnable by running lombok.jar as a jar.
- * 
- * @see lombok.delombok.DelombokApp
- */
-public interface LombokApp {
-	/**
-	 * @param args The arguments; analogous to what's passed to {@code public static void main(String[] args)} methods.
-	 * @return The return value. Don't call {@code System.exit} yourself.
-	 */
-	public int runApp(List<String> args) throws Exception;
+import lombok.core.runtimeDependencies.RuntimeDependencyInfo;
+
+import org.mangosdk.spi.ProviderFor;
+
+@ProviderFor(RuntimeDependencyInfo.class)
+public class SneakyThrowsDependencyInfo implements RuntimeDependencyInfo {
+	@Override public List<String> getRuntimeDependencies() {
+		return Arrays.asList(
+				"/lombok/Lombok.class"
+		);
+	}
 	
-	/**
-	 * @return Your app name. For example {@code delombok}.
-	 */
-	public String getAppName();
-	
-	/**
-	 * @return Description of this app, for the command line.
-	 */
-	public String getAppDescription();
-	
-	/**
-	 * @return When lombok.jar is executed with any of these strings as first argument, your app will be started.
-	 */
-	public List<String> getAppAliases();
+	@Override public List<String> getRuntimeDependentsDescriptions() {
+		return Arrays.asList(
+				"@SneakyThrows"
+		);
+	}
 }

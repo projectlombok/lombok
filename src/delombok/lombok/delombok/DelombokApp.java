@@ -7,7 +7,9 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -17,7 +19,7 @@ import org.mangosdk.spi.ProviderFor;
 
 @ProviderFor(LombokApp.class)
 public class DelombokApp implements LombokApp {
-	@Override public int runApp(String[] args) throws Exception {
+	@Override public int runApp(List<String> args) throws Exception {
 		try {
 			Class.forName("com.sun.tools.javac.main.JavaCompiler");
 			runDirectly(args);
@@ -117,8 +119,8 @@ public class DelombokApp implements LombokApp {
 		}
 	}
 	
-	private void runDirectly(String[] args) {
-		Delombok.main(args);
+	private void runDirectly(List<String> args) {
+		Delombok.main(args.toArray(new String[0]));
 	}
 	
 	private static File findToolsJar() {
@@ -167,6 +169,14 @@ public class DelombokApp implements LombokApp {
 	
 	@Override public String getAppName() {
 		return "delombok";
+	}
+	
+	@Override public List<String> getAppAliases() {
+		return Arrays.asList("unlombok", "delombok");
+	}
+	
+	@Override public String getAppDescription() {
+		return "Applies lombok transformations without compiling your\njava code (so, 'unpacks' lombok annotations and such).";
 	}
 }
 

@@ -40,9 +40,9 @@ import java.awt.event.ActionListener;
 import java.awt.font.TextAttribute;
 import java.io.File;
 import java.io.FilenameFilter;
-import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -65,21 +65,29 @@ import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 
 import lombok.core.LombokApp;
-import lombok.core.SpiLoadUtil;
 import lombok.core.Version;
 import lombok.installer.EclipseFinder.OS;
 import lombok.installer.EclipseLocation.InstallException;
 import lombok.installer.EclipseLocation.NotAnEclipseException;
 import lombok.installer.EclipseLocation.UninstallException;
 
+import org.mangosdk.spi.ProviderFor;
+
+import com.zwitserloot.cmdreader.CmdReader;
+import com.zwitserloot.cmdreader.Description;
+import com.zwitserloot.cmdreader.InvalidCommandLineException;
+import com.zwitserloot.cmdreader.Parameterized;
+import com.zwitserloot.cmdreader.Shorthand;
+
 /**
  * The lombok installer proper.
  * Uses swing to show a simple GUI that can add and remove the java agent to Eclipse installations.
  * Also offers info on what this installer does in case people want to instrument their Eclipse manually,
- * and looks in some common places on Mac OS X and Windows.
+ * and looks in some common places on Mac OS X, Linux and Windows.
  */
 public class Installer {
 	private static final URI ABOUT_LOMBOK_URL = URI.create("http://projectlombok.org");
+	private static final AtomicReference<Integer> exitMarker = new AtomicReference<Integer>();
 	
 	private JFrame appWindow;
 	
@@ -97,103 +105,64 @@ public class Installer {
 	private JLabel uninstallPlaceholder;
 	private JButton installButton;
 	
-	public static void main(String[] args) {
-		if (args.length > 0) {
-			String appName = args[0];
-			String[] newArgs = new String[args.length-1];
-			System.arraycopy(args, 1, newArgs, 0, newArgs.length);
-			Iterable<LombokApp> services;
-			try {
-				services = SpiLoadUtil.findServices(LombokApp.class);
-			} catch (IOException e) {
-				System.err.println("Your lombok installation appears to be corrupted! Please let us know by clicking 'report bugs' on projectlombok.org. Include this stack trace:");
-				e.printStackTrace();
-				System.exit(2);
-				return;
-			}
-			for (LombokApp app : services) {
-				if (appName.equals(app.getAppName())) {
-					try {
-						int returnCode = app.runApp(newArgs);
-						System.exit(returnCode);
-					} catch (Exception e) {
-						e.printStackTrace();
-						System.exit(10);
-					}
-					return;
-				}
-			}
-		}
-		if (args.length > 0 && (args[0].equals("install") || args[0].equals("uninstall"))) {
-			boolean uninstall = args[0].equals("uninstall");
-			if (args.length < 3 || !args[1].equals("eclipse")) {
-				System.err.printf("Run java -jar lombok.jar %1$s eclipse path/to/eclipse/executable (or 'auto' to %1$s to all auto-discovered eclipse locations)\n", uninstall ? "uninstall" : "install");
-				System.exit(1);
-			}
-			String path = args[2];
-			try {
-				final List<EclipseLocation> locations = new ArrayList<EclipseLocation>();
-				final List<NotAnEclipseException> problems = new ArrayList<NotAnEclipseException>();
-				if (path.equals("auto")) {
-					EclipseFinder.findEclipses(locations, problems);
-				} else {
-					locations.add(EclipseLocation.create(path));
-				}
-				int validLocations = locations.size();
-				for (EclipseLocation loc : locations) {
-					try {
-						if (uninstall) {
-							loc.uninstall();
-						} else {
-							loc.install();
-						}
-						System.out.printf("Lombok %s %s: %s\n", uninstall ? "uninstalled" : "installed", uninstall ? "from" : "to", loc.getName());
-					} catch (InstallException e) {
-						System.err.printf("Installation at %s failed:\n", loc.getName());
-						System.err.println(e.getMessage());
-						validLocations--;
-					} catch (UninstallException e) {
-						System.err.printf("Uninstall at %s failed:\n", loc.getName());
-						System.err.println(e.getMessage());
-						validLocations--;
-					}
-				}
-				for (NotAnEclipseException problem : problems) {
-					System.err.println("WARNING: " + problem.getMessage());
-				}
-				if (validLocations == 0) {
-					System.err.println("WARNING: Zero valid locations found; so nothing was done.");
-				}
-				System.exit(0);
-			} catch (NotAnEclipseException e) {
-				System.err.println("Not a valid eclipse location:");
-				System.err.println(e.getMessage());
-				System.exit(2);
-			}
+	@ProviderFor(LombokApp.class)
+	public static class GraphicalInstallerApp implements LombokApp {
+		@Override public String getAppName() {
+			return "installer";
 		}
 		
-		if (args.length > 0 && args[0].equals("uninstall")) {
-			if (args.length < 3 || !args[1].equals("eclipse")) {
-				System.err.println("Run java -jar lombok.jar uninstall eclipse path/to/eclipse/executable (or 'auto' to uninstall all auto-discovered eclipse locations)");
-				System.exit(1);
-			}
-			String path = args[2];
-			try {
-				EclipseLocation loc = EclipseLocation.create(path);
-				loc.uninstall();
-				System.out.println("Uninstalled from: " + loc.getName());
-				System.exit(0);
-			} catch (NotAnEclipseException e) {
-				System.err.println("Not a valid eclipse location:");
-				System.err.println(e.getMessage());
-				System.exit(2);
-			} catch (UninstallException e) {
-				System.err.println("Uninstall failed:");
-				System.err.println(e.getMessage());
-				System.exit(1);
-			}
+		@Override public String getAppDescription() {
+			return "Runs the graphical installer tool (default).";
 		}
 		
+		@Override public List<String> getAppAliases() {
+			return Arrays.asList("installer", "");
+		}
+		
+		@Override public int runApp(List<String> args) throws Exception {
+			return guiInstaller();
+		}
+	}
+	
+	@ProviderFor(LombokApp.class)
+	public static class CommandLineInstallerApp implements LombokApp {
+		@Override public String getAppName() {
+			return "install";
+		}
+		
+		@Override public String getAppDescription() {
+			return "Runs the 'handsfree' command line scriptable installer.";
+		}
+		
+		@Override public List<String> getAppAliases() {
+			return Arrays.asList("install");
+		}
+		
+		@Override public int runApp(List<String> args) throws Exception {
+			return cliInstaller(false, args);
+		}
+	}
+	
+	@ProviderFor(LombokApp.class)
+	public static class CommandLineUninstallerApp implements LombokApp {
+		@Override public String getAppName() {
+			return "uninstall";
+		}
+		
+		@Override public String getAppDescription() {
+			return "Runs the 'handsfree' command line scriptable uninstaller.";
+		}
+		
+		@Override public List<String> getAppAliases() {
+			return Arrays.asList("uninstall");
+		}
+		
+		@Override public int runApp(List<String> args) throws Exception {
+			return cliInstaller(true, args);
+		}
+	}
+	
+	private static int guiInstaller() {
 		if (EclipseFinder.getOS() == OS.MAC_OS_X) {
 			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Lombok Installer");
 			System.setProperty("com.apple.macos.use-file-dialog-packages", "true");
@@ -213,9 +182,106 @@ public class Installer {
 					}
 				}
 			});
+			
+			synchronized (exitMarker) {
+				while (!Thread.interrupted() && exitMarker.get() == null) {
+					try {
+						exitMarker.wait();
+					} catch (InterruptedException e) {
+						return 1;
+					}
+				}
+				Integer errCode = exitMarker.get();
+				return errCode == null ? 1 : errCode;
+			}
 		} catch (HeadlessException e) {
 			printHeadlessInfo();
+			return 1;
 		}
+	}
+	
+	private static class CmdArgs {
+		@Shorthand("e")
+		@Description("Specify a path to an eclipse location to install/uninstall. Use 'auto' to apply to all automatically discoverable eclipse installations.")
+		@Parameterized
+		List<String> eclipse = new ArrayList<String>();
+		
+		@Shorthand({"?", "h"})
+		@Description("Shows this help text")
+		boolean help;
+	}
+	
+	public static int cliInstaller(boolean uninstall, List<String> rawArgs) {
+		CmdReader<CmdArgs> reader = CmdReader.of(CmdArgs.class);
+		CmdArgs args;
+		try {
+			args = reader.make(rawArgs.toArray(new String[0]));
+		} catch (InvalidCommandLineException e) {
+			System.err.println(e.getMessage());
+			System.err.println("--------------------------");
+			System.err.println(generateCliHelp(uninstall, reader));
+			return 1;
+		}
+		
+		if (args.help) {
+			System.out.println(generateCliHelp(uninstall, reader));
+			return 0;
+		}
+		
+		if (args.eclipse.isEmpty()) {
+			System.err.println("ERROR: Nothing to do!");
+			System.err.println("--------------------------");
+			System.err.println(generateCliHelp(uninstall, reader));
+			return 1;
+		}
+		
+		final List<EclipseLocation> locations = new ArrayList<EclipseLocation>();
+		final List<NotAnEclipseException> problems = new ArrayList<NotAnEclipseException>();
+		
+		for (String rawPath : args.eclipse) {
+			if (rawPath.equals("auto")) {
+				EclipseFinder.findEclipses(locations, problems);
+			} else {
+				try {
+					locations.add(EclipseLocation.create(rawPath));
+				} catch (NotAnEclipseException e) {
+					problems.add(e);
+				}
+			}
+		}
+		
+		int validLocations = locations.size();
+		for (EclipseLocation loc : locations) {
+			try {
+				if (uninstall) {
+					loc.uninstall();
+				} else {
+					loc.install();
+				}
+				System.out.printf("Lombok %s %s: %s\n", uninstall ? "uninstalled" : "installed", uninstall ? "from" : "to", loc.getName());
+			} catch (InstallException e) {
+				System.err.printf("Installation at %s failed:\n", loc.getName());
+				System.err.println(e.getMessage());
+				validLocations--;
+			} catch (UninstallException e) {
+				System.err.printf("Uninstall at %s failed:\n", loc.getName());
+				System.err.println(e.getMessage());
+				validLocations--;
+			}
+		}
+		
+		for (NotAnEclipseException problem : problems) {
+			System.err.println("WARNING: " + problem.getMessage());
+		}
+		
+		if (validLocations == 0) {
+			System.err.println("WARNING: Zero valid locations found; so nothing was done!");
+		}
+		return 0;
+	}
+	
+	private static String generateCliHelp(boolean uninstall, CmdReader<CmdArgs> reader) {
+		return reader.generateCommandLineHelp("java -jar lombok.jar " + (uninstall ? "uninstall" : "install"));
 	}
 	
 	/**
@@ -228,13 +294,12 @@ public class Installer {
 				"Lombok makes java better by providing very spicy additions to the Java programming language," +
 				"such as using @Getter to automatically generate a getter method for any field.\n\n" +
 				"Browse to %s for more information. To install lombok on Eclipse, re-run this jar file on a " +
-				"graphical computer system - this message is being shown because your terminal is not graphics capable." +
+				"graphical computer system - this message is being shown because your terminal is not graphics capable.\n" +
+				"Alternatively, use the command line installer (java -jar lombok.jar install --help).\n" +
 				"If you are just using 'javac' or a tool that calls on javac, no installation is neccessary; just " +
 				"make sure lombok.jar is in the classpath when you compile. Example:\n\n" +
-				"   java -cp lombok.jar MyCode.java\n\n\n" +
-				"If for whatever reason you can't run the graphical installer but you do want to install lombok into eclipse," +
-				"start this jar with the following syntax:\n\n" +
-				"   java -jar lombok.jar install eclipse path/to/your/eclipse/executable", Version.getVersion(), ABOUT_LOMBOK_URL);
+				"   java -cp lombok.jar MyCode.java\n",
+				Version.getVersion(), ABOUT_LOMBOK_URL);
 	}
 	
 	/**
@@ -625,13 +690,19 @@ public class Installer {
 								"as parameter as well.</html>", "Install successful",
 								JOptionPane.INFORMATION_MESSAGE);
 						appWindow.setVisible(false);
-						System.exit(0);
+						synchronized (exitMarker) {
+							exitMarker.set(0);
+							exitMarker.notifyAll();
+						}
 					}
 				});
 				
 				if (!success.get()) SwingUtilities.invokeLater(new Runnable() {
 					@Override public void run() {
-						System.exit(0);
+						synchronized (exitMarker) {
+							exitMarker.set(1);
+							exitMarker.notifyAll();
+						}
 					}
 				});
 			}

@@ -19,34 +19,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.core;
+package lombok.core.runtimeDependencies;
 
 import java.util.List;
 
 /**
- * Implement this class, and add yourself as a provider for it, to become an app runnable by running lombok.jar as a jar.
- * 
- * @see lombok.delombok.DelombokApp
+ * Implement and provide this interface to specify which transformations have a runtime dependency on
+ * {@code lombok-runtime.jar}, as well as which files of your transformation must be in {@code lombok-runtime.jar}.
  */
-public interface LombokApp {
+public interface RuntimeDependencyInfo {
 	/**
-	 * @param args The arguments; analogous to what's passed to {@code public static void main(String[] args)} methods.
-	 * @return The return value. Don't call {@code System.exit} yourself.
+	 * @return A list of strings describing each lombok transformation that has a runtime dependency.
 	 */
-	public int runApp(List<String> args) throws Exception;
+	public List<String> getRuntimeDependentsDescriptions();
 	
 	/**
-	 * @return Your app name. For example {@code delombok}.
+	 * @return A list of files (findable via {@code yourClass.getResourceAsStream(NAME)}) to include in
+	 *     {@code lombok-runtime.jar}.
 	 */
-	public String getAppName();
-	
-	/**
-	 * @return Description of this app, for the command line.
-	 */
-	public String getAppDescription();
-	
-	/**
-	 * @return When lombok.jar is executed with any of these strings as first argument, your app will be started.
-	 */
-	public List<String> getAppAliases();
+	public List<String> getRuntimeDependencies();
 }

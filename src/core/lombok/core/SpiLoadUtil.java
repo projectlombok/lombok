@@ -29,10 +29,12 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import lombok.Lombok;
@@ -48,6 +50,19 @@ import lombok.Lombok;
 public class SpiLoadUtil {
 	private SpiLoadUtil() {
 		//Prevent instantiation
+	}
+	
+	/**
+	 * Method that conveniently turn the {@code Iterable}s returned by the other methods in this class to a
+	 * {@code List}.
+	 * 
+	 * @see #findServices(Class)
+	 * @see #findServices(Class, ClassLoader)
+	 */
+	public static <T> List<T> readAllFromIterator(Iterable<T> findServices) {
+		List<T> list = new ArrayList<T>();
+		for (T t : findServices) list.add(t);
+		return list;
 	}
 	
 	/**
