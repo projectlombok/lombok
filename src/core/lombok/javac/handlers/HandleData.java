@@ -27,8 +27,8 @@ import java.lang.reflect.Modifier;
 
 import lombok.Data;
 import lombok.core.AnnotationValues;
-import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
+import lombok.core.handlers.TransformationsUtil;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;

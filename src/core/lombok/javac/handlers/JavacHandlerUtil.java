@@ -25,8 +25,8 @@ import java.lang.annotation.Annotation;
 import java.util.regex.Pattern;
 
 import lombok.AccessLevel;
-import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
+import lombok.core.handlers.TransformationsUtil;
 import lombok.javac.JavacNode;
 
 import com.sun.tools.javac.code.Flags;

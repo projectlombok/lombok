@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import lombok.AccessLevel;
-import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
+import lombok.core.handlers.TransformationsUtil;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseNode;
 
