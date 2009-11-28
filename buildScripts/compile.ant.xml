@@ -151,10 +151,11 @@ lombok code including the various agents.
 		<jar destfile="dist/lombok-${lombok.version}.jar">
 			<fileset dir="build/lombok" />
 			<fileset dir="build" includes="changelog.txt" />
+			<fileset dir="." includes="LICENCE" />
 			<manifest>
 				<attribute name="Premain-Class" value="lombok.eclipse.agent.EclipsePatcher" />
 				<attribute name="Can-Redefine-Classes" value="true" />
-				<attribute name="Main-Class" value="lombok.installer.Installer" />
+				<attribute name="Main-Class" value="lombok.core.Main" />
 				<attribute name="Lombok-Version" value="${lombok.version}" />
 			</manifest>
 		</jar>

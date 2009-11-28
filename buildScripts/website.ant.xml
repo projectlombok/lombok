@@ -106,6 +106,9 @@ such as converting the changelog into HTML, and creating javadoc.
 				<exclude name="**/*unused*" />
 				<exclude name="videos/**" />
 			</fileset>
+			<fileset dir=".">
+				<include name="LICENCE" />
+			</fileset>
 		</copy>
 		<copy todir="build/website" overwrite="true">
 			<fileset dir="website">
