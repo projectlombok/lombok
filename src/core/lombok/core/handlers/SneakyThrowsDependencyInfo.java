@@ -32,7 +32,7 @@ import org.mangosdk.spi.ProviderFor;
 public class SneakyThrowsDependencyInfo implements RuntimeDependencyInfo {
 	@Override public List<String> getRuntimeDependencies() {
 		return Arrays.asList(
-				"/lombok/Lombok.class"
+				"lombok/Lombok.class"
 		);
 	}
 	

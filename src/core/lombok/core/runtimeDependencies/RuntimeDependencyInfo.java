@@ -34,7 +34,7 @@ public interface RuntimeDependencyInfo {
 	public List<String> getRuntimeDependentsDescriptions();
 	
 	/**
-	 * @return A list of files (findable via {@code yourClass.getResourceAsStream(NAME)}) to include in
+	 * @return A list of files (findable via {@code yourClass.getResourceAsStream("/" + NAME)}) to include in
 	 *     {@code lombok-runtime.jar}.
 	 */
 	public List<String> getRuntimeDependencies();

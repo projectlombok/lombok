@@ -146,11 +146,11 @@ public class CreateLombokRuntimeApp implements LombokApp {
 	}
 	
 	private int writeRuntimeJar(File outFile) throws Exception {
-		Map<Class<?>, List<String>> deps = new LinkedHashMap<Class<?>, List<String>>();
+		Map<String, Class<?>> deps = new LinkedHashMap<String, Class<?>>();
 		for (RuntimeDependencyInfo info : infoObjects) {
 			List<String> depNames = info.getRuntimeDependencies();
-			if (depNames != null && !depNames.isEmpty()) {
-				deps.put(info.getClass(), depNames);
+			if (depNames != null) for (String depName : depNames) {
+				if (!deps.containsKey(depName)) deps.put(depName, info.getClass());
 			}
 		}
 		
@@ -163,17 +163,15 @@ public class CreateLombokRuntimeApp implements LombokApp {
 		boolean success = false;
 		try {
 			JarOutputStream jar = new JarOutputStream(out);
-			for (Entry<Class<?>, List<String>> dep : deps.entrySet()) {
-				for (String depName : dep.getValue()) {
-					InputStream in = dep.getKey().getResourceAsStream(depName);
-					try {
-						if (in == null) {
-							throw new Fail(String.format("Dependency %s contributed by %s cannot be found", depName, dep.getKey().getName()));
-						}
-						writeIntoJar(jar, depName, in);
-					} finally {
-						if (in != null) in.close();
+			for (Entry<String, Class<?>> dep : deps.entrySet()) {
+				InputStream in = dep.getValue().getResourceAsStream("/" + dep.getKey());
+				try {
+					if (in == null) {
+						throw new Fail(String.format("Dependency %s contributed by %s cannot be found", dep.getKey(), dep.getValue()));
 					}
+					writeIntoJar(jar, dep.getKey(), in);
+				} finally {
+					if (in != null) in.close();
 				}
 			}
 			jar.close();
