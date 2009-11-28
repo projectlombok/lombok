@@ -21,39 +21,19 @@
  */
 package lombok.delombok;
 
-import lombok.ReflectionFileTester;
+import java.io.File;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import lombok.DirectoryRunner;
 
+import org.junit.runner.RunWith;
+
+@RunWith(DirectoryRunner.class)
 public class TestSourceFiles {
-	private static final String AFTER = "test/delombok/resource/after";
-	private static final String BEFORE = "test/delombok/resource/before";
-	
-	private static final ReflectionFileTester tester = new ReflectionFileTester(BEFORE, AFTER);
-	
-	@BeforeClass
-	public static void verify() {
-		tester.verify(TestSourceFiles.class);
+	public static File getBeforeDirectory() {
+		return new File("test/delombok/resource/before");
 	}
 	
-	@Test
-	public void testAnnotation() throws Exception {
-		tester.test();
-	}
-	
-	@Test
-	public void testCast() throws Exception {
-		tester.test();
-	}
-	
-	@Test
-	public void testForLoop() throws Exception {
-		tester.test();
-	}
-	
-	@Test
-	public void testWithComments() throws Exception {
-		tester.test();
+	public static File getAfterDirectory() {
+		return new File("test/delombok/resource/after");
 	}
 }

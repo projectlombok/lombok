@@ -23,16 +23,20 @@ package lombok.delombok;
 
 import java.io.File;
 
+import lombok.DirectoryRunner;
 import lombok.TestViaDelombok;
 
-import org.junit.Test;
+import org.junit.runner.RunWith;
 
+@RunWith(DirectoryRunner.class)
 public class TestLombokFiles {
-	private static final File BEFORE_DIR = new File("test/lombok/resource/before");
-	private static final File AFTER_DIR = new File("test/lombok/resource/after");
 	
-	@Test
-	public void testSources() throws Exception {
-		TestViaDelombok.runComparison(BEFORE_DIR, AFTER_DIR);
+	public static File getBeforeDirectory() {
+		TestViaDelombok.printErrors(true);
+		return new File("test/lombok/resource/before");
+	}
+	
+	public static File getAfterDirectory() {
+		return new File("test/lombok/resource/after");
 	}
 }
