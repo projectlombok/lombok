@@ -5,6 +5,8 @@ import java.lang.reflect.Method;
 
 import javax.lang.model.element.Element;
 
+import org.netbeans.api.java.source.ClasspathInfo;
+
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
@@ -63,8 +65,8 @@ public class PatchFixes {
 	//Contributed by Jan Lahoda (jlahoda@netbeans.org)
 	//Turned into a patch script by rzwitserloot.
 	//see http://code.google.com/p/projectlombok/issues/detail?id=20#c3
-	public static void addTaskListenerWhenCallingJavac() {
-		TaskListenerProvider p = /* Lookup.getDefault().lookup(TLP.class) */;
+	public static void addTaskListenerWhenCallingJavac(Context context, ClasspathInfo cpInfo) {
+		TaskListenerProvider p = /* Lookup.getDefault().lookup(TaskListenerProvider.class) */;
 		if (p != null) {
 			TaskListener l = p.create(context, cpInfo);
 			task.setTaskListener(l);
