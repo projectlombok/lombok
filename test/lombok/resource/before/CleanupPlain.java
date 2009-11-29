@@ -1,3 +1,4 @@
+//ignore
 import lombok.Cleanup;
 import java.io.*;
 class Cleanup {

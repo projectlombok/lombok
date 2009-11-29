@@ -1,6 +1,10 @@
 package lombok;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.TreeMap;
@@ -62,7 +66,9 @@ public class DirectoryRunner extends Runner {
 			Description testDescription = entry.getValue();
 			notifier.fireTestStarted(testDescription);
 			try {
-				runTest(entry.getKey());
+				if (!runTest(entry.getKey())) {
+					notifier.fireTestIgnored(testDescription);
+				}
 			}
 			catch (Throwable t) {
 				notifier.fireTestFailure(new Failure(testDescription, t));
@@ -71,7 +77,19 @@ public class DirectoryRunner extends Runner {
 		}
 	}
 
-	private void runTest(String fileName) throws Throwable {
-		TestViaDelombok.compareFile(afterDirectory, new File(beforeDirectory, fileName));
+	private boolean runTest(String fileName) throws Throwable {
+		File file = new File(beforeDirectory, fileName);
+		if (mustIgnore(file)) {
+			return false;
+		}
+		TestViaDelombok.compareFile(afterDirectory, file);
+		return true;
+	}
+
+	private boolean mustIgnore(File file) throws FileNotFoundException, IOException {
+		BufferedReader reader = new BufferedReader(new FileReader(file));
+		String line = reader.readLine();
+		reader.close();
+		return "//ignore".equals(line);
 	}
 }
