@@ -33,7 +33,7 @@ import java.util.List;
 
 import lombok.delombok.Delombok;
 
-public class TestViaDelombok {
+public class RunTestsViaDelombok {
 	private static Delombok delombok = new Delombok();
 	private static volatile boolean printErrors = false;
 	

@@ -75,6 +75,10 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ant>
 	</target>
 	
+	<target name="test" depends="compile">
+		<ant antfile="buildScripts/test.ant.xml" target="test" />
+	</target>
+	
 	<target name="findbugs" description="Runs findbugs on the code">
 		<ant antfile="buildScripts/compile.ant.xml" target="findbugs" inheritAll="false" />
 	</target>
