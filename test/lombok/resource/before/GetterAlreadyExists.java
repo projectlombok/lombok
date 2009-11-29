@@ -52,3 +52,57 @@ class Getter9 {
 		return false;
 	}
 }
+class Getter10 {
+	@lombok.Getter boolean foo;
+	static boolean hasFoo() {
+		return false;
+	}
+}
+class Getter11 {
+	@lombok.Getter boolean foo;
+	static boolean isFoo() {
+		return false;
+	}
+}
+class Getter12 {
+	@lombok.Getter boolean foo;
+	static boolean getFoo() {
+		return false;
+	}
+}
+class Getter13 {
+	@lombok.Getter String foo;
+	static boolean hasFoo() {
+		return false;
+	}
+}
+class Getter14 {
+	@lombok.Getter String foo;
+	static boolean isFoo() {
+		return false;
+	}
+}
+class Getter15 {
+	@lombok.Getter String foo;
+	static boolean getFoo() {
+		return false;
+	}
+}
+class Getter16 {
+	@lombok.Getter String foo;
+	static String hasFoo() {
+		return false;
+	}
+}
+class Getter17 {
+	@lombok.Getter String foo;
+	static String isFoo() {
+		return false;
+	}
+}
+class Getter18 {
+	@lombok.Getter String foo;
+	static String getFoo() {
+		return false;
+	}
+}

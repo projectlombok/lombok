@@ -64,3 +64,69 @@ class Getter9 {
 		return false;
 	}
 }
+class Getter10 {
+	boolean foo;
+	static boolean hasFoo() {
+		return false;
+	}
+}
+class Getter11 {
+	boolean foo;
+	static boolean isFoo() {
+		return false;
+	}
+}
+class Getter12 {
+	boolean foo;
+	static boolean getFoo() {
+		return false;
+	}
+}
+class Getter13 {
+	String foo;
+	static boolean hasFoo() {
+		return false;
+	}
+	public String getFoo() {
+		return foo;
+	}
+}
+class Getter14 {
+	String foo;
+	static boolean isFoo() {
+		return false;
+	}
+	public String getFoo() {
+		return foo;
+	}
+}
+class Getter15 {
+	String foo;
+	static boolean getFoo() {
+		return false;
+	}
+}
+class Getter16 {
+	String foo;
+	static String hasFoo() {
+		return false;
+	}
+	public String getFoo() {
+		return foo;
+	}
+}
+class Getter17 {
+	String foo;
+	static String isFoo() {
+		return false;
+	}
+	public String getFoo() {
+		return foo;
+	}
+}
+class Getter18 {
+	String foo;
+	static String getFoo() {
+		return false;
+	}
+}
