@@ -24,7 +24,7 @@ package lombok.delombok;
 import java.io.File;
 
 import lombok.DirectoryRunner;
-import lombok.TestViaDelombok;
+import lombok.RunTestsViaDelombok;
 
 import org.junit.runner.RunWith;
 
@@ -32,7 +32,7 @@ import org.junit.runner.RunWith;
 public class TestLombokFiles {
 	
 	public static File getBeforeDirectory() {
-		TestViaDelombok.printErrors(true);
+		RunTestsViaDelombok.printErrors(true);
 		return new File("test/lombok/resource/before");
 	}
 	

@@ -82,7 +82,7 @@ public class DirectoryRunner extends Runner {
 		if (mustIgnore(file)) {
 			return false;
 		}
-		TestViaDelombok.compareFile(afterDirectory, file);
+		RunTestsViaDelombok.compareFile(afterDirectory, file);
 		return true;
 	}
 
