@@ -56,30 +56,25 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	 * @param ast The compilation unit, which serves as the top level node in the tree to be built.
 	 */
 	public EclipseAST(CompilationUnitDeclaration ast) {
-		super(toFileName(ast));
+		super(toFileName(ast), packageDeclaration(ast), imports(ast));
 		this.compilationUnitDeclaration = ast;
 		setTop(buildCompilationUnit(ast));
 		this.completeParse = isComplete(ast);
 		clearChanged();
 	}
 	
-	/** {@inheritDoc} */
-	@Override public String getPackageDeclaration() {
-		CompilationUnitDeclaration cud = (CompilationUnitDeclaration) top().get();
+	private static String packageDeclaration(CompilationUnitDeclaration cud) {
 		ImportReference pkg = cud.currentPackage;
 		return pkg == null ? null : Eclipse.toQualifiedName(pkg.getImportName());
 	}
 	
-	/** {@inheritDoc} */
-	@Override public Collection<String> getImportStatements() {
+	private static Collection<String> imports(CompilationUnitDeclaration cud) { 
 		List<String> imports = new ArrayList<String>();
-		CompilationUnitDeclaration cud = (CompilationUnitDeclaration) top().get();
 		if (cud.imports == null) return imports;
 		for (ImportReference imp : cud.imports) {
 			if (imp == null) continue;
 			imports.add(Eclipse.toQualifiedName(imp.getImportName()));
 		}
-		
 		return imports;
 	}
 	

@@ -30,6 +30,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -52,12 +53,16 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	
 	private L top;
 	private final String fileName;
+	private final String packageDeclaration;
+	private final Collection<String> imports;
 	Map<N, Void> identityDetector = new IdentityHashMap<N, Void>();
 	private Map<N, L> nodeMap = new IdentityHashMap<N, L>();
 	private boolean changed = false;
 	
-	protected AST(String fileName) {
+	protected AST(String fileName, String packageDeclaration, Collection<String> imports) {
 		this.fileName = fileName == null ? "(unknown).java" : fileName;
+		this.packageDeclaration = packageDeclaration;
+		this.imports = Collections.unmodifiableCollection(new ArrayList<String>(imports));
 	}
 	
 	protected void setChanged() {
@@ -82,14 +87,18 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	 * 
 	 * Example: "java.util".
 	 */
-	public abstract String getPackageDeclaration();
+	public final String getPackageDeclaration() {
+		return packageDeclaration;
+	}
 	
 	/**
 	 * Return the contents of each non-static import statement on this AST's top (Compilation Unit) node.
 	 * 
 	 * Example: "java.util.IOException".
 	 */
-	public abstract Collection<String> getImportStatements();
+	public final Collection<String> getImportStatements() {
+		return imports;
+	}
 	
 	/**
 	 * Puts the given node in the map so that javac/Eclipse's own internal AST object can be translated to

@@ -87,7 +87,7 @@ public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> 
 			JCNewArray newObjectArray = maker.NewArray(chainDots(maker, methodNode, "java", "lang", "Object"),
 					List.<JCExpression>of(maker.Literal(TypeTags.INT, 0)), null);
 			JCVariableDecl fieldDecl = maker.VarDef(
-					maker.Modifiers(Flags.FINAL | (isStatic ? Flags.STATIC : 0)),
+					maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic ? Flags.STATIC : 0)),
 					methodNode.toName(lockName), objectType, newObjectArray);
 			injectField(methodNode.up(), fieldDecl);
 		}

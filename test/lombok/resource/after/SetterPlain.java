@@ -1,4 +1,4 @@
-class Setter {
+class SetterPlain {
 	int i;
 	int foo;
 	public void setI(final int i) {

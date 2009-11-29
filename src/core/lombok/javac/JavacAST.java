@@ -71,7 +71,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	 * @param top The compilation unit, which serves as the top level node in the tree to be built.
 	 */
 	public JavacAST(Messager messager, Context context, JCCompilationUnit top) {
-		super(top.sourcefile == null ? null : top.sourcefile.toString());
+		super(sourceName(top), packageDeclaration(top), imports(top));
 		setTop(buildCompilationUnit(top));
 		this.context = context;
 		this.messager = messager;
@@ -81,28 +81,27 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		this.symtab = Symtab.instance(context);
 		clearChanged();
 	}
-	
-	public Context getContext() {
-		return context;
+
+	private static String sourceName(JCCompilationUnit cu) {
+		return cu.sourcefile == null ? null : cu.sourcefile.toString();
 	}
 	
-	/** {@inheritDoc} */
-	@Override public String getPackageDeclaration() {
-		JCCompilationUnit unit = (JCCompilationUnit)top().get();
-		return unit.pid instanceof JCFieldAccess ? unit.pid.toString() : null;
+	private static String packageDeclaration(JCCompilationUnit cu) {
+		return cu.pid instanceof JCFieldAccess ? cu.pid.toString() : null;
 	}
 	
-	/** {@inheritDoc} */
-	@Override public Collection<String> getImportStatements() {
+	private static Collection<String> imports(JCCompilationUnit cu) {
 		List<String> imports = new ArrayList<String>();
-		JCCompilationUnit unit = (JCCompilationUnit)top().get();
-		for (JCTree def : unit.defs) {
+		for (JCTree def : cu.defs) {
 			if (def instanceof JCImport) {
 				imports.add(((JCImport)def).qualid.toString());
 			}
 		}
-		
 		return imports;
+	}
+	
+	public Context getContext() {
+		return context;
 	}
 	
 	/**

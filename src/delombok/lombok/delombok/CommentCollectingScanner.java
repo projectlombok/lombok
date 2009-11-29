@@ -23,6 +23,7 @@ package lombok.delombok;
 
 import java.nio.CharBuffer;
 
+import lombok.delombok.Comment.StartConnection;
 import lombok.delombok.CommentPreservingParser.Comments;
 
 import com.sun.tools.javac.parser.Scanner;
@@ -79,17 +80,32 @@ public class CommentCollectingScanner extends Scanner {
 	protected void processComment(CommentStyle style) {
 		int prevEndPos = prevEndPos();
 		int pos = pos();
-		boolean newLine = containsNewLine(prevEndPos, pos);
-		String content = new String(getRawCharacters(pos, endPos()));
-		comments.add(prevEndPos, pos, endPos(), content, newLine);
+		int endPos = endPos();
+		String content = new String(getRawCharacters(pos, endPos));
+		boolean lineBreakAfter = isNewLine(getRawCharacters(endPos, endPos + 1)[0]);
+		StartConnection start = determineStartConnection(prevEndPos, pos);
+		Comment comment = new Comment(prevEndPos, pos, endPos, content, start, lineBreakAfter);
+		
+		comments.add(comment);
 	}
 	
-	private boolean containsNewLine(int from, int to) {
-		for (char c : getRawCharacters(from, to)) {
-			if (c == '\n' || c == '\r') {
-				return true;
+	private StartConnection determineStartConnection(int from, int to) {
+		if (from == to) {
+			return StartConnection.DIRECT_AFTER_PREVIOUS;
+		}
+		char[] between = getRawCharacters(from, to);
+		if (isNewLine(between[between.length - 1])) {
+			return StartConnection.START_OF_LINE;
+		}
+		for (char c : between) {
+			if (isNewLine(c)) {
+				return StartConnection.ON_NEXT_LINE;
 			}
 		}
-		return false;
+		return StartConnection.AFTER_PREVIOUS;
+	}
+
+	private boolean isNewLine(char c) {
+		return c == '\n' || c == '\r';
 	}
 }

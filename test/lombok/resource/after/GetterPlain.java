@@ -1,4 +1,4 @@
-class Getter {
+class GetterPlain {
 	int i;
 	int foo;
 	public int getI() {

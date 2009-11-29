@@ -22,22 +22,28 @@
 package lombok.delombok;
 
 public final class Comment {
+	
+	public enum StartConnection {
+		START_OF_LINE,
+		ON_NEXT_LINE,
+		DIRECT_AFTER_PREVIOUS,
+		AFTER_PREVIOUS
+	}
+	
 	final int pos;
 	final int prevEndPos;
 	final String content;
 	final int endPos;
-	final boolean newLine;
+	final StartConnection start;
+	final boolean newLineAfter;
 	
-	public Comment(int prevEndPos, int pos, int endPos, String content, boolean newLine) {
+	public Comment(int prevEndPos, int pos, int endPos, String content, StartConnection start, boolean newLineAfter) {
 		this.pos = pos;
 		this.prevEndPos = prevEndPos;
 		this.endPos = endPos;
 		this.content = content;
-		this.newLine = newLine;
-	}
-	
-	public boolean isConnected() {
-		return !newLine && prevEndPos == pos;
+		this.start = start;
+		this.newLineAfter = newLineAfter;
 	}
 	
 	public String summary() {
