@@ -63,14 +63,14 @@ public class NetbeansPatcher {
 				.build());
 		
 		sm.addScript(ScriptBuilder.wrapReturnValue()
-				.request()
+				.request(StackRequest.RETURN_VALUE, StackRequest.PARAM1)
 				.transplant()
 				.target(new MethodTarget("org.netbeans.modules.java.source.parsing.JavacParser", "createJavacTask",
 						"com.sun.tools.javac.api.JavacTaskImpl",
 						"ClasspathInfo", "DiagnosticListener", "java.lang.String", "boolean",
 						"ClassNamesForFileOraculum", "CancelService"))
 				.wrapMethod(new Hook("lombok/netbeans/agent/PatchFixes", "addTaskListenerWhenCallingJavac",
-						"()V"))
+						"(Lcom/sun/tools/javac/api/JavacTaskImpl;Lorg/netbeans/api/java/source/ClasspathInfo;)V"))
 				.build());
 	}
 	
@@ -94,5 +94,12 @@ public class NetbeansPatcher {
 				.replacementMethod(new Hook("lombok/netbeans/agent/PatchFixes", "returnMinus1ForGeneratedNode",
 						"(Lcom/sun/source/util/SourcePositions;Lcom/sun/source/tree/CompilationUnitTree;Lcom/sun/source/tree/Tree;)J"))
 				.build());
+		
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.netbeans.modules.java.source.save.CasualDiff", "filterHidden"))
+				.methodToWrap(new Hook("java/lang/Iterable", "iterator", "()L/java/util/Iterator;"))
+				.wrapMethod(new Hook("lombok/netbeans/agent/PatchFixes", "filterGenerated",
+						"(Ljava/util/Iterator;)L/java/util/Iterator;"))
+				.transplant().build());
 	}
 }

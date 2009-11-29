@@ -2,10 +2,13 @@ package lombok.netbeans.agent;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import javax.lang.model.element.Element;
 
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.openide.util.Lookup;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
@@ -13,6 +16,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TaskListener;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 
 public class PatchFixes {
@@ -65,13 +69,54 @@ public class PatchFixes {
 	//Contributed by Jan Lahoda (jlahoda@netbeans.org)
 	//Turned into a patch script by rzwitserloot.
 	//see http://code.google.com/p/projectlombok/issues/detail?id=20#c3
-	public static void addTaskListenerWhenCallingJavac(Context context, ClasspathInfo cpInfo) {
-		TaskListenerProvider p = /* Lookup.getDefault().lookup(TaskListenerProvider.class) */;
+	public static void addTaskListenerWhenCallingJavac(JavacTaskImpl task, ClasspathInfo cpInfo) {
+		TaskListenerProvider p = Lookup.getDefault().lookup(TaskListenerProvider.class);
 		if (p != null) {
-			TaskListener l = p.create(context, cpInfo);
+			TaskListener l = p.create(task.getContext(), cpInfo);
 			task.setTaskListener(l);
 		}
-		
-		return;
+	}
+	
+	//Contributed by Jan Lahoda (jlahoda@netbeans.org)
+	//Turned into a patch script by rzwitserloot.
+	//see http://code.google.com/p/projectlombok/issues/detail?id=20#c3
+	public static Iterator<JCTree> filterGenerated(final Iterator<JCTree> it) {
+		return new Iterator<JCTree>() {
+			private JCTree next;
+			private boolean hasNext;
+			
+			{
+				calc();
+			}
+			
+			private void calc() {
+				while (it.hasNext()) {
+					JCTree n = it.next();
+					if (n.pos != -1) {
+						hasNext = true;
+						next = n;
+						return;
+					}
+				}
+				
+				hasNext = false;
+				next = null;
+			}
+			
+			@Override public boolean hasNext() {
+				return hasNext;
+			}
+			
+			@Override public JCTree next() {
+				if (!hasNext) throw new NoSuchElementException();
+				JCTree n = next;
+				calc();
+				return n;
+			}
+			
+			@Override public void remove() {
+				throw new UnsupportedOperationException();
+			}
+		};
 	}
 }
