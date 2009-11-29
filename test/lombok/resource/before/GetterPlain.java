@@ -1,5 +1,5 @@
 import lombok.Getter;
-class Getter {
+class GetterPlain {
 	@lombok.Getter int i;
 	@Getter int foo;
 }

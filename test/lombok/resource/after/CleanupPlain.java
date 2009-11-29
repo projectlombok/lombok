@@ -1,5 +1,5 @@
 import java.io.*;
-class Cleanup {
+class CleanupPlain {
 	void test() throws Exception {
 		InputStream in = new FileInputStream("in");
 		try {
