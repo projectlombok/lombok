@@ -1,5 +1,4 @@
 class SynchronizedPlain1 {
-	private final Object $lock = new Object[0];
 	void test() {
 		synchronized ($lock) {
 			System.out.println("one");
@@ -10,9 +9,9 @@ class SynchronizedPlain1 {
 			System.out.println("two");
 		}
 	}
+	private final java.lang.Object $lock = new java.lang.Object[0];
 }
 class SynchronizedPlain2 {
-	private static final Object $LOCK = new Object[0];
 	static void test() {
 		synchronized ($LOCK) {
 			System.out.println("three");
@@ -23,4 +22,5 @@ class SynchronizedPlain2 {
 			System.out.println("four");
 		}
 	}
+	private static final java.lang.Object $LOCK = new java.lang.Object[0];
 }

@@ -1,17 +1,17 @@
 import lombok.Synchronized;
 class SynchronizedPlain1 {
-	@lombok.Synchonized void test() {
+	@lombok.Synchronized void test() {
 		System.out.println("one");
 	}
-	@Synchonized void test2() {
+	@Synchronized void test2() {
 		System.out.println("two");
 	}
 }
 class SynchronizedPlain2 {
-	@lombok.Synchonized static void test() {
+	@lombok.Synchronized static void test() {
 		System.out.println("three");
 	}
-	@Synchonized static void test2() {
+	@Synchronized static void test2() {
 		System.out.println("four");
 	}
 }
