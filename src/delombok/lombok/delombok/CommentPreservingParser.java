@@ -101,8 +101,8 @@ public class CommentPreservingParser {
 	static class Comments {
 		List<Comment> comments = List.nil();
 		
-		void add(int prevEndPos, int pos, int endPos, String content, boolean newLine) {
-			comments = comments.append(new Comment(prevEndPos, pos, endPos, content, newLine));
+		void add(Comment comment) {
+			comments = comments.append(comment);
 		}
 	}
 	
