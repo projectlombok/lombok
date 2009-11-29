@@ -154,7 +154,8 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 	private List<Comment> comments;
 	private final JCCompilationUnit cu;
 	private boolean newLine = true;
-    
+	private boolean inParams = false;
+	
     public PrettyCommentsPrinter(Writer out, JCCompilationUnit cu, List<Comment> comments) {
         this.out = out;
 		this.comments = comments;
@@ -370,8 +371,13 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void printAnnotations(List<JCAnnotation> trees) throws IOException {
         for (List<JCAnnotation> l = trees; l.nonEmpty(); l = l.tail) {
             printStat(l.head);
-            println();
-            align();
+            if (inParams) { 
+            	print(" ");
+            }
+            else {
+            	println();
+            	align();
+            }
         }
     }
 
@@ -605,7 +611,9 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
                 print(" " + tree.name);
             }
             print("(");
+            inParams = true;
             printExprs(tree.params);
+            inParams = false;
             print(")");
             if (tree.thrown.nonEmpty()) {
                 print(" throws ");

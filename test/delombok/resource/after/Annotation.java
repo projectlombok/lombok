@@ -4,4 +4,6 @@ class Annotation {
 	public String toString() {
 		return super.toString();
 	}
+	public void method(@SuppressWarnings("unused") int x) {
+	}
 }
