@@ -2,17 +2,19 @@
 <classpath>
 	<classpathentry kind="src" path="src/core"/>
 	<classpathentry kind="src" path="src/eclipseAgent"/>
+	<classpathentry kind="src" path="src/netbeansAgent"/>
 	<classpathentry kind="src" path="src/installer"/>
 	<classpathentry kind="src" path="src/delombok"/>
 	<classpathentry kind="src" path="experimental/src"/>
 	<classpathentry kind="src" path="test/delombok/src"/>
 	<classpathentry kind="src" path="test/core/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="deps/lombok/org.eclipse.jdt.core_3.5.0.v_963.jar"/>
-	<classpathentry kind="lib" path="deps/lombok/org.eclipse.jdt.ui_3.5.1.r351_v20090821-0800.jar"/>
-	<classpathentry kind="lib" path="deps/lombok/org.eclipse.core.runtime_3.5.0.v20090525.jar"/>
-	<classpathentry kind="lib" path="deps/lombok/org.eclipse.osgi_3.5.0.v20090520.jar"/>
-	<classpathentry kind="lib" path="deps/lombok/org.eclipse.equinox.common_3.5.0.v20090520-1800.jar"/>
+	<classpathentry kind="lib" path="deps/lombok/eclipse/org.eclipse.jdt.core_3.5.0.v_963.jar"/>
+	<classpathentry kind="lib" path="deps/lombok/eclipse/org.eclipse.jdt.ui_3.5.1.r351_v20090821-0800.jar"/>
+	<classpathentry kind="lib" path="deps/lombok/eclipse/org.eclipse.core.runtime_3.5.0.v20090525.jar"/>
+	<classpathentry kind="lib" path="deps/lombok/eclipse/org.eclipse.osgi_3.5.0.v20090520.jar"/>
+	<classpathentry kind="lib" path="deps/lombok/eclipse/org.eclipse.equinox.common_3.5.0.v20090520-1800.jar"/>
+	<classpathentry kind="lib" path="deps/lombok/netbeans/org-netbeans-modules-java-source_6.8beta.jar"/>
 	<classpathentry kind="lib" path="deps/junit-4.7.jar"/>
 	<classpathentry kind="lib" path="deps/lombok/ant.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/lombok.patcher"/>
