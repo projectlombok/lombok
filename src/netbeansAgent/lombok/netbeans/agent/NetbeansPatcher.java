@@ -67,8 +67,8 @@ public class NetbeansPatcher {
 				.transplant()
 				.target(new MethodTarget("org.netbeans.modules.java.source.parsing.JavacParser", "createJavacTask",
 						"com.sun.tools.javac.api.JavacTaskImpl",
-						"ClasspathInfo", "DiagnosticListener", "java.lang.String", "boolean",
-						"ClassNamesForFileOraculum", "CancelService"))
+						"org.netbeans.api.java.source.ClasspathInfo", "javax.tools.DiagnosticListener", "java.lang.String", "boolean",
+						"com.sun.tools.javac.api.ClassNamesForFileOraculum", "com.sun.tools.javac.util.CancelService"))
 				.wrapMethod(new Hook("lombok/netbeans/agent/PatchFixes", "addTaskListenerWhenCallingJavac",
 						"(Lcom/sun/tools/javac/api/JavacTaskImpl;Lorg/netbeans/api/java/source/ClasspathInfo;)V"))
 				.build());
@@ -83,7 +83,7 @@ public class NetbeansPatcher {
 				.replacementMethod(new Hook("lombok/netbeans/agent/PatchFixes", "returnNullForGeneratedNode",
 						"(Lcom/sun/source/util/Trees;Ljavax/lang/model/element/Element;Ljava/lang/Object;)" +
 						"Lcom/sun/source/tree/Tree;"))
-				.requestExtra(StackRequest.PARAM1)
+				.requestExtra(StackRequest.PARAM1).transplant()
 				.build());
 		
 		sm.addScript(ScriptBuilder.replaceMethodCall()
@@ -93,7 +93,7 @@ public class NetbeansPatcher {
 						"(Lcom/sun/source/tree/CompilationUnitTree;Lcom/sun/source/tree/Tree;)J"))
 				.replacementMethod(new Hook("lombok/netbeans/agent/PatchFixes", "returnMinus1ForGeneratedNode",
 						"(Lcom/sun/source/util/SourcePositions;Lcom/sun/source/tree/CompilationUnitTree;Lcom/sun/source/tree/Tree;)J"))
-				.build());
+				.transplant().build());
 		
 		sm.addScript(ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.netbeans.modules.java.source.save.CasualDiff", "filterHidden"))

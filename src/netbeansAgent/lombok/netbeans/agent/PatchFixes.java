@@ -48,22 +48,19 @@ public class PatchFixes {
 		if (context.get(TaskListener.class) != null)
 			context.put(TaskListener.class, (TaskListener)null);
 		if (taskListener != null) {
-			try {
-				Method m = JavacTaskImpl.class.getDeclaredMethod("wrap", TaskListener.class);
-				try {
-					m.setAccessible(true);
-				} catch (SecurityException ignore) {}
-				TaskListener w = (TaskListener)m.invoke(that, taskListener);
-				context.put(TaskListener.class, w);
-			} catch (InvocationTargetException e) {
-				throw e.getCause();
-			}
+//			try {
+//				Method m = JavacTaskImpl.class.getDeclaredMethod("wrap", TaskListener.class);
+//				try {
+//					m.setAccessible(true);
+//				} catch (SecurityException ignore) {}
+//				TaskListener w = (TaskListener)m.invoke(that, taskListener);
+				context.put(TaskListener.class, taskListener);
+//			} catch (InvocationTargetException e) {
+//				throw e.getCause();
+//			}
 		}
 	}
 	
-	//Contributed by Jan Lahoda (jlahoda@netbeans.org)
-	//Turned into a patch script by rzwitserloot.
-	//see http://code.google.com/p/projectlombok/issues/detail?id=20#c3
 	public static Tree returnNullForGeneratedNode(Trees trees, Element element, Object o) throws Throwable {
 		try {
 			Tree tree = trees.getTree(element);
