@@ -38,6 +38,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
+import lombok.delombok.Comment.EndConnection;
 import lombok.delombok.Comment.StartConnection;
 
 import com.sun.source.tree.Tree;
@@ -155,9 +156,13 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 	
 	private List<Comment> comments;
 	private final JCCompilationUnit cu;
-	private boolean newLine = true;
-	private boolean indent = false;
+	private boolean onNewLine = true;
+	private boolean aligned = false;
 	private boolean inParams = false;
+	
+	private boolean needsSpace = false;
+	private boolean needsNewLine = false;
+	private boolean needsAlign = false;
 	
     public PrettyCommentsPrinter(Writer out, JCCompilationUnit cu, List<Comment> comments) {
         this.out = out;
@@ -170,65 +175,70 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 	}
     
     private void consumeComments(int till) throws IOException {
-    	boolean shouldIndent = !newLine;
+    	boolean prevNewLine = onNewLine;
     	boolean found = false;
     	Comment head = comments.head;
 		while (comments.nonEmpty() && head.pos < till) {
-			found = true;
 			printComment(head);
 			comments = comments.tail;
 			head = comments.head;
 		}
-		if (found && !newLine && !indent) {
-			print(" ");
-		}
-		if (newLine && shouldIndent) {
-			align();
+		if (!onNewLine && prevNewLine) {
+			println();
 		}
 	}
 
     private void consumeTrailingComments(int from) throws IOException {
-    	boolean shouldIndent = !newLine;
+    	boolean prevNewLine = onNewLine;
 		Comment head = comments.head;
-		while (comments.nonEmpty() && head.prevEndPos == from) {
+		boolean stop = false;
+		while (comments.nonEmpty() && head.prevEndPos == from && !stop && !(head.start == StartConnection.ON_NEXT_LINE || head.start == StartConnection.START_OF_LINE)) {
 			from = head.endPos;
 			printComment(head);
+			stop = (head.end == EndConnection.ON_NEXT_LINE);
 			comments = comments.tail;
 			head = comments.head;
 		}
-		if (newLine && shouldIndent) {
-			align();
+		if (!onNewLine && prevNewLine) {
+			println();
 		}
 	}
-    
-    private void printComment(Comment comment) throws IOException {
+
+	private void printComment(Comment comment) throws IOException {
     	prepareComment(comment.start);
     	print(comment.content);
-    	if (comment.newLineAfter) {
-    		println();
-    	}
+    	switch (comment.end) {
+		case ON_NEXT_LINE:
+			if (!aligned) {
+				needsNewLine = true;
+				needsAlign = true;
+			}
+			break;
+		case AFTER_COMMENT:
+			needsSpace = true;
+			break;
+		case DIRECT_AFTER_COMMENT:
+			// do nothing
+			break;
+		}
     }
 
 	private void prepareComment(StartConnection start) throws IOException {
 		switch (start) {
 			case DIRECT_AFTER_PREVIOUS:
+				needsSpace = false;
 				break;
 			case AFTER_PREVIOUS:
-				if (!newLine && !indent) {
-					print(" ");
-				}
+				needsSpace = true;
 				break;
 			case START_OF_LINE:
-				if (!newLine) {
-					println();
-				}
+				needsNewLine = true;
+				needsAlign = false;
 				break;
 			case ON_NEXT_LINE:
-				if (!newLine && !indent) {
-					println();
-				}
-				if (!indent) {
-					align();
+				if (!aligned) {
+					needsNewLine = true;
+					needsAlign = true;
 				}
 				break;
 		}
@@ -254,8 +264,9 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     /** Align code to be indented to left margin.
      */
     void align() throws IOException {
-    	newLine = false;
-    	indent = true;
+    	onNewLine = false;
+    	aligned = true;
+    	needsAlign = false;
         for (int i = 0; i < lmargin; i++) out.write("\t");
     }
 
@@ -292,16 +303,30 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     /** Print string, replacing all non-ascii character with unicode escapes.
      */
     public void print(Object s) throws IOException {
-    	newLine = false;
-    	indent = false;
-        out.write(Convert.escapeUnicode(s.toString()));
+    	boolean align = needsAlign;
+    	if (needsNewLine && !onNewLine) {
+    		println();
+    	}
+    	if (align && !aligned) {
+    		align();
+    	}
+    	if (needsSpace && !onNewLine && !aligned) {
+    		out.write(' ');
+    	}
+    	needsSpace = false;
+        
+    	out.write(Convert.escapeUnicode(s.toString()));
+       
+        onNewLine = false;
+        aligned = false;
     }
 
     /** Print new line.
      */
     public void println() throws IOException {
-    	newLine = true;
-    	indent = false;
+    	onNewLine = true;
+    	aligned = false;
+    	needsNewLine = false;
         out.write(lineSep);
     }
 
@@ -337,7 +362,6 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
                	tree.accept(this);
                	int endPos = endPos(tree);
 				consumeTrailingComments(endPos);
-//               	consumeComments(endPos);
             }
         } catch (UncheckedIOException ex) {
             IOException e = new IOException(ex.getMessage());
@@ -566,6 +590,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitTopLevel(JCCompilationUnit tree) {
         try {
             printUnit(tree, null);
+            consumeComments(Integer.MAX_VALUE);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

@@ -23,6 +23,7 @@ package lombok.delombok;
 
 import java.nio.CharBuffer;
 
+import lombok.delombok.Comment.EndConnection;
 import lombok.delombok.Comment.StartConnection;
 import lombok.delombok.CommentPreservingParser.Comments;
 
@@ -31,6 +32,7 @@ import com.sun.tools.javac.util.Context;
 
 public class CommentCollectingScanner extends Scanner {
 	private final Comments comments;
+	private int endComment = 0;
 
 	/** A factory for creating scanners. */
 	public static class Factory extends Scanner.Factory {
@@ -78,17 +80,33 @@ public class CommentCollectingScanner extends Scanner {
 	
 	@Override
 	protected void processComment(CommentStyle style) {
-		int prevEndPos = prevEndPos();
+		int prevEndPos = Math.max(prevEndPos(), endComment);
 		int pos = pos();
 		int endPos = endPos();
+		endComment = endPos;
 		String content = new String(getRawCharacters(pos, endPos));
-		boolean lineBreakAfter = isNewLine(getRawCharacters(endPos, endPos + 1)[0]);
 		StartConnection start = determineStartConnection(prevEndPos, pos);
-		Comment comment = new Comment(prevEndPos, pos, endPos, content, start, lineBreakAfter);
-		
+		EndConnection end = determineEndConnection(endPos); 
+
+		Comment comment = new Comment(prevEndPos, pos, endPos, content, start, end);
 		comments.add(comment);
 	}
 	
+	private EndConnection determineEndConnection(int pos) {
+		boolean first = true;
+		for (int i = pos;; i++) {
+			char c = getRawCharacters(i, i + 1)[0];
+			if (isNewLine(c)) {
+				return EndConnection.ON_NEXT_LINE;
+			}
+			if (Character.isWhitespace(c)) {
+				first = false;
+				continue;
+			}
+			return first ? EndConnection.DIRECT_AFTER_COMMENT : EndConnection.AFTER_COMMENT;
+		}
+	}
+
 	private StartConnection determineStartConnection(int from, int to) {
 		if (from == to) {
 			return StartConnection.DIRECT_AFTER_PREVIOUS;

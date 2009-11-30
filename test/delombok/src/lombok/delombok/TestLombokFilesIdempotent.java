@@ -21,39 +21,22 @@
  */
 package lombok.delombok;
 
-public final class Comment {
-	
-	public enum StartConnection {
-		START_OF_LINE,
-		ON_NEXT_LINE,
-		DIRECT_AFTER_PREVIOUS,
-		AFTER_PREVIOUS
-	}
+import java.io.File;
 
-	public enum EndConnection {
-		DIRECT_AFTER_COMMENT,
-		AFTER_COMMENT,
-		ON_NEXT_LINE
+import lombok.DirectoryRunner;
+import lombok.RunTestsViaDelombok;
+
+import org.junit.runner.RunWith;
+
+@RunWith(DirectoryRunner.class)
+public class TestLombokFilesIdempotent {
+	
+	public static File getBeforeDirectory() {
+		RunTestsViaDelombok.printErrors(true);
+		return getAfterDirectory();
 	}
 	
-	final int pos;
-	final int prevEndPos;
-	final String content;
-	final int endPos;
-	final StartConnection start;
-	final EndConnection end;
-	
-	public Comment(int prevEndPos, int pos, int endPos, String content, StartConnection start, EndConnection end) {
-		this.pos = pos;
-		this.prevEndPos = prevEndPos;
-		this.endPos = endPos;
-		this.content = content;
-		this.start = start;
-		this.end = end;
-	}
-	
-	@Override
-	public String toString() {
-		return String.format("%d: %s (%s,%s)", pos, content, start, end);
+	public static File getAfterDirectory() {
+		return new File("test/lombok/resource/after");
 	}
 }
