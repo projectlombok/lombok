@@ -1,3 +1,24 @@
+/*
+ * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package lombok.netbeans.agent;
 
 import java.lang.reflect.InvocationTargetException;
@@ -8,7 +29,6 @@ import java.util.NoSuchElementException;
 import javax.lang.model.element.Element;
 
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.openide.util.Lookup;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
@@ -19,10 +39,10 @@ import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Context;
 
+// A lot of the footwork on the netbeans support has been done by Jan Lahoda, who is awesome. (jlahoda@netbeans.org)
+// This footwork was converted into a patch script form by me (rzwitserloot). See:
+// http://code.google.com/p/projectlombok/issues/detail?id=20#c3
 public class PatchFixes {
-	//Contributed by Jan Lahoda (jlahoda@netbeans.org)
-	//Turned into a patch script by rzwitserloot.
-	//see http://code.google.com/p/projectlombok/issues/detail?id=20#c3
 	public static void fixContentOnSetTaskListener(JavacTaskImpl that, TaskListener taskListener) throws Throwable {
 		Context context = that.getContext();
 		if (context.get(TaskListener.class) != null)
@@ -57,29 +77,17 @@ public class PatchFixes {
 		}
 	}
 	
-	//Contributed by Jan Lahoda (jlahoda@netbeans.org)
-	//Turned into a patch script by rzwitserloot.
-	//see http://code.google.com/p/projectlombok/issues/detail?id=20#c3
 	public static long returnMinus1ForGeneratedNode(SourcePositions that, CompilationUnitTree cu, Tree tree) {
 		int start = (int) that.getStartPosition(cu, tree);
 		if (start < 0) return -1;
 		return that.getEndPosition(cu, tree);
 	}
 	
-	//Contributed by Jan Lahoda (jlahoda@netbeans.org)
-	//Turned into a patch script by rzwitserloot.
-	//see http://code.google.com/p/projectlombok/issues/detail?id=20#c3
-	public static void addTaskListenerWhenCallingJavac(JavacTaskImpl task, ClasspathInfo cpInfo) {
-		TaskListenerProvider p = Lookup.getDefault().lookup(TaskListenerProvider.class);
-		if (p != null) {
-			TaskListener l = p.create(task.getContext(), cpInfo);
-			task.setTaskListener(l);
-		}
+	public static void addTaskListenerWhenCallingJavac(JavacTaskImpl task,
+			@SuppressWarnings("unused") /* Will come in handy later */ ClasspathInfo cpInfo) {
+		task.setTaskListener(new NetbeansEntryPoint(task.getContext()));
 	}
 	
-	//Contributed by Jan Lahoda (jlahoda@netbeans.org)
-	//Turned into a patch script by rzwitserloot.
-	//see http://code.google.com/p/projectlombok/issues/detail?id=20#c3
 	public static Iterator<JCTree> filterGenerated(final Iterator<JCTree> it) {
 		return new Iterator<JCTree>() {
 			private JCTree next;
