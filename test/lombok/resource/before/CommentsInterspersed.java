@@ -11,4 +11,7 @@ public /*bla */ class CommentsInterspersed {
 		javascript;
 	}-*/
 } //haha!
+//hahaha!
+
+//hahahaha!
 
