@@ -30,10 +30,10 @@ import org.junit.runner.RunWith;
 @RunWith(DirectoryRunner.class)
 public class TestSourceFiles {
 	public static File getBeforeDirectory() {
-		return new File("test/delombok/resource/before");
+		return new File("test/pretty/resource/before");
 	}
 	
 	public static File getAfterDirectory() {
-		return new File("test/delombok/resource/after");
+		return new File("test/pretty/resource/after");
 	}
 }

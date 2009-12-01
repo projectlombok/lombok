@@ -33,10 +33,10 @@ public class TestLombokFiles {
 	
 	public static File getBeforeDirectory() {
 		RunTestsViaDelombok.printErrors(true);
-		return new File("test/lombok/resource/before");
+		return new File("test/delombok/resource/before");
 	}
 	
 	public static File getAfterDirectory() {
-		return new File("test/lombok/resource/after");
+		return new File("test/delombok/resource/after");
 	}
 }

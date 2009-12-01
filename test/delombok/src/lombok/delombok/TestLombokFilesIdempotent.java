@@ -37,6 +37,6 @@ public class TestLombokFilesIdempotent {
 	}
 	
 	public static File getAfterDirectory() {
-		return new File("test/lombok/resource/after");
+		return new File("test/delombok/resource/after");
 	}
 }

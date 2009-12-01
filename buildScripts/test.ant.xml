@@ -53,7 +53,7 @@ This buildfile is part of projectlombok.org. It responsible for running unit tes
 			<src path="test/delombok/src" />
 		</javac>
 		<copy todir="build/tests">
-			<fileset dir="test/lombok/resource" />
+			<fileset dir="test/pretty/resource" />
 			<fileset dir="test/delombok/resource" />
 		</copy>
 	</target>
