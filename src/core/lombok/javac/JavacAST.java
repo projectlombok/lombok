@@ -125,6 +125,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	
 	/** @return A TreeMaker instance that you can use to create new AST nodes. */
 	public TreeMaker getTreeMaker() {
+		treeMaker.at(-1);
 		return treeMaker;
 	}
 	

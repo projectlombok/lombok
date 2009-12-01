@@ -83,6 +83,7 @@ lombok code including the various agents.
 			<sourcePath path="src/core" />
 			<sourcePath path="src/installer" />
 			<sourcePath path="src/eclipseAgent" />
+			<sourcePath path="src/netbeansAgent" />
 			<sourcePath path="src/delombok" />
 			<class location="build/lombok/lombok" />
 		</findbugs>
@@ -119,8 +120,10 @@ lombok code including the various agents.
 		<javac debug="on" destdir="build/lombok" target="1.6" source="1.6">
 			<src path="src/core" />
 			<src path="src/delombok" />
+			<src path="src/netbeansAgent" />
 			<include name="lombok/javac/**" />
 			<include name="lombok/delombok/**" />
+			<include name="lombok/netbeans/**" />
 			<classpath location="build/lombok" />
 			<classpath refid="deps.path" />
 			<classpath refid="libs.path" />
@@ -133,6 +136,9 @@ lombok code including the various agents.
 				<patternset refid="copyables" />
 			</fileset>
 			<fileset dir="src/eclipseAgent">
+				<patternset refid="copyables" />
+			</fileset>
+			<fileset dir="src/netbeansAgent">
 				<patternset refid="copyables" />
 			</fileset>
 			<fileset dir="src/delombok">
@@ -153,7 +159,7 @@ lombok code including the various agents.
 			<fileset dir="build" includes="changelog.txt" />
 			<fileset dir="." includes="LICENCE" />
 			<manifest>
-				<attribute name="Premain-Class" value="lombok.eclipse.agent.EclipsePatcher" />
+				<attribute name="Premain-Class" value="lombok.core.Agent" />
 				<attribute name="Can-Redefine-Classes" value="true" />
 				<attribute name="Main-Class" value="lombok.core.Main" />
 				<attribute name="Lombok-Version" value="${lombok.version}" />
