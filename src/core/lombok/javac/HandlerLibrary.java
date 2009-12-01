@@ -21,14 +21,12 @@
  */
 package lombok.javac;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.ServiceConfigurationError;
-import java.util.ServiceLoader;
 
 import javax.annotation.processing.Messager;
 import javax.tools.Diagnostic;
@@ -85,46 +83,36 @@ public class HandlerLibrary {
 	public static HandlerLibrary load(Messager messager) {
 		HandlerLibrary library = new HandlerLibrary(messager);
 		
-		loadAnnotationHandlers(library);
-		loadVisitorHandlers(library);
+		try {
+			loadAnnotationHandlers(library);
+			loadVisitorHandlers(library);
+		} catch (IOException e) {
+			System.err.println("Lombok isn't running due to misconfigured SPI files: " + e);
+		}
 		
 		return library;
 	}
 	
 	/** Uses SPI Discovery to find implementations of {@link JavacAnnotationHandler}. */
 	@SuppressWarnings("unchecked")
-	private static void loadAnnotationHandlers(HandlerLibrary lib) {
+	private static void loadAnnotationHandlers(HandlerLibrary lib) throws IOException {
 		//No, that seemingly superfluous reference to JavacAnnotationHandler's classloader is not in fact superfluous!
-		Iterator<JavacAnnotationHandler> it = ServiceLoader.load(JavacAnnotationHandler.class,
-				JavacAnnotationHandler.class.getClassLoader()).iterator();
-		while (it.hasNext()) {
-			try {
-				JavacAnnotationHandler<?> handler = it.next();
-				Class<? extends Annotation> annotationClass =
-					SpiLoadUtil.findAnnotationClass(handler.getClass(), JavacAnnotationHandler.class);
-				AnnotationHandlerContainer<?> container = new AnnotationHandlerContainer(handler, annotationClass);
-				if (lib.annotationHandlers.put(container.annotationClass.getName(), container) != null) {
-					lib.javacWarning("Duplicate handlers for annotation type: " + container.annotationClass.getName());
-				}
-				lib.typeLibrary.addType(container.annotationClass.getName());
-			} catch (ServiceConfigurationError e) {
-				lib.javacWarning("Can't load Lombok annotation handler for javac", e);
+		for (JavacAnnotationHandler handler : SpiLoadUtil.findServices(JavacAnnotationHandler.class, JavacAnnotationHandler.class.getClassLoader())) {
+			Class<? extends Annotation> annotationClass =
+				SpiLoadUtil.findAnnotationClass(handler.getClass(), JavacAnnotationHandler.class);
+			AnnotationHandlerContainer<?> container = new AnnotationHandlerContainer(handler, annotationClass);
+			if (lib.annotationHandlers.put(container.annotationClass.getName(), container) != null) {
+				lib.javacWarning("Duplicate handlers for annotation type: " + container.annotationClass.getName());
 			}
+			lib.typeLibrary.addType(container.annotationClass.getName());
 		}
 	}
 	
 	/** Uses SPI Discovery to find implementations of {@link JavacASTVisitor}. */
-	private static void loadVisitorHandlers(HandlerLibrary lib) {
+	private static void loadVisitorHandlers(HandlerLibrary lib) throws IOException {
 		//No, that seemingly superfluous reference to JavacASTVisitor's classloader is not in fact superfluous!
-		Iterator<JavacASTVisitor> it = ServiceLoader.load(JavacASTVisitor.class,
-				JavacASTVisitor.class.getClassLoader()).iterator();
-		while (it.hasNext()) {
-			try {
-				JavacASTVisitor handler = it.next();
-				lib.visitorHandlers.add(handler);
-			} catch (ServiceConfigurationError e) {
-				lib.javacWarning("Can't load Lombok visitor handler for javac", e);
-			}
+		for (JavacASTVisitor visitor : SpiLoadUtil.findServices(JavacASTVisitor.class, JavacASTVisitor.class.getClassLoader())) {
+			lib.visitorHandlers.add(visitor);
 		}
 	}
 	
@@ -177,6 +165,7 @@ public class HandlerLibrary {
 			if (container == null) continue;
 			
 			try {
+				System.out.println("Calling handle on: "+ container.handler.getClass().getName());
 				handled |= container.handle(node);
 			} catch (AnnotationValueDecodeFail fail) {
 				fail.owner.setError(fail.getMessage(), fail.idx);
