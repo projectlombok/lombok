@@ -23,29 +23,29 @@ package lombok.netbeans.agent;
 
 import java.lang.instrument.Instrumentation;
 
+import lombok.core.Agent;
 import lombok.patcher.Hook;
 import lombok.patcher.MethodTarget;
 import lombok.patcher.ScriptManager;
 import lombok.patcher.StackRequest;
-import lombok.patcher.equinox.EquinoxClassLoader;
 import lombok.patcher.scripts.ScriptBuilder;
 
-public class NetbeansPatcher {
-	private NetbeansPatcher() {}
-	
-	public static void agentmain(@SuppressWarnings("unused") String agentArgs, Instrumentation instrumentation) throws Exception {
-		registerPatchScripts(instrumentation, true);
-	}
-	
-	public static void premain(@SuppressWarnings("unused") String agentArgs, Instrumentation instrumentation) throws Exception {
-		registerPatchScripts(instrumentation, false);
+/**
+ * This is a java-agent that patches some of netbeans's classes so that lombok is initialized as Javac TaskListener,
+ * allowing us to change AST nodes anytime netbeans parses source code. It also fixes some of the places in netbeans that
+ * can't deal with generated code.
+ * 
+ * The hard work on figuring out where to patch has been done by Jan Lahoda (jlahoda@netbeans.org)
+ */
+public class NetbeansPatcher extends Agent {
+	@Override
+	public void runAgent(String agentArgs, Instrumentation instrumentation, boolean injected) throws Exception {
+		registerPatchScripts(instrumentation, injected);
 	}
 	
 	private static void registerPatchScripts(Instrumentation instrumentation, boolean reloadExistingClasses) {
 		ScriptManager sm = new ScriptManager();
 		sm.registerTransformer(instrumentation);
-		EquinoxClassLoader.addPrefix("lombok.");
-		EquinoxClassLoader.registerScripts(sm);
 		
 		patchNetbeansJavac(sm);
 		patchNetbeansMissingPositionAwareness(sm);

@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.core.Agent;
 import lombok.patcher.Hook;
 import lombok.patcher.MethodTarget;
 import lombok.patcher.ScriptManager;
@@ -41,15 +42,10 @@ import lombok.patcher.scripts.ScriptBuilder;
  * classes in this package for more information about which classes are transformed and how they are
  * transformed.
  */
-public class EclipsePatcher {
-	private EclipsePatcher() {}
-	
-	public static void agentmain(@SuppressWarnings("unused") String agentArgs, Instrumentation instrumentation) throws Exception {
-		registerPatchScripts(instrumentation, true);
-	}
-	
-	public static void premain(@SuppressWarnings("unused") String agentArgs, Instrumentation instrumentation) throws Exception {
-		registerPatchScripts(instrumentation, false);
+public class EclipsePatcher extends Agent {
+	@Override
+	public void runAgent(String agentArgs, Instrumentation instrumentation, boolean injected) throws Exception {
+		registerPatchScripts(instrumentation, injected);
 	}
 	
 	private static void registerPatchScripts(Instrumentation instrumentation, boolean reloadExistingClasses) {

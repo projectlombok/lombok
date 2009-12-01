@@ -159,8 +159,7 @@ lombok code including the various agents.
 			<fileset dir="build" includes="changelog.txt" />
 			<fileset dir="." includes="LICENCE" />
 			<manifest>
-<!--				<attribute name="Premain-Class" value="lombok.eclipse.agent.EclipsePatcher" /> -->
-				<attribute name="Premain-Class" value="lombok.netbeans.agent.NetbeansPatcher" />
+				<attribute name="Premain-Class" value="lombok.core.Agent" />
 				<attribute name="Can-Redefine-Classes" value="true" />
 				<attribute name="Main-Class" value="lombok.core.Main" />
 				<attribute name="Lombok-Version" value="${lombok.version}" />
