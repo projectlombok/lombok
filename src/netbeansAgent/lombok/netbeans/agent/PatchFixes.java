@@ -21,13 +21,22 @@
  */
 package lombok.netbeans.agent;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import javax.lang.model.element.Element;
 
+import lombok.Lombok;
+import lombok.patcher.inject.LiveInjector;
+
+import org.netbeans.Module;
+import org.netbeans.ProxyClassLoader;
 import org.netbeans.api.java.source.ClasspathInfo;
 
 import com.sun.source.tree.CompilationUnitTree;
@@ -43,8 +52,50 @@ import com.sun.tools.javac.util.Context;
 // This footwork was converted into a patch script form by me (rzwitserloot). See:
 // http://code.google.com/p/projectlombok/issues/detail?id=20#c3
 public class PatchFixes {
+	public static boolean loadClass_decision(@SuppressWarnings("unused") ClassLoader loader, String name) throws Exception {
+		return name.startsWith("lombok.");
+	}
+	
+	public static Class<?> loadClass_value(ClassLoader loader, String name) throws Exception {
+		int last = name.lastIndexOf('.');
+		String pkg = (last >= 0) ? name.substring(0, last) : "";
+		Method m = ProxyClassLoader.class.getDeclaredMethod("selfLoadClass", String.class, String.class);
+		m.setAccessible(true);
+		return (Class<?>)m.invoke(loader, pkg, name);
+	}
+	
+	public static boolean getResource_decision(@SuppressWarnings("unused") ClassLoader loader, String name) throws Exception {
+		return name.startsWith("META-INF/services/lombok.");
+	}
+	
+	public static URL getResource_value(ClassLoader loader, String name) throws Exception {
+		Method m = ProxyClassLoader.class.getDeclaredMethod("findResource", String.class);
+		m.setAccessible(true);
+		return (URL) m.invoke(loader, name);
+	}
+	
+	public static boolean getResources_decision(@SuppressWarnings("unused") ClassLoader loader, String name) throws Exception {
+		return name.startsWith("META-INF/services/lombok.");
+	}
+	
+	public static Enumeration<?> getResources_value(ClassLoader loader, String name) throws Exception {
+		Method m = ProxyClassLoader.class.getDeclaredMethod("findResources", String.class);
+		m.setAccessible(true);
+		return (Enumeration<?>) m.invoke(loader, name);
+	}
+	
+	public static boolean addSelfToClassLoader(Module module, List<File> classPath) {
+		if (module.getJarFile().getName().equals("org-netbeans-libs-javacimpl.jar")) {
+			String lombokJarLoc = LiveInjector.findPathJar(Lombok.class);
+			classPath.add(new File(lombokJarLoc));
+		}
+		
+		return false;
+	}
+	
 	public static void fixContentOnSetTaskListener(JavacTaskImpl that, TaskListener taskListener) throws Throwable {
 		Context context = that.getContext();
+		
 		if (context.get(TaskListener.class) != null)
 			context.put(TaskListener.class, (TaskListener)null);
 		if (taskListener != null) {
@@ -81,8 +132,9 @@ public class PatchFixes {
 	}
 	
 	public static void addTaskListenerWhenCallingJavac(JavacTaskImpl task,
-			@SuppressWarnings("unused") /* Will come in handy later */ ClasspathInfo cpInfo) {
-		task.setTaskListener(new NetbeansEntryPoint(task.getContext()));
+			@SuppressWarnings("unused") /* Will come in handy later */ ClasspathInfo cpInfo) throws Exception {
+		Class<?> entryPoint = JavacTaskImpl.class.getClassLoader().loadClass("lombok.netbeans.agent.NetbeansEntryPoint");
+		task.setTaskListener((TaskListener) entryPoint.getConstructor(Context.class).newInstance(task.getContext()));
 	}
 	
 	public static Iterator<JCTree> filterGenerated(final Iterator<JCTree> it) {

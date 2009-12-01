@@ -47,10 +47,40 @@ public class NetbeansPatcher extends Agent {
 		ScriptManager sm = new ScriptManager();
 		sm.registerTransformer(instrumentation);
 		
+		patchNetbeansClassLoader(sm);
 		patchNetbeansJavac(sm);
 		patchNetbeansMissingPositionAwareness(sm);
 		
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
+	}
+	
+	private static void patchNetbeansClassLoader(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.exitEarly()
+				.transplant().request(StackRequest.PARAM1, StackRequest.PARAM2)
+				.target(new MethodTarget("org.netbeans.StandardModule$OneModuleClassLoader", "<init>"))
+				.decisionMethod(new Hook("lombok/netbeans/agent/PatchFixes", "addSelfToClassLoader", "(Lorg/netbeans/Module;Ljava/util/List;)Z"))
+				.build());
+		sm.addScript(ScriptBuilder.exitEarly()
+				.transplant()
+				.request(StackRequest.THIS, StackRequest.PARAM1)
+				.target(new MethodTarget("org.netbeans.ProxyClassLoader", "getResource"))
+				.decisionMethod(new Hook("lombok/netbeans/agent/PatchFixes", "getResource_decision", "(Ljava/lang/ClassLoader;Ljava/lang/String;)Z"))
+				.valueMethod(new Hook("lombok/netbeans/agent/PatchFixes", "getResource_value", "(Ljava/lang/ClassLoader;Ljava/lang/String;)Ljava/net/URL;"))
+				.build());
+		sm.addScript(ScriptBuilder.exitEarly()
+				.transplant()
+				.request(StackRequest.THIS, StackRequest.PARAM1)
+				.target(new MethodTarget("org.netbeans.ProxyClassLoader", "getResources"))
+				.decisionMethod(new Hook("lombok/netbeans/agent/PatchFixes", "getResources_decision", "(Ljava/lang/ClassLoader;Ljava/lang/String;)Z"))
+				.valueMethod(new Hook("lombok/netbeans/agent/PatchFixes", "getResources_value", "(Ljava/lang/ClassLoader;Ljava/lang/String;)Ljava/util/Enumeration;"))
+				.build());
+		sm.addScript(ScriptBuilder.exitEarly()
+				.transplant()
+				.target(new MethodTarget("org.netbeans.ProxyClassLoader", "loadClass"))
+				.request(StackRequest.THIS, StackRequest.PARAM1)
+				.decisionMethod(new Hook("lombok/netbeans/agent/PatchFixes", "loadClass_decision", "(Ljava/lang/ClassLoader;Ljava/lang/String;)Z"))
+				.valueMethod(new Hook("lombok/netbeans/agent/PatchFixes", "loadClass_value", "(Ljava/lang/ClassLoader;Ljava/lang/String;)Ljava/lang/Class;"))
+				.build());
 	}
 	
 	private static void patchNetbeansJavac(ScriptManager sm) {

@@ -68,7 +68,8 @@ public class NetbeansEntryPoint implements TaskListener {
 	@Override public void finished(TaskEvent event) {
 		if (TaskEvent.Kind.PARSE == event.getKind()) {
 			JavacTransformer transformer = new JavacTransformer(new DummyMessager());	//TODO hook into netbeans error reporting!
-			transformer.transform(context, Collections.singleton((JCCompilationUnit)event.getCompilationUnit()));
+			JCCompilationUnit compilationUnit = (JCCompilationUnit) event.getCompilationUnit();
+			transformer.transform(context, Collections.singleton(compilationUnit));
 		}
 	}
 }
