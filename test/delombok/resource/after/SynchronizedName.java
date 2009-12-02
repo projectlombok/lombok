@@ -17,4 +17,9 @@ class SynchronizedName {
 			System.out.println("four");
 		}
 	}
+	void test5() {
+		synchronized (read) {
+			System.out.println("five");
+		}
+	}
 }

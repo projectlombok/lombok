@@ -15,4 +15,7 @@ class SynchronizedName {
 	@lombok.Synchronized("READ") void test4() {
 		System.out.println("four");
 	}	
+	@lombok.Synchronized(value="read") void test5() {
+		System.out.println("five");
+	}
 }
