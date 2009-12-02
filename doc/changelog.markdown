@@ -2,13 +2,15 @@ Lombok Changelog
 ----------------
 
 ### v0.9.2
+* preliminary support for lombok on NetBeans!  - thanks go to Jan Lahoda from NetBeans. [Issue #20](http://code.google.com/p/projectlombok/issues/detail?id=20)
 * lombok now ships with the delombok tool, which copies an entire directory filled with sources to a new directory, desugaring any java files to what it would look like without lombok's transformations. Compiling the sources in this new directory without lombok support should result in the same class files as compiling the original with lombok support. Great to double check on what lombok is doing, and for chaining the delombok-ed sources to source-based java tools such as Google Web Toolkit or javadoc. lombok.jar itself also provides an ant task for delombok. [Full documentation of delombok](http://projectlombok.org/features/delombok.html).
-* Lombok now works on openjdk7 (tested with JDK7m5)! For all the folks on the cutting edge, this should be very good news. [Issue #61](http://code.google.com/p/projectlombok/issues/detail?id=61)
-* lombok now has various command-line accessible utilities bundled with it. Run `java -jar lombok.jar --help` to see them. Included:
+* Lombok now works on openjdk7 (tested with JDK7m5)! For all the folks on the cutting edge, this should be very good news. [Issue #61](http://code.google.com/p/projectlombok/issues/detail?id=61) - thanks go to Jan Lahoda from NetBeans.
+* lombok now has various command-line accessible utilities bundled with it. Run `java -jar lombok.jar --help` to see them. Included (aside from the already mentioned delombok):
 * Ability to create a tiny jar named lombok-runtime.jar with runtime dependencies. The lombok transformations that have a runtime dependency on this jar can be listed as well. Run `java -jar lombok.jar createRuntime --help` for more information.
 * Scriptable command line install and uninstall options. Run `java -jar lombok.jar install --help` (or `uninstall`, of course) for more information. Technically this support has been there in earlier versions, but the command line options are now much more lenient, not to mention more visible.
-* Erroneous use of lombok in eclipse (adding it to a project as an annotation processor, which is not how lombok is to be used on eclipse) now generates a useful warning message with helpful information, instead of a confusing error hidden in the logs. [Issue #53](http://code.google.com/p/projectlombok/issues/detail?id=53)
-* Solved a regression bug where you would occasionally see errors with the gist 'loader constraint violation: when resolving...', such as when opening the help system, starting the diff editor, or, rarely, opening any java source file. [Issue #68](http://code.google.com/p/projectlombok/issues/detail?id=68)
+* Erroneous use of lombok in Eclipse (adding it to a project as an annotation processor, which is not how lombok is to be used on Eclipse) now generates a useful warning message with helpful information, instead of a confusing error hidden in the logs. [Issue #53](http://code.google.com/p/projectlombok/issues/detail?id=53)
+* FIXED: Regression bug where you would occasionally see errors with the gist 'loader constraint violation: when resolving...', such as when opening the help system, starting the diff editor, or, rarely, opening any java source file. [Issue #68](http://code.google.com/p/projectlombok/issues/detail?id=68)
+* FIXED: @SneakyThrows without any parameters should default to `Throwable.class` but it didn't do anything in javac. [Issue #73](http://code.google.com/p/projectlombok/issues/detail?id=73)
 
 ### v0.9.1
 
