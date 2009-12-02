@@ -167,21 +167,6 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 			}
 		}
 		
-		switch (methodExists("hashCode", typeNode)) {
-		case NOT_EXISTS:
-			JCMethodDecl method = createHashCode(typeNode, nodesForEquality, callSuper);
-			injectMethod(typeNode, method);
-			break;
-		case EXISTS_BY_LOMBOK:
-			break;
-		default:
-		case EXISTS_BY_USER:
-			if (whineIfExists) {
-				errorNode.addWarning("Not generating hashCode(): A method with that name already exists");
-			}
-			break;
-		}
-		
 		switch (methodExists("equals", typeNode)) {
 		case NOT_EXISTS:
 			JCMethodDecl method = createEquals(typeNode, nodesForEquality, callSuper);
@@ -193,6 +178,21 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		case EXISTS_BY_USER:
 			if (whineIfExists) {
 				errorNode.addWarning("Not generating equals(Object other): A method with that name already exists");
+			}
+			break;
+		}
+		
+		switch (methodExists("hashCode", typeNode)) {
+		case NOT_EXISTS:
+			JCMethodDecl method = createHashCode(typeNode, nodesForEquality, callSuper);
+			injectMethod(typeNode, method);
+			break;
+		case EXISTS_BY_LOMBOK:
+			break;
+		default:
+		case EXISTS_BY_USER:
+			if (whineIfExists) {
+				errorNode.addWarning("Not generating hashCode(): A method with that name already exists");
 			}
 			break;
 		}
@@ -326,7 +326,7 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(chainDots(maker, typeNode, "java", "lang", "Override"), List.<JCExpression>nil());
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
-		JCExpression objectType = maker.Type(typeNode.getSymbolTable().objectType);
+		JCExpression objectType = chainDots(maker, typeNode, "java", "lang", "Object");
 		JCExpression returnType = maker.TypeIdent(TypeTags.BOOLEAN);
 		
 		List<JCStatement> statements = List.nil();

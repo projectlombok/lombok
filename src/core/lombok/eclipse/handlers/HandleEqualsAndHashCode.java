@@ -204,21 +204,6 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 			}
 		}
 		
-		switch (methodExists("hashCode", typeNode)) {
-		case NOT_EXISTS:
-			MethodDeclaration hashCode = createHashCode(typeNode, nodesForEquality, callSuper, errorNode.get());
-			injectMethod(typeNode, hashCode);
-			break;
-		case EXISTS_BY_LOMBOK:
-			break;
-		default:
-		case EXISTS_BY_USER:
-			if (whineIfExists) {
-				errorNode.addWarning("Not generating hashCode(): A method with that name already exists");
-			}
-			break;
-		}
-		
 		switch (methodExists("equals", typeNode)) {
 		case NOT_EXISTS:
 			MethodDeclaration equals = createEquals(typeNode, nodesForEquality, callSuper, errorNode.get());
@@ -230,6 +215,21 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		case EXISTS_BY_USER:
 			if (whineIfExists) {
 				errorNode.addWarning("Not generating equals(Object other): A method with that name already exists");
+			}
+			break;
+		}
+		
+		switch (methodExists("hashCode", typeNode)) {
+		case NOT_EXISTS:
+			MethodDeclaration hashCode = createHashCode(typeNode, nodesForEquality, callSuper, errorNode.get());
+			injectMethod(typeNode, hashCode);
+			break;
+		case EXISTS_BY_LOMBOK:
+			break;
+		default:
+		case EXISTS_BY_USER:
+			if (whineIfExists) {
+				errorNode.addWarning("Not generating hashCode(): A method with that name already exists");
 			}
 			break;
 		}

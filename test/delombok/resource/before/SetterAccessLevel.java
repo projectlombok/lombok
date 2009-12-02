@@ -1,4 +1,4 @@
-class Setter {
+class SetterAccessLevel {
 	@lombok.Setter(lombok.AccessLevel.NONE)
 	boolean isNone;
 	@lombok.Setter(lombok.AccessLevel.PRIVATE)
@@ -9,4 +9,6 @@ class Setter {
 	boolean isProtected;
 	@lombok.Setter(lombok.AccessLevel.PUBLIC)
 	boolean isPublic;
+	@lombok.Setter(value=lombok.AccessLevel.PUBLIC)
+	boolean value;
 }

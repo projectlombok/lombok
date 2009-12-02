@@ -165,7 +165,6 @@ public class HandlerLibrary {
 			if (container == null) continue;
 			
 			try {
-				System.out.println("Calling handle on: "+ container.handler.getClass().getName());
 				handled |= container.handle(node);
 			} catch (AnnotationValueDecodeFail fail) {
 				fail.owner.setError(fail.getMessage(), fail.idx);

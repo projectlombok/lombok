@@ -21,13 +21,21 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.eclipse.Eclipse.*;
-import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
+import static lombok.eclipse.Eclipse.copyAnnotations;
+import static lombok.eclipse.Eclipse.copyType;
+import static lombok.eclipse.Eclipse.copyTypeParams;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.constructorExists;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.findAnnotations;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.generateNullCheck;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.injectMethod;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.methodExists;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -84,6 +92,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		}
 		
 		List<EclipseNode> nodesForConstructor = new ArrayList<EclipseNode>();
+		Map<EclipseNode, Boolean> gettersAndSetters = new LinkedHashMap<EclipseNode, Boolean>();
 		for (EclipseNode child : typeNode.down()) {
 			if (child.getKind() != Kind.FIELD) continue;
 			FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
@@ -94,12 +103,8 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			boolean isFinal = (fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0;
 			boolean isNonNull = findAnnotations(fieldDecl, TransformationsUtil.NON_NULL_PATTERN).length != 0;
 			if ((isFinal || isNonNull) && fieldDecl.initialization == null) nodesForConstructor.add(child);
-			new HandleGetter().generateGetterForField(child, annotationNode.get());
-			if (!isFinal) new HandleSetter().generateSetterForField(child, annotationNode.get());
+			gettersAndSetters.put(child, !isFinal);
 		}
-		
-		new HandleToString().generateToStringForType(typeNode, annotationNode);
-		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		
 		//Careful: Generate the public static constructor (if there is one) LAST, so that any attempt to
 		//'find callers' on the annotation node will find callers of the constructor, which is by far the
@@ -121,6 +126,14 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			}
 		}
 		
+		for (Map.Entry<EclipseNode, Boolean> field : gettersAndSetters.entrySet()) {
+			new HandleGetter().generateGetterForField(field.getKey(), annotationNode.get());
+			if (field.getValue()) new HandleSetter().generateSetterForField(field.getKey(), annotationNode.get());
+		}
+		
+		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
+		new HandleToString().generateToStringForType(typeNode, annotationNode);
+				
 		return false;
 	}
 	
