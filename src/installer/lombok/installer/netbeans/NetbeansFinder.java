@@ -101,7 +101,7 @@ public class NetbeansFinder extends IdeFinder {
 	
 	/** Checks if the provided directory contains 'netbeans.exe', and if so, returns the directory, otherwise null. */
 	private String findNetbeansOnWindows1(File dir) {
-		if (new File(dir, "netbeans.exe").isFile()) return dir.getAbsolutePath();
+		if (new File(dir, "bin/netbeans.exe").isFile()) return dir.getAbsolutePath();
 		return null;
 	}
 	
@@ -165,7 +165,7 @@ public class NetbeansFinder extends IdeFinder {
 		if (!d.isDirectory()) return;
 		for (File f : d.listFiles()) {
 			if (f.isDirectory() && f.getName().toLowerCase().contains("netbeans")) {
-				File possible = new File(f, "bin/netbeans.exe");
+				File possible = new File(f, "bin/netbeans");
 				if (possible.exists()) guesses.add(possible.getAbsolutePath());
 			}
 		}

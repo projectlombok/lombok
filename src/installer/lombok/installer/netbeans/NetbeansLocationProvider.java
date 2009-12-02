@@ -61,11 +61,11 @@ public class NetbeansLocationProvider implements IdeLocationProvider {
 				if (conf.exists()) return new NetbeansLocation(path, conf);
 			}
 			
-			File f = new File(p, "netbeans");
+			File f = new File(p, "bin/netbeans");
 			if (f.isFile()) return findNetbeansConfFromExe(f, 0);
-			f = new File(p, "netbeans.exe");
+			f = new File(p, "bin/netbeans.exe");
 			if (f.isFile()) return findNetbeansConfFromExe(f, 0);
-			f = new File(p, "netbeans.conf");
+			f = new File(p, "etc/netbeans.conf");
 			if (f.isFile()) return new NetbeansLocation(canonical(f.getParentFile().getParentFile()), f);
 		}
 		
@@ -116,7 +116,7 @@ public class NetbeansLocationProvider implements IdeLocationProvider {
 		case MAC_OS_X:
 			return Pattern.compile("^(netbeans|netbeans\\.conf|NetBeans.*\\.app)$", Pattern.CASE_INSENSITIVE);
 		case WINDOWS:
-			return Pattern.compile("^(netbeans\\.exe|netbeans\\.ini)$", Pattern.CASE_INSENSITIVE);
+			return Pattern.compile("^(netbeans\\.exe|netbeans\\.conf)$", Pattern.CASE_INSENSITIVE);
 		default:
 		case UNIX:
 			return Pattern.compile("^(netbeans|netbeans\\.conf)$", Pattern.CASE_INSENSITIVE);

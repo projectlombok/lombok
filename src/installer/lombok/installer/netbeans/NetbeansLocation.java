@@ -84,7 +84,7 @@ public class NetbeansLocation extends IdeLocation {
 	
 	private final String ID_CHARS = "(?:\\\\.|[^\"\\\\])*";
 	private final Pattern JAVA_AGENT_LINE_MATCHER = Pattern.compile(
-			"^\\s*netbeans_default_options\\s*=\\s*\"\\s*" + ID_CHARS + "(?<=[ \"])(-J-javaagent:\\\\\"" + ID_CHARS + "lombok" + ID_CHARS + "\\.jar\\\\\")(?=[ \"])" + ID_CHARS +"\\s*\"\\s*(?:#.*)?$", Pattern.CASE_INSENSITIVE);
+			"^\\s*netbeans_default_options\\s*=\\s*\"\\s*" + ID_CHARS + "(?<=[ \"])(-J-javaagent:\\\\\".*lombok.*\\.jar\\\\\")(?=[ \"])" + ID_CHARS +"\\s*\"\\s*(?:#.*)?$", Pattern.CASE_INSENSITIVE);
 	
 	private final Pattern OPTIONS_LINE_MATCHER = Pattern.compile(
 			"^\\s*netbeans_default_options\\s*=\\s*\"\\s*" + ID_CHARS + "\\s*(\")\\s*(?:#.*)?$", Pattern.CASE_INSENSITIVE);
@@ -240,7 +240,7 @@ public class NetbeansLocation extends IdeLocation {
 					m = OPTIONS_LINE_MATCHER.matcher(line);
 					if (m.matches()) {
 						newContents.append(line.substring(0, m.start(1)));
-						newContents.append(" ").append("-J-javaagent:\\\"" + canonical(lombokJar) +"\\\"");
+						newContents.append(" ").append("-J-javaagent:\\\"" + canonical(lombokJar) +"\\\"\"");
 						newContents.append(line.substring(m.end(1))).append(OS_NEWLINE);
 						continue;
 					}
