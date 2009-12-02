@@ -108,7 +108,7 @@ public class DelombokApp implements LombokApp {
 				}
 			};
 			try {
-				loader.loadClass("lombok.delombok.Delombok").getMethod("main", String[].class).invoke(null, new Object[] {args});
+				loader.loadClass("lombok.delombok.Delombok").getMethod("main", String[].class).invoke(null, new Object[] {args.toArray(new String[0])});
 			} catch (InvocationTargetException e1) {
 				Throwable t = e1.getCause();
 				if (t instanceof Error) throw (Error)t;
