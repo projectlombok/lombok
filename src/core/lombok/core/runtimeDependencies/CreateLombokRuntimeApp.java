@@ -85,7 +85,6 @@ public class CreateLombokRuntimeApp implements LombokApp {
 		@Requires("create")
 		String output;
 		
-		@Shorthand({"h", "?"})
 		@Description("Shows this help text")
 		boolean help;
 	}
