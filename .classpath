@@ -16,6 +16,7 @@
 	<classpathentry kind="lib" path="deps/lombok/eclipse/org.eclipse.equinox.common_3.5.0.v20090520-1800.jar"/>
 	<classpathentry kind="lib" path="deps/lombok/netbeans/boot_6.8beta.jar"/>
 	<classpathentry kind="lib" path="deps/lombok/netbeans/org-openide-util_6.8beta.jar"/>
+	<classpathentry kind="lib" path="deps/lombok/netbeans/org-openide-modules_6.8beta.jar"/>
 	<classpathentry kind="lib" path="deps/lombok/netbeans/org-netbeans-modules-java-source_6.8beta.jar"/>
 	<classpathentry kind="lib" path="deps/junit-4.7.jar"/>
 	<classpathentry kind="lib" path="deps/lombok/ant.jar"/>
