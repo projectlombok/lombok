@@ -21,9 +21,16 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.handlers.JavacHandlerUtil.*;
+import static lombok.javac.handlers.JavacHandlerUtil.constructorExists;
+import static lombok.javac.handlers.JavacHandlerUtil.findAnnotations;
+import static lombok.javac.handlers.JavacHandlerUtil.generateNullCheck;
+import static lombok.javac.handlers.JavacHandlerUtil.injectMethod;
+import static lombok.javac.handlers.JavacHandlerUtil.markAnnotationAsProcessed;
+import static lombok.javac.handlers.JavacHandlerUtil.methodExists;
 
 import java.lang.reflect.Modifier;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import lombok.Data;
 import lombok.core.AnnotationValues;
@@ -72,6 +79,7 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		}
 		
 		List<JavacNode> nodesForConstructor = List.nil();
+		Map<JavacNode, Boolean> gettersAndSetters = new LinkedHashMap<JavacNode, Boolean>();
 		for (JavacNode child : typeNode.down()) {
 			if (child.getKind() != Kind.FIELD) continue;
 			JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
@@ -83,12 +91,8 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 			boolean isFinal = (fieldFlags & Flags.FINAL) != 0;
 			boolean isNonNull = !findAnnotations(child, TransformationsUtil.NON_NULL_PATTERN).isEmpty();
 			if ((isFinal || isNonNull) && fieldDecl.init == null) nodesForConstructor = nodesForConstructor.append(child);
-			new HandleGetter().generateGetterForField(child, annotationNode.get());
-			if (!isFinal) new HandleSetter().generateSetterForField(child, annotationNode.get());
+			gettersAndSetters.put(child, !isFinal);
 		}
-		
-		new HandleToString().generateToStringForType(typeNode, annotationNode);
-		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		
 		String staticConstructorName = annotation.getInstance().staticConstructor();
 		
@@ -101,6 +105,14 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 			JCMethodDecl staticConstructor = createStaticConstructor(staticConstructorName, typeNode, nodesForConstructor);
 			injectMethod(typeNode, staticConstructor);
 		}
+		
+		for (Map.Entry<JavacNode, Boolean> field : gettersAndSetters.entrySet()) {
+			new HandleGetter().generateGetterForField(field.getKey(), annotationNode.get());
+			if (field.getValue()) new HandleSetter().generateSetterForField(field.getKey(), annotationNode.get());
+		}
+		
+		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
+		new HandleToString().generateToStringForType(typeNode, annotationNode);
 		
 		return true;
 	}
