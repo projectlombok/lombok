@@ -26,6 +26,7 @@ import static lombok.javac.handlers.JavacHandlerUtil.markAnnotationAsProcessed;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 import lombok.SneakyThrows;
 import lombok.core.AnnotationValues;
@@ -52,9 +53,9 @@ public class HandleSneakyThrows implements JavacAnnotationHandler<SneakyThrows> 
 	@Override public boolean handle(AnnotationValues<SneakyThrows> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		markAnnotationAsProcessed(annotationNode, SneakyThrows.class);
 		Collection<String> exceptionNames = annotation.getRawExpressions("value");
-		
-		List<JCExpression> memberValuePairs = ast.getArguments();
-		if (memberValuePairs == null || memberValuePairs.size() == 0) return false;
+		if (exceptionNames.isEmpty()) {
+			exceptionNames = Collections.singleton("java.lang.Throwable");
+		}
 		
 		java.util.List<String> exceptions = new ArrayList<String>();
 		for (String exception : exceptionNames) {
