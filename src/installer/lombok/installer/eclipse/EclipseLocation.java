@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.installer;
+package lombok.installer.eclipse;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,162 +28,39 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
+import lombok.installer.CorruptedIdeLocationException;
+import lombok.installer.IdeFinder;
+import lombok.installer.IdeLocation;
+import lombok.installer.InstallException;
+import lombok.installer.UninstallException;
 
 /**
  * Represents an Eclipse installation.
  * An instance can figure out if an Eclipse installation has been lombok-ified, and can
  * install and uninstall lombok from the Eclipse installation.
  */
-final class EclipseLocation {
-	private static final String OS_NEWLINE;
-	
-	static {
-		String os = System.getProperty("os.name", "");
-		
-		if ("Mac OS".equals(os)) OS_NEWLINE = "\r";
-		else if (os.toLowerCase().contains("windows")) OS_NEWLINE = "\r\n";
-		else OS_NEWLINE = "\n";
-	}
-	
+public final class EclipseLocation extends IdeLocation {
 	private final String name;
 	private final File eclipseIniPath;
 	private volatile boolean hasLombok;
 	
-	/** Toggling the 'selected' checkbox in the GUI is tracked via this boolean */
-	boolean selected = true;
+	private static final String OS_NEWLINE = IdeFinder.getOS().getLineEnding();
 	
-	/**
-	 * Thrown when creating a new EclipseLocation with a path object that doesn't, in fact,
-	 * point at an Eclipse installation.
-	 */
-	static final class NotAnEclipseException extends Exception {
-		private static final long serialVersionUID = 1L;
-		
-		public NotAnEclipseException(String message, Throwable cause) {
-			super(message, cause);
-		}
-		
-		/**
-		 * Renders a message dialog with information about what went wrong.
-		 */
-		void showDialog(JFrame appWindow) {
-			JOptionPane.showMessageDialog(appWindow, getMessage(), "Cannot configure Eclipse installation", JOptionPane.WARNING_MESSAGE);
-		}
-	}
-	
-	private EclipseLocation(String nameOfLocation, File pathToEclipseIni) throws NotAnEclipseException {
+	EclipseLocation(String nameOfLocation, File pathToEclipseIni) throws CorruptedIdeLocationException {
 		this.name = nameOfLocation;
 		this.eclipseIniPath = pathToEclipseIni;
 		try {
 			this.hasLombok = checkForLombok(eclipseIniPath);
 		} catch (IOException e) {
-			throw new NotAnEclipseException(
+			throw new CorruptedIdeLocationException(
 					"I can't read the configuration file of the Eclipse installed at " + name + "\n" +
-					"You may need to run this installer with root privileges if you want to modify that Eclipse.", e);
-		}
-	}
-	
-	private static final List<String> eclipseExecutableNames = Collections.unmodifiableList(Arrays.asList(
-			"eclipse.app", "eclipse.exe", "eclipse"));
-	
-	/**
-	 * Create a new EclipseLocation by pointing at either the directory contain the Eclipse executable, or the executable itself,
-	 * or an eclipse.ini file.
-	 * 
-	 * @throws NotAnEclipseException
-	 *             If this isn't an Eclipse executable or a directory with an
-	 *             Eclipse executable.
-	 */
-	public static EclipseLocation create(String path) throws NotAnEclipseException {
-		if (path == null) throw new NullPointerException("path");
-		File p = new File(path);
-		
-		if (!p.exists()) throw new NotAnEclipseException("File does not exist: " + path, null);
-		if (p.isDirectory()) {
-			for (String possibleExeName : eclipseExecutableNames) {
-				File f = new File(p, possibleExeName);
-				if (f.exists()) return findEclipseIniFromExe(f, 0);
-			}
-			
-			File f = new File(p, "eclipse.ini");
-			if (f.exists()) return new EclipseLocation(getFilePath(p), f);
-		}
-		
-		if (p.isFile()) {
-			if (p.getName().equalsIgnoreCase("eclipse.ini")) {
-				return new EclipseLocation(getFilePath(p.getParentFile()), p);
-			}
-			
-			if (eclipseExecutableNames.contains(p.getName().toLowerCase())) {
-				return findEclipseIniFromExe(p, 0);
-			}
-		}
-		
-		throw new NotAnEclipseException("This path does not appear to contain an Eclipse installation: " + p, null);
-	}
-	
-	private static EclipseLocation findEclipseIniFromExe(File exePath, int loopCounter) throws NotAnEclipseException {
-		/* Try looking for eclipse.ini as sibling to the executable */ {
-			File ini = new File(exePath.getParentFile(), "eclipse.ini");
-			if (ini.isFile()) return new EclipseLocation(getFilePath(exePath), ini);
-		}
-		
-		/* Try looking for Eclipse/app/Contents/MacOS/eclipse.ini as sibling to executable; this works on Mac OS X. */ {
-			File ini = new File(exePath.getParentFile(), "Eclipse.app/Contents/MacOS/eclipse.ini");
-			if (ini.isFile()) return new EclipseLocation(getFilePath(exePath), ini);
-		}
-		
-		/* If executable is a soft link, follow it and retry. */ {
-			if (loopCounter < 50) {
-				try {
-					String oPath = exePath.getAbsolutePath();
-					String nPath = exePath.getCanonicalPath();
-					if (!oPath.equals(nPath)) try {
-						return findEclipseIniFromExe(new File(nPath), loopCounter + 1);
-					} catch (NotAnEclipseException ignore) {
-						// Unlinking didn't help find an eclipse, so continue.
-					}
-				} catch (IOException ignore) { /* okay, that didn't work, assume it isn't a soft link then. */ }
-			}
-		}
-		
-		/* If executable is a linux LSB-style path, then look in the usual places that package managers like apt-get use.*/ {
-			String path = exePath.getAbsolutePath();
-			try {
-				path = exePath.getCanonicalPath();
-			} catch (IOException ignore) { /* We'll stick with getAbsolutePath()'s result then. */ }
-			
-			if (path.equals("/usr/bin/eclipse") || path.equals("/bin/eclipse") || path.equals("/usr/local/bin/eclipse")) {
-				File ini = new File("/usr/lib/eclipse/eclipse.ini");
-				if (ini.isFile()) return new EclipseLocation(path, ini);
-				ini = new File("/usr/local/lib/eclipse/eclipse.ini");
-				if (ini.isFile()) return new EclipseLocation(path, ini);
-				ini = new File("/usr/local/etc/eclipse/eclipse.ini");
-				if (ini.isFile()) return new EclipseLocation(path, ini);
-				ini = new File("/etc/eclipse.ini");
-				if (ini.isFile()) return new EclipseLocation(path, ini);
-			}
-		}
-		
-		/* If we get this far, we lose. */
-		throw new NotAnEclipseException("This path does not appear to contain an eclipse installation: " + exePath, null);
-	}
-	
-	public static String getFilePath(File p) {
-		try {
-			return p.getCanonicalPath();
-		} catch (IOException e) {
-			String x = p.getAbsolutePath();
-			return x == null ? p.getPath() : x;
+					"You may need to run this installer with root privileges if you want to modify that Eclipse.", "eclipse", e);
 		}
 	}
 	
@@ -201,14 +78,16 @@ final class EclipseLocation {
 	 * 
 	 * Executables: "eclipse.exe" (Windows), "Eclipse.app" (Mac OS X), "eclipse" (Linux and other unixes).
 	 */
-	String getName() {
+	@Override
+	public String getName() {
 		return name;
 	}
 	
 	/**
 	 * @return true if the Eclipse installation has been instrumented with lombok.
 	 */
-	boolean hasLombok() {
+	@Override
+	public boolean hasLombok() {
 		return hasLombok;
 	}
 	
@@ -234,15 +113,6 @@ final class EclipseLocation {
 		}
 	}
 	
-	/** Thrown when uninstalling lombok fails. */
-	static class UninstallException extends Exception {
-		private static final long serialVersionUID = 1L;
-		
-		public UninstallException(String message, Throwable cause) {
-			super(message, cause);
-		}
-	}
-	
 	/** Returns directories that may contain lombok.jar files that need to be deleted. */
 	private List<File> getUninstallDirs() {
 		List<File> result = new ArrayList<File>();
@@ -263,7 +133,8 @@ final class EclipseLocation {
 	 *             installation. bugs in the uninstall code will probably throw
 	 *             other exceptions; this is intentional.
 	 */
-	void uninstall() throws UninstallException {
+	@Override 
+	public void uninstall() throws UninstallException {
 		for (File dir : getUninstallDirs()) {
 			File lombokJar = new File(dir, "lombok.jar");
 			if (lombokJar.exists()) {
@@ -327,19 +198,10 @@ final class EclipseLocation {
 		}
 	}
 	
-	/** Thrown when installing lombok fails. */
-	static class InstallException extends Exception {
-		private static final long serialVersionUID = 1L;
-		
-		public InstallException(String message, Throwable cause) {
-			super(message, cause);
-		}
-	}
-	
 	private static String generateWriteErrorMessage() {
 		String osSpecificError;
 		
-		switch (EclipseFinder.getOS()) {
+		switch (IdeFinder.getOS()) {
 		default:
 		case MAC_OS_X:
 		case UNIX:
@@ -363,21 +225,20 @@ final class EclipseLocation {
 	 *             installation. bugs in the install code will probably throw
 	 *             other exceptions; this is intentional.
 	 */
-	void install() throws InstallException {
+	@Override
+	public String install() throws InstallException {
 		// For whatever reason, relative paths in your eclipse.ini file don't work on linux, but only for -javaagent.
 		// If someone knows how to fix this, please do so, as this current hack solution (putting the absolute path
 		// to the jar files in your eclipse.ini) means you can't move your eclipse around on linux without lombok
 		// breaking it. NB: rerunning lombok.jar installer and hitting 'update' will fix it if you do that.
-		boolean fullPathRequired = EclipseFinder.getOS() == EclipseFinder.OS.UNIX;
+		boolean fullPathRequired = IdeFinder.getOS() == EclipseFinder.OS.UNIX;
 		
 		boolean installSucceeded = false;
 		StringBuilder newContents = new StringBuilder();
-		//If 'installSucceeded' is true here, something very weird is going on, but instrumenting all of them
-		//is no less bad than aborting, and this situation should be rare to the point of non-existence.
 		
 		File lombokJar = new File(eclipseIniPath.getParentFile(), "lombok.jar");
 		
-		File ourJar = EclipseFinder.findOurJar();
+		File ourJar = findOurJar();
 		byte[] b = new byte[524288];
 		boolean readSucceeded = true;
 		try {
@@ -448,9 +309,9 @@ final class EclipseLocation {
 			String fullPathToLombok = fullPathRequired ? (lombokJar.getParentFile().getCanonicalPath() + File.separator) : "";
 			
 			newContents.append(String.format(
-					"-javaagent:%slombok.jar", fullPathToLombok)).append(OS_NEWLINE);
+					"-javaagent:%s", escapePath(fullPathToLombok + "lombok.jar"))).append(OS_NEWLINE);
 			newContents.append(String.format(
-					"-Xbootclasspath/a:%slombok.jar", fullPathToLombok)).append(OS_NEWLINE);
+					"-Xbootclasspath/a:%s", escapePath(fullPathToLombok + "lombok.jar"))).append(OS_NEWLINE);
 			
 			FileOutputStream fos = new FileOutputStream(eclipseIniPath);
 			try {
@@ -470,5 +331,13 @@ final class EclipseLocation {
 		if (!installSucceeded) {
 			throw new InstallException("I can't find the eclipse.ini file. Is this a real Eclipse installation?", null);
 		}
+		
+		return "If you start eclipse with a custom -vm parameter, you'll need to add:<br>" +
+				"<code>-vmargs -Xbootclasspath/a:lombok.jar -javaagent:lombok.jar</code><br>" +
+				"as parameter as well.";
+	}
+	
+	@Override public URL getIdeIcon() {
+		return EclipseLocation.class.getResource("eclipse.png");
 	}
 }
