@@ -1,8 +1,4 @@
-##Fix data
-
-the constructor generation is just not that useful as is. Consider generating a constructor with only all final variables.
-
-## Fix Eclipse's HandleCleanup
+## Fix HandleCleanup
 
 Consider requiring an initializer and warn when the varname gets reassigned, if the declaration wasn't already final. Think about this more.
 
@@ -39,62 +35,9 @@ A lot has been tried:
        in.close();
        System.out.println(i); //fail - i is inside the generated try block but this isn't, so 'i' is not visible from here.
     
-    By running to the end of visible scope, all these problems are avoided. This does remove the flexibility of declaring where you want a close call to be executed, but there are two mitigating factors availa
+    By running to the end of visible scope, all these problems are avoided. This does remove the flexibility of declaring where you want a close call to be executed, but there are two mitigating factors available:
     
      1) Create an explicit scope block. You can just stick { code } in any place where you can legally write a statement, in java. This is relatively unknown, so I expect most users will go for:
     
      2) Just call close explicitly. I've yet to see a cleanup method which isn't idempotent anyway (calling it multiple times is no different than calling it once).
     
-    During the course of investigating these options, the AST code has been extended to support live replacement of any child node, including updating the actual underlying system AST as well as our own.
-    Unfortunately, this code has NOT been tested. It was rather a lot of work so I'm leaving it in, and at least for eclipse it even seemed to work.
-
-
-## Fix eclipse's pointers
-
-* We really need to do more work on setting positions properly.
-
-## Eclipse insertion point for newly generated code
-
-We need to figure out which of the bodyStart/bodyDeclarationStart/sourceStart blocks are used as where insertions happen, and set it to the entire line of a field and not just the annotation.
-
-Don't forget to extend past the opening brace for @Data - so eclipse puts generated methods in the right place!
-
-## javadoc
-
-Either just let people run lombokc and javadoc that, -or-, hack javadoc.
-
-Using either a taglet to cast our way into Javadoc's AST, or a doclet are both bad ideas:
-
-It does not appear possible to get there from a taglet, and a doclet replaces most of javadoc's functionality -
-exactly the functionality we DONT want. (Doclets convert a structural set of classes to HTML. We want to change
-the classes offered, not how the HTML is generated!)
-
-## lombokc
-
-To keep comments, try:
-
-com.sun.tools.javac.main.JavaCompiler.instance(context).keepComments = true;
-
-## netbeans agent plugin
-
-module: java.source
-class: org.netbeans.modules.java.source.parsing.JavacParser
-
-to instrument:
-
-class: JavacTaskImpl
-
-method1: public JCBlock reparseMethodBody(CompilationUnitTree topLevel, MethodTree methodBody, String newText, int annonIndex) {}
-method2: public Iterable<? extends CompilationUnitTree> parse();
-
-in either case, returned value could be null/empty. CompilationUnitTree are MethodTree are superinterfaces of JCCU and JCMD.
-
-problem: the agent stops receiving requests to transform classes early in the netbeans load process.
-
-Possible work-around: Rewrite the entire JavacTaskImpl.class file on disk. It's in:
-
-/NetBeans 6.7 RC3.app/Contents/Resources/NetBeans/java2/modules/ext/javac-impl-nb-7.0-b07.jar
-
-Some work has been done in the addNetbeans branch.
-
-
