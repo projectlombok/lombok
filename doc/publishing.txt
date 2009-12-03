@@ -1,15 +1,13 @@
 To publish:
 
-Make sure you up the version number, then, assuming the version number is now '0.8.1':
-git tag v0.8.1
-git push
-git push --tags
-ant publish
+Step #1: Change src/core/lombok/core/Version.java and pick a nice version number. Example: "0.8.1"
 
-Then, up the version number again, to v0.8.2-HEAD, and run:
-ant website
+Step #2: commit everything to the git master branch.
 
-and publish the website. Or, at least:
-ant changelogToHtml
+Step #3: tag this release with the version number. (Example: v0.8.1) - note the prefix v.
 
-and publish build/website/changelog.html
+Step #4: git push && git push --tags
+
+Step #5: ant publish-all
+
+Step #6: Change src/core/lombok/core/Version.java to "0.8.2-HEAD", and commit this.
