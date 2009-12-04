@@ -53,7 +53,15 @@ public class CommentPreservingParser {
 		this.encoding = encoding;
 	}
 	
+	public ParseResult parse(JavaFileObject source, boolean forceProcessing) throws IOException {
+		return doParse(source, forceProcessing);
+	}
+	
 	public ParseResult parse(String fileName, boolean forceProcessing) throws IOException {
+		return doParse(fileName, forceProcessing);
+	}
+	
+	private ParseResult doParse(Object source, boolean forceProcessing) throws IOException {
 		Context context = new Context();
 		
 		Options.instance(context).put(OptionName.ENCODING, encoding);
@@ -73,8 +81,15 @@ public class CommentPreservingParser {
 
 		comments.comments = List.nil();
 		
-		@SuppressWarnings("deprecation")
-		JCCompilationUnit cu = compiler.parse(fileName);
+		JCCompilationUnit cu;
+		if (source instanceof JavaFileObject) {
+			cu = compiler.parse((JavaFileObject) source);
+		}
+		else {
+			@SuppressWarnings("deprecation")
+			JCCompilationUnit unit = compiler.parse((String)source);
+			cu = unit;
+		}
 		
 		boolean changed = new JavacTransformer(messager).transform(context, Collections.singleton(cu));
 		return new ParseResult(comments.comments, cu, forceProcessing || changed);
