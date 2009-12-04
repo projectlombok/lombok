@@ -11,6 +11,7 @@ Lombok Changelog
 * Erroneous use of lombok in Eclipse (adding it to a project as an annotation processor, which is not how lombok is to be used on Eclipse) now generates a useful warning message with helpful information, instead of a confusing error hidden in the logs. [Issue #53](http://code.google.com/p/projectlombok/issues/detail?id=53)
 * FIXED: Regression bug where you would occasionally see errors with the gist 'loader constraint violation: when resolving...', such as when opening the help system, starting the diff editor, or, rarely, opening any java source file. [Issue #68](http://code.google.com/p/projectlombok/issues/detail?id=68)
 * FIXED: @SneakyThrows without any parameters should default to `Throwable.class` but it didn't do anything in javac. [Issue #73](http://code.google.com/p/projectlombok/issues/detail?id=73)
+* FIXED: Capitalization is now ignored when scanning for existing methods, so if `setURL` already exists, then a `@Data` annotation on a class with a field named `url` will no longer _also_ generate `setUrl`. [Issue #75](http://code.google.com/p/projectlombok/issues/detail?id=75)
 
 ### v0.9.1
 
