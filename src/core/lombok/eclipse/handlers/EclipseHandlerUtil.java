@@ -138,13 +138,21 @@ public class EclipseHandlerUtil {
 	}
 	
 	/**
+	 * Wrapper for {@link #methodExists(String, EclipseNode, boolean)} with {@code caseSensitive} = {@code true}.
+	 */
+	public static MemberExistsResult methodExists(String methodName, EclipseNode node) {
+		return methodExists(methodName, node, true);
+	}
+	
+	/**
 	 * Checks if there is a method with the provided name. In case of multiple methods (overloading), only
 	 * the first method decides if EXISTS_BY_USER or EXISTS_BY_LOMBOK is returned.
 	 * 
 	 * @param methodName the method name to check for.
 	 * @param node Any node that represents the Type (TypeDeclaration) to look in, or any child node thereof.
+	 * @param caseSensitive If the search should be case sensitive.
 	 */
-	public static MemberExistsResult methodExists(String methodName, EclipseNode node) {
+	public static MemberExistsResult methodExists(String methodName, EclipseNode node, boolean caseSensitive) {
 		while (node != null && !(node.get() instanceof TypeDeclaration)) {
 			node = node.up();
 		}
@@ -154,7 +162,8 @@ public class EclipseHandlerUtil {
 			if (typeDecl.methods != null) for (AbstractMethodDeclaration def : typeDecl.methods) {
 				char[] mName = def.selector;
 				if (mName == null) continue;
-				if (methodName.equals(new String(mName))) {
+				boolean nameEquals = caseSensitive ? methodName.equals(new String(mName)) : methodName.equalsIgnoreCase(new String(mName));
+				if (nameEquals) {
 					EclipseNode existing = node.getNodeFor(def);
 					if (existing == null || !existing.isHandled()) return MemberExistsResult.EXISTS_BY_USER;
 					return MemberExistsResult.EXISTS_BY_LOMBOK;

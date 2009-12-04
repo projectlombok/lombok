@@ -184,14 +184,19 @@ public class JavacHandlerUtil {
 		return MemberExistsResult.NOT_EXISTS;
 	}
 	
+	public static MemberExistsResult methodExists(String methodName, JavacNode node) {
+		return methodExists(methodName, node, true);
+	}
+	
 	/**
 	 * Checks if there is a method with the provided name. In case of multiple methods (overloading), only
 	 * the first method decides if EXISTS_BY_USER or EXISTS_BY_LOMBOK is returned.
 	 * 
 	 * @param methodName the method name to check for.
 	 * @param node Any node that represents the Type (JCClassDecl) to look in, or any child node thereof.
+	 * @param caseSensitive If the search should be case sensitive.
 	 */
-	public static MemberExistsResult methodExists(String methodName, JavacNode node) {
+	public static MemberExistsResult methodExists(String methodName, JavacNode node, boolean caseSensitive) {
 		while (node != null && !(node.get() instanceof JCClassDecl)) {
 			node = node.up();
 		}
@@ -199,7 +204,9 @@ public class JavacHandlerUtil {
 		if (node != null && node.get() instanceof JCClassDecl) {
 			for (JCTree def : ((JCClassDecl)node.get()).defs) {
 				if (def instanceof JCMethodDecl) {
-					if (((JCMethodDecl)def).name.contentEquals(methodName)) {
+					String name = ((JCMethodDecl)def).name.toString();
+					boolean matches = caseSensitive ? name.equals(methodName) : name.equalsIgnoreCase(methodName);
+					if (matches) {
 						JavacNode existing = node.getNodeFor(def);
 						if (existing == null || !existing.isHandled()) return MemberExistsResult.EXISTS_BY_USER;
 						return MemberExistsResult.EXISTS_BY_LOMBOK;
