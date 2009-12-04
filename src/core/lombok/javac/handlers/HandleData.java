@@ -101,7 +101,7 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 			injectMethod(typeNode, constructor);
 		}
 		
-		if (!staticConstructorName.isEmpty() && methodExists("of", typeNode) == MemberExistsResult.NOT_EXISTS) {
+		if (!staticConstructorName.isEmpty() && methodExists("of", typeNode, false) == MemberExistsResult.NOT_EXISTS) {
 			JCMethodDecl staticConstructor = createStaticConstructor(staticConstructorName, typeNode, nodesForConstructor);
 			injectMethod(typeNode, staticConstructor);
 		}

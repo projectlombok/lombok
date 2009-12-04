@@ -103,7 +103,7 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		
 		int modifier = toEclipseModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		
-		switch (methodExists(setterName, fieldNode)) {
+		switch (methodExists(setterName, fieldNode, false)) {
 		case EXISTS_BY_LOMBOK:
 			return true;
 		case EXISTS_BY_USER:

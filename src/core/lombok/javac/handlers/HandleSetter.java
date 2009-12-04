@@ -101,7 +101,7 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		JCVariableDecl fieldDecl = (JCVariableDecl)fieldNode.get();
 		String methodName = toSetterName(fieldDecl);
 		
-		switch (methodExists(methodName, fieldNode)) {
+		switch (methodExists(methodName, fieldNode, false)) {
 		case EXISTS_BY_LOMBOK:
 			return true;
 		case EXISTS_BY_USER:

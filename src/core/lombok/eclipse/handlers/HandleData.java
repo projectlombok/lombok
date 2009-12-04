@@ -119,7 +119,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		}
 		
 		if (ann.staticConstructor().length() > 0) {
-			if (methodExists("of", typeNode) == MemberExistsResult.NOT_EXISTS) {
+			if (methodExists("of", typeNode, false) == MemberExistsResult.NOT_EXISTS) {
 				MethodDeclaration staticConstructor = createStaticConstructor(
 						ann.staticConstructor(), typeNode, nodesForConstructor, ast);
 				injectMethod(typeNode, staticConstructor);
