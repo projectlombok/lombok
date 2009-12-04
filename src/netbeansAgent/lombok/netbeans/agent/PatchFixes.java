@@ -84,13 +84,11 @@ public class PatchFixes {
 		return (Enumeration<?>) m.invoke(loader, name);
 	}
 	
-	public static boolean addSelfToClassLoader(Module module, List<File> classPath) {
+	public static void addSelfToClassLoader(Module module, List<File> classPath) {
 		if (module.getJarFile().getName().equals("org-netbeans-libs-javacimpl.jar")) {
 			String lombokJarLoc = LiveInjector.findPathJar(Lombok.class);
 			classPath.add(new File(lombokJarLoc));
 		}
-		
-		return false;
 	}
 	
 	public static void fixContentOnSetTaskListener(JavacTaskImpl that, TaskListener taskListener) throws Throwable {
@@ -133,8 +131,14 @@ public class PatchFixes {
 	
 	public static void addTaskListenerWhenCallingJavac(JavacTaskImpl task,
 			@SuppressWarnings("unused") /* Will come in handy later */ ClasspathInfo cpInfo) throws Exception {
+		if (task == null) return;
 		Class<?> entryPoint = JavacTaskImpl.class.getClassLoader().loadClass("lombok.netbeans.agent.NetbeansEntryPoint");
-		task.setTaskListener((TaskListener) entryPoint.getConstructor(Context.class).newInstance(task.getContext()));
+		if (entryPoint == null) {
+			/* TODO tell the user that lombok is not working. loadClass is not supposed to return null, but netbeans' loader does anyway. */
+			System.err.println("[LOMBOK] ClassLoader not patched correctly.");
+		} else {
+			task.setTaskListener((TaskListener) entryPoint.getConstructor(Context.class).newInstance(task.getContext()));
+		}
 	}
 	
 	public static Iterator<JCTree> filterGenerated(final Iterator<JCTree> it) {

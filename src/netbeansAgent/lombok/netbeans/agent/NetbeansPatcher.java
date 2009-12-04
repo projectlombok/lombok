@@ -58,7 +58,7 @@ public class NetbeansPatcher extends Agent {
 		sm.addScript(ScriptBuilder.exitEarly()
 				.transplant().request(StackRequest.PARAM1, StackRequest.PARAM2)
 				.target(new MethodTarget("org.netbeans.StandardModule$OneModuleClassLoader", "<init>"))
-				.decisionMethod(new Hook("lombok/netbeans/agent/PatchFixes", "addSelfToClassLoader", "(Lorg/netbeans/Module;Ljava/util/List;)Z"))
+				.decisionMethod(new Hook("lombok/netbeans/agent/PatchFixes", "addSelfToClassLoader", "(Lorg/netbeans/Module;Ljava/util/List;)V"))
 				.build());
 		sm.addScript(ScriptBuilder.exitEarly()
 				.transplant()
