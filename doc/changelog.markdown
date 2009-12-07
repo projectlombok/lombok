@@ -13,12 +13,12 @@ Lombok Changelog
 * FIXED: @SneakyThrows without any parameters should default to `Throwable.class` but it didn't do anything in javac. [Issue #73](http://code.google.com/p/projectlombok/issues/detail?id=73)
 * FIXED: Capitalization is now ignored when scanning for existing methods, so if `setURL` already exists, then a `@Data` annotation on a class with a field named `url` will no longer _also_ generate `setUrl`. [Issue #75](http://code.google.com/p/projectlombok/issues/detail?id=75)
 
-### v0.9.1
+### v0.9.1 (November 9th, 2009)
 
 * The installer now works much better on linux, in that it auto-finds eclipse in most locations linux users tend to put their eclipse installs, and it can now handle apt-get installed eclipses, which previously didn't work well at all. There's also a hidden feature where the installer can work as a command-line only tool (`java -jar lombok.jar install eclipse path/to/eclipse`) which also supports `uninstall` of course. You can now also point at `eclipse.ini` in case you have a really odd eclipse install, which should always work.
 * For lombok developers, the eclipse launch target now works out-of-the-box on snow leopard. [Issue #66](http://code.google.com/p/projectlombok/issues/detail?id=66)
 
-### v0.9.0
+### v0.9.0 (November 2nd, 2009)
 
 * The lombok class patching system has been completely revamped; the core business of patching class files has been offloaded in an independent project called 'lombok.patcher', which is now used to patch lombok into eclipse.
 * Many behind-the-scenes changes to improve lombok's stability and flexibility on eclipse.
@@ -28,7 +28,7 @@ Lombok Changelog
 * The windows installer would fail on boot if you have unformatted drives. [Issue #65](http://code.google.com/p/projectlombok/issues/detail?id=65)
 * The static constructor that `@Data` can make was being generated as package private when compiling with javac. [Issue #63](http://code.google.com/p/projectlombok/issues/detail?id=63)
 
-### v0.8.5
+### v0.8.5 (September 3rd, 2009)
 
 * There's now an `AccessLevel.NONE` that you can use for your `@Getter` and `@Setter` annotations to suppress generating setters and getters when you're using the `@Data` annotation. Address [Issue #37](http://code.google.com/p/projectlombok/issues/detail?id=37)
 * Both `@EqualsAndHashCode` and `@ToString` now support explicitly specifying the fields to use, via the new 'of' parameter. Fields that begin with a '$' are now also excluded by default from equals, hashCode, and toString generation, unless of course you explicitly mention them in the 'of' parameter. Addresses [Issue #32](http://code.google.com/p/projectlombok/issues/detail?id=32)
@@ -36,7 +36,7 @@ Lombok Changelog
 * Fixed yet another issue with `@SneakyThrows`. This was reported fixed in v0.8.4. but it still didn't work quite as it should. Still falls under the bailiwick of
 [Issue #30](http://code.google.com/p/projectlombok/issues/detail?id=30)
 
-### v0.8.4
+### v0.8.4 (September 2nd, 2009)
 
 * Fixed many issues with `@SneakyThrows` - in previous versions, using it would sometimes confuse the syntax colouring, and various constructs in the annotated method would cause outright eclipse errors, such as beginning the method with a try block. This also fixes [Issue #30](http://code.google.com/p/projectlombok/issues/detail?id=30)
 * Fixed the David Lynch bug - in eclipse, classes with lombok features used in them would sometimes appear invisible from other source files. It's described in more detail on [Issue #41](http://code.google.com/p/projectlombok/issues/detail?id=41). If you suffered from it, you'll know what this is about.
@@ -45,19 +45,19 @@ Lombok Changelog
 * Okay, this time _really_ added support for @NonNull and @NotNull annotations. It was reported for v0.8.3 but it wasn't actually in that release. @Nullable annotations are now also copied over to the getter's return type and the setter and constructor's parameters (but, obviously, no check is added). Any @NonNull annotated non-final fields that are not initialized are now also added to the generated constructor by @Data in order to ensure via an explicit null check that they contain a legal value.
 * @ToString (and hence, @Data) now default to includeFieldNames=true. [Issue #35](http://code.google.com/p/projectlombok/issues/detail?id=35)
 
-### v0.8.3
+### v0.8.3 (August 21st, 2009)
 
 * @EqualsAndHashCode (and, indirectly, @Data) generate a warning when overriding a class other than java.lang.Object but not setting EqualsAndHashCode's callSuper to true. There are, however, legitimate reasons to do this, so this warning is now no longer generated if you explicitly set callSuper to false. The warning text now also refers to this action if not calling super is intentional.
 * If your fields have @NonNull or @NotNull annotations, then generated setters are generated with a null check, and the
 annotation is copied to the setter's parameter, and the getter's method.
 * An annoying bug that usually showed up if you had package-info.java files has been fixed. It would cause a `NullPointerException` at lombok.javac.apt.Processor.toUnit(Processor.java:143)
 
-### v0.8.2
+### v0.8.2 (July 29th, 2009)
 
 * @EqualsAndHashCode and @ToString created; these are subsets of what @Data does (namely: generate toString(), and generate equals() and hashCode() implementations). @Data will still generate these methods, but you can now generate them separately if you wish. As part of this split off, you can now specify for toString generation to include the field names in the produced toString method, and for all 3 methods: You can choose to involve the implementation of the superclass, and you can choose to exclude certain fields. [Issue #8](http://code.google.com/p/projectlombok/issues/detail?id=8)
 * when compiling with javac: warnings on specific entries of an annotation parameter (such as non-existent fields in a @EqualsAndHashCode exclude parameter) now show up on the problematic parameter and not on the entire annotation. [Issue #11](http://code.google.com/p/projectlombok/issues/detail?id=11)
 
-### v0.8.1
+### v0.8.1 (July 26th, 2009)
 
 * Changelog tracking from this version on.
 * Using eclipse's 'find callers' on a @Data annotation will now find callers of the static constructor if you generated it. If not, it still finds callers to hashCode() as before (it's not possible to make eclipse find callers to the normal constructor, though you can just use 'find callers' on the class name, which works fine). [Issue #5](http://code.google.com/p/projectlombok/issues/detail?id=5)
