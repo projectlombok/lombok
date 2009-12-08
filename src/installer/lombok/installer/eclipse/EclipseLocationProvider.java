@@ -26,7 +26,6 @@ import static lombok.installer.IdeLocation.canonical;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -43,8 +42,25 @@ public class EclipseLocationProvider implements IdeLocationProvider {
 		return create0(path);
 	}
 	
-	private static final List<String> eclipseExecutableNames = Collections.unmodifiableList(Arrays.asList(
-			"eclipse.app", "eclipse.exe", "eclipse"));
+	protected List<String> getEclipseExecutableNames() {
+		return Arrays.asList("eclipse.app", "eclipse.exe", "eclipse");
+	}
+	
+	protected String getIniName() {
+		return "eclipse.ini";
+	}
+	
+	protected IdeLocation makeLocation(String name, File ini) throws CorruptedIdeLocationException {
+		return new EclipseLocation(name, ini);
+	}
+	
+	protected String getMacAppName() {
+		return "Eclipse.app";
+	}
+	
+	protected String getUnixAppName() {
+		return "eclipse";
+	}
 	
 	/**
 	 * Create a new EclipseLocation by pointing at either the directory contains the Eclipse executable, or the executable itself,
@@ -54,27 +70,27 @@ public class EclipseLocationProvider implements IdeLocationProvider {
 	 *             If this isn't an Eclipse executable or a directory with an
 	 *             Eclipse executable.
 	 */
-	static EclipseLocation create0(String path) throws CorruptedIdeLocationException {
+	protected IdeLocation create0(String path) throws CorruptedIdeLocationException {
 		if (path == null) throw new NullPointerException("path");
 		File p = new File(path);
 		
 		if (!p.exists()) return null;
 		if (p.isDirectory()) {
-			for (String possibleExeName : eclipseExecutableNames) {
+			for (String possibleExeName : getEclipseExecutableNames()) {
 				File f = new File(p, possibleExeName);
 				if (f.exists()) return findEclipseIniFromExe(f, 0);
 			}
 			
-			File f = new File(p, "eclipse.ini");
+			File f = new File(p, getIniName());
 			if (f.exists()) return new EclipseLocation(canonical(p), f);
 		}
 		
 		if (p.isFile()) {
-			if (p.getName().equalsIgnoreCase("eclipse.ini")) {
+			if (p.getName().equalsIgnoreCase(getIniName())) {
 				return new EclipseLocation(canonical(p.getParentFile()), p);
 			}
 			
-			if (eclipseExecutableNames.contains(p.getName().toLowerCase())) {
+			if (getEclipseExecutableNames().contains(p.getName().toLowerCase())) {
 				return findEclipseIniFromExe(p, 0);
 			}
 		}
@@ -82,15 +98,15 @@ public class EclipseLocationProvider implements IdeLocationProvider {
 		return null;
 	}
 	
-	private static EclipseLocation findEclipseIniFromExe(File exePath, int loopCounter) throws CorruptedIdeLocationException {
+	private IdeLocation findEclipseIniFromExe(File exePath, int loopCounter) throws CorruptedIdeLocationException {
 		/* Try looking for eclipse.ini as sibling to the executable */ {
-			File ini = new File(exePath.getParentFile(), "eclipse.ini");
-			if (ini.isFile()) return new EclipseLocation(canonical(exePath), ini);
+			File ini = new File(exePath.getParentFile(), getIniName());
+			if (ini.isFile()) return makeLocation(canonical(exePath), ini);
 		}
 		
 		/* Try looking for Eclipse/app/Contents/MacOS/eclipse.ini as sibling to executable; this works on Mac OS X. */ {
-			File ini = new File(exePath.getParentFile(), "Eclipse.app/Contents/MacOS/eclipse.ini");
-			if (ini.isFile()) return new EclipseLocation(canonical(exePath), ini);
+			File ini = new File(exePath.getParentFile(), getMacAppName() + "/Contents/MacOS/" + getIniName());
+			if (ini.isFile()) return makeLocation(canonical(exePath), ini);
 		}
 		
 		/* If executable is a soft link, follow it and retry. */ {
@@ -99,7 +115,7 @@ public class EclipseLocationProvider implements IdeLocationProvider {
 					String oPath = exePath.getAbsolutePath();
 					String nPath = exePath.getCanonicalPath();
 					if (!oPath.equals(nPath)) try {
-						EclipseLocation loc = findEclipseIniFromExe(new File(nPath), loopCounter + 1);
+						IdeLocation loc = findEclipseIniFromExe(new File(nPath), loopCounter + 1);
 						if (loc != null) return loc;
 					} catch (CorruptedIdeLocationException ignore) {
 						// Unlinking didn't help find an eclipse, so continue.
@@ -114,15 +130,15 @@ public class EclipseLocationProvider implements IdeLocationProvider {
 				path = exePath.getCanonicalPath();
 			} catch (IOException ignore) { /* We'll stick with getAbsolutePath()'s result then. */ }
 			
-			if (path.equals("/usr/bin/eclipse") || path.equals("/bin/eclipse") || path.equals("/usr/local/bin/eclipse")) {
-				File ini = new File("/usr/lib/eclipse/eclipse.ini");
-				if (ini.isFile()) return new EclipseLocation(path, ini);
-				ini = new File("/usr/local/lib/eclipse/eclipse.ini");
-				if (ini.isFile()) return new EclipseLocation(path, ini);
-				ini = new File("/usr/local/etc/eclipse/eclipse.ini");
-				if (ini.isFile()) return new EclipseLocation(path, ini);
-				ini = new File("/etc/eclipse.ini");
-				if (ini.isFile()) return new EclipseLocation(path, ini);
+			if (path.equals("/usr/bin/" + getUnixAppName()) || path.equals("/bin/" + getUnixAppName()) || path.equals("/usr/local/bin/" + getUnixAppName())) {
+				File ini = new File("/usr/lib/" + getUnixAppName() + "/" + getIniName());
+				if (ini.isFile()) return makeLocation(path, ini);
+				ini = new File("/usr/local/lib/" + getUnixAppName() + "/" + getIniName());
+				if (ini.isFile()) return makeLocation(path, ini);
+				ini = new File("/usr/local/etc/" + getUnixAppName() + "/" + getIniName());
+				if (ini.isFile()) return makeLocation(path, ini);
+				ini = new File("/etc/" + getIniName());
+				if (ini.isFile()) return makeLocation(path, ini);
 			}
 		}
 		

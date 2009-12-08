@@ -45,12 +45,20 @@ import lombok.installer.UninstallException;
  * An instance can figure out if an Eclipse installation has been lombok-ified, and can
  * install and uninstall lombok from the Eclipse installation.
  */
-public final class EclipseLocation extends IdeLocation {
+public class EclipseLocation extends IdeLocation {
 	private final String name;
 	private final File eclipseIniPath;
 	private volatile boolean hasLombok;
 	
 	private static final String OS_NEWLINE = IdeFinder.getOS().getLineEnding();
+	
+	protected String getTypeName() {
+		return "eclipse";
+	}
+	
+	protected String getIniFileName() {
+		return "eclipse.ini";
+	}
 	
 	EclipseLocation(String nameOfLocation, File pathToEclipseIni) throws CorruptedIdeLocationException {
 		this.name = nameOfLocation;
@@ -59,8 +67,8 @@ public final class EclipseLocation extends IdeLocation {
 			this.hasLombok = checkForLombok(eclipseIniPath);
 		} catch (IOException e) {
 			throw new CorruptedIdeLocationException(
-					"I can't read the configuration file of the Eclipse installed at " + name + "\n" +
-					"You may need to run this installer with root privileges if you want to modify that Eclipse.", "eclipse", e);
+					"I can't read the configuration file of the " + getTypeName() + " installed at " + name + "\n" +
+					"You may need to run this installer with root privileges if you want to modify that " + getTypeName() + ".", getTypeName(), e);
 		}
 	}
 	
@@ -75,8 +83,6 @@ public final class EclipseLocation extends IdeLocation {
 	
 	/**
 	 * Returns the name of this location; generally the path to the eclipse executable.
-	 * 
-	 * Executables: "eclipse.exe" (Windows), "Eclipse.app" (Mac OS X), "eclipse" (Linux and other unixes).
 	 */
 	@Override
 	public String getName() {
@@ -267,7 +273,7 @@ public final class EclipseLocation extends IdeLocation {
 					"I can't read my own jar file. I think you've found a bug in this installer!\nI suggest you restart it " +
 					"and use the 'what do I do' link, to manually install lombok. Also, tell us about this at:\n" +
 					"http://groups.google.com/group/project-lombok - Thanks!", e);
-			throw new InstallException("I can't write to your Eclipse directory at " + name + generateWriteErrorMessage(), e);
+			throw new InstallException("I can't write to your " + getTypeName() + " directory at " + name + generateWriteErrorMessage(), e);
 		}
 		
 		/* legacy - delete lombok.eclipse.agent.jar if its there, which lombok no longer uses. */ {
@@ -329,10 +335,10 @@ public final class EclipseLocation extends IdeLocation {
 		}
 		
 		if (!installSucceeded) {
-			throw new InstallException("I can't find the eclipse.ini file. Is this a real Eclipse installation?", null);
+			throw new InstallException("I can't find the " + getIniFileName() + " file. Is this a real " + getTypeName() + " installation?", null);
 		}
 		
-		return "If you start eclipse with a custom -vm parameter, you'll need to add:<br>" +
+		return "If you start " + getTypeName() + " with a custom -vm parameter, you'll need to add:<br>" +
 				"<code>-vmargs -Xbootclasspath/a:lombok.jar -javaagent:lombok.jar</code><br>" +
 				"as parameter as well.";
 	}

@@ -25,6 +25,7 @@ import static java.util.Arrays.asList;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import lombok.installer.IdeFinder;
@@ -35,6 +36,39 @@ import org.mangosdk.spi.ProviderFor;
 
 @ProviderFor(IdeFinder.class)
 public class EclipseFinder extends IdeFinder {
+	/** should be lowercase! */
+	protected String getDirName() {
+		return "eclipse";
+	}
+	
+	protected String getWindowsExecutableName() {
+		return "eclipse.exe";
+	}
+	
+	protected String getUnixExecutableName() {
+		return "eclipse";
+	}
+	
+	protected String getMacExecutableName() {
+		return "Eclipse.app";
+	}
+	
+	protected IdeLocation createLocation(String guess) throws CorruptedIdeLocationException {
+		return new EclipseLocationProvider().create0(guess);
+	}
+	
+	protected List<String> getSourceDirsOnWindows() {
+		return Arrays.asList("\\", "\\Program Files", System.getProperty("user.home", "."));
+	}
+	
+	protected List<String> getSourceDirsOnMac() {
+		return Arrays.asList("/Applications", System.getProperty("user.home", "."));
+	}
+	
+	protected List<String> getSourceDirsOnUnix() {
+		return Arrays.asList(System.getProperty("user.home", "."));
+	}
+	
 	/**
 	 * Returns a list of paths of Eclipse installations.
 	 * Eclipse installations are found by checking for the existence of 'eclipse.exe' in the following locations:
@@ -46,7 +80,7 @@ public class EclipseFinder extends IdeFinder {
 	 * Where 'X' is tried for all local disk drives, unless there's a problem calling fsutil, in which case only
 	 * C: is tried.
 	 */
-	private static void findEclipseOnWindows(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems) {
+	private void findEclipseOnWindows(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems) {
 		List<String> driveLetters = asList("C");
 		try {
 			driveLetters = getDrivesOnWindows();
@@ -58,48 +92,33 @@ public class EclipseFinder extends IdeFinder {
 		//such as an unformatted drive causing a NullPointerException on listFiles. Best action is almost invariably to just
 		//continue onwards.
 		for (String letter : driveLetters) {
-			try {
-				File f = new File(letter + ":\\");
-				for (File dir : f.listFiles()) {
-					if (!dir.isDirectory()) continue;
-					try {
-						if (dir.getName().toLowerCase().contains("eclipse")) {
-							String eclipseLocation = findEclipseOnWindows1(dir);
-							if (eclipseLocation != null) {
-								try {
-									locations.add(EclipseLocationProvider.create0(eclipseLocation));
-								} catch (CorruptedIdeLocationException e) {
-									problems.add(e);
-								}
-							}
-						}
-					} catch (Exception ignore) {}
-					
-					try {
-						if (dir.getName().toLowerCase().contains("program files")) {
-							for (File dir2 : dir.listFiles()) {
-								if (!dir2.isDirectory()) continue;
-								if (dir2.getName().toLowerCase().contains("eclipse")) {
-									String eclipseLocation = findEclipseOnWindows1(dir2);
-									if (eclipseLocation != null) {
-										try {
-											locations.add(EclipseLocationProvider.create0(eclipseLocation));
-										} catch (CorruptedIdeLocationException e) {
-											problems.add(e);
-										}
+			for (String possibleSource : getSourceDirsOnWindows()) {
+				try {
+					File f = new File(letter + ":" + possibleSource);
+					if (!f.isDirectory()) continue;
+					for (File dir : f.listFiles()) {
+						if (!dir.isDirectory()) continue;
+						try {
+							if (dir.getName().toLowerCase().contains(getDirName())) {
+								String eclipseLocation = findEclipseOnWindows1(dir);
+								if (eclipseLocation != null) {
+									try {
+										locations.add(createLocation(eclipseLocation));
+									} catch (CorruptedIdeLocationException e) {
+										problems.add(e);
 									}
 								}
 							}
-						}
-					} catch (Exception ignore) {}
-				}
-			} catch (Exception ignore) {}
+						} catch (Exception ignore) {}
+					}
+				} catch (Exception ignore) {}
+			}
 		}
 	}
 	
 	/** Checks if the provided directory contains 'eclipse.exe', and if so, returns the directory, otherwise null. */
-	private static String findEclipseOnWindows1(File dir) {
-		if (new File(dir, "eclipse.exe").isFile()) return dir.getAbsolutePath();
+	private String findEclipseOnWindows1(File dir) {
+		if (new File(dir, getWindowsExecutableName()).isFile()) return dir.getAbsolutePath();
 		return null;
 	}
 	
@@ -137,33 +156,35 @@ public class EclipseFinder extends IdeFinder {
 		
 		File d;
 		
-		d = new File("/usr/bin/eclipse");
+		d = new File("/usr/bin/" + getUnixExecutableName());
 		if (d.exists()) guesses.add(d.getPath());
-		d = new File("/usr/local/bin/eclipse");
+		d = new File("/usr/local/bin/" + getUnixExecutableName());
 		if (d.exists()) guesses.add(d.getPath());
-		d = new File(System.getProperty("user.home", "."), "bin/eclipse");
+		d = new File(System.getProperty("user.home", "."), "bin/" + getUnixExecutableName());
 		if (d.exists()) guesses.add(d.getPath());
 		
-		findEclipseInSubDir("/usr/local/share", guesses);
-		findEclipseInSubDir("/usr/local", guesses);
-		findEclipseInSubDir("/usr/share", guesses);
-		findEclipseInSubDir(System.getProperty("user.home", "."), guesses);
+		findEclipseOnUnix1("/usr/local/share", guesses);
+		findEclipseOnUnix1("/usr/local", guesses);
+		findEclipseOnUnix1("/usr/share", guesses);
+		for (String possibleSourceDir : getSourceDirsOnUnix()) {
+			findEclipseOnUnix1(possibleSourceDir, guesses);
+		}
 		
 		for (String guess : guesses) {
 			try {
-				locations.add(EclipseLocationProvider.create0(guess));
+				locations.add(createLocation(guess));
 			} catch (CorruptedIdeLocationException e) {
 				problems.add(e);
 			}
 		}
 	}
 	
-	private void findEclipseInSubDir(String dir, List<String> guesses) {
+	private void findEclipseOnUnix1(String dir, List<String> guesses) {
 		File d = new File(dir);
 		if (!d.isDirectory()) return;
 		for (File f : d.listFiles()) {
-			if (f.isDirectory() && f.getName().toLowerCase().contains("eclipse")) {
-				File possible = new File(f, "eclipse");
+			if (f.isDirectory() && f.getName().toLowerCase().contains(getDirName())) {
+				File possible = new File(f, getUnixExecutableName());
 				if (possible.exists()) guesses.add(possible.getAbsolutePath());
 			}
 		}
@@ -173,24 +194,29 @@ public class EclipseFinder extends IdeFinder {
 	 * Scans /Applications for any folder named 'Eclipse'
 	 */
 	private void findEclipseOnMac(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems) {
-		for (File dir : new File("/Applications").listFiles()) {
-			if (!dir.isDirectory()) continue;
-			if (dir.getName().toLowerCase().equals("eclipse.app")) {
-				//This would be kind of an unorthodox Eclipse installation, but if Eclipse ever
-				//moves to this more maclike installation concept, our installer can still handle it.
+		for (String possibleSourceDir : getSourceDirsOnMac()) {
+			File[] list = new File(possibleSourceDir).listFiles();
+			if (list != null) for (File dir : list) {
+				findEclipseOnMac1(dir, locations, problems);
+			}
+		}
+	}
+	
+	private void findEclipseOnMac1(File f, List<IdeLocation> locations, List<CorruptedIdeLocationException> problems) {
+		if (!f.isDirectory()) return;
+		if (f.getName().toLowerCase().equals(getMacExecutableName().toLowerCase())) {
+			try {
+				locations.add(createLocation(f.getParent()));
+			} catch (CorruptedIdeLocationException e) {
+				problems.add(e);
+			}
+		}
+		if (f.getName().toLowerCase().contains(getDirName())) {
+			if (new File(f, getMacExecutableName()).exists()) {
 				try {
-					locations.add(EclipseLocationProvider.create0("/Applications"));
+					locations.add(createLocation(f.toString()));
 				} catch (CorruptedIdeLocationException e) {
 					problems.add(e);
-				}
-			}
-			if (dir.getName().toLowerCase().contains("eclipse")) {
-				if (new File(dir, "Eclipse.app").exists()) {
-					try {
-						locations.add(EclipseLocationProvider.create0(dir.toString()));
-					} catch (CorruptedIdeLocationException e) {
-						problems.add(e);
-					}
 				}
 			}
 		}
