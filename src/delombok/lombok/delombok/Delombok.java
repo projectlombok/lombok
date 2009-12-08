@@ -53,6 +53,7 @@ public class Delombok {
 	private CommentPreservingParser parser = new CommentPreservingParser();
 	private PrintStream feedback = System.err;
 	private boolean verbose;
+	private boolean noCopy;
 	private boolean force = false;
 	
 	/** If null, output to standard out. */
@@ -88,6 +89,10 @@ public class Delombok {
 		@Sequential
 		@Parameterized
 		private List<String> input = new ArrayList<String>();
+		
+		@Description("Lombok will only delombok source files. Without this option, non-java, non-class files are copied to the target directory.")
+		@Shorthand("n")
+		private boolean nocopy;
 		
 		private boolean help;
 	}
@@ -130,6 +135,7 @@ public class Delombok {
 		}
 		
 		if (args.verbose) delombok.setVerbose(true);
+		if (args.nocopy) delombok.setNoCopy(true);
 		if (args.print) delombok.setOutputToStandardOut();
 		else delombok.setOutput(new File(args.target));
 		
@@ -175,6 +181,10 @@ public class Delombok {
 		this.verbose = verbose;
 	}
 	
+	public void setNoCopy(boolean noCopy) {
+		this.noCopy = noCopy;
+	}
+	
 	public void setOutput(File dir) {
 		if (dir.isFile() || (!dir.isDirectory() && dir.getName().endsWith(".java"))) throw new IllegalArgumentException(
 				"DELOMBOK: delombok will only write to a directory. " +
@@ -188,16 +198,16 @@ public class Delombok {
 	}
 	
 	public void delombok(File base) throws IOException {
-		delombok0(base, "", 0);
+		delombok0(false, base, "", 0);
 	}
 	
-	public void process(File base, String name) throws IOException {
+	public void process(boolean copy, File base, String name) throws IOException {
 		File f = new File(base, name);
 		if (f.isFile()) {
 			String extension = getExtension(f);
 			if (extension.equals("java")) delombok(base, name);
 			else if (extension.equals("class")) skipClass(name);
-			else copy(base, name);
+			else copy(copy, base, name);
 		} else if (!f.exists()) {
 			feedback.printf("Skipping %s because it does not exist.\n", canonical(f));
 		} else if (!f.isDirectory()) {
@@ -205,19 +215,32 @@ public class Delombok {
 		}
 	}
 	
-	private void delombok0(File base, String suffix, int loop) throws IOException {
+	private void delombok0(boolean inHiddenDir, File base, String suffix, int loop) throws IOException {
 		File dir = suffix.isEmpty() ? base : new File(base, suffix);
 		
 		if (dir.isDirectory()) {
+			boolean thisDirIsHidden = !inHiddenDir && new File(canonical(dir)).getName().startsWith(".");
 			if (loop >= 100) {
 				feedback.printf("Over 100 subdirectories? I'm guessing there's a loop in your directory structure. Skipping: %s\n", suffix);
 			} else {
-				for (File f : dir.listFiles()) {
-					delombok0(base, suffix + (suffix.isEmpty() ? "" : File.separator) + f.getName(), loop + 1);
+				File[] list = dir.listFiles();
+				if (list.length > 0) {
+					if (thisDirIsHidden && !noCopy && output != null) {
+						feedback.printf("Only processing java files (not copying non-java files) in %s because it's a hidden directory.\n", canonical(dir));
+					}
+					for (File f : list) {
+						delombok0(inHiddenDir || thisDirIsHidden, base, suffix + (suffix.isEmpty() ? "" : File.separator) + f.getName(), loop + 1);
+					}
+				} else {
+					if (!thisDirIsHidden && !noCopy && !inHiddenDir && output != null && !suffix.isEmpty()) {
+						File emptyDir = new File(output, suffix);
+						emptyDir.mkdirs();
+						if (verbose) feedback.printf("Creating empty directory: %s\n", canonical(emptyDir));
+					}
 				}
 			}
 		} else {
-			process(base, suffix);
+			process(!inHiddenDir && !noCopy, base, suffix);
 		}
 	}
 	
@@ -225,18 +248,25 @@ public class Delombok {
 		if (verbose) feedback.printf("Skipping class file: %s\n", fileName);
 	}
 	
-	private void copy(File base, String fileName) throws IOException {
+	private void copy(boolean copy, File base, String fileName) throws IOException {
 		if (output == null) {
 			feedback.printf("Skipping resource file: %s\n", fileName);
 			return;
 		}
+		
+		if (!copy) {
+			if (verbose) feedback.printf("Skipping resource file: %s\n", fileName);
+			return;
+		}
+		
 		if (verbose) feedback.printf("Copying resource file: %s\n", fileName);
 		byte[] b = new byte[65536];
-		File outFile = new File(base, fileName);
-		outFile.getParentFile().mkdirs();
-		FileInputStream in = new FileInputStream(outFile);
+		File inFile = new File(base, fileName);
+		FileInputStream in = new FileInputStream(inFile);
 		try {
-			FileOutputStream out = new FileOutputStream(new File(output, fileName));
+			File outFile = new File(output, fileName);
+			outFile.getParentFile().mkdirs();
+			FileOutputStream out = new FileOutputStream(outFile);
 			try {
 				while (true) {
 					int r = in.read(b);

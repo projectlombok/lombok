@@ -85,9 +85,9 @@ public class DelombokTask extends Task {
 					File baseDir = fileResource.getBaseDir();
 					if (baseDir == null) {
 						File file = fileResource.getFile();
-						delombok.process(file.getParentFile(), file.getName());
+						delombok.process(false, file.getParentFile(), file.getName());
 					} else {
-						delombok.process(baseDir, fileResource.getName());
+						delombok.process(false, baseDir, fileResource.getName());
 					}
 				}
 			}
