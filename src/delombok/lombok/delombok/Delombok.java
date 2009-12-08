@@ -35,6 +35,8 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.tools.JavaFileObject;
+
 import lombok.delombok.CommentPreservingParser.ParseResult;
 
 import com.zwitserloot.cmdreader.CmdReader;
@@ -248,10 +250,14 @@ public class Delombok {
 			in.close();
 		}
 	}
+
+	public void delombok(JavaFileObject file, Writer writer) throws IOException {
+		ParseResult result = parser.parse(file, force);
+		result.print(writer);
+	}
 	
 	public void delombok(String file, Writer writer) throws IOException {
 		ParseResult result = parser.parse(file, force);
-		
 		result.print(writer);
 	}
 	
