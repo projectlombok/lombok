@@ -116,6 +116,7 @@ lombok code including the various agents.
 			<exclude name="lombok/javac/**" />
 			<classpath refid="deps.path" />
 			<classpath refid="libs.path" />
+			<compilerarg value="-Xlint:unchecked" />
 		</javac>
 		<javac debug="on" destdir="build/lombok" target="1.6" source="1.6">
 			<src path="src/core" />
@@ -127,6 +128,7 @@ lombok code including the various agents.
 			<classpath location="build/lombok" />
 			<classpath refid="deps.path" />
 			<classpath refid="libs.path" />
+			<compilerarg value="-Xlint:unchecked" />
 		</javac>
 		<copy todir="build/lombok">
 			<fileset dir="src/installer">
