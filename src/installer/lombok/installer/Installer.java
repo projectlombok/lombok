@@ -240,7 +240,6 @@ public class Installer {
 					IdeLocation loc = tryAllProviders(rawPath);
 					if (loc != null) locations.add(loc);
 					else problems.add(new CorruptedIdeLocationException("Can't find any IDE at: " + rawPath, null, null));
-					locations.add(tryAllProviders(rawPath));
 				} catch (CorruptedIdeLocationException e) {
 					problems.add(e);
 				}

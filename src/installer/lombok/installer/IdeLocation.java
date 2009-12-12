@@ -48,6 +48,10 @@ public abstract class IdeLocation {
 		return new File(LiveInjector.findPathJar(IdeFinder.class));
 	}
 	
+	@Override public String toString() {
+		return getName();
+	}
+	
 	/**
 	 * Returns a full path to the provided file.
 	 * Returns the canonical path, unless that is not available, in which cae it returns the absolute path.
