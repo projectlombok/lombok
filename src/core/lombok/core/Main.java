@@ -58,7 +58,7 @@ public class Main {
 		}
 		
 		@Override public int runApp(List<String> args) {
-			System.out.println(Version.getVersion());
+			System.out.println(Version.getFullVersion());
 			return 0;
 		}
 	}

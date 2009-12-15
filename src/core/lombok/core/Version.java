@@ -38,7 +38,7 @@ public class Version {
 	 */
 	public static void main(String[] args) {
 		if (args.length > 0) {
-			System.out.printf("Lombok v%s \"%s\"\n", VERSION, RELEASE_NAME);
+			System.out.printf("Lombok %s", getFullVersion());
 		} else {
 			System.out.println(VERSION);
 		}
@@ -60,5 +60,9 @@ public class Version {
 	 */
 	public static String getReleaseName() {
 		return RELEASE_NAME;
+	}
+	
+	public static String getFullVersion() {
+		return String.format("v%s \"%s\"\n", VERSION, RELEASE_NAME);
 	}
 }
