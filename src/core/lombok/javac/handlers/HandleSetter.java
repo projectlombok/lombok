@@ -21,7 +21,13 @@
  */
 package lombok.javac.handlers;
 
+import static com.sun.tools.javac.code.TypeTags.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+
+import javax.lang.model.type.NoType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeVisitor;
+
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.core.AnnotationValues;
@@ -34,6 +40,8 @@ import lombok.javac.JavacNode;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
@@ -142,7 +150,7 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		JCBlock methodBody = treeMaker.Block(0, statements);
 		Name methodName = field.toName(toSetterName(fieldDecl));
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(Flags.FINAL, nonNulls.appendList(nullables)), fieldDecl.name, fieldDecl.vartype, null);
-		JCExpression methodType = treeMaker.Type(field.getSymbolTable().voidType);
+		JCExpression methodType = treeMaker.Type(new JCNoType(TypeTags.VOID));
 		
 		List<JCTypeParameter> methodGenericParams = List.nil();
 		List<JCVariableDecl> parameters = List.of(param);
@@ -151,5 +159,26 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		
 		return treeMaker.MethodDef(treeMaker.Modifiers(access, List.<JCAnnotation>nil()), methodName, methodType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue);
+	}
+	
+	private static class JCNoType extends Type implements NoType {
+		public JCNoType(int tag) {
+			super(tag, null);
+		}
+		
+		@Override
+		public TypeKind getKind() {
+			switch (tag) {
+			case VOID:  return TypeKind.VOID;
+			case NONE:  return TypeKind.NONE;
+			default:
+				throw new AssertionError("Unexpected tag: " + tag);
+			}
+		}
+		
+		@Override
+		public <R, P> R accept(TypeVisitor<R, P> v, P p) {
+			return v.visitNoType(this, p);
+		}
 	}
 }
