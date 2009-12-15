@@ -26,7 +26,8 @@ package lombok.core;
  */
 public class Version {
 	// ** CAREFUL ** - this class must always compile with 0 dependencies (it must not refer to any other sources or libraries).
-	private static final String VERSION = "0.9.2-HEAD";
+	private static final String VERSION = "0.9.2";
+	private static final String RELEASE_NAME = "hailbunny";
 	
 	private Version() {
 		//Prevent instantiation
@@ -36,7 +37,11 @@ public class Version {
 	 * Prints the version followed by a newline, and exits.
 	 */
 	public static void main(String[] args) {
-		System.out.println(VERSION);
+		if (args.length > 0) {
+			System.out.printf("Lombok v%s \"%s\"\n", VERSION, RELEASE_NAME);
+		} else {
+			System.out.println(VERSION);
+		}
 	}
 	
 	/**
@@ -44,5 +49,16 @@ public class Version {
 	 */
 	public static String getVersion() {
 		return VERSION;
+	}
+	
+	/**
+	 * Get the current release name.
+	 * 
+	 * The release name is a string (not numbers). Every time a new release has a significantly improved feature set, a new release name is given.
+	 * Thus, many versions can carry the same release name. Version bumps and release names are not related; if a new version of lombok is entirely
+	 * backwards compatible with a previous one, but also adds many new features, it will get only a minor version bump, but also a new release name.
+	 */
+	public static String getReleaseName() {
+		return RELEASE_NAME;
 	}
 }
