@@ -8,7 +8,8 @@ Lombok Changelog
 * lombok now has various command-line accessible utilities bundled with it. Run `java -jar lombok.jar --help` to see them. Included (aside from the already mentioned delombok):
 * Ability to create a tiny jar named lombok-runtime.jar with runtime dependencies. The lombok transformations that have a runtime dependency on this jar can be listed as well. Run `java -jar lombok.jar createRuntime --help` for more information.
 * Scriptable command line install and uninstall options. Run `java -jar lombok.jar install --help` (or `uninstall`, of course) for more information. Technically this support has been there in earlier versions, but the command line options are now much more lenient, not to mention more visible.
-* lombok now works on Springsource Tool Suite. [Issue #22](http://code.google.com/p/projectlombok/issues/detail?id=22)
+* Lombok now works on Springsource Tool Suite. [Issue #22](http://code.google.com/p/projectlombok/issues/detail?id=22)
+* Lombok now works on JDK 1.6.0_0, for those of us who have really old JDK1.6's installed on their system. [Issue #83](http://code.google.com/p/projectlombok/issues/detail?id=83)
 * Erroneous use of lombok in Eclipse (adding it to a project as an annotation processor, which is not how lombok is to be used on Eclipse) now generates a useful warning message with helpful information, instead of a confusing error hidden in the logs. [Issue #53](http://code.google.com/p/projectlombok/issues/detail?id=53)
 * FIXED: Regression bug where you would occasionally see errors with the gist 'loader constraint violation: when resolving...', such as when opening the help system, starting the diff editor, or, rarely, opening any java source file. [Issue #68](http://code.google.com/p/projectlombok/issues/detail?id=68)
 * FIXED: @SneakyThrows without any parameters should default to `Throwable.class` but it didn't do anything in javac. [Issue #73](http://code.google.com/p/projectlombok/issues/detail?id=73)
