@@ -150,6 +150,7 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		JCBlock methodBody = treeMaker.Block(0, statements);
 		Name methodName = field.toName(toSetterName(fieldDecl));
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(Flags.FINAL, nonNulls.appendList(nullables)), fieldDecl.name, fieldDecl.vartype, null);
+		//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.
 		JCExpression methodType = treeMaker.Type(new JCNoType(TypeTags.VOID));
 		
 		List<JCTypeParameter> methodGenericParams = List.nil();
