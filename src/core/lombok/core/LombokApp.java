@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * Implement this class, and add yourself as a provider for it, to become an app runnable by running lombok.jar as a jar.
  * 
- * @see lombok.delombok.DelombokApp
+ * @see lombok.core.Main.VersionApp
  */
 public interface LombokApp {
 	/**
