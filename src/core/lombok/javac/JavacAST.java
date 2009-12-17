@@ -42,6 +42,7 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
@@ -87,7 +88,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	}
 	
 	private static String packageDeclaration(JCCompilationUnit cu) {
-		return cu.pid instanceof JCFieldAccess ? cu.pid.toString() : null;
+		return (cu.pid instanceof JCFieldAccess || cu.pid instanceof JCIdent) ? cu.pid.toString() : null;
 	}
 	
 	private static Collection<String> imports(JCCompilationUnit cu) {
