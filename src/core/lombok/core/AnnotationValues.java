@@ -425,7 +425,9 @@ public class AnnotationValues<A extends Annotation> {
 		}
 		
 		/* 3. Walk through star imports and, if they start with "java.", use Class.forName based resolution. */ {
-			for (String im : ast.getImportStatements()) {
+			List<String> imports = new ArrayList<String>(ast.getImportStatements());
+			imports.add("java.lang.*");
+			for (String im : imports) {
 				if (!im.endsWith(".*") || !im.startsWith("java.")) continue;
 				try {
 					Class<?> c = Class.forName(im.substring(0, im.length()-1) + typeName);
