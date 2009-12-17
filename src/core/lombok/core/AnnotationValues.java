@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import lombok.core.AST.Kind;
+
 /**
  * Represents a single annotation in a source file and can be used to query the parameters present on it.
  * 
@@ -373,47 +375,88 @@ public class AnnotationValues<A extends Annotation> {
 		return l.isEmpty() ? null : l.get(0);
 	}
 	
+	/*
+	 * Credit goes to Petr Jiricka of Sun for highlighting the problems with the earlier version of this method.
+	 */
 	private String toFQ(String typeName) {
-		Class<?> c;
-		boolean fqn = typeName.indexOf('.') > -1;
-		String prefix = fqn ? typeName.substring(0, typeName.indexOf('.')) : typeName;
+		String prefix = typeName.indexOf('.') > -1 ? typeName.substring(0, typeName.indexOf('.')) : typeName;
 		
-		for (String im : ast.getImportStatements()) {
-			int idx = im.lastIndexOf('.');
-			String simple = im;
-			if (idx > -1) simple = im.substring(idx+1);
-			if (simple.equals(prefix)) {
-				return im + typeName.substring(prefix.length());
+		/* 1. Walk through type names in this source file at this level. */ {
+			LombokNode<?, ?, ?> n = ast;
+			walkThroughCU:
+			while (n != null) {
+				if (n.getKind() == Kind.TYPE) {
+					String simpleName = n.getName();
+					if (prefix.equals(simpleName)) {
+						//We found a matching type name in the local hierarchy!
+						List<String> outerNames = new ArrayList<String>();
+						while (true) {
+							n = n.up();
+							if (n == null || n.getKind() == Kind.COMPILATION_UNIT) break;
+							if (n.getKind() == Kind.TYPE) outerNames.add(n.getName());
+							//If our type has a parent that isn't either the CompilationUnit or another type, then we are
+							//a method-local class or an anonymous inner class literal. These technically do have FQNs
+							//and we may, with a lot of effort, figure out their name, but, that's some fairly horrible code
+							//style and these methods have 'probable' in their name for a reason.
+							break walkThroughCU;
+						}
+						StringBuilder result = new StringBuilder();
+						if (ast.getPackageDeclaration() != null) result.append(ast.getPackageDeclaration());
+						if (result.length() > 0) result.append('.');
+						Collections.reverse(outerNames);
+						for (String outerName : outerNames) result.append(outerName).append('.');
+						result.append(typeName);
+						return result.toString();
+					}
+				}
+				n = n.up();
 			}
 		}
 		
-		c = tryClass(typeName);
-		if (c != null) return c.getName();
-		
-		c = tryClass("java.lang." + typeName);
-		if (c != null) return c.getName();
-		
-		//Try star imports
-		for (String im : ast.getImportStatements()) {
-			if (im.endsWith(".*")) {
-				c = tryClass(im.substring(0, im.length() -1) + typeName);
-				if (c != null) return c.getName();
+		/* 2. Walk through non-star imports and search for a match. */ {
+			for (String im : ast.getImportStatements()) {
+				if (im.endsWith(".*")) continue;
+				int idx = im.lastIndexOf('.');
+				String simple = idx == -1 ? im : im.substring(idx+1);
+				if (simple.equals(prefix)) {
+					return im + typeName.substring(prefix.length());
+				}
 			}
 		}
 		
-		if (!fqn) {
-			String pkg = ast.getPackageDeclaration();
-			if (pkg != null) return pkg + "." + typeName;
+		/* 3. Walk through star imports and, if they start with "java.", use Class.forName based resolution. */ {
+			for (String im : ast.getImportStatements()) {
+				if (!im.endsWith(".*") || !im.startsWith("java.")) continue;
+				try {
+					Class<?> c = Class.forName(im.substring(0, im.length()-1) + typeName);
+					if (c != null) return c.getName();
+				} catch (Throwable t) {
+					//Class.forName failed for whatever reason - it most likely does not exist, continue.
+				}
+			}
 		}
 		
-		return null;
+		/* 4. If the type name is a simple name, then our last guess is that it's another class in this package. */ {
+			if (typeName.indexOf('.') == -1) return inLocalPackage(ast, typeName);
+		}
+		
+		/* 5. It's either an FQN or a nested class in another class in our package. Use code conventions to guess. */ {
+			char firstChar = typeName.charAt(0);
+			if (Character.isTitleCase(firstChar) || Character.isUpperCase(firstChar)) {
+				//Class names start with uppercase letters, so presume it's a nested class in another class in our package.
+				return inLocalPackage(ast, typeName);
+			}
+			
+			//Presume it's fully qualified.
+			return typeName;
+		}
 	}
 	
-	private Class<?> tryClass(String name) {
-		try {
-			return Class.forName(name);
-		} catch (ClassNotFoundException e) {
-			return null;
-		}
+	private static String inLocalPackage(LombokNode<?, ?, ?> node, String typeName) {
+		StringBuilder result = new StringBuilder();
+		if (node.getPackageDeclaration() != null) result.append(node.getPackageDeclaration());
+		if (result.length() > 0) result.append('.');
+		result.append(typeName);
+		return result.toString();
 	}
 }
