@@ -256,9 +256,12 @@ public class Eclipse {
 		}
 		
 		if (ref instanceof Wildcard) {
-			Wildcard wildcard = new Wildcard(((Wildcard)ref).kind);
-			wildcard.sourceStart = ref.sourceStart;
-			wildcard.sourceEnd = ref.sourceEnd;
+			Wildcard original = (Wildcard)ref;
+			
+			Wildcard wildcard = new Wildcard(original.kind);
+			wildcard.sourceStart = original.sourceStart;
+			wildcard.sourceEnd = original.sourceEnd;
+			if (original.bound != null) wildcard.bound = copyType(original.bound, source);
 			setGeneratedBy(wildcard, source);
 			return wildcard;
 		}
