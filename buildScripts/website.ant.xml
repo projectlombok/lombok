@@ -263,7 +263,7 @@ such as converting the changelog into HTML, and creating javadoc.
 	<target name="changelogToHtml" depends="-compile-webclasses">
 		<mkdir dir="build/website" />
 		<property name="CHANGELOG_FILE" location="doc/changelog.markdown" />
-		<property name="CHANGELOG_HTML" location="build/website/changelog.html" />
+		<property name="CHANGELOG_HTML" location="build/website/changelog-raw.html" />
 		<java fork="true" classname="lombok.website.CompileChangelog" failonerror="true">
 			<classpath>
 				<path refid="buildScripts.deps.path" />
@@ -272,6 +272,18 @@ such as converting the changelog into HTML, and creating javadoc.
 			<arg value="${CHANGELOG_FILE}" />
 			<arg value="${CHANGELOG_HTML}" />
 		</java>
+		<loadfile property="changelog.main" srcFile="build/website/changelog-raw.html" />
+		<delete file="build/website/changelog-raw.html" />
+		<copy todir="build/website" overwrite="true">
+			<fileset dir="website">
+				<include name="changelog.html" />
+			</fileset>
+			<filterchain>
+				<replacetokens>
+					<token key="CHANGELOG" value="${changelog.main}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
 	</target>
 	
 	<target name="javadoc" description="Generates the javadoc" depends="version">
