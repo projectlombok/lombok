@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v0.9.3
+### v0.9.3 (edge)
 * Eclipse: `@Data` and other annotations now don't throw errors when you include fields with bounded wildcard generics, such as `List<? extends Number>`. [Issue #84](http://code.google.com/p/projectlombok/issues/detail?id=84)
 * plugins and `@SneakyThrows`: Resolving types in annotations now works better especially for classes that aren't in the core java libraries. [Issue #88](http://code.google.com/p/projectlombok/issues/detail?id=88)
 

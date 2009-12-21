@@ -26,7 +26,7 @@ package lombok.core;
  */
 public class Version {
 	// ** CAREFUL ** - this class must always compile with 0 dependencies (it must not refer to any other sources or libraries).
-	private static final String VERSION = "0.9.3-HEAD";
+	private static final String VERSION = "0.9.3-EDGE";
 	private static final String RELEASE_NAME = "hailbunny";
 	
 	private Version() {

@@ -10,4 +10,4 @@ Step #4: git push && git push --tags
 
 Step #5: ant publish-all
 
-Step #6: Change src/core/lombok/core/Version.java to "0.8.2-HEAD", and commit this.
+Step #6: Change src/core/lombok/core/Version.java to "0.8.2-EDGE", and commit this.
