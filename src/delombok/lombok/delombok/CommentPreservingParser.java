@@ -84,8 +84,7 @@ public class CommentPreservingParser {
 		JCCompilationUnit cu;
 		if (source instanceof JavaFileObject) {
 			cu = compiler.parse((JavaFileObject) source);
-		}
-		else {
+		} else {
 			@SuppressWarnings("deprecation")
 			JCCompilationUnit unit = compiler.parse((String)source);
 			cu = unit;
