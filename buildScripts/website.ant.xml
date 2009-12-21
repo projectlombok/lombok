@@ -105,11 +105,14 @@ such as converting the changelog into HTML, and creating javadoc.
 				<exclude name="**/publish" />
 				<exclude name="**/*unused*" />
 				<exclude name="videos/**" />
+				<exclude name="download-edge.html" />
+				<exclude name="download-edge-none.html" />
 			</fileset>
 			<fileset dir=".">
 				<include name="LICENCE" />
 			</fileset>
 		</copy>
+		<copy file="website/download-edge-none.html" tofile="build/website/download-edge.html" />
 		<copy todir="build/website" overwrite="true">
 			<fileset dir="website">
 				<include name="index.html" />
@@ -144,10 +147,10 @@ such as converting the changelog into HTML, and creating javadoc.
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="SneakyThrows" />
 		</antcall>
-		<mkdir dir="dist" />
 	</target>
 	
 	<target name="-website-dist">
+		<mkdir dir="dist" />
 		<tar destfile="dist/website.tar.bz2" compression="bzip2">
 			<tarfileset dir="build/website" />
 			<tarfileset dir="doc/api" prefix="api" />
