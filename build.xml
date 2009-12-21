@@ -104,6 +104,13 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<target name="publish-all" depends="clean, version, website-publish, maven-publish, publish"
 		description="Publishes lombok itself, updates the maven repository, and the website" />
 	
+	<target name="edge-release" depends="clean, version, dist"
+		description="Publishes an edge release for those who need to test a cutting edge build">
+		<ant antfile="buildScripts/website.ant.xml" target="edgeRelease" inheritAll="false">
+			<property name="lombok.version" value="${lombok.version}" />
+		</ant>
+	</target>
+	
 	<target name="website" depends="version" description="Prepares the website for distribution">
 		<ant antfile="buildScripts/website.ant.xml" target="website" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />

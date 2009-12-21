@@ -208,6 +208,58 @@ such as converting the changelog into HTML, and creating javadoc.
 		</copy>
 	</target>
 	
+	<target name="edgeRelease-build" depends="-compile-webclasses, version">
+		<mkdir dir="build/website-edge" />
+		<property name="CHANGELOG_FILE" location="doc/changelog.markdown" />
+		<property name="CHANGELOG_HTML" location="build/website-edge/changelog-edge.html" />
+		<java fork="true" classname="lombok.website.CompileChangelog" failonerror="true">
+			<classpath>
+				<path refid="buildScripts.deps.path" />
+				<pathelement location="build/webclasses" />
+			</classpath>
+			<arg value="${CHANGELOG_FILE}" />
+			<arg value="${CHANGELOG_HTML}" />
+			<arg value="-edge" />
+			<arg value="${lombok.version}" />
+		</java>
+		<loadfile property="changelog.edge" srcFile="build/website-edge/changelog-edge.html" encoding="UTF-8" />
+		
+		<copy todir="build/website-edge" overwrite="true">
+			<fileset dir="website">
+				<include name="download-edge.html" />
+			</fileset>
+			<filterchain>
+				<replacetokens>
+					<token key="VERSION-EDGE" value="${lombok.version}" />
+					<token key="CHANGELOG-EDGE" value="${changelog.edge}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
+		
+		<delete file="build/website-edge/changelog-edge.html" />
+		<copy file="dist/lombok.jar" tofile="build/website-edge/lombok-edge.jar" />
+		
+		<tar destfile="dist/website-edge.tar.bz2" compression="bzip2">
+			<tarfileset dir="build/website-edge" />
+		</tar>
+	</target>
+	
+	<target name="edgeRelease" depends="edgeRelease-build">
+		<available file="libertad-upload.key" property="libertad.key.available" />
+		<fail unless="libertad.key.available">You don't have the libertad-upload.key; you'll need it to get write access to the server.</fail>
+		
+		<scp
+			localFile="dist/website-edge.tar.bz2"
+			todir="lombokup@projectlombok.org:/staging"
+			keyfile="libertad-upload.key" passphrase=""
+			sftp="true" verbose="true" trust="true" />
+		<sshexec
+			host="projectlombok.org"
+			username="lombokup"
+			keyfile="libertad-upload.key" passphrase=""
+			trust="true" command="./deployEdge" />
+	</target>
+	
 	<target name="changelogToHtml" depends="-compile-webclasses">
 		<mkdir dir="build/website" />
 		<property name="CHANGELOG_FILE" location="doc/changelog.markdown" />
