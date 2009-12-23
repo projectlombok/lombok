@@ -96,7 +96,7 @@ public class HandlerLibrary {
 	/** Uses SPI Discovery to find implementations of {@link EclipseAnnotationHandler}. */
 	@SuppressWarnings("unchecked") private static void loadAnnotationHandlers(HandlerLibrary lib) {
 		try {
-			for (EclipseAnnotationHandler<?> handler : SpiLoadUtil.findServices(EclipseAnnotationHandler.class)) {
+			for (EclipseAnnotationHandler<?> handler : SpiLoadUtil.findServices(EclipseAnnotationHandler.class, EclipseAnnotationHandler.class.getClassLoader())) {
 				try {
 					Class<? extends Annotation> annotationClass =
 						SpiLoadUtil.findAnnotationClass(handler.getClass(), EclipseAnnotationHandler.class);
@@ -117,7 +117,7 @@ public class HandlerLibrary {
 	/** Uses SPI Discovery to find implementations of {@link EclipseASTVisitor}. */
 	private static void loadVisitorHandlers(HandlerLibrary lib) {
 		try {
-			for (EclipseASTVisitor visitor : SpiLoadUtil.findServices(EclipseASTVisitor.class)) {
+			for (EclipseASTVisitor visitor : SpiLoadUtil.findServices(EclipseASTVisitor.class, EclipseASTVisitor.class.getClassLoader())) {
 				lib.visitorHandlers.add(visitor);
 			}
 		} catch (Throwable t) {

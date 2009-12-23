@@ -90,7 +90,8 @@ public class SpiLoadUtil {
 	 * @param loader The classloader object to use to both the spi discovery files, as well as the loader to use
 	 * to make the returned instances.
 	 */
-	public static <C> Iterable<C> findServices(final Class<C> target, final ClassLoader loader) throws IOException {
+	public static <C> Iterable<C> findServices(final Class<C> target, ClassLoader loader) throws IOException {
+		if (loader == null) loader = ClassLoader.getSystemClassLoader();
 		Enumeration<URL> resources = loader.getResources("META-INF/services/" + target.getName());
 		final Set<String> entries = new LinkedHashSet<String>();
 		while (resources.hasMoreElements()) {
@@ -99,6 +100,7 @@ public class SpiLoadUtil {
 		}
 		
 		final Iterator<String> names = entries.iterator();
+		final ClassLoader fLoader = loader;
 		return new Iterable<C> () {
 			@Override public Iterator<C> iterator() {
 				return new Iterator<C>() {
@@ -108,7 +110,7 @@ public class SpiLoadUtil {
 					
 					@Override public C next() {
 						try {
-							return target.cast(Class.forName(names.next(), true, loader).newInstance());
+							return target.cast(Class.forName(names.next(), true, fLoader).newInstance());
 						} catch (Throwable t) {
 							throw Lombok.sneakyThrow(t);
 						}
