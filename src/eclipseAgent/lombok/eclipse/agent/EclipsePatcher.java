@@ -54,11 +54,11 @@ public class EclipsePatcher extends Agent {
 		EquinoxClassLoader.addPrefix("lombok.");
 		EquinoxClassLoader.registerScripts(sm);
 		
-		patchLombokizeAST(sm);
+//		patchLombokizeAST(sm);
 		patchAvoidReparsingGeneratedCode(sm);
-		patchCatchReparse(sm);
-		patchSetGeneratedFlag(sm);
-		patchHideGeneratedNodes(sm);
+//		patchCatchReparse(sm);
+//		patchSetGeneratedFlag(sm);
+//		patchHideGeneratedNodes(sm);
 		
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
 	}
@@ -167,14 +167,14 @@ public class EclipsePatcher extends Agent {
 						"org.eclipse.jdt.internal.compiler.ast.MethodDeclaration",
 						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration"))
 				.decisionMethod(new Hook("lombok/eclipse/agent/PatchFixes", "checkBit24", "(Ljava/lang/Object;)Z"))
-				.transplant().request(StackRequest.PARAM1).build());
+				.request(StackRequest.PARAM1).build());
 		
 		sm.addScript(ScriptBuilder.exitEarly()
 				.target(new MethodTarget(PARSER_SIG1, "parse", "void",
 						"org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration",
 						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration", "boolean"))
 				.decisionMethod(new Hook("lombok/eclipse/agent/PatchFixes", "checkBit24", "(Ljava/lang/Object;)Z"))
-				.transplant().request(StackRequest.PARAM1).build());
+				.request(StackRequest.PARAM1).build());
 		
 		sm.addScript(ScriptBuilder.exitEarly()
 				.target(new MethodTarget(PARSER_SIG1, "parse", "void",
@@ -182,7 +182,7 @@ public class EclipsePatcher extends Agent {
 						"org.eclipse.jdt.internal.compiler.ast.TypeDeclaration",
 						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration"))
 				.decisionMethod(new Hook("lombok/eclipse/agent/PatchFixes", "checkBit24", "(Ljava/lang/Object;)Z"))
-				.transplant().request(StackRequest.PARAM1).build());
+				.request(StackRequest.PARAM1).build());
 	}
 	
 	private static void patchLombokizeAST(ScriptManager sm) {
