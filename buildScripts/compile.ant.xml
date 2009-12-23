@@ -150,7 +150,7 @@ lombok code including the various agents.
 		
 		<mkdir dir="build/lombok/META-INF" />
 		<mkdir dir="build/lombok/META-INF/services" />
-		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.javac.apt.Processor</echo>
+		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.core.AnnotationProcessor</echo>
 	</target>
 	
 	<target name="dist" description="Builds THE lombok.jar file which contains everything" depends="compile, version, -unpackLibs">
@@ -162,6 +162,7 @@ lombok code including the various agents.
 			<fileset dir="." includes="LICENCE" />
 			<manifest>
 				<attribute name="Premain-Class" value="lombok.core.Agent" />
+				<attribute name="Agent-Class" value="lombok.core.Agent" />
 				<attribute name="Can-Redefine-Classes" value="true" />
 				<attribute name="Main-Class" value="lombok.core.Main" />
 				<attribute name="Lombok-Version" value="${lombok.version}" />
