@@ -9,6 +9,7 @@
 	<classpathentry kind="src" path="test/delombok/src"/>
 	<classpathentry kind="src" path="test/core/src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="lib" path="deps/lombok/ecj-3.5.1.jar" sourcepath="contrib/ecjsrc-3.5.1.zip"/>
 	<classpathentry kind="lib" path="deps/lombok/eclipse/org.eclipse.jdt.core_3.5.0.v_963.jar"/>
 	<classpathentry kind="lib" path="deps/lombok/eclipse/org.eclipse.jdt.ui_3.5.1.r351_v20090821-0800.jar"/>
 	<classpathentry kind="lib" path="deps/lombok/eclipse/org.eclipse.core.runtime_3.5.0.v20090525.jar"/>
