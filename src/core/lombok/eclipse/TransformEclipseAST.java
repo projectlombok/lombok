@@ -57,10 +57,10 @@ public class TransformEclipseAST {
 	
 	static {
 		Field f = null;
-		HandlerLibrary l = null;
+		HandlerLibrary h = null;
+		
 		try {
-			l = HandlerLibrary.load();
-			f = CompilationUnitDeclaration.class.getDeclaredField("$lombokAST");
+			h = HandlerLibrary.load();
 		} catch (Throwable t) {
 			try {
 				Eclipse.error(null, "Problem initializing lombok", t);
@@ -70,8 +70,14 @@ public class TransformEclipseAST {
 			}
 			disableLombok = true;
 		}
+		try {
+			f = CompilationUnitDeclaration.class.getDeclaredField("$lombokAST");
+		} catch (Throwable t) {
+			//I guess we're in an ecj environment; we'll just not cache stuff then.
+		}
+		
 		astCacheField = f;
-		handlers = l;
+		handlers = h;
 	}
 	
 	public static void transform_swapped(CompilationUnitDeclaration ast, Parser parser) {
@@ -86,7 +92,7 @@ public class TransformEclipseAST {
 	 * Eclipse's parsers often operate in diet mode, which means many parts of the AST have been left blank.
 	 * Be ready to deal with just about anything being null, such as the Statement[] arrays of the Method AST nodes.
 	 * 
-	 * @param parser The Eclipse parser object that generated the AST.
+	 * @param parser The Eclipse parser object that generated the AST. Not actually used; mostly there to satisfy parameter rules for lombok.patcher scripts.
 	 * @param ast The AST node belonging to the compilation unit (java speak for a single source file).
 	 */
 	public static void transform(Parser parser, CompilationUnitDeclaration ast) {
