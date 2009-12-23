@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import lombok.Lombok;
 import lombok.core.AnnotationValues;
 import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
@@ -105,16 +104,34 @@ public class Eclipse {
 	 * Generates an error in the Eclipse error log. Note that most people never look at it!
 	 */
 	public static void error(CompilationUnitDeclaration cud, String message, String bundleName, Throwable error) {
-		Bundle bundle = Platform.getBundle(bundleName);
-		if (bundle == null) {
-			System.err.printf("Can't find bundle %s while trying to report error:\n%s\n", bundleName, message);
-			return;
+		try {
+			new EclipseWorkspaceLogger().error(message, bundleName, error);
+		} catch (NoClassDefFoundError e) {	//standalone ecj does not jave Platform, ILog, IStatus, and friends.
+			new TerminalLogger().error(message, bundleName, error);
 		}
-		
-		ILog log = Platform.getLog(bundle);
-		
-		log.log(new Status(IStatus.ERROR, bundleName, message, error));
 		if (cud != null) EclipseAST.addProblemToCompilationResult(cud, false, message + " - See error log.", 0, 0);
+	}
+	
+	private static class TerminalLogger {
+		@SuppressWarnings("unused")	//to match signature of EclipseWorkspaceLogger.
+		void error(String message, String bundleName, Throwable error) {
+			System.err.println(message);
+			error.printStackTrace();
+		}
+	}
+	
+	private static class EclipseWorkspaceLogger {
+		void error(String message, String bundleName, Throwable error) {
+			Bundle bundle = Platform.getBundle(bundleName);
+			if (bundle == null) {
+				System.err.printf("Can't find bundle %s while trying to report error:\n%s\n", bundleName, message);
+				return;
+			}
+			
+			ILog log = Platform.getLog(bundle);
+			
+			log.log(new Status(IStatus.ERROR, bundleName, message, error));
+		}
 	}
 	
 	/**
@@ -454,7 +471,7 @@ public class Eclipse {
 		try {
 			generatedByField = ASTNode.class.getDeclaredField("$generatedBy");
 		} catch (Throwable t) {
-			throw Lombok.sneakyThrow(t);
+			//ignore - no $generatedBy exists when running in ecj.
 		}
 	}
 	
@@ -462,7 +479,8 @@ public class Eclipse {
 		try {
 			return (ASTNode) generatedByField.get(node);
 		} catch (Exception t) {
-			throw Lombok.sneakyThrow(t);
+			//ignore - no $generatedBy exists when running in ecj.
+			return null;
 		}
 	}
 	
@@ -474,7 +492,7 @@ public class Eclipse {
 		try {
 			generatedByField.set(node, source);
 		} catch (Exception t) {
-			throw Lombok.sneakyThrow(t);
+			//ignore - no $generatedBy exists when running in ecj.
 		}
 		
 		return node;
