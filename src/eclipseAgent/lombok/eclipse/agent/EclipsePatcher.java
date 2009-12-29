@@ -45,20 +45,25 @@ import lombok.patcher.scripts.ScriptBuilder;
 public class EclipsePatcher extends Agent {
 	@Override
 	public void runAgent(String agentArgs, Instrumentation instrumentation, boolean injected) throws Exception {
-		registerPatchScripts(instrumentation, injected);
+		registerPatchScripts(instrumentation, injected, injected);
 	}
 	
-	private static void registerPatchScripts(Instrumentation instrumentation, boolean reloadExistingClasses) {
+	private static void registerPatchScripts(Instrumentation instrumentation, boolean reloadExistingClasses, boolean ecjOnly) {
 		ScriptManager sm = new ScriptManager();
 		sm.registerTransformer(instrumentation);
-		EquinoxClassLoader.addPrefix("lombok.");
-		EquinoxClassLoader.registerScripts(sm);
+		if (!ecjOnly) {
+			EquinoxClassLoader.addPrefix("lombok.");
+			EquinoxClassLoader.registerScripts(sm);
+		}
 		
-//		patchLombokizeAST(sm);
 		patchAvoidReparsingGeneratedCode(sm);
-//		patchCatchReparse(sm);
-//		patchSetGeneratedFlag(sm);
-//		patchHideGeneratedNodes(sm);
+		
+		if (!ecjOnly) {
+			patchLombokizeAST(sm);
+			patchCatchReparse(sm);
+			patchSetGeneratedFlag(sm);
+			patchHideGeneratedNodes(sm);
+		}
 		
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
 	}
