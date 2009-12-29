@@ -44,6 +44,7 @@ import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
+import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
@@ -160,13 +161,15 @@ public class EclipseHandlerUtil {
 		if (node != null && node.get() instanceof TypeDeclaration) {
 			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
 			if (typeDecl.methods != null) for (AbstractMethodDeclaration def : typeDecl.methods) {
-				char[] mName = def.selector;
-				if (mName == null) continue;
-				boolean nameEquals = caseSensitive ? methodName.equals(new String(mName)) : methodName.equalsIgnoreCase(new String(mName));
-				if (nameEquals) {
-					EclipseNode existing = node.getNodeFor(def);
-					if (existing == null || !existing.isHandled()) return MemberExistsResult.EXISTS_BY_USER;
-					return MemberExistsResult.EXISTS_BY_LOMBOK;
+				if (def instanceof MethodDeclaration) {
+					char[] mName = def.selector;
+					if (mName == null) continue;
+					boolean nameEquals = caseSensitive ? methodName.equals(new String(mName)) : methodName.equalsIgnoreCase(new String(mName));
+					if (nameEquals) {
+						EclipseNode existing = node.getNodeFor(def);
+						if (existing == null || !existing.isHandled()) return MemberExistsResult.EXISTS_BY_USER;
+						return MemberExistsResult.EXISTS_BY_LOMBOK;
+					}
 				}
 			}
 		}
