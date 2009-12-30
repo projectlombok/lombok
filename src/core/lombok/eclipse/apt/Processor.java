@@ -2,6 +2,11 @@ package lombok.eclipse.apt;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -12,12 +17,18 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 
+import lombok.Lombok;
 import lombok.eclipse.TransformEclipseAST;
+import lombok.eclipse.agent.PatchFixes;
 import lombok.patcher.inject.LiveInjector;
 
 import org.eclipse.jdt.core.compiler.CharOperation;
 import org.eclipse.jdt.internal.compiler.apt.dispatch.BaseProcessingEnvImpl;
+import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.lookup.PackageBinding;
+import org.eclipse.jdt.internal.compiler.parser.Parser;
 import org.eclipse.jdt.internal.compiler.util.HashtableOfType;
 
 @SupportedAnnotationTypes("*")
@@ -35,45 +46,98 @@ public class Processor extends AbstractProcessor {
 	
 	/** {@inheritDoc} */
 	@Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-		try {
-			Field unitsField = roundEnv.getClass().getDeclaredField("_units");
-			unitsField.setAccessible(true);
-			CompilationUnitDeclaration[] roots = (CompilationUnitDeclaration[]) unitsField.get(roundEnv);
-			
-			if (roots == null) System.out.println("roots is null: " + roundEnv.processingOver());
-			else System.out.println("rootscount: " + roots.length);
-			
-			if (roots != null) for (CompilationUnitDeclaration cud : roots) {
-				TransformEclipseAST.transform(null, cud);
-			}
-			
-			Field f = processingEnv.getLookupEnvironment().getClass().getDeclaredField("stepCompleted");
-			f.setAccessible(true);
-			f.set(processingEnv.getLookupEnvironment(), 1);
-			if (roots != null) for (CompilationUnitDeclaration cud : roots) {
-				Field f2 = cud.scope.fPackage.getClass().getDeclaredField("knownTypes");
-				f2.setAccessible(true);
-				HashtableOfType turd = (HashtableOfType) f2.get(cud.scope.fPackage);
-				int idx = 0;
-				for (char[] x : turd.keyTable) {
-					if (CharOperation.equals(x, cud.types[0].name)) turd.keyTable[idx] = null;
-					idx++;
+		CompilationUnitDeclaration[] roots = (CompilationUnitDeclaration[]) fieldAccess(roundEnv, "_units");
+		
+		if (roots == null) return false;
+		for (CompilationUnitDeclaration cud : roots) {
+			//ECJ, like eclipse, first 'diet parses' - parsing only structure and not method bodies, and then later parses method bodies.
+			//On eclipse, we instrument both runs, but on ECJ, instrumenting is rather limited, and unless you get major errors or use -proc:none,
+			//full parsing is inevitable, so we just get it over with up front, so we can lombokize everything in one go instead of in 2 phases.
+			fullParseType(processingEnv.getCompiler().parser, cud, cud.types);
+			TransformEclipseAST.transform(null, cud);
+		}
+		
+		Map<PackageBinding, List<char[]>> packageToTypeNames = new HashMap<PackageBinding, List<char[]>>();
+		
+		for (CompilationUnitDeclaration cud : roots) {
+			addToClearTracker(packageToTypeNames, new char[0], cud.scope.fPackage, cud.types);
+		}
+		
+		for (Map.Entry<PackageBinding, List<char[]>> e : packageToTypeNames.entrySet()) {
+			if (e.getValue().isEmpty()) continue;
+			HashtableOfType knownTypes = (HashtableOfType) fieldAccess(e.getKey(), "knownTypes");
+			for (int i = 0; i < knownTypes.keyTable.length; i++) {
+				if (knownTypes.keyTable[i] == null) continue;
+				for (char[] toClear : e.getValue()) {
+					if (CharOperation.equals(knownTypes.keyTable[i], toClear)) knownTypes.keyTable[i] = null;
 				}
-				Method m = HashtableOfType.class.getDeclaredMethod("rehash");
-				m.setAccessible(true);
-				m.invoke(turd);
-				cud.scope = null;
-				cud.types[0].binding = null;
-				cud.types[0].scope = null;
-				processingEnv.getLookupEnvironment().buildTypeBindings(cud, null);
 			}
 			
-			processingEnv.getLookupEnvironment().completeTypeBindings();
-			return false;
-		} catch (Throwable t) {
-			System.out.println("Scream and shout!");
-			t.printStackTrace();
-			return false;
+			methodInvoke(knownTypes, "rehash");
+		}
+		
+		for (CompilationUnitDeclaration cud : roots) {
+			cud.scope = null;
+			cud.types[0].binding = null;
+			cud.types[0].scope = null;
+			processingEnv.getLookupEnvironment().buildTypeBindings(cud, null);
+		}
+		
+		processingEnv.getLookupEnvironment().completeTypeBindings();
+		return false;
+	}
+	
+	private static void fullParseType(Parser parser, CompilationUnitDeclaration cud, TypeDeclaration[] typeDecls) {
+		if (typeDecls == null) return;
+		for (TypeDeclaration typeDecl : typeDecls) {
+			for (AbstractMethodDeclaration methodDecl : typeDecl.methods) {
+				methodDecl.parseStatements(parser, cud);
+				methodDecl.bits |= PatchFixes.ALREADY_PROCESSED_FLAG;
+			}
+			fullParseType(parser, cud, typeDecl.memberTypes);
+		}
+	}
+	
+	private static void addToClearTracker(Map<PackageBinding, List<char[]>> packageToTypeNames, char[] prefix, PackageBinding packageBinding, TypeDeclaration[] typeDecls) {
+		if (typeDecls == null) return;
+		List<char[]> names = packageToTypeNames.get(packageBinding);
+		if (names == null) {
+			names = new ArrayList<char[]>();
+			packageToTypeNames.put(packageBinding, names);
+		}
+		for (TypeDeclaration typeDecl : typeDecls) {
+			char[] name;
+			if (prefix.length == 0) name = typeDecl.name;
+			else {
+				name = Arrays.copyOf(prefix, prefix.length + typeDecl.name.length);
+				System.arraycopy(typeDecl.name, 0, name, prefix.length, typeDecl.name.length);
+			}
+			names.add(name);
+			if (typeDecl.memberTypes != null && typeDecl.memberTypes.length > 0) {
+				char[] newPrefix = Arrays.copyOf(name, name.length +1);
+				newPrefix[newPrefix.length-1] = '$';
+				addToClearTracker(packageToTypeNames, newPrefix, packageBinding, typeDecl.memberTypes);
+			}
+		}
+	}
+	
+	private static void methodInvoke(Object object, String methodName) {
+		try {
+			Method m = object.getClass().getDeclaredMethod(methodName);
+			m.setAccessible(true);
+			m.invoke(object);
+		} catch (Exception e) {
+			throw Lombok.sneakyThrow(e);
+		}
+	}
+	
+	private static Object fieldAccess(Object object, String fieldName) {
+		try {
+			Field f = object.getClass().getDeclaredField(fieldName);
+			f.setAccessible(true);
+			return f.get(object);
+		} catch (Exception e) {
+			throw Lombok.sneakyThrow(e);
 		}
 	}
 }

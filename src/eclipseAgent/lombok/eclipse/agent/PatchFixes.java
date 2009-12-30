@@ -13,11 +13,11 @@ public class PatchFixes {
 		return in;
 	}
 	
-	private static final int BIT24 = 0x800000;
+	public static final int ALREADY_PROCESSED_FLAG = 0x800000;	//Bit 24
 	
 	public static boolean checkBit24(Object node) throws Exception {
 		int bits = (Integer)(node.getClass().getField("bits").get(node));
-		return (bits & BIT24) != 0;
+		return (bits & ALREADY_PROCESSED_FLAG) != 0;
 	}
 	
 	public static boolean skipRewritingGeneratedNodes(org.eclipse.jdt.core.dom.ASTNode node) throws Exception {
