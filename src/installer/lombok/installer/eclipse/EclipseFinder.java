@@ -103,7 +103,8 @@ public class EclipseFinder extends IdeFinder {
 								String eclipseLocation = findEclipseOnWindows1(dir);
 								if (eclipseLocation != null) {
 									try {
-										locations.add(createLocation(eclipseLocation));
+										IdeLocation newLocation = createLocation(eclipseLocation);
+										if (newLocation != null) locations.add(newLocation);
 									} catch (CorruptedIdeLocationException e) {
 										problems.add(e);
 									}
@@ -172,7 +173,8 @@ public class EclipseFinder extends IdeFinder {
 		
 		for (String guess : guesses) {
 			try {
-				locations.add(createLocation(guess));
+				IdeLocation newLocation = createLocation(guess);
+				if (newLocation != null) locations.add(newLocation);
 			} catch (CorruptedIdeLocationException e) {
 				problems.add(e);
 			}
@@ -206,7 +208,8 @@ public class EclipseFinder extends IdeFinder {
 		if (!f.isDirectory()) return;
 		if (f.getName().toLowerCase().equals(getMacExecutableName().toLowerCase())) {
 			try {
-				locations.add(createLocation(f.getParent()));
+				IdeLocation newLocation = createLocation(f.getParent());
+				if (newLocation != null) locations.add(newLocation);
 			} catch (CorruptedIdeLocationException e) {
 				problems.add(e);
 			}
@@ -214,7 +217,8 @@ public class EclipseFinder extends IdeFinder {
 		if (f.getName().toLowerCase().contains(getDirName())) {
 			if (new File(f, getMacExecutableName()).exists()) {
 				try {
-					locations.add(createLocation(f.toString()));
+					IdeLocation newLocation = createLocation(f.toString());
+					if (newLocation != null) locations.add(newLocation);
 				} catch (CorruptedIdeLocationException e) {
 					problems.add(e);
 				}

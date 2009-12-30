@@ -69,7 +69,8 @@ public class NetbeansFinder extends IdeFinder {
 							String netbeansLocation = findNetbeansOnWindows1(dir);
 							if (netbeansLocation != null) {
 								try {
-									locations.add(NetbeansLocationProvider.create0(netbeansLocation));
+									IdeLocation newLocation = NetbeansLocationProvider.create0(netbeansLocation);
+									if (newLocation != null) locations.add(newLocation);
 								} catch (CorruptedIdeLocationException e) {
 									problems.add(e);
 								}
@@ -85,7 +86,8 @@ public class NetbeansFinder extends IdeFinder {
 									String netbeansLocation = findNetbeansOnWindows1(dir2);
 									if (netbeansLocation != null) {
 										try {
-											locations.add(NetbeansLocationProvider.create0(netbeansLocation));
+											IdeLocation newLocation = NetbeansLocationProvider.create0(netbeansLocation);
+											if (newLocation != null) locations.add(newLocation);
 										} catch (CorruptedIdeLocationException e) {
 											problems.add(e);
 										}
@@ -153,7 +155,8 @@ public class NetbeansFinder extends IdeFinder {
 		
 		for (String guess : guesses) {
 			try {
-				locations.add(NetbeansLocationProvider.create0(guess));
+				IdeLocation newLocation = NetbeansLocationProvider.create0(guess);
+				if (newLocation != null) locations.add(newLocation);
 			} catch (CorruptedIdeLocationException e) {
 				problems.add(e);
 			}
@@ -179,7 +182,8 @@ public class NetbeansFinder extends IdeFinder {
 			if (!dir.isDirectory()) continue;
 			if (dir.getName().toLowerCase().startsWith("netbeans") && dir.getName().toLowerCase().endsWith(".app")) {
 				try {
-					locations.add(NetbeansLocationProvider.create0(dir.getAbsolutePath()));
+					IdeLocation newLocation = NetbeansLocationProvider.create0(dir.getAbsolutePath());
+					if (newLocation != null) locations.add(newLocation);
 				} catch (CorruptedIdeLocationException e) {
 					problems.add(e);
 				}
@@ -189,7 +193,8 @@ public class NetbeansFinder extends IdeFinder {
 					if (!dir2.isDirectory()) continue;
 					if (dir2.getName().toLowerCase().startsWith("netbeans") && dir2.getName().toLowerCase().endsWith(".app")) {
 						try {
-							locations.add(NetbeansLocationProvider.create0(dir2.getAbsolutePath()));
+							IdeLocation newLocation = NetbeansLocationProvider.create0(dir2.getAbsolutePath());
+							if (newLocation != null) locations.add(newLocation);
 						} catch (CorruptedIdeLocationException e) {
 							problems.add(e);
 						}
