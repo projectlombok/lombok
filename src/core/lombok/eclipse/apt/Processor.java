@@ -62,7 +62,18 @@ public class Processor extends AbstractProcessor {
 		
 		this.processingEnv = (BaseProcessingEnvImpl)procEnv;
 		
-		new LiveInjector().injectSelf();
+		if (eclipseNeedsPatching()) {
+			new LiveInjector().injectSelf();
+		}
+	}
+	
+	private boolean eclipseNeedsPatching() {
+		try {
+			return Class.forName("org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration").getDeclaredField("$lombokAST") == null;
+		} catch (Exception ignore) {
+			//I guess it isn't there, then.
+			return true;
+		}
 	}
 	
 	/** {@inheritDoc} */
