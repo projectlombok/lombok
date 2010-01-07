@@ -24,12 +24,14 @@ package lombok.delombok;
 import java.io.File;
 
 import lombok.DirectoryRunner;
+import lombok.RunTestsViaDelombok;
 
 import org.junit.runner.RunWith;
 
 @RunWith(DirectoryRunner.class)
 public class TestSourceFiles {
 	public static File getBeforeDirectory() {
+		RunTestsViaDelombok.printErrors(true);
 		return new File("test/pretty/resource/before");
 	}
 	
