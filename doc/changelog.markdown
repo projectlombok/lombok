@@ -5,6 +5,7 @@ Lombok Changelog
 * Lombok should now run in stand-alone ecj (Eclipse Compiler for Java). This isn't just useful for the few souls actually using this compiler day to day, but various eclipse build tools such as the RCP builder run ecj internally as well. [Issue #72](http://code.google.com/p/projectlombok/issues/detail?id=72)
 * Eclipse: `@Data` and other annotations now don't throw errors when you include fields with bounded wildcard generics, such as `List<? extends Number>`. [Issue #84](http://code.google.com/p/projectlombok/issues/detail?id=84)
 * plugins and `@SneakyThrows`: Resolving types in annotations now works better especially for classes that aren't in the core java libraries. [Issue #88](http://code.google.com/p/projectlombok/issues/detail?id=88)
+* BUGFIX: complex enums didn't get delomboked properly. [Issue #96](http://code.google.com/p/projectlombok/issues/detail?id=96)
 
 ### v0.9.2 "Hailbunny" (December 15th, 2009)
 * preliminary support for lombok on NetBeans! - thanks go to Jan Lahoda from NetBeans. [Issue #20](http://code.google.com/p/projectlombok/issues/detail?id=20)
