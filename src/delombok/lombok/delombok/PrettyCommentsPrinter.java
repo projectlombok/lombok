@@ -521,6 +521,22 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         print("}");
     }
 
+    public void printEnumMember(JCVariableDecl tree) throws IOException {
+        print(tree.name);
+        if (tree.init instanceof JCNewClass) {
+            JCNewClass constructor = (JCNewClass) tree.init;
+            if (constructor.args != null && constructor.args.nonEmpty()) {
+                print("(");
+                printExprs(constructor.args);
+                print(")");
+            }
+            if (constructor.def != null && constructor.def.defs != null) {
+                print(" ");
+                printBlock(constructor.def.defs, constructor.def);
+            }
+        }
+    }
+
     /** Is the given tree an enumerator definition? */
     boolean isEnumerator(JCTree t) {
         return getTag(t) == JCTree.VARDEF && (((JCVariableDecl) t).mods.flags & ENUM) != 0;
@@ -693,13 +709,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
             }
             printDocComment(tree);
             if ((tree.mods.flags & ENUM) != 0) {
-                print("/*public static final*/ ");
-                print(tree.name);
-                if (tree.init != null) {
-                    print(" /* = ");
-                    printExpr(tree.init);
-                    print(" */");
-                }
+                printEnumMember(tree);
             } else {
                 printExpr(tree.mods);
                 if ((tree.mods.flags & VARARGS) != 0) {
