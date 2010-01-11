@@ -26,12 +26,12 @@ public class DelombokApp implements LombokApp {
 			runDirectly(args);
 			return 0;
 		} catch (ClassNotFoundException e) {
-			Class<?> delombokClass = loadDelombok();
+			Class<?> delombokClass = loadDelombok(args);
 			if (delombokClass == null) {
 				return 1;
 			}
 			try {
-				loadDelombok().getMethod("main", String[].class).invoke(null, new Object[] {args.toArray(new String[0])});
+				loadDelombok(args).getMethod("main", String[].class).invoke(null, new Object[] {args.toArray(new String[0])});
 			} catch (InvocationTargetException e1) {
 				Throwable t = e1.getCause();
 				if (t instanceof Error) throw (Error)t;
@@ -42,11 +42,24 @@ public class DelombokApp implements LombokApp {
 		}
 	}
 	
-	public static Class<?> loadDelombok() throws Exception {
+	public static Class<?> loadDelombok(List<String> args) throws Exception {
 		//tools.jar is probably not on the classpath. We're going to try and find it, and then load the rest via a ClassLoader that includes tools.jar.
 		final File toolsJar = findToolsJar();
 		if (toolsJar == null) {
-			System.err.println("Can't find tools.jar. Rerun delombok with tools.jar on the classpath.");
+			String examplePath = "/path/to/tools.jar";
+			if (File.separator.equals("\\")) examplePath = "C:\\path\\to\\tools.jar";
+			StringBuilder sb = new StringBuilder();
+			for (String arg : args) {
+				if (sb.length() > 0) sb.append(' ');
+				if (arg.contains(" ")) {
+					sb.append('"').append(arg).append('"');
+				} else {
+					sb.append(arg);
+				}
+			}
+			
+			System.err.printf("Can't find tools.jar. Rerun delombok as: java -cp lombok.jar%1$s%2$s lombok.core.Main delombok %3$s\n",
+					File.pathSeparator, examplePath, sb.toString());
 			return null;
 		}
 		
