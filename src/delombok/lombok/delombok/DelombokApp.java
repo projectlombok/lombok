@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -27,7 +28,6 @@ public class DelombokApp implements LombokApp {
 		} catch (ClassNotFoundException e) {
 			Class<?> delombokClass = loadDelombok();
 			if (delombokClass == null) {
-				System.err.println("Can't find tools.jar. Rerun delombok with tools.jar on the classpath.");
 				return 1;
 			}
 			try {
@@ -136,20 +136,50 @@ public class DelombokApp implements LombokApp {
 		try {
 			File toolsJar = findToolsJarViaRT();
 			if (toolsJar != null) return toolsJar;
-		} catch (Throwable ignore) {}
+		} catch (Throwable ignore) {
+			//fallthrough
+		}
 		
-		return findToolsJarViaProperties();
+		try {
+			File toolsJar = findToolsJarViaProperties();
+			if (toolsJar != null) return toolsJar;
+		} catch (Throwable ignore) {
+			//fallthrough
+		}
+		
+		try {
+			File toolsJar = findToolsJarViaEnvironment();
+			return toolsJar;
+		} catch (Throwable ignore) {
+			//fallthrough
+		}
+		
+		return null;
+	}
+	
+	private static File findToolsJarViaEnvironment() {
+		for (Map.Entry<String, String> s : System.getenv().entrySet()) {
+			if ("JAVA_HOME".equalsIgnoreCase(s.getKey())) {
+				return extensiveCheckToolsJar(new File(s.getValue()));
+			}
+		}
+		
+		return null;
 	}
 	
 	private static File findToolsJarViaProperties() {
 		File home = new File(System.getProperty("java.home", "."));
-		File toolsJar = checkToolsJar(home);
+		return extensiveCheckToolsJar(home);
+	}
+	
+	private static File extensiveCheckToolsJar(File base) {
+		File toolsJar = checkToolsJar(base);
 		if (toolsJar != null) return toolsJar;
-		toolsJar = checkToolsJar(new File(home, "lib"));
+		toolsJar = checkToolsJar(new File(base, "lib"));
 		if (toolsJar != null) return toolsJar;
-		toolsJar = checkToolsJar(new File(home.getParentFile(), "lib"));
+		toolsJar = checkToolsJar(new File(base.getParentFile(), "lib"));
 		if (toolsJar != null) return toolsJar;
-		toolsJar = checkToolsJar(new File(new File(home, "jdk"), "lib"));
+		toolsJar = checkToolsJar(new File(new File(base, "jdk"), "lib"));
 		if (toolsJar != null) return toolsJar;
 		return null;
 	}
