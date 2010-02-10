@@ -45,7 +45,6 @@ import com.zwitserloot.cmdreader.CmdReader;
 import com.zwitserloot.cmdreader.Description;
 import com.zwitserloot.cmdreader.InvalidCommandLineException;
 import com.zwitserloot.cmdreader.Mandatory;
-import com.zwitserloot.cmdreader.Parameterized;
 import com.zwitserloot.cmdreader.Requires;
 import com.zwitserloot.cmdreader.Shorthand;
 
@@ -81,7 +80,6 @@ public class CreateLombokRuntimeApp implements LombokApp {
 		
 		@Shorthand("o")
 		@Description("Where to write the lombok-runtime.jar. Defaults to the current working directory.")
-		@Parameterized
 		@Requires("create")
 		String output;
 		

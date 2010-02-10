@@ -44,7 +44,6 @@ import com.zwitserloot.cmdreader.Description;
 import com.zwitserloot.cmdreader.Excludes;
 import com.zwitserloot.cmdreader.InvalidCommandLineException;
 import com.zwitserloot.cmdreader.Mandatory;
-import com.zwitserloot.cmdreader.Parameterized;
 import com.zwitserloot.cmdreader.Sequential;
 import com.zwitserloot.cmdreader.Shorthand;
 
@@ -72,7 +71,6 @@ public class Delombok {
 		
 		@Shorthand("e")
 		@Description("Sets the encoding of your source files. Defaults to the system default charset. Example: \"UTF-8\"")
-		@Parameterized
 		private String encoding;
 		
 		@Shorthand("p")
@@ -82,12 +80,10 @@ public class Delombok {
 		@Shorthand("d")
 		@Description("Directory to save delomboked files to")
 		@Mandatory(onlyIfNot={"print", "help"})
-		@Parameterized
 		private String target;
 		
 		@Description("Files to delombok. Provide either a file, or a directory. If you use a directory, all files in it (recursive) are delombok-ed")
 		@Sequential
-		@Parameterized
 		private List<String> input = new ArrayList<String>();
 		
 		@Description("Lombok will only delombok source files. Without this option, non-java, non-class files are copied to the target directory.")

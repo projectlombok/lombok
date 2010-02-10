@@ -44,7 +44,6 @@ import org.mangosdk.spi.ProviderFor;
 import com.zwitserloot.cmdreader.CmdReader;
 import com.zwitserloot.cmdreader.Description;
 import com.zwitserloot.cmdreader.InvalidCommandLineException;
-import com.zwitserloot.cmdreader.Parameterized;
 import com.zwitserloot.cmdreader.Sequential;
 import com.zwitserloot.cmdreader.Shorthand;
 
@@ -196,7 +195,6 @@ public class Installer {
 	
 	private static class CmdArgs {
 		@Description("Specify paths to a location to install/uninstall. Use 'auto' to apply to all automatically discoverable installations.")
-		@Parameterized
 		@Sequential
 		List<String> path = new ArrayList<String>();
 		
