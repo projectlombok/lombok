@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -25,13 +26,12 @@ public class DelombokApp implements LombokApp {
 			runDirectly(args);
 			return 0;
 		} catch (ClassNotFoundException e) {
-			Class<?> delombokClass = loadDelombok();
+			Class<?> delombokClass = loadDelombok(args);
 			if (delombokClass == null) {
-				System.err.println("Can't find tools.jar. Rerun delombok with tools.jar on the classpath.");
 				return 1;
 			}
 			try {
-				loadDelombok().getMethod("main", String[].class).invoke(null, new Object[] {args.toArray(new String[0])});
+				loadDelombok(args).getMethod("main", String[].class).invoke(null, new Object[] {args.toArray(new String[0])});
 			} catch (InvocationTargetException e1) {
 				Throwable t = e1.getCause();
 				if (t instanceof Error) throw (Error)t;
@@ -42,11 +42,24 @@ public class DelombokApp implements LombokApp {
 		}
 	}
 	
-	public static Class<?> loadDelombok() throws Exception {
+	public static Class<?> loadDelombok(List<String> args) throws Exception {
 		//tools.jar is probably not on the classpath. We're going to try and find it, and then load the rest via a ClassLoader that includes tools.jar.
 		final File toolsJar = findToolsJar();
 		if (toolsJar == null) {
-			System.err.println("Can't find tools.jar. Rerun delombok with tools.jar on the classpath.");
+			String examplePath = "/path/to/tools.jar";
+			if (File.separator.equals("\\")) examplePath = "C:\\path\\to\\tools.jar";
+			StringBuilder sb = new StringBuilder();
+			for (String arg : args) {
+				if (sb.length() > 0) sb.append(' ');
+				if (arg.contains(" ")) {
+					sb.append('"').append(arg).append('"');
+				} else {
+					sb.append(arg);
+				}
+			}
+			
+			System.err.printf("Can't find tools.jar. Rerun delombok as: java -cp lombok.jar%1$s%2$s lombok.core.Main delombok %3$s\n",
+					File.pathSeparator, examplePath, sb.toString());
 			return null;
 		}
 		
@@ -136,20 +149,50 @@ public class DelombokApp implements LombokApp {
 		try {
 			File toolsJar = findToolsJarViaRT();
 			if (toolsJar != null) return toolsJar;
-		} catch (Throwable ignore) {}
+		} catch (Throwable ignore) {
+			//fallthrough
+		}
 		
-		return findToolsJarViaProperties();
+		try {
+			File toolsJar = findToolsJarViaProperties();
+			if (toolsJar != null) return toolsJar;
+		} catch (Throwable ignore) {
+			//fallthrough
+		}
+		
+		try {
+			File toolsJar = findToolsJarViaEnvironment();
+			return toolsJar;
+		} catch (Throwable ignore) {
+			//fallthrough
+		}
+		
+		return null;
+	}
+	
+	private static File findToolsJarViaEnvironment() {
+		for (Map.Entry<String, String> s : System.getenv().entrySet()) {
+			if ("JAVA_HOME".equalsIgnoreCase(s.getKey())) {
+				return extensiveCheckToolsJar(new File(s.getValue()));
+			}
+		}
+		
+		return null;
 	}
 	
 	private static File findToolsJarViaProperties() {
 		File home = new File(System.getProperty("java.home", "."));
-		File toolsJar = checkToolsJar(home);
+		return extensiveCheckToolsJar(home);
+	}
+	
+	private static File extensiveCheckToolsJar(File base) {
+		File toolsJar = checkToolsJar(base);
 		if (toolsJar != null) return toolsJar;
-		toolsJar = checkToolsJar(new File(home, "lib"));
+		toolsJar = checkToolsJar(new File(base, "lib"));
 		if (toolsJar != null) return toolsJar;
-		toolsJar = checkToolsJar(new File(home.getParentFile(), "lib"));
+		toolsJar = checkToolsJar(new File(base.getParentFile(), "lib"));
 		if (toolsJar != null) return toolsJar;
-		toolsJar = checkToolsJar(new File(new File(home, "jdk"), "lib"));
+		toolsJar = checkToolsJar(new File(new File(base, "jdk"), "lib"));
 		if (toolsJar != null) return toolsJar;
 		return null;
 	}
