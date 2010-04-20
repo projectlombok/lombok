@@ -63,7 +63,7 @@ This buildfile is part of projectlombok.org. It responsible for finding, downloa
 			<or>
 				<not><available file="${lombok.patcher.fileloc}" /></not>
 				<not><uptodate
-						srcfile="${lombok.patcher.dir}/dist/lombok-patcher.jar"
+						srcfile="${lombok.patcher.dir}/dist/lombok.patcher.jar"
 						targetfile="${lombok.patcher.fileloc}" /></not>
 			</or>
 		</condition>
