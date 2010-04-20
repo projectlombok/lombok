@@ -70,7 +70,7 @@ This buildfile is part of projectlombok.org. It responsible for finding, downloa
 	</target>
 	
 	<target name="-replace-lombok.patcher" if="lombok.patcher.replace">
-		<copy file="${lombok.patcher.dir}/dist/lombok-patcher.jar" tofile="${lombok.patcher.fileloc}" />
+		<copy file="${lombok.patcher.dir}/dist/lombok.patcher.jar" tofile="${lombok.patcher.fileloc}" />
 		<echo level="info">** UPDATED: ${lombok.patcher.fileloc}</echo>
 	</target>
 	
