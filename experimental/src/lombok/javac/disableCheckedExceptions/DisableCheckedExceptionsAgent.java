@@ -95,8 +95,8 @@ public class DisableCheckedExceptionsAgent extends AbstractProcessor {
 		sm.addScript(ScriptBuilder.exitEarly()
 				.target(new MethodTarget("com.sun.tools.javac.comp.Check", "isUnchecked",
 						"boolean", "com.sun.tools.javac.code.Symbol$ClassSymbol"))
-				.decisionMethod(new Hook("lombok/javac/disableCheckedExceptions/DisableCheckedExceptionsAgent", "retTrue", "()Z"))
-				.valueMethod(new Hook("lombok/javac/disableCheckedExceptions/DisableCheckedExceptionsAgent", "retTrue", "()Z"))
+				.decisionMethod(new Hook("lombok.javac.disableCheckedExceptions.DisableCheckedExceptionsAgent", "retTrue", "boolean"))
+				.valueMethod(new Hook("lombok.javac.disableCheckedExceptions.DisableCheckedExceptionsAgent", "retTrue", "boolean"))
 				.insert().build());
 	}
 	
