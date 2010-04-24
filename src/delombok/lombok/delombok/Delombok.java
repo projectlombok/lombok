@@ -323,10 +323,14 @@ public class Delombok {
 		File outFile = new File(base, fileName);
 		outFile.getParentFile().mkdirs();
 		FileOutputStream out = new FileOutputStream(outFile);
-		return new OutputStreamWriter(out, charset);
+		return createUnicodeEscapeWriter(out);
 	}
 	
 	private Writer createStandardOutWriter() {
-		return new OutputStreamWriter(System.out, charset);
+		return createUnicodeEscapeWriter(System.out);
+	}
+	
+	private Writer createUnicodeEscapeWriter(OutputStream out) {
+		return new UnicodeEscapeWriter(new OutputStreamWriter(out, charset), charset);
 	}
 }
