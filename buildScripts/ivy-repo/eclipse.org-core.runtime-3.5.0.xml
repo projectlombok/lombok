@@ -1,0 +1,12 @@
+<ivy-module version="2.0">
+	<info organisation="eclipse.org" module="core.runtime" revision="3.5.0" publication="20100419062500">
+		<license name="Eclipse Public Licence v1.0" url="http://www.eclipse.org/org/documents/epl-v10.php" />
+		<description homepage="http://www.eclipse.org/eclipse/" />
+	</info>
+	<configurations>
+		<conf name="build" />
+	</configurations>
+	<publications>
+		<artifact conf="build" url="http://projectlombok.org/ivyrepo/eclipse/org.eclipse.core.runtime_3.5.0.v20090525.jar" />
+	</publications>
+</ivy-module>

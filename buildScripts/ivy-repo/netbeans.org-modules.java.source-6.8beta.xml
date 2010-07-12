@@ -1,0 +1,12 @@
+<ivy-module version="2.0">
+	<info organisation="netbeans.org" module="modules.java.source" revision="6.8beta" publication="20100419062500">
+		<license name="CDDL 1.0 / GPL 2.0" url="http://netbeans.org/cddl-gplv2.html" />
+		<description homepage="http://www.netbeans.org/" />
+	</info>
+	<configurations>
+		<conf name="build" />
+	</configurations>
+	<publications>
+		<artifact conf="build" url="http://projectlombok.org/ivyrepo/netbeans/org-netbeans-modules-java-source_6.8beta.jar" />
+	</publications>
+</ivy-module>

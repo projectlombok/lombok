@@ -1,0 +1,11 @@
+<ivysettings>
+	<resolvers>
+		<chain name="projectRepos">
+			<filesystem name="projectLocalRepo">
+				<ivy pattern="${ivy.settings.dir}/ivy-repo/[organization]-[module]-[revision].xml" />
+			</filesystem>
+			<ibiblio name="maven-repo2" m2compatible="true" root="http://repo2.maven.org/maven2" />
+		</chain>
+	</resolvers>
+	<settings defaultResolver="projectRepos" />
+</ivysettings>

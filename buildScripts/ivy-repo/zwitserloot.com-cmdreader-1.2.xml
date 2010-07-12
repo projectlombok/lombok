@@ -1,0 +1,15 @@
+<ivy-module version="2.0">
+	<info organisation="zwitserloot.com" module="cmdreader" revision="1.2" publication="20100210120000">
+		<license name="MIT License" url="http://www.opensource.org/licenses/mit-license.php" />
+		<ivyauthor name="rzwitserloot" url="http://zwitserloot.com/" />
+		<description homepage="http://github.com/rzwitserloot/com.zwitserloot.cmdreader" />
+	</info>
+	<configurations>
+		<conf name="runtime" />
+		<conf name="sources" />
+	</configurations>
+	<publications>
+		<artifact conf="runtime" url="http://github.com/downloads/rzwitserloot/com.zwitserloot.cmdreader/com.zwitserloot.cmdreader-1.2.jar" />
+		<artifact type="zip" conf="sources" url="http://github.com/downloads/rzwitserloot/com.zwitserloot.cmdreader/com.zwitserloot.cmdreader-src-1.2.zip" />
+	</publications>
+</ivy-module>

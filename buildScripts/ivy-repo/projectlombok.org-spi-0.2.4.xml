@@ -1,0 +1,12 @@
+<ivy-module version="2.0">
+	<info organisation="projectlombok.org" module="spi" revision="0.2.4" publication="20100419062500">
+		<license name="Apache License v2.0" url="http://www.apache.org/licenses/LICENSE-2.0" />
+		<description homepage="http://code.google.com/p/spi/" />
+	</info>
+	<configurations>
+		<conf name="build" />
+	</configurations>
+	<publications>
+		<artifact conf="build" url="http://projectlombok.org/ivyrepo/tools/spi-0.2.4.jar" />
+	</publications>
+</ivy-module>

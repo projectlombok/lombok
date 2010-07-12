@@ -1,5 +1,5 @@
 <!--
-  Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+  Copyright © 2010 Reinier Zwitserloot and Roel Spilker.
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -19,17 +19,83 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 -->
-<project name="lombok" default="dist">
+<project name="lombok" default="dist" xmlns:ivy="antlib:com.zwitserloot.ivyplusplus">
 	<description>
 This buildfile is part of projectlombok.org. It is the main entry point that contains
 the common tasks and can be called on to run the main aspects of all the sub-scripts.
 	</description>
+	
+	<property name="build.compiler" value="javac1.6" />
+	<property name="ivy.retrieve.pattern" value="lib/[conf]/[artifact].[ext]" />
+	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
+	
 	<target name="clean" description="Removes all generated files">
 		<delete dir="build" quiet="true" />
-		<delete dir="dist" quiet="true" />
 	</target>
 	
-	<target name="version" description="Shows the version number" unless="lombok.version">
+	<target name="distclean" depends="clean" description="Deletes everything that this build script has ever generated.">
+		<delete dir="lib" quiet="true" />
+		<delete dir="dist" quiet="true" />
+		<delete file=".project" quiet="true" />
+		<delete file=".classpath" quiet="true" />
+		<delete dir=".settings" quiet="true" />
+	</target>
+	
+	<target name="download-ipp" unless="ivyplusplus.available">
+		<mkdir dir="lib" />
+		<get src="http://projectlombok.org/downloads/ivyplusplus.jar" dest="lib/ivyplusplus.jar" usetimestamp="true" />
+	</target>
+	
+	<target name="ensure-ipp" depends="download-ipp">
+		<taskdef classpath="lib/ivyplusplus.jar" resource="com/zwitserloot/ivyplusplus/antlib.xml" uri="antlib:com.zwitserloot.ivyplusplus" />
+	</target>
+	
+	<target name="config-ivy" depends="ensure-ipp" unless="ivy.config">
+		<ivy:configure file="buildScripts/ivysettings.xml" />
+		<property name="ivy.config" value="true" />
+	</target>
+	
+	<target name="deps" depends="ensureBuildDeps, ensureRuntimeDeps, ensureTestDeps, contrib" description="Downloads all dependencies." />
+	
+	<target name="contrib" depends="config-ivy" description="Downloads various non-crucial documentation, sources, etc that are useful when developing lombok.ast.">
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="contrib" />
+		<ivy:retrieve />
+	</target>
+	
+	<target name="ensureBuildDeps" depends="config-ivy">
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build" />
+		<ivy:retrieve />
+	</target>
+	
+	<target name="ensureRuntimeDeps" depends="config-ivy">
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="runtime" />
+		<ivy:retrieve />
+	</target>
+	
+	<target name="ensureTestDeps" depends="config-ivy">
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="test" />
+		<ivy:retrieve />
+	</target>
+	
+	<path id="build.path">
+		<fileset dir="lib/build">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+	
+	<path id="runtime.path">
+		<fileset dir="lib/runtime">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+	
+	<path id="test.path">
+		<fileset dir="lib/test">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+	
+	<target name="version" depends="ensure-ipp" description="Shows the version number" unless="lombok.version">
 		<mkdir dir="build/lombok" />
 		<javac includeDestClasses="false" srcdir="src/core" debug="on" destdir="build/lombok" source="1.5" target="1.5" includes="lombok/core/Version.java" />
 		<java
@@ -37,68 +103,205 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			classpath="build/lombok"
 			failonerror="true"
 			output="build/version.txt" />
-		<loadresource property="lombok.version">
-			<file file="build/version.txt" />
-			<filterchain>
-				<striplinebreaks />
-			</filterchain>
-		</loadresource>
+		<ivy:loadversion property="lombok.version" file="build/version.txt" />
 		<echo level="info">Lombok version: ${lombok.version}</echo>
 	</target>
 	
-	<target name="buildDeps" description="Builds buildable dependencies">
-		<ant antfile="buildScripts/deps.ant.xml" target="build" inheritAll="false" />
+	<target name="-unpackLibs" depends="ensureRuntimeDeps">
+		<unjar dest="build/lombok">
+			<path refid="runtime.path" />
+		</unjar>
 	</target>
 	
-	<target name="updateDeps" description="Updates existing dependencies">
-		<ant antfile="buildScripts/deps.ant.xml" target="update" inheritAll="false" />
+	<target name="compile" depends="version, ensureBuildDeps" description="Compiles the code.">
+		<!-- ant includes the destination dir on the classpath (and there are good reason to do this), but that also means
+		 the bleeding edge lombok from the previous build is run, which means if there are bugs in it, you can't compile
+		anymore until you 'ant clean'. That's very much not desired, so we kill the processor, which stops lombok from running.
+		We re-create the file at the end of this target. -->
+		<delete file="build/lombok/META-INF/services/javax.annotation.processing.Processor" quiet="true" />
+		<ivy:compile destdir="build/lombok" source="1.5" target="1.5">
+			<src path="src/core" />
+			<src path="src/installer" />
+			<src path="src/eclipseAgent" />
+			<exclude name="lombok/javac/**" />
+			<classpath refid="build.path" />
+		</ivy:compile>
+		<ivy:compile destdir="build/lombok" source="1.6" target="1.6">
+			<src path="src/core" />
+			<src path="src/delombok" />
+			<src path="src/netbeansAgent" />
+			<include name="lombok/javac/**" />
+			<include name="lombok/delombok/**" />
+			<include name="lombok/netbeans/**" />
+			<classpath location="build/lombok" />
+			<classpath refid="build.path" />
+		</ivy:compile>
+		<mkdir dir="build/lombok/META-INF" />
+		<mkdir dir="build/lombok/META-INF/services" />
+		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.core.AnnotationProcessor</echo>
 	</target>
 	
-	<target name="installDeps" description="Interactively asks you which dependencies you want, and installs them.">
-		<ant antfile="buildScripts/deps.ant.xml" target="install" inheritAll="false" />
-	</target>
-	
-	<target name="installDeps-silent" description="Installs ALL dependencies, optional or not.">
-		<ant antfile="buildScripts/deps.ant.xml" target="install-silent" inheritAll="false" />
-	</target>
-	
-	<target name="dist" depends="version, buildDeps" description="Builds THE lombok.jar file which contains everything">
-		<ant antfile="buildScripts/compile.ant.xml" target="dist" inheritAll="false">
-			<property name="lombok.version" value="${lombok.version}" />
-		</ant>
+	<target name="dist" description="Builds THE lombok.jar file which contains everything." depends="version, compile, -unpackLibs">
+		<mkdir dir="dist" />
+		<copy file="doc/changelog.markdown" tofile="build/changelog.txt" />
+		<jar destfile="dist/lombok-${lombok.version}.jar">
+			<fileset dir="build/lombok" />
+			<fileset dir="build" includes="changelog.txt" />
+			<fileset dir="." includes="LICENSE" />
+			<manifest>
+				<attribute name="Premain-Class" value="lombok.core.Agent" />
+				<attribute name="Agent-Class" value="lombok.core.Agent" />
+				<attribute name="Can-Redefine-Classes" value="true" />
+				<attribute name="Main-Class" value="lombok.core.Main" />
+				<attribute name="Lombok-Version" value="${lombok.version}" />
+			</manifest>
+		</jar>
+		<copy file="dist/lombok-${lombok.version}.jar" tofile="dist/lombok.jar" />
 		<property name="lombok.dist.built" value="true" />
 	</target>
 	
-	<target name="compile" depends="version" description="Compiles the code">
-		<ant antfile="buildScripts/compile.ant.xml" target="compile" inheritAll="false">
-			<property name="lombok.version" value="${lombok.version}" />
-		</ant>
+	<target name="eclipse" depends="deps, contrib" description="Creates eclipse project files and downloads all dependencies. Open this directory as project in eclipse after running this target.">
+		<ivy:eclipsegen>
+			<srcdir dir="src/core" />
+			<srcdir dir="src/eclipseAgent" />
+			<srcdir dir="src/netbeansAgent" />
+			<srcdir dir="src/installer" />
+			<srcdir dir="src/delombok" />
+			<srcdir dir="experimental/src" />
+			<srcdir dir="test/delombok/src" />
+			<srcdir dir="test/core/src" />
+			<conf name="build" sources="contrib" />
+			<conf name="test" sources="contrib" />
+			<settings>
+				<url url="http://projectlombok.org/downloads/lombok.eclipse.settings" />
+			</settings>
+			<apt location="lib/build/spi.jar" />
+		</ivy:eclipsegen>
+		
+		<condition property="startOnFirstThread" value="-XstartOnFirstThread">
+			<os family="mac" />
+		</condition>
+		<condition property="d32" value="-d32">
+			<os family="mac" />
+		</condition>
+		<condition property="d32" value="">
+			<not><os family="mac" /></not>
+		</condition>
+		
+		<copy
+				file="buildScripts/eclipse-debug-target.template"
+				tofile="LombokizedEclipse.launch"
+				preservelastmodified="true"
+				overwrite="true">
+			<filterset>
+				<filter token="START_ON_FIRST_THREAD" value="${startOnFirstThread}" />
+				<filter token="D32" value="${d32}" />
+			</filterset>
+		</copy>
 	</target>
 	
-	<target name="test" depends="compile">
-		<ant antfile="buildScripts/test.ant.xml" target="test" />
+	<target name="-test-compile" depends="ensureTestDeps, compile" unless="skipTests">
+		<mkdir dir="build/tests" />
+		<ivy:compile destdir="build/tests" source="1.5" target="1.5">
+			<classpath refid="test.path" />
+			<classpath path="build/lombok" />
+			<src path="test/core/src" />
+			<src path="test/delombok/src" />
+		</ivy:compile>
+		<copy todir="build/tests">
+			<fileset dir="test/pretty/resource" />
+			<fileset dir="test/delombok/resource" />
+		</copy>
 	</target>
 	
-	<target name="findbugs" description="Runs findbugs on the code">
-		<ant antfile="buildScripts/compile.ant.xml" target="findbugs" inheritAll="false" />
+	<target name="test" depends="-test-compile" unless="tests.skip">
+		<junit haltonfailure="yes" fork="on">
+			<formatter type="plain" usefile="false" unless="tests.quiet" />
+			<classpath refid="test.path" />
+			<classpath path="build/lombok" />
+			<classpath path="build/tests" />
+			<batchtest>
+				<fileset dir="test/core/src">
+					<include name="**/Test*.java" />
+				</fileset>
+				<fileset dir="test/delombok/src">
+					<include name="**/Test*.java" />
+				</fileset>
+			</batchtest>
+		</junit>
+		<echo level="info">All tests successful.</echo>
 	</target>
 	
-	<target name="maven" depends="version" description="Build a maven repository">
-		<ant antfile="buildScripts/maven.ant.xml" target="maven" inheritAll="false">
-			<property name="lombok.version" value="${lombok.version}" />
-		</ant>
+	<target name="maven" depends="version, dist, test" description="Build a maven repository.">
+		<ivy:make-maven-repo
+				group="org.projectlombok" artifact="lombok"
+				version="${lombok.version}"
+				url="http://projectlombok.org/mavenrepo"
+				outfile="dist/maven.tar.bz2"
+				artifactfile="dist/lombok-${lombok.version}.jar"
+				pomfile="doc/maven-pom.xml">
+				
+				<sources>
+					<fileset dir="src/core" />
+					<fileset dir="src/eclipseAgent" />
+					<fileset dir="src/netbeansAgent" />
+					<fileset dir="src/installer" />
+					<fileset dir="src/delombok" />
+					<fileset dir="experimental/src" />
+					<fileset dir="test/delombok/src" />
+					<fileset dir="test/core/src" />
+				</sources>
+		</ivy:make-maven-repo>
 	</target>
 	
-	<target name="maven-publish" depends="clean, version" description="Build a maven repository then upload it to projectlombok.org">
-		<ant antfile="buildScripts/maven.ant.xml" target="maven-publish" inheritAll="false">
-			<property name="lombok.version" value="${lombok.version}" />
-		</ant>
+	<target name="maven-publish" depends="maven" description="Build a maven repository then upload it to projectlombok.org.">
+		<available file="libertad-upload.key" property="libertad.key.available" />
+		<fail unless="libertad.key.available">You don't have the libertad-upload.key; you'll need it to get write access to the server.</fail>
+		<scp
+			localFile="dist/maven.tar.bz2"
+			todir="lombokup@projectlombok.org:/staging"
+			keyfile="libertad-upload.key" passphrase=""
+			sftp="true" verbose="true" trust="true" />
+		<sshexec
+			host="projectlombok.org"
+			username="lombokup"
+			keyfile="libertad-upload.key" passphrase=""
+			trust="true" command="./deployMavenRepo" />
 	</target>
 	
-	<target name="publish" depends="clean, version" description="Publishes the latest build to googlecode">
-		<ant antfile="buildScripts/publish.ant.xml" target="publish" inheritAll="false">
-			<property name="lombok.version" value="${lombok.version}" />
-		</ant>
+	<target name="-credentials">
+		<available property="hasCredentialsFile" file="${credentialsFile}"/>
+	</target>
+	
+	<target name="-checkCredentialsFile" depends="-credentials" unless="hasCredentialsFile">
+		<echo file="${credentialsFile}">
+#username=[your google account name without @gmail.com]
+#password=[your googlecode password, is NOT your gmail password]
+		</echo>
+		<fail message="fill in ${credentialsFile} to provide your credentials" />
+	</target>
+	
+	<target name="publish" description="Publishes the latest build to googlecode" depends="version, -checkCredentialsFile, dist, test">
+		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="lib/build/ant-googlecode-0.0.2.jar" name="gcupload" />
+		<property file="${credentialsFile}" prefix="google" />
+		<gcupload 
+				username="${google.username}"
+				password="${google.password}"
+				projectname="projectlombok"
+				filename="dist/lombok.jar"
+				targetfilename="lombok-${lombok.version}.jar"
+				summary="Version ${lombok.version}"
+				labels=""
+				verbose="true" />
+		<gcupload 
+				username="${google.username}"
+				password="${google.password}" 
+				projectname="projectlombok" 
+				filename="dist/lombok.jar" 
+				targetfilename="lombok.jar"
+				summary="Version ${lombok.version} - The everything jar - doubleclick it to install, or just include it in your projects."
+				labels="Featured" 
+				verbose="true" />
 	</target>
 	
 	<target name="publish-all" depends="clean, version, website-publish, maven-publish, publish"

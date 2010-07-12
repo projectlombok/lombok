@@ -1,0 +1,14 @@
+<ivy-module version="2.0">
+	<info organisation="projectlombok.org" module="javac" revision="1.6.0.18" publication="20100225011200">
+		<license name="GNU General Public License v2 with Classpath Exception" url="http://openjdk.java.net/legal/gplv2+ce.html" />
+		<description homepage="http://openjdk.java.net/" />
+	</info>
+	<configurations>
+		<conf name="runtime" />
+		<conf name="sources" />
+	</configurations>
+	<publications>
+		<artifact conf="runtime" url="http://projectlombok.org/ivyrepo/langtools/javac.jar" />
+		<artifact type="zip" conf="sources" url="http://projectlombok.org/ivyrepo/langtools/javac-sources.zip" />
+	</publications>
+</ivy-module>

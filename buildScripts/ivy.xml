@@ -1,0 +1,39 @@
+<ivy-module version="2.0">
+	<info organisation="projectlombok.org" module="lombok" />
+	<configurations>
+		<conf name="eclipseBuild" />
+		<conf name="netbeansBuild" />
+		<conf name="build" extends="eclipseBuild, netbeansBuild" />
+		<conf name="runtime" />
+		<conf name="test" extends="build, runtime" />
+		<conf name="contrib" />
+	</configurations>
+	<dependencies>
+		<dependency org="projectlombok.org" name="lombok.patcher" rev="0.3" conf="build; runtime->build" />
+		<dependency org="zwitserloot.com" name="cmdreader" rev="1.2" conf="build->runtime; runtime" />
+		
+		<dependency org="projectlombok.org" name="junit" rev="4.8.1" conf="test" />
+		
+		<dependency org="org.apache.ant" name="ant" rev="1.8.0" conf="build->master" />
+		<dependency org="projectlombok.org" name="spi" rev="0.2.4" conf="build" />
+		<dependency org="projectlombok.org" name="ant-googlecode" rev="0.0.2" conf="build" />
+		<dependency org="jcraft.com" name="jsch" rev="0.1.42" conf="build" />
+		<dependency org="projectlombok.org" name="jsch-ant-fixed" rev="0.1.42" conf="build" />
+		<dependency org="projectlombok.org" name="markdownj" rev="1.02b4" conf="build" />
+		<dependency org="de.java2html" name="java2html" rev="5.0" conf="build->master" />
+		
+		<dependency org="projectlombok.org" name="javac" rev="1.6.0.18" conf="build->runtime; contrib->sources" />
+		<dependency org="eclipse.org" name="ecj" rev="3.5.2" conf="build->runtime; contrib->sources" />
+		
+		<dependency org="netbeans.org" name="boot" rev="6.8beta" conf="netbeansBuild->build" />
+		<dependency org="netbeans.org" name="openide.modules" rev="6.8beta" conf="netbeansBuild->build" />
+		<dependency org="netbeans.org" name="openide.util" rev="6.8beta" conf="netbeansBuild->build" />
+		<dependency org="netbeans.org" name="modules.java.source" rev="6.8beta" conf="netbeansBuild->build" />
+		
+		<dependency org="eclipse.org" name="core.runtime" rev="3.5.0" conf="eclipseBuild->build" />
+		<dependency org="eclipse.org" name="equinox.common" rev="3.5.0" conf="eclipseBuild->build" />
+		<dependency org="eclipse.org" name="jdt.core" rev="3.5.0" conf="eclipseBuild->build" />
+		<dependency org="eclipse.org" name="jdt.ui" rev="3.5.1" conf="eclipseBuild->build" />
+		<dependency org="eclipse.org" name="osgi" rev="3.5.0" conf="eclipseBuild->build" />
+	</dependencies>
+</ivy-module>

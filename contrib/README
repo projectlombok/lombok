@@ -1,4 +1,0 @@
-The files in this directory are not required to either run or build lombok.
-They are in the repository solely because they are useful when developing lombok.
-For example, the sources to used libraries are here so you can click through to it
-in your IDE when you configure your library requirements correctly.

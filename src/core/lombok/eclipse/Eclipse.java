@@ -113,7 +113,6 @@ public class Eclipse {
 	}
 	
 	private static class TerminalLogger {
-		@SuppressWarnings("unused")	//to match signature of EclipseWorkspaceLogger.
 		void error(String message, String bundleName, Throwable error) {
 			System.err.println(message);
 			error.printStackTrace();

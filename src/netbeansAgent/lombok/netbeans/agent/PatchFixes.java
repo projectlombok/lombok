@@ -52,7 +52,7 @@ import com.sun.tools.javac.util.Context;
 // This footwork was converted into a patch script form by me (rzwitserloot). See:
 // http://code.google.com/p/projectlombok/issues/detail?id=20#c3
 public class PatchFixes {
-	public static boolean loadClass_decision(@SuppressWarnings("unused") ClassLoader loader, String name) throws Exception {
+	public static boolean loadClass_decision(ClassLoader loader, String name) throws Exception {
 		return name.startsWith("lombok.");
 	}
 	
@@ -64,7 +64,7 @@ public class PatchFixes {
 		return (Class<?>)m.invoke(loader, pkg, name);
 	}
 	
-	public static boolean getResource_decision(@SuppressWarnings("unused") ClassLoader loader, String name) throws Exception {
+	public static boolean getResource_decision(ClassLoader loader, String name) throws Exception {
 		return name.startsWith("META-INF/services/lombok.");
 	}
 	
@@ -74,7 +74,7 @@ public class PatchFixes {
 		return (URL) m.invoke(loader, name);
 	}
 	
-	public static boolean getResources_decision(@SuppressWarnings("unused") ClassLoader loader, String name) throws Exception {
+	public static boolean getResources_decision(ClassLoader loader, String name) throws Exception {
 		return name.startsWith("META-INF/services/lombok.");
 	}
 	
@@ -130,7 +130,7 @@ public class PatchFixes {
 	}
 	
 	public static void addTaskListenerWhenCallingJavac(JavacTaskImpl task,
-			@SuppressWarnings("unused") /* Will come in handy later */ ClasspathInfo cpInfo) throws Exception {
+			ClasspathInfo cpInfo) throws Exception {
 		if (task == null) return;
 		Class<?> entryPoint = JavacTaskImpl.class.getClassLoader().loadClass("lombok.netbeans.agent.NetbeansEntryPoint");
 		if (entryPoint == null) {

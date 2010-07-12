@@ -1,0 +1,13 @@
+<ivy-module version="2.0">
+	<info organisation="projectlombok.org" module="junit" revision="4.8.1" publication="20100225011200">
+		<license name="MIT License" url="http://www.opensource.org/licenses/mit-license.php" />
+		<ivyauthor name="KentBeck" url="http://www.threeriversinstitute.org/Kent%20Beck.htm" />
+		<description homepage="http://junit.org/" />
+	</info>
+	<configurations>
+		<conf name="test" />
+	</configurations>
+	<publications>
+		<artifact conf="test" url="http://cloud.github.com/downloads/KentBeck/junit/junit-4.8.1.jar" />
+	</publications>
+</ivy-module>
