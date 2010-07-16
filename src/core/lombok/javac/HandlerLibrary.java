@@ -94,7 +94,7 @@ public class HandlerLibrary {
 	}
 	
 	/** Uses SPI Discovery to find implementations of {@link JavacAnnotationHandler}. */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	private static void loadAnnotationHandlers(HandlerLibrary lib) throws IOException {
 		//No, that seemingly superfluous reference to JavacAnnotationHandler's classloader is not in fact superfluous!
 		for (JavacAnnotationHandler handler : SpiLoadUtil.findServices(JavacAnnotationHandler.class, JavacAnnotationHandler.class.getClassLoader())) {

@@ -147,7 +147,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 		return nodeMap.get(node);
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	L replaceNewWithExistingOld(Map<N, L> oldNodes, L newNode) {
 		L oldNode = oldNodes.get(newNode.get());
 		L targetNode = oldNode == null ? newNode : oldNode;
@@ -317,7 +317,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	 * 
 	 * @throws IllegalAccessException This exception won't happen, but we allow you to throw it so you can avoid having to catch it.
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	protected void setElementInASTCollection(Field field, Object fieldRef, List<Collection<?>> chain, Collection<?> collection, int idx, N newN) throws IllegalAccessException {
 		if (collection instanceof List<?>) {
 			((List)collection).set(idx, newN);

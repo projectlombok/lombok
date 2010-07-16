@@ -94,7 +94,8 @@ public class HandlerLibrary {
 	}
 	
 	/** Uses SPI Discovery to find implementations of {@link EclipseAnnotationHandler}. */
-	@SuppressWarnings("unchecked") private static void loadAnnotationHandlers(HandlerLibrary lib) {
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	private static void loadAnnotationHandlers(HandlerLibrary lib) {
 		try {
 			for (EclipseAnnotationHandler<?> handler : SpiLoadUtil.findServices(EclipseAnnotationHandler.class, EclipseAnnotationHandler.class.getClassLoader())) {
 				try {

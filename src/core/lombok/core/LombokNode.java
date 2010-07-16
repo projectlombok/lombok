@@ -124,7 +124,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 * 
 	 * Also affects the underlying (Eclipse/javac) AST.
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	public L replaceWith(N newN, Kind newNodeKind) {
 		ast.setChanged();
 		L newNode = ast.buildTree(newN, newNodeKind);
@@ -228,7 +228,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 * 
 	 * Does not change the underlying (javac/Eclipse) AST, only the wrapped view.
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"rawtypes", "unchecked"})
 	public L add(N newChild, Kind newChildKind) {
 		ast.setChanged();
 		L n = ast.buildTree(newChild, newChildKind);
