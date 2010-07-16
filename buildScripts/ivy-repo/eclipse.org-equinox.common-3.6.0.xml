@@ -1,0 +1,14 @@
+<ivy-module version="2.0">
+	<info organisation="eclipse.org" module="equinox.common" revision="3.6.0" publication="20100503120000">
+		<license name="Eclipse Public Licence v1.0" url="http://www.eclipse.org/org/documents/epl-v10.php" />
+		<description homepage="http://www.eclipse.org/eclipse/" />
+	</info>
+	<configurations>
+		<conf name="runtime" />
+		<conf name="sources" />
+	</configurations>
+	<publications>
+		<artifact conf="runtime" url="http://projectlombok.org/ivyrepo/eclipse/org.eclipse.equinox.common_3.6.0.v20100503.jar" />
+		<artifact type="zip" conf="sources" url="http://projectlombok.org/ivyrepo/eclipse/org.eclipse.equinox.common_3.6.0.v20100503-sources.jar" />
+	</publications>
+</ivy-module>

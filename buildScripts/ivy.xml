@@ -23,17 +23,17 @@
 		<dependency org="de.java2html" name="java2html" rev="5.0" conf="build->master" />
 		
 		<dependency org="projectlombok.org" name="javac" rev="1.6.0.18" conf="build->runtime; contrib->sources" />
-		<dependency org="eclipse.org" name="ecj" rev="3.5.2" conf="build->runtime; contrib->sources" />
+		<dependency org="eclipse.org" name="ecj" rev="3.6.0" conf="build->runtime; contrib->sources" />
 		
 		<dependency org="netbeans.org" name="boot" rev="6.8beta" conf="netbeansBuild->build" />
 		<dependency org="netbeans.org" name="openide.modules" rev="6.8beta" conf="netbeansBuild->build" />
 		<dependency org="netbeans.org" name="openide.util" rev="6.8beta" conf="netbeansBuild->build" />
 		<dependency org="netbeans.org" name="modules.java.source" rev="6.8beta" conf="netbeansBuild->build" />
 		
-		<dependency org="eclipse.org" name="core.runtime" rev="3.5.0" conf="eclipseBuild->build" />
-		<dependency org="eclipse.org" name="equinox.common" rev="3.5.0" conf="eclipseBuild->build" />
-		<dependency org="eclipse.org" name="jdt.core" rev="3.5.0" conf="eclipseBuild->build" />
-		<dependency org="eclipse.org" name="jdt.ui" rev="3.5.1" conf="eclipseBuild->build" />
-		<dependency org="eclipse.org" name="osgi" rev="3.5.0" conf="eclipseBuild->build" />
+		<dependency org="eclipse.org" name="core.runtime" rev="3.6.0" conf="eclipseBuild->runtime; contrib->sources" />
+		<dependency org="eclipse.org" name="jdt.core" rev="3.6.0" conf="eclipseBuild->runtime; contrib->sources" />
+		<dependency org="eclipse.org" name="jdt.ui" rev="3.6.0" conf="eclipseBuild->runtime; contrib->sources" />
+		<dependency org="eclipse.org" name="equinox.common" rev="3.6.0" conf="eclipseBuild->runtime; contrib->sources" />
+		<dependency org="eclipse.org" name="osgi" rev="3.6.0" conf="eclipseBuild->runtime; contrib->sources" />
 	</dependencies>
 </ivy-module>
