@@ -2,11 +2,13 @@ Lombok Changelog
 ----------------
 
 ### v0.9.3 (edge)
-* Lombok should now run in stand-alone ecj (Eclipse Compiler for Java). This isn't just useful for the few souls actually using this compiler day to day, but various eclipse build tools such as the RCP builder run ecj internally as well. [Issue #72](http://code.google.com/p/projectlombok/issues/detail?id=72)
-* Eclipse: `@Data` and other annotations now don't throw errors when you include fields with bounded wildcard generics, such as `List<? extends Number>`. [Issue #84](http://code.google.com/p/projectlombok/issues/detail?id=84)
-* plugins and `@SneakyThrows`: Resolving types in annotations now works better especially for classes that aren't in the core java libraries. [Issue #88](http://code.google.com/p/projectlombok/issues/detail?id=88)
+* PLATFORMS: Lombok should now run in stand-alone ecj (Eclipse Compiler for Java). This isn't just useful for the few souls actually using this compiler day to day, but various eclipse build tools such as the RCP builder run ecj internally as well. [Issue #72](http://code.google.com/p/projectlombok/issues/detail?id=72)
+* BUGFIX: Eclipse: `@Data` and other annotations now don't throw errors when you include fields with bounded wildcard generics, such as `List<? extends Number>`. [Issue #84](http://code.google.com/p/projectlombok/issues/detail?id=84)
+* FEATURE: plugins and `@SneakyThrows`: Resolving types in annotations now works better especially for classes that aren't in the core java libraries. [Issue #88](http://code.google.com/p/projectlombok/issues/detail?id=88)
 * BUGFIX: complex enums didn't get delomboked properly. [Issue #96](http://code.google.com/p/projectlombok/issues/detail?id=96)
 * FEATURE: If `tools.jar` isn't found (required when running _delombok_), now a useful error message is generated. The search for `tools.jar` now also looks in `JAVA_HOME`.
+* FEATURE: FindBugs' `@CheckForNull` is now copied from a field to a setter's parameter and the getter method just like `@Nullable`. [Issue #128](http://code.google.com/p/projectlombok/issues/detail?id=128)
+* BUILD: dependencies are now fetched automatically via ivy, and most dependencies now include sources by default, which is particularly handy for those working on the lombok sources themselves.
 
 ### v0.9.2 "Hailbunny" (December 15th, 2009)
 * preliminary support for lombok on NetBeans! - thanks go to Jan Lahoda from NetBeans. [Issue #20](http://code.google.com/p/projectlombok/issues/detail?id=20)
