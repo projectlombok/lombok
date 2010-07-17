@@ -79,7 +79,7 @@ public class Main {
 		
 		@Override public int runApp(List<String> args) {
 			try {
-				InputStream in = Main.class.getResourceAsStream("/LICENCE");
+				InputStream in = Main.class.getResourceAsStream("/LICENSE");
 				try {
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
 					byte[] b = new byte[65536];
@@ -94,7 +94,7 @@ public class Main {
 					in.close();
 				}
 			} catch (Exception e) {
-				System.err.println("License file not found. Check http://projectlombok.org/LICENCE");
+				System.err.println("License file not found. Check http://projectlombok.org/LICENSE");
 				return 1;
 			}
 		}
@@ -142,7 +142,7 @@ public class Main {
 			out.println("------------------------------");
 		}
 		out.println("projectlombok.org v" + Version.getVersion());
-		out.println("Copyright (C) 2009 Reinier Zwitserloot and Roel Spilker.");
+		out.println("Copyright (C) 2009-2010 Reinier Zwitserloot and Roel Spilker.");
 		out.println("Run 'lombok license' to see the lombok license agreement.");
 		out.println();
 		out.println("Run lombok without any parameters to start the graphical installer.");
