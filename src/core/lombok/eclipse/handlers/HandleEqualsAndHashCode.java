@@ -561,15 +561,14 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		for (EclipseNode field : fields) {
 			FieldDeclaration f = (FieldDeclaration) field.get();
 			char[] token = f.type.getLastToken();
+			
 			if (f.type.dimensions() == 0 && token != null) {
 				if (Arrays.equals(TypeConstants.FLOAT, token)) {
 					statements.add(generateCompareFloatOrDouble(otherN, "Float".toCharArray(), f.name, source));
 				} else if (Arrays.equals(TypeConstants.DOUBLE, token)) {
 					statements.add(generateCompareFloatOrDouble(otherN, "Double".toCharArray(), f.name, source));
 				} else if (BUILT_IN_TYPES.contains(new String(token))) {
-					NameReference fieldRef = new SingleNameReference(f.name, p);
-					Eclipse.setGeneratedBy(fieldRef, source);
-					EqualExpression fieldsNotEqual = new EqualExpression(fieldRef,
+					EqualExpression fieldsNotEqual = new EqualExpression(generateFieldReference(f.name, source),
 							generateQualifiedNameRef(source, otherN, f.name), OperatorIds.NOT_EQUAL);
 					Eclipse.setGeneratedBy(fieldsNotEqual, source);
 					FalseLiteral falseLiteral = new FalseLiteral(pS, pE);
@@ -580,11 +579,9 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 					Eclipse.setGeneratedBy(ifStatement, source);
 					statements.add(ifStatement);
 				} else /* objects */ {
-					NameReference fieldNameRef = new SingleNameReference(f.name, p);
-					Eclipse.setGeneratedBy(fieldNameRef, source);
 					NullLiteral nullLiteral = new NullLiteral(pS, pE);
 					Eclipse.setGeneratedBy(nullLiteral, source);
-					EqualExpression fieldIsNull = new EqualExpression(fieldNameRef, nullLiteral, OperatorIds.EQUAL_EQUAL);
+					EqualExpression fieldIsNull = new EqualExpression(generateFieldReference(f.name, source), nullLiteral, OperatorIds.EQUAL_EQUAL);
 					nullLiteral = new NullLiteral(pS, pE);
 					Eclipse.setGeneratedBy(nullLiteral, source);
 					EqualExpression otherFieldIsntNull = new EqualExpression(
@@ -593,8 +590,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 					MessageSend equalsCall = new MessageSend();
 					equalsCall.sourceStart = pS; equalsCall.sourceEnd = pE;
 					Eclipse.setGeneratedBy(equalsCall, source);
-					equalsCall.receiver = new SingleNameReference(f.name, p);
-					Eclipse.setGeneratedBy(equalsCall.receiver, source);
+					equalsCall.receiver = generateFieldReference(f.name, source);
 					equalsCall.selector = "equals".toCharArray();
 					equalsCall.arguments = new Expression[] { generateQualifiedNameRef(source, otherN, f.name) };
 					UnaryExpression fieldsNotEqual = new UnaryExpression(equalsCall, OperatorIds.NOT);
@@ -621,9 +617,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 				} else {
 					arraysEqualCall.selector = "equals".toCharArray();
 				}
-				NameReference fieldNameRef = new SingleNameReference(f.name, p);
-				Eclipse.setGeneratedBy(fieldNameRef, source);
-				arraysEqualCall.arguments = new Expression[] { fieldNameRef, generateQualifiedNameRef(source, otherN, f.name) };
+				arraysEqualCall.arguments = new Expression[] { generateFieldReference(f.name, source), generateQualifiedNameRef(source, otherN, f.name) };
 				UnaryExpression arraysNotEqual = new UnaryExpression(arraysEqualCall, OperatorIds.NOT);
 				arraysNotEqual.sourceStart = pS; arraysNotEqual.sourceEnd = pE;
 				Eclipse.setGeneratedBy(arraysNotEqual, source);
@@ -650,16 +644,13 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 	
 	private IfStatement generateCompareFloatOrDouble(char[] otherN, char[] floatOrDouble, char[] fieldName, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
 		/* if (Float.compare(fieldName, other.fieldName) != 0) return false */
 		MessageSend floatCompare = new MessageSend();
 		floatCompare.sourceStart = pS; floatCompare.sourceEnd = pE;
 		Eclipse.setGeneratedBy(floatCompare, source);
 		floatCompare.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA, TypeConstants.LANG, floatOrDouble);
 		floatCompare.selector = "compare".toCharArray();
-		NameReference fieldNameRef = new SingleNameReference(fieldName, p);
-		Eclipse.setGeneratedBy(fieldNameRef, source);
-		floatCompare.arguments = new Expression[] {fieldNameRef, generateQualifiedNameRef(source, otherN, fieldName)};
+		floatCompare.arguments = new Expression[] {generateFieldReference(fieldName, source), generateQualifiedNameRef(source, otherN, fieldName)};
 		IntLiteral int0 = new IntLiteral(new char[] {'0'}, pS, pE);
 		Eclipse.setGeneratedBy(int0, source);
 		EqualExpression ifFloatCompareIsNot0 = new EqualExpression(floatCompare, int0, OperatorIds.NOT_EQUAL);
@@ -696,7 +687,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 	private Reference generateFieldReference(char[] fieldName, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
-		FieldReference thisX = new FieldReference(("this." + new String(fieldName)).toCharArray(), p);
+		FieldReference thisX = new FieldReference(fieldName, p);
 		Eclipse.setGeneratedBy(thisX, source);
 		thisX.receiver = new ThisReference(pS, pE);
 		Eclipse.setGeneratedBy(thisX.receiver, source);

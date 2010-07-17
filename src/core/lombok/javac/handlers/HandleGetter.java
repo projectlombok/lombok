@@ -39,6 +39,7 @@ import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
@@ -159,7 +160,8 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 	
 	private JCMethodDecl createGetter(long access, JavacNode field, TreeMaker treeMaker) {
 		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
-		JCStatement returnStatement = treeMaker.Return(treeMaker.Ident(fieldNode.getName()));
+		JCFieldAccess thisX = treeMaker.Select(treeMaker.Ident(field.toName("this")), fieldNode.name);
+		JCStatement returnStatement = treeMaker.Return(thisX);
 		
 		JCBlock methodBody = treeMaker.Block(0, List.of(returnStatement));
 		Name methodName = field.toName(toGetterName(fieldNode));

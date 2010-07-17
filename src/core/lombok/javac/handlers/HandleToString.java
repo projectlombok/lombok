@@ -40,6 +40,7 @@ import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
@@ -202,14 +203,16 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			JCExpression expr;
 			
+			JCFieldAccess thisX = maker.Select(maker.Ident(fieldNode.toName("this")), field.name);
+			
 			if (field.vartype instanceof JCArrayTypeTree) {
 				boolean multiDim = ((JCArrayTypeTree)field.vartype).elemtype instanceof JCArrayTypeTree;
 				boolean primitiveArray = ((JCArrayTypeTree)field.vartype).elemtype instanceof JCPrimitiveTypeTree;
 				boolean useDeepTS = multiDim || !primitiveArray;
 				
 				JCExpression hcMethod = chainDots(maker, typeNode, "java", "util", "Arrays", useDeepTS ? "deepToString" : "toString");
-				expr = maker.Apply(List.<JCExpression>nil(), hcMethod, List.<JCExpression>of(maker.Ident(field.name)));
-			} else expr = maker.Ident(field.name);
+				expr = maker.Apply(List.<JCExpression>nil(), hcMethod, List.<JCExpression>of(thisX));
+			} else expr = thisX;
 			
 			if (first) {
 				current = maker.Binary(JCTree.PLUS, current, expr);

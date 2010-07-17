@@ -94,7 +94,12 @@ public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> 
 		
 		if (method.body == null) return false;
 		
-		JCExpression lockNode = maker.Ident(methodNode.toName(lockName));
+		JCExpression lockNode;
+		if (isStatic) {
+			lockNode = chainDots(maker, methodNode, methodNode.up().getName(), lockName);
+		} else {
+			lockNode = maker.Select(maker.Ident(methodNode.toName("this")), methodNode.toName(lockName));
+		}
 		
 		method.body = maker.Block(0, List.<JCStatement>of(maker.Synchronized(lockNode, method.body)));
 		

@@ -220,12 +220,17 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 			FieldDeclaration f = (FieldDeclaration)field.get();
 			if (f.name == null || f.type == null) continue;
 			
+			FieldReference thisX = new FieldReference(f.name, p);
+			Eclipse.setGeneratedBy(thisX, source);
+			thisX.receiver = new ThisReference(source.sourceStart, source.sourceEnd);
+			Eclipse.setGeneratedBy(thisX.receiver, source);
+			
 			Expression ex;
 			if (f.type.dimensions() > 0) {
 				MessageSend arrayToString = new MessageSend();
 				arrayToString.sourceStart = pS; arrayToString.sourceEnd = pE;
 				arrayToString.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA, TypeConstants.UTIL, "Arrays".toCharArray());
-				arrayToString.arguments = new Expression[] { new SingleNameReference(f.name, p) };
+				arrayToString.arguments = new Expression[] { thisX };
 				Eclipse.setGeneratedBy(arrayToString.arguments[0], source);
 				if (f.type.dimensions() > 1 || !BUILT_IN_TYPES.contains(new String(f.type.getLastToken()))) {
 					arrayToString.selector = "deepToString".toCharArray();
@@ -234,9 +239,6 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 				}
 				ex = arrayToString;
 			} else {
-				FieldReference thisX = new FieldReference(f.name, p);
-				thisX.receiver = new ThisReference(source.sourceStart, source.sourceEnd);
-				Eclipse.setGeneratedBy(thisX.receiver, source);
 				ex = thisX;
 			}
 			Eclipse.setGeneratedBy(ex, source);
