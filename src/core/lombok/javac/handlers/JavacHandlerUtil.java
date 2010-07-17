@@ -89,7 +89,6 @@ public class JavacHandlerUtil {
 			//This really shouldn't happen, but if it does, better just break delombok instead of breaking everything.
 			return;
 		}
-		parentNode.removeChild(annotation);
 		
 		JCCompilationUnit unit = (JCCompilationUnit) annotation.top().get();
 		deleteImportFromCompilationUnit(unit, annotationType.getName());
