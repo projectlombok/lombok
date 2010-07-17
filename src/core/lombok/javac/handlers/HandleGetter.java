@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
@@ -66,7 +67,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 	 * @param fieldNode The node representing the field you want a getter for.
 	 * @param pos The node responsible for generating the getter (the {@code @Data} or {@code @Getter} annotation).
 	 */
-	public void generateGetterForField(JavacNode fieldNode, DiagnosticPosition pos) {
+	public void generateGetterForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level, boolean checkForTypeLevelGetter) {
 		for (JavacNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				if (Javac.annotationTypeMatches(Getter.class, child)) {
@@ -76,17 +77,49 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 			}
 		}
 		
-		createGetterForField(AccessLevel.PUBLIC, fieldNode, fieldNode, false);
+		if (checkForTypeLevelGetter) {
+			JavacNode containingType = fieldNode.up();
+			if (containingType != null) for (JavacNode child : containingType.down()) {
+				if (child.getKind() == Kind.ANNOTATION) {
+					if (Javac.annotationTypeMatches(Getter.class, child)) {
+						//The annotation will make it happen, so we can skip it.
+						return;
+					}
+				}
+			}
+		}
+		
+		createGetterForField(level, fieldNode, fieldNode, false);
 	}
 	
 	@Override public boolean handle(AnnotationValues<Getter> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		markAnnotationAsProcessed(annotationNode, Getter.class);
-		JavacNode fieldNode = annotationNode.up();
+		JavacNode node = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
-		
 		if (level == AccessLevel.NONE) return true;
 		
-		return createGetterForField(level, fieldNode, annotationNode, true);
+		if (node == null) return false;
+		if (node.getKind() == Kind.FIELD) {
+			return createGetterForField(level, node, annotationNode, true);
+		}
+		if (node.getKind() == Kind.TYPE) {
+			JCClassDecl typeDecl = null;
+			if (node.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) node.get();
+			long modifiers = typeDecl == null ? 0 : typeDecl.mods.flags;
+			boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION | Flags.ENUM)) != 0;
+			
+			if (typeDecl == null || notAClass) {
+				annotationNode.addError("@Getter is only supported on a class.");
+				return false;
+			}
+			
+			for (JavacNode field : node.down()) {
+				if (field.getKind() != Kind.FIELD) continue;
+				generateGetterForField(field, ast, level, false);
+			}
+			return true;
+		}
+		return false;
 	}
 	
 	private boolean createGetterForField(AccessLevel level,

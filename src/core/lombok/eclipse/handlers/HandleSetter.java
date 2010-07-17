@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,7 +69,7 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 	 * If not, the setter is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
 	 */
-	public void generateSetterForField(EclipseNode fieldNode, ASTNode pos) {
+	public void generateSetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level, boolean checkForTypeLevelSetter) {
 		for (EclipseNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				if (annotationTypeMatches(Setter.class, child)) {
@@ -79,16 +79,49 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 			}
 		}
 		
-		createSetterForField(AccessLevel.PUBLIC, fieldNode, fieldNode, pos, false);
+		if (checkForTypeLevelSetter) {
+			EclipseNode containingType = fieldNode.up();
+			if (containingType != null) for (EclipseNode child : containingType.down()) {
+				if (child.getKind() == Kind.ANNOTATION) {
+					if (annotationTypeMatches(Setter.class, child)) {
+						//The annotation will make it happen, so we can skip it.
+						return;
+					}
+				}
+			}
+		}
+		
+		createSetterForField(level, fieldNode, fieldNode, pos, false);
 	}
 	
 	public boolean handle(AnnotationValues<Setter> annotation, Annotation ast, EclipseNode annotationNode) {
-		EclipseNode fieldNode = annotationNode.up();
-		if (fieldNode.getKind() != Kind.FIELD) return false;
+		EclipseNode node = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
 		if (level == AccessLevel.NONE) return true;
 		
-		return createSetterForField(level, fieldNode, annotationNode, annotationNode.get(), true);
+		if (node == null) return false;
+		if (node.getKind() == Kind.FIELD) {
+			return createSetterForField(level, node, annotationNode, annotationNode.get(), true);
+		}
+		if (node.getKind() == Kind.TYPE) {
+			TypeDeclaration typeDecl = null;
+			if (node.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) node.get();
+			int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
+			boolean notAClass = (modifiers &
+					(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0;
+			
+			if (typeDecl == null || notAClass) {
+				annotationNode.addError("@Setter is only supported on a class.");
+				return false;
+			}
+			
+			for (EclipseNode field : node.down()) {
+				if (field.getKind() != Kind.FIELD) continue;
+				generateSetterForField(field, ast, level, false);
+			}
+			return true;
+		}
+		return false;
 	}
 	
 	private boolean createSetterForField(AccessLevel level,

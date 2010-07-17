@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -127,8 +127,8 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		}
 		
 		for (Map.Entry<EclipseNode, Boolean> field : gettersAndSetters.entrySet()) {
-			new HandleGetter().generateGetterForField(field.getKey(), annotationNode.get());
-			if (field.getValue()) new HandleSetter().generateSetterForField(field.getKey(), annotationNode.get());
+			new HandleGetter().generateGetterForField(field.getKey(), annotationNode.get(), AccessLevel.PUBLIC, true);
+			if (field.getValue()) new HandleSetter().generateSetterForField(field.getKey(), annotationNode.get(), AccessLevel.PUBLIC, true);
 		}
 		
 		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);

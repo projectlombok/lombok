@@ -9,6 +9,7 @@ Lombok Changelog
 * FEATURE: If `tools.jar` isn't found (required when running _delombok_), now a useful error message is generated. The search for `tools.jar` now also looks in `JAVA_HOME`.
 * FEATURE: FindBugs' `@CheckForNull` is now copied from a field to a setter's parameter and the getter method just like `@Nullable`. [Issue #128](http://code.google.com/p/projectlombok/issues/detail?id=128)
 * BUILD: dependencies are now fetched automatically via ivy, and most dependencies now include sources by default, which is particularly handy for those working on the lombok sources themselves.
+* FEATURE: Adding `@Getter` or `@Setter` to a class is now legal and is like adding those annotations to every non-static field in it. [Issue #129](http://code.google.com/p/projectlombok/issues/detail?id=129)
 
 ### v0.9.2 "Hailbunny" (December 15th, 2009)
 * preliminary support for lombok on NetBeans! - thanks go to Jan Lahoda from NetBeans. [Issue #20](http://code.google.com/p/projectlombok/issues/detail?id=20)

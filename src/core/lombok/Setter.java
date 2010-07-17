@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,8 +44,11 @@ import java.lang.annotation.Target;
  * 
  * If any method named {@code setFoo} exists, regardless of return type or parameters, no method is generated,
  * and instead a compiler warning is emitted.
+ * <p>
+ * This annotation can also be applied to a class, in which case it'll be as if all non-static fields that don't already have
+ * a {@code Setter} annotation have the annotation.
  */
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD, ElementType.TYPE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface Setter {
 	/**
