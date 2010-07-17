@@ -176,8 +176,8 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		if (setAndGetAsHandled(type)) return null;
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
 		
+		for (JCAnnotation annotation : type.mods.annotations) addIfNotNull(childNodes, buildAnnotation(annotation));
 		for (JCTree def : type.defs) {
-			for (JCAnnotation annotation : type.mods.annotations) addIfNotNull(childNodes, buildAnnotation(annotation));
 			/* A def can be:
 			 *   JCClassDecl for inner types
 			 *   JCMethodDecl for constructors and methods
