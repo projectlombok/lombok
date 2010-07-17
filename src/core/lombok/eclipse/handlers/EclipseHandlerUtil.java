@@ -24,6 +24,7 @@ package lombok.eclipse.handlers;
 import static lombok.eclipse.Eclipse.fromQualifiedName;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -48,6 +49,7 @@ import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
@@ -55,6 +57,7 @@ import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 
 /**
  * Container for static utility methods useful to handlers written for eclipse.
@@ -256,6 +259,7 @@ public class EclipseHandlerUtil {
 	 * Inserts a field into an existing type. The type must represent a {@code TypeDeclaration}.
 	 */
 	public static void injectField(EclipseNode type, FieldDeclaration field) {
+		field.annotations = createSuppressWarningsAll(field, field.annotations);
 		TypeDeclaration parent = (TypeDeclaration) type.get();
 		
 		if (parent.fields == null) {
@@ -275,6 +279,7 @@ public class EclipseHandlerUtil {
 	 * Inserts a method into an existing type. The type must represent a {@code TypeDeclaration}.
 	 */
 	public static void injectMethod(EclipseNode type, AbstractMethodDeclaration method) {
+		method.annotations = createSuppressWarningsAll(method, method.annotations);
 		TypeDeclaration parent = (TypeDeclaration) type.get();
 		
 		if (parent.methods == null) {
@@ -303,6 +308,26 @@ public class EclipseHandlerUtil {
 		}
 		
 		type.add(method, Kind.METHOD).recursiveSetHandled();
+	}
+	
+	private static final char[] ALL = "all".toCharArray();
+	
+	private static Annotation[] createSuppressWarningsAll(ASTNode source, Annotation[] originalAnnotationArray) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long)pS << 32 | pE;
+		long[] poss = new long[3];
+		Arrays.fill(poss, p);
+		QualifiedTypeReference suppressWarningsType = new QualifiedTypeReference(TypeConstants.JAVA_LANG_SUPPRESSWARNINGS, poss);
+		Eclipse.setGeneratedBy(suppressWarningsType, source);
+		SingleMemberAnnotation ann = new SingleMemberAnnotation(suppressWarningsType, pS);
+		ann.declarationSourceEnd = pE;
+		ann.memberValue = new StringLiteral(ALL, pS, pE, 0);
+		Eclipse.setGeneratedBy(ann, source);
+		Eclipse.setGeneratedBy(ann.memberValue, source);
+		if (originalAnnotationArray == null) return new Annotation[] { ann };
+		Annotation[] newAnnotationArray = Arrays.copyOf(originalAnnotationArray, originalAnnotationArray.length + 1);
+		newAnnotationArray[originalAnnotationArray.length] = ann;
+		return newAnnotationArray;
 	}
 	
 	/**

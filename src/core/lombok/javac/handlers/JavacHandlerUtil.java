@@ -32,6 +32,8 @@ import lombok.javac.JavacNode;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
+import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -270,6 +272,7 @@ public class JavacHandlerUtil {
 	public static void injectField(JavacNode typeNode, JCVariableDecl field) {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
+		addSuppressWarningsAll(field.mods, typeNode, field.pos);
 		type.defs = type.defs.append(field);
 		
 		typeNode.add(field, Kind.FIELD).recursiveSetHandled();
@@ -300,9 +303,21 @@ public class JavacHandlerUtil {
 			}
 		}
 		
+		addSuppressWarningsAll(method.mods, typeNode, method.pos);
 		type.defs = type.defs.append(method);
 		
 		typeNode.add(method, Kind.METHOD).recursiveSetHandled();
+	}
+	
+	private static void addSuppressWarningsAll(JCModifiers mods, JavacNode node, int pos) {
+		TreeMaker maker = node.getTreeMaker();
+		JCExpression suppressWarningsType = chainDots(maker, node, "java", "lang", "SuppressWarnings");
+		JCLiteral allLiteral = maker.Literal("all");
+		suppressWarningsType.pos = pos;
+		allLiteral.pos = pos;
+		JCAnnotation annotation = maker.Annotation(suppressWarningsType, List.<JCExpression>of(allLiteral));
+		annotation.pos = pos;
+		mods.annotations = mods.annotations.append(annotation);
 	}
 	
 	private static List<JCTree> addAllButOne(List<JCTree> defs, int idx) {
