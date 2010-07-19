@@ -237,7 +237,7 @@ public class EclipseLocation extends IdeLocation {
 		// If someone knows how to fix this, please do so, as this current hack solution (putting the absolute path
 		// to the jar files in your eclipse.ini) means you can't move your eclipse around on linux without lombok
 		// breaking it. NB: rerunning lombok.jar installer and hitting 'update' will fix it if you do that.
-		boolean fullPathRequired = IdeFinder.getOS() == EclipseFinder.OS.UNIX;
+		boolean fullPathRequired = IdeFinder.getOS() == EclipseFinder.OS.UNIX || System.getProperty("lombok.installer.fullpath") != null;
 		
 		boolean installSucceeded = false;
 		StringBuilder newContents = new StringBuilder();
