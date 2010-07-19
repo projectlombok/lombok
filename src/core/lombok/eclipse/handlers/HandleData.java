@@ -21,53 +21,24 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.eclipse.Eclipse.copyAnnotations;
-import static lombok.eclipse.Eclipse.copyType;
-import static lombok.eclipse.Eclipse.copyTypeParams;
-import static lombok.eclipse.handlers.EclipseHandlerUtil.constructorExists;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.findAnnotations;
-import static lombok.eclipse.handlers.EclipseHandlerUtil.generateNullCheck;
-import static lombok.eclipse.handlers.EclipseHandlerUtil.injectMethod;
-import static lombok.eclipse.handlers.EclipseHandlerUtil.methodExists;
 
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import lombok.AccessLevel;
 import lombok.Data;
-import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
 import lombok.core.handlers.TransformationsUtil;
-import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
-import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
 
-import org.eclipse.jdt.internal.compiler.ast.ASTNode;
-import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
-import org.eclipse.jdt.internal.compiler.ast.Argument;
-import org.eclipse.jdt.internal.compiler.ast.Assignment;
-import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.ExplicitConstructorCall;
-import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.FieldReference;
-import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
-import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
-import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
-import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
-import org.eclipse.jdt.internal.compiler.ast.Statement;
-import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
-import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.mangosdk.spi.ProviderFor;
 
@@ -112,19 +83,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		//for whatever reason, though you can find callers of that one by focusing on the class name itself
 		//and hitting 'find callers'.
 		
-		if (constructorExists(typeNode) == MemberExistsResult.NOT_EXISTS) {
-			ConstructorDeclaration constructor = createConstructor(
-					ann.staticConstructor().length() == 0, typeNode, nodesForConstructor, ast);
-			injectMethod(typeNode, constructor);
-		}
-		
-		if (ann.staticConstructor().length() > 0) {
-			if (methodExists("of", typeNode, false) == MemberExistsResult.NOT_EXISTS) {
-				MethodDeclaration staticConstructor = createStaticConstructor(
-						ann.staticConstructor(), typeNode, nodesForConstructor, ast);
-				injectMethod(typeNode, staticConstructor);
-			}
-		}
+		new HandleConstructor().generateConstructor(AccessLevel.PUBLIC, typeNode, nodesForConstructor, ann.staticConstructor(), true, ast);
 		
 		for (Map.Entry<EclipseNode, Boolean> field : gettersAndSetters.entrySet()) {
 			new HandleGetter().generateGetterForField(field.getKey(), annotationNode.get(), AccessLevel.PUBLIC, true);
@@ -135,122 +94,5 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		new HandleToString().generateToStringForType(typeNode, annotationNode);
 				
 		return false;
-	}
-	
-	private ConstructorDeclaration createConstructor(boolean isPublic,
-			EclipseNode type, Collection<EclipseNode> fields, ASTNode source) {
-		long p = (long)source.sourceStart << 32 | source.sourceEnd;
-		
-		ConstructorDeclaration constructor = new ConstructorDeclaration(
-				((CompilationUnitDeclaration) type.top().get()).compilationResult);
-		Eclipse.setGeneratedBy(constructor, source);
-		
-		constructor.modifiers = EclipseHandlerUtil.toEclipseModifier(isPublic ? AccessLevel.PUBLIC : AccessLevel.PRIVATE);
-		constructor.annotations = null;
-		constructor.selector = ((TypeDeclaration)type.get()).name;
-		constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
-		Eclipse.setGeneratedBy(constructor.constructorCall, source);
-		constructor.thrownExceptions = null;
-		constructor.typeParameters = null;
-		constructor.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
-		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = source.sourceStart;
-		constructor.bodyEnd = constructor.declarationSourceEnd = constructor.sourceEnd = source.sourceEnd;
-		constructor.arguments = null;
-		
-		List<Argument> args = new ArrayList<Argument>();
-		List<Statement> assigns = new ArrayList<Statement>();
-		List<Statement> nullChecks = new ArrayList<Statement>();
-		
-		for (EclipseNode fieldNode : fields) {
-			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
-			FieldReference thisX = new FieldReference(("this." + new String(field.name)).toCharArray(), p);
-			Eclipse.setGeneratedBy(thisX, source);
-			thisX.receiver = new ThisReference((int)(p >> 32), (int)p);
-			Eclipse.setGeneratedBy(thisX.receiver, source);
-			thisX.token = field.name;
-			
-			SingleNameReference assignmentNameRef = new SingleNameReference(field.name, p);
-			Eclipse.setGeneratedBy(assignmentNameRef, source);
-			Assignment assignment = new Assignment(thisX, assignmentNameRef, (int)p);
-			Eclipse.setGeneratedBy(assignment, source);
-			assigns.add(assignment);
-			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
-			Argument argument = new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL);
-			Eclipse.setGeneratedBy(argument, source);
-			Annotation[] nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
-			Annotation[] nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
-			if (nonNulls.length != 0) {
-				Statement nullCheck = generateNullCheck(field, source);
-				if (nullCheck != null) nullChecks.add(nullCheck);
-			}
-			Annotation[] copiedAnnotations = copyAnnotations(nonNulls, nullables, source);
-			if (copiedAnnotations.length != 0) argument.annotations = copiedAnnotations;
-			args.add(argument);
-		}
-		
-		nullChecks.addAll(assigns);
-		constructor.statements = nullChecks.isEmpty() ? null : nullChecks.toArray(new Statement[nullChecks.size()]);
-		constructor.arguments = args.isEmpty() ? null : args.toArray(new Argument[args.size()]);
-		return constructor;
-	}
-	
-	private MethodDeclaration createStaticConstructor(String name, EclipseNode type, Collection<EclipseNode> fields, ASTNode source) {
-		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
-		
-		MethodDeclaration constructor = new MethodDeclaration(
-				((CompilationUnitDeclaration) type.top().get()).compilationResult);
-		Eclipse.setGeneratedBy(constructor, source);
-		
-		constructor.modifiers = EclipseHandlerUtil.toEclipseModifier(AccessLevel.PUBLIC) | Modifier.STATIC;
-		TypeDeclaration typeDecl = (TypeDeclaration) type.get();
-		if (typeDecl.typeParameters != null && typeDecl.typeParameters.length > 0) {
-			TypeReference[] refs = new TypeReference[typeDecl.typeParameters.length];
-			int idx = 0;
-			for (TypeParameter param : typeDecl.typeParameters) {
-				TypeReference typeRef = new SingleTypeReference(param.name, (long)param.sourceStart << 32 | param.sourceEnd);
-				Eclipse.setGeneratedBy(typeRef, source);
-				refs[idx++] = typeRef;
-			}
-			constructor.returnType = new ParameterizedSingleTypeReference(typeDecl.name, refs, 0, p);
-		} else constructor.returnType = new SingleTypeReference(((TypeDeclaration)type.get()).name, p);
-		Eclipse.setGeneratedBy(constructor.returnType, source);
-		constructor.annotations = null;
-		constructor.selector = name.toCharArray();
-		constructor.thrownExceptions = null;
-		constructor.typeParameters = copyTypeParams(((TypeDeclaration)type.get()).typeParameters, source);
-		constructor.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
-		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = source.sourceStart;
-		constructor.bodyEnd = constructor.declarationSourceEnd = constructor.sourceEnd = source.sourceEnd;
-		
-		List<Argument> args = new ArrayList<Argument>();
-		List<Expression> assigns = new ArrayList<Expression>();
-		AllocationExpression statement = new AllocationExpression();
-		statement.sourceStart = pS; statement.sourceEnd = pE;
-		Eclipse.setGeneratedBy(statement, source);
-		statement.type = copyType(constructor.returnType, source);
-		
-		for (EclipseNode fieldNode : fields) {
-			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
-			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
-			SingleNameReference nameRef = new SingleNameReference(field.name, fieldPos);
-			Eclipse.setGeneratedBy(nameRef, source);
-			assigns.add(nameRef);
-			
-			Argument argument = new Argument(field.name, fieldPos, copyType(field.type, source), 0);
-			Eclipse.setGeneratedBy(argument, source);
-
-			Annotation[] copiedAnnotations = copyAnnotations(
-					findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN),
-					findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN), source);
-			if (copiedAnnotations.length != 0) argument.annotations = copiedAnnotations;
-			args.add(new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL));
-		}
-		
-		statement.arguments = assigns.isEmpty() ? null : assigns.toArray(new Expression[assigns.size()]);
-		constructor.arguments = args.isEmpty() ? null : args.toArray(new Argument[args.size()]);
-		constructor.statements = new Statement[] { new ReturnStatement(statement, (int)(p >> 32), (int)p) };
-		Eclipse.setGeneratedBy(constructor.statements[0], source);
-		return constructor;
 	}
 }
