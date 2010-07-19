@@ -48,15 +48,4 @@ public @interface NoArgsConstructor {
 	 * Sets the access level of the constructor. By default, generated constructors are {@code public}.
 	 */
 	AccessLevel access() default lombok.AccessLevel.PUBLIC;
-	
-	/**
-	 * Constructors are generated with the {@link java.beans.ConstructorProperties} annotation.
-	 * However, this annotation is new in 1.6 which means those compiling for 1.5 will need
-	 * to set this value to true.
-	 * 
-	 * @deprecated Java 1.5 has already been end-of-lifed. As java 1.5 loses ground this
-	 *     method will eventually be removed.
-	 */
-	@Deprecated
-	boolean suppressConstructorProperties() default false;
 }

@@ -78,7 +78,7 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		
 		String staticConstructorName = annotation.getInstance().staticConstructor();
 		
-		new HandleConstructor().generateConstructor(AccessLevel.PUBLIC, typeNode, nodesForConstructor, staticConstructorName, true);
+		new HandleConstructor().generateConstructor(AccessLevel.PUBLIC, typeNode, nodesForConstructor, staticConstructorName, true, false);
 		
 		for (Map.Entry<JavacNode, Boolean> field : gettersAndSetters.entrySet()) {
 			new HandleGetter().generateGetterForField(field.getKey(), annotationNode.get(), AccessLevel.PUBLIC, true);

@@ -83,7 +83,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		//for whatever reason, though you can find callers of that one by focusing on the class name itself
 		//and hitting 'find callers'.
 		
-		new HandleConstructor().generateConstructor(AccessLevel.PUBLIC, typeNode, nodesForConstructor, ann.staticConstructor(), true, ast);
+		new HandleConstructor().generateConstructor(AccessLevel.PUBLIC, typeNode, nodesForConstructor, ann.staticConstructor(), true, false, ast);
 		
 		for (Map.Entry<EclipseNode, Boolean> field : gettersAndSetters.entrySet()) {
 			new HandleGetter().generateGetterForField(field.getKey(), annotationNode.get(), AccessLevel.PUBLIC, true);

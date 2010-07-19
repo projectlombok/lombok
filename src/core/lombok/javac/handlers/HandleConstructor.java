@@ -59,11 +59,12 @@ public class HandleConstructor {
 		@Override public boolean handle(AnnotationValues<NoArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			markAnnotationAsProcessed(annotationNode, NoArgsConstructor.class);
 			JavacNode typeNode = annotationNode.up();
-			List<JavacNode> fields = List.nil();
 			NoArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
 			String staticName = ann.staticName();
-			new HandleConstructor().generateConstructor(level, typeNode, fields, staticName, false);
+			if (level == AccessLevel.NONE) return true;
+			List<JavacNode> fields = List.nil();
+			new HandleConstructor().generateConstructor(level, typeNode, fields, staticName, false, false);
 			return true;
 		}
 	}
@@ -73,6 +74,12 @@ public class HandleConstructor {
 		@Override public boolean handle(AnnotationValues<RequiredArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			markAnnotationAsProcessed(annotationNode, RequiredArgsConstructor.class);
 			JavacNode typeNode = annotationNode.up();
+			RequiredArgsConstructor ann = annotation.getInstance();
+			AccessLevel level = ann.access();
+			String staticName = ann.staticName();
+			@SuppressWarnings("deprecation")
+			boolean suppressConstructorProperties = ann.suppressConstructorProperties();
+			if (level == AccessLevel.NONE) return true;
 			List<JavacNode> fields = List.nil();
 			for (JavacNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
@@ -86,10 +93,7 @@ public class HandleConstructor {
 				boolean isNonNull = !findAnnotations(child, TransformationsUtil.NON_NULL_PATTERN).isEmpty();
 				if ((isFinal || isNonNull) && fieldDecl.init == null) fields = fields.append(child);
 			}
-			RequiredArgsConstructor ann = annotation.getInstance();
-			AccessLevel level = ann.access();
-			String staticName = ann.staticName();
-			new HandleConstructor().generateConstructor(level, typeNode, fields, staticName, false);
+			new HandleConstructor().generateConstructor(level, typeNode, fields, staticName, false, suppressConstructorProperties);
 			return true;
 		}
 	}
@@ -99,6 +103,12 @@ public class HandleConstructor {
 		@Override public boolean handle(AnnotationValues<AllArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			markAnnotationAsProcessed(annotationNode, AllArgsConstructor.class);
 			JavacNode typeNode = annotationNode.up();
+			AllArgsConstructor ann = annotation.getInstance();
+			AccessLevel level = ann.access();
+			String staticName = ann.staticName();
+			@SuppressWarnings("deprecation")
+			boolean suppressConstructorProperties = ann.suppressConstructorProperties();
+			if (level == AccessLevel.NONE) return true;
 			List<JavacNode> fields = List.nil();
 			for (JavacNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
@@ -110,15 +120,12 @@ public class HandleConstructor {
 				if ((fieldFlags & Flags.STATIC) != 0) continue;
 				fields = fields.append(child);
 			}
-			AllArgsConstructor ann = annotation.getInstance();
-			AccessLevel level = ann.access();
-			String staticName = ann.staticName();
-			new HandleConstructor().generateConstructor(level, typeNode, fields, staticName, false);
+			new HandleConstructor().generateConstructor(level, typeNode, fields, staticName, false, suppressConstructorProperties);
 			return true;
 		}
 	}
 	
-	public void generateConstructor(AccessLevel level, JavacNode typeNode, List<JavacNode> fields, String staticName, boolean skipIfConstructorExists) {
+	public void generateConstructor(AccessLevel level, JavacNode typeNode, List<JavacNode> fields, String staticName, boolean skipIfConstructorExists, boolean suppressConstructorProperties) {
 		if (skipIfConstructorExists && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) return;
 		if (skipIfConstructorExists) {
 			for (JavacNode child : typeNode.down()) {
@@ -133,7 +140,7 @@ public class HandleConstructor {
 		
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
 		
-		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields);
+		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields, suppressConstructorProperties);
 		injectMethod(typeNode, constr);
 		if (staticConstrRequired) {
 			JCMethodDecl staticConstr = createStaticConstructor(staticName, level, typeNode, fields);
@@ -141,7 +148,20 @@ public class HandleConstructor {
 		}
 	}
 	
-	private JCMethodDecl createConstructor(AccessLevel level, JavacNode typeNode, List<JavacNode> fields) {
+	private static void addConstructorProperties(JCModifiers mods, JavacNode node, List<JavacNode> fields) {
+		if (fields.isEmpty()) return;
+		TreeMaker maker = node.getTreeMaker();
+		JCExpression constructorPropertiesType = chainDots(maker, node, "java", "beans", "ConstructorProperties");
+		List<JCExpression> fieldNames = List.nil();
+		for (JavacNode field : fields) {
+			fieldNames = fieldNames.append(maker.Literal(field.getName()));
+		}
+		JCExpression fieldNamesArray = maker.NewArray(null, List.<JCExpression>nil(), fieldNames);
+		JCAnnotation annotation = maker.Annotation(constructorPropertiesType, List.of(fieldNamesArray));
+		mods.annotations = mods.annotations.append(annotation);
+	}
+	
+	private JCMethodDecl createConstructor(AccessLevel level, JavacNode typeNode, List<JavacNode> fields, boolean suppressConstructorProperties) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
@@ -166,6 +186,10 @@ public class HandleConstructor {
 		}
 		
 		JCModifiers mods = maker.Modifiers(toJavacModifier(level));
+		if (!suppressConstructorProperties && level != AccessLevel.PRIVATE) {
+			addConstructorProperties(mods, typeNode, fields);
+		}
+		
 		return maker.MethodDef(mods, typeNode.toName("<init>"),
 				null, type.typarams, params, List.<JCExpression>nil(), maker.Block(0L, nullChecks.appendList(assigns)), null);
 	}

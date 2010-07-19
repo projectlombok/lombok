@@ -26,6 +26,7 @@ import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -45,6 +46,7 @@ import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
+import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
@@ -54,10 +56,13 @@ import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
+import org.eclipse.jdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
+import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
@@ -70,11 +75,12 @@ public class HandleConstructor {
 	public static class HandleNoArgsConstructor implements EclipseAnnotationHandler<NoArgsConstructor> {
 		@Override public boolean handle(AnnotationValues<NoArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
 			EclipseNode typeNode = annotationNode.up();
-			List<EclipseNode> fields = new ArrayList<EclipseNode>();
 			NoArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
 			String staticName = ann.staticName();
-			new HandleConstructor().generateConstructor(level, typeNode, fields, staticName, false, ast);
+			if (level == AccessLevel.NONE) return true;
+			List<EclipseNode> fields = new ArrayList<EclipseNode>();
+			new HandleConstructor().generateConstructor(level, typeNode, fields, staticName, false, false, ast);
 			return true;
 		}
 	}
@@ -83,6 +89,12 @@ public class HandleConstructor {
 	public static class HandleRequiredArgsConstructor implements EclipseAnnotationHandler<RequiredArgsConstructor> {
 		@Override public boolean handle(AnnotationValues<RequiredArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
 			EclipseNode typeNode = annotationNode.up();
+			RequiredArgsConstructor ann = annotation.getInstance();
+			AccessLevel level = ann.access();
+			String staticName = ann.staticName();
+			@SuppressWarnings("deprecation")
+			boolean suppressConstructorProperties = ann.suppressConstructorProperties();
+			if (level == AccessLevel.NONE) return true;
 			List<EclipseNode> fields = new ArrayList<EclipseNode>();
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
@@ -95,10 +107,7 @@ public class HandleConstructor {
 				boolean isNonNull = findAnnotations(fieldDecl, TransformationsUtil.NON_NULL_PATTERN).length != 0;
 				if ((isFinal || isNonNull) && fieldDecl.initialization == null) fields.add(child);
 			}
-			RequiredArgsConstructor ann = annotation.getInstance();
-			AccessLevel level = ann.access();
-			String staticName = ann.staticName();
-			new HandleConstructor().generateConstructor(level, typeNode, fields, staticName, false, ast);
+			new HandleConstructor().generateConstructor(level, typeNode, fields, staticName, false, suppressConstructorProperties, ast);
 			return true;
 		}
 	}
@@ -107,6 +116,12 @@ public class HandleConstructor {
 	public static class HandleAllArgsConstructor implements EclipseAnnotationHandler<AllArgsConstructor> {
 		@Override public boolean handle(AnnotationValues<AllArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
 			EclipseNode typeNode = annotationNode.up();
+			AllArgsConstructor ann = annotation.getInstance();
+			AccessLevel level = ann.access();
+			String staticName = ann.staticName();
+			@SuppressWarnings("deprecation")
+			boolean suppressConstructorProperties = ann.suppressConstructorProperties();
+			if (level == AccessLevel.NONE) return true;
 			List<EclipseNode> fields = new ArrayList<EclipseNode>();
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
@@ -117,15 +132,12 @@ public class HandleConstructor {
 				if ((fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0) continue;
 				fields.add(child);
 			}
-			AllArgsConstructor ann = annotation.getInstance();
-			AccessLevel level = ann.access();
-			String staticName = ann.staticName();
-			new HandleConstructor().generateConstructor(level, typeNode, fields, staticName, false, ast);
+			new HandleConstructor().generateConstructor(level, typeNode, fields, staticName, false, suppressConstructorProperties, ast);
 			return true;
 		}
 	}
 	
-	public void generateConstructor(AccessLevel level, EclipseNode typeNode, List<EclipseNode> fields, String staticName, boolean skipIfConstructorExists, ASTNode source) {
+	public void generateConstructor(AccessLevel level, EclipseNode typeNode, List<EclipseNode> fields, String staticName, boolean skipIfConstructorExists, boolean suppressConstructorProperties, ASTNode source) {
 		if (skipIfConstructorExists && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) return;
 		if (skipIfConstructorExists) {
 			for (EclipseNode child : typeNode.down()) {
@@ -140,7 +152,7 @@ public class HandleConstructor {
 		
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
 		
-		ConstructorDeclaration constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields, source);
+		ConstructorDeclaration constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields, suppressConstructorProperties, source);
 		injectMethod(typeNode, constr);
 		if (staticConstrRequired) {
 			MethodDeclaration staticConstr = createStaticConstructor(level, staticName, typeNode, fields, source);
@@ -148,8 +160,42 @@ public class HandleConstructor {
 		}
 	}
 	
+	private static final char[][] JAVA_BEANS_CONSTRUCTORPROPERTIES = new char[][] { "java".toCharArray(), "beans".toCharArray(), "ConstructorProperties".toCharArray() };
+	private static Annotation[] createConstructorProperties(ASTNode source, Annotation[] originalAnnotationArray, Collection<EclipseNode> fields) {
+		if (fields.isEmpty()) return originalAnnotationArray;
+		
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long)pS << 32 | pE;
+		long[] poss = new long[3];
+		Arrays.fill(poss, p);
+		QualifiedTypeReference constructorPropertiesType = new QualifiedTypeReference(JAVA_BEANS_CONSTRUCTORPROPERTIES, poss);
+		Eclipse.setGeneratedBy(constructorPropertiesType, source);
+		SingleMemberAnnotation ann = new SingleMemberAnnotation(constructorPropertiesType, pS);
+		ann.declarationSourceEnd = pE;
+		
+		ArrayInitializer fieldNames = new ArrayInitializer();
+		fieldNames.sourceStart = pS;
+		fieldNames.sourceEnd = pE;
+		fieldNames.expressions = new Expression[fields.size()];
+		
+		int ctr = 0;
+		for (EclipseNode field : fields) {
+			fieldNames.expressions[ctr] = new StringLiteral(field.getName().toCharArray(), pS, pE, 0);
+			Eclipse.setGeneratedBy(fieldNames.expressions[ctr], source);
+			ctr++;
+		}
+		
+		ann.memberValue = fieldNames;
+		Eclipse.setGeneratedBy(ann, source);
+		Eclipse.setGeneratedBy(ann.memberValue, source);
+		if (originalAnnotationArray == null) return new Annotation[] { ann };
+		Annotation[] newAnnotationArray = Arrays.copyOf(originalAnnotationArray, originalAnnotationArray.length + 1);
+		newAnnotationArray[originalAnnotationArray.length] = ann;
+		return newAnnotationArray;
+	}
+	
 	private ConstructorDeclaration createConstructor(AccessLevel level,
-			EclipseNode type, Collection<EclipseNode> fields, ASTNode source) {
+			EclipseNode type, Collection<EclipseNode> fields, boolean suppressConstructorProperties, ASTNode source) {
 		long p = (long)source.sourceStart << 32 | source.sourceEnd;
 		
 		ConstructorDeclaration constructor = new ConstructorDeclaration(
@@ -201,6 +247,11 @@ public class HandleConstructor {
 		nullChecks.addAll(assigns);
 		constructor.statements = nullChecks.isEmpty() ? null : nullChecks.toArray(new Statement[nullChecks.size()]);
 		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[params.size()]);
+		
+		if (!suppressConstructorProperties && level != AccessLevel.PRIVATE) {
+			constructor.annotations = createConstructorProperties(source, constructor.annotations, fields);
+		}
+		
 		return constructor;
 	}
 	
