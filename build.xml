@@ -214,7 +214,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</copy>
 	</target>
 	
-	<target name="test" depends="-test-compile" unless="tests.skip">
+	<target name="test" depends="-test-compile" unless="tests.skip" description="Runs the tests.">
 		<junit haltonfailure="yes" fork="on">
 			<formatter type="plain" usefile="false" unless="tests.quiet" />
 			<classpath refid="test.path" />
