@@ -1,10 +1,12 @@
 class GetterPlain {
 	int i;
 	int foo;
+	@java.lang.SuppressWarnings("all")
 	public int getI() {
-		return i;
+		return this.i;
 	}
+	@java.lang.SuppressWarnings("all")
 	public int getFoo() {
-		return foo;
+		return this.foo;
 	}
 }

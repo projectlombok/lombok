@@ -7,8 +7,9 @@ public class CommentsInterspersed {
 	public native void gwtTest(); /*-{
 		javascript;
 	}-*/
+	@java.lang.SuppressWarnings("all")
 	public String getTest() {
-		return test;
+		return this.test;
 	}
 } //haha!
 //hahaha!

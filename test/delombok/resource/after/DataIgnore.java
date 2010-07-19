@@ -1,13 +1,17 @@
 class DataIgnore {
 	final int x;
 	String $name;
+	@java.beans.ConstructorProperties({"x"})
+	@java.lang.SuppressWarnings("all")
 	public DataIgnore(final int x) {
 		this.x = x;
 	}
+	@java.lang.SuppressWarnings("all")
 	public int getX() {
-		return x;
+		return this.x;
 	}
 	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (o == null) return false;
@@ -17,6 +21,7 @@ class DataIgnore {
 		return true;
 	}
 	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
 		final int PRIME = 31;
 		int result = 1;
@@ -24,7 +29,8 @@ class DataIgnore {
 		return result;
 	}
 	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
 	public java.lang.String toString() {
-		return "DataIgnore(x=" + x + ")";
+		return "DataIgnore(x=" + this.x + ")";
 	}
 }

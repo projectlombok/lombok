@@ -2,14 +2,17 @@ class Getter {
 	boolean foo;
 	boolean isBar;
 	boolean hasBaz;
+	@java.lang.SuppressWarnings("all")
 	public boolean isFoo() {
-		return foo;
+		return this.foo;
 	}
+	@java.lang.SuppressWarnings("all")
 	public boolean isBar() {
-		return isBar;
+		return this.isBar;
 	}
+	@java.lang.SuppressWarnings("all")
 	public boolean hasBaz() {
-		return hasBaz;
+		return this.hasBaz;
 	}
 }
 class MoreGetter {

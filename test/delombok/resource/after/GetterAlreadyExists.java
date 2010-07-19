@@ -21,8 +21,9 @@ class Getter4 {
 	String hasFoo() {
 		return null;
 	}
+	@java.lang.SuppressWarnings("all")
 	public String getFoo() {
-		return foo;
+		return this.foo;
 	}
 }
 class Getter5 {
@@ -30,8 +31,9 @@ class Getter5 {
 	String isFoo() {
 		return null;
 	}
+	@java.lang.SuppressWarnings("all")
 	public String getFoo() {
-		return foo;
+		return this.foo;
 	}
 }
 class Getter6 {
@@ -45,8 +47,9 @@ class Getter7 {
 	boolean hasFoo() {
 		return false;
 	}
+	@java.lang.SuppressWarnings("all")
 	public String getFoo() {
-		return foo;
+		return this.foo;
 	}
 }
 class Getter8 {
@@ -54,8 +57,9 @@ class Getter8 {
 	boolean isFoo() {
 		return false;
 	}
+	@java.lang.SuppressWarnings("all")
 	public String getFoo() {
-		return foo;
+		return this.foo;
 	}
 }
 class Getter9 {
@@ -87,8 +91,9 @@ class Getter13 {
 	static boolean hasFoo() {
 		return false;
 	}
+	@java.lang.SuppressWarnings("all")
 	public String getFoo() {
-		return foo;
+		return this.foo;
 	}
 }
 class Getter14 {
@@ -96,8 +101,9 @@ class Getter14 {
 	static boolean isFoo() {
 		return false;
 	}
+	@java.lang.SuppressWarnings("all")
 	public String getFoo() {
-		return foo;
+		return this.foo;
 	}
 }
 class Getter15 {
@@ -111,8 +117,9 @@ class Getter16 {
 	static String hasFoo() {
 		return false;
 	}
+	@java.lang.SuppressWarnings("all")
 	public String getFoo() {
-		return foo;
+		return this.foo;
 	}
 }
 class Getter17 {
@@ -120,8 +127,9 @@ class Getter17 {
 	static String isFoo() {
 		return false;
 	}
+	@java.lang.SuppressWarnings("all")
 	public String getFoo() {
-		return foo;
+		return this.foo;
 	}
 }
 class Getter18 {

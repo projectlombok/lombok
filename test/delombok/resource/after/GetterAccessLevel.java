@@ -10,31 +10,40 @@ class GetterAccessLevel {
 	String protectedString;
 	String publicString;
 	String value;
+	@java.lang.SuppressWarnings("all")
 	private boolean isPrivate() {
-		return isPrivate;
+		return this.isPrivate;
 	}
+	@java.lang.SuppressWarnings("all")
 	boolean isPackage() {
-		return isPackage;
+		return this.isPackage;
 	}
+	@java.lang.SuppressWarnings("all")
 	protected boolean isProtected() {
-		return isProtected;
+		return this.isProtected;
 	}
+	@java.lang.SuppressWarnings("all")
 	public boolean isPublic() {
-		return isPublic;
+		return this.isPublic;
 	}
+	@java.lang.SuppressWarnings("all")
 	private String getPrivateString() {
-		return privateString;
+		return this.privateString;
 	}
+	@java.lang.SuppressWarnings("all")
 	String getPackageString() {
-		return packageString;
+		return this.packageString;
 	}
+	@java.lang.SuppressWarnings("all")
 	protected String getProtectedString() {
-		return protectedString;
+		return this.protectedString;
 	}
+	@java.lang.SuppressWarnings("all")
 	public String getPublicString() {
-		return publicString;
+		return this.publicString;
 	}
+	@java.lang.SuppressWarnings("all")
 	public String getValue() {
-		return value;
+		return this.value;
 	}
 }
