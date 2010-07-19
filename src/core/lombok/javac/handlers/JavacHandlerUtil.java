@@ -257,6 +257,7 @@ public class JavacHandlerUtil {
 		default:
 		case PUBLIC:
 			return Flags.PUBLIC;
+		case NONE:
 		case PRIVATE:
 			return Flags.PRIVATE;
 		case PROTECTED:

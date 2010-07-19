@@ -88,6 +88,7 @@ public class EclipseHandlerUtil {
 			return ClassFileConstants.AccPublic;
 		case PROTECTED:
 			return ClassFileConstants.AccProtected;
+		case NONE:
 		case PRIVATE:
 			return ClassFileConstants.AccPrivate;
 		}
