@@ -113,7 +113,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</unjar>
 	</target>
 	
-	<target name="compile" depends="version, ensureBuildDeps" description="Compiles the code.">
+	<target name="compile" depends="version, ensureBuildDeps, -unpackLibs" description="Compiles the code.">
 		<!-- ant includes the destination dir on the classpath (and there are good reason to do this), but that also means
 		 the bleeding edge lombok from the previous build is run, which means if there are bugs in it, you can't compile
 		anymore until you 'ant clean'. That's very much not desired, so we kill the processor, which stops lombok from running.
@@ -141,7 +141,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.core.AnnotationProcessor</echo>
 	</target>
 	
-	<target name="dist" description="Builds THE lombok.jar file which contains everything." depends="version, compile, -unpackLibs">
+	<target name="dist" description="Builds THE lombok.jar file which contains everything." depends="version, compile">
 		<mkdir dir="dist" />
 		<copy file="doc/changelog.markdown" tofile="build/changelog.txt" />
 		<jar destfile="dist/lombok-${lombok.version}.jar">
