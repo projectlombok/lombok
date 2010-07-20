@@ -2,6 +2,7 @@ package lombok;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -15,6 +16,12 @@ import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 
 public class DirectoryRunner extends Runner {
+	
+	private static final FileFilter JAVA_FILE_FILTER = new FileFilter() {
+		@Override public boolean accept(File file) {
+			return file.isFile() && file.getName().endsWith(".java");
+		}
+	};
 	
 	private final Description description;
 	private final Map<String, Description> tests = new TreeMap<String, Description>();
@@ -41,7 +48,7 @@ public class DirectoryRunner extends Runner {
 		Method afterMethod = testClass.getDeclaredMethod("getAfterDirectory");
 		afterDirectory = (File) afterMethod.invoke(null);
 		
-		for (File file : beforeDirectory.listFiles()) {
+		for (File file : beforeDirectory.listFiles(JAVA_FILE_FILTER)) {
 			Description testDescription = Description.createTestDescription(testClass, file.getName());
 			description.addChild(testDescription);
 			tests.put(file.getName(), testDescription);
@@ -82,7 +89,7 @@ public class DirectoryRunner extends Runner {
 		if (mustIgnore(file)) {
 			return false;
 		}
-		RunTestsViaDelombok.compareFile(afterDirectory, file);
+		RunTestsViaDelombok.compareFile(beforeDirectory, afterDirectory, file);
 		return true;
 	}
 
