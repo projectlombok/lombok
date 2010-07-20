@@ -20,7 +20,7 @@
 			if the field's type is <code>boolean</code>). A default setter is named <code>setFoo</code> if the field is called <code>foo</code>, returns <code>void</code>,
 			and takes 1 parameter of the same type as the field. It simply sets the field to this value.
 			</p><p>
-			The generated getter/setter method will be <code>public</code> unless you explicitly specify an <code>AccessLevel</code>, as shown in the example above.
+			The generated getter/setter method will be <code>public</code> unless you explicitly specify an <code>AccessLevel</code>, as shown in the example below.
 			Legal access levels are <code>PUBLIC</code>, <code>PROTECTED</code>, <code>PACKAGE</code>, and <code>PRIVATE</code>.
 			</p><p>
 			You can also put a <code>@Getter</code> and/or <code>@Setter</code> annotation on a class. In that case, it's as if you annotate all the non-static fields in that
@@ -60,7 +60,7 @@
 				</p><p>
 				Any annotations named <code>@NonNull</code> (case insensitive) on the field are interpreted as: This field must not ever hold
 				<em>null</em>. Therefore, these annotations result in an explicit null check in the generated setter. Also, these
-				annotations (as well as any annotation named <code>@Nullable</code>) are copied to setter parameter and getter method
+				annotations (as well as any annotation named <code>@Nullable</code> or <code>@CheckForNull</code>) are copied to setter parameter and getter method
 				</p><p>
 				Using the <code>AccessLevel.NONE</code> access level simply generates nothing. It's useful only in combination with
 				<a href="Data.html"><code>@Data</code></a>.

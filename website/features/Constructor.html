@@ -66,7 +66,8 @@
 					signals you must know what you're doing.
 				</p><p>
 					The <code>@java.beans.ConstructorProperties</code> annotation is never generated for a constructor with no arguments. This also explains why <code>@NoArgsConstructor</code>
-					lacks the <code>suppressConstructorProperties</code> annotation method. The <code>@ConstructorProperties</code> annotation is also omitted for private constructors.
+					lacks the <code>suppressConstructorProperties</code> annotation method. The <code>@ConstructorProperties</code> annotation is also omitted for private constructors. The
+					generated static factory methods also do not get <code>@ConstructorProperties</code>, as this annotation can only be added to real constructors.
 				</p>
 			</div>
 		</div>
