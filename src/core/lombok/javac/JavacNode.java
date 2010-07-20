@@ -26,6 +26,7 @@ import java.util.List;
 import javax.tools.Diagnostic;
 
 import lombok.core.AST.Kind;
+import lombok.delombok.DeleteLombokAnnotations;
 
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.tree.JCTree;
@@ -171,6 +172,11 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 	 */
 	public Context getContext() {
 		return ast.getContext();
+	}
+	
+	public boolean shouldDeleteLombokAnnotations() {
+		DeleteLombokAnnotations dla = ast.getContext().get(DeleteLombokAnnotations.class);
+		return dla != null && dla.isDeleteLombokAnnotations();
 	}
 	
 	/**

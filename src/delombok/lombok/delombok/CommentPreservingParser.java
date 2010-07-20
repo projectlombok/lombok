@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,7 @@ import com.sun.tools.javac.util.Options;
 
 public class CommentPreservingParser {
 	private final String encoding;
+	private boolean deleteLombokAnnotations = false;
 	
 	public CommentPreservingParser() {
 		this("utf-8");
@@ -51,6 +52,10 @@ public class CommentPreservingParser {
 	
 	public CommentPreservingParser(String encoding) {
 		this.encoding = encoding;
+	}
+	
+	public void setDeleteLombokAnnotations(boolean deleteLombokAnnotations) {
+		this.deleteLombokAnnotations  = deleteLombokAnnotations;
 	}
 	
 	public ParseResult parse(JavaFileObject source, boolean forceProcessing) throws IOException {
@@ -78,7 +83,8 @@ public class CommentPreservingParser {
 		
 		Comments comments = new Comments();
 		context.put(Comments.class, comments);
-
+		if (deleteLombokAnnotations) context.put(DeleteLombokAnnotations.class, new DeleteLombokAnnotations(true));
+		
 		comments.comments = List.nil();
 		
 		JCCompilationUnit cu;

@@ -58,6 +58,7 @@ public class HandleConstructor {
 	public static class HandleNoArgsConstructor implements JavacAnnotationHandler<NoArgsConstructor> {
 		@Override public boolean handle(AnnotationValues<NoArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			markAnnotationAsProcessed(annotationNode, NoArgsConstructor.class);
+			deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 			JavacNode typeNode = annotationNode.up();
 			NoArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
@@ -73,6 +74,7 @@ public class HandleConstructor {
 	public static class HandleRequiredArgsConstructor implements JavacAnnotationHandler<RequiredArgsConstructor> {
 		@Override public boolean handle(AnnotationValues<RequiredArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			markAnnotationAsProcessed(annotationNode, RequiredArgsConstructor.class);
+			deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 			JavacNode typeNode = annotationNode.up();
 			RequiredArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
@@ -102,6 +104,7 @@ public class HandleConstructor {
 	public static class HandleAllArgsConstructor implements JavacAnnotationHandler<AllArgsConstructor> {
 		@Override public boolean handle(AnnotationValues<AllArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			markAnnotationAsProcessed(annotationNode, AllArgsConstructor.class);
+			deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 			JavacNode typeNode = annotationNode.up();
 			AllArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();

@@ -92,12 +92,14 @@ public class JavacHandlerUtil {
 			return;
 		}
 		
-		JCCompilationUnit unit = (JCCompilationUnit) annotation.top().get();
-		deleteImportFromCompilationUnit(unit, annotationType.getName());
+		deleteImportFromCompilationUnit(annotation, annotationType.getName());
 	}
 	
-	private static void deleteImportFromCompilationUnit(JCCompilationUnit unit, String name) {
+	public static void deleteImportFromCompilationUnit(JavacNode node, String name) {
+		if (!node.shouldDeleteLombokAnnotations()) return;
 		List<JCTree> newDefs = List.nil();
+		
+		JCCompilationUnit unit = (JCCompilationUnit) node.top().get();
 		
 		for (JCTree def : unit.defs) {
 			boolean delete = false;

@@ -104,6 +104,7 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 	
 	@Override public boolean handle(AnnotationValues<Setter> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		markAnnotationAsProcessed(annotationNode, Setter.class);
+		deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 		JavacNode node = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
 		

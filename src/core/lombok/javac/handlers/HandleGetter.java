@@ -95,6 +95,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 	
 	@Override public boolean handle(AnnotationValues<Getter> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		markAnnotationAsProcessed(annotationNode, Getter.class);
+		deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 		JavacNode node = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
 		if (level == AccessLevel.NONE) return true;
