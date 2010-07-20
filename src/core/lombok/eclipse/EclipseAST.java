@@ -73,7 +73,9 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		if (cud.imports == null) return imports;
 		for (ImportReference imp : cud.imports) {
 			if (imp == null) continue;
-			imports.add(Eclipse.toQualifiedName(imp.getImportName()));
+			String qualifiedName = Eclipse.toQualifiedName(imp.getImportName());
+			if ((imp.bits & ASTNode.OnDemand) != 0) qualifiedName += ".*";
+			imports.add(qualifiedName);
 		}
 		return imports;
 	}
