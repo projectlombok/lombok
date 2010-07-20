@@ -30,6 +30,7 @@ import javax.annotation.processing.Messager;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 import javax.tools.Diagnostic.Kind;
 
@@ -46,6 +47,7 @@ import com.sun.tools.javac.util.Options;
 public class CommentPreservingParser {
 	private final String encoding;
 	private boolean deleteLombokAnnotations = false;
+	private DiagnosticListener<JavaFileObject> diagnostics = null;
 	
 	public CommentPreservingParser() {
 		this("utf-8");
@@ -56,7 +58,11 @@ public class CommentPreservingParser {
 	}
 	
 	public void setDeleteLombokAnnotations(boolean deleteLombokAnnotations) {
-		this.deleteLombokAnnotations  = deleteLombokAnnotations;
+		this.deleteLombokAnnotations = deleteLombokAnnotations;
+	}
+	
+	public void setDiagnosticsListener(DiagnosticListener<JavaFileObject> diagnostics) {
+		this.diagnostics = diagnostics;
 	}
 	
 	public ParseResult parse(JavaFileObject source, boolean forceProcessing) throws IOException {
@@ -72,6 +78,8 @@ public class CommentPreservingParser {
 		
 		Options.instance(context).put(OptionName.ENCODING, encoding);
 		
+		if (diagnostics != null) context.put(DiagnosticListener.class, diagnostics);
+		
 		CommentCollectingScanner.Factory.preRegister(context);
 		
 		JavaCompiler compiler = new JavaCompiler(context) {
@@ -80,6 +88,7 @@ public class CommentPreservingParser {
 				return true;
 			}
 		};
+		
 		compiler.genEndPos = true;
 		
 		Comments comments = new Comments();

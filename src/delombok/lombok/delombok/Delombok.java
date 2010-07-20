@@ -35,6 +35,7 @@ import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 
 import lombok.delombok.CommentPreservingParser.ParseResult;
@@ -168,6 +169,11 @@ public class Delombok {
 	
 	public void setCharset(String charsetName) throws UnsupportedCharsetException {
 		charset = Charset.forName(charsetName);
+	}
+	
+	
+	public void setDiagnosticsListener(DiagnosticListener<JavaFileObject> diagnostics) {
+		parser.setDiagnosticsListener(diagnostics);
 	}
 	
 	public void setForceProcess(boolean force) {
