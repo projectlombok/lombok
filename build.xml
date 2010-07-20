@@ -29,7 +29,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<property name="ivy.retrieve.pattern" value="lib/[conf]/[artifact].[ext]" />
 	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
 	
-	<target name="clean" description="Removes all generated files">
+	<target name="clean" description="Removes all generated files.">
 		<delete dir="build" quiet="true" />
 	</target>
 	
@@ -95,7 +95,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</fileset>
 	</path>
 	
-	<target name="version" depends="ensure-ipp" description="Shows the version number" unless="lombok.version">
+	<target name="version" depends="ensure-ipp" description="Shows the version number." unless="lombok.version">
 		<mkdir dir="build/lombok" />
 		<javac includeDestClasses="false" srcdir="src/core" debug="on" destdir="build/lombok" source="1.5" target="1.5" includes="lombok/core/Version.java" />
 		<java
@@ -281,7 +281,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<fail message="fill in ${credentialsFile} to provide your credentials" />
 	</target>
 	
-	<target name="publish" description="Publishes the latest build to googlecode" depends="version, -checkCredentialsFile, dist, test">
+	<target name="publish" description="Publishes the latest build to googlecode." depends="version, -checkCredentialsFile, dist, test">
 		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="lib/build/ant-googlecode-0.0.2.jar" name="gcupload" />
 		<property file="${credentialsFile}" prefix="google" />
 		<gcupload 
@@ -305,23 +305,23 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</target>
 	
 	<target name="publish-all" depends="clean, version, website-publish, maven-publish, publish"
-		description="Publishes lombok itself, updates the maven repository, and the website" />
+		description="Publishes lombok itself, updates the maven repository and the website." />
 	
 	<target name="edge-release" depends="clean, version, dist"
-		description="Publishes an edge release for those who need to test a cutting edge build">
+		description="Publishes an edge release for those who need to test a cutting edge build.">
 		<ant antfile="buildScripts/website.ant.xml" target="edgeRelease" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
 		</ant>
 	</target>
 	
-	<target name="website" depends="version" description="Prepares the website for distribution">
+	<target name="website" depends="version" description="Prepares the website for distribution.">
 		<ant antfile="buildScripts/website.ant.xml" target="website" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
 		</ant>
 	</target>
 	
 	<target name="website-publish" depends="clean, version"
-			description="Prepares the website for distribution and then publishes it to projectlombok.org">
+			description="Prepares the website for distribution and then publishes it to projectlombok.org.">
 		<ant antfile="buildScripts/website.ant.xml" target="website-publish" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
 		</ant>
