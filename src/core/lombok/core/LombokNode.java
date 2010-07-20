@@ -23,6 +23,7 @@ package lombok.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -166,6 +167,31 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 		while (result != null && !result.isStructurallySignificant) result = result.parent;
 		return result;
 	}
+	
+	/**
+	 * {@code @Foo int x, y;} is stored in both javac and ecj as 2 FieldDeclarations, both with the same annotation as child.
+	 * The normal {@code up()} method can't handle having multiple parents, but this one can.
+	 */
+	public Collection<L> upFromAnnotationToFields() {
+		if (getKind() != Kind.ANNOTATION) return Collections.emptyList();
+		L field = up();
+		if (field == null || field.getKind() != Kind.FIELD) return Collections.emptyList();
+		L type = field.up();
+		if (type == null || type.getKind() != Kind.TYPE) return Collections.emptyList();
+		
+		List<L> fields = new ArrayList<L>();
+		for (L potentialField : type.down()) {
+			if (potentialField.getKind() != Kind.FIELD) continue;
+			if (fieldContainsAnnotation(potentialField.get(), get())) fields.add(potentialField);
+		}
+		
+		return fields;
+	}
+	
+	/**
+	 * Return {@code true} if the annotation is attached to the field.
+	 */
+	protected abstract boolean fieldContainsAnnotation(N field, N annotation);
 	
 	/**
 	 * Returns the direct parent node in the AST tree of this node. For example, a local variable declaration's

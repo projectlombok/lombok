@@ -23,6 +23,9 @@ package lombok.eclipse.handlers;
 
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
+
+import java.util.Collection;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.core.AnnotationValues;
@@ -94,7 +97,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		
 		if (node == null) return false;
 		if (node.getKind() == Kind.FIELD) {
-			return createGetterForField(level, node, annotationNode, annotationNode.get(), true);
+			return createGetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true);
 		}
 		if (node.getKind() == Kind.TYPE) {
 			TypeDeclaration typeDecl = null;
@@ -115,6 +118,13 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 			return true;
 		}
 		return false;
+	}
+	
+	private boolean createGetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists) {
+		for (EclipseNode fieldNode : fieldNodes) {
+			createGetterForField(level, fieldNode, errorNode, source, whineIfExists);
+		}
+		return true;
 	}
 	
 	private boolean createGetterForField(AccessLevel level,

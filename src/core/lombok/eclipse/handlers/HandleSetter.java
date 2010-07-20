@@ -25,6 +25,7 @@ import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
+import java.util.Collection;
 
 import lombok.AccessLevel;
 import lombok.Setter;
@@ -101,7 +102,7 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		
 		if (node == null) return false;
 		if (node.getKind() == Kind.FIELD) {
-			return createSetterForField(level, node, annotationNode, annotationNode.get(), true);
+			return createSetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true);
 		}
 		if (node.getKind() == Kind.TYPE) {
 			TypeDeclaration typeDecl = null;
@@ -122,6 +123,13 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 			return true;
 		}
 		return false;
+	}
+	
+	private boolean createSetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists) {
+		for (EclipseNode fieldNode : fieldNodes) {
+			createSetterForField(level, fieldNode, errorNode, source, whineIfExists);
+		}
+		return true;
 	}
 	
 	private boolean createSetterForField(AccessLevel level,

@@ -122,6 +122,16 @@ public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode,
 		}
 	}
 	
+	@Override protected boolean fieldContainsAnnotation(ASTNode field, ASTNode annotation) {
+		if (!(field instanceof FieldDeclaration)) return false;
+		FieldDeclaration f = (FieldDeclaration) field;
+		if (f.annotations == null) return false;
+		for (Annotation childAnnotation : f.annotations) {
+			if (childAnnotation == annotation) return true;
+		}
+		return false;
+	}
+	
 	/** {@inheritDoc} */
 	@Override public String getName() {
 		final char[] n;

@@ -24,6 +24,8 @@ package lombok.javac.handlers;
 import static com.sun.tools.javac.code.TypeTags.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
+import java.util.Collection;
+
 import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVisitor;
@@ -103,6 +105,7 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 	}
 	
 	@Override public boolean handle(AnnotationValues<Setter> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		Collection<JavacNode> fields = annotationNode.upFromAnnotationToFields();
 		markAnnotationAsProcessed(annotationNode, Setter.class);
 		deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 		JavacNode node = annotationNode.up();
@@ -112,7 +115,7 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		
 		if (node == null) return false;
 		if (node.getKind() == Kind.FIELD) {
-			return createSetterForField(level, node, annotationNode, true);
+			return createSetterForFields(level, fields, annotationNode, true);
 		}
 		if (node.getKind() == Kind.TYPE) {
 			JCClassDecl typeDecl = null;
@@ -132,6 +135,14 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 			return true;
 		}
 		return false;
+	}
+	
+	private boolean createSetterForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists) {
+		for (JavacNode fieldNode : fieldNodes) {
+			createSetterForField(level, fieldNode, errorNode, whineIfExists);
+		}
+		
+		return true;
 	}
 	
 	private boolean createSetterForField(AccessLevel level,

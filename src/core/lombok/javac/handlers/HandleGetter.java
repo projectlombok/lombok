@@ -22,6 +22,9 @@
 package lombok.javac.handlers;
 
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+
+import java.util.Collection;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.core.AnnotationValues;
@@ -94,6 +97,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 	}
 	
 	@Override public boolean handle(AnnotationValues<Getter> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		Collection<JavacNode> fields = annotationNode.upFromAnnotationToFields();
 		markAnnotationAsProcessed(annotationNode, Getter.class);
 		deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 		JavacNode node = annotationNode.up();
@@ -102,7 +106,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		
 		if (node == null) return false;
 		if (node.getKind() == Kind.FIELD) {
-			return createGetterForField(level, node, annotationNode, true);
+			return createGetterForFields(level, fields, annotationNode, true);
 		}
 		if (node.getKind() == Kind.TYPE) {
 			JCClassDecl typeDecl = null;
@@ -122,6 +126,14 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 			return true;
 		}
 		return false;
+	}
+	
+	private boolean createGetterForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists) {
+		for (JavacNode fieldNode : fieldNodes) {
+			createGetterForField(level, fieldNode, errorNode, whineIfExists);
+		}
+		
+		return true;
 	}
 	
 	private boolean createGetterForField(AccessLevel level,
