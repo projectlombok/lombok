@@ -63,10 +63,12 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
-	 * Removes the annotation from javac's AST, then removes it from lombok's AST,
+	 * Removes the annotation from javac's AST (it remains in lombok's AST),
 	 * then removes any import statement that imports this exact annotation (not star imports).
+	 * Only does this if the DeleteLombokAnnotations class is in the context.
 	 */
 	public static void markAnnotationAsProcessed(JavacNode annotation, Class<? extends Annotation> annotationType) {
+		if (!annotation.shouldDeleteLombokAnnotations()) return;
 		JavacNode parentNode = annotation.directUp();
 		switch (parentNode.getKind()) {
 		case FIELD:
