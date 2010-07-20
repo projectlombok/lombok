@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.delombok;
+package lombok.javac;
 
 /** Used as marker in javac's Context object when delombok is running to signal that all lombok annotations should be deleted as they are processed. */
 public class DeleteLombokAnnotations {

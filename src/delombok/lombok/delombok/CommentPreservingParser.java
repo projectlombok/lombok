@@ -33,6 +33,7 @@ import javax.lang.model.element.Element;
 import javax.tools.JavaFileObject;
 import javax.tools.Diagnostic.Kind;
 
+import lombok.javac.DeleteLombokAnnotations;
 import lombok.javac.JavacTransformer;
 
 import com.sun.tools.javac.main.JavaCompiler;
