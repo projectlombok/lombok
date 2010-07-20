@@ -129,6 +129,9 @@ such as converting the changelog into HTML, and creating javadoc.
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="SneakyThrows" />
 		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="Constructor" />
+		</antcall>
 	</target>
 	
 	<target name="-website-dist">
@@ -283,8 +286,7 @@ such as converting the changelog into HTML, and creating javadoc.
 			write your own plugins, the other packages are what you're looking for.</body></html>
 		]]></echo>
 		<javadoc sourcepath="src/core" defaultexcludes="yes" destdir="build/api" windowtitle="Lombok" Overview="${javadoc.overview.html}">
-			<classpath refid="deps.path" />
-			<classpath refid="libs.path" />
+			<classpath refid="build.path" />
 			<link href="http://java.sun.com/javase/6/docs/api/" offline="true" packagelistLoc="./deps/javadoc/java6"/>
 			<header><![CDATA[<a href='http://projectlombok.org/'>Lombok</a> - ]]>v${lombok.version}</header>
 			<bottom><![CDATA[<i>Copyright &#169; 2009 Reinier Zwitserloot and Roel Spilker, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php'>MIT licence</a>.]]></bottom>

@@ -19,10 +19,11 @@
 				<dd>No need to start a debugger to see your fields: Just let lombok generate a <code>toString</code> for you!</dd>
 				<dt><a href="EqualsAndHashCode.html"><code>@EqualsAndHashCode</code></a></dt>
 				<dd>Equality made easy: Generates <code>hashCode</code> and <code>equals</code> implementations from the fields of your object.</dd>
+				<dt><a href="Constructor.html"><code>@NoArgsConstructor</code>, <code>@RequiredArgsConstructor</code> and <code>@AllArgsConstructor</code></a></dt>
+				<dd>Constructors made to order: Generates constructors that take no arguments, one argument per final / non-null field, or one argument for every field.</dd>
 				<dt><a href="Data.html"><code>@Data</code></a></dt>
 				<dd>All together now: A shortcut for <code>@ToString</code>, <code>@EqualsAndHashCode</code>,
-					<code>@Getter</code> on all fields, and <code>@Setter</code> on all non-final fields. You even
-					get a free constructor to initialize your final fields!</dd>
+					<code>@Getter</code> on all fields, and <code>@Setter</code> on all non-final fields, and <code>@RequiredArgsConstructor</code>!</dd>
 				<dt><a href="Cleanup.html"><code>@Cleanup</code></a></dt>
 				<dd>Automatic resource management: Call your <code>close()</code> methods safely with no hassle.</dd>
 				<dt><a href="Synchronized.html"><code>@Synchronized</code></a></dt>
@@ -50,7 +51,7 @@
 				your source files for source-level tools such as javadoc and GWT. More information about how to run delombok, including instructions for build tools
 				can be found at the <a href="delombok.html">delombok page</a>.</div>
 		<div class="footer">
-			<a href="../credits.html" class="creditsLink">credits</a> | <span class="copyright">Copyright &copy; 2009 Reinier Zwitserloot and Roel Spilker, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.</span>
+			<a href="../credits.html" class="creditsLink">credits</a> | <span class="copyright">Copyright &copy; 2009-2010 Reinier Zwitserloot and Roel Spilker, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.</span>
 		</div>
 		<div style="clear: both;"></div>
 	</div>
