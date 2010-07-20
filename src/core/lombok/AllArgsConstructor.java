@@ -29,6 +29,9 @@ import java.lang.annotation.Target;
 /**
  * Generates an all-args constructor. An all-args constructor requires one argument
  * for every field in the class.
+ * 
+ * @see NoArgsConstructor
+ * @see RequiredArgsConstructor
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)

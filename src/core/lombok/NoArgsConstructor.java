@@ -32,6 +32,9 @@ import java.lang.annotation.Target;
  * 
  * NB: Fields with constraints such as {@code @NonNull} will <em>NOT</em> be checked
  * in such a constructor, of course!
+ * 
+ * @see RequiredArgsConstructor
+ * @see AllArgsConstructor
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)

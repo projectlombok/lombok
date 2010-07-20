@@ -29,6 +29,9 @@ import java.lang.annotation.Target;
 /**
  * Generates a constructor with required arguments.
  * Required arguments are final fields and fields with constraints such as {@code @NonNull}.
+ *  
+ * @see NoArgsConstructor
+ * @see AllArgsConstructor
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
