@@ -42,6 +42,7 @@ import lombok.delombok.Comment.EndConnection;
 import lombok.delombok.Comment.StartConnection;
 
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.TypeTags;
@@ -1386,12 +1387,20 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     @Override
     public void visitWildcard(JCWildcard tree) {
         try {
-            print(tree.kind);
+            Object kind = tree.getClass().getField("kind").get(tree);
+            print(kind);
+            if (kind != null && kind.getClass().getSimpleName().equals("TypeBoundKind")) {
+                kind = kind.getClass().getField("kind").get(kind);
+            }
             
             if (tree.getKind() != Tree.Kind.UNBOUNDED_WILDCARD)
                 printExpr(tree.inner);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
         }
     }
 
