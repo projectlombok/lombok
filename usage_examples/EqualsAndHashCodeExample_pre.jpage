@@ -9,6 +9,10 @@ public class EqualsAndHashCodeExample {
 	private String[] tags;
 	private int id;
 	
+	public String getName() {
+		return this.name;
+	}
+	
 	@EqualsAndHashCode(callSuper=true)
 	public static class Square extends Shape {
 		private final int width, height;

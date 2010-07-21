@@ -70,6 +70,9 @@
 				Having both <code>exclude</code> and <code>of</code> generates a warning; the <code>exclude</code> parameter will be ignored in that case.
 				</p><p>
 				By default, any variables that start with a $ symbol are excluded automatically. You can only include them by using the 'of' parameter.
+				</p><p>
+				If a getter exists for a field to be included, it is called instead of using a direct field reference. This behaviour can be suppressed:<br />
+				<code>@EqualsAndHashCode(doNotUseGetters = true)</code>
 				</p>
 			</div>
 		</div>

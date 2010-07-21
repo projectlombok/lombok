@@ -8,24 +8,28 @@ public class EqualsAndHashCodeExample {
 	private String[] tags;
 	private int id;
 	
+	public String getName() {
+		return this.name;
+	}
+	
 	@Override public boolean equals(Object o) {
 		if (o == this) return true;
 		if (o == null) return false;
 		if (o.getClass() != this.getClass()) return false;
 		EqualsAndHashCodeExample other = (EqualsAndHashCodeExample) o;
-		if (name == null ? other.name != null : !name.equals(other.name)) return false;
-		if (Double.compare(score, other.score) != 0) return false;
-		if (!Arrays.deepEquals(tags, other.tags)) return false;
+		if (this.getName() == null ? other.getName() != null : !this.getName().equals(other.getName())) return false;
+		if (Double.compare(this.score, other.score) != 0) return false;
+		if (!Arrays.deepEquals(this.tags, other.tags)) return false;
 		return true;
 	}
 	
 	@Override public int hashCode() {
 		final int PRIME = 31;
 		int result = 1;
-		final long temp1 = Double.doubleToLongBits(score);
-		result = (result*PRIME) + (name == null ? 0 : name.hashCode());
+		final long temp1 = Double.doubleToLongBits(this.score);
+		result = (result*PRIME) + (this.name == null ? 0 : this.name.hashCode());
 		result = (result*PRIME) + (int)(temp1 ^ (temp1 >>> 32));
-		result = (result*PRIME) + Arrays.deepHashCode(tags);
+		result = (result*PRIME) + Arrays.deepHashCode(this.tags);
 		return result;
 	}
 	
@@ -43,8 +47,8 @@ public class EqualsAndHashCodeExample {
 			if (o.getClass() != this.getClass()) return false;
 			if (!super.equals(o)) return false;
 			Square other = (Square) o;
-			if (width != o.width) return false;
-			if (height != o.height) return false;
+			if (this.width != other.width) return false;
+			if (this.height != other.height) return false;
 			return true;
 		}
 		
@@ -52,8 +56,8 @@ public class EqualsAndHashCodeExample {
 			final int PRIME = 31;
 			int result = 1;
 			result = (result*PRIME) + super.hashCode();
-			result = (result*PRIME) + width;
-			result = (result*PRIME) + height;
+			result = (result*PRIME) + this.width;
+			result = (result*PRIME) + this.height;
 			return result;
 		}
 	}

@@ -353,7 +353,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 					MessageSend hashCodeCall = new MessageSend();
 					hashCodeCall.sourceStart = pS; hashCodeCall.sourceEnd = pE;
 					Eclipse.setGeneratedBy(hashCodeCall, source);
-					hashCodeCall.receiver = fieldAccessor;
+					hashCodeCall.receiver = createFieldAccessor(field, useFieldsDirectly, source);
 					hashCodeCall.selector = "hashCode".toCharArray();
 					NullLiteral nullLiteral = new NullLiteral(pS, pE);
 					Eclipse.setGeneratedBy(nullLiteral, source);

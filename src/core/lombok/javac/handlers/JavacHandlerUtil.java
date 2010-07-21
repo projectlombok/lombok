@@ -41,6 +41,7 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
@@ -269,15 +270,26 @@ public class JavacHandlerUtil {
 		}
 	}
 	
-	/**
-	 * Creates an expression that reads the field. Will either be {@code this.field} or {@code this.getField()} depending on whether or not there's a getter.
-	 */
-	static JCExpression createFieldAccessor(TreeMaker maker, JavacNode field, boolean useFieldsDirectly) {
-		return createFieldAccessor(maker, field, useFieldsDirectly, maker.Ident(field.toName("this")));
-	}
-	
-	static JCExpression createFieldAccessor(TreeMaker maker, JavacNode field, boolean useFieldsDirectly, JCExpression receiver) {
-		return maker.Select(receiver, ((JCVariableDecl)field.get()).name);
+	private static JCMethodDecl findGetter(JavacNode field) {
+		JCVariableDecl decl = (JCVariableDecl)field.get();
+		JavacNode typeNode = field.up();
+		for (String potentialGetterName : toAllGetterNames(decl)) {
+			switch (methodExists(potentialGetterName, typeNode, false)) {
+			case EXISTS_BY_LOMBOK:
+			case EXISTS_BY_USER:
+				for (JavacNode potentialGetter : typeNode.down()) {
+					if (potentialGetter.getKind() != Kind.METHOD) continue;
+					JCMethodDecl method = (JCMethodDecl) potentialGetter.get();
+					/** static getX() methods don't count. */
+					if ((method.mods.flags & Flags.STATIC) != 0) continue;
+					/** Nor do getters with a non-empty parameter list. */
+					if (method.params != null && method.params.size() > 0) continue;
+					return method;
+				}
+			}
+		}
+		
+		return null;
 	}
 	
 	/**
@@ -286,7 +298,32 @@ public class JavacHandlerUtil {
 	 * @see #createFieldAccessor(TreeMaker, JavacNode)
 	 */
 	static JCExpression getFieldType(JavacNode field, boolean useFieldsDirectly) {
-		return ((JCVariableDecl)field.get()).vartype;
+		JCMethodDecl getter = useFieldsDirectly ? null : findGetter(field);
+		
+		if (getter == null) {
+			return ((JCVariableDecl)field.get()).vartype;
+		}
+		
+		return getter.restype;
+	}
+	
+	/**
+	 * Creates an expression that reads the field. Will either be {@code this.field} or {@code this.getField()} depending on whether or not there's a getter.
+	 */
+	static JCExpression createFieldAccessor(TreeMaker maker, JavacNode field, boolean useFieldsDirectly) {
+		return createFieldAccessor(maker, field, useFieldsDirectly, maker.Ident(field.toName("this")));
+	}
+	
+	static JCExpression createFieldAccessor(TreeMaker maker, JavacNode field, boolean useFieldsDirectly, JCExpression receiver) {
+		JCMethodDecl getter = useFieldsDirectly ? null : findGetter(field);
+		
+		if (getter == null) {
+			return maker.Select(receiver, ((JCVariableDecl)field.get()).name);
+		}
+		
+		JCMethodInvocation call = maker.Apply(List.<JCExpression>nil(),
+				maker.Select(receiver, getter.name), List.<JCExpression>nil());
+		return call;
 	}
 	
 	/**

@@ -17,6 +17,7 @@ Lombok Changelog
 * BUGFIX: delombok now no longer forgets to remove `import lombok.AccessLevel;`. In netbeans, that import will no longer be flagged erroneously as being unused. [Issue #100](http://code.google.com/p/projectlombok/issues/detail?id=100) and [Issue #103](http://code.google.com/p/projectlombok/issues/detail?id=103)
 * BUGFIX: While its discouraged, `import lombok.*;` is supposed to work in the vast majority of cases. In eclipse, however, it didn't. Now it does. [Issue #102](http://code.google.com/p/projectlombok/issues/detail?id=102)
 * BUGFIX: When `@Getter` or `@Setter` is applied to a multiple field declaration, such as `@Getter int x, y;`, the annotation now applies to all fields, not just the first. [Issue #54](http://code.google.com/p/projectlombok/issues/detail?id=54)
+* ENHANCEMENT: generated `toString`, `equals` and `hashCode` methods will now use `this.getX()` and `other.getX()` instead of `this.x` and `other.x` if a suitable getter is available. This behaviour is useful for proxied classes, such as the POJOs that hibernate makes. Usage of the getters can be suppressed with `@ToString/@EqualsAndHashCode(doNotUseGetters = true)`. [Issue #110](http://code.google.com/p/projectlombok/issues/detail?id=110)
 
 ### v0.9.2 "Hailbunny" (December 15th, 2009)
 * preliminary support for lombok on NetBeans! - thanks go to Jan Lahoda from NetBeans. [Issue #20](http://code.google.com/p/projectlombok/issues/detail?id=20)

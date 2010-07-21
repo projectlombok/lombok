@@ -11,7 +11,7 @@ public class DataExample {
 	}
 	
 	public String getName() {
-		return name;
+		return this.name;
 	}
 	
 	void setAge(int age) {
@@ -19,7 +19,7 @@ public class DataExample {
 	}
 	
 	public int getAge() {
-		return age;
+		return this.age;
 	}
 	
 	public void setScore(double score) {
@@ -27,11 +27,11 @@ public class DataExample {
 	}
 	
 	public double getScore() {
-		return score;
+		return this.score;
 	}
 	
 	public String[] getTags() {
-		return tags;
+		return this.tags;
 	}
 	
 	public void setTags(String[] tags) {
@@ -39,7 +39,7 @@ public class DataExample {
 	}
 	
 	@Override public String toString() {
-		return "DataExample(" + name + ", " + age + ", " + score + ", " + Arrays.deepToString(tags) + ")";
+		return "DataExample(" + this.getName() + ", " + this.getAge() + ", " + this.getScore() + ", " + Arrays.deepToString(this.getTags()) + ")";
 	}
 	
 	@Override public boolean equals(Object o) {
@@ -47,21 +47,21 @@ public class DataExample {
 		if (o == null) return false;
 		if (o.getClass() != this.getClass()) return false;
 		DataExample other = (DataExample) o;
-		if (name == null ? other.name != null : !name.equals(other.name)) return false;
-		if (age != other.age) return false;
-		if (Double.compare(score, other.score) != 0) return false;
-		if (!Arrays.deepEquals(tags, other.tags)) return false;
+		if (this.getName() == null ? other.getName() != null : !this.getName().equals(other.getName())) return false;
+		if (this.getAge() != other.getAge()) return false;
+		if (Double.compare(this.getScore(), other.getScore()) != 0) return false;
+		if (!Arrays.deepEquals(this.getTags(), other.getTags())) return false;
 		return true;
 	}
 	
 	@Override public int hashCode() {
 		final int PRIME = 31;
 		int result = 1;
-		final long temp1 = Double.doubleToLongBits(score);
-		result = (result*PRIME) + (name == null ? 0 : name.hashCode());
-		result = (result*PRIME) + age;
+		final long temp1 = Double.doubleToLongBits(this.getScore());
+		result = (result*PRIME) + (this.getName() == null ? 0 : this.getName().hashCode());
+		result = (result*PRIME) + this.getAge();
 		result = (result*PRIME) + (int)(temp1 ^ (temp1 >>> 32));
-		result = (result*PRIME) + Arrays.deepHashCode(tags);
+		result = (result*PRIME) + Arrays.deepHashCode(this.getTags());
 		return result;
 	}
 	
@@ -79,15 +79,15 @@ public class DataExample {
 		}
 		
 		public String getName() {
-			return name;
+			return this.name;
 		}
 		
 		public T getValue() {
-			return value;
+			return this.value;
 		}
 		
 		@Override public String toString() {
-			return "Exercise(name=" + name + ", value=" + value + ")";
+			return "Exercise(name=" + this.getName() + ", value=" + this.getValue() + ")";
 		}
 		
 		@Override public boolean equals(Object o) {
@@ -95,16 +95,16 @@ public class DataExample {
 			if (o == null) return false;
 			if (o.getClass() != this.getClass()) return false;
 			Exercise<?> other = (Exercise<?>) o;
-			if (name == null ? other.name != null : !name.equals(other.name)) return false;
-			if (value == null ? other.value != null : !value.equals(other.value)) return false;
+			if (this.getName() == null ? other.getValue() != null : !this.getName().equals(other.getName())) return false;
+			if (this.getValue() == null ? other.getValue() != null : !this.getValue().equals(other.getValue())) return false;
 			return true;
 		}
 		
 		@Override public int hashCode() {
 			final int PRIME = 31;
 			int result = 1;
-			result = (result*PRIME) + (name == null ? 0 : name.hashCode());
-			result = (result*PRIME) + (value == null ? 0 : value.hashCode());
+			result = (result*PRIME) + (this.getName() == null ? 0 : this.getName().hashCode());
+			result = (result*PRIME) + (this.getValue() == null ? 0 : this.getValue().hashCode());
 			return result;
 		}
 	}

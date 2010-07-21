@@ -281,7 +281,7 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 						maker.Apply(List.<JCExpression>nil(), hcMethod, List.of(fieldAccessor)));
 			} else /* objects */ {
 				/* this.fieldName == null ? 0 : this.fieldName.hashCode() */
-				JCExpression hcCall = maker.Apply(List.<JCExpression>nil(), maker.Select(fieldAccessor, typeNode.toName("hashCode")),
+				JCExpression hcCall = maker.Apply(List.<JCExpression>nil(), maker.Select(createFieldAccessor(maker, fieldNode, useFieldsDirectly), typeNode.toName("hashCode")),
 						List.<JCExpression>nil());
 				JCExpression thisEqualsNull = maker.Binary(JCTree.EQ, fieldAccessor, maker.Literal(TypeTags.BOT, null));
 				intoResult = intoResult.append(

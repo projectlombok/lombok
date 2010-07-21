@@ -46,6 +46,7 @@ import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
+import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
@@ -98,34 +99,87 @@ public class EclipseHandlerUtil {
 		}
 	}
 	
+	private static AbstractMethodDeclaration findGetter(EclipseNode field) {
+		TypeReference fieldType = ((FieldDeclaration)field.get()).type;
+		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
+		EclipseNode typeNode = field.up();
+		for (String potentialGetterName : TransformationsUtil.toAllGetterNames(field.getName(), isBoolean)) {
+			switch (methodExists(potentialGetterName, typeNode, false)) {
+			case EXISTS_BY_LOMBOK:
+			case EXISTS_BY_USER:
+				for (EclipseNode potentialGetter : typeNode.down()) {
+					if (potentialGetter.getKind() != Kind.METHOD) continue;
+					AbstractMethodDeclaration method = (AbstractMethodDeclaration) potentialGetter.get();
+					/** static getX() methods don't count. */
+					if ((method.modifiers & ClassFileConstants.AccStatic) != 0) continue;
+					/** Nor do getters with a non-empty parameter list. */
+					if (method.arguments != null && method.arguments.length > 0) continue;
+					return method;
+				}
+			}
+		}
+		
+		return null;
+	}
+	
 	static TypeReference getFieldType(EclipseNode field, boolean useFieldsDirectly) {
-		return ((FieldDeclaration)field.get()).type;
+		AbstractMethodDeclaration getter = useFieldsDirectly ? null : findGetter(field);
+		if (!(getter instanceof MethodDeclaration)) {
+			return ((FieldDeclaration)field.get()).type;
+		}
+		
+		return ((MethodDeclaration)getter).returnType;
 	}
 	
 	static Expression createFieldAccessor(EclipseNode field, boolean useFieldsDirectly, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
-		FieldReference thisX = new FieldReference(field.getName().toCharArray(), p);
-		Eclipse.setGeneratedBy(thisX, source);
-		thisX.receiver = new ThisReference(pS, pE);
-		Eclipse.setGeneratedBy(thisX.receiver, source);
-		return thisX;
+		
+		AbstractMethodDeclaration getter = useFieldsDirectly ? null : findGetter(field);
+		
+		if (getter == null) {
+			FieldReference thisX = new FieldReference(field.getName().toCharArray(), p);
+			Eclipse.setGeneratedBy(thisX, source);
+			thisX.receiver = new ThisReference(pS, pE);
+			Eclipse.setGeneratedBy(thisX.receiver, source);
+			return thisX;
+		}
+		
+		MessageSend call = new MessageSend();
+		Eclipse.setGeneratedBy(call, source);
+		call.sourceStart = pS; call.sourceEnd = pE;
+		call.receiver = new ThisReference(pS, pE);
+		Eclipse.setGeneratedBy(call.receiver, source);
+		call.selector = getter.selector;
+		return call;
 	}
 	
 	static Expression createFieldAccessor(EclipseNode field, boolean useFieldsDirectly, ASTNode source, char[] receiver) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
-		NameReference ref;
+		AbstractMethodDeclaration getter = useFieldsDirectly ? null : findGetter(field);
 		
-		char[][] tokens = new char[2][];
-		tokens[0] = receiver;
-		tokens[1] = field.getName().toCharArray();
-		long[] poss = {p, p};
+		if (getter == null) {
+			NameReference ref;
+			
+			char[][] tokens = new char[2][];
+			tokens[0] = receiver;
+			tokens[1] = field.getName().toCharArray();
+			long[] poss = {p, p};
+			
+			ref = new QualifiedNameReference(tokens, poss, pS, pE);
+			Eclipse.setGeneratedBy(ref, source);
+			return ref;
+		}
 		
-		ref = new QualifiedNameReference(tokens, poss, pS, pE);
-		Eclipse.setGeneratedBy(ref, source);
-		return ref;
+		MessageSend call = new MessageSend();
+		Eclipse.setGeneratedBy(call, source);
+		call.sourceStart = pS; call.sourceEnd = pE;
+		call.receiver = new SingleNameReference(receiver, p);
+		Eclipse.setGeneratedBy(call.receiver, source);
+		call.selector = getter.selector;
+		return call;
 	}
 	
 	/**
