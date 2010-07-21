@@ -168,7 +168,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<srcdir dir="src/installer" />
 			<srcdir dir="src/delombok" />
 			<srcdir dir="experimental/src" />
-			<srcdir dir="test/delombok/src" />
+			<srcdir dir="test/transform/src" />
 			<srcdir dir="test/core/src" />
 			<conf name="build" sources="contrib" />
 			<conf name="test" sources="contrib" />
@@ -206,11 +206,11 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<classpath refid="test.path" />
 			<classpath path="build/lombok" />
 			<src path="test/core/src" />
-			<src path="test/delombok/src" />
+			<src path="test/transform/src" />
 		</ivy:compile>
 		<copy todir="build/tests">
 			<fileset dir="test/pretty/resource" />
-			<fileset dir="test/delombok/resource" />
+			<fileset dir="test/transform/resource" />
 		</copy>
 	</target>
 	
@@ -224,7 +224,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 				<fileset dir="test/core/src">
 					<include name="**/Test*.java" />
 				</fileset>
-				<fileset dir="test/delombok/src">
+				<fileset dir="test/transform/src">
 					<include name="**/Test*.java" />
 				</fileset>
 			</batchtest>

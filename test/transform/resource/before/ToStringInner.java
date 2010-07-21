@@ -1,4 +1,3 @@
-//ignore
 import lombok.ToString;
 @ToString class ToStringOuter {
 	final int x;

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,24 +19,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.delombok;
+package lombok.transform;
 
 import java.io.File;
 
 import lombok.DirectoryRunner;
-import lombok.RunTestsViaDelombok;
 
 import org.junit.runner.RunWith;
 
 @RunWith(DirectoryRunner.class)
-public class TestLombokFilesIdempotent {
-	
-	public static File getBeforeDirectory() {
-		RunTestsViaDelombok.printErrors(true);
-		return getAfterDirectory();
+public class TestWithDelombok implements DirectoryRunner.TestParams {
+	@Override
+	public DirectoryRunner.Compiler getCompiler() {
+		return DirectoryRunner.Compiler.DELOMBOK;
 	}
 	
-	public static File getAfterDirectory() {
-		return new File("test/delombok/resource/after");
+	@Override
+	public boolean printErrors() {
+		return true;
+	}
+	
+	@Override
+	public File getBeforeDirectory() {
+		return new File("test/transform/resource/before");
+	}
+	
+	@Override
+	public File getAfterDirectory() {
+		return new File("test/transform/resource/after-delombok");
+	}
+	
+	@Override
+	public File getMessagesDirectory() {
+		return new File("test/transform/resource/messages-delombok");
 	}
 }
