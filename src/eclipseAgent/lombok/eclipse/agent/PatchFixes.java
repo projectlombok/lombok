@@ -20,6 +20,26 @@ public class PatchFixes {
 		return (bits & ALREADY_PROCESSED_FLAG) != 0;
 	}
 	
+	/**
+	 * XXX LIVE DEBUG
+	 * 
+	 * Once in a blue moon eclipse throws a NullPointerException while editing a file. Can't reproduce it while running eclipse in a debugger,
+	 * but at least this way we patch the problem to be a bit more specific in the error that should then appear.
+	 */
+	public static boolean debugPrintStateOfScope(Object in) throws Exception {
+		/* this.scope.enclosingSourceType().sourceName */
+		Object scope = in.getClass().getField("scope").get(in);
+		String msg = null;
+		if (scope == null) msg = "scope itself is null";
+		else {
+			Object sourceTypeBinding = scope.getClass().getMethod("enclosingSourceType").invoke(scope);
+			if (sourceTypeBinding == null) msg = "scope.enclosingSourceType() is null";
+		}
+		
+		if (msg != null) throw new NullPointerException(msg);
+		return false;
+	}
+	
 	public static boolean skipRewritingGeneratedNodes(org.eclipse.jdt.core.dom.ASTNode node) throws Exception {
 		return ((Boolean)node.getClass().getField("$isGenerated").get(node)).booleanValue();
 	}
