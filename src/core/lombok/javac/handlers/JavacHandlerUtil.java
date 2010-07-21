@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -267,6 +267,26 @@ public class JavacHandlerUtil {
 		case PROTECTED:
 			return Flags.PROTECTED;
 		}
+	}
+	
+	/**
+	 * Creates an expression that reads the field. Will either be {@code this.field} or {@code this.getField()} depending on whether or not there's a getter.
+	 */
+	static JCExpression createFieldAccessor(TreeMaker maker, JavacNode field, boolean useFieldsDirectly) {
+		return createFieldAccessor(maker, field, useFieldsDirectly, maker.Ident(field.toName("this")));
+	}
+	
+	static JCExpression createFieldAccessor(TreeMaker maker, JavacNode field, boolean useFieldsDirectly, JCExpression receiver) {
+		return maker.Select(receiver, ((JCVariableDecl)field.get()).name);
+	}
+	
+	/**
+	 * Returns the type of the field, unless a getter exists for this field, in which case the return type of the getter is returned.
+	 * 
+	 * @see #createFieldAccessor(TreeMaker, JavacNode)
+	 */
+	static JCExpression getFieldType(JavacNode field, boolean useFieldsDirectly) {
+		return ((JCVariableDecl)field.get()).vartype;
 	}
 	
 	/**

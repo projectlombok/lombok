@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -95,7 +95,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		try {
 			includeFieldNames = ((Boolean)ToString.class.getMethod("includeFieldNames").getDefaultValue()).booleanValue();
 		} catch (Exception ignore) {}
-		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false);
+		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, false);
 	}
 	
 	public boolean handle(AnnotationValues<ToString> annotation, Annotation ast, EclipseNode annotationNode) {
@@ -116,11 +116,11 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		
 		checkForBogusFieldNames(typeNode, annotation);
 		
-		return generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true);
+		return generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true, ann.doNotUseGetters());
 	}
 	
 	public boolean generateToString(EclipseNode typeNode, EclipseNode errorNode, List<String> excludes, List<String> includes,
-			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists) {
+			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, boolean useFieldsDirectly) {
 		TypeDeclaration typeDecl = null;
 		
 		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
@@ -162,7 +162,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		
 		switch (methodExists("toString", typeNode)) {
 		case NOT_EXISTS:
-			MethodDeclaration toString = createToString(typeNode, nodesForToString, includeFieldNames, callSuper, errorNode.get());
+			MethodDeclaration toString = createToString(typeNode, nodesForToString, includeFieldNames, callSuper, errorNode.get(), useFieldsDirectly);
 			injectMethod(typeNode, toString);
 			return true;
 		case EXISTS_BY_LOMBOK:
@@ -177,7 +177,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 	}
 	
 	private MethodDeclaration createToString(EclipseNode type, Collection<EclipseNode> fields,
-			boolean includeFieldNames, boolean callSuper, ASTNode source) {
+			boolean includeFieldNames, boolean callSuper, ASTNode source, boolean useFieldsDirectly) {
 		TypeDeclaration typeDeclaration = (TypeDeclaration)type.get();
 		char[] rawTypeName = typeDeclaration.name;
 		String typeName = rawTypeName == null ? "" : new String(rawTypeName);

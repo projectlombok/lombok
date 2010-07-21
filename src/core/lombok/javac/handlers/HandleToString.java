@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,6 @@ import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
@@ -89,7 +88,7 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 			annotation.setWarning("exclude", "exclude and of are mutually exclusive; the 'exclude' parameter will be ignored.");
 		}
 		
-		return generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true);
+		return generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true, ann.doNotUseGetters());
 	}
 	
 	public void generateToStringForType(JavacNode typeNode, JavacNode errorNode) {
@@ -106,11 +105,11 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		try {
 			includeFieldNames = ((Boolean)ToString.class.getMethod("includeFieldNames").getDefaultValue()).booleanValue();
 		} catch (Exception ignore) {}
-		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false);
+		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, false);
 	}
 	
 	private boolean generateToString(JavacNode typeNode, JavacNode errorNode, List<String> excludes, List<String> includes,
-			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists) {
+			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, boolean useFieldsDirectly) {
 		boolean notAClass = true;
 		if (typeNode.get() instanceof JCClassDecl) {
 			long flags = ((JCClassDecl)typeNode.get()).mods.flags;
@@ -151,7 +150,7 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		
 		switch (methodExists("toString", typeNode)) {
 		case NOT_EXISTS:
-			JCMethodDecl method = createToString(typeNode, nodesForToString, includeFieldNames, callSuper);
+			JCMethodDecl method = createToString(typeNode, nodesForToString, includeFieldNames, callSuper, useFieldsDirectly);
 			injectMethod(typeNode, method);
 			return true;
 		case EXISTS_BY_LOMBOK:
@@ -166,7 +165,7 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 
 	}
 	
-	private JCMethodDecl createToString(JavacNode typeNode, List<JavacNode> fields, boolean includeFieldNames, boolean callSuper) {
+	private JCMethodDecl createToString(JavacNode typeNode, List<JavacNode> fields, boolean includeFieldNames, boolean callSuper, boolean useFieldsDirectly) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(chainDots(maker, typeNode, "java", "lang", "Override"), List.<JCExpression>nil());
@@ -203,16 +202,16 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			JCExpression expr;
 			
-			JCFieldAccess thisX = maker.Select(maker.Ident(fieldNode.toName("this")), field.name);
+			JCExpression fieldAccessor = createFieldAccessor(maker, fieldNode, useFieldsDirectly);
 			
-			if (field.vartype instanceof JCArrayTypeTree) {
+			if (getFieldType(fieldNode, useFieldsDirectly) instanceof JCArrayTypeTree) {
 				boolean multiDim = ((JCArrayTypeTree)field.vartype).elemtype instanceof JCArrayTypeTree;
 				boolean primitiveArray = ((JCArrayTypeTree)field.vartype).elemtype instanceof JCPrimitiveTypeTree;
 				boolean useDeepTS = multiDim || !primitiveArray;
 				
 				JCExpression hcMethod = chainDots(maker, typeNode, "java", "util", "Arrays", useDeepTS ? "deepToString" : "toString");
-				expr = maker.Apply(List.<JCExpression>nil(), hcMethod, List.<JCExpression>of(thisX));
-			} else expr = thisX;
+				expr = maker.Apply(List.<JCExpression>nil(), hcMethod, List.<JCExpression>of(fieldAccessor));
+			} else expr = fieldAccessor;
 			
 			if (first) {
 				current = maker.Binary(JCTree.PLUS, current, expr);
@@ -238,5 +237,4 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		return maker.MethodDef(mods, typeNode.toName("toString"), returnType,
 				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 	}
-	
 }

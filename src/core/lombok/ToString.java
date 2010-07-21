@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,4 +78,10 @@ public @interface ToString {
 	 * <strong>default: false</strong>
 	 */
 	boolean callSuper() default false;
+	
+	/**
+	 * Normally, if getters are available, those are called. To suppress this and let the generated code use the fields directly, set this to {@code true}.
+	 * <strong>default: false</strong>
+	 */
+	boolean doNotUseGetters() default false;
 }

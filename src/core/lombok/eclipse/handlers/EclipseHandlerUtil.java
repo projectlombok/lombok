@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,16 +43,20 @@ import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.NameReference;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
+import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
@@ -92,6 +96,36 @@ public class EclipseHandlerUtil {
 		case PRIVATE:
 			return ClassFileConstants.AccPrivate;
 		}
+	}
+	
+	static TypeReference getFieldType(EclipseNode field, boolean useFieldsDirectly) {
+		return ((FieldDeclaration)field.get()).type;
+	}
+	
+	static Expression createFieldAccessor(EclipseNode field, boolean useFieldsDirectly, ASTNode source) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long)pS << 32 | pE;
+		FieldReference thisX = new FieldReference(field.getName().toCharArray(), p);
+		Eclipse.setGeneratedBy(thisX, source);
+		thisX.receiver = new ThisReference(pS, pE);
+		Eclipse.setGeneratedBy(thisX.receiver, source);
+		return thisX;
+	}
+	
+	static Expression createFieldAccessor(EclipseNode field, boolean useFieldsDirectly, ASTNode source, char[] receiver) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long)pS << 32 | pE;
+		
+		NameReference ref;
+		
+		char[][] tokens = new char[2][];
+		tokens[0] = receiver;
+		tokens[1] = field.getName().toCharArray();
+		long[] poss = {p, p};
+		
+		ref = new QualifiedNameReference(tokens, poss, pS, pE);
+		Eclipse.setGeneratedBy(ref, source);
+		return ref;
 	}
 	
 	/**
