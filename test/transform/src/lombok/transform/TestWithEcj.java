@@ -19,38 +19,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok;
+package lombok.transform;
 
 import java.io.File;
-import java.io.StringWriter;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import javax.tools.Diagnostic;
-import javax.tools.DiagnosticListener;
-import javax.tools.JavaFileObject;
+import lombok.DirectoryRunner;
 
-import lombok.delombok.Delombok;
+import org.junit.runner.RunWith;
 
-public class RunTestsViaDelombok extends AbstractRunTests {
-	private Delombok delombok = new Delombok();
+@RunWith(DirectoryRunner.class)
+public class TestWithEcj implements DirectoryRunner.TestParams {
+	@Override
+	public DirectoryRunner.Compiler getCompiler() {
+		return DirectoryRunner.Compiler.ECJ;
+	}
 	
 	@Override
-	public void transformCode(final StringBuilder messages, StringWriter result, final File file) throws Throwable {
-		delombok.setVerbose(false);
-		delombok.setForceProcess(true);
-		delombok.setCharset("UTF-8");
-		
-		delombok.setDiagnosticsListener(new DiagnosticListener<JavaFileObject>() {
-			@Override public void report(Diagnostic<? extends JavaFileObject> d) {
-				String msg = d.getMessage(Locale.ENGLISH);
-				Matcher m = Pattern.compile("^" + Pattern.quote(file.getAbsolutePath()) + "\\s*:\\s*\\d+\\s*:\\s*(?:warning:\\s*)?(.*)$").matcher(msg);
-				if (m.matches()) msg = m.group(1);
-				messages.append(String.format("%d:%d %s %s\n", d.getLineNumber(), d.getColumnNumber(), d.getKind(), msg));
-			}
-		});
-		
-		delombok.delombok(file.getAbsolutePath(), result);
+	public boolean printErrors() {
+		return true;
+	}
+	
+	@Override
+	public File getBeforeDirectory() {
+		return new File("test/transform/resource/before");
+	}
+	
+	@Override
+	public File getAfterDirectory() {
+		return new File("test/transform/resource/after-ecj");
+	}
+	
+	@Override
+	public File getMessagesDirectory() {
+		return new File("test/transform/resource/messages-ecj");
 	}
 }

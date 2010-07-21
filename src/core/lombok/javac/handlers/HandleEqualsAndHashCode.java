@@ -412,7 +412,7 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 			} else /* objects */ {
 				/* if (this.fieldName == null ? other.fieldName != null : !this.fieldName.equals(other.fieldName)) return false; */
 				JCExpression thisEqualsNull = maker.Binary(JCTree.EQ, thisFieldAccessor, maker.Literal(TypeTags.BOT, null));
-				JCExpression otherNotEqualsNull = maker.Binary(JCTree.NE, thisFieldAccessor, maker.Literal(TypeTags.BOT, null));
+				JCExpression otherNotEqualsNull = maker.Binary(JCTree.NE, otherFieldAccessor, maker.Literal(TypeTags.BOT, null));
 				JCExpression thisEqualsThat = maker.Apply(List.<JCExpression>nil(),
 						maker.Select(createFieldAccessor(maker, fieldNode, useFieldsDirectly), typeNode.toName("equals")),
 						List.of(createFieldAccessor(maker, fieldNode, useFieldsDirectly, maker.Ident(otherName))));

@@ -1,4 +1,3 @@
-//ignore
 class SynchronizedName {
 	private Object read = new Object();
 	private static Object READ = new Object();

@@ -7,10 +7,10 @@ class SneakyThrowsMultiple {
 			try {
 				System.out.println("test1");
 				throw new IOException();
-			} catch (IOException $ex) {
+			} catch (final IOException $ex) {
 				throw lombok.Lombok.sneakyThrow($ex);
 			}
-		} catch (Throwable $ex) {
+		} catch (final Throwable $ex) {
 			throw lombok.Lombok.sneakyThrow($ex);
 		}
 	}
@@ -23,10 +23,10 @@ class SneakyThrowsMultiple {
 				} else {
 					throw new AWTException("WHAT");
 				}
-			} catch (AWTException $ex) {
+			} catch (final AWTException $ex) {
 				throw lombok.Lombok.sneakyThrow($ex);
 			}
-		} catch (IOException $ex) {
+		} catch (final IOException $ex) {
 			throw lombok.Lombok.sneakyThrow($ex);
 		}
 	}
@@ -35,10 +35,10 @@ class SneakyThrowsMultiple {
 			try {
 				System.out.println("test3");
 				throw new IOException();
-			} catch (IOException $ex) {
+			} catch (final IOException $ex) {
 				throw lombok.Lombok.sneakyThrow($ex);
 			}
-		} catch (Throwable $ex) {
+		} catch (final Throwable $ex) {
 			throw lombok.Lombok.sneakyThrow($ex);
 		}
 	}

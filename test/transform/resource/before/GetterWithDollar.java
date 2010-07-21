@@ -1,4 +1,3 @@
-//ignore
 class GetterWithDollar1 {
 	@lombok.Getter int $i;
 }

@@ -1,4 +1,3 @@
-//ignore
 class SetterWithDollar1 {
 	@lombok.Setter int $i;
 }

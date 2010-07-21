@@ -2,7 +2,7 @@ class SynchronizedName {
 	private Object read = new Object();
 	private static Object READ = new Object();
 	void test1() {
-		synchronized (read) {
+		synchronized (this.read) {
 			System.out.println("one");
 		}
 	}
@@ -10,15 +10,17 @@ class SynchronizedName {
 		System.out.println("two");
 	}
 	static void test3() {
-		System.out.println("three");
+		synchronized (SynchronizedName.read) {
+			System.out.println("three");
+		}
 	}
 	void test4() {
-		synchronized (READ) {
+		synchronized (this.READ) {
 			System.out.println("four");
 		}
 	}
 	void test5() {
-		synchronized (read) {
+		synchronized (this.read) {
 			System.out.println("five");
 		}
 	}

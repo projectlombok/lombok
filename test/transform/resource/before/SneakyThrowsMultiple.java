@@ -3,13 +3,13 @@ import java.io.IOException;
 import java.util.Random;
 
 class SneakyThrowsMultiple {
-	@lombok.SneakyThrows(IOException.class,Throwable.class) 
+	@lombok.SneakyThrows({IOException.class,Throwable.class})
 	public void test() {
 		System.out.println("test1");
 		throw new IOException();
 	}
 	
-	@lombok.SneakyThrows(AWTException.class,IOException.class)
+	@lombok.SneakyThrows({AWTException.class,IOException.class})
 	public void test2() {
 		System.out.println("test2");
 		if (new Random().nextBoolean()) {

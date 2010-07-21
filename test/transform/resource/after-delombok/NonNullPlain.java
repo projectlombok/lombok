@@ -3,14 +3,14 @@ class NonNullPlain {
 	int i;
 	@lombok.NonNull
 	String s;
+	@java.lang.SuppressWarnings("all")
+	public void setI(@lombok.NonNull final int i) {
+		this.i = i;
+	}
 	@lombok.NonNull
 	@java.lang.SuppressWarnings("all")
 	public int getI() {
 		return this.i;
-	}
-	@java.lang.SuppressWarnings("all")
-	public void setI(@lombok.NonNull final int i) {
-		this.i = i;
 	}
 	@lombok.NonNull
 	@java.lang.SuppressWarnings("all")

@@ -527,6 +527,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		/* MyType<?> other = (MyType<?>) o; */ {
 			if (!fields.isEmpty()) {
 				LocalDeclaration other = new LocalDeclaration(otherN, pS, pE);
+				other.modifiers |= ClassFileConstants.AccFinal;
 				Eclipse.setGeneratedBy(other, source);
 				char[] typeName = typeDecl.name;
 				Expression targetType;

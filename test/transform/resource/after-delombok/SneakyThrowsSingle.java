@@ -3,7 +3,7 @@ class SneakyThrowsSingle {
 	public void test() {
 		try {
 			System.out.println("test1");
-		} catch (Throwable $ex) {
+		} catch (final Throwable $ex) {
 			throw lombok.Lombok.sneakyThrow($ex);
 		}
 	}
@@ -11,7 +11,7 @@ class SneakyThrowsSingle {
 		try {
 			System.out.println("test2");
 			throw new IOException();
-		} catch (IOException $ex) {
+		} catch (final IOException $ex) {
 			throw lombok.Lombok.sneakyThrow($ex);
 		}
 	}
@@ -19,7 +19,7 @@ class SneakyThrowsSingle {
 		try {
 			System.out.println("test3");
 			throw new IOException();
-		} catch (IOException $ex) {
+		} catch (final IOException $ex) {
 			throw lombok.Lombok.sneakyThrow($ex);
 		}
 	}

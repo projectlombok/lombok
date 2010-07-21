@@ -83,6 +83,10 @@ public abstract class AbstractRunTests {
 				System.out.println(expectedFile);
 				System.out.println("****  Actual  ******");
 				System.out.println(actualFile);
+				if (actualMessages != null && !actualMessages.isEmpty()) {
+					System.out.println("**** Actual Errors *****");
+					System.out.println(actualMessages);
+				}
 				System.out.println("*******************");
 			}
 			throw e;

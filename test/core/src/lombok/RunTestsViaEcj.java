@@ -47,8 +47,10 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		
 		TransformEclipseAST.transform(parser, cud);
 		
-		for (CategorizedProblem p : compilationResult.getErrors()) {
-			messages.append(p.toString()).append("\n");
+		CategorizedProblem[] problems = compilationResult.getAllProblems();
+		
+		if (problems != null) for (CategorizedProblem p : problems) {
+			messages.append(String.format("%d %s %s\n", p.getSourceLineNumber(), p.isError() ? "error" : p.isWarning() ? "warning" : "unknown", p.getMessage()));
 		}
 		
 		result.append(cud.toString());

@@ -1,5 +1,4 @@
 class NonNullPlain {
-	@lombok.Getter
 	@lombok.Setter
 	@lombok.NonNull
 	@lombok.Getter int i;

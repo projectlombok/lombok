@@ -102,7 +102,7 @@ public class HandleSneakyThrows implements JavacAnnotationHandler<SneakyThrows> 
 		
 		JCExpression varType = chainDots(maker, node, exception.split("\\."));
 		
-		JCVariableDecl catchParam = maker.VarDef(maker.Modifiers(0), node.toName("$ex"), varType, null);
+		JCVariableDecl catchParam = maker.VarDef(maker.Modifiers(Flags.FINAL), node.toName("$ex"), varType, null);
 		JCExpression lombokLombokSneakyThrowNameRef = chainDots(maker, node, "lombok", "Lombok", "sneakyThrow");
 		JCBlock catchBody = maker.Block(0, List.<JCStatement>of(maker.Throw(maker.Apply(
 				List.<JCExpression>nil(), lombokLombokSneakyThrowNameRef,
