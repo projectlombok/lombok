@@ -566,7 +566,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
             if (getTag(l.head) == JCTree.IMPORT) {
                 JCImport imp = (JCImport)l.head;
                 Name name = TreeInfo.name(imp.qualid);
-                if (name == name.table.asterisk ||
+                if (name == name.table.fromChars(new char[] {'*'}, 0, 1) ||
                         cdef == null ||
                         isUsed(TreeInfo.symbol(imp.qualid), cdef)) {
                     if (firstImport) {
@@ -671,13 +671,13 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitMethodDef(JCMethodDecl tree) {
         try {
             // when producing source output, omit anonymous constructors
-            if (tree.name == tree.name.table.init &&
+            if (tree.name == tree.name.table.fromChars("<init>".toCharArray(), 0, 6) &&
                     enclClassName == null) return;
             println(); align();
             printDocComment(tree);
             printExpr(tree.mods);
             printTypeParameters(tree.typarams);
-            if (tree.name == tree.name.table.init) {
+            if (tree.name == tree.name.table.fromChars("<init>".toCharArray(), 0, 6)) {
                 print(enclClassName != null ? enclClassName : tree.name);
             } else {
                 printExpr(tree.restype);
@@ -1063,7 +1063,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
                 Name enclClassNamePrev = enclClassName;
                 enclClassName =
                         tree.def.name != null ? tree.def.name :
-                            tree.type != null && tree.type.tsym.name != tree.type.tsym.name.table.empty ? tree.type.tsym.name :
+                            tree.type != null && tree.type.tsym.name != tree.type.tsym.name.table.fromChars(new char[0], 0, 0) ? tree.type.tsym.name :
                                 null;
                 if ((tree.def.mods.flags & Flags.ENUM) != 0) print("/*enum*/");
                 printBlock(tree.def.defs, tree.def);
