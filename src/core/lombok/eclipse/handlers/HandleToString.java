@@ -45,7 +45,6 @@ import org.eclipse.jdt.internal.compiler.ast.BinaryExpression;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
@@ -57,8 +56,8 @@ import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.SuperReference;
-import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.mangosdk.spi.ProviderFor;
@@ -217,29 +216,24 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		}
 		
 		for (EclipseNode field : fields) {
-			FieldDeclaration f = (FieldDeclaration)field.get();
-			if (f.name == null || f.type == null) continue;
-			
-			FieldReference thisX = new FieldReference(f.name, p);
-			Eclipse.setGeneratedBy(thisX, source);
-			thisX.receiver = new ThisReference(source.sourceStart, source.sourceEnd);
-			Eclipse.setGeneratedBy(thisX.receiver, source);
+			TypeReference fType = getFieldType(field, useFieldsDirectly);
+			Expression fieldAccessor = createFieldAccessor(field, useFieldsDirectly, source);
 			
 			Expression ex;
-			if (f.type.dimensions() > 0) {
+			if (fType.dimensions() > 0) {
 				MessageSend arrayToString = new MessageSend();
 				arrayToString.sourceStart = pS; arrayToString.sourceEnd = pE;
 				arrayToString.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA, TypeConstants.UTIL, "Arrays".toCharArray());
-				arrayToString.arguments = new Expression[] { thisX };
+				arrayToString.arguments = new Expression[] { fieldAccessor };
 				Eclipse.setGeneratedBy(arrayToString.arguments[0], source);
-				if (f.type.dimensions() > 1 || !BUILT_IN_TYPES.contains(new String(f.type.getLastToken()))) {
+				if (fType.dimensions() > 1 || !BUILT_IN_TYPES.contains(new String(fType.getLastToken()))) {
 					arrayToString.selector = "deepToString".toCharArray();
 				} else {
 					arrayToString.selector = "toString".toCharArray();
 				}
 				ex = arrayToString;
 			} else {
-				ex = thisX;
+				ex = fieldAccessor;
 			}
 			Eclipse.setGeneratedBy(ex, source);
 			
@@ -253,7 +247,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 			
 			StringLiteral fieldNameLiteral;
 			if (includeFieldNames) {
-				char[] namePlusEqualsSign = (infixS + new String(f.name) + "=").toCharArray();
+				char[] namePlusEqualsSign = (infixS + field.getName() + "=").toCharArray();
 				fieldNameLiteral = new StringLiteral(namePlusEqualsSign, pS, pE, 0);
 			} else {
 				fieldNameLiteral = new StringLiteral(infix, pS, pE, 0);
