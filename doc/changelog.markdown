@@ -20,9 +20,6 @@ Lombok Changelog
 * ENHANCEMENT: generated `toString`, `equals` and `hashCode` methods will now use `this.getX()` and `other.getX()` instead of `this.x` and `other.x` if a suitable getter is available. This behaviour is useful for proxied classes, such as the POJOs that hibernate makes. Usage of the getters can be suppressed with `@ToString/@EqualsAndHashCode(doNotUseGetters = true)`. [Issue #110](http://code.google.com/p/projectlombok/issues/detail?id=110)
 * BUGFIX: delombok on most javacs would quit with a NoSuchFieldError if it contains <?> style wildcards anywhere in the source, as well as at least 1 lombok annotation. No longer. [Issue #134](http://code.google.com/p/projectlombok/issues/detail?id=134)
 
-Fixes issue #134.
-
-
 ### v0.9.2 "Hailbunny" (December 15th, 2009)
 * preliminary support for lombok on NetBeans! - thanks go to Jan Lahoda from NetBeans. [Issue #20](http://code.google.com/p/projectlombok/issues/detail?id=20)
 * lombok now ships with the delombok tool, which copies an entire directory filled with sources to a new directory, desugaring any java files to what it would look like without lombok's transformations. Compiling the sources in this new directory without lombok support should result in the same class files as compiling the original with lombok support. Great to double check on what lombok is doing, and for chaining the delombok-ed sources to source-based java tools such as Google Web Toolkit or javadoc. lombok.jar itself also provides an ant task for delombok. [Full documentation of delombok](http://projectlombok.org/features/delombok.html).
