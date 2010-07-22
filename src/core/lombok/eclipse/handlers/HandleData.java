@@ -21,23 +21,13 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.eclipse.handlers.EclipseHandlerUtil.findAnnotations;
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import lombok.AccessLevel;
 import lombok.Data;
-import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.core.handlers.TransformationsUtil;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
-import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.mangosdk.spi.ProviderFor;
@@ -62,37 +52,18 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 			return false;
 		}
 		
-		List<EclipseNode> nodesForConstructor = new ArrayList<EclipseNode>();
-		Map<EclipseNode, Boolean> gettersAndSetters = new LinkedHashMap<EclipseNode, Boolean>();
-		for (EclipseNode child : typeNode.down()) {
-			if (child.getKind() != Kind.FIELD) continue;
-			FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
-			//Skip fields that start with $
-			if (fieldDecl.name.length > 0 && fieldDecl.name[0] == '$') continue;
-			//Skip static fields.
-			if ((fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0) continue;
-			boolean isFinal = (fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0;
-			boolean isNonNull = findAnnotations(fieldDecl, TransformationsUtil.NON_NULL_PATTERN).length != 0;
-			if ((isFinal || isNonNull) && fieldDecl.initialization == null) nodesForConstructor.add(child);
-			gettersAndSetters.put(child, !isFinal);
-		}
-		
 		//Careful: Generate the public static constructor (if there is one) LAST, so that any attempt to
 		//'find callers' on the annotation node will find callers of the constructor, which is by far the
 		//most useful of the many methods built by @Data. This trick won't work for the non-static constructor,
 		//for whatever reason, though you can find callers of that one by focusing on the class name itself
 		//and hitting 'find callers'.
 		
-		new HandleConstructor().generateConstructor(AccessLevel.PUBLIC, typeNode, nodesForConstructor, ann.staticConstructor(), true, false, ast);
-		
-		for (Map.Entry<EclipseNode, Boolean> field : gettersAndSetters.entrySet()) {
-			new HandleGetter().generateGetterForField(field.getKey(), annotationNode.get(), AccessLevel.PUBLIC, true);
-			if (field.getValue()) new HandleSetter().generateSetterForField(field.getKey(), annotationNode.get(), AccessLevel.PUBLIC, true);
-		}
-		
+		new HandleGetter().generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
+		new HandleSetter().generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
 		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		new HandleToString().generateToStringForType(typeNode, annotationNode);
-				
+		new HandleConstructor().generateRequiredArgsConstructor(typeNode, AccessLevel.PUBLIC, ann.staticConstructor(), true, ast);
+		
 		return false;
 	}
 }

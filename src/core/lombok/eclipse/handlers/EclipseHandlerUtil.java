@@ -21,7 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.eclipse.Eclipse.fromQualifiedName;
+import static lombok.eclipse.Eclipse.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,7 +29,10 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Getter;
 import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
 import lombok.core.handlers.TransformationsUtil;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseNode;
@@ -99,7 +102,17 @@ public class EclipseHandlerUtil {
 		}
 	}
 	
-	private static AbstractMethodDeclaration findGetter(EclipseNode field) {
+	private static class GetterMethod {
+		private final char[] name;
+		private final TypeReference type;
+		
+		GetterMethod(char[] name, TypeReference type) {
+			this.name = name;
+			this.type = type;
+		}
+	}
+	
+	private static GetterMethod findGetter(EclipseNode field) {
 		TypeReference fieldType = ((FieldDeclaration)field.get()).type;
 		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
 		EclipseNode typeNode = field.up();
@@ -109,33 +122,68 @@ public class EclipseHandlerUtil {
 			case EXISTS_BY_USER:
 				for (EclipseNode potentialGetter : typeNode.down()) {
 					if (potentialGetter.getKind() != Kind.METHOD) continue;
-					AbstractMethodDeclaration method = (AbstractMethodDeclaration) potentialGetter.get();
+					if (!(potentialGetter.get() instanceof MethodDeclaration)) continue;
+					MethodDeclaration method = (MethodDeclaration) potentialGetter.get();
+					if (!potentialGetterName.equals(new String(method.selector))) continue;
 					/** static getX() methods don't count. */
 					if ((method.modifiers & ClassFileConstants.AccStatic) != 0) continue;
 					/** Nor do getters with a non-empty parameter list. */
 					if (method.arguments != null && method.arguments.length > 0) continue;
-					return method;
+					return new GetterMethod(method.selector, method.returnType);
 				}
 			}
+		}
+		
+		// Check if the field has a @Getter annotation.
+		
+		boolean hasGetterAnnotation = false;
+		
+		for (EclipseNode child : field.down()) {
+			if (child.getKind() == Kind.ANNOTATION && annotationTypeMatches(Getter.class, child)) {
+				AnnotationValues<Getter> ann = Eclipse.createAnnotation(Getter.class, child);
+				if (ann.getInstance().value() == AccessLevel.NONE) return null;   //Definitely WONT have a getter.
+				hasGetterAnnotation = true;
+			}
+		}
+		
+		// Check if the class has a @Getter annotation.
+		
+		if (!hasGetterAnnotation && new HandleGetter().fieldQualifiesForGetterGeneration(field)) {
+			//Check if the class has @Getter or @Data annotation.
+			
+			EclipseNode containingType = field.up();
+			if (containingType != null) for (EclipseNode child : containingType.down()) {
+				if (child.getKind() == Kind.ANNOTATION && annotationTypeMatches(Data.class, child)) hasGetterAnnotation = true;
+				if (child.getKind() == Kind.ANNOTATION && annotationTypeMatches(Getter.class, child)) {
+					AnnotationValues<Getter> ann = Eclipse.createAnnotation(Getter.class, child);
+					if (ann.getInstance().value() == AccessLevel.NONE) return null;   //Definitely WONT have a getter.
+					hasGetterAnnotation = true;
+				}
+			}
+		}
+		
+		if (hasGetterAnnotation) {
+			String getterName = TransformationsUtil.toGetterName(field.getName(), isBoolean);
+			return new GetterMethod(getterName.toCharArray(), fieldType);
 		}
 		
 		return null;
 	}
 	
 	static TypeReference getFieldType(EclipseNode field, boolean useFieldsDirectly) {
-		AbstractMethodDeclaration getter = useFieldsDirectly ? null : findGetter(field);
-		if (!(getter instanceof MethodDeclaration)) {
+		GetterMethod getter = useFieldsDirectly ? null : findGetter(field);
+		if (getter == null) {
 			return ((FieldDeclaration)field.get()).type;
 		}
 		
-		return ((MethodDeclaration)getter).returnType;
+		return getter.type;
 	}
 	
 	static Expression createFieldAccessor(EclipseNode field, boolean useFieldsDirectly, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
-		AbstractMethodDeclaration getter = useFieldsDirectly ? null : findGetter(field);
+		GetterMethod getter = useFieldsDirectly ? null : findGetter(field);
 		
 		if (getter == null) {
 			FieldReference thisX = new FieldReference(field.getName().toCharArray(), p);
@@ -150,7 +198,7 @@ public class EclipseHandlerUtil {
 		call.sourceStart = pS; call.sourceEnd = pE;
 		call.receiver = new ThisReference(pS, pE);
 		Eclipse.setGeneratedBy(call.receiver, source);
-		call.selector = getter.selector;
+		call.selector = getter.name;
 		return call;
 	}
 	
@@ -158,7 +206,7 @@ public class EclipseHandlerUtil {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
-		AbstractMethodDeclaration getter = useFieldsDirectly ? null : findGetter(field);
+		GetterMethod getter = useFieldsDirectly ? null : findGetter(field);
 		
 		if (getter == null) {
 			NameReference ref;
@@ -178,7 +226,7 @@ public class EclipseHandlerUtil {
 		call.sourceStart = pS; call.sourceEnd = pE;
 		call.receiver = new SingleNameReference(receiver, p);
 		Eclipse.setGeneratedBy(call.receiver, source);
-		call.selector = getter.selector;
+		call.selector = getter.name;
 		return call;
 	}
 	

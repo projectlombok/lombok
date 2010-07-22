@@ -37,7 +37,7 @@
     return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-    return (((((("DataWithGetterNone(x=" + this.getX()) + ", y=") + this.getY()) + ", z=") + this.getZ()) + ")");
+    return (((((("DataWithGetter(x=" + this.getX()) + ", y=") + this.getY()) + ", z=") + this.getZ()) + ")");
   }
   public @java.lang.SuppressWarnings("all") int getX() {
     return this.x;

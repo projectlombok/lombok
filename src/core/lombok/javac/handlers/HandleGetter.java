@@ -56,6 +56,45 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleGetter implements JavacAnnotationHandler<Getter> {
+	public boolean generateGetterForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelGetter) {
+		if (checkForTypeLevelGetter) {
+			if (typeNode != null) for (JavacNode child : typeNode.down()) {
+				if (child.getKind() == Kind.ANNOTATION) {
+					if (Javac.annotationTypeMatches(Getter.class, child)) {
+						//The annotation will make it happen, so we can skip it.
+						return true;
+					}
+				}
+			}
+		}
+		
+		JCClassDecl typeDecl = null;
+		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) typeNode.get();
+		long modifiers = typeDecl == null ? 0 : typeDecl.mods.flags;
+		boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION | Flags.ENUM)) != 0;
+		
+		if (typeDecl == null || notAClass) {
+			errorNode.addError("@Getter is only supported on a class or a field.");
+			return false;
+		}
+		
+		for (JavacNode field : typeNode.down()) {
+			if (fieldQualifiesForGetterGeneration(field)) generateGetterForField(field, errorNode.get(), level);
+		}
+		
+		return true;
+	}
+	
+	public boolean fieldQualifiesForGetterGeneration(JavacNode field) {
+		if (field.getKind() != Kind.FIELD) return false;
+		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
+		//Skip fields that start with $
+		if (fieldDecl.name.toString().startsWith("$")) return false;
+		//Skip static fields.
+		if ((fieldDecl.mods.flags & Flags.STATIC) != 0) return false;
+		return true;
+	}
+	
 	/**
 	 * Generates a getter on the stated field.
 	 * 
@@ -71,24 +110,12 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 	 * @param fieldNode The node representing the field you want a getter for.
 	 * @param pos The node responsible for generating the getter (the {@code @Data} or {@code @Getter} annotation).
 	 */
-	public void generateGetterForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level, boolean checkForTypeLevelGetter) {
+	public void generateGetterForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level) {
 		for (JavacNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				if (Javac.annotationTypeMatches(Getter.class, child)) {
 					//The annotation will make it happen, so we can skip it.
 					return;
-				}
-			}
-		}
-		
-		if (checkForTypeLevelGetter) {
-			JavacNode containingType = fieldNode.up();
-			if (containingType != null) for (JavacNode child : containingType.down()) {
-				if (child.getKind() == Kind.ANNOTATION) {
-					if (Javac.annotationTypeMatches(Getter.class, child)) {
-						//The annotation will make it happen, so we can skip it.
-						return;
-					}
 				}
 			}
 		}
@@ -109,21 +136,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 			return createGetterForFields(level, fields, annotationNode, true);
 		}
 		if (node.getKind() == Kind.TYPE) {
-			JCClassDecl typeDecl = null;
-			if (node.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) node.get();
-			long modifiers = typeDecl == null ? 0 : typeDecl.mods.flags;
-			boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION | Flags.ENUM)) != 0;
-			
-			if (typeDecl == null || notAClass) {
-				annotationNode.addError("@Getter is only supported on a class.");
-				return false;
-			}
-			
-			for (JavacNode field : node.down()) {
-				if (field.getKind() != Kind.FIELD) continue;
-				generateGetterForField(field, ast, level, false);
-			}
-			return true;
+			return generateGetterForType(node, annotationNode, level, false);
 		}
 		return false;
 	}
@@ -139,7 +152,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 	private boolean createGetterForField(AccessLevel level,
 			JavacNode fieldNode, JavacNode errorNode, boolean whineIfExists) {
 		if (fieldNode.getKind() != Kind.FIELD) {
-			errorNode.addError("@Getter is only supported on a field.");
+			errorNode.addError("@Getter is only supported on a class or a field.");
 			return true;
 		}
 		

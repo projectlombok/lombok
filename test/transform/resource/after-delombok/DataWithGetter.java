@@ -40,7 +40,7 @@ class DataWithGetter {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public java.lang.String toString() {
-		return "DataWithGetterNone(x=" + this.getX() + ", y=" + this.getY() + ", z=" + this.getZ() + ")";
+		return "DataWithGetter(x=" + this.getX() + ", y=" + this.getY() + ", z=" + this.getZ() + ")";
 	}
 	@java.lang.SuppressWarnings("all")
 	public int getX() {

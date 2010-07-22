@@ -32,8 +32,8 @@ import javax.lang.model.type.TypeVisitor;
 
 import lombok.AccessLevel;
 import lombok.Setter;
-import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
 import lombok.core.handlers.TransformationsUtil;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
@@ -44,7 +44,6 @@ import org.mangosdk.spi.ProviderFor;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTags;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -55,15 +54,53 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
-import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
 /**
  * Handles the {@code lombok.Setter} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleSetter implements JavacAnnotationHandler<Setter> {
+	public boolean generateSetterForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelSetter) {
+		if (checkForTypeLevelSetter) {
+			if (typeNode != null) for (JavacNode child : typeNode.down()) {
+				if (child.getKind() == Kind.ANNOTATION) {
+					if (Javac.annotationTypeMatches(Setter.class, child)) {
+						//The annotation will make it happen, so we can skip it.
+						return true;
+					}
+				}
+			}
+		}
+		
+		JCClassDecl typeDecl = null;
+		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) typeNode.get();
+		long modifiers = typeDecl == null ? 0 : typeDecl.mods.flags;
+		boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION | Flags.ENUM)) != 0;
+		
+		if (typeDecl == null || notAClass) {
+			errorNode.addError("@Setter is only supported on a class or a field.");
+			return false;
+		}
+		
+		for (JavacNode field : typeNode.down()) {
+			if (field.getKind() != Kind.FIELD) continue;
+			JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
+			//Skip fields that start with $
+			if (fieldDecl.name.toString().startsWith("$")) continue;
+			//Skip static fields.
+			if ((fieldDecl.mods.flags & Flags.STATIC) != 0) continue;
+			//Skip final fields.
+			if ((fieldDecl.mods.flags & Flags.FINAL) != 0) continue;
+			
+			generateSetterForField(field, errorNode.get(), level);
+		}
+		return true;
+	}
+	
 	/**
 	 * Generates a setter on the stated field.
 	 * 
@@ -79,24 +116,12 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 	 * @param fieldNode The node representing the field you want a setter for.
 	 * @param pos The node responsible for generating the setter (the {@code @Data} or {@code @Setter} annotation).
 	 */
-	public void generateSetterForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level, boolean checkForTypeLevelSetter) {
+	public void generateSetterForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level) {
 		for (JavacNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				if (Javac.annotationTypeMatches(Setter.class, child)) {
 					//The annotation will make it happen, so we can skip it.
 					return;
-				}
-			}
-		}
-		
-		if (checkForTypeLevelSetter) {
-			JavacNode containingType = fieldNode.up();
-			if (containingType != null) for (JavacNode child : containingType.down()) {
-				if (child.getKind() == Kind.ANNOTATION) {
-					if (Javac.annotationTypeMatches(Setter.class, child)) {
-						//The annotation will make it happen, so we can skip it.
-						return;
-					}
 				}
 			}
 		}
@@ -118,21 +143,7 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 			return createSetterForFields(level, fields, annotationNode, true);
 		}
 		if (node.getKind() == Kind.TYPE) {
-			JCClassDecl typeDecl = null;
-			if (node.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) node.get();
-			long modifiers = typeDecl == null ? 0 : typeDecl.mods.flags;
-			boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION | Flags.ENUM)) != 0;
-			
-			if (typeDecl == null || notAClass) {
-				annotationNode.addError("@Setter is only supported on a class.");
-				return false;
-			}
-			
-			for (JavacNode field : node.down()) {
-				if (field.getKind() != Kind.FIELD) continue;
-				generateSetterForField(field, ast, level, false);
-			}
-			return true;
+			return generateSetterForType(node, annotationNode, level, false);
 		}
 		return false;
 	}
@@ -148,7 +159,7 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 	private boolean createSetterForField(AccessLevel level,
 			JavacNode fieldNode, JavacNode errorNode, boolean whineIfExists) {
 		if (fieldNode.getKind() != Kind.FIELD) {
-			fieldNode.addError("@Setter is only supported on a field.");
+			fieldNode.addError("@Setter is only supported on a class or a field.");
 			return true;
 		}
 		

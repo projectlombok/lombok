@@ -53,6 +53,45 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleGetter implements EclipseAnnotationHandler<Getter> {
+	public boolean generateGetterForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelGetter) {
+		if (checkForTypeLevelGetter) {
+			if (typeNode != null) for (EclipseNode child : typeNode.down()) {
+				if (child.getKind() == Kind.ANNOTATION) {
+					if (annotationTypeMatches(Getter.class, child)) {
+						//The annotation will make it happen, so we can skip it.
+						return true;
+					}
+				}
+			}
+		}
+		
+		TypeDeclaration typeDecl = null;
+		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
+		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
+		boolean notAClass = (modifiers &
+				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0;
+		
+		if (typeDecl == null || notAClass) {
+			pos.addError("@Getter is only supported on a class or a field.");
+			return false;
+		}
+		
+		for (EclipseNode field : typeNode.down()) {
+			if (fieldQualifiesForGetterGeneration(field)) generateGetterForField(field, pos.get(), level);
+		}
+		return true;
+	}
+	
+	public boolean fieldQualifiesForGetterGeneration(EclipseNode field) {
+		if (field.getKind() != Kind.FIELD) return false;
+		FieldDeclaration fieldDecl = (FieldDeclaration) field.get();
+		//Skip fields that start with $
+		if (fieldDecl.name.length > 0 && fieldDecl.name[0] == '$') return false;
+		//Skip static fields.
+		if ((fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0) return false;
+		return true;
+	}
+	
 	/**
 	 * Generates a getter on the stated field.
 	 * 
@@ -65,24 +104,12 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 	 * If not, the getter is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
 	 */
-	public void generateGetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level, boolean checkForTypeLevelGetter) {
+	public void generateGetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level) {
 		for (EclipseNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				if (annotationTypeMatches(Getter.class, child)) {
 					//The annotation will make it happen, so we can skip it.
 					return;
-				}
-			}
-		}
-		
-		if (checkForTypeLevelGetter) {
-			EclipseNode containingType = fieldNode.up();
-			if (containingType != null) for (EclipseNode child : containingType.down()) {
-				if (child.getKind() == Kind.ANNOTATION) {
-					if (annotationTypeMatches(Getter.class, child)) {
-						//The annotation will make it happen, so we can skip it.
-						return;
-					}
 				}
 			}
 		}
@@ -100,22 +127,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 			return createGetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true);
 		}
 		if (node.getKind() == Kind.TYPE) {
-			TypeDeclaration typeDecl = null;
-			if (node.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) node.get();
-			int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
-			boolean notAClass = (modifiers &
-					(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0;
-			
-			if (typeDecl == null || notAClass) {
-				annotationNode.addError("@Getter is only supported on a class.");
-				return false;
-			}
-			
-			for (EclipseNode field : node.down()) {
-				if (field.getKind() != Kind.FIELD) continue;
-				generateGetterForField(field, ast, level, false);
-			}
-			return true;
+			return generateGetterForType(node, annotationNode, level, false);
 		}
 		return false;
 	}
@@ -130,7 +142,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 	private boolean createGetterForField(AccessLevel level,
 			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists) {
 		if (fieldNode.getKind() != Kind.FIELD) {
-			errorNode.addError("@Getter is only supported on a field.");
+			errorNode.addError("@Getter is only supported on a class or a field.");
 			return true;
 		}
 		

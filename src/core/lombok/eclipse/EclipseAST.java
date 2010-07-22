@@ -233,7 +233,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		case STATEMENT:
 			return buildStatement((Statement) node);
 		case ANNOTATION:
-			return buildAnnotation((Annotation) node);
+			return buildAnnotation((Annotation) node, false);
 		default:
 			throw new AssertionError("Did not expect to arrive here: " + kind);
 		}
@@ -261,7 +261,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		childNodes.addAll(buildFields(type.fields));
 		childNodes.addAll(buildTypes(type.memberTypes));
 		childNodes.addAll(buildMethods(type.methods));
-		childNodes.addAll(buildAnnotations(type.annotations));
+		childNodes.addAll(buildAnnotations(type.annotations, false));
 		return putInMap(new EclipseNode(this, type, childNodes, Kind.TYPE));
 	}
 	
@@ -282,7 +282,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		if (setAndGetAsHandled(field)) return null;
 		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
 		addIfNotNull(childNodes, buildStatement(field.initialization));
-		childNodes.addAll(buildAnnotations(field.annotations));
+		childNodes.addAll(buildAnnotations(field.annotations, true));
 		return putInMap(new EclipseNode(this, field, childNodes, Kind.FIELD));
 	}
 	
@@ -302,7 +302,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
 		childNodes.addAll(buildArguments(method.arguments));
 		childNodes.addAll(buildStatements(method.statements));
-		childNodes.addAll(buildAnnotations(method.annotations));
+		childNodes.addAll(buildAnnotations(method.annotations, false));
 		return putInMap(new EclipseNode(this, method, childNodes, Kind.METHOD));
 	}
 	
@@ -319,19 +319,23 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		if (setAndGetAsHandled(local)) return null;
 		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
 		addIfNotNull(childNodes, buildStatement(local.initialization));
-		childNodes.addAll(buildAnnotations(local.annotations));
+		childNodes.addAll(buildAnnotations(local.annotations, true));
 		return putInMap(new EclipseNode(this, local, childNodes, kind));
 	}
 	
-	private Collection<EclipseNode> buildAnnotations(Annotation[] annotations) {
+	private Collection<EclipseNode> buildAnnotations(Annotation[] annotations, boolean varDecl) {
 		List<EclipseNode> elements = new ArrayList<EclipseNode>();
-		if (annotations != null) for (Annotation an : annotations) addIfNotNull(elements, buildAnnotation(an));
+		if (annotations != null) for (Annotation an : annotations) addIfNotNull(elements, buildAnnotation(an, varDecl));
 		return elements;
 	}
 	
-	private EclipseNode buildAnnotation(Annotation annotation) {
+	private EclipseNode buildAnnotation(Annotation annotation, boolean field) {
 		if (annotation == null) return null;
-		if (setAndGetAsHandled(annotation)) return null;
+		boolean handled = setAndGetAsHandled(annotation);
+		if (!field && handled) {
+			// @Foo int x, y; is handled in eclipse by putting the same annotation node on 2 FieldDeclarations.
+			return null;
+		}
 		return putInMap(new EclipseNode(this, annotation, null, Kind.ANNOTATION));
 	}
 	

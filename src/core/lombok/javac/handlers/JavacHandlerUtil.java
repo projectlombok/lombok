@@ -21,12 +21,18 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.javac.Javac.annotationTypeMatches;
+
 import java.lang.annotation.Annotation;
 import java.util.regex.Pattern;
 
 import lombok.AccessLevel;
+import lombok.Data;
+import lombok.Getter;
+import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
 import lombok.core.handlers.TransformationsUtil;
+import lombok.javac.Javac;
 import lombok.javac.JavacNode;
 
 import com.sun.tools.javac.code.Flags;
@@ -270,7 +276,17 @@ public class JavacHandlerUtil {
 		}
 	}
 	
-	private static JCMethodDecl findGetter(JavacNode field) {
+	private static class GetterMethod {
+		private final Name name;
+		private final JCExpression type;
+		
+		GetterMethod(Name name, JCExpression type) {
+			this.name = name;
+			this.type = type;
+		}
+	}
+	
+	private static GetterMethod findGetter(JavacNode field) {
 		JCVariableDecl decl = (JCVariableDecl)field.get();
 		JavacNode typeNode = field.up();
 		for (String potentialGetterName : toAllGetterNames(decl)) {
@@ -280,13 +296,47 @@ public class JavacHandlerUtil {
 				for (JavacNode potentialGetter : typeNode.down()) {
 					if (potentialGetter.getKind() != Kind.METHOD) continue;
 					JCMethodDecl method = (JCMethodDecl) potentialGetter.get();
+					if (!method.name.contentEquals(potentialGetterName)) continue;
 					/** static getX() methods don't count. */
 					if ((method.mods.flags & Flags.STATIC) != 0) continue;
 					/** Nor do getters with a non-empty parameter list. */
 					if (method.params != null && method.params.size() > 0) continue;
-					return method;
+					return new GetterMethod(method.name, method.restype);
 				}
 			}
+		}
+		
+		// Check if the field has a @Getter annotation.
+		
+		boolean hasGetterAnnotation = false;
+		
+		for (JavacNode child : field.down()) {
+			if (child.getKind() == Kind.ANNOTATION && annotationTypeMatches(Getter.class, child)) {
+				AnnotationValues<Getter> ann = Javac.createAnnotation(Getter.class, child);
+				if (ann.getInstance().value() == AccessLevel.NONE) return null;   //Definitely WONT have a getter.
+				hasGetterAnnotation = true;
+			}
+		}
+		
+		// Check if the class has a @Getter annotation.
+		
+		if (!hasGetterAnnotation && new HandleGetter().fieldQualifiesForGetterGeneration(field)) {
+			//Check if the class has @Getter or @Data annotation.
+			
+			JavacNode containingType = field.up();
+			if (containingType != null) for (JavacNode child : containingType.down()) {
+				if (child.getKind() == Kind.ANNOTATION && annotationTypeMatches(Data.class, child)) hasGetterAnnotation = true;
+				if (child.getKind() == Kind.ANNOTATION && annotationTypeMatches(Getter.class, child)) {
+					AnnotationValues<Getter> ann = Javac.createAnnotation(Getter.class, child);
+					if (ann.getInstance().value() == AccessLevel.NONE) return null;   //Definitely WONT have a getter.
+					hasGetterAnnotation = true;
+				}
+			}
+		}
+		
+		if (hasGetterAnnotation) {
+			String getterName = toGetterName(decl);
+			return new GetterMethod(field.toName(getterName), decl.vartype);
 		}
 		
 		return null;
@@ -298,13 +348,13 @@ public class JavacHandlerUtil {
 	 * @see #createFieldAccessor(TreeMaker, JavacNode)
 	 */
 	static JCExpression getFieldType(JavacNode field, boolean useFieldsDirectly) {
-		JCMethodDecl getter = useFieldsDirectly ? null : findGetter(field);
+		GetterMethod getter = useFieldsDirectly ? null : findGetter(field);
 		
 		if (getter == null) {
 			return ((JCVariableDecl)field.get()).vartype;
 		}
 		
-		return getter.restype;
+		return getter.type;
 	}
 	
 	/**
@@ -315,7 +365,7 @@ public class JavacHandlerUtil {
 	}
 	
 	static JCExpression createFieldAccessor(TreeMaker maker, JavacNode field, boolean useFieldsDirectly, JCExpression receiver) {
-		JCMethodDecl getter = useFieldsDirectly ? null : findGetter(field);
+		GetterMethod getter = useFieldsDirectly ? null : findGetter(field);
 		
 		if (getter == null) {
 			return maker.Select(receiver, ((JCVariableDecl)field.get()).name);

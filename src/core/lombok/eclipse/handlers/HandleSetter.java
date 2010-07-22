@@ -58,6 +58,44 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleSetter implements EclipseAnnotationHandler<Setter> {
+	public boolean generateSetterForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelSetter) {
+		if (checkForTypeLevelSetter) {
+			if (typeNode != null) for (EclipseNode child : typeNode.down()) {
+				if (child.getKind() == Kind.ANNOTATION) {
+					if (annotationTypeMatches(Setter.class, child)) {
+						//The annotation will make it happen, so we can skip it.
+						return true;
+					}
+				}
+			}
+		}
+		
+		TypeDeclaration typeDecl = null;
+		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
+		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
+		boolean notAClass = (modifiers &
+				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0;
+		
+		if (typeDecl == null || notAClass) {
+			pos.addError("@Setter is only supported on a class or a field.");
+			return false;
+		}
+		
+		for (EclipseNode field : typeNode.down()) {
+			if (field.getKind() != Kind.FIELD) continue;
+			FieldDeclaration fieldDecl = (FieldDeclaration) field.get();
+			//Skip fields that start with $
+			if (fieldDecl.name.length > 0 && fieldDecl.name[0] == '$') continue;
+			//Skip static fields.
+			if ((fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0) continue;
+			//Skip final fields.
+			if ((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) continue;
+			
+			generateSetterForField(field, pos.get(), level);
+		}
+		return true;
+	}
+	
 	/**
 	 * Generates a setter on the stated field.
 	 * 
@@ -70,24 +108,12 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 	 * If not, the setter is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
 	 */
-	public void generateSetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level, boolean checkForTypeLevelSetter) {
+	public void generateSetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level) {
 		for (EclipseNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				if (annotationTypeMatches(Setter.class, child)) {
 					//The annotation will make it happen, so we can skip it.
 					return;
-				}
-			}
-		}
-		
-		if (checkForTypeLevelSetter) {
-			EclipseNode containingType = fieldNode.up();
-			if (containingType != null) for (EclipseNode child : containingType.down()) {
-				if (child.getKind() == Kind.ANNOTATION) {
-					if (annotationTypeMatches(Setter.class, child)) {
-						//The annotation will make it happen, so we can skip it.
-						return;
-					}
 				}
 			}
 		}
@@ -105,22 +131,7 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 			return createSetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true);
 		}
 		if (node.getKind() == Kind.TYPE) {
-			TypeDeclaration typeDecl = null;
-			if (node.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) node.get();
-			int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
-			boolean notAClass = (modifiers &
-					(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0;
-			
-			if (typeDecl == null || notAClass) {
-				annotationNode.addError("@Setter is only supported on a class.");
-				return false;
-			}
-			
-			for (EclipseNode field : node.down()) {
-				if (field.getKind() != Kind.FIELD) continue;
-				generateSetterForField(field, ast, level, false);
-			}
-			return true;
+			return generateSetterForType(node, annotationNode, level, false);
 		}
 		return false;
 	}
@@ -135,7 +146,7 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 	private boolean createSetterForField(AccessLevel level,
 			EclipseNode fieldNode, EclipseNode errorNode, ASTNode pos, boolean whineIfExists) {
 		if (fieldNode.getKind() != Kind.FIELD) {
-			errorNode.addError("@Setter is only supported on a field.");
+			errorNode.addError("@Setter is only supported on a class or a field.");
 			return true;
 		}
 		

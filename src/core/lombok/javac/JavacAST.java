@@ -155,7 +155,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		case STATEMENT:
 			return buildStatementOrExpression(node);
 		case ANNOTATION:
-			return buildAnnotation((JCAnnotation) node);
+			return buildAnnotation((JCAnnotation) node, false);
 		default:
 			throw new AssertionError("Did not expect: " + kind);
 		}
@@ -176,7 +176,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		if (setAndGetAsHandled(type)) return null;
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
 		
-		for (JCAnnotation annotation : type.mods.annotations) addIfNotNull(childNodes, buildAnnotation(annotation));
+		for (JCAnnotation annotation : type.mods.annotations) addIfNotNull(childNodes, buildAnnotation(annotation, false));
 		for (JCTree def : type.defs) {
 			/* A def can be:
 			 *   JCClassDecl for inner types
@@ -196,7 +196,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	private JavacNode buildField(JCVariableDecl field) {
 		if (setAndGetAsHandled(field)) return null;
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
-		for (JCAnnotation annotation : field.mods.annotations) addIfNotNull(childNodes, buildAnnotation(annotation));
+		for (JCAnnotation annotation : field.mods.annotations) addIfNotNull(childNodes, buildAnnotation(annotation, true));
 		addIfNotNull(childNodes, buildExpression(field.init));
 		return putInMap(new JavacNode(this, field, childNodes, Kind.FIELD));
 	}
@@ -204,7 +204,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	private JavacNode buildLocalVar(JCVariableDecl local, Kind kind) {
 		if (setAndGetAsHandled(local)) return null;
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
-		for (JCAnnotation annotation : local.mods.annotations) addIfNotNull(childNodes, buildAnnotation(annotation));
+		for (JCAnnotation annotation : local.mods.annotations) addIfNotNull(childNodes, buildAnnotation(annotation, true));
 		addIfNotNull(childNodes, buildExpression(local.init));
 		return putInMap(new JavacNode(this, local, childNodes, kind));
 	}
@@ -219,7 +219,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	private JavacNode buildMethod(JCMethodDecl method) {
 		if (setAndGetAsHandled(method)) return null;
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
-		for (JCAnnotation annotation : method.mods.annotations) addIfNotNull(childNodes, buildAnnotation(annotation));
+		for (JCAnnotation annotation : method.mods.annotations) addIfNotNull(childNodes, buildAnnotation(annotation, false));
 		for (JCVariableDecl param : method.params) addIfNotNull(childNodes, buildLocalVar(param, Kind.ARGUMENT));
 		if (method.body != null && method.body.stats != null) {
 			for (JCStatement statement : method.body.stats) addIfNotNull(childNodes, buildStatement(statement));
@@ -227,8 +227,13 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		return putInMap(new JavacNode(this, method, childNodes, Kind.METHOD));
 	}
 	
-	private JavacNode buildAnnotation(JCAnnotation annotation) {
-		if (setAndGetAsHandled(annotation)) return null;
+	private JavacNode buildAnnotation(JCAnnotation annotation, boolean varDecl) {
+		boolean handled = setAndGetAsHandled(annotation);
+		if (!varDecl && handled) {
+			// @Foo int x, y; is handled in javac by putting the same annotation node on 2 JCVariableDecls.
+			return null;
+		}
+		
 		return putInMap(new JavacNode(this, annotation, null, Kind.ANNOTATION));
 	}
 	

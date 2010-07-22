@@ -65,7 +65,7 @@ public class HandleConstructor {
 			String staticName = ann.staticName();
 			if (level == AccessLevel.NONE) return true;
 			List<JavacNode> fields = List.nil();
-			new HandleConstructor().generateConstructor(level, typeNode, fields, staticName, false, false);
+			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, false, false);
 			return true;
 		}
 	}
@@ -82,22 +82,26 @@ public class HandleConstructor {
 			@SuppressWarnings("deprecation")
 			boolean suppressConstructorProperties = ann.suppressConstructorProperties();
 			if (level == AccessLevel.NONE) return true;
-			List<JavacNode> fields = List.nil();
-			for (JavacNode child : typeNode.down()) {
-				if (child.getKind() != Kind.FIELD) continue;
-				JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
-				//Skip fields that start with $
-				if (fieldDecl.name.toString().startsWith("$")) continue;
-				long fieldFlags = fieldDecl.mods.flags;
-				//Skip static fields.
-				if ((fieldFlags & Flags.STATIC) != 0) continue;
-				boolean isFinal = (fieldFlags & Flags.FINAL) != 0;
-				boolean isNonNull = !findAnnotations(child, TransformationsUtil.NON_NULL_PATTERN).isEmpty();
-				if ((isFinal || isNonNull) && fieldDecl.init == null) fields = fields.append(child);
-			}
-			new HandleConstructor().generateConstructor(level, typeNode, fields, staticName, false, suppressConstructorProperties);
+			new HandleConstructor().generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, false, suppressConstructorProperties);
 			return true;
 		}
+	}
+	
+	private static List<JavacNode> findRequiredFields(JavacNode typeNode) {
+		List<JavacNode> fields = List.nil();
+		for (JavacNode child : typeNode.down()) {
+			if (child.getKind() != Kind.FIELD) continue;
+			JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
+			//Skip fields that start with $
+			if (fieldDecl.name.toString().startsWith("$")) continue;
+			long fieldFlags = fieldDecl.mods.flags;
+			//Skip static fields.
+			if ((fieldFlags & Flags.STATIC) != 0) continue;
+			boolean isFinal = (fieldFlags & Flags.FINAL) != 0;
+			boolean isNonNull = !findAnnotations(child, TransformationsUtil.NON_NULL_PATTERN).isEmpty();
+			if ((isFinal || isNonNull) && fieldDecl.init == null) fields = fields.append(child);
+		}
+		return fields;
 	}
 	
 	@ProviderFor(JavacAnnotationHandler.class)
@@ -123,12 +127,16 @@ public class HandleConstructor {
 				if ((fieldFlags & Flags.STATIC) != 0) continue;
 				fields = fields.append(child);
 			}
-			new HandleConstructor().generateConstructor(level, typeNode, fields, staticName, false, suppressConstructorProperties);
+			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, false, suppressConstructorProperties);
 			return true;
 		}
 	}
 	
-	public void generateConstructor(AccessLevel level, JavacNode typeNode, List<JavacNode> fields, String staticName, boolean skipIfConstructorExists, boolean suppressConstructorProperties) {
+	public void generateRequiredArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, boolean skipIfConstructorExists) {
+		generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, skipIfConstructorExists, false);
+	}
+	
+	public void generateConstructor(JavacNode typeNode, AccessLevel level, List<JavacNode> fields, String staticName, boolean skipIfConstructorExists, boolean suppressConstructorProperties) {
 		if (skipIfConstructorExists && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) return;
 		if (skipIfConstructorExists) {
 			for (JavacNode child : typeNode.down()) {
