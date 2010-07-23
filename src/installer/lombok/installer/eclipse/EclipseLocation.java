@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@ import lombok.installer.CorruptedIdeLocationException;
 import lombok.installer.IdeFinder;
 import lombok.installer.IdeLocation;
 import lombok.installer.InstallException;
+import lombok.installer.Installer;
 import lombok.installer.UninstallException;
 
 /**
@@ -141,23 +142,7 @@ public class EclipseLocation extends IdeLocation {
 	 */
 	@Override 
 	public void uninstall() throws UninstallException {
-		for (File dir : getUninstallDirs()) {
-			File lombokJar = new File(dir, "lombok.jar");
-			if (lombokJar.exists()) {
-				if (!lombokJar.delete()) throw new UninstallException(
-						"Can't delete " + lombokJar.getAbsolutePath() + generateWriteErrorMessage(), null);
-			}
-			
-			/* legacy code - lombok at one point used to have a separate jar for the eclipse agent.
-			 * Leave this code in to delete it for those upgrading from an old version. */ {
-				File agentJar = new File(dir, "lombok.eclipse.agent.jar");
-				if (agentJar.exists()) {
-					if (!agentJar.delete()) throw new UninstallException(
-							"Can't delete " + agentJar.getAbsolutePath() + generateWriteErrorMessage(), null);
-				}
-			}
-		}
-		
+		final List<File> lombokJarsForWhichCantDeleteSelf = new ArrayList<File>();
 		StringBuilder newContents = new StringBuilder();
 		if (eclipseIniPath.exists()) {
 			try {
@@ -202,6 +187,35 @@ public class EclipseLocation extends IdeLocation {
 				throw new UninstallException("Cannot uninstall lombok from " + name + generateWriteErrorMessage(), e);
 			}
 		}
+		
+		for (File dir : getUninstallDirs()) {
+			File lombokJar = new File(dir, "lombok.jar");
+			if (lombokJar.exists()) {
+				if (!lombokJar.delete()) {
+					if (IdeFinder.getOS() == IdeFinder.OS.WINDOWS && Installer.isSelf(lombokJar.getAbsolutePath())) {
+						lombokJarsForWhichCantDeleteSelf.add(lombokJar);
+					} else {
+						throw new UninstallException(
+							"Can't delete " + lombokJar.getAbsolutePath() + generateWriteErrorMessage(), null);
+					}
+				}
+			}
+			
+			/* legacy code - lombok at one point used to have a separate jar for the eclipse agent.
+			 * Leave this code in to delete it for those upgrading from an old version. */ {
+				File agentJar = new File(dir, "lombok.eclipse.agent.jar");
+				if (agentJar.exists()) {
+					agentJar.delete();
+				}
+			}
+		}
+		
+		if (!lombokJarsForWhichCantDeleteSelf.isEmpty()) {
+			throw new UninstallException(true, String.format(
+					"lombok.jar cannot delete itself on windows.\nHowever, lombok has been uncoupled from your %s.\n" +
+					"You can safely delete this jar file. You can find it at:\n%s",
+					getTypeName(), lombokJarsForWhichCantDeleteSelf.get(0).getAbsolutePath()), null);
+		}
 	}
 	
 	private static String generateWriteErrorMessage() {
@@ -244,36 +258,39 @@ public class EclipseLocation extends IdeLocation {
 		
 		File lombokJar = new File(eclipseIniPath.getParentFile(), "lombok.jar");
 		
-		File ourJar = findOurJar();
-		byte[] b = new byte[524288];
-		boolean readSucceeded = true;
-		try {
-			FileOutputStream out = new FileOutputStream(lombokJar);
+		/* No need to copy lombok.jar to itself, obviously. On windows this would generate an error so we check for this. */
+		if (!Installer.isSelf(lombokJar.getAbsolutePath())) {
+			File ourJar = findOurJar();
+			byte[] b = new byte[524288];
+			boolean readSucceeded = true;
 			try {
-				readSucceeded = false;
-				InputStream in = new FileInputStream(ourJar);
+				FileOutputStream out = new FileOutputStream(lombokJar);
 				try {
-					while (true) {
-						int r = in.read(b);
-						if (r == -1) break;
-						if (r > 0) readSucceeded = true;
-						out.write(b, 0, r);
+					readSucceeded = false;
+					InputStream in = new FileInputStream(ourJar);
+					try {
+						while (true) {
+							int r = in.read(b);
+							if (r == -1) break;
+							if (r > 0) readSucceeded = true;
+							out.write(b, 0, r);
+						}
+					} finally {
+						in.close();
 					}
 				} finally {
-					in.close();
+					out.close();
 				}
-			} finally {
-				out.close();
+			} catch (IOException e) {
+				try {
+					lombokJar.delete();
+				} catch (Throwable ignore) { /* Nothing we can do about that. */ }
+				if (!readSucceeded) throw new InstallException(
+						"I can't read my own jar file. I think you've found a bug in this installer!\nI suggest you restart it " +
+						"and use the 'what do I do' link, to manually install lombok. Also, tell us about this at:\n" +
+						"http://groups.google.com/group/project-lombok - Thanks!", e);
+				throw new InstallException("I can't write to your " + getTypeName() + " directory at " + name + generateWriteErrorMessage(), e);
 			}
-		} catch (IOException e) {
-			try {
-				lombokJar.delete();
-			} catch (Throwable ignore) { /* Nothing we can do about that. */ }
-			if (!readSucceeded) throw new InstallException(
-					"I can't read my own jar file. I think you've found a bug in this installer!\nI suggest you restart it " +
-					"and use the 'what do I do' link, to manually install lombok. Also, tell us about this at:\n" +
-					"http://groups.google.com/group/project-lombok - Thanks!", e);
-			throw new InstallException("I can't write to your " + getTypeName() + " directory at " + name + generateWriteErrorMessage(), e);
 		}
 		
 		/* legacy - delete lombok.eclipse.agent.jar if its there, which lombok no longer uses. */ {
@@ -307,7 +324,6 @@ public class EclipseLocation extends IdeLocation {
 					
 					newContents.append(line).append(OS_NEWLINE);
 				}
-				
 			} finally {
 				fis.close();
 			}

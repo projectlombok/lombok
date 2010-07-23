@@ -54,7 +54,7 @@ public abstract class IdeLocation {
 	
 	/**
 	 * Returns a full path to the provided file.
-	 * Returns the canonical path, unless that is not available, in which cae it returns the absolute path.
+	 * Returns the canonical path, unless that is not available, in which case it returns the absolute path.
 	 */
 	public static String canonical(File p) {
 		try {

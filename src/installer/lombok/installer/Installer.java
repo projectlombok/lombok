@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 package lombok.installer;
 
 import java.awt.HeadlessException;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ import lombok.core.LombokApp;
 import lombok.core.SpiLoadUtil;
 import lombok.core.Version;
 import lombok.installer.IdeFinder.OS;
+import lombok.patcher.inject.LiveInjector;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -96,6 +98,16 @@ public class Installer {
 		} catch (IOException e) {
 			throw Lombok.sneakyThrow(e);
 		}
+	}
+	
+	public static boolean isSelf(String jar) {
+		String self = LiveInjector.findPathJar(Installer.class);
+		if (self == null) return false;
+		File a = new File(jar).getAbsoluteFile();
+		File b = new File(self).getAbsoluteFile();
+		try { a = a.getCanonicalFile(); } catch (IOException ignore) {}
+		try { b = b.getCanonicalFile(); } catch (IOException ignore) {}
+		return a.equals(b);
 	}
 	
 	@ProviderFor(LombokApp.class)

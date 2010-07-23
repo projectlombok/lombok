@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,6 +38,7 @@ import lombok.installer.CorruptedIdeLocationException;
 import lombok.installer.IdeFinder;
 import lombok.installer.IdeLocation;
 import lombok.installer.InstallException;
+import lombok.installer.Installer;
 import lombok.installer.UninstallException;
 
 public class NetbeansLocation extends IdeLocation {
@@ -117,12 +120,8 @@ public class NetbeansLocation extends IdeLocation {
 	 */
 	@Override 
 	public void uninstall() throws UninstallException {
+		final List<File> lombokJarsForWhichCantDeleteSelf = new ArrayList<File>();
 		File dir = netbeansConfPath.getParentFile();
-		File lombokJar = new File(dir, "lombok.jar");
-		if (lombokJar.exists()) {
-			if (!lombokJar.delete()) throw new UninstallException(
-					"Can't delete " + lombokJar.getAbsolutePath() + generateWriteErrorMessage(), null);
-		}
 		
 		StringBuilder newContents = new StringBuilder();
 		if (netbeansConfPath.exists()) {
@@ -153,6 +152,23 @@ public class NetbeansLocation extends IdeLocation {
 			} catch (IOException e) {
 				throw new UninstallException("Cannot uninstall lombok from " + name + generateWriteErrorMessage(), e);
 			}
+		}
+		
+		File lombokJar = new File(dir, "lombok.jar");
+		if (lombokJar.exists()) {
+			if (IdeFinder.getOS() == IdeFinder.OS.WINDOWS && Installer.isSelf(lombokJar.getAbsolutePath())) {
+				lombokJarsForWhichCantDeleteSelf.add(lombokJar);
+			} else {
+				throw new UninstallException(
+					"Can't delete " + lombokJar.getAbsolutePath() + generateWriteErrorMessage(), null);
+			}
+		}
+		
+		if (!lombokJarsForWhichCantDeleteSelf.isEmpty()) {
+			throw new UninstallException(true,
+					"lombok.jar cannot delete itself on windows.\nHowever, lombok has been uncoupled from your netbeans.\n" +
+					"You can safely delete this jar file. You can find it at:\n" +
+					lombokJarsForWhichCantDeleteSelf.get(0).getAbsolutePath(), null);
 		}
 	}
 	
@@ -190,36 +206,39 @@ public class NetbeansLocation extends IdeLocation {
 		
 		File lombokJar = new File(netbeansConfPath.getParentFile(), "lombok.jar");
 		
-		File ourJar = findOurJar();
-		byte[] b = new byte[524288];
-		boolean readSucceeded = true;
-		try {
-			FileOutputStream out = new FileOutputStream(lombokJar);
+		/* No need to copy lombok.jar to itself, obviously. On windows this would generate an error so we check for this. */
+		if (!Installer.isSelf(lombokJar.getAbsolutePath())) {
+			File ourJar = findOurJar();
+			byte[] b = new byte[524288];
+			boolean readSucceeded = true;
 			try {
-				readSucceeded = false;
-				InputStream in = new FileInputStream(ourJar);
+				FileOutputStream out = new FileOutputStream(lombokJar);
 				try {
-					while (true) {
-						int r = in.read(b);
-						if (r == -1) break;
-						if (r > 0) readSucceeded = true;
-						out.write(b, 0, r);
+					readSucceeded = false;
+					InputStream in = new FileInputStream(ourJar);
+					try {
+						while (true) {
+							int r = in.read(b);
+							if (r == -1) break;
+							if (r > 0) readSucceeded = true;
+							out.write(b, 0, r);
+						}
+					} finally {
+						in.close();
 					}
 				} finally {
-					in.close();
+					out.close();
 				}
-			} finally {
-				out.close();
+			} catch (IOException e) {
+				try {
+					lombokJar.delete();
+				} catch (Throwable ignore) { /* Nothing we can do about that. */ }
+				if (!readSucceeded) throw new InstallException(
+						"I can't read my own jar file. I think you've found a bug in this installer!\nI suggest you restart it " +
+						"and use the 'what do I do' link, to manually install lombok. Also, tell us about this at:\n" +
+						"http://groups.google.com/group/project-lombok - Thanks!", e);
+				throw new InstallException("I can't write to your Netbeans directory at " + name + generateWriteErrorMessage(), e);
 			}
-		} catch (IOException e) {
-			try {
-				lombokJar.delete();
-			} catch (Throwable ignore) { /* Nothing we can do about that. */ }
-			if (!readSucceeded) throw new InstallException(
-					"I can't read my own jar file. I think you've found a bug in this installer!\nI suggest you restart it " +
-					"and use the 'what do I do' link, to manually install lombok. Also, tell us about this at:\n" +
-					"http://groups.google.com/group/project-lombok - Thanks!", e);
-			throw new InstallException("I can't write to your Netbeans directory at " + name + generateWriteErrorMessage(), e);
 		}
 		
 		try {

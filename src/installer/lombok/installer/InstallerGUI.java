@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -512,39 +512,63 @@ public class InstallerGUI {
 		spinner.setLayout(new FlowLayout());
 		spinner.add(new JLabel(new ImageIcon(Installer.class.getResource("/lombok/installer/loading.gif"))));
 		
+		final Container originalContentPane = appWindow.getContentPane();
 		appWindow.setContentPane(spinner);
 		
 		final AtomicReference<Boolean> success = new AtomicReference<Boolean>(true);
-		new Thread() {
+		new Thread(new Runnable() {
 			@Override public void run() {
 				for (IdeLocation loc : toUninstall) {
 					try {
 						loc.uninstall();
 					} catch (final UninstallException e) {
-						success.set(false);
-						try {
-							SwingUtilities.invokeAndWait(new Runnable() {
-								@Override public void run() {
-									JOptionPane.showMessageDialog(appWindow,
-											e.getMessage(), "Uninstall Problem", JOptionPane.ERROR_MESSAGE);
-								}
-							});
-						} catch (Exception e2) {
-							//Shouldn't happen.
-							throw new RuntimeException(e2);
+						if (e.isWarning()) {
+							try {
+								SwingUtilities.invokeAndWait(new Runnable() {
+									@Override public void run() {
+										JOptionPane.showMessageDialog(appWindow,
+												e.getMessage(), "Uninstall Problem", JOptionPane.WARNING_MESSAGE);
+									}
+								});
+							} catch (Exception e2) {
+								e2.printStackTrace();
+								//Shouldn't happen.
+								throw new RuntimeException(e2);
+							}
+						} else {
+							success.set(false);
+							try {
+								SwingUtilities.invokeAndWait(new Runnable() {
+									@Override public void run() {
+										JOptionPane.showMessageDialog(appWindow,
+												e.getMessage(), "Uninstall Problem", JOptionPane.ERROR_MESSAGE);
+									}
+								});
+							} catch (Exception e2) {
+								e2.printStackTrace();
+								//Shouldn't happen.
+								throw new RuntimeException(e2);
+							}
 						}
 					}
 				}
 				
-				if (success.get()) SwingUtilities.invokeLater(new Runnable() {
+				SwingUtilities.invokeLater(new Runnable() {
 					@Override public void run() {
-						JOptionPane.showMessageDialog(appWindow, "Lombok has been removed from the selected IDE installations.", "Uninstall successful", JOptionPane.INFORMATION_MESSAGE);
-						appWindow.setVisible(false);
-						System.exit(0);
+						if (success.get()) {
+							JOptionPane.showMessageDialog(appWindow, "Lombok has been removed from the selected IDE installations.", "Uninstall successful", JOptionPane.INFORMATION_MESSAGE);
+							appWindow.setVisible(false);
+							System.exit(0);
+							return;
+						}
+						
+						appWindow.setContentPane(originalContentPane);
 					}
 				});
+				
+				
 			}
-		}.start();
+		}).start();
 	}
 	
 	private IdesList idesList = new IdesList();
