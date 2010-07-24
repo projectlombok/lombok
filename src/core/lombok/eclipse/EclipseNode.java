@@ -165,7 +165,7 @@ public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode,
 	}
 	
 	/** {@inheritDoc} */
-	@Override protected boolean calculateIsStructurallySignificant() {
+	@Override protected boolean calculateIsStructurallySignificant(ASTNode parent) {
 		if (node instanceof TypeDeclaration) return true;
 		if (node instanceof AbstractMethodDeclaration) return true;
 		if (node instanceof FieldDeclaration) return true;

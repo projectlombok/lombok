@@ -70,8 +70,12 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 		this.kind = kind;
 		this.node = node;
 		this.children = children == null ? new ArrayList<L>() : children;
-		for (L child : this.children) child.parent = (L) this;
-		this.isStructurallySignificant = calculateIsStructurallySignificant();
+		for (L child : this.children) {
+			child.parent = (L) this;
+			if (!child.isStructurallySignificant)
+				child.isStructurallySignificant = calculateIsStructurallySignificant(node);
+		}
+		this.isStructurallySignificant = calculateIsStructurallySignificant(null);
 	}
 	
 	/** {@inheritDoc} */
@@ -101,7 +105,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	/**
 	 * See {@link #isStructurallySignificant}.
 	 */
-	protected abstract boolean calculateIsStructurallySignificant();
+	protected abstract boolean calculateIsStructurallySignificant(N parent);
 	
 	/**
 	 * Convenient shortcut to the owning ast object's get method.

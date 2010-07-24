@@ -138,11 +138,14 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 	}
 	
 	/** {@inheritDoc} */
-	@Override protected boolean calculateIsStructurallySignificant() {
+	@Override protected boolean calculateIsStructurallySignificant(JCTree parent) {
 		if (node instanceof JCClassDecl) return true;
 		if (node instanceof JCMethodDecl) return true;
 		if (node instanceof JCVariableDecl) return true;
 		if (node instanceof JCCompilationUnit) return true;
+		//Static and instance initializers
+		if (node instanceof JCBlock) return parent instanceof JCClassDecl;
+		
 		return false;
 	}
 	
