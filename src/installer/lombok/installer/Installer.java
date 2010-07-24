@@ -266,13 +266,21 @@ public class Installer {
 				}
 				System.out.printf("Lombok %s %s: %s\n", uninstall ? "uninstalled" : "installed", uninstall ? "from" : "to", loc.getName());
 			} catch (InstallException e) {
-				System.err.printf("Installation at %s failed:\n", loc.getName());
+				if (e.isWarning()) {
+					System.err.printf("Warning while installing at %s:\n", loc.getName());
+				} else {
+					System.err.printf("Installation at %s failed:\n", loc.getName());
+					validLocations--;
+				}
 				System.err.println(e.getMessage());
-				validLocations--;
 			} catch (UninstallException e) {
-				System.err.printf("Uninstall at %s failed:\n", loc.getName());
+				if (e.isWarning()) {
+					System.err.printf("Warning while uninstalling at %s:\n", loc.getName());
+				} else {
+					System.err.printf("Uninstall at %s failed:\n", loc.getName());
+					validLocations--;
+				}
 				System.err.println(e.getMessage());
-				validLocations--;
 			}
 		}
 		

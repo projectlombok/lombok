@@ -45,6 +45,8 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
@@ -452,56 +454,81 @@ public class InstallerGUI {
 		spinner.add(new JLabel(new ImageIcon(Installer.class.getResource("loading.gif"))));
 		appWindow.setContentPane(spinner);
 		
-		final AtomicReference<Boolean> success = new AtomicReference<Boolean>(true);
+		final AtomicInteger successes = new AtomicInteger();
+		final AtomicBoolean failure = new AtomicBoolean();
 		
 		new Thread() {
 			@Override public void run() {
 				for (IdeLocation loc : toInstall) {
 					try {
 						installSpecificMessages.add(loc.install());
+						successes.incrementAndGet();
 					} catch (final InstallException e) {
-						success.set(false);
-						try {
-							SwingUtilities.invokeAndWait(new Runnable() {
-								@Override public void run() {
-									JOptionPane.showMessageDialog(appWindow,
-											e.getMessage(), "Install Problem", JOptionPane.ERROR_MESSAGE);
-								}
-							});
-						} catch (Exception e2) {
-							//Shouldn't happen.
-							throw new RuntimeException(e2);
+						if (e.isWarning()) {
+							try {
+								SwingUtilities.invokeAndWait(new Runnable() {
+									@Override public void run() {
+										JOptionPane.showMessageDialog(appWindow,
+												e.getMessage(), "Install Problem", JOptionPane.WARNING_MESSAGE);
+									}
+								});
+							} catch (Exception e2) {
+								e2.printStackTrace();
+								//Shouldn't happen.
+								throw new RuntimeException(e2);
+							}
+						} else {
+							failure.set(true);
+							try {
+								SwingUtilities.invokeAndWait(new Runnable() {
+									@Override public void run() {
+										JOptionPane.showMessageDialog(appWindow,
+												e.getMessage(), "Install Problem", JOptionPane.ERROR_MESSAGE);
+									}
+								});
+							} catch (Exception e2) {
+								e2.printStackTrace();
+								//Shouldn't happen.
+								throw new RuntimeException(e2);
+							}
 						}
 					}
 				}
 				
-				if (success.get()) SwingUtilities.invokeLater(new Runnable() {
-					@Override public void run() {
-						StringBuilder installSpecific = new StringBuilder();
-						for (String installSpecificMessage : installSpecificMessages) {
-							installSpecific.append("<br>").append(installSpecificMessage);
-						}
-						JOptionPane.showMessageDialog(appWindow,
-								"<html>Lombok has been installed on the selected IDE installations.<br>" +
-								"Don't forget to add <code>lombok.jar</code> to your projects, and restart your IDE!" + installSpecific.toString() + "</html>",
-								"Install successful",
-								JOptionPane.INFORMATION_MESSAGE);
-						appWindow.setVisible(false);
-						synchronized (exitMarker) {
-							exitMarker.set(0);
-							exitMarker.notifyAll();
-						}
+				if (successes.get() > 0) {
+					try {
+						SwingUtilities.invokeAndWait(new Runnable() {
+							@Override public void run() {
+								StringBuilder installSpecific = new StringBuilder();
+								for (String installSpecificMessage : installSpecificMessages) {
+									installSpecific.append("<br>").append(installSpecificMessage);
+								}
+								JOptionPane.showMessageDialog(appWindow,
+										"<html>Lombok has been installed on the selected IDE installations.<br>" +
+										"Don't forget to add <code>lombok.jar</code> to your projects, and restart your IDE!" + installSpecific.toString() + "</html>",
+										"Install successful",
+										JOptionPane.INFORMATION_MESSAGE);
+								appWindow.setVisible(false);
+								synchronized (exitMarker) {
+									exitMarker.set(0);
+									exitMarker.notifyAll();
+								}
+							}
+						});
+					} catch (Exception e) {
+						// Shouldn't happen.
+						throw new RuntimeException(e);
 					}
-				});
-				
-				if (!success.get()) SwingUtilities.invokeLater(new Runnable() {
-					@Override public void run() {
-						synchronized (exitMarker) {
-							exitMarker.set(1);
-							exitMarker.notifyAll();
+				} else {
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override public void run() {
+							synchronized (exitMarker) {
+								exitMarker.set(failure.get() ? 1 : 0);
+								exitMarker.notifyAll();
+							}
 						}
-					}
-				});
+					});
+				}
 			}
 		}.start();
 	}
@@ -515,12 +542,13 @@ public class InstallerGUI {
 		final Container originalContentPane = appWindow.getContentPane();
 		appWindow.setContentPane(spinner);
 		
-		final AtomicReference<Boolean> success = new AtomicReference<Boolean>(true);
+		final AtomicInteger successes = new AtomicInteger();
 		new Thread(new Runnable() {
 			@Override public void run() {
 				for (IdeLocation loc : toUninstall) {
 					try {
 						loc.uninstall();
+						successes.incrementAndGet();
 					} catch (final UninstallException e) {
 						if (e.isWarning()) {
 							try {
@@ -536,7 +564,6 @@ public class InstallerGUI {
 								throw new RuntimeException(e2);
 							}
 						} else {
-							success.set(false);
 							try {
 								SwingUtilities.invokeAndWait(new Runnable() {
 									@Override public void run() {
@@ -555,7 +582,7 @@ public class InstallerGUI {
 				
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override public void run() {
-						if (success.get()) {
+						if (successes.get() > 0) {
 							JOptionPane.showMessageDialog(appWindow, "Lombok has been removed from the selected IDE installations.", "Uninstall successful", JOptionPane.INFORMATION_MESSAGE);
 							appWindow.setVisible(false);
 							System.exit(0);

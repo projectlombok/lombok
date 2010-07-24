@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,18 @@ package lombok.installer;
  * Thrown when installation of lombok into an IDE fails.
  */
 public class InstallException extends Exception {
+	private boolean warning;
+	
 	public InstallException(String message, Throwable cause) {
 		super(message, cause);
+	}
+	
+	public InstallException(boolean warning, String message, Throwable cause) {
+		super(message, cause);
+		this.warning = warning;
+	}
+	
+	public boolean isWarning() {
+		return warning;
 	}
 }

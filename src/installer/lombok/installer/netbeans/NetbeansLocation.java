@@ -44,7 +44,9 @@ import lombok.installer.UninstallException;
 public class NetbeansLocation extends IdeLocation {
 	private final String name;
 	private final File netbeansConfPath;
-	private volatile boolean hasLombok;
+	private final String version;
+	private final int versionFirst, versionSecond;
+	private final boolean hasLombok;
 	
 	private static final String OS_NEWLINE = IdeFinder.getOS().getLineEnding();
 	
@@ -58,6 +60,33 @@ public class NetbeansLocation extends IdeLocation {
 					"I can't read the configuration file of the Netbeans installed at " + name + "\n" +
 					"You may need to run this installer with root privileges if you want to modify that Netbeans.", "netbeans", e);
 		}
+		this.version = findNetbeansVersion(netbeansConfPath);
+		int first, second;
+		String[] vs = version.split("\\.");
+		try {
+			first = Integer.parseInt(vs[0]);
+		} catch (Exception e) {
+			first = 0;
+		}
+		try {
+			second = Integer.parseInt(vs[1]);
+		} catch (Exception e) {
+			second = 0;
+		}
+		this.versionFirst = first;
+		this.versionSecond = second;
+	}
+	
+	public boolean versionIsPre68() {
+		return versionFirst < 6 || (versionFirst == 6 && versionSecond < 8);
+	}
+	
+	public boolean versionIs68() {
+		return versionFirst == 6 && versionSecond == 8;
+	}
+	
+	public boolean versionIsPost68() {
+		return versionFirst > 6 || (versionFirst == 6 && versionSecond > 8);
 	}
 	
 	@Override public int hashCode() {
@@ -91,6 +120,51 @@ public class NetbeansLocation extends IdeLocation {
 	
 	private final Pattern OPTIONS_LINE_MATCHER = Pattern.compile(
 			"^\\s*netbeans_default_options\\s*=\\s*\"\\s*" + ID_CHARS + "\\s*(\")\\s*(?:#.*)?$", Pattern.CASE_INSENSITIVE);
+	
+	private String findNetbeansVersion(File iniFile) {
+		String forcedVersion = System.getProperty("force.netbeans.version", null);
+		if (forcedVersion != null) return forcedVersion;
+		
+		try {
+			for (File child : iniFile.getParentFile().getParentFile().listFiles()) {
+				if (!child.isDirectory()) continue;
+				String name = child.getName();
+				if (name == null || !name.startsWith("nb")) continue;
+				String version = name.substring(2);
+				File versionFile = new File(child, "VERSION.txt");
+				if (versionFile.exists() && versionFile.canRead() && !versionFile.isDirectory()) {
+					try {
+						version = readVersionFile(versionFile);
+					} catch (IOException e) {
+						// Intentional Fallthrough
+					}
+				}
+				if (version != null && version.length() > 0) {
+					return version;
+				}
+			}
+		} catch (NullPointerException e) {
+			// Intentional Fallthrough
+		}
+		
+		return "UNKNOWN";
+	}
+	
+	private static String readVersionFile(File file) throws IOException {
+		FileInputStream fis = new FileInputStream(file);
+		StringBuilder version = new StringBuilder();
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(fis, "UTF-8"));
+			for (String line = br.readLine(); line != null; line = br.readLine()) {
+				if (line.startsWith("#")) continue;
+				if (version.length() > 0) version.append(" ");
+				version.append(line);
+			}
+			return version.toString();
+		} finally {
+			fis.close();
+		}
+	}
 	
 	private boolean checkForLombok(File iniFile) throws IOException {
 		if (!iniFile.exists()) return false;
@@ -203,6 +277,40 @@ public class NetbeansLocation extends IdeLocation {
 	 */
 	@Override
 	public String install() throws InstallException {
+		if ("UNKNOWN".equals(version)) {
+			throw new InstallException(String.format(
+					"Can't determine version of Netbeans installed at:\n%s\n\n" +
+					"Your Netbeans version determines what this installer does:\n" +
+					"Pre 6.8: Lombok is not compatible with netbeans pre 6.8, and thus won't install.\n" +
+					"6.8: Lombok will install itself into Netbeans.\n" +
+					"6.9 and later: NetBeans supports lombok natively. This installer will explain how to enable it.\n\n" +
+					"If you know your netbeans version, you can force this by starting the installer with:\n" +
+					"java -Dforce.netbeans.version=6.8 -jar lombok.jar", this.getName()), null);
+		}
+		
+		if (versionIsPre68()) {
+			throw new InstallException(String.format(
+					"Lombok is not compatible with Netbeans versions prior to 6.8.\n" +
+					"Therefore, lombok will not be installed at:\n%s\nbecause it is version: %s",
+					this.getName(), version), null);
+		}
+		if (versionIsPost68()) {
+			try {
+				uninstall();
+			} catch (Exception e) {
+				// Well, we tried. Lombok on 6.9 doesn't do anything, so we'll leave it then.
+			}
+			
+			throw new InstallException(true, String.format(
+					"Starting with NetBeans 6.9, lombok is natively supported and does not need to be installed at:\n%s\n\n" +
+					"To use lombok.jar in your netbeans project:\n" +
+					"1. Add lombok.jar to your project (Go to Project Properties, 'Libraries' page, and add lombok.jar in the 'Compile' tab).\n" +
+					"2. Enable Annotation Processors (Go to Project Properties, 'Build/Compiling' page, and check 'Enable Annotation Processing in Editor').\n" +
+					"\n" +
+					"NB: In the first release of NetBeans 6.9, due to a netbeans bug, maven-based projects don't run annotation processors. This \n" +
+					"issue should be fixed by the great folks at NetBeans soon.", this.getName()), null);
+		}
+		
 		boolean installSucceeded = false;
 		StringBuilder newContents = new StringBuilder();
 		
