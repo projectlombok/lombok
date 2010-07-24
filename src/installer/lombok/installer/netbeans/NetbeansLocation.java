@@ -156,11 +156,13 @@ public class NetbeansLocation extends IdeLocation {
 		
 		File lombokJar = new File(dir, "lombok.jar");
 		if (lombokJar.exists()) {
-			if (IdeFinder.getOS() == IdeFinder.OS.WINDOWS && Installer.isSelf(lombokJar.getAbsolutePath())) {
-				lombokJarsForWhichCantDeleteSelf.add(lombokJar);
-			} else {
-				throw new UninstallException(
-					"Can't delete " + lombokJar.getAbsolutePath() + generateWriteErrorMessage(), null);
+			if (!lombokJar.delete()) {
+				if (IdeFinder.getOS() == IdeFinder.OS.WINDOWS && Installer.isSelf(lombokJar.getAbsolutePath())) {
+					lombokJarsForWhichCantDeleteSelf.add(lombokJar);
+				} else {
+					throw new UninstallException(
+							"Can't delete " + lombokJar.getAbsolutePath() + generateWriteErrorMessage(), null);
+				}
 			}
 		}
 		
