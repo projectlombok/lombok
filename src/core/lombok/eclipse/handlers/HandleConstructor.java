@@ -256,11 +256,18 @@ public class HandleConstructor {
 		constructor.statements = nullChecks.isEmpty() ? null : nullChecks.toArray(new Statement[nullChecks.size()]);
 		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[params.size()]);
 		
-		if (!suppressConstructorProperties && level != AccessLevel.PRIVATE) {
+		if (!suppressConstructorProperties && level != AccessLevel.PRIVATE && !isLocalType(type)) {
 			constructor.annotations = createConstructorProperties(source, constructor.annotations, fields);
 		}
 		
 		return constructor;
+	}
+	
+	private boolean isLocalType(EclipseNode type) {
+		Kind kind = type.up().getKind();
+		if (kind == Kind.COMPILATION_UNIT) return false;
+		if (kind == Kind.TYPE) return isLocalType(type.up());
+		return true;
 	}
 	
 	private MethodDeclaration createStaticConstructor(AccessLevel level, String name, EclipseNode type, Collection<EclipseNode> fields, ASTNode source) {

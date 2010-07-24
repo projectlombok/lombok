@@ -26,16 +26,18 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.AST.Kind;
 import lombok.core.handlers.TransformationsUtil;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -50,7 +52,6 @@ import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 
 public class HandleConstructor {
@@ -197,12 +198,19 @@ public class HandleConstructor {
 		}
 		
 		JCModifiers mods = maker.Modifiers(toJavacModifier(level));
-		if (!suppressConstructorProperties && level != AccessLevel.PRIVATE) {
+		if (!suppressConstructorProperties && level != AccessLevel.PRIVATE && !isLocalType(typeNode)) {
 			addConstructorProperties(mods, typeNode, fields);
 		}
 		
 		return maker.MethodDef(mods, typeNode.toName("<init>"),
 				null, type.typarams, params, List.<JCExpression>nil(), maker.Block(0L, nullChecks.appendList(assigns)), null);
+	}
+	
+	private boolean isLocalType(JavacNode type) {
+		Kind kind = type.up().getKind();
+		if (kind == Kind.COMPILATION_UNIT) return false;
+		if (kind == Kind.TYPE) return isLocalType(type.up());
+		return true;
 	}
 	
 	private JCMethodDecl createStaticConstructor(String name, AccessLevel level, JavacNode typeNode, List<JavacNode> fields) {
