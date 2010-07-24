@@ -313,20 +313,20 @@ public class InstallerGUI {
 				String file = null;
 				
 				if (IdeFinder.getOS() == OS.MAC_OS_X) {
-					System.setProperty("apple.awt.fileDialogForDirectories", "true");
 					FileDialog chooser = new FileDialog(appWindow);
 					chooser.setMode(FileDialog.LOAD);
 					
 					chooser.setFilenameFilter(new FilenameFilter() {
 						@Override public boolean accept(File dir, String fileName) {
 							for (Pattern exeName : exeNames) if (exeName.matcher(fileName).matches()) return true;
-							if (new File(dir, fileName).isDirectory()) return true;
 							return false;
 						}
 					});
 					
 					chooser.setVisible(true);
-					file = new File(chooser.getDirectory(), chooser.getFile()).getAbsolutePath();
+					if (chooser.getDirectory() != null && chooser.getFile() != null) {
+						file = new File(chooser.getDirectory(), chooser.getFile()).getAbsolutePath();
+					}
 				} else {
 					JFileChooser chooser = new JFileChooser();
 					
