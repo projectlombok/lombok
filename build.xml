@@ -25,6 +25,7 @@ This buildfile is part of projectlombok.org. It is the main entry point that con
 the common tasks and can be called on to run the main aspects of all the sub-scripts.
 	</description>
 	
+	<property name="credentialsFile" value="google.properties" />
 	<property name="build.compiler" value="javac1.6" />
 	<property name="ivy.retrieve.pattern" value="lib/[conf]/[artifact].[ext]" />
 	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
@@ -248,13 +249,15 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 					<fileset dir="src/installer" />
 					<fileset dir="src/delombok" />
 					<fileset dir="experimental/src" />
-					<fileset dir="test/delombok/src" />
+					<fileset dir="test/transform/src" />
 					<fileset dir="test/core/src" />
 				</sources>
 		</ivy:make-maven-repo>
 	</target>
 	
 	<target name="maven-publish" depends="maven" description="Build a maven repository then upload it to projectlombok.org.">
+		<taskdef name="scp" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.Scp" classpathref="build.path" />
+		<taskdef name="sshexec" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="build.path" />
 		<available file="libertad-upload.key" property="libertad.key.available" />
 		<fail unless="libertad.key.available">You don't have the libertad-upload.key; you'll need it to get write access to the server.</fail>
 		<scp
@@ -282,7 +285,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</target>
 	
 	<target name="publish" description="Publishes the latest build to googlecode." depends="version, -checkCredentialsFile, dist, test">
-		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="lib/build/ant-googlecode-0.0.2.jar" name="gcupload" />
+		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpathref="build.path" name="gcupload" />
 		<property file="${credentialsFile}" prefix="google" />
 		<gcupload 
 				username="${google.username}"
