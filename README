@@ -1,21 +1,10 @@
 projectlombok makes java a spicier language by adding 'handlers' that know how to build and compile simple, boilerplate-free, not-quite-java code.
-See LICENCE for the project lombok licence.
+See LICENSE for the project lombok license.
 
 
-To start:
+To start, run:
 
-First, run:
-
-ant installDeps
-
-to grab a bunch of dependencies interactively from the internet.
-
-Then, to build lombok:
-
-ant dist
-
-try ant -projecthelp for descriptions of other options.
-
+ant -projecthelp
 
 Project Authors:
 
