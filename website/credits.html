@@ -17,14 +17,36 @@
 			width: 800px;
 		}
 		
-		.reinierImg {
-			float: left;
-			margin-right: 16px;
+		.personList {
+			clear: both;
+			padding-top: 16px;
 		}
 		
-		.roelImg {
-			margin-left: 16px;
-			float: right;
+		.personList h3 {
+			font-size: 1em;
+		}
+		
+		.person {
+			width: 128px;
+			float: left;
+			margin-right: 32px;
+		}
+		
+		.person .imgCt {
+			width: 128px;
+		}
+		
+		.person img {
+			text-align: center;
+			margin: 0 auto;
+			display: block;
+		}
+		
+		.person .name {
+			margin: 0 auto 0 auto;
+			width: 100%;
+			text-align: center;
+			display: block;
 		}
 		
 		.thanks {
@@ -45,31 +67,45 @@
 	<div class="meat">
 		<h1>Project Lombok - About the authors and everyone that's helped us create Project Lombok.</h1>
 		<div class="credits">
-			<div class="aboutUs">
-				<img class="reinierImg" src="reinier.jpg" style="float: left;" />
-				<img class="roelImg" src="roel.jpg" style="float: right;" />
-				<p>
-				Project Lombok is created by us: Reinier Zwitserloot (left) and Roel Spilker (right).
-				</p>
+			<div class="aboutUs personList">
+				<h3>Project Lombok was created by us:</h3>
+				<div class="person">
+					<div class="imgCt"><img class="reinierImg" src="reinier.jpg" /></div>
+					<span class="name">Reinier Zwitserloot</span>
+				</div>
+				<div class="person">
+					<div class="imgCt"><img class="roelImg" src="roel.jpg" /></div>
+					<span class="name">Roel Spilker</span>
+				</div>
+			</div>
+			<div class="committers personList">
+				<h3>These folks also have commit access:</h3>
+				<div class="person">
+					<div class="imgCt"><img class="rjImg" src="robbertjan.jpg" /></div>
+					<span class="name">Robbert Jan Grootjans</span>
+				</div>
 			</div>
 			<div class="thanks">
 				We'd like to thank:<ul>
 				<li>Perry Nguyen (pfn on ##java on freenode) for creating the inspiration for project lombok.</li>
+				<li>Tor Norbye for some feedback on how Netbeans works internally. We haven't cracked the netbeans nut quite yet, and help is
+					very welcome. Still, we've made some progress in adding netbeans support to Project Lombok thanks to Tor.</li>
+					<li><a href="http://javaposse.com/">The Java Posse</a> for making the java community <em>awesome</em>. Listen to their podcast!</li>
+					<li>Petr Jiricka for his help with netbeans and javac.</li>
+				</ul>
+				as well as the authors of the following tools that we use:<ul>
 				<li><a href="http://code.google.com/">Google Code Hosting</a> for hosting our issue tracker as well as the lombok releases.</a></li>
 				<li><a href="http://github.com/">Github</a> for hosting lombok's repository.</li>
 				<li>The <a href="http://asm.ow2.org/index.html">ASM team</a> at ObjectWeb for creating an excellent class file editing tool.
 					Lombok uses ASM to interact with Eclipse.</li>
 				<li>Markus Gebhard for creating <a href="http://java2html.de/">java2html</a> which we use for the example code snippets on the
 					features pages.</li>
-				<li>Tor Norbye for some feedback on how Netbeans works internally. We haven't cracked the netbeans nut quite yet, and help is
-					very welcome. Still, we've made some progress in adding netbeans support to Project Lombok thanks to Tor.</li>
-				<li><a href="http://javaposse.com/">The Java Posse</a> for making the java community <em>awesome</em>. Listen to their podcast!</li>
-				<li><a href="http://camendesign.com/code/video_for_everybody">Kroc Camen</a>'s video for everbody code. The lombok demo video
+				<li><a href="http://camendesign.com/code/video_for_everybody">Kroc Camen</a>'s video for everbody. The lombok demo video
 					runs on just about every system imaginable because of it.</a></li>
 				<li>Longtail Video's <a href="http://www.longtailvideo.com/players/jw-flv-player/">JWPlayer</a>, which is bringing the video to
 					those of you who have an aging browser.</li>
 				<li>The <a href="http://code.google.com/p/spi/">spi project</a>, which makes it very easy to extend lombok with your own transformations.</li>
-				<li>Petr Jiricka for his help with netbeans and javac.</li>
+				<li><a href="http://ant.apache.org/ivy/">Apache Ivy</a> - Dependency management</li>
 				<li><a href="http://cobertura.sourceforge.net/">Cobertura</a> which we use to ensure our tests cover as much as possible.</li>
 				</ul>
 			</div>
