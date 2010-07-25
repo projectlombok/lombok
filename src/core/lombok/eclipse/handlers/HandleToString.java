@@ -287,7 +287,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		String typeName = getSingleTypeName(type);
 		EclipseNode upType = type.up();
 		while (upType.getKind() == Kind.TYPE) {
-			typeName = getSingleTypeName(upType) + "." + typeName; 
+			typeName = getSingleTypeName(upType) + "." + typeName;
 			upType = upType.up();
 		}
 		return typeName;

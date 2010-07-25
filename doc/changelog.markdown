@@ -19,6 +19,7 @@ Lombok Changelog
 * BUGFIX: When `@Getter` or `@Setter` is applied to a multiple field declaration, such as `@Getter int x, y;`, the annotation now applies to all fields, not just the first. [Issue #54](http://code.google.com/p/projectlombok/issues/detail?id=54)
 * ENHANCEMENT: generated `toString`, `equals` and `hashCode` methods will now use `this.getX()` and `other.getX()` instead of `this.x` and `other.x` if a suitable getter is available. This behaviour is useful for proxied classes, such as the POJOs that hibernate makes. Usage of the getters can be suppressed with `@ToString/@EqualsAndHashCode(doNotUseGetters = true)`. [Issue #110](http://code.google.com/p/projectlombok/issues/detail?id=110)
 * BUGFIX: delombok on most javacs would quit with a NoSuchFieldError if it contains <?> style wildcards anywhere in the source, as well as at least 1 lombok annotation. No longer. [Issue #134](http://code.google.com/p/projectlombok/issues/detail?id=134)
+* ENHANCEMENT: toString() on inner classes now lists the class name as `Outer.Inner` instead of just `Inner`. Addresses issue #133(http://code.google.com/p/projectlombok/issues/detail?id=133)
 
 ### v0.9.2 "Hailbunny" (December 15th, 2009)
 * preliminary support for lombok on NetBeans! - thanks go to Jan Lahoda from NetBeans. [Issue #20](http://code.google.com/p/projectlombok/issues/detail?id=20)

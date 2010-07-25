@@ -242,7 +242,7 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		String typeName = ((JCClassDecl) typeNode.get()).name.toString();
 		JavacNode upType = typeNode.up();
 		while (upType.getKind() == Kind.TYPE) {
-			typeName = ((JCClassDecl) upType.get()).name.toString() + "." + typeName; 
+			typeName = ((JCClassDecl) upType.get()).name.toString() + "." + typeName;
 			upType = upType.up();
 		}
 		return typeName;
