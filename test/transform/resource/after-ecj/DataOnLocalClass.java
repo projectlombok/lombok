@@ -85,7 +85,7 @@ class DataOnLocalClass2 {
           return result;
         }
         public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-          return (("InnerLocal(name=" + this.getName()) + ")");
+          return (("Local.InnerLocal(name=" + this.getName()) + ")");
         }
       }
       final int x;

@@ -6,7 +6,7 @@ class ToStringOuter {
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "ToStringInner(y=" + this.y + ")";
+			return "ToStringOuter.ToStringInner(y=" + this.y + ")";
 		}
 	}
 	static class ToStringStaticInner {
@@ -14,7 +14,7 @@ class ToStringOuter {
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "ToStringStaticInner(y=" + this.y + ")";
+			return "ToStringOuter.ToStringStaticInner(y=" + this.y + ")";
 		}
 	}
 	class ToStringMiddle {
@@ -23,7 +23,7 @@ class ToStringOuter {
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {
-				return "ToStringMoreInner(name=" + this.name + ")";
+				return "ToStringOuter.ToStringMiddle.ToStringMoreInner(name=" + this.name + ")";
 			}
 		}
 	}

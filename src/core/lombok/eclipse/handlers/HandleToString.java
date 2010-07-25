@@ -177,9 +177,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 	
 	private MethodDeclaration createToString(EclipseNode type, Collection<EclipseNode> fields,
 			boolean includeFieldNames, boolean callSuper, ASTNode source, boolean useFieldsDirectly) {
-		TypeDeclaration typeDeclaration = (TypeDeclaration)type.get();
-		char[] rawTypeName = typeDeclaration.name;
-		String typeName = rawTypeName == null ? "" : new String(rawTypeName);
+		String typeName = getTypeName(type);
 		char[] suffix = ")".toCharArray();
 		String infixS = ", ";
 		char[] infix = infixS.toCharArray();
@@ -283,6 +281,22 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
 		method.statements = new Statement[] { returnStatement };
 		return method;
+	}
+	
+	private String getTypeName(EclipseNode type) {
+		String typeName = getSingleTypeName(type);
+		EclipseNode upType = type.up();
+		while (upType.getKind() == Kind.TYPE) {
+			typeName = getSingleTypeName(upType) + "." + typeName; 
+			upType = upType.up();
+		}
+		return typeName;
+	}
+	
+	private String getSingleTypeName(EclipseNode type) {
+		TypeDeclaration typeDeclaration = (TypeDeclaration)type.get();
+		char[] rawTypeName = typeDeclaration.name;
+		return rawTypeName == null ? "" : new String(rawTypeName);
 	}
 	
 	private static final Set<String> BUILT_IN_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(

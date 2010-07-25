@@ -6,7 +6,7 @@ import lombok.ToString;
       super();
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-      return (("ToStringInner(y=" + this.y) + ")");
+      return (("ToStringOuter.ToStringInner(y=" + this.y) + ")");
     }
   }
   static @ToString class ToStringStaticInner {
@@ -15,7 +15,7 @@ import lombok.ToString;
       super();
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-      return (("ToStringStaticInner(y=" + this.y) + ")");
+      return (("ToStringOuter.ToStringStaticInner(y=" + this.y) + ")");
     }
   }
   class ToStringMiddle {
@@ -25,7 +25,7 @@ import lombok.ToString;
         super();
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-        return (("ToStringMoreInner(name=" + this.name) + ")");
+        return (("ToStringOuter.ToStringMiddle.ToStringMoreInner(name=" + this.name) + ")");
       }
     }
     ToStringMiddle() {

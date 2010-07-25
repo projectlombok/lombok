@@ -90,7 +90,7 @@ class DataOnLocalClass2 {
 				@java.lang.Override
 				@java.lang.SuppressWarnings("all")
 				public java.lang.String toString() {
-					return "InnerLocal(name=" + this.getName() + ")";
+					return "Local.InnerLocal(name=" + this.getName() + ")";
 				}
 			}
 			@java.lang.SuppressWarnings("all")

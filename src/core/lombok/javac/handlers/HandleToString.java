@@ -174,7 +174,7 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		
 		boolean first = true;
 		
-		String typeName = ((JCClassDecl) typeNode.get()).name.toString();
+		String typeName = getTypeName(typeNode);
 		String infix = ", ";
 		String suffix = ")";
 		String prefix;
@@ -236,5 +236,15 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		
 		return maker.MethodDef(mods, typeNode.toName("toString"), returnType,
 				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+	}
+	
+	private String getTypeName(JavacNode typeNode) {
+		String typeName = ((JCClassDecl) typeNode.get()).name.toString();
+		JavacNode upType = typeNode.up();
+		while (upType.getKind() == Kind.TYPE) {
+			typeName = ((JCClassDecl) upType.get()).name.toString() + "." + typeName; 
+			upType = upType.up();
+		}
+		return typeName;
 	}
 }
