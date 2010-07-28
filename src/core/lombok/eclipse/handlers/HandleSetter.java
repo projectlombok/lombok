@@ -40,13 +40,12 @@ import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
+import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
-import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
@@ -168,16 +167,15 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 			//continue with creating the setter
 		}
 		
-		MethodDeclaration method = generateSetter((TypeDeclaration) fieldNode.up().get(), field, setterName, modifier, pos);
+		MethodDeclaration method = generateSetter((TypeDeclaration) fieldNode.up().get(), fieldNode, setterName, modifier, pos);
 		
 		injectMethod(fieldNode.up(), method);
 		
 		return true;
 	}
 	
-	private MethodDeclaration generateSetter(TypeDeclaration parent, FieldDeclaration field, String name,
-			int modifier, ASTNode source) {
-		
+	private MethodDeclaration generateSetter(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, ASTNode source) {
+		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
@@ -196,13 +194,10 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		method.thrownExceptions = null;
 		method.typeParameters = null;
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		FieldReference thisX = new FieldReference(field.name, p);
-		Eclipse.setGeneratedBy(thisX, source);
-		thisX.receiver = new ThisReference(source.sourceStart, source.sourceEnd);
-		Eclipse.setGeneratedBy(thisX.receiver, source);
+		Expression fieldRef = createFieldAccessor(fieldNode, true, source);
 		NameReference fieldNameRef = new SingleNameReference(field.name, p);
 		Eclipse.setGeneratedBy(fieldNameRef, source);
-		Assignment assignment = new Assignment(thisX, fieldNameRef, (int)p);
+		Assignment assignment = new Assignment(fieldRef, fieldNameRef, (int)p);
 		assignment.sourceStart = pS; assignment.sourceEnd = pE;
 		Eclipse.setGeneratedBy(assignment, source);
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;

@@ -37,12 +37,11 @@ import lombok.eclipse.EclipseNode;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
-import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
@@ -172,7 +171,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 			}
 		}
 		
-		MethodDeclaration method = generateGetter((TypeDeclaration) fieldNode.up().get(), field, getterName, modifier, source);
+		MethodDeclaration method = generateGetter((TypeDeclaration) fieldNode.up().get(), fieldNode, getterName, modifier, source);
 		Annotation[] copiedAnnotations = copyAnnotations(
 				findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN),
 				findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN), source);
@@ -185,8 +184,8 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		return true;
 	}
 	
-	private MethodDeclaration generateGetter(TypeDeclaration parent, FieldDeclaration field, String name,
-			int modifier, ASTNode source) {
+	private MethodDeclaration generateGetter(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, ASTNode source) {
+		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
 		Eclipse.setGeneratedBy(method, source);
 		method.modifiers = modifier;
@@ -198,12 +197,8 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		method.thrownExceptions = null;
 		method.typeParameters = null;
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		long p = ((long)field.declarationSourceStart << 32) | field.declarationSourceEnd;
-		FieldReference thisX = new FieldReference(field.name, p);
-		Eclipse.setGeneratedBy(thisX, source);
-		thisX.receiver = new ThisReference(source.sourceStart, source.sourceEnd);
-		Eclipse.setGeneratedBy(thisX.receiver, source);
-		Statement returnStatement = new ReturnStatement(thisX, field.sourceStart, field.sourceEnd);
+		Expression fieldRef = createFieldAccessor(fieldNode, true, source);
+		Statement returnStatement = new ReturnStatement(fieldRef, field.sourceStart, field.sourceEnd);
 		Eclipse.setGeneratedBy(returnStatement, source);
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;

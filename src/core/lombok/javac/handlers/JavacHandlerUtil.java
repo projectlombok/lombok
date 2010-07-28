@@ -361,16 +361,30 @@ public class JavacHandlerUtil {
 	 * Creates an expression that reads the field. Will either be {@code this.field} or {@code this.getField()} depending on whether or not there's a getter.
 	 */
 	static JCExpression createFieldAccessor(TreeMaker maker, JavacNode field, boolean useFieldsDirectly) {
-		return createFieldAccessor(maker, field, useFieldsDirectly, maker.Ident(field.toName("this")));
+		return createFieldAccessor(maker, field, useFieldsDirectly, null);
 	}
 	
 	static JCExpression createFieldAccessor(TreeMaker maker, JavacNode field, boolean useFieldsDirectly, JCExpression receiver) {
 		GetterMethod getter = useFieldsDirectly ? null : findGetter(field);
+		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
 		
 		if (getter == null) {
-			return maker.Select(receiver, ((JCVariableDecl)field.get()).name);
+			if (receiver == null) {
+				if ((fieldDecl.mods.flags & Flags.STATIC) == 0) {
+					receiver = maker.Ident(field.toName("this"));
+				} else {
+					JavacNode containerNode = field.up();
+					if (containerNode != null && containerNode.get() instanceof JCClassDecl) {
+						JCClassDecl container = (JCClassDecl) field.up().get();
+						receiver = maker.Ident(container.name);
+					}
+				}
+			}
+			
+			return receiver == null ? maker.Ident(fieldDecl.name) : maker.Select(receiver, fieldDecl.name);
 		}
 		
+		if (receiver == null) receiver = maker.Ident(field.toName("this"));
 		JCMethodInvocation call = maker.Apply(List.<JCExpression>nil(),
 				maker.Select(receiver, getter.name), List.<JCExpression>nil());
 		return call;

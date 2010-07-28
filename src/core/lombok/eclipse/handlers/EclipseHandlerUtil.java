@@ -186,11 +186,23 @@ public class EclipseHandlerUtil {
 		GetterMethod getter = useFieldsDirectly ? null : findGetter(field);
 		
 		if (getter == null) {
-			FieldReference thisX = new FieldReference(field.getName().toCharArray(), p);
-			Eclipse.setGeneratedBy(thisX, source);
-			thisX.receiver = new ThisReference(pS, pE);
-			Eclipse.setGeneratedBy(thisX.receiver, source);
-			return thisX;
+			FieldDeclaration fieldDecl = (FieldDeclaration)field.get();
+			FieldReference ref = new FieldReference(field.getName().toCharArray(), p);
+			if ((fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0) {
+				EclipseNode containerNode = field.up();
+				if (containerNode != null && containerNode.get() instanceof TypeDeclaration) {
+					ref.receiver = new SingleNameReference(((TypeDeclaration)containerNode.get()).name, p);
+				} else {
+					Expression smallRef = new FieldReference(field.getName().toCharArray(), p);
+					Eclipse.setGeneratedBy(smallRef, source);
+					return smallRef;
+				}
+			} else {
+				ref.receiver = new ThisReference(pS, pE);
+			}
+			Eclipse.setGeneratedBy(ref, source);
+			Eclipse.setGeneratedBy(ref.receiver, source);
+			return ref;
 		}
 		
 		MessageSend call = new MessageSend();

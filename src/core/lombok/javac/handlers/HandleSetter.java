@@ -49,7 +49,6 @@ import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
@@ -189,8 +188,8 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 	private JCMethodDecl createSetter(long access, JavacNode field, TreeMaker treeMaker) {
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
 		
-		JCFieldAccess thisX = treeMaker.Select(treeMaker.Ident(field.toName("this")), fieldDecl.name);
-		JCAssign assign = treeMaker.Assign(thisX, treeMaker.Ident(fieldDecl.name));
+		JCExpression fieldRef = createFieldAccessor(treeMaker, field, true);
+		JCAssign assign = treeMaker.Assign(fieldRef, treeMaker.Ident(fieldDecl.name));
 		
 		List<JCStatement> statements;
 		List<JCAnnotation> nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
