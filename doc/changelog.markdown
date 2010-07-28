@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v0.9.4 (edge)
+* BUGFIX: `@Setter` and `@Getter` can now be applied to static fields again (was broken in v0.9.3 only). [Issue #136](http://code.google.com/p/projectlombok/issues/detail?id=136)
+
 ### v0.9.3 "Burrowing Whale" (July 25th, 2010)
 * FEATURE: Adding `@Getter` or `@Setter` to a class is now legal and is like adding those annotations to every non-static field in it. [Issue #129](http://code.google.com/p/projectlombok/issues/detail?id=129)
 * FEATURE: Three new annotations, `@NoArgsConstructor`, `@RequiredArgsConstructor` and `@AllArgsConstructor` have been added. These split off `@Data`'s ability to generate constructors, and also allow you to finetune what kind of constructor you want. In addition, by using these annotations, you can force generation of constructors even if you have your own. [Issue #79](http://code.google.com/p/projectlombok/issues/detail?id=79)
