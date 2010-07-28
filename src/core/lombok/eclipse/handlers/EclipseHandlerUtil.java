@@ -187,7 +187,7 @@ public class EclipseHandlerUtil {
 		
 		if (getter == null) {
 			FieldDeclaration fieldDecl = (FieldDeclaration)field.get();
-			FieldReference ref = new FieldReference(field.getName().toCharArray(), p);
+			FieldReference ref = new FieldReference(fieldDecl.name, p);
 			if ((fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0) {
 				EclipseNode containerNode = field.up();
 				if (containerNode != null && containerNode.get() instanceof TypeDeclaration) {
