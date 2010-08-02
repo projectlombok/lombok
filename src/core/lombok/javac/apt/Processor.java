@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,10 +21,14 @@
  */
 package lombok.javac.apt;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.IdentityHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
@@ -32,14 +36,17 @@ import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import javax.tools.JavaFileManager;
 
+import lombok.Lombok;
+import lombok.core.DiagnosticsReceiver;
 import lombok.javac.JavacTransformer;
 
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-
+import com.sun.tools.javac.util.Context;
 
 /**
  * This Annotation Processor is the standard injection mechanism for lombok-enabling the javac compiler.
@@ -54,6 +61,7 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 @SupportedAnnotationTypes("*")
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class Processor extends AbstractProcessor {
+
 	private JavacProcessingEnvironment processingEnv;
 	private JavacTransformer transformer;
 	private Trees trees;
@@ -62,8 +70,34 @@ public class Processor extends AbstractProcessor {
 	@Override public void init(ProcessingEnvironment procEnv) {
 		super.init(procEnv);
 		this.processingEnv = (JavacProcessingEnvironment) procEnv;
+		placePostCompileHook();
 		transformer = new JavacTransformer(procEnv.getMessager());
 		trees = Trees.instance(procEnv);
+	}
+
+	private void placePostCompileHook() {
+		Context context = processingEnv.getContext();
+		
+		try {
+			Method keyMethod = Context.class.getDeclaredMethod("key", Class.class);
+			keyMethod.setAccessible(true);
+			Object key = keyMethod.invoke(context, JavaFileManager.class);
+			Field htField = Context.class.getDeclaredField("ht");
+			htField.setAccessible(true);
+			@SuppressWarnings("unchecked")
+			Map<Object,Object> ht = (Map<Object,Object>) htField.get(context);
+			final JavaFileManager originalFiler = (JavaFileManager) ht.get(key);
+			
+			if (!(originalFiler instanceof InterceptingJavaFileManager)) {
+				final Messager messager = processingEnv.getMessager();
+				DiagnosticsReceiver receiver = new MessagerDiagnosticsReceiver(messager);
+				
+				JavaFileManager newFiler = new InterceptingJavaFileManager(originalFiler, receiver);
+				ht.put(key, newFiler);
+			}
+		} catch (Exception e) {
+			throw Lombok.sneakyThrow(e);
+		}
 	}
 	
 	/** {@inheritDoc} */
