@@ -22,6 +22,17 @@
 package lombok.core;
 
 public interface DiagnosticsReceiver {
+	DiagnosticsReceiver CONSOLE = new DiagnosticsReceiver() {
+		
+		@Override public void addError(String message) {
+			System.err.println(message);
+		}
+		
+		@Override public void addWarning(String message) {
+			System.out.println(message);
+		}
+	};
+	
 	/** Generate a compiler error on this node. */
 	void addError(String message);
 	
