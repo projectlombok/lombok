@@ -22,8 +22,7 @@
 package lombok.core;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 
 public final class PostCompiler {
@@ -49,17 +48,10 @@ public final class PostCompiler {
 	
 	private static synchronized void init(DiagnosticsReceiver diagnostics) {
 		if (transformations != null) return;
-		transformations = new ArrayList<PostCompilerTransformation>();
 		try {
-			Iterator<PostCompilerTransformation> discovered = SpiLoadUtil.findServices(PostCompilerTransformation.class).iterator();
-			while (discovered.hasNext()) {
-				try {
-					transformations.add(discovered.next());
-				} catch (Exception e) {
-					diagnostics.addWarning("Error during loading post-compile transformers: " + e.getMessage());
-				}
-			}
+			transformations = SpiLoadUtil.readAllFromIterator(SpiLoadUtil.findServices(PostCompilerTransformation.class, PostCompilerTransformation.class.getClassLoader()));
 		} catch (IOException e) {
+			transformations = Collections.emptyList();
 			diagnostics.addWarning("Could not load post-compile transformers: " + e.getMessage());
 		}
 	}
