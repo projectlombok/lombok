@@ -27,10 +27,13 @@ import lombok.core.DiagnosticsReceiver;
 import lombok.core.PostCompilerTransformation;
 
 import org.mangosdk.spi.ProviderFor;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -77,6 +80,8 @@ public class SneakyThrowsRemover implements PostCompilerTransformation {
 		final AtomicBoolean changesMade = new AtomicBoolean();
 		
 		class SneakyThrowsRemoverVisitor extends MethodAdapter {
+			boolean justAddedAthrow = false;
+			
 			SneakyThrowsRemoverVisitor(MethodVisitor mv) {
 				super(mv);
 			}
@@ -89,10 +94,103 @@ public class SneakyThrowsRemover implements PostCompilerTransformation {
 				if (hit && !"(Ljava/lang/Throwable;)Ljava/lang/RuntimeException;".equals(desc)) hit = false;
 				if (hit) {
 					changesMade.set(true);
+					justAddedAthrow = true;
 					super.visitInsn(Opcodes.ATHROW);
 				} else {
 					super.visitMethodInsn(opcode, owner, name, desc);
 				}
+			}
+			
+			@Override public void visitInsn(int opcode) {
+				if (!justAddedAthrow || opcode != Opcodes.ATHROW) {
+					super.visitInsn(opcode);
+				}
+				justAddedAthrow = false;
+			}
+			
+			@Override public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+				justAddedAthrow = false;
+				return super.visitAnnotation(desc, visible);
+			}
+			
+			@Override public AnnotationVisitor visitAnnotationDefault() {
+				justAddedAthrow = false;
+				return super.visitAnnotationDefault();
+			}
+			
+			@Override public void visitAttribute(Attribute attr) {
+				justAddedAthrow = false;
+				super.visitAttribute(attr);
+			}
+			
+			@Override public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+				justAddedAthrow = false;
+				super.visitFieldInsn(opcode, owner, name, desc);
+			}
+			
+			@Override public void visitIincInsn(int var, int increment) {
+				justAddedAthrow = false;
+				super.visitIincInsn(var, increment);
+			}
+			
+			@Override public void visitIntInsn(int opcode, int operand) {
+				justAddedAthrow = false;
+				super.visitIntInsn(opcode, operand);
+			}
+			
+			@Override public void visitJumpInsn(int opcode, Label label) {
+				justAddedAthrow = false;
+				super.visitJumpInsn(opcode, label);
+			}
+			
+			@Override public void visitLabel(Label label) {
+				justAddedAthrow = false;
+				super.visitLabel(label);
+			}
+			
+			@Override public void visitLdcInsn(Object cst) {
+				justAddedAthrow = false;
+				super.visitLdcInsn(cst);
+			}
+			
+			@Override public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
+				justAddedAthrow = false;
+				super.visitLocalVariable(name, desc, signature, start, end, index);
+			}
+			
+			@Override public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
+				justAddedAthrow = false;
+				super.visitLookupSwitchInsn(dflt, keys, labels);
+			}
+			
+			@Override public void visitMultiANewArrayInsn(String desc, int dims) {
+				justAddedAthrow = false;
+				super.visitMultiANewArrayInsn(desc, dims);
+			}
+			
+			@Override public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
+				justAddedAthrow = false;
+				return super.visitParameterAnnotation(parameter, desc, visible);
+			}
+			
+			@Override public void visitTableSwitchInsn(int min, int max, Label dflt, Label[] labels) {
+				justAddedAthrow = false;
+				super.visitTableSwitchInsn(min, max, dflt, labels);
+			}
+			
+			@Override public void visitTryCatchBlock(Label start, Label end, Label handler, String type) {
+				justAddedAthrow = false;
+				super.visitTryCatchBlock(start, end, handler, type);
+			}
+			
+			@Override public void visitTypeInsn(int opcode, String type) {
+				justAddedAthrow = false;
+				super.visitTypeInsn(opcode, type);
+			}
+			
+			@Override public void visitVarInsn(int opcode, int var) {
+				justAddedAthrow = false;
+				super.visitVarInsn(opcode, var);
 			}
 		}
 		
