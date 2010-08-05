@@ -72,6 +72,8 @@ public class SneakyThrowsRemover implements PostCompilerTransformation {
 	}
 	
 	@Override public byte[] applyTransformations(byte[] original, String className, DiagnosticsReceiver diagnostics) {
+		if (!new ClassFileMetaData(original).usesMethod("lombok/Lombok", "sneakyThrow")) return null;
+		
 		byte[] fixedByteCode = fixJSRInlining(original);
 		
 		ClassReader reader = new ClassReader(fixedByteCode);

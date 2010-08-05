@@ -130,8 +130,8 @@ public class PostCompilerApp implements LombokApp {
 			else if (f.getName().endsWith(".class")) filesToProcess.add(f);
 		}
 	}
-
-	private static byte[] readFile(File file) throws IOException {
+	
+	static byte[] readFile(File file) throws IOException {
 		byte[] buffer = new byte[1024];
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		FileInputStream fileInputStream = new FileInputStream(file);
@@ -144,7 +144,7 @@ public class PostCompilerApp implements LombokApp {
 		return bytes.toByteArray();
 	}
 	
-	private static void writeFile(File file, byte[] transformed) throws IOException {
+	static void writeFile(File file, byte[] transformed) throws IOException {
 		FileOutputStream out = new FileOutputStream(file);
 		out.write(transformed);
 		out.close();
