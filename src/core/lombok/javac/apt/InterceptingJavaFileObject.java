@@ -21,7 +21,6 @@
  */
 package lombok.javac.apt;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -48,29 +47,7 @@ final class InterceptingJavaFileObject implements JavaFileObject {
 	}
 	
 	public OutputStream openOutputStream() throws IOException {
-		// Open it first to make sure we throw an exception if that fails.
-		final OutputStream originalStream = delegate.openOutputStream();
-		
-		return new ByteArrayOutputStream() {
-			@Override public void close() throws IOException {
-				// no need to call super
-				byte[] original = toByteArray();
-				byte[] copy = null;
-				try {
-					copy = PostCompiler.applyTransformations(original, className, diagnostics);
-				} catch (Exception e) {
-					diagnostics.addWarning(String.format("Error during the transformation of '%s'; no post-compilation has been applied", className));
-				}
-				
-				if (copy == null) {
-					copy = original;
-				}
-				
-				// Exceptions below should bubble
-				originalStream.write(copy);
-				originalStream.close(); 
-			}
-		};
+		return PostCompiler.wrapOutputStream(delegate.openOutputStream(), className, diagnostics);
 	}
 	
 	public Writer openWriter() throws IOException {

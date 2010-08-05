@@ -21,7 +21,9 @@
  */
 package lombok.core;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
 
@@ -54,5 +56,28 @@ public final class PostCompiler {
 			transformations = Collections.emptyList();
 			diagnostics.addWarning("Could not load post-compile transformers: " + e.getMessage());
 		}
+	}
+
+	public static OutputStream wrapOutputStream(final OutputStream originalStream, final String className, final DiagnosticsReceiver diagnostics) throws IOException {
+		return new ByteArrayOutputStream() {
+			@Override public void close() throws IOException {
+				// no need to call super
+				byte[] original = toByteArray();
+				byte[] copy = null;
+				try {
+					copy = applyTransformations(original, className, diagnostics);
+				} catch (Exception e) {
+					diagnostics.addWarning(String.format("Error during the transformation of '%s'; no post-compilation has been applied", className));
+				}
+				
+				if (copy == null) {
+					copy = original;
+				}
+				
+				// Exceptions below should bubble
+				originalStream.write(copy);
+				originalStream.close(); 
+			}
+		};
 	}
 }
