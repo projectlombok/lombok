@@ -40,6 +40,7 @@ public class ClassFileMetaData {
 	private static final byte NAME_TYPE = 12;
 	
 	private static final int NOT_FOUND = -1;
+	private static final int START_OF_CONSTANT_POOL = 8; 
 	
 	private final byte[] byteCode;
 	
@@ -52,12 +53,12 @@ public class ClassFileMetaData {
 	public ClassFileMetaData(byte[] byteCode) {
 		this.byteCode = byteCode;
 		
-		maxPoolSize = readValue(8) + 1;
+		maxPoolSize = readValue(START_OF_CONSTANT_POOL);
 		offsets = new int[maxPoolSize];
 		types = new byte[maxPoolSize];
 		utf8s = new String[maxPoolSize];
 		int position = 10;
-		for (int i = 1; i < maxPoolSize - 1; i++) {
+		for (int i = 1; i < maxPoolSize; i++) {
 			byte type = byteCode[position];
 			types[i] = type;
 			position++;
@@ -84,6 +85,7 @@ public class ClassFileMetaData {
 			case LONG:
 			case DOUBLE:
 				position += 8;
+				i++;
 				break;
 			case 0:
 				break;
@@ -178,6 +180,65 @@ public class ClassFileMetaData {
 		return false;
 	}
 	
+	public boolean containsLong(long value) {
+		for (int i = 1; i < maxPoolSize; i++) {
+			if (types[i] == LONG && readLong(i) == value) return true;
+		}
+		return false;
+	}
+	
+	public boolean containsDouble(double value) {
+		boolean isNan = Double.isNaN(value);
+		for (int i = 1; i < maxPoolSize; i++) {
+			if (types[i] == DOUBLE) {
+				double d = readDouble(i);
+				if (d == value || (isNan && Double.isNaN(d))) return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean containsInteger(int value) {
+		for (int i = 1; i < maxPoolSize; i++) {
+			if (types[i] == INTEGER && readInteger(i) == value) return true;
+		}
+		return false;
+	}
+	
+	public boolean containsFloat(float value) {
+		boolean isNan = Float.isNaN(value);
+		for (int i = 1; i < maxPoolSize; i++) {
+			if (types[i] == FLOAT) {
+				float f = readFloat(i);
+				if (f == value || (isNan && Float.isNaN(f))) return true;
+			}
+		}
+		return false;
+	}
+	
+	private long readLong(int index) {
+		int pos = offsets[index];
+		return ((long)read32(pos)) << 32 | read32(pos + 4);
+	}
+	
+	private double readDouble(int index) {
+		int pos = offsets[index];
+		long bits = ((long)read32(pos)) << 32 | (read32(pos + 4) & 0x00000000FFFFFFFF);
+		return Double.longBitsToDouble(bits);
+	}
+	
+	private long readInteger(int index) {
+		return read32(offsets[index]);
+	}
+
+	private float readFloat(int index) {
+		return Float.intBitsToFloat(read32(offsets[index]));
+	}
+	
+	private int read32(int pos) {
+		return (byteCode[pos] & 0xFF) << 24 | (byteCode[pos + 1] & 0xFF) << 16 | (byteCode[pos + 2] & 0xFF) << 8 | (byteCode[pos + 3] &0xFF);
+	}
+
 	public String getClassName() {
 		return getClassName(readValue(endOfPool + 2));
 	}
@@ -195,6 +256,63 @@ public class ClassFileMetaData {
 			result.add(getClassName(readValue(endOfPool + 8 + (i * 2))));
 		}
 		return result;
+	}
+	
+	public String poolContent() {
+		StringBuilder result = new StringBuilder();
+		for (int i = 1; i < maxPoolSize; i++) {
+			result.append(String.format("#%02d: ", i));
+			int pos = offsets[i];
+			switch(types[i]) {
+			case UTF8:
+				result.append("Utf8 ").append(utf8s[i]);
+				break;
+			case CLASS:
+				result.append("Class ").append(getClassName(i));
+				break;
+			case STRING:
+				result.append("String \"").append(utf8s[readValue(pos)]).append("\"");
+				break;
+			case INTEGER:
+				result.append("int ").append(readInteger(i));
+				break;
+			case FLOAT:
+				result.append("float ").append(readFloat(i));
+				break;
+			case FIELD:
+				appendAccess(result.append("Field "), i);
+				break;
+			case METHOD:
+			case IMETHOD:
+				appendAccess(result.append("Method "), i);
+				break;
+			case NAME_TYPE:
+				appendNameAndType(result.append("Name&Type "), i);
+				break;
+			case LONG:
+				result.append("long ").append(readLong(i));
+				break;
+			case DOUBLE:
+				result.append("double ").append(readDouble(i));
+				break;
+			case 0:
+				result.append("(cont.)");
+				break;
+			}
+			result.append("\n");
+		}
+		return result.toString();
+	}
+	
+	private void appendAccess(StringBuilder result, int index) {
+		int pos = offsets[index];
+		result.append(getClassName(readValue(pos))).append(".");
+		appendNameAndType(result, readValue(pos + 2));
+	}
+	
+	private void appendNameAndType(StringBuilder result, int index) {
+		int pos = offsets[index];
+		result.append(utf8s[readValue(pos)]).append(":").append(utf8s[readValue(pos + 2)]);
 	}
 	
 	private String getClassName(int classIndex) {

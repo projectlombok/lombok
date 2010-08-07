@@ -43,10 +43,24 @@ import org.junit.Test;
 
 public class ClassFileMetaDataTest {
 	
-	private ClassFileMetaData foo = create(new File("test/bytecode/resource/Foo.java"));
-	private ClassFileMetaData bar = create(new File("test/bytecode/resource/Bar.java"));
-	private ClassFileMetaData baz = create(new File("test/bytecode/resource/Baz.java"));
-	private ClassFileMetaData buux = create(new File("test/bytecode/resource/Buux.java"));
+	private static ClassFileMetaData foo = create(new File("test/bytecode/resource/Foo.java"));
+	private static ClassFileMetaData bar = create(new File("test/bytecode/resource/Bar.java"));
+	private static ClassFileMetaData baz = create(new File("test/bytecode/resource/Baz.java"));
+	private static ClassFileMetaData buux = create(new File("test/bytecode/resource/Buux.java"));
+	
+//	@Test 
+//	public void dump() {
+//		byte[] bytes = compile(new File("test/bytecode/resource/Foo.java"));
+//		int count = 0;
+//		for (byte b : bytes) {
+//			System.out.printf("%02x ", (b & 0xFF));
+//			count++;
+//			if (count % 20 == 0) System.out.println();
+//		}
+//		System.out.println();
+//		System.out.println();
+//		System.out.println(foo.poolContent());
+//	}
 	
 	@Test
 	public void testGetClassName() {
@@ -125,13 +139,59 @@ public class ClassFileMetaDataTest {
 		assertTrue(foo.containsStringConstant("TwoFour"));
 		
 		assertTrue(buux.containsStringConstant("H\u3404l\0"));
+		
+		assertFalse(foo.containsStringConstant("Seven"));
 	}
 	
-	private ClassFileMetaData create(File file) {
+	@Test
+	public void testContainsDouble() {
+		assertTrue(foo.containsDouble(1.23));
+		assertTrue(foo.containsDouble(Double.NaN));
+		assertTrue(foo.containsDouble(Double.POSITIVE_INFINITY));
+		assertTrue(foo.containsDouble(Double.NEGATIVE_INFINITY));
+		
+		assertFalse(foo.containsDouble(1.0));
+		assertFalse(buux.containsDouble(1.0));
+		assertFalse(buux.containsDouble(Double.NaN));
+		assertFalse(buux.containsDouble(Double.POSITIVE_INFINITY));
+		assertFalse(buux.containsDouble(Double.NEGATIVE_INFINITY));
+	}	
+	
+	@Test
+	public void testContainsFloat() {
+		assertTrue(foo.containsFloat(1.23F));
+		assertTrue(foo.containsFloat(Float.NaN));
+		assertTrue(foo.containsFloat(Float.POSITIVE_INFINITY));
+		assertTrue(foo.containsFloat(Float.NEGATIVE_INFINITY));
+		
+		assertFalse(foo.containsFloat(1.0F));
+		assertFalse(buux.containsFloat(1.0F));
+		assertFalse(buux.containsFloat(Float.NaN));
+		assertFalse(buux.containsFloat(Float.POSITIVE_INFINITY));
+		assertFalse(buux.containsFloat(Float.NEGATIVE_INFINITY));
+	}	
+	
+	@Test
+	public void testContainsInteger() {
+		assertTrue(foo.containsInteger(123));
+		
+		assertFalse(foo.containsInteger(1));
+		assertFalse(buux.containsInteger(1));
+	}
+	
+	@Test
+	public void testContainsLong() {
+		assertTrue(foo.containsLong(123));
+		
+		assertFalse(foo.containsLong(1));
+		assertFalse(buux.containsLong(1));
+	}
+	
+	private static ClassFileMetaData create(File file) {
 		return new ClassFileMetaData(compile(file));
 	}
 	
-	private byte[] compile(File file) {
+	private static byte[] compile(File file) {
 		try {
 			JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 			File tempDir = getTempDir();
@@ -146,7 +206,7 @@ public class ClassFileMetaDataTest {
 		}
 	}
 	
-	private File getTempDir() {
+	private static File getTempDir() {
 		String[] rawDirs = {
 				System.getProperty("java.io.tmpdir"),
 				"/tmp",
@@ -177,7 +237,7 @@ public class ClassFileMetaDataTest {
 		}
 	}
 	
-	private String readFileAsString(File file) {
+	private static String readFileAsString(File file) {
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(file));
 			StringWriter writer = new StringWriter();
