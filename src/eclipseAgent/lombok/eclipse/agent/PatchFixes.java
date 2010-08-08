@@ -22,9 +22,15 @@
 
 package lombok.eclipse.agent;
 
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+
+import lombok.core.DiagnosticsReceiver;
+import lombok.core.PostCompiler;
 
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -106,5 +112,18 @@ public class PatchFixes {
 			if (in[i] == null || !((Boolean)f.get(in[i])).booleanValue()) newSimpleNames[count++] = in[i];
 		}
 		return newSimpleNames;
+	}
+	
+	public static byte[] runPostCompiler(byte[] bytes, String className) {
+		byte[] transformed = PostCompiler.applyTransformations(bytes, className, DiagnosticsReceiver.CONSOLE);
+		return transformed == null ? bytes : transformed;
+	}
+	
+	public static OutputStream runPostCompiler(OutputStream out) throws IOException {
+		return PostCompiler.wrapOutputStream(out, "TEST", DiagnosticsReceiver.CONSOLE);
+	}
+	
+	public static BufferedOutputStream runPostCompiler(BufferedOutputStream out) throws IOException {
+		return new BufferedOutputStream(PostCompiler.wrapOutputStream(out, "TEST", DiagnosticsReceiver.CONSOLE));
 	}
 }

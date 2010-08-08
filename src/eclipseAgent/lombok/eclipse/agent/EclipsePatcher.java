@@ -64,9 +64,37 @@ public class EclipsePatcher extends Agent {
 			patchSetGeneratedFlag(sm);
 			patchHideGeneratedNodes(sm);
 			patchLiveDebug(sm);
+			patchPostCompileHookEclipse(sm);
+		} else {
+			patchPostCompileHookEcj(sm);
 		}
 		
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
+	}
+	
+	private static void patchPostCompileHookEclipse(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.core.builder.IncrementalImageBuilder", "writeClassFileContents"))
+				.target(new MethodTarget("org.eclipse.jdt.internal.core.builder.AbstractImageBuilder", "writeClassFileContents"))
+				.methodToWrap(new Hook("org.eclipse.jdt.internal.compiler.ClassFile", "getBytes", "byte[]"))
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "runPostCompiler", "byte[]", "byte[]", "java.lang.String"))
+				.requestExtra(StackRequest.PARAM3)
+				.transplant()
+				.build());
+	}
+	
+	private static void patchPostCompileHookEcj(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.tool.EclipseCompilerImpl", "outputClassFiles"))
+				.methodToWrap(new Hook("javax.tools.JavaFileObject", "openOutputStream", "java.io.OutputStream"))
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "runPostCompiler", "java.io.OutputStream", "java.io.OutputStream"))
+				.build());
+		
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.util.Util", "writeToDisk"))
+				.methodToWrap(new Hook("java.io.BufferedOutputStream", "<init>", "void", "java.io.OutputStream", "int"))
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "runPostCompiler", "java.io.BufferedOutputStream", "java.io.BufferedOutputStream"))
+				.build());
 	}
 	
 	private static void patchHideGeneratedNodes(ScriptManager sm) {
