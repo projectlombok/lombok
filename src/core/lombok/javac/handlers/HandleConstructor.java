@@ -175,7 +175,6 @@ public class HandleConstructor {
 	
 	private JCMethodDecl createConstructor(AccessLevel level, JavacNode typeNode, List<JavacNode> fields, boolean suppressConstructorProperties) {
 		TreeMaker maker = typeNode.getTreeMaker();
-		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
 		List<JCStatement> nullChecks = List.nil();
 		List<JCStatement> assigns = List.nil();
@@ -203,7 +202,7 @@ public class HandleConstructor {
 		}
 		
 		return maker.MethodDef(mods, typeNode.toName("<init>"),
-				null, type.typarams, params, List.<JCExpression>nil(), maker.Block(0L, nullChecks.appendList(assigns)), null);
+				null, List.<JCTypeParameter>nil(), params, List.<JCExpression>nil(), maker.Block(0L, nullChecks.appendList(assigns)), null);
 	}
 	
 	private boolean isLocalType(JavacNode type) {
