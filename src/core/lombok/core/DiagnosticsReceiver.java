@@ -23,13 +23,12 @@ package lombok.core;
 
 public interface DiagnosticsReceiver {
 	DiagnosticsReceiver CONSOLE = new DiagnosticsReceiver() {
-		
 		@Override public void addError(String message) {
-			System.err.println(message);
+			System.err.println("Error: " + message);
 		}
 		
 		@Override public void addWarning(String message) {
-			System.out.println(message);
+			System.out.println("Warning: " + message);
 		}
 	};
 	
