@@ -123,7 +123,8 @@ public class PatchFixes {
 		return PostCompiler.wrapOutputStream(out, "TEST", DiagnosticsReceiver.CONSOLE);
 	}
 	
-	public static BufferedOutputStream runPostCompiler(BufferedOutputStream out) throws IOException {
-		return new BufferedOutputStream(PostCompiler.wrapOutputStream(out, "TEST", DiagnosticsReceiver.CONSOLE));
+	public static BufferedOutputStream runPostCompiler(BufferedOutputStream out, String path, String name) throws IOException {
+		String fileName = path + "/" + name;
+		return new BufferedOutputStream(PostCompiler.wrapOutputStream(out, fileName, DiagnosticsReceiver.CONSOLE));
 	}
 }
