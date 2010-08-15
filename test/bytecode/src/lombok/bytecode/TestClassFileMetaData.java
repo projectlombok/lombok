@@ -25,8 +25,9 @@ import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collections;
@@ -196,7 +197,7 @@ public class TestClassFileMetaData {
 			JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 			File tempDir = getTempDir();
 			tempDir.mkdirs();
-			List<String> options = Arrays.asList("-nowarn", "-proc:none", "-d", tempDir.getAbsolutePath());
+			List<String> options = Arrays.asList("-proc:none", "-d", tempDir.getAbsolutePath());
 			StringWriter captureWarnings = new StringWriter();
 			CompilationTask task = compiler.getTask(captureWarnings, null, null, options, null, Collections.singleton(new ContentBasedJavaFileObject(file.getPath(), readFileAsString(file))));
 			assertTrue(task.call());
@@ -239,16 +240,21 @@ public class TestClassFileMetaData {
 	
 	private static String readFileAsString(File file) {
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(file));
-			StringWriter writer = new StringWriter();
-			String line = reader.readLine();
-			while(line != null) {
-				writer.append(line).append("\n");
-				line = reader.readLine();
+			FileInputStream in = new FileInputStream(file);
+			try {
+				BufferedReader reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+				StringWriter writer = new StringWriter();
+				String line = reader.readLine();
+				while(line != null) {
+					writer.append(line).append("\n");
+					line = reader.readLine();
+				}
+				reader.close();
+				writer.close();
+				return writer.toString();
+			} finally {
+				in.close();
 			}
-			reader.close();
-			writer.close();
-			return writer.toString();
 		} catch (Exception e) {
 			throw Lombok.sneakyThrow(e);
 		}
