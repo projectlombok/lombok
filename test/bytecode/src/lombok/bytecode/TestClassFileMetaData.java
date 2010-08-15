@@ -41,7 +41,7 @@ import lombok.Lombok;
 
 import org.junit.Test;
 
-public class ClassFileMetaDataTest {
+public class TestClassFileMetaData {
 	
 	private static ClassFileMetaData foo = create(new File("test/bytecode/resource/Foo.java"));
 	private static ClassFileMetaData bar = create(new File("test/bytecode/resource/Bar.java"));

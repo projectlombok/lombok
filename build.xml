@@ -171,6 +171,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<srcdir dir="experimental/src" />
 			<srcdir dir="test/transform/src" />
 			<srcdir dir="test/core/src" />
+			<srcdir dir="test/bytecode/src" />
 			<conf name="build" sources="contrib" />
 			<conf name="test" sources="contrib" />
 			<settings>
@@ -208,6 +209,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<classpath path="build/lombok" />
 			<src path="test/core/src" />
 			<src path="test/transform/src" />
+			<src path="test/bytecode/src" />
 		</ivy:compile>
 		<copy todir="build/tests">
 			<fileset dir="test/pretty/resource" />
@@ -226,6 +228,9 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 					<include name="**/Test*.java" />
 				</fileset>
 				<fileset dir="test/transform/src">
+					<include name="**/Test*.java" />
+				</fileset>
+				<fileset dir="test/bytecode/src">
 					<include name="**/Test*.java" />
 				</fileset>
 			</batchtest>
