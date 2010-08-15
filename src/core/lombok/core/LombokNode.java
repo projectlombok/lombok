@@ -38,7 +38,7 @@ import lombok.core.AST.Kind;
  * @param N The common type of all AST nodes in the internal representation of the target platform.
  *          For example, JCTree for javac, and ASTNode for Eclipse.
  */
-public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N> {
+public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N> implements DiagnosticsReceiver {
 	protected final A ast;
 	protected final Kind kind;
 	protected final N node;
@@ -315,12 +315,6 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 		for (L child : children) child.recursiveSetHandled();
 		return (L) this;
 	}
-	
-	/** Generate a compiler error on this node. */
-	public abstract void addError(String message);
-	
-	/** Generate a compiler warning on this node. */
-	public abstract void addWarning(String message);
 	
 	/**
 	 * Structurally significant means: LocalDeclaration, TypeDeclaration, MethodDeclaration, ConstructorDeclaration,
