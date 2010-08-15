@@ -49,20 +49,6 @@ public class TestClassFileMetaData {
 	private static ClassFileMetaData baz = create(new File("test/bytecode/resource/Baz.java"));
 	private static ClassFileMetaData buux = create(new File("test/bytecode/resource/Buux.java"));
 	
-//	@Test 
-//	public void dump() {
-//		byte[] bytes = compile(new File("test/bytecode/resource/Foo.java"));
-//		int count = 0;
-//		for (byte b : bytes) {
-//			System.out.printf("%02x ", (b & 0xFF));
-//			count++;
-//			if (count % 20 == 0) System.out.println();
-//		}
-//		System.out.println();
-//		System.out.println();
-//		System.out.println(foo.poolContent());
-//	}
-	
 	@Test
 	public void testGetClassName() {
 		assertTrue(foo.containsUtf8("Foo"));

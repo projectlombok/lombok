@@ -25,8 +25,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Utility to read the constant pool, header, and inheritance information of any class file.
+ */
 public class ClassFileMetaData {
-	
 	private static final byte UTF8 = 1;
 	private static final byte INTEGER = 3;
 	private static final byte FLOAT = 4;
@@ -119,14 +121,31 @@ public class ClassFileMetaData {
 		return result.toString();
 	}
 	
+	/**
+	 * Checks if the constant pool contains the provided 'raw' string. These are used as source material for further JVM types, such as string constants, type references, etcetera.
+	 */
 	public boolean containsUtf8(String value) {
 		return findUtf8(value) != NOT_FOUND;
 	}
 	
+	/**
+	 * Checks if the constant pool contains a reference to the provided class.
+	 * 
+	 * NB: Most uses of a type do <em>NOT</em> show up as a class in the constant pool.
+	 *    For example, the parameter types and return type of any method you invoke or declare, are stored as signatures and not as type references,
+	 *    but the type to which any method you invoke belongs, is. Read the JVM Specification for more information.
+	 * 
+	 * @param className must be provided JVM-style, such as {@code java/lang/String}
+	 */
 	public boolean usesClass(String className) {
 		return findClass(className) != NOT_FOUND;
 	}
 	
+	/**
+	 * Checks if the constant pool contains a reference to a given field, either for writing or reading.
+	 * 
+	 * @param className must be provided JVM-style, such as {@code java/lang/String}
+	 */
 	public boolean usesField(String className, String fieldName) {
 		int classIndex = findClass(className);
 		if (classIndex == NOT_FOUND) return false;
@@ -142,6 +161,11 @@ public class ClassFileMetaData {
 		return false;
 	}
 	
+	/**
+	 * Checks if the constant pool contains a reference to a given method, with any signature (return type and parameter types).
+	 * 
+	 * @param className must be provided JVM-style, such as {@code java/lang/String}
+	 */
 	public boolean usesMethod(String className, String methodName) {
 		int classIndex = findClass(className);
 		if (classIndex == NOT_FOUND) return false;
@@ -157,6 +181,12 @@ public class ClassFileMetaData {
 		return false;
 	}
 	
+	/**
+	 * Checks if the constant pool contains a reference to a given method.
+	 * 
+	 * @param className must be provided JVM-style, such as {@code java/lang/String}
+	 * @param descriptor must be provided JVM-style, such as {@code (IZ)Ljava/lang/String;}
+	 */
 	public boolean usesMethod(String className, String methodName, String descriptor) {
 		int classIndex = findClass(className);
 		if (classIndex == NOT_FOUND) return false;
@@ -171,6 +201,11 @@ public class ClassFileMetaData {
 		return false;
 	}
 	
+	/**
+	 * Checks if the constant pool contains the provided string constant, which implies the constant is used somewhere in the code.
+	 * 
+	 * NB: String literals get concatenated by the compiler.
+	 */
 	public boolean containsStringConstant(String value) {
 		int index = findUtf8(value);
 		if (index == NOT_FOUND) return false;
@@ -180,6 +215,11 @@ public class ClassFileMetaData {
 		return false;
 	}
 	
+	/**
+	 * Checks if the constant pool contains the provided long constant, which implies the constant is used somewhere in the code.
+	 * 
+	 * NB: compile-time constant expressions are evaluated at compile time.
+	 */
 	public boolean containsLong(long value) {
 		for (int i = 1; i < maxPoolSize; i++) {
 			if (types[i] == LONG && readLong(i) == value) return true;
@@ -187,6 +227,11 @@ public class ClassFileMetaData {
 		return false;
 	}
 	
+	/**
+	 * Checks if the constant pool contains the provided double constant, which implies the constant is used somewhere in the code.
+	 * 
+	 * NB: compile-time constant expressions are evaluated at compile time.
+	 */
 	public boolean containsDouble(double value) {
 		boolean isNan = Double.isNaN(value);
 		for (int i = 1; i < maxPoolSize; i++) {
@@ -198,6 +243,11 @@ public class ClassFileMetaData {
 		return false;
 	}
 	
+	/**
+	 * Checks if the constant pool contains the provided int constant, which implies the constant is used somewhere in the code.
+	 * 
+	 * NB: compile-time constant expressions are evaluated at compile time.
+	 */
 	public boolean containsInteger(int value) {
 		for (int i = 1; i < maxPoolSize; i++) {
 			if (types[i] == INTEGER && readInteger(i) == value) return true;
@@ -205,6 +255,11 @@ public class ClassFileMetaData {
 		return false;
 	}
 	
+	/**
+	 * Checks if the constant pool contains the provided float constant, which implies the constant is used somewhere in the code.
+	 * 
+	 * NB: compile-time constant expressions are evaluated at compile time.
+	 */
 	public boolean containsFloat(float value) {
 		boolean isNan = Float.isNaN(value);
 		for (int i = 1; i < maxPoolSize; i++) {
@@ -230,7 +285,7 @@ public class ClassFileMetaData {
 	private long readInteger(int index) {
 		return read32(offsets[index]);
 	}
-
+	
 	private float readFloat(int index) {
 		return Float.intBitsToFloat(read32(offsets[index]));
 	}
@@ -238,15 +293,27 @@ public class ClassFileMetaData {
 	private int read32(int pos) {
 		return (byteCode[pos] & 0xFF) << 24 | (byteCode[pos + 1] & 0xFF) << 16 | (byteCode[pos + 2] & 0xFF) << 8 | (byteCode[pos + 3] &0xFF);
 	}
-
+	
+	/**
+	 * Returns the name of the class in JVM format, such as {@code java/lang/String}
+	 */
 	public String getClassName() {
 		return getClassName(readValue(endOfPool + 2));
 	}
 	
+	/**
+	 * Returns the name of the superclass in JVM format, such as {@code java/lang/Object}
+	 * 
+	 * NB: If you try this on Object itself, you'll get {@code null}.<br />
+	 * NB2: For interfaces and annotation interfaces, you'll always get {@code java/lang/Object}
+	 */
 	public String getSuperClassName() {
 		return getClassName(readValue(endOfPool + 4));
 	}
 	
+	/**
+	 * Returns the name of all implemented interfaces.
+	 */
 	public List<String> getInterfaces() {
 		int size = readValue(endOfPool + 6);
 		if (size == 0) return Collections.emptyList();
@@ -258,10 +325,16 @@ public class ClassFileMetaData {
 		return result;
 	}
 	
+	/**
+	 * A {@code toString()} like utility to dump all contents of the constant pool into a string.
+	 * 
+	 * NB: No guarantees are made about the exact layout of this string. It is for informational purposes only, don't try to parse it.<br />
+	 * NB2: After a double or long, there's a JVM spec-mandated gap, which is listed as {@code (cont.)} in the returned string.
+	 */
 	public String poolContent() {
 		StringBuilder result = new StringBuilder();
 		for (int i = 1; i < maxPoolSize; i++) {
-			result.append(String.format("#%02d: ", i));
+			result.append(String.format("#%02x: ", i));
 			int pos = offsets[i];
 			switch(types[i]) {
 			case UTF8:
