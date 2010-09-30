@@ -114,8 +114,8 @@ public class PatchFixes {
 		return newSimpleNames;
 	}
 	
-	public static byte[] runPostCompiler(byte[] bytes, String className) {
-		byte[] transformed = PostCompiler.applyTransformations(bytes, className, DiagnosticsReceiver.CONSOLE);
+	public static byte[] runPostCompiler(byte[] bytes, String fileName) {
+		byte[] transformed = PostCompiler.applyTransformations(bytes, fileName, DiagnosticsReceiver.CONSOLE);
 		return transformed == null ? bytes : transformed;
 	}
 	

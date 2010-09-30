@@ -129,7 +129,7 @@ public class TransformationsUtil {
 				//could also be 'foo'.
 				baseNames.add(fieldName.toString().substring(knownBooleanPrefix.length()));
 				//prefix with 'is' but instead just use the field name as is. The isLowerCase check is so we don't turn
-				//hashCodeGenerated, which so happens to start with 'has', into hasHCodeGenerated instead of isHashCodeGenerated.
+				//hashCodeGenerated, which so happens to start with 'has', into hashCodeGenerated instead of isHashCodeGenerated.
 			}
 		}
 		

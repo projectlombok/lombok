@@ -37,17 +37,17 @@ import lombok.core.PostCompiler;
 
 final class InterceptingJavaFileObject implements JavaFileObject {
 	private final JavaFileObject delegate;
-	private final String className;
+	private final String fileName;
 	private final DiagnosticsReceiver diagnostics;
 	
-	public InterceptingJavaFileObject(JavaFileObject original, String className, DiagnosticsReceiver diagnostics) {
+	public InterceptingJavaFileObject(JavaFileObject original, String fileName, DiagnosticsReceiver diagnostics) {
 		this.delegate = original;
-		this.className = className;
+		this.fileName = fileName;
 		this.diagnostics = diagnostics;
 	}
 	
 	public OutputStream openOutputStream() throws IOException {
-		return PostCompiler.wrapOutputStream(delegate.openOutputStream(), className, diagnostics);
+		return PostCompiler.wrapOutputStream(delegate.openOutputStream(), fileName, diagnostics);
 	}
 	
 	public Writer openWriter() throws IOException {

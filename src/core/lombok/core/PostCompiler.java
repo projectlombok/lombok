@@ -32,17 +32,17 @@ public final class PostCompiler {
 	
 	private static List<PostCompilerTransformation> transformations;
 	
-	public static byte[] applyTransformations(byte[] original, String className, DiagnosticsReceiver diagnostics) {
+	public static byte[] applyTransformations(byte[] original, String fileName, DiagnosticsReceiver diagnostics) {
 		init(diagnostics);
 		byte[] previous = original;
 		for (PostCompilerTransformation transformation : transformations) {
 			try {
-				byte[] next = transformation.applyTransformations(previous, className, diagnostics);
+				byte[] next = transformation.applyTransformations(previous, fileName, diagnostics);
 				if (next != null) {
 					previous = next;
 				}
 			} catch (Exception e) {
-				diagnostics.addWarning(String.format("Error during the transformation of '%s'; post-compiler '%s' caused an exception: %s", className, transformation.getClass().getName(), e.getMessage()));
+				diagnostics.addWarning(String.format("Error during the transformation of '%s'; post-compiler '%s' caused an exception: %s", fileName, transformation.getClass().getName(), e.getMessage()));
 			}
 		}
 		return previous;
@@ -58,16 +58,16 @@ public final class PostCompiler {
 		}
 	}
 
-	public static OutputStream wrapOutputStream(final OutputStream originalStream, final String className, final DiagnosticsReceiver diagnostics) throws IOException {
+	public static OutputStream wrapOutputStream(final OutputStream originalStream, final String fileName, final DiagnosticsReceiver diagnostics) throws IOException {
 		return new ByteArrayOutputStream() {
 			@Override public void close() throws IOException {
 				// no need to call super
 				byte[] original = toByteArray();
 				byte[] copy = null;
 				try {
-					copy = applyTransformations(original, className, diagnostics);
+					copy = applyTransformations(original, fileName, diagnostics);
 				} catch (Exception e) {
-					diagnostics.addWarning(String.format("Error during the transformation of '%s'; no post-compilation has been applied", className));
+					diagnostics.addWarning(String.format("Error during the transformation of '%s'; no post-compilation has been applied", fileName));
 				}
 				
 				if (copy == null) {
