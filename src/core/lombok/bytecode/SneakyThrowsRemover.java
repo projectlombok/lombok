@@ -71,7 +71,7 @@ public class SneakyThrowsRemover implements PostCompilerTransformation {
 		return writer.toByteArray();
 	}
 	
-	@Override public byte[] applyTransformations(byte[] original, String className, DiagnosticsReceiver diagnostics) {
+	@Override public byte[] applyTransformations(byte[] original, String fileName, DiagnosticsReceiver diagnostics) {
 		if (!new ClassFileMetaData(original).usesMethod("lombok/Lombok", "sneakyThrow")) return null;
 		
 		byte[] fixedByteCode = fixJSRInlining(original);
@@ -89,6 +89,7 @@ public class SneakyThrowsRemover implements PostCompilerTransformation {
 			}
 			
 			@Override public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+				justAddedAthrow = false;
 				boolean hit = true;
 				if (hit && opcode != Opcodes.INVOKESTATIC) hit = false;
 				if (hit && !"sneakyThrow".equals(name)) hit = false;
