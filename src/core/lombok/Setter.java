@@ -21,6 +21,7 @@
  */
 package lombok;
 
+import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -55,4 +56,10 @@ public @interface Setter {
 	 * If you want your setter to be non-public, you can specify an alternate access level here.
 	 */
 	lombok.AccessLevel value() default lombok.AccessLevel.PUBLIC;
+	
+	AnyAnnotation[] onMethod() default {};
+	AnyAnnotation[] onParam() default {};
+	
+	@Retention(RetentionPolicy.SOURCE)
+	@interface AnyAnnotation {}
 }

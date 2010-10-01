@@ -33,6 +33,8 @@ import org.mangosdk.spi.ProviderFor;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.util.List;
 
 /**
  * Handles the {@code lombok.Data} annotation for javac.
@@ -57,7 +59,7 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		// TODO move this to the end OR move it to the top in eclipse.
 		new HandleConstructor().generateRequiredArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, true);
 		new HandleGetter().generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
-		new HandleSetter().generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
+		new HandleSetter().generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true, List.<JCExpression>nil(), List.<JCExpression>nil());
 		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		new HandleToString().generateToStringForType(typeNode, annotationNode);
 		
