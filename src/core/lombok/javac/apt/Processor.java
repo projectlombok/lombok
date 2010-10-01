@@ -21,8 +21,12 @@
  */
 package lombok.javac.apt;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -74,8 +78,10 @@ public class Processor extends AbstractProcessor {
 		transformer = new JavacTransformer(procEnv.getMessager());
 		trees = Trees.instance(procEnv);
 	}
-
+	
 	private void placePostCompileHook() {
+		stopJavacProcessingEnvironmentFromClosingOurClassloader();
+		
 		Context context = processingEnv.getContext();
 		
 		try {
@@ -97,6 +103,62 @@ public class Processor extends AbstractProcessor {
 			}
 		} catch (Exception e) {
 			throw Lombok.sneakyThrow(e);
+		}
+	}
+	
+	private static class WrappingClassLoader extends ClassLoader {
+		private final ClassLoader parent;
+		
+		public WrappingClassLoader(ClassLoader parent) {
+			this.parent = parent;
+		}
+		
+		public Class<?> loadClass(String name) throws ClassNotFoundException {
+			return parent.loadClass(name);
+		}
+		
+		public String toString() {
+			return parent.toString();
+		}
+		
+		public URL getResource(String name) {
+			return parent.getResource(name);
+		}
+		
+		public Enumeration<URL> getResources(String name) throws IOException {
+			return parent.getResources(name);
+		}
+		
+		public InputStream getResourceAsStream(String name) {
+			return parent.getResourceAsStream(name);
+		}
+		
+		public void setDefaultAssertionStatus(boolean enabled) {
+			parent.setDefaultAssertionStatus(enabled);
+		}
+		
+		public void setPackageAssertionStatus(String packageName, boolean enabled) {
+			parent.setPackageAssertionStatus(packageName, enabled);
+		}
+		
+		public void setClassAssertionStatus(String className, boolean enabled) {
+			parent.setClassAssertionStatus(className, enabled);
+		}
+		
+		public void clearAssertionStatus() {
+			parent.clearAssertionStatus();
+		}
+	}
+	
+	private void stopJavacProcessingEnvironmentFromClosingOurClassloader() {
+		try {
+			Field f = JavacProcessingEnvironment.class.getDeclaredField("processorClassLoader");
+			f.setAccessible(true);
+			ClassLoader unwrapped = (ClassLoader) f.get(processingEnv);
+			ClassLoader wrapped = new WrappingClassLoader(unwrapped);
+			f.set(processingEnv, wrapped);
+		} catch (Throwable t) {
+			throw Lombok.sneakyThrow(t);
 		}
 	}
 	
