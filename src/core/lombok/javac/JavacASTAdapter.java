@@ -35,6 +35,11 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
  */
 public class JavacASTAdapter implements JavacASTVisitor {
 	/** {@inheritDoc} */
+	@Override public boolean isResolutionBased() {
+		return false;
+	}
+	
+	/** {@inheritDoc} */
 	@Override public void visitCompilationUnit(JavacNode top, JCCompilationUnit unit) {}
 	
 	/** {@inheritDoc} */
