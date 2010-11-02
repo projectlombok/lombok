@@ -37,9 +37,13 @@ import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.CaseStatement;
 import org.eclipse.jdt.internal.compiler.ast.CastExpression;
+import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
+import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
+import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
+import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.SwitchStatement;
@@ -157,7 +161,29 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		}
 		unsafeClose.nameSourcePosition = nameSourcePosition;
 		unsafeClose.selector = cleanupName.toCharArray();
-		finallyBlock[0] = unsafeClose;
+		
+		
+		int pS = ast.sourceStart, pE = ast.sourceEnd;
+		long p = (long)pS << 32 | pE;
+
+		SingleNameReference varName = new SingleNameReference(decl.name, p);
+		Eclipse.setGeneratedBy(varName, ast);
+		NullLiteral nullLiteral = new NullLiteral(pS, pE);
+		Eclipse.setGeneratedBy(nullLiteral, ast);
+		EqualExpression equalExpression = new EqualExpression(varName, nullLiteral, OperatorIds.NOT_EQUAL);
+		equalExpression.sourceStart = pS; equalExpression.sourceEnd = pE;
+		Eclipse.setGeneratedBy(equalExpression, ast);
+		
+		Block closeBlock = new Block(0);
+		closeBlock.statements = new Statement[1];
+		closeBlock.statements[0] = unsafeClose;
+		Eclipse.setGeneratedBy(closeBlock, ast);
+		IfStatement ifStatement = new IfStatement(equalExpression, closeBlock, 0, 0);
+		Eclipse.setGeneratedBy(ifStatement, ast);
+
+		
+		
+		finallyBlock[0] = ifStatement;
 		tryStatement.finallyBlock = new Block(0);
 		Eclipse.setGeneratedBy(tryStatement.finallyBlock, ast);
 		tryStatement.finallyBlock.statements = finallyBlock;
