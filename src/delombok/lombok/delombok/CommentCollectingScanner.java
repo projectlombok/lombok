@@ -25,7 +25,7 @@ import java.nio.CharBuffer;
 
 import lombok.delombok.Comment.EndConnection;
 import lombok.delombok.Comment.StartConnection;
-import lombok.delombok.CommentPreservingParser.Comments;
+import lombok.delombok.Delombok.Comments;
 
 import com.sun.tools.javac.parser.Scanner;
 import com.sun.tools.javac.util.Context;

@@ -670,9 +670,11 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 
     public void visitMethodDef(JCMethodDecl tree) {
         try {
+            boolean isConstructor = tree.name == tree.name.table.fromChars("<init>".toCharArray(), 0, 6);
             // when producing source output, omit anonymous constructors
-            if (tree.name == tree.name.table.fromChars("<init>".toCharArray(), 0, 6) &&
-                    enclClassName == null) return;
+            if (isConstructor && enclClassName == null) return;
+            boolean isGeneratedConstructor = isConstructor && ((tree.mods.flags & Flags.GENERATEDCONSTR) != 0);
+            if (isGeneratedConstructor) return;
             println(); align();
             printDocComment(tree);
             printExpr(tree.mods);
@@ -1442,9 +1444,13 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
             print("@");
             printExpr(tree.annotationType);
             if (tree.args.nonEmpty()) {
-	            print("(");
-	            printExprs(tree.args);
-	            print(")");
+                print("(");
+                if (tree.args.length() == 1 && tree.args.get(0) instanceof JCAssign) {
+                     JCExpression lhs = ((JCAssign)tree.args.get(0)).lhs;
+                     if (lhs instanceof JCIdent && ((JCIdent)lhs).name.toString().equals("value")) tree.args = List.of(((JCAssign)tree.args.get(0)).rhs);
+                }
+                printExprs(tree.args);
+                print(")");
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
