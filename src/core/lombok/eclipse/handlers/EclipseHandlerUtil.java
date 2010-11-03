@@ -406,9 +406,17 @@ public class EclipseHandlerUtil {
 	
 	/**
 	 * Inserts a field into an existing type. The type must represent a {@code TypeDeclaration}.
+	 * The field carries the &#64;{@link SuppressWarnings}("all") annotation.
+	 */
+	public static void injectFieldSuppressWarnings(EclipseNode type, FieldDeclaration field) {
+		field.annotations = createSuppressWarningsAll(field, field.annotations);
+		injectField(type, field);
+	}
+	
+	/**
+	 * Inserts a field into an existing type. The type must represent a {@code TypeDeclaration}.
 	 */
 	public static void injectField(EclipseNode type, FieldDeclaration field) {
-		field.annotations = createSuppressWarningsAll(field, field.annotations);
 		TypeDeclaration parent = (TypeDeclaration) type.get();
 		
 		if (parent.fields == null) {
