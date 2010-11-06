@@ -64,6 +64,15 @@ h1 {
 	margin-left: 32px;
 }
 
+dt {
+	margin-top: 4px;
+	font-size: 1.2em;
+}
+
+dd {
+	margin-left: 16px;
+}
+
 .overview code {
 	font-size: 1.1em;
 }
@@ -137,4 +146,24 @@ h1 {
 .creditsLink {
 	font-style: normal;
 	font-weight: bold;
+}
+
+code a {
+	color: black;
+	text-decoration: none;
+}
+
+code a:hover {
+	color: black;
+	text-decoration: underline;
+}
+
+code .keyword {
+	color: #7f0055;
+	font-weight: bold;
+}
+
+code .staticfield {
+	color: #2a00ff;
+	font-style: italic;	
 }
