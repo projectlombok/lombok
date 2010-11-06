@@ -657,6 +657,11 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
                 }
             }
             print(" ");
+            // <Added for delombok by Reinier Zwitserloot>
+            if ((tree.mods.flags & INTERFACE) != 0) {
+                removeImplicitModifiersForInterfaceMembers(tree.defs);
+            }
+            // </Added for delombok by Reinier Zwitserloot>
             if ((tree.mods.flags & ENUM) != 0) {
                 printEnumBody(tree.defs);
             } else {
@@ -668,6 +673,21 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         }
     }
 
+    // Added for delombok by Reinier Zwitserloot
+    private void removeImplicitModifiersForInterfaceMembers(List<JCTree> defs) {
+        for (JCTree def :defs) {
+            if (def instanceof JCVariableDecl) {
+                ((JCVariableDecl) def).mods.flags &= ~(Flags.PUBLIC | Flags.STATIC | Flags.FINAL);
+            }
+            if (def instanceof JCMethodDecl) {
+                ((JCMethodDecl) def).mods.flags &= ~(Flags.PUBLIC | Flags.ABSTRACT);
+            }
+            if (def instanceof JCClassDecl) {
+                ((JCClassDecl) def).mods.flags &= ~(Flags.PUBLIC | Flags.STATIC);
+            }
+        }
+    }
+    
     public void visitMethodDef(JCMethodDecl tree) {
         try {
             boolean isConstructor = tree.name == tree.name.table.fromChars("<init>".toCharArray(), 0, 6);
