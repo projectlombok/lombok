@@ -15,6 +15,5 @@ public class ValInFor {
 			System.out.println(shouldBeString.toLowerCase());
 			val shouldBeString2 = shouldBeString;
 		}
-	}
-*/
+	}*/
 }
