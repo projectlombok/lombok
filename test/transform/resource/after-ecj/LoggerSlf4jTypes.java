@@ -22,6 +22,8 @@
 interface LoggerSlf4jTypesInterfaceOuter {
   @lombok.slf4j.Log class Inner {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jTypesInterfaceOuter.Inner.class);
+    <clinit>() {
+    }
     Inner() {
       super();
     }
