@@ -1,4 +1,4 @@
-@lombok.commons.Log class LoggerCommons {
+@lombok.extern.apachecommons.Log class LoggerCommons {
   private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(LoggerCommons.class);
   <clinit>() {
   }
@@ -6,7 +6,7 @@
     super();
   }
 }
-@lombok.commons.Log(String.class) class LoggerCommonsString {
+@lombok.extern.apachecommons.Log(String.class) class LoggerCommonsString {
   private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(String.class);
   <clinit>() {
   }
@@ -14,7 +14,7 @@
     super();
   }
 }
-@lombok.commons.Log(java.lang.String.class) class LoggerCommonsJavaLangString {
+@lombok.extern.apachecommons.Log(java.lang.String.class) class LoggerCommonsJavaLangString {
   private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(java.lang.String.class);
   <clinit>() {
   }

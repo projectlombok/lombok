@@ -19,16 +19,59 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.log4j;
+package lombok.extern.jul;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Causes lombok to generate a logger field.
+ * Example:
+ * <pre>
+ * &#64;Log
+ * public class LogExample {
+ * }
+ * </pre>
+ * 
+ * will generate:
+ * 
+ * <pre>
+ * public class LogExample {
+ *     private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(LogExample.class.getName());
+ * }
+ * </pre>
+ * 
+ * If you do not want to use the annotated class as the logger parameter, you can specify an alternate class.
+ * Example:
+ * <pre>
+ * &#64;Log(java.util.List.class)
+ * public class LogExample {
+ * }
+ * </pre>
+ * 
+ * will generate:
+ * 
+ * <pre>
+ * public class LogExample {
+ *     private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(java.util.List.class.getName());
+ * }
+ * </pre>
+ * 
+ * This annotation is valid for classes and enumerations.<br />
+ * 
+ * @see lombok.extern.apachecommons.Log lombok.extern.apachecommons.Log
+ * @see lombok.extern.log4j.Log lombok.extern.log4j.Log
+ * @see lombok.extern.slf4j.Log lombok.extern.slf4j.Log
+ */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface Log {
-	
+	/**
+	 * If you do not want to use the annotated class as the logger parameter, you can specify an alternate class here.
+ 	 * <br />
+	 * NB: If {@code void.class} is passed, it will be considered the same as specifying no parameter.
+	 */
 	Class<?> value() default void.class;
 }

@@ -1,8 +1,8 @@
-@lombok.slf4j.Log interface LoggerSlf4jTypesInterface {
+@lombok.extern.slf4j.Log interface LoggerSlf4jTypesInterface {
 }
-@lombok.slf4j.Log @interface LoggerSlf4jTypesAnnotation {
+@lombok.extern.slf4j.Log @interface LoggerSlf4jTypesAnnotation {
 }
-@lombok.slf4j.Log enum LoggerSlf4jTypesEnum {
+@lombok.extern.slf4j.Log enum LoggerSlf4jTypesEnum {
   private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jTypesEnum.class);
   <clinit>() {
   }
@@ -10,7 +10,7 @@
     super();
   }
 }
-@lombok.slf4j.Log enum LoggerSlf4jTypesEnumWithElement {
+@lombok.extern.slf4j.Log enum LoggerSlf4jTypesEnumWithElement {
   FOO(),
   private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jTypesEnumWithElement.class);
   <clinit>() {
@@ -20,7 +20,7 @@
   }
 }
 interface LoggerSlf4jTypesInterfaceOuter {
-  @lombok.slf4j.Log class Inner {
+  @lombok.extern.slf4j.Log class Inner {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jTypesInterfaceOuter.Inner.class);
     <clinit>() {
     }

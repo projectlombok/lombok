@@ -1,11 +1,11 @@
-@lombok.commons.Log
+@lombok.extern.apachecommons.Log
 class LoggerCommons {
 }
 
-@lombok.commons.Log(String.class)
+@lombok.extern.apachecommons.Log(String.class)
 class LoggerCommonsString {
 }
 
-@lombok.commons.Log(java.lang.String.class)
+@lombok.extern.apachecommons.Log(java.lang.String.class)
 class LoggerCommonsJavaLangString {
 }

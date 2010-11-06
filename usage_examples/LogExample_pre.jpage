@@ -1,4 +1,4 @@
-import lombok.slf4j.Log;
+import lombok.extern.slf4j.Log;
 
 @Log
 public class LogExample {

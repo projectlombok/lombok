@@ -172,51 +172,51 @@ public class HandleLog {
 	}
 	
 	/**
-	 * Handles the {@link lombok.commons.Log} annotation for Eclipse.
+	 * Handles the {@link lombok.extern.apachecommons.Log} annotation for Eclipse.
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
-	public static class HandleCommonsLog implements EclipseAnnotationHandler<lombok.commons.Log> {
-		@Override public boolean handle(AnnotationValues<lombok.commons.Log> annotation, Annotation source, EclipseNode annotationNode) {
+	public static class HandleCommonsLog implements EclipseAnnotationHandler<lombok.extern.apachecommons.Log> {
+		@Override public boolean handle(AnnotationValues<lombok.extern.apachecommons.Log> annotation, Annotation source, EclipseNode annotationNode) {
 			return processAnnotation(LoggingFramework.COMMONS, annotation, source, annotationNode);
 		}
 	}
 	
 	/**
-	 * Handles the {@link lombok.jul.Log} annotation for Eclipse.
+	 * Handles the {@link lombok.extern.jul.Log} annotation for Eclipse.
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
-	public static class HandleJulLog implements EclipseAnnotationHandler<lombok.jul.Log> {
-		@Override public boolean handle(AnnotationValues<lombok.jul.Log> annotation, Annotation source, EclipseNode annotationNode) {
+	public static class HandleJulLog implements EclipseAnnotationHandler<lombok.extern.jul.Log> {
+		@Override public boolean handle(AnnotationValues<lombok.extern.jul.Log> annotation, Annotation source, EclipseNode annotationNode) {
 			return processAnnotation(LoggingFramework.JUL, annotation, source, annotationNode);
 		}
 	}
 	
 	/**
-	 * Handles the {@link lombok.log4j.Log} annotation for Eclipse.
+	 * Handles the {@link lombok.extern.log4j.Log} annotation for Eclipse.
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
-	public static class HandleLog4jLog implements EclipseAnnotationHandler<lombok.log4j.Log> {
-		@Override public boolean handle(AnnotationValues<lombok.log4j.Log> annotation, Annotation source, EclipseNode annotationNode) {
+	public static class HandleLog4jLog implements EclipseAnnotationHandler<lombok.extern.log4j.Log> {
+		@Override public boolean handle(AnnotationValues<lombok.extern.log4j.Log> annotation, Annotation source, EclipseNode annotationNode) {
 			return processAnnotation(LoggingFramework.LOG4J, annotation, source, annotationNode);
 		}
 	}
 	
 	/**
-	 * Handles the {@link lombok.slf4j.Log} annotation for Eclipse.
+	 * Handles the {@link lombok.extern.slf4j.Log} annotation for Eclipse.
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
-	public static class HandleSlf4jLog implements EclipseAnnotationHandler<lombok.slf4j.Log> {
-		@Override public boolean handle(AnnotationValues<lombok.slf4j.Log> annotation, Annotation source, EclipseNode annotationNode) {
+	public static class HandleSlf4jLog implements EclipseAnnotationHandler<lombok.extern.slf4j.Log> {
+		@Override public boolean handle(AnnotationValues<lombok.extern.slf4j.Log> annotation, Annotation source, EclipseNode annotationNode) {
 			return processAnnotation(LoggingFramework.SLF4J, annotation, source, annotationNode);
 		}
 	}
 	
 	enum LoggingFramework {
 		// private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(TargetType.class);
-		COMMONS(lombok.jul.Log.class, "org.apache.commons.logging.Log", "org.apache.commons.logging.LogFactory", "getLog"),
+		COMMONS(lombok.extern.jul.Log.class, "org.apache.commons.logging.Log", "org.apache.commons.logging.LogFactory", "getLog"),
 		
 		// private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(TargetType.class.getName());
-		JUL(lombok.jul.Log.class, "java.util.logging.Logger", "java.util.logging.Logger", "getLogger") {
+		JUL(lombok.extern.jul.Log.class, "java.util.logging.Logger", "java.util.logging.Logger", "getLogger") {
 			@Override public Expression createFactoryParameter(String typeName, Annotation source) {
 				int pS = source.sourceStart, pE = source.sourceEnd;
 				long p = (long)pS << 32 | pE;
@@ -236,10 +236,10 @@ public class HandleLog {
 		},
 		
 		// private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(TargetType.class);
-		LOG4J(lombok.jul.Log.class, "org.apache.log4j.Logger", "org.apache.log4j.Logger", "getLogger"),
+		LOG4J(lombok.extern.jul.Log.class, "org.apache.log4j.Logger", "org.apache.log4j.Logger", "getLogger"),
 
 		// private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TargetType.class);
-		SLF4J(lombok.slf4j.Log.class, "org.slf4j.Logger", "org.slf4j.LoggerFactory", "getLogger"),
+		SLF4J(lombok.extern.slf4j.Log.class, "org.slf4j.Logger", "org.slf4j.LoggerFactory", "getLogger"),
 		
 		;
 		
