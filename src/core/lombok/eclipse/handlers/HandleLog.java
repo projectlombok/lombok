@@ -47,10 +47,11 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.mangosdk.spi.ProviderFor;
 
-/**
- * Handles the {@code lombok.HandleSneakyThrows} annotation for eclipse.
- */
 public class HandleLog {
+	
+	private HandleLog() {
+		throw new UnsupportedOperationException();
+	}
 	
 	public static boolean processAnnotation(LoggingFramework framework, AnnotationValues<? extends java.lang.annotation.Annotation> annotation, Annotation source, EclipseNode annotationNode) {
 		
@@ -73,8 +74,7 @@ public class HandleLog {
 				return false;
 			}
 			
-			MemberExistsResult fieldExists = fieldExists("log", owner);
-			if (fieldExists != MemberExistsResult.NOT_EXISTS) {
+			if (fieldExists("log", owner) != MemberExistsResult.NOT_EXISTS) {
 				annotationNode.addWarning("Field 'log' already exists.");
 				return true;
 			}
