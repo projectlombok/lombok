@@ -489,6 +489,21 @@ public class JavacHandlerUtil {
 		
 		return e;
 	}
+
+	
+	/**
+	 * In javac, dotted access of any kind, from {@code java.lang.String} to {@code var.methodName}
+	 * is represented by a fold-left of {@code Select} nodes with the leftmost string represented by
+	 * a {@code Ident} node. This method generates such an expression.
+	 * 
+	 * For example, maker.Select(maker.Select(maker.Ident(NAME[java]), NAME[lang]), NAME[String]).
+	 * 
+	 * @see com.sun.tools.javac.tree.JCTree.JCIdent
+	 * @see com.sun.tools.javac.tree.JCTree.JCFieldAccess
+	 */
+	public static JCExpression chainDotsString(TreeMaker maker, JavacNode node, String elems) {
+		return chainDots(maker, node, elems.split("\\."));	
+	}
 	
 	/**
 	 * Searches the given field node for annotations and returns each one that matches the provided regular expression pattern.
