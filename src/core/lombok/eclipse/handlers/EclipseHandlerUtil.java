@@ -23,6 +23,7 @@ package lombok.eclipse.handlers;
 
 import static lombok.eclipse.Eclipse.*;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,6 +43,7 @@ import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.Clinit;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
@@ -406,9 +408,17 @@ public class EclipseHandlerUtil {
 	
 	/**
 	 * Inserts a field into an existing type. The type must represent a {@code TypeDeclaration}.
+	 * The field carries the &#64;{@link SuppressWarnings}("all") annotation.
+	 */
+	public static void injectFieldSuppressWarnings(EclipseNode type, FieldDeclaration field) {
+		field.annotations = createSuppressWarningsAll(field, field.annotations);
+		injectField(type, field);
+	}
+	
+	/**
+	 * Inserts a field into an existing type. The type must represent a {@code TypeDeclaration}.
 	 */
 	public static void injectField(EclipseNode type, FieldDeclaration field) {
-		field.annotations = createSuppressWarningsAll(field, field.annotations);
 		TypeDeclaration parent = (TypeDeclaration) type.get();
 		
 		if (parent.fields == null) {
@@ -421,9 +431,24 @@ public class EclipseHandlerUtil {
 			parent.fields = newArray;
 		}
 		
+		if ((field.modifiers & Modifier.STATIC) != 0) {
+			if (!hasClinit(parent)) {
+				parent.addClinit();
+			}
+		}
+		
 		type.add(field, Kind.FIELD).recursiveSetHandled();
 	}
 	
+	private static boolean hasClinit(TypeDeclaration parent) {
+		if (parent.methods == null) return false;
+		
+		for (AbstractMethodDeclaration method : parent.methods) {
+			if (method instanceof Clinit) return true;
+		}
+		return false;
+	}
+
 	/**
 	 * Inserts a method into an existing type. The type must represent a {@code TypeDeclaration}.
 	 */

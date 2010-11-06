@@ -89,7 +89,7 @@ public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> 
 			JCVariableDecl fieldDecl = maker.VarDef(
 					maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic ? Flags.STATIC : 0)),
 					methodNode.toName(lockName), objectType, newObjectArray);
-			injectField(methodNode.up(), fieldDecl);
+			injectFieldSuppressWarnings(methodNode.up(), fieldDecl);
 		}
 		
 		if (method.body == null) return false;

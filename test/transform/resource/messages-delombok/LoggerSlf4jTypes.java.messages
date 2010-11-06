@@ -1,0 +1,2 @@
+1:1 ERROR @Log is legal only on classes and enums.
+4:1 ERROR @Log is legal only on classes and enums.
