@@ -70,7 +70,7 @@ public class HandleLog {
 			if (loggingClassName.equals("void")) {
 				loggingClassName = getSelfName(typeNode);
 			}
-			createField(typeNode, loggingClassName, framework);
+			createField(framework, typeNode, loggingClassName);
 			return true;
 		default:
 			annotationNode.addError("@Log is legal only on types.");
@@ -93,7 +93,7 @@ public class HandleLog {
 		return typeName;
 	}
 	
-	private static boolean createField(JavacNode typeNode, String loggerClassName, LoggingFramework framework) {
+	private static boolean createField(LoggingFramework framework, JavacNode typeNode, String loggerClassName) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		
 		// 	private static final <loggerType> log = <factoryMethod>(<parameter>);
