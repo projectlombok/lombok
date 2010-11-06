@@ -111,60 +111,15 @@ public class HandleLog {
 		return true;
 	}
 	
-	static interface LoggingFramework {
-		Class<? extends Annotation> getAnnotationClass();
-		String getLoggerTypeName();
-		String getLoggerFactoryMethodName();
-		JCExpression createFactoryParameter(JavacNode typeNode, String typeName);
-	}
-	
-	// private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(TargetType.class);
-	private static LoggingFramework COMMONS = new LoggingFramework() {
-		@Override public Class<? extends Annotation> getAnnotationClass() {
-			return lombok.jul.Log.class;
-		}
-		
-		@Override public String getLoggerTypeName() {
-			return "org.apache.commons.logging.Log";
-		}
-		
-		@Override public String getLoggerFactoryMethodName() {
-			return "org.apache.commons.logging.LogFactory.getLog";
-		}
-		
-		@Override public JCExpression createFactoryParameter(JavacNode typeNode, String typeName) {
-			return chainDotsString(typeNode.getTreeMaker(), typeNode, typeName + ".class");
-		}
-	};
-	
 	/**
 	 * Handles the {@link lombok.commons.Log} annotation for javac.
 	 */
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleCommonsLog implements JavacAnnotationHandler<lombok.commons.Log> {
 		@Override public boolean handle(AnnotationValues<lombok.commons.Log> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			return processAnnotation(COMMONS, annotation, annotationNode);
+			return processAnnotation(LoggingFramework.COMMONS, annotation, annotationNode);
 		}
 	}
-	
-	// private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger("TargetType");
-	private static LoggingFramework JUL = new LoggingFramework() {
-		@Override public Class<? extends Annotation> getAnnotationClass() {
-			return lombok.jul.Log.class;
-		}
-		
-		@Override public String getLoggerTypeName() {
-			return "java.util.logging.Logger";
-		}
-		
-		@Override public String getLoggerFactoryMethodName() {
-			return "java.util.logging.Logger.getLogger";
-		}
-		
-		@Override public JCExpression createFactoryParameter(JavacNode typeNode, String typeName) {
-			return typeNode.getTreeMaker().Literal(typeName);
-		}
-	};
 	
 	/**
 	 * Handles the {@link lombok.jul.Log} annotation for javac.
@@ -172,28 +127,9 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleJulLog implements JavacAnnotationHandler<lombok.jul.Log> {
 		@Override public boolean handle(AnnotationValues<lombok.jul.Log> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			return processAnnotation(JUL, annotation, annotationNode);
+			return processAnnotation(LoggingFramework.JUL, annotation, annotationNode);
 		}
 	}	
-	
-	// private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(TargetType.class);
-	private static LoggingFramework LOG4J = new LoggingFramework() {
-		@Override public Class<? extends Annotation> getAnnotationClass() {
-			return lombok.jul.Log.class;
-		}
-		
-		@Override public String getLoggerTypeName() {
-			return "org.apache.log4j.Logger";
-		}
-		
-		@Override public String getLoggerFactoryMethodName() {
-			return "org.apache.log4j.Logger.getLogger";
-		}
-		
-		@Override public JCExpression createFactoryParameter(JavacNode typeNode, String typeName) {
-			return chainDotsString(typeNode.getTreeMaker(), typeNode, typeName + ".class");
-		}
-	};
 	
 	/**
 	 * Handles the {@link lombok.log4j.Log} annotation for javac.
@@ -201,28 +137,9 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleLog4jLog implements JavacAnnotationHandler<lombok.log4j.Log> {
 		@Override public boolean handle(AnnotationValues<lombok.log4j.Log> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			return processAnnotation(LOG4J, annotation, annotationNode);
+			return processAnnotation(LoggingFramework.LOG4J, annotation, annotationNode);
 		}
 	}
-	
-	// private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TargetType.class);
-	private static LoggingFramework SLF4J = new LoggingFramework() {
-		@Override public Class<? extends Annotation> getAnnotationClass() {
-			return lombok.slf4j.Log.class;
-		}
-		
-		@Override public String getLoggerTypeName() {
-			return "org.slf4j.Logger";
-		}
-		
-		@Override public String getLoggerFactoryMethodName() {
-			return "org.slf4j.LoggerFactory.getLogger";
-		}
-		
-		@Override public JCExpression createFactoryParameter(JavacNode typeNode, String typeName) {
-			return chainDotsString(typeNode.getTreeMaker(), typeNode, typeName + ".class");
-		}
-	};
 	
 	/**
 	 * Handles the {@link lombok.slf4j.Log} annotation for javac.
@@ -230,7 +147,53 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleSlf4jLog implements JavacAnnotationHandler<lombok.slf4j.Log> {
 		@Override public boolean handle(AnnotationValues<lombok.slf4j.Log> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			return processAnnotation(SLF4J, annotation, annotationNode);
+			return processAnnotation(LoggingFramework.SLF4J, annotation, annotationNode);
+		}
+	}
+	
+	enum LoggingFramework {
+		// private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(TargetType.class);
+		COMMONS(lombok.jul.Log.class, "org.apache.commons.logging.Log", "org.apache.commons.logging.LogFactory.getLog"),
+		
+		// private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger("TargetType");
+		JUL(lombok.jul.Log.class, "java.util.logging.Logger", "java.util.logging.Logger.getLogger") {
+			@Override public JCExpression createFactoryParameter(JavacNode typeNode, String typeName) {
+				return typeNode.getTreeMaker().Literal(typeName);
+			}
+		},
+		
+		// private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(TargetType.class);
+		LOG4J(lombok.jul.Log.class, "org.apache.log4j.Logger", "org.apache.log4j.Logger.getLogger"),
+		
+		// private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TargetType.class);
+		SLF4J(lombok.slf4j.Log.class, "org.slf4j.Logger", "org.slf4j.LoggerFactory.getLogger"),
+		
+		;
+		
+		private final Class<? extends Annotation> annotationClass;
+		private final String loggerTypeName;
+		private final String loggerFactoryName;
+		
+		LoggingFramework(Class<? extends Annotation> annotationClass, String loggerTypeName, String loggerFactoryName) {
+			this.annotationClass = annotationClass;
+			this.loggerTypeName = loggerTypeName;
+			this.loggerFactoryName = loggerFactoryName;
+		}
+		
+		final Class<? extends Annotation> getAnnotationClass() {
+			return annotationClass;
+		}
+		
+		final String getLoggerTypeName() {
+			return loggerTypeName;
+		}
+		
+		final String getLoggerFactoryMethodName() {
+			return loggerFactoryName;
+		}
+		
+		JCExpression createFactoryParameter(JavacNode typeNode, String typeName) {
+			return chainDotsString(typeNode.getTreeMaker(), typeNode, typeName + ".class");
 		}
 	}
 }
