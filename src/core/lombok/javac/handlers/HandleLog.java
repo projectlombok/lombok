@@ -155,10 +155,13 @@ public class HandleLog {
 		// private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(TargetType.class);
 		COMMONS(lombok.jul.Log.class, "org.apache.commons.logging.Log", "org.apache.commons.logging.LogFactory.getLog"),
 		
-		// private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger("TargetType");
+		// private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(TargetType.class.getName());
 		JUL(lombok.jul.Log.class, "java.util.logging.Logger", "java.util.logging.Logger.getLogger") {
 			@Override public JCExpression createFactoryParameter(JavacNode typeNode, String typeName) {
-				return typeNode.getTreeMaker().Literal(typeName);
+				TreeMaker maker = typeNode.getTreeMaker();
+				JCExpression classAccess = super.createFactoryParameter(typeNode, typeName);
+				JCExpression method = maker.Select(classAccess, typeNode.toName("getName"));
+				return maker.Apply(List.<JCExpression>nil(), method, List.<JCExpression>nil());
 			}
 		},
 		

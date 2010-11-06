@@ -42,7 +42,6 @@ import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
-import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
@@ -216,12 +215,23 @@ public class HandleLog {
 		// private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(TargetType.class);
 		COMMONS(lombok.jul.Log.class, "org.apache.commons.logging.Log", "org.apache.commons.logging.LogFactory", "getLog"),
 		
-		// private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger("TargetType");
+		// private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(TargetType.class.getName());
 		JUL(lombok.jul.Log.class, "java.util.logging.Logger", "java.util.logging.Logger", "getLogger") {
 			@Override public Expression createFactoryParameter(String typeName, Annotation source) {
-				Expression current = new StringLiteral(typeName.toCharArray(), source.sourceStart, source.sourceEnd, 0);
-				Eclipse.setGeneratedBy(current, source);
-				return current;
+				int pS = source.sourceStart, pE = source.sourceEnd;
+				long p = (long)pS << 32 | pE;
+				
+				MessageSend factoryParameterCall = new MessageSend();
+				Eclipse.setGeneratedBy(factoryParameterCall, source);
+				
+				factoryParameterCall.receiver = super.createFactoryParameter(typeName, source);
+				factoryParameterCall.selector = "getName".toCharArray();
+				
+				factoryParameterCall.nameSourcePosition = p;
+				factoryParameterCall.sourceStart = pS;
+				factoryParameterCall.sourceEnd = factoryParameterCall.statementEnd = pE;
+				
+				return factoryParameterCall;
 			}
 		},
 		
