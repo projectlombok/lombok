@@ -35,6 +35,7 @@ import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
@@ -261,7 +262,10 @@ public class HandleLog {
 		}
 		
 		Expression createFactoryParameter(String typeName, Annotation source){
-			return createNameReference(typeName + ".class", source);
+			TypeReference type = createTypeReference(typeName, source);
+			ClassLiteralAccess result = new ClassLiteralAccess(source.sourceEnd, type);
+			Eclipse.setGeneratedBy(result, source);
+			return result;
 		};
 	}
 }
