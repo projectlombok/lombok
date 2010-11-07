@@ -31,10 +31,22 @@ import java.util.List;
 
 import lombok.core.DiagnosticsReceiver;
 import lombok.core.PostCompiler;
+import lombok.eclipse.Eclipse;
 
 import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.internal.compiler.ast.ASTNode;
+import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.Expression;
+import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
+import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
+import org.eclipse.jdt.internal.compiler.parser.Parser;
 
 public class PatchFixes {
 	public static int fixRetrieveStartingCatchPosition(int in) {
@@ -78,7 +90,7 @@ public class PatchFixes {
 		boolean isGenerated = internalNode.getClass().getField("$generatedBy").get(internalNode) != null;
 		if (isGenerated) {
 			domNode.getClass().getField("$isGenerated").set(domNode, true);
-			domNode.setFlags(domNode.getFlags() & ~ASTNode.ORIGINAL);
+			domNode.setFlags(domNode.getFlags() & ~org.eclipse.jdt.core.dom.ASTNode.ORIGINAL);
 		}
 	}
 	
@@ -126,5 +138,81 @@ public class PatchFixes {
 	public static BufferedOutputStream runPostCompiler(BufferedOutputStream out, String path, String name) throws IOException {
 		String fileName = path + "/" + name;
 		return new BufferedOutputStream(PostCompiler.wrapOutputStream(out, fileName, DiagnosticsReceiver.CONSOLE));
+	}
+	
+	public static void copyInitializationOfLocalDeclarationForVal(Parser parser) {
+		ASTNode[] astStack;
+		int astPtr;
+		try {
+			Field astStackF = Parser.class.getDeclaredField("astStack");
+			astStackF.setAccessible(true);
+			astStack = (ASTNode[]) astStackF.get(parser);
+			Field astPtrF = Parser.class.getDeclaredField("astPtr");
+			astPtrF.setAccessible(true);
+			astPtr = (Integer)astPtrF.get(parser);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		AbstractVariableDeclaration variableDecl = (AbstractVariableDeclaration) astStack[astPtr];
+		if (!(variableDecl instanceof LocalDeclaration)) return;
+		ASTNode init = variableDecl.initialization;
+		if (init == null) return;
+		if (variableDecl.type instanceof SingleTypeReference) {
+			SingleTypeReference ref = (SingleTypeReference) variableDecl.type;
+			if (ref.token == null || ref.token.length != 3 || ref.token[0] != 'v' || ref.token[1] != 'a' || ref.token[2] != 'l') return;
+		} else return;
+		
+		try {
+			LocalDeclaration.class.getDeclaredField("$initCopy").set(variableDecl, init);
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			// In ecj mode this field isn't there and we don't need the copy anyway, so, we ignore the exception.
+		}
+	}
+	
+	private static Field initCopyField;
+	
+	static {
+		try {
+			initCopyField = LocalDeclaration.class.getDeclaredField("$initCopy");
+		} catch (Throwable t) {
+			 //ignore - no $generatedBy exists when running in ecj.
+		}
+	}
+	
+	public static boolean handleValForLocalDeclaration(LocalDeclaration local, BlockScope scope) {
+		if (local.type instanceof SingleTypeReference) {
+			char[] token = ((SingleTypeReference)local.type).token;
+			if (token == null || token.length != 3) return false;
+			else if (token[0] != 'v' || token[1] != 'a' || token[2] != 'l') return false;
+		} else return false;
+		
+		Expression init = local.initialization;
+		if (init == null && initCopyField != null) {
+			try {
+				init = (Expression) initCopyField.get(local);
+				System.out.println("copy = " + init);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
+		TypeReference replacement = null;
+		if (init != null) {
+			TypeBinding resolved = init.resolveType(scope);
+			if (resolved != null) {
+				replacement = Eclipse.makeType(resolved, local.type, false);
+			}
+		}
+		
+		local.modifiers |= ClassFileConstants.AccFinal;
+		local.type = replacement != null ? replacement : new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, Eclipse.poss(local.type, 3));
+		
+		return false;
+	}
+	
+	public static TypeBinding skipResolveInitializerIfAlreadyCalled(Expression expr, BlockScope scope) {
+		if (expr.resolvedType != null) return expr.resolvedType;
+		return expr.resolveType(scope);
 	}
 }
