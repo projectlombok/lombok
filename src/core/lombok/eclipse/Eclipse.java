@@ -377,6 +377,7 @@ public class Eclipse {
 			if (!Modifier.isPublic(m.getModifiers())) continue;
 			String name = m.getName();
 			List<String> raws = new ArrayList<String>();
+			List<Object> expressionValues = new ArrayList<Object>();
 			List<Object> guesses = new ArrayList<Object>();
 			Expression fullExpression = null;
 			Expression[] expressions = null;
@@ -397,6 +398,7 @@ public class Eclipse {
 					StringBuffer sb = new StringBuffer();
 					ex.print(0, sb);
 					raws.add(sb.toString());
+					expressionValues.add(ex);
 					guesses.add(calculateValue(ex));
 				}
 			}
@@ -404,7 +406,7 @@ public class Eclipse {
 			final Expression fullExpr = fullExpression;
 			final Expression[] exprs = expressions;
 			
-			values.put(name, new AnnotationValue(annotationNode, raws, guesses, isExplicit) {
+			values.put(name, new AnnotationValue(annotationNode, raws, expressionValues, guesses, isExplicit) {
 				@Override public void setError(String message, int valueIdx) {
 					Expression ex;
 					if (valueIdx == -1) ex = fullExpr;

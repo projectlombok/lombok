@@ -90,6 +90,7 @@ public class Javac {
 			String name = m.getName();
 			List<String> raws = new ArrayList<String>();
 			List<Object> guesses = new ArrayList<Object>();
+			List<Object> expressions = new ArrayList<Object>();
 			final List<DiagnosticPosition> positions = new ArrayList<DiagnosticPosition>();
 			boolean isExplicit = false;
 			
@@ -112,17 +113,19 @@ public class Javac {
 					List<JCExpression> elems = ((JCNewArray)rhs).elems;
 					for (JCExpression inner : elems) {
 						raws.add(inner.toString());
+						expressions.add(inner);
 						guesses.add(calculateGuess(inner));
 						positions.add(inner.pos());
 					}
 				} else {
 					raws.add(rhs.toString());
+					expressions.add(rhs);
 					guesses.add(calculateGuess(rhs));
 					positions.add(rhs.pos());
 				}
 			}
 			
-			values.put(name, new AnnotationValue(node, raws, guesses, isExplicit) {
+			values.put(name, new AnnotationValue(node, raws, expressions, guesses, isExplicit) {
 				@Override public void setError(String message, int valueIdx) {
 					if (valueIdx < 0) node.addError(message);
 					else node.addError(message, positions.get(valueIdx));

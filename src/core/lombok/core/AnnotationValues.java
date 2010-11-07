@@ -53,29 +53,20 @@ public class AnnotationValues<A extends Annotation> {
 		/** Guesses for each raw expression. If the raw expression is a literal expression, the guess will
 		 * likely be right. If not, it'll be wrong. */
 		public final List<Object> valueGuesses;
+		
+		/** A list of the actual expressions. List is size 1 unless an array is provided. */
+		public final List<Object> expressions;
+		
 		private final LombokNode<?, ?, ?> node;
 		private final boolean isExplicit;
 		
 		/**
-		 * 'raw' should be the exact expression, for example '5+7', 'AccessLevel.PUBLIC', or 'int.class'.
-		 * 'valueGuess' should be a likely guess at the real value intended.
-		 * 
-		 * For classes, supply the class name (qualified or not) as a string.<br />
-		 * For enums, supply the simple name part (everything after the last dot) as a string.<br />
-		 */
-		public AnnotationValue(LombokNode<?, ?, ?> node, String raw, Object valueGuess, boolean isExplicit) {
-			this.node = node;
-			this.raws = Collections.singletonList(raw);
-			this.valueGuesses = Collections.singletonList(valueGuess);
-			this.isExplicit = isExplicit;
-		}
-		
-		/**
 		 * Like the other constructor, but used for when the annotation method is initialized with an array value.
 		 */
-		public AnnotationValue(LombokNode<?, ?, ?> node, List<String> raws, List<Object> valueGuesses, boolean isExplicit) {
+		public AnnotationValue(LombokNode<?, ?, ?> node, List<String> raws, List<Object> expressions, List<Object> valueGuesses, boolean isExplicit) {
 			this.node = node;
 			this.raws = raws;
+			this.expressions = expressions;
 			this.valueGuesses = valueGuesses;
 			this.isExplicit = isExplicit;
 		}
@@ -310,6 +301,14 @@ public class AnnotationValues<A extends Annotation> {
 		return v == null ? Collections.<String>emptyList() : v.raws;
 	}
 	
+	/**
+	 * Returns the actual expressions used for the provided {@code annotationMethodName}.
+	 */
+	public List<Object> getActualExpressions(String annotationMethodName) {
+		AnnotationValue v = values.get(annotationMethodName);
+		return v == null ? Collections.<Object>emptyList() : v.expressions;
+	}
+	
 	public boolean isExplicit(String annotationMethodName) {
 		AnnotationValue annotationValue = values.get(annotationMethodName);
 		return annotationValue != null && annotationValue.isExplicit();
@@ -322,6 +321,16 @@ public class AnnotationValues<A extends Annotation> {
 	 */
 	public String getRawExpression(String annotationMethodName) {
 		List<String> l = getRawExpressions(annotationMethodName);
+		return l.isEmpty() ? null : l.get(0);
+	}
+	
+	/**
+	 * Convenience method to return the first result in a {@link #getActualExpressions(String)} call.
+	 * 
+	 * You should use this method if the annotation method is not an array type.
+	 */
+	public Object getActualExpression(String annotationMethodName) {
+		List<Object> l = getActualExpressions(annotationMethodName);
 		return l.isEmpty() ? null : l.get(0);
 	}
 	
