@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import lombok.core.AnnotationValues;
 import lombok.core.TypeLibrary;
@@ -476,12 +477,16 @@ public class Eclipse {
 		}
 	}
 	
+	private static Map<ASTNode, ASTNode> generatedNodes = new WeakHashMap<ASTNode, ASTNode>();
+	
 	public static ASTNode getGeneratedBy(ASTNode node) {
-		try {
-			return (ASTNode) generatedByField.get(node);
-		} catch (Exception t) {
-			//ignore - no $generatedBy exists when running in ecj.
-			return null;
+		if (generatedByField != null) {
+			try {
+				return (ASTNode) generatedByField.get(node);
+			} catch (Exception e) {}
+		}
+		synchronized (generatedNodes) {
+			return generatedNodes.get(node);
 		}
 	}
 	
@@ -490,12 +495,15 @@ public class Eclipse {
 	}
 	
 	public static ASTNode setGeneratedBy(ASTNode node, ASTNode source) {
-		try {
-			generatedByField.set(node, source);
-		} catch (Exception t) {
-			//ignore - no $generatedBy exists when running in ecj.
+		if (generatedByField != null) {
+			try {
+				generatedByField.set(node, source);
+				return node;
+			} catch (Exception e) {}
 		}
-		
+		synchronized (generatedNodes) {
+			generatedNodes.put(node, source);
+		}
 		return node;
 	}
 }
