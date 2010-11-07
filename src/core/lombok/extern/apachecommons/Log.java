@@ -70,8 +70,6 @@ import java.lang.annotation.Target;
 public @interface Log {
 	/**
 	 * If you do not want to use the annotated class as the logger parameter, you can specify an alternate class here.
-	 * <br />
-	 * NB: If {@code void.class} is passed, it will be considered the same as specifying no parameter.
 	 */
 	Class<?> value() default void.class;
 }

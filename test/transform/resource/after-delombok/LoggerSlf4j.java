@@ -3,6 +3,6 @@ class LoggerSlf4j {
 }
 class LoggerSlf4jOuter {
 	static class Inner {
-		private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jOuter.Inner.class);
+		private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Inner.class);
 	}
 }

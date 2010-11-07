@@ -26,9 +26,9 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 import java.lang.annotation.Annotation;
 
 import lombok.core.AnnotationValues;
-import lombok.core.AST.Kind;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -37,9 +37,11 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Name;
 
 public class HandleLog {
 	
@@ -50,9 +52,18 @@ public class HandleLog {
 	public static boolean processAnnotation(LoggingFramework framework, AnnotationValues<?> annotation, JavacNode annotationNode) {
 		markAnnotationAsProcessed(annotationNode, framework.getAnnotationClass());
 		
-		String loggingClassName = annotation.getRawExpression("value");
-		if (loggingClassName == null) loggingClassName = "void";
-		if (loggingClassName.endsWith(".class")) loggingClassName = loggingClassName.substring(0, loggingClassName.length() - 6);
+//		String loggingClassName = annotation.getRawExpression("value");
+//		if (loggingClassName == null) loggingClassName = "void";
+//		if (loggingClassName.endsWith(".class")) loggingClassName = loggingClassName.substring(0, loggingClassName.length() - 6);
+		
+		JCExpression annotationValue = (JCExpression) annotation.getActualExpression("value");
+		JCFieldAccess loggingType = null; 
+		if (annotationValue != null) {
+			if (!(annotationValue instanceof JCFieldAccess)) return true;
+			loggingType = (JCFieldAccess) annotationValue;
+			if (!loggingType.name.contentEquals("class")) return true; 
+		}
+		
 		
 		JavacNode typeNode = annotationNode.up();
 		switch (typeNode.getKind()) {
@@ -67,10 +78,10 @@ public class HandleLog {
 				return true;
 			}
 
-			if (loggingClassName.equals("void")) {
-				loggingClassName = getSelfName(typeNode);
+			if (loggingType == null) {
+				loggingType = selfType(typeNode);
 			}
-			createField(framework, typeNode, loggingClassName);
+			createField(framework, typeNode, loggingType);
 			return true;
 		default:
 			annotationNode.addError("@Log is legal only on types.");
@@ -78,29 +89,20 @@ public class HandleLog {
 		}
 	}
 	
-	private static String getSelfName(JavacNode typeNode) {
-		String typeName = ((JCClassDecl) typeNode.get()).name.toString();
-		JavacNode upType = typeNode.up();
-		while (upType.getKind() == Kind.TYPE) {
-			typeName = ((JCClassDecl) upType.get()).name.toString() + "." + typeName;
-			upType = upType.up();
-		}
-		
-		String packageDeclaration = typeNode.getPackageDeclaration();
-		if (packageDeclaration != null) {
-			typeName = packageDeclaration + "." + typeName;
-		}
-		return typeName;
+	private static JCFieldAccess selfType(JavacNode typeNode) {
+		TreeMaker maker = typeNode.getTreeMaker();
+		Name name = ((JCClassDecl) typeNode.get()).name;
+		return maker.Select(maker.Ident(name), typeNode.toName("class"));
 	}
 	
-	private static boolean createField(LoggingFramework framework, JavacNode typeNode, String loggerClassName) {
+	private static boolean createField(LoggingFramework framework, JavacNode typeNode, JCFieldAccess loggingType) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		
 		// 	private static final <loggerType> log = <factoryMethod>(<parameter>);
 		JCExpression loggerType = chainDotsString(maker, typeNode, framework.getLoggerTypeName());
 		JCExpression factoryMethod = chainDotsString(maker, typeNode, framework.getLoggerFactoryMethodName());
 		
-		JCExpression loggerName = framework.createFactoryParameter(typeNode, loggerClassName);
+		JCExpression loggerName = framework.createFactoryParameter(typeNode, loggingType);
 		JCMethodInvocation factoryMethodCall = maker.Apply(List.<JCExpression>nil(), factoryMethod, List.<JCExpression>of(loggerName));
 		
 		JCVariableDecl fieldDecl = maker.VarDef(
@@ -157,10 +159,9 @@ public class HandleLog {
 		
 		// private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(TargetType.class.getName());
 		JUL(lombok.extern.jul.Log.class, "java.util.logging.Logger", "java.util.logging.Logger.getLogger") {
-			@Override public JCExpression createFactoryParameter(JavacNode typeNode, String typeName) {
+			@Override public JCExpression createFactoryParameter(JavacNode typeNode, JCFieldAccess loggingType) {
 				TreeMaker maker = typeNode.getTreeMaker();
-				JCExpression classAccess = super.createFactoryParameter(typeNode, typeName);
-				JCExpression method = maker.Select(classAccess, typeNode.toName("getName"));
+				JCExpression method = maker.Select(loggingType, typeNode.toName("getName"));
 				return maker.Apply(List.<JCExpression>nil(), method, List.<JCExpression>nil());
 			}
 		},
@@ -195,8 +196,8 @@ public class HandleLog {
 			return loggerFactoryName;
 		}
 		
-		JCExpression createFactoryParameter(JavacNode typeNode, String typeName) {
-			return chainDotsString(typeNode.getTreeMaker(), typeNode, typeName + ".class");
+		JCExpression createFactoryParameter(JavacNode typeNode, JCFieldAccess loggingType) {
+			return loggingType;
 		}
 	}
 }

@@ -12,6 +12,6 @@ enum LoggerSlf4jTypesEnumWithElement {
 }
 interface LoggerSlf4jTypesInterfaceOuter {
 	class Inner {
-		private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jTypesInterfaceOuter.Inner.class);
+		private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Inner.class);
 	}
 }

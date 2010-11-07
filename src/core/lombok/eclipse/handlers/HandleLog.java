@@ -28,7 +28,6 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
 import lombok.core.AnnotationValues;
-import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
@@ -42,6 +41,7 @@ import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
@@ -54,10 +54,11 @@ public class HandleLog {
 	}
 	
 	public static boolean processAnnotation(LoggingFramework framework, AnnotationValues<? extends java.lang.annotation.Annotation> annotation, Annotation source, EclipseNode annotationNode) {
-		
-		String loggingClassName = annotation.getRawExpression("value");
-		if (loggingClassName == null) loggingClassName = "void";
-		if (loggingClassName.endsWith(".class")) loggingClassName = loggingClassName.substring(0, loggingClassName.length() - 6);
+		Expression annotationValue = (Expression) annotation.getActualExpression("value");
+		if (annotationValue != null && !(annotationValue instanceof ClassLiteralAccess)) {
+			return true;
+		}
+		ClassLiteralAccess loggingType = (ClassLiteralAccess)annotationValue;
 		
 		EclipseNode owner = annotationNode.up();
 		switch (owner.getKind()) {
@@ -79,11 +80,11 @@ public class HandleLog {
 				return true;
 			}
 			
-			if (loggingClassName.equals("void")) {
-				loggingClassName = getSelfName(owner);
+			if (loggingType == null) {
+				loggingType = selfType(owner, source);
 			}
 			
-			injectField(owner, createField(framework, source, loggingClassName));
+			injectField(owner, createField(framework, source, loggingType));
 			owner.rebuild();
 			return true;
 		default:
@@ -92,27 +93,21 @@ public class HandleLog {
 		}
 	}
 	
-	private static String getSelfName(EclipseNode type) {
-		String typeName = getSingleTypeName(type);
-		EclipseNode upType = type.up();
-		while (upType.getKind() == Kind.TYPE) {
-			typeName = getSingleTypeName(upType) + "." + typeName;
-			upType = upType.up();
-		}
-		String packageDeclaration = type.getPackageDeclaration();
-		if (packageDeclaration != null) {
-			typeName = packageDeclaration + "." + typeName;
-		}
-		return typeName;
-	}
-	
-	private static String getSingleTypeName(EclipseNode type) {
+	private static ClassLiteralAccess selfType(EclipseNode type, Annotation source) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long)pS << 32 | pE;
+
 		TypeDeclaration typeDeclaration = (TypeDeclaration)type.get();
-		char[] rawTypeName = typeDeclaration.name;
-		return rawTypeName == null ? "" : new String(rawTypeName);
+		TypeReference typeReference = new SingleTypeReference(typeDeclaration.name, p);
+		Eclipse.setGeneratedBy(typeReference, source);
+
+		ClassLiteralAccess result = new ClassLiteralAccess(source.sourceEnd, typeReference);
+		Eclipse.setGeneratedBy(result, source);
+		
+		return result;
 	}
 	
-	private static FieldDeclaration createField(LoggingFramework framework, Annotation source, String loggingClassName) {
+	private static FieldDeclaration createField(LoggingFramework framework, Annotation source, ClassLiteralAccess loggingType) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
@@ -131,7 +126,7 @@ public class HandleLog {
 		factoryMethodCall.receiver = createNameReference(framework.getLoggerFactoryTypeName(), source);
 		factoryMethodCall.selector = framework.getLoggerFactoryMethodName().toCharArray();
 		
-		Expression parameter = framework.createFactoryParameter(loggingClassName, source);
+		Expression parameter = framework.createFactoryParameter(loggingType, source);
 		
 		factoryMethodCall.arguments = new Expression[] { parameter };
 		factoryMethodCall.nameSourcePosition = p;
@@ -147,11 +142,19 @@ public class HandleLog {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
-		char[][] typeNameTokens = fromQualifiedName(typeName);
-		long[] pos = new long[typeNameTokens.length];
-		Arrays.fill(pos, p);
+		TypeReference typeReference;
+		if (typeName.contains(".")) {
+			
+			char[][] typeNameTokens = fromQualifiedName(typeName);
+			long[] pos = new long[typeNameTokens.length];
+			Arrays.fill(pos, p);
+			
+			typeReference = new QualifiedTypeReference(typeNameTokens, pos);
+		}
+		else {
+			typeReference = null;
+		}
 		
-		QualifiedTypeReference typeReference = new QualifiedTypeReference(typeNameTokens, pos);
 		Eclipse.setGeneratedBy(typeReference, source);
 		return typeReference;
 	}
@@ -217,14 +220,14 @@ public class HandleLog {
 		
 		// private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(TargetType.class.getName());
 		JUL(lombok.extern.jul.Log.class, "java.util.logging.Logger", "java.util.logging.Logger", "getLogger") {
-			@Override public Expression createFactoryParameter(String typeName, Annotation source) {
+			@Override public Expression createFactoryParameter(ClassLiteralAccess type, Annotation source) {
 				int pS = source.sourceStart, pE = source.sourceEnd;
 				long p = (long)pS << 32 | pE;
 				
 				MessageSend factoryParameterCall = new MessageSend();
 				Eclipse.setGeneratedBy(factoryParameterCall, source);
 				
-				factoryParameterCall.receiver = super.createFactoryParameter(typeName, source);
+				factoryParameterCall.receiver = super.createFactoryParameter(type, source);
 				factoryParameterCall.selector = "getName".toCharArray();
 				
 				factoryParameterCall.nameSourcePosition = p;
@@ -271,9 +274,9 @@ public class HandleLog {
 			return loggerFactoryMethodName;
 		}
 		
-		Expression createFactoryParameter(String typeName, Annotation source){
-			TypeReference type = createTypeReference(typeName, source);
-			ClassLiteralAccess result = new ClassLiteralAccess(source.sourceEnd, type);
+		Expression createFactoryParameter(ClassLiteralAccess loggingType, Annotation source){
+			TypeReference copy = Eclipse.copyType(loggingType.type, source);
+			ClassLiteralAccess result = new ClassLiteralAccess(source.sourceEnd, copy);
 			Eclipse.setGeneratedBy(result, source);
 			return result;
 		};

@@ -23,7 +23,7 @@
   }
 }
 @lombok.extern.slf4j.Log(void.class) class LoggerSlf4jWithClassVoid {
-  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jWithClassVoid.class);
+  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(void.class);
   <clinit>() {
   }
   LoggerSlf4jWithClassVoid() {
