@@ -1,9 +1,6 @@
 class NonNullPlain {
   @lombok.Setter @lombok.NonNull @lombok.Getter int i;
   @lombok.Getter @lombok.Setter @lombok.NonNull String s;
-  NonNullPlain() {
-    super();
-  }
   public @java.lang.SuppressWarnings("all") void setI(final @lombok.NonNull int i) {
     this.i = i;
   }
@@ -17,5 +14,8 @@ class NonNullPlain {
     if ((s == null))
         throw new java.lang.NullPointerException("s");
     this.s = s;
+  }
+  NonNullPlain() {
+    super();
   }
 }

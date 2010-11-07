@@ -5,9 +5,6 @@ class SetterAccessLevel {
   @lombok.Setter(lombok.AccessLevel.PROTECTED) boolean isProtected;
   @lombok.Setter(lombok.AccessLevel.PUBLIC) boolean isPublic;
   @lombok.Setter(value = lombok.AccessLevel.PUBLIC) boolean value;
-  SetterAccessLevel() {
-    super();
-  }
   private @java.lang.SuppressWarnings("all") void setIsPrivate(final boolean isPrivate) {
     this.isPrivate = isPrivate;
   }
@@ -22,5 +19,8 @@ class SetterAccessLevel {
   }
   public @java.lang.SuppressWarnings("all") void setValue(final boolean value) {
     this.value = value;
+  }
+  SetterAccessLevel() {
+    super();
   }
 }

@@ -460,25 +460,42 @@ public class EclipseHandlerUtil {
 			parent.methods = new AbstractMethodDeclaration[1];
 			parent.methods[0] = method;
 		} else {
-			boolean injectionComplete = false;
 			if (method instanceof ConstructorDeclaration) {
 				for (int i = 0 ; i < parent.methods.length ; i++) {
 					if (parent.methods[i] instanceof ConstructorDeclaration &&
 							(parent.methods[i].bits & ASTNode.IsDefaultConstructor) != 0) {
 						EclipseNode tossMe = type.getNodeFor(parent.methods[i]);
-						parent.methods[i] = method;
+						
+						AbstractMethodDeclaration[] withoutGeneratedConstructor = new AbstractMethodDeclaration[parent.methods.length - 1];
+						
+						System.arraycopy(parent.methods, 0, withoutGeneratedConstructor, 0, i);
+						System.arraycopy(parent.methods, i + 1, withoutGeneratedConstructor, i, parent.methods.length - i - 1);
+						
+						parent.methods = withoutGeneratedConstructor;
 						if (tossMe != null) tossMe.up().removeChild(tossMe);
-						injectionComplete = true;
 						break;
 					}
 				}
 			}
-			if (!injectionComplete) {
-				AbstractMethodDeclaration[] newArray = new AbstractMethodDeclaration[parent.methods.length + 1];
-				System.arraycopy(parent.methods, 0, newArray, 0, parent.methods.length);
-				newArray[parent.methods.length] = method;
-				parent.methods = newArray;
+			int insertionPoint;
+			for (insertionPoint = 0; insertionPoint < parent.methods.length; insertionPoint++) {
+				AbstractMethodDeclaration current = parent.methods[insertionPoint];
+				if (current instanceof Clinit) continue;
+				if (method instanceof ConstructorDeclaration) {
+					if (current instanceof ConstructorDeclaration) continue;
+					break;
+				}
+				if (Eclipse.isGenerated(current)) continue;
+				break;
 			}
+			AbstractMethodDeclaration[] newArray = new AbstractMethodDeclaration[parent.methods.length + 1];
+			System.arraycopy(parent.methods, 0, newArray, 0, insertionPoint);
+			if (insertionPoint <= parent.methods.length) {
+				System.arraycopy(parent.methods, insertionPoint, newArray, insertionPoint + 1, parent.methods.length - insertionPoint);
+			}
+			
+			newArray[insertionPoint] = method;
+			parent.methods = newArray;
 		}
 		
 		type.add(method, Kind.METHOD).recursiveSetHandled();
