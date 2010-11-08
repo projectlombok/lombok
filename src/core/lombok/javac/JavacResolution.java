@@ -12,6 +12,7 @@ import javax.tools.DiagnosticListener;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type;
@@ -388,6 +389,22 @@ public class JavacResolution {
 	}
 	
 	private static JCExpression typeToJCTree(Type type, TreeMaker maker, JavacAST ast, boolean allowCompound) throws TypeNotConvertibleException {
+		int dims = 0;
+		Type type0 = type;
+		while (type0 instanceof ArrayType) {
+			dims++;
+			type0 = ((ArrayType)type0).elemtype;
+		}
+		
+		JCExpression result = typeToJCTree0(type0, maker, ast, allowCompound);
+		while (dims > 0) {
+			result = maker.TypeArray(result);
+			dims--;
+		}
+		return result;
+	}
+	
+	private static JCExpression typeToJCTree0(Type type, TreeMaker maker, JavacAST ast, boolean allowCompound) throws TypeNotConvertibleException {
 		// NB: There's such a thing as maker.Type(type), but this doesn't work very well; it screws up anonymous classes, captures, and adds an extra prefix dot for some reason too.
 		//  -- so we write our own take on that here.
 		

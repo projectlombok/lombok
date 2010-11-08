@@ -33,6 +33,7 @@ import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
 @ProviderFor(JavacASTVisitor.class)
@@ -54,6 +55,11 @@ public class HandleVal extends JavacASTAdapter {
 			
 			if (rhsOfEnhancedForLoop == null && local.init == null) {
 				localNode.addError("'val' on a local variable requires an initializer expression");
+				return;
+			}
+			
+			if (local.init instanceof JCNewArray && ((JCNewArray)local.init).elemtype == null) {
+				localNode.addError("'val' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })");
 				return;
 			}
 			
