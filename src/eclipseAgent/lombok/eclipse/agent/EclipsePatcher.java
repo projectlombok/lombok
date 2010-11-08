@@ -282,7 +282,8 @@ public class EclipsePatcher extends Agent {
 		sm.addScript(ScriptBuilder.replaceMethodCall()
 				.target(new MethodTarget(LOCALDECLARATION_SIG, "resolve", "void", BLOCKSCOPE_SIG))
 				.methodToReplace(new Hook(EXPRESSION_SIG, "resolveType", TYPEBINDING_SIG, BLOCKSCOPE_SIG))
-				.replacementMethod(new Hook("lombok.eclipse.agent.PatchFixes", "skipResolveInitializerIfAlreadyCalled", TYPEBINDING_SIG, EXPRESSION_SIG, BLOCKSCOPE_SIG))
+				.requestExtra(StackRequest.THIS)
+				.replacementMethod(new Hook("lombok.eclipse.agent.PatchFixes", "skipResolveInitializerIfAlreadyCalled2", TYPEBINDING_SIG, EXPRESSION_SIG, BLOCKSCOPE_SIG, LOCALDECLARATION_SIG))
 				.build());
 		
 		sm.addScript(ScriptBuilder.exitEarly()

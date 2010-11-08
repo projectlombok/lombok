@@ -268,6 +268,7 @@ public class PatchFixes {
 	}
 	
 	public static boolean handleValForLocalDeclaration(LocalDeclaration local, BlockScope scope) {
+		if (local == null || !LocalDeclaration.class.equals(local.getClass())) return false;
 		boolean decomponent = false;
 		
 		if (local.type instanceof SingleTypeReference) {
@@ -311,6 +312,11 @@ public class PatchFixes {
 	
 	public static TypeBinding skipResolveInitializerIfAlreadyCalled(Expression expr, BlockScope scope) {
 		if (expr.resolvedType != null) return expr.resolvedType;
+		return expr.resolveType(scope);
+	}
+	
+	public static TypeBinding skipResolveInitializerIfAlreadyCalled2(Expression expr, BlockScope scope, LocalDeclaration decl) {
+		if (decl != null && LocalDeclaration.class.equals(decl.getClass()) && expr.resolvedType != null) return expr.resolvedType;
 		return expr.resolveType(scope);
 	}
 }
