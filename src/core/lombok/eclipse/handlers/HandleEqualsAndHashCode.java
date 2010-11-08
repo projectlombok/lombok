@@ -47,6 +47,7 @@ import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
+import org.eclipse.jdt.internal.compiler.ast.InstanceOfExpression;
 import org.eclipse.jdt.internal.compiler.ast.IntLiteral;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
@@ -202,9 +203,13 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 			}
 		}
 		
+		boolean needsCanEqual = false;
 		switch (methodExists("equals", typeNode)) {
 		case NOT_EXISTS:
-			MethodDeclaration equals = createEquals(typeNode, nodesForEquality, callSuper, errorNode.get(), useFieldsDirectly);
+			boolean isFinal = (typeDecl.modifiers & ClassFileConstants.AccFinal) != 0;
+			needsCanEqual = !isDirectDescendantOfObject || !isFinal;
+			
+			MethodDeclaration equals = createEquals(typeNode, nodesForEquality, callSuper, errorNode.get(), useFieldsDirectly, needsCanEqual);
 			injectMethod(typeNode, equals);
 			break;
 		case EXISTS_BY_LOMBOK:
@@ -215,6 +220,19 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 				errorNode.addWarning("Not generating equals(Object other): A method with that name already exists");
 			}
 			break;
+		}
+		
+		if (needsCanEqual) {
+			switch (methodExists("canEqual", typeNode)) {
+			case NOT_EXISTS:
+				MethodDeclaration equals = createCanEqual(typeNode, errorNode.get());
+				injectMethod(typeNode, equals);
+				break;
+			case EXISTS_BY_LOMBOK:
+			case EXISTS_BY_USER:
+			default:
+				break;
+			}
 		}
 		
 		switch (methodExists("hashCode", typeNode)) {
@@ -415,9 +433,10 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		return method;
 	}
 	
-	private MethodDeclaration createEquals(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, boolean useFieldsDirectly) {
+	private MethodDeclaration createEquals(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, boolean useFieldsDirectly, boolean needsCanEqual) {
 		int pS = source.sourceStart; int pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
+		TypeDeclaration typeDecl = (TypeDeclaration)type.get();
 		
 		MethodDeclaration method = new MethodDeclaration(
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
@@ -458,75 +477,36 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 			statements.add(ifOtherEqualsThis);
 		}
 		
-		/* if (o == null) return false; */ {
+		/* if (!(o instanceof MyType) return false; */ {
 			SingleNameReference oRef = new SingleNameReference(new char[] { 'o' }, p);
 			Eclipse.setGeneratedBy(oRef, source);
-			NullLiteral nullLiteral = new NullLiteral(pS, pE);
-			Eclipse.setGeneratedBy(nullLiteral, source);
-			EqualExpression otherEqualsNull = new EqualExpression(oRef, nullLiteral, OperatorIds.EQUAL_EQUAL);
-			Eclipse.setGeneratedBy(otherEqualsNull, source);
+			
+			SingleTypeReference typeReference = new SingleTypeReference(typeDecl.name, p);
+			Eclipse.setGeneratedBy(typeReference, source);
+			
+			InstanceOfExpression instanceOf = new InstanceOfExpression(oRef, typeReference);
+			instanceOf.sourceStart = pS; instanceOf.sourceEnd = pE;
+			Eclipse.setGeneratedBy(instanceOf, source);
+			
+			Expression notInstanceOf = new UnaryExpression(instanceOf, OperatorIds.NOT);
+			Eclipse.setGeneratedBy(notInstanceOf, source);
 			
 			FalseLiteral falseLiteral = new FalseLiteral(pS, pE);
 			Eclipse.setGeneratedBy(falseLiteral, source);
+			
 			ReturnStatement returnFalse = new ReturnStatement(falseLiteral, pS, pE);
 			Eclipse.setGeneratedBy(returnFalse, source);
-			IfStatement ifOtherEqualsNull = new IfStatement(otherEqualsNull, returnFalse, pS, pE);
-			Eclipse.setGeneratedBy(ifOtherEqualsNull, source);
-			statements.add(ifOtherEqualsNull);
+			
+			IfStatement ifNotInstanceOf = new IfStatement(notInstanceOf, returnFalse, pS, pE);
+			Eclipse.setGeneratedBy(ifNotInstanceOf, source);
+			statements.add(ifNotInstanceOf);
 		}
 		
-		/* if (o.getClass() != getClass()) return false; */ {
-			MessageSend otherGetClass = new MessageSend();
-			otherGetClass.sourceStart = pS; otherGetClass.sourceEnd = pE;
-			Eclipse.setGeneratedBy(otherGetClass, source);
-			otherGetClass.receiver = new SingleNameReference(new char[] { 'o' }, p);
-			Eclipse.setGeneratedBy(otherGetClass.receiver, source);
-			otherGetClass.selector = "getClass".toCharArray();
-			MessageSend thisGetClass = new MessageSend();
-			thisGetClass.sourceStart = pS; thisGetClass.sourceEnd = pE;
-			Eclipse.setGeneratedBy(thisGetClass, source);
-			thisGetClass.receiver = new ThisReference(pS, pE);
-			Eclipse.setGeneratedBy(thisGetClass.receiver, source);
-			thisGetClass.selector = "getClass".toCharArray();
-			EqualExpression classesNotEqual = new EqualExpression(otherGetClass, thisGetClass, OperatorIds.NOT_EQUAL);
-			Eclipse.setGeneratedBy(classesNotEqual, source);
-			FalseLiteral falseLiteral = new FalseLiteral(pS, pE);
-			Eclipse.setGeneratedBy(falseLiteral, source);
-			ReturnStatement returnFalse = new ReturnStatement(falseLiteral, pS, pE);
-			Eclipse.setGeneratedBy(returnFalse, source);
-			IfStatement ifClassesNotEqual = new IfStatement(classesNotEqual, returnFalse, pS, pE);
-			Eclipse.setGeneratedBy(ifClassesNotEqual, source);
-			statements.add(ifClassesNotEqual);
-		}
+		char[] otherName = "other".toCharArray();
 		
-		char[] otherN = "other".toCharArray();
-		
-		/* if (!super.equals(o)) return false; */
-		if (callSuper) {
-			MessageSend callToSuper = new MessageSend();
-			callToSuper.sourceStart = pS; callToSuper.sourceEnd = pE;
-			Eclipse.setGeneratedBy(callToSuper, source);
-			callToSuper.receiver = new SuperReference(pS, pE);
-			Eclipse.setGeneratedBy(callToSuper.receiver, source);
-			callToSuper.selector = "equals".toCharArray();
-			SingleNameReference oRef = new SingleNameReference(new char[] { 'o' }, p);
-			Eclipse.setGeneratedBy(oRef, source);
-			callToSuper.arguments = new Expression[] {oRef};
-			Expression superNotEqual = new UnaryExpression(callToSuper, OperatorIds.NOT);
-			Eclipse.setGeneratedBy(superNotEqual, source);
-			FalseLiteral falseLiteral = new FalseLiteral(pS, pE);
-			Eclipse.setGeneratedBy(falseLiteral, source);
-			ReturnStatement returnFalse = new ReturnStatement(falseLiteral, pS, pE);
-			Eclipse.setGeneratedBy(returnFalse, source);
-			IfStatement ifSuperEquals = new IfStatement(superNotEqual, returnFalse, pS, pE);
-			Eclipse.setGeneratedBy(ifSuperEquals, source);
-			statements.add(ifSuperEquals);
-		}
-		
-		TypeDeclaration typeDecl = (TypeDeclaration)type.get();
 		/* MyType<?> other = (MyType<?>) o; */ {
 			if (!fields.isEmpty()) {
-				LocalDeclaration other = new LocalDeclaration(otherN, pS, pE);
+				LocalDeclaration other = new LocalDeclaration(otherName, pS, pE);
 				other.modifiers |= ClassFileConstants.AccFinal;
 				Eclipse.setGeneratedBy(other, source);
 				char[] typeName = typeDecl.name;
@@ -556,11 +536,63 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 			}
 		}
 		
+		/* if (!other.canEqual(this)) return false; */ {
+			if (needsCanEqual) {
+				MessageSend otherCanEqual = new MessageSend();
+				otherCanEqual.sourceStart = pS; otherCanEqual.sourceEnd = pE;
+				Eclipse.setGeneratedBy(otherCanEqual, source);
+				otherCanEqual.receiver = new SingleNameReference(otherName, p);
+				Eclipse.setGeneratedBy(otherCanEqual.receiver, source);
+				otherCanEqual.selector = "canEqual".toCharArray();
+				
+				ThisReference thisReference = new ThisReference(pS, pE);
+				Eclipse.setGeneratedBy(thisReference, source);
+				
+				otherCanEqual.arguments = new Expression[] {thisReference};
+				
+				Expression notOtherCanEqual = new UnaryExpression(otherCanEqual, OperatorIds.NOT);
+				Eclipse.setGeneratedBy(notOtherCanEqual, source);
+				
+				FalseLiteral falseLiteral = new FalseLiteral(pS, pE);
+				Eclipse.setGeneratedBy(falseLiteral, source);
+				
+				ReturnStatement returnFalse = new ReturnStatement(falseLiteral, pS, pE);
+				Eclipse.setGeneratedBy(returnFalse, source);
+				
+				IfStatement ifNotCanEqual = new IfStatement(notOtherCanEqual, returnFalse, pS, pE);
+				Eclipse.setGeneratedBy(ifNotCanEqual, source);
+				
+				statements.add(ifNotCanEqual);
+			}
+		}
+		
+		/* if (!super.equals(o)) return false; */
+		if (callSuper) {
+			MessageSend callToSuper = new MessageSend();
+			callToSuper.sourceStart = pS; callToSuper.sourceEnd = pE;
+			Eclipse.setGeneratedBy(callToSuper, source);
+			callToSuper.receiver = new SuperReference(pS, pE);
+			Eclipse.setGeneratedBy(callToSuper.receiver, source);
+			callToSuper.selector = "equals".toCharArray();
+			SingleNameReference oRef = new SingleNameReference(new char[] { 'o' }, p);
+			Eclipse.setGeneratedBy(oRef, source);
+			callToSuper.arguments = new Expression[] {oRef};
+			Expression superNotEqual = new UnaryExpression(callToSuper, OperatorIds.NOT);
+			Eclipse.setGeneratedBy(superNotEqual, source);
+			FalseLiteral falseLiteral = new FalseLiteral(pS, pE);
+			Eclipse.setGeneratedBy(falseLiteral, source);
+			ReturnStatement returnFalse = new ReturnStatement(falseLiteral, pS, pE);
+			Eclipse.setGeneratedBy(returnFalse, source);
+			IfStatement ifSuperEquals = new IfStatement(superNotEqual, returnFalse, pS, pE);
+			Eclipse.setGeneratedBy(ifSuperEquals, source);
+			statements.add(ifSuperEquals);
+		}
+		
 		for (EclipseNode field : fields) {
 			TypeReference fType = getFieldType(field, useFieldsDirectly);
 			char[] token = fType.getLastToken();
 			Expression thisFieldAccessor = createFieldAccessor(field, useFieldsDirectly, source);
-			Expression otherFieldAccessor = createFieldAccessor(field, useFieldsDirectly, source, otherN);
+			Expression otherFieldAccessor = createFieldAccessor(field, useFieldsDirectly, source, otherName);
 			
 			if (fType.dimensions() == 0 && token != null) {
 				if (Arrays.equals(TypeConstants.FLOAT, token)) {
@@ -589,7 +621,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 					Eclipse.setGeneratedBy(equalsCall, source);
 					equalsCall.receiver = createFieldAccessor(field, useFieldsDirectly, source);
 					equalsCall.selector = "equals".toCharArray();
-					equalsCall.arguments = new Expression[] { createFieldAccessor(field, useFieldsDirectly, source, otherN) };
+					equalsCall.arguments = new Expression[] { createFieldAccessor(field, useFieldsDirectly, source, otherName) };
 					UnaryExpression fieldsNotEqual = new UnaryExpression(equalsCall, OperatorIds.NOT);
 					fieldsNotEqual.sourceStart = pS; fieldsNotEqual.sourceEnd = pE;
 					Eclipse.setGeneratedBy(fieldsNotEqual, source);
@@ -638,6 +670,54 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		method.statements = statements.toArray(new Statement[statements.size()]);
 		return method;
 	}
+	
+	
+	private MethodDeclaration createCanEqual(EclipseNode type, ASTNode source) {
+		/* public boolean canEquals(final java.lang.Object other) {
+		 *     return other instanceof MyType;
+		 * }
+		 */
+		int pS = source.sourceStart; int pE = source.sourceEnd;
+		long p = (long)pS << 32 | pE;
+		
+		char[] otherName = "other".toCharArray();
+		
+		MethodDeclaration method = new MethodDeclaration(
+				((CompilationUnitDeclaration) type.top().get()).compilationResult);
+		Eclipse.setGeneratedBy(method, source);
+		method.modifiers = EclipseHandlerUtil.toEclipseModifier(AccessLevel.PUBLIC);
+		method.returnType = TypeReference.baseTypeReference(TypeIds.T_boolean, 0);
+		method.returnType.sourceStart = pS; method.returnType.sourceEnd = pE;
+		Eclipse.setGeneratedBy(method.returnType, source);
+		method.selector = "canEqual".toCharArray();
+		method.thrownExceptions = null;
+		method.typeParameters = null;
+		method.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
+		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
+		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
+		TypeReference objectRef = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { p, p, p });
+		Eclipse.setGeneratedBy(objectRef, source);
+		method.arguments = new Argument[] {new Argument(otherName, 0, objectRef, Modifier.FINAL)};
+		method.arguments[0].sourceStart = pS; method.arguments[0].sourceEnd = pE;
+		Eclipse.setGeneratedBy(method.arguments[0], source);
+		
+		SingleNameReference otherRef = new SingleNameReference(otherName, p);
+		Eclipse.setGeneratedBy(otherRef, source);
+		
+		SingleTypeReference typeReference = new SingleTypeReference(((TypeDeclaration)type.get()).name, p);
+		Eclipse.setGeneratedBy(typeReference, source);
+		
+		InstanceOfExpression instanceOf = new InstanceOfExpression(otherRef, typeReference);
+		instanceOf.sourceStart = pS; instanceOf.sourceEnd = pE;
+		Eclipse.setGeneratedBy(instanceOf, source);
+		
+		ReturnStatement returnStatement = new ReturnStatement(instanceOf, pS, pE);
+		Eclipse.setGeneratedBy(returnStatement, source);
+		
+		method.statements = new Statement[] {returnStatement};
+		return method;
+	}
+
 	
 	private IfStatement generateCompareFloatOrDouble(Expression thisRef, Expression otherRef, char[] floatOrDouble, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;

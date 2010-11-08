@@ -18,16 +18,19 @@ import lombok.Data;
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
-    if ((o == null))
-        return false;
-    if ((o.getClass() != this.getClass()))
+    if ((! (o instanceof Data1)))
         return false;
     final Data1 other = (Data1) o;
+    if ((! other.canEqual(this)))
+        return false;
     if ((this.getX() != other.getX()))
         return false;
     if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals(other.getName()))))
         return false;
     return true;
+  }
+  public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+    return (other instanceof Data1);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
     final int PRIME = 31;
@@ -59,16 +62,19 @@ import lombok.Data;
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
-    if ((o == null))
-        return false;
-    if ((o.getClass() != this.getClass()))
+    if ((! (o instanceof Data2)))
         return false;
     final Data2 other = (Data2) o;
+    if ((! other.canEqual(this)))
+        return false;
     if ((this.getX() != other.getX()))
         return false;
     if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals(other.getName()))))
         return false;
     return true;
+  }
+  public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+    return (other instanceof Data2);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
     final int PRIME = 31;
@@ -100,9 +106,7 @@ final @Data class Data3 {
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
-    if ((o == null))
-        return false;
-    if ((o.getClass() != this.getClass()))
+    if ((! (o instanceof Data3)))
         return false;
     final Data3 other = (Data3) o;
     if ((this.getX() != other.getX()))
@@ -133,16 +137,19 @@ final @Data @lombok.EqualsAndHashCode(callSuper = true) class Data4 extends java
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
-    if ((o == null))
+    if ((! (o instanceof Data4)))
         return false;
-    if ((o.getClass() != this.getClass()))
+    final Data4 other = (Data4) o;
+    if ((! other.canEqual(this)))
         return false;
     if ((! super.equals(o)))
         return false;
-    final Data4 other = (Data4) o;
     if ((this.getX() != other.getX()))
         return false;
     return true;
+  }
+  public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+    return (other instanceof Data4);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
     final int PRIME = 31;
