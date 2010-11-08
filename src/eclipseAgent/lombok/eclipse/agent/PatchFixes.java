@@ -163,7 +163,7 @@ public class PatchFixes {
 		} else return;
 		
 		try {
-			LocalDeclaration.class.getDeclaredField("$initCopy").set(variableDecl, init);
+			if (initCopyField != null) initCopyField.set(variableDecl, init);
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 			// In ecj mode this field isn't there and we don't need the copy anyway, so, we ignore the exception.
@@ -176,7 +176,7 @@ public class PatchFixes {
 		try {
 			initCopyField = LocalDeclaration.class.getDeclaredField("$initCopy");
 		} catch (Throwable t) {
-			 //ignore - no $generatedBy exists when running in ecj.
+			 //ignore - no $initCopy exists when running in ecj.
 		}
 	}
 	
@@ -191,7 +191,6 @@ public class PatchFixes {
 		if (init == null && initCopyField != null) {
 			try {
 				init = (Expression) initCopyField.get(local);
-				System.out.println("copy = " + init);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
