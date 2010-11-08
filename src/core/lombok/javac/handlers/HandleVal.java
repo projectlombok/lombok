@@ -94,7 +94,10 @@ public class HandleVal extends JavacASTAdapter {
 						// TODO: Fix enhanced for loops - then uncomment a bunch of lines in test/transform/resource/*/ValInFor.java
 					}
 					replacement = JavacResolution.typeToJCTree(type, localNode.getTreeMaker(), localNode.getAst());
-					if (replacement != null) local.vartype = replacement;
+					if (replacement != null) {
+						local.vartype = replacement;
+						localNode.getAst().setChanged();
+					}
 					else local.vartype = oldVarType;
 				} catch (JavacResolution.TypeNotConvertibleException e) {
 					localNode.addError("Cannot use 'val' here because initializer expression does not have a representable type: " + e.getMessage());
