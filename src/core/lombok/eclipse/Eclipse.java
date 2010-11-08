@@ -410,6 +410,7 @@ public class Eclipse {
 		} else {
 			String[] pkg = new String(binding.qualifiedPackageName()).split("\\.");
 			String[] name = new String(binding.qualifiedSourceName()).split("\\.");
+			if (pkg.length == 1 && pkg[0].isEmpty()) pkg = new String[0];
 			parts = new char[pkg.length + name.length][];
 			int ptr;
 			for (ptr = 0; ptr < pkg.length; ptr++) parts[ptr] = pkg[ptr].toCharArray();
