@@ -12,11 +12,13 @@ import javax.tools.DiagnosticListener;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTags;
+import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.Attr;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
@@ -234,63 +236,10 @@ public class JavacResolution {
 			if (copyAt != null) return;
 			copyAt = tree;
 		}
+		
+		@Override public void visitTree(JCTree that) {
+		}
 	}
-	
-//	/**
-//	 * The {@code Env} object primarily tracks legal symbol names. i.e. its the lexical scope. To build it, we need to go from the top and drill down to the current node,
-//	 * updating the {@code Env} object at each step. This TreeVisitor does that. Requires {@code enterTrees} to be called first (this is done before processors run, normally).
-//	 */
-//	private static final class EnvChainer extends JCTree.Visitor {
-//		private Env<AttrContext> env = null;
-//		private Enter enter;
-//		private MemberEnter memberEnter;
-//		private Attr attr;
-//		private JCTree target;
-//		private boolean blocksAreInitializers;
-//		
-//		EnvChainer(Context context) {
-//			this.enter = Enter.instance(context);
-//			this.memberEnter = MemberEnter.instance(context);
-//			this.attr = Attr.instance(context);
-//		}
-//		
-//		Env<AttrContext> get() {
-//			return env;
-//		}
-//		
-//		@Override public void visitTopLevel(JCCompilationUnit tree) {
-//			env = enter.getTopLevelEnv(tree);
-//		}
-//		
-//		@Override public void visitClassDef(JCClassDecl tree) {
-//			// The commented out one leaves the 'lint' field unset, which causes NPEs during attrib. So, we use the other one.
-//			//env = enter.classEnv((JCClassDecl) tree, env);
-//			env = enter.getClassEnv(tree.sym);
-//			blocksAreInitializers = true;
-//		}
-//		
-//		@Override public void visitMethodDef(JCMethodDecl tree) {
-//			env = memberEnter.getMethodEnv(tree, env);
-//			blocksAreInitializers = false;
-//			if (tree.body != null) visitBlock(tree.body);
-//		}
-//		
-//		@Override public void visitBlock(JCBlock tree) {
-//			if (blocksAreInitializers) attr.attribStat(tree, env);
-//			for (JCStatement stat : tree.stats) {
-//				if (stat == target) return;
-//				attr.attribStat(stat, env);
-//			}
-//		}
-//		
-//		@Override public void visitTree(JCTree tree) {
-//			// Do nothing
-//		}
-//		
-//		public void setTarget(JCTree target) {
-//			this.target = target;
-//		}
-//	};
 	
 	public Map<JCTree, JCTree> resolve(JavacNode node) {
 		ArrayDeque<JCTree> stack = new ArrayDeque<JCTree>();
@@ -325,56 +274,24 @@ public class JavacResolution {
 		else throw new IllegalStateException("Called with something that isn't a block, method decl, or variable decl");
 	}
 	
-//	public void resolveUpTo(JavacNode statementNode) {
-//		ArrayDeque<JCTree> stack = new ArrayDeque<JCTree>();
-//		
-//		{
-//			JavacNode n = statementNode;
-//			while (n != null) {
-//				stack.push(n.get());
-//				n = n.up();
-//			}
-//		}
-//		
-//		logDisabler.disableLoggers();
-//		try {
-//			JCTree tree = stack.isEmpty() ? null : stack.pop();
-//			while (!stack.isEmpty()) {
-//				JCTree target = stack.pop();
-//				envChainer.setTarget(target);
-//				tree.accept(envChainer);
-//				tree = target;
-//			}
-//			if (tree != null) {
-//				envChainer.setTarget(null);
-//				tree.accept(envChainer);
-//			}
-//			
-////			System.out.println("ATTRIBSTAT: " + attr.attribStat(statementNode.get(), envChainer.get()));
-////			if (statementNode.get() instanceof JCVariableDecl) {
-////				System.out.println("Force-tribbing expr");
-////				JCExpression init = ((JCVariableDecl)statementNode.get()).init;
-////				System.out.println("ATTRIBEXPR: " + attr.attribExpr(init, envChainer.get(), Type.noType));
-////				System.out.println("TYPE: " + ((JCVariableDecl)statementNode.get()).init.type);
-////			}
-//		} finally {
-//			logDisabler.enableLoggers();
-//		}
-//	}
-//	
-//	public void resolveExpr(JCExpression expr) {
-//		logDisabler.disableLoggers();
-//		try {
-//			attr.attribExpr(expr, envChainer.get(), Type.noType);
-//		} finally {
-//			logDisabler.enableLoggers();
-//		}
-//	}
-	
 	public static class TypeNotConvertibleException extends Exception {
 		public TypeNotConvertibleException(String msg) {
 			super(msg);
 		}
+	}
+	
+	public static Type ifTypeIsIterableToComponent(Type type, JavacAST ast) {
+		Types types = Types.instance(ast.getContext());
+		Symtab syms = Symtab.instance(ast.getContext());
+		Type boundType = types.upperBound(type);
+		Type elemTypeIfArray = types.elemtype(boundType);
+		if (elemTypeIfArray != null) return elemTypeIfArray;
+		
+		Type base = types.asSuper(boundType, syms.iterableType.tsym);
+		if (base == null) return syms.objectType;
+		
+		List<Type> iterableParams = base.allparams();
+		return iterableParams.isEmpty() ? syms.objectType : types.upperBound(iterableParams.head);
 	}
 	
 	public static JCExpression typeToJCTree(Type type, TreeMaker maker, JavacAST ast) throws TypeNotConvertibleException {

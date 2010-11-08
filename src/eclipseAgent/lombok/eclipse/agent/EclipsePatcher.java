@@ -267,6 +267,7 @@ public class EclipsePatcher extends Agent {
 	
 	private static void patchHandleVal(ScriptManager sm, boolean ecj) {
 		final String LOCALDECLARATION_SIG = "org.eclipse.jdt.internal.compiler.ast.LocalDeclaration";
+		final String FOREACHSTATEMENT_SIG = "org.eclipse.jdt.internal.compiler.ast.ForeachStatement";
 		final String EXPRESSION_SIG = "org.eclipse.jdt.internal.compiler.ast.Expression";
 		final String BLOCKSCOPE_SIG = "org.eclipse.jdt.internal.compiler.lookup.BlockScope";
 		final String PARSER_SIG = "org.eclipse.jdt.internal.compiler.parser.Parser";
@@ -278,9 +279,35 @@ public class EclipsePatcher extends Agent {
 				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "handleValForLocalDeclaration", "boolean", LOCALDECLARATION_SIG, BLOCKSCOPE_SIG))
 				.build());
 		
+		sm.addScript(ScriptBuilder.replaceMethodCall()
+				.target(new MethodTarget(LOCALDECLARATION_SIG, "resolve", "void", BLOCKSCOPE_SIG))
+				.methodToReplace(new Hook(EXPRESSION_SIG, "resolveType", TYPEBINDING_SIG, BLOCKSCOPE_SIG))
+				.replacementMethod(new Hook("lombok.eclipse.agent.PatchFixes", "skipResolveInitializerIfAlreadyCalled", TYPEBINDING_SIG, EXPRESSION_SIG, BLOCKSCOPE_SIG))
+				.build());
+		
+		sm.addScript(ScriptBuilder.exitEarly()
+				.target(new MethodTarget(FOREACHSTATEMENT_SIG, "resolve", "void", BLOCKSCOPE_SIG))
+				.request(StackRequest.THIS, StackRequest.PARAM1)
+				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "handleValForForEach", "boolean", FOREACHSTATEMENT_SIG, BLOCKSCOPE_SIG))
+				.build());
+		
+		sm.addScript(ScriptBuilder.replaceMethodCall()
+				.target(new MethodTarget(FOREACHSTATEMENT_SIG, "resolve", "void", BLOCKSCOPE_SIG))
+				.methodToReplace(new Hook(EXPRESSION_SIG, "resolveType", TYPEBINDING_SIG, BLOCKSCOPE_SIG))
+				.replacementMethod(new Hook("lombok.eclipse.agent.PatchFixes", "skipResolveInitializerIfAlreadyCalled", TYPEBINDING_SIG, EXPRESSION_SIG, BLOCKSCOPE_SIG))
+				.build());
+		
 		if (!ecj) {
 			sm.addScript(ScriptBuilder.addField()
 					.fieldName("$initCopy")
+					.fieldType("Lorg/eclipse/jdt/internal/compiler/ast/ASTNode;")
+					.setPublic()
+					.setTransient()
+					.targetClass("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration")
+					.build());
+			
+			sm.addScript(ScriptBuilder.addField()
+					.fieldName("$iterableCopy")
 					.fieldType("Lorg/eclipse/jdt/internal/compiler/ast/ASTNode;")
 					.setPublic()
 					.setTransient()
@@ -292,12 +319,12 @@ public class EclipsePatcher extends Agent {
 					.request(StackRequest.THIS)
 					.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "copyInitializationOfLocalDeclarationForVal", "void", PARSER_SIG))
 					.build());
+			
+			sm.addScript(ScriptBuilder.wrapReturnValue()
+					.target(new MethodTarget(PARSER_SIG, "consumeEnhancedForStatementHeader", "void"))
+					.request(StackRequest.THIS)
+					.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "copyInitializationOfForEachIterable", "void", PARSER_SIG))
+					.build());
 		}
-		
-		sm.addScript(ScriptBuilder.replaceMethodCall()
-				.target(new MethodTarget(LOCALDECLARATION_SIG, "resolve", "void", BLOCKSCOPE_SIG))
-				.methodToReplace(new Hook(EXPRESSION_SIG, "resolveType", TYPEBINDING_SIG, BLOCKSCOPE_SIG))
-				.replacementMethod(new Hook("lombok.eclipse.agent.PatchFixes", "skipResolveInitializerIfAlreadyCalled", TYPEBINDING_SIG, EXPRESSION_SIG, BLOCKSCOPE_SIG))
-				.build());
 	}
 }

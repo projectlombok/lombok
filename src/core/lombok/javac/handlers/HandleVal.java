@@ -64,7 +64,6 @@ public class HandleVal extends JavacASTAdapter {
 			}
 			
 			local.mods.flags |= Flags.FINAL;
-			JCExpression oldVarType = local.vartype;
 			local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
 			
 			Type type;
@@ -89,25 +88,26 @@ public class HandleVal extends JavacASTAdapter {
 					JCExpression replacement;
 					
 					if (rhsOfEnhancedForLoop != null) {
-						localNode.addError("For now 'val' cannot be used in enhanced for loops. Fixing this is a high priority lombok issue though!");
-						return;
-						// TODO: Fix enhanced for loops - then uncomment a bunch of lines in test/transform/resource/*/ValInFor.java
+						Type componentType = JavacResolution.ifTypeIsIterableToComponent(type, localNode.getAst());
+						if (componentType == null) replacement = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
+						else replacement = JavacResolution.typeToJCTree(componentType, localNode.getTreeMaker(), localNode.getAst());
+					} else {
+						replacement = JavacResolution.typeToJCTree(type, localNode.getTreeMaker(), localNode.getAst());
 					}
-					replacement = JavacResolution.typeToJCTree(type, localNode.getTreeMaker(), localNode.getAst());
+					
 					if (replacement != null) {
 						local.vartype = replacement;
 						localNode.getAst().setChanged();
 					}
-					else local.vartype = oldVarType;
+					else local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());;
 				} catch (JavacResolution.TypeNotConvertibleException e) {
 					localNode.addError("Cannot use 'val' here because initializer expression does not have a representable type: " + e.getMessage());
-					local.vartype = oldVarType;
+					local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());;
 				}
 			} catch (RuntimeException e) {
-				local.vartype = oldVarType;
+				local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());;
 				throw e;
 			}
 		}
-		// TODO search for val decls in either kind of for.
 	}
 }

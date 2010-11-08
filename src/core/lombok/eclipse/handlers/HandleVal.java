@@ -26,6 +26,7 @@ import lombok.eclipse.EclipseASTVisitor;
 import lombok.eclipse.EclipseNode;
 
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
+import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.mangosdk.spi.ProviderFor;
@@ -41,7 +42,14 @@ public class HandleVal extends EclipseASTAdapter {
 			if (token == null || token.length != 3) return;
 			else if (token[0] != 'v' || token[1] != 'a' || token[2] != 'l') return;
 			
-			if (local.initialization == null) {
+			boolean variableOfForEach = false;
+			
+			if (localNode.directUp().get() instanceof ForeachStatement) {
+				ForeachStatement fs = (ForeachStatement) localNode.directUp().get();
+				variableOfForEach = fs.elementVariable == local;
+			}
+			
+			if (local.initialization == null && !variableOfForEach) {
 				localNode.addError("'val' on a local variable requires an initializer expression");
 			}
 			
