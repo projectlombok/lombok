@@ -15,11 +15,15 @@ class DataExtended {
 	@java.lang.SuppressWarnings("all")
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
-		if (o == null) return false;
-		if (o.getClass() != this.getClass()) return false;
+		if (!(o instanceof DataExtended)) return false;
 		final DataExtended other = (DataExtended)o;
+		if (!other.canEqual(this)) return false;
 		if (this.getX() != other.getX()) return false;
 		return true;
+	}
+	@java.lang.SuppressWarnings("all")
+	public boolean canEqual(final java.lang.Object other) {
+		return other instanceof DataExtended;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
