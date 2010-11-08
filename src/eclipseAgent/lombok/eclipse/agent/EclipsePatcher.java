@@ -69,7 +69,7 @@ public class EclipsePatcher extends Agent {
 			patchPostCompileHookEcj(sm);
 		}
 		
-		patchEcjTransformers(sm);
+		patchEcjTransformers(sm, ecjOnly);
 		
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
 	}
@@ -256,8 +256,8 @@ public class EclipsePatcher extends Agent {
 				.request(StackRequest.THIS, StackRequest.RETURN_VALUE).build());
 	}
 	
-	private static void patchEcjTransformers(ScriptManager sm) {
-		patchHandleVal(sm);
+	private static void patchEcjTransformers(ScriptManager sm, boolean ecj) {
+		patchHandleVal(sm, ecj);
 	}
 	
 	// Creates a copy of the 'initialization' field on a LocalDeclaration if the type of the LocalDeclaration is 'val', because the completion parser will null this out,
@@ -265,7 +265,7 @@ public class EclipsePatcher extends Agent {
 	// Also patches local declaration to not call .resolveType() on the initializer expression if we've already done so (calling it twice causes weird errors),
 	// and patches .resolve() on LocalDeclaration itself to just-in-time replace the 'val' vartype with the right one.
 	
-	private static void patchHandleVal(ScriptManager sm) {
+	private static void patchHandleVal(ScriptManager sm, boolean ecj) {
 		final String LOCALDECLARATION_SIG = "org.eclipse.jdt.internal.compiler.ast.LocalDeclaration";
 		final String EXPRESSION_SIG = "org.eclipse.jdt.internal.compiler.ast.Expression";
 		final String BLOCKSCOPE_SIG = "org.eclipse.jdt.internal.compiler.lookup.BlockScope";
@@ -278,19 +278,21 @@ public class EclipsePatcher extends Agent {
 				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "handleValForLocalDeclaration", "boolean", LOCALDECLARATION_SIG, BLOCKSCOPE_SIG))
 				.build());
 		
-		sm.addScript(ScriptBuilder.addField()
-				.fieldName("$initCopy")
-				.fieldType("Lorg/eclipse/jdt/internal/compiler/ast/ASTNode;")
-				.setPublic()
-				.setTransient()
-				.targetClass("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration")
-				.build());
-		
-		sm.addScript(ScriptBuilder.wrapReturnValue()
-				.target(new MethodTarget(PARSER_SIG, "consumeExitVariableWithInitialization", "void"))
-				.request(StackRequest.THIS)
-				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "copyInitializationOfLocalDeclarationForVal", "void", PARSER_SIG))
-				.build());
+		if (!ecj) {
+			sm.addScript(ScriptBuilder.addField()
+					.fieldName("$initCopy")
+					.fieldType("Lorg/eclipse/jdt/internal/compiler/ast/ASTNode;")
+					.setPublic()
+					.setTransient()
+					.targetClass("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration")
+					.build());
+			
+			sm.addScript(ScriptBuilder.wrapReturnValue()
+					.target(new MethodTarget(PARSER_SIG, "consumeExitVariableWithInitialization", "void"))
+					.request(StackRequest.THIS)
+					.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "copyInitializationOfLocalDeclarationForVal", "void", PARSER_SIG))
+					.build());
+		}
 		
 		sm.addScript(ScriptBuilder.replaceMethodCall()
 				.target(new MethodTarget(LOCALDECLARATION_SIG, "resolve", "void", BLOCKSCOPE_SIG))

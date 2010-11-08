@@ -311,28 +311,50 @@ public class Eclipse {
 	}
 	
 	public static TypeReference makeType(TypeBinding binding, ASTNode pos, boolean allowCompound) {
+		int dims = binding.dimensions();
+		binding = binding.leafComponentType();
+		
 		// Primitives
+		
+		char[] base = null;
+		
 		switch (binding.id) {
 		case TypeIds.T_int:
-			return new SingleTypeReference(TypeConstants.INT, pos(pos));
+			base = TypeConstants.INT;
+			break;
 		case TypeIds.T_long:
-			return new SingleTypeReference(TypeConstants.LONG, pos(pos));
+			base = TypeConstants.LONG;
+			break;
 		case TypeIds.T_short:
-			return new SingleTypeReference(TypeConstants.SHORT, pos(pos));
+			base = TypeConstants.SHORT;
+			break;
 		case TypeIds.T_byte:
-			return new SingleTypeReference(TypeConstants.BYTE, pos(pos));
+			base = TypeConstants.BYTE;
+			break;
 		case TypeIds.T_double:
-			return new SingleTypeReference(TypeConstants.DOUBLE, pos(pos));
+			base = TypeConstants.DOUBLE;
+			break;
 		case TypeIds.T_float:
-			return new SingleTypeReference(TypeConstants.FLOAT, pos(pos));
+			base = TypeConstants.FLOAT;
+			break;
 		case TypeIds.T_boolean:
-			return new SingleTypeReference(TypeConstants.BOOLEAN, pos(pos));
-		case TypeIds.T_void:
-			return new SingleTypeReference(TypeConstants.VOID, pos(pos));
+			base = TypeConstants.BOOLEAN;
+			break;
 		case TypeIds.T_char:
-			return new SingleTypeReference(TypeConstants.CHAR, pos(pos));
+			base = TypeConstants.CHAR;
+			break;
+		case TypeIds.T_void:
+			base = TypeConstants.VOID;
+			break;
 		case TypeIds.T_null:
 			return null;
+		}
+		
+		if (base != null) {
+			if (dims > 0) {
+				return new ArrayTypeReference(base, dims, pos(pos));
+			}
+			return new SingleTypeReference(base, pos(pos));
 		}
 		
 		if (binding.isAnonymousType()) {
@@ -405,8 +427,6 @@ public class Eclipse {
 				}
 			}
 		}
-		
-		int dims = binding.dimensions();
 		
 		if (params.length > 0) {
 			if (parts.length > 1) {
