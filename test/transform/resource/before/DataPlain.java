@@ -7,3 +7,15 @@ import lombok.Data;
 	final int x;
 	String name;
 }
+final @Data class Data3 {
+	final int x;
+	String name;
+}
+@Data 
+@lombok.EqualsAndHashCode(callSuper=true)
+final class Data4 extends java.util.Timer {
+	final int x;
+	Data4() {
+		super();
+	}
+}

@@ -19,13 +19,17 @@ class DataWithGetter {
 	@java.lang.SuppressWarnings("all")
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
-		if (o == null) return false;
-		if (o.getClass() != this.getClass()) return false;
+		if (!(o instanceof DataWithGetter)) return false;
 		final DataWithGetter other = (DataWithGetter)o;
+		if (!other.canEqual(this)) return false;
 		if (this.getX() != other.getX()) return false;
 		if (this.getY() != other.getY()) return false;
 		if (this.getZ() == null ? other.getZ() != null : !this.getZ().equals(other.getZ())) return false;
 		return true;
+	}
+	@java.lang.SuppressWarnings("all")
+	public boolean canEqual(final java.lang.Object other) {
+		return other instanceof DataWithGetter;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")

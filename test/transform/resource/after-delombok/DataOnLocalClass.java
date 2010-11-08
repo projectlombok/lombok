@@ -23,12 +23,16 @@ class DataOnLocalClass1 {
 			@java.lang.SuppressWarnings("all")
 			public boolean equals(final java.lang.Object o) {
 				if (o == this) return true;
-				if (o == null) return false;
-				if (o.getClass() != this.getClass()) return false;
+				if (!(o instanceof Local)) return false;
 				final Local other = (Local)o;
+				if (!other.canEqual(this)) return false;
 				if (this.getX() != other.getX()) return false;
 				if (this.getName() == null ? other.getName() != null : !this.getName().equals(other.getName())) return false;
 				return true;
+			}
+			@java.lang.SuppressWarnings("all")
+			public boolean canEqual(final java.lang.Object other) {
+				return other instanceof Local;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
@@ -73,11 +77,15 @@ class DataOnLocalClass2 {
 				@java.lang.SuppressWarnings("all")
 				public boolean equals(final java.lang.Object o) {
 					if (o == this) return true;
-					if (o == null) return false;
-					if (o.getClass() != this.getClass()) return false;
+					if (!(o instanceof InnerLocal)) return false;
 					final InnerLocal other = (InnerLocal)o;
+					if (!other.canEqual(this)) return false;
 					if (this.getName() == null ? other.getName() != null : !this.getName().equals(other.getName())) return false;
 					return true;
+				}
+				@java.lang.SuppressWarnings("all")
+				public boolean canEqual(final java.lang.Object other) {
+					return other instanceof InnerLocal;
 				}
 				@java.lang.Override
 				@java.lang.SuppressWarnings("all")
@@ -105,11 +113,15 @@ class DataOnLocalClass2 {
 			@java.lang.SuppressWarnings("all")
 			public boolean equals(final java.lang.Object o) {
 				if (o == this) return true;
-				if (o == null) return false;
-				if (o.getClass() != this.getClass()) return false;
+				if (!(o instanceof Local)) return false;
 				final Local other = (Local)o;
+				if (!other.canEqual(this)) return false;
 				if (this.getX() != other.getX()) return false;
 				return true;
+			}
+			@java.lang.SuppressWarnings("all")
+			public boolean canEqual(final java.lang.Object other) {
+				return other instanceof Local;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
