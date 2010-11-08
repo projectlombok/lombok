@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,7 @@ import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCIf;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
@@ -115,7 +116,8 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 		List<JCStatement> cleanupCall = List.<JCStatement>of(maker.Exec(
 				maker.Apply(List.<JCExpression>nil(), cleanupMethod, List.<JCExpression>nil())));
 		
-		JCBinary isNull = maker.Binary(JCTree.NE, maker.Ident(decl.name), maker.Literal(TypeTags.BOT, null));
+		JCMethodInvocation preventNullAnalysis = maker.Apply(List.<JCExpression>nil(), JavacHandlerUtil.chainDotsString(maker, annotationNode, "lombok.Lombok.preventNullAnalysis"), List.<JCExpression>of(maker.Ident(decl.name)));
+		JCBinary isNull = maker.Binary(JCTree.NE, preventNullAnalysis, maker.Literal(TypeTags.BOT, null));
 		
 		JCIf ifNotNullCleanup = maker.If(isNull, maker.Block(0, cleanupCall), null);
 		

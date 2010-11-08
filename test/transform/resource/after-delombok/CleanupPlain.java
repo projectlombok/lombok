@@ -9,12 +9,12 @@ class CleanupPlain {
 					out.flush();
 				}
 			} finally {
-				if (out != null) {
+				if (lombok.Lombok.preventNullAnalysis(out) != null) {
 					out.close();
 				}
 			}
 		} finally {
-			if (in != null) {
+			if (lombok.Lombok.preventNullAnalysis(in) != null) {
 				in.close();
 			}
 		}

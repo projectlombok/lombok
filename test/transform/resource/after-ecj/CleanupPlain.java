@@ -18,7 +18,7 @@ class CleanupPlain {
           }
         finally
           {
-            if ((out != null))
+            if ((lombok.Lombok.preventNullAnalysis(out) != null))
                 {
                   out.close();
                 }
@@ -26,7 +26,7 @@ class CleanupPlain {
       }
     finally
       {
-        if ((in != null))
+        if ((lombok.Lombok.preventNullAnalysis(in) != null))
             {
               in.close();
             }

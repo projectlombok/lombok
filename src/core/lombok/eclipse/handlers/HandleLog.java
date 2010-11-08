@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
+ * Copyright © 2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,8 +38,6 @@ import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
-import org.eclipse.jdt.internal.compiler.ast.NameReference;
-import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
@@ -157,21 +155,6 @@ public class HandleLog {
 		
 		Eclipse.setGeneratedBy(typeReference, source);
 		return typeReference;
-	}
-	
-	private static NameReference createNameReference(String name, Annotation source) {
-		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
-		
-		char[][] nameTokens = fromQualifiedName(name);
-		long[] pos = new long[nameTokens.length];
-		Arrays.fill(pos, p);
-		
-		QualifiedNameReference nameReference = new QualifiedNameReference(nameTokens, pos, pS, pE);
-		nameReference.statementEnd = pE;
-
-		Eclipse.setGeneratedBy(nameReference, source);
-		return nameReference;
 	}
 	
 	/**
