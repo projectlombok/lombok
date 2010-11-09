@@ -356,24 +356,26 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		}
 		
 		/* MyType<?> other = (MyType<?>) o; */ {
-			final JCExpression selfType1, selfType2;
-			List<JCExpression> wildcards1 = List.nil();
-			List<JCExpression> wildcards2 = List.nil();
-			for (int i = 0 ; i < type.typarams.length() ; i++) {
-				wildcards1 = wildcards1.append(maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null));
-				wildcards2 = wildcards2.append(maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null));
+			if (!fields.isEmpty() || needsCanEqual) {
+				final JCExpression selfType1, selfType2;
+				List<JCExpression> wildcards1 = List.nil();
+				List<JCExpression> wildcards2 = List.nil();
+				for (int i = 0 ; i < type.typarams.length() ; i++) {
+					wildcards1 = wildcards1.append(maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null));
+					wildcards2 = wildcards2.append(maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null));
+				}
+				
+				if (type.typarams.isEmpty()) {
+					selfType1 = maker.Ident(type.name);
+					selfType2 = maker.Ident(type.name);
+				} else {
+					selfType1 = maker.TypeApply(maker.Ident(type.name), wildcards1);
+					selfType2 = maker.TypeApply(maker.Ident(type.name), wildcards2);
+				}
+				
+				statements = statements.append(
+						maker.VarDef(maker.Modifiers(Flags.FINAL), otherName, selfType1, maker.TypeCast(selfType2, maker.Ident(oName))));
 			}
-			
-			if (type.typarams.isEmpty()) {
-				selfType1 = maker.Ident(type.name);
-				selfType2 = maker.Ident(type.name);
-			} else {
-				selfType1 = maker.TypeApply(maker.Ident(type.name), wildcards1);
-				selfType2 = maker.TypeApply(maker.Ident(type.name), wildcards2);
-			}
-			
-			statements = statements.append(
-					maker.VarDef(maker.Modifiers(Flags.FINAL), otherName, selfType1, maker.TypeCast(selfType2, maker.Ident(oName))));
 		}
 		
 		/* if (!other.canEqual(this)) return false; */ {
