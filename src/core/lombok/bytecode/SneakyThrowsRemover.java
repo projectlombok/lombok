@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,8 @@
  */
 package lombok.bytecode;
 
+import static lombok.bytecode.PostCompilationUtil.*;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import lombok.core.DiagnosticsReceiver;
@@ -31,45 +33,14 @@ import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.commons.JSRInlinerAdapter;
 
 @ProviderFor(PostCompilerTransformation.class)
 public class SneakyThrowsRemover implements PostCompilerTransformation {
-	private static class FixedClassWriter extends ClassWriter {
-		FixedClassWriter(ClassReader classReader, int flags) {
-			super(classReader, flags);
-		}
-		
-		@Override protected String getCommonSuperClass(String type1, String type2) {
-			//By default, ASM will attempt to live-load the class types, which will fail if meddling with classes in an
-			//environment with custom classloaders, such as Equinox. It's just an optimization; returning Object is always legal.
-			try {
-				return super.getCommonSuperClass(type1, type2);
-			} catch (Exception e) {
-				return "java/lang/Object";
-			}
-		}
-	}
-	
-	protected byte[] fixJSRInlining(byte[] byteCode) {
-		ClassReader reader = new ClassReader(byteCode);
-		ClassWriter writer = new FixedClassWriter(reader, 0);
-		
-		ClassVisitor visitor = new ClassAdapter(writer) {
-			@Override public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-				return new JSRInlinerAdapter(super.visitMethod(access, name, desc, signature, exceptions), access, name, desc, signature, exceptions);
-			}
-		};
-		
-		reader.accept(visitor, 0);
-		return writer.toByteArray();
-	}
 	
 	@Override public byte[] applyTransformations(byte[] original, String fileName, DiagnosticsReceiver diagnostics) {
 		if (!new ClassFileMetaData(original).usesMethod("lombok/Lombok", "sneakyThrow")) return null;

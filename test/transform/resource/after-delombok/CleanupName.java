@@ -4,7 +4,7 @@ class CleanupName {
 		try {
 			System.out.println(o);
 		} finally {
-			if (o != null) {
+			if (lombok.Lombok.preventNullAnalysis(o) != null) {
 				o.toString();
 			}
 		}
@@ -14,7 +14,7 @@ class CleanupName {
 		try {
 			System.out.println(o);
 		} finally {
-			if (o != null) {
+			if (lombok.Lombok.preventNullAnalysis(o) != null) {
 				o.toString();
 			}
 		}

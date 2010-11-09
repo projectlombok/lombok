@@ -10,7 +10,7 @@ class CleanupName {
       }
     finally
       {
-        if ((o != null))
+        if ((lombok.Lombok.preventNullAnalysis(o) != null))
             {
               o.toString();
             }
@@ -24,7 +24,7 @@ class CleanupName {
       }
     finally
       {
-        if ((o != null))
+        if ((lombok.Lombok.preventNullAnalysis(o) != null))
             {
               o.toString();
             }
