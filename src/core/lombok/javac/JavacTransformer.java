@@ -25,8 +25,6 @@ import java.util.ArrayList;
 
 import javax.annotation.processing.Messager;
 
-import com.sun.tools.javac.comp.Enter;
-import com.sun.tools.javac.comp.MemberEnter;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -64,10 +62,6 @@ public class JavacTransformer {
 			ast.traverse(new AnnotationVisitor());
 			handlers.callASTVisitors(ast);
 		}
-		
-		context.put(Enter.class, (Enter) null);
-		context.put(MemberEnter.class, (MemberEnter) null);
-		Enter.instance(context).main(compilationUnits);
 		
 		handlers.setPostResolutionPhase();
 		for (JavacAST ast : asts) {

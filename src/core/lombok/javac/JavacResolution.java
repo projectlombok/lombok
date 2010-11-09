@@ -11,7 +11,6 @@ import javax.lang.model.type.TypeKind;
 import javax.tools.DiagnosticListener;
 
 import com.sun.tools.javac.code.BoundKind;
-import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type.ArrayType;
