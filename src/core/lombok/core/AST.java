@@ -65,7 +65,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 		this.imports = Collections.unmodifiableCollection(new ArrayList<String>(imports));
 	}
 	
-	protected void setChanged() {
+	public void setChanged() {
 		this.changed = true;
 	}
 	

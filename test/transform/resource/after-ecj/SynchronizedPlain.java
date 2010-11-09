@@ -19,6 +19,8 @@ class SynchronizedPlain1 {
 }
 class SynchronizedPlain2 {
   private static final @java.lang.SuppressWarnings("all") java.lang.Object $LOCK = new java.lang.Object[0];
+  <clinit>() {
+  }
   SynchronizedPlain2() {
     super();
   }

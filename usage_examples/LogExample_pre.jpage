@@ -1,0 +1,17 @@
+import lombok.extern.slf4j.Log;
+
+@Log
+public class LogExample {
+	
+	public static void main(String... args) {
+		log.error("Something's wrong here");
+	}
+}
+
+@Log(java.util.List.class)
+public class LogExampleOther {
+	
+	public static void main(String... args) {
+		log.warn("Something might be wrong here");
+	}
+}

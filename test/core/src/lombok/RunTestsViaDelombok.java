@@ -51,6 +51,9 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 			}
 		});
 		
-		delombok.delombok(file.getAbsolutePath(), result);
+		delombok.addFile(file.getParentFile(), file.getName());
+		delombok.setSourcepath(file.getParentFile().getAbsolutePath());
+		delombok.setWriter(result);
+		delombok.delombok();
 	}
 }

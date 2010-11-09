@@ -4,7 +4,9 @@ class CleanupName {
 		try {
 			System.out.println(o);
 		} finally {
-			o.toString();
+			if (o != null) {
+				o.toString();
+			}
 		}
 	}
 	void test2() {
@@ -12,7 +14,9 @@ class CleanupName {
 		try {
 			System.out.println(o);
 		} finally {
-			o.toString();
+			if (o != null) {
+				o.toString();
+			}
 		}
 	}
 }

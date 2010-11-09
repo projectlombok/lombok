@@ -18,12 +18,18 @@ class CleanupPlain {
           }
         finally
           {
-            out.close();
+            if ((out != null))
+                {
+                  out.close();
+                }
           }
       }
     finally
       {
-        in.close();
+        if ((in != null))
+            {
+              in.close();
+            }
       }
   }
 }

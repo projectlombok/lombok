@@ -10,7 +10,10 @@ class CleanupName {
       }
     finally
       {
-        o.toString();
+        if ((o != null))
+            {
+              o.toString();
+            }
       }
   }
   void test2() {
@@ -21,7 +24,10 @@ class CleanupName {
       }
     finally
       {
-        o.toString();
+        if ((o != null))
+            {
+              o.toString();
+            }
       }
   }
 }

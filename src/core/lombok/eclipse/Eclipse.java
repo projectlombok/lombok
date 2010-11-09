@@ -25,10 +25,12 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import lombok.core.AnnotationValues;
 import lombok.core.TypeLibrary;
@@ -62,7 +64,13 @@ import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Wildcard;
+import org.eclipse.jdt.internal.compiler.lookup.CaptureBinding;
+import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
+import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
+import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 import org.osgi.framework.Bundle;
 
 public class Eclipse {
@@ -155,7 +163,6 @@ public class Eclipse {
 		}
 		return result;
 	}
-	
 	
 	/**
 	 * You can't share TypeParameter objects or bad things happen; for example, one 'T' resolves differently
@@ -292,6 +299,159 @@ public class Eclipse {
 		return ref;
 	}
 	
+	private static long pos(ASTNode node) {
+		return ((long) node.sourceStart << 32) | (node.sourceEnd & 0xFFFFFFFFL);
+	}
+	
+	public static long[] poss(ASTNode node, int repeat) {
+		long p = ((long) node.sourceStart << 32) | (node.sourceEnd & 0xFFFFFFFFL);
+		long[] out = new long[repeat];
+		Arrays.fill(out, p);
+		return out;
+	}
+	
+	public static TypeReference makeType(TypeBinding binding, ASTNode pos, boolean allowCompound) {
+		int dims = binding.dimensions();
+		binding = binding.leafComponentType();
+		
+		// Primitives
+		
+		char[] base = null;
+		
+		switch (binding.id) {
+		case TypeIds.T_int:
+			base = TypeConstants.INT;
+			break;
+		case TypeIds.T_long:
+			base = TypeConstants.LONG;
+			break;
+		case TypeIds.T_short:
+			base = TypeConstants.SHORT;
+			break;
+		case TypeIds.T_byte:
+			base = TypeConstants.BYTE;
+			break;
+		case TypeIds.T_double:
+			base = TypeConstants.DOUBLE;
+			break;
+		case TypeIds.T_float:
+			base = TypeConstants.FLOAT;
+			break;
+		case TypeIds.T_boolean:
+			base = TypeConstants.BOOLEAN;
+			break;
+		case TypeIds.T_char:
+			base = TypeConstants.CHAR;
+			break;
+		case TypeIds.T_void:
+			base = TypeConstants.VOID;
+			break;
+		case TypeIds.T_null:
+			return null;
+		}
+		
+		if (base != null) {
+			if (dims > 0) {
+				return new ArrayTypeReference(base, dims, pos(pos));
+			}
+			return new SingleTypeReference(base, pos(pos));
+		}
+		
+		if (binding.isAnonymousType()) {
+			ReferenceBinding ref = (ReferenceBinding)binding;
+			ReferenceBinding[] supers = ref.superInterfaces();
+			if (supers == null || supers.length == 0) supers = new ReferenceBinding[] {ref.superclass()};
+			if (supers[0] == null) return new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(pos, 3));
+			return makeType(supers[0], pos, false);
+		}
+		
+		if (binding instanceof CaptureBinding) {
+			return makeType(((CaptureBinding)binding).wildcard, pos, allowCompound);
+		}
+		
+		if (binding.isUnboundWildcard()) {
+			if (!allowCompound) {
+				return new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(pos, 3));
+			} else {
+				Wildcard out = new Wildcard(Wildcard.UNBOUND);
+				out.sourceStart = pos.sourceStart;
+				out.sourceEnd = pos.sourceEnd;
+				return out;
+			}
+		}
+		
+		if (binding.isWildcard()) {
+			WildcardBinding wildcard = (WildcardBinding) binding;
+			if (wildcard.boundKind == Wildcard.EXTENDS) {
+				if (!allowCompound) {
+					return makeType(wildcard.bound, pos, false);
+				} else {
+					Wildcard out = new Wildcard(Wildcard.EXTENDS);
+					out.bound = makeType(wildcard.bound, pos, false);
+					out.sourceStart = pos.sourceStart;
+					out.sourceEnd = pos.sourceEnd;
+					return out;
+				}
+			} else if (allowCompound && wildcard.boundKind == Wildcard.SUPER) {
+				Wildcard out = new Wildcard(Wildcard.SUPER);
+				out.bound = makeType(wildcard.bound, pos, false);
+				out.sourceStart = pos.sourceStart;
+				out.sourceEnd = pos.sourceEnd;
+				return out;
+			} else {
+				return new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(pos, 3));
+			}
+		}
+		
+		char[][] parts;
+		
+		if (binding.isLocalType() || binding.isTypeVariable()) {
+			parts = new char[][] { binding.shortReadableName() };
+		} else {
+			String[] pkg = new String(binding.qualifiedPackageName()).split("\\.");
+			String[] name = new String(binding.qualifiedSourceName()).split("\\.");
+			if (pkg.length == 1 && pkg[0].isEmpty()) pkg = new String[0];
+			parts = new char[pkg.length + name.length][];
+			int ptr;
+			for (ptr = 0; ptr < pkg.length; ptr++) parts[ptr] = pkg[ptr].toCharArray();
+			for (; ptr < pkg.length + name.length; ptr++) parts[ptr] = name[ptr - pkg.length].toCharArray();
+		}
+		
+		TypeReference[] params = new TypeReference[0];
+		
+		if (binding instanceof ParameterizedTypeBinding) {
+			ParameterizedTypeBinding paramized = (ParameterizedTypeBinding) binding;
+			if (paramized.arguments != null) {
+				params = new TypeReference[paramized.arguments.length];
+				for (int i = 0; i < params.length; i++) {
+					params[i] = makeType(paramized.arguments[i], pos, true);
+				}
+			}
+		}
+		
+		if (params.length > 0) {
+			if (parts.length > 1) {
+				TypeReference[][] typeArguments = new TypeReference[parts.length][];
+				typeArguments[typeArguments.length - 1] = params;
+				return new ParameterizedQualifiedTypeReference(parts, typeArguments, dims, poss(pos, parts.length));
+			}
+			return new ParameterizedSingleTypeReference(parts[0], params, dims, pos(pos));
+		}
+		
+		if (dims > 0) {
+			if (parts.length > 1) {
+				return new ArrayQualifiedTypeReference(parts, dims, poss(pos, parts.length));
+			}
+			return new ArrayTypeReference(parts[0], dims, pos(pos));
+		}
+		
+		if (parts.length > 1) {
+			return new QualifiedTypeReference(parts, poss(pos, parts.length));
+		}
+		return new SingleTypeReference(parts[0], pos(pos));
+		
+	}
+	
 	public static Annotation[] copyAnnotations(Annotation[] annotations, ASTNode source) {
 		return copyAnnotations(annotations, null, source);
 	}
@@ -377,6 +537,7 @@ public class Eclipse {
 			if (!Modifier.isPublic(m.getModifiers())) continue;
 			String name = m.getName();
 			List<String> raws = new ArrayList<String>();
+			List<Object> expressionValues = new ArrayList<Object>();
 			List<Object> guesses = new ArrayList<Object>();
 			Expression fullExpression = null;
 			Expression[] expressions = null;
@@ -397,6 +558,7 @@ public class Eclipse {
 					StringBuffer sb = new StringBuffer();
 					ex.print(0, sb);
 					raws.add(sb.toString());
+					expressionValues.add(ex);
 					guesses.add(calculateValue(ex));
 				}
 			}
@@ -404,7 +566,7 @@ public class Eclipse {
 			final Expression fullExpr = fullExpression;
 			final Expression[] exprs = expressions;
 			
-			values.put(name, new AnnotationValue(annotationNode, raws, guesses, isExplicit) {
+			values.put(name, new AnnotationValue(annotationNode, raws, expressionValues, guesses, isExplicit) {
 				@Override public void setError(String message, int valueIdx) {
 					Expression ex;
 					if (valueIdx == -1) ex = fullExpr;
@@ -474,12 +636,16 @@ public class Eclipse {
 		}
 	}
 	
+	private static Map<ASTNode, ASTNode> generatedNodes = new WeakHashMap<ASTNode, ASTNode>();
+	
 	public static ASTNode getGeneratedBy(ASTNode node) {
-		try {
-			return (ASTNode) generatedByField.get(node);
-		} catch (Exception t) {
-			//ignore - no $generatedBy exists when running in ecj.
-			return null;
+		if (generatedByField != null) {
+			try {
+				return (ASTNode) generatedByField.get(node);
+			} catch (Exception e) {}
+		}
+		synchronized (generatedNodes) {
+			return generatedNodes.get(node);
 		}
 	}
 	
@@ -488,12 +654,15 @@ public class Eclipse {
 	}
 	
 	public static ASTNode setGeneratedBy(ASTNode node, ASTNode source) {
-		try {
-			generatedByField.set(node, source);
-		} catch (Exception t) {
-			//ignore - no $generatedBy exists when running in ecj.
+		if (generatedByField != null) {
+			try {
+				generatedByField.set(node, source);
+				return node;
+			} catch (Exception e) {}
 		}
-		
+		synchronized (generatedNodes) {
+			generatedNodes.put(node, source);
+		}
 		return node;
 	}
 }

@@ -1,0 +1,2 @@
+3:21 ERROR Cannot use 'val' here because initializer expression does not have a representable type: <nulltype>
+7:21 ERROR Cannot use 'val' here because initializer expression does not have a representable type: Type cannot be resolved

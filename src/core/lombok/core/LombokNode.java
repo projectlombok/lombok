@@ -78,6 +78,10 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 		this.isStructurallySignificant = calculateIsStructurallySignificant(null);
 	}
 	
+	public A getAst() {
+		return ast;
+	}
+	
 	/** {@inheritDoc} */
 	@Override public String toString() {
 		return String.format("NODE %s (%s) %s%s",

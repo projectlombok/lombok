@@ -157,6 +157,8 @@ public class Processor extends AbstractProcessor {
 			ClassLoader unwrapped = (ClassLoader) f.get(processingEnv);
 			ClassLoader wrapped = new WrappingClassLoader(unwrapped);
 			f.set(processingEnv, wrapped);
+		} catch (NoSuchFieldException e) {
+			// Some versions of javac have this (and call close on it), some don't. I guess this one doesn't have it.
 		} catch (Throwable t) {
 			throw Lombok.sneakyThrow(t);
 		}

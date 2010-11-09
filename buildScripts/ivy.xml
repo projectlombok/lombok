@@ -9,10 +9,13 @@
 		<conf name="contrib" />
 	</configurations>
 	<dependencies>
-		<dependency org="projectlombok.org" name="lombok.patcher" rev="0.3" conf="build; runtime->build" />
+		<dependency org="projectlombok.org" name="lombok.patcher" rev="0.4" conf="build; runtime->build" />
 		<dependency org="zwitserloot.com" name="cmdreader" rev="1.2" conf="build->runtime; runtime" />
 		
 		<dependency org="projectlombok.org" name="junit" rev="4.8.1" conf="test" />
+		<dependency org="log4j" name="log4j" rev="1.2.16" conf="test->master"/>
+		<dependency org="commons-logging" name="commons-logging" rev="1.1.1" conf="test->master"/>
+		<dependency org="org.slf4j" name="slf4j-api" rev="1.6.1" conf="test->master"/>
 		
 		<dependency org="org.apache.ant" name="ant" rev="1.8.0" conf="build->master" />
 		<dependency org="projectlombok.org" name="spi" rev="0.2.4" conf="build" />

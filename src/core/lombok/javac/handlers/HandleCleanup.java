@@ -30,10 +30,12 @@ import lombok.javac.JavacNode;
 
 import org.mangosdk.spi.ProviderFor;
 
+import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
+import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
@@ -41,6 +43,7 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.JCTree.JCIf;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
@@ -108,11 +111,16 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 		doAssignmentCheck(annotationNode, tryBlock, decl.name);
 		
 		TreeMaker maker = annotationNode.getTreeMaker();
-		JCFieldAccess cleanupCall = maker.Select(maker.Ident(decl.name), annotationNode.toName(cleanupName));
-		List<JCStatement> finalizerBlock = List.<JCStatement>of(maker.Exec(
-				maker.Apply(List.<JCExpression>nil(), cleanupCall, List.<JCExpression>nil())));
+		JCFieldAccess cleanupMethod = maker.Select(maker.Ident(decl.name), annotationNode.toName(cleanupName));
+		List<JCStatement> cleanupCall = List.<JCStatement>of(maker.Exec(
+				maker.Apply(List.<JCExpression>nil(), cleanupMethod, List.<JCExpression>nil())));
 		
-		JCBlock finalizer = maker.Block(0, finalizerBlock);
+		JCBinary isNull = maker.Binary(JCTree.NE, maker.Ident(decl.name), maker.Literal(TypeTags.BOT, null));
+		
+		JCIf ifNotNullCleanup = maker.If(isNull, maker.Block(0, cleanupCall), null);
+		
+		JCBlock finalizer = maker.Block(0, List.<JCStatement>of(ifNotNullCleanup));
+		
 		newStatements = newStatements.append(maker.Try(maker.Block(0, tryBlock), List.<JCCatch>nil(), finalizer));
 		
 		if (blockNode instanceof JCBlock) {

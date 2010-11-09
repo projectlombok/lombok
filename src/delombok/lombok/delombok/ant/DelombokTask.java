@@ -32,13 +32,54 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
+import org.apache.tools.ant.types.Reference;
 import org.apache.tools.ant.types.resources.FileResource;
 
 public class DelombokTask extends Task {
 	private File fromDir, toDir;
+	private Path classpath;
+	private Path sourcepath;
 	private boolean verbose;
 	private String encoding;
 	private Path path;
+	
+	public void setClasspath(Path classpath) {
+		if (this.classpath == null) {
+			this.classpath = classpath;
+		} else {
+			this.classpath.append(classpath);
+		}
+	}
+	
+	public Path createClasspath() {
+		if (classpath == null) {
+			classpath = new Path(getProject());
+		}
+		return classpath.createPath();
+	}
+	
+	public void setClasspathRef(Reference r) {
+		createClasspath().setRefid(r);
+	}
+	
+	public void setSourcepath(Path sourcepath) {
+		if (this.sourcepath == null) {
+			this.sourcepath = sourcepath;
+		} else {
+			this.sourcepath.append(sourcepath);
+		}
+	}
+	
+	public Path createSourcepath() {
+		if (sourcepath == null) {
+			sourcepath = new Path(getProject());
+		}
+		return sourcepath.createPath();
+	}
+	
+	public void setSourcepathRef(Reference r) {
+		createSourcepath().setRefid(r);
+	}
 	
 	public void setFrom(File dir) {
 		this.fromDir = dir;
@@ -75,9 +116,12 @@ public class DelombokTask extends Task {
 			throw new BuildException("Unknown charset: " + encoding, getLocation());
 		}
 		
+		if (classpath != null) delombok.setClasspath(classpath.toString());
+		if (sourcepath != null) delombok.setSourcepath(sourcepath.toString());
+		
 		delombok.setOutput(toDir);
 		try {
-			if (fromDir != null) delombok.delombok(fromDir);
+			if (fromDir != null) delombok.addDirectory(fromDir);
 			else {
 				Iterator<?> it = path.iterator();
 				while (it.hasNext()) {
@@ -85,12 +129,13 @@ public class DelombokTask extends Task {
 					File baseDir = fileResource.getBaseDir();
 					if (baseDir == null) {
 						File file = fileResource.getFile();
-						delombok.process(false, file.getParentFile(), file.getName());
+						delombok.addFile(file.getParentFile(), file.getName());
 					} else {
-						delombok.process(false, baseDir, fileResource.getName());
+						delombok.addFile(baseDir, fileResource.getName());
 					}
 				}
 			}
+			delombok.delombok();
 		} catch (IOException e) {
 			throw new BuildException("I/O problem during delombok", e, getLocation());
 		}

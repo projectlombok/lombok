@@ -15,11 +15,11 @@
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
-    if ((o == null))
-        return false;
-    if ((o.getClass() != this.getClass()))
+    if ((! (o instanceof DataWithGetterNone)))
         return false;
     final DataWithGetterNone other = (DataWithGetterNone) o;
+    if ((! other.canEqual(this)))
+        return false;
     if ((this.x != other.x))
         return false;
     if ((this.y != other.y))
@@ -27,6 +27,9 @@
     if (((this.z == null) ? (other.z != null) : (! this.z.equals(other.z))))
         return false;
     return true;
+  }
+  public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+    return (other instanceof DataWithGetterNone);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
     final int PRIME = 31;

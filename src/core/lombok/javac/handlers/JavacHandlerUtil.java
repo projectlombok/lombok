@@ -392,13 +392,26 @@ public class JavacHandlerUtil {
 	
 	/**
 	 * Adds the given new field declaration to the provided type AST Node.
+	 * The field carries the &#64;{@link SuppressWarnings}("all") annotation.
+	 * Also takes care of updating the JavacAST.
+	 */
+	public static void injectFieldSuppressWarnings(JavacNode typeNode, JCVariableDecl field) {
+		injectField(typeNode, field, true);
+	}
+	
+	/**
+	 * Adds the given new field declaration to the provided type AST Node.
 	 * 
 	 * Also takes care of updating the JavacAST.
 	 */
 	public static void injectField(JavacNode typeNode, JCVariableDecl field) {
+		injectField(typeNode, field, false);
+	}
+
+	private static void injectField(JavacNode typeNode, JCVariableDecl field, boolean addSuppressWarnings) {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
-		addSuppressWarningsAll(field.mods, typeNode, field.pos);
+		if (addSuppressWarnings) addSuppressWarningsAll(field.mods, typeNode, field.pos);
 		type.defs = type.defs.append(field);
 		
 		typeNode.add(field, Kind.FIELD).recursiveSetHandled();
@@ -475,6 +488,21 @@ public class JavacHandlerUtil {
 		}
 		
 		return e;
+	}
+
+	
+	/**
+	 * In javac, dotted access of any kind, from {@code java.lang.String} to {@code var.methodName}
+	 * is represented by a fold-left of {@code Select} nodes with the leftmost string represented by
+	 * a {@code Ident} node. This method generates such an expression.
+	 * 
+	 * For example, maker.Select(maker.Select(maker.Ident(NAME[java]), NAME[lang]), NAME[String]).
+	 * 
+	 * @see com.sun.tools.javac.tree.JCTree.JCIdent
+	 * @see com.sun.tools.javac.tree.JCTree.JCFieldAccess
+	 */
+	public static JCExpression chainDotsString(TreeMaker maker, JavacNode node, String elems) {
+		return chainDots(maker, node, elems.split("\\."));	
 	}
 	
 	/**

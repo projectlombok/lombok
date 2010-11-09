@@ -23,16 +23,19 @@ class DataOnLocalClass1 {
       public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
         if ((o == this))
             return true;
-        if ((o == null))
-            return false;
-        if ((o.getClass() != this.getClass()))
+        if ((! (o instanceof Local)))
             return false;
         final Local other = (Local) o;
+        if ((! other.canEqual(this)))
+            return false;
         if ((this.getX() != other.getX()))
             return false;
         if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals(other.getName()))))
             return false;
         return true;
+      }
+      public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+        return (other instanceof Local);
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
         final int PRIME = 31;
@@ -69,14 +72,17 @@ class DataOnLocalClass2 {
         public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
           if ((o == this))
               return true;
-          if ((o == null))
-              return false;
-          if ((o.getClass() != this.getClass()))
+          if ((! (o instanceof InnerLocal)))
               return false;
           final InnerLocal other = (InnerLocal) o;
+          if ((! other.canEqual(this)))
+              return false;
           if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals(other.getName()))))
               return false;
           return true;
+        }
+        public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+          return (other instanceof InnerLocal);
         }
         public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
           final int PRIME = 31;
@@ -99,14 +105,17 @@ class DataOnLocalClass2 {
       public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
         if ((o == this))
             return true;
-        if ((o == null))
-            return false;
-        if ((o.getClass() != this.getClass()))
+        if ((! (o instanceof Local)))
             return false;
         final Local other = (Local) o;
+        if ((! other.canEqual(this)))
+            return false;
         if ((this.getX() != other.getX()))
             return false;
         return true;
+      }
+      public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+        return (other instanceof Local);
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
         final int PRIME = 31;

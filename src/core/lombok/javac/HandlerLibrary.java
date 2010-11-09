@@ -183,7 +183,13 @@ public class HandlerLibrary {
 	 */
 	public void callASTVisitors(JavacAST ast) {
 		for (JavacASTVisitor visitor : visitorHandlers) try {
-			ast.traverse(visitor);
+			if (!visitor.isResolutionBased()) ast.traverse(visitor);
+		} catch (Throwable t) {
+			javacError(String.format("Lombok visitor handler %s failed", visitor.getClass()), t);
+		}
+		
+		for (JavacASTVisitor visitor : visitorHandlers) try {
+			if (visitor.isResolutionBased()) ast.traverse(visitor);
 		} catch (Throwable t) {
 			javacError(String.format("Lombok visitor handler %s failed", visitor.getClass()), t);
 		}
