@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -172,7 +173,7 @@ public class Processor extends AbstractProcessor {
 			if (unit != null) units.put(unit, null);
 		}
 		
-		transformer.transform(processingEnv.getContext(), units.keySet());
+		transformer.transform(processingEnv.getContext(), new ArrayList<JCCompilationUnit>(units.keySet()));
 		
 		return false;
 	}

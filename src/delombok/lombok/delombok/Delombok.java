@@ -383,7 +383,8 @@ public class Delombok {
 		compiler.enterTrees(toJavacList(roots));
 		
 		for (JCCompilationUnit unit : roots) {
-			boolean changed = new JavacTransformer(messager).transform(context, Collections.singleton(unit));
+			// Run one single massive transform instead of a lot of singleton calls, as this causes a heck of a lot of refilling of the enter cache.
+			boolean changed = new JavacTransformer(messager).transform(context, Collections.singletonList(unit));
 			DelombokResult result = new DelombokResult(commentsMap.get(unit).comments, unit, force || changed);
 			if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged");
 			Writer rawWriter;

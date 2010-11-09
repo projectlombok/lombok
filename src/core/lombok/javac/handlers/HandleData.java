@@ -63,4 +63,8 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		
 		return true;
 	}
+	
+	@Override public boolean isResolutionBased() {
+		return false;
+	}
 }

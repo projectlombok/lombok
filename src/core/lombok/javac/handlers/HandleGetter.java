@@ -202,4 +202,8 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		return treeMaker.MethodDef(treeMaker.Modifiers(access, nonNulls.appendList(nullables)), methodName, methodType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue);
 	}
+	
+	@Override public boolean isResolutionBased() {
+		return false;
+	}
 }

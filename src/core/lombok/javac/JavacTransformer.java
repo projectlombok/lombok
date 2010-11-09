@@ -22,16 +22,18 @@
 package lombok.javac;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.annotation.processing.Messager;
 
+import com.sun.tools.javac.comp.Enter;
+import com.sun.tools.javac.comp.MemberEnter;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.List;
 
 public class JavacTransformer {
 	private final HandlerLibrary handlers;
@@ -42,18 +44,39 @@ public class JavacTransformer {
 		this.handlers = HandlerLibrary.load(messager);
 	}
 	
-	public boolean transform(Context context, Iterable<JCCompilationUnit> compilationUnits) {
-		List<JavacAST> asts = new ArrayList<JavacAST>();
+	public boolean transform(Context context, java.util.List<JCCompilationUnit> compilationUnitsRaw) {
+		List<JCCompilationUnit> compilationUnits;
+		if (compilationUnitsRaw instanceof List<?>) {
+			compilationUnits = (List<JCCompilationUnit>)compilationUnitsRaw;
+		} else {
+			compilationUnits = List.nil();
+			for (int i = compilationUnitsRaw.size() -1; i >= 0; i--) {
+				compilationUnits = compilationUnits.prepend(compilationUnitsRaw.get(i));
+			}
+		}
+		
+		java.util.List<JavacAST> asts = new ArrayList<JavacAST>();
 		
 		for (JCCompilationUnit unit : compilationUnits) asts.add(new JavacAST(messager, context, unit));
 		
-		handlers.skipPrintAST();
+		handlers.setPreResolutionPhase();
 		for (JavacAST ast : asts) {
 			ast.traverse(new AnnotationVisitor());
 			handlers.callASTVisitors(ast);
 		}
 		
-		handlers.skipAllButPrintAST();
+		context.put(Enter.class, (Enter) null);
+		context.put(MemberEnter.class, (MemberEnter) null);
+		Enter.instance(context).main(compilationUnits);
+		
+		handlers.setPostResolutionPhase();
+		for (JavacAST ast : asts) {
+			ast.traverse(new AnnotationVisitor());
+			handlers.callASTVisitors(ast);
+		}
+		
+		
+		handlers.setPrintASTPhase();
 		for (JavacAST ast : asts) {
 			ast.traverse(new AnnotationVisitor());
 		}
@@ -61,6 +84,7 @@ public class JavacTransformer {
 		for (JavacAST ast : asts) {
 			if (ast.isChanged()) return true;
 		}
+		
 		return false;
 	}
 	
