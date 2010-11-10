@@ -384,7 +384,8 @@ public class Delombok {
 		
 		for (JCCompilationUnit unit : roots) {
 			// Run one single massive transform instead of a lot of singleton calls, as this causes a heck of a lot of refilling of the enter cache.
-			boolean changed = new JavacTransformer(messager).transform(context, Collections.singletonList(unit));
+			// XXX This isn't enough - we need to call transform again after resetting everything.
+			boolean changed = new JavacTransformer(messager).transform(false, context, Collections.singletonList(unit));
 			DelombokResult result = new DelombokResult(commentsMap.get(unit).comments, unit, force || changed);
 			if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged");
 			Writer rawWriter;

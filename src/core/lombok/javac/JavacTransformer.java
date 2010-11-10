@@ -42,7 +42,7 @@ public class JavacTransformer {
 		this.handlers = HandlerLibrary.load(messager);
 	}
 	
-	public boolean transform(Context context, java.util.List<JCCompilationUnit> compilationUnitsRaw) {
+	public boolean transform(boolean postResolution, Context context, java.util.List<JCCompilationUnit> compilationUnitsRaw) {
 		List<JCCompilationUnit> compilationUnits;
 		if (compilationUnitsRaw instanceof List<?>) {
 			compilationUnits = (List<JCCompilationUnit>)compilationUnitsRaw;
@@ -57,22 +57,25 @@ public class JavacTransformer {
 		
 		for (JCCompilationUnit unit : compilationUnits) asts.add(new JavacAST(messager, context, unit));
 		
-		handlers.setPreResolutionPhase();
-		for (JavacAST ast : asts) {
-			ast.traverse(new AnnotationVisitor());
-			handlers.callASTVisitors(ast);
+		if (!postResolution) {
+			handlers.setPreResolutionPhase();
+			for (JavacAST ast : asts) {
+				ast.traverse(new AnnotationVisitor());
+				handlers.callASTVisitors(ast);
+			}
 		}
 		
-		handlers.setPostResolutionPhase();
-		for (JavacAST ast : asts) {
-			ast.traverse(new AnnotationVisitor());
-			handlers.callASTVisitors(ast);
-		}
-		
-		
-		handlers.setPrintASTPhase();
-		for (JavacAST ast : asts) {
-			ast.traverse(new AnnotationVisitor());
+		if (postResolution) {
+			handlers.setPostResolutionPhase();
+			for (JavacAST ast : asts) {
+				ast.traverse(new AnnotationVisitor());
+				handlers.callASTVisitors(ast);
+			}
+			
+			handlers.setPrintASTPhase();
+			for (JavacAST ast : asts) {
+				ast.traverse(new AnnotationVisitor());
+			}
 		}
 		
 		for (JavacAST ast : asts) {
