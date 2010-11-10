@@ -41,16 +41,11 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import javax.annotation.processing.Messager;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.Element;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
-import javax.tools.Diagnostic.Kind;
 
 import lombok.javac.DeleteLombokAnnotations;
-import lombok.javac.JavacTransformer;
+import lombok.javac.TrackChangedAsts;
 
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.main.OptionName;
@@ -358,6 +353,7 @@ public class Delombok {
 		options.put(OptionName.ENCODING, charset.name());
 		if (classpath != null) options.put(OptionName.CLASSPATH, classpath);
 		if (sourcepath != null) options.put(OptionName.SOURCEPATH, sourcepath);
+		options.put("compilePolicy", "attr");
 		CommentCollectingScanner.Factory.preRegister(context);
 		
 		JavaCompiler compiler = new JavaCompiler(context);
@@ -367,6 +363,9 @@ public class Delombok {
 		List<JCCompilationUnit> roots = new ArrayList<JCCompilationUnit>();
 		Map<JCCompilationUnit, Comments> commentsMap = new IdentityHashMap<JCCompilationUnit, Comments>();
 		Map<JCCompilationUnit, File> baseMap = new IdentityHashMap<JCCompilationUnit, File>();
+		
+		compiler.initProcessAnnotations(Collections.singleton(new lombok.javac.apt.Processor()));
+		
 		for (File fileToParse : filesToParse) {
 			Comments comments = new Comments();
 			context.put(Comments.class, comments);
@@ -379,14 +378,18 @@ public class Delombok {
 			roots.add(unit);
 		}
 		
-		if (compiler.errorCount() > 0) return false;
-		compiler.enterTrees(toJavacList(roots));
+		if (compiler.errorCount() > 0) {
+			// At least one parse error. No point continuing (a real javac run doesn't either).
+			return false;
+		}
 		
+		TrackChangedAsts tca = new TrackChangedAsts();
+		
+		context.put(TrackChangedAsts.class, tca);
+		
+		JavaCompiler delegate = compiler.processAnnotations(compiler.enterTrees(toJavacList(roots)));
 		for (JCCompilationUnit unit : roots) {
-			// Run one single massive transform instead of a lot of singleton calls, as this causes a heck of a lot of refilling of the enter cache.
-			// XXX This isn't enough - we need to call transform again after resetting everything.
-			boolean changed = new JavacTransformer(messager).transform(false, context, Collections.singletonList(unit));
-			DelombokResult result = new DelombokResult(commentsMap.get(unit).comments, unit, force || changed);
+			DelombokResult result = new DelombokResult(commentsMap.get(unit).comments, unit, force || tca.changed.contains(unit));
 			if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged");
 			Writer rawWriter;
 			if (presetWriter != null) rawWriter = presetWriter;
@@ -399,6 +402,7 @@ public class Delombok {
 				writer.close();
 			}
 		}
+		delegate.close();
 		
 		return true;
 	}
@@ -410,24 +414,6 @@ public class Delombok {
 			comments = comments.append(comment);
 		}
 	}
-	
-	private static final Messager messager = new Messager() {
-		@Override public void printMessage(Kind kind, CharSequence msg) {
-			System.out.printf("%s: %s\n", kind, msg);
-		}
-		
-		@Override public void printMessage(Kind kind, CharSequence msg, Element e) {
-			System.out.printf("%s: %s\n", kind, msg);
-		}
-		
-		@Override public void printMessage(Kind kind, CharSequence msg, Element e, AnnotationMirror a) {
-			System.out.printf("%s: %s\n", kind, msg);
-		}
-		
-		@Override public void printMessage(Kind kind, CharSequence msg, Element e, AnnotationMirror a, AnnotationValue v) {
-			System.out.printf("%s: %s\n", kind, msg);
-		}
-	};
 	
 	private static String canonical(File dir) {
 		try {

@@ -42,7 +42,7 @@ public class JavacTransformer {
 		this.handlers = HandlerLibrary.load(messager);
 	}
 	
-	public boolean transform(boolean postResolution, Context context, java.util.List<JCCompilationUnit> compilationUnitsRaw) {
+	public void transform(boolean postResolution, Context context, java.util.List<JCCompilationUnit> compilationUnitsRaw) {
 		List<JCCompilationUnit> compilationUnits;
 		if (compilationUnitsRaw instanceof List<?>) {
 			compilationUnits = (List<JCCompilationUnit>)compilationUnitsRaw;
@@ -78,11 +78,10 @@ public class JavacTransformer {
 			}
 		}
 		
-		for (JavacAST ast : asts) {
-			if (ast.isChanged()) return true;
+		TrackChangedAsts changes = context.get(TrackChangedAsts.class);
+		if (changes != null) for (JavacAST ast : asts) {
+			if (ast.isChanged()) changes.changed.add((JCCompilationUnit) ast.top().get());
 		}
-		
-		return false;
 	}
 	
 	private class AnnotationVisitor extends JavacASTAdapter {
