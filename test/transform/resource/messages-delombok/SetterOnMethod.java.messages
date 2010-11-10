@@ -1,0 +1,17 @@
+3:34 ERROR incompatible types
+found   : java.lang.Deprecated
+required: lombok.Setter.AnyAnnotation
+4:44 ERROR incompatible types
+found   : java.lang.Deprecated
+required: lombok.Setter.AnyAnnotation
+6:26 ERROR incompatible types
+found   : java.lang.Deprecated
+required: lombok.Setter.AnyAnnotation
+11:26 ERROR incompatible types
+found   : java.lang.Deprecated
+required: lombok.Setter.AnyAnnotation
+14:44 ERROR incompatible types
+found   : java.lang.Deprecated
+required: lombok.Setter.AnyAnnotation
+6:1 ERROR 'onMethod' is not supported for @Setter on a type.
+11:1 ERROR 'onMethod' is not supported for @Setter on a type.

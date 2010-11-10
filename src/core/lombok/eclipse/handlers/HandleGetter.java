@@ -76,7 +76,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		}
 		
 		for (EclipseNode field : typeNode.down()) {
-			if (fieldQualifiesForGetterGeneration(field)) generateGetterForField(field, pos.get(), level);
+			if (fieldQualifiesForGetterGeneration(field)) generateGetterForField(field, pos.get(), level, null);
 		}
 		return true;
 	}
@@ -103,7 +103,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 	 * If not, the getter is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
 	 */
-	public void generateGetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level) {
+	public void generateGetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level, Annotation[] onMethod) {
 		for (EclipseNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				if (annotationTypeMatches(Getter.class, child)) {
@@ -113,7 +113,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 			}
 		}
 		
-		createGetterForField(level, fieldNode, fieldNode, pos, false);
+		createGetterForField(level, fieldNode, fieldNode, pos, false, onMethod);
 	}
 	
 	public boolean handle(AnnotationValues<Getter> annotation, Annotation ast, EclipseNode annotationNode) {
@@ -122,24 +122,27 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		if (level == AccessLevel.NONE) return true;
 		
 		if (node == null) return false;
+		
+		Annotation[] onMethod = getAndRemoveAnnotationParameter(ast, "onMethod");
 		if (node.getKind() == Kind.FIELD) {
-			return createGetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true);
+			return createGetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true, onMethod);
 		}
 		if (node.getKind() == Kind.TYPE) {
+			if (onMethod != null && onMethod.length != 0) annotationNode.addError("'onMethod' is not supported for @Getter on a type.");
 			return generateGetterForType(node, annotationNode, level, false);
 		}
 		return false;
 	}
 	
-	private boolean createGetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists) {
+	private boolean createGetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, Annotation[] onMethod) {
 		for (EclipseNode fieldNode : fieldNodes) {
-			createGetterForField(level, fieldNode, errorNode, source, whineIfExists);
+			createGetterForField(level, fieldNode, errorNode, source, whineIfExists, onMethod);
 		}
 		return true;
 	}
 	
 	private boolean createGetterForField(AccessLevel level,
-			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists) {
+			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists, Annotation[] onMethod) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			errorNode.addError("@Getter is only supported on a class or a field.");
 			return true;
@@ -172,9 +175,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		}
 		
 		MethodDeclaration method = generateGetter((TypeDeclaration) fieldNode.up().get(), fieldNode, getterName, modifier, source);
-		Annotation[] copiedAnnotations = copyAnnotations(
-				findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN),
-				findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN), source);
+		Annotation[] copiedAnnotations = copyAnnotations(source, findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN), onMethod);
 		if (copiedAnnotations.length != 0) {
 			method.annotations = copiedAnnotations;
 		}

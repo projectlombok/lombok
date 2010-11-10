@@ -78,7 +78,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		}
 		
 		for (JavacNode field : typeNode.down()) {
-			if (fieldQualifiesForGetterGeneration(field)) generateGetterForField(field, errorNode.get(), level);
+			if (fieldQualifiesForGetterGeneration(field)) generateGetterForField(field, errorNode.get(), level, List.<JCExpression>nil());
 		}
 		
 		return true;
@@ -109,7 +109,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 	 * @param fieldNode The node representing the field you want a getter for.
 	 * @param pos The node responsible for generating the getter (the {@code @Data} or {@code @Getter} annotation).
 	 */
-	public void generateGetterForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level) {
+	public void generateGetterForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level, List<JCExpression> onMethod) {
 		for (JavacNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				if (Javac.annotationTypeMatches(Getter.class, child)) {
@@ -119,7 +119,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 			}
 		}
 		
-		createGetterForField(level, fieldNode, fieldNode, false);
+		createGetterForField(level, fieldNode, fieldNode, false, onMethod);
 	}
 	
 	@Override public boolean handle(AnnotationValues<Getter> annotation, JCAnnotation ast, JavacNode annotationNode) {
@@ -131,25 +131,28 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		if (level == AccessLevel.NONE) return true;
 		
 		if (node == null) return false;
+		
+		List<JCExpression> onMethod = getAndRemoveAnnotationParameter(ast, "onMethod");
 		if (node.getKind() == Kind.FIELD) {
-			return createGetterForFields(level, fields, annotationNode, true);
+			return createGetterForFields(level, fields, annotationNode, true, onMethod);
 		}
 		if (node.getKind() == Kind.TYPE) {
+			if (!onMethod.isEmpty()) annotationNode.addError("'onMethod' is not supported for @Getter on a type.");
 			return generateGetterForType(node, annotationNode, level, false);
 		}
 		return false;
 	}
 	
-	private boolean createGetterForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists) {
+	private boolean createGetterForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists, List<JCExpression> onMethod) {
 		for (JavacNode fieldNode : fieldNodes) {
-			createGetterForField(level, fieldNode, errorNode, whineIfExists);
+			createGetterForField(level, fieldNode, errorNode, whineIfExists, onMethod);
 		}
 		
 		return true;
 	}
 	
 	private boolean createGetterForField(AccessLevel level,
-			JavacNode fieldNode, JavacNode errorNode, boolean whineIfExists) {
+			JavacNode fieldNode, JavacNode errorNode, boolean whineIfExists, List<JCExpression> onMethod) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			errorNode.addError("@Getter is only supported on a class or a field.");
 			return true;
@@ -178,12 +181,12 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
 		
-		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker()));
+		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker(), onMethod));
 		
 		return true;
 	}
 	
-	private JCMethodDecl createGetter(long access, JavacNode field, TreeMaker treeMaker) {
+	private JCMethodDecl createGetter(long access, JavacNode field, TreeMaker treeMaker, List<JCExpression> onMethod) {
 		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
 		JCExpression fieldRef = createFieldAccessor(treeMaker, field, true);
 		JCStatement returnStatement = treeMaker.Return(fieldRef);
@@ -199,7 +202,10 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		
 		List<JCAnnotation> nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
 		List<JCAnnotation> nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
-		return treeMaker.MethodDef(treeMaker.Modifiers(access, nonNulls.appendList(nullables)), methodName, methodType,
+		
+		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod).appendList(nonNulls).appendList(nullables);
+		
+		return treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue);
 	}
 }

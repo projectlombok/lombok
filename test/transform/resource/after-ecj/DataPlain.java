@@ -162,3 +162,33 @@ final @Data @lombok.EqualsAndHashCode(callSuper = true) class Data4 extends java
     super();
   }
 }
+@Data class Data5 {
+  public @java.lang.SuppressWarnings("all") Data5() {
+    super();
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+    if ((o == this))
+        return true;
+    if ((! (o instanceof Data5)))
+        return false;
+    final Data5 other = (Data5) o;
+    if ((! other.canEqual(this)))
+        return false;
+    return true;
+  }
+  public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+    return (other instanceof Data5);
+  }
+}
+final @Data class Data6 {
+  public @java.lang.SuppressWarnings("all") Data6() {
+    super();
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+    if ((o == this))
+        return true;
+    if ((! (o instanceof Data6)))
+        return false;
+    return true;
+  }
+}

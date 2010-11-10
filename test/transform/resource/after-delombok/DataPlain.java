@@ -182,3 +182,55 @@ final class Data4 extends java.util.Timer {
 		return result;
 	}
 }
+class Data5 {
+	@java.lang.SuppressWarnings("all")
+	public Data5() {
+	}
+	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
+	public boolean equals(final java.lang.Object o) {
+		if (o == this) return true;
+		if (!(o instanceof Data5)) return false;
+		final Data5 other = (Data5)o;
+		if (!other.canEqual(this)) return false;
+		return true;
+	}
+	@java.lang.SuppressWarnings("all")
+	public boolean canEqual(final java.lang.Object other) {
+		return other instanceof Data5;
+	}
+	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
+	public int hashCode() {
+		int result = 1;
+		return result;
+	}
+	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
+	public java.lang.String toString() {
+		return "Data5()";
+	}
+}
+final class Data6 {
+	@java.lang.SuppressWarnings("all")
+	public Data6() {
+	}
+	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
+	public boolean equals(final java.lang.Object o) {
+		if (o == this) return true;
+		if (!(o instanceof Data6)) return false;
+		return true;
+	}
+	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
+	public int hashCode() {
+		int result = 1;
+		return result;
+	}
+	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
+	public java.lang.String toString() {
+		return "Data6()";
+	}
+}

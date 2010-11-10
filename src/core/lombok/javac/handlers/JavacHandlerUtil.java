@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,12 +42,15 @@ import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
+import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
@@ -566,5 +569,40 @@ public class JavacHandlerUtil {
 		}
 		
 		return problematic;
+	}
+	
+	static List<JCExpression> getAndRemoveAnnotationParameter(JCAnnotation ast, String parameterName) {
+		List<JCExpression> params = List.nil();
+		List<JCExpression> result = List.nil();
+		
+		for (JCExpression param : ast.args) {
+			if (param instanceof JCAssign) {
+				JCAssign assign = (JCAssign) param;
+				if (assign.lhs instanceof JCIdent) {
+					JCIdent ident = (JCIdent) assign.lhs;
+					if (parameterName.equals(ident.name.toString())) {
+						if (assign.rhs instanceof JCNewArray) {
+							result = ((JCNewArray) assign.rhs).elems;
+						} else {
+							result = result.append(assign.rhs);
+						}
+						continue;
+					}
+				}
+			}
+			
+			params = params.append(param);
+		}
+		ast.args = params;
+		return result;
+	}
+	
+	static List<JCAnnotation> copyAnnotations(List<JCExpression> in) {
+		List<JCAnnotation> out = List.nil();
+		for (JCExpression expr : in) {
+			if (!(expr instanceof JCAnnotation)) continue;
+			out = out.append((JCAnnotation) expr.clone());
+		}
+		return out;
 	}
 }

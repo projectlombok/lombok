@@ -32,8 +32,8 @@ import java.util.regex.Pattern;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
-import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.AST.Kind;
 import lombok.core.handlers.TransformationsUtil;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseNode;
@@ -43,6 +43,7 @@ import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.Clinit;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
@@ -51,9 +52,11 @@ import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
+import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
+import org.eclipse.jdt.internal.compiler.ast.NormalAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
@@ -610,4 +613,41 @@ public class EclipseHandlerUtil {
 		
 		return problematic;
 	}
+	
+	private static final Annotation[] EMPTY_ANNOTATION_ARRAY = new Annotation[0];
+	static Annotation[] getAndRemoveAnnotationParameter(Annotation annotation, String annotationName) {
+		
+		List<Annotation> result = new ArrayList<Annotation>();
+		if (annotation instanceof NormalAnnotation) {
+			NormalAnnotation normalAnnotation = (NormalAnnotation)annotation;
+			MemberValuePair[] memberValuePairs = normalAnnotation.memberValuePairs;
+			List<MemberValuePair> pairs = new ArrayList<MemberValuePair>();
+			if (memberValuePairs != null) for (MemberValuePair memberValuePair : memberValuePairs) {
+				if (annotationName.equals(new String(memberValuePair.name))) {
+					Expression value = memberValuePair.value;
+					if (value instanceof ArrayInitializer) {
+						ArrayInitializer array = (ArrayInitializer) value;
+						for(Expression expression : array.expressions) {
+							if (expression instanceof Annotation) {
+								result.add((Annotation)expression);
+							}
+						}
+					}
+					else if (value instanceof Annotation) {
+						result.add((Annotation)value);
+					}
+					continue;
+				}
+				pairs.add(memberValuePair);
+			}
+			
+			if (!result.isEmpty()) {
+				normalAnnotation.memberValuePairs = pairs.isEmpty() ? null : pairs.toArray(new MemberValuePair[0]);
+				return result.toArray(EMPTY_ANNOTATION_ARRAY);
+			}
+		}
+		
+		return EMPTY_ANNOTATION_ARRAY;
+	}
+	
 }

@@ -247,7 +247,7 @@ public class HandleConstructor {
 				Statement nullCheck = generateNullCheck(field, source);
 				if (nullCheck != null) nullChecks.add(nullCheck);
 			}
-			Annotation[] copiedAnnotations = copyAnnotations(nonNulls, nullables, source);
+			Annotation[] copiedAnnotations = copyAnnotations(source, nonNulls, nullables);
 			if (copiedAnnotations.length != 0) parameter.annotations = copiedAnnotations;
 			params.add(parameter);
 		}
@@ -316,9 +316,7 @@ public class HandleConstructor {
 			Argument parameter = new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL);
 			Eclipse.setGeneratedBy(parameter, source);
 
-			Annotation[] copiedAnnotations = copyAnnotations(
-					findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN),
-					findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN), source);
+			Annotation[] copiedAnnotations = copyAnnotations(source, findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN));
 			if (copiedAnnotations.length != 0) parameter.annotations = copiedAnnotations;
 			params.add(new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL));
 		}

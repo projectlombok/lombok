@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,6 @@
  */
 package lombok;
 
-import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -57,9 +56,21 @@ public @interface Setter {
 	 */
 	lombok.AccessLevel value() default lombok.AccessLevel.PUBLIC;
 	
+	/**
+	 * If you want your setter method to have additional annotations, you can specify them here.
+	 * If the {code @Setter} is put on a type, {code onMethod} may not be specified.
+	 */
 	AnyAnnotation[] onMethod() default {};
+	
+	/**
+	 * If you want the parameter of your setter to have additional annotations, you can specify them here.
+	 * If the {code @Setter} is put on a type, {code onParam} may not be specified.
+	 */
 	AnyAnnotation[] onParam() default {};
 	
+	/**
+	 * Placeholder annotation to enable the placement of annotations on the setter method or its parameter. 
+	 */
 	@Retention(RetentionPolicy.SOURCE)
 	@interface AnyAnnotation {}
 }

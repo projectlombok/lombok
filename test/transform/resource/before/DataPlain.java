@@ -19,3 +19,9 @@ final class Data4 extends java.util.Timer {
 		super();
 	}
 }
+@Data
+class Data5 {
+}
+@Data
+final class Data6 {
+}

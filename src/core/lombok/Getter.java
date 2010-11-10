@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,4 +58,16 @@ public @interface Getter {
 	 * If you want your setter to be non-public, you can specify an alternate access level here.
 	 */
 	lombok.AccessLevel value() default lombok.AccessLevel.PUBLIC;
+
+	/**
+	 * If you want your getter method to have additional annotations, you can specify them here.<br/>
+	 * If the {code @Getter} is put on a type, {code onMethod} may not be specified.
+	 */
+	AnyAnnotation[] onMethod() default {};
+	
+	/**
+	 * Placeholder annotation to enable the placement of annotations on the getter method. 
+	 */
+	@Retention(RetentionPolicy.SOURCE)
+	@interface AnyAnnotation {}
 }

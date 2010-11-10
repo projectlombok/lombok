@@ -1,0 +1,6 @@
+2:34 ERROR incompatible types
+found   : java.lang.Deprecated
+required: lombok.Setter.AnyAnnotation
+2:54 ERROR incompatible types
+found   : java.lang.SuppressWarnings
+required: lombok.Setter.AnyAnnotation

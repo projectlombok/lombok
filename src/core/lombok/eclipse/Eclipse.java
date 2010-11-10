@@ -452,23 +452,22 @@ public class Eclipse {
 		
 	}
 	
-	public static Annotation[] copyAnnotations(Annotation[] annotations, ASTNode source) {
-		return copyAnnotations(annotations, null, source);
-	}
+	private static final Annotation[] EMPTY_ANNOTATION_ARRAY = new Annotation[0];
 	
-	public static Annotation[] copyAnnotations(Annotation[] annotations1, Annotation[] annotations2, ASTNode source) {
-		if (annotations1 == null && annotations2 == null) return null;
-		if (annotations1 == null) annotations1 = new Annotation[0];
-		if (annotations2 == null) annotations2 = new Annotation[0];
-		Annotation[] outs = new Annotation[annotations1.length + annotations2.length];
-		int idx = 0;
-		for (Annotation annotation : annotations1) {
-			outs[idx++] = copyAnnotation(annotation, source);
+	public static Annotation[] copyAnnotations(ASTNode source, Annotation[]... allAnnotations) {
+		boolean allNull = true;
+		
+		List<Annotation> result = new ArrayList<Annotation>();
+		for (Annotation[] annotations : allAnnotations) {
+			if (annotations != null) {
+				allNull = false;
+				for (Annotation annotation : annotations) {
+					result.add(copyAnnotation(annotation, source));
+				}
+			}
 		}
-		for (Annotation annotation : annotations2) {
-			outs[idx++] = copyAnnotation(annotation, source);
-		}
-		return outs;
+		if (allNull) return null;
+		return result.toArray(EMPTY_ANNOTATION_ARRAY);
 	}
 	
 	public static Annotation copyAnnotation(Annotation annotation, ASTNode source) {
