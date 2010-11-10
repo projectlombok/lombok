@@ -51,4 +51,16 @@ public class ValWeirdTypes<Z> {
 		val d = c ? a : b;
 		java.util.RandomAccess confirm = c ? a : b;
 	}
+	
+	public void nullType() {
+		val nully = null;
+	}
+	
+	public void testArrays() {
+		val intArray = new int[] {1, 2, 3};
+		val multiDimArray = new Object[][] {{}};
+		val copy = intArray;
+		val single = multiDimArray[0];
+		val singleInt = copy[0];
+	}
 }

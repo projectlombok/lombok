@@ -156,4 +156,8 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 			}
 		}
 	}
+	
+	@Override public boolean isResolutionBased() {
+		return false;
+	}
 }

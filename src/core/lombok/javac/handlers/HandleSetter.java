@@ -249,4 +249,8 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 			return v.visitNoType(this, p);
 		}
 	}
+	
+	@Override public boolean isResolutionBased() {
+		return false;
+	}
 }

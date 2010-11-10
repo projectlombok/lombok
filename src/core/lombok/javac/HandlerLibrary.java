@@ -51,7 +51,7 @@ public class HandlerLibrary {
 	private final Map<String, AnnotationHandlerContainer<?>> annotationHandlers = new HashMap<String, AnnotationHandlerContainer<?>>();
 	private final Collection<JavacASTVisitor> visitorHandlers = new ArrayList<JavacASTVisitor>();
 	private final Messager messager;
-	private boolean skipPrintAST = true;
+	private int phase = 0;
 	
 	/**
 	 * Creates a new HandlerLibrary that will report any problems or errors to the provided messager.
@@ -68,6 +68,10 @@ public class HandlerLibrary {
 		AnnotationHandlerContainer(JavacAnnotationHandler<T> handler, Class<T> annotationClass) {
 			this.handler = handler;
 			this.annotationClass = annotationClass;
+		}
+		
+		public boolean isResolutionBased() {
+			return handler.isResolutionBased();
 		}
 		
 		public boolean handle(final JavacNode node) {
@@ -160,12 +164,14 @@ public class HandlerLibrary {
 		boolean handled = false;
 		for (String fqn : resolver.findTypeMatches(node, rawType)) {
 			boolean isPrintAST = fqn.equals(PrintAST.class.getName());
-			if (isPrintAST == skipPrintAST) continue;
+			if (isPrintAST && phase != 2) continue;
+			if (!isPrintAST && phase == 2) continue;
 			AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
 			if (container == null) continue;
 			
 			try {
-				handled |= container.handle(node);
+				if (container.isResolutionBased() && phase == 1) handled |= container.handle(node);
+				if (!container.isResolutionBased() && phase == 0) handled |= container.handle(node);
 			} catch (AnnotationValueDecodeFail fail) {
 				fail.owner.setError(fail.getMessage(), fail.idx);
 			} catch (Throwable t) {
@@ -183,13 +189,8 @@ public class HandlerLibrary {
 	 */
 	public void callASTVisitors(JavacAST ast) {
 		for (JavacASTVisitor visitor : visitorHandlers) try {
-			if (!visitor.isResolutionBased()) ast.traverse(visitor);
-		} catch (Throwable t) {
-			javacError(String.format("Lombok visitor handler %s failed", visitor.getClass()), t);
-		}
-		
-		for (JavacASTVisitor visitor : visitorHandlers) try {
-			if (visitor.isResolutionBased()) ast.traverse(visitor);
+			if (!visitor.isResolutionBased() && phase == 0) ast.traverse(visitor);
+			if (visitor.isResolutionBased() && phase == 1) ast.traverse(visitor);
 		} catch (Throwable t) {
 			javacError(String.format("Lombok visitor handler %s failed", visitor.getClass()), t);
 		}
@@ -197,17 +198,17 @@ public class HandlerLibrary {
 	
 	/**
 	 * Lombok does not currently support triggering annotations in a specified order; the order is essentially
-	 * random right now. This lack of order is particularly annoying for the {@code PrintAST} annotation,
-	 * which is almost always intended to run last. Hence, this hack, which lets it in fact run last.
-	 * 
-	 * @see #skipAllButPrintAST()
+	 * random right now. As a temporary hack we've identified 3 important phases.
 	 */
-	public void skipPrintAST() {
-		skipPrintAST = true;
+	public void setPreResolutionPhase() {
+		phase = 0;
 	}
 	
-	/** @see #skipPrintAST() */
-	public void skipAllButPrintAST() {
-		skipPrintAST = false;
+	public void setPostResolutionPhase() {
+		phase = 1;
+	}
+	
+	public void setPrintASTPhase() {
+		phase = 2;
 	}
 }

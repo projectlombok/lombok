@@ -130,10 +130,8 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<ivy:compile destdir="build/lombok" source="1.6" target="1.6">
 			<src path="src/core" />
 			<src path="src/delombok" />
-			<src path="src/netbeansAgent" />
 			<include name="lombok/javac/**" />
 			<include name="lombok/delombok/**" />
-			<include name="lombok/netbeans/**" />
 			<classpath location="build/lombok" />
 			<classpath refid="build.path" />
 		</ivy:compile>
@@ -165,7 +163,6 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<ivy:eclipsegen>
 			<srcdir dir="src/core" />
 			<srcdir dir="src/eclipseAgent" />
-			<srcdir dir="src/netbeansAgent" />
 			<srcdir dir="src/installer" />
 			<srcdir dir="src/delombok" />
 			<srcdir dir="experimental/src" />
@@ -250,7 +247,6 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 				<sources>
 					<fileset dir="src/core" />
 					<fileset dir="src/eclipseAgent" />
-					<fileset dir="src/netbeansAgent" />
 					<fileset dir="src/installer" />
 					<fileset dir="src/delombok" />
 					<fileset dir="experimental/src" />

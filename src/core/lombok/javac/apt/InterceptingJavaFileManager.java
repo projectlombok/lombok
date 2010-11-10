@@ -21,13 +21,19 @@
  */
 package lombok.javac.apt;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
 import java.util.Iterator;
 import java.util.Set;
 
 import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import javax.tools.SimpleJavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 
 import lombok.core.DiagnosticsReceiver;
@@ -42,6 +48,22 @@ final class InterceptingJavaFileManager implements JavaFileManager {
 	}
 	
 	@Override public JavaFileObject getJavaFileForOutput(Location location, String className, Kind kind, FileObject sibling) throws IOException {
+		if (className.startsWith("lombok.dummy.ForceNewRound")) {
+			String name = className.replace(".", "/") + kind.extension;
+			return new SimpleJavaFileObject(URI.create(name), kind) {
+				@Override public OutputStream openOutputStream() throws IOException {
+					return new ByteArrayOutputStream();
+				}
+				
+				@Override public InputStream openInputStream() throws IOException {
+					return new ByteArrayInputStream(new byte[0]);
+				}
+				
+				@Override public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+					return "";
+				}
+			};
+		}
 		JavaFileObject fileObject = delegate.getJavaFileForOutput(location, className, kind, sibling);
 		if (kind != Kind.CLASS) {
 			return fileObject;

@@ -22,7 +22,6 @@
 package lombok.javac;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.annotation.processing.Messager;
 
@@ -32,6 +31,7 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.List;
 
 public class JavacTransformer {
 	private final HandlerLibrary handlers;
@@ -42,26 +42,46 @@ public class JavacTransformer {
 		this.handlers = HandlerLibrary.load(messager);
 	}
 	
-	public boolean transform(Context context, Iterable<JCCompilationUnit> compilationUnits) {
-		List<JavacAST> asts = new ArrayList<JavacAST>();
+	public void transform(boolean postResolution, Context context, java.util.List<JCCompilationUnit> compilationUnitsRaw) {
+		List<JCCompilationUnit> compilationUnits;
+		if (compilationUnitsRaw instanceof List<?>) {
+			compilationUnits = (List<JCCompilationUnit>)compilationUnitsRaw;
+		} else {
+			compilationUnits = List.nil();
+			for (int i = compilationUnitsRaw.size() -1; i >= 0; i--) {
+				compilationUnits = compilationUnits.prepend(compilationUnitsRaw.get(i));
+			}
+		}
+		
+		java.util.List<JavacAST> asts = new ArrayList<JavacAST>();
 		
 		for (JCCompilationUnit unit : compilationUnits) asts.add(new JavacAST(messager, context, unit));
 		
-		handlers.skipPrintAST();
-		for (JavacAST ast : asts) {
-			ast.traverse(new AnnotationVisitor());
-			handlers.callASTVisitors(ast);
+		if (!postResolution) {
+			handlers.setPreResolutionPhase();
+			for (JavacAST ast : asts) {
+				ast.traverse(new AnnotationVisitor());
+				handlers.callASTVisitors(ast);
+			}
 		}
 		
-		handlers.skipAllButPrintAST();
-		for (JavacAST ast : asts) {
-			ast.traverse(new AnnotationVisitor());
+		if (postResolution) {
+			handlers.setPostResolutionPhase();
+			for (JavacAST ast : asts) {
+				ast.traverse(new AnnotationVisitor());
+				handlers.callASTVisitors(ast);
+			}
+			
+			handlers.setPrintASTPhase();
+			for (JavacAST ast : asts) {
+				ast.traverse(new AnnotationVisitor());
+			}
 		}
 		
-		for (JavacAST ast : asts) {
-			if (ast.isChanged()) return true;
+		TrackChangedAsts changes = context.get(TrackChangedAsts.class);
+		if (changes != null) for (JavacAST ast : asts) {
+			if (ast.isChanged()) changes.changed.add((JCCompilationUnit) ast.top().get());
 		}
-		return false;
 	}
 	
 	private class AnnotationVisitor extends JavacASTAdapter {

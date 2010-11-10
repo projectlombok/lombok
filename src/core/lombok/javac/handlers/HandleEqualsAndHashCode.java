@@ -481,4 +481,8 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 	private JCStatement returnBool(TreeMaker maker, boolean bool) {
 		return maker.Return(maker.Literal(TypeTags.BOOLEAN, bool ? 1 : 0));
 	}
+	
+	@Override public boolean isResolutionBased() {
+		return false;
+	}
 }
