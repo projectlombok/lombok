@@ -1,4 +1,3 @@
-//ignore
 @SuppressWarnings("all")
 class Annotation {
 	@Override

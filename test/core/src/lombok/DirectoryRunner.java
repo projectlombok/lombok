@@ -118,15 +118,13 @@ public class DirectoryRunner extends Runner {
 		}
 		switch (params.getCompiler()) {
 		case DELOMBOK:
-			new RunTestsViaDelombok().compareFile(params, file);
-			break;
+			return new RunTestsViaDelombok().compareFile(params, file);
 		case ECJ:
-			new RunTestsViaEcj().compareFile(params, file);
-			break;
+			return new RunTestsViaEcj().compareFile(params, file);
+		default:
 		case JAVAC:
 			throw new UnsupportedOperationException();
 		}
-		return true;
 	}
 	
 	private boolean mustIgnore(File file) throws FileNotFoundException, IOException {

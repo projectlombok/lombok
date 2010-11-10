@@ -40,6 +40,11 @@ public class TestLombokFilesIdempotent implements DirectoryRunner.TestParams {
 	}
 	
 	@Override
+	public File getMessagesDirectory() {
+		return new File("test/transform/resource/messages-idempotent");
+	}
+	
+	@Override
 	public DirectoryRunner.Compiler getCompiler() {
 		return DirectoryRunner.Compiler.DELOMBOK;
 	}
@@ -47,10 +52,5 @@ public class TestLombokFilesIdempotent implements DirectoryRunner.TestParams {
 	@Override
 	public boolean printErrors() {
 		return true;
-	}
-	
-	@Override
-	public File getMessagesDirectory() {
-		return null;
 	}
 }
