@@ -57,4 +57,18 @@ public class Lombok {
 	private static <T extends Throwable> void sneakyThrow0(Throwable t) throws T {
 		throw (T)t;
 	}
+	
+	/**
+	 * Returns the parameter directly. <br />
+	 * 
+	 * This method can be used to prevent a static analyzer to determine
+	 * the nullness of the passed parameter.
+	 * 
+	 * @param <T> the type of the parameter
+	 * @param value the value to return
+	 * @return value
+	 */
+	public static <T> T preventNullAnalysis(T value) {
+		return value;
+	}
 }

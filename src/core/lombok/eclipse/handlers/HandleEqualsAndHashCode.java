@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -505,7 +505,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		char[] otherName = "other".toCharArray();
 		
 		/* MyType<?> other = (MyType<?>) o; */ {
-			if (!fields.isEmpty()) {
+			if (!fields.isEmpty() || needsCanEqual) {
 				LocalDeclaration other = new LocalDeclaration(otherName, pS, pE);
 				other.modifiers |= ClassFileConstants.AccFinal;
 				Eclipse.setGeneratedBy(other, source);

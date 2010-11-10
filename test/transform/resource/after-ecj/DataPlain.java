@@ -179,6 +179,13 @@ final @Data @lombok.EqualsAndHashCode(callSuper = true) class Data4 extends java
   public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
     return (other instanceof Data5);
   }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+    int result = 1;
+    return result;
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+    return "Data5()";
+  }
 }
 final @Data class Data6 {
   public @java.lang.SuppressWarnings("all") Data6() {
@@ -190,5 +197,12 @@ final @Data class Data6 {
     if ((! (o instanceof Data6)))
         return false;
     return true;
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+    int result = 1;
+    return result;
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+    return "Data6()";
   }
 }

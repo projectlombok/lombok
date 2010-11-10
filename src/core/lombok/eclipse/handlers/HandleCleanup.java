@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,8 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.eclipse.handlers.EclipseHandlerUtil.createNameReference;
+
 import java.util.Arrays;
 
 import lombok.Cleanup;
@@ -38,6 +40,7 @@ import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.CaseStatement;
 import org.eclipse.jdt.internal.compiler.ast.CastExpression;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
+import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
@@ -170,7 +173,19 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		Eclipse.setGeneratedBy(varName, ast);
 		NullLiteral nullLiteral = new NullLiteral(pS, pE);
 		Eclipse.setGeneratedBy(nullLiteral, ast);
-		EqualExpression equalExpression = new EqualExpression(varName, nullLiteral, OperatorIds.NOT_EQUAL);
+		
+		MessageSend preventNullAnalysis = new MessageSend();
+		Eclipse.setGeneratedBy(preventNullAnalysis, ast);
+
+		preventNullAnalysis.receiver = createNameReference("lombok.Lombok", ast);
+		preventNullAnalysis.selector = "preventNullAnalysis".toCharArray();
+		
+		preventNullAnalysis.arguments = new Expression[] { varName };
+		preventNullAnalysis.nameSourcePosition = p;
+		preventNullAnalysis.sourceStart = pS;
+		preventNullAnalysis.sourceEnd = preventNullAnalysis.statementEnd = pE;
+		
+		EqualExpression equalExpression = new EqualExpression(preventNullAnalysis, nullLiteral, OperatorIds.NOT_EQUAL);
 		equalExpression.sourceStart = pS; equalExpression.sourceEnd = pE;
 		Eclipse.setGeneratedBy(equalExpression, ast);
 		
