@@ -345,13 +345,34 @@ public class JavacHandlerUtil {
 		return null;
 	}
 	
+	enum FieldAccess {
+		GETTER, PREFER_FIELD, ALWAYS_FIELD;
+	}
+	
+	static boolean lookForGetter(JavacNode field, FieldAccess fieldAccess) {
+		if (fieldAccess == FieldAccess.GETTER) return true;
+		if (fieldAccess == FieldAccess.ALWAYS_FIELD) return false;
+		
+		// If @Getter(lazy = true) is used, then using it is mandatory.
+		for (JavacNode child : field.down()) {
+			if (child.getKind() != Kind.ANNOTATION) continue;
+			if (Javac.annotationTypeMatches(Getter.class, child)) {
+				AnnotationValues<Getter> ann = Javac.createAnnotation(Getter.class, child);
+				if (ann.getInstance().lazy()) return true;
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * Returns the type of the field, unless a getter exists for this field, in which case the return type of the getter is returned.
 	 * 
 	 * @see #createFieldAccessor(TreeMaker, JavacNode)
 	 */
-	static JCExpression getFieldType(JavacNode field, boolean useFieldsDirectly) {
-		GetterMethod getter = useFieldsDirectly ? null : findGetter(field);
+	static JCExpression getFieldType(JavacNode field, FieldAccess fieldAccess) {
+		boolean lookForGetter = lookForGetter(field, fieldAccess);
+		
+		GetterMethod getter = lookForGetter ? findGetter(field) : null;
 		
 		if (getter == null) {
 			return ((JCVariableDecl)field.get()).vartype;
@@ -363,12 +384,14 @@ public class JavacHandlerUtil {
 	/**
 	 * Creates an expression that reads the field. Will either be {@code this.field} or {@code this.getField()} depending on whether or not there's a getter.
 	 */
-	static JCExpression createFieldAccessor(TreeMaker maker, JavacNode field, boolean useFieldsDirectly) {
-		return createFieldAccessor(maker, field, useFieldsDirectly, null);
+	static JCExpression createFieldAccessor(TreeMaker maker, JavacNode field, FieldAccess fieldAccess) {
+		return createFieldAccessor(maker, field, fieldAccess, null);
 	}
 	
-	static JCExpression createFieldAccessor(TreeMaker maker, JavacNode field, boolean useFieldsDirectly, JCExpression receiver) {
-		GetterMethod getter = useFieldsDirectly ? null : findGetter(field);
+	static JCExpression createFieldAccessor(TreeMaker maker, JavacNode field, FieldAccess fieldAccess, JCExpression receiver) {
+		boolean lookForGetter = lookForGetter(field, fieldAccess);
+		
+		GetterMethod getter = lookForGetter ? findGetter(field) : null;
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
 		
 		if (getter == null) {

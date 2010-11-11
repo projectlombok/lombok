@@ -38,6 +38,7 @@ import lombok.core.handlers.TransformationsUtil;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -197,7 +198,7 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 	private JCMethodDecl createSetter(long access, JavacNode field, TreeMaker treeMaker, List<JCExpression> onMethod, List<JCExpression> onParam) {
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
 		
-		JCExpression fieldRef = createFieldAccessor(treeMaker, field, true);
+		JCExpression fieldRef = createFieldAccessor(treeMaker, field, FieldAccess.ALWAYS_FIELD);
 		JCAssign assign = treeMaker.Assign(fieldRef, treeMaker.Ident(fieldDecl.name));
 		
 		List<JCStatement> statements;

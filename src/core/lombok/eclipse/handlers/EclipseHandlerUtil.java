@@ -175,8 +175,29 @@ public class EclipseHandlerUtil {
 		return null;
 	}
 	
-	static TypeReference getFieldType(EclipseNode field, boolean useFieldsDirectly) {
-		GetterMethod getter = useFieldsDirectly ? null : findGetter(field);
+	enum FieldAccess {
+		GETTER, PREFER_FIELD, ALWAYS_FIELD;
+	}
+	
+	static boolean lookForGetter(EclipseNode field, FieldAccess fieldAccess) {
+		if (fieldAccess == FieldAccess.GETTER) return true;
+		if (fieldAccess == FieldAccess.ALWAYS_FIELD) return false;
+		
+		// If @Getter(lazy = true) is used, then using it is mandatory.
+		for (EclipseNode child : field.down()) {
+			if (child.getKind() != Kind.ANNOTATION) continue;
+			if (Eclipse.annotationTypeMatches(Getter.class, child)) {
+				AnnotationValues<Getter> ann = Eclipse.createAnnotation(Getter.class, child);
+				if (ann.getInstance().lazy()) return true;
+			}
+		}
+		return false;
+	}
+	
+	static TypeReference getFieldType(EclipseNode field, FieldAccess fieldAccess) {
+		boolean lookForGetter = lookForGetter(field, fieldAccess);
+		
+		GetterMethod getter = lookForGetter ? findGetter(field) : null;
 		if (getter == null) {
 			return ((FieldDeclaration)field.get()).type;
 		}
@@ -184,11 +205,13 @@ public class EclipseHandlerUtil {
 		return getter.type;
 	}
 	
-	static Expression createFieldAccessor(EclipseNode field, boolean useFieldsDirectly, ASTNode source) {
+	static Expression createFieldAccessor(EclipseNode field, FieldAccess fieldAccess, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
-		GetterMethod getter = useFieldsDirectly ? null : findGetter(field);
+		boolean lookForGetter = lookForGetter(field, fieldAccess);
+		
+		GetterMethod getter = lookForGetter ? findGetter(field) : null;
 		
 		if (getter == null) {
 			FieldDeclaration fieldDecl = (FieldDeclaration)field.get();
@@ -219,11 +242,13 @@ public class EclipseHandlerUtil {
 		return call;
 	}
 	
-	static Expression createFieldAccessor(EclipseNode field, boolean useFieldsDirectly, ASTNode source, char[] receiver) {
+	static Expression createFieldAccessor(EclipseNode field, FieldAccess fieldAccess, ASTNode source, char[] receiver) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
-		GetterMethod getter = useFieldsDirectly ? null : findGetter(field);
+		boolean lookForGetter = lookForGetter(field, fieldAccess);
+		
+		GetterMethod getter = lookForGetter ? findGetter(field) : null;
 		
 		if (getter == null) {
 			NameReference ref;

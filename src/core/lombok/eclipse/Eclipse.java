@@ -352,16 +352,24 @@ public class Eclipse {
 		
 		if (base != null) {
 			if (dims > 0) {
-				return new ArrayTypeReference(base, dims, pos(pos));
+				TypeReference result = new ArrayTypeReference(base, dims, pos(pos));
+				Eclipse.setGeneratedBy(result, pos);
+				return result;
 			}
-			return new SingleTypeReference(base, pos(pos));
+			TypeReference result = new SingleTypeReference(base, pos(pos));
+			Eclipse.setGeneratedBy(result, pos);
+			return result;
 		}
 		
 		if (binding.isAnonymousType()) {
 			ReferenceBinding ref = (ReferenceBinding)binding;
 			ReferenceBinding[] supers = ref.superInterfaces();
 			if (supers == null || supers.length == 0) supers = new ReferenceBinding[] {ref.superclass()};
-			if (supers[0] == null) return new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(pos, 3));
+			if (supers[0] == null) {
+				TypeReference result = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(pos, 3));
+				Eclipse.setGeneratedBy(result, pos);
+				return result;
+			}
 			return makeType(supers[0], pos, false);
 		}
 		
@@ -371,9 +379,12 @@ public class Eclipse {
 		
 		if (binding.isUnboundWildcard()) {
 			if (!allowCompound) {
-				return new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(pos, 3));
+				TypeReference result = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(pos, 3));
+				Eclipse.setGeneratedBy(result, pos);
+				return result;
 			} else {
 				Wildcard out = new Wildcard(Wildcard.UNBOUND);
+				Eclipse.setGeneratedBy(out, pos);
 				out.sourceStart = pos.sourceStart;
 				out.sourceEnd = pos.sourceEnd;
 				return out;
@@ -387,6 +398,7 @@ public class Eclipse {
 					return makeType(wildcard.bound, pos, false);
 				} else {
 					Wildcard out = new Wildcard(Wildcard.EXTENDS);
+					Eclipse.setGeneratedBy(out, pos);
 					out.bound = makeType(wildcard.bound, pos, false);
 					out.sourceStart = pos.sourceStart;
 					out.sourceEnd = pos.sourceEnd;
@@ -394,12 +406,15 @@ public class Eclipse {
 				}
 			} else if (allowCompound && wildcard.boundKind == Wildcard.SUPER) {
 				Wildcard out = new Wildcard(Wildcard.SUPER);
+				Eclipse.setGeneratedBy(out, pos);
 				out.bound = makeType(wildcard.bound, pos, false);
 				out.sourceStart = pos.sourceStart;
 				out.sourceEnd = pos.sourceEnd;
 				return out;
 			} else {
-				return new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(pos, 3));
+				TypeReference result = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(pos, 3));
+				Eclipse.setGeneratedBy(result, pos);
+				return result;
 			}
 		}
 		
@@ -433,23 +448,34 @@ public class Eclipse {
 			if (parts.length > 1) {
 				TypeReference[][] typeArguments = new TypeReference[parts.length][];
 				typeArguments[typeArguments.length - 1] = params;
-				return new ParameterizedQualifiedTypeReference(parts, typeArguments, dims, poss(pos, parts.length));
+				TypeReference result = new ParameterizedQualifiedTypeReference(parts, typeArguments, dims, poss(pos, parts.length));
+				Eclipse.setGeneratedBy(result, pos);
+				return result;
 			}
-			return new ParameterizedSingleTypeReference(parts[0], params, dims, pos(pos));
+			TypeReference result = new ParameterizedSingleTypeReference(parts[0], params, dims, pos(pos));
+			Eclipse.setGeneratedBy(result, pos);
+			return result;
 		}
 		
 		if (dims > 0) {
 			if (parts.length > 1) {
-				return new ArrayQualifiedTypeReference(parts, dims, poss(pos, parts.length));
+				TypeReference result = new ArrayQualifiedTypeReference(parts, dims, poss(pos, parts.length));
+				Eclipse.setGeneratedBy(result, pos);
+				return result;
 			}
-			return new ArrayTypeReference(parts[0], dims, pos(pos));
+			TypeReference result = new ArrayTypeReference(parts[0], dims, pos(pos));
+			Eclipse.setGeneratedBy(result, pos);
+			return result;
 		}
 		
 		if (parts.length > 1) {
-			return new QualifiedTypeReference(parts, poss(pos, parts.length));
+			TypeReference result = new QualifiedTypeReference(parts, poss(pos, parts.length));
+			Eclipse.setGeneratedBy(result, pos);
+			return result;
 		}
-		return new SingleTypeReference(parts[0], pos(pos));
-		
+		TypeReference result = new SingleTypeReference(parts[0], pos(pos));
+		Eclipse.setGeneratedBy(result, pos);
+		return result;
 	}
 	
 	private static final Annotation[] EMPTY_ANNOTATION_ARRAY = new Annotation[0];

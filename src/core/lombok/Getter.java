@@ -65,6 +65,8 @@ public @interface Getter {
 	 */
 	AnyAnnotation[] onMethod() default {};
 	
+	boolean lazy() default false;
+	
 	/**
 	 * Placeholder annotation to enable the placement of annotations on the getter method. 
 	 * @deprecated Don't use this annotation, since we might remove it. 

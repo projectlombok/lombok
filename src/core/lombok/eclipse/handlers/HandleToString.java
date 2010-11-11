@@ -38,6 +38,7 @@ import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.eclipse.handlers.EclipseHandlerUtil.FieldAccess;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -94,7 +95,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		try {
 			includeFieldNames = ((Boolean)ToString.class.getMethod("includeFieldNames").getDefaultValue()).booleanValue();
 		} catch (Exception ignore) {}
-		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, false);
+		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, FieldAccess.GETTER);
 	}
 	
 	public boolean handle(AnnotationValues<ToString> annotation, Annotation ast, EclipseNode annotationNode) {
@@ -115,11 +116,13 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		
 		checkForBogusFieldNames(typeNode, annotation);
 		
-		return generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true, ann.doNotUseGetters());
+		FieldAccess fieldAccess = ann.doNotUseGetters() ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
+		
+		return generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true, fieldAccess);
 	}
 	
 	public boolean generateToString(EclipseNode typeNode, EclipseNode errorNode, List<String> excludes, List<String> includes,
-			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, boolean useFieldsDirectly) {
+			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
 		TypeDeclaration typeDecl = null;
 		
 		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
@@ -161,7 +164,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		
 		switch (methodExists("toString", typeNode)) {
 		case NOT_EXISTS:
-			MethodDeclaration toString = createToString(typeNode, nodesForToString, includeFieldNames, callSuper, errorNode.get(), useFieldsDirectly);
+			MethodDeclaration toString = createToString(typeNode, nodesForToString, includeFieldNames, callSuper, errorNode.get(), fieldAccess);
 			injectMethod(typeNode, toString);
 			return true;
 		case EXISTS_BY_LOMBOK:
@@ -176,7 +179,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 	}
 	
 	private MethodDeclaration createToString(EclipseNode type, Collection<EclipseNode> fields,
-			boolean includeFieldNames, boolean callSuper, ASTNode source, boolean useFieldsDirectly) {
+			boolean includeFieldNames, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {
 		String typeName = getTypeName(type);
 		char[] suffix = ")".toCharArray();
 		String infixS = ", ";
@@ -214,8 +217,8 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		}
 		
 		for (EclipseNode field : fields) {
-			TypeReference fType = getFieldType(field, useFieldsDirectly);
-			Expression fieldAccessor = createFieldAccessor(field, useFieldsDirectly, source);
+			TypeReference fType = getFieldType(field, fieldAccess);
+			Expression fieldAccessor = createFieldAccessor(field, fieldAccess, source);
 			
 			Expression ex;
 			if (fType.dimensions() > 0) {

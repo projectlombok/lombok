@@ -1,0 +1,6 @@
+2:9 ERROR 'lazy' requires the field to be private and final.
+6:9 ERROR 'lazy' requires the field to be private and final.
+10:9 ERROR 'lazy' requires the field to be private and final.
+14:9 WARNING 'lazy' does not work with AccessLevel.NONE.
+17:1 ERROR 'lazy' is not supported for @Getter on a type.
+22:9 ERROR 'lazy' requires field initialization.
