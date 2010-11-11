@@ -22,5 +22,5 @@
 package lombok;
 
 public @interface Delegate {
-	Class<?> value() default java.lang.Object.class;
+	Class<?>[] value() default {};
 }

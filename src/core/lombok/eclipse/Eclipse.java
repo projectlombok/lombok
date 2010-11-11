@@ -299,7 +299,7 @@ public class Eclipse {
 		return ref;
 	}
 	
-	private static long pos(ASTNode node) {
+	public static long pos(ASTNode node) {
 		return ((long) node.sourceStart << 32) | (node.sourceEnd & 0xFFFFFFFFL);
 	}
 	

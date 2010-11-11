@@ -257,7 +257,18 @@ public class EclipsePatcher extends Agent {
 	}
 	
 	private static void patchEcjTransformers(ScriptManager sm, boolean ecj) {
+		patchDelegate(sm);
 		patchHandleVal(sm, ecj);
+	}
+	
+	private static void patchDelegate(ScriptManager sm) {
+		final String TYPEDECLARATION_SIG = "org.eclipse.jdt.internal.compiler.ast.TypeDeclaration";
+		
+		sm.addScript(ScriptBuilder.exitEarly()
+				.target(new MethodTarget(TYPEDECLARATION_SIG, "resolve", "void"))
+				.request(StackRequest.THIS)
+				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "handleDelegateForType", "boolean", TYPEDECLARATION_SIG))
+				.build());
 	}
 	
 	// Creates a copy of the 'initialization' field on a LocalDeclaration if the type of the LocalDeclaration is 'val', because the completion parser will null this out,

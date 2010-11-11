@@ -506,7 +506,7 @@ public class EclipseHandlerUtil {
 	
 	private static final char[] ALL = "all".toCharArray();
 	
-	private static Annotation[] createSuppressWarningsAll(ASTNode source, Annotation[] originalAnnotationArray) {
+	public static Annotation[] createSuppressWarningsAll(ASTNode source, Annotation[] originalAnnotationArray) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		long[] poss = new long[3];
