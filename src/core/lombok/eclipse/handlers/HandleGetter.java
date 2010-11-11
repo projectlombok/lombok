@@ -76,7 +76,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		}
 		
 		for (EclipseNode field : typeNode.down()) {
-			if (fieldQualifiesForGetterGeneration(field)) generateGetterForField(field, pos.get(), level, null);
+			if (fieldQualifiesForGetterGeneration(field)) generateGetterForField(field, pos.get(), level, null, false);
 		}
 		return true;
 	}
@@ -103,7 +103,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 	 * If not, the getter is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
 	 */
-	public void generateGetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level, Annotation[] onMethod) {
+	public void generateGetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level, Annotation[] onMethod, boolean lazy) {
 		for (EclipseNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				if (annotationTypeMatches(Getter.class, child)) {
@@ -113,42 +113,61 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 			}
 		}
 		
-		createGetterForField(level, fieldNode, fieldNode, pos, false, onMethod);
+		createGetterForField(level, fieldNode, fieldNode, pos, false, onMethod, lazy);
 	}
 	
 	public boolean handle(AnnotationValues<Getter> annotation, Annotation ast, EclipseNode annotationNode) {
 		EclipseNode node = annotationNode.up();
-		AccessLevel level = annotation.getInstance().value();
-		if (level == AccessLevel.NONE) return true;
+		Getter annotationInstance = annotation.getInstance();
+		AccessLevel level = annotationInstance.value();
+		boolean lazy = annotationInstance.lazy();
+		if (level == AccessLevel.NONE) {
+			if (lazy) {
+				annotationNode.addWarning("'lazy' requires AccessLevel.PRIVATE or higher.");
+			}
+			return true;
+		}
 		
 		if (node == null) return false;
 		
 		Annotation[] onMethod = getAndRemoveAnnotationParameter(ast, "onMethod");
 		if (node.getKind() == Kind.FIELD) {
-			return createGetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true, onMethod);
+			return createGetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true, onMethod, lazy);
 		}
 		if (node.getKind() == Kind.TYPE) {
 			if (onMethod != null && onMethod.length != 0) annotationNode.addError("'onMethod' is not supported for @Getter on a type.");
+			if (lazy) annotationNode.addError("'lazy' is not supported for @Getter on a type.");
 			return generateGetterForType(node, annotationNode, level, false);
 		}
 		return false;
 	}
 	
-	private boolean createGetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, Annotation[] onMethod) {
+	private boolean createGetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, Annotation[] onMethod, boolean lazy) {
 		for (EclipseNode fieldNode : fieldNodes) {
-			createGetterForField(level, fieldNode, errorNode, source, whineIfExists, onMethod);
+			createGetterForField(level, fieldNode, errorNode, source, whineIfExists, onMethod, lazy);
 		}
 		return true;
 	}
 	
 	private boolean createGetterForField(AccessLevel level,
-			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists, Annotation[] onMethod) {
+			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists, Annotation[] onMethod, boolean lazy) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			errorNode.addError("@Getter is only supported on a class or a field.");
 			return true;
 		}
 		
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
+		if (lazy) {
+			if ((field.modifiers & (ClassFileConstants.AccPrivate | ClassFileConstants.AccFinal)) != 0) {
+				errorNode.addError("'lazy' requires the field to be private and final.");
+				return true;
+			}
+			if (field.initialization == null) {
+				errorNode.addError("'lazy' requires field initialization.");
+				return true;
+			}
+		}
+		
 		TypeReference fieldType = copyType(field.type, source);
 		String fieldName = new String(field.name);
 		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
@@ -198,7 +217,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		method.thrownExceptions = null;
 		method.typeParameters = null;
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		Expression fieldRef = createFieldAccessor(fieldNode, true, source);
+		Expression fieldRef = createFieldAccessor(fieldNode, FieldAccess.ALWAYS_FIELD, source);
 		Statement returnStatement = new ReturnStatement(fieldRef, field.sourceStart, field.sourceEnd);
 		Eclipse.setGeneratedBy(returnStatement, source);
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;

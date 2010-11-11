@@ -29,6 +29,7 @@ import lombok.core.AST.Kind;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -88,7 +89,9 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 			annotation.setWarning("exclude", "exclude and of are mutually exclusive; the 'exclude' parameter will be ignored.");
 		}
 		
-		return generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true, ann.doNotUseGetters());
+		FieldAccess fieldAccess = ann.doNotUseGetters() ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
+		
+		return generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true, fieldAccess);
 	}
 	
 	public void generateToStringForType(JavacNode typeNode, JavacNode errorNode) {
@@ -105,11 +108,11 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		try {
 			includeFieldNames = ((Boolean)ToString.class.getMethod("includeFieldNames").getDefaultValue()).booleanValue();
 		} catch (Exception ignore) {}
-		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, false);
+		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, FieldAccess.GETTER);
 	}
 	
 	private boolean generateToString(JavacNode typeNode, JavacNode errorNode, List<String> excludes, List<String> includes,
-			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, boolean useFieldsDirectly) {
+			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
 		boolean notAClass = true;
 		if (typeNode.get() instanceof JCClassDecl) {
 			long flags = ((JCClassDecl)typeNode.get()).mods.flags;
@@ -150,7 +153,7 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		
 		switch (methodExists("toString", typeNode)) {
 		case NOT_EXISTS:
-			JCMethodDecl method = createToString(typeNode, nodesForToString, includeFieldNames, callSuper, useFieldsDirectly);
+			JCMethodDecl method = createToString(typeNode, nodesForToString, includeFieldNames, callSuper, fieldAccess);
 			injectMethod(typeNode, method);
 			return true;
 		case EXISTS_BY_LOMBOK:
@@ -165,7 +168,7 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 
 	}
 	
-	private JCMethodDecl createToString(JavacNode typeNode, List<JavacNode> fields, boolean includeFieldNames, boolean callSuper, boolean useFieldsDirectly) {
+	private JCMethodDecl createToString(JavacNode typeNode, List<JavacNode> fields, boolean includeFieldNames, boolean callSuper, FieldAccess fieldAccess) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(chainDots(maker, typeNode, "java", "lang", "Override"), List.<JCExpression>nil());
@@ -202,9 +205,9 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			JCExpression expr;
 			
-			JCExpression fieldAccessor = createFieldAccessor(maker, fieldNode, useFieldsDirectly);
+			JCExpression fieldAccessor = createFieldAccessor(maker, fieldNode, fieldAccess);
 			
-			if (getFieldType(fieldNode, useFieldsDirectly) instanceof JCArrayTypeTree) {
+			if (getFieldType(fieldNode, fieldAccess) instanceof JCArrayTypeTree) {
 				boolean multiDim = ((JCArrayTypeTree)field.vartype).elemtype instanceof JCArrayTypeTree;
 				boolean primitiveArray = ((JCArrayTypeTree)field.vartype).elemtype instanceof JCPrimitiveTypeTree;
 				boolean useDeepTS = multiDim || !primitiveArray;

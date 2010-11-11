@@ -35,6 +35,7 @@ import lombok.core.handlers.TransformationsUtil;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.eclipse.handlers.EclipseHandlerUtil.FieldAccess;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -206,7 +207,7 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		method.thrownExceptions = null;
 		method.typeParameters = null;
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		Expression fieldRef = createFieldAccessor(fieldNode, true, source);
+		Expression fieldRef = createFieldAccessor(fieldNode, FieldAccess.ALWAYS_FIELD, source);
 		NameReference fieldNameRef = new SingleNameReference(field.name, p);
 		Eclipse.setGeneratedBy(fieldNameRef, source);
 		Assignment assignment = new Assignment(fieldRef, fieldNameRef, (int)p);

@@ -113,7 +113,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 			}
 		}
 		
-		generateMethods(typeNode, errorNode, null, null, null, false, false);
+		generateMethods(typeNode, errorNode, null, null, null, false, FieldAccess.GETTER);
 	}
 	
 	@Override public boolean handle(AnnotationValues<EqualsAndHashCode> annotation,
@@ -135,11 +135,13 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 			annotation.setWarning("exclude", "exclude and of are mutually exclusive; the 'exclude' parameter will be ignored.");
 		}
 		
-		return generateMethods(typeNode, annotationNode, excludes, includes, callSuper, true, ann.doNotUseGetters());
+		FieldAccess fieldAccess = ann.doNotUseGetters() ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
+		
+		return generateMethods(typeNode, annotationNode, excludes, includes, callSuper, true, fieldAccess);
 	}
 	
 	public boolean generateMethods(EclipseNode typeNode, EclipseNode errorNode, List<String> excludes, List<String> includes,
-			Boolean callSuper, boolean whineIfExists, boolean useFieldsDirectly) {
+			Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
 		assert excludes == null || includes == null;
 		
 		TypeDeclaration typeDecl = null;
@@ -209,7 +211,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 			boolean isFinal = (typeDecl.modifiers & ClassFileConstants.AccFinal) != 0;
 			needsCanEqual = !isDirectDescendantOfObject || !isFinal;
 			
-			MethodDeclaration equals = createEquals(typeNode, nodesForEquality, callSuper, errorNode.get(), useFieldsDirectly, needsCanEqual);
+			MethodDeclaration equals = createEquals(typeNode, nodesForEquality, callSuper, errorNode.get(), fieldAccess, needsCanEqual);
 			injectMethod(typeNode, equals);
 			break;
 		case EXISTS_BY_LOMBOK:
@@ -237,7 +239,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		
 		switch (methodExists("hashCode", typeNode)) {
 		case NOT_EXISTS:
-			MethodDeclaration hashCode = createHashCode(typeNode, nodesForEquality, callSuper, errorNode.get(), useFieldsDirectly);
+			MethodDeclaration hashCode = createHashCode(typeNode, nodesForEquality, callSuper, errorNode.get(), fieldAccess);
 			injectMethod(typeNode, hashCode);
 			break;
 		case EXISTS_BY_LOMBOK:
@@ -253,7 +255,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		return true;
 	}
 	
-	private MethodDeclaration createHashCode(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, boolean useFieldsDirectly) {
+	private MethodDeclaration createHashCode(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
@@ -318,9 +320,9 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		
 		int tempCounter = 0;
 		for (EclipseNode field : fields) {
-			TypeReference fType = getFieldType(field, useFieldsDirectly);
+			TypeReference fType = getFieldType(field, fieldAccess);
 			char[] token = fType.getLastToken();
-			Expression fieldAccessor = createFieldAccessor(field, useFieldsDirectly, source);
+			Expression fieldAccessor = createFieldAccessor(field, fieldAccess, source);
 			if (fType.dimensions() == 0 && token != null) {
 				if (Arrays.equals(TypeConstants.FLOAT, token)) {
 					/* Float.floatToIntBits(fieldName) */
@@ -363,7 +365,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 					Eclipse.setGeneratedBy(int1231or1237, source);
 					intoResult.add(int1231or1237);
 				} else if (Arrays.equals(TypeConstants.LONG, token)) {
-					intoResult.add(longToIntForHashCode(fieldAccessor, createFieldAccessor(field, useFieldsDirectly, source), source));
+					intoResult.add(longToIntForHashCode(fieldAccessor, createFieldAccessor(field, fieldAccess, source), source));
 				} else if (BUILT_IN_TYPES.contains(new String(token))) {
 					intoResult.add(fieldAccessor);
 				} else /* objects */ {
@@ -371,7 +373,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 					MessageSend hashCodeCall = new MessageSend();
 					hashCodeCall.sourceStart = pS; hashCodeCall.sourceEnd = pE;
 					Eclipse.setGeneratedBy(hashCodeCall, source);
-					hashCodeCall.receiver = createFieldAccessor(field, useFieldsDirectly, source);
+					hashCodeCall.receiver = createFieldAccessor(field, fieldAccess, source);
 					hashCodeCall.selector = "hashCode".toCharArray();
 					NullLiteral nullLiteral = new NullLiteral(pS, pE);
 					Eclipse.setGeneratedBy(nullLiteral, source);
@@ -433,7 +435,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		return method;
 	}
 	
-	private MethodDeclaration createEquals(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, boolean useFieldsDirectly, boolean needsCanEqual) {
+	private MethodDeclaration createEquals(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess, boolean needsCanEqual) {
 		int pS = source.sourceStart; int pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		TypeDeclaration typeDecl = (TypeDeclaration)type.get();
@@ -589,10 +591,10 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		}
 		
 		for (EclipseNode field : fields) {
-			TypeReference fType = getFieldType(field, useFieldsDirectly);
+			TypeReference fType = getFieldType(field, fieldAccess);
 			char[] token = fType.getLastToken();
-			Expression thisFieldAccessor = createFieldAccessor(field, useFieldsDirectly, source);
-			Expression otherFieldAccessor = createFieldAccessor(field, useFieldsDirectly, source, otherName);
+			Expression thisFieldAccessor = createFieldAccessor(field, fieldAccess, source);
+			Expression otherFieldAccessor = createFieldAccessor(field, fieldAccess, source, otherName);
 			
 			if (fType.dimensions() == 0 && token != null) {
 				if (Arrays.equals(TypeConstants.FLOAT, token)) {
@@ -619,9 +621,9 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 					MessageSend equalsCall = new MessageSend();
 					equalsCall.sourceStart = pS; equalsCall.sourceEnd = pE;
 					Eclipse.setGeneratedBy(equalsCall, source);
-					equalsCall.receiver = createFieldAccessor(field, useFieldsDirectly, source);
+					equalsCall.receiver = createFieldAccessor(field, fieldAccess, source);
 					equalsCall.selector = "equals".toCharArray();
-					equalsCall.arguments = new Expression[] { createFieldAccessor(field, useFieldsDirectly, source, otherName) };
+					equalsCall.arguments = new Expression[] { createFieldAccessor(field, fieldAccess, source, otherName) };
 					UnaryExpression fieldsNotEqual = new UnaryExpression(equalsCall, OperatorIds.NOT);
 					fieldsNotEqual.sourceStart = pS; fieldsNotEqual.sourceEnd = pE;
 					Eclipse.setGeneratedBy(fieldsNotEqual, source);
