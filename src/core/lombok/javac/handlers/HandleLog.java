@@ -121,6 +121,10 @@ public class HandleLog {
 		@Override public boolean handle(AnnotationValues<lombok.extern.apachecommons.Log> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			return processAnnotation(LoggingFramework.COMMONS, annotation, annotationNode);
 		}
+		
+		@Override public boolean isResolutionBased() {
+			return false;
+		}
 	}
 	
 	/**
@@ -131,7 +135,11 @@ public class HandleLog {
 		@Override public boolean handle(AnnotationValues<lombok.extern.jul.Log> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			return processAnnotation(LoggingFramework.JUL, annotation, annotationNode);
 		}
-	}	
+		
+		@Override public boolean isResolutionBased() {
+			return false;
+		}
+	}
 	
 	/**
 	 * Handles the {@link lombok.extern.log4j.Log} annotation for javac.
@@ -140,6 +148,10 @@ public class HandleLog {
 	public static class HandleLog4jLog implements JavacAnnotationHandler<lombok.extern.log4j.Log> {
 		@Override public boolean handle(AnnotationValues<lombok.extern.log4j.Log> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			return processAnnotation(LoggingFramework.LOG4J, annotation, annotationNode);
+		}
+		
+		@Override public boolean isResolutionBased() {
+			return false;
 		}
 	}
 	
@@ -150,6 +162,10 @@ public class HandleLog {
 	public static class HandleSlf4jLog implements JavacAnnotationHandler<lombok.extern.slf4j.Log> {
 		@Override public boolean handle(AnnotationValues<lombok.extern.slf4j.Log> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			return processAnnotation(LoggingFramework.SLF4J, annotation, annotationNode);
+		}
+		
+		@Override public boolean isResolutionBased() {
+			return false;
 		}
 	}
 	

@@ -110,4 +110,8 @@ public class HandleSneakyThrows implements JavacAnnotationHandler<SneakyThrows> 
 		
 		return maker.Try(tryBlock, List.of(maker.Catch(catchParam, catchBody)), null);
 	}
+	
+	@Override public boolean isResolutionBased() {
+		return false;
+	}
 }

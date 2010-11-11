@@ -69,6 +69,10 @@ public class HandleConstructor {
 			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, false, false);
 			return true;
 		}
+		
+		@Override public boolean isResolutionBased() {
+			return false;
+		}
 	}
 	
 	@ProviderFor(JavacAnnotationHandler.class)
@@ -85,6 +89,10 @@ public class HandleConstructor {
 			if (level == AccessLevel.NONE) return true;
 			new HandleConstructor().generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, false, suppressConstructorProperties);
 			return true;
+		}
+		
+		@Override public boolean isResolutionBased() {
+			return false;
 		}
 	}
 	
@@ -130,6 +138,10 @@ public class HandleConstructor {
 			}
 			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, false, suppressConstructorProperties);
 			return true;
+		}
+		
+		@Override public boolean isResolutionBased() {
+			return false;
 		}
 	}
 	

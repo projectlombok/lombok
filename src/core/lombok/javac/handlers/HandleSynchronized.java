@@ -107,4 +107,8 @@ public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> 
 		
 		return true;
 	}
+	
+	@Override public boolean isResolutionBased() {
+		return false;
+	}
 }

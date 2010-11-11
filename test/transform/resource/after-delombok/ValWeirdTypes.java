@@ -44,4 +44,14 @@ public class ValWeirdTypes<Z> {
 		final java.util.AbstractList<java.lang.String> d = c ? a : b;
 		java.util.RandomAccess confirm = c ? a : b;
 	}
+	public void nullType() {
+		final java.lang.Object nully = null;
+	}
+	public void testArrays() {
+		final int[] intArray = new int[]{1, 2, 3};
+		final java.lang.Object[][] multiDimArray = new Object[][]{{}};
+		final int[] copy = intArray;
+		final java.lang.Object[] single = multiDimArray[0];
+		final int singleInt = copy[0];
+	}
 }

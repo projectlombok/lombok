@@ -33,8 +33,6 @@ import org.mangosdk.spi.ProviderFor;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.util.List;
 
 /**
  * Handles the {@code lombok.Data} annotation for javac.
@@ -64,5 +62,9 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		new HandleToString().generateToStringForType(typeNode, annotationNode);
 		
 		return true;
+	}
+	
+	@Override public boolean isResolutionBased() {
+		return false;
 	}
 }

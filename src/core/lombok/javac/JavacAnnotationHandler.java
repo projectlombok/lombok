@@ -55,4 +55,9 @@ public interface JavacAnnotationHandler<T extends Annotation> {
 	 * compile session (you've handled it), or {@code false} to indicate you aren't done yet.
 	 */
 	boolean handle(AnnotationValues<T> annotation, JCAnnotation ast, JavacNode annotationNode);
+	
+	/**
+	 * Return true if this handler requires resolution.
+	 */
+	boolean isResolutionBased();
 }

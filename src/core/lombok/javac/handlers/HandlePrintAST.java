@@ -54,4 +54,8 @@ public class HandlePrintAST implements JavacAnnotationHandler<PrintAST> {
 		
 		return true;
 	}
+	
+	@Override public boolean isResolutionBased() {
+		return false;
+	}
 }

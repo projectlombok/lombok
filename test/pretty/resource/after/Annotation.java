@@ -6,7 +6,7 @@ class Annotation {
 	}
 	public void method(@SuppressWarnings("unused") int x) {
 	}
-	public void method2(@SuppressWarnings(value = {"unused"}) int y) {
+	public void method2(@SuppressWarnings({"unused"}) int y) {
 	}
 	public void method3(@SuppressWarnings({"unused", "unchecked"}) int z) {
 	}

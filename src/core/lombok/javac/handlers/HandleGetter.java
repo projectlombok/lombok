@@ -221,7 +221,6 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		return true;
 	}
 	
-	
 	private JCMethodDecl createGetter(long access, JavacNode field, TreeMaker treeMaker, List<JCExpression> onMethod, boolean lazy) {
 		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
 		
@@ -366,5 +365,9 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 	
 	private JCExpression copyType(TreeMaker treeMaker, JCVariableDecl fieldNode) {
 		return fieldNode.type != null ? treeMaker.Type(fieldNode.type) : fieldNode.vartype;
+	}
+	
+	@Override public boolean isResolutionBased() {
+		return false;
 	}
 }

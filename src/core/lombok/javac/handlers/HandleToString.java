@@ -250,4 +250,8 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		}
 		return typeName;
 	}
+	
+	@Override public boolean isResolutionBased() {
+		return false;
+	}
 }

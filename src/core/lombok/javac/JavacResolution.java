@@ -325,6 +325,8 @@ public class JavacResolution {
 		// NB: There's such a thing as maker.Type(type), but this doesn't work very well; it screws up anonymous classes, captures, and adds an extra prefix dot for some reason too.
 		//  -- so we write our own take on that here.
 		
+		if (type.tag == TypeTags.BOT) return createJavaLangObject(maker, ast);
+		
 		if (type.isPrimitive()) return primitiveToJCTree(type.getKind(), maker);
 		if (type.isErroneous()) throw new TypeNotConvertibleException("Type cannot be resolved");
 		
