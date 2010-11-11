@@ -8,15 +8,18 @@ class GetterLazyInvalidNotPrivateFinal {
 	String fieldName = "";
 }
 class GetterLazyInvalidNone {
-	String fieldName = "";
+	private final String fieldName = "";
 }
 class GetterLazyInvalidClass {
-	String fieldName = "";
+	private final String fieldName = "";
 	@java.lang.SuppressWarnings("all")
 	public String getFieldName() {
 		return this.fieldName;
 	}
 }
 class GetterLazyInvalidNoInit {
-	String fieldName;
+	private final String fieldName;
+	GetterLazyInvalidNoInit() {
+		this.fieldName = "foo";
+	}
 }

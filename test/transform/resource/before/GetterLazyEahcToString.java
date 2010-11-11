@@ -3,4 +3,6 @@
 class GetterLazyEahcToString {
 	@lombok.Getter(lazy=true)
 	private final String value = "";
+	@lombok.Getter
+	private final String value2 = "";
 }

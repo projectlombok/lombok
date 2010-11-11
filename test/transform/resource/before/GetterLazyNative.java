@@ -22,4 +22,7 @@ class GetterLazyNative {
 	
 	@lombok.Getter(lazy=true)
 	private final char charField = '1';
+	
+	@lombok.Getter(lazy=true)
+	private final int[] intArrayField = new int[] {1};
 }

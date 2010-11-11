@@ -1,5 +1,8 @@
 class GetterLazyEahcToString {
+	
 	private final java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<String>> value = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<String>>();
+	private final String value2 = "";
+	
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public boolean equals(final java.lang.Object o) {
@@ -8,25 +11,31 @@ class GetterLazyEahcToString {
 		final GetterLazyEahcToString other = (GetterLazyEahcToString)o;
 		if (!other.canEqual(this)) return false;
 		if (this.getValue() == null ? other.getValue() != null : !this.getValue().equals(other.getValue())) return false;
+		if (this.value2 == null ? other.value2 != null : !this.value2.equals(other.value2)) return false;
 		return true;
 	}
+	
 	@java.lang.SuppressWarnings("all")
 	public boolean canEqual(final java.lang.Object other) {
 		return other instanceof GetterLazyEahcToString;
 	}
+	
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
 		final int PRIME = 31;
 		int result = 1;
 		result = result * PRIME + (this.getValue() == null ? 0 : this.getValue().hashCode());
+		result = result * PRIME + (this.value2 == null ? 0 : this.value2.hashCode());
 		return result;
 	}
+	
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public java.lang.String toString() {
-		return "GetterLazyEahcToString(value=" + this.getValue() + ")";
+		return "GetterLazyEahcToString(value=" + this.getValue() + ", value2=" + this.value2 + ")";
 	}
+	
 	@java.lang.SuppressWarnings("all")
 	public String getValue() {
 		java.util.concurrent.atomic.AtomicReference<String> value = this.value.get();
@@ -40,5 +49,10 @@ class GetterLazyEahcToString {
 			}
 		}
 		return value.get();
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public String getValue2() {
+		return this.value2;
 	}
 }

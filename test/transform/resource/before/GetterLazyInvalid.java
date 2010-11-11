@@ -12,13 +12,16 @@ class GetterLazyInvalidNotPrivateFinal {
 }
 class GetterLazyInvalidNone {
 	@lombok.Getter(lazy=true, value=lombok.AccessLevel.NONE)
-	String fieldName = "";
+	private final String fieldName = "";
 }
 @lombok.Getter(lazy = true)
 class GetterLazyInvalidClass {
-	String fieldName = "";
+	private final String fieldName = "";
 }
 class GetterLazyInvalidNoInit {
 	@lombok.Getter(lazy = true)
-	String fieldName;
+	private final String fieldName;
+	GetterLazyInvalidNoInit() {
+		this.fieldName = "foo";
+	}
 }

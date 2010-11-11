@@ -1,5 +1,4 @@
 class GetterLazyNative {
-	
 	private final java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>> booleanField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>>();
 	private final java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Byte>> byteField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Byte>>();
 	private final java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Short>> shortField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Short>>();
@@ -8,7 +7,7 @@ class GetterLazyNative {
 	private final java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Float>> floatField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Float>>();
 	private final java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Double>> doubleField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Double>>();
 	private final java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Character>> charField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Character>>();
-	
+	private final java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<int[]>> intArrayField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<int[]>>();
 	@java.lang.SuppressWarnings("all")
 	public boolean getBooleanField() {
 		java.util.concurrent.atomic.AtomicReference<java.lang.Boolean> value = this.booleanField.get();
@@ -116,6 +115,20 @@ class GetterLazyNative {
 				if (value == null) {
 					value = new java.util.concurrent.atomic.AtomicReference<java.lang.Character>('1');
 					this.charField.set(value);
+				}
+			}
+		}
+		return value.get();
+	}
+	@java.lang.SuppressWarnings("all")
+	public int[] getIntArrayField() {
+		java.util.concurrent.atomic.AtomicReference<int[]> value = this.intArrayField.get();
+		if (value == null) {
+			synchronized (this.intArrayField) {
+				value = this.intArrayField.get();
+				if (value == null) {
+					value = new java.util.concurrent.atomic.AtomicReference<int[]>(new int[]{1});
+					this.intArrayField.set(value);
 				}
 			}
 		}
