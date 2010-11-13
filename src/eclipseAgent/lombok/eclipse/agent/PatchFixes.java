@@ -71,6 +71,8 @@ import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
+import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
+import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
@@ -348,10 +350,47 @@ public class PatchFixes {
 	}
 	
 	public static boolean handleDelegateForType(TypeDeclaration decl) {
-		if (decl.scope == null) return false;
-		if (decl.fields == null) return false;
+		return false;
+	}
+	
+	public static boolean handleDelegateForType2(ClassScope scope) {
+		TypeDeclaration decl = scope.referenceContext;
+		if (decl == null) return false;
 		
-		for (FieldDeclaration field : decl.fields) {
+		boolean continueAdding = false;
+		
+		/* debug */ try {
+			MethodBinding[] existingMethods = (MethodBinding[]) sourceTypeBindingMethodsField.get(decl.binding);
+			System.out.println("Existing method bindings in type.SourceTypeBinding: " + new String(scope.referenceContext.name));
+			for (MethodBinding binding : existingMethods) {
+				System.out.println("  " + binding);
+			}
+			FieldBinding[] existingFields = (FieldBinding[]) sourceTypeBindingFieldsField.get(decl.binding);
+			System.out.println("Existing field bindings in type.SourceTypeBinding: ");
+			for (FieldBinding binding : existingFields) {
+				System.out.println("  " + binding);
+			}
+			
+			if (charArrayEquals("Test", scope.referenceContext.name)) {
+				for (AbstractMethodDeclaration m : scope.referenceContext.methods) {
+					if (m instanceof MethodDeclaration) {
+						if (charArrayEquals("example", m.selector)) {
+							System.out.println("Example scope now: " + m.scope);
+							System.out.println("Example binding now: " + m.binding);
+							if (m.scope == null && m.binding == null) continueAdding = true;
+							Thread.dumpStack();
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			System.err.println("EXCEPTION DURING DEBUG 1");
+			e.printStackTrace();
+		}
+		
+		if (!continueAdding) return false;
+		
+		if (decl.fields != null) for (FieldDeclaration field : decl.fields) {
 			if (field.annotations == null) continue;
 			for (Annotation ann : field.annotations) {
 				if (ann.type == null) continue;
@@ -397,11 +436,11 @@ public class PatchFixes {
 	}
 	
 	private static final Method methodScopeCreateMethodMethod;
-	private static final Field sourceTypeBindingMethodsField;
+	private static final Field sourceTypeBindingMethodsField, sourceTypeBindingFieldsField;
 	
 	static {
 		Method m = null;
-		Field f = null;
+		Field f = null, g = null;
 		Exception ex = null;
 		
 		try {
@@ -409,12 +448,15 @@ public class PatchFixes {
 			m.setAccessible(true);
 			f = SourceTypeBinding.class.getDeclaredField("methods");
 			f.setAccessible(true);
+			g = SourceTypeBinding.class.getDeclaredField("fields");
+			g.setAccessible(true);
 		} catch (Exception e) {
 			ex = e;
 		}
 		
 		methodScopeCreateMethodMethod = m;
 		sourceTypeBindingMethodsField = f;
+		sourceTypeBindingFieldsField = g;
 		if (ex != null) throw new RuntimeException(ex);
 	}
 	
@@ -440,28 +482,28 @@ public class PatchFixes {
 				
 				newArray[insertionPoint] = method;
 				type.methods = newArray;
-				MethodScope methodScope = new MethodScope(type.scope, method, false);
-				
-				try {
-					MethodBinding methodBinding = (MethodBinding) methodScopeCreateMethodMethod.invoke(methodScope, method);
-					System.out.println("SCOPE NOW: " + method.scope);
-					
-					method.resolve(type.scope);
-					System.out.println("Bind now: " + methodBinding.returnType);
-					
-					MethodBinding[] existing = (MethodBinding[]) sourceTypeBindingMethodsField.get(type.binding);
-					if (existing == null) existing = new MethodBinding[] {methodBinding};
-					else {
-						MethodBinding[] copy = new MethodBinding[existing.length + 1];
-						System.arraycopy(existing, 0, copy, 0, existing.length);
-						copy[existing.length] = methodBinding;
-					}
-					sourceTypeBindingMethodsField.set(type.binding, existing);
-					System.out.println("Added method binding: " + methodBinding);
-					System.out.println(method);
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
+//				MethodScope methodScope = new MethodScope(type.scope, method, false);
+//				
+//				try {
+//					MethodBinding methodBinding = (MethodBinding) methodScopeCreateMethodMethod.invoke(methodScope, method);
+//					System.out.println("SCOPE NOW: " + method.scope);
+//					
+//					method.resolve(type.scope);
+//					System.out.println("Bind now: " + methodBinding.returnType);
+//					
+//					MethodBinding[] existing = (MethodBinding[]) sourceTypeBindingMethodsField.get(type.binding);
+//					if (existing == null) existing = new MethodBinding[] {methodBinding};
+//					else {
+//						MethodBinding[] copy = new MethodBinding[existing.length + 1];
+//						System.arraycopy(existing, 0, copy, 0, existing.length);
+//						copy[existing.length] = methodBinding;
+//					}
+//					sourceTypeBindingMethodsField.set(type.binding, existing);
+//					System.out.println("Added method binding: " + methodBinding);
+//					System.out.println(method);
+//				} catch (Exception e) {
+//					throw new RuntimeException(e);
+//				}
 			}
 		}
 	}

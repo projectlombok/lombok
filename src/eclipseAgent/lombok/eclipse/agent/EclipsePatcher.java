@@ -26,6 +26,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.jdt.internal.compiler.env.AccessRestriction;
+import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
+
 import lombok.core.Agent;
 import lombok.patcher.Hook;
 import lombok.patcher.MethodTarget;
@@ -264,10 +267,18 @@ public class EclipsePatcher extends Agent {
 	private static void patchDelegate(ScriptManager sm) {
 		final String TYPEDECLARATION_SIG = "org.eclipse.jdt.internal.compiler.ast.TypeDeclaration";
 		
+//		sm.addScript(ScriptBuilder.exitEarly()
+//				.target(new MethodTarget(TYPEDECLARATION_SIG, "resolve", "void"))
+//				.request(StackRequest.THIS)
+//				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "handleDelegateForType", "boolean", TYPEDECLARATION_SIG))
+//				.build());
+		
+		final String CLASSSCOPE_SIG = "org.eclipse.jdt.internal.compiler.lookup.ClassScope";
+		
 		sm.addScript(ScriptBuilder.exitEarly()
-				.target(new MethodTarget(TYPEDECLARATION_SIG, "resolve", "void"))
+				.target(new MethodTarget(CLASSSCOPE_SIG, "buildFieldsAndMethods", "void"))
 				.request(StackRequest.THIS)
-				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "handleDelegateForType", "boolean", TYPEDECLARATION_SIG))
+				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "handleDelegateForType2", "boolean", CLASSSCOPE_SIG))
 				.build());
 	}
 	
