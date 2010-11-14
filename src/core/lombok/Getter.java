@@ -73,5 +73,6 @@ public @interface Getter {
 	 */
 	@Deprecated
 	@Retention(RetentionPolicy.SOURCE)
+	@Target({})
 	@interface AnyAnnotation {}
 }
