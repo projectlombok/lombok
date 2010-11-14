@@ -26,9 +26,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.jdt.internal.compiler.env.AccessRestriction;
-import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
-
 import lombok.core.Agent;
 import lombok.patcher.Hook;
 import lombok.patcher.MethodTarget;
@@ -260,94 +257,7 @@ public class EclipsePatcher extends Agent {
 	}
 	
 	private static void patchEcjTransformers(ScriptManager sm, boolean ecj) {
-		patchDelegate(sm);
-		patchHandleVal(sm, ecj);
-	}
-	
-	private static void patchDelegate(ScriptManager sm) {
-		final String TYPEDECLARATION_SIG = "org.eclipse.jdt.internal.compiler.ast.TypeDeclaration";
-		
-//		sm.addScript(ScriptBuilder.exitEarly()
-//				.target(new MethodTarget(TYPEDECLARATION_SIG, "resolve", "void"))
-//				.request(StackRequest.THIS)
-//				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "handleDelegateForType", "boolean", TYPEDECLARATION_SIG))
-//				.build());
-		
-		final String CLASSSCOPE_SIG = "org.eclipse.jdt.internal.compiler.lookup.ClassScope";
-		
-		sm.addScript(ScriptBuilder.exitEarly()
-				.target(new MethodTarget(CLASSSCOPE_SIG, "buildFieldsAndMethods", "void"))
-				.request(StackRequest.THIS)
-				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "handleDelegateForType2", "boolean", CLASSSCOPE_SIG))
-				.build());
-	}
-	
-	// Creates a copy of the 'initialization' field on a LocalDeclaration if the type of the LocalDeclaration is 'val', because the completion parser will null this out,
-	// which in turn stops us from inferring the intended type for 'val x = 5;'. We look at the copy.
-	// Also patches local declaration to not call .resolveType() on the initializer expression if we've already done so (calling it twice causes weird errors),
-	// and patches .resolve() on LocalDeclaration itself to just-in-time replace the 'val' vartype with the right one.
-	
-	private static void patchHandleVal(ScriptManager sm, boolean ecj) {
-		final String LOCALDECLARATION_SIG = "org.eclipse.jdt.internal.compiler.ast.LocalDeclaration";
-		final String FOREACHSTATEMENT_SIG = "org.eclipse.jdt.internal.compiler.ast.ForeachStatement";
-		final String EXPRESSION_SIG = "org.eclipse.jdt.internal.compiler.ast.Expression";
-		final String BLOCKSCOPE_SIG = "org.eclipse.jdt.internal.compiler.lookup.BlockScope";
-		final String PARSER_SIG = "org.eclipse.jdt.internal.compiler.parser.Parser";
-		final String TYPEBINDING_SIG = "org.eclipse.jdt.internal.compiler.lookup.TypeBinding";
-		
-		sm.addScript(ScriptBuilder.exitEarly()
-				.target(new MethodTarget(LOCALDECLARATION_SIG, "resolve", "void", BLOCKSCOPE_SIG))
-				.request(StackRequest.THIS, StackRequest.PARAM1)
-				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "handleValForLocalDeclaration", "boolean", LOCALDECLARATION_SIG, BLOCKSCOPE_SIG))
-				.build());
-		
-		sm.addScript(ScriptBuilder.replaceMethodCall()
-				.target(new MethodTarget(LOCALDECLARATION_SIG, "resolve", "void", BLOCKSCOPE_SIG))
-				.methodToReplace(new Hook(EXPRESSION_SIG, "resolveType", TYPEBINDING_SIG, BLOCKSCOPE_SIG))
-				.requestExtra(StackRequest.THIS)
-				.replacementMethod(new Hook("lombok.eclipse.agent.PatchFixes", "skipResolveInitializerIfAlreadyCalled2", TYPEBINDING_SIG, EXPRESSION_SIG, BLOCKSCOPE_SIG, LOCALDECLARATION_SIG))
-				.build());
-		
-		sm.addScript(ScriptBuilder.exitEarly()
-				.target(new MethodTarget(FOREACHSTATEMENT_SIG, "resolve", "void", BLOCKSCOPE_SIG))
-				.request(StackRequest.THIS, StackRequest.PARAM1)
-				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "handleValForForEach", "boolean", FOREACHSTATEMENT_SIG, BLOCKSCOPE_SIG))
-				.build());
-		
-		sm.addScript(ScriptBuilder.replaceMethodCall()
-				.target(new MethodTarget(FOREACHSTATEMENT_SIG, "resolve", "void", BLOCKSCOPE_SIG))
-				.methodToReplace(new Hook(EXPRESSION_SIG, "resolveType", TYPEBINDING_SIG, BLOCKSCOPE_SIG))
-				.replacementMethod(new Hook("lombok.eclipse.agent.PatchFixes", "skipResolveInitializerIfAlreadyCalled", TYPEBINDING_SIG, EXPRESSION_SIG, BLOCKSCOPE_SIG))
-				.build());
-		
-		if (!ecj) {
-			sm.addScript(ScriptBuilder.addField()
-					.fieldName("$initCopy")
-					.fieldType("Lorg/eclipse/jdt/internal/compiler/ast/ASTNode;")
-					.setPublic()
-					.setTransient()
-					.targetClass("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration")
-					.build());
-			
-			sm.addScript(ScriptBuilder.addField()
-					.fieldName("$iterableCopy")
-					.fieldType("Lorg/eclipse/jdt/internal/compiler/ast/ASTNode;")
-					.setPublic()
-					.setTransient()
-					.targetClass("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration")
-					.build());
-			
-			sm.addScript(ScriptBuilder.wrapReturnValue()
-					.target(new MethodTarget(PARSER_SIG, "consumeExitVariableWithInitialization", "void"))
-					.request(StackRequest.THIS)
-					.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "copyInitializationOfLocalDeclarationForVal", "void", PARSER_SIG))
-					.build());
-			
-			sm.addScript(ScriptBuilder.wrapReturnValue()
-					.target(new MethodTarget(PARSER_SIG, "consumeEnhancedForStatementHeader", "void"))
-					.request(StackRequest.THIS)
-					.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "copyInitializationOfForEachIterable", "void", PARSER_SIG))
-					.build());
-		}
+		PatchDelegate.addPatches(sm, ecj);
+		PatchVal.addPatches(sm, ecj);
 	}
 }
