@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import lombok.eclipse.Eclipse;
@@ -95,11 +96,39 @@ public class PatchDelegate {
 					}
 				}
 				
+				removeExistingMethods(methodsToDelegate, decl, scope);
+				
 				generateDelegateMethods(decl, methodsToDelegate, field.name, ann);
 			}
 		}
 		
 		return false;
+	}
+	
+	private static void removeExistingMethods(List<MethodBinding> list, TypeDeclaration decl, ClassScope scope) {
+		for (AbstractMethodDeclaration methodDecl : decl.methods) {
+			if (!(methodDecl instanceof MethodDeclaration)) continue;
+			MethodDeclaration md = (MethodDeclaration) methodDecl;
+			char[] name = md.selector;
+			TypeBinding[] args = md.arguments == null ? new TypeBinding[0] : new TypeBinding[md.arguments.length];
+			for (int i = 0; i < args.length; i++) {
+				TypeReference clone = Eclipse.copyType(md.arguments[i].type, md.arguments[i]);
+				args[i] = clone.resolveType(scope).erasure();
+			}
+			Iterator<MethodBinding> it = list.iterator();
+			methods:
+			while (it.hasNext()) {
+				MethodBinding mb = it.next();
+				if (!Arrays.equals(mb.selector, name)) continue;
+				int paramLen = mb.parameters == null ? 0 : mb.parameters.length;
+				if (paramLen != args.length) continue;
+				// TODO check if varargs are copied or otherwise handled correctly.
+				for (int i = 0; i < paramLen; i++) {
+					if (!mb.parameters[i].erasure().isEquivalentTo(args[i])) continue methods;
+				}
+				it.remove(); // Method already exists in this class - don't create a delegating implementation.
+			}
+		}
 	}
 	
 	private static void generateDelegateMethods(TypeDeclaration type, List<MethodBinding> methods, char[] delegate, ASTNode source) {
