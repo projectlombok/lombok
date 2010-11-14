@@ -50,6 +50,7 @@ import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
 /**
@@ -93,14 +94,14 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 		}
 		
 		boolean seenDeclaration = false;
-		List<JCStatement> tryBlock = List.nil();
-		List<JCStatement> newStatements = List.nil();
+		ListBuffer<JCStatement> newStatements = ListBuffer.lb();
+		ListBuffer<JCStatement> tryBlock = ListBuffer.lb();
 		for (JCStatement statement : statements) {
 			if (!seenDeclaration) {
 				if (statement == decl) seenDeclaration = true;
-				newStatements = newStatements.append(statement);
+				newStatements.append(statement);
 			} else {
-				tryBlock = tryBlock.append(statement);
+				tryBlock.append(statement);
 			}
 		}
 		
@@ -108,8 +109,7 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 			annotationNode.addError("LOMBOK BUG: Can't find this local variable declaration inside its parent.");
 			return true;
 		}
-		
-		doAssignmentCheck(annotationNode, tryBlock, decl.name);
+		doAssignmentCheck(annotationNode, tryBlock.toList(), decl.name);
 		
 		TreeMaker maker = annotationNode.getTreeMaker();
 		JCFieldAccess cleanupMethod = maker.Select(maker.Ident(decl.name), annotationNode.toName(cleanupName));
@@ -123,14 +123,14 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 		
 		JCBlock finalizer = maker.Block(0, List.<JCStatement>of(ifNotNullCleanup));
 		
-		newStatements = newStatements.append(maker.Try(maker.Block(0, tryBlock), List.<JCCatch>nil(), finalizer));
+		newStatements.append(maker.Try(maker.Block(0, tryBlock.toList()), List.<JCCatch>nil(), finalizer));
 		
 		if (blockNode instanceof JCBlock) {
-			((JCBlock)blockNode).stats = newStatements;
+			((JCBlock)blockNode).stats = newStatements.toList();
 		} else if (blockNode instanceof JCCase) {
-			((JCCase)blockNode).stats = newStatements;
+			((JCCase)blockNode).stats = newStatements.toList();
 		} else if (blockNode instanceof JCMethodDecl) {
-			((JCMethodDecl)blockNode).body.stats = newStatements;
+			((JCMethodDecl)blockNode).body.stats = newStatements.toList();
 		} else throw new AssertionError("Should not get here");
 		
 		ancestor.rebuild();
