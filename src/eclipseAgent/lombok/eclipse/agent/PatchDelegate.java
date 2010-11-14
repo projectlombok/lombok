@@ -213,12 +213,6 @@ public class PatchDelegate {
 		return method;
 	}
 	
-	private static void addAllMethodBindings(List<MethodBinding> list, TypeBinding binding) {
-		List<String> ban = new ArrayList<String>();
-		ban.addAll(METHODS_IN_OBJECT);
-		addAllMethodBindings(list, binding, ban);
-	}
-	
 	private static final class Reflection {
 		public static final Method classScopeBuildMethodsMethod;
 		
@@ -236,7 +230,7 @@ public class PatchDelegate {
 		}
 	}
 	
-	private static void addAllMethodBindings(List<MethodBinding> list, TypeBinding binding, List<String> banList) {
+	private static void addAllMethodBindings(List<MethodBinding> list, TypeBinding binding) {
 		if (binding == null) return;
 		if (binding instanceof MemberTypeBinding) {
 			ClassScope cs = ((SourceTypeBinding)binding).scope;
@@ -258,11 +252,7 @@ public class PatchDelegate {
 				if (mb.isDefaultAbstract()) continue;
 				if (!mb.isPublic()) continue;
 				if (mb.isSynthetic()) continue;
-				if (mb.isFinal()) {
-					banList.add(printSig(mb));
-					continue;
-				}
-				if (banList.contains(printSig(mb))) continue;
+				if (METHODS_IN_OBJECT.contains(printSig(mb))) continue;
 				list.add(mb);
 			}
 			addAllMethodBindings(list, rb.superclass());
