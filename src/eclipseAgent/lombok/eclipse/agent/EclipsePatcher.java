@@ -61,6 +61,7 @@ public class EclipsePatcher extends Agent {
 		if (!ecjOnly) {
 			patchLombokizeAST(sm);
 			patchCatchReparse(sm);
+			patchIdentifierEndReparse(sm);
 			patchSetGeneratedFlag(sm);
 			patchHideGeneratedNodes(sm);
 			patchLiveDebug(sm);
@@ -140,6 +141,13 @@ public class EclipsePatcher extends Agent {
 		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveStartingCatchPosition"))
 				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "fixRetrieveStartingCatchPosition", "int", "int"))
+				.transplant().request(StackRequest.PARAM1).build());
+	}
+	
+	private static void patchIdentifierEndReparse(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveIdentifierEndPosition"))
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "fixRetrieveIdentifierEndPosition", "int", "int"))
 				.transplant().request(StackRequest.PARAM1).build());
 	}
 	

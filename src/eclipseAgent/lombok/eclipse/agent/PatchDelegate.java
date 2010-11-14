@@ -2,10 +2,19 @@ package lombok.eclipse.agent;
 
 import static lombok.eclipse.Eclipse.*;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import lombok.eclipse.Eclipse;
+import lombok.eclipse.handlers.EclipseHandlerUtil;
+import lombok.patcher.Hook;
+import lombok.patcher.MethodTarget;
+import lombok.patcher.ScriptManager;
+import lombok.patcher.StackRequest;
+import lombok.patcher.scripts.ScriptBuilder;
 
 import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
@@ -27,22 +36,17 @@ import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
+import org.eclipse.jdt.internal.compiler.lookup.MemberTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
+import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
-
-import lombok.eclipse.Eclipse;
-import lombok.eclipse.handlers.EclipseHandlerUtil;
-import lombok.patcher.Hook;
-import lombok.patcher.MethodTarget;
-import lombok.patcher.ScriptManager;
-import lombok.patcher.StackRequest;
-import lombok.patcher.scripts.ScriptBuilder;
 
 public class PatchDelegate {
 	static void addPatches(ScriptManager sm, boolean ecj) {
@@ -125,8 +129,11 @@ public class PatchDelegate {
 	}
 	
 	private static MethodDeclaration generateDelegateMethod(char[] name, MethodBinding binding, CompilationResult compilationResult, ASTNode source) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		
 		MethodDeclaration method = new MethodDeclaration(compilationResult);
 		Eclipse.setGeneratedBy(method, source);
+		method.sourceStart = pS; method.sourceEnd = pE;
 		method.modifiers = ClassFileConstants.AccPublic;
 		method.returnType = Eclipse.makeType(binding.returnType, source, false);
 		method.annotations = EclipseHandlerUtil.createSuppressWarningsAll(source, null);
@@ -138,8 +145,10 @@ public class PatchDelegate {
 						argName.toCharArray(), pos(source),
 						Eclipse.makeType(binding.parameters[i], source, false),
 						ClassFileConstants.AccFinal);
+				Eclipse.setGeneratedBy(method.arguments[i], source);
 			}
 		}
+		
 		method.selector = binding.selector;
 		if (binding.thrownExceptions != null && binding.thrownExceptions.length > 0) {
 			method.thrownExceptions = new TypeReference[binding.thrownExceptions.length];
@@ -148,17 +157,47 @@ public class PatchDelegate {
 			}
 		}
 		
-		method.typeParameters = null; // TODO think about this
+		if (binding.typeVariables != null && binding.typeVariables.length > 0) {
+			method.typeParameters = new TypeParameter[binding.typeVariables.length];
+			for (int i = 0; i < method.typeParameters.length; i++) {
+				method.typeParameters[i] = new TypeParameter();
+				method.typeParameters[i].sourceStart = pS; method.typeParameters[i].sourceEnd = pE;
+				Eclipse.setGeneratedBy(method.typeParameters[i], source);
+				method.typeParameters[i].name = binding.typeVariables[i].sourceName;
+				ReferenceBinding super1 = binding.typeVariables[i].superclass;
+				System.out.println("super1: " + super1);
+				ReferenceBinding[] super2 = binding.typeVariables[i].superInterfaces;
+				if (super2 == null) super2 = new ReferenceBinding[0];
+				System.out.println("super2: " + Arrays.asList(super2));
+				if (super1 != null || super2.length > 0) {
+					int offset = super1 == null ? 0 : 1;
+					method.typeParameters[i].bounds = new TypeReference[super2.length + offset - 1];
+					if (super1 != null) method.typeParameters[i].type = Eclipse.makeType(super1, source, false);
+					else method.typeParameters[i].type = Eclipse.makeType(super2[0], source, false);
+					int ctr = 0;
+					for (int j = (super1 == null) ? 1 : 0; j < super2.length; j++) {
+						method.typeParameters[i].bounds[ctr] = Eclipse.makeType(super2[j], source, false);
+						method.typeParameters[i].bounds[ctr++].bits |= ASTNode.IsSuperType;
+					}
+				}
+			}
+		}
+		
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		FieldReference fieldRef = new FieldReference(name, pos(source));
-		fieldRef.receiver = new ThisReference(source.sourceStart, source.sourceEnd);
+		fieldRef.receiver = new ThisReference(pS, pE);
+		Eclipse.setGeneratedBy(fieldRef, source);
+		Eclipse.setGeneratedBy(fieldRef.receiver, source);
 		MessageSend call = new MessageSend();
+		call.sourceStart = pS; call.sourceEnd = pE;
+		Eclipse.setGeneratedBy(call, source);
 		call.receiver = fieldRef;
 		call.selector = binding.selector;
 		if (method.arguments != null) {
 			call.arguments = new Expression[method.arguments.length];
 			for (int i = 0; i < method.arguments.length; i++) {
 				call.arguments[i] = new SingleNameReference(("$p" + i).toCharArray(), pos(source));
+				Eclipse.setGeneratedBy(call.arguments[i], source);
 			}
 		}
 		
@@ -167,12 +206,10 @@ public class PatchDelegate {
 			body = call;
 		} else {
 			body = new ReturnStatement(call, source.sourceStart, source.sourceEnd);
+			Eclipse.setGeneratedBy(body, source);
 		}
 		
 		method.statements = new Statement[] {body};
-		// TODO add Eclipse.setGeneratedBy everywhere.
-		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
-		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
 		return method;
 	}
 	
@@ -182,8 +219,36 @@ public class PatchDelegate {
 		addAllMethodBindings(list, binding, ban);
 	}
 	
+	private static final class Reflection {
+		public static final Method classScopeBuildMethodsMethod;
+		
+		static {
+			Method m = null;
+			try {
+				m = ClassScope.class.getDeclaredMethod("buildMethods");
+				m.setAccessible(true);
+			} catch (Exception e) {
+				// That's problematic, but as long as no local classes are used we don't actually need it.
+				// Better fail on local classes than crash altogether.
+			}
+			
+			classScopeBuildMethodsMethod = m;
+		}
+	}
+	
 	private static void addAllMethodBindings(List<MethodBinding> list, TypeBinding binding, List<String> banList) {
 		if (binding == null) return;
+		if (binding instanceof MemberTypeBinding) {
+			ClassScope cs = ((SourceTypeBinding)binding).scope;
+			if (cs != null) {
+				try {
+					Reflection.classScopeBuildMethodsMethod.invoke(cs);
+				} catch (Exception e) {
+					// See 'Reflection' class for why we ignore this exception.
+				}
+			}
+		}
+		
 		if (binding instanceof ReferenceBinding) {
 			ReferenceBinding rb = (ReferenceBinding) binding;
 			for (MethodBinding mb : rb.availableMethods()) {
