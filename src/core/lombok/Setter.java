@@ -74,5 +74,6 @@ public @interface Setter {
 	 */
 	@Deprecated
 	@Retention(RetentionPolicy.SOURCE)
+	@Target({})
 	@interface AnyAnnotation {}
 }
