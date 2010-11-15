@@ -290,7 +290,7 @@ such as converting the changelog into HTML, and creating javadoc.
 		]]></echo>
 		<javadoc sourcepath="src/core" defaultexcludes="yes" destdir="build/api" windowtitle="Lombok" Overview="${javadoc.overview.html}">
 			<classpath refid="build.path" />
-			<link href="http://java.sun.com/javase/6/docs/api/" offline="true" packagelistLoc="./deps/javadoc/java6"/>
+			<link href="http://java.sun.com/javase/6/docs/api/" offline="true" packagelistLoc="./buildScripts/javadoc/java6"/>
 			<header><![CDATA[<a href='http://projectlombok.org/'>Lombok</a> - ]]>v${lombok.version}</header>
 			<bottom><![CDATA[<i>Copyright &#169; 2009-2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php'>MIT licence</a>.]]></bottom>
 		</javadoc>
