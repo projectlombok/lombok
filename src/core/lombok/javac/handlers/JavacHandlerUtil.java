@@ -54,6 +54,7 @@ import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
 /**
@@ -109,7 +110,7 @@ public class JavacHandlerUtil {
 	
 	public static void deleteImportFromCompilationUnit(JavacNode node, String name) {
 		if (!node.shouldDeleteLombokAnnotations()) return;
-		List<JCTree> newDefs = List.nil();
+		ListBuffer<JCTree> newDefs = ListBuffer.lb();
 		
 		JCCompilationUnit unit = (JCCompilationUnit) node.top().get();
 		
@@ -119,17 +120,17 @@ public class JavacHandlerUtil {
 				JCImport imp0rt = (JCImport)def;
 				delete = (!imp0rt.staticImport && imp0rt.qualid.toString().equals(name));
 			}
-			if (!delete) newDefs = newDefs.append(def);
+			if (!delete) newDefs.append(def);
 		}
-		unit.defs = newDefs;
+		unit.defs = newDefs.toList();
 	}
 
 	private static List<JCAnnotation> filterList(List<JCAnnotation> annotations, JCTree jcTree) {
-		List<JCAnnotation> newAnnotations = List.nil();
+		ListBuffer<JCAnnotation> newAnnotations = ListBuffer.lb();
 		for (JCAnnotation ann : annotations) {
-			if (jcTree != ann) newAnnotations = newAnnotations.append(ann);
+			if (jcTree != ann) newAnnotations.append(ann);
 		}
-		return newAnnotations;
+		return newAnnotations.toList();
 	}
 	
 	/**
@@ -486,12 +487,12 @@ public class JavacHandlerUtil {
 	}
 	
 	private static List<JCTree> addAllButOne(List<JCTree> defs, int idx) {
-		List<JCTree> out = List.nil();
+		ListBuffer<JCTree> out = ListBuffer.lb();
 		int i = 0;
 		for (JCTree def : defs) {
-			if (i++ != idx) out = out.append(def);
+			if (i++ != idx) out.append(def);
 		}
-		return out;
+		return out.toList();
 	}
 	
 	/**
@@ -537,7 +538,7 @@ public class JavacHandlerUtil {
 	 * Only the simple name is checked - the package and any containing class are ignored.
 	 */
 	public static List<JCAnnotation> findAnnotations(JavacNode fieldNode, Pattern namePattern) {
-		List<JCAnnotation> result = List.nil();
+		ListBuffer<JCAnnotation> result = ListBuffer.lb();
 		for (JavacNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				JCAnnotation annotation = (JCAnnotation) child.get();
@@ -545,11 +546,11 @@ public class JavacHandlerUtil {
 				int idx = name.lastIndexOf(".");
 				String suspect = idx == -1 ? name : name.substring(idx + 1);
 				if (namePattern.matcher(suspect).matches()) {
-					result = result.append(annotation);
+					result.append(annotation);
 				}
 			}
 		}	
-		return result;
+		return result.toList();
 	}
 	
 	/**
@@ -586,16 +587,16 @@ public class JavacHandlerUtil {
 			if (idx > -1) matched[idx] = true;
 		}
 		
-		List<Integer> problematic = List.nil();
+		ListBuffer<Integer> problematic = ListBuffer.lb();
 		for (int i = 0 ; i < list.size() ; i++) {
-			if (!matched[i]) problematic = problematic.append(i);
+			if (!matched[i]) problematic.append(i);
 		}
 		
-		return problematic;
+		return problematic.toList();
 	}
 	
 	static List<JCExpression> getAndRemoveAnnotationParameter(JCAnnotation ast, String parameterName) {
-		List<JCExpression> params = List.nil();
+		ListBuffer<JCExpression> params = ListBuffer.lb();
 		List<JCExpression> result = List.nil();
 		
 		for (JCExpression param : ast.args) {
@@ -614,18 +615,18 @@ public class JavacHandlerUtil {
 				}
 			}
 			
-			params = params.append(param);
+			params.append(param);
 		}
-		ast.args = params;
+		ast.args = params.toList();
 		return result;
 	}
 	
 	static List<JCAnnotation> copyAnnotations(List<JCExpression> in) {
-		List<JCAnnotation> out = List.nil();
+		ListBuffer<JCAnnotation> out = ListBuffer.lb();
 		for (JCExpression expr : in) {
 			if (!(expr instanceof JCAnnotation)) continue;
-			out = out.append((JCAnnotation) expr.clone());
+			out.append((JCAnnotation) expr.clone());
 		}
-		return out;
+		return out.toList();
 	}
 }

@@ -49,6 +49,7 @@ import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.ListBuffer;
 
 /**
  * Handles the {@code ToString} annotation for javac.
@@ -130,12 +131,12 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 			return false;
 		}
 		
-		List<JavacNode> nodesForToString = List.nil();
+		ListBuffer<JavacNode> nodesForToString = ListBuffer.lb();
 		if (includes != null) {
 			for (JavacNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
 				JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
-				if (includes.contains(fieldDecl.name.toString())) nodesForToString = nodesForToString.append(child);
+				if (includes.contains(fieldDecl.name.toString())) nodesForToString.append(child);
 			}
 		} else {
 			for (JavacNode child : typeNode.down()) {
@@ -147,13 +148,13 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 				if (excludes != null && excludes.contains(fieldDecl.name.toString())) continue;
 				//Skip fields that start with $.
 				if (fieldDecl.name.toString().startsWith("$")) continue;
-				nodesForToString = nodesForToString.append(child);
+				nodesForToString.append(child);
 			}
 		}
 		
 		switch (methodExists("toString", typeNode)) {
 		case NOT_EXISTS:
-			JCMethodDecl method = createToString(typeNode, nodesForToString, includeFieldNames, callSuper, fieldAccess);
+			JCMethodDecl method = createToString(typeNode, nodesForToString.toList(), includeFieldNames, callSuper, fieldAccess);
 			injectMethod(typeNode, method);
 			return true;
 		case EXISTS_BY_LOMBOK:

@@ -389,7 +389,7 @@ public class Delombok {
 		
 		JavaCompiler delegate = compiler.processAnnotations(compiler.enterTrees(toJavacList(roots)));
 		for (JCCompilationUnit unit : roots) {
-			DelombokResult result = new DelombokResult(commentsMap.get(unit).comments, unit, force || tca.changed.contains(unit));
+			DelombokResult result = new DelombokResult(commentsMap.get(unit).comments.toList(), unit, force || tca.changed.contains(unit));
 			if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged");
 			Writer rawWriter;
 			if (presetWriter != null) rawWriter = presetWriter;
@@ -408,10 +408,10 @@ public class Delombok {
 	}
 	
 	public static class Comments {
-		public com.sun.tools.javac.util.List<Comment> comments = com.sun.tools.javac.util.List.nil();
+		public com.sun.tools.javac.util.ListBuffer<Comment> comments = com.sun.tools.javac.util.ListBuffer.lb();
 		
 		void add(Comment comment) {
-			comments = comments.append(comment);
+			comments.append(comment);
 		}
 	}
 	

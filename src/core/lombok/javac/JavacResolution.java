@@ -34,6 +34,7 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Log;
 
 public class JavacResolution {
@@ -378,9 +379,9 @@ public class JavacResolution {
 		}
 		
 		if (generics != null && !generics.isEmpty()) {
-			List<JCExpression> args = List.nil();
-			for (Type t : generics) args = args.append(typeToJCTree(t, maker, ast, true));
-			replacement = maker.TypeApply(replacement, args);
+			ListBuffer<JCExpression> args = ListBuffer.lb();
+			for (Type t : generics) args.append(typeToJCTree(t, maker, ast, true));
+			replacement = maker.TypeApply(replacement, args.toList());
 		}
 		
 		return replacement;

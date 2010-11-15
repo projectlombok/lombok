@@ -61,6 +61,7 @@ import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
@@ -287,7 +288,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		return value.get();
 		*/
 		
-		List<JCStatement> statements = List.nil();
+		ListBuffer<JCStatement> statements = ListBuffer.lb();
 		
 		JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 		field.type = null;
@@ -302,46 +303,46 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		
 		/* java.util.concurrent.atomic.AtomicReference<ValueType> value = this.fieldName.get();*/ {
 			JCTypeApply valueVarType = maker.TypeApply(chainDotsString(maker, fieldNode, AR), List.of(copyType(maker, field)));
-			statements = statements.append(maker.VarDef(maker.Modifiers(0), valueName, valueVarType, callGet(fieldNode, createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD))));
+			statements.append(maker.VarDef(maker.Modifiers(0), valueName, valueVarType, callGet(fieldNode, createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD))));
 		}
 		
 		/* if (value == null) { */ {
 			JCSynchronized synchronizedStatement;
 			/* synchronized (this.fieldName) { */ {
-				List<JCStatement> synchronizedStatements = List.nil();
+				ListBuffer<JCStatement> synchronizedStatements = ListBuffer.lb();
 				/* value = this.fieldName.get(); */ {
 					JCExpressionStatement newAssign = maker.Exec(maker.Assign(maker.Ident(valueName), callGet(fieldNode, createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD))));
-					synchronizedStatements = synchronizedStatements.append(newAssign);
+					synchronizedStatements.append(newAssign);
 				}
 				
 				/* if (value == null) { */ {
-					List<JCStatement> innerIfStatements = List.nil();
+					ListBuffer<JCStatement> innerIfStatements = ListBuffer.lb();
 					/* value = new java.util.concurrent.atomic.AtomicReference<ValueType>(new ValueType());*/ {
 						JCTypeApply valueVarType = maker.TypeApply(chainDotsString(maker, fieldNode, AR), List.of(copyType(maker, field)));			
 						JCNewClass newInstance = maker.NewClass(null, NIL_EXPRESSION, valueVarType, List.<JCExpression>of(field.init), null);
 						
 						JCStatement statement = maker.Exec(maker.Assign(maker.Ident(valueName), newInstance));
-						innerIfStatements = innerIfStatements.append(statement);
+						innerIfStatements.append(statement);
 					}
 					/* this.fieldName.set(value); */ {
 						JCStatement statement = callSet(fieldNode, createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD), maker.Ident(valueName));
-						innerIfStatements = innerIfStatements.append(statement);
+						innerIfStatements.append(statement);
 					}
 					
 					JCBinary isNull = maker.Binary(JCTree.EQ, maker.Ident(valueName), maker.Literal(TypeTags.BOT, null));
-					JCIf ifStatement = maker.If(isNull, maker.Block(0, innerIfStatements), null);
-					synchronizedStatements = synchronizedStatements.append(ifStatement);
+					JCIf ifStatement = maker.If(isNull, maker.Block(0, innerIfStatements.toList()), null);
+					synchronizedStatements.append(ifStatement);
 				}
 				
-				synchronizedStatement = maker.Synchronized(createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD), maker.Block(0, synchronizedStatements));
+				synchronizedStatement = maker.Synchronized(createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD), maker.Block(0, synchronizedStatements.toList()));
 			}
 			
 			JCBinary isNull = maker.Binary(JCTree.EQ, maker.Ident(valueName), maker.Literal(TypeTags.BOT, null));
 			JCIf ifStatement = maker.If(isNull, maker.Block(0, List.<JCStatement>of(synchronizedStatement)), null);
-			statements = statements.append(ifStatement);
+			statements.append(ifStatement);
 		}
 		/* return value.get(); */
-		statements = statements.append(maker.Return(callGet(fieldNode, maker.Ident(valueName))));
+		statements.append(maker.Return(callGet(fieldNode, maker.Ident(valueName))));
 		
 		// update the field type and init last
 		
@@ -350,7 +351,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 			field.init = maker.NewClass(null, NIL_EXPRESSION, copyType(maker, field), NIL_EXPRESSION, null);
 		}
 		
-		return statements;
+		return statements.toList();
 	}
 	
 	private JCMethodInvocation callGet(JavacNode source, JCExpression receiver) {
