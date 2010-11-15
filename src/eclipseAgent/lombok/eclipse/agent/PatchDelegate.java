@@ -5,9 +5,12 @@ import static lombok.eclipse.Eclipse.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.handlers.EclipseHandlerUtil;
@@ -194,10 +197,8 @@ public class PatchDelegate {
 				Eclipse.setGeneratedBy(method.typeParameters[i], source);
 				method.typeParameters[i].name = binding.typeVariables[i].sourceName;
 				ReferenceBinding super1 = binding.typeVariables[i].superclass;
-				System.out.println("super1: " + super1);
 				ReferenceBinding[] super2 = binding.typeVariables[i].superInterfaces;
 				if (super2 == null) super2 = new ReferenceBinding[0];
-				System.out.println("super2: " + Arrays.asList(super2));
 				if (super1 != null || super2.length > 0) {
 					int offset = super1 == null ? 0 : 1;
 					method.typeParameters[i].bounds = new TypeReference[super2.length + offset - 1];
@@ -260,6 +261,12 @@ public class PatchDelegate {
 	}
 	
 	private static void addAllMethodBindings(List<MethodBinding> list, TypeBinding binding) {
+		Set<String> banList = new HashSet<String>();
+		banList.addAll(METHODS_IN_OBJECT);
+		addAllMethodBindings(list, binding, banList);
+	}
+	
+	private static void addAllMethodBindings(List<MethodBinding> list, TypeBinding binding, Collection<String> banList) {
 		if (binding == null) return;
 		if (binding instanceof MemberTypeBinding) {
 			ClassScope cs = ((SourceTypeBinding)binding).scope;
@@ -275,19 +282,21 @@ public class PatchDelegate {
 		if (binding instanceof ReferenceBinding) {
 			ReferenceBinding rb = (ReferenceBinding) binding;
 			for (MethodBinding mb : rb.availableMethods()) {
+				String sig = printSig(mb);
 				if (mb.isStatic()) continue;
 				if (mb.isBridge()) continue;
 				if (mb.isConstructor()) continue;
 				if (mb.isDefaultAbstract()) continue;
 				if (!mb.isPublic()) continue;
 				if (mb.isSynthetic()) continue;
-				if (METHODS_IN_OBJECT.contains(printSig(mb))) continue;
+				if (banList.contains(sig)) continue;
 				list.add(mb);
+				banList.add(sig);
 			}
-			addAllMethodBindings(list, rb.superclass());
+			addAllMethodBindings(list, rb.superclass(), banList);
 			ReferenceBinding[] interfaces = rb.superInterfaces();
 			if (interfaces != null) {
-				for (ReferenceBinding iface : interfaces) addAllMethodBindings(list, iface);
+				for (ReferenceBinding iface : interfaces) addAllMethodBindings(list, iface, banList);
 			}
 		}
 	}
@@ -331,7 +340,7 @@ public class PatchDelegate {
 			return pkg.isEmpty() ? qsn : (pkg + "." + qsn);
 		} else if (binding instanceof ArrayBinding) {
 			StringBuilder out = new StringBuilder();
-			out.append(binding.leafComponentType());
+			out.append(simpleTypeBindingToString(binding.leafComponentType()));
 			for (int i = 0; i < binding.dimensions(); i++) out.append("[]");
 			return out.toString();
 		}
