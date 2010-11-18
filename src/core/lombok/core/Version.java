@@ -26,8 +26,8 @@ package lombok.core;
  */
 public class Version {
 	// ** CAREFUL ** - this class must always compile with 0 dependencies (it must not refer to any other sources or libraries).
-	private static final String VERSION = "0.9.4-EDGE";
-	private static final String RELEASE_NAME = "burrowing whale";
+	private static final String VERSION = "0.10.0-BETA1";
+	private static final String RELEASE_NAME = "Burning Emu";
 	
 	private Version() {
 		//Prevent instantiation
