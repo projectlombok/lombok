@@ -130,11 +130,13 @@ public class HandleConstructor {
 			for (JavacNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
 				JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
-				//Skip fields that start with $
+				// Skip fields that start with $
 				if (fieldDecl.name.toString().startsWith("$")) continue;
 				long fieldFlags = fieldDecl.mods.flags;
-				//Skip static fields.
+				// Skip static fields.
 				if ((fieldFlags & Flags.STATIC) != 0) continue;
+				// Skip initialized final fields.
+				if (((fieldFlags & Flags.FINAL) != 0) && fieldDecl.init != null) continue;
 				fields.append(child);
 			}
 			new HandleConstructor().generateConstructor(typeNode, level, fields.toList(), staticName, false, suppressConstructorProperties);

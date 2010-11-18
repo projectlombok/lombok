@@ -130,10 +130,12 @@ public class HandleConstructor {
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
 				FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
-				//Skip fields that start with $
+				// Skip fields that start with $
 				if (fieldDecl.name.length > 0 && fieldDecl.name[0] == '$') continue;
-				//Skip static fields.
+				// Skip static fields.
 				if ((fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0) continue;
+				// Skip initialized final fields.
+				if (((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) && fieldDecl.initialization != null) continue;
 				fields.add(child);
 			}
 			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, false, suppressConstructorProperties, ast);
