@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html><head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="../logi/reset.css" />
+	<link rel="stylesheet" type="text/css" href="features.css" />
+	<link rel="shortcut icon" href="../favicon.ico" type="image/x-icon" />
+	<meta name="description" content="Spice up your java" />
+	<title>@Data</title>
+</head><body><div id="pepper">
+	<div class="minimumHeight"></div>
+	<div class="meat">
+		<div class="header"><a href="../index.html">Project Lombok</a></div>
+		<h1>val</h1>
+		<div class="byline">Finally! hassle-free final local variables.</div>
+		<div class="overview">
+			<h3>Overview</h3>
+			<p>
+			<em>NEW in Lombok 0.10: </em>You can use <code>val</code> as the type of a local variable declaration instead of actually writing the type. When you do this,
+			the type will be inferred from the initializer expression. The local variable will also be made final. This feature works
+			on local variables and on foreach loops only, not on fields. The initializer expression is required.
+			</p><p>
+			<em>WARNING: This feature does not currently work in NetBeans. We're working on fixing that.</em>
+			</p>
+		</div>
+		<div class="snippets">
+			<div class="pre">
+				<h3>With Lombok</h3>
+				<div class="snippet">@HTML_PRE@</div>
+			</div>
+			<div class="sep"></div>
+			<div class="post">
+				<h3>Vanilla Java</h3>
+				<div class="snippet">@HTML_POST@</div>
+			</div>
+		</div>
+		<div style="clear: left;"></div>
+		<div class="overview">
+			<h3>Small print</h3><div class="smallprint">
+				<p>
+				For compound types, the most common superclass is inferred, not any shared interfaces. For example, <code>bool ? new HashSet() : new ArrayList()</code>
+				is an expression with a compound type: The result is both <code>AbstractCollection</code> as well as <code>Serializable</code>. The type inferred will be
+				<code>AbstractCollection</code>, as that is a class, whereas <code>Serializable</code> is an interface.
+				</p><p>
+				In ambiguous cases, such as when the initializer expression is <code>null</code>, <code>java.lang.Object</code> is inferred.
+				</p>
+			</div>
+		</div>
+		<div class="footer">
+			<a href="index.html">Back to features</a> | <a href="Log.html">Previous feature (@Log)</a> | <span class="disabled">Next feature</span><br />
+			<a href="../credits.html" class="creditsLink">credits</a> | <span class="copyright">Copyright &copy; 2010 Reinier Zwitserloot and Roel Spilker, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.</span>
+		</div>
+		<div style="clear: both;"></div>
+	</div>
+</div>
+<script type="text/javascript">
+	var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+	document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+	try {
+		var pageTracker = _gat._getTracker("UA-9884254-1");
+		pageTracker._trackPageview();
+	} catch(err) {}
+</script>
+</body></html>

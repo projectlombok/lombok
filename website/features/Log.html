@@ -15,7 +15,7 @@
 		<div class="overview">
 			<h3>Overview</h3>
 			<p>
-			You can annotate any field with <code>@Log</code> to let lombok generate a logger field automatically.<br />
+			<em>NEW in lombok 0.10: </em>You can annotate any field with <code>@Log</code> to let lombok generate a logger field automatically.<br />
 			The logger is named <code>log</code> and field's type depends on which logger you have selected.
 			</p><p>
 			There are four <code>@Log</code> choices available:<br />
@@ -50,11 +50,16 @@
 			<h3>Small print</h3><div class="smallprint">
 				<p>
 				If a field called <code>log</code> already exists, a warning will be emitted and no code will be generated.
+				</p><p>
+				A future feature of lombok's <code>@Log</code> is to find calls to the logger field and, if the chosen logging framework supports
+				it and the log level can be compile-time determined from the log call, guard it with an <code>if</code> statement. This way if
+				the log statement ends up being ignored, the potentially expensive calculation of the log string is avoided entirely. This does mean
+				that you should <em>NOT</em> put any side-effects in the expression that you log.
 				</p>
 			</div>
 		</div>
 		<div class="footer">
-			<a href="index.html">Back to features</a> | <a href="SneakyThrows.html">Previous feature (@SneakyThrows)</a> | <span class="disabled">Next feature</span><br />
+			<a href="index.html">Back to features</a> | <a href="SneakyThrows.html">Previous feature (@SneakyThrows)</a> | <a href="val.html">Next feature (val)</a><br />
 			<a href="../credits.html" class="creditsLink">credits</a> | <span class="copyright">Copyright &copy; 2009-2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.</span>
 		</div>
 		<div style="clear: both;"></div>

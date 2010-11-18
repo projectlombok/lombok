@@ -112,6 +112,9 @@ such as converting the changelog into HTML, and creating javadoc.
 			<param name="transformationName" value="GetterSetter" />
 		</antcall>
 		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="GetterLazy" />
+		</antcall>
+		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="ToString" />
 		</antcall>
 		<antcall target="-integrateSnippet">
@@ -134,6 +137,9 @@ such as converting the changelog into HTML, and creating javadoc.
 		</antcall>
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="Log" />
+		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="val" />
 		</antcall>
 	</target>
 	

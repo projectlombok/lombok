@@ -15,8 +15,9 @@ public class EqualsAndHashCodeExample {
 	@Override public boolean equals(Object o) {
 		if (o == this) return true;
 		if (o == null) return false;
-		if (o.getClass() != this.getClass()) return false;
+		if (!(o instanceof EqualsAndHashCodeExample)) return false;
 		EqualsAndHashCodeExample other = (EqualsAndHashCodeExample) o;
+		if (!other.canEqual(this)) return false;
 		if (this.getName() == null ? other.getName() != null : !this.getName().equals(other.getName())) return false;
 		if (Double.compare(this.score, other.score) != 0) return false;
 		if (!Arrays.deepEquals(this.tags, other.tags)) return false;
@@ -33,6 +34,10 @@ public class EqualsAndHashCodeExample {
 		return result;
 	}
 	
+	public boolean canEqual(Object other) {
+		return other instanceof EqualsAndHashCodeExample;
+	}
+	
 	public static class Square extends Shape {
 		private final int width, height;
 		
@@ -44,9 +49,10 @@ public class EqualsAndHashCodeExample {
 		@Override public boolean equals(Object o) {
 			if (o == this) return true;
 			if (o == null) return false;
-			if (o.getClass() != this.getClass()) return false;
-			if (!super.equals(o)) return false;
+			if (!(o instanceof Square)) return false;
 			Square other = (Square) o;
+			if (!other.canEqual(this)) return false;
+			if (!super.equals(o)) return false;
 			if (this.width != other.width) return false;
 			if (this.height != other.height) return false;
 			return true;
@@ -59,6 +65,10 @@ public class EqualsAndHashCodeExample {
 			result = (result*PRIME) + this.width;
 			result = (result*PRIME) + this.height;
 			return result;
+		}
+		
+		public boolean canEqual(Object other) {
+			return other instanceof Square;
 		}
 	}
 }

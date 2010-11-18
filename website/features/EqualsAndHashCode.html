@@ -28,10 +28,16 @@
 			</p><p>
 			Setting <code>callSuper</code> to <em>true</em> when you don't extend anything (you extend <code>java.lang.Object</code>) is a compile-time error, because it would turn
 			the generated <code>equals()</code> and <code>hashCode()</code> implementations into having the same behaviour as simply inheriting these methods from <code>java.lang.Object</code>:
-			only the same object will be equal to each other and will have the same hashCode. Obviously, inheriting <code>java.lang.Object</code> is the right strategy if you want this behaviour.
+			only the same object will be equal to each other and will have the same hashCode.
 			Not setting <code>callSuper</code> to <em>true</em> when you extend another class generates a warning, because unless the superclass has no (equality-important) fields, lombok
 			cannot generate an implementation for you that takes into account the fields declared by your superclasses. You'll need to write your own implementations, or rely on the
 			<code>callSuper</code> chaining facility.
+			</p><p>
+			<em>NEW in Lombok 0.10: </em>Unless your class is <code>final</code> and extends <code>java.lang.Object</code>, lombok generates a <code>canEqual</code> method
+			which means JPA proxies can still be equal to their base class, but subclasses that add new state don't break the equals contract. The complicated reasons for
+			why such a method is necessary are explained in this paper: (TODO: Find link to Venners/Spoon/Odersky). If all classes in a hierarchy are a mix of scala case classes
+			and classes with lombok-generated equals methods, all equality will 'just work'. If you need to write your own equals methods, you should always override <code>canEqual</code>
+			if you change <code>equals</code> and <code>hashCode</code>.
 			</p>
 		</div>
 		<div class="snippets">
