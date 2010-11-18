@@ -59,7 +59,8 @@ import java.lang.annotation.Target;
  * </pre>
  * 
  * This annotation is valid for classes and enumerations.<br />
- * 
+ * @see org.slf4j.Logger org.slf4j.Logger
+ * @see org.slf4j.LoggerFactory#getLogger(java.lang.Class) org.slf4j.LoggerFactory.getLogger(Class target)
  * @see lombok.extern.apachecommons.Log lombok.extern.apachecommons.Log
  * @see lombok.extern.jul.Log lombok.extern.jul.Log
  * @see lombok.extern.log4j.Log lombok.extern.log4j.Log
