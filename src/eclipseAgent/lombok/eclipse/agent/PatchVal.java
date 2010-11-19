@@ -18,6 +18,8 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
+ * 
+ * Thanks to Stephen Haberman for a patch to solve some NPEs in Eclipse.
  */
 package lombok.eclipse.agent;
 
@@ -262,6 +264,7 @@ public class PatchVal {
 		} else return false;
 		
 		TypeBinding component = getForEachComponentType(forEach.collection, scope);
+		if (component == null) return false;
 		TypeReference replacement = Eclipse.makeType(component, forEach.elementVariable.type, false);
 		
 		forEach.elementVariable.modifiers |= ClassFileConstants.AccFinal;
@@ -274,6 +277,7 @@ public class PatchVal {
 	private static TypeBinding getForEachComponentType(Expression collection, BlockScope scope) {
 		if (collection != null) {
 			TypeBinding resolved = collection.resolveType(scope);
+			if (resolved == null) return null;
 			if (resolved.isArrayType()) {
 				resolved = ((ArrayBinding) resolved).elementsType();
 				return resolved;
