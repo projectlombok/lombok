@@ -72,6 +72,7 @@ import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
+import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 
 public class PatchDelegate {
 	static void addPatches(ScriptManager sm, boolean ecj) {
@@ -287,7 +288,7 @@ public class PatchDelegate {
 		addAllMethodBindings(list, binding, banList);
 	}
 	
-	private static void addAllMethodBindings(List<MethodBinding> list, TypeBinding binding, Collection<String> banList) {
+	private static void addAllMethodBindings(List<MethodBinding> list, TypeBinding binding, Set<String> banList) {
 		if (binding == null) return;
 		if (binding instanceof MemberTypeBinding) {
 			ClassScope cs = ((SourceTypeBinding)binding).scope;
@@ -310,9 +311,8 @@ public class PatchDelegate {
 				if (mb.isDefaultAbstract()) continue;
 				if (!mb.isPublic()) continue;
 				if (mb.isSynthetic()) continue;
-				if (banList.contains(sig)) continue;
+				if (!banList.add(sig)) continue; // If add returns false, it was already in there.
 				list.add(mb);
-				banList.add(sig);
 			}
 			addAllMethodBindings(list, rb.superclass(), banList);
 			ReferenceBinding[] interfaces = rb.superInterfaces();
@@ -344,14 +344,14 @@ public class PatchDelegate {
 		if (binding.parameters != null) for (TypeBinding param : binding.parameters) {
 			if (!first) signature.append(", ");
 			first = false;
-			signature.append(simpleTypeBindingToString(param));
+			signature.append(typeBindingToSignature(param));
 		}
 		signature.append(")");
 		
 		return signature.toString();
 	}
 	
-	private static String simpleTypeBindingToString(TypeBinding binding) {
+	private static String typeBindingToSignature(TypeBinding binding) {
 		binding = binding.erasure();
 		if (binding != null && binding.isBaseType()) {
 			return new String (binding.sourceName());
@@ -361,7 +361,7 @@ public class PatchDelegate {
 			return pkg.isEmpty() ? qsn : (pkg + "." + qsn);
 		} else if (binding instanceof ArrayBinding) {
 			StringBuilder out = new StringBuilder();
-			out.append(simpleTypeBindingToString(binding.leafComponentType()));
+			out.append(typeBindingToSignature(binding.leafComponentType()));
 			for (int i = 0; i < binding.dimensions(); i++) out.append("[]");
 			return out.toString();
 		}

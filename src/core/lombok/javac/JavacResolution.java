@@ -317,8 +317,8 @@ public class JavacResolution {
 		return iterableParams.isEmpty() ? syms.objectType : types.upperBound(iterableParams.head);
 	}
 	
-	public static JCExpression typeToJCTree(Type type, TreeMaker maker, JavacAST ast) throws TypeNotConvertibleException {
-		return typeToJCTree(type, maker, ast, false);
+	public static JCExpression typeToJCTree(Type type, TreeMaker maker, JavacAST ast, boolean allowVoid) throws TypeNotConvertibleException {
+		return typeToJCTree(type, maker, ast, false, allowVoid);
 	}
 	
 	public static JCExpression createJavaLangObject(TreeMaker maker, JavacAST ast) {
@@ -328,7 +328,7 @@ public class JavacResolution {
 		return out;
 	}
 	
-	private static JCExpression typeToJCTree(Type type, TreeMaker maker, JavacAST ast, boolean allowCompound) throws TypeNotConvertibleException {
+	private static JCExpression typeToJCTree(Type type, TreeMaker maker, JavacAST ast, boolean allowCompound, boolean allowVoid) throws TypeNotConvertibleException {
 		int dims = 0;
 		Type type0 = type;
 		while (type0 instanceof ArrayType) {
@@ -336,7 +336,7 @@ public class JavacResolution {
 			type0 = ((ArrayType)type0).elemtype;
 		}
 		
-		JCExpression result = typeToJCTree0(type0, maker, ast, allowCompound);
+		JCExpression result = typeToJCTree0(type0, maker, ast, allowCompound, allowVoid);
 		while (dims > 0) {
 			result = maker.TypeArray(result);
 			dims--;
@@ -344,12 +344,12 @@ public class JavacResolution {
 		return result;
 	}
 	
-	private static JCExpression typeToJCTree0(Type type, TreeMaker maker, JavacAST ast, boolean allowCompound) throws TypeNotConvertibleException {
+	private static JCExpression typeToJCTree0(Type type, TreeMaker maker, JavacAST ast, boolean allowCompound, boolean allowVoid) throws TypeNotConvertibleException {
 		// NB: There's such a thing as maker.Type(type), but this doesn't work very well; it screws up anonymous classes, captures, and adds an extra prefix dot for some reason too.
 		//  -- so we write our own take on that here.
 		
 		if (type.tag == TypeTags.BOT) return createJavaLangObject(maker, ast);
-		
+		if (type.tag == TypeTags.VOID) return allowVoid ? primitiveToJCTree(type.getKind(), maker) : createJavaLangObject(maker, ast);
 		if (type.isPrimitive()) return primitiveToJCTree(type.getKind(), maker);
 		if (type.isErroneous()) throw new TypeNotConvertibleException("Type cannot be resolved");
 		

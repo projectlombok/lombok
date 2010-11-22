@@ -90,9 +90,9 @@ public class HandleVal extends JavacASTAdapter {
 					if (rhsOfEnhancedForLoop != null) {
 						Type componentType = JavacResolution.ifTypeIsIterableToComponent(type, localNode.getAst());
 						if (componentType == null) replacement = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
-						else replacement = JavacResolution.typeToJCTree(componentType, localNode.getTreeMaker(), localNode.getAst());
+						else replacement = JavacResolution.typeToJCTree(componentType, localNode.getTreeMaker(), localNode.getAst(), false);
 					} else {
-						replacement = JavacResolution.typeToJCTree(type, localNode.getTreeMaker(), localNode.getAst());
+						replacement = JavacResolution.typeToJCTree(type, localNode.getTreeMaker(), localNode.getAst(), false);
 					}
 					
 					if (replacement != null) {
