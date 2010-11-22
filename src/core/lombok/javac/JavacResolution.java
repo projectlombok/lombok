@@ -242,7 +242,7 @@ public class JavacResolution {
 		}
 	}
 	
-	public Map<JCTree, JCTree> resolve(JavacNode node) {
+	public Map<JCTree, JCTree> resolveMethodMember(JavacNode node) {
 		ArrayDeque<JCTree> stack = new ArrayDeque<JCTree>();
 		
 		{
@@ -263,6 +263,28 @@ public class JavacResolution {
 			
 			attrib(copy, finder.get());
 			return mirrorMaker.getOriginalToCopyMap();
+		} finally {
+			logDisabler.enableLoggers();
+		}
+	}
+	
+	public void resolveClassMember(JavacNode node) {
+		ArrayDeque<JCTree> stack = new ArrayDeque<JCTree>();
+		
+		{
+			JavacNode n = node;
+			while (n != null) {
+				stack.push(n.get());
+				n = n.up();
+			}
+		}
+		
+		logDisabler.disableLoggers();
+		try {
+			EnvFinder finder = new EnvFinder(node.getContext());
+			while (!stack.isEmpty()) stack.pop().accept(finder);
+			
+			attrib(node.get(), finder.get());
 		} finally {
 			logDisabler.enableLoggers();
 		}

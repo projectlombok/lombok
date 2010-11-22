@@ -34,6 +34,7 @@ import lombok.core.AST;
 
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.model.JavacElements;
+import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -61,6 +62,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	private final JavacElements elements;
 	private final TreeMaker treeMaker;
 	private final Symtab symtab;
+	private final JavacTypes javacTypes;
 	private final Log log;
 	private final Context context;
 	
@@ -80,6 +82,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		this.elements = JavacElements.instance(context);
 		this.treeMaker = TreeMaker.instance(context);
 		this.symtab = Symtab.instance(context);
+		this.javacTypes = JavacTypes.instance(context);
 		clearChanged();
 	}
 
@@ -133,6 +136,13 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	/** @return The symbol table used by this AST for symbols. */
 	public Symtab getSymbolTable() {
 		return symtab;
+	}
+	
+	/**
+	 * @return The implementation of {@link javax.lang.model.util.Types} of javac. Contains a few extra methods beyond
+	 * the ones listed in the official annotation API interface. */
+	public JavacTypes getTypesUtil() {
+		return javacTypes;
 	}
 	
 	/** {@inheritDoc} */
