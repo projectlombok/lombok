@@ -8,4 +8,5 @@
 		</chain>
 	</resolvers>
 	<settings defaultResolver="projectRepos" />
+	<caches defaultCacheDir="${ivy.basedir}/ivyCache" />
 </ivysettings>
