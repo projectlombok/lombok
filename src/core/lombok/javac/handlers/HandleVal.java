@@ -71,14 +71,14 @@ public class HandleVal extends JavacASTAdapter {
 				if (rhsOfEnhancedForLoop == null) {
 					if (local.init.type == null) {
 						JavacResolution resolver = new JavacResolution(localNode.getContext());
-						type = ((JCExpression) resolver.resolve(localNode).get(local.init)).type;
+						type = ((JCExpression) resolver.resolveMethodMember(localNode).get(local.init)).type;
 					} else {
 						type = local.init.type;
 					}
 				} else {
 					if (rhsOfEnhancedForLoop.type == null) {
 						JavacResolution resolver = new JavacResolution(localNode.getContext());
-						type = ((JCExpression) resolver.resolve(localNode.directUp()).get(rhsOfEnhancedForLoop)).type;
+						type = ((JCExpression) resolver.resolveMethodMember(localNode.directUp()).get(rhsOfEnhancedForLoop)).type;
 					} else {
 						type = rhsOfEnhancedForLoop.type;
 					}

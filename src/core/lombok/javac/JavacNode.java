@@ -28,6 +28,7 @@ import javax.tools.Diagnostic;
 import lombok.core.AST.Kind;
 
 import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -175,6 +176,15 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 	 */
 	public Symtab getSymbolTable() {
 		return ast.getSymbolTable();
+	}
+	
+	/**
+	 * Convenient shortcut to the owning JavacAST object's getTypesUtil method.
+	 * 
+	 * @see JavacAST#getTypesUtil()
+	 */
+	public JavacTypes getTypesUtil() {
+		return ast.getTypesUtil();
 	}
 	
 	/**
