@@ -140,15 +140,15 @@ public class EclipsePatcher extends Agent {
 	private static void patchCatchReparse(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveStartingCatchPosition"))
-				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "fixRetrieveStartingCatchPosition", "int", "int"))
-				.transplant().request(StackRequest.PARAM1).build());
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "fixRetrieveStartingCatchPosition", "int", "int", "int"))
+				.transplant().request(StackRequest.RETURN_VALUE, StackRequest.PARAM1).build());
 	}
 	
 	private static void patchIdentifierEndReparse(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveIdentifierEndPosition"))
-				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "fixRetrieveIdentifierEndPosition", "int", "int"))
-				.transplant().request(StackRequest.PARAM1).build());
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "fixRetrieveIdentifierEndPosition", "int", "int", "int"))
+				.transplant().request(StackRequest.RETURN_VALUE, StackRequest.PARAM2).build());
 	}
 	
 	private static void patchSetGeneratedFlag(ScriptManager sm) {

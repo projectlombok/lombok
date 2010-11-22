@@ -36,12 +36,12 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.dom.SimpleName;
 
 public class PatchFixes {
-	public static int fixRetrieveStartingCatchPosition(int in) {
-		return in;
+	public static int fixRetrieveStartingCatchPosition(int original, int start) {
+		return original == -1 ? start : original;
 	}
 	
-	public static int fixRetrieveIdentifierEndPosition(int in) {
-		return in;
+	public static int fixRetrieveIdentifierEndPosition(int original, int end) {
+		return original == -1 ? end : original;
 	}
 	
 	public static final int ALREADY_PROCESSED_FLAG = 0x800000;	//Bit 24
