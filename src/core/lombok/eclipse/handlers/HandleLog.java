@@ -52,12 +52,6 @@ public class HandleLog {
 	}
 	
 	public static boolean processAnnotation(LoggingFramework framework, AnnotationValues<? extends java.lang.annotation.Annotation> annotation, Annotation source, EclipseNode annotationNode) {
-		Expression annotationValue = (Expression) annotation.getActualExpression("value");
-		if (annotationValue != null && !(annotationValue instanceof ClassLiteralAccess)) {
-			return true;
-		}
-		ClassLiteralAccess loggingType = (ClassLiteralAccess)annotationValue;
-		
 		EclipseNode owner = annotationNode.up();
 		switch (owner.getKind()) {
 		case TYPE:
@@ -78,9 +72,7 @@ public class HandleLog {
 				return true;
 			}
 			
-			if (loggingType == null) {
-				loggingType = selfType(owner, source);
-			}
+			ClassLiteralAccess loggingType = selfType(owner, source);
 			
 			injectField(owner, createField(framework, source, loggingType));
 			owner.rebuild();
@@ -158,51 +150,51 @@ public class HandleLog {
 	}
 	
 	/**
-	 * Handles the {@link lombok.extern.apachecommons.Log} annotation for Eclipse.
+	 * Handles the {@link lombok.extern.apachecommons.CommonsLog} annotation for Eclipse.
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
-	public static class HandleCommonsLog implements EclipseAnnotationHandler<lombok.extern.apachecommons.Log> {
-		@Override public boolean handle(AnnotationValues<lombok.extern.apachecommons.Log> annotation, Annotation source, EclipseNode annotationNode) {
+	public static class HandleCommonsLog implements EclipseAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
+		@Override public boolean handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, Annotation source, EclipseNode annotationNode) {
 			return processAnnotation(LoggingFramework.COMMONS, annotation, source, annotationNode);
 		}
 	}
 	
 	/**
-	 * Handles the {@link lombok.extern.jul.Log} annotation for Eclipse.
+	 * Handles the {@link lombok.extern.java.Log} annotation for Eclipse.
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
-	public static class HandleJulLog implements EclipseAnnotationHandler<lombok.extern.jul.Log> {
-		@Override public boolean handle(AnnotationValues<lombok.extern.jul.Log> annotation, Annotation source, EclipseNode annotationNode) {
+	public static class HandleJulLog implements EclipseAnnotationHandler<lombok.extern.java.Log> {
+		@Override public boolean handle(AnnotationValues<lombok.extern.java.Log> annotation, Annotation source, EclipseNode annotationNode) {
 			return processAnnotation(LoggingFramework.JUL, annotation, source, annotationNode);
 		}
 	}
 	
 	/**
-	 * Handles the {@link lombok.extern.log4j.Log} annotation for Eclipse.
+	 * Handles the {@link lombok.extern.log4j.Log4j} annotation for Eclipse.
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
-	public static class HandleLog4jLog implements EclipseAnnotationHandler<lombok.extern.log4j.Log> {
-		@Override public boolean handle(AnnotationValues<lombok.extern.log4j.Log> annotation, Annotation source, EclipseNode annotationNode) {
+	public static class HandleLog4jLog implements EclipseAnnotationHandler<lombok.extern.log4j.Log4j> {
+		@Override public boolean handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, Annotation source, EclipseNode annotationNode) {
 			return processAnnotation(LoggingFramework.LOG4J, annotation, source, annotationNode);
 		}
 	}
 	
 	/**
-	 * Handles the {@link lombok.extern.slf4j.Log} annotation for Eclipse.
+	 * Handles the {@link lombok.extern.slf4j.Slf4j} annotation for Eclipse.
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
-	public static class HandleSlf4jLog implements EclipseAnnotationHandler<lombok.extern.slf4j.Log> {
-		@Override public boolean handle(AnnotationValues<lombok.extern.slf4j.Log> annotation, Annotation source, EclipseNode annotationNode) {
+	public static class HandleSlf4jLog implements EclipseAnnotationHandler<lombok.extern.slf4j.Slf4j> {
+		@Override public boolean handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, Annotation source, EclipseNode annotationNode) {
 			return processAnnotation(LoggingFramework.SLF4J, annotation, source, annotationNode);
 		}
 	}
 	
 	enum LoggingFramework {
 		// private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(TargetType.class);
-		COMMONS(lombok.extern.jul.Log.class, "org.apache.commons.logging.Log", "org.apache.commons.logging.LogFactory", "getLog"),
+		COMMONS("org.apache.commons.logging.Log", "org.apache.commons.logging.LogFactory", "getLog"),
 		
 		// private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(TargetType.class.getName());
-		JUL(lombok.extern.jul.Log.class, "java.util.logging.Logger", "java.util.logging.Logger", "getLogger") {
+		JUL("java.util.logging.Logger", "java.util.logging.Logger", "getLogger") {
 			@Override public Expression createFactoryParameter(ClassLiteralAccess type, Annotation source) {
 				int pS = source.sourceStart, pE = source.sourceEnd;
 				long p = (long)pS << 32 | pE;
@@ -222,27 +214,21 @@ public class HandleLog {
 		},
 		
 		// private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(TargetType.class);
-		LOG4J(lombok.extern.jul.Log.class, "org.apache.log4j.Logger", "org.apache.log4j.Logger", "getLogger"),
+		LOG4J("org.apache.log4j.Logger", "org.apache.log4j.Logger", "getLogger"),
 
 		// private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TargetType.class);
-		SLF4J(lombok.extern.slf4j.Log.class, "org.slf4j.Logger", "org.slf4j.LoggerFactory", "getLogger"),
+		SLF4J("org.slf4j.Logger", "org.slf4j.LoggerFactory", "getLogger"),
 		
 		;
 		
-		private final Class<? extends java.lang.annotation.Annotation> annotationClass;
 		private final String loggerTypeName;
 		private final String loggerFactoryTypeName;
 		private final String loggerFactoryMethodName;
 
-		LoggingFramework(Class<? extends java.lang.annotation.Annotation> annotationClass, String loggerTypeName, String loggerFactoryTypeName, String loggerFactoryMethodName) {
-			this.annotationClass = annotationClass;
+		LoggingFramework(String loggerTypeName, String loggerFactoryTypeName, String loggerFactoryMethodName) {
 			this.loggerTypeName = loggerTypeName;
 			this.loggerFactoryTypeName = loggerFactoryTypeName;
 			this.loggerFactoryMethodName = loggerFactoryMethodName;
-		}
-		
-		final Class<? extends java.lang.annotation.Annotation> getAnnotationClass() {
-			return annotationClass;
 		}
 		
 		final String getLoggerTypeName() {

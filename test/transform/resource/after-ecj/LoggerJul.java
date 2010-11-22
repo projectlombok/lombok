@@ -1,4 +1,5 @@
-@lombok.extern.jul.Log class LoggerJul {
+import lombok.extern.java.Log;
+@lombok.extern.java.Log class LoggerJul {
   private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(LoggerJul.class.getName());
   <clinit>() {
   }
@@ -6,19 +7,11 @@
     super();
   }
 }
-@lombok.extern.jul.Log(String.class) class LoggerJulString {
-  private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(String.class.getName());
+@Log class LoggerJulWithImport {
+  private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(LoggerJulWithImport.class.getName());
   <clinit>() {
   }
-  LoggerJulString() {
-    super();
-  }
-}
-@lombok.extern.jul.Log(java.lang.String.class) class LoggerJulJavaLangString {
-  private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(java.lang.String.class.getName());
-  <clinit>() {
-  }
-  LoggerJulJavaLangString() {
+  LoggerJulWithImport() {
     super();
   }
 }

@@ -19,18 +19,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.extern.apachecommons;
+package lombok.extern.slf4j;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
 /**
  * Causes lombok to generate a logger field.
  * Example:
  * <pre>
- * &#64;Log
+ * &#64;Slf4j
  * public class LogExample {
  * }
  * </pre>
@@ -39,39 +38,18 @@ import java.lang.annotation.Target;
  * 
  * <pre>
  * public class LogExample {
- *     private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(LogExample.class);
- * }
- * </pre>
- * 
- * If you do not want to use the annotated class as the logger parameter, you can specify an alternate class.
- * Example:
- * <pre>
- * &#64;Log(java.util.List.class)
- * public class LogExample {
- * }
- * </pre>
- * 
- * will generate:
- * 
- * <pre>
- * public class LogExample {
- *     private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(java.util.List.class);
+ *     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LogExample.class);
  * }
  * </pre>
  * 
  * This annotation is valid for classes and enumerations.<br />
- * 
- * @see org.apache.commons.logging.Log org.apache.commons.logging.Log
- * @see org.apache.commons.logging.LogFactory#getLog(java.lang.Class) org.apache.commons.logging.LogFactory.getLog(Class target)
- * @see lombok.extern.jul.Log lombok.extern.jul.Log
- * @see lombok.extern.log4j.Log lombok.extern.log4j.Log
- * @see lombok.extern.slf4j.Log lombok.extern.slf4j.Log
+ * @see org.slf4j.Logger org.slf4j.Logger
+ * @see org.slf4j.LoggerFactory#getLogger(java.lang.Class) org.slf4j.LoggerFactory.getLogger(Class target)
+ * @see lombok.extern.apachecommons.CommonsLog &#64;CommonsLog
+ * @see lombok.extern.java.Log &#64;Log
+ * @see lombok.extern.log4j.Log4j &#64;Log4j
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
-public @interface Log {
-	/**
-	 * If you do not want to use the annotated class as the logger parameter, you can specify an alternate class here.
-	 */
-	Class<?> value() default void.class;
+public @interface Slf4j {
 }

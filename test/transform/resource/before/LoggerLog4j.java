@@ -1,11 +1,9 @@
-@lombok.extern.log4j.Log
+import lombok.extern.log4j.Log4j;
+
+@lombok.extern.log4j.Log4j
 class LoggerLog4j {
 }
 
-@lombok.extern.log4j.Log(String.class)
-class LoggerLog4jString {
-}
-
-@lombok.extern.log4j.Log(java.lang.String.class)
-class LoggerLog4jJavaLangString {
+@Log4j
+class LoggerLog4jWithImport {
 }

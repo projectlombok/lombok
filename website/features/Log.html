@@ -5,33 +5,30 @@
 	<link rel="stylesheet" type="text/css" href="features.css" />
 	<link rel="shortcut icon" href="../favicon.ico" type="image/x-icon" />
 	<meta name="description" content="Spice up your java" />
-	<title>@Log</title>
+	<title>@Log (and friends)</title>
 </head><body><div id="pepper">
 	<div class="minimumHeight"></div>
 	<div class="meat">
 		<div class="header"><a href="../index.html">Project Lombok</a></div>
-		<h1>@Log</h1>
+		<h1>@Log (and friends)</h1>
 		<div class="byline">Captain's Log, stardate 24435.7: &quot;What was that line again?&quot;</div>
 		<div class="overview">
 			<h3>Overview</h3>
 			<p>
-			<em>NEW in lombok 0.10: </em>You can annotate any field with <code>@Log</code> to let lombok generate a logger field automatically.<br />
+			<em>NEW in lombok 0.10: </em>You can annotate any class with a log annotation to let lombok generate a logger field.<br />
 			The logger is named <code>log</code> and field's type depends on which logger you have selected.
 			</p><p>
-			There are four <code>@Log</code> choices available:<br />
+			There are four choices available:<br />
 			<dl>
-				<dt><code>@lombok.extern.apachecommons.Log</code></dt>
+				<dt><code>@CommonsLog</code></dt>
 				<dd>Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="http://commons.apache.org/logging/apidocs/org/apache/commons/logging/Log.html">org.apache.commons.logging.Log</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="http://commons.apache.org/logging/apidocs/org/apache/commons/logging/LogFactory.html#getLog(java.lang.Class)">org.apache.commons.logging.LogFactory.getLog</a>(LogExample.<span class="keyword">class</span>);</code></dd>
-				<dt><code>@lombok.extern.jul.Log</code></dt>
+				<dt><code>@Log</code></dt>
 				<dd>Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="http://download.oracle.com/javase/6/docs/api/java/util/logging/Logger.html">java.util.logging.Logger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="http://download.oracle.com/javase/6/docs/api/java/util/logging/Logger.html#getLogger(java.lang.String)">java.util.logging.Logger.getLogger</a>(LogExample.<span class="keyword">class</span>.getName());</code></dd>
-				<dt><code>@lombok.extern.log4j.Log</code></dt>
+				<dt><code>@Log4j</code></dt>
 				<dd>Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Logger.html">org.apache.log4j.Logger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Logger.html#getLogger(java.lang.Class)">org.apache.log4j.Logger.getLogger</a>(LogExample.<span class="keyword">class</span>);</code></dd>
-				<dt><code>@lombok.extern.slf4j.Log</code></dt>
+				<dt><code>@Slf4j</code></dt>
 				<dd>Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="http://www.slf4j.org/api/org/slf4j/Logger.html">org.slf4j.Logger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="http://www.slf4j.org/apidocs/org/slf4j/LoggerFactory.html#getLogger(java.lang.Class)">org.slf4j.LoggerFactory.getLogger</a>(LogExample.<span class="keyword">class</span>);</code></dd>
 			</dl>
-			</p>
-			<p>
-			All <code>@Log</code> annotations can take an optional parameter of type <code>Class</code>. If such a parameter is specified, that class will be used as the parameter for the logger factory call.
 			</p>
 		</div>
 		<div class="snippets">
@@ -51,7 +48,7 @@
 				<p>
 				If a field called <code>log</code> already exists, a warning will be emitted and no code will be generated.
 				</p><p>
-				A future feature of lombok's <code>@Log</code> is to find calls to the logger field and, if the chosen logging framework supports
+				A future feature of lombok's diverse log annotations is to find calls to the logger field and, if the chosen logging framework supports
 				it and the log level can be compile-time determined from the log call, guard it with an <code>if</code> statement. This way if
 				the log statement ends up being ignored, the potentially expensive calculation of the log string is avoided entirely. This does mean
 				that you should <em>NOT</em> put any side-effects in the expression that you log.
