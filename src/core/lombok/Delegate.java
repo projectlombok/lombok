@@ -26,8 +26,27 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Put on any field to make lombok generate delegate methods that forward the call to this field.
+ * 
+ * Example:
+ * <pre>
+ *     private &#64;Delegate List&lt;String&gt; foo;
+ * </pre>
+ * 
+ * will generate for example an {@code boolean add(String)} method, which contains: {@code return foo.add(arg);}, as well as all other methods in {@code List}.
+ * 
+ * All public instance methods of the field's type, as well as all public instance methods of all the field's type's superfields are delegated, except for all methods
+ * that exist in {@link java.lang.Object}, and except for methods that are already present in the class.
+ */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.SOURCE)
 public @interface Delegate {
+	/**
+	 * Normally the type of the field is used as delegate type. However, to choose a different type to delegate, you can list one (or more) types here. Note that types with
+	 * type arguments can only be done as a field type. A solution for this is to create a private inner interface/class with the appropriate types extended, and possibly
+	 * with all methods you'd like to delegate listed, and then supply that class here. The field does not actually have to implement the type you're delegating; the
+	 * type listed here is used only to determine which delegate methods to generate.
+	 */
 	Class<?>[] value() default {};
 }

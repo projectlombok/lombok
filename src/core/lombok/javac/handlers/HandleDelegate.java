@@ -54,7 +54,6 @@ import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.model.JavacTypes;
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -89,7 +88,10 @@ public class HandleDelegate implements JavacAnnotationHandler<Delegate> {
 			"finalize()"));
 	
 	@Override public boolean handle(AnnotationValues<Delegate> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		if (annotationNode.up().getKind() != Kind.FIELD) return false; // TODO error
+		if (annotationNode.up().getKind() != Kind.FIELD) {
+			// As the annotation is legal on fields only, javac itself will take care of printing an error message for this.
+			return false;
+		}
 		
 		List<Object> delegateTypes = annotation.getActualExpressions("value");
 		JavacResolution reso = new JavacResolution(annotationNode.getContext());
