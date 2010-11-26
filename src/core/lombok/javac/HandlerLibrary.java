@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -172,6 +172,7 @@ public class HandlerLibrary {
 			try {
 				if (container.isResolutionBased() && phase == 1) handled |= container.handle(node);
 				if (!container.isResolutionBased() && phase == 0) handled |= container.handle(node);
+				if (container.annotationClass == PrintAST.class && phase == 2) handled |= container.handle(node);
 			} catch (AnnotationValueDecodeFail fail) {
 				fail.owner.setError(fail.getMessage(), fail.idx);
 			} catch (Throwable t) {
