@@ -40,6 +40,8 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<delete file=".project" quiet="true" />
 		<delete file=".classpath" quiet="true" />
 		<delete dir=".settings" quiet="true" />
+		<delete dir=".idea" quiet="true" />
+		<delete file="lombok.iml" quiet="true" />
 	</target>
 	
 	<target name="download-ipp" unless="ivyplusplus.available">
@@ -47,9 +49,26 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<get src="http://projectlombok.org/downloads/ivyplusplus.jar" dest="lib/ivyplusplus.jar" usetimestamp="true" />
 	</target>
 	
-	<target name="ensure-ipp" depends="download-ipp">
+	<target name="load-ipp" depends="download-ipp">
 		<taskdef classpath="lib/ivyplusplus.jar" resource="com/zwitserloot/ivyplusplus/antlib.xml" uri="antlib:com.zwitserloot.ivyplusplus" />
+		<available classname="com.zwitserloot.ivyplusplus.EnsureVersion" classpath="lib/ivyplusplus.jar" property="ivyplusplus.min14" />
 	</target>
+	
+	<target name="redownload-ipp1" depends="load-ipp" unless="ivyplusplus.min14">
+		<get src="http://projectlombok.org/downloads/ivyplusplus.jar" dest="lib/ivyplusplus.jar" />
+		<fail>ivyplusplus had to be redownloaded. Restart the script to continue.</fail>
+	</target>
+	
+	<target name="check-ipp-version" depends="load-ipp">
+		<ivy:ensureippversion version="1.4" property="ipp.versionOkay" />
+	</target>
+	
+	<target name="redownload-ipp2" depends="check-ipp-version" unless="ipp.versionOkay">
+		<get src="http://projectlombok.org/downloads/ivyplusplus.jar" dest="lib/ivyplusplus.jar" />
+		<fail>ivyplusplus had to be redownloaded. Restart the script to continue.</fail>
+	</target>
+	
+	<target name="ensure-ipp" depends="load-ipp, redownload-ipp1, redownload-ipp2" />
 	
 	<target name="config-ivy" depends="ensure-ipp" unless="ivy.config">
 		<ivy:configure file="buildScripts/ivysettings.xml" />
@@ -157,6 +176,27 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</jar>
 		<copy file="dist/lombok-${lombok.version}.jar" tofile="dist/lombok.jar" />
 		<property name="lombok.dist.built" value="true" />
+	</target>
+	
+	<target name="intellij" depends="deps, contrib" description="Creates intellij project files and downloads all dependencies. Open this directory as a project in IntelliJ after running this target.">
+		<ivy:intellijgen>
+			<conf name="build" sources="contrib" />
+			<conf name="test" sources="contrib" />
+			<module name="lombok" depends="build, test">
+				<srcdir dir="src/core" />
+				<srcdir dir="src/eclipseAgent" />
+				<srcdir dir="src/installer" />
+				<srcdir dir="src/delombok" />
+				<srcdir dir="experimental/src" />
+				<srcdir dir="test/transform/src" test="true" />
+				<srcdir dir="test/core/src" test="true" />
+				<srcdir dir="test/bytecode/src" test="true" />
+			</module>
+			<settings>
+				<url url="http://projectlombok.org/downloads/lombok.intellij.settings" />
+			</settings>
+			<apt enabled="true" />
+		</ivy:intellijgen>
 	</target>
 	
 	<target name="eclipse" depends="deps, contrib" description="Creates eclipse project files and downloads all dependencies. Open this directory as project in eclipse after running this target.">
