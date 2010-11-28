@@ -31,9 +31,20 @@ import java.util.Set;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.NoType;
+import javax.lang.model.type.NullType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
+import javax.lang.model.type.TypeVisitor;
+import javax.lang.model.type.WildcardType;
 
 import lombok.Delegate;
 import lombok.core.AST.Kind;
@@ -151,10 +162,94 @@ public class HandleDelegate implements JavacAnnotationHandler<Delegate> {
 	}
 	
 	private JCMethodDecl createDelegateMethod(MethodSig sig, JavacNode annotation, Name delegateFieldName) throws TypeNotConvertibleException {
-		/** public <P1, P2, ...> ReturnType methodName(ParamType1 $p1, ParamType2 $p2, ...) throws T1, T2, ... {
-		 *      (return) delegate.<P1, P2>methodName($p1, $p2);
+		/** public <T, U, ...> ReturnType methodName(ParamType1 name1, ParamType2 name2, ...) throws T1, T2, ... {
+		 *      (return) delegate.<T, U>methodName(name1, name2);
 		 *  }
 		 */
+		
+		if (!sig.elem.getTypeParameters().isEmpty()) {
+			// There's a rare but problematic case if a delegate method has its own type variables, and the delegated type does too, and the method uses both.
+			// If for example the delegated type has <E>, and the method has <T>, but in our class we have a <T> at the class level, then we have two different
+			// type variables both named 'T'. We detect this situation and error out asking the programmer to rename their type variable.
+			final Set<String> usedTypeVars = new HashSet<String>();
+			class TypeScanner implements TypeVisitor<Void, Void> {
+				@Override public Void visit(TypeMirror t, Void p) {
+					return null;
+				}
+				
+				@Override public Void visit(TypeMirror t) {
+					return null;
+				}
+				
+				@Override public Void visitPrimitive(PrimitiveType t, Void p) {
+					return null;
+				}
+				
+				@Override public Void visitNull(NullType t, Void p) {
+					return null;
+				}
+				
+				@Override public Void visitArray(ArrayType t, Void p) {
+					t.getComponentType().accept(this, null);
+					return null;
+				}
+				
+				@Override public Void visitDeclared(DeclaredType t, Void p) {
+					for (TypeMirror arg : t.getTypeArguments()) {
+						arg.accept(this, null);
+					}
+					
+					return null;
+				}
+				
+				@Override public Void visitError(ErrorType t, Void p) {
+					return null;
+				}
+				
+				@Override public Void visitTypeVariable(TypeVariable t, Void p) {
+					String name = t.asElement().getSimpleName().toString();
+					usedTypeVars.add(name);
+					return null;
+				}
+				
+				@Override public Void visitWildcard(WildcardType t, Void p) {
+					if (t.getExtendsBound() != null) t.getExtendsBound().accept(this, null);
+					if (t.getSuperBound() != null) t.getSuperBound().accept(this, null);
+					return null;
+				}
+				
+				@Override public Void visitExecutable(ExecutableType t, Void p) {
+					return null;
+				}
+				
+				@Override public Void visitNoType(NoType t, Void p) {
+					return null;
+				}
+				
+				@Override public Void visitUnknown(TypeMirror t, Void p) {
+					return null;
+				}
+			}
+			
+			TypeScanner scanner = new TypeScanner();
+			
+			sig.elem.getReturnType().accept(scanner, null);
+			for (VariableElement param : sig.elem.getParameters()) {
+				param.asType().accept(scanner, null);
+			}
+			for (TypeMirror ex : sig.elem.getThrownTypes()) {
+				ex.accept(scanner, null);
+			}
+			
+			for (TypeParameterElement ownVar : sig.elem.getTypeParameters()) {
+				usedTypeVars.remove(ownVar.toString());
+			}
+			
+			if (!usedTypeVars.isEmpty()) {
+				
+				
+			}
+		}
 		
 		TreeMaker maker = annotation.getTreeMaker();
 		
@@ -177,9 +272,8 @@ public class HandleDelegate implements JavacAnnotationHandler<Delegate> {
 		ListBuffer<JCExpression> typeArgs = sig.type.getTypeVariables().isEmpty() ? null : new ListBuffer<JCExpression>();
 		Types types = Types.instance(annotation.getContext());
 		
-		int nameCounter = 0;
 		for (TypeMirror param : sig.type.getTypeVariables()) {
-			Name name = annotation.toName("P" + (nameCounter++));
+			Name name = ((TypeVar) param).tsym.name;
 			typeParams.append(maker.TypeParameter(name, maker.Types(types.getBounds((TypeVar) param))));
 			typeArgs.append(maker.Ident(name));
 		}
@@ -188,10 +282,11 @@ public class HandleDelegate implements JavacAnnotationHandler<Delegate> {
 			thrown.append(JavacResolution.typeToJCTree((Type) ex, maker, annotation.getAst(), true));
 		}
 		
-		nameCounter = 0;
+		int idx = 0;
 		for (TypeMirror param : sig.type.getParameterTypes()) {
-			Name name = annotation.toName("$a" + (nameCounter++));
 			JCModifiers paramMods = maker.Modifiers(Flags.FINAL);
+			String[] paramNames = sig.getParameterNames();
+			Name name = annotation.toName(paramNames[idx++]);
 			params.append(maker.VarDef(paramMods, name, JavacResolution.typeToJCTree((Type) param, maker, annotation.getAst(), true), null));
 			args.append(maker.Ident(name));
 		}
@@ -222,7 +317,7 @@ public class HandleDelegate implements JavacAnnotationHandler<Delegate> {
 			String sig = printSig(methodType, member.name, node.getTypesUtil());
 			if (!banList.add(sig)) continue; //If add returns false, it was already in there
 			boolean isDeprecated = exElem.getAnnotation(Deprecated.class) != null;
-			signatures.add(new MethodSig(member.name, methodType, isDeprecated));
+			signatures.add(new MethodSig(member.name, methodType, isDeprecated, exElem));
 		}
 		
 		if (ct.supertype_field instanceof ClassType) addMethodBindings(signatures, (ClassType) ct.supertype_field, node, banList);
@@ -235,11 +330,22 @@ public class HandleDelegate implements JavacAnnotationHandler<Delegate> {
 		final Name name;
 		final ExecutableType type;
 		final boolean isDeprecated;
+		final ExecutableElement elem;
 		
-		MethodSig(Name name, ExecutableType type, boolean isDeprecated) {
+		MethodSig(Name name, ExecutableType type, boolean isDeprecated, ExecutableElement elem) {
 			this.name = name;
 			this.type = type;
 			this.isDeprecated = isDeprecated;
+			this.elem = elem;
+		}
+		
+		String[] getParameterNames() {
+			List<? extends VariableElement> paramList = elem.getParameters();
+			String[] paramNames = new String[paramList.size()];
+			for (int i = 0; i < paramNames.length; i++) {
+				paramNames[i] = paramList.get(i).getSimpleName().toString();
+			}
+			return paramNames;
 		}
 		
 		@Override public String toString() {

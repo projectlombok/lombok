@@ -17,6 +17,7 @@ import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.WildcardType;
 import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.Attr;
@@ -366,26 +367,34 @@ public class JavacResolution {
 				List<Type> ifaces = ((ClassType)type).interfaces_field;
 				Type supertype = ((ClassType)type).supertype_field;
 				if (ifaces != null && ifaces.length() == 1) {
-					return typeToJCTree(ifaces.get(0), maker, ast, allowCompound);
+					return typeToJCTree(ifaces.get(0), maker, ast, allowCompound, allowVoid);
 				}
-				if (supertype != null) return typeToJCTree(supertype, maker, ast, allowCompound);
+				if (supertype != null) return typeToJCTree(supertype, maker, ast, allowCompound, allowVoid);
 			}
 			throw new TypeNotConvertibleException("Anonymous inner class");
 		}
 		
-		if (type instanceof CapturedType) {
+		if (type instanceof CapturedType || type instanceof WildcardType) {
+			Type lower, upper;
+			if (type instanceof WildcardType) {
+				upper = ((WildcardType)type).getExtendsBound();
+				lower = ((WildcardType)type).getSuperBound();
+			} else {
+				lower = type.getLowerBound();
+				upper = type.getUpperBound();
+			}
 			if (allowCompound) {
-				if (type.getLowerBound() == null || type.getLowerBound().tag == TypeTags.BOT) {
-					if (type.getUpperBound().toString().equals("java.lang.Object")) {
+				if (lower == null || lower.tag == TypeTags.BOT) {
+					if (upper == null || upper.toString().equals("java.lang.Object")) {
 						return maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
 					}
-					return maker.Wildcard(maker.TypeBoundKind(BoundKind.EXTENDS), typeToJCTree(type.getUpperBound(), maker, ast, false));
+					return maker.Wildcard(maker.TypeBoundKind(BoundKind.EXTENDS), typeToJCTree(upper, maker, ast, false, false));
 				} else {
-					return maker.Wildcard(maker.TypeBoundKind(BoundKind.SUPER), typeToJCTree(type.getLowerBound(), maker, ast, false));
+					return maker.Wildcard(maker.TypeBoundKind(BoundKind.SUPER), typeToJCTree(lower, maker, ast, false, false));
 				}
 			}
-			if (type.getUpperBound() != null) {
-				return typeToJCTree(type.getUpperBound(), maker, ast, allowCompound);
+			if (upper != null) {
+				return typeToJCTree(upper, maker, ast, allowCompound, allowVoid);
 			}
 			
 			return createJavaLangObject(maker, ast);
@@ -402,7 +411,7 @@ public class JavacResolution {
 		
 		if (generics != null && !generics.isEmpty()) {
 			ListBuffer<JCExpression> args = ListBuffer.lb();
-			for (Type t : generics) args.append(typeToJCTree(t, maker, ast, true));
+			for (Type t : generics) args.append(typeToJCTree(t, maker, ast, true, false));
 			replacement = maker.TypeApply(replacement, args.toList());
 		}
 		
