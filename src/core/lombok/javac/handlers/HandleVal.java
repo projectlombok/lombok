@@ -68,6 +68,8 @@ public class HandleVal extends JavacASTAdapter {
 			return;
 		}
 		
+		JavacHandlerUtil.deleteImportFromCompilationUnit(localNode, "lombok.val");
+		
 		local.mods.flags |= Flags.FINAL;
 		local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
 		
@@ -102,9 +104,10 @@ public class HandleVal extends JavacASTAdapter {
 				
 				if (replacement != null) {
 					local.vartype = replacement;
-					localNode.getAst().setChanged();
+				} else {
+					local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());;
 				}
-				else local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());;
+				localNode.getAst().setChanged();
 			} catch (JavacResolution.TypeNotConvertibleException e) {
 				localNode.addError("Cannot use 'val' here because initializer expression does not have a representable type: " + e.getMessage());
 				local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());;
