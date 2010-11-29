@@ -36,6 +36,7 @@ import lombok.core.TypeResolver;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues.AnnotationValue;
 
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
@@ -61,7 +62,18 @@ public class Javac {
 	 */
 	public static boolean annotationTypeMatches(Class<? extends Annotation> type, JavacNode node) {
 		if (node.getKind() != Kind.ANNOTATION) return false;
-		String typeName = ((JCAnnotation)node.get()).annotationType.toString();
+		return typeMatches(type, node, ((JCAnnotation)node.get()).annotationType);
+	}
+	
+	/**
+	 * Checks if the given TypeReference node is likely to be a reference to the provided class.
+	 * 
+	 * @param type An actual type. This method checks if {@code typeNode} is likely to be a reference to this type.
+	 * @param node A Lombok AST node. Any node in the appropriate compilation unit will do (used to get access to import statements).
+	 * @param typeNode A type reference to check.
+	 */
+	public static boolean typeMatches(Class<?> type, JavacNode node, JCTree typeNode) {
+		String typeName = typeNode.toString();
 		
 		TypeLibrary library = new TypeLibrary();
 		library.addType(type.getName());

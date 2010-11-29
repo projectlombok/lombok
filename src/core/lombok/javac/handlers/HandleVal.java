@@ -21,6 +21,8 @@
  */
 package lombok.javac.handlers;
 
+import lombok.val;
+import lombok.javac.Javac;
 import lombok.javac.JavacASTAdapter;
 import lombok.javac.JavacASTVisitor;
 import lombok.javac.JavacNode;
@@ -43,71 +45,73 @@ public class HandleVal extends JavacASTAdapter {
 	}
 	
 	@Override public void visitLocal(JavacNode localNode, JCVariableDecl local) {
-		if (local.vartype != null && local.vartype.toString().equals("val")) {
-			JCExpression rhsOfEnhancedForLoop = null;
-			if (local.init == null) {
-				JCTree parentRaw = localNode.directUp().get();
-				if (parentRaw instanceof JCEnhancedForLoop) {
-					JCEnhancedForLoop efl = (JCEnhancedForLoop) parentRaw;
-					if (efl.var == local) rhsOfEnhancedForLoop = efl.expr;
+		if (local.vartype == null || (!local.vartype.toString().equals("val") && !local.vartype.toString().equals("lombok.val"))) return;
+		
+		if (!Javac.typeMatches(val.class, localNode, local.vartype)) return;
+		
+		JCExpression rhsOfEnhancedForLoop = null;
+		if (local.init == null) {
+			JCTree parentRaw = localNode.directUp().get();
+			if (parentRaw instanceof JCEnhancedForLoop) {
+				JCEnhancedForLoop efl = (JCEnhancedForLoop) parentRaw;
+				if (efl.var == local) rhsOfEnhancedForLoop = efl.expr;
+			}
+		}
+		
+		if (rhsOfEnhancedForLoop == null && local.init == null) {
+			localNode.addError("'val' on a local variable requires an initializer expression");
+			return;
+		}
+		
+		if (local.init instanceof JCNewArray && ((JCNewArray)local.init).elemtype == null) {
+			localNode.addError("'val' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })");
+			return;
+		}
+		
+		local.mods.flags |= Flags.FINAL;
+		local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
+		
+		Type type;
+		try {
+			if (rhsOfEnhancedForLoop == null) {
+				if (local.init.type == null) {
+					JavacResolution resolver = new JavacResolution(localNode.getContext());
+					type = ((JCExpression) resolver.resolveMethodMember(localNode).get(local.init)).type;
+				} else {
+					type = local.init.type;
+				}
+			} else {
+				if (rhsOfEnhancedForLoop.type == null) {
+					JavacResolution resolver = new JavacResolution(localNode.getContext());
+					type = ((JCExpression) resolver.resolveMethodMember(localNode.directUp()).get(rhsOfEnhancedForLoop)).type;
+				} else {
+					type = rhsOfEnhancedForLoop.type;
 				}
 			}
 			
-			if (rhsOfEnhancedForLoop == null && local.init == null) {
-				localNode.addError("'val' on a local variable requires an initializer expression");
-				return;
-			}
-			
-			if (local.init instanceof JCNewArray && ((JCNewArray)local.init).elemtype == null) {
-				localNode.addError("'val' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })");
-				return;
-			}
-			
-			local.mods.flags |= Flags.FINAL;
-			local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
-			
-			Type type;
 			try {
-				if (rhsOfEnhancedForLoop == null) {
-					if (local.init.type == null) {
-						JavacResolution resolver = new JavacResolution(localNode.getContext());
-						type = ((JCExpression) resolver.resolveMethodMember(localNode).get(local.init)).type;
-					} else {
-						type = local.init.type;
-					}
+				JCExpression replacement;
+				
+				if (rhsOfEnhancedForLoop != null) {
+					Type componentType = JavacResolution.ifTypeIsIterableToComponent(type, localNode.getAst());
+					if (componentType == null) replacement = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
+					else replacement = JavacResolution.typeToJCTree(componentType, localNode.getTreeMaker(), localNode.getAst(), false);
 				} else {
-					if (rhsOfEnhancedForLoop.type == null) {
-						JavacResolution resolver = new JavacResolution(localNode.getContext());
-						type = ((JCExpression) resolver.resolveMethodMember(localNode.directUp()).get(rhsOfEnhancedForLoop)).type;
-					} else {
-						type = rhsOfEnhancedForLoop.type;
-					}
+					replacement = JavacResolution.typeToJCTree(type, localNode.getTreeMaker(), localNode.getAst(), false);
 				}
 				
-				try {
-					JCExpression replacement;
-					
-					if (rhsOfEnhancedForLoop != null) {
-						Type componentType = JavacResolution.ifTypeIsIterableToComponent(type, localNode.getAst());
-						if (componentType == null) replacement = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
-						else replacement = JavacResolution.typeToJCTree(componentType, localNode.getTreeMaker(), localNode.getAst(), false);
-					} else {
-						replacement = JavacResolution.typeToJCTree(type, localNode.getTreeMaker(), localNode.getAst(), false);
-					}
-					
-					if (replacement != null) {
-						local.vartype = replacement;
-						localNode.getAst().setChanged();
-					}
-					else local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());;
-				} catch (JavacResolution.TypeNotConvertibleException e) {
-					localNode.addError("Cannot use 'val' here because initializer expression does not have a representable type: " + e.getMessage());
-					local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());;
+				if (replacement != null) {
+					local.vartype = replacement;
+					localNode.getAst().setChanged();
 				}
-			} catch (RuntimeException e) {
+				else local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());;
+			} catch (JavacResolution.TypeNotConvertibleException e) {
+				localNode.addError("Cannot use 'val' here because initializer expression does not have a representable type: " + e.getMessage());
 				local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());;
-				throw e;
 			}
+		} catch (RuntimeException e) {
+			local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());;
+			throw e;
 		}
 	}
 }
