@@ -1,3 +1,5 @@
+import lombok.val;
+
 public class ValInFor {
 	{
 		val x = 10;
@@ -10,11 +12,11 @@ public class ValInFor {
 		}
 	}
 	
-/*	public void enhancedFor() {
+	public void enhancedFor() {
 		java.util.List<String> list = java.util.Arrays.asList("Hello, World!");
 		for (val shouldBeString : list) {
 			System.out.println(shouldBeString.toLowerCase());
 			val shouldBeString2 = shouldBeString;
 		}
-	}*/
+	}
 }

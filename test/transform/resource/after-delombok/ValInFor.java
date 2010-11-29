@@ -9,11 +9,11 @@ public class ValInFor {
 			final java.lang.String v = a;
 		}
 	}
-/*	public void enhancedFor() {
+	public void enhancedFor() {
 		java.util.List<String> list = java.util.Arrays.asList("Hello, World!");
-		for (val shouldBeString : list) {
+		for (final java.lang.String shouldBeString : list) {
 			System.out.println(shouldBeString.toLowerCase());
-			val shouldBeString2 = shouldBeString;
+			final java.lang.String shouldBeString2 = shouldBeString;
 		}
-	}*/
+	}
 }

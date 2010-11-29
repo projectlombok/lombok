@@ -1,2 +1,2 @@
-3:21 ERROR Cannot use 'val' here because initializer expression does not have a representable type: Type cannot be resolved
-7:21 ERROR 'val' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })
+5:21 ERROR Cannot use 'val' here because initializer expression does not have a representable type: Type cannot be resolved
+9:21 ERROR 'val' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })

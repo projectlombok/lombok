@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,7 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Options;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
 /**
@@ -197,8 +198,8 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 	}
 	
 	public boolean shouldDeleteLombokAnnotations() {
-		DeleteLombokAnnotations dla = ast.getContext().get(DeleteLombokAnnotations.class);
-		return dla != null && dla.isDeleteLombokAnnotations();
+		Options options = ast.getContext().get(Options.optionsKey);
+		return options instanceof LombokOptions && ((LombokOptions)options).deleteLombokAnnotations;
 	}
 	
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@ import java.util.ArrayList;
 
 import javax.annotation.processing.Messager;
 
+
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -32,6 +33,7 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Options;
 
 public class JavacTransformer {
 	private final HandlerLibrary handlers;
@@ -78,9 +80,9 @@ public class JavacTransformer {
 			}
 		}
 		
-		TrackChangedAsts changes = context.get(TrackChangedAsts.class);
-		if (changes != null) for (JavacAST ast : asts) {
-			if (ast.isChanged()) changes.changed.add((JCCompilationUnit) ast.top().get());
+		Options options = context.get(Options.optionsKey);
+		if (options instanceof LombokOptions) for (JavacAST ast : asts) {
+			if (ast.isChanged()) ((LombokOptions)options).changed.add((JCCompilationUnit) ast.top().get());
 		}
 	}
 	

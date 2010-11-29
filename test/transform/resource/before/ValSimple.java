@@ -1,3 +1,5 @@
+import lombok.val;
+
 public class ValSimple {
 	private String field = "field";
 	private short field2 = 5;

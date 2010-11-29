@@ -1,3 +1,5 @@
+import lombok.val;
+
 public class ValErrors {
 	public void unresolvableExpression() {
 		val c = d;

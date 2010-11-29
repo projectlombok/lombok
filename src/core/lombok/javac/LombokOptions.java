@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,27 @@
  */
 package lombok.javac;
 
-/** Used as marker in javac's Context object when delombok is running to signal that all lombok annotations should be deleted as they are processed. */
-public class DeleteLombokAnnotations {
-	private final boolean deleteLombokAnnotations;
+import java.util.HashSet;
+import java.util.Set;
+
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Options;
+
+public class LombokOptions extends Options {
 	
-	public DeleteLombokAnnotations(boolean deleteLombokAnnotations) {
-		this.deleteLombokAnnotations = deleteLombokAnnotations;
+	public boolean deleteLombokAnnotations = true;
+	public final Set<JCCompilationUnit> changed = new HashSet<JCCompilationUnit>();
+
+	public static LombokOptions replaceWithDelombokOptions(Context context) {
+		Options options = Options.instance(context);
+		context.put(optionsKey, (Options)null);
+		LombokOptions result = new LombokOptions(context);
+		result.putAll(options);
+		return result;
 	}
 	
-	public boolean isDeleteLombokAnnotations() {
-		return deleteLombokAnnotations;
+	private LombokOptions(Context context) {
+		super(context);
 	}
 }

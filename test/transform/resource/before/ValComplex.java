@@ -1,3 +1,5 @@
+import lombok.val;
+
 public class ValComplex {
 	private ValSimple field = new ValSimple();
 	private static final int CONSTANT = 20;

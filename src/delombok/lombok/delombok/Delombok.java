@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,14 +44,12 @@ import java.util.Map;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 
-import lombok.javac.DeleteLombokAnnotations;
-import lombok.javac.TrackChangedAsts;
+import lombok.javac.LombokOptions;
 
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.main.OptionName;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Options;
 import com.zwitserloot.cmdreader.CmdReader;
 import com.zwitserloot.cmdreader.Description;
 import com.zwitserloot.cmdreader.Excludes;
@@ -70,7 +68,7 @@ public class Delombok {
 	}
 	
 	public Delombok() {
-		context.put(DeleteLombokAnnotations.class, new DeleteLombokAnnotations(true));
+//		context.put(DeleteLombokAnnotations.class, new DeleteLombokAnnotations(true));
 	}
 	
 	private PrintStream feedback = System.err;
@@ -349,7 +347,7 @@ public class Delombok {
 	}
 	
 	public boolean delombok() throws IOException {
-		Options options = Options.instance(context);
+		LombokOptions options = LombokOptions.replaceWithDelombokOptions(context);
 		options.put(OptionName.ENCODING, charset.name());
 		if (classpath != null) options.put(OptionName.CLASSPATH, classpath);
 		if (sourcepath != null) options.put(OptionName.SOURCEPATH, sourcepath);
@@ -383,13 +381,9 @@ public class Delombok {
 			return false;
 		}
 		
-		TrackChangedAsts tca = new TrackChangedAsts();
-		
-		context.put(TrackChangedAsts.class, tca);
-		
 		JavaCompiler delegate = compiler.processAnnotations(compiler.enterTrees(toJavacList(roots)));
 		for (JCCompilationUnit unit : roots) {
-			DelombokResult result = new DelombokResult(commentsMap.get(unit).comments.toList(), unit, force || tca.changed.contains(unit));
+			DelombokResult result = new DelombokResult(commentsMap.get(unit).comments.toList(), unit, force || options.changed.contains(unit));
 			if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged");
 			Writer rawWriter;
 			if (presetWriter != null) rawWriter = presetWriter;

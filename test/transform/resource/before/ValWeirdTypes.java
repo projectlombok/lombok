@@ -1,4 +1,5 @@
 import java.util.*;
+import lombok.val;
 
 public class ValWeirdTypes<Z> {
 	private final List<Z> fieldList;
