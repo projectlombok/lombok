@@ -289,9 +289,9 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 		ast.replaceNewWithExistingOld(oldNodes, newNode);
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	private void gatherAndRemoveChildren(Map<N, L> map) {
-		for (L child : children) child.gatherAndRemoveChildren(map);
+		for (LombokNode child : children) child.gatherAndRemoveChildren(map);
 		ast.identityDetector.remove(get());
 		map.put(get(), (L) this);
 		children.clear();
