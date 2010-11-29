@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Set;
 
 import lombok.eclipse.Eclipse;
+import lombok.eclipse.EclipseAST;
+import lombok.eclipse.EclipseNode;
+import lombok.eclipse.TransformEclipseAST;
 import lombok.eclipse.handlers.EclipseHandlerUtil;
 import lombok.patcher.Hook;
 import lombok.patcher.MethodTarget;
@@ -47,7 +50,7 @@ import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
-import org.eclipse.jdt.internal.compiler.ast.Clinit;
+import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
@@ -87,6 +90,9 @@ public class PatchDelegate {
 		TypeDeclaration decl = scope.referenceContext;
 		if (decl == null) return false;
 		
+		CompilationUnitDeclaration cud = null;
+		EclipseAST astNode = null;
+		
 		if (decl.fields != null) for (FieldDeclaration field : decl.fields) {
 			if (field.annotations == null) continue;
 			for (Annotation ann : field.annotations) {
@@ -94,6 +100,11 @@ public class PatchDelegate {
 				TypeBinding tb = ann.type.resolveType(decl.initializerScope);
 				if (!charArrayEquals("lombok", tb.qualifiedPackageName())) continue;
 				if (!charArrayEquals("Delegate", tb.qualifiedSourceName())) continue;
+				
+				if (cud == null) {
+					cud = scope.compilationUnitScope().referenceContext;
+					astNode = TransformEclipseAST.getAST(cud);
+				}
 				
 				List<ClassLiteralAccess> rawTypes = new ArrayList<ClassLiteralAccess>();
 				for (MemberValuePair pair : ann.memberValuePairs()) {
@@ -121,7 +132,7 @@ public class PatchDelegate {
 				
 				removeExistingMethods(methodsToDelegate, decl, scope);
 				
-				generateDelegateMethods(decl, methodsToDelegate, field.name, ann);
+				generateDelegateMethods(astNode.get(decl), methodsToDelegate, field.name, ann);
 			}
 		}
 		
@@ -154,29 +165,31 @@ public class PatchDelegate {
 		}
 	}
 	
-	private static void generateDelegateMethods(TypeDeclaration type, List<MethodBinding> methods, char[] delegate, ASTNode source) {
+	private static void generateDelegateMethods(EclipseNode typeNode, List<MethodBinding> methods, char[] delegate, ASTNode source) {
+		CompilationUnitDeclaration top = (CompilationUnitDeclaration) typeNode.top().get();
 		for (MethodBinding binding : methods) {
-			MethodDeclaration method = generateDelegateMethod(delegate, binding, type.compilationResult, source);
-			if (type.methods == null) {
-				type.methods = new AbstractMethodDeclaration[1];
-				type.methods[0] = method;
-			} else {
-				int insertionPoint;
-				for (insertionPoint = 0; insertionPoint < type.methods.length; insertionPoint++) {
-					AbstractMethodDeclaration current = type.methods[insertionPoint];
-					if (current instanceof Clinit) continue;
-					if (Eclipse.isGenerated(current)) continue;
-					break;
-				}
-				AbstractMethodDeclaration[] newArray = new AbstractMethodDeclaration[type.methods.length + 1];
-				System.arraycopy(type.methods, 0, newArray, 0, insertionPoint);
-				if (insertionPoint <= type.methods.length) {
-					System.arraycopy(type.methods, insertionPoint, newArray, insertionPoint + 1, type.methods.length - insertionPoint);
-				}
-				
-				newArray[insertionPoint] = method;
-				type.methods = newArray;
-			}
+			MethodDeclaration method = generateDelegateMethod(delegate, binding, top.compilationResult, source);
+			EclipseHandlerUtil.injectMethod(typeNode, method);
+//			if (type.methods == null) {
+//				type.methods = new AbstractMethodDeclaration[1];
+//				type.methods[0] = method;
+//			} else {
+//				int insertionPoint;
+//				for (insertionPoint = 0; insertionPoint < type.methods.length; insertionPoint++) {
+//					AbstractMethodDeclaration current = type.methods[insertionPoint];
+//					if (current instanceof Clinit) continue;
+//					if (Eclipse.isGenerated(current)) continue;
+//					break;
+//				}
+//				AbstractMethodDeclaration[] newArray = new AbstractMethodDeclaration[type.methods.length + 1];
+//				System.arraycopy(type.methods, 0, newArray, 0, insertionPoint);
+//				if (insertionPoint <= type.methods.length) {
+//					System.arraycopy(type.methods, insertionPoint, newArray, insertionPoint + 1, type.methods.length - insertionPoint);
+//				}
+//				
+//				newArray[insertionPoint] = method;
+//				type.methods = newArray;
+//			}
 		}
 	}
 	
@@ -188,7 +201,7 @@ public class PatchDelegate {
 		method.sourceStart = pS; method.sourceEnd = pE;
 		method.modifiers = ClassFileConstants.AccPublic;
 		method.returnType = Eclipse.makeType(binding.returnType, source, false);
-		method.annotations = EclipseHandlerUtil.createSuppressWarningsAll(source, null);
+		method.annotations = null;
 		if (binding.parameters != null && binding.parameters.length > 0) {
 			method.arguments = new Argument[binding.parameters.length];
 			for (int i = 0; i < method.arguments.length; i++) {

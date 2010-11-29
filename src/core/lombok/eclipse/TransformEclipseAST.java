@@ -84,6 +84,29 @@ public class TransformEclipseAST {
 		transform(parser, ast);
 	}
 	
+	public static EclipseAST getAST(CompilationUnitDeclaration ast) {
+		EclipseAST existing = null;
+		if (astCacheField != null) {
+			try {
+				existing = (EclipseAST)astCacheField.get(ast);
+			} catch (Exception e) {
+				// existing remains null
+			}
+		}
+		
+		if (existing == null) {
+			existing = new EclipseAST(ast);
+			if (astCacheField != null) try {
+				astCacheField.set(ast, existing);
+			} catch (Exception ignore) {
+			}
+		} else {
+			existing.reparse();
+		}
+		
+		return existing;
+	}
+	
 	/**
 	 * This method is called immediately after Eclipse finishes building a CompilationUnitDeclaration, which is
 	 * the top-level AST node when Eclipse parses a source file. The signature is 'magic' - you should not
@@ -101,11 +124,7 @@ public class TransformEclipseAST {
 		if (Symbols.hasSymbol("lombok.disable")) return;
 		
 		try {
-			EclipseAST existing = getCache(ast);
-			if (existing == null) {
-				existing = new EclipseAST(ast);
-				setCache(ast, existing);
-			} else existing.reparse();
+			EclipseAST existing = getAST(ast);
 			new TransformEclipseAST(existing).go();
 		} catch (Throwable t) {
 			try {
@@ -126,24 +145,6 @@ public class TransformEclipseAST {
 					disableLombok = true;
 				}
 			}
-		}
-	}
-	
-	private static EclipseAST getCache(CompilationUnitDeclaration ast) {
-		if (astCacheField == null) return null;
-		try {
-			return (EclipseAST)astCacheField.get(ast);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-	
-	private static void setCache(CompilationUnitDeclaration ast, EclipseAST cache) {
-		if (astCacheField != null) try {
-			astCacheField.set(ast, cache);
-		} catch (Exception ignore) {
-			ignore.printStackTrace();
 		}
 	}
 	
