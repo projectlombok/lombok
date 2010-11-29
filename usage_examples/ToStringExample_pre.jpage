@@ -1,6 +1,6 @@
 import lombok.ToString;
 
-@ToString(excludes="id")
+@ToString(exclude="id")
 public class ToStringExample {
 	private static final int STATIC_VAR = 10;
 	private String name;
