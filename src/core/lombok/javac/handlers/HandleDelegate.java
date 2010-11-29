@@ -33,22 +33,14 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.ArrayType;
-import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.ErrorType;
 import javax.lang.model.type.ExecutableType;
-import javax.lang.model.type.NoType;
-import javax.lang.model.type.NullType;
-import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.type.TypeVariable;
-import javax.lang.model.type.TypeVisitor;
-import javax.lang.model.type.WildcardType;
 
 import lombok.Delegate;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.javac.FindTypeVarScanner;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacResolution;
@@ -153,101 +145,71 @@ public class HandleDelegate implements JavacAnnotationHandler<Delegate> {
 	}
 	
 	private void generateAndAdd(MethodSig sig, JavacNode annotation, Name delegateFieldName) {
+		List<JCMethodDecl> toAdd = new ArrayList<JCMethodDecl>();
 		try {
-			JCMethodDecl method = createDelegateMethod(sig, annotation, delegateFieldName);
-			JavacHandlerUtil.injectMethod(annotation.up().up(), method);
+			toAdd.add(createDelegateMethod(sig, annotation, delegateFieldName));
 		} catch (TypeNotConvertibleException e) {
 			annotation.addError("Can't create delegate method for " + sig.name + ": " + e.getMessage());
+			return;
+		} catch (CantMakeDelegates e) {
+			annotation.addError("There's a conflict in the names of type parameters. Fix it by renaming the following type parameters of your class: " + e.conflicted);
+			return;
+		}
+		
+		for (JCMethodDecl method : toAdd) {
+			JavacHandlerUtil.injectMethod(annotation.up().up(), method);
 		}
 	}
 	
-	private JCMethodDecl createDelegateMethod(MethodSig sig, JavacNode annotation, Name delegateFieldName) throws TypeNotConvertibleException {
+	private static class CantMakeDelegates extends Exception {
+		Set<String> conflicted;
+	}
+	
+	private JCMethodDecl createDelegateMethod(MethodSig sig, JavacNode annotation, Name delegateFieldName) throws TypeNotConvertibleException, CantMakeDelegates {
 		/** public <T, U, ...> ReturnType methodName(ParamType1 name1, ParamType2 name2, ...) throws T1, T2, ... {
 		 *      (return) delegate.<T, U>methodName(name1, name2);
 		 *  }
 		 */
 		
+		// There's a rare but problematic case if a delegate method has its own type variables, and the delegated type does too, and the method uses both.
+		// If for example the delegated type has <E>, and the method has <T>, but in our class we have a <T> at the class level, then we have two different
+		// type variables both named 'T'. We detect this situation and error out asking the programmer to rename their type variable.
+		// As first step, we check if there's a conflict between the delegate method's type vars and our own class.
+		
 		if (!sig.elem.getTypeParameters().isEmpty()) {
-			// There's a rare but problematic case if a delegate method has its own type variables, and the delegated type does too, and the method uses both.
-			// If for example the delegated type has <E>, and the method has <T>, but in our class we have a <T> at the class level, then we have two different
-			// type variables both named 'T'. We detect this situation and error out asking the programmer to rename their type variable.
-			final Set<String> usedTypeVars = new HashSet<String>();
-			class TypeScanner implements TypeVisitor<Void, Void> {
-				@Override public Void visit(TypeMirror t, Void p) {
-					return null;
-				}
-				
-				@Override public Void visit(TypeMirror t) {
-					return null;
-				}
-				
-				@Override public Void visitPrimitive(PrimitiveType t, Void p) {
-					return null;
-				}
-				
-				@Override public Void visitNull(NullType t, Void p) {
-					return null;
-				}
-				
-				@Override public Void visitArray(ArrayType t, Void p) {
-					t.getComponentType().accept(this, null);
-					return null;
-				}
-				
-				@Override public Void visitDeclared(DeclaredType t, Void p) {
-					for (TypeMirror arg : t.getTypeArguments()) {
-						arg.accept(this, null);
+			Set<String> usedInOurType = new HashSet<String>();
+			
+			JavacNode enclosingType = annotation;
+			while (enclosingType != null) {
+				if (enclosingType.getKind() == Kind.TYPE) {
+					List<JCTypeParameter> typarams = ((JCClassDecl)enclosingType.get()).typarams;
+					if (typarams != null) for (JCTypeParameter param : typarams) {
+						if (param.name != null) usedInOurType.add(param.name.toString());
 					}
-					
-					return null;
 				}
-				
-				@Override public Void visitError(ErrorType t, Void p) {
-					return null;
-				}
-				
-				@Override public Void visitTypeVariable(TypeVariable t, Void p) {
-					String name = t.asElement().getSimpleName().toString();
-					usedTypeVars.add(name);
-					return null;
-				}
-				
-				@Override public Void visitWildcard(WildcardType t, Void p) {
-					if (t.getExtendsBound() != null) t.getExtendsBound().accept(this, null);
-					if (t.getSuperBound() != null) t.getSuperBound().accept(this, null);
-					return null;
-				}
-				
-				@Override public Void visitExecutable(ExecutableType t, Void p) {
-					return null;
-				}
-				
-				@Override public Void visitNoType(NoType t, Void p) {
-					return null;
-				}
-				
-				@Override public Void visitUnknown(TypeMirror t, Void p) {
-					return null;
-				}
+				enclosingType = enclosingType.up();
 			}
 			
-			TypeScanner scanner = new TypeScanner();
-			
-			sig.elem.getReturnType().accept(scanner, null);
-			for (VariableElement param : sig.elem.getParameters()) {
-				param.asType().accept(scanner, null);
-			}
-			for (TypeMirror ex : sig.elem.getThrownTypes()) {
-				ex.accept(scanner, null);
+			Set<String> usedInMethodSig = new HashSet<String>();
+			for (TypeParameterElement param : sig.elem.getTypeParameters()) {
+				usedInMethodSig.add(param.getSimpleName().toString());
 			}
 			
-			for (TypeParameterElement ownVar : sig.elem.getTypeParameters()) {
-				usedTypeVars.remove(ownVar.toString());
-			}
-			
-			if (!usedTypeVars.isEmpty()) {
-				
-				
+			usedInMethodSig.retainAll(usedInOurType);
+			if (!usedInMethodSig.isEmpty()) {
+				// We might be delegating a List<T>, and we are making method <T> toArray(). A conflict is possible.
+				// But only if the toArray method also uses type vars from its class, otherwise we're only shadowing,
+				// which is okay as we'll add a @SuppressWarnings.
+				FindTypeVarScanner scanner = new FindTypeVarScanner();
+				sig.elem.asType().accept(scanner, null);
+				Set<String> names = new HashSet<String>(scanner.getTypeVariables());
+				names.removeAll(usedInMethodSig);
+				if (!names.isEmpty()) {
+					// We have a confirmed conflict. We could dig deeper as this may still be a false alarm, but its already an exceedingly rare case.
+					CantMakeDelegates cmd = new CantMakeDelegates();
+					cmd.conflicted = usedInMethodSig;
+					throw cmd;
+				}
 			}
 		}
 		
