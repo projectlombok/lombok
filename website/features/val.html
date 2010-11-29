@@ -19,6 +19,10 @@
 			the type will be inferred from the initializer expression. The local variable will also be made final. This feature works
 			on local variables and on foreach loops only, not on fields. The initializer expression is required.
 			</p><p>
+				<code>val</code> is actually a 'type' of sorts, and exists as a real class in the <code>lombok</code> package. You must import it for val to work (or use <code>lombok.val</code> as the type).
+				The existence of this type on a local variable declaration triggers both the adding of the <code>final</code> keyword as well as copying the type of the initializing expression which overwrites
+				the 'fake' <code>val</code> type.
+			</p><p>
 			<em>WARNING: This feature does not currently work in NetBeans. We're working on fixing that.</em>
 			</p>
 		</div>

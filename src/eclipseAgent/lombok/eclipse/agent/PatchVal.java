@@ -188,21 +188,47 @@ public class PatchVal {
 		return expr.resolveType(scope);
 	}
 	
+	public static boolean matches(String key, char[] array) {
+		if (array == null || key.length() != array.length) return false;
+		for (int i = 0; i < array.length; i++) {
+			if (key.charAt(i) != array[i]) return false;
+		}
+		
+		return true;
+	}
+	
 	public static boolean handleValForLocalDeclaration(LocalDeclaration local, BlockScope scope) {
 		if (local == null || !LocalDeclaration.class.equals(local.getClass())) return false;
 		boolean decomponent = false;
 		
+		boolean isVal = false;
+		
 		if (local.type instanceof SingleTypeReference) {
 			char[] token = ((SingleTypeReference)local.type).token;
-			if (token == null || token.length != 3) return false;
-			else if (token[0] != 'v' || token[1] != 'a' || token[2] != 'l') return false;
-		} else return false;
+			if (matches("val", token)) isVal = true;
+		}
+		
+		if (local.type instanceof QualifiedTypeReference) {
+			char[][] tokens = ((QualifiedTypeReference)local.type).tokens;
+			if (tokens != null && tokens.length == 2 && matches("lombok", tokens[0]) && matches("val", tokens[1])) isVal = true;
+		}
+		
+		if (!isVal) return false;
+		
+		TypeBinding resolvedType = local.type.resolvedType;
+		if (resolvedType == null) resolvedType = local.type.resolveType(scope, false);
+		if (resolvedType == null) return false;
+		
+		char[] pkg = resolvedType.qualifiedPackageName();
+		char[] nm = resolvedType.qualifiedSourceName();
+		if (!matches("lombok", pkg) || !matches("val", nm)) return false;
 		
 		Expression init = local.initialization;
 		if (init == null && Reflection.initCopyField != null) {
 			try {
 				init = (Expression) Reflection.initCopyField.get(local);
 			} catch (Exception e) {
+				// init remains null.
 			}
 		}
 		
@@ -211,12 +237,11 @@ public class PatchVal {
 				init = (Expression) Reflection.iterableCopyField.get(local);
 				decomponent = true;
 			} catch (Exception e) {
+				// init remains null.
 			}
 		}
 		
 		TypeReference replacement = null;
-		if (init != null && decomponent) {
-		}
 		
 		if (init != null) {
 			TypeBinding resolved = decomponent ? getForEachComponentType(init, scope) : init.resolveType(scope);

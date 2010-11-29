@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.HashMap;
+import lombok.val;
 
 public class ValExample {
 	public String example() {
