@@ -54,6 +54,7 @@ import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
+import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
@@ -170,27 +171,20 @@ public class PatchDelegate {
 		for (MethodBinding binding : methods) {
 			MethodDeclaration method = generateDelegateMethod(delegate, binding, top.compilationResult, source);
 			EclipseHandlerUtil.injectMethod(typeNode, method);
-//			if (type.methods == null) {
-//				type.methods = new AbstractMethodDeclaration[1];
-//				type.methods[0] = method;
-//			} else {
-//				int insertionPoint;
-//				for (insertionPoint = 0; insertionPoint < type.methods.length; insertionPoint++) {
-//					AbstractMethodDeclaration current = type.methods[insertionPoint];
-//					if (current instanceof Clinit) continue;
-//					if (Eclipse.isGenerated(current)) continue;
-//					break;
-//				}
-//				AbstractMethodDeclaration[] newArray = new AbstractMethodDeclaration[type.methods.length + 1];
-//				System.arraycopy(type.methods, 0, newArray, 0, insertionPoint);
-//				if (insertionPoint <= type.methods.length) {
-//					System.arraycopy(type.methods, insertionPoint, newArray, insertionPoint + 1, type.methods.length - insertionPoint);
-//				}
-//				
-//				newArray[insertionPoint] = method;
-//				type.methods = newArray;
-//			}
 		}
+	}
+	
+	private static boolean hasDeprecatedAnnotation(MethodBinding binding) {
+		AnnotationBinding[] annotations = binding.getAnnotations();
+		if (annotations != null) for (AnnotationBinding ann : annotations) {
+			ReferenceBinding annType = ann.getAnnotationType();
+			char[] pkg = annType.qualifiedPackageName();
+			char[] src = annType.qualifiedSourceName();
+			
+			if (charArrayEquals("java.lang", pkg) && charArrayEquals("Deprecated", src)) return true;
+		}
+		
+		return false;
 	}
 	
 	private static MethodDeclaration generateDelegateMethod(char[] name, MethodBinding binding, CompilationResult compilationResult, ASTNode source) {
@@ -201,7 +195,6 @@ public class PatchDelegate {
 		method.sourceStart = pS; method.sourceEnd = pE;
 		method.modifiers = ClassFileConstants.AccPublic;
 		method.returnType = Eclipse.makeType(binding.returnType, source, false);
-		method.annotations = null;
 		if (binding.parameters != null && binding.parameters.length > 0) {
 			method.arguments = new Argument[binding.parameters.length];
 			for (int i = 0; i < method.arguments.length; i++) {
@@ -213,8 +206,10 @@ public class PatchDelegate {
 				Eclipse.setGeneratedBy(method.arguments[i], source);
 			}
 		}
+		boolean isDeprecated = hasDeprecatedAnnotation(binding);
 		
 		method.selector = binding.selector;
+		
 		if (binding.thrownExceptions != null && binding.thrownExceptions.length > 0) {
 			method.thrownExceptions = new TypeReference[binding.thrownExceptions.length];
 			for (int i = 0; i < method.thrownExceptions.length; i++) {
@@ -244,6 +239,14 @@ public class PatchDelegate {
 					}
 				}
 			}
+		}
+		
+		if (isDeprecated) {
+			QualifiedTypeReference qtr = new QualifiedTypeReference(new char[][] {
+					{'j', 'a', 'v', 'a'}, {'l', 'a', 'n', 'g'}, {'D', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd'}}, poss(source, 3));
+			Eclipse.setGeneratedBy(qtr, source);
+			MarkerAnnotation ann = new MarkerAnnotation(qtr, pS);
+			method.annotations = new Annotation[] {ann};
 		}
 		
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
