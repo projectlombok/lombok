@@ -58,6 +58,7 @@ import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
@@ -67,6 +68,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
 import org.eclipse.jdt.internal.compiler.lookup.MemberTypeBinding;
@@ -194,18 +196,8 @@ public class PatchDelegate {
 		Eclipse.setGeneratedBy(method, source);
 		method.sourceStart = pS; method.sourceEnd = pE;
 		method.modifiers = ClassFileConstants.AccPublic;
+		
 		method.returnType = Eclipse.makeType(binding.returnType, source, false);
-		if (binding.parameters != null && binding.parameters.length > 0) {
-			method.arguments = new Argument[binding.parameters.length];
-			for (int i = 0; i < method.arguments.length; i++) {
-				String argName = "$p" + i;
-				method.arguments[i] = new Argument(
-						argName.toCharArray(), pos(source),
-						Eclipse.makeType(binding.parameters[i], source, false),
-						ClassFileConstants.AccFinal);
-				Eclipse.setGeneratedBy(method.arguments[i], source);
-			}
-		}
 		boolean isDeprecated = hasDeprecatedAnnotation(binding);
 		
 		method.selector = binding.selector;
@@ -217,13 +209,26 @@ public class PatchDelegate {
 			}
 		}
 		
+		MessageSend call = new MessageSend();
+		call.sourceStart = pS; call.sourceEnd = pE;
+		Eclipse.setGeneratedBy(call, source);
+		FieldReference fieldRef = new FieldReference(name, pos(source));
+		fieldRef.receiver = new ThisReference(pS, pE);
+		Eclipse.setGeneratedBy(fieldRef, source);
+		Eclipse.setGeneratedBy(fieldRef.receiver, source);
+		call.receiver = fieldRef;
+		call.selector = binding.selector;
+		
 		if (binding.typeVariables != null && binding.typeVariables.length > 0) {
 			method.typeParameters = new TypeParameter[binding.typeVariables.length];
+			call.typeArguments = new TypeReference[binding.typeVariables.length];
 			for (int i = 0; i < method.typeParameters.length; i++) {
 				method.typeParameters[i] = new TypeParameter();
 				method.typeParameters[i].sourceStart = pS; method.typeParameters[i].sourceEnd = pE;
 				Eclipse.setGeneratedBy(method.typeParameters[i], source);
 				method.typeParameters[i].name = binding.typeVariables[i].sourceName;
+				call.typeArguments[i] = new SingleTypeReference(binding.typeVariables[i].sourceName, pos(source));
+				Eclipse.setGeneratedBy(call.typeArguments[i], source);
 				ReferenceBinding super1 = binding.typeVariables[i].superclass;
 				ReferenceBinding[] super2 = binding.typeVariables[i].superInterfaces;
 				if (super2 == null) super2 = new ReferenceBinding[0];
@@ -250,19 +255,23 @@ public class PatchDelegate {
 		}
 		
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		FieldReference fieldRef = new FieldReference(name, pos(source));
-		fieldRef.receiver = new ThisReference(pS, pE);
-		Eclipse.setGeneratedBy(fieldRef, source);
-		Eclipse.setGeneratedBy(fieldRef.receiver, source);
-		MessageSend call = new MessageSend();
-		call.sourceStart = pS; call.sourceEnd = pE;
-		Eclipse.setGeneratedBy(call, source);
-		call.receiver = fieldRef;
-		call.selector = binding.selector;
-		if (method.arguments != null) {
+		
+		if (binding.parameters != null && binding.parameters.length > 0) {
+			method.arguments = new Argument[binding.parameters.length];
 			call.arguments = new Expression[method.arguments.length];
 			for (int i = 0; i < method.arguments.length; i++) {
-				call.arguments[i] = new SingleNameReference(("$p" + i).toCharArray(), pos(source));
+				AbstractMethodDeclaration sourceElem = binding.sourceMethod();
+				char[] argName;
+				if (sourceElem == null) argName = ("arg" + i).toCharArray();
+				else {
+					argName = sourceElem.arguments[i].name;
+				}
+				method.arguments[i] = new Argument(
+						argName, pos(source),
+						Eclipse.makeType(binding.parameters[i], source, false),
+						ClassFileConstants.AccFinal);
+				Eclipse.setGeneratedBy(method.arguments[i], source);
+				call.arguments[i] = new SingleNameReference(argName, pos(source));
 				Eclipse.setGeneratedBy(call.arguments[i], source);
 			}
 		}
