@@ -73,6 +73,7 @@ import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
 import org.eclipse.jdt.internal.compiler.lookup.MemberTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
+import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
@@ -123,7 +124,7 @@ public class PatchDelegate {
 					}
 				}
 				
-				List<MethodBinding> methodsToDelegate = new ArrayList<MethodBinding>();
+				List<BindingPair> methodsToDelegate = new ArrayList<BindingPair>();
 				
 				if (rawTypes.isEmpty()) {
 					addAllMethodBindings(methodsToDelegate, field.type.resolveType(decl.initializerScope));
@@ -142,7 +143,7 @@ public class PatchDelegate {
 		return false;
 	}
 	
-	private static void removeExistingMethods(List<MethodBinding> list, TypeDeclaration decl, ClassScope scope) {
+	private static void removeExistingMethods(List<BindingPair> list, TypeDeclaration decl, ClassScope scope) {
 		for (AbstractMethodDeclaration methodDecl : decl.methods) {
 			if (!(methodDecl instanceof MethodDeclaration)) continue;
 			MethodDeclaration md = (MethodDeclaration) methodDecl;
@@ -152,10 +153,10 @@ public class PatchDelegate {
 				TypeReference clone = Eclipse.copyType(md.arguments[i].type, md.arguments[i]);
 				args[i] = clone.resolveType(scope).erasure();
 			}
-			Iterator<MethodBinding> it = list.iterator();
+			Iterator<BindingPair> it = list.iterator();
 			methods:
 			while (it.hasNext()) {
-				MethodBinding mb = it.next();
+				MethodBinding mb = it.next().parameterized;
 				if (!Arrays.equals(mb.selector, name)) continue;
 				int paramLen = mb.parameters == null ? 0 : mb.parameters.length;
 				if (paramLen != args.length) continue;
@@ -168,10 +169,10 @@ public class PatchDelegate {
 		}
 	}
 	
-	private static void generateDelegateMethods(EclipseNode typeNode, List<MethodBinding> methods, char[] delegate, ASTNode source) {
+	private static void generateDelegateMethods(EclipseNode typeNode, List<BindingPair> methods, char[] delegate, ASTNode source) {
 		CompilationUnitDeclaration top = (CompilationUnitDeclaration) typeNode.top().get();
-		for (MethodBinding binding : methods) {
-			MethodDeclaration method = generateDelegateMethod(delegate, binding, top.compilationResult, source);
+		for (BindingPair pair : methods) {
+			MethodDeclaration method = generateDelegateMethod(delegate, pair, top.compilationResult, source);
 			EclipseHandlerUtil.injectMethod(typeNode, method);
 		}
 	}
@@ -189,9 +190,10 @@ public class PatchDelegate {
 		return false;
 	}
 	
-	private static MethodDeclaration generateDelegateMethod(char[] name, MethodBinding binding, CompilationResult compilationResult, ASTNode source) {
+	private static MethodDeclaration generateDelegateMethod(char[] name, BindingPair pair, CompilationResult compilationResult, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		
+		MethodBinding binding = pair.parameterized;
 		MethodDeclaration method = new MethodDeclaration(compilationResult);
 		Eclipse.setGeneratedBy(method, source);
 		method.sourceStart = pS; method.sourceEnd = pE;
@@ -211,6 +213,7 @@ public class PatchDelegate {
 		
 		MessageSend call = new MessageSend();
 		call.sourceStart = pS; call.sourceEnd = pE;
+		call.nameSourcePosition = pos(source);
 		Eclipse.setGeneratedBy(call, source);
 		FieldReference fieldRef = new FieldReference(name, pos(source));
 		fieldRef.receiver = new ThisReference(pS, pE);
@@ -260,7 +263,7 @@ public class PatchDelegate {
 			method.arguments = new Argument[binding.parameters.length];
 			call.arguments = new Expression[method.arguments.length];
 			for (int i = 0; i < method.arguments.length; i++) {
-				AbstractMethodDeclaration sourceElem = binding.sourceMethod();
+				AbstractMethodDeclaration sourceElem = pair.base.sourceMethod();
 				char[] argName;
 				if (sourceElem == null) argName = ("arg" + i).toCharArray();
 				else {
@@ -305,16 +308,26 @@ public class PatchDelegate {
 		}
 	}
 	
-	private static void addAllMethodBindings(List<MethodBinding> list, TypeBinding binding) {
+	private static void addAllMethodBindings(List<BindingPair> list, TypeBinding binding) {
 		Set<String> banList = new HashSet<String>();
 		banList.addAll(METHODS_IN_OBJECT);
 		addAllMethodBindings(list, binding, banList);
 	}
 	
-	private static void addAllMethodBindings(List<MethodBinding> list, TypeBinding binding, Set<String> banList) {
+	private static void addAllMethodBindings(List<BindingPair> list, TypeBinding binding, Set<String> banList) {
+		System.out.println("adding method bindings for type: " + binding);
 		if (binding == null) return;
-		if (binding instanceof MemberTypeBinding) {
-			ClassScope cs = ((SourceTypeBinding)binding).scope;
+		
+		TypeBinding inner;
+		
+		if (binding instanceof ParameterizedTypeBinding) {
+			inner = ((ParameterizedTypeBinding) binding).genericType();
+		} else {
+			inner = binding;
+		}
+		
+		if (inner instanceof MemberTypeBinding) {
+			ClassScope cs = ((SourceTypeBinding)inner).scope;
 			if (cs != null) {
 				try {
 					Reflection.classScopeBuildMethodsMethod.invoke(cs);
@@ -325,9 +338,22 @@ public class PatchDelegate {
 		}
 		
 		if (binding instanceof ReferenceBinding) {
+			System.out.println("isRefBinding: " + binding.getClass());
 			ReferenceBinding rb = (ReferenceBinding) binding;
-			for (MethodBinding mb : rb.availableMethods()) {
+			MethodBinding[] parameterizedSigs = rb.availableMethods();
+			MethodBinding[] baseSigs = parameterizedSigs;
+			if (binding instanceof ParameterizedTypeBinding) {
+				baseSigs = ((ParameterizedTypeBinding)binding).genericType().availableMethods();
+				if (baseSigs.length != parameterizedSigs.length) {
+					// The last known state of eclipse source says this can't happen, so we rely on it,
+					// but if this invariant is broken, better to go with 'arg0' naming instead of crashing.
+					baseSigs = parameterizedSigs;
+				}
+			}
+			for (int i = 0; i < parameterizedSigs.length; i++) {
+				MethodBinding mb = parameterizedSigs[i];
 				String sig = printSig(mb);
+				System.out.println("Method: " + sig);
 				if (mb.isStatic()) continue;
 				if (mb.isBridge()) continue;
 				if (mb.isConstructor()) continue;
@@ -335,7 +361,10 @@ public class PatchDelegate {
 				if (!mb.isPublic()) continue;
 				if (mb.isSynthetic()) continue;
 				if (!banList.add(sig)) continue; // If add returns false, it was already in there.
-				list.add(mb);
+				BindingPair pair = new BindingPair();
+				pair.parameterized = mb;
+				pair.base = baseSigs[i];
+				list.add(pair);
 			}
 			addAllMethodBindings(list, rb.superclass(), banList);
 			ReferenceBinding[] interfaces = rb.superInterfaces();
@@ -343,6 +372,10 @@ public class PatchDelegate {
 				for (ReferenceBinding iface : interfaces) addAllMethodBindings(list, iface, banList);
 			}
 		}
+	}
+	
+	private static final class BindingPair {
+		MethodBinding parameterized, base;
 	}
 	
 	private static final List<String> METHODS_IN_OBJECT = Collections.unmodifiableList(Arrays.asList(
