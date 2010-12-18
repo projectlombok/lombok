@@ -83,6 +83,7 @@ public class JavacASTAdapter implements JavacASTVisitor {
 	
 	/** {@inheritDoc} */
 	@Override public void visitAnnotationOnMethodArgument(JCVariableDecl argument, JCMethodDecl method, JavacNode annotationNode, JCAnnotation annotation) {}
+	
 	/** {@inheritDoc} */
 	@Override public void endVisitMethodArgument(JavacNode argumentNode, JCVariableDecl argument, JCMethodDecl method) {}
 	

@@ -198,7 +198,7 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 			JCMethodInvocation callToSuper = maker.Apply(List.<JCExpression>nil(),
 					maker.Select(maker.Ident(typeNode.toName("super")), typeNode.toName("toString")),
 					List.<JCExpression>nil());
-			current = maker.Binary(JCTree.PLUS, current, callToSuper);
+			current = maker.Binary(Javac.getCTCint(JCTree.class, "PLUS"), current, callToSuper);
 			first = false;
 		}
 		
@@ -218,21 +218,21 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 			} else expr = fieldAccessor;
 			
 			if (first) {
-				current = maker.Binary(JCTree.PLUS, current, expr);
+				current = maker.Binary(Javac.getCTCint(JCTree.class, "PLUS"), current, expr);
 				first = false;
 				continue;
 			}
 			
 			if (includeFieldNames) {
-				current = maker.Binary(JCTree.PLUS, current, maker.Literal(infix + fieldNode.getName() + "="));
+				current = maker.Binary(Javac.getCTCint(JCTree.class, "PLUS"), current, maker.Literal(infix + fieldNode.getName() + "="));
 			} else {
-				current = maker.Binary(JCTree.PLUS, current, maker.Literal(infix));
+				current = maker.Binary(Javac.getCTCint(JCTree.class, "PLUS"), current, maker.Literal(infix));
 			}
 			
-			current = maker.Binary(JCTree.PLUS, current, expr);
+			current = maker.Binary(Javac.getCTCint(JCTree.class, "PLUS"), current, expr);
 		}
 		
-		if (!first) current = maker.Binary(JCTree.PLUS, current, maker.Literal(suffix));
+		if (!first) current = maker.Binary(Javac.getCTCint(JCTree.class, "PLUS"), current, maker.Literal(suffix));
 		
 		JCStatement returnStatement = maker.Return(current);
 		

@@ -25,6 +25,7 @@ import static lombok.javac.handlers.JavacHandlerUtil.markAnnotationAsProcessed;
 import lombok.Cleanup;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
+import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 
@@ -117,7 +118,7 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 				maker.Apply(List.<JCExpression>nil(), cleanupMethod, List.<JCExpression>nil())));
 		
 		JCMethodInvocation preventNullAnalysis = maker.Apply(List.<JCExpression>nil(), JavacHandlerUtil.chainDotsString(maker, annotationNode, "lombok.Lombok.preventNullAnalysis"), List.<JCExpression>of(maker.Ident(decl.name)));
-		JCBinary isNull = maker.Binary(JCTree.NE, preventNullAnalysis, maker.Literal(TypeTags.BOT, null));
+		JCBinary isNull = maker.Binary(Javac.getCTCint(JCTree.class, "NE"), preventNullAnalysis, maker.Literal(Javac.getCTCint(TypeTags.class, "BOT"), null));
 		
 		JCIf ifNotNullCleanup = maker.If(isNull, maker.Block(0, cleanupCall), null);
 		

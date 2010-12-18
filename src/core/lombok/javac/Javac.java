@@ -30,11 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.Lombok;
+import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
-import lombok.core.AST.Kind;
-import lombok.core.AnnotationValues.AnnotationValue;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -173,5 +174,24 @@ public class Javac {
 			}
 			return x;
 		} else return null;
+	}
+	
+	/**
+	 * Retrieves a compile time constant of type int from the specified class location.
+	 * 
+	 * Solves the problem of compile time constant inlining, resulting in lombok having the wrong value 
+	 * (javac compiler changes private api constants from time to time)
+	 * 
+	 * @param ctcLocation location of the compile time constant
+	 * @param identifier the name of the field of the compile time constant.
+	 */
+	public static int getCTCint(Class<?> ctcLocation, String identifier) {
+		try {
+			return (Integer)ctcLocation.getField(identifier).get(null);
+		} catch (NoSuchFieldException e) {
+			throw Lombok.sneakyThrow(e);
+		} catch (IllegalAccessException e) {
+			throw Lombok.sneakyThrow(e);
+		}
 	}
 }

@@ -39,6 +39,7 @@ import com.sun.tools.javac.util.List;
 import lombok.Synchronized;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
+import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 
@@ -85,7 +86,7 @@ public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> 
 			JCExpression objectType = chainDots(maker, methodNode, "java", "lang", "Object");
 			//We use 'new Object[0];' because quite unlike 'new Object();', empty arrays *ARE* serializable!
 			JCNewArray newObjectArray = maker.NewArray(chainDots(maker, methodNode, "java", "lang", "Object"),
-					List.<JCExpression>of(maker.Literal(TypeTags.INT, 0)), null);
+					List.<JCExpression>of(maker.Literal(Javac.getCTCint(TypeTags.class, "INT"), 0)), null);
 			JCVariableDecl fieldDecl = maker.VarDef(
 					maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic ? Flags.STATIC : 0)),
 					methodNode.toName(lockName), objectType, newObjectArray);

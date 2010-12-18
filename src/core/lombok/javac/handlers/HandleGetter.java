@@ -262,14 +262,14 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 	private static final java.util.Map<Integer, String> TYPE_MAP;
 	static {
 		Map<Integer, String> m = new HashMap<Integer, String>();
-		m.put(TypeTags.INT, "java.lang.Integer");
-		m.put(TypeTags.DOUBLE, "java.lang.Double");
-		m.put(TypeTags.FLOAT, "java.lang.Float");
-		m.put(TypeTags.SHORT, "java.lang.Short");
-		m.put(TypeTags.BYTE, "java.lang.Byte");
-		m.put(TypeTags.LONG, "java.lang.Long");
-		m.put(TypeTags.BOOLEAN, "java.lang.Boolean");
-		m.put(TypeTags.CHAR, "java.lang.Character");
+		m.put(Javac.getCTCint(TypeTags.class, "INT"), "java.lang.Integer");
+		m.put(Javac.getCTCint(TypeTags.class, "DOUBLE"), "java.lang.Double");
+		m.put(Javac.getCTCint(TypeTags.class, "FLOAT"), "java.lang.Float");
+		m.put(Javac.getCTCint(TypeTags.class, "SHORT"), "java.lang.Short");
+		m.put(Javac.getCTCint(TypeTags.class, "BYTE"), "java.lang.Byte");
+		m.put(Javac.getCTCint(TypeTags.class, "LONG"), "java.lang.Long");
+		m.put(Javac.getCTCint(TypeTags.class, "BOOLEAN"), "java.lang.Boolean");
+		m.put(Javac.getCTCint(TypeTags.class, "CHAR"), "java.lang.Character");
 		TYPE_MAP = Collections.unmodifiableMap(m);
 	}
 	
@@ -329,7 +329,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 						innerIfStatements.append(statement);
 					}
 					
-					JCBinary isNull = maker.Binary(JCTree.EQ, maker.Ident(valueName), maker.Literal(TypeTags.BOT, null));
+					JCBinary isNull = maker.Binary(JCTree.EQ, maker.Ident(valueName), maker.Literal(Javac.getCTCint(TypeTags.class, "BOT"), null));
 					JCIf ifStatement = maker.If(isNull, maker.Block(0, innerIfStatements.toList()), null);
 					synchronizedStatements.append(ifStatement);
 				}
@@ -337,7 +337,7 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 				synchronizedStatement = maker.Synchronized(createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD), maker.Block(0, synchronizedStatements.toList()));
 			}
 			
-			JCBinary isNull = maker.Binary(JCTree.EQ, maker.Ident(valueName), maker.Literal(TypeTags.BOT, null));
+			JCBinary isNull = maker.Binary(JCTree.EQ, maker.Ident(valueName), maker.Literal(Javac.getCTCint(TypeTags.class, "BOT"), null));
 			JCIf ifStatement = maker.If(isNull, maker.Block(0, List.<JCStatement>of(synchronizedStatement)), null);
 			statements.append(ifStatement);
 		}

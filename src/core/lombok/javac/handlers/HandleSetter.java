@@ -21,7 +21,6 @@
  */
 package lombok.javac.handlers;
 
-import static com.sun.tools.javac.code.TypeTags.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.Collection;
@@ -32,8 +31,8 @@ import javax.lang.model.type.TypeVisitor;
 
 import lombok.AccessLevel;
 import lombok.Setter;
-import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
 import lombok.core.handlers.TransformationsUtil;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
@@ -45,7 +44,6 @@ import org.mangosdk.spi.ProviderFor;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.TypeTags;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -55,9 +53,10 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
-import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
 /**
  * Handles the {@code lombok.Setter} annotation for javac.
@@ -219,7 +218,7 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		annsOnParam = annsOnParam.appendList(nonNulls).appendList(nullables);
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(Flags.FINAL, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
 		//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.
-		JCExpression methodType = treeMaker.Type(new JCNoType(TypeTags.VOID));
+		JCExpression methodType = treeMaker.Type(new JCNoType(Javac.getCTCint(TypeTags.class, "VOID")));
 		
 		List<JCTypeParameter> methodGenericParams = List.nil();
 		List<JCVariableDecl> parameters = List.of(param);
@@ -237,12 +236,9 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		
 		@Override
 		public TypeKind getKind() {
-			switch (tag) {
-			case VOID:  return TypeKind.VOID;
-			case NONE:  return TypeKind.NONE;
-			default:
-				throw new AssertionError("Unexpected tag: " + tag);
-			}
+			if (tag == Javac.getCTCint(TypeTags.class, "VOID")) return TypeKind.VOID;
+			if (tag == Javac.getCTCint(TypeTags.class, "NONE")) return TypeKind.NONE;
+			throw new AssertionError("Unexpected tag: " + tag);
 		}
 		
 		@Override
