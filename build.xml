@@ -217,14 +217,8 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<apt location="lib/build/spi.jar" />
 		</ivy:eclipsegen>
 		
-		<condition property="startOnFirstThread" value="-XstartOnFirstThread">
+		<condition property="startOnFirstThread" value="-XstartOnFirstThread" else="">
 			<os family="mac" />
-		</condition>
-		<condition property="d32" value="-d32">
-			<os family="mac" />
-		</condition>
-		<condition property="d32" value="">
-			<not><os family="mac" /></not>
 		</condition>
 		
 		<copy
