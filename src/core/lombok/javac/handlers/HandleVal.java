@@ -33,10 +33,12 @@ import org.mangosdk.spi.ProviderFor;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.util.List;
 
 @ProviderFor(JavacASTVisitor.class)
 public class HandleVal extends JavacASTAdapter {
@@ -71,6 +73,12 @@ public class HandleVal extends JavacASTAdapter {
 		JavacHandlerUtil.deleteImportFromCompilationUnit(localNode, "lombok.val");
 		
 		local.mods.flags |= Flags.FINAL;
+		
+		if (!localNode.shouldDeleteLombokAnnotations()) {
+			JCAnnotation valAnnotation = localNode.getTreeMaker().Annotation(local.vartype, List.<JCExpression>nil());
+			local.mods.annotations = local.mods.annotations == null ? List.of(valAnnotation) : local.mods.annotations.append(valAnnotation);
+		}
+		
 		local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
 		
 		Type type;
