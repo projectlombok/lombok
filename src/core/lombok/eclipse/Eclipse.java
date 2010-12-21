@@ -533,7 +533,17 @@ public class Eclipse {
 	 */
 	public static boolean annotationTypeMatches(Class<? extends java.lang.annotation.Annotation> type, EclipseNode node) {
 		if (node.getKind() != Kind.ANNOTATION) return false;
-		TypeReference typeRef = ((Annotation)node.get()).type;
+		return typeMatches(type, node, ((Annotation)node.get()).type);
+	}
+	
+	/**
+	 * Checks if the given TypeReference node is likely to be a reference to the provided class.
+	 * 
+	 * @param type An actual type. This method checks if {@code typeNode} is likely to be a reference to this type.
+	 * @param node A Lombok AST node. Any node in the appropriate compilation unit will do (used to get access to import statements).
+	 * @param typeNode A type reference to check.
+	 */
+	public static boolean typeMatches(Class<?> type, EclipseNode node, TypeReference typeRef) {
 		if (typeRef == null || typeRef.getTypeName() == null) return false;
 		String typeName = toQualifiedName(typeRef.getTypeName());
 		

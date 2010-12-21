@@ -21,6 +21,8 @@
  */
 package lombok.eclipse.handlers;
 
+import lombok.val;
+import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseASTAdapter;
 import lombok.eclipse.EclipseASTVisitor;
 import lombok.eclipse.EclipseNode;
@@ -28,7 +30,6 @@ import lombok.eclipse.EclipseNode;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.mangosdk.spi.ProviderFor;
 
 /*
@@ -37,25 +38,22 @@ import org.mangosdk.spi.ProviderFor;
 @ProviderFor(EclipseASTVisitor.class)
 public class HandleVal extends EclipseASTAdapter {
 	@Override public void visitLocal(EclipseNode localNode, LocalDeclaration local) {
-		if (local.type instanceof SingleTypeReference) {
-			char[] token = ((SingleTypeReference)local.type).token;
-			if (token == null || token.length != 3) return;
-			else if (token[0] != 'v' || token[1] != 'a' || token[2] != 'l') return;
-			
-			boolean variableOfForEach = false;
-			
-			if (localNode.directUp().get() instanceof ForeachStatement) {
-				ForeachStatement fs = (ForeachStatement) localNode.directUp().get();
-				variableOfForEach = fs.elementVariable == local;
-			}
-			
-			if (local.initialization == null && !variableOfForEach) {
-				localNode.addError("'val' on a local variable requires an initializer expression");
-			}
-			
-			if (local.initialization instanceof ArrayInitializer) {
-				localNode.addError("'val' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })");
-			}
+		if (!Eclipse.typeMatches(val.class, localNode, local.type)) return;
+		boolean variableOfForEach = false;
+		
+		if (localNode.directUp().get() instanceof ForeachStatement) {
+			ForeachStatement fs = (ForeachStatement) localNode.directUp().get();
+			variableOfForEach = fs.elementVariable == local;
+		}
+		
+		if (local.initialization == null && !variableOfForEach) {
+			localNode.addError("'val' on a local variable requires an initializer expression");
+			return;
+		}
+		
+		if (local.initialization instanceof ArrayInitializer) {
+			localNode.addError("'val' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })");
+			return;
 		}
 	}
 }

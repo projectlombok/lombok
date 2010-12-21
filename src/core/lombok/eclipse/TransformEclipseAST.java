@@ -123,6 +123,8 @@ public class TransformEclipseAST {
 		
 		if (Symbols.hasSymbol("lombok.disable")) return;
 		
+		// Do NOT abort if (ast.bits & ASTNode.HasAllMethodBodies) != 0 - that doesn't work.
+		
 		try {
 			EclipseAST existing = getAST(ast);
 			new TransformEclipseAST(existing).go();

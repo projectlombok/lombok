@@ -23,8 +23,13 @@
  */
 package lombok.eclipse.agent;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.List;
 
+import lombok.Lombok;
 import lombok.eclipse.Eclipse;
 import lombok.patcher.Hook;
 import lombok.patcher.MethodTarget;
@@ -32,8 +37,16 @@ import lombok.patcher.ScriptManager;
 import lombok.patcher.StackRequest;
 import lombok.patcher.scripts.ScriptBuilder;
 
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.IExtendedModifier;
+import org.eclipse.jdt.core.dom.MarkerAnnotation;
+import org.eclipse.jdt.core.dom.Modifier;
+import org.eclipse.jdt.core.dom.Modifier.ModifierKeyword;
+import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
@@ -65,6 +78,8 @@ public class PatchVal {
 		final String BLOCKSCOPE_SIG = "org.eclipse.jdt.internal.compiler.lookup.BlockScope";
 		final String PARSER_SIG = "org.eclipse.jdt.internal.compiler.parser.Parser";
 		final String TYPEBINDING_SIG = "org.eclipse.jdt.internal.compiler.lookup.TypeBinding";
+		final String VARIABLEDECLARATIONSTATEMENT_SIG = "org.eclipse.jdt.core.dom.VariableDeclarationStatement";
+		final String ASTCONVERTER_SIG = "org.eclipse.jdt.core.dom.ASTConverter";
 		
 		sm.addScript(ScriptBuilder.exitEarly()
 				.target(new MethodTarget(LOCALDECLARATION_SIG, "resolve", "void", BLOCKSCOPE_SIG))
@@ -119,15 +134,28 @@ public class PatchVal {
 					.request(StackRequest.THIS)
 					.wrapMethod(new Hook("lombok.eclipse.agent.PatchVal", "copyInitializationOfForEachIterable", "void", PARSER_SIG))
 					.build());
+			
+			
+			sm.addScript(ScriptBuilder.wrapReturnValue()
+					.target(new MethodTarget(ASTCONVERTER_SIG, "setModifiers", "void", VARIABLEDECLARATIONSTATEMENT_SIG, LOCALDECLARATION_SIG))
+					.wrapMethod(new Hook("lombok.eclipse.agent.PatchVal", "addFinalAndValAnnotationToVariableDeclarationStatement",
+							"void", "java.lang.Object", VARIABLEDECLARATIONSTATEMENT_SIG, LOCALDECLARATION_SIG))
+					.transplant().request(StackRequest.THIS, StackRequest.PARAM1, StackRequest.PARAM2).build());
 		}
 	}
 	
-	private static final class Reflection {
-		private static final Field initCopyField, iterableCopyField;
-		private static final Field astStackField, astPtrField;
+	public static final class Reflection {
+		public static final Field initCopyField, iterableCopyField;
+		public static final Field astStackField, astPtrField;
+		public static final Constructor<Modifier> modifierConstructor;
+		public static final Constructor<MarkerAnnotation> markerAnnotationConstructor;
+		public static final Method astConverterRecordNodes;
 		
 		static {
 			Field a = null, b = null, c = null, d = null;
+			Constructor<Modifier> f = null;
+			Constructor<MarkerAnnotation> g = null;
+			Method h = null;
 			
 			try {
 				a = LocalDeclaration.class.getDeclaredField("$initCopy");
@@ -141,6 +169,13 @@ public class PatchVal {
 				c.setAccessible(true);
 				d = Parser.class.getDeclaredField("astPtr");
 				d.setAccessible(true);
+				f = Modifier.class.getDeclaredConstructor(AST.class);
+				f.setAccessible(true);
+				g = MarkerAnnotation.class.getDeclaredConstructor(AST.class);
+				g.setAccessible(true);
+				Class<?> z = Class.forName("org.eclipse.jdt.core.dom.ASTConverter");
+				h = z.getDeclaredMethod("recordNodes", org.eclipse.jdt.core.dom.ASTNode.class, org.eclipse.jdt.internal.compiler.ast.ASTNode.class);
+				h.setAccessible(true);
 			} catch (Exception e) {
 				// Most likely we're in ecj or some other plugin usage of the eclipse compiler. No need for this.
 			}
@@ -149,6 +184,9 @@ public class PatchVal {
 			iterableCopyField = b;
 			astStackField = c;
 			astPtrField = d;
+			modifierConstructor = f;
+			markerAnnotationConstructor = g;
+			astConverterRecordNodes = h;
 		}
 	}
 	
@@ -178,6 +216,121 @@ public class PatchVal {
 		}
 	}
 	
+	public static void addFinalAndValAnnotationToVariableDeclarationStatement(Object converter, VariableDeclarationStatement out, LocalDeclaration in) {
+		// First check that 'in' has the final flag on, and a @val / @lombok.val annotation.
+		if ((in.modifiers & ClassFileConstants.AccFinal) == 0) return;
+		if (in.annotations == null) return;
+		boolean found = false;
+		Annotation valAnnotation = null;
+		
+		for (Annotation ann : in.annotations) {
+			if (ann.type instanceof SingleTypeReference) {
+				if (matches("val", ((SingleTypeReference)ann.type).token)) {
+					found = true;
+					valAnnotation = ann;
+					break;
+				}
+			}
+			if (ann.type instanceof QualifiedTypeReference) {
+				char[][] tokens = ((QualifiedTypeReference)ann.type).tokens;
+				if (tokens != null && tokens.length == 2 && matches("lombok", tokens[0]) && matches("val", tokens[1])) {
+					found = true;
+					valAnnotation = ann;
+					break;
+				}
+			}
+		}
+		
+		if (!found) return;
+		
+		// Now check that 'out' is missing either of these.
+		
+		@SuppressWarnings("unchecked") List<IExtendedModifier> modifiers = out.modifiers();
+		
+		if (modifiers == null) return; // This is null only if the project is 1.4 or less. Lombok doesn't work in that.
+		boolean finalIsPresent = false;
+		boolean valIsPresent = false;
+		
+		for (Object present : modifiers) {
+			if (present instanceof Modifier) {
+				ModifierKeyword keyword = ((Modifier)present).getKeyword();
+				if (keyword == null) continue;
+				if (keyword.toFlagValue() == Modifier.FINAL) finalIsPresent = true;
+			}
+			
+			if (present instanceof org.eclipse.jdt.core.dom.Annotation) {
+				Name typeName = ((org.eclipse.jdt.core.dom.Annotation) present).getTypeName();
+				if (typeName != null) {
+					String fullyQualifiedName = typeName.getFullyQualifiedName();
+					if ("val".equals(fullyQualifiedName) || "lombok.val".equals(fullyQualifiedName)) {
+						valIsPresent = true;
+					}
+				}
+			}
+		}
+		
+		if (!finalIsPresent) {
+			modifiers.add(
+					createModifier(out.getAST(), ModifierKeyword.FINAL_KEYWORD, valAnnotation.sourceStart, valAnnotation.sourceEnd));
+		}
+		
+		if (!valIsPresent) {
+			MarkerAnnotation newAnnotation = createValAnnotation(out.getAST(), valAnnotation, valAnnotation.sourceStart, valAnnotation.sourceEnd);
+			try {
+				Reflection.astConverterRecordNodes.invoke(converter, newAnnotation, valAnnotation);
+				Reflection.astConverterRecordNodes.invoke(converter, newAnnotation.getTypeName(), valAnnotation.type);
+			} catch (IllegalAccessException e) {
+				Lombok.sneakyThrow(e);
+			} catch (InvocationTargetException e) {
+				Lombok.sneakyThrow(e.getCause());
+			}
+			modifiers.add(newAnnotation);
+		}
+	}
+	
+	public static MarkerAnnotation createValAnnotation(AST ast, Annotation original, int start, int end) {
+		MarkerAnnotation out = null;
+		try {
+			out = Reflection.markerAnnotationConstructor.newInstance(ast);
+		} catch (InstantiationException e) {
+			Lombok.sneakyThrow(e);
+		} catch (IllegalAccessException e) {
+			Lombok.sneakyThrow(e);
+		} catch (InvocationTargetException e) {
+			Lombok.sneakyThrow(e);
+		}
+		
+		if (out != null) {
+			if (original.type instanceof SingleTypeReference) {
+				out.setTypeName(ast.newSimpleName("val"));
+			} else {
+				out.setTypeName(ast.newQualifiedName(ast.newSimpleName("lombok"), ast.newSimpleName("val")));
+			}
+			out.setSourceRange(start, end - start + 1);
+		}
+		
+		return out;
+	}
+	
+	public static Modifier createModifier(AST ast, ModifierKeyword keyword, int start, int end) {
+		Modifier modifier = null;
+		try {
+			modifier = Reflection.modifierConstructor.newInstance(ast);
+		} catch (InstantiationException e) {
+			Lombok.sneakyThrow(e);
+		} catch (IllegalAccessException e) {
+			Lombok.sneakyThrow(e);
+		} catch (InvocationTargetException e) {
+			Lombok.sneakyThrow(e);
+		}
+		
+		if (modifier != null) {
+			modifier.setKeyword(keyword);
+			modifier.setSourceRange(start, end - start + 1);
+		}
+		return modifier;
+	}
+	
 	public static TypeBinding skipResolveInitializerIfAlreadyCalled(Expression expr, BlockScope scope) {
 		if (expr.resolvedType != null) return expr.resolvedType;
 		return expr.resolveType(scope);
@@ -197,31 +350,38 @@ public class PatchVal {
 		return true;
 	}
 	
-	public static boolean handleValForLocalDeclaration(LocalDeclaration local, BlockScope scope) {
-		if (local == null || !LocalDeclaration.class.equals(local.getClass())) return false;
-		boolean decomponent = false;
-		
-		boolean isVal = false;
-		
-		if (local.type instanceof SingleTypeReference) {
-			char[] token = ((SingleTypeReference)local.type).token;
-			if (matches("val", token)) isVal = true;
+	private static boolean couldBeVal(TypeReference ref) {
+		if (ref instanceof SingleTypeReference) {
+			char[] token = ((SingleTypeReference)ref).token;
+			return matches("val", token);
 		}
 		
-		if (local.type instanceof QualifiedTypeReference) {
-			char[][] tokens = ((QualifiedTypeReference)local.type).tokens;
-			if (tokens != null && tokens.length == 2 && matches("lombok", tokens[0]) && matches("val", tokens[1])) isVal = true;
+		if (ref instanceof QualifiedTypeReference) {
+			char[][] tokens = ((QualifiedTypeReference)ref).tokens;
+			if (tokens == null || tokens.length != 2) return false;
+			return matches("lombok", tokens[0]) && matches("val", tokens[1]);
 		}
 		
-		if (!isVal) return false;
+		return false;
+	}
+	
+	private static boolean isVal(TypeReference ref, BlockScope scope) {
+		if (!couldBeVal(ref)) return false;
 		
-		TypeBinding resolvedType = local.type.resolvedType;
-		if (resolvedType == null) resolvedType = local.type.resolveType(scope, false);
+		TypeBinding resolvedType = ref.resolvedType;
+		if (resolvedType == null) resolvedType = ref.resolveType(scope, false);
 		if (resolvedType == null) return false;
 		
 		char[] pkg = resolvedType.qualifiedPackageName();
 		char[] nm = resolvedType.qualifiedSourceName();
-		if (!matches("lombok", pkg) || !matches("val", nm)) return false;
+		return matches("lombok", pkg) && matches("val", nm);
+	}
+	
+	public static boolean handleValForLocalDeclaration(LocalDeclaration local, BlockScope scope) {
+		if (local == null || !LocalDeclaration.class.equals(local.getClass())) return false;
+		boolean decomponent = false;
+		
+		if (!isVal(local.type, scope)) return false;
 		
 		Expression init = local.initialization;
 		if (init == null && Reflection.initCopyField != null) {
@@ -251,10 +411,12 @@ public class PatchVal {
 		}
 		
 		local.modifiers |= ClassFileConstants.AccFinal;
+		local.annotations = addValAnnotation(local.annotations, local.type, scope);
 		local.type = replacement != null ? replacement : new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, Eclipse.poss(local.type, 3));
 		
 		return false;
 	}
+	
 	public static void copyInitializationOfForEachIterable(Parser parser) {
 		ASTNode[] astStack;
 		int astPtr;
@@ -282,21 +444,34 @@ public class PatchVal {
 	}
 	
 	public static boolean handleValForForEach(ForeachStatement forEach, BlockScope scope) {
-		if (forEach.elementVariable != null && forEach.elementVariable.type instanceof SingleTypeReference) {
-			char[] token = ((SingleTypeReference)forEach.elementVariable.type).token;
-			if (token == null || token.length != 3) return false;
-			else if (token[0] != 'v' || token[1] != 'a' || token[2] != 'l') return false;
-		} else return false;
+		if (forEach.elementVariable == null) return false;
+		
+		if (!isVal(forEach.elementVariable.type, scope)) return false;
 		
 		TypeBinding component = getForEachComponentType(forEach.collection, scope);
 		if (component == null) return false;
 		TypeReference replacement = Eclipse.makeType(component, forEach.elementVariable.type, false);
 		
 		forEach.elementVariable.modifiers |= ClassFileConstants.AccFinal;
+		forEach.elementVariable.annotations = addValAnnotation(forEach.elementVariable.annotations, forEach.elementVariable.type, scope);
 		forEach.elementVariable.type = replacement != null ? replacement :
 				new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, Eclipse.poss(forEach.elementVariable.type, 3));
 		
 		return false;
+	}
+	
+	private static Annotation[] addValAnnotation(Annotation[] originals, TypeReference originalRef, BlockScope scope) {
+		Annotation[] newAnn;
+		if (originals != null) {
+			newAnn = new Annotation[1 + originals.length];
+			System.arraycopy(originals, 0, newAnn, 0, originals.length);
+		} else {
+			newAnn = new Annotation[1];
+		}
+		
+		newAnn[newAnn.length - 1] = new org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation(originalRef, originalRef.sourceStart);
+		
+		return newAnn;
 	}
 	
 	private static TypeBinding getForEachComponentType(Expression collection, BlockScope scope) {

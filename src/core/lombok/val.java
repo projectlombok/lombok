@@ -25,5 +25,7 @@ package lombok;
  * Use {@code val} as the type of any local variable declaration (even in a for-each statement), and the type will be inferred from the initializing expression.
  * For example: {@code val x = 10.0;} will infer {@code double}, and {@code val y = new ArrayList<String>();} will infer {@code ArrayList<String>}. The local variable
  * will also be made final.
+ * 
+ * Note that this is an interface because {@code val x = 10;} will be desugared to <code>&#64;val int x = 10;</code>
  */
-public class val {}
+public @interface val {}
