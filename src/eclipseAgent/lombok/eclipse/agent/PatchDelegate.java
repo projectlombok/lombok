@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
@@ -70,6 +71,8 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
+import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
 import org.eclipse.jdt.internal.compiler.lookup.MemberTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
@@ -78,6 +81,9 @@ import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
+import org.eclipse.jdt.internal.compiler.lookup.TypeVariableBinding;
+import org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding;
+import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 
 public class PatchDelegate {
 	static void addPatches(ScriptManager sm, boolean ecj) {
@@ -95,7 +101,7 @@ public class PatchDelegate {
 		if (decl == null) return false;
 		
 		CompilationUnitDeclaration cud = null;
-		EclipseAST astNode = null;
+		EclipseAST eclipseAst = null;
 		
 		if (decl.fields != null) for (FieldDeclaration field : decl.fields) {
 			if (field.annotations == null) continue;
@@ -107,7 +113,7 @@ public class PatchDelegate {
 				
 				if (cud == null) {
 					cud = scope.compilationUnitScope().referenceContext;
-					astNode = TransformEclipseAST.getAST(cud);
+					eclipseAst = TransformEclipseAST.getAST(cud);
 				}
 				
 				List<ClassLiteralAccess> rawTypes = new ArrayList<ClassLiteralAccess>();
@@ -136,7 +142,7 @@ public class PatchDelegate {
 				
 				removeExistingMethods(methodsToDelegate, decl, scope);
 				
-				generateDelegateMethods(astNode.get(decl), methodsToDelegate, field.name, ann);
+				generateDelegateMethods(eclipseAst.get(decl), methodsToDelegate, field.name, eclipseAst.get(ann));
 			}
 		}
 		
@@ -169,11 +175,11 @@ public class PatchDelegate {
 		}
 	}
 	
-	private static void generateDelegateMethods(EclipseNode typeNode, List<BindingPair> methods, char[] delegate, ASTNode source) {
+	private static void generateDelegateMethods(EclipseNode typeNode, List<BindingPair> methods, char[] delegate, EclipseNode annNode) {
 		CompilationUnitDeclaration top = (CompilationUnitDeclaration) typeNode.top().get();
 		for (BindingPair pair : methods) {
-			MethodDeclaration method = generateDelegateMethod(delegate, pair, top.compilationResult, source);
-			EclipseHandlerUtil.injectMethod(typeNode, method);
+			MethodDeclaration method = createDelegateMethod(delegate, typeNode, pair, top.compilationResult, annNode);
+			if (method != null) EclipseHandlerUtil.injectMethod(typeNode, method);
 		}
 	}
 	
@@ -190,7 +196,147 @@ public class PatchDelegate {
 		return false;
 	}
 	
-	private static MethodDeclaration generateDelegateMethod(char[] name, BindingPair pair, CompilationResult compilationResult, ASTNode source) {
+	public static void checkConflictOfTypeVarNames(BindingPair binding, EclipseNode typeNode) throws CantMakeDelegates {
+		TypeVariableBinding[] typeVars = binding.parameterized.typeVariables();
+		if (typeVars == null || typeVars.length == 0) return;
+		
+		Set<String> usedInOurType = new HashSet<String>();
+		EclipseNode enclosingType = typeNode;
+		while (enclosingType != null) {
+			if (enclosingType.getKind() == Kind.TYPE) {
+				TypeParameter[] typeParameters = ((TypeDeclaration)enclosingType.get()).typeParameters;
+				if (typeParameters != null) {
+					for (TypeParameter param : typeParameters) {
+						if (param.name != null) usedInOurType.add(new String(param.name));
+					}
+				}
+			}
+			enclosingType = enclosingType.up();
+		}
+		
+		Set<String> usedInMethodSig = new HashSet<String>();
+		for (TypeVariableBinding var : typeVars) {
+			char[] sourceName = var.sourceName();
+			if (sourceName != null) usedInMethodSig.add(new String(sourceName));
+		}
+		
+		usedInMethodSig.retainAll(usedInOurType);
+		if (usedInMethodSig.isEmpty()) return;
+		
+		// We might be delegating a List<T>, and we are making method <T> toArray(). A conflict is possible.
+		// But only if the toArray method also uses type vars from its class, otherwise we're only shadowing,
+		// which is okay as we'll add a @SuppressWarnings.
+		
+		TypeVarFinder finder = new TypeVarFinder();
+		finder.visitRaw(binding.base);
+		
+		Set<String> names = new HashSet<String>(finder.getTypeVariables());
+		names.removeAll(usedInMethodSig);
+		if (!names.isEmpty()) {
+			// We have a confirmed conflict. We could dig deeper as this may still be a false alarm, but its already an exceedingly rare case.
+			CantMakeDelegates cmd = new CantMakeDelegates();
+			cmd.conflicted = usedInMethodSig;
+			throw cmd;
+		}
+	}
+	
+	public static class CantMakeDelegates extends Exception {
+		public Set<String> conflicted;
+	}
+	
+	public static class TypeVarFinder extends EclipseTypeBindingScanner {
+		private Set<String> typeVars = new HashSet<String>();
+		
+		public Set<String> getTypeVariables() {
+			return typeVars;
+		}
+		
+		@Override public void visitTypeVariable(TypeVariableBinding binding) {
+			if (binding.sourceName != null) typeVars.add(new String(binding.sourceName));
+			super.visitTypeVariable(binding);
+		}
+	}
+	
+	public abstract static class EclipseTypeBindingScanner {
+		public void visitRaw(Binding binding) {
+			if (binding == null) return;
+			if (binding instanceof MethodBinding) visitMethod((MethodBinding) binding);
+			if (binding instanceof BaseTypeBinding) visitBase((BaseTypeBinding) binding);
+			if (binding instanceof ArrayBinding) visitArray((ArrayBinding) binding);
+			if (binding instanceof UnresolvedReferenceBinding) visitUnresolved((UnresolvedReferenceBinding) binding);
+			if (binding instanceof WildcardBinding) visitWildcard((WildcardBinding) binding);
+			if (binding instanceof TypeVariableBinding) visitTypeVariable((TypeVariableBinding) binding);
+			if (binding instanceof ParameterizedTypeBinding) visitParameterized((ParameterizedTypeBinding) binding);
+			if (binding instanceof ReferenceBinding) visitReference((ReferenceBinding) binding);
+		}
+		
+		public void visitReference(ReferenceBinding binding) {
+		}
+		
+		public void visitParameterized(ParameterizedTypeBinding binding) {
+			visitRaw(binding.genericType());
+			TypeVariableBinding[] typeVars = binding.typeVariables();
+			if (typeVars != null) for (TypeVariableBinding child : typeVars) {
+				visitRaw(child);
+			}
+		}
+		
+		public void visitTypeVariable(TypeVariableBinding binding) {
+			visitRaw(binding.superclass);
+			ReferenceBinding[] supers = binding.superInterfaces();
+			if (supers != null) for (ReferenceBinding child : supers) {
+				visitRaw(child);
+			}
+		}
+		
+		public void visitWildcard(WildcardBinding binding) {
+			visitRaw(binding.bound);
+		}
+		
+		public void visitUnresolved(UnresolvedReferenceBinding binding) {
+		}
+		
+		public void visitArray(ArrayBinding binding) {
+			visitRaw(binding.leafComponentType());
+		}
+		
+		public void visitBase(BaseTypeBinding binding) {
+		}
+		
+		public void visitMethod(MethodBinding binding) {
+			if (binding.parameters != null) for (TypeBinding child : binding.parameters) {
+				visitRaw(child);
+			}
+			visitRaw(binding.returnType);
+			if (binding.thrownExceptions != null) for (TypeBinding child : binding.thrownExceptions) {
+				visitRaw(child);
+			}
+			TypeVariableBinding[] typeVars = binding.typeVariables();
+			if (typeVars != null) for (TypeVariableBinding child : typeVars) {
+				visitRaw(child.superclass);
+				ReferenceBinding[] supers = child.superInterfaces();
+				if (supers != null) for (ReferenceBinding child2 : supers) {
+					visitRaw(child2);
+				}
+			}
+		}
+	}
+	
+	private static MethodDeclaration createDelegateMethod(char[] name, EclipseNode typeNode, BindingPair pair, CompilationResult compilationResult, EclipseNode annNode) {
+		/* public <T, U, ...> ReturnType methodName(ParamType1 name1, ParamType2 name2, ...) throws T1, T2, ... {
+		 *      (return) delegate.<T, U>methodName(name1, name2);
+		 *  }
+		 */
+		
+		try {
+			checkConflictOfTypeVarNames(pair, typeNode);
+		} catch (CantMakeDelegates e) {
+			annNode.addError("There's a conflict in the names of type parameters. Fix it by renaming the following type parameters of your class: " + e.conflicted);
+			return null;
+		}
+		
+		ASTNode source = annNode.get();
+		
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		
 		MethodBinding binding = pair.parameterized;
@@ -315,7 +461,6 @@ public class PatchDelegate {
 	}
 	
 	private static void addAllMethodBindings(List<BindingPair> list, TypeBinding binding, Set<String> banList) {
-		System.out.println("adding method bindings for type: " + binding);
 		if (binding == null) return;
 		
 		TypeBinding inner;
@@ -338,7 +483,6 @@ public class PatchDelegate {
 		}
 		
 		if (binding instanceof ReferenceBinding) {
-			System.out.println("isRefBinding: " + binding.getClass());
 			ReferenceBinding rb = (ReferenceBinding) binding;
 			MethodBinding[] parameterizedSigs = rb.availableMethods();
 			MethodBinding[] baseSigs = parameterizedSigs;
@@ -353,7 +497,6 @@ public class PatchDelegate {
 			for (int i = 0; i < parameterizedSigs.length; i++) {
 				MethodBinding mb = parameterizedSigs[i];
 				String sig = printSig(mb);
-				System.out.println("Method: " + sig);
 				if (mb.isStatic()) continue;
 				if (mb.isBridge()) continue;
 				if (mb.isConstructor()) continue;

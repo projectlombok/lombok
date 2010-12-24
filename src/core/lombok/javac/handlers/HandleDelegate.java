@@ -165,53 +165,60 @@ public class HandleDelegate implements JavacAnnotationHandler<Delegate> {
 		Set<String> conflicted;
 	}
 	
+	/**
+	 * There's a rare but problematic case if a delegate method has its own type variables, and the delegated type does too, and the method uses both.
+	 * If for example the delegated type has {@code <E>}, and the method has {@code <T>}, but in our class we have a {@code <T>} at the class level, then we have two different
+	 * type variables both named {@code T}. We detect this situation and error out asking the programmer to rename their type variable.
+	 * 
+	 * @throws CantMakeDelegates If there's a conflict. Conflict list is in ex.conflicted.
+	 */
+	private void checkConflictOfTypeVarNames(MethodSig sig, JavacNode annotation) throws CantMakeDelegates {
+		// As first step, we check if there's a conflict between the delegate method's type vars and our own class.
+		
+		if (sig.elem.getTypeParameters().isEmpty()) return;
+		Set<String> usedInOurType = new HashSet<String>();
+		
+		JavacNode enclosingType = annotation;
+		while (enclosingType != null) {
+			if (enclosingType.getKind() == Kind.TYPE) {
+				List<JCTypeParameter> typarams = ((JCClassDecl)enclosingType.get()).typarams;
+				if (typarams != null) for (JCTypeParameter param : typarams) {
+					if (param.name != null) usedInOurType.add(param.name.toString());
+				}
+			}
+			enclosingType = enclosingType.up();
+		}
+		
+		Set<String> usedInMethodSig = new HashSet<String>();
+		for (TypeParameterElement param : sig.elem.getTypeParameters()) {
+			usedInMethodSig.add(param.getSimpleName().toString());
+		}
+		
+		usedInMethodSig.retainAll(usedInOurType);
+		if (usedInMethodSig.isEmpty()) return;
+		
+		// We might be delegating a List<T>, and we are making method <T> toArray(). A conflict is possible.
+		// But only if the toArray method also uses type vars from its class, otherwise we're only shadowing,
+		// which is okay as we'll add a @SuppressWarnings.
+		FindTypeVarScanner scanner = new FindTypeVarScanner();
+		sig.elem.asType().accept(scanner, null);
+		Set<String> names = new HashSet<String>(scanner.getTypeVariables());
+		names.removeAll(usedInMethodSig);
+		if (!names.isEmpty()) {
+			// We have a confirmed conflict. We could dig deeper as this may still be a false alarm, but its already an exceedingly rare case.
+			CantMakeDelegates cmd = new CantMakeDelegates();
+			cmd.conflicted = usedInMethodSig;
+			throw cmd;
+		}
+	}
+	
 	private JCMethodDecl createDelegateMethod(MethodSig sig, JavacNode annotation, Name delegateFieldName) throws TypeNotConvertibleException, CantMakeDelegates {
-		/** public <T, U, ...> ReturnType methodName(ParamType1 name1, ParamType2 name2, ...) throws T1, T2, ... {
+		/* public <T, U, ...> ReturnType methodName(ParamType1 name1, ParamType2 name2, ...) throws T1, T2, ... {
 		 *      (return) delegate.<T, U>methodName(name1, name2);
 		 *  }
 		 */
 		
-		// There's a rare but problematic case if a delegate method has its own type variables, and the delegated type does too, and the method uses both.
-		// If for example the delegated type has <E>, and the method has <T>, but in our class we have a <T> at the class level, then we have two different
-		// type variables both named 'T'. We detect this situation and error out asking the programmer to rename their type variable.
-		// As first step, we check if there's a conflict between the delegate method's type vars and our own class.
-		
-		if (!sig.elem.getTypeParameters().isEmpty()) {
-			Set<String> usedInOurType = new HashSet<String>();
-			
-			JavacNode enclosingType = annotation;
-			while (enclosingType != null) {
-				if (enclosingType.getKind() == Kind.TYPE) {
-					List<JCTypeParameter> typarams = ((JCClassDecl)enclosingType.get()).typarams;
-					if (typarams != null) for (JCTypeParameter param : typarams) {
-						if (param.name != null) usedInOurType.add(param.name.toString());
-					}
-				}
-				enclosingType = enclosingType.up();
-			}
-			
-			Set<String> usedInMethodSig = new HashSet<String>();
-			for (TypeParameterElement param : sig.elem.getTypeParameters()) {
-				usedInMethodSig.add(param.getSimpleName().toString());
-			}
-			
-			usedInMethodSig.retainAll(usedInOurType);
-			if (!usedInMethodSig.isEmpty()) {
-				// We might be delegating a List<T>, and we are making method <T> toArray(). A conflict is possible.
-				// But only if the toArray method also uses type vars from its class, otherwise we're only shadowing,
-				// which is okay as we'll add a @SuppressWarnings.
-				FindTypeVarScanner scanner = new FindTypeVarScanner();
-				sig.elem.asType().accept(scanner, null);
-				Set<String> names = new HashSet<String>(scanner.getTypeVariables());
-				names.removeAll(usedInMethodSig);
-				if (!names.isEmpty()) {
-					// We have a confirmed conflict. We could dig deeper as this may still be a false alarm, but its already an exceedingly rare case.
-					CantMakeDelegates cmd = new CantMakeDelegates();
-					cmd.conflicted = usedInMethodSig;
-					throw cmd;
-				}
-			}
-		}
+		checkConflictOfTypeVarNames(sig, annotation);
 		
 		TreeMaker maker = annotation.getTreeMaker();
 		
