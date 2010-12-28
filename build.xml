@@ -228,7 +228,6 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 				overwrite="true">
 			<filterset>
 				<filter token="START_ON_FIRST_THREAD" value="${startOnFirstThread}" />
-				<filter token="D32" value="${d32}" />
 			</filterset>
 		</copy>
 	</target>
