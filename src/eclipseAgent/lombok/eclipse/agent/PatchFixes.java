@@ -44,6 +44,10 @@ public class PatchFixes {
 		return original == -1 ? end : original;
 	}
 	
+	public static int fixRetrieveEllipsisStartPosition(int original, int end) {
+		return original == -1 ? end : original;
+	}
+	
 	public static final int ALREADY_PROCESSED_FLAG = 0x800000;	//Bit 24
 	
 	public static boolean checkBit24(Object node) throws Exception {

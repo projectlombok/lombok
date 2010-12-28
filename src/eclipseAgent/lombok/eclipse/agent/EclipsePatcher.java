@@ -62,6 +62,7 @@ public class EclipsePatcher extends Agent {
 			patchLombokizeAST(sm);
 			patchCatchReparse(sm);
 			patchIdentifierEndReparse(sm);
+			patchRetrieveEllipsisStartPosition(sm);
 			patchSetGeneratedFlag(sm);
 			patchHideGeneratedNodes(sm);
 			patchLiveDebug(sm);
@@ -148,6 +149,13 @@ public class EclipsePatcher extends Agent {
 		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveIdentifierEndPosition"))
 				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "fixRetrieveIdentifierEndPosition", "int", "int", "int"))
+				.transplant().request(StackRequest.RETURN_VALUE, StackRequest.PARAM2).build());
+	}
+	
+	private static void patchRetrieveEllipsisStartPosition(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveEllipsisStartPosition"))
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "fixRetrieveEllipsisStartPosition", "int", "int", "int"))
 				.transplant().request(StackRequest.RETURN_VALUE, StackRequest.PARAM2).build());
 	}
 	

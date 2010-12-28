@@ -166,7 +166,6 @@ public class PatchDelegate {
 				if (!Arrays.equals(mb.selector, name)) continue;
 				int paramLen = mb.parameters == null ? 0 : mb.parameters.length;
 				if (paramLen != args.length) continue;
-				// TODO check if varargs are copied or otherwise handled correctly.
 				for (int i = 0; i < paramLen; i++) {
 					if (!mb.parameters[i].erasure().isEquivalentTo(args[i])) continue methods;
 				}
@@ -328,6 +327,8 @@ public class PatchDelegate {
 		 *  }
 		 */
 		
+		boolean isVarargs = (pair.base.modifiers & ClassFileConstants.AccVarargs) != 0;
+		
 		try {
 			checkConflictOfTypeVarNames(pair, typeNode);
 		} catch (CantMakeDelegates e) {
@@ -422,6 +423,12 @@ public class PatchDelegate {
 				Eclipse.setGeneratedBy(method.arguments[i], source);
 				call.arguments[i] = new SingleNameReference(argName, pos(source));
 				Eclipse.setGeneratedBy(call.arguments[i], source);
+			}
+			if (isVarargs) {
+				method.arguments[method.arguments.length - 1].type.bits |= ASTNode.IsVarArgs;
+			}
+			for (int i = 0; i < method.arguments.length; i++) {
+				System.out.printf("Positions of marg type: %d %d\n", method.arguments[i].sourceStart(), method.arguments[i].sourceEnd());
 			}
 		}
 		
