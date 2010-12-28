@@ -193,14 +193,12 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
 				FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
-				//Skip static fields.
-				if ((fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0) continue;
+				if (!EclipseHandlerUtil.filterField(fieldDecl)) continue;
+				
 				//Skip transient fields.
 				if ((fieldDecl.modifiers & ClassFileConstants.AccTransient) != 0) continue;
 				//Skip excluded fields.
 				if (excludes != null && excludes.contains(new String(fieldDecl.name))) continue;
-				//Skip fields that start with $.
-				if (fieldDecl.name.length > 0 && fieldDecl.name[0] == '$') continue;
 				nodesForEquality.add(child);
 			}
 		}

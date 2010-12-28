@@ -294,6 +294,24 @@ public class EclipseHandlerUtil {
 	}
 	
 	/**
+	 * Checks if the field should be included in operations that work on 'all' fields:
+	 *    If the field is static, or starts with a '$', or is actually an enum constant, 'false' is returned, indicating you should skip it.
+	 */
+	public static boolean filterField(FieldDeclaration declaration) {
+		// Skip the fake fields that represent enum constants.
+		if (declaration.initialization instanceof AllocationExpression &&
+				((AllocationExpression)declaration.initialization).enumConstant != null) return false;
+		
+		// Skip fields that start with $
+		if (declaration.name.length > 0 && declaration.name[0] == '$') return false;
+		
+		// Skip static fields.
+		if ((declaration.modifiers & ClassFileConstants.AccStatic) != 0) return false;
+		
+		return true;
+	}
+	
+	/**
 	 * Checks if there is a field with the provided name.
 	 * 
 	 * @param fieldName the field name to check for.

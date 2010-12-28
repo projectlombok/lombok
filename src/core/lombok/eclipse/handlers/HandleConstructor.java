@@ -75,6 +75,7 @@ public class HandleConstructor {
 	public static class HandleNoArgsConstructor implements EclipseAnnotationHandler<NoArgsConstructor> {
 		@Override public boolean handle(AnnotationValues<NoArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
 			EclipseNode typeNode = annotationNode.up();
+			if (!checkLegality(typeNode, annotationNode, NoArgsConstructor.class.getSimpleName())) return true;
 			NoArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
 			String staticName = ann.staticName();
@@ -89,6 +90,7 @@ public class HandleConstructor {
 	public static class HandleRequiredArgsConstructor implements EclipseAnnotationHandler<RequiredArgsConstructor> {
 		@Override public boolean handle(AnnotationValues<RequiredArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
 			EclipseNode typeNode = annotationNode.up();
+			if (!checkLegality(typeNode, annotationNode, RequiredArgsConstructor.class.getSimpleName())) return true;
 			RequiredArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
 			String staticName = ann.staticName();
@@ -105,10 +107,7 @@ public class HandleConstructor {
 		for (EclipseNode child : typeNode.down()) {
 			if (child.getKind() != Kind.FIELD) continue;
 			FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
-			//Skip fields that start with $
-			if (fieldDecl.name.length > 0 && fieldDecl.name[0] == '$') continue;
-			//Skip static fields.
-			if ((fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0) continue;
+			if (!EclipseHandlerUtil.filterField(fieldDecl)) continue;
 			boolean isFinal = (fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0;
 			boolean isNonNull = findAnnotations(fieldDecl, TransformationsUtil.NON_NULL_PATTERN).length != 0;
 			if ((isFinal || isNonNull) && fieldDecl.initialization == null) fields.add(child);
@@ -120,6 +119,7 @@ public class HandleConstructor {
 	public static class HandleAllArgsConstructor implements EclipseAnnotationHandler<AllArgsConstructor> {
 		@Override public boolean handle(AnnotationValues<AllArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
 			EclipseNode typeNode = annotationNode.up();
+			if (!checkLegality(typeNode, annotationNode, AllArgsConstructor.class.getSimpleName())) return true;
 			AllArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
 			String staticName = ann.staticName();
@@ -130,17 +130,30 @@ public class HandleConstructor {
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
 				FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
-				// Skip fields that start with $
-				if (fieldDecl.name.length > 0 && fieldDecl.name[0] == '$') continue;
-				// Skip static fields.
-				if ((fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0) continue;
+				if (!EclipseHandlerUtil.filterField(fieldDecl)) continue;
+				
 				// Skip initialized final fields.
-				if (((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) && fieldDecl.initialization != null) continue;
+				if (((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) && fieldDecl.initialization != null) return false;
+				
 				fields.add(child);
 			}
 			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, false, suppressConstructorProperties, ast);
 			return true;
 		}
+	}
+	
+	static boolean checkLegality(EclipseNode typeNode, EclipseNode errorNode, String name) {
+		TypeDeclaration typeDecl = null;
+		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
+		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
+		boolean notAClass = (modifiers & (ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation)) != 0;
+		
+		if (typeDecl == null || notAClass) {
+			errorNode.addError(name + " is only supported on a class or an enum.");
+			return false;
+		}
+		
+		return true;
 	}
 	
 	public void generateRequiredArgsConstructor(EclipseNode typeNode, AccessLevel level, String staticName, boolean skipIfConstructorExists, ASTNode source) {
@@ -207,6 +220,10 @@ public class HandleConstructor {
 	private ConstructorDeclaration createConstructor(AccessLevel level,
 			EclipseNode type, Collection<EclipseNode> fields, boolean suppressConstructorProperties, ASTNode source) {
 		long p = (long)source.sourceStart << 32 | source.sourceEnd;
+		
+		boolean isEnum = (((TypeDeclaration)type.get()).modifiers & ClassFileConstants.AccEnum) != 0;
+		
+		if (isEnum) level = AccessLevel.PRIVATE;
 		
 		ConstructorDeclaration constructor = new ConstructorDeclaration(
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);

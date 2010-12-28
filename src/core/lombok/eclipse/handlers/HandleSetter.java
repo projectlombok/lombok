@@ -85,10 +85,8 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		for (EclipseNode field : typeNode.down()) {
 			if (field.getKind() != Kind.FIELD) continue;
 			FieldDeclaration fieldDecl = (FieldDeclaration) field.get();
-			//Skip fields that start with $
-			if (fieldDecl.name.length > 0 && fieldDecl.name[0] == '$') continue;
-			//Skip static fields.
-			if ((fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0) continue;
+			if (!EclipseHandlerUtil.filterField(fieldDecl)) continue;
+			
 			//Skip final fields.
 			if ((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) continue;
 			

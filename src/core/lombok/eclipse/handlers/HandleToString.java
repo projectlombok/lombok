@@ -128,10 +128,10 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
 		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
 		boolean notAClass = (modifiers &
-				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0;
+				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation)) != 0;
 		
 		if (typeDecl == null || notAClass) {
-			errorNode.addError("@ToString is only supported on a class.");
+			errorNode.addError("@ToString is only supported on a class or enum.");
 			return false;
 		}
 		
@@ -152,12 +152,11 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
 				FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
-				//Skip static fields.
-				if ((fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0) continue;
+				if (!EclipseHandlerUtil.filterField(fieldDecl)) continue;
+				
 				//Skip excluded fields.
 				if (excludes != null && excludes.contains(new String(fieldDecl.name))) continue;
-				//Skip fields that start with $
-				if (fieldDecl.name.length > 0 && fieldDecl.name[0] == '$') continue;
+				
 				nodesForToString.add(child);
 			}
 		}

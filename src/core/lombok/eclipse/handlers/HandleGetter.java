@@ -87,10 +87,10 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
 		int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
 		boolean notAClass = (modifiers &
-				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0;
+				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation)) != 0;
 		
 		if (typeDecl == null || notAClass) {
-			pos.addError("@Getter is only supported on a class or a field.");
+			pos.addError("@Getter is only supported on a class, an enum, or a field.");
 			return false;
 		}
 		
@@ -103,11 +103,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 	public boolean fieldQualifiesForGetterGeneration(EclipseNode field) {
 		if (field.getKind() != Kind.FIELD) return false;
 		FieldDeclaration fieldDecl = (FieldDeclaration) field.get();
-		//Skip fields that start with $
-		if (fieldDecl.name.length > 0 && fieldDecl.name[0] == '$') return false;
-		//Skip static fields.
-		if ((fieldDecl.modifiers & ClassFileConstants.AccStatic) != 0) return false;
-		return true;
+		return EclipseHandlerUtil.filterField(fieldDecl);
 	}
 	
 	/**

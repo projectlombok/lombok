@@ -117,7 +117,7 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		boolean notAClass = true;
 		if (typeNode.get() instanceof JCClassDecl) {
 			long flags = ((JCClassDecl)typeNode.get()).mods.flags;
-			notAClass = (flags & (Flags.INTERFACE | Flags.ANNOTATION | Flags.ENUM)) != 0;
+			notAClass = (flags & (Flags.INTERFACE | Flags.ANNOTATION)) != 0;
 		}
 		
 		if (callSuper == null) {
@@ -127,7 +127,7 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		}
 		
 		if (notAClass) {
-			errorNode.addError("@ToString is only supported on a class.");
+			errorNode.addError("@ToString is only supported on a class or enum.");
 			return false;
 		}
 		

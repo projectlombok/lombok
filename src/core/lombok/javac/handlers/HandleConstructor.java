@@ -62,6 +62,7 @@ public class HandleConstructor {
 			markAnnotationAsProcessed(annotationNode, NoArgsConstructor.class);
 			deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 			JavacNode typeNode = annotationNode.up();
+			if (!checkLegality(typeNode, annotationNode, NoArgsConstructor.class.getSimpleName())) return true;
 			NoArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
 			String staticName = ann.staticName();
@@ -82,6 +83,7 @@ public class HandleConstructor {
 			markAnnotationAsProcessed(annotationNode, RequiredArgsConstructor.class);
 			deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 			JavacNode typeNode = annotationNode.up();
+			if (!checkLegality(typeNode, annotationNode, RequiredArgsConstructor.class.getSimpleName())) return true;
 			RequiredArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
 			String staticName = ann.staticName();
@@ -120,6 +122,7 @@ public class HandleConstructor {
 			markAnnotationAsProcessed(annotationNode, AllArgsConstructor.class);
 			deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 			JavacNode typeNode = annotationNode.up();
+			if (!checkLegality(typeNode, annotationNode, AllArgsConstructor.class.getSimpleName())) return true;
 			AllArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
 			String staticName = ann.staticName();
@@ -146,6 +149,20 @@ public class HandleConstructor {
 		@Override public boolean isResolutionBased() {
 			return false;
 		}
+	}
+	
+	static boolean checkLegality(JavacNode typeNode, JavacNode errorNode, String name) {
+		JCClassDecl typeDecl = null;
+		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) typeNode.get();
+		long modifiers = typeDecl == null ? 0 : typeDecl.mods.flags;
+		boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION)) != 0;
+		
+		if (typeDecl == null || notAClass) {
+			errorNode.addError(name + " is only supported on a class or an enum.");
+			return false;
+		}
+		
+		return true;
 	}
 	
 	public void generateRequiredArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, boolean skipIfConstructorExists) {

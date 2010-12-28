@@ -85,10 +85,10 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 		JCClassDecl typeDecl = null;
 		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) typeNode.get();
 		long modifiers = typeDecl == null ? 0 : typeDecl.mods.flags;
-		boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION | Flags.ENUM)) != 0;
+		boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION)) != 0;
 		
 		if (typeDecl == null || notAClass) {
-			errorNode.addError("@Getter is only supported on a class or a field.");
+			errorNode.addError("@Getter is only supported on a class, an enum, or a field.");
 			return false;
 		}
 		
