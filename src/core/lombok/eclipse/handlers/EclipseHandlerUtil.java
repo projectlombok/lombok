@@ -122,20 +122,16 @@ public class EclipseHandlerUtil {
 		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
 		EclipseNode typeNode = field.up();
 		for (String potentialGetterName : TransformationsUtil.toAllGetterNames(field.getName(), isBoolean)) {
-			switch (methodExists(potentialGetterName, typeNode, false)) {
-			case EXISTS_BY_LOMBOK:
-			case EXISTS_BY_USER:
-				for (EclipseNode potentialGetter : typeNode.down()) {
-					if (potentialGetter.getKind() != Kind.METHOD) continue;
-					if (!(potentialGetter.get() instanceof MethodDeclaration)) continue;
-					MethodDeclaration method = (MethodDeclaration) potentialGetter.get();
-					if (!potentialGetterName.equals(new String(method.selector))) continue;
-					/** static getX() methods don't count. */
-					if ((method.modifiers & ClassFileConstants.AccStatic) != 0) continue;
-					/** Nor do getters with a non-empty parameter list. */
-					if (method.arguments != null && method.arguments.length > 0) continue;
-					return new GetterMethod(method.selector, method.returnType);
-				}
+			for (EclipseNode potentialGetter : typeNode.down()) {
+				if (potentialGetter.getKind() != Kind.METHOD) continue;
+				if (!(potentialGetter.get() instanceof MethodDeclaration)) continue;
+				MethodDeclaration method = (MethodDeclaration) potentialGetter.get();
+				if (!potentialGetterName.equalsIgnoreCase(new String(method.selector))) continue;
+				/** static getX() methods don't count. */
+				if ((method.modifiers & ClassFileConstants.AccStatic) != 0) continue;
+				/** Nor do getters with a non-empty parameter list. */
+				if (method.arguments != null && method.arguments.length > 0) continue;
+				return new GetterMethod(method.selector, method.returnType);
 			}
 		}
 		

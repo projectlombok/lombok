@@ -294,19 +294,15 @@ public class JavacHandlerUtil {
 		JCVariableDecl decl = (JCVariableDecl)field.get();
 		JavacNode typeNode = field.up();
 		for (String potentialGetterName : toAllGetterNames(decl)) {
-			switch (methodExists(potentialGetterName, typeNode, false)) {
-			case EXISTS_BY_LOMBOK:
-			case EXISTS_BY_USER:
-				for (JavacNode potentialGetter : typeNode.down()) {
-					if (potentialGetter.getKind() != Kind.METHOD) continue;
-					JCMethodDecl method = (JCMethodDecl) potentialGetter.get();
-					if (!method.name.contentEquals(potentialGetterName)) continue;
-					/** static getX() methods don't count. */
-					if ((method.mods.flags & Flags.STATIC) != 0) continue;
-					/** Nor do getters with a non-empty parameter list. */
-					if (method.params != null && method.params.size() > 0) continue;
-					return new GetterMethod(method.name, method.restype);
-				}
+			for (JavacNode potentialGetter : typeNode.down()) {
+				if (potentialGetter.getKind() != Kind.METHOD) continue;
+				JCMethodDecl method = (JCMethodDecl) potentialGetter.get();
+				if (!method.name.toString().equalsIgnoreCase(potentialGetterName)) continue;
+				/** static getX() methods don't count. */
+				if ((method.mods.flags & Flags.STATIC) != 0) continue;
+				/** Nor do getters with a non-empty parameter list. */
+				if (method.params != null && method.params.size() > 0) continue;
+				return new GetterMethod(method.name, method.restype);
 			}
 		}
 		
