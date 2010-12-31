@@ -199,7 +199,7 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 			case EXISTS_BY_USER:
 			default:
 				break;
-			}		
+			}
 		}
 		switch (methodExists("hashCode", typeNode)) {
 		case NOT_EXISTS:
@@ -381,12 +381,14 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 			}
 		}
 		
-		/* if (!other.canEqual(this)) return false; */ {
+		/* if (!other.canEqual((java.lang.Object) this)) return false; */ {
 			if (needsCanEqual) {
 				List<JCExpression> exprNil = List.nil();
+				JCExpression thisRef = maker.Ident(thisName);
+				JCExpression castThisRef = maker.TypeCast(chainDots(maker, typeNode, "java", "lang", "Object"), thisRef);
 				JCExpression equalityCheck = maker.Apply(exprNil, 
 						maker.Select(maker.Ident(otherName), typeNode.toName("canEqual")),
-						List.<JCExpression>of(maker.Ident(thisName)));
+						List.of(castThisRef));
 				statements.append(maker.If(maker.Unary(Javac.getCTCint(JCTree.class, "NOT"), equalityCheck), returnBool(maker, false), null));
 			}
 		}
@@ -434,9 +436,11 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 				/* if (this.fieldName == null ? other.fieldName != null : !this.fieldName.equals(other.fieldName)) return false; */
 				JCExpression thisEqualsNull = maker.Binary(Javac.getCTCint(JCTree.class, "EQ"), thisFieldAccessor, maker.Literal(Javac.getCTCint(TypeTags.class, "BOT"), null));
 				JCExpression otherNotEqualsNull = maker.Binary(Javac.getCTCint(JCTree.class, "NE"), otherFieldAccessor, maker.Literal(Javac.getCTCint(TypeTags.class, "BOT"), null));
+				JCExpression equalsArg = createFieldAccessor(maker, fieldNode, fieldAccess, maker.Ident(otherName));
+				JCExpression castEqualsArg = maker.TypeCast(chainDots(maker, typeNode, "java", "lang", "Object"), equalsArg);
 				JCExpression thisEqualsThat = maker.Apply(List.<JCExpression>nil(),
 						maker.Select(createFieldAccessor(maker, fieldNode, fieldAccess), typeNode.toName("equals")),
-						List.of(createFieldAccessor(maker, fieldNode, fieldAccess, maker.Ident(otherName))));
+						List.of(castEqualsArg));
 				JCExpression fieldsAreNotEqual = maker.Conditional(thisEqualsNull, otherNotEqualsNull, maker.Unary(Javac.getCTCint(JCTree.class, "NOT"), thisEqualsThat));
 				statements.append(maker.If(fieldsAreNotEqual, returnBool(maker, false), null));
 			}
@@ -451,7 +455,7 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 	}
 
 	private JCMethodDecl createCanEqual(JavacNode typeNode) {
-		/* public boolean canEquals(final java.lang.Object other) {
+		/* public boolean canEqual(final java.lang.Object other) {
 		 *     return other instanceof MyType;
 		 * }
 		 */

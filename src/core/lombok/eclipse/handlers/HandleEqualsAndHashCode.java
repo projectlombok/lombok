@@ -536,7 +536,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 			}
 		}
 		
-		/* if (!other.canEqual(this)) return false; */ {
+		/* if (!other.canEqual((java.lang.Object) this)) return false; */ {
 			if (needsCanEqual) {
 				MessageSend otherCanEqual = new MessageSend();
 				otherCanEqual.sourceStart = pS; otherCanEqual.sourceEnd = pE;
@@ -547,8 +547,11 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 				
 				ThisReference thisReference = new ThisReference(pS, pE);
 				Eclipse.setGeneratedBy(thisReference, source);
+				CastExpression castThisRef = new CastExpression(thisReference, generateQualifiedNameRef(source, TypeConstants.JAVA_LANG_OBJECT));
+				Eclipse.setGeneratedBy(castThisRef, source);
+				castThisRef.sourceStart = pS; castThisRef.sourceEnd = pE;
 				
-				otherCanEqual.arguments = new Expression[] {thisReference};
+				otherCanEqual.arguments = new Expression[] {castThisRef};
 				
 				Expression notOtherCanEqual = new UnaryExpression(otherCanEqual, OperatorIds.NOT);
 				Eclipse.setGeneratedBy(notOtherCanEqual, source);
@@ -621,7 +624,11 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 					Eclipse.setGeneratedBy(equalsCall, source);
 					equalsCall.receiver = createFieldAccessor(field, fieldAccess, source);
 					equalsCall.selector = "equals".toCharArray();
-					equalsCall.arguments = new Expression[] { createFieldAccessor(field, fieldAccess, source, otherName) };
+					Expression equalsArg = createFieldAccessor(field, fieldAccess, source, otherName);
+					CastExpression castEqualsArg = new CastExpression(equalsArg, generateQualifiedNameRef(source, TypeConstants.JAVA_LANG_OBJECT));
+					Eclipse.setGeneratedBy(castEqualsArg, source);
+					castEqualsArg.sourceStart = pS; castEqualsArg.sourceEnd = pE;
+					equalsCall.arguments = new Expression[] { castEqualsArg };
 					UnaryExpression fieldsNotEqual = new UnaryExpression(equalsCall, OperatorIds.NOT);
 					fieldsNotEqual.sourceStart = pS; fieldsNotEqual.sourceEnd = pE;
 					Eclipse.setGeneratedBy(fieldsNotEqual, source);
@@ -673,7 +680,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 	
 	
 	private MethodDeclaration createCanEqual(EclipseNode type, ASTNode source) {
-		/* public boolean canEquals(final java.lang.Object other) {
+		/* public boolean canEqual(final java.lang.Object other) {
 		 *     return other instanceof MyType;
 		 * }
 		 */
