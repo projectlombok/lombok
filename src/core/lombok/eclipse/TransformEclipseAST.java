@@ -84,7 +84,7 @@ public class TransformEclipseAST {
 		transform(parser, ast);
 	}
 	
-	public static EclipseAST getAST(CompilationUnitDeclaration ast) {
+	public static EclipseAST getAST(CompilationUnitDeclaration ast, boolean forceRebuild) {
 		EclipseAST existing = null;
 		if (astCacheField != null) {
 			try {
@@ -101,7 +101,7 @@ public class TransformEclipseAST {
 			} catch (Exception ignore) {
 			}
 		} else {
-			existing.reparse();
+			existing.reparse(forceRebuild);
 		}
 		
 		return existing;
@@ -126,7 +126,7 @@ public class TransformEclipseAST {
 		// Do NOT abort if (ast.bits & ASTNode.HasAllMethodBodies) != 0 - that doesn't work.
 		
 		try {
-			EclipseAST existing = getAST(ast);
+			EclipseAST existing = getAST(ast, false);
 			new TransformEclipseAST(existing).go();
 		} catch (Throwable t) {
 			try {

@@ -113,7 +113,7 @@ public class PatchDelegate {
 				
 				if (cud == null) {
 					cud = scope.compilationUnitScope().referenceContext;
-					eclipseAst = TransformEclipseAST.getAST(cud);
+					eclipseAst = TransformEclipseAST.getAST(cud, true);
 				}
 				
 				List<ClassLiteralAccess> rawTypes = new ArrayList<ClassLiteralAccess>();

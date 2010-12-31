@@ -196,12 +196,12 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	 * with filled in method bodies and such. Also propagates problems and errors, which in diet parse
 	 * mode can't be reliably added to the problems/warnings view.
 	 */
-	public void reparse() {
+	public void reparse(boolean forceRebuild) {
 		propagateProblems();
-		if (completeParse) return;
+		if (completeParse && !forceRebuild) return;
 		boolean changed = isChanged();
 		boolean newCompleteParse = isComplete(compilationUnitDeclaration);
-		if (!newCompleteParse) return;
+		if (!newCompleteParse && !forceRebuild) return;
 		
 		top().rebuild();
 		
