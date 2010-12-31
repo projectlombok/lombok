@@ -298,6 +298,8 @@ public class EclipseHandlerUtil {
 		if (declaration.initialization instanceof AllocationExpression &&
 				((AllocationExpression)declaration.initialization).enumConstant != null) return false;
 		
+		if (declaration.type == null) return false;
+		
 		// Skip fields that start with $
 		if (declaration.name.length > 0 && declaration.name[0] == '$') return false;
 		
