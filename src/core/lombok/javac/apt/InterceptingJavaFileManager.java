@@ -26,15 +26,25 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.Writer;
 import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.NestingKind;
 import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
-import javax.tools.SimpleJavaFileObject;
 import javax.tools.JavaFileObject.Kind;
+
+import com.sun.tools.javac.util.BaseFileObject;
 
 import lombok.core.DiagnosticsReceiver;
 
@@ -47,20 +57,72 @@ final class InterceptingJavaFileManager implements JavaFileManager {
 		this.diagnostics = diagnostics;
 	}
 	
-	@Override public JavaFileObject getJavaFileForOutput(Location location, String className, Kind kind, FileObject sibling) throws IOException {
+	@Override public JavaFileObject getJavaFileForOutput(Location location, String className, final Kind kind, FileObject sibling) throws IOException {
 		if (className.startsWith("lombok.dummy.ForceNewRound")) {
-			String name = className.replace(".", "/") + kind.extension;
-			return new SimpleJavaFileObject(URI.create(name), kind) {
-				@Override public OutputStream openOutputStream() throws IOException {
-					return new ByteArrayOutputStream();
+			final String name = className.replace(".", "/") + kind.extension;
+			// Can't use SimpleJavaFileObject so we copy/paste most of its content here, because javac doesn't follow the interface,
+			// and casts to its own BaseFileObject type. D'oh!
+			return new BaseFileObject() {
+				@Override public boolean isNameCompatible(String simpleName, Kind kind) {
+					String baseName = simpleName + kind.extension;
+					return kind.equals(getKind())
+					&& (baseName.equals(toUri().getPath())
+							|| toUri().getPath().endsWith("/" + baseName));
+				}
+				
+				@Override public URI toUri() {
+					return URI.create(name);
 				}
 				
 				@Override public InputStream openInputStream() throws IOException {
 					return new ByteArrayInputStream(new byte[0]);
 				}
 				
+				@Override public OutputStream openOutputStream() throws IOException {
+					return new ByteArrayOutputStream();
+				}
+				
 				@Override public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
 					return "";
+				}
+				
+				@Override public Writer openWriter() throws IOException {
+					return new OutputStreamWriter(openOutputStream());
+				}
+				
+				@Override public long getLastModified() {
+					return 0L;
+				}
+				
+				@Override public boolean delete() {
+					return false;
+				}
+				
+				@Override public Kind getKind() {
+					return kind;
+				}
+				
+				@SuppressWarnings("all")
+				@Override public String getName() {
+					return toUri().getPath();
+				}
+				
+				@Override public NestingKind getNestingKind() {
+					return null;
+				}
+				
+				@Override public Modifier getAccessLevel() {
+					return null;
+				}
+				
+				@Override public Reader openReader(boolean ignoreEncodingErrors) throws IOException {
+					return new StringReader("");
+				}
+				
+				protected CharsetDecoder getDecoder(boolean ignoreEncodingErrors) {
+					CharsetDecoder decoder = Charset.forName("UTF-8").newDecoder();
+					CodingErrorAction action = ignoreEncodingErrors ? CodingErrorAction.REPLACE : CodingErrorAction.REPORT;
+					return decoder.onMalformedInput(action).onUnmappableCharacter(action);
 				}
 			};
 		}
