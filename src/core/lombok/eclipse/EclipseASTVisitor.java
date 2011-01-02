@@ -110,6 +110,7 @@ public interface EclipseASTVisitor {
 		private final boolean printContent;
 		private int disablePrinting = 0;
 		private int indent = 0;
+		private boolean printClassNames = false;
 		
 		/**
 		 * @param printContent if true, bodies are printed directly, as java code,
@@ -134,7 +135,25 @@ public interface EclipseASTVisitor {
 		private void forcePrint(String text, Object... params) {
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < indent; i++) sb.append("  ");
-			out.printf(sb.append(text).append('\n').toString(), params);
+			sb.append(text);
+			Object[] t;
+			if (printClassNames && params.length > 0) {
+				sb.append(" [");
+				for (int i = 0; i < params.length; i++) {
+					if (i > 0) sb.append(", ");
+					sb.append("%s");
+				}
+				sb.append("]");
+				t = new Object[params.length + params.length];
+				for (int i = 0; i < params.length; i++) {
+					t[i] = params[i];
+					t[i + params.length] = (params[i] == null) ? "NULL " : params[i].getClass();
+				}
+			} else {
+				t = params;
+			}
+			sb.append("\n");
+			out.printf(sb.toString(), t);
 			out.flush();
 		}
 		
