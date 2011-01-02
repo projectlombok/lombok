@@ -32,8 +32,12 @@ import java.util.List;
 import lombok.core.DiagnosticsReceiver;
 import lombok.core.PostCompiler;
 
+import org.eclipse.jdt.core.IAnnotatable;
+import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.internal.compiler.ast.Annotation;
 
 public class PatchFixes {
 	public static int fixRetrieveStartingCatchPosition(int original, int start) {
@@ -133,5 +137,46 @@ public class PatchFixes {
 	public static BufferedOutputStream runPostCompiler(BufferedOutputStream out, String path, String name) throws IOException {
 		String fileName = path + "/" + name;
 		return new BufferedOutputStream(PostCompiler.wrapOutputStream(out, fileName, DiagnosticsReceiver.CONSOLE));
+	}
+	
+	public static Annotation[] convertAnnotations(Annotation[] out, IAnnotatable annotatable) {
+		IAnnotation[] in;
+		
+		try {
+			in = annotatable.getAnnotations();
+		} catch (JavaModelException e) {
+			return out;
+		}
+		
+		if (out == null) return null;
+		int toWrite = 0;
+		
+		for (int idx = 0; idx < out.length; idx++) {
+			String oName = new String(out[idx].type.getLastToken());
+			boolean found = false;
+			for (IAnnotation i : in) {
+				String name = i.getElementName();
+				int li = name.lastIndexOf('.');
+				if (li > -1) name = name.substring(li + 1);
+				if (name.equals(oName)) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) out[idx] = null;
+			else toWrite++;
+		}
+		
+		Annotation[] replace = out;
+		if (toWrite < out.length) {
+			replace = new Annotation[toWrite];
+			int idx = 0;
+			for (int i = 0; i < out.length; i++) {
+				if (out[i] == null) continue;
+				replace[idx++] = out[i];
+			}
+		}
+		
+		return replace;
 	}
 }

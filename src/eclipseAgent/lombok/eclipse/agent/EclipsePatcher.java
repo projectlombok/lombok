@@ -67,6 +67,7 @@ public class EclipsePatcher extends Agent {
 			patchHideGeneratedNodes(sm);
 			patchLiveDebug(sm);
 			patchPostCompileHookEclipse(sm);
+			patchFixSourceTypeConverter(sm);
 		} else {
 			patchPostCompileHookEcj(sm);
 		}
@@ -275,5 +276,16 @@ public class EclipsePatcher extends Agent {
 	private static void patchEcjTransformers(ScriptManager sm, boolean ecj) {
 		PatchDelegate.addPatches(sm, ecj);
 		PatchVal.addPatches(sm, ecj);
+	}
+	
+	private static void patchFixSourceTypeConverter(ScriptManager sm) {
+		final String SOURCE_TYPE_CONVERTER_SIG = "org.eclipse.jdt.internal.compiler.parser.SourceTypeConverter";
+		final String I_ANNOTATABLE_SIG = "org.eclipse.jdt.core.IAnnotatable";
+		final String ANNOTATION_SIG = "org.eclipse.jdt.internal.compiler.ast.Annotation";
+		
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget(SOURCE_TYPE_CONVERTER_SIG, "convertAnnotations", ANNOTATION_SIG + "[]", I_ANNOTATABLE_SIG))
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "convertAnnotations", ANNOTATION_SIG + "[]", ANNOTATION_SIG + "[]", I_ANNOTATABLE_SIG))
+				.request(StackRequest.PARAM1, StackRequest.RETURN_VALUE).build());
 	}
 }
