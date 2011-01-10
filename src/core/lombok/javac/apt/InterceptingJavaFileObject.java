@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2010-2011 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,21 +35,21 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 import javax.tools.JavaFileObject;
 
-import com.sun.tools.javac.util.BaseFileObject;
-
 import lombok.Lombok;
 import lombok.core.DiagnosticsReceiver;
 import lombok.core.PostCompiler;
 
-final class InterceptingJavaFileObject extends BaseFileObject {
+final class InterceptingJavaFileObject implements LombokFileObject {
 	private final JavaFileObject delegate;
 	private final String fileName;
 	private final DiagnosticsReceiver diagnostics;
+	private final Method decoderMethod;
 	
-	public InterceptingJavaFileObject(JavaFileObject original, String fileName, DiagnosticsReceiver diagnostics) {
+	public InterceptingJavaFileObject(JavaFileObject original, String fileName, DiagnosticsReceiver diagnostics, Method decoderMethod) {
 		this.delegate = original;
 		this.fileName = fileName;
 		this.diagnostics = diagnostics;
+		this.decoderMethod = decoderMethod;
 	}
 	
 	@Override
@@ -60,10 +60,35 @@ final class InterceptingJavaFileObject extends BaseFileObject {
 	@Override
 	public Writer openWriter() throws IOException {
 		throw new UnsupportedOperationException("Can't use a write for class files");
-//		return original.openWriter();
 	}
 	
+	@Override public CharsetDecoder getDecoder(boolean ignoreEncodingErrors) {
+		if (decoderMethod == null) {
+			throw new UnsupportedOperationException();
+		}
+		try {
+			return (CharsetDecoder) decoderMethod.invoke(delegate, ignoreEncodingErrors);
+		} catch (IllegalAccessException e) {
+			throw Lombok.sneakyThrow(e);
+		} catch (InvocationTargetException e) {
+			throw Lombok.sneakyThrow(e);
+		}
+	}	
 	
+	@Override public boolean equals(Object obj) {
+		if (!(obj instanceof InterceptingJavaFileObject)) {
+			return false;
+		}
+		if (obj == this) {
+			return true;
+		}
+		InterceptingJavaFileObject other = (InterceptingJavaFileObject) obj;
+		return fileName.equals(other.fileName) && delegate.equals(other.delegate);
+	}
+	
+	@Override public int hashCode() {
+		return fileName.hashCode() ^ delegate.hashCode();
+	}
 	
 	
 /////////////////////// NOTHING CHANGED BELOW //////////////////////////////////////
@@ -122,23 +147,5 @@ final class InterceptingJavaFileObject extends BaseFileObject {
 	@Override
 	public URI toUri() {
 		return delegate.toUri();
-	}
-	
-	protected CharsetDecoder getDecoder(boolean ignoreEncodingErrors) {
-		if (delegate instanceof BaseFileObject) {
-			try {
-				Method m = BaseFileObject.class.getDeclaredMethod("getDecoder", boolean.class);
-				m.setAccessible(true);
-				return (CharsetDecoder) m.invoke(delegate, ignoreEncodingErrors);
-			} catch (NoSuchMethodException e) {
-				Lombok.sneakyThrow(e);
-			} catch (IllegalAccessException e) {
-				Lombok.sneakyThrow(e);
-			} catch (InvocationTargetException e) {
-				Lombok.sneakyThrow(e);
-			}
-		}
-		
-		throw new UnsupportedOperationException();
 	}
 }

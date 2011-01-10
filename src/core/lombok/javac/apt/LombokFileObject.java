@@ -19,36 +19,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package lombok.javac.apt;
 
-import java.io.IOException;
+import java.nio.charset.CharsetDecoder;
 
-import javax.tools.FileObject;
-import javax.tools.ForwardingJavaFileManager;
-import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
-import javax.tools.JavaFileObject.Kind;
 
-import lombok.core.DiagnosticsReceiver;
-
-final class InterceptingJavaFileManager extends ForwardingJavaFileManager<JavaFileManager> {
-	
-	private final DiagnosticsReceiver diagnostics;
-	
-	InterceptingJavaFileManager(JavaFileManager original, DiagnosticsReceiver diagnostics) {
-		super(original);
-		this.diagnostics = diagnostics;
-	}
-	
-	@Override public JavaFileObject getJavaFileForOutput(Location location, String className, final Kind kind, FileObject sibling) throws IOException {
-		if (className.startsWith("lombok.dummy.ForceNewRound")) {
-			final String name = className.replace(".", "/") + kind.extension;
-			return LombokFileObjects.createEmpty(fileManager, name, kind);
-		}
-		JavaFileObject fileObject = fileManager.getJavaFileForOutput(location, className, kind, sibling);
-		if (kind != Kind.CLASS) {
-			return fileObject;
-		}
-		return LombokFileObjects.createIntercepting(fileManager, fileObject, className, diagnostics);
-	}
+interface LombokFileObject extends JavaFileObject {
+	CharsetDecoder getDecoder(boolean ignoreEncodingErrors);
 }

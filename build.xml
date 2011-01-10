@@ -147,8 +147,10 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<classpath refid="build.path" />
 		</ivy:compile>
 		<ivy:compile destdir="build/lombok" source="1.6" target="1.6" includeantruntime="false">
+			<src path="src/contrib" />
 			<src path="src/core" />
 			<src path="src/delombok" />
+			<include name="com/sun/**" />
 			<include name="lombok/javac/**" />
 			<include name="lombok/delombok/**" />
 			<classpath location="build/lombok" />
@@ -163,7 +165,9 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<mkdir dir="dist" />
 		<copy file="doc/changelog.markdown" tofile="build/changelog.txt" />
 		<jar destfile="dist/lombok-${lombok.version}.jar">
-			<fileset dir="build/lombok" />
+			<fileset dir="build/lombok">
+				<exclude name="com/sun/**"/>
+			</fileset>
 			<fileset dir="build" includes="changelog.txt" />
 			<fileset dir="." includes="LICENSE" />
 			<manifest>
@@ -187,6 +191,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 				<srcdir dir="src/eclipseAgent" />
 				<srcdir dir="src/installer" />
 				<srcdir dir="src/delombok" />
+				<srcdir dir="src/contrib" />
 				<srcdir dir="experimental/src" />
 				<srcdir dir="test/transform/src" test="true" />
 				<srcdir dir="test/core/src" test="true" />
@@ -205,6 +210,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<srcdir dir="src/eclipseAgent" />
 			<srcdir dir="src/installer" />
 			<srcdir dir="src/delombok" />
+			<srcdir dir="src/contrib" />
 			<srcdir dir="experimental/src" />
 			<srcdir dir="test/transform/src" />
 			<srcdir dir="test/core/src" />
