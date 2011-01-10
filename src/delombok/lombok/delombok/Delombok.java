@@ -366,6 +366,7 @@ public class Delombok {
 		
 		for (File fileToParse : filesToParse) {
 			Comments comments = new Comments();
+			context.put(Comments.class, (Comments) null);
 			context.put(Comments.class, comments);
 			
 			@SuppressWarnings("deprecation")
