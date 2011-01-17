@@ -240,7 +240,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	
 	<target name="-test-compile" depends="ensureTestDeps, compile" unless="skipTests">
 		<mkdir dir="build/tests" />
-		<ivy:compile destdir="build/tests" source="1.5" target="1.5">
+		<ivy:compile destdir="build/tests" source="1.5" target="1.5" includeantruntime="false">
 			<classpath refid="test.path" />
 			<classpath path="build/lombok" />
 			<src path="test/core/src" />
