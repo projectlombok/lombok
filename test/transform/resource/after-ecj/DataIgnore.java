@@ -14,7 +14,7 @@
     if ((! (o instanceof DataIgnore)))
         return false;
     final DataIgnore other = (DataIgnore) o;
-    if ((! other.canEqual(this)))
+    if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((this.getX() != other.getX()))
         return false;

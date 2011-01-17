@@ -25,9 +25,9 @@ class DataOnLocalClass1 {
 				if (o == this) return true;
 				if (!(o instanceof Local)) return false;
 				final Local other = (Local)o;
-				if (!other.canEqual(this)) return false;
+				if (!other.canEqual((java.lang.Object)this)) return false;
 				if (this.getX() != other.getX()) return false;
-				if (this.getName() == null ? other.getName() != null : !this.getName().equals(other.getName())) return false;
+				if (this.getName() == null ? other.getName() != null : !this.getName().equals((java.lang.Object)other.getName())) return false;
 				return true;
 			}
 			@java.lang.SuppressWarnings("all")
@@ -79,8 +79,8 @@ class DataOnLocalClass2 {
 					if (o == this) return true;
 					if (!(o instanceof InnerLocal)) return false;
 					final InnerLocal other = (InnerLocal)o;
-					if (!other.canEqual(this)) return false;
-					if (this.getName() == null ? other.getName() != null : !this.getName().equals(other.getName())) return false;
+					if (!other.canEqual((java.lang.Object)this)) return false;
+					if (this.getName() == null ? other.getName() != null : !this.getName().equals((java.lang.Object)other.getName())) return false;
 					return true;
 				}
 				@java.lang.SuppressWarnings("all")
@@ -115,7 +115,7 @@ class DataOnLocalClass2 {
 				if (o == this) return true;
 				if (!(o instanceof Local)) return false;
 				final Local other = (Local)o;
-				if (!other.canEqual(this)) return false;
+				if (!other.canEqual((java.lang.Object)this)) return false;
 				if (this.getX() != other.getX()) return false;
 				return true;
 			}

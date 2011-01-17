@@ -21,11 +21,11 @@ import lombok.Data;
     if ((! (o instanceof Data1)))
         return false;
     final Data1 other = (Data1) o;
-    if ((! other.canEqual(this)))
+    if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((this.getX() != other.getX()))
         return false;
-    if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals(other.getName()))))
+    if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals((java.lang.Object) other.getName()))))
         return false;
     return true;
   }
@@ -65,11 +65,11 @@ import lombok.Data;
     if ((! (o instanceof Data2)))
         return false;
     final Data2 other = (Data2) o;
-    if ((! other.canEqual(this)))
+    if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((this.getX() != other.getX()))
         return false;
-    if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals(other.getName()))))
+    if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals((java.lang.Object) other.getName()))))
         return false;
     return true;
   }
@@ -111,7 +111,7 @@ final @Data class Data3 {
     final Data3 other = (Data3) o;
     if ((this.getX() != other.getX()))
         return false;
-    if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals(other.getName()))))
+    if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals((java.lang.Object) other.getName()))))
         return false;
     return true;
   }
@@ -140,7 +140,7 @@ final @Data @lombok.EqualsAndHashCode(callSuper = true) class Data4 extends java
     if ((! (o instanceof Data4)))
         return false;
     final Data4 other = (Data4) o;
-    if ((! other.canEqual(this)))
+    if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((! super.equals(o)))
         return false;
@@ -172,7 +172,7 @@ final @Data @lombok.EqualsAndHashCode(callSuper = true) class Data4 extends java
     if ((! (o instanceof Data5)))
         return false;
     final Data5 other = (Data5) o;
-    if ((! other.canEqual(this)))
+    if ((! other.canEqual((java.lang.Object) this)))
         return false;
     return true;
   }

@@ -18,13 +18,13 @@
     if ((! (o instanceof DataWithGetterNone)))
         return false;
     final DataWithGetterNone other = (DataWithGetterNone) o;
-    if ((! other.canEqual(this)))
+    if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((this.x != other.x))
         return false;
     if ((this.y != other.y))
         return false;
-    if (((this.z == null) ? (other.z != null) : (! this.z.equals(other.z))))
+    if (((this.z == null) ? (other.z != null) : (! this.z.equals((java.lang.Object) other.z))))
         return false;
     return true;
   }

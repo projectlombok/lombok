@@ -21,10 +21,10 @@ class DataWithGetter {
 		if (o == this) return true;
 		if (!(o instanceof DataWithGetter)) return false;
 		final DataWithGetter other = (DataWithGetter)o;
-		if (!other.canEqual(this)) return false;
+		if (!other.canEqual((java.lang.Object)this)) return false;
 		if (this.getX() != other.getX()) return false;
 		if (this.getY() != other.getY()) return false;
-		if (this.getZ() == null ? other.getZ() != null : !this.getZ().equals(other.getZ())) return false;
+		if (this.getZ() == null ? other.getZ() != null : !this.getZ().equals((java.lang.Object)other.getZ())) return false;
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")

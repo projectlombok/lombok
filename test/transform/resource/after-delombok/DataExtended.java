@@ -17,7 +17,7 @@ class DataExtended {
 		if (o == this) return true;
 		if (!(o instanceof DataExtended)) return false;
 		final DataExtended other = (DataExtended)o;
-		if (!other.canEqual(this)) return false;
+		if (!other.canEqual((java.lang.Object)this)) return false;
 		if (this.getX() != other.getX()) return false;
 		return true;
 	}

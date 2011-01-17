@@ -26,11 +26,11 @@
     if ((! (o instanceof GetterLazyEahcToString)))
         return false;
     final GetterLazyEahcToString other = (GetterLazyEahcToString) o;
-    if ((! other.canEqual(this)))
+    if ((! other.canEqual((java.lang.Object) this)))
         return false;
-    if (((this.getValue() == null) ? (other.getValue() != null) : (! this.getValue().equals(other.getValue()))))
+    if (((this.getValue() == null) ? (other.getValue() != null) : (! this.getValue().equals((java.lang.Object) other.getValue()))))
         return false;
-    if (((this.value2 == null) ? (other.value2 != null) : (! this.value2.equals(other.value2))))
+    if (((this.value2 == null) ? (other.value2 != null) : (! this.value2.equals((java.lang.Object) other.value2))))
         return false;
     return true;
   }

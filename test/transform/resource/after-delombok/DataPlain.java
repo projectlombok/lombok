@@ -24,9 +24,9 @@ class Data1 {
 		if (o == this) return true;
 		if (!(o instanceof Data1)) return false;
 		final Data1 other = (Data1)o;
-		if (!other.canEqual(this)) return false;
+		if (!other.canEqual((java.lang.Object)this)) return false;
 		if (this.getX() != other.getX()) return false;
-		if (this.getName() == null ? other.getName() != null : !this.getName().equals(other.getName())) return false;
+		if (this.getName() == null ? other.getName() != null : !this.getName().equals((java.lang.Object)other.getName())) return false;
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
@@ -74,9 +74,9 @@ class Data2 {
 		if (o == this) return true;
 		if (!(o instanceof Data2)) return false;
 		final Data2 other = (Data2)o;
-		if (!other.canEqual(this)) return false;
+		if (!other.canEqual((java.lang.Object)this)) return false;
 		if (this.getX() != other.getX()) return false;
-		if (this.getName() == null ? other.getName() != null : !this.getName().equals(other.getName())) return false;
+		if (this.getName() == null ? other.getName() != null : !this.getName().equals((java.lang.Object)other.getName())) return false;
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
@@ -125,7 +125,7 @@ final class Data3 {
 		if (!(o instanceof Data3)) return false;
 		final Data3 other = (Data3)o;
 		if (this.getX() != other.getX()) return false;
-		if (this.getName() == null ? other.getName() != null : !this.getName().equals(other.getName())) return false;
+		if (this.getName() == null ? other.getName() != null : !this.getName().equals((java.lang.Object)other.getName())) return false;
 		return true;
 	}
 	@java.lang.Override
@@ -163,7 +163,7 @@ final class Data4 extends java.util.Timer {
 		if (o == this) return true;
 		if (!(o instanceof Data4)) return false;
 		final Data4 other = (Data4)o;
-		if (!other.canEqual(this)) return false;
+		if (!other.canEqual((java.lang.Object)this)) return false;
 		if (!super.equals(o)) return false;
 		if (this.getX() != other.getX()) return false;
 		return true;
@@ -192,7 +192,7 @@ class Data5 {
 		if (o == this) return true;
 		if (!(o instanceof Data5)) return false;
 		final Data5 other = (Data5)o;
-		if (!other.canEqual(this)) return false;
+		if (!other.canEqual((java.lang.Object)this)) return false;
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
