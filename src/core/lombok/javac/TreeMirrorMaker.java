@@ -30,17 +30,21 @@ public class TreeMirrorMaker extends TreeCopier<Void> {
 	
 	@Override public <T extends JCTree> List<T> copy(List<T> originals) {
 		List<T> copies = super.copy(originals);
-		Iterator<T> it1 = originals.iterator();
-		Iterator<T> it2 = copies.iterator();
-		while (it1.hasNext()) originalToCopy.put(it1.next(), it2.next());
+		if (originals != null) {
+			Iterator<T> it1 = originals.iterator();
+			Iterator<T> it2 = copies.iterator();
+			while (it1.hasNext()) originalToCopy.put(it1.next(), it2.next());
+		}
 		return copies;
 	}
 	
 	@Override public <T extends JCTree> List<T> copy(List<T> originals, Void p) {
 		List<T> copies = super.copy(originals, p);
-		Iterator<T> it1 = originals.iterator();
-		Iterator<T> it2 = copies.iterator();
-		while (it1.hasNext()) originalToCopy.put(it1.next(), it2.next());
+		if (originals != null) {
+			Iterator<T> it1 = originals.iterator();
+			Iterator<T> it2 = copies.iterator();
+			while (it1.hasNext()) originalToCopy.put(it1.next(), it2.next());
+		}
 		return copies;
 	}
 	
