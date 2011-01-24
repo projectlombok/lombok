@@ -208,6 +208,9 @@ public class HandleConstructor {
 	private JCMethodDecl createConstructor(AccessLevel level, JavacNode typeNode, List<JavacNode> fields, boolean suppressConstructorProperties) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		
+		boolean isEnum = (((JCClassDecl) typeNode.get()).mods.flags & Flags.ENUM) != 0;
+		if (isEnum) level = AccessLevel.PRIVATE;
+		
 		ListBuffer<JCStatement> nullChecks = ListBuffer.lb();
 		ListBuffer<JCStatement> assigns = ListBuffer.lb();
 		ListBuffer<JCVariableDecl> params = ListBuffer.lb();
