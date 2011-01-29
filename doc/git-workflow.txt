@@ -1,0 +1,24 @@
+# git workflow for Project Lombok
+
+public branch 'master' tracks major releases and should always be in an effectively working condition. It is updated only occasionally, and virtually always just points at a particularly stable point on the more dynamic 'develop' branch.
+
+public branch 'develop' is still intended to run more or less stable, but is less tested and is what developers check completed features into.
+
+Each version release is accompanied by a tag.
+
+To develop a new feature, no matter how trivial:
+
+	git checkout develop        # start from branch 'develop'
+	git checkout -b fixFoobar   # Create a new branch for yourself
+	.....                       # write and commit stuff
+	git checkout develop        # go back to develop to update it
+	git pull                    # update develop
+	git checkout fixFoobar
+	git rebase develop          # Rewrite fixFoobar's history as if it was written according to latest 'develop' state.
+	git checkout develop
+	git merge fixFoobar         # Update your version of 'develop' to include your fixes.
+	git branch -d fixFoobar     # delete your branch name
+	git push                    # push changes up to github repo
+
+Major features might be turned into public branches, and will be merged and not rebased.
+

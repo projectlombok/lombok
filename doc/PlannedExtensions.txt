@@ -129,17 +129,6 @@ The return type should probably be `Iterable<Integer>` instead, which would work
 bytecode rewrite based generators use a superclass type named 'Generator' and use this to support a method that returns X,
 but which when called from the outside returns Iterable<X>.
 
-## @SneakyThrows
-
-We currently generate:
-    try { /* method body */ } catch ( SneakyThrownType t ) { throw Lombok.sneakyThrow(t); }
-
-Which also means that usage of SneakyThrows creates a runtime dependency on lombok.jar. When lombok supports
-class file rewriting, we should replace the entire try statement with just 'method body' again, as the JVM
-does not care about checked exceptions. This also removes the runtime dependency.
-
-SneakyThrows also needs to be extended to fields and local variable declarations (it would apply to the initialization).
-
 ## @Finalizer
 
 Creates a new unique (serializable?) anonymous inner class based object that has a finalizer which will call the
