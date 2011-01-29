@@ -174,17 +174,22 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		JCVariableDecl fieldDecl = (JCVariableDecl)fieldNode.get();
 		String methodName = toSetterName(fieldDecl);
 		
-		switch (methodExists(methodName, fieldNode, false)) {
-		case EXISTS_BY_LOMBOK:
-			return true;
-		case EXISTS_BY_USER:
-			if (whineIfExists) errorNode.addWarning(
-					String.format("Not generating %s(%s %s): A method with that name already exists",
-					methodName, fieldDecl.vartype, fieldDecl.name));
-			return true;
-		default:
-		case NOT_EXISTS:
-			//continue with creating the setter
+		for (String altName : toAllSetterNames(fieldDecl)) {
+			switch (methodExists(altName, fieldNode, false)) {
+			case EXISTS_BY_LOMBOK:
+				return true;
+			case EXISTS_BY_USER:
+				if (whineIfExists) {
+					String altNameExpl = "";
+					if (!altName.equals(methodName)) altNameExpl = String.format(" (%s)", altName);
+					errorNode.addWarning(
+						String.format("Not generating %s(): A method with that name already exists%s", methodName, altNameExpl));
+				}
+				return true;
+			default:
+			case NOT_EXISTS:
+				//continue scanning the other alt names.
+			}
 		}
 		
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);

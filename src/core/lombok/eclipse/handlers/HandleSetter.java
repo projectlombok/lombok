@@ -157,21 +157,28 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		}
 		
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
-		String setterName = TransformationsUtil.toSetterName(new String(field.name));
+		TypeReference fieldType = copyType(field.type, source);
+		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
+		String setterName = TransformationsUtil.toSetterName(new String(field.name), isBoolean);
 		
 		int modifier = toEclipseModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		
-		switch (methodExists(setterName, fieldNode, false)) {
-		case EXISTS_BY_LOMBOK:
-			return true;
-		case EXISTS_BY_USER:
-			if (whineIfExists) errorNode.addWarning(
-					String.format("Not generating %s(%s %s): A method with that name already exists",
-					setterName, field.type, new String(field.name)));
-			return true;
-		default:
-		case NOT_EXISTS:
-			//continue with creating the setter
+		for (String altName : TransformationsUtil.toAllSetterNames(new String(field.name), isBoolean)) {
+			switch (methodExists(altName, fieldNode, false)) {
+			case EXISTS_BY_LOMBOK:
+				return true;
+			case EXISTS_BY_USER:
+				if (whineIfExists) {
+					String altNameExpl = "";
+					if (!altName.equals(setterName)) altNameExpl = String.format(" (%s)", altName);
+					errorNode.addWarning(
+						String.format("Not generating %s(): A method with that name already exists%s", setterName, altNameExpl));
+				}
+				return true;
+			default:
+			case NOT_EXISTS:
+				//continue scanning the other alt names.
+			}
 		}
 		
 		MethodDeclaration method = generateSetter((TypeDeclaration) fieldNode.up().get(), fieldNode, setterName, modifier, source, onParam);

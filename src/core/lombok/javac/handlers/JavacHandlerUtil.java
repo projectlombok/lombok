@@ -159,6 +159,18 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
+	 * Translates the given field into all possible setter names.
+	 * Convenient wrapper around {@link TransformationsUtil#toAllSetterNames(CharSequence, boolean)}.
+	 */
+	public static java.util.List<String> toAllSetterNames(JCVariableDecl field) {
+		CharSequence fieldName = field.name;
+		
+		boolean isBoolean = field.vartype.toString().equals("boolean");
+		
+		return TransformationsUtil.toAllSetterNames(fieldName, isBoolean);
+	}
+	
+	/**
 	 * @return the likely setter name for the stated field. (e.g. private boolean foo; to setFoo).
 	 * 
 	 * Convenient wrapper around {@link TransformationsUtil#toSetterName(CharSequence)}.
@@ -166,7 +178,9 @@ public class JavacHandlerUtil {
 	public static String toSetterName(JCVariableDecl field) {
 		CharSequence fieldName = field.name;
 		
-		return TransformationsUtil.toSetterName(fieldName);
+		boolean isBoolean = field.vartype.toString().equals("boolean");
+		
+		return TransformationsUtil.toSetterName(fieldName, isBoolean);
 	}
 	
 	/** Serves as return value for the methods that check for the existence of fields and methods. */

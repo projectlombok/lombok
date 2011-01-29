@@ -22,7 +22,6 @@
 package lombok.core.handlers;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -38,10 +37,6 @@ public class TransformationsUtil {
 		//Prevent instantiation
 	}
 	
-	private static final List<String> KNOWN_BOOLEAN_PREFIXES = Collections.unmodifiableList(Arrays.asList(
-			"is", "has", "get"
-			));
-	
 	/**
 	 * Generates a getter name from a given field name.
 	 * 
@@ -54,7 +49,7 @@ public class TransformationsUtil {
 	 * 
 	 * return the prefix plus the possibly title/uppercased first character, and the rest of the field name.
 	 * 
-	 * Note that for boolean fields, if the field starts with 'has', 'get', or 'is', and the character after that is
+	 * Note that for boolean fields, if the field starts with 'is', and the character after that is
 	 * <b>not</b> a lowercase character, the field name is returned without changing any character's case and without
 	 * any prefix.
 	 * 
@@ -66,15 +61,9 @@ public class TransformationsUtil {
 		
 		if (fieldName.length() == 0) return prefix;
 		
-		for (String knownBooleanPrefix : KNOWN_BOOLEAN_PREFIXES) {
-			if (!fieldName.toString().startsWith(knownBooleanPrefix)) continue;
-			if (fieldName.length() > knownBooleanPrefix.length() && 
-					!Character.isLowerCase(fieldName.charAt(knownBooleanPrefix.length()))) {
-				//The field is called something like 'isFoo' or 'hasFoo' or 'getFoo', so we shouldn't
-				//prefix with 'is' but instead just use the field name as is. The isLowerCase check is so we don't turn
-				//hashCodeGenerated, which so happens to start with 'has', into hasHCodeGenerated instead of isHashCodeGenerated.
-				return fieldName.toString();
-			}
+		if (isBoolean && fieldName.toString().startsWith("is") && fieldName.length() > 2 && !Character.isLowerCase(fieldName.charAt(2))) {
+			// The field is for example named 'isRunning'.
+			return fieldName.toString();
 		}
 		
 		return buildName(prefix, fieldName.toString());
@@ -87,7 +76,7 @@ public class TransformationsUtil {
 	public static final Pattern NULLABLE_PATTERN = Pattern.compile("^(?:nullable|checkfornull)$", Pattern.CASE_INSENSITIVE);
 	
 	/**
-	 * Generates a getter name from a given field name.
+	 * Generates a setter name from a given field name.
 	 * 
 	 * Strategy:
 	 * 
@@ -96,9 +85,19 @@ public class TransformationsUtil {
 	 * 
 	 * return "set" plus the possibly title/uppercased first character, and the rest of the field name.
 	 * 
+	 * Note that if the field is boolean and starts with 'is' followed by a non-lowercase letter, the 'is' is stripped and replaced with 'set'.
+	 * 
 	 * @param fieldName the name of the field.
+	 * @param isBoolean if the field is of type 'boolean'. For fields of type 'java.lang.Boolean', you should provide {@code false}.
 	 */
-	public static String toSetterName(CharSequence fieldName) {
+	public static String toSetterName(CharSequence fieldName, boolean isBoolean) {
+		if (fieldName.length() == 0) return "set";
+		
+		if (isBoolean && fieldName.toString().startsWith("is") && fieldName.length() > 2 && !Character.isLowerCase(fieldName.charAt(2))) {
+			// The field is for example named 'isRunning'.
+			return "set" + fieldName.toString().substring(2);
+		}
+		
 		return buildName("set", fieldName.toString());
 	}
 	
@@ -116,21 +115,24 @@ public class TransformationsUtil {
 		return String.format("%s%s", prefix, suffix);
 	}
 	
+	/**
+	 * Returns all names of methods that would represent the getter for a field with the provided name.
+	 * 
+	 * For example if {@code isBoolean} is true, then a field named {@code isRunning} would produce:<br />
+	 * {@code [isRunning, getRunning, isIsRunning, getIsRunning]}
+	 * 
+	 * @param fieldName the name of the field.
+	 * @param isBoolean if the field is of type 'boolean'. For fields of type 'java.lang.Boolean', you should provide {@code false}.
+	 */
 	public static List<String> toAllGetterNames(CharSequence fieldName, boolean isBoolean) {
 		if (!isBoolean) return Collections.singletonList(toGetterName(fieldName, false));
 		
 		List<String> baseNames = new ArrayList<String>();
 		baseNames.add(fieldName.toString());
-		for (String knownBooleanPrefix : KNOWN_BOOLEAN_PREFIXES) {
-			if (!fieldName.toString().startsWith(knownBooleanPrefix)) continue;
-			if (fieldName.length() > knownBooleanPrefix.length() && 
-					!Character.isLowerCase(fieldName.charAt(knownBooleanPrefix.length()))) {
-				//The field is called something like 'isFoo' or 'hasFoo' or 'getFoo', so the practical fieldname
-				//could also be 'foo'.
-				baseNames.add(fieldName.toString().substring(knownBooleanPrefix.length()));
-				//prefix with 'is' but instead just use the field name as is. The isLowerCase check is so we don't turn
-				//hashCodeGenerated, which so happens to start with 'has', into hashCodeGenerated instead of isHashCodeGenerated.
-			}
+		
+		// isPrefix = field is called something like 'isRunning', so 'running' could also be the fieldname.
+		if (fieldName.toString().startsWith("is") && fieldName.length() > 2 && !Character.isLowerCase(fieldName.charAt(2))) {
+			baseNames.add(fieldName.toString().substring(2));
 		}
 		
 		Set<String> names = new HashSet<String>();
@@ -139,9 +141,40 @@ public class TransformationsUtil {
 				baseName = Character.toTitleCase(baseName.charAt(0)) + baseName.substring(1);
 			}
 			
-			for (String prefix : KNOWN_BOOLEAN_PREFIXES) {
-				names.add(prefix + baseName);
+			names.add("is" + baseName);
+			names.add("get" + baseName);
+		}
+		
+		return new ArrayList<String>(names);
+	}
+	
+	/**
+	 * Returns all names of methods that would represent the setter for a field with the provided name.
+	 * 
+	 * For example if {@code isBoolean} is true, then a field named {@code isRunning} would produce:<br />
+	 * {@code [setRunning, setIsRunning]}
+	 * 
+	 * @param fieldName the name of the field.
+	 * @param isBoolean if the field is of type 'boolean'. For fields of type 'java.lang.Boolean', you should provide {@code false}.
+	 */
+	public static List<String> toAllSetterNames(CharSequence fieldName, boolean isBoolean) {
+		if (!isBoolean) return Collections.singletonList(toSetterName(fieldName, false));
+		
+		List<String> baseNames = new ArrayList<String>();
+		baseNames.add(fieldName.toString());
+		
+		// isPrefix = field is called something like 'isRunning', so 'running' could also be the fieldname.
+		if (fieldName.toString().startsWith("is") && fieldName.length() > 2 && !Character.isLowerCase(fieldName.charAt(2))) {
+			baseNames.add(fieldName.toString().substring(2));
+		}
+		
+		Set<String> names = new HashSet<String>();
+		for (String baseName : baseNames) {
+			if (baseName.length() > 0 && Character.isLowerCase(baseName.charAt(0))) {
+				baseName = Character.toTitleCase(baseName.charAt(0)) + baseName.substring(1);
 			}
+			
+			names.add("set" + baseName);
 		}
 		
 		return new ArrayList<String>(names);
