@@ -202,7 +202,10 @@ public class Delombok {
 	}
 	
 	public void setCharset(String charsetName) throws UnsupportedCharsetException {
-		
+		if (charsetName == null) {
+			charset = Charset.defaultCharset();
+			return;
+		}
 		charset = Charset.forName(charsetName);
 	}
 	
