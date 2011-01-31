@@ -361,7 +361,7 @@ public class JavacResolution {
 		
 		if (symbol == null) throw new TypeNotConvertibleException("Null or compound type");
 		
-		if (symbol.name.len == 0) {
+		if (symbol.name.length() == 0) {
 			// Anonymous inner class
 			if (type instanceof ClassType) {
 				List<Type> ifaces = ((ClassType)type).interfaces_field;
