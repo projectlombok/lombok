@@ -13,10 +13,14 @@ public class CleanupExample {
 					out.write(b, 0, r);
 				}
 			} finally {
-				out.close();
+				if (out != null) {
+					out.close();
+				}
 			}
 		} finally {
-			in.close();
+			if (in != null) {
+				in.close();
+			}
 		}
 	}
 }

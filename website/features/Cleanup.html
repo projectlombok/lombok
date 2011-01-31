@@ -43,6 +43,12 @@
 		<div class="overview">
 			<h3>Small print</h3><div class="smallprint">
 				<p>
+				In the finally block, the cleanup method is only called if the given resource is not <code>null</code>. However, if you use <code>delombok</code> 
+				on the code, a call to <code>lombok.Lombok.preventNullAnalysis(Object o)</code> is inserted to prevent warnings if static code analysis could 
+				determine that a null-check would not be needed. Compilation with <code>lombok.jar</code> on the classpath removes that method call, 
+				so there is no runtime dependency.
+				</p>
+				<p>
 				If your code throws an exception, and the cleanup method call that is then triggered also throws an exception, then the original exception
 				is hidden by the exception thrown by the cleanup call. You should <em>not</em> rely on this 'feature'. Preferably, lombok would like to generate
 				code so that, if the main body has thrown an exception, any exception thrown by the close call is silently swallowed (but if the main body
