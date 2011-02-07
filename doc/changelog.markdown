@@ -11,7 +11,6 @@ Lombok Changelog
 * BUGFIX: delombok added type parameters to constructors that mirror the type's own type parameters. This resulted in delombok turning any generated constructor that takes at least 1 parameter of type 'T' into something that didn't compile, and to boot, a confusing error message ('T is not compatible with T'). This is now fixed. [Issue #140](http://code.google.com/p/projectlombok/issues/detail?id=140)
 * BUGFIX: Add null check for `@Cleanup` [Issue #154](http://code.google.com/p/projectlombok/issues/detail?id=154)
 * BUGFIX: The Eclipse source generator would place the generated code outside the class [Issue #154](http://code.google.com/p/projectlombok/issues/detail?id=155)
-* ENHANCEMENT: Setting the charset for delombok to null will now use the system default charset. [Issue #181](http://code.google.com/p/projectlombok/issues/detail?id=181)
 
 ### v0.9.3 "Burrowing Whale" (July 25th, 2010)
 * FEATURE: Adding `@Getter` or `@Setter` to a class is now legal and is like adding those annotations to every non-static field in it. [Issue #129](http://code.google.com/p/projectlombok/issues/detail?id=129)
