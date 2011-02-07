@@ -2,6 +2,8 @@ Lombok Changelog
 ----------------
 
 ### v0.10.0 "Burning Emu" (edge)
+* FEATURE: New annotation: @Delegate. This annotation lets lombok generate delegation methods for a given field.
+* FEATURE: Added support for 'val'. Val is an immutable variable that infers it's type from the right hand side of an expression.
 * FEATURE: Added support for several logging frameworks by the `@Log` annotation.
 * FEATURE: Lombok now supports post-compile transformers. [Issue #144](http://code.google.com/p/projectlombok/issues/detail?id=144)
 * FEATURE: Using `@SneakyThrows` no longer requires a runtime dependency on lombok.jar. In fact, any call to {@code Lombok.sneakyThrows(ex)} is optimized at the bytecode level and no longer requires you to actually have lombok.jar or lombok-runtime.jar on the classpath.
