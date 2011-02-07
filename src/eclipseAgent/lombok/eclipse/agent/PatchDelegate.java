@@ -427,9 +427,6 @@ public class PatchDelegate {
 			if (isVarargs) {
 				method.arguments[method.arguments.length - 1].type.bits |= ASTNode.IsVarArgs;
 			}
-			for (int i = 0; i < method.arguments.length; i++) {
-				System.out.printf("Positions of marg type: %d %d\n", method.arguments[i].sourceStart(), method.arguments[i].sourceEnd());
-			}
 		}
 		
 		Statement body;
