@@ -1,1 +1,1 @@
-7 warning Not generating isFoo(): A method with that name already exists (hasFoo)
+13 warning Not generating isFoo(): A method with that name already exists (getFoo)

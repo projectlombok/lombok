@@ -3,6 +3,10 @@ class Getter1 {
 	boolean hasFoo() {
 		return true;
 	}
+	@java.lang.SuppressWarnings("all")
+	public boolean isFoo() {
+		return this.foo;
+	}
 }
 class Getter2 {
 	boolean foo;
@@ -72,6 +76,10 @@ class Getter10 {
 	boolean foo;
 	static boolean hasFoo() {
 		return false;
+	}
+	@java.lang.SuppressWarnings("all")
+	public boolean isFoo() {
+		return this.foo;
 	}
 }
 class Getter11 {

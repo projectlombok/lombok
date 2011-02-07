@@ -2,7 +2,7 @@ class SetterOnClass1 {
 	boolean isNone;
 	boolean isPublic;
 	@java.lang.SuppressWarnings("all")
-	public void setIsPublic(final boolean isPublic) {
+	public void setPublic(final boolean isPublic) {
 		this.isPublic = isPublic;
 	}
 }
@@ -11,11 +11,11 @@ class SetterOnClass2 {
 	boolean isProtected;
 	boolean isPackage;
 	@java.lang.SuppressWarnings("all")
-	protected void setIsProtected(final boolean isProtected) {
+	protected void setProtected(final boolean isProtected) {
 		this.isProtected = isProtected;
 	}
 	@java.lang.SuppressWarnings("all")
-	void setIsPackage(final boolean isPackage) {
+	void setPackage(final boolean isPackage) {
 		this.isPackage = isPackage;
 	}
 }
@@ -23,7 +23,7 @@ class SetterOnClass3 {
 	boolean isNone;
 	boolean isPackage;
 	@java.lang.SuppressWarnings("all")
-	void setIsPackage(final boolean isPackage) {
+	void setPackage(final boolean isPackage) {
 		this.isPackage = isPackage;
 	}
 }
@@ -31,7 +31,7 @@ class SetterOnClass4 {
 	boolean isNone;
 	boolean isPrivate;
 	@java.lang.SuppressWarnings("all")
-	private void setIsPrivate(final boolean isPrivate) {
+	private void setPrivate(final boolean isPrivate) {
 		this.isPrivate = isPrivate;
 	}
 }
@@ -39,7 +39,7 @@ class SetterOnClass5 {
 	boolean isNone;
 	boolean isPublic;
 	@java.lang.SuppressWarnings("all")
-	public void setIsPublic(final boolean isPublic) {
+	public void setPublic(final boolean isPublic) {
 		this.isPublic = isPublic;
 	}
 }

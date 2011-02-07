@@ -33,3 +33,13 @@ class Setter7 {
 	static void setFoo() {
 	}
 }
+class Setter8 {
+	@lombok.Setter boolean isFoo;
+	void setIsFoo() {
+	}
+}
+class Setter9 {
+	@lombok.Setter boolean isFoo;
+	void setFoo() {
+	}
+}

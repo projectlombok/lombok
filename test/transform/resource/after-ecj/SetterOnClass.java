@@ -1,7 +1,7 @@
 @lombok.Setter class SetterOnClass1 {
   @lombok.Setter(lombok.AccessLevel.NONE) boolean isNone;
   boolean isPublic;
-  public @java.lang.SuppressWarnings("all") void setIsPublic(final boolean isPublic) {
+  public @java.lang.SuppressWarnings("all") void setPublic(final boolean isPublic) {
     this.isPublic = isPublic;
   }
   SetterOnClass1() {
@@ -12,10 +12,10 @@
   @lombok.Setter(lombok.AccessLevel.NONE) boolean isNone;
   boolean isProtected;
   @lombok.Setter(lombok.AccessLevel.PACKAGE) boolean isPackage;
-  @java.lang.SuppressWarnings("all") void setIsPackage(final boolean isPackage) {
+  @java.lang.SuppressWarnings("all") void setPackage(final boolean isPackage) {
     this.isPackage = isPackage;
   }
-  protected @java.lang.SuppressWarnings("all") void setIsProtected(final boolean isProtected) {
+  protected @java.lang.SuppressWarnings("all") void setProtected(final boolean isProtected) {
     this.isProtected = isProtected;
   }
   SetterOnClass2() {
@@ -25,7 +25,7 @@
 @lombok.Setter(lombok.AccessLevel.PACKAGE) class SetterOnClass3 {
   @lombok.Setter(lombok.AccessLevel.NONE) boolean isNone;
   boolean isPackage;
-  @java.lang.SuppressWarnings("all") void setIsPackage(final boolean isPackage) {
+  @java.lang.SuppressWarnings("all") void setPackage(final boolean isPackage) {
     this.isPackage = isPackage;
   }
   SetterOnClass3() {
@@ -35,7 +35,7 @@
 @lombok.Setter(lombok.AccessLevel.PRIVATE) class SetterOnClass4 {
   @lombok.Setter(lombok.AccessLevel.NONE) boolean isNone;
   boolean isPrivate;
-  private @java.lang.SuppressWarnings("all") void setIsPrivate(final boolean isPrivate) {
+  private @java.lang.SuppressWarnings("all") void setPrivate(final boolean isPrivate) {
     this.isPrivate = isPrivate;
   }
   SetterOnClass4() {
@@ -45,7 +45,7 @@
 @lombok.Setter(lombok.AccessLevel.PUBLIC) class SetterOnClass5 {
   @lombok.Setter(lombok.AccessLevel.NONE) boolean isNone;
   boolean isPublic;
-  public @java.lang.SuppressWarnings("all") void setIsPublic(final boolean isPublic) {
+  public @java.lang.SuppressWarnings("all") void setPublic(final boolean isPublic) {
     this.isPublic = isPublic;
   }
   SetterOnClass5() {

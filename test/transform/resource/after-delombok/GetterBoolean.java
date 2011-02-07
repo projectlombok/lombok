@@ -11,13 +11,23 @@ class Getter {
 		return this.isBar;
 	}
 	@java.lang.SuppressWarnings("all")
-	public boolean hasBaz() {
+	public boolean isHasBaz() {
 		return this.hasBaz;
 	}
 }
 class MoreGetter {
 	boolean foo;
 	boolean hasFoo() {
+		return true;
+	}
+	@java.lang.SuppressWarnings("all")
+	public boolean isFoo() {
+		return this.foo;
+	}
+}
+class YetMoreGetter {
+	boolean foo;
+	boolean getFoo() {
 		return true;
 	}
 }

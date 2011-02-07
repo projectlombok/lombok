@@ -33,3 +33,13 @@ class Setter7 {
 	static void setFoo() {
 	}
 }
+class Setter8 {
+	boolean isFoo;
+	void setIsFoo() {
+	}
+}
+class Setter9 {
+	boolean isFoo;
+	void setFoo() {
+	}
+}

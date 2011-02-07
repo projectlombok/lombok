@@ -1,7 +1,9 @@
-2:9 WARNING Not generating setFoo(boolean foo): A method with that name already exists
-7:9 WARNING Not generating setFoo(boolean foo): A method with that name already exists
-12:9 WARNING Not generating setFoo(String foo): A method with that name already exists
-17:9 WARNING Not generating setFoo(String foo): A method with that name already exists
-22:9 WARNING Not generating setFoo(String foo): A method with that name already exists
-27:9 WARNING Not generating setFoo(String foo): A method with that name already exists
-32:9 WARNING Not generating setFoo(String foo): A method with that name already exists
+2:9 WARNING Not generating setFoo(): A method with that name already exists
+7:9 WARNING Not generating setFoo(): A method with that name already exists
+12:9 WARNING Not generating setFoo(): A method with that name already exists
+17:9 WARNING Not generating setFoo(): A method with that name already exists
+22:9 WARNING Not generating setFoo(): A method with that name already exists
+27:9 WARNING Not generating setFoo(): A method with that name already exists
+32:9 WARNING Not generating setFoo(): A method with that name already exists
+37:9 WARNING Not generating setFoo(): A method with that name already exists (setIsFoo)
+42:9 WARNING Not generating setFoo(): A method with that name already exists

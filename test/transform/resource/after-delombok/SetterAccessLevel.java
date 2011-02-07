@@ -6,19 +6,19 @@ class SetterAccessLevel {
 	boolean isPublic;
 	boolean value;
 	@java.lang.SuppressWarnings("all")
-	private void setIsPrivate(final boolean isPrivate) {
+	private void setPrivate(final boolean isPrivate) {
 		this.isPrivate = isPrivate;
 	}
 	@java.lang.SuppressWarnings("all")
-	void setIsPackage(final boolean isPackage) {
+	void setPackage(final boolean isPackage) {
 		this.isPackage = isPackage;
 	}
 	@java.lang.SuppressWarnings("all")
-	protected void setIsProtected(final boolean isProtected) {
+	protected void setProtected(final boolean isProtected) {
 		this.isProtected = isProtected;
 	}
 	@java.lang.SuppressWarnings("all")
-	public void setIsPublic(final boolean isPublic) {
+	public void setPublic(final boolean isPublic) {
 		this.isPublic = isPublic;
 	}
 	@java.lang.SuppressWarnings("all")

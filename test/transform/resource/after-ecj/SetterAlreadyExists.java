@@ -54,3 +54,19 @@ class Setter7 {
   static void setFoo() {
   }
 }
+class Setter8 {
+  @lombok.Setter boolean isFoo;
+  Setter8() {
+    super();
+  }
+  void setIsFoo() {
+  }
+}
+class Setter9 {
+  @lombok.Setter boolean isFoo;
+  Setter9() {
+    super();
+  }
+  void setFoo() {
+  }
+}

@@ -1,5 +1,8 @@
 class Getter1 {
   @lombok.Getter boolean foo;
+  public @java.lang.SuppressWarnings("all") boolean isFoo() {
+    return this.foo;
+  }
   Getter1() {
     super();
   }
@@ -93,6 +96,9 @@ class Getter9 {
 }
 class Getter10 {
   @lombok.Getter boolean foo;
+  public @java.lang.SuppressWarnings("all") boolean isFoo() {
+    return this.foo;
+  }
   Getter10() {
     super();
   }
