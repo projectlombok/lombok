@@ -141,6 +141,9 @@ such as converting the changelog into HTML, and creating javadoc.
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="val" />
 		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="Delegate" />
+		</antcall>
 	</target>
 	
 	<target name="-website-dist">

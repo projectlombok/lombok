@@ -1,0 +1,27 @@
+import java.util.ArrayList;
+import java.util.Collection;
+
+import lombok.Delegate;
+
+
+public class DelegateExample {
+	long counter = 0L;
+	
+	@Delegate
+	private final Collection<String> collection = new ArrayList<String>();
+	
+	public boolean add(String name) {
+		counter++;
+		return collection.add(name);
+	}
+}
+
+class PartialDelegationExample {
+	@Delegate({SimpleCollection.class})
+	private final Collection<String> collection = new ArrayList<String>();
+	
+	private interface SimpleCollection {
+		boolean add(String item);
+		boolean remove(Object item);
+	}
+}
