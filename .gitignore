@@ -14,3 +14,4 @@ lib
 .factorypath
 lombok.iml
 .idea
+*.markdown.html
