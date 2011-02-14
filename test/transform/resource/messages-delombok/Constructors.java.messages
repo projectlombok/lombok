@@ -1,0 +1,3 @@
+16:48 ERROR incompatible types
+found   : java.lang.Deprecated
+required: lombok.RequiredArgsConstructor.AnyAnnotation
