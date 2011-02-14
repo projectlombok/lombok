@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2010-2011 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,4 +51,18 @@ public @interface NoArgsConstructor {
 	 * Sets the access level of the constructor. By default, generated constructors are {@code public}.
 	 */
 	AccessLevel access() default lombok.AccessLevel.PUBLIC;
+	
+	/**
+	 * If you want your constructor to have additional annotations, you can specify them here.
+	 */
+	AnyAnnotation[] onConstructor() default {};
+	
+	/**
+	 * Placeholder annotation to enable the placement of annotations on the constructor.
+	 * @deprecated Don't use this annotation, since we might remove it. 
+	 */
+	@Deprecated
+	@Retention(RetentionPolicy.SOURCE)
+	@Target({})
+	@interface AnyAnnotation {}
 }
