@@ -21,12 +21,17 @@
  */
 package lombok.core;
 
+import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -38,6 +43,8 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
+
+import lombok.patcher.inject.LiveInjector;
 
 @SupportedAnnotationTypes("*")
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
@@ -58,6 +65,8 @@ public class AnnotationProcessor extends AbstractProcessor {
 	private final List<ProcessorDescriptor> active = new ArrayList<ProcessorDescriptor>();
 	private final List<String> delayedWarnings = new ArrayList<String>();
 	
+	private static final Map<ClassLoader, Boolean> lombokAlreadyAddedTo = new WeakHashMap<ClassLoader, Boolean>();
+	
 	static class JavacDescriptor extends ProcessorDescriptor {
 		private Processor processor;
 		
@@ -69,7 +78,15 @@ public class AnnotationProcessor extends AbstractProcessor {
 			if (!procEnv.getClass().getName().equals("com.sun.tools.javac.processing.JavacProcessingEnvironment")) return false;
 			
 			try {
-				processor = (Processor)Class.forName("lombok.javac.apt.Processor").newInstance();
+				ClassLoader toFix = procEnv.getClass().getClassLoader();
+				if (toFix.getClass().getCanonicalName().equals("org.codehaus.plexus.compiler.javac.IsolatedClassLoader")) {
+					if (lombokAlreadyAddedTo.put(toFix, true) == null) {
+						Method m = toFix.getClass().getDeclaredMethod("addURL", URL.class);
+						URL selfUrl = new File(LiveInjector.findPathJar(AnnotationProcessor.class)).toURI().toURL();
+						m.invoke(toFix, selfUrl);
+					}
+				}
+				processor = (Processor)Class.forName("lombok.javac.apt.Processor", false, procEnv.getClass().getClassLoader()).newInstance();
 			} catch (Exception e) {
 				delayedWarnings.add("You found a bug in lombok; lombok.javac.apt.Processor is not available. Lombok will not run during this compilation: " + trace(e));
 				return false;
@@ -77,8 +94,15 @@ public class AnnotationProcessor extends AbstractProcessor {
 				delayedWarnings.add("Can't load javac processor due to (most likely) a class loader problem: " + trace(e));
 				return false;
 			}
-			
-			processor.init(procEnv);
+			try {
+				processor.init(procEnv);
+			} catch (Exception e) {
+				delayedWarnings.add("lombok.javac.apt.Processor could not be initialized. Lombok will not run during this compilation: " + trace(e));
+				return false;
+			} catch (NoClassDefFoundError e) {
+				delayedWarnings.add("Can't initialize javac processor due to (most likely) a class loader problem: " + trace(e));
+				return false;
+			}
 			return true;
 		}
 		
