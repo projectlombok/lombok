@@ -173,8 +173,8 @@ public class Delombok {
 		if (args.classpath != null) delombok.setClasspath(args.classpath);
 		if (args.sourcepath != null) delombok.setSourcepath(args.sourcepath);
 		
-		for (String in : args.input) {
-			try {
+		try {
+			for (String in : args.input) {
 				File f = new File(in);
 				if (f.isFile()) {
 					delombok.addFile(f.getParentFile(), f.getName());
@@ -185,18 +185,18 @@ public class Delombok {
 				} else {
 					if (!args.quiet) System.err.println("WARNING: not a standard file or directory - skipping: " + f);
 				}
-				
-				delombok.delombok();
-			} catch (Exception e) {
-				if (!args.quiet) {
-					String msg = e.getMessage();
-					if (msg != null && msg.startsWith("DELOMBOK: ")) System.err.println(msg.substring("DELOMBOK: ".length()));
-					else {
-						e.printStackTrace();
-					}
-					System.exit(1);
-					return;
+			}
+			
+			delombok.delombok();
+		} catch (Exception e) {
+			if (!args.quiet) {
+				String msg = e.getMessage();
+				if (msg != null && msg.startsWith("DELOMBOK: ")) System.err.println(msg.substring("DELOMBOK: ".length()));
+				else {
+					e.printStackTrace();
 				}
+				System.exit(1);
+				return;
 			}
 		}
 	}
