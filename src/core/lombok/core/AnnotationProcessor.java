@@ -78,15 +78,8 @@ public class AnnotationProcessor extends AbstractProcessor {
 			if (!procEnv.getClass().getName().equals("com.sun.tools.javac.processing.JavacProcessingEnvironment")) return false;
 			
 			try {
-				ClassLoader toFix = procEnv.getClass().getClassLoader();
-				if (toFix.getClass().getCanonicalName().equals("org.codehaus.plexus.compiler.javac.IsolatedClassLoader")) {
-					if (lombokAlreadyAddedTo.put(toFix, true) == null) {
-						Method m = toFix.getClass().getDeclaredMethod("addURL", URL.class);
-						URL selfUrl = new File(LiveInjector.findPathJar(AnnotationProcessor.class)).toURI().toURL();
-						m.invoke(toFix, selfUrl);
-					}
-				}
-				processor = (Processor)Class.forName("lombok.javac.apt.Processor", false, procEnv.getClass().getClassLoader()).newInstance();
+				ClassLoader classLoader = findAndPatchClassLoader(procEnv);
+				processor = (Processor)Class.forName("lombok.javac.apt.Processor", false, classLoader).newInstance();
 			} catch (Exception e) {
 				delayedWarnings.add("You found a bug in lombok; lombok.javac.apt.Processor is not available. Lombok will not run during this compilation: " + trace(e));
 				return false;
@@ -104,6 +97,22 @@ public class AnnotationProcessor extends AbstractProcessor {
 				return false;
 			}
 			return true;
+		}
+		
+		private ClassLoader findAndPatchClassLoader(ProcessingEnvironment procEnv) throws Exception {
+			ClassLoader environmentClassLoader = procEnv.getClass().getClassLoader();
+			if (environmentClassLoader != null && environmentClassLoader.getClass().getCanonicalName().equals("org.codehaus.plexus.compiler.javac.IsolatedClassLoader")) {
+				if (lombokAlreadyAddedTo.put(environmentClassLoader, true) == null) {
+					Method m = environmentClassLoader.getClass().getDeclaredMethod("addURL", URL.class);
+					URL selfUrl = new File(LiveInjector.findPathJar(AnnotationProcessor.class)).toURI().toURL();
+					m.invoke(environmentClassLoader, selfUrl);
+				}
+				return environmentClassLoader;
+			}
+			
+			ClassLoader ourClassLoader = JavacDescriptor.class.getClassLoader();
+			if (ourClassLoader == null) return ClassLoader.getSystemClassLoader();
+			return ourClassLoader;
 		}
 		
 		@Override boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
