@@ -1,0 +1,23 @@
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+
+public class OnMethodOnParamExample {
+	@Getter(onMethod=@Deprecated) private int fires = 200;
+	@Setter(onMethod=@Deprecated) private int firemen = 20;
+	@Setter(onParam=@SuppressWarnings("all")) private String fireStationName = "base";
+	
+	@Override public String toString() {
+		return String.format("firestation:%s, %d firemen are fighting %d fires", fireStationName, firemen, fires);
+	}
+}
+
+@RequiredArgsConstructor(onConstructor=@Deprecated)
+class OnConstructorExample {
+	private final int radishes;
+	private int bananas;
+	
+	@Override public String toString() {
+		return String.format("I have %d bananas and %d radishes", bananas, radishes);
+	}
+}

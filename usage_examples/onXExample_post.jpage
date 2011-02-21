@@ -1,0 +1,41 @@
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+
+public class OnMethodOnParamExample {
+	private int fires = 200;
+	private int firemen = 20;
+	private String fireStationName = "base";
+	
+	@Deprecated
+	public int getFires() {
+		return fires;
+	}
+	
+	@Deprecated
+	public void setFiremen(int firemen) {
+		this.firemen = firemen;
+	}
+	
+	public void setFireStationName(@SuppressWarnings("all") int fireStationName) {
+		this.fireStationName = fireStationName;
+	}
+	
+	@Override public String toString() {
+		return String.format("firestation:%s, %d firemen are fighting %d fires", fireStationName, firemen, fires);
+	}
+}
+
+class OnConstructorExample {
+	private final int radishes;
+	private int bananas;
+	
+	@Deprecated
+	public OnConstructorExample(int radishes) {
+		this.radishes = radishes;
+	}
+	
+	@Override public String toString() {
+		return String.format("I have %d bananas and %d radishes", bananas, radishes);
+	}
+}
