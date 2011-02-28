@@ -1,23 +1,24 @@
+import com.google.inject.Inject;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.Min;
 
 public class OnMethodOnParamExample {
-	@Getter(onMethod=@Deprecated) private int fires = 200;
-	@Setter(onMethod=@Deprecated) private int firemen = 20;
-	@Setter(onParam=@SuppressWarnings("all")) private String fireStationName = "base";
+	@Getter(onMethod=@Deprecated) private int bananas;
+	@Setter(onMethod=@Min(10)) private int radishes;
 	
 	@Override public String toString() {
-		return String.format("firestation:%s, %d firemen are fighting %d fires", fireStationName, firemen, fires);
+		return String.format("I have %d bananas and %d beautiful radishes", bananas, radishes);
 	}
 }
 
-@RequiredArgsConstructor(onConstructor=@Deprecated)
+@RequiredArgsConstructor(onConstructor=@Inject)
 class OnConstructorExample {
-	private final int radishes;
-	private int bananas;
+	private final Fireman fireman;
+	@Setter(onParam=@SuppressWarnings("all")) private int fires = 10;
 	
 	@Override public String toString() {
-		return String.format("I have %d bananas and %d radishes", bananas, radishes);
+		return String.format("Fireman: %s has %d fires", fireman, fires);
 	}
 }
