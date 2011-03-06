@@ -20,6 +20,28 @@
 		<connection>scm:git:git://github.com/rzwitserloot/lombok.git</connection>
 		<url>scm:git:git://github.com/rzwitserloot/lombok.git</url>
 	</scm>
+	<developers>
+		<developer>
+			<id>rzwitserloot</id>
+			<name>Reinier Zwitserloot</name>
+			<email>reinier@projectlombok.org</email>
+			<url>http://zwitserloot.com</url>
+			<timezone>+1</timezone>
+		</developer>
+		<developer>
+			<id>rspilker</id>
+			<name>Roel Spilker</name>
+			<email>roel@projectlombok.org</email>
+			<timezone>+1</timezone>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<id>rgrootjans<id>
+			<name>Robbert Jan Grootjans</name>
+			<timezone>+1</timezone>
+		</contributor>
+	</contributors>
 	<!--
 		For auto-syncing to the main maven repository:
 		"org.projectlombok","mavensync@projectlombok.org:/home/mavensync/public_html/m2repo","rsync_ssh","Reinier Zwitserloot", "reinier@projectlombok.org",,
