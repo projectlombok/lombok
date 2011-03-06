@@ -275,6 +275,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</target>
 	
 	<target name="maven" depends="version, dist, test" description="Build a maven repository.">
+		<ant antfile="buildScripts/website.ant.xml" target="javadoc" inheritAll="false">
+			<property name="lombok.version" value="${lombok.version}" />
+		</ant>
+		<jar destfile="dist/lombok-${lombok.version}-javadoc.jar">
+			<fileset dir="doc/api" />
+		</jar>
 		<ivy:make-maven-repo
 				group="org.projectlombok" artifact="lombok"
 				version="${lombok.version}"
