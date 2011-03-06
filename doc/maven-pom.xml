@@ -20,6 +20,10 @@
 		<connection>scm:git:git://github.com/rzwitserloot/lombok.git</connection>
 		<url>scm:git:git://github.com/rzwitserloot/lombok.git</url>
 	</scm>
+	<issueManagement>
+		<system>Google Code</system>
+		<url>http://code.google.com/p/projectlombok/issues</url>
+	</issueManagement>
 	<developers>
 		<developer>
 			<id>rzwitserloot</id>
