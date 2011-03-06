@@ -12,18 +12,18 @@
 		<dependency org="projectlombok.org" name="lombok.patcher" rev="0.4" conf="build; runtime->build" />
 		<dependency org="zwitserloot.com" name="cmdreader" rev="1.2" conf="build->runtime; runtime" />
 		
-		<dependency org="projectlombok.org" name="junit" rev="4.8.1" conf="test" />
-		<dependency org="log4j" name="log4j" rev="1.2.16" conf="test->master"/>
-		<dependency org="commons-logging" name="commons-logging" rev="1.1.1" conf="test->master"/>
-		<dependency org="org.slf4j" name="slf4j-api" rev="1.6.1" conf="test->master"/>
+		<dependency org="junit" name="junit" rev="4.8.2" conf="test->default; contrib->sources" />
+		<dependency org="log4j" name="log4j" rev="1.2.16" conf="test->default; contrib->sources" />
+		<dependency org="commons-logging" name="commons-logging" rev="1.1.1" conf="test->default; contrib->sources"/>
+		<dependency org="org.slf4j" name="slf4j-api" rev="1.6.1" conf="test->default; contrib->sources"/>
 		
-		<dependency org="org.apache.ant" name="ant" rev="1.8.0" conf="build->master" />
+		<dependency org="org.apache.ant" name="ant" rev="1.8.0" conf="build->default; contrib->sources" />
 		<dependency org="projectlombok.org" name="spi" rev="0.2.4" conf="build" />
 		<dependency org="projectlombok.org" name="ant-googlecode" rev="0.0.2" conf="build" />
-		<dependency org="jcraft.com" name="jsch" rev="0.1.42" conf="build" />
+		<dependency org="com.jcraft" name="jsch" rev="0.1.42" conf="build->default" />
 		<dependency org="projectlombok.org" name="jsch-ant-fixed" rev="0.1.42" conf="build" />
 		<dependency org="projectlombok.org" name="markdownj" rev="1.02b4" conf="build" />
-		<dependency org="de.java2html" name="java2html" rev="5.0" conf="build->master" />
+		<dependency org="de.java2html" name="java2html" rev="5.0" conf="build->default" />
 		
 		<dependency org="projectlombok.org" name="javac" rev="1.6.0.18" conf="build->runtime; contrib->sources" />
 		<dependency org="eclipse.org" name="ecj" rev="3.6.0" conf="build->runtime; contrib->sources" />
@@ -33,10 +33,10 @@
 		<dependency org="netbeans.org" name="openide.util" rev="6.8beta" conf="netbeansBuild->build" />
 		<dependency org="netbeans.org" name="modules.java.source" rev="6.8beta" conf="netbeansBuild->build" />
 		
-		<dependency org="eclipse.org" name="core.runtime" rev="3.6.0" conf="eclipseBuild->runtime; contrib->sources" />
+		<dependency org="org.eclipse.core" name="org.eclipse.core.runtime" rev="3.6.0.v20100505" conf="eclipseBuild->default; contrib->sources" />
 		<dependency org="eclipse.org" name="jdt.core" rev="3.6.0" conf="eclipseBuild->runtime; contrib->sources" />
 		<dependency org="eclipse.org" name="jdt.ui" rev="3.6.0" conf="eclipseBuild->runtime; contrib->sources" />
-		<dependency org="eclipse.org" name="equinox.common" rev="3.6.0" conf="eclipseBuild->runtime; contrib->sources" />
-		<dependency org="eclipse.org" name="osgi" rev="3.6.0" conf="eclipseBuild->runtime; contrib->sources" />
+		<dependency org="org.eclipse.equinox" name="org.eclipse.equinox.common" rev="3.6.0.v20100503" conf="eclipseBuild->default; contrib->sources" />
+		<dependency org="org.eclipse.osgi" name="org.eclipse.osgi" rev="3.6.0.v20100517" conf="eclipseBuild->default; contrib->sources" />
 	</dependencies>
 </ivy-module>
