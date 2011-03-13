@@ -274,48 +274,54 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<echo level="info">All tests successful.</echo>
 	</target>
 	
-	<target name="maven" depends="version, dist, test" description="Build a maven repository.">
+	<target name="maven" depends="version, dist, test" description="Build a maven artifact bundle.">
 		<ant antfile="buildScripts/website.ant.xml" target="javadoc" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
 		</ant>
 		<jar destfile="dist/lombok-${lombok.version}-javadoc.jar">
 			<fileset dir="doc/api" />
 		</jar>
-		<ivy:make-maven-repo
-				group="org.projectlombok" artifact="lombok"
-				version="${lombok.version}"
-				url="http://projectlombok.org/mavenrepo"
-				outfile="dist/maven.tar.bz2"
-				artifactfile="dist/lombok-${lombok.version}.jar"
-				pomfile="doc/maven-pom.xml">
-				
-				<sources>
-					<fileset dir="src/core" />
-					<fileset dir="src/eclipseAgent" />
-					<fileset dir="src/installer" />
-					<fileset dir="src/delombok" />
-					<fileset dir="experimental/src" />
-					<fileset dir="test/transform/src" />
-					<fileset dir="test/core/src" />
-				</sources>
-		</ivy:make-maven-repo>
+		<jar destfile="dist/lombok-${lombok.version}-sources.jar">
+			<fileset dir="src/core" />
+			<fileset dir="src/eclipseAgent" />
+			<fileset dir="src/installer" />
+			<fileset dir="src/delombok" />
+			<fileset dir="test/transform/src" />
+			<fileset dir="test/core/src" />
+		</jar>
+		<mkdir dir="build/mavenPublish" />
+		<copy tofile="build/mavenPublish/pom.xml" overwrite="true" file="doc/maven-pom.xml">
+			<filterchain>
+				<replacetokens>
+					<token key="VERSION" value="${lombok.version}" />
+				</replacetokens>
+			</filterchain>
+		</copy>
+		<tar destfile="build/mavenPublish/mavenPublish.tar.bz2" compression="bzip2">
+			<tarfileset dir="dist">
+				<include name="lombok-${lombok.version}.jar" />
+				<include name="lombok-${lombok.version}-sources.jar" />
+				<include name="lombok-${lombok.version}-javadoc.jar" />
+			</tarfileset>
+			<tarfileset dir="build/mavenPublish" includes="pom.xml" />
+		</tar>
 	</target>
 	
-	<target name="maven-publish" depends="maven" description="Build a maven repository then upload it to projectlombok.org.">
+	<target name="maven-publish" depends="maven" description="Build a maven artifact bundle then upload it to projectlombok.org and ask the server to upload it to maven central">
 		<taskdef name="scp" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.Scp" classpathref="build.path" />
 		<taskdef name="sshexec" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="build.path" />
-		<available file="libertad-upload.key" property="libertad.key.available" />
-		<fail unless="libertad.key.available">You don't have the libertad-upload.key; you'll need it to get write access to the server.</fail>
+		<available file="escudo-upload.key" property="escudo.key.available" />
+		<fail unless="escudo.key.available">You don't have the escudo-upload.key; you'll need it to get write access to the server.</fail>
 		<scp
-			localFile="dist/maven.tar.bz2"
+			localFile="build/mavenPublish/mavenPublish.tar.bz2"
 			todir="lombokup@projectlombok.org:/staging"
-			keyfile="libertad-upload.key" passphrase=""
-			sftp="true" verbose="true" trust="true" />
+			keyfile="escudo-upload.key" passphrase=""
+			sftp="false" verbose="true" trust="true" />
 		<sshexec
 			host="projectlombok.org"
 			username="lombokup"
-			keyfile="libertad-upload.key" passphrase=""
-			trust="true" command="./deployMavenRepo" />
+			keyfile="escudo-upload.key" passphrase=""
+			trust="true" command="./publishToMavenCentral" />
 	</target>
 	
 	<target name="-credentials">

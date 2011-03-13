@@ -12,7 +12,7 @@
 	<licenses>
 		<license>
 			<name>The MIT License</name>
-			<url>http://www.opensource.org/licenses/mit-license.php</url>
+			<url>http://projectlombok.org/LICENSE</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
@@ -38,20 +38,11 @@
 			<email>roel@projectlombok.org</email>
 			<timezone>+1</timezone>
 		</developer>
-	</developers>
-	<contributors>
-		<contributor>
-			<id>rgrootjans<id>
+		<developer>
+			<id>rgrootjans</id>
 			<name>Robbert Jan Grootjans</name>
 			<timezone>+1</timezone>
-		</contributor>
-	</contributors>
-	<!--
-		For auto-syncing to the main maven repository:
-		"org.projectlombok","mavensync@projectlombok.org:/home/mavensync/public_html/m2repo","rsync_ssh","Reinier Zwitserloot", "reinier@projectlombok.org",,
-		
-		For deploying to the remote repo on projectlombok.org:
-		mvn deploy:deploy-file -DrepositoryId=projectlombok.org url=scp://reinier@projectlombok.org/home/mavensync/public_html/m2repo -Dfile=dist/lombok.jar -DpomFile=doc/maven-pom.xml
-	-->
+		</developer>
+	</developers>
 </project>
 

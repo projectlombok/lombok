@@ -43,7 +43,7 @@
 	</style>
 </head><body>
 	<div class="meat">
-		<h1>Use Lombok via Maven</h1>
+		<h1>Use Lombok via Maven or ivy</h1>
 		<div>
 			You can use lombok with maven by adding the following to your <strong>pom.xml</strong>:
 			<div class="snippet">&lt;dependencies&gt;
@@ -53,25 +53,14 @@
 		&lt;version&gt;@VERSION@&lt;/version&gt;
 		&lt;scope&gt;provided&lt;/scope&gt;
 	&lt;/dependency&gt;
-&lt;/dependencies&gt;
-&lt;repositories&gt;
-	&lt;repository&gt;
-		&lt;id&gt;projectlombok.org&lt;/id&gt;
-		&lt;url&gt;http://projectlombok.org/mavenrepo&lt;/url&gt;
-	&lt;/repository&gt;
-&lt;/repositories&gt;</div>
+&lt;/dependencies&gt;</div>
+		</div>
 		<div>
-			<em><strong>CAREFUL:</strong></em> lombok requires using the javac v1.6 compiler. If this is not your default compiler, you'll need to add the following to your
-			pom file to explicitly set the java compiler version to use:
-			<div class="snippet">&lt;plugin&gt;
-	&lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
-	&lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
-	&lt;configuration&gt;
-		&lt;compilerVersion&gt;1.6&lt;/compilerVersion&gt;
-		&lt;source&gt;1.6&lt;/source&gt;
-		&lt;target&gt;1.6&lt;/target&gt;
-	&lt;/configuration&gt;
-&lt;/plugin&gt;</div>
+			You can use lombok with ivy by adding the following to your <strong>ivy.xml</strong>:
+			<div class="snippet">&lt;dependency org="projectlombok.org" name="lombok" rev="@VERSION@" conf="build" /&gt;</div>
+		</div>
+		<div>
+			<em><strong>CAREFUL:</strong></em> lombok requires using the javac v1.6 compiler or higher.
 		</div>
 		That's all there is to it!<br />
 		<em>note:</em> You'll still need to download lombok, or doubleclick on the lombok.jar file downloaded by maven, to install lombok into your eclipse installation.<br />
