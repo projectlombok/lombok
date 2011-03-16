@@ -10,4 +10,6 @@ Step #4: git push && git push --tags
 
 Step #5: ant publish-all
 
+Step #6: Follow the instructions that flew by when the maven-publish task ran, which involves going to http://oss.sonatype.org/ and logging in with the username/pass that are in your scroll log, to test and then 'release' the staged repo to maven central. Note that once you do this there's no turning back, and that version number is forever associated with this release.
+
 Step #6: Change src/core/lombok/core/Version.java to "0.8.2-EDGE", and commit this.
