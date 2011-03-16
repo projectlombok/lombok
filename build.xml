@@ -322,6 +322,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			username="lombokup"
 			keyfile="escudo-upload.key" passphrase=""
 			trust="true" command="./publishToMavenCentral" />
+		<echo>The artifact has been published to staging. Now go to http://oss.sonatype.org/ and log in as Reinier, then doublecheck if all is well and 'release' it.</echo>
+		<sshexec
+			host="projectlombok.org"
+			username="lombokup"
+			keyfile="escudo-upload.key" passphrase=""
+			trust="true" command="./showMavenCentralPassword" />
 	</target>
 	
 	<target name="-credentials">
