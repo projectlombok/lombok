@@ -42,6 +42,7 @@ import org.eclipse.jdt.internal.compiler.ast.CastExpression;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
+import org.eclipse.jdt.internal.compiler.ast.IntLiteral;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
@@ -174,16 +175,7 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		NullLiteral nullLiteral = new NullLiteral(pS, pE);
 		Eclipse.setGeneratedBy(nullLiteral, ast);
 		
-		MessageSend preventNullAnalysis = new MessageSend();
-		Eclipse.setGeneratedBy(preventNullAnalysis, ast);
-
-		preventNullAnalysis.receiver = createNameReference("lombok.Lombok", ast);
-		preventNullAnalysis.selector = "preventNullAnalysis".toCharArray();
-		
-		preventNullAnalysis.arguments = new Expression[] { varName };
-		preventNullAnalysis.nameSourcePosition = p;
-		preventNullAnalysis.sourceStart = pS;
-		preventNullAnalysis.sourceEnd = preventNullAnalysis.statementEnd = pE;
+		MessageSend preventNullAnalysis = preventNullAnalysis(ast, varName);
 		
 		EqualExpression equalExpression = new EqualExpression(preventNullAnalysis, nullLiteral, OperatorIds.NOT_EQUAL);
 		equalExpression.sourceStart = pS; equalExpression.sourceEnd = pE;
@@ -195,8 +187,6 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		Eclipse.setGeneratedBy(closeBlock, ast);
 		IfStatement ifStatement = new IfStatement(equalExpression, closeBlock, 0, 0);
 		Eclipse.setGeneratedBy(ifStatement, ast);
-
-		
 		
 		finallyBlock[0] = ifStatement;
 		tryStatement.finallyBlock = new Block(0);
@@ -217,6 +207,35 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		ancestor.rebuild();
 		
 		return true;
+	}
+	
+	private MessageSend preventNullAnalysis(Annotation ast, Expression expr) {
+		MessageSend singletonList = new MessageSend();
+		Eclipse.setGeneratedBy(singletonList, ast);
+		
+		int pS = ast.sourceStart, pE = ast.sourceEnd;
+		long p = (long)pS << 32 | pE;
+		
+		singletonList.receiver = createNameReference("java.util.Collections", ast);
+		singletonList.selector = "singletonList".toCharArray();
+		
+		singletonList.arguments = new Expression[] { expr };
+		singletonList.nameSourcePosition = p;
+		singletonList.sourceStart = pS;
+		singletonList.sourceEnd = singletonList.statementEnd = pE;
+		
+		MessageSend preventNullAnalysis = new MessageSend();
+		Eclipse.setGeneratedBy(preventNullAnalysis, ast);
+		
+		preventNullAnalysis.receiver = singletonList;
+		preventNullAnalysis.selector = "get".toCharArray();
+		
+		preventNullAnalysis.arguments = new Expression[] { new IntLiteral(new char[] { '0' }, pS, pE) };
+		preventNullAnalysis.nameSourcePosition = p;
+		preventNullAnalysis.sourceStart = pS;
+		preventNullAnalysis.sourceEnd = singletonList.statementEnd = pE;
+		
+		return preventNullAnalysis;
 	}
 	
 	private void doAssignmentCheck(EclipseNode node, Statement[] tryBlock, char[] varName) {
