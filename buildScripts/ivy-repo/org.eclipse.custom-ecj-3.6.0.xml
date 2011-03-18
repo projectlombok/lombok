@@ -1,14 +1,14 @@
 <ivy-module version="2.0">
-	<info organisation="eclipse.org" module="ecj" revision="3.6.0" publication="20100608091100">
+	<info organisation="org.eclipse.custom" module="ecj" revision="3.6.0" publication="20100608091100">
 		<license name="Eclipse Public Licence v1.0" url="http://www.eclipse.org/org/documents/epl-v10.php" />
 		<description homepage="http://www.eclipse.org/eclipse/" />
 	</info>
 	<configurations>
-		<conf name="runtime" />
+		<conf name="default" />
 		<conf name="sources" />
 	</configurations>
 	<publications>
-		<artifact conf="runtime" url="http://mirror.selfnet.de/eclipse/eclipse/downloads/drops/R-3.6-201006080911/ecj-3.6.jar" />
+		<artifact conf="default" url="http://mirror.selfnet.de/eclipse/eclipse/downloads/drops/R-3.6-201006080911/ecj-3.6.jar" />
 		<artifact type="zip" conf="sources" url="http://mirror.selfnet.de/eclipse/eclipse/downloads/drops/R-3.6-201006080911/ecjsrc-3.6.zip" />
 	</publications>
 </ivy-module>
