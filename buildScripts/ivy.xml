@@ -24,6 +24,7 @@
 		<dependency org="projectlombok.org" name="jsch-ant-fixed" rev="0.1.42" conf="build" />
 		<dependency org="projectlombok.org" name="markdownj" rev="1.02b4" conf="build" />
 		<dependency org="de.java2html" name="java2html" rev="5.0" conf="build->default" />
+		<dependency org="tonicsystems.com" name="jarjar" rev="1.1" conf="build" />
 		
 		<dependency org="projectlombok.org" name="javac" rev="1.6.0.18" conf="build->runtime; contrib->sources" />
 		<dependency org="org.eclipse.custom" name="ecj" rev="3.6.0" conf="build->default; contrib->sources" />
