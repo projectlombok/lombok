@@ -164,12 +164,15 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<target name="dist" description="Builds THE lombok.jar file which contains everything." depends="version, compile">
 		<mkdir dir="dist" />
 		<copy file="doc/changelog.markdown" tofile="build/changelog.txt" />
-		<jar destfile="dist/lombok-${lombok.version}.jar">
+		<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="lib/build/jarjar.jar" />
+		<jarjar destfile="dist/lombok-${lombok.version}.jar">
 			<fileset dir="build/lombok">
 				<exclude name="com/sun/**"/>
 			</fileset>
 			<fileset dir="build" includes="changelog.txt" />
 			<fileset dir="." includes="LICENSE" />
+			<rule pattern="com.zwitserloot.cmdreader.**" result="lombok.libs.com.zwitserloot.cmdreader.@1" />
+			<rule pattern="org.objectweb.asm.**" result="lombok.libs.org.objectweb.asm.@1" />
 			<manifest>
 				<attribute name="Premain-Class" value="lombok.core.Agent" />
 				<attribute name="Agent-Class" value="lombok.core.Agent" />
@@ -177,7 +180,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 				<attribute name="Main-Class" value="lombok.core.Main" />
 				<attribute name="Lombok-Version" value="${lombok.version}" />
 			</manifest>
-		</jar>
+		</jarjar>
 		<copy file="dist/lombok-${lombok.version}.jar" tofile="dist/lombok.jar" />
 		<property name="lombok.dist.built" value="true" />
 	</target>

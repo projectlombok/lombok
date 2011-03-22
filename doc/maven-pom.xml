@@ -18,7 +18,7 @@
 	</licenses>
 	<scm>
 		<connection>scm:git:git://github.com/rzwitserloot/lombok.git</connection>
-		<url>scm:git:git://github.com/rzwitserloot/lombok.git</url>
+		<url>http://github.com/rzwitserloot/lombok</url>
 	</scm>
 	<issueManagement>
 		<system>Google Code</system>
