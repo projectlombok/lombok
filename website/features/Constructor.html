@@ -71,6 +71,10 @@
 				</p><p>
 					<code>@XArgsConstructor</code> can also be used on an enum definition. The generated constructor will always be
 					private, because non-private constructors aren't legal in enums. You don't have to specify <code>AccessLevel.PRIVATE</code>.
+				</p><p>
+					While <code>suppressConstructorProperties</code> has been marked deprecated in anticipation of a world where all java environments have the
+					<code>@ConstructorProperties</code> annotation available, first GWT 2.2 and Android 2.3.3, which do not (yet) have this annotation, will have
+					to be ancient history before this annotation parameter will be removed.
 				</p>
 			</div>
 		</div>
