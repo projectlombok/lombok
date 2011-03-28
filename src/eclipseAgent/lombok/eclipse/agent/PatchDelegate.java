@@ -74,7 +74,6 @@ import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
-import org.eclipse.jdt.internal.compiler.lookup.MemberTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
@@ -475,7 +474,7 @@ public class PatchDelegate {
 			inner = binding;
 		}
 		
-		if (inner instanceof MemberTypeBinding) {
+		if (inner instanceof SourceTypeBinding) {
 			ClassScope cs = ((SourceTypeBinding)inner).scope;
 			if (cs != null) {
 				try {
@@ -527,6 +526,7 @@ public class PatchDelegate {
 	
 	private static final List<String> METHODS_IN_OBJECT = Collections.unmodifiableList(Arrays.asList(
 			"hashCode()",
+			"canEqual(java.lang.Object)",  //Not in j.l.Object, but it goes with hashCode and equals so if we ignore those two, we should ignore this one.
 			"equals(java.lang.Object)",
 			"wait()",
 			"wait(long)",
