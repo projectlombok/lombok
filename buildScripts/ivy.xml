@@ -27,7 +27,7 @@
 		<dependency org="de.java2html" name="java2html" rev="5.0" conf="build->default" />
 		
 		<dependency org="projectlombok.org" name="javac" rev="1.6.0.18" conf="build->runtime; contrib->sources" />
-		<dependency org="org.eclipse.custom" name="ecj" rev="3.6.0" conf="build->default; contrib->sources" />
+		<dependency org="org.eclipse.custom" name="ecj" rev="3.6.2" conf="build->default; contrib->sources" />
 		
 		<dependency org="netbeans.org" name="boot" rev="6.8beta" conf="netbeansBuild->build" />
 		<dependency org="netbeans.org" name="openide.modules" rev="6.8beta" conf="netbeansBuild->build" />
