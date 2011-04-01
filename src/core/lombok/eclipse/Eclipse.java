@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,46 +89,85 @@ public class Eclipse {
 	
 	/**
 	 * Generates an error in the Eclipse error log. Note that most people never look at it!
-	 */
-	public static void error(CompilationUnitDeclaration cud, String message) {
-		error(cud, message, DEFAULT_BUNDLE, null);
-	}
-	
-	/**
-	 * Generates an error in the Eclipse error log. Note that most people never look at it!
+	 * 
+	 * @param cud The {@code CompilationUnitDeclaration} where the error occurred.
+	 *     An error will be generated on line 0 linking to the error log entry. Can be {@code null}.
+	 * @param message Human readable description of the problem.
+	 * @param error The associated exception. Can be {@code null}.
 	 */
 	public static void error(CompilationUnitDeclaration cud, String message, Throwable error) {
-		error(cud, message, DEFAULT_BUNDLE, error);
+		error(cud, message, null, error);
 	}
 	
 	/**
 	 * Generates an error in the Eclipse error log. Note that most people never look at it!
-	 */
-	public static void error(CompilationUnitDeclaration cud, String message, String bundleName) {
-		error(cud, message, bundleName, null);
-	}
-	
-	/**
-	 * Generates an error in the Eclipse error log. Note that most people never look at it!
+	 * 
+	 * @param cud The {@code CompilationUnitDeclaration} where the error occurred.
+	 *     An error will be generated on line 0 linking to the error log entry. Can be {@code null}.
+	 * @param message Human readable description of the problem.
+	 * @param bundleName Can be {@code null} to default to {@code org.eclipse.jdt.core} which is usually right.
+	 * @param error The associated exception. Can be {@code null}.
 	 */
 	public static void error(CompilationUnitDeclaration cud, String message, String bundleName, Throwable error) {
+		if (bundleName == null) bundleName = DEFAULT_BUNDLE;
 		try {
 			new EclipseWorkspaceLogger().error(message, bundleName, error);
-		} catch (NoClassDefFoundError e) {	//standalone ecj does not jave Platform, ILog, IStatus, and friends.
+		} catch (NoClassDefFoundError e) {  //standalone ecj does not jave Platform, ILog, IStatus, and friends.
 			new TerminalLogger().error(message, bundleName, error);
 		}
 		if (cud != null) EclipseAST.addProblemToCompilationResult(cud, false, message + " - See error log.", 0, 0);
 	}
 	
+	/**
+	 * Generates a warning in the Eclipse error log. Note that most people never look at it!
+	 * 
+	 * @param cud The {@code CompilationUnitDeclaration} where the error occurred.
+	 *     An error will be generated on line 0 linking to the error log entry. Can be {@code null}.
+	 * @param message Human readable description of the problem.
+	 * @param error The associated exception. Can be {@code null}.
+	 */
+	public static void warning(String message, Throwable error) {
+		warning(message, null, error);
+	}
+	
+	/**
+	 * Generates a warning in the Eclipse error log. Note that most people never look at it!
+	 * 
+	 * @param message Human readable description of the problem.
+	 * @param bundleName Can be {@code null} to default to {@code org.eclipse.jdt.core} which is usually right.
+	 * @param error The associated exception. Can be {@code null}.
+	 */
+	public static void warning(String message, String bundleName, Throwable error) {
+		if (bundleName == null) bundleName = DEFAULT_BUNDLE;
+		try {
+			new EclipseWorkspaceLogger().warning(message, bundleName, error);
+		} catch (NoClassDefFoundError e) {  //standalone ecj does not jave Platform, ILog, IStatus, and friends.
+			new TerminalLogger().warning(message, bundleName, error);
+		}
+	}
+	
 	private static class TerminalLogger {
 		void error(String message, String bundleName, Throwable error) {
 			System.err.println(message);
-			error.printStackTrace();
+			if (error != null) error.printStackTrace();
+		}
+		
+		void warning(String message, String bundleName, Throwable error) {
+			System.err.println(message);
+			if (error != null) error.printStackTrace();
 		}
 	}
 	
 	private static class EclipseWorkspaceLogger {
 		void error(String message, String bundleName, Throwable error) {
+			msg(IStatus.ERROR, message, bundleName, error);
+		}
+		
+		void warning(String message, String bundleName, Throwable error) {
+			msg(IStatus.WARNING, message, bundleName, error);
+		}
+		
+		private void msg(int msgType, String message, String bundleName, Throwable error) {
 			Bundle bundle = Platform.getBundle(bundleName);
 			if (bundle == null) {
 				System.err.printf("Can't find bundle %s while trying to report error:\n%s\n", bundleName, message);
@@ -137,7 +176,7 @@ public class Eclipse {
 			
 			ILog log = Platform.getLog(bundle);
 			
-			log.log(new Status(IStatus.ERROR, bundleName, message, error));
+			log.log(new Status(msgType, bundleName, message, error));
 		}
 	}
 	

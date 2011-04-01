@@ -103,7 +103,7 @@ public class HandlerLibrary {
 						SpiLoadUtil.findAnnotationClass(handler.getClass(), EclipseAnnotationHandler.class);
 					AnnotationHandlerContainer<?> container = new AnnotationHandlerContainer(handler, annotationClass);
 					if (lib.annotationHandlers.put(container.annotationClass.getName(), container) != null) {
-						Eclipse.error(null, "Duplicate handlers for annotation type: " + container.annotationClass.getName());
+						Eclipse.error(null, "Duplicate handlers for annotation type: " + container.annotationClass.getName(), null);
 					}
 					lib.typeLibrary.addType(container.annotationClass.getName());
 				} catch (Throwable t) {
