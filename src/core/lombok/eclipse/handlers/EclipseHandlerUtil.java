@@ -500,6 +500,27 @@ public class EclipseHandlerUtil {
 		method.annotations = createSuppressWarningsAll(method, method.annotations);
 		TypeDeclaration parent = (TypeDeclaration) type.get();
 		
+		if (parent.scope != null && method.scope == null) {
+			// We think this means heisenbug #164 is about to happen later in some other worker thread.
+			// To improve our ability to figure out what the heck is going on, let's generate a log so we can ask those who stumble on this about it,
+			// and thus see a far more useful stack trace.
+			boolean report = true;
+			for (StackTraceElement elem : Thread.currentThread().getStackTrace()) {
+				// We intentionally hook into the middle of ClassScope filling in BlockScopes for PatchDelegate,
+				// meaning that will trigger a false positive. Detect it and do not report the occurence of #164 if so.
+				if ("lombok.eclipse.agent.PatchDelegate".equals(elem.getClassName())) {
+					report = false;
+					break;
+				}
+			}
+			
+			if (report) {
+				Eclipse.warning("We believe you may have just stumbled on lombok issue #164. Please " +
+						"report the stack trace associated with this message at:\n" +
+						"http://code.google.com/p/projectlombok/issues/detail?id=164", new Throwable());
+			}
+		}
+		
 		if (parent.methods == null) {
 			parent.methods = new AbstractMethodDeclaration[1];
 			parent.methods[0] = method;
