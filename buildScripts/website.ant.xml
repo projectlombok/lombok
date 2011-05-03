@@ -160,17 +160,17 @@ such as converting the changelog into HTML, and creating javadoc.
 	<taskdef name="scp" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.Scp" classpathref="build.path" />
 	<taskdef name="sshexec" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="build.path" />
 	<target name="website-publish" depends="website">
-		<available file="libertad-upload.key" property="libertad.key.available" />
-		<fail unless="libertad.key.available">You don't have the libertad-upload.key; you'll need it to get write access to the server.</fail>
+		<available file="escudo-upload.key" property="escudo.key.available" />
+		<fail unless="escudo.key.available">You don't have the escudo-upload.key; you'll need it to get write access to the server.</fail>
 		<scp
 			localFile="dist/website.tar.bz2"
 			todir="lombokup@projectlombok.org:/staging"
-			keyfile="libertad-upload.key" passphrase=""
-			sftp="true" verbose="true" trust="true" />
+			keyfile="escudo-upload.key" passphrase=""
+			sftp="false" verbose="true" trust="true" />
 		<sshexec
 			host="projectlombok.org"
 			username="lombokup"
-			keyfile="libertad-upload.key" passphrase=""
+			keyfile="escudo-upload.key" passphrase=""
 			trust="true" command="./deployWebsite" />
 	</target>
 	
@@ -247,19 +247,19 @@ such as converting the changelog into HTML, and creating javadoc.
 		</tar>
 	</target>
 	
-	<target name="edgeRelease" depends="edgeRelease-build">
-		<available file="libertad-upload.key" property="libertad.key.available" />
-		<fail unless="libertad.key.available">You don't have the libertad-upload.key; you'll need it to get write access to the server.</fail>
+	<target name="edgeRelease">
+		<available file="escudo-upload.key" property="escudo.key.available" />
+		<fail unless="escudo.key.available">You don't have the escudo-upload.key; you'll need it to get write access to the server.</fail>
 		
 		<scp
 			localFile="dist/website-edge.tar.bz2"
 			todir="lombokup@projectlombok.org:/staging"
-			keyfile="libertad-upload.key" passphrase=""
-			sftp="true" verbose="true" trust="true" />
+			keyfile="escudo-upload.key" passphrase=""
+			sftp="false" verbose="true" trust="true" />
 		<sshexec
 			host="projectlombok.org"
 			username="lombokup"
-			keyfile="libertad-upload.key" passphrase=""
+			keyfile="escudo-upload.key" passphrase=""
 			trust="true" command="./deployEdge" />
 	</target>
 	
