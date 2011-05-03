@@ -37,7 +37,8 @@ import java.lang.annotation.Target;
  * will generate for example an {@code boolean add(String)} method, which contains: {@code return foo.add(arg);}, as well as all other methods in {@code List}.
  * 
  * All public instance methods of the field's type, as well as all public instance methods of all the field's type's superfields are delegated, except for all methods
- * that exist in {@link java.lang.Object}, and except for methods that are already present in the class.
+ * that exist in {@link Object}, the {@code canEqual(Object)} method, and any methods that appear in types
+ * that are listed in the {@code excludes} property.
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.SOURCE)
@@ -47,6 +48,15 @@ public @interface Delegate {
 	 * type arguments can only be done as a field type. A solution for this is to create a private inner interface/class with the appropriate types extended, and possibly
 	 * with all methods you'd like to delegate listed, and then supply that class here. The field does not actually have to implement the type you're delegating; the
 	 * type listed here is used only to determine which delegate methods to generate.
+	 * 
+	 * NB: All methods in {@code Object}, as well as {@code canEqual(Object other)} will never be delegated.
 	 */
-	Class<?>[] value() default {};
+	Class<?>[] types() default {};
+	
+	/**
+	 * Each method in any of the types listed here (include supertypes) will <em>not</em> be delegated.
+	 * 
+	 * NB: All methods in {@code Object}, as well as {@code canEqual(Object other)} will never be delegated.
+	 */
+	Class<?>[] excludes() default {};
 }
