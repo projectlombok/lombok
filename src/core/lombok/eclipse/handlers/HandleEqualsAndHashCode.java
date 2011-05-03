@@ -510,9 +510,9 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 				other.modifiers |= ClassFileConstants.AccFinal;
 				Eclipse.setGeneratedBy(other, source);
 				char[] typeName = typeDecl.name;
-				Expression targetType;
+				TypeReference targetType;
 				if (typeDecl.typeParameters == null || typeDecl.typeParameters.length == 0) {
-					targetType = new SingleNameReference(((TypeDeclaration)type.get()).name, p);
+					targetType = new SingleTypeReference(typeName, p);
 					Eclipse.setGeneratedBy(targetType, source);
 					other.type = new SingleTypeReference(typeName, p);
 					Eclipse.setGeneratedBy(other.type, source);
@@ -530,8 +530,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 				}
 				NameReference oRef = new SingleNameReference(new char[] { 'o' }, p);
 				Eclipse.setGeneratedBy(oRef, source);
-				other.initialization = new CastExpression(oRef, targetType);
-				Eclipse.setGeneratedBy(other.initialization, source);
+				other.initialization = EclipseHandlerUtil.makeCastExpression(oRef, targetType, source);
 				statements.add(other);
 			}
 		}
@@ -547,8 +546,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 				
 				ThisReference thisReference = new ThisReference(pS, pE);
 				Eclipse.setGeneratedBy(thisReference, source);
-				CastExpression castThisRef = new CastExpression(thisReference, generateQualifiedNameRef(source, TypeConstants.JAVA_LANG_OBJECT));
-				Eclipse.setGeneratedBy(castThisRef, source);
+				CastExpression castThisRef = EclipseHandlerUtil.makeCastExpression(thisReference, generateQualifiedTypeRef(source, TypeConstants.JAVA_LANG_OBJECT), source);
 				castThisRef.sourceStart = pS; castThisRef.sourceEnd = pE;
 				
 				otherCanEqual.arguments = new Expression[] {castThisRef};
@@ -625,8 +623,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 					equalsCall.receiver = createFieldAccessor(field, fieldAccess, source);
 					equalsCall.selector = "equals".toCharArray();
 					Expression equalsArg = createFieldAccessor(field, fieldAccess, source, otherName);
-					CastExpression castEqualsArg = new CastExpression(equalsArg, generateQualifiedNameRef(source, TypeConstants.JAVA_LANG_OBJECT));
-					Eclipse.setGeneratedBy(castEqualsArg, source);
+					CastExpression castEqualsArg = EclipseHandlerUtil.makeCastExpression(equalsArg, generateQualifiedTypeRef(source, TypeConstants.JAVA_LANG_OBJECT), source);
 					castEqualsArg.sourceStart = pS; castEqualsArg.sourceEnd = pE;
 					equalsCall.arguments = new Expression[] { castEqualsArg };
 					UnaryExpression fieldsNotEqual = new UnaryExpression(equalsCall, OperatorIds.NOT);
@@ -762,9 +759,8 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		TypeReference intRef = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 		intRef.sourceStart = pS; intRef.sourceEnd = pE;
 		Eclipse.setGeneratedBy(intRef, source);
-		CastExpression expr = new CastExpression(xorParts, intRef);
+		CastExpression expr = EclipseHandlerUtil.makeCastExpression(xorParts, intRef, source);
 		expr.sourceStart = pS; expr.sourceEnd = pE;
-		Eclipse.setGeneratedBy(expr, source);
 		return expr;
 	}
 	
@@ -776,6 +772,19 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		
 		if (varNames.length > 1) ref = new QualifiedNameReference(varNames, new long[varNames.length], pS, pE);
 		else ref = new SingleNameReference(varNames[0], p);
+		Eclipse.setGeneratedBy(ref, source);
+		return ref;
+	}
+	
+	private TypeReference generateQualifiedTypeRef(ASTNode source, char[]... varNames) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long)pS << 32 | pE;
+		
+		TypeReference ref;
+		
+		long[] poss = Eclipse.poss(source, varNames.length);
+		if (varNames.length > 1) ref = new QualifiedTypeReference(varNames, poss);
+		else ref = new SingleTypeReference(varNames[0], p);
 		Eclipse.setGeneratedBy(ref, source);
 		return ref;
 	}

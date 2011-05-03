@@ -23,6 +23,8 @@ package lombok.eclipse.handlers;
 
 import static lombok.eclipse.Eclipse.*;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,6 +34,7 @@ import java.util.regex.Pattern;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
+import lombok.Lombok;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
 import lombok.core.handlers.TransformationsUtil;
@@ -44,6 +47,7 @@ import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
+import org.eclipse.jdt.internal.compiler.ast.CastExpression;
 import org.eclipse.jdt.internal.compiler.ast.Clinit;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
@@ -63,6 +67,7 @@ import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
+import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
@@ -70,6 +75,7 @@ import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 
 /**
@@ -653,6 +659,72 @@ public class EclipseHandlerUtil {
 		}
 		
 		return problematic;
+	}
+	
+	/**
+	 * In eclipse 3.7+, the CastExpression constructor was changed from a really weird version to
+	 * a less weird one. Unfortunately that means we need to use reflection as we want to be compatible
+	 * with eclipse versions before 3.7 and 3.7+.
+	 * 
+	 * @param ref The {@code foo} in {@code (String)foo}.
+	 * @param castTo The {@code String} in {@code (String)foo}.
+	 */
+	public static CastExpression makeCastExpression(Expression ref, TypeReference castTo, ASTNode source) {
+		CastExpression result;
+		try {
+			if (castExpressionConstructorIsTypeRefBased) {
+				result = castExpressionConstructor.newInstance(ref, castTo);
+			} else {
+				Expression castToConverted = castTo;
+				
+				if (castTo.getClass() == SingleTypeReference.class && !PRIMITIVE_NAMES.contains(
+						" " + new String(((SingleTypeReference)castTo).token) + " ")) {
+					SingleTypeReference str = (SingleTypeReference) castTo;
+					//Why a SingleNameReference instead of a SingleTypeReference you ask? I don't know. It seems dumb. Ask the ecj guys.
+					castToConverted = new SingleNameReference(str.token, 0);
+					castToConverted.bits = (castToConverted.bits & ~Binding.VARIABLE) | Binding.TYPE;
+					castToConverted.sourceStart = str.sourceStart;
+					castToConverted.sourceEnd = str.sourceEnd;
+					Eclipse.setGeneratedBy(castToConverted, source);
+				} else if (castTo.getClass() == QualifiedTypeReference.class) {
+					QualifiedTypeReference qtr = (QualifiedTypeReference) castTo;
+					//Same here, but for the more complex types, they stay types.
+					castToConverted = new QualifiedNameReference(qtr.tokens, qtr.sourcePositions, qtr.sourceStart, qtr.sourceEnd);
+					castToConverted.bits = (castToConverted.bits & ~Binding.VARIABLE) | Binding.TYPE;
+					Eclipse.setGeneratedBy(castToConverted, source);
+				}
+				
+				result = castExpressionConstructor.newInstance(ref, castToConverted);
+			}
+		} catch (InvocationTargetException e) {
+			throw Lombok.sneakyThrow(e.getCause());
+		} catch (IllegalAccessException e) {
+			throw Lombok.sneakyThrow(e);
+		} catch (InstantiationException e) {
+			throw Lombok.sneakyThrow(e);
+		}
+		
+		Eclipse.setGeneratedBy(result, source);
+		return result;
+	}
+	
+	private static final String PRIMITIVE_NAMES = " int long float double char short byte boolean ";
+	private static final Constructor<CastExpression> castExpressionConstructor;
+	private static final boolean castExpressionConstructorIsTypeRefBased;
+	
+	static {
+		Constructor<?> constructor = null;
+		for (Constructor<?> ctor : CastExpression.class.getConstructors()) {
+			if (ctor.getParameterTypes().length != 2) continue;
+			constructor = ctor;
+		}
+		
+		@SuppressWarnings("unchecked")
+		Constructor<CastExpression> constructor_ = (Constructor<CastExpression>) constructor;
+		castExpressionConstructor = constructor_;
+		
+		castExpressionConstructorIsTypeRefBased =
+				(castExpressionConstructor.getParameterTypes()[1] == TypeReference.class);
 	}
 	
 	private static final Annotation[] EMPTY_ANNOTATION_ARRAY = new Annotation[0];
