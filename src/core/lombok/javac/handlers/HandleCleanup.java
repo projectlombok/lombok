@@ -117,7 +117,7 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 		List<JCStatement> cleanupCall = List.<JCStatement>of(maker.Exec(
 				maker.Apply(List.<JCExpression>nil(), cleanupMethod, List.<JCExpression>nil())));
 		
-		JCMethodInvocation preventNullAnalysis = maker.Apply(List.<JCExpression>nil(), JavacHandlerUtil.chainDotsString(maker, annotationNode, "lombok.Lombok.preventNullAnalysis"), List.<JCExpression>of(maker.Ident(decl.name)));
+		JCMethodInvocation preventNullAnalysis = preventNullAnalysis(maker, annotationNode, maker.Ident(decl.name));
 		JCBinary isNull = maker.Binary(Javac.getCTCint(JCTree.class, "NE"), preventNullAnalysis, maker.Literal(Javac.getCTCint(TypeTags.class, "BOT"), null));
 		
 		JCIf ifNotNullCleanup = maker.If(isNull, maker.Block(0, cleanupCall), null);
@@ -137,6 +137,12 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 		ancestor.rebuild();
 		
 		return true;
+	}
+	
+	private JCMethodInvocation preventNullAnalysis(TreeMaker maker, JavacNode node, JCExpression expression) {
+		JCMethodInvocation singletonList = maker.Apply(List.<JCExpression>nil(), JavacHandlerUtil.chainDotsString(maker, node, "java.util.Collections.singletonList"), List.of(expression));
+		JCMethodInvocation cleanedExpr = maker.Apply(List.<JCExpression>nil(), maker.Select(singletonList, node.toName("get")) , List.<JCExpression>of(maker.Literal(TypeTags.INT, 0)));
+		return cleanedExpr;
 	}
 	
 	private void doAssignmentCheck(JavacNode node, List<JCStatement> statements, Name name) {

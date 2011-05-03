@@ -18,7 +18,7 @@ class CleanupPlain {
           }
         finally
           {
-            if ((lombok.Lombok.preventNullAnalysis(out) != null))
+            if ((java.util.Collections.singletonList(out).get(0) != null))
                 {
                   out.close();
                 }
@@ -26,7 +26,7 @@ class CleanupPlain {
       }
     finally
       {
-        if ((lombok.Lombok.preventNullAnalysis(in) != null))
+        if ((java.util.Collections.singletonList(in).get(0) != null))
             {
               in.close();
             }

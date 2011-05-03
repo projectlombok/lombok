@@ -1,0 +1,42 @@
+import com.google.inject.Inject;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.hibernate.validator.Min;
+
+public class OnMethodOnParamExample {
+	private int bananas;
+	private int radishes;
+	
+	@Deprecated
+	public int getBananas() {
+		return bananas;
+	}
+	
+	@Min(10)
+	public int setRadishes(int radishes) {
+		this.radishes = radishes;
+	}
+	
+	@Override public String toString() {
+		return String.format("I have %d bananas and %d beautiful radishes", bananas, radishes);
+	}
+}
+
+class OnConstructorExample {
+	private final Fireman fireman;
+	private int fires = 10;
+	
+	@Inject
+	public OnConstructorExample(Fireman fireman) {
+		this.fireman = fireman;
+	}
+	
+	public void setFires(@SuppressWarnings("all") int fires) {
+		this.fires = fires;
+	}
+	
+	@Override public String toString() {
+		return String.format("Fireman: %s has %d fires", fireman, fires);
+	}
+}

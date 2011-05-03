@@ -4,7 +4,7 @@ class CleanupName {
 		try {
 			System.out.println(o);
 		} finally {
-			if (lombok.Lombok.preventNullAnalysis(o) != null) {
+			if (java.util.Collections.singletonList(o).get(0) != null) {
 				o.toString();
 			}
 		}
@@ -14,7 +14,7 @@ class CleanupName {
 		try {
 			System.out.println(o);
 		} finally {
-			if (lombok.Lombok.preventNullAnalysis(o) != null) {
+			if (java.util.Collections.singletonList(o).get(0) != null) {
 				o.toString();
 			}
 		}
