@@ -20,12 +20,21 @@
 			</p>
 			<p>
 			Lombok delegates all <code>public</code> methods of the field's type, as well as those of its supertype except for all methods declared 
-			in <code>java.lang.Object</code>. You can provide a specific implementation for a method by providing you own implementation, lombok will not
-			generate delegate methods for those already declared in the class.
+			in <code>java.lang.Object</code>.
 			</p>
 			<p>
-			You can pass any number of classes into the <code>@Delegate</code> annotation. If you do that, then lombok will delegate all <code>public</code>
-			methods in those types (and their supertypes, except <code>java.lang.Object</code>) instead of looking at the field's type.
+			You can pass any number of classes into the <code>@Delegate</code> annotation's <code>types</code> parameter.
+			If you do that, then lombok will delegate all <code>public</code> methods in those types (and their supertypes, except
+			<code>java.lang.Object</code>) instead of looking at the field's type.
+			</p>
+			<p>
+			All public non-Object methods that are part of the field's type (or, if you used <code>types</code> parameter, the methods of those types) are
+			copied, whether or not you also wrote implementations for those methods. That would thus result in duplicate method errors. You can avoid these
+			by using the <code>@Delegate(excludes=SomeType.class)</code> parameter to exclude all public methods in the excluded type(s), and their supertypes.
+			</p>
+			<p>
+			To have very precise control over what is delegated and what isn't, write private inner interfaces with method signatures, then specify these
+			private inner interfaces as types in <code>@Delegate(types=PrivateInnerInterfaceWithIncludesList.class, excludes=SameForExcludes.class)</code>.
 			</p>
 		</div>
 		<div class="snippets">
@@ -43,12 +52,14 @@
 		<div class="overview">
 			<h3>Small print</h3><div class="smallprint">
 			<p>
-			When passing classes to the annotation, these cannot contain generics. This is a limitation of java that lombok cannot work around.
+			When passing classes to the annotation's <code>types</code> or <code>excludes<code> parameter, you cannot include generics.
+			This is a limitation of java. Use private inner interfaces or classes that extend the intended type including the
+			generics parameter to work around this problem.
 			</p>
 			<p>
 			When passing classes to the annotation, these classes do not need to be supertypes of the field. See the example.
 			</p>
-			<div>	
+			<div>
 		</div>
 		<div class="footer">
 			<a href="index.html">Back to features</a> | <a href="val.html">Previous feature (val)</a> | <a href="onX.html">Next feature (onMethod=,onParameter=,onConstructor=)</a><br />
