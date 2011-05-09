@@ -58,7 +58,7 @@ public class EclipseFinder extends IdeFinder {
 	}
 	
 	protected List<String> getSourceDirsOnWindows() {
-		return Arrays.asList("\\", "\\Program Files", System.getProperty("user.home", "."));
+		return Arrays.asList("\\", "\\Program Files", "\\Program Files (x86)", System.getProperty("user.home", "."));
 	}
 	
 	protected List<String> getSourceDirsOnMac() {
@@ -96,24 +96,32 @@ public class EclipseFinder extends IdeFinder {
 				try {
 					File f = new File(letter + ":" + possibleSource);
 					if (!f.isDirectory()) continue;
-					for (File dir : f.listFiles()) {
-						if (!dir.isDirectory()) continue;
-						try {
-							if (dir.getName().toLowerCase().contains(getDirName())) {
-								String eclipseLocation = findEclipseOnWindows1(dir);
-								if (eclipseLocation != null) {
-									try {
-										IdeLocation newLocation = createLocation(eclipseLocation);
-										if (newLocation != null) locations.add(newLocation);
-									} catch (CorruptedIdeLocationException e) {
-										problems.add(e);
-									}
-								}
-							}
-						} catch (Exception ignore) {}
-					}
+					recurseDirectory(locations, problems, f);
 				} catch (Exception ignore) {}
 			}
+		}
+	}
+	
+	private void recurseDirectory(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems, File f) {
+		//Various try/catch/ignore statements are in this for loop. Weird conditions on the disk can cause exceptions,
+		//such as an unformatted drive causing a NullPointerException on listFiles. Best action is almost invariably to just
+		//continue onwards.
+		for (File dir : f.listFiles()) {
+			if (!dir.isDirectory()) continue;
+			try {
+				if (dir.getName().toLowerCase().contains(getDirName())) {
+					String eclipseLocation = findEclipseOnWindows1(dir);
+					if (eclipseLocation != null) {
+						try {
+							IdeLocation newLocation = createLocation(eclipseLocation);
+							if (newLocation != null) locations.add(newLocation);
+						} catch (CorruptedIdeLocationException e) {
+							problems.add(e);
+						}
+					}
+					recurseDirectory(locations, problems, dir);
+				}
+			} catch (Exception ignore) {}
 		}
 	}
 	
