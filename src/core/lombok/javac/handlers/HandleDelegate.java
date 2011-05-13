@@ -50,7 +50,6 @@ import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ClassType;
@@ -96,41 +95,68 @@ public class HandleDelegate implements JavacAnnotationHandler<Delegate> {
 			return false;
 		}
 		
-		List<Object> delegateTypes = annotation.getActualExpressions("value");
+		List<Object> delegateTypes = annotation.getActualExpressions("types");
+		List<Object> excludeTypes = annotation.getActualExpressions("excludes");
 		JavacResolution reso = new JavacResolution(annotationNode.getContext());
-		List<Type> resolved = new ArrayList<Type>();
+		List<Type> toDelegate = new ArrayList<Type>();
+		List<Type> toExclude = new ArrayList<Type>();
 		
 		if (delegateTypes.isEmpty()) {
 			Type type = ((JCVariableDecl)annotationNode.up().get()).type;
 			if (type == null) reso.resolveClassMember(annotationNode.up());
 			//TODO I'm fairly sure the above line (and that entire method) does effectively bupkis!
 			type = ((JCVariableDecl)annotationNode.up().get()).type;
-			if (type != null) resolved.add(type);
+			if (type != null) toDelegate.add(type);
 		} else {
 			for (Object dt : delegateTypes) {
 				if (dt instanceof JCFieldAccess && ((JCFieldAccess)dt).name.toString().equals("class")) {
 					Type type = ((JCFieldAccess)dt).selected.type;
 					if (type == null) reso.resolveClassMember(annotationNode);
 					type = ((JCFieldAccess)dt).selected.type;
-					if (type != null) resolved.add(type);
+					if (type != null) toDelegate.add(type);
 				}
 			}
 		}
 		
-		List<MethodSig> signatures = new ArrayList<MethodSig>();
-		Set<String> banList = new HashSet<String>();
-		for (Type t : resolved) {
-			banList.addAll(METHODS_IN_OBJECT);
-			JavacNode typeNode = annotationNode.up().up();
-			for (Symbol member : ((JCClassDecl)typeNode.get()).sym.getEnclosedElements()) {
-				if (member instanceof MethodSymbol) {
-					MethodSymbol method = (MethodSymbol) member;
-					banList.add(printSig((ExecutableType) method.asType(), method.name, annotationNode.getTypesUtil()));
-				}
+		for (Object et : excludeTypes) {
+			if (et instanceof JCFieldAccess && ((JCFieldAccess)et).name.toString().equals("class")) {
+				Type type = ((JCFieldAccess)et).selected.type;
+				if (type == null) reso.resolveClassMember(annotationNode);
+				type = ((JCFieldAccess)et).selected.type;
+				if (type != null) toExclude.add(type);
 			}
+		}
+		
+		List<MethodSig> signaturesToDelegate = new ArrayList<MethodSig>();
+		List<MethodSig> signaturesToExclude = new ArrayList<MethodSig>();
+		Set<String> banList = new HashSet<String>();
+		banList.addAll(METHODS_IN_OBJECT);
+		/* To exclude all methods in the class itself, try this:
+		for (Symbol member : ((JCClassDecl)typeNode.get()).sym.getEnclosedElements()) {
+			if (member instanceof MethodSymbol) {
+				MethodSymbol method = (MethodSymbol) member;
+				banList.add(printSig((ExecutableType) method.asType(), method.name, annotationNode.getTypesUtil()));
+			}
+		}
+		 */
+		for (Type t : toExclude) {
 			if (t instanceof ClassType) {
 				ClassType ct = (ClassType) t;
-				addMethodBindings(signatures, ct, annotationNode, banList);
+				addMethodBindings(signaturesToExclude, ct, annotationNode, banList);
+			} else {
+				annotationNode.addError("@Delegate can only use concrete class types, not wildcards, arrays, type variables, or primitives.");
+				return false;
+			}
+		}
+		
+		for (MethodSig sig : signaturesToExclude) {
+			banList.add(printSig(sig.type, sig.name, annotationNode.getTypesUtil()));
+		}
+		
+		for (Type t : toDelegate) {
+			if (t instanceof ClassType) {
+				ClassType ct = (ClassType) t;
+				addMethodBindings(signaturesToDelegate, ct, annotationNode, banList);
 			} else {
 				annotationNode.addError("@Delegate can only use concrete class types, not wildcards, arrays, type variables, or primitives.");
 				return false;
@@ -139,7 +165,7 @@ public class HandleDelegate implements JavacAnnotationHandler<Delegate> {
 		
 		Name delegateFieldName = annotationNode.toName(annotationNode.up().getName());
 		
-		for (MethodSig sig : signatures) generateAndAdd(sig, annotationNode, delegateFieldName);
+		for (MethodSig sig : signaturesToDelegate) generateAndAdd(sig, annotationNode, delegateFieldName);
 		
 		return false;
 	}
