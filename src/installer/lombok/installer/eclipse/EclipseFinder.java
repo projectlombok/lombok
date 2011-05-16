@@ -26,6 +26,7 @@ import static java.util.Arrays.asList;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import lombok.installer.IdeFinder;
@@ -61,14 +62,6 @@ public class EclipseFinder extends IdeFinder {
 		return Arrays.asList("\\", "\\Program Files", "\\Program Files (x86)", System.getProperty("user.home", "."));
 	}
 	
-	protected List<String> getSourceDirsOnMac() {
-		return Arrays.asList("/Applications", System.getProperty("user.home", "."));
-	}
-	
-	protected List<String> getSourceDirsOnUnix() {
-		return Arrays.asList(System.getProperty("user.home", "."));
-	}
-	
 	/**
 	 * Returns a list of paths of Eclipse installations.
 	 * Eclipse installations are found by checking for the existence of 'eclipse.exe' in the following locations:
@@ -80,55 +73,52 @@ public class EclipseFinder extends IdeFinder {
 	 * Where 'X' is tried for all local disk drives, unless there's a problem calling fsutil, in which case only
 	 * C: is tried.
 	 */
-	private void findEclipseOnWindows(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems) {
+	private List<String> getSourceDirsOnWindowsWithDriveLetters() {
 		List<String> driveLetters = asList("C");
 		try {
 			driveLetters = getDrivesOnWindows();
 		} catch (Throwable ignore) {
 			ignore.printStackTrace();
 		}
-		
-		//Various try/catch/ignore statements are in this for loop. Weird conditions on the disk can cause exceptions,
-		//such as an unformatted drive causing a NullPointerException on listFiles. Best action is almost invariably to just
-		//continue onwards.
+		List<String> sourceDirs = new ArrayList<String>();
 		for (String letter : driveLetters) {
 			for (String possibleSource : getSourceDirsOnWindows()) {
-				try {
-					File f = new File(letter + ":" + possibleSource);
-					if (!f.isDirectory()) continue;
-					recurseDirectory(locations, problems, f);
-				} catch (Exception ignore) {}
+				sourceDirs.add(letter + ":" + possibleSource);
 			}
 		}
+		return sourceDirs;
 	}
 	
-	private void recurseDirectory(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems, File f) {
-		//Various try/catch/ignore statements are in this for loop. Weird conditions on the disk can cause exceptions,
-		//such as an unformatted drive causing a NullPointerException on listFiles. Best action is almost invariably to just
-		//continue onwards.
-		for (File dir : f.listFiles()) {
-			if (!dir.isDirectory()) continue;
-			try {
-				if (dir.getName().toLowerCase().contains(getDirName())) {
-					String eclipseLocation = findEclipseOnWindows1(dir);
-					if (eclipseLocation != null) {
-						try {
-							IdeLocation newLocation = createLocation(eclipseLocation);
-							if (newLocation != null) locations.add(newLocation);
-						} catch (CorruptedIdeLocationException e) {
-							problems.add(e);
-						}
-					}
-					recurseDirectory(locations, problems, dir);
-				}
-			} catch (Exception ignore) {}
+	protected List<String> getSourceDirsOnMac() {
+		return Arrays.asList("/Applications", System.getProperty("user.home", "."));
+	}
+	
+	protected List<String> getSourceDirsOnUnix() {
+		return Arrays.asList(System.getProperty("user.home", "."));
+	}
+	
+	private List<File> transformToFiles(List<String> fileNames) {
+		List<File> files = new ArrayList<File>();
+		for (String fileName : fileNames) {
+			files.add(new File(fileName));
 		}
+		return files;
 	}
 	
-	/** Checks if the provided directory contains 'eclipse.exe', and if so, returns the directory, otherwise null. */
-	private String findEclipseOnWindows1(File dir) {
-		if (new File(dir, getWindowsExecutableName()).isFile()) return dir.getAbsolutePath();
-		return null;
+	private List<File> getFlatSourceLocationsOnUnix() {
+		List<File> dirs = new ArrayList<File>();
+		dirs.add(new File("/usr/bin/"));
+		dirs.add(new File("/usr/local/bin/"));
+		dirs.add(new File(System.getProperty("user.home", "."), "bin/"));
+		return dirs;
+	}
+	
+	private List<File> getNestedSourceLocationOnUnix() {
+		List<File> dirs = new ArrayList<File>();
+		dirs.add(new File("/usr/local/share"));
+		dirs.add(new File("/usr/local"));
+		dirs.add(new File("/usr/share"));
+		return dirs;
 	}
 	
 	/**
@@ -147,85 +137,99 @@ public class EclipseFinder extends IdeFinder {
 	public void findIdes(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems) {
 		switch (getOS()) {
 		case WINDOWS:
-			findEclipseOnWindows(locations, problems);
+			new WindowsFinder().findEclipse(locations, problems);
 			break;
 		case MAC_OS_X:
-			findEclipseOnMac(locations, problems);
+			new MacFinder().findEclipse(locations, problems);
 			break;
 		default:
 		case UNIX:
-			findEclipseOnUnix(locations, problems);
+			new UnixFinder().findEclipse(locations, problems);
 			break;
 		}
 	}
 	
-	/** Scans a couple of likely locations on linux. */
-	private void findEclipseOnUnix(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems) {
-		List<String> guesses = new ArrayList<String>();
-		
-		File d;
-		
-		d = new File("/usr/bin/" + getUnixExecutableName());
-		if (d.exists()) guesses.add(d.getPath());
-		d = new File("/usr/local/bin/" + getUnixExecutableName());
-		if (d.exists()) guesses.add(d.getPath());
-		d = new File(System.getProperty("user.home", "."), "bin/" + getUnixExecutableName());
-		if (d.exists()) guesses.add(d.getPath());
-		
-		findEclipseOnUnix1("/usr/local/share", guesses);
-		findEclipseOnUnix1("/usr/local", guesses);
-		findEclipseOnUnix1("/usr/share", guesses);
-		for (String possibleSourceDir : getSourceDirsOnUnix()) {
-			findEclipseOnUnix1(possibleSourceDir, guesses);
+	private class UnixFinder extends DirectoryFinder {
+		UnixFinder() {
+			super(getNestedSourceLocationOnUnix(), getFlatSourceLocationsOnUnix());
 		}
 		
-		for (String guess : guesses) {
-			try {
-				IdeLocation newLocation = createLocation(guess);
-				if (newLocation != null) locations.add(newLocation);
-			} catch (CorruptedIdeLocationException e) {
-				problems.add(e);
-			}
+		@Override protected String findEclipseOnPlatform(File dir) {
+			File possible = new File(dir, getUnixExecutableName());
+			return (possible.exists()) ? possible.getAbsolutePath() : null;
 		}
 	}
 	
-	private void findEclipseOnUnix1(String dir, List<String> guesses) {
-		File d = new File(dir);
-		if (!d.isDirectory()) return;
-		for (File f : d.listFiles()) {
-			if (f.isDirectory() && f.getName().toLowerCase().contains(getDirName())) {
-				File possible = new File(f, getUnixExecutableName());
-				if (possible.exists()) guesses.add(possible.getAbsolutePath());
-			}
+	private class WindowsFinder extends DirectoryFinder {
+		WindowsFinder() {
+			super(transformToFiles(getSourceDirsOnWindowsWithDriveLetters()), Collections.<File>emptyList());
+		}
+		
+		/** Checks if the provided directory contains 'eclipse.exe', and if so, returns the directory, otherwise null. */
+		@Override 
+		protected String findEclipseOnPlatform(File dir) {
+			File possible = new File(dir, getWindowsExecutableName());
+			return (possible.isFile()) ? dir.getAbsolutePath() : null;
 		}
 	}
 	
-	/**
-	 * Scans /Applications for any folder named 'Eclipse'
-	 */
-	private void findEclipseOnMac(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems) {
-		for (String possibleSourceDir : getSourceDirsOnMac()) {
-			File[] list = new File(possibleSourceDir).listFiles();
-			if (list != null) for (File dir : list) {
-				findEclipseOnMac1(dir, locations, problems);
+	private class MacFinder extends DirectoryFinder {
+		MacFinder() {
+			super(transformToFiles(getSourceDirsOnMac()), Collections.<File>emptyList());
+		}
+		
+		protected String findEclipseOnPlatform(File dir) {
+			if (dir.getName().toLowerCase().equals(getMacExecutableName().toLowerCase())) return dir.getParent();
+			if (dir.getName().toLowerCase().contains(getDirName())) {
+				if (new File(dir, getMacExecutableName()).exists()) return dir.toString();
 			}
+			return null;
 		}
 	}
 	
-	private void findEclipseOnMac1(File f, List<IdeLocation> locations, List<CorruptedIdeLocationException> problems) {
-		if (!f.isDirectory()) return;
-		if (f.getName().toLowerCase().equals(getMacExecutableName().toLowerCase())) {
-			try {
-				IdeLocation newLocation = createLocation(f.getParent());
-				if (newLocation != null) locations.add(newLocation);
-			} catch (CorruptedIdeLocationException e) {
-				problems.add(e);
-			}
+	private abstract class DirectoryFinder {
+		private final List<File> flatSourceDirs;
+		private final List<File> nestedSourceDirs;
+
+		DirectoryFinder(List<File> nestedSourceDirs, List<File> flatSourceDirs) {
+			this.nestedSourceDirs = nestedSourceDirs;
+			this.flatSourceDirs = flatSourceDirs;
 		}
-		if (f.getName().toLowerCase().contains(getDirName())) {
-			if (new File(f, getMacExecutableName()).exists()) {
+		
+		public void findEclipse(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems) {
+			for (File dir : nestedSourceDirs) recurseDirectory(locations, problems, dir);
+			for (File dir : flatSourceDirs) findEclipse(locations, problems, dir);
+		}
+		
+		protected abstract String findEclipseOnPlatform(File dir);
+		
+		protected void recurseDirectory(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems, File dir) {
+			recurseDirectory0(locations, problems, dir, 0);
+		}
+		
+		private void recurseDirectory0(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems, File f, int loopCounter) {
+			//Various try/catch/ignore statements are in this for loop. Weird conditions on the disk can cause exceptions,
+			//such as an unformatted drive causing a NullPointerException on listFiles. Best action is almost invariably to just
+			//continue onwards.
+			File[] listFiles = f.listFiles();
+			if (listFiles == null) return;
+			
+			for (File dir : listFiles) {
+				if (!dir.isDirectory()) continue;
 				try {
-					IdeLocation newLocation = createLocation(f.toString());
+					if (dir.getName().toLowerCase().contains(getDirName())) {
+						findEclipse(locations, problems, dir);
+						if (loopCounter < 50) recurseDirectory0(locations, problems, dir, loopCounter + 1);
+					}
+				} catch (Exception ignore) {}
+			}
+		}
+
+		private void findEclipse(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems, File dir) {
+			String eclipseLocation = findEclipseOnPlatform(dir);
+			if (eclipseLocation != null) {
+				try {
+					IdeLocation newLocation = createLocation(eclipseLocation);
 					if (newLocation != null) locations.add(newLocation);
 				} catch (CorruptedIdeLocationException e) {
 					problems.add(e);
