@@ -37,11 +37,6 @@ import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.TransformEclipseAST;
 import lombok.eclipse.handlers.EclipseHandlerUtil;
-import lombok.patcher.Hook;
-import lombok.patcher.MethodTarget;
-import lombok.patcher.ScriptManager;
-import lombok.patcher.StackRequest;
-import lombok.patcher.scripts.ScriptBuilder;
 
 import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
@@ -84,16 +79,6 @@ import org.eclipse.jdt.internal.compiler.lookup.UnresolvedReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 
 public class PatchDelegate {
-	static void addPatches(ScriptManager sm, boolean ecj) {
-		final String CLASSSCOPE_SIG = "org.eclipse.jdt.internal.compiler.lookup.ClassScope";
-		
-		sm.addScript(ScriptBuilder.exitEarly()
-				.target(new MethodTarget(CLASSSCOPE_SIG, "buildFieldsAndMethods", "void"))
-				.request(StackRequest.THIS)
-				.decisionMethod(new Hook(PatchDelegate.class.getName(), "handleDelegateForType", "boolean", CLASSSCOPE_SIG))
-				.build());
-	}
-	
 	private static class ClassScopeEntry {
 		ClassScopeEntry(ClassScope scope) {
 			this.scope = scope;

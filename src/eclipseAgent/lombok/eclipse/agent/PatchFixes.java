@@ -35,7 +35,6 @@ import lombok.core.PostCompiler;
 import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 
@@ -144,7 +143,7 @@ public class PatchFixes {
 		
 		try {
 			in = annotatable.getAnnotations();
-		} catch (JavaModelException e) {
+		} catch (Exception e) {
 			return out;
 		}
 		
