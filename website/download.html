@@ -1,61 +1,65 @@
 <!DOCTYPE html>
 <html><head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script src="logi/jQuery-all.js" type="text/javascript"></script>
 	<link rel="stylesheet" type="text/css" href="logi/reset.css" />
+	<link rel="stylesheet" type="text/css" href="index.css" />
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
 	<meta name="description" content="Spice up your java" />
-	<title>Project Lombok - Download</title>
-	<style type="text/css">
-		code {
-			font-size: 12px;
-			font-family: monospaced;
-		}
-		
-		#downloadLink {
-			font-size: 14px;
-		}
-		
-		.meat {
-			margin: 16px auto 0 auto;
-			width: 800px;
-		}
-		
-		.backLink {
-			padding-top: 100px;
-			width: 100%;
-			text-align: right;
-		}
-		
-		h1 {
-			padding-bottom: 0;
-			margin-bottom: 4px;
-		}
-	</style>
+	<title>Project Lombok</title>
+	<!--[if lt IE 7]><script type="text/javascript" src="logi/iepngfix_tilebg.js"></script><![endif]--> 
 </head><body>
+	<a id="forkMe" href="http://github.com/rzwitserloot/lombok"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
 	<div class="meat">
-		<h1>Download Lombok</h1>
-		<div class="versionInfo">
-			version: @VERSION@ | <a href="changelog.html">changelog</a>
+		<h1><a href="/">Project Lombok</a> - Download</h1>
+		<div id="buttonBar" class="buttonBar">
+			<a class="button" href="features/index.html">
+				<img src="icon_overview.png" />
+				<span>Feature Overview</span>
+			</a>
+			<a class="button" href="http://groups.google.com/group/project-lombok">
+				<img src="icon_discussion.png" />
+				<span>Discuss / Help</span>
+			</a>
+			<a class="button" href="http://wiki.github.com/rzwitserloot/lombok/contributing">
+				<img src="icon_contribute.png" />
+				<span>Contribute</span>
+			</a>
+			<a class="button" href="http://code.google.com/p/projectlombok/issues/list">
+				<img src="icon_bugs.png" />
+				<span>Report an issue</span>
+			</a>
+			<div class="downloadContainer">
+				<div class="versionInfo">
+					Version: @VERSION@ | <a href="changelog.html">changelog</a>
+				</div>
+			</div>
 		</div>
-		<p id="downloadHelp">
-			Just double-click the <code>lombok.jar</code> file you'll download to install lombok into
-			your IDE. <code>lombok.jar</code> is also the jar you use as a project dependency
-			(include it in your classpath when compiling with <code>javac</code> or add it to your project
-			library list in your java IDE). It's the only jar you need!<br /><br />
-			If double-clicking opens winrar or some other archiver, go to the command line and run<br />
-			<code>java -jar lombok.jar</code> to start the installer.
-		</p>
-		<a href="http://projectlombok.googlecode.com/files/lombok.jar" id="downloadLink">
-			Download now!
-		</a>
-		<p>
-			<a href="mavenrepo/index.html">Using maven? Click here!</a>
-		</p>
-		<p>
-			Interested in the cutting edge build? More information on the <a href="download-edge.html">cutting edge</a> page.
-		</p>
-		<div class="backLink">
-			<a href="index.html">back to the project homepage</a>
+		<div class="downloadHelp">
+			<h3>Maven or Ivy</h3>
+			Lombok is in maven central with groupId <code>org.projectlombok</code>, artifactId <code>lombok</code> and version <code>@VERSION@</code>.<br />
+			Full instructions are on the <a href="mavenrepo/index.html">lombok maven info page</a>.
+			<h3>Javac, netbeans, and most other compilers and tools based on javac</h3>
+			Just put <code>lombok.jar</code> on the classpath.
+			<h3>Eclipse and STS (Springsource Tool Suite)</h3>
+			Run <code>lombok.jar</code> as a stand-alone java app (i.e. doubleclick it, usually) to open the installer, which will find your eclipse/STS installs automatically.
+			<h3>IDEA IntelliJ</h3>
+			lombok doesn't (yet) work under IntelliJ. We're working on it though!
+			<h3>Javadoc</h3>
+			First delombok your code then run javadoc on the result. See the <a href="/features/delombok.html">delombok feature page</a> for more information.
+			<h3>GWT</h3>
+			When you create a new GWT project, 2 batch scripts are made by the tool (one to run in devmode, one to compile). Open these scripts in an editor and find the
+			invocation of 'java'. Add the following: <code>-javaagent:lombok.jar=ECJ</code>. Then copy <code>lombok.jar</code> to your GWT project directory, and add <code>lombok.jar</code>
+			to the classpath as usual. <span class="attribution">Thanks to Stephan Habermann for figuring this out.</span>
+			<h3>Play! Framework</h3>
+			Play does not run annotation processors of any kind, but Aaron Freeman has made a play plugin to get around this problem. See the <a href="https://github.com/aaronfreeman/play-lombok">play-lombok</a> plugin for more information.
+			<h3>ecj and other tools based on ecj</h3>
+			Put <code>lombok.jar</code> on the classpath and add the following VM parameter when invoking ecj: <code>-javaagent:lombok.jar=ECJ</code>.
+		</div>
+		<div class="endBar">
+		</div>
+		<div class="footer">
+			<a href="credits.html" class="creditsLink">credits</a> | Copyright &copy; 2009-2011 Reinier Zwitserloot, Roel Spilker, and Robbert Jan Grootjans, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.
 		</div>
 	</div>
 	<script type="text/javascript">

@@ -87,6 +87,10 @@ code {
 	font-weight: bold;
 }
 
+.attribution {
+	font-size: 0.6em;
+}
+
 .downloadLink {
 	background-image: url(downloadButton.png);
 	display: block;
