@@ -5,7 +5,9 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeCopier;
 import com.sun.tools.javac.util.List;
 
@@ -50,5 +52,13 @@ public class TreeMirrorMaker extends TreeCopier<Void> {
 	
 	public Map<JCTree, JCTree> getOriginalToCopyMap() {
 		return Collections.unmodifiableMap(originalToCopy);
+	}
+	
+	// Fix for NPE in HandleVal. See http://code.google.com/p/projectlombok/issues/detail?id=205
+	// Maybe this should be done elsewhere...
+	@Override public JCTree visitVariable(VariableTree node, Void p) {
+		JCVariableDecl copy = (JCVariableDecl) super.visitVariable(node, p);
+		copy.sym = ((JCVariableDecl) node).sym;
+		return copy;
 	}
 }
