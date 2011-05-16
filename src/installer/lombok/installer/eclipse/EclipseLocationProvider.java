@@ -89,10 +89,10 @@ public class EclipseLocationProvider implements IdeLocationProvider {
 			if (p.getName().equalsIgnoreCase(getIniName())) {
 				return new EclipseLocation(canonical(p.getParentFile()), p);
 			}
-			
-			if (getEclipseExecutableNames().contains(p.getName().toLowerCase())) {
-				return findEclipseIniFromExe(p, 0);
-			}
+		}
+		
+		if (getEclipseExecutableNames().contains(p.getName().toLowerCase())) {
+			return findEclipseIniFromExe(p, 0);
 		}
 		
 		return null;
