@@ -53,7 +53,7 @@ public class TransformEclipseAST {
 	private static final Field astCacheField;
 	private static final HandlerLibrary handlers;
 	
-	private static boolean disableLombok = false;
+	public static boolean disableLombok = false;
 	
 	static {
 		Field f = null;

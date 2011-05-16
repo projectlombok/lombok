@@ -102,6 +102,8 @@ public class PatchDelegate {
 	}
 	
 	public static boolean handleDelegateForType(ClassScope scope) {
+		if (TransformEclipseAST.disableLombok) return false;
+		
 		List<ClassScopeEntry> stack = visited.get();
 		StringBuilder corrupted = null;
 		for (ClassScopeEntry entry : stack) {

@@ -336,20 +336,20 @@ public class EclipsePatcher extends Agent {
 		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget(PARSER_SIG, "consumeExitVariableWithInitialization", "void"))
 				.request(StackRequest.THIS)
-				.wrapMethod(new Hook("lombok.eclipse.agent.PatchValEclipse", "copyInitializationOfLocalDeclaration", "void", PARSER_SIG))
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchValEclipsePortal", "copyInitializationOfLocalDeclaration", "void", "java.lang.Object"))
 				.build());
 		
 		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget(PARSER_SIG, "consumeEnhancedForStatementHeader", "void"))
 				.request(StackRequest.THIS)
-				.wrapMethod(new Hook("lombok.eclipse.agent.PatchValEclipse", "copyInitializationOfForEachIterable", "void", PARSER_SIG))
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchValEclipsePortal", "copyInitializationOfForEachIterable", "void", "java.lang.Object"))
 				.build());
 		
 		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget(ASTCONVERTER_SIG, "setModifiers", "void", VARIABLEDECLARATIONSTATEMENT_SIG, LOCALDECLARATION_SIG))
-				.wrapMethod(new Hook("lombok.eclipse.agent.PatchValEclipse", "addFinalAndValAnnotationToVariableDeclarationStatement",
-						"void", "java.lang.Object", VARIABLEDECLARATIONSTATEMENT_SIG, LOCALDECLARATION_SIG))
-				.transplant().request(StackRequest.THIS, StackRequest.PARAM1, StackRequest.PARAM2).build());
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchValEclipsePortal", "addFinalAndValAnnotationToVariableDeclarationStatement",
+						"void", "java.lang.Object", "java.lang.Object", "java.lang.Object"))
+				.request(StackRequest.THIS, StackRequest.PARAM1, StackRequest.PARAM2).build());
 	}
 	
 	private static void addPatchesForVal(ScriptManager sm) {
