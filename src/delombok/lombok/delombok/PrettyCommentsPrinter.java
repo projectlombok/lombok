@@ -554,6 +554,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         docComments = tree.docComments;
         printDocComment(tree);
         if (tree.pid != null) {
+            consumeComments(tree.pos);
             print("package ");
             printExpr(tree.pid);
             print(";");
