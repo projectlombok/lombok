@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -129,30 +129,10 @@ public class AnnotationProcessor extends AbstractProcessor {
 		
 		@Override boolean want(ProcessingEnvironment procEnv, List<String> delayedWarnings) {
 			if (!procEnv.getClass().getName().startsWith("org.eclipse.jdt.")) return false;
-			boolean inEclipse;
-			try {
-				Class.forName("org.eclipse.core.runtime.Platform");	//if this works, we're in eclipse.
-				inEclipse = true;
-			} catch (ClassNotFoundException e) {
-				inEclipse = false;	//We're in ecj.
-			}
 			
-			if (inEclipse) {
-				delayedWarnings.add("You should not install lombok.jar as an annotation processor in eclipse. Instead, run lombok.jar as a java application and follow the instructions.");
-				return false;
-			}
-			
-			try {
-				processor = (Processor)Class.forName("lombok.eclipse.apt.Processor").newInstance();
-			} catch (Exception e) {
-				delayedWarnings.add("You found a bug in lombok; lombok.eclipse.apt.Processor is not available. Lombok will not run during this compilation: " + trace(e));
-				return false;
-			} catch (NoClassDefFoundError e) {
-				delayedWarnings.add("Can't load eclipse processor due to (most likely) a class loader problem: " + trace(e));
-				return false;
-			}
-			
-			processor.init(procEnv);
+			// Lombok used to work as annotation processor to ecj but that never actually worked properly, so we disabled the feature in 0.10.0.
+			// Because loading lombok as an agent in any ECJ-based non-interactive tool works just fine, we're not going to generate any warnings, as we'll
+			// likely generate more false positives than be helpful.
 			return true;
 		}
 		

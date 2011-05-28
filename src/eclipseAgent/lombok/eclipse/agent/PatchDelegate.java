@@ -28,7 +28,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import lombok.core.AST.Kind;
@@ -159,6 +161,9 @@ public class PatchDelegate {
 		return null;
 	}
 	
+	private static Map<ASTNode, Object> alreadyApplied = new IdentityHashMap<ASTNode, Object>();
+	private static final Object MARKER = new Object();
+	
 	private static void fillMethodBindings(CompilationUnitDeclaration cud, ClassScope scope, List<BindingTuple> methodsToDelegate) {
 		TypeDeclaration decl = scope.referenceContext;
 		if (decl == null) return;
@@ -170,6 +175,7 @@ public class PatchDelegate {
 				TypeBinding tb = ann.type.resolveType(decl.initializerScope);
 				if (!charArrayEquals("lombok", tb.qualifiedPackageName())) continue;
 				if (!charArrayEquals("Delegate", tb.qualifiedSourceName())) continue;
+				if (alreadyApplied.put(ann, MARKER) == MARKER) continue;
 				
 				List<ClassLiteralAccess> rawTypes = new ArrayList<ClassLiteralAccess>();
 				List<ClassLiteralAccess> excludedRawTypes = new ArrayList<ClassLiteralAccess>();

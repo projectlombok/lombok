@@ -518,6 +518,10 @@ public class EclipseHandlerUtil {
 					report = false;
 					break;
 				}
+				if ("lombok.core.AnnotationProcessor".equals(elem.getClassName())) {
+					report = false;
+					break;
+				}
 			}
 			
 			if (report) {
