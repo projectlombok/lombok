@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -98,7 +98,7 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, FieldAccess.GETTER);
 	}
 	
-	public boolean handle(AnnotationValues<ToString> annotation, Annotation ast, EclipseNode annotationNode) {
+	public void handle(AnnotationValues<ToString> annotation, Annotation ast, EclipseNode annotationNode) {
 		ToString ann = annotation.getInstance();
 		List<String> excludes = Arrays.asList(ann.exclude());
 		List<String> includes = Arrays.asList(ann.of());
@@ -118,10 +118,10 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		
 		FieldAccess fieldAccess = ann.doNotUseGetters() ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
 		
-		return generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true, fieldAccess);
+		generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true, fieldAccess);
 	}
 	
-	public boolean generateToString(EclipseNode typeNode, EclipseNode errorNode, List<String> excludes, List<String> includes,
+	public void generateToString(EclipseNode typeNode, EclipseNode errorNode, List<String> excludes, List<String> includes,
 			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
 		TypeDeclaration typeDecl = null;
 		
@@ -132,7 +132,6 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		
 		if (typeDecl == null || notAClass) {
 			errorNode.addError("@ToString is only supported on a class or enum.");
-			return false;
 		}
 		
 		if (callSuper == null) {
@@ -165,15 +164,14 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		case NOT_EXISTS:
 			MethodDeclaration toString = createToString(typeNode, nodesForToString, includeFieldNames, callSuper, errorNode.get(), fieldAccess);
 			injectMethod(typeNode, toString);
-			return true;
+			break;
 		case EXISTS_BY_LOMBOK:
-			return true;
+			break;
 		default:
 		case EXISTS_BY_USER:
 			if (whineIfExists) {
 				errorNode.addWarning("Not generating toString(): A method with that name already exists");
 			}
-			return true;
 		}
 	}
 	

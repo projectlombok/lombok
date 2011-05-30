@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,7 +69,7 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 		}
 	}
 	
-	@Override public boolean handle(AnnotationValues<SneakyThrows> annotation, Annotation source, EclipseNode annotationNode) {
+	@Override public void handle(AnnotationValues<SneakyThrows> annotation, Annotation source, EclipseNode annotationNode) {
 		List<String> exceptionNames = annotation.getRawExpressions("value");
 		List<DeclaredException> exceptions = new ArrayList<DeclaredException>();
 		
@@ -101,10 +101,10 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 //		case FIELD:
 //			return handleField(annotationNode, (FieldDeclaration)owner.get(), exceptions);
 		case METHOD:
-			return handleMethod(annotationNode, (AbstractMethodDeclaration)owner.get(), exceptions);
+			handleMethod(annotationNode, (AbstractMethodDeclaration)owner.get(), exceptions);
+			break;
 		default:
 			annotationNode.addError("@SneakyThrows is legal only on methods and constructors.");
-			return true;
 		}
 	}
 	
@@ -140,13 +140,13 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 //		return true;
 //	}
 	
-	private boolean handleMethod(EclipseNode annotation, AbstractMethodDeclaration method, List<DeclaredException> exceptions) {
+	private void handleMethod(EclipseNode annotation, AbstractMethodDeclaration method, List<DeclaredException> exceptions) {
 		if (method.isAbstract()) {
 			annotation.addError("@SneakyThrows can only be used on concrete methods.");
-			return true;
+			return;
 		}
 		
-		if (method.statements == null) return false;
+		if (method.statements == null) return;
 		
 		Statement[] contents = method.statements;
 		
@@ -156,8 +156,6 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 		
 		method.statements = contents;
 		annotation.up().rebuild();
-		
-		return true;
 	}
 	
 	private Statement buildTryCatchBlock(Statement[] contents, DeclaredException exception, ASTNode source) {

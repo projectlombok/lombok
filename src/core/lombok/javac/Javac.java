@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import lombok.Lombok;
 import lombok.core.AST.Kind;
@@ -45,6 +46,7 @@ import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
+import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
 /**
@@ -193,5 +195,45 @@ public class Javac {
 		} catch (IllegalAccessException e) {
 			throw Lombok.sneakyThrow(e);
 		}
+	}
+	
+	private static class MarkingScanner extends TreeScanner {
+		private final JCTree source;
+		
+		MarkingScanner(JCTree source) {
+			this.source = source;
+		}
+		
+		@Override public void scan(JCTree tree) {
+			setGeneratedBy(tree, source);
+			super.scan(tree);
+		}
+	}
+	
+	private static Map<JCTree, JCTree> generatedNodes = new WeakHashMap<JCTree, JCTree>();
+	
+	public static JCTree getGeneratedBy(JCTree node) {
+		synchronized (generatedNodes) {
+			return generatedNodes.get(node);
+		}
+	}
+	
+	public static boolean isGenerated(JCTree node) {
+		return getGeneratedBy(node) != null;
+	}
+	
+	public static <T extends JCTree> T recursiveSetGeneratedBy(T node, JCTree source) {
+		setGeneratedBy(node, source);
+		node.accept(new MarkingScanner(source));
+		
+		return node;
+	}
+	
+	public static <T extends JCTree> T setGeneratedBy(T node, JCTree source) {
+		synchronized (generatedNodes) {
+			if (source == null) generatedNodes.remove(node);
+			else generatedNodes.put(node, source);
+		}
+		return node;
 	}
 }

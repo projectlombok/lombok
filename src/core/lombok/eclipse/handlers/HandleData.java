@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleData implements EclipseAnnotationHandler<Data> {
-	public boolean handle(AnnotationValues<Data> annotation, Annotation ast, EclipseNode annotationNode) {
+	public void handle(AnnotationValues<Data> annotation, Annotation ast, EclipseNode annotationNode) {
 		Data ann = annotation.getInstance();
 		EclipseNode typeNode = annotationNode.up();
 		
@@ -49,7 +49,7 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		
 		if (typeDecl == null || notAClass) {
 			annotationNode.addError("@Data is only supported on a class.");
-			return false;
+			return;
 		}
 		
 		//Careful: Generate the public static constructor (if there is one) LAST, so that any attempt to
@@ -63,7 +63,5 @@ public class HandleData implements EclipseAnnotationHandler<Data> {
 		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		new HandleToString().generateToStringForType(typeNode, annotationNode);
 		new HandleConstructor().generateRequiredArgsConstructor(typeNode, AccessLevel.PUBLIC, ann.staticConstructor(), true, ast);
-		
-		return false;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
+ * Copyright © 2009-2011 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,7 +78,7 @@ public class JavacHandlerUtil {
 	 * then removes any import statement that imports this exact annotation (not star imports).
 	 * Only does this if the DeleteLombokAnnotations class is in the context.
 	 */
-	public static void markAnnotationAsProcessed(JavacNode annotation, Class<? extends Annotation> annotationType) {
+	public static void deleteAnnotationIfNeccessary(JavacNode annotation, Class<? extends Annotation> annotationType) {
 		if (!annotation.shouldDeleteLombokAnnotations()) return;
 		JavacNode parentNode = annotation.directUp();
 		switch (parentNode.getKind()) {
@@ -203,9 +203,7 @@ public class JavacHandlerUtil {
 			for (JCTree def : ((JCClassDecl)node.get()).defs) {
 				if (def instanceof JCVariableDecl) {
 					if (((JCVariableDecl)def).name.contentEquals(fieldName)) {
-						JavacNode existing = node.getNodeFor(def);
-						if (existing == null || !existing.isHandled()) return MemberExistsResult.EXISTS_BY_USER;
-						return MemberExistsResult.EXISTS_BY_LOMBOK;
+						return Javac.getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
 				}
 			}
@@ -236,11 +234,7 @@ public class JavacHandlerUtil {
 				if (def instanceof JCMethodDecl) {
 					String name = ((JCMethodDecl)def).name.toString();
 					boolean matches = caseSensitive ? name.equals(methodName) : name.equalsIgnoreCase(methodName);
-					if (matches) {
-						JavacNode existing = node.getNodeFor(def);
-						if (existing == null || !existing.isHandled()) return MemberExistsResult.EXISTS_BY_USER;
-						return MemberExistsResult.EXISTS_BY_LOMBOK;
-					}
+					if (matches) return Javac.getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 				}
 			}
 		}
@@ -264,9 +258,7 @@ public class JavacHandlerUtil {
 				if (def instanceof JCMethodDecl) {
 					if (((JCMethodDecl)def).name.contentEquals("<init>")) {
 						if ((((JCMethodDecl)def).mods.flags & Flags.GENERATEDCONSTR) != 0) continue;
-						JavacNode existing = node.getNodeFor(def);
-						if (existing == null || !existing.isHandled()) return MemberExistsResult.EXISTS_BY_USER;
-						return MemberExistsResult.EXISTS_BY_LOMBOK;
+						return Javac.getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
 				}
 			}
@@ -448,10 +440,10 @@ public class JavacHandlerUtil {
 	private static void injectField(JavacNode typeNode, JCVariableDecl field, boolean addSuppressWarnings) {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
-		if (addSuppressWarnings) addSuppressWarningsAll(field.mods, typeNode, field.pos);
+		if (addSuppressWarnings) addSuppressWarningsAll(field.mods, typeNode, field.pos, Javac.getGeneratedBy(field));
 		type.defs = type.defs.append(field);
 		
-		typeNode.add(field, Kind.FIELD).recursiveSetHandled();
+		typeNode.add(field, Kind.FIELD);
 	}
 	
 	/**
@@ -479,19 +471,19 @@ public class JavacHandlerUtil {
 			}
 		}
 		
-		addSuppressWarningsAll(method.mods, typeNode, method.pos);
+		addSuppressWarningsAll(method.mods, typeNode, method.pos, Javac.getGeneratedBy(method));
 		type.defs = type.defs.append(method);
 		
-		typeNode.add(method, Kind.METHOD).recursiveSetHandled();
+		typeNode.add(method, Kind.METHOD);
 	}
 	
-	private static void addSuppressWarningsAll(JCModifiers mods, JavacNode node, int pos) {
+	private static void addSuppressWarningsAll(JCModifiers mods, JavacNode node, int pos, JCTree source) {
 		TreeMaker maker = node.getTreeMaker();
 		JCExpression suppressWarningsType = chainDots(maker, node, "java", "lang", "SuppressWarnings");
 		JCLiteral allLiteral = maker.Literal("all");
 		suppressWarningsType.pos = pos;
 		allLiteral.pos = pos;
-		JCAnnotation annotation = maker.Annotation(suppressWarningsType, List.<JCExpression>of(allLiteral));
+		JCAnnotation annotation = Javac.recursiveSetGeneratedBy(maker.Annotation(suppressWarningsType, List.<JCExpression>of(allLiteral)), source);
 		annotation.pos = pos;
 		mods.annotations = mods.annotations.append(annotation);
 	}

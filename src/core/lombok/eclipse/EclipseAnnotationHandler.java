@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,8 +47,6 @@ public interface EclipseAnnotationHandler<T extends java.lang.annotation.Annotat
 	 * @param annotationNode The Lombok AST wrapper around the 'ast' parameter. You can use this object
 	 * to travel back up the chain (something javac AST can't do) to the parent of the annotation, as well
 	 * as access useful methods such as generating warnings or errors focused on the annotation.
-	 * @return {@code true} if you don't want to be called again about this annotation during this
-	 * compile session (you've handled it), or {@code false} to indicate you aren't done yet.
 	 */
-	boolean handle(AnnotationValues<T> annotation, org.eclipse.jdt.internal.compiler.ast.Annotation ast, EclipseNode annotationNode);
+	void handle(AnnotationValues<T> annotation, org.eclipse.jdt.internal.compiler.ast.Annotation ast, EclipseNode annotationNode);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,20 +57,20 @@ public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized
 	private static final char[] INSTANCE_LOCK_NAME = "$lock".toCharArray();
 	private static final char[] STATIC_LOCK_NAME = "$LOCK".toCharArray();
 	
-	@Override public boolean handle(AnnotationValues<Synchronized> annotation, Annotation source, EclipseNode annotationNode) {
+	@Override public void handle(AnnotationValues<Synchronized> annotation, Annotation source, EclipseNode annotationNode) {
 		int p1 = source.sourceStart -1;
 		int p2 = source.sourceStart -2;
 		long pos = (((long)p1) << 32) | p2;
 		EclipseNode methodNode = annotationNode.up();
 		if (methodNode == null || methodNode.getKind() != Kind.METHOD || !(methodNode.get() instanceof MethodDeclaration)) {
 			annotationNode.addError("@Synchronized is legal only on methods.");
-			return true;
+			return;
 		}
 		
 		MethodDeclaration method = (MethodDeclaration)methodNode.get();
 		if (method.isAbstract()) {
 			annotationNode.addError("@Synchronized is legal only on concrete methods.");
-			return true;
+			return;
 		}
 		
 		char[] lockName = annotation.getInstance().value().toCharArray();
@@ -83,7 +83,7 @@ public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized
 		if (fieldExists(new String(lockName), methodNode) == MemberExistsResult.NOT_EXISTS) {
 			if (!autoMake) {
 				annotationNode.addError("The field " + new String(lockName) + " does not exist.");
-				return true;
+				return;
 			}
 			FieldDeclaration fieldDecl = new FieldDeclaration(lockName, 0, -1);
 			Eclipse.setGeneratedBy(fieldDecl, source);
@@ -104,7 +104,7 @@ public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized
 			injectFieldSuppressWarnings(annotationNode.up().up(), fieldDecl);
 		}
 		
-		if (method.statements == null) return false;
+		if (method.statements == null) return;
 		
 		Block block = new Block(0);
 		Eclipse.setGeneratedBy(block, source);
@@ -126,7 +126,5 @@ public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized
 		Eclipse.setGeneratedBy(method.statements[0], source);
 		
 		methodNode.rebuild();
-		
-		return true;
 	}
 }

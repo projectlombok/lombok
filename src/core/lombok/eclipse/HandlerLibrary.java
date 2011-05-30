@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import lombok.Lombok;
 import lombok.core.AnnotationValues;
@@ -38,6 +39,7 @@ import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
 import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
 
+import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 
@@ -65,10 +67,10 @@ public class HandlerLibrary {
 			this.annotationClass = annotationClass;
 		}
 		
-		public boolean handle(org.eclipse.jdt.internal.compiler.ast.Annotation annotation,
+		public void handle(org.eclipse.jdt.internal.compiler.ast.Annotation annotation,
 				final EclipseNode annotationNode) {
 			AnnotationValues<T> annValues = Eclipse.createAnnotation(annotationClass, annotationNode);
-			return handler.handle(annValues, annotation, annotationNode);
+			handler.handle(annValues, annotation, annotationNode);
 		}
 	}
 	
@@ -126,6 +128,15 @@ public class HandlerLibrary {
 		}
 	}
 	
+	private static final Map<ASTNode, Object> handledMap = new WeakHashMap<ASTNode, Object>();
+	private static final Object MARKER = new Object();
+	
+	private boolean checkAndSetHandled(ASTNode node) {
+		synchronized (handledMap) {
+			return handledMap.put(node, MARKER) != MARKER;
+		}
+	}
+	
 	/**
 	 * Handles the provided annotation node by first finding a qualifying instance of
 	 * {@link EclipseAnnotationHandler} and if one exists, calling it with a freshly cooked up
@@ -143,15 +154,15 @@ public class HandlerLibrary {
 	 * @param annotationNode The Lombok AST Node representing the Annotation AST Node.
 	 * @param annotation 'node.get()' - convenience parameter.
 	 */
-	public boolean handle(CompilationUnitDeclaration ast, EclipseNode annotationNode,
-			org.eclipse.jdt.internal.compiler.ast.Annotation annotation) {
+	public void handleAnnotation(CompilationUnitDeclaration ast, EclipseNode annotationNode, org.eclipse.jdt.internal.compiler.ast.Annotation annotation) {
+		if (!checkAndSetHandled(annotation)) return;
+		
 		String pkgName = annotationNode.getPackageDeclaration();
 		Collection<String> imports = annotationNode.getImportStatements();
 		
 		TypeResolver resolver = new TypeResolver(typeLibrary, pkgName, imports);
 		TypeReference rawType = annotation.type;
-		if (rawType == null) return false;
-		boolean handled = false;
+		if (rawType == null) return;
 		for (String fqn : resolver.findTypeMatches(annotationNode, toQualifiedName(annotation.type.getTypeName()))) {
 			boolean isPrintAST = fqn.equals(PrintAST.class.getName());
 			if (isPrintAST == skipPrintAST) continue;
@@ -160,15 +171,13 @@ public class HandlerLibrary {
 			if (container == null) continue;
 			
 			try {
-				handled |= container.handle(annotation, annotationNode);
+				container.handle(annotation, annotationNode);
 			} catch (AnnotationValueDecodeFail fail) {
 				fail.owner.setError(fail.getMessage(), fail.idx);
 			} catch (Throwable t) {
 				Eclipse.error(ast, String.format("Lombok annotation handler %s failed", container.handler.getClass()), t);
 			}
 		}
-		
-		return handled;
 	}
 	
 	/**

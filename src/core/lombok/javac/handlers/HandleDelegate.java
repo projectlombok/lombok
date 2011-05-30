@@ -21,7 +21,7 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.handlers.JavacHandlerUtil.markAnnotationAsProcessed;
+import static lombok.javac.handlers.JavacHandlerUtil.deleteAnnotationIfNeccessary;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +43,7 @@ import lombok.Delegate;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.javac.FindTypeVarScanner;
+import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacResolution;
@@ -91,11 +92,11 @@ public class HandleDelegate implements JavacAnnotationHandler<Delegate> {
 			"clone()",
 			"finalize()"));
 	
-	@Override public boolean handle(AnnotationValues<Delegate> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		markAnnotationAsProcessed(annotationNode, Delegate.class);
+	@Override public void handle(AnnotationValues<Delegate> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		deleteAnnotationIfNeccessary(annotationNode, Delegate.class);
 		if (annotationNode.up().getKind() != Kind.FIELD) {
 			// As the annotation is legal on fields only, javac itself will take care of printing an error message for this.
-			return false;
+			return;
 		}
 		
 		List<Object> delegateTypes = annotation.getActualExpressions("types");
@@ -148,7 +149,7 @@ public class HandleDelegate implements JavacAnnotationHandler<Delegate> {
 				addMethodBindings(signaturesToExclude, ct, annotationNode, banList);
 			} else {
 				annotationNode.addError("@Delegate can only use concrete class types, not wildcards, arrays, type variables, or primitives.");
-				return false;
+				return;
 			}
 		}
 		
@@ -162,15 +163,13 @@ public class HandleDelegate implements JavacAnnotationHandler<Delegate> {
 				addMethodBindings(signaturesToDelegate, ct, annotationNode, banList);
 			} else {
 				annotationNode.addError("@Delegate can only use concrete class types, not wildcards, arrays, type variables, or primitives.");
-				return false;
+				return;
 			}
 		}
 		
 		Name delegateFieldName = annotationNode.toName(annotationNode.up().getName());
 		
 		for (MethodSig sig : signaturesToDelegate) generateAndAdd(sig, annotationNode, delegateFieldName);
-		
-		return false;
 	}
 	
 	private void generateAndAdd(MethodSig sig, JavacNode annotation, Name delegateFieldName) {
@@ -295,7 +294,7 @@ public class HandleDelegate implements JavacAnnotationHandler<Delegate> {
 		JCStatement body = useReturn ? maker.Return(delegateCall) : maker.Exec(delegateCall);
 		JCBlock bodyBlock = maker.Block(0, com.sun.tools.javac.util.List.of(body));
 		
-		return maker.MethodDef(mods, sig.name, returnType, toList(typeParams), toList(params), toList(thrown), bodyBlock, null);
+		return Javac.recursiveSetGeneratedBy(maker.MethodDef(mods, sig.name, returnType, toList(typeParams), toList(params), toList(thrown), bodyBlock, null), annotation.get());
 	}
 	
 	private static <T> com.sun.tools.javac.util.List<T> toList(ListBuffer<T> collection) {

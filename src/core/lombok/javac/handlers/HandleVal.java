@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
+ * Copyright © 2010-2011 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,6 +49,8 @@ public class HandleVal extends JavacASTAdapter {
 	@Override public void visitLocal(JavacNode localNode, JCVariableDecl local) {
 		if (local.vartype == null || (!local.vartype.toString().equals("val") && !local.vartype.toString().equals("lombok.val"))) return;
 		
+		JCTree source = local.vartype;
+		
 		if (!Javac.typeMatches(val.class, localNode, local.vartype)) return;
 		
 		JCExpression rhsOfEnhancedForLoop = null;
@@ -75,7 +77,7 @@ public class HandleVal extends JavacASTAdapter {
 		local.mods.flags |= Flags.FINAL;
 		
 		if (!localNode.shouldDeleteLombokAnnotations()) {
-			JCAnnotation valAnnotation = localNode.getTreeMaker().Annotation(local.vartype, List.<JCExpression>nil());
+			JCAnnotation valAnnotation = Javac.recursiveSetGeneratedBy(localNode.getTreeMaker().Annotation(local.vartype, List.<JCExpression>nil()), source);
 			local.mods.annotations = local.mods.annotations == null ? List.of(valAnnotation) : local.mods.annotations.append(valAnnotation);
 		}
 		
@@ -118,11 +120,13 @@ public class HandleVal extends JavacASTAdapter {
 				localNode.getAst().setChanged();
 			} catch (JavacResolution.TypeNotConvertibleException e) {
 				localNode.addError("Cannot use 'val' here because initializer expression does not have a representable type: " + e.getMessage());
-				local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());;
+				local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
 			}
 		} catch (RuntimeException e) {
-			local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());;
+			local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
 			throw e;
+		} finally {
+			Javac.recursiveSetGeneratedBy(local.vartype, source);
 		}
 	}
 }

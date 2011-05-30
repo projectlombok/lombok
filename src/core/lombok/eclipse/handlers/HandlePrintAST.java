@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,8 +40,8 @@ import lombok.eclipse.EclipseNode;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandlePrintAST implements EclipseAnnotationHandler<PrintAST> {
-	public boolean handle(AnnotationValues<PrintAST> annotation, Annotation ast, EclipseNode annotationNode) {
-		if (!annotationNode.isCompleteParse()) return false;
+	public void handle(AnnotationValues<PrintAST> annotation, Annotation ast, EclipseNode annotationNode) {
+		if (!annotationNode.isCompleteParse()) return;
 		
 		PrintStream stream = System.out;
 		String fileName = annotation.getInstance().outfile();
@@ -52,6 +52,5 @@ public class HandlePrintAST implements EclipseAnnotationHandler<PrintAST> {
 		}
 		
 		annotationNode.up().traverse(new EclipseASTVisitor.Printer(annotation.getInstance().printContent(), stream));
-		return true;
 	}
 }

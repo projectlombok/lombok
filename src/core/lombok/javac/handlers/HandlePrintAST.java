@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@ import lombok.javac.JavacNode;
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandlePrintAST implements JavacAnnotationHandler<PrintAST> {
-	@Override public boolean handle(AnnotationValues<PrintAST> annotation, JCAnnotation ast, JavacNode annotationNode) {
+	@Override public void handle(AnnotationValues<PrintAST> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		PrintStream stream = System.out;
 		String fileName = annotation.getInstance().outfile();
 		if (fileName.length() > 0) try {
@@ -51,8 +51,6 @@ public class HandlePrintAST implements JavacAnnotationHandler<PrintAST> {
 		}
 		
 		annotationNode.up().traverse(new JavacASTVisitor.Printer(annotation.getInstance().printContent(), stream));
-		
-		return true;
 	}
 	
 	@Override public boolean isResolutionBased() {

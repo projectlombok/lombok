@@ -37,6 +37,7 @@ import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
@@ -58,19 +59,18 @@ import com.sun.tools.javac.util.ListBuffer;
 public class HandleConstructor {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleNoArgsConstructor implements JavacAnnotationHandler<NoArgsConstructor> {
-		@Override public boolean handle(AnnotationValues<NoArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			markAnnotationAsProcessed(annotationNode, NoArgsConstructor.class);
+		@Override public void handle(AnnotationValues<NoArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
+			deleteAnnotationIfNeccessary(annotationNode, NoArgsConstructor.class);
 			deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 			JavacNode typeNode = annotationNode.up();
-			if (!checkLegality(typeNode, annotationNode, NoArgsConstructor.class.getSimpleName())) return true;
+			if (!checkLegality(typeNode, annotationNode, NoArgsConstructor.class.getSimpleName())) return;
 			NoArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
 			String staticName = ann.staticName();
-			if (level == AccessLevel.NONE) return true;
+			if (level == AccessLevel.NONE) return;
 			List<JavacNode> fields = List.nil();
 			List<JCExpression> onConstructor = getAndRemoveAnnotationParameter(ast, "onConstructor");
-			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, onConstructor, false, false);
-			return true;
+			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, onConstructor, false, false, annotationNode);
 		}
 		
 		@Override public boolean isResolutionBased() {
@@ -80,20 +80,19 @@ public class HandleConstructor {
 	
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleRequiredArgsConstructor implements JavacAnnotationHandler<RequiredArgsConstructor> {
-		@Override public boolean handle(AnnotationValues<RequiredArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			markAnnotationAsProcessed(annotationNode, RequiredArgsConstructor.class);
+		@Override public void handle(AnnotationValues<RequiredArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
+			deleteAnnotationIfNeccessary(annotationNode, RequiredArgsConstructor.class);
 			deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 			JavacNode typeNode = annotationNode.up();
-			if (!checkLegality(typeNode, annotationNode, RequiredArgsConstructor.class.getSimpleName())) return true;
+			if (!checkLegality(typeNode, annotationNode, RequiredArgsConstructor.class.getSimpleName())) return;
 			RequiredArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
 			String staticName = ann.staticName();
 			@SuppressWarnings("deprecation")
 			boolean suppressConstructorProperties = ann.suppressConstructorProperties();
-			if (level == AccessLevel.NONE) return true;
+			if (level == AccessLevel.NONE) return;
 			List<JCExpression> onConstructor = getAndRemoveAnnotationParameter(ast, "onConstructor");
-			new HandleConstructor().generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, onConstructor, false, suppressConstructorProperties);
-			return true;
+			new HandleConstructor().generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, onConstructor, false, suppressConstructorProperties, annotationNode);
 		}
 		
 		@Override public boolean isResolutionBased() {
@@ -120,17 +119,17 @@ public class HandleConstructor {
 	
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleAllArgsConstructor implements JavacAnnotationHandler<AllArgsConstructor> {
-		@Override public boolean handle(AnnotationValues<AllArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			markAnnotationAsProcessed(annotationNode, AllArgsConstructor.class);
+		@Override public void handle(AnnotationValues<AllArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
+			deleteAnnotationIfNeccessary(annotationNode, AllArgsConstructor.class);
 			deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 			JavacNode typeNode = annotationNode.up();
-			if (!checkLegality(typeNode, annotationNode, AllArgsConstructor.class.getSimpleName())) return true;
+			if (!checkLegality(typeNode, annotationNode, AllArgsConstructor.class.getSimpleName())) return;
 			AllArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
 			String staticName = ann.staticName();
 			@SuppressWarnings("deprecation")
 			boolean suppressConstructorProperties = ann.suppressConstructorProperties();
-			if (level == AccessLevel.NONE) return true;
+			if (level == AccessLevel.NONE) return;
 			ListBuffer<JavacNode> fields = ListBuffer.lb();
 			for (JavacNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
@@ -145,8 +144,7 @@ public class HandleConstructor {
 				fields.append(child);
 			}
 			List<JCExpression> onConstructor = getAndRemoveAnnotationParameter(ast, "onConstructor");
-			new HandleConstructor().generateConstructor(typeNode, level, fields.toList(), staticName, onConstructor, false, suppressConstructorProperties);
-			return true;
+			new HandleConstructor().generateConstructor(typeNode, level, fields.toList(), staticName, onConstructor, false, suppressConstructorProperties, annotationNode);
 		}
 		
 		@Override public boolean isResolutionBased() {
@@ -168,11 +166,11 @@ public class HandleConstructor {
 		return true;
 	}
 	
-	public void generateRequiredArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, boolean skipIfConstructorExists) {
-		generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, List.<JCExpression>nil(), skipIfConstructorExists, false);
+	public void generateRequiredArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, boolean skipIfConstructorExists, JavacNode source) {
+		generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, List.<JCExpression>nil(), skipIfConstructorExists, false, source);
 	}
 	
-	public void generateConstructor(JavacNode typeNode, AccessLevel level, List<JavacNode> fields, String staticName, List<JCExpression> onConstructor, boolean skipIfConstructorExists, boolean suppressConstructorProperties) {
+	public void generateConstructor(JavacNode typeNode, AccessLevel level, List<JavacNode> fields, String staticName, List<JCExpression> onConstructor, boolean skipIfConstructorExists, boolean suppressConstructorProperties, JavacNode source) {
 		if (skipIfConstructorExists && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) return;
 		if (skipIfConstructorExists) {
 			for (JavacNode child : typeNode.down()) {
@@ -187,10 +185,10 @@ public class HandleConstructor {
 		
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
 		
-		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields, onConstructor, suppressConstructorProperties);
+		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields, onConstructor, suppressConstructorProperties, source.get());
 		injectMethod(typeNode, constr);
 		if (staticConstrRequired) {
-			JCMethodDecl staticConstr = createStaticConstructor(staticName, level, typeNode, fields);
+			JCMethodDecl staticConstr = createStaticConstructor(staticName, level, typeNode, fields, source.get());
 			injectMethod(typeNode, staticConstr);
 		}
 	}
@@ -208,7 +206,7 @@ public class HandleConstructor {
 		mods.annotations = mods.annotations.append(annotation);
 	}
 	
-	private JCMethodDecl createConstructor(AccessLevel level, JavacNode typeNode, List<JavacNode> fields, List<JCExpression> onConstructor, boolean suppressConstructorProperties) {
+	private JCMethodDecl createConstructor(AccessLevel level, JavacNode typeNode, List<JavacNode> fields, List<JCExpression> onConstructor, boolean suppressConstructorProperties, JCTree source) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		
 		boolean isEnum = (((JCClassDecl) typeNode.get()).mods.flags & Flags.ENUM) != 0;
@@ -239,8 +237,8 @@ public class HandleConstructor {
 		if (!suppressConstructorProperties && level != AccessLevel.PRIVATE && !isLocalType(typeNode)) {
 			addConstructorProperties(mods, typeNode, fields);
 		}
-		return maker.MethodDef(mods, typeNode.toName("<init>"),
-				null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(), maker.Block(0L, nullChecks.appendList(assigns).toList()), null);
+		return Javac.recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
+				null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(), maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source);
 	}
 	
 	private boolean isLocalType(JavacNode type) {
@@ -250,7 +248,7 @@ public class HandleConstructor {
 		return true;
 	}
 	
-	private JCMethodDecl createStaticConstructor(String name, AccessLevel level, JavacNode typeNode, List<JavacNode> fields) {
+	private JCMethodDecl createStaticConstructor(String name, AccessLevel level, JavacNode typeNode, List<JavacNode> fields, JCTree source) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
@@ -298,6 +296,6 @@ public class HandleConstructor {
 		JCReturn returnStatement = maker.Return(maker.NewClass(null, List.<JCExpression>nil(), constructorType, args.toList(), null));
 		JCBlock body = maker.Block(0, List.<JCStatement>of(returnStatement));
 		
-		return maker.MethodDef(mods, typeNode.toName(name), returnType, typeParams.toList(), params.toList(), List.<JCExpression>nil(), body, null);
+		return Javac.recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName(name), returnType, typeParams.toList(), params.toList(), List.<JCExpression>nil(), body, null), source);
 	}
 }

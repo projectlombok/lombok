@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
+ * Copyright © 2009-2011 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,23 +59,23 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
-	public boolean handle(AnnotationValues<Cleanup> annotation, Annotation ast, EclipseNode annotationNode) {
+	public void handle(AnnotationValues<Cleanup> annotation, Annotation ast, EclipseNode annotationNode) {
 		String cleanupName = annotation.getInstance().value();
 		if (cleanupName.length() == 0) {
 			annotationNode.addError("cleanupName cannot be the empty string.");
-			return true;
+			return;
 		}
 		
 		if (annotationNode.up().getKind() != Kind.LOCAL) {
 			annotationNode.addError("@Cleanup is legal only on local variable declarations.");
-			return true;
+			return;
 		}
 		
 		LocalDeclaration decl = (LocalDeclaration)annotationNode.up().get();
 		
 		if (decl.initialization == null) {
 			annotationNode.addError("@Cleanup variable declarations need to be initialized.");
-			return true;
+			return;
 		}
 		
 		EclipseNode ancestor = annotationNode.up().directUp();
@@ -94,12 +94,12 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 			statements = ((SwitchStatement)blockNode).statements;
 		} else {
 			annotationNode.addError("@Cleanup is legal only on a local variable declaration inside a block.");
-			return true;
+			return;
 		}
 		
 		if (statements == null) {
 			annotationNode.addError("LOMBOK BUG: Parent block does not contain any statements.");
-			return true;
+			return;
 		}
 		
 		int start = 0;
@@ -109,7 +109,7 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		
 		if (start == statements.length) {
 			annotationNode.addError("LOMBOK BUG: Can't find this local variable declaration inside its parent.");
-			return true;
+			return;
 		}
 		
 		start++;  //We start with try{} *AFTER* the var declaration.
@@ -205,8 +205,6 @@ public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
 		}
 		
 		ancestor.rebuild();
-		
-		return true;
 	}
 	
 	private MessageSend preventNullAnalysis(Annotation ast, Expression expr) {

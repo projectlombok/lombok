@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,8 +69,8 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		}
 	}
 	
-	@Override public boolean handle(AnnotationValues<ToString> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		markAnnotationAsProcessed(annotationNode, ToString.class);
+	@Override public void handle(AnnotationValues<ToString> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		deleteAnnotationIfNeccessary(annotationNode, ToString.class);
 		
 		ToString ann = annotation.getInstance();
 		List<String> excludes = List.from(ann.exclude());
@@ -92,7 +92,7 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		
 		FieldAccess fieldAccess = ann.doNotUseGetters() ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
 		
-		return generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true, fieldAccess);
+		generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true, fieldAccess);
 	}
 	
 	public void generateToStringForType(JavacNode typeNode, JavacNode errorNode) {
@@ -112,7 +112,7 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, FieldAccess.GETTER);
 	}
 	
-	private boolean generateToString(JavacNode typeNode, JavacNode errorNode, List<String> excludes, List<String> includes,
+	private void generateToString(JavacNode typeNode, JavacNode source, List<String> excludes, List<String> includes,
 			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
 		boolean notAClass = true;
 		if (typeNode.get() instanceof JCClassDecl) {
@@ -127,8 +127,8 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		}
 		
 		if (notAClass) {
-			errorNode.addError("@ToString is only supported on a class or enum.");
-			return false;
+			source.addError("@ToString is only supported on a class or enum.");
+			return;
 		}
 		
 		ListBuffer<JavacNode> nodesForToString = ListBuffer.lb();
@@ -154,22 +154,21 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		
 		switch (methodExists("toString", typeNode)) {
 		case NOT_EXISTS:
-			JCMethodDecl method = createToString(typeNode, nodesForToString.toList(), includeFieldNames, callSuper, fieldAccess);
+			JCMethodDecl method = createToString(typeNode, nodesForToString.toList(), includeFieldNames, callSuper, fieldAccess, source.get());
 			injectMethod(typeNode, method);
-			return true;
+			break;
 		case EXISTS_BY_LOMBOK:
-			return true;
+			break;
 		default:
 		case EXISTS_BY_USER:
 			if (whineIfExists) {
-				errorNode.addWarning("Not generating toString(): A method with that name already exists");
+				source.addWarning("Not generating toString(): A method with that name already exists");
 			}
-			return true;
+			break;
 		}
-
 	}
 	
-	private JCMethodDecl createToString(JavacNode typeNode, List<JavacNode> fields, boolean includeFieldNames, boolean callSuper, FieldAccess fieldAccess) {
+	private JCMethodDecl createToString(JavacNode typeNode, List<JavacNode> fields, boolean includeFieldNames, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(chainDots(maker, typeNode, "java", "lang", "Override"), List.<JCExpression>nil());
@@ -238,8 +237,8 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 		
 		JCBlock body = maker.Block(0, List.of(returnStatement));
 		
-		return maker.MethodDef(mods, typeNode.toName("toString"), returnType,
-				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+		return Javac.recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("toString"), returnType,
+				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source);
 	}
 	
 	private String getTypeName(JavacNode typeNode) {

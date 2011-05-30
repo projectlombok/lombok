@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -120,40 +120,37 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		createSetterForField(level, fieldNode, fieldNode, pos, false, onMethod, onParam);
 	}
 	
-	public boolean handle(AnnotationValues<Setter> annotation, Annotation ast, EclipseNode annotationNode) {
+	public void handle(AnnotationValues<Setter> annotation, Annotation ast, EclipseNode annotationNode) {
 		EclipseNode node = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
-		if (level == AccessLevel.NONE) return true;
-		
-		if (node == null) return false;
+		if (level == AccessLevel.NONE || node == null) return;
 		
 		Annotation[] onMethod = getAndRemoveAnnotationParameter(ast, "onMethod");
 		Annotation[] onParam = getAndRemoveAnnotationParameter(ast, "onParam");
 		
-		if (node.getKind() == Kind.FIELD) {
-			return createSetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true, onMethod, onParam);
-			
-		}
-		if (node.getKind() == Kind.TYPE) {
+		switch (node.getKind()) {
+		case FIELD:
+			createSetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true, onMethod, onParam);
+			break;
+		case TYPE:
 			if (onMethod != null && onMethod.length != 0) annotationNode.addError("'onMethod' is not supported for @Setter on a type.");
 			if (onParam != null && onParam.length != 0) annotationNode.addError("'onParam' is not supported for @Setter on a type.");
-			return generateSetterForType(node, annotationNode, level, false);
+			generateSetterForType(node, annotationNode, level, false);
+			break;
 		}
-		return false;
 	}
 	
-	private boolean createSetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, Annotation[] onMethod , Annotation[] onParam) {
+	private void createSetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, Annotation[] onMethod , Annotation[] onParam) {
 		for (EclipseNode fieldNode : fieldNodes) {
 			createSetterForField(level, fieldNode, errorNode, source, whineIfExists, onMethod, onParam);
 		}
-		return true;
 	}
 	
-	private boolean createSetterForField(AccessLevel level,
+	private void createSetterForField(AccessLevel level,
 			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists, Annotation[] onMethod , Annotation[] onParam) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			errorNode.addError("@Setter is only supported on a class or a field.");
-			return true;
+			return;
 		}
 		
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
@@ -166,7 +163,7 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		for (String altName : TransformationsUtil.toAllSetterNames(new String(field.name), isBoolean)) {
 			switch (methodExists(altName, fieldNode, false)) {
 			case EXISTS_BY_LOMBOK:
-				return true;
+				return;
 			case EXISTS_BY_USER:
 				if (whineIfExists) {
 					String altNameExpl = "";
@@ -174,7 +171,7 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 					errorNode.addWarning(
 						String.format("Not generating %s(): A method with that name already exists%s", setterName, altNameExpl));
 				}
-				return true;
+				return;
 			default:
 			case NOT_EXISTS:
 				//continue scanning the other alt names.
@@ -188,8 +185,6 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		}
 		
 		injectMethod(fieldNode.up(), method);
-		
-		return true;
 	}
 	
 	private MethodDeclaration generateSetter(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, ASTNode source, Annotation[] onParam) {

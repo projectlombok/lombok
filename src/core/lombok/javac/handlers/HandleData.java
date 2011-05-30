@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.handlers.JavacHandlerUtil.markAnnotationAsProcessed;
+import static lombok.javac.handlers.JavacHandlerUtil.deleteAnnotationIfNeccessary;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.core.AnnotationValues;
@@ -39,8 +39,8 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleData implements JavacAnnotationHandler<Data> {
-	@Override public boolean handle(AnnotationValues<Data> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		markAnnotationAsProcessed(annotationNode, Data.class);
+	@Override public void handle(AnnotationValues<Data> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		deleteAnnotationIfNeccessary(annotationNode, Data.class);
 		JavacNode typeNode = annotationNode.up();
 		JCClassDecl typeDecl = null;
 		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl)typeNode.get();
@@ -49,19 +49,17 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		
 		if (typeDecl == null || notAClass) {
 			annotationNode.addError("@Data is only supported on a class.");
-			return false;
+			return;
 		}
 		
 		String staticConstructorName = annotation.getInstance().staticConstructor();
 		
 		// TODO move this to the end OR move it to the top in eclipse.
-		new HandleConstructor().generateRequiredArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, true);
+		new HandleConstructor().generateRequiredArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, true, annotationNode);
 		new HandleGetter().generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
 		new HandleSetter().generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
 		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		new HandleToString().generateToStringForType(typeNode, annotationNode);
-		
-		return true;
 	}
 	
 	@Override public boolean isResolutionBased() {

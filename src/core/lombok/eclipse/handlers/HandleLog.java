@@ -51,7 +51,7 @@ public class HandleLog {
 		throw new UnsupportedOperationException();
 	}
 	
-	public static boolean processAnnotation(LoggingFramework framework, AnnotationValues<? extends java.lang.annotation.Annotation> annotation, Annotation source, EclipseNode annotationNode) {
+	public static void processAnnotation(LoggingFramework framework, AnnotationValues<? extends java.lang.annotation.Annotation> annotation, Annotation source, EclipseNode annotationNode) {
 		EclipseNode owner = annotationNode.up();
 		switch (owner.getKind()) {
 		case TYPE:
@@ -64,22 +64,22 @@ public class HandleLog {
 			
 			if (typeDecl == null || notAClass) {
 				annotationNode.addError("@Log is legal only on classes and enums.");
-				return false;
+				return;
 			}
 			
 			if (fieldExists("log", owner) != MemberExistsResult.NOT_EXISTS) {
 				annotationNode.addWarning("Field 'log' already exists.");
-				return true;
+				return;
 			}
 			
 			ClassLiteralAccess loggingType = selfType(owner, source);
 			
 			injectField(owner, createField(framework, source, loggingType));
 			owner.rebuild();
-			return true;
+			break;
 		default:
 			annotationNode.addError("@Log is legal only on types.");
-			return true;
+			break;
 		}
 	}
 	
@@ -154,8 +154,8 @@ public class HandleLog {
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleCommonsLog implements EclipseAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
-		@Override public boolean handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, Annotation source, EclipseNode annotationNode) {
-			return processAnnotation(LoggingFramework.COMMONS, annotation, source, annotationNode);
+		@Override public void handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, Annotation source, EclipseNode annotationNode) {
+			processAnnotation(LoggingFramework.COMMONS, annotation, source, annotationNode);
 		}
 	}
 	
@@ -164,8 +164,8 @@ public class HandleLog {
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleJulLog implements EclipseAnnotationHandler<lombok.extern.java.Log> {
-		@Override public boolean handle(AnnotationValues<lombok.extern.java.Log> annotation, Annotation source, EclipseNode annotationNode) {
-			return processAnnotation(LoggingFramework.JUL, annotation, source, annotationNode);
+		@Override public void handle(AnnotationValues<lombok.extern.java.Log> annotation, Annotation source, EclipseNode annotationNode) {
+			processAnnotation(LoggingFramework.JUL, annotation, source, annotationNode);
 		}
 	}
 	
@@ -174,8 +174,8 @@ public class HandleLog {
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleLog4jLog implements EclipseAnnotationHandler<lombok.extern.log4j.Log4j> {
-		@Override public boolean handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, Annotation source, EclipseNode annotationNode) {
-			return processAnnotation(LoggingFramework.LOG4J, annotation, source, annotationNode);
+		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, Annotation source, EclipseNode annotationNode) {
+			processAnnotation(LoggingFramework.LOG4J, annotation, source, annotationNode);
 		}
 	}
 	
@@ -184,8 +184,8 @@ public class HandleLog {
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleSlf4jLog implements EclipseAnnotationHandler<lombok.extern.slf4j.Slf4j> {
-		@Override public boolean handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, Annotation source, EclipseNode annotationNode) {
-			return processAnnotation(LoggingFramework.SLF4J, annotation, source, annotationNode);
+		@Override public void handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, Annotation source, EclipseNode annotationNode) {
+			processAnnotation(LoggingFramework.SLF4J, annotation, source, annotationNode);
 		}
 	}
 	

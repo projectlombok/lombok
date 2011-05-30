@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,14 +51,14 @@ public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> 
 	private static final String INSTANCE_LOCK_NAME = "$lock";
 	private static final String STATIC_LOCK_NAME = "$LOCK";
 	
-	@Override public boolean handle(AnnotationValues<Synchronized> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		markAnnotationAsProcessed(annotationNode, Synchronized.class);
+	@Override public void handle(AnnotationValues<Synchronized> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		deleteAnnotationIfNeccessary(annotationNode, Synchronized.class);
 		JavacNode methodNode = annotationNode.up();
 		
 		if (methodNode == null || methodNode.getKind() != Kind.METHOD || !(methodNode.get() instanceof JCMethodDecl)) {
 			annotationNode.addError("@Synchronized is legal only on methods.");
 			
-			return true;
+			return;
 		}
 		
 		JCMethodDecl method = (JCMethodDecl)methodNode.get();
@@ -66,7 +66,7 @@ public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> 
 		if ((method.mods.flags & Flags.ABSTRACT) != 0) {
 			annotationNode.addError("@Synchronized is legal only on concrete methods.");
 			
-			return true;
+			return;
 		}
 		boolean isStatic = (method.mods.flags & Flags.STATIC) != 0;
 		String lockName = annotation.getInstance().value();
@@ -81,19 +81,19 @@ public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> 
 		if (fieldExists(lockName, methodNode) == MemberExistsResult.NOT_EXISTS) {
 			if (!autoMake) {
 				annotationNode.addError("The field " + lockName + " does not exist.");
-				return true;
+				return;
 			}
 			JCExpression objectType = chainDots(maker, methodNode, "java", "lang", "Object");
-			//We use 'new Object[0];' because quite unlike 'new Object();', empty arrays *ARE* serializable!
+			//We use 'new Object[0];' because unlike 'new Object();', empty arrays *ARE* serializable!
 			JCNewArray newObjectArray = maker.NewArray(chainDots(maker, methodNode, "java", "lang", "Object"),
 					List.<JCExpression>of(maker.Literal(Javac.getCTCint(TypeTags.class, "INT"), 0)), null);
-			JCVariableDecl fieldDecl = maker.VarDef(
+			JCVariableDecl fieldDecl = Javac.recursiveSetGeneratedBy(maker.VarDef(
 					maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic ? Flags.STATIC : 0)),
-					methodNode.toName(lockName), objectType, newObjectArray);
+					methodNode.toName(lockName), objectType, newObjectArray), ast);
 			injectFieldSuppressWarnings(methodNode.up(), fieldDecl);
 		}
 		
-		if (method.body == null) return false;
+		if (method.body == null) return;
 		
 		JCExpression lockNode;
 		if (isStatic) {
@@ -102,11 +102,10 @@ public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> 
 			lockNode = maker.Select(maker.Ident(methodNode.toName("this")), methodNode.toName(lockName));
 		}
 		
-		method.body = maker.Block(0, List.<JCStatement>of(maker.Synchronized(lockNode, method.body)));
+		Javac.recursiveSetGeneratedBy(lockNode, ast);
+		method.body = Javac.setGeneratedBy(maker.Block(0, List.<JCStatement>of(Javac.setGeneratedBy(maker.Synchronized(lockNode, method.body), ast))), ast);
 		
 		methodNode.rebuild();
-		
-		return true;
 	}
 	
 	@Override public boolean isResolutionBased() {

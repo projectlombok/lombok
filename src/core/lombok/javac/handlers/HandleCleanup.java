@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
+ * Copyright © 2009-2011 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.handlers.JavacHandlerUtil.markAnnotationAsProcessed;
+import static lombok.javac.handlers.JavacHandlerUtil.deleteAnnotationIfNeccessary;
 import lombok.Cleanup;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
@@ -59,24 +59,24 @@ import com.sun.tools.javac.util.Name;
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
-	@Override public boolean handle(AnnotationValues<Cleanup> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		markAnnotationAsProcessed(annotationNode, Cleanup.class);
+	@Override public void handle(AnnotationValues<Cleanup> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		deleteAnnotationIfNeccessary(annotationNode, Cleanup.class);
 		String cleanupName = annotation.getInstance().value();
 		if (cleanupName.length() == 0) {
 			annotationNode.addError("cleanupName cannot be the empty string.");
-			return true;
+			return;
 		}
 		
 		if (annotationNode.up().getKind() != Kind.LOCAL) {
 			annotationNode.addError("@Cleanup is legal only on local variable declarations.");
-			return true;
+			return;
 		}
 		
 		JCVariableDecl decl = (JCVariableDecl)annotationNode.up().get();
 		
 		if (decl.init == null) {
 			annotationNode.addError("@Cleanup variable declarations need to be initialized.");
-			return true;
+			return;
 		}
 		
 		JavacNode ancestor = annotationNode.up().directUp();
@@ -91,7 +91,7 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 			statements = ((JCMethodDecl)blockNode).body.stats;
 		} else {
 			annotationNode.addError("@Cleanup is legal only on a local variable declaration inside a block.");
-			return true;
+			return;
 		}
 		
 		boolean seenDeclaration = false;
@@ -108,7 +108,7 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 		
 		if (!seenDeclaration) {
 			annotationNode.addError("LOMBOK BUG: Can't find this local variable declaration inside its parent.");
-			return true;
+			return;
 		}
 		doAssignmentCheck(annotationNode, tryBlock.toList(), decl.name);
 		
@@ -122,9 +122,9 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 		
 		JCIf ifNotNullCleanup = maker.If(isNull, maker.Block(0, cleanupCall), null);
 		
-		JCBlock finalizer = maker.Block(0, List.<JCStatement>of(ifNotNullCleanup));
+		JCBlock finalizer = Javac.recursiveSetGeneratedBy(maker.Block(0, List.<JCStatement>of(ifNotNullCleanup)), ast);
 		
-		newStatements.append(maker.Try(maker.Block(0, tryBlock.toList()), List.<JCCatch>nil(), finalizer));
+		newStatements.append(Javac.setGeneratedBy(maker.Try(Javac.setGeneratedBy(maker.Block(0, tryBlock.toList()), ast), List.<JCCatch>nil(), finalizer), ast));
 		
 		if (blockNode instanceof JCBlock) {
 			((JCBlock)blockNode).stats = newStatements.toList();
@@ -135,8 +135,6 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 		} else throw new AssertionError("Should not get here");
 		
 		ancestor.rebuild();
-		
-		return true;
 	}
 	
 	private JCMethodInvocation preventNullAnalysis(TreeMaker maker, JavacNode node, JCExpression expression) {

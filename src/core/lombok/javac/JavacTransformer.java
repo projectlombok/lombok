@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
+ * Copyright © 2009-2011 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -88,38 +88,28 @@ public class JavacTransformer {
 	
 	private class AnnotationVisitor extends JavacASTAdapter {
 		@Override public void visitAnnotationOnType(JCClassDecl type, JavacNode annotationNode, JCAnnotation annotation) {
-			if (annotationNode.isHandled()) return;
 			JCCompilationUnit top = (JCCompilationUnit) annotationNode.top().get();
-			boolean handled = handlers.handleAnnotation(top, annotationNode, annotation);
-			if (handled) annotationNode.setHandled();
+			handlers.handleAnnotation(top, annotationNode, annotation);
 		}
 		
 		@Override public void visitAnnotationOnField(JCVariableDecl field, JavacNode annotationNode, JCAnnotation annotation) {
-			if (annotationNode.isHandled()) return;
 			JCCompilationUnit top = (JCCompilationUnit) annotationNode.top().get();
-			boolean handled = handlers.handleAnnotation(top, annotationNode, annotation);
-			if (handled) annotationNode.setHandled();
+			handlers.handleAnnotation(top, annotationNode, annotation);
 		}
 		
 		@Override public void visitAnnotationOnMethod(JCMethodDecl method, JavacNode annotationNode, JCAnnotation annotation) {
-			if (annotationNode.isHandled()) return;
 			JCCompilationUnit top = (JCCompilationUnit) annotationNode.top().get();
-			boolean handled = handlers.handleAnnotation(top, annotationNode, annotation);
-			if (handled) annotationNode.setHandled();
+			handlers.handleAnnotation(top, annotationNode, annotation);
 		}
 		
 		@Override public void visitAnnotationOnMethodArgument(JCVariableDecl argument, JCMethodDecl method, JavacNode annotationNode, JCAnnotation annotation) {
-			if (annotationNode.isHandled()) return;
 			JCCompilationUnit top = (JCCompilationUnit) annotationNode.top().get();
-			boolean handled = handlers.handleAnnotation(top, annotationNode, annotation);
-			if (handled) annotationNode.setHandled();
+			handlers.handleAnnotation(top, annotationNode, annotation);
 		}
 		
 		@Override public void visitAnnotationOnLocal(JCVariableDecl local, JavacNode annotationNode, JCAnnotation annotation) {
-			if (annotationNode.isHandled()) return;
 			JCCompilationUnit top = (JCCompilationUnit) annotationNode.top().get();
-			boolean handled = handlers.handleAnnotation(top, annotationNode, annotation);
-			if (handled) annotationNode.setHandled();
+			handlers.handleAnnotation(top, annotationNode, annotation);
 		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -131,7 +131,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		createGetterForField(level, fieldNode, fieldNode, pos, false, onMethod, lazy);
 	}
 	
-	public boolean handle(AnnotationValues<Getter> annotation, Annotation ast, EclipseNode annotationNode) {
+	public void handle(AnnotationValues<Getter> annotation, Annotation ast, EclipseNode annotationNode) {
 		EclipseNode node = annotationNode.up();
 		Getter annotationInstance = annotation.getInstance();
 		AccessLevel level = annotationInstance.value();
@@ -140,46 +140,46 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 			if (lazy) {
 				annotationNode.addWarning("'lazy' does not work with AccessLevel.NONE.");
 			}
-			return true;
+			return;
 		}
 		
-		if (node == null) return false;
+		if (node == null) return;
 		
 		Annotation[] onMethod = getAndRemoveAnnotationParameter(ast, "onMethod");
-		if (node.getKind() == Kind.FIELD) {
-			return createGetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true, onMethod, lazy);
-		}
-		if (node.getKind() == Kind.TYPE) {
+		switch (node.getKind()) {
+		case FIELD:
+			createGetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true, onMethod, lazy);
+			break;
+		case TYPE:
 			if (onMethod != null && onMethod.length != 0) annotationNode.addError("'onMethod' is not supported for @Getter on a type.");
 			if (lazy) annotationNode.addError("'lazy' is not supported for @Getter on a type.");
-			return generateGetterForType(node, annotationNode, level, false);
+			generateGetterForType(node, annotationNode, level, false);
+			break;
 		}
-		return false;
 	}
 	
-	private boolean createGetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, Annotation[] onMethod, boolean lazy) {
+	private void createGetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, Annotation[] onMethod, boolean lazy) {
 		for (EclipseNode fieldNode : fieldNodes) {
 			createGetterForField(level, fieldNode, errorNode, source, whineIfExists, onMethod, lazy);
 		}
-		return true;
 	}
 	
-	private boolean createGetterForField(AccessLevel level,
+	private void createGetterForField(AccessLevel level,
 			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists, Annotation[] onMethod, boolean lazy) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			errorNode.addError("@Getter is only supported on a class or a field.");
-			return true;
+			return;
 		}
 		
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		if (lazy) {
 			if ((field.modifiers & ClassFileConstants.AccPrivate) == 0 || (field.modifiers & ClassFileConstants.AccFinal) == 0) {
 				errorNode.addError("'lazy' requires the field to be private and final.");
-				return true;
+				return;
 			}
 			if (field.initialization == null) {
 				errorNode.addError("'lazy' requires field initialization.");
-				return true;
+				return;
 			}
 		}
 		
@@ -193,7 +193,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		for (String altName : TransformationsUtil.toAllGetterNames(fieldName, isBoolean)) {
 			switch (methodExists(altName, fieldNode, false)) {
 			case EXISTS_BY_LOMBOK:
-				return true;
+				return;
 			case EXISTS_BY_USER:
 				if (whineIfExists) {
 					String altNameExpl = "";
@@ -201,7 +201,7 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 					errorNode.addWarning(
 						String.format("Not generating %s(): A method with that name already exists%s", getterName, altNameExpl));
 				}
-				return true;
+				return;
 			default:
 			case NOT_EXISTS:
 				//continue scanning the other alt names.
@@ -215,8 +215,6 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		}
 		
 		injectMethod(fieldNode.up(), method);
-		
-		return true;
 	}
 	
 	private MethodDeclaration generateGetter(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, ASTNode source, boolean lazy) {

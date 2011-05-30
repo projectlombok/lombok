@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -168,38 +168,28 @@ public class TransformEclipseAST {
 	
 	private static class AnnotationVisitor extends EclipseASTAdapter {
 		@Override public void visitAnnotationOnField(FieldDeclaration field, EclipseNode annotationNode, Annotation annotation) {
-			if (annotationNode.isHandled()) return;
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			boolean handled = handlers.handle(top, annotationNode, annotation);
-			if (handled) annotationNode.setHandled();
+			handlers.handleAnnotation(top, annotationNode, annotation);
 		}
 		
 		@Override public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation) {
-			if (annotationNode.isHandled()) return;
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			boolean handled = handlers.handle(top, annotationNode, annotation);
-			if (handled) annotationNode.setHandled();
+			handlers.handleAnnotation(top, annotationNode, annotation);
 		}
 		
 		@Override public void visitAnnotationOnLocal(LocalDeclaration local, EclipseNode annotationNode, Annotation annotation) {
-			if (annotationNode.isHandled()) return;
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			boolean handled = handlers.handle(top, annotationNode, annotation);
-			if (handled) annotationNode.setHandled();
+			handlers.handleAnnotation(top, annotationNode, annotation);
 		}
 		
 		@Override public void visitAnnotationOnMethod(AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation) {
-			if (annotationNode.isHandled()) return;
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			boolean handled = handlers.handle(top, annotationNode, annotation);
-			if (handled) annotationNode.setHandled();
+			handlers.handleAnnotation(top, annotationNode, annotation);
 		}
 		
 		@Override public void visitAnnotationOnType(TypeDeclaration type, EclipseNode annotationNode, Annotation annotation) {
-			if (annotationNode.isHandled()) return;
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			boolean handled = handlers.handle(top, annotationNode, annotation);
-			if (handled) annotationNode.setHandled();
+			handlers.handleAnnotation(top, annotationNode, annotation);
 		}
 	}
 }

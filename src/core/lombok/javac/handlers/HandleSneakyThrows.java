@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,7 @@
 package lombok.javac.handlers;
 
 import static lombok.javac.handlers.JavacHandlerUtil.chainDots;
-import static lombok.javac.handlers.JavacHandlerUtil.markAnnotationAsProcessed;
+import static lombok.javac.handlers.JavacHandlerUtil.deleteAnnotationIfNeccessary;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,12 +30,14 @@ import java.util.Collections;
 
 import lombok.SneakyThrows;
 import lombok.core.AnnotationValues;
+import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -50,8 +52,8 @@ import com.sun.tools.javac.util.List;
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleSneakyThrows implements JavacAnnotationHandler<SneakyThrows> {
-	@Override public boolean handle(AnnotationValues<SneakyThrows> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		markAnnotationAsProcessed(annotationNode, SneakyThrows.class);
+	@Override public void handle(AnnotationValues<SneakyThrows> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		deleteAnnotationIfNeccessary(annotationNode, SneakyThrows.class);
 		Collection<String> exceptionNames = annotation.getRawExpressions("value");
 		if (exceptionNames.isEmpty()) {
 			exceptionNames = Collections.singleton("java.lang.Throwable");
@@ -66,39 +68,38 @@ public class HandleSneakyThrows implements JavacAnnotationHandler<SneakyThrows> 
 		JavacNode owner = annotationNode.up();
 		switch (owner.getKind()) {
 		case METHOD:
-			return handleMethod(annotationNode, (JCMethodDecl)owner.get(), exceptions);
+			handleMethod(annotationNode, (JCMethodDecl)owner.get(), exceptions);
+			break;
 		default:
 			annotationNode.addError("@SneakyThrows is legal only on methods and constructors.");
-			return true;
+			break;
 		}
 	}
 	
-	private boolean handleMethod(JavacNode annotation, JCMethodDecl method, Collection<String> exceptions) {
+	private void handleMethod(JavacNode annotation, JCMethodDecl method, Collection<String> exceptions) {
 		JavacNode methodNode = annotation.up();
 		
 		if ( (method.mods.flags & Flags.ABSTRACT) != 0) {
 			annotation.addError("@SneakyThrows can only be used on concrete methods.");
-			return true;
+			return;
 		}
 		
-		if (method.body == null) return false;
+		if (method.body == null) return;
 		
 		List<JCStatement> contents = method.body.stats;
 		
 		for (String exception : exceptions) {
-			contents = List.of(buildTryCatchBlock(methodNode, contents, exception));
+			contents = List.of(buildTryCatchBlock(methodNode, contents, exception, annotation.get()));
 		}
 		
 		method.body.stats = contents;
 		methodNode.rebuild();
-		
-		return true;
 	}
 
-	private JCStatement buildTryCatchBlock(JavacNode node, List<JCStatement> contents, String exception) {
+	private JCStatement buildTryCatchBlock(JavacNode node, List<JCStatement> contents, String exception, JCTree source) {
 		TreeMaker maker = node.getTreeMaker();
 		
-		JCBlock tryBlock = maker.Block(0, contents);
+		JCBlock tryBlock = Javac.setGeneratedBy(maker.Block(0, contents), source);
 		
 		JCExpression varType = chainDots(maker, node, exception.split("\\."));
 		
@@ -108,7 +109,7 @@ public class HandleSneakyThrows implements JavacAnnotationHandler<SneakyThrows> 
 				List.<JCExpression>nil(), lombokLombokSneakyThrowNameRef,
 				List.<JCExpression>of(maker.Ident(node.toName("$ex")))))));
 		
-		return maker.Try(tryBlock, List.of(maker.Catch(catchParam, catchBody)), null);
+		return Javac.setGeneratedBy(maker.Try(tryBlock, List.of(Javac.recursiveSetGeneratedBy(maker.Catch(catchParam, catchBody), source)), null), source);
 	}
 	
 	@Override public boolean isResolutionBased() {

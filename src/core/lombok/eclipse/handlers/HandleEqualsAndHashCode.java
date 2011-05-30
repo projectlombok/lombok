@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
+ * Copyright © 2009-2011 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -116,7 +116,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		generateMethods(typeNode, errorNode, null, null, null, false, FieldAccess.GETTER);
 	}
 	
-	@Override public boolean handle(AnnotationValues<EqualsAndHashCode> annotation,
+	@Override public void handle(AnnotationValues<EqualsAndHashCode> annotation,
 			Annotation ast, EclipseNode annotationNode) {
 		EqualsAndHashCode ann = annotation.getInstance();
 		List<String> excludes = Arrays.asList(ann.exclude());
@@ -137,10 +137,10 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		
 		FieldAccess fieldAccess = ann.doNotUseGetters() ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
 		
-		return generateMethods(typeNode, annotationNode, excludes, includes, callSuper, true, fieldAccess);
+		generateMethods(typeNode, annotationNode, excludes, includes, callSuper, true, fieldAccess);
 	}
 	
-	public boolean generateMethods(EclipseNode typeNode, EclipseNode errorNode, List<String> excludes, List<String> includes,
+	public void generateMethods(EclipseNode typeNode, EclipseNode errorNode, List<String> excludes, List<String> includes,
 			Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
 		assert excludes == null || includes == null;
 		
@@ -153,7 +153,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		
 		if (typeDecl == null || notAClass) {
 			errorNode.addError("@EqualsAndHashCode is only supported on a class.");
-			return false;
+			return;
 		}
 		
 		boolean implicitCallSuper = callSuper == null;
@@ -175,7 +175,7 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		
 		if (isDirectDescendantOfObject && callSuper) {
 			errorNode.addError("Generating equals/hashCode with a supercall to java.lang.Object is pointless.");
-			return true;
+			return;
 		}
 		
 		if (!isDirectDescendantOfObject && !callSuper && implicitCallSuper) {
@@ -249,8 +249,6 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 			}
 			break;
 		}
-		
-		return true;
 	}
 	
 	private MethodDeclaration createHashCode(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {

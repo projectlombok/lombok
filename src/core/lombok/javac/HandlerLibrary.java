@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import javax.annotation.processing.Messager;
 import javax.tools.Diagnostic;
@@ -37,6 +38,7 @@ import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
 import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
 
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
@@ -74,8 +76,8 @@ public class HandlerLibrary {
 			return handler.isResolutionBased();
 		}
 		
-		public boolean handle(final JavacNode node) {
-			return handler.handle(Javac.createAnnotation(annotationClass, node), (JCAnnotation)node.get(), node);
+		public void handle(final JavacNode node) {
+			handler.handle(Javac.createAnnotation(annotationClass, node), (JCAnnotation)node.get(), node);
 		}
 	}
 	
@@ -141,6 +143,15 @@ public class HandlerLibrary {
 		if (t != null) t.printStackTrace();
 	}
 	
+	private static final Map<JCTree, Object> handledMap = new WeakHashMap<JCTree, Object>();
+	private static final Object MARKER = new Object();
+	
+	private boolean checkAndSetHandled(JCTree node) {
+		synchronized (handledMap) {
+			return handledMap.put(node, MARKER) != MARKER;
+		}
+	}
+	
 	/**
 	 * Handles the provided annotation node by first finding a qualifying instance of
 	 * {@link JavacAnnotationHandler} and if one exists, calling it with a freshly cooked up
@@ -158,10 +169,11 @@ public class HandlerLibrary {
 	 * @param node The Lombok AST Node representing the Annotation AST Node.
 	 * @param annotation 'node.get()' - convenience parameter.
 	 */
-	public boolean handleAnnotation(JCCompilationUnit unit, JavacNode node, JCAnnotation annotation) {
+	public void handleAnnotation(JCCompilationUnit unit, JavacNode node, JCAnnotation annotation) {
+		if (!checkAndSetHandled(annotation)) return;
+		
 		TypeResolver resolver = new TypeResolver(typeLibrary, node.getPackageDeclaration(), node.getImportStatements());
 		String rawType = annotation.annotationType.toString();
-		boolean handled = false;
 		for (String fqn : resolver.findTypeMatches(node, rawType)) {
 			boolean isPrintAST = fqn.equals(PrintAST.class.getName());
 			if (isPrintAST && phase != 2) continue;
@@ -170,9 +182,9 @@ public class HandlerLibrary {
 			if (container == null) continue;
 			
 			try {
-				if (container.isResolutionBased() && phase == 1) handled |= container.handle(node);
-				if (!container.isResolutionBased() && phase == 0) handled |= container.handle(node);
-				if (container.annotationClass == PrintAST.class && phase == 2) handled |= container.handle(node);
+				if (container.isResolutionBased() && phase == 1) container.handle(node);
+				if (!container.isResolutionBased() && phase == 0) container.handle(node);
+				if (container.annotationClass == PrintAST.class && phase == 2) container.handle(node);
 			} catch (AnnotationValueDecodeFail fail) {
 				fail.owner.setError(fail.getMessage(), fail.idx);
 			} catch (Throwable t) {
@@ -181,8 +193,6 @@ public class HandlerLibrary {
 				javacError(String.format("Lombok annotation handler %s failed on " + sourceName, container.handler.getClass()), t);
 			}
 		}
-		
-		return handled;
 	}
 	
 	/**

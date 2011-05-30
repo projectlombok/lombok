@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
+ * Copyright © 2009-2011 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,8 +72,8 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		}
 	}
 	
-	@Override public boolean handle(AnnotationValues<EqualsAndHashCode> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		markAnnotationAsProcessed(annotationNode, EqualsAndHashCode.class);
+	@Override public void handle(AnnotationValues<EqualsAndHashCode> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		deleteAnnotationIfNeccessary(annotationNode, EqualsAndHashCode.class);
 		EqualsAndHashCode ann = annotation.getInstance();
 		List<String> excludes = List.from(ann.exclude());
 		List<String> includes = List.from(ann.of());
@@ -93,10 +93,10 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		
 		FieldAccess fieldAccess = ann.doNotUseGetters() ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
 		
-		return generateMethods(typeNode, annotationNode, excludes, includes, callSuper, true, fieldAccess);
+		generateMethods(typeNode, annotationNode, excludes, includes, callSuper, true, fieldAccess);
 	}
 	
-	public void generateEqualsAndHashCodeForType(JavacNode typeNode, JavacNode errorNode) {
+	public void generateEqualsAndHashCodeForType(JavacNode typeNode, JavacNode source) {
 		for (JavacNode child : typeNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				if (Javac.annotationTypeMatches(EqualsAndHashCode.class, child)) {
@@ -106,10 +106,10 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 			}
 		}
 		
-		generateMethods(typeNode, errorNode, null, null, null, false, FieldAccess.GETTER);
+		generateMethods(typeNode, source, null, null, null, false, FieldAccess.GETTER);
 	}
 	
-	private boolean generateMethods(JavacNode typeNode, JavacNode errorNode, List<String> excludes, List<String> includes,
+	private void generateMethods(JavacNode typeNode, JavacNode source, List<String> excludes, List<String> includes,
 			Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
 		boolean notAClass = true;
 		if (typeNode.get() instanceof JCClassDecl) {
@@ -118,8 +118,8 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		}
 		
 		if (notAClass) {
-			errorNode.addError("@EqualsAndHashCode is only supported on a class.");
-			return false;
+			source.addError("@EqualsAndHashCode is only supported on a class.");
+			return;
 		}
 		
 		boolean isDirectDescendantOfObject = true;
@@ -139,12 +139,12 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		}
 		
 		if (isDirectDescendantOfObject && callSuper) {
-			errorNode.addError("Generating equals/hashCode with a supercall to java.lang.Object is pointless.");
-			return true;
+			source.addError("Generating equals/hashCode with a supercall to java.lang.Object is pointless.");
+			return;
 		}
 		
 		if (!isDirectDescendantOfObject && !callSuper && implicitCallSuper) {
-			errorNode.addWarning("Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.");
+			source.addWarning("Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.");
 		}
 		
 		ListBuffer<JavacNode> nodesForEquality = ListBuffer.lb();
@@ -176,7 +176,7 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 			boolean isFinal = (((JCClassDecl)typeNode.get()).mods.flags & Flags.FINAL) != 0;
 			needsCanEqual = !isFinal || !isDirectDescendantOfObject;
 			
-			JCMethodDecl method = createEquals(typeNode, nodesForEquality.toList(), callSuper, fieldAccess, needsCanEqual);
+			JCMethodDecl method = createEquals(typeNode, nodesForEquality.toList(), callSuper, fieldAccess, needsCanEqual, source.get());
 			injectMethod(typeNode, method);
 			break;
 		case EXISTS_BY_LOMBOK:
@@ -184,7 +184,7 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		default:
 		case EXISTS_BY_USER:
 			if (whineIfExists) {
-				errorNode.addWarning("Not generating equals(Object other): A method with that name already exists");
+				source.addWarning("Not generating equals(Object other): A method with that name already exists");
 			}
 			break;
 		}
@@ -192,7 +192,7 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		if (needsCanEqual) {
 			switch (methodExists("canEqual", typeNode)) {
 			case NOT_EXISTS:
-				JCMethodDecl method = createCanEqual(typeNode);
+				JCMethodDecl method = createCanEqual(typeNode, source.get());
 				injectMethod(typeNode, method);
 				break;
 			case EXISTS_BY_LOMBOK:
@@ -203,7 +203,7 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		}
 		switch (methodExists("hashCode", typeNode)) {
 		case NOT_EXISTS:
-			JCMethodDecl method = createHashCode(typeNode, nodesForEquality.toList(), callSuper, fieldAccess);
+			JCMethodDecl method = createHashCode(typeNode, nodesForEquality.toList(), callSuper, fieldAccess, source.get());
 			injectMethod(typeNode, method);
 			break;
 		case EXISTS_BY_LOMBOK:
@@ -211,14 +211,13 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		default:
 		case EXISTS_BY_USER:
 			if (whineIfExists) {
-				errorNode.addWarning("Not generating hashCode(): A method with that name already exists");
+				source.addWarning("Not generating hashCode(): A method with that name already exists");
 			}
 			break;
 		}
-		return true;
 	}
 	
-	private JCMethodDecl createHashCode(JavacNode typeNode, List<JavacNode> fields, boolean callSuper, FieldAccess fieldAccess) {
+	private JCMethodDecl createHashCode(JavacNode typeNode, List<JavacNode> fields, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(chainDots(maker, typeNode, "java", "lang", "Override"), List.<JCExpression>nil());
@@ -320,8 +319,8 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		}
 		
 		JCBlock body = maker.Block(0, statements.toList());
-		return maker.MethodDef(mods, typeNode.toName("hashCode"), returnType,
-				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+		return Javac.recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("hashCode"), returnType,
+				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source);
 	}
 	
 	/** The 2 references must be clones of each other. */
@@ -332,7 +331,7 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		return maker.TypeCast(maker.TypeIdent(Javac.getCTCint(TypeTags.class, "INT")), xorBits);
 	}
 	
-	private JCMethodDecl createEquals(JavacNode typeNode, List<JavacNode> fields, boolean callSuper, FieldAccess fieldAccess, boolean needsCanEqual) {
+	private JCMethodDecl createEquals(JavacNode typeNode, List<JavacNode> fields, boolean callSuper, FieldAccess fieldAccess, boolean needsCanEqual, JCTree source) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
@@ -451,10 +450,10 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		}
 		
 		JCBlock body = maker.Block(0, statements.toList());
-		return maker.MethodDef(mods, typeNode.toName("equals"), returnType, List.<JCTypeParameter>nil(), params, List.<JCExpression>nil(), body, null);
+		return Javac.recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("equals"), returnType, List.<JCTypeParameter>nil(), params, List.<JCExpression>nil(), body, null), source);
 	}
 
-	private JCMethodDecl createCanEqual(JavacNode typeNode) {
+	private JCMethodDecl createCanEqual(JavacNode typeNode, JCTree source) {
 		/* public boolean canEqual(final java.lang.Object other) {
 		 *     return other instanceof MyType;
 		 * }
@@ -472,7 +471,7 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 		JCBlock body = maker.Block(0, List.<JCStatement>of(
 				maker.Return(maker.TypeTest(maker.Ident(otherName), maker.Ident(type.name)))));
 		
-		return maker.MethodDef(mods, canEqualName, returnType, List.<JCTypeParameter>nil(), params, List.<JCExpression>nil(), body, null);
+		return Javac.recursiveSetGeneratedBy(maker.MethodDef(mods, canEqualName, returnType, List.<JCTypeParameter>nil(), params, List.<JCExpression>nil(), body, null), source);
 	}
 	
 	private JCStatement generateCompareFloatOrDouble(JCExpression thisDotField, JCExpression otherDotField,

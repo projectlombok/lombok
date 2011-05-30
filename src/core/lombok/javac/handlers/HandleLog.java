@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
+ * Copyright © 2010-2011 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 import java.lang.annotation.Annotation;
 
 import lombok.core.AnnotationValues;
+import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
@@ -33,6 +34,7 @@ import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -49,28 +51,28 @@ public class HandleLog {
 		throw new UnsupportedOperationException();
 	}
 	
-	public static boolean processAnnotation(LoggingFramework framework, AnnotationValues<?> annotation, JavacNode annotationNode) {
-		markAnnotationAsProcessed(annotationNode, framework.getAnnotationClass());
+	public static void processAnnotation(LoggingFramework framework, AnnotationValues<?> annotation, JavacNode annotationNode) {
+		deleteAnnotationIfNeccessary(annotationNode, framework.getAnnotationClass());
 		
 		JavacNode typeNode = annotationNode.up();
 		switch (typeNode.getKind()) {
 		case TYPE:
 			if ((((JCClassDecl)typeNode.get()).mods.flags & Flags.INTERFACE)!= 0) {
 				annotationNode.addError("@Log is legal only on classes and enums.");
-				return true;
+				return;
 			}
 			
 			if (fieldExists("log", typeNode)!= MemberExistsResult.NOT_EXISTS) {
 				annotationNode.addWarning("Field 'log' already exists.");
-				return true;
+				return;
 			}
-
+			
 			JCFieldAccess loggingType = selfType(typeNode);
-			createField(framework, typeNode, loggingType);
-			return true;
+			createField(framework, typeNode, loggingType, annotationNode.get());
+			break;
 		default:
 			annotationNode.addError("@Log is legal only on types.");
-			return true;
+			break;
 		}
 	}
 	
@@ -80,7 +82,7 @@ public class HandleLog {
 		return maker.Select(maker.Ident(name), typeNode.toName("class"));
 	}
 	
-	private static boolean createField(LoggingFramework framework, JavacNode typeNode, JCFieldAccess loggingType) {
+	private static boolean createField(LoggingFramework framework, JavacNode typeNode, JCFieldAccess loggingType, JCTree source) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		
 		// 	private static final <loggerType> log = <factoryMethod>(<parameter>);
@@ -90,9 +92,9 @@ public class HandleLog {
 		JCExpression loggerName = framework.createFactoryParameter(typeNode, loggingType);
 		JCMethodInvocation factoryMethodCall = maker.Apply(List.<JCExpression>nil(), factoryMethod, List.<JCExpression>of(loggerName));
 		
-		JCVariableDecl fieldDecl = maker.VarDef(
+		JCVariableDecl fieldDecl = Javac.recursiveSetGeneratedBy(maker.VarDef(
 				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | Flags.STATIC),
-				typeNode.toName("log"), loggerType, factoryMethodCall);
+				typeNode.toName("log"), loggerType, factoryMethodCall), source);
 		
 		injectField(typeNode, fieldDecl);
 		return true;
@@ -103,8 +105,8 @@ public class HandleLog {
 	 */
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleCommonsLog implements JavacAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
-		@Override public boolean handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			return processAnnotation(LoggingFramework.COMMONS, annotation, annotationNode);
+		@Override public void handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, JCAnnotation ast, JavacNode annotationNode) {
+			processAnnotation(LoggingFramework.COMMONS, annotation, annotationNode);
 		}
 		
 		@Override public boolean isResolutionBased() {
@@ -117,8 +119,8 @@ public class HandleLog {
 	 */
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleJulLog implements JavacAnnotationHandler<lombok.extern.java.Log> {
-		@Override public boolean handle(AnnotationValues<lombok.extern.java.Log> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			return processAnnotation(LoggingFramework.JUL, annotation, annotationNode);
+		@Override public void handle(AnnotationValues<lombok.extern.java.Log> annotation, JCAnnotation ast, JavacNode annotationNode) {
+			processAnnotation(LoggingFramework.JUL, annotation, annotationNode);
 		}
 		
 		@Override public boolean isResolutionBased() {
@@ -131,8 +133,8 @@ public class HandleLog {
 	 */
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleLog4jLog implements JavacAnnotationHandler<lombok.extern.log4j.Log4j> {
-		@Override public boolean handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			return processAnnotation(LoggingFramework.LOG4J, annotation, annotationNode);
+		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
+			processAnnotation(LoggingFramework.LOG4J, annotation, annotationNode);
 		}
 		
 		@Override public boolean isResolutionBased() {
@@ -145,8 +147,8 @@ public class HandleLog {
 	 */
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleSlf4jLog implements JavacAnnotationHandler<lombok.extern.slf4j.Slf4j> {
-		@Override public boolean handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			return processAnnotation(LoggingFramework.SLF4J, annotation, annotationNode);
+		@Override public void handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
+			processAnnotation(LoggingFramework.SLF4J, annotation, annotationNode);
 		}
 		
 		@Override public boolean isResolutionBased() {

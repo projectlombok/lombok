@@ -73,34 +73,32 @@ import org.mangosdk.spi.ProviderFor;
 public class HandleConstructor {
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleNoArgsConstructor implements EclipseAnnotationHandler<NoArgsConstructor> {
-		@Override public boolean handle(AnnotationValues<NoArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
+		@Override public void handle(AnnotationValues<NoArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
 			EclipseNode typeNode = annotationNode.up();
-			if (!checkLegality(typeNode, annotationNode, NoArgsConstructor.class.getSimpleName())) return true;
+			if (!checkLegality(typeNode, annotationNode, NoArgsConstructor.class.getSimpleName())) return;
 			NoArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
 			String staticName = ann.staticName();
-			if (level == AccessLevel.NONE) return true;
+			if (level == AccessLevel.NONE) return;
 			List<EclipseNode> fields = new ArrayList<EclipseNode>();
 			Annotation[] onConstructor = getAndRemoveAnnotationParameter(ast, "onConstructor");
 			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, onConstructor, false, false, ast);
-			return true;
 		}
 	}
 	
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleRequiredArgsConstructor implements EclipseAnnotationHandler<RequiredArgsConstructor> {
-		@Override public boolean handle(AnnotationValues<RequiredArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
+		@Override public void handle(AnnotationValues<RequiredArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
 			EclipseNode typeNode = annotationNode.up();
-			if (!checkLegality(typeNode, annotationNode, RequiredArgsConstructor.class.getSimpleName())) return true;
+			if (!checkLegality(typeNode, annotationNode, RequiredArgsConstructor.class.getSimpleName())) return;
 			RequiredArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
 			String staticName = ann.staticName();
 			@SuppressWarnings("deprecation")
 			boolean suppressConstructorProperties = ann.suppressConstructorProperties();
-			if (level == AccessLevel.NONE) return true;
+			if (level == AccessLevel.NONE) return;
 			Annotation[] onConstructor = getAndRemoveAnnotationParameter(ast, "onConstructor");
 			new HandleConstructor().generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, onConstructor, false, suppressConstructorProperties, ast);
-			return true;
 		}
 	}
 	
@@ -119,15 +117,15 @@ public class HandleConstructor {
 	
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleAllArgsConstructor implements EclipseAnnotationHandler<AllArgsConstructor> {
-		@Override public boolean handle(AnnotationValues<AllArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
+		@Override public void handle(AnnotationValues<AllArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
 			EclipseNode typeNode = annotationNode.up();
-			if (!checkLegality(typeNode, annotationNode, AllArgsConstructor.class.getSimpleName())) return true;
+			if (!checkLegality(typeNode, annotationNode, AllArgsConstructor.class.getSimpleName())) return;
 			AllArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
 			String staticName = ann.staticName();
 			@SuppressWarnings("deprecation")
 			boolean suppressConstructorProperties = ann.suppressConstructorProperties();
-			if (level == AccessLevel.NONE) return true;
+			if (level == AccessLevel.NONE) return;
 			List<EclipseNode> fields = new ArrayList<EclipseNode>();
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
@@ -135,13 +133,12 @@ public class HandleConstructor {
 				if (!EclipseHandlerUtil.filterField(fieldDecl)) continue;
 				
 				// Skip initialized final fields.
-				if (((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) && fieldDecl.initialization != null) return false;
+				if (((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) && fieldDecl.initialization != null) return;
 				
 				fields.add(child);
 			}
 			Annotation[] onConstructor = getAndRemoveAnnotationParameter(ast, "onConstructor");
 			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, onConstructor, false, suppressConstructorProperties, ast);
-			return true;
 		}
 	}
 	
