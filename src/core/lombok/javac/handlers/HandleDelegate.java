@@ -21,6 +21,8 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.javac.handlers.JavacHandlerUtil.markAnnotationAsProcessed;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -90,6 +92,7 @@ public class HandleDelegate implements JavacAnnotationHandler<Delegate> {
 			"finalize()"));
 	
 	@Override public boolean handle(AnnotationValues<Delegate> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		markAnnotationAsProcessed(annotationNode, Delegate.class);
 		if (annotationNode.up().getKind() != Kind.FIELD) {
 			// As the annotation is legal on fields only, javac itself will take care of printing an error message for this.
 			return false;
