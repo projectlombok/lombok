@@ -121,8 +121,6 @@ public class AnnotationProcessor extends AbstractProcessor {
 	}
 	
 	static class EcjDescriptor extends ProcessorDescriptor {
-		private Processor processor;
-		
 		@Override String getName() {
 			return "ECJ";
 		}
@@ -137,7 +135,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		
 		@Override boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-			return processor.process(annotations, roundEnv);
+			return false;
 		}
 	}
 	
