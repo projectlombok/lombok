@@ -52,7 +52,8 @@ h1 {
 	height: 30px;
 	line-height: 30px;
 	font-size: 14px;
-	text-align: center
+	text-align: center;
+	clear: both;
 }
 
 .button {
@@ -145,4 +146,23 @@ code {
 .creditsLink {
 	font-style: normal;
 	font-weight: bold;
+}
+
+.downloadHelp {
+	margin: 32px 16px 32px 0px;
+}
+
+.downloadHelp .platform {
+	font-size: 1.2em;
+	font-weight: bold;
+	padding-right: 32px;
+}
+
+.stableLink {
+	font-size: 1.5em;
+	margin-bottom: 16px;
+}
+
+.edgeLink {
+	margin-bottom: 16px;
 }

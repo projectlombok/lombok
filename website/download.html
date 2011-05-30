@@ -30,31 +30,44 @@
 				<span>Report an issue</span>
 			</a>
 			<div class="downloadContainer">
+				<a class="downloadLink" id="downloadLink" href="download.html">
+					<img src="icon_download.png" />
+					<span>Download!</span>
+				</a>
 				<div class="versionInfo">
 					Version: @VERSION@ | <a href="changelog.html">changelog</a>
 				</div>
 			</div>
 		</div>
 		<div class="downloadHelp">
-			<h3>Maven or Ivy</h3>
-			Lombok is in maven central with groupId <code>org.projectlombok</code>, artifactId <code>lombok</code> and version <code>@VERSION@</code>.<br />
-			Full instructions are on the <a href="mavenrepo/index.html">lombok maven info page</a>.
-			<h3>Javac, netbeans, and most other compilers and tools based on javac</h3>
-			Just put <code>lombok.jar</code> on the classpath.
-			<h3>Eclipse and STS (Springsource Tool Suite)</h3>
-			Run <code>lombok.jar</code> as a stand-alone java app (i.e. doubleclick it, usually) to open the installer, which will find your eclipse/STS installs automatically.
-			<h3>IDEA IntelliJ</h3>
-			lombok doesn't (yet) work under IntelliJ. We're working on it though!
-			<h3>Javadoc</h3>
-			First delombok your code then run javadoc on the result. See the <a href="/features/delombok.html">delombok feature page</a> for more information.
-			<h3>GWT</h3>
-			When you create a new GWT project, 2 batch scripts are made by the tool (one to run in devmode, one to compile). Open these scripts in an editor and find the
-			invocation of 'java'. Add the following: <code>-javaagent:lombok.jar=ECJ</code>. Then copy <code>lombok.jar</code> to your GWT project directory, and add <code>lombok.jar</code>
-			to the classpath as usual. <span class="attribution">Thanks to Stephan Habermann for figuring this out.</span>
-			<h3>Play! Framework</h3>
-			Play does not run annotation processors of any kind, but Aaron Freeman has made a play plugin to get around this problem. See the <a href="https://github.com/aaronfreeman/play-lombok">play-lombok</a> plugin for more information.
-			<h3>ecj and other tools based on ecj</h3>
-			Put <code>lombok.jar</code> on the classpath and add the following VM parameter when invoking ecj: <code>-javaagent:lombok.jar=ECJ</code>.
+			<div class="stableLink">Download <a href="http://projectlombok.googlecode.com/files/lombok.jar">lombok.jar</a> @VERSION@.</div>
+			<div class="edgeLink">Feeling adventurous? Download the latest <a href="download-edge.html">snapshot</a> release.</div>
+			
+			<table cellspacing="0" cellpadding="0">
+				<tr><td class="platform">Maven or Ivy</td>
+				<td class="instruction">Lombok is in maven central. <a href="mavenrepo/index.html">More&hellip;</a></td></tr>
+				
+				<tr><td class="platform">Javac and netbeans</td>
+				<td class="instruction">Just put <code>lombok.jar</code> on the classpath. <span style="font-size: 0.8em;">Note that <a href="features/val.html"><em>val</em></a> does not work in Netbeans (yet).</span></td></tr>
+				
+				<tr><td class="platform">Eclipse and STS</td>
+				<td class="instruction">Run <code>lombok.jar</code> as a java app (i.e. doubleclick it, usually) to open the installer.</td></tr>
+				
+				<tr><td class="platform">IDEA IntelliJ</td>
+				<td class="instruction">lombok doesn't (yet) work under IntelliJ. We're working on it though!</td></tr>
+				
+				<tr><td class="platform">Javadoc</td>
+				<td class="instruction">First delombok your code then run javadoc on the result. <a href="features/delombok.html">More&hellip;</a></td></tr>
+				
+				<tr><td class="platform">GWT</td>
+				<td class="instruction">Lombok works with GWT. <a href="setup/gwt.html">More&hellip;</a></td></tr>
+				
+				<tr><td class="platform">Play! Framework</td>
+				<td class="instruction">Use Aaron Freeman's <a href="https://github.com/aaronfreeman/play-lombok#readme">lombok play plugin</a>.</td></tr>
+				
+				<tr><td class="platform">ecj</td>
+				<td class="instruction">Lombok works on ecj and ecj-based tools. <a href="setup/ecj.html">More&hellip;</a></td></tr>
+			</table>
 		</div>
 		<div class="endBar">
 		</div>
