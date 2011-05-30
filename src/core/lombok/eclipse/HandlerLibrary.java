@@ -155,8 +155,6 @@ public class HandlerLibrary {
 	 * @param annotation 'node.get()' - convenience parameter.
 	 */
 	public void handleAnnotation(CompilationUnitDeclaration ast, EclipseNode annotationNode, org.eclipse.jdt.internal.compiler.ast.Annotation annotation) {
-		if (!checkAndSetHandled(annotation)) return;
-		
 		String pkgName = annotationNode.getPackageDeclaration();
 		Collection<String> imports = annotationNode.getImportStatements();
 		
@@ -171,7 +169,7 @@ public class HandlerLibrary {
 			if (container == null) continue;
 			
 			try {
-				container.handle(annotation, annotationNode);
+				if (checkAndSetHandled(annotation)) container.handle(annotation, annotationNode);
 			} catch (AnnotationValueDecodeFail fail) {
 				fail.owner.setError(fail.getMessage(), fail.idx);
 			} catch (Throwable t) {

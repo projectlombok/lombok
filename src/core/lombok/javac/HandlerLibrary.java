@@ -170,8 +170,6 @@ public class HandlerLibrary {
 	 * @param annotation 'node.get()' - convenience parameter.
 	 */
 	public void handleAnnotation(JCCompilationUnit unit, JavacNode node, JCAnnotation annotation) {
-		if (!checkAndSetHandled(annotation)) return;
-		
 		TypeResolver resolver = new TypeResolver(typeLibrary, node.getPackageDeclaration(), node.getImportStatements());
 		String rawType = annotation.annotationType.toString();
 		for (String fqn : resolver.findTypeMatches(node, rawType)) {
@@ -182,9 +180,15 @@ public class HandlerLibrary {
 			if (container == null) continue;
 			
 			try {
-				if (container.isResolutionBased() && phase == 1) container.handle(node);
-				if (!container.isResolutionBased() && phase == 0) container.handle(node);
-				if (container.annotationClass == PrintAST.class && phase == 2) container.handle(node);
+				if (container.isResolutionBased() && phase == 1) {
+					if (checkAndSetHandled(annotation)) container.handle(node);
+				}
+				if (!container.isResolutionBased() && phase == 0) {
+					if (checkAndSetHandled(annotation)) container.handle(node);
+				}
+				if (container.annotationClass == PrintAST.class && phase == 2) {
+					if (checkAndSetHandled(annotation)) container.handle(node);
+				}
 			} catch (AnnotationValueDecodeFail fail) {
 				fail.owner.setError(fail.getMessage(), fail.idx);
 			} catch (Throwable t) {
