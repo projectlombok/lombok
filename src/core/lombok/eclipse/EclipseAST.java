@@ -35,6 +35,7 @@ import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.Initializer;
@@ -301,6 +302,10 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		if (setAndGetAsHandled(method)) return null;
 		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
 		childNodes.addAll(buildArguments(method.arguments));
+		if (method instanceof ConstructorDeclaration) {
+			ConstructorDeclaration constructor = (ConstructorDeclaration) method;
+			addIfNotNull(childNodes, buildStatement(constructor.constructorCall));
+		}
 		childNodes.addAll(buildStatements(method.statements));
 		childNodes.addAll(buildAnnotations(method.annotations, false));
 		return putInMap(new EclipseNode(this, method, childNodes, Kind.METHOD));
