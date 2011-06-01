@@ -1,0 +1,8 @@
+8 warning Not generating isFoo(): A method with that name already exists
+14 warning Not generating isFoo(): A method with that name already exists (getFoo)
+32 warning Not generating getFoo(): A method with that name already exists
+50 warning Not generating getFoo(): A method with that name already exists
+62 warning Not generating isFoo(): A method with that name already exists
+68 warning Not generating isFoo(): A method with that name already exists (getFoo)
+86 warning Not generating getFoo(): A method with that name already exists
+104 warning Not generating getFoo(): A method with that name already exists

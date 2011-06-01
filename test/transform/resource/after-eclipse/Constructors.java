@@ -1,0 +1,56 @@
+@lombok.RequiredArgsConstructor class RequiredArgsConstructor1 {
+  final int x;
+  String name;
+  public @java.beans.ConstructorProperties({"x"}) @java.lang.SuppressWarnings("all") RequiredArgsConstructor1(final int x) {
+    super();
+    this.x = x;
+  }
+}
+
+@lombok.RequiredArgsConstructor(access = lombok.AccessLevel.PROTECTED) class RequiredArgsConstructorAccess {
+  final int x;
+  String name;
+  protected @java.beans.ConstructorProperties({"x"}) @java.lang.SuppressWarnings("all") RequiredArgsConstructorAccess(final int x) {
+    super();
+    this.x = x;
+  }
+}
+
+@lombok.RequiredArgsConstructor(staticName = "staticname") class RequiredArgsConstructorStaticName {
+  final int x;
+  String name;
+  private @java.lang.SuppressWarnings("all") RequiredArgsConstructorStaticName(final int x) {
+    super();
+    this.x = x;
+  }
+  public static @java.lang.SuppressWarnings("all") RequiredArgsConstructorStaticName staticname(final int x) {
+    return new RequiredArgsConstructorStaticName(x);
+  }
+}
+
+@lombok.RequiredArgsConstructor() class RequiredArgsConstructorWithAnnotations {
+  final int x;
+  String name;
+  public @Deprecated @java.beans.ConstructorProperties({"x"}) @java.lang.SuppressWarnings("all") RequiredArgsConstructorWithAnnotations(final int x) {
+    super();
+    this.x = x;
+  }
+}
+
+@lombok.AllArgsConstructor class AllArgsConstructor1 {
+  final int x;
+  String name;
+  public @java.beans.ConstructorProperties({"x", "name"}) @java.lang.SuppressWarnings("all") AllArgsConstructor1(final int x, final String name) {
+    super();
+    this.x = x;
+    this.name = name;
+  }
+}
+
+@lombok.NoArgsConstructor class NoArgsConstructor1 {
+  final int x;
+  String name;
+  public @java.lang.SuppressWarnings("all") NoArgsConstructor1() {
+    super();
+  }
+}
