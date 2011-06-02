@@ -82,7 +82,7 @@ public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized
 		
 		if (fieldExists(new String(lockName), methodNode) == MemberExistsResult.NOT_EXISTS) {
 			if (!autoMake) {
-				annotationNode.addError("The field " + new String(lockName) + " does not exist.");
+				annotationNode.addError(String.format("The field %s does not exist.", new String(lockName)));
 				return;
 			}
 			FieldDeclaration fieldDecl = new FieldDeclaration(lockName, 0, -1);
@@ -91,7 +91,7 @@ public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized
 			
 			fieldDecl.modifiers = (method.isStatic() ? Modifier.STATIC : 0) | Modifier.FINAL | Modifier.PRIVATE;
 			
-			//We use 'new Object[0];' because quite unlike 'new Object();', empty arrays *ARE* serializable!
+			//We use 'new Object[0];' because unlike 'new Object();', empty arrays *ARE* serializable!
 			ArrayAllocationExpression arrayAlloc = new ArrayAllocationExpression();
 			Eclipse.setGeneratedBy(arrayAlloc, source);
 			arrayAlloc.dimensions = new Expression[] { new IntLiteral(new char[] { '0' }, 0, 0) };
