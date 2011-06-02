@@ -131,6 +131,10 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		createGetterForField(level, fieldNode, fieldNode, pos, false, onMethod, lazy);
 	}
 	
+	@Override public boolean deferUntilPostDiet() {
+		return false;
+	}
+	
 	public void handle(AnnotationValues<Getter> annotation, Annotation ast, EclipseNode annotationNode) {
 		EclipseNode node = annotationNode.up();
 		Getter annotationInstance = annotation.getInstance();

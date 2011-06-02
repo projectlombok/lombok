@@ -116,6 +116,10 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		generateMethods(typeNode, errorNode, null, null, null, false, FieldAccess.GETTER);
 	}
 	
+	@Override public boolean deferUntilPostDiet() {
+		return false;
+	}
+	
 	@Override public void handle(AnnotationValues<EqualsAndHashCode> annotation,
 			Annotation ast, EclipseNode annotationNode) {
 		EqualsAndHashCode ann = annotation.getInstance();

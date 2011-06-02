@@ -98,6 +98,10 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, FieldAccess.GETTER);
 	}
 	
+	@Override public boolean deferUntilPostDiet() {
+		return false;
+	}
+	
 	public void handle(AnnotationValues<ToString> annotation, Annotation ast, EclipseNode annotationNode) {
 		ToString ann = annotation.getInstance();
 		List<String> excludes = Arrays.asList(ann.exclude());

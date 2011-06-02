@@ -49,4 +49,11 @@ public interface EclipseAnnotationHandler<T extends java.lang.annotation.Annotat
 	 * as access useful methods such as generating warnings or errors focused on the annotation.
 	 */
 	void handle(AnnotationValues<T> annotation, org.eclipse.jdt.internal.compiler.ast.Annotation ast, EclipseNode annotationNode);
+	
+	/**
+	 * Return true if this handler should not be run in the diet parse phase.
+	 * 'diet parse' is where method bodies aren't filled in yet. If you have a method-level annotation that modifies the contents of that method,
+	 * return {@code true} here. Otherwise, return {@code false} here.
+	 */
+	boolean deferUntilPostDiet();
 }

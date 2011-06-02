@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
+ * Copyright © 2010-2011 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,10 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseASTVisitor.class)
 public class HandleVal extends EclipseASTAdapter {
+	@Override public boolean deferUntilPostDiet() {
+		return false;
+	}
+	
 	@Override public void visitLocal(EclipseNode localNode, LocalDeclaration local) {
 		if (!Eclipse.typeMatches(val.class, localNode, local.type)) return;
 		boolean variableOfForEach = false;

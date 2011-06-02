@@ -46,7 +46,6 @@ import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.mangosdk.spi.ProviderFor;
 
 public class HandleLog {
-	
 	private HandleLog() {
 		throw new UnsupportedOperationException();
 	}
@@ -154,6 +153,10 @@ public class HandleLog {
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleCommonsLog implements EclipseAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
+		@Override public boolean deferUntilPostDiet() {
+			return false;
+		}
+		
 		@Override public void handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, Annotation source, EclipseNode annotationNode) {
 			processAnnotation(LoggingFramework.COMMONS, annotation, source, annotationNode);
 		}
@@ -164,6 +167,10 @@ public class HandleLog {
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleJulLog implements EclipseAnnotationHandler<lombok.extern.java.Log> {
+		@Override public boolean deferUntilPostDiet() {
+			return false;
+		}
+		
 		@Override public void handle(AnnotationValues<lombok.extern.java.Log> annotation, Annotation source, EclipseNode annotationNode) {
 			processAnnotation(LoggingFramework.JUL, annotation, source, annotationNode);
 		}
@@ -174,6 +181,10 @@ public class HandleLog {
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleLog4jLog implements EclipseAnnotationHandler<lombok.extern.log4j.Log4j> {
+		@Override public boolean deferUntilPostDiet() {
+			return false;
+		}
+		
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, Annotation source, EclipseNode annotationNode) {
 			processAnnotation(LoggingFramework.LOG4J, annotation, source, annotationNode);
 		}
@@ -184,6 +195,10 @@ public class HandleLog {
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleSlf4jLog implements EclipseAnnotationHandler<lombok.extern.slf4j.Slf4j> {
+		@Override public boolean deferUntilPostDiet() {
+			return false;
+		}
+		
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, Annotation source, EclipseNode annotationNode) {
 			processAnnotation(LoggingFramework.SLF4J, annotation, source, annotationNode);
 		}

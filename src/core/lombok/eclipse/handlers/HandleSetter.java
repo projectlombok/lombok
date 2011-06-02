@@ -120,6 +120,10 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		createSetterForField(level, fieldNode, fieldNode, pos, false, onMethod, onParam);
 	}
 	
+	@Override public boolean deferUntilPostDiet() {
+		return false;
+	}
+	
 	public void handle(AnnotationValues<Setter> annotation, Annotation ast, EclipseNode annotationNode) {
 		EclipseNode node = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();

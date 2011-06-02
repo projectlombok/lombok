@@ -72,6 +72,10 @@ public class HandlerLibrary {
 			AnnotationValues<T> annValues = Eclipse.createAnnotation(annotationClass, annotationNode);
 			handler.handle(annValues, annotation, annotationNode);
 		}
+		
+		public boolean deferUntilPostDiet() {
+			return handler.deferUntilPostDiet();
+		}
 	}
 	
 	private Map<String, AnnotationHandlerContainer<?>> annotationHandlers =
@@ -167,6 +171,7 @@ public class HandlerLibrary {
 			AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
 			
 			if (container == null) continue;
+			if (!annotationNode.isCompleteParse() && container.deferUntilPostDiet()) continue;
 			
 			try {
 				if (checkAndSetHandled(annotation)) container.handle(annotation, annotationNode);

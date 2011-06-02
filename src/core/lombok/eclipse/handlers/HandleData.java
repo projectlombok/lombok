@@ -37,6 +37,10 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleData implements EclipseAnnotationHandler<Data> {
+	@Override public boolean deferUntilPostDiet() {
+		return false;
+	}
+	
 	public void handle(AnnotationValues<Data> annotation, Annotation ast, EclipseNode annotationNode) {
 		Data ann = annotation.getInstance();
 		EclipseNode typeNode = annotationNode.up();

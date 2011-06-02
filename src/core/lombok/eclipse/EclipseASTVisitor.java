@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,13 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
  * calling the appropriate visit and endVisit methods.
  */
 public interface EclipseASTVisitor {
+	/**
+	 * Return true if this handler should not be run in the diet parse phase.
+	 * 'diet parse' is where method bodies aren't filled in yet. If you have a method-level annotation that modifies the contents of that method,
+	 * return {@code true} here. Otherwise, return {@code false} here.
+	 */
+	boolean deferUntilPostDiet();
+	
 	/**
 	 * Called at the very beginning and end.
 	 */
@@ -111,6 +118,10 @@ public interface EclipseASTVisitor {
 		private int disablePrinting = 0;
 		private int indent = 0;
 		private boolean printClassNames = false;
+		
+		public boolean deferUntilPostDiet() {
+			return false;
+		}
 		
 		/**
 		 * @param printContent if true, bodies are printed directly, as java code,

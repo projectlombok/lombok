@@ -57,6 +57,10 @@ public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized
 	private static final char[] INSTANCE_LOCK_NAME = "$lock".toCharArray();
 	private static final char[] STATIC_LOCK_NAME = "$LOCK".toCharArray();
 	
+	@Override public boolean deferUntilPostDiet() {
+		return true;
+	}
+	
 	@Override public void handle(AnnotationValues<Synchronized> annotation, Annotation source, EclipseNode annotationNode) {
 		int p1 = source.sourceStart -1;
 		int p2 = source.sourceStart -2;

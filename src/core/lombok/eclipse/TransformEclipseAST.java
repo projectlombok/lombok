@@ -167,6 +167,10 @@ public class TransformEclipseAST {
 	}
 	
 	private static class AnnotationVisitor extends EclipseASTAdapter {
+		public boolean deferUntilPostDiet() {
+			return false;
+		}
+		
 		@Override public void visitAnnotationOnField(FieldDeclaration field, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
 			handlers.handleAnnotation(top, annotationNode, annotation);

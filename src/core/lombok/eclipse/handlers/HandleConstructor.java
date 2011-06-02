@@ -73,6 +73,10 @@ import org.mangosdk.spi.ProviderFor;
 public class HandleConstructor {
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleNoArgsConstructor implements EclipseAnnotationHandler<NoArgsConstructor> {
+		@Override public boolean deferUntilPostDiet() {
+			return false;
+		}
+		
 		@Override public void handle(AnnotationValues<NoArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
 			EclipseNode typeNode = annotationNode.up();
 			if (!checkLegality(typeNode, annotationNode, NoArgsConstructor.class.getSimpleName())) return;
@@ -88,6 +92,10 @@ public class HandleConstructor {
 	
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleRequiredArgsConstructor implements EclipseAnnotationHandler<RequiredArgsConstructor> {
+		@Override public boolean deferUntilPostDiet() {
+			return false;
+		}
+		
 		@Override public void handle(AnnotationValues<RequiredArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
 			EclipseNode typeNode = annotationNode.up();
 			if (!checkLegality(typeNode, annotationNode, RequiredArgsConstructor.class.getSimpleName())) return;
@@ -117,6 +125,10 @@ public class HandleConstructor {
 	
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleAllArgsConstructor implements EclipseAnnotationHandler<AllArgsConstructor> {
+		@Override public boolean deferUntilPostDiet() {
+			return false;
+		}
+		
 		@Override public void handle(AnnotationValues<AllArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
 			EclipseNode typeNode = annotationNode.up();
 			if (!checkLegality(typeNode, annotationNode, AllArgsConstructor.class.getSimpleName())) return;

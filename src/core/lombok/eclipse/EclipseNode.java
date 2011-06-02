@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,8 @@ public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode,
 	 * Visits this node and all child nodes depth-first, calling the provided visitor's visit methods.
 	 */
 	public void traverse(EclipseASTVisitor visitor) {
+		if (!this.isCompleteParse() && visitor.deferUntilPostDiet()) return;
+		
 		switch (getKind()) {
 		case COMPILATION_UNIT:
 			visitor.visitCompilationUnit(this, (CompilationUnitDeclaration)get());

@@ -59,6 +59,10 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
+	@Override public boolean deferUntilPostDiet() {
+		return false;
+	}
+	
 	public void handle(AnnotationValues<Cleanup> annotation, Annotation ast, EclipseNode annotationNode) {
 		String cleanupName = annotation.getInstance().value();
 		if (cleanupName.length() == 0) {

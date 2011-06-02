@@ -69,6 +69,10 @@ public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows
 		}
 	}
 	
+	@Override public boolean deferUntilPostDiet() {
+		return true;
+	}
+	
 	@Override public void handle(AnnotationValues<SneakyThrows> annotation, Annotation source, EclipseNode annotationNode) {
 		List<String> exceptionNames = annotation.getRawExpressions("value");
 		List<DeclaredException> exceptions = new ArrayList<DeclaredException>();

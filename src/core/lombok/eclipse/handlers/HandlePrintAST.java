@@ -40,6 +40,10 @@ import lombok.eclipse.EclipseNode;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandlePrintAST implements EclipseAnnotationHandler<PrintAST> {
+	@Override public boolean deferUntilPostDiet() {
+		return false;
+	}
+	
 	public void handle(AnnotationValues<PrintAST> annotation, Annotation ast, EclipseNode annotationNode) {
 		if (!annotationNode.isCompleteParse()) return;
 		
