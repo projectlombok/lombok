@@ -66,29 +66,37 @@ public class RunTestsViaEclipse extends AbstractRunTests {
 	}
 	
 	@Override public void transformCode(final StringBuilder messages, StringWriter result, File file) throws Throwable {
-		String source = readFile(file);
-		CompilationUnit sourceUnit = new CompilationUnit(source.toCharArray(), file.getName(), "UTF-8");
-		IErrorHandlingPolicy policy = DefaultErrorHandlingPolicies.proceedWithAllProblems();
-		IProblemFactory problemFactory = new DefaultProblemFactory(Locale.ENGLISH);
-		INameEnvironment nameEnvironment = new LombokTestNameEnvironment();
-		ICompilerRequestor compilerRequestor = new LombokTestCompilerRequestor();
-		CompilerOptions options = ecjCompilerOptions();
-		
-		
-		ISourceElementRequestor sourceElementRequestor = new LombokTestSourceElementRequestor();
-		SourceElementParser parser = new SourceElementParser(sourceElementRequestor, problemFactory, options, true, true);
-		final CompilationUnitDeclaration cud = parser.parseCompilationUnit(sourceUnit, true, null);
-		
+		// setup parser and compiler
+		final IErrorHandlingPolicy policy = DefaultErrorHandlingPolicies.proceedWithAllProblems();
+		final IProblemFactory problemFactory = new DefaultProblemFactory(Locale.ENGLISH);
+		final INameEnvironment nameEnvironment = new LombokTestNameEnvironment();
+		final ICompilerRequestor compilerRequestor = new LombokTestCompilerRequestor();
+		final ISourceElementRequestor sourceElementRequestor = new LombokTestSourceElementRequestor();
+		final CompilerOptions options = ecjCompilerOptions();
 		final LombokTestCompiler jdtCompiler = new LombokTestCompiler(nameEnvironment, policy, options, compilerRequestor, problemFactory);
+		final SourceElementParser parser = new SourceElementParser(sourceElementRequestor, problemFactory, options, true, true);
+		
+		// read the file
+		final String source = readFile(file);
+		final CompilationUnit sourceUnit = new CompilationUnit(source.toCharArray(), file.getName(), "UTF-8");
+		
+		
+		// parse
+		final CompilationUnitDeclaration cud = parser.parseCompilationUnit(sourceUnit, true, null);
+		// build
 		jdtCompiler.lookupEnvironment.buildTypeBindings(cud, null);
 		jdtCompiler.lookupEnvironment.completeTypeBindings(cud, true);
+		// process
+		if (cud.scope != null) cud.scope.verifyMethods(jdtCompiler.lookupEnvironment.methodVerifier());
 		
-		CategorizedProblem[] problems = cud.compilationResult.getAllProblems();
+		// handle problems
+		final CategorizedProblem[] problems = cud.compilationResult.getAllProblems();
 		
 		if (problems != null) for (CategorizedProblem p : problems) {
 			messages.append(String.format("%d %s %s\n", p.getSourceLineNumber(), p.isError() ? "error" : p.isWarning() ? "warning" : "unknown", p.getMessage()));
 		}
 		
+		// set transformed code
 		result.append(cud.toString());
 	}
 	
@@ -217,6 +225,10 @@ public class RunTestsViaEclipse extends AbstractRunTests {
 	private static class LombokTestNameEnvironment implements INameEnvironment {
 		Map<String, Boolean> packagesCache = new HashMap<String, Boolean>();
 		
+		public LombokTestNameEnvironment() {
+			packagesCache.put("before", true);
+		}
+
 		public NameEnvironmentAnswer findType(final char[][] compoundTypeName) {
 			final StringBuffer result = new StringBuffer();
 			for (int i = 0; i < compoundTypeName.length; i++) {
@@ -289,8 +301,8 @@ public class RunTestsViaEclipse extends AbstractRunTests {
 			if (packagesCache.containsKey(name)) {
 				return packagesCache.get(name).booleanValue();
 			}
-			byte[] bytes = getClassDefinition(name);
-			if (bytes != null) {
+			
+			if (name.startsWith("before") || (getClassDefinition(name) != null)) {
 				packagesCache.put(name, false);
 				return false;
 			}
