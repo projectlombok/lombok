@@ -38,8 +38,12 @@ public class ClassFileMetaData {
 	private static final byte STRING = 8;
 	private static final byte FIELD = 9;
 	private static final byte METHOD = 10;
-	private static final byte IMETHOD = 11;
+	private static final byte INTERFACE_METHOD = 11;
 	private static final byte NAME_TYPE = 12;
+	// New in java7: support for methodhandles and invokedynamic
+	private static final byte METHOD_HANDLE = 15;
+	private static final byte METHOD_TYPE = 16;
+	private static final byte INVOKE_DYNAMIC = 18;
 	
 	private static final int NOT_FOUND = -1;
 	private static final int START_OF_CONSTANT_POOL = 8; 
@@ -74,14 +78,19 @@ public class ClassFileMetaData {
 				break;
 			case CLASS:
 			case STRING:
+			case METHOD_TYPE:
 				position += 2;
+				break;
+			case METHOD_HANDLE:
+				position += 3;
 				break;
 			case INTEGER:
 			case FLOAT:
 			case FIELD:
 			case METHOD:
-			case IMETHOD:
+			case INTERFACE_METHOD:
 			case NAME_TYPE:
+			case INVOKE_DYNAMIC:
 				position += 4;
 				break;
 			case LONG:
@@ -356,7 +365,7 @@ public class ClassFileMetaData {
 				appendAccess(result.append("Field "), i);
 				break;
 			case METHOD:
-			case IMETHOD:
+			case INTERFACE_METHOD:
 				appendAccess(result.append("Method "), i);
 				break;
 			case NAME_TYPE:
@@ -367,6 +376,15 @@ public class ClassFileMetaData {
 				break;
 			case DOUBLE:
 				result.append("double ").append(readDouble(i));
+				break;
+			case METHOD_HANDLE:
+				result.append("MethodHandle...");
+				break;
+			case METHOD_TYPE:
+				result.append("MethodType...");
+				break;
+			case INVOKE_DYNAMIC:
+				result.append("InvokeDynamic...");
 				break;
 			case 0:
 				result.append("(cont.)");
@@ -395,7 +413,7 @@ public class ClassFileMetaData {
 	
 	private boolean isMethod(int i) {
 		byte type = types[i];
-		return type == METHOD || type == IMETHOD;
+		return type == METHOD || type == INTERFACE_METHOD;
 	}
 	
 	private int findNameAndType(String name, String descriptor) {
