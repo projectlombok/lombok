@@ -10,7 +10,7 @@
 		<conf name="ecj" />
 	</configurations>
 	<dependencies>
-		<dependency org="projectlombok.org" name="lombok.patcher" rev="0.4" conf="build; runtime->build" />
+		<dependency org="org.projectlombok" name="lombok.patcher" rev="0.5" conf="build; runtime->build" />
 		<dependency org="zwitserloot.com" name="cmdreader" rev="1.2" conf="build->runtime; runtime" />
 		
 		<dependency org="junit" name="junit" rev="4.8.2" conf="test->default; contrib->sources" />

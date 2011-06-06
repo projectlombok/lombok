@@ -1,5 +1,5 @@
 <ivy-module version="2.0">
-	<info organisation="projectlombok.org" module="lombok.patcher" revision="0.4" publication="20101108232300">
+	<info organisation="org.projectlombok" module="lombok.patcher" revision="0.5" publication="20110607001300">
 		<license name="MIT License" url="http://www.opensource.org/licenses/mit-license.php" />
 		<ivyauthor name="rzwitserloot" url="http://zwitserloot.com/" />
 		<ivyauthor name="rspilker" url="http://github.com/rspilker" />
@@ -9,6 +9,6 @@
 		<conf name="build" />
 	</configurations>
 	<publications>
-		<artifact conf="build" url="http://projectlombok.org/downloads/lombok.patcher-0.4.jar" />
+		<artifact conf="build" url="http://projectlombok.org/downloads/lombok.patcher-0.5.jar" />
 	</publications>
 </ivy-module>

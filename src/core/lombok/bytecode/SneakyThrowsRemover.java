@@ -147,7 +147,7 @@ public class SneakyThrowsRemover implements PostCompilerTransformation {
 				return super.visitParameterAnnotation(parameter, desc, visible);
 			}
 			
-			@Override public void visitTableSwitchInsn(int min, int max, Label dflt, Label[] labels) {
+			@Override public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
 				justAddedAthrow = false;
 				super.visitTableSwitchInsn(min, max, dflt, labels);
 			}
