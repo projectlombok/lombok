@@ -227,13 +227,16 @@ such as converting the changelog into HTML, and creating javadoc.
 		</java>
 		<loadfile property="changelog.edge" srcFile="build/website-edge/changelog-edge.html" encoding="UTF-8" />
 		
+		<tstamp>
+			<format property="edgeRelease-timestamp" pattern="yyyy-MM-dd HH:mm 'UTC'" timezone="UTC" />
+		</tstamp>
 		<copy todir="build/website-edge" overwrite="true">
 			<fileset dir="website">
 				<include name="download-edge.html" />
 			</fileset>
 			<filterchain>
 				<replacetokens>
-					<token key="VERSION-EDGE" value="${lombok.version}" />
+					<token key="VERSION-EDGE" value="${lombok.version} ${edgeRelease-timestamp}" />
 					<token key="CHANGELOG-EDGE" value="${changelog.edge}" />
 				</replacetokens>
 			</filterchain>
@@ -247,7 +250,7 @@ such as converting the changelog into HTML, and creating javadoc.
 		</tar>
 	</target>
 	
-	<target name="edgeRelease">
+	<target name="edgeRelease" depends="edgeRelease-build">
 		<available file="escudo-upload.key" property="escudo.key.available" />
 		<fail unless="escudo.key.available">You don't have the escudo-upload.key; you'll need it to get write access to the server.</fail>
 		
