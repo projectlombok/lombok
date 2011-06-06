@@ -81,7 +81,6 @@ public class EclipsePatcher extends Agent {
 		patchAvoidReparsingGeneratedCode(sm);
 		
 		if (!ecjOnly) {
-			patchLombokizeAST(sm);
 			patchCatchReparse(sm);
 			patchIdentifierEndReparse(sm);
 			patchRetrieveEllipsisStartPosition(sm);
@@ -94,6 +93,7 @@ public class EclipsePatcher extends Agent {
 			patchPostCompileHookEcj(sm);
 		}
 		
+		patchLombokizeAST(sm);
 		patchEcjTransformers(sm, ecjOnly);
 		
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
