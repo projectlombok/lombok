@@ -80,6 +80,8 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<target name="contrib" depends="config-ivy" description="Downloads various non-crucial documentation, sources, etc that are useful when developing lombok.ast.">
 		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="contrib" />
 		<ivy:retrieve />
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="ecj" />
+		<ivy:retrieve />
 	</target>
 	
 	<target name="ensureBuildDeps" depends="config-ivy">
