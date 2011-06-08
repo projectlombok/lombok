@@ -126,7 +126,7 @@ public abstract class IdeFinder {
 		String prop = System.getProperty("os.name", "").toLowerCase();
 		if (prop.matches("^.*\\bmac\\b.*$")) return OS.MAC_OS_X;
 		if (prop.matches("^.*\\bdarwin\\b.*$")) return OS.MAC_OS_X;
-		if (prop.matches("^.*\\bwin(dows)\\b.*$")) return OS.WINDOWS;
+		if (prop.matches("^.*\\bwindows\\b.*$")) return OS.WINDOWS;
 		
 		return OS.UNIX;
 	}
