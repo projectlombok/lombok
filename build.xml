@@ -51,24 +51,15 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	
 	<target name="load-ipp" depends="download-ipp">
 		<taskdef classpath="lib/ivyplusplus.jar" resource="com/zwitserloot/ivyplusplus/antlib.xml" uri="antlib:com.zwitserloot.ivyplusplus" />
-		<available classname="com.zwitserloot.ivyplusplus.EnsureVersion" classpath="lib/ivyplusplus.jar" property="ivyplusplus.min14" />
+		<ivy:ensureippversion version="1.7" property="ivyplusplus.minimumAvailable" />
 	</target>
 	
-	<target name="redownload-ipp1" depends="load-ipp" unless="ivyplusplus.min14">
+	<target name="redownload-ipp" unless="ivyplusplus.minimumAvailable">
 		<get src="http://projectlombok.org/downloads/ivyplusplus.jar" dest="lib/ivyplusplus.jar" />
-		<fail>ivyplusplus had to be redownloaded. Restart the script to continue.</fail>
+		<fail>A new version of ivyplusplus was required and has been downloaded. Rerun the script to continue.</fail>
 	</target>
 	
-	<target name="check-ipp-version" depends="load-ipp">
-		<ivy:ensureippversion version="1.4" property="ipp.versionOkay" />
-	</target>
-	
-	<target name="redownload-ipp2" depends="check-ipp-version" unless="ipp.versionOkay">
-		<get src="http://projectlombok.org/downloads/ivyplusplus.jar" dest="lib/ivyplusplus.jar" />
-		<fail>ivyplusplus had to be redownloaded. Restart the script to continue.</fail>
-	</target>
-	
-	<target name="ensure-ipp" depends="load-ipp, redownload-ipp1, redownload-ipp2" />
+	<target name="ensure-ipp" depends="load-ipp, redownload-ipp" />
 	
 	<target name="config-ivy" depends="ensure-ipp" unless="ivy.config">
 		<ivy:configure file="buildScripts/ivysettings.xml" />
@@ -130,9 +121,9 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</target>
 	
 	<target name="-unpackLibs" depends="ensureRuntimeDeps">
-		<unjar dest="build/lombok">
+		<ivy:cachedunjar dest="build/lombok" marker="build/unpackDeps.marker">
 			<path refid="runtime.path" />
-		</unjar>
+		</ivy:cachedunjar>
 	</target>
 	
 	<target name="compile" depends="version, ensureBuildDeps, -unpackLibs" description="Compiles the code.">
