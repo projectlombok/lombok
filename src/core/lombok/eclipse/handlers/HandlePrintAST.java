@@ -41,12 +41,10 @@ import lombok.eclipse.EclipseNode;
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandlePrintAST implements EclipseAnnotationHandler<PrintAST> {
 	@Override public boolean deferUntilPostDiet() {
-		return false;
+		return true;
 	}
 	
 	public void handle(AnnotationValues<PrintAST> annotation, Annotation ast, EclipseNode annotationNode) {
-		if (!annotationNode.isCompleteParse()) return;
-		
 		PrintStream stream = System.out;
 		String fileName = annotation.getInstance().outfile();
 		if (fileName.length() > 0) try {

@@ -103,8 +103,24 @@ public class PatchDelegate {
 		return new String(decl.name);
 	}
 	
+	private static boolean hasDelegateMarkedFields(TypeDeclaration decl) {
+		if (decl.fields != null) for (FieldDeclaration field : decl.fields) {
+			if (field.annotations == null) continue;
+			for (Annotation ann : field.annotations) {
+				if (ann.type == null) continue;
+				TypeBinding tb = ann.type.resolveType(decl.initializerScope);
+				if (!charArrayEquals("lombok", tb.qualifiedPackageName())) continue;
+				if (!charArrayEquals("Delegate", tb.qualifiedSourceName())) continue;
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	public static boolean handleDelegateForType(ClassScope scope) {
 		if (TransformEclipseAST.disableLombok) return false;
+		if (!hasDelegateMarkedFields(scope.referenceContext)) return false;
 		
 		List<ClassScopeEntry> stack = visited.get();
 		StringBuilder corrupted = null;

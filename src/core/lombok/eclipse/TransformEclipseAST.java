@@ -101,7 +101,7 @@ public class TransformEclipseAST {
 			} catch (Exception ignore) {
 			}
 		} else {
-			existing.reparse(forceRebuild);
+			existing.rebuild(forceRebuild);
 		}
 		
 		return existing;
