@@ -48,8 +48,7 @@
 			<br />
 			Instead of a <code>from</code> attribute, you can also nest <code>&lt;fileset&gt;</code> nodes.
 			<h3>Running delombok in maven</h3>
-			We don't have a maven plugin for delombok (yet). You'll have to make do with either making maven running an ant script, or letting maven execute
-			delombok directly as an application. If you'd like to contribute a plugin, do get in touch with us!
+			Anthony Whitford has written a <a href="https://github.com/awhitford/lombok.maven">maven plugin</a> for delomboking your source code.
 			<h3>Limitations</h3>
 			Delombok tries to preserve your code as much as it can, but comments may move around a little bit, especially comments that are in the middle of
 			a syntax node. For example, any comments appearing in the middle of a list of method modifiers, such as <code>public /*comment*/ static ...</code> will
