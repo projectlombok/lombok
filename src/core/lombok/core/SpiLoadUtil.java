@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -151,22 +151,16 @@ public class SpiLoadUtil {
 	 * It returns an annotation type because it is used exclusively to figure out which annotations are
 	 * being handled by {@link lombok.eclipse.EclipseAnnotationHandler} and {@link lombok.javac.JavacAnnotationHandler}.
 	 */
-	@SuppressWarnings("unchecked")
 	public static Class<? extends Annotation> findAnnotationClass(Class<?> c, Class<?> base) {
 		if (c == Object.class || c == null) return null;
+		Class<? extends Annotation> answer = null;
+		
+		answer = findAnnotationHelper(base, c.getGenericSuperclass());
+		if (answer != null) return answer;
+		
 		for (Type iface : c.getGenericInterfaces()) {
-			if (iface instanceof ParameterizedType) {
-				ParameterizedType p = (ParameterizedType)iface;
-				if (!base.equals(p.getRawType())) continue;
-				Type target = p.getActualTypeArguments()[0];
-				if (target instanceof Class<?>) {
-					if (Annotation.class.isAssignableFrom((Class<?>) target)) {
-						return (Class<? extends Annotation>) target;
-					}
-				}
-				
-				throw new ClassCastException("Not an annotation type: " + target);
-			}
+			answer = findAnnotationHelper(base, iface);
+			if (answer != null) return answer;
 		}
 		
 		Class<? extends Annotation> potential = findAnnotationClass(c.getSuperclass(), base);
@@ -176,6 +170,23 @@ public class SpiLoadUtil {
 			if (potential != null) return potential;
 		}
 		
+		return null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static Class<? extends Annotation> findAnnotationHelper(Class<?> base, Type iface) {
+		if (iface instanceof ParameterizedType) {
+			ParameterizedType p = (ParameterizedType)iface;
+			if (!base.equals(p.getRawType())) return null;
+			Type target = p.getActualTypeArguments()[0];
+			if (target instanceof Class<?>) {
+				if (Annotation.class.isAssignableFrom((Class<?>) target)) {
+					return (Class<? extends Annotation>) target;
+				}
+			}
+			
+			throw new ClassCastException("Not an annotation type: " + target);
+		}
 		return null;
 	}
 }
