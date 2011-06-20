@@ -51,6 +51,16 @@ public abstract class EclipseAnnotationHandler<T extends java.lang.annotation.An
 	public abstract void handle(AnnotationValues<T> annotation, org.eclipse.jdt.internal.compiler.ast.Annotation ast, EclipseNode annotationNode);
 	
 	/**
+	 * Called when you want to defer until post diet, and we're still in pre-diet. May be called not at all or multiple times, so make sure
+	 * this method is idempotent if run more than once, and whatever you do here should also be done in the main 'handle' method.
+	 * 
+	 * NB: This method exists because in certain cases, within eclipse, you have to create i.e. a field before referencing it in generated code. You still
+	 * have to create the field, if its not already there, in 'handle', because for example preHandle would never even be called in ecj mode.
+	 */
+	public void preHandle(AnnotationValues<T> annotation, org.eclipse.jdt.internal.compiler.ast.Annotation ast, EclipseNode annotationNode) {
+	}
+	
+	/**
 	 * Return true if this handler should not be run in the diet parse phase.
 	 * 'diet parse' is where method bodies aren't filled in yet. If you have a method-level annotation that modifies the contents of that method,
 	 * return {@code true} here. Otherwise, return {@code false} here.

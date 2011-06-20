@@ -73,6 +73,12 @@ public class HandlerLibrary {
 			handler.handle(annValues, annotation, annotationNode);
 		}
 		
+		public void preHandle(org.eclipse.jdt.internal.compiler.ast.Annotation annotation,
+				final EclipseNode annotationNode) {
+			AnnotationValues<T> annValues = Eclipse.createAnnotation(annotationClass, annotationNode);
+			handler.preHandle(annValues, annotation, annotationNode);
+		}
+		
 		public boolean deferUntilPostDiet() {
 			return handler.deferUntilPostDiet();
 		}
@@ -141,6 +147,12 @@ public class HandlerLibrary {
 		}
 	}
 	
+	private boolean needsHandling(ASTNode node) {
+		synchronized (handledMap) {
+			return handledMap.get(node) != MARKER;
+		}
+	}
+	
 	/**
 	 * Handles the provided annotation node by first finding a qualifying instance of
 	 * {@link EclipseAnnotationHandler} and if one exists, calling it with a freshly cooked up
@@ -171,7 +183,10 @@ public class HandlerLibrary {
 			AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
 			
 			if (container == null) continue;
-			if (!annotationNode.isCompleteParse() && container.deferUntilPostDiet()) continue;
+			if (!annotationNode.isCompleteParse() && container.deferUntilPostDiet()) {
+				if (needsHandling(annotation)) container.preHandle(annotation, annotationNode);
+				continue;
+			}
 			
 			try {
 				if (checkAndSetHandled(annotation)) container.handle(annotation, annotationNode);
