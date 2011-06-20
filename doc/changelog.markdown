@@ -1,14 +1,16 @@
 Lombok Changelog
 ----------------
 
-### v0.10.0 "Burning Emu" (edge)
-* FEATURE: New annotation: @Delegate. This annotation lets lombok generate delegation methods for a given field.
-* FEATURE: Added support for 'val'. Val is an immutable variable that infers it's type from the right hand side of an expression.
-* FEATURE: Added support for several logging frameworks by the `@Log` annotation.
+### v0.10.0 "Burning Emu" (June 20th, 2011)
+* FEATURE: New annotation: @Delegate. This annotation lets lombok generate delegation methods for a given field. [More&hellip;](http://projectlombok.org/features/Delegate.html)
+* FEATURE: Added support for 'val'. Val is an immutable variable that infers it's type from the right hand side of an expression. [More&hellip;](http://projectlombok.org/features/val.html)
+* FEATURE: Added support for several logging frameworks via the `@Log`, `@Slf4j`, etc. annotation. [Full documentation](http://projectlombok.org/features/Log.html)
 * FEATURE: Lombok now supports post-compile transformers. [Issue #144](http://code.google.com/p/projectlombok/issues/detail?id=144)
+* FEATURE: `@Getter`, `@Setter`, `@XArgsConstructor` now all support `onMethod=`, `onParam=` and/or `onConstructor=`, which lets you add annotations to generated methods. [More&hellip;](http://projectlombok.org/features/onX.html)
 * FEATURE: Using `@SneakyThrows` no longer requires a runtime dependency on lombok.jar. In fact, any call to {@code Lombok.sneakyThrows(ex)} is optimized at the bytecode level and no longer requires you to actually have lombok.jar or lombok-runtime.jar on the classpath.
 * FEATURE: @XArgsConstructor, @Getter, and @ToString can now be used on enum declarations. Previously, behaviour of these annotations on enums was undefined.
 * FEATURE: @Getter/@Setter (and thus, also @Data) in v0.9.3 and earlier would generate getter and setter method names that did not conform to the beanspec, primarily when faced with boolean properties. This has been fixed. In practice this won't affect you unless you have properties named `isFoo` or `hasFoo`. Now the setter generated for this will be called `setFoo` (as the property name is `foo`) and not `setIsFoo`. Also, `hasFoo` is now no longer special; the names would be `isHasFoo` and `setHasFoo`. The java bean spec does not give `has` special meaning.
+* FEATURE: `@EqualsAndHashCode` (and by extension, `@Data`) now add a `canEqual` method which improves the sanity of equality amongst a hierarchy of classes. [More&hellip;](file://localhost/Users/rzwitserloot/ws/LOMBOK/lombok/website/features/EqualsAndHashCode.html)
 * ENHANCEMENT: The installer will now find Eclipse installations when they are located in a subdirectory of a directory containing the word 'eclipse' . [Issue #210](http://code.google.com/p/projectlombok/issues/detail?id=210)
 * BUGFIX: `@Setter` and `@Getter` can now be applied to static fields again (was broken in v0.9.3 only). [Issue #136](http://code.google.com/p/projectlombok/issues/detail?id=136)
 * BUGFIX: delombok added type parameters to constructors that mirror the type's own type parameters. This resulted in delombok turning any generated constructor that takes at least 1 parameter of type 'T' into something that didn't compile, and to boot, a confusing error message ('T is not compatible with T'). This is now fixed. [Issue #140](http://code.google.com/p/projectlombok/issues/detail?id=140)
