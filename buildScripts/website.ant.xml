@@ -100,6 +100,7 @@ such as converting the changelog into HTML, and creating javadoc.
 				<include name="index.html" />
 				<include name="download.html" />
 				<include name="slideshow.html" />
+				<include name="setup/*.html" />
 				<include name="mavenrepo/index.html" />
 			</fileset>
 			<filterchain>

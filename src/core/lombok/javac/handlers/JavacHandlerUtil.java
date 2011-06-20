@@ -173,7 +173,7 @@ public class JavacHandlerUtil {
 	/**
 	 * @return the likely setter name for the stated field. (e.g. private boolean foo; to setFoo).
 	 * 
-	 * Convenient wrapper around {@link TransformationsUtil#toSetterName(CharSequence)}.
+	 * Convenient wrapper around {@link TransformationsUtil#toSetterName(CharSequence, boolean)}.
 	 */
 	public static String toSetterName(JCVariableDecl field) {
 		CharSequence fieldName = field.name;

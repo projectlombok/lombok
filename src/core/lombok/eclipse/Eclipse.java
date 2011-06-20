@@ -121,8 +121,6 @@ public class Eclipse {
 	/**
 	 * Generates a warning in the Eclipse error log. Note that most people never look at it!
 	 * 
-	 * @param cud The {@code CompilationUnitDeclaration} where the error occurred.
-	 *     An error will be generated on line 0 linking to the error log entry. Can be {@code null}.
 	 * @param message Human readable description of the problem.
 	 * @param error The associated exception. Can be {@code null}.
 	 */
@@ -580,7 +578,7 @@ public class Eclipse {
 	 * 
 	 * @param type An actual type. This method checks if {@code typeNode} is likely to be a reference to this type.
 	 * @param node A Lombok AST node. Any node in the appropriate compilation unit will do (used to get access to import statements).
-	 * @param typeNode A type reference to check.
+	 * @param typeRef A type reference to check.
 	 */
 	public static boolean typeMatches(Class<?> type, EclipseNode node, TypeReference typeRef) {
 		if (typeRef == null || typeRef.getTypeName() == null) return false;
