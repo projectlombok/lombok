@@ -53,7 +53,7 @@ import org.mangosdk.spi.ProviderFor;
  * Handles the {@code lombok.Synchronized} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
-public class HandleSynchronized implements EclipseAnnotationHandler<Synchronized> {
+public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 	private static final char[] INSTANCE_LOCK_NAME = "$lock".toCharArray();
 	private static final char[] STATIC_LOCK_NAME = "$LOCK".toCharArray();
 	

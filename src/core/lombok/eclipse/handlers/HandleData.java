@@ -36,11 +36,7 @@ import org.mangosdk.spi.ProviderFor;
  * Handles the {@code lombok.Data} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
-public class HandleData implements EclipseAnnotationHandler<Data> {
-	@Override public boolean deferUntilPostDiet() {
-		return false;
-	}
-	
+public class HandleData extends EclipseAnnotationHandler<Data> {
 	public void handle(AnnotationValues<Data> annotation, Annotation ast, EclipseNode annotationNode) {
 		Data ann = annotation.getInstance();
 		EclipseNode typeNode = annotationNode.up();

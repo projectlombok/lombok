@@ -152,11 +152,7 @@ public class HandleLog {
 	 * Handles the {@link lombok.extern.apachecommons.CommonsLog} annotation for Eclipse.
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
-	public static class HandleCommonsLog implements EclipseAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
-		@Override public boolean deferUntilPostDiet() {
-			return false;
-		}
-		
+	public static class HandleCommonsLog extends EclipseAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, Annotation source, EclipseNode annotationNode) {
 			processAnnotation(LoggingFramework.COMMONS, annotation, source, annotationNode);
 		}
@@ -166,11 +162,7 @@ public class HandleLog {
 	 * Handles the {@link lombok.extern.java.Log} annotation for Eclipse.
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
-	public static class HandleJulLog implements EclipseAnnotationHandler<lombok.extern.java.Log> {
-		@Override public boolean deferUntilPostDiet() {
-			return false;
-		}
-		
+	public static class HandleJulLog extends EclipseAnnotationHandler<lombok.extern.java.Log> {
 		@Override public void handle(AnnotationValues<lombok.extern.java.Log> annotation, Annotation source, EclipseNode annotationNode) {
 			processAnnotation(LoggingFramework.JUL, annotation, source, annotationNode);
 		}
@@ -180,11 +172,7 @@ public class HandleLog {
 	 * Handles the {@link lombok.extern.log4j.Log4j} annotation for Eclipse.
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
-	public static class HandleLog4jLog implements EclipseAnnotationHandler<lombok.extern.log4j.Log4j> {
-		@Override public boolean deferUntilPostDiet() {
-			return false;
-		}
-		
+	public static class HandleLog4jLog extends EclipseAnnotationHandler<lombok.extern.log4j.Log4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, Annotation source, EclipseNode annotationNode) {
 			processAnnotation(LoggingFramework.LOG4J, annotation, source, annotationNode);
 		}
@@ -194,11 +182,7 @@ public class HandleLog {
 	 * Handles the {@link lombok.extern.slf4j.Slf4j} annotation for Eclipse.
 	 */
 	@ProviderFor(EclipseAnnotationHandler.class)
-	public static class HandleSlf4jLog implements EclipseAnnotationHandler<lombok.extern.slf4j.Slf4j> {
-		@Override public boolean deferUntilPostDiet() {
-			return false;
-		}
-		
+	public static class HandleSlf4jLog extends EclipseAnnotationHandler<lombok.extern.slf4j.Slf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, Annotation source, EclipseNode annotationNode) {
 			processAnnotation(LoggingFramework.SLF4J, annotation, source, annotationNode);
 		}

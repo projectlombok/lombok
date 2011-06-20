@@ -69,7 +69,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
  * Handles the {@code lombok.Getter} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
-public class HandleGetter implements JavacAnnotationHandler<Getter> {
+public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	public void generateGetterForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelGetter) {
 		if (checkForTypeLevelGetter) {
 			if (typeNode != null) for (JavacNode child : typeNode.down()) {
@@ -368,9 +368,5 @@ public class HandleGetter implements JavacAnnotationHandler<Getter> {
 	
 	private JCExpression copyType(TreeMaker treeMaker, JCVariableDecl fieldNode) {
 		return fieldNode.type != null ? treeMaker.Type(fieldNode.type) : fieldNode.vartype;
-	}
-	
-	@Override public boolean isResolutionBased() {
-		return false;
 	}
 }

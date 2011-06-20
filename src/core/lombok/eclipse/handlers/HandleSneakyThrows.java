@@ -54,7 +54,7 @@ import org.mangosdk.spi.ProviderFor;
  * Handles the {@code lombok.HandleSneakyThrows} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
-public class HandleSneakyThrows implements EclipseAnnotationHandler<SneakyThrows> {
+public class HandleSneakyThrows extends EclipseAnnotationHandler<SneakyThrows> {
 	private static class DeclaredException {
 		final String exceptionName;
 		final ASTNode node;

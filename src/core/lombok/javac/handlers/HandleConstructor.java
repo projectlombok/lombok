@@ -58,7 +58,7 @@ import com.sun.tools.javac.util.ListBuffer;
 
 public class HandleConstructor {
 	@ProviderFor(JavacAnnotationHandler.class)
-	public static class HandleNoArgsConstructor implements JavacAnnotationHandler<NoArgsConstructor> {
+	public static class HandleNoArgsConstructor extends JavacAnnotationHandler<NoArgsConstructor> {
 		@Override public void handle(AnnotationValues<NoArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			deleteAnnotationIfNeccessary(annotationNode, NoArgsConstructor.class);
 			deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
@@ -72,14 +72,10 @@ public class HandleConstructor {
 			List<JCExpression> onConstructor = getAndRemoveAnnotationParameter(ast, "onConstructor");
 			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, onConstructor, false, false, annotationNode);
 		}
-		
-		@Override public boolean isResolutionBased() {
-			return false;
-		}
 	}
 	
 	@ProviderFor(JavacAnnotationHandler.class)
-	public static class HandleRequiredArgsConstructor implements JavacAnnotationHandler<RequiredArgsConstructor> {
+	public static class HandleRequiredArgsConstructor extends JavacAnnotationHandler<RequiredArgsConstructor> {
 		@Override public void handle(AnnotationValues<RequiredArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			deleteAnnotationIfNeccessary(annotationNode, RequiredArgsConstructor.class);
 			deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
@@ -93,10 +89,6 @@ public class HandleConstructor {
 			if (level == AccessLevel.NONE) return;
 			List<JCExpression> onConstructor = getAndRemoveAnnotationParameter(ast, "onConstructor");
 			new HandleConstructor().generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, onConstructor, false, suppressConstructorProperties, annotationNode);
-		}
-		
-		@Override public boolean isResolutionBased() {
-			return false;
 		}
 	}
 	
@@ -118,7 +110,7 @@ public class HandleConstructor {
 	}
 	
 	@ProviderFor(JavacAnnotationHandler.class)
-	public static class HandleAllArgsConstructor implements JavacAnnotationHandler<AllArgsConstructor> {
+	public static class HandleAllArgsConstructor extends JavacAnnotationHandler<AllArgsConstructor> {
 		@Override public void handle(AnnotationValues<AllArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			deleteAnnotationIfNeccessary(annotationNode, AllArgsConstructor.class);
 			deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
@@ -145,10 +137,6 @@ public class HandleConstructor {
 			}
 			List<JCExpression> onConstructor = getAndRemoveAnnotationParameter(ast, "onConstructor");
 			new HandleConstructor().generateConstructor(typeNode, level, fields.toList(), staticName, onConstructor, false, suppressConstructorProperties, annotationNode);
-		}
-		
-		@Override public boolean isResolutionBased() {
-			return false;
 		}
 	}
 	

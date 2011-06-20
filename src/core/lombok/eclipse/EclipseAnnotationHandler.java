@@ -34,7 +34,7 @@ import lombok.core.AnnotationValues;
  * 
  * You also need to register yourself via SPI discovery as being an implementation of {@code EclipseAnnotationHandler}.
  */
-public interface EclipseAnnotationHandler<T extends java.lang.annotation.Annotation> {
+public abstract class EclipseAnnotationHandler<T extends java.lang.annotation.Annotation> {
 	/**
 	 * Called when an annotation is found that is likely to match the annotation you're interested in.
 	 * 
@@ -48,12 +48,14 @@ public interface EclipseAnnotationHandler<T extends java.lang.annotation.Annotat
 	 * to travel back up the chain (something javac AST can't do) to the parent of the annotation, as well
 	 * as access useful methods such as generating warnings or errors focused on the annotation.
 	 */
-	void handle(AnnotationValues<T> annotation, org.eclipse.jdt.internal.compiler.ast.Annotation ast, EclipseNode annotationNode);
+	public abstract void handle(AnnotationValues<T> annotation, org.eclipse.jdt.internal.compiler.ast.Annotation ast, EclipseNode annotationNode);
 	
 	/**
 	 * Return true if this handler should not be run in the diet parse phase.
 	 * 'diet parse' is where method bodies aren't filled in yet. If you have a method-level annotation that modifies the contents of that method,
 	 * return {@code true} here. Otherwise, return {@code false} here.
 	 */
-	boolean deferUntilPostDiet();
+	public boolean deferUntilPostDiet() {
+		return false;
+	}
 }

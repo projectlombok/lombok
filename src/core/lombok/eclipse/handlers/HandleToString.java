@@ -67,7 +67,7 @@ import org.mangosdk.spi.ProviderFor;
  * Handles the {@code ToString} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
-public class HandleToString implements EclipseAnnotationHandler<ToString> {
+public class HandleToString extends EclipseAnnotationHandler<ToString> {
 	private void checkForBogusFieldNames(EclipseNode type, AnnotationValues<ToString> annotation) {
 		if (annotation.isExplicit("exclude")) {
 			for (int i : createListOfNonExistentFields(Arrays.asList(annotation.getInstance().exclude()), type, true, false)) {
@@ -96,10 +96,6 @@ public class HandleToString implements EclipseAnnotationHandler<ToString> {
 			includeFieldNames = ((Boolean)ToString.class.getMethod("includeFieldNames").getDefaultValue()).booleanValue();
 		} catch (Exception ignore) {}
 		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, FieldAccess.GETTER);
-	}
-	
-	@Override public boolean deferUntilPostDiet() {
-		return false;
 	}
 	
 	public void handle(AnnotationValues<ToString> annotation, Annotation ast, EclipseNode annotationNode) {

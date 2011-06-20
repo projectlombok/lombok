@@ -47,7 +47,7 @@ import lombok.javac.JavacNode;
  * Handles the {@code lombok.Synchronized} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
-public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> {
+public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 	private static final String INSTANCE_LOCK_NAME = "$lock";
 	private static final String STATIC_LOCK_NAME = "$LOCK";
 	
@@ -106,9 +106,5 @@ public class HandleSynchronized implements JavacAnnotationHandler<Synchronized> 
 		method.body = Javac.setGeneratedBy(maker.Block(0, List.<JCStatement>of(Javac.setGeneratedBy(maker.Synchronized(lockNode, method.body), ast))), ast);
 		
 		methodNode.rebuild();
-	}
-	
-	@Override public boolean isResolutionBased() {
-		return false;
 	}
 }

@@ -38,7 +38,7 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
  * Handles the {@code lombok.Data} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
-public class HandleData implements JavacAnnotationHandler<Data> {
+public class HandleData extends JavacAnnotationHandler<Data> {
 	@Override public void handle(AnnotationValues<Data> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		deleteAnnotationIfNeccessary(annotationNode, Data.class);
 		JavacNode typeNode = annotationNode.up();
@@ -60,9 +60,5 @@ public class HandleData implements JavacAnnotationHandler<Data> {
 		new HandleSetter().generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
 		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		new HandleToString().generateToStringForType(typeNode, annotationNode);
-	}
-	
-	@Override public boolean isResolutionBased() {
-		return false;
 	}
 }

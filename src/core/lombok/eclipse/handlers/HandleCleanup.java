@@ -58,11 +58,7 @@ import org.mangosdk.spi.ProviderFor;
  * Handles the {@code lombok.Cleanup} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
-public class HandleCleanup implements EclipseAnnotationHandler<Cleanup> {
-	@Override public boolean deferUntilPostDiet() {
-		return false;
-	}
-	
+public class HandleCleanup extends EclipseAnnotationHandler<Cleanup> {
 	public void handle(AnnotationValues<Cleanup> annotation, Annotation ast, EclipseNode annotationNode) {
 		String cleanupName = annotation.getInstance().value();
 		if (cleanupName.length() == 0) {

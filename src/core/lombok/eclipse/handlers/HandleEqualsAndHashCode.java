@@ -86,7 +86,7 @@ import lombok.eclipse.EclipseNode;
  * Handles the {@code EqualsAndHashCode} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
-public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsAndHashCode> {
+public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndHashCode> {
 	private static final Set<String> BUILT_IN_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
 			"byte", "short", "int", "long", "char", "boolean", "double", "float")));
 	
@@ -114,10 +114,6 @@ public class HandleEqualsAndHashCode implements EclipseAnnotationHandler<EqualsA
 		}
 		
 		generateMethods(typeNode, errorNode, null, null, null, false, FieldAccess.GETTER);
-	}
-	
-	@Override public boolean deferUntilPostDiet() {
-		return false;
 	}
 	
 	@Override public void handle(AnnotationValues<EqualsAndHashCode> annotation,

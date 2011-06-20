@@ -57,7 +57,7 @@ import org.mangosdk.spi.ProviderFor;
  * Handles the {@code lombok.Setter} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
-public class HandleSetter implements EclipseAnnotationHandler<Setter> {
+public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 	private static final Annotation[] EMPTY_ANNOTATIONS_ARRAY = new Annotation[0];
 	public boolean generateSetterForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelSetter) {
 		if (checkForTypeLevelSetter) {
@@ -118,10 +118,6 @@ public class HandleSetter implements EclipseAnnotationHandler<Setter> {
 		}
 		
 		createSetterForField(level, fieldNode, fieldNode, pos, false, onMethod, onParam);
-	}
-	
-	@Override public boolean deferUntilPostDiet() {
-		return false;
 	}
 	
 	public void handle(AnnotationValues<Setter> annotation, Annotation ast, EclipseNode annotationNode) {

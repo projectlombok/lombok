@@ -58,7 +58,7 @@ import com.sun.tools.javac.util.Name;
  * Handles the {@code lombok.EqualsAndHashCode} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
-public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAndHashCode> {
+public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHashCode> {
 	private void checkForBogusFieldNames(JavacNode type, AnnotationValues<EqualsAndHashCode> annotation) {
 		if (annotation.isExplicit("exclude")) {
 			for (int i : createListOfNonExistentFields(List.from(annotation.getInstance().exclude()), type, true, true)) {
@@ -486,9 +486,5 @@ public class HandleEqualsAndHashCode implements JavacAnnotationHandler<EqualsAnd
 	
 	private JCStatement returnBool(TreeMaker maker, boolean bool) {
 		return maker.Return(maker.Literal(Javac.getCTCint(TypeTags.class, "BOOLEAN"), bool ? 1 : 0));
-	}
-	
-	@Override public boolean isResolutionBased() {
-		return false;
 	}
 }

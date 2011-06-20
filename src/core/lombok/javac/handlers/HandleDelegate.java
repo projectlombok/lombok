@@ -74,7 +74,7 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
 @ProviderFor(JavacAnnotationHandler.class)
-public class HandleDelegate implements JavacAnnotationHandler<Delegate> {
+public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 	@Override public boolean isResolutionBased() {
 		return true;
 	}

@@ -40,7 +40,7 @@ import lombok.javac.JavacNode;
  * Handles the {@code lombok.core.PrintAST} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
-public class HandlePrintAST implements JavacAnnotationHandler<PrintAST> {
+public class HandlePrintAST extends JavacAnnotationHandler<PrintAST> {
 	@Override public void handle(AnnotationValues<PrintAST> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		PrintStream stream = System.out;
 		String fileName = annotation.getInstance().outfile();
@@ -51,9 +51,5 @@ public class HandlePrintAST implements JavacAnnotationHandler<PrintAST> {
 		}
 		
 		annotationNode.up().traverse(new JavacASTVisitor.Printer(annotation.getInstance().printContent(), stream));
-	}
-	
-	@Override public boolean isResolutionBased() {
-		return false;
 	}
 }

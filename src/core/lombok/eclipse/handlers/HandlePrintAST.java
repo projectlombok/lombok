@@ -39,7 +39,7 @@ import lombok.eclipse.EclipseNode;
  * Handles the {@code lombok.core.PrintAST} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
-public class HandlePrintAST implements EclipseAnnotationHandler<PrintAST> {
+public class HandlePrintAST extends EclipseAnnotationHandler<PrintAST> {
 	@Override public boolean deferUntilPostDiet() {
 		return true;
 	}

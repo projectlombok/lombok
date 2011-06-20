@@ -70,7 +70,7 @@ import org.mangosdk.spi.ProviderFor;
  * Handles the {@code lombok.Getter} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
-public class HandleGetter implements EclipseAnnotationHandler<Getter> {
+public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	public boolean generateGetterForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelGetter) {
 		if (checkForTypeLevelGetter) {
 			if (typeNode != null) for (EclipseNode child : typeNode.down()) {
@@ -129,10 +129,6 @@ public class HandleGetter implements EclipseAnnotationHandler<Getter> {
 		}
 		
 		createGetterForField(level, fieldNode, fieldNode, pos, false, onMethod, lazy);
-	}
-	
-	@Override public boolean deferUntilPostDiet() {
-		return false;
 	}
 	
 	public void handle(AnnotationValues<Getter> annotation, Annotation ast, EclipseNode annotationNode) {

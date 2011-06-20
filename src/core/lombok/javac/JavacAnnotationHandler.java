@@ -38,7 +38,7 @@ import com.sun.tools.javac.tree.JCTree.JCAnnotation;
  * 
  * You also need to register yourself via SPI discovery as being an implementation of {@code JavacAnnotationHandler}.
  */
-public interface JavacAnnotationHandler<T extends Annotation> {
+public abstract class JavacAnnotationHandler<T extends Annotation> {
 	/**
 	 * Called when an annotation is found that is likely to match the annotation you're interested in.
 	 * 
@@ -52,10 +52,12 @@ public interface JavacAnnotationHandler<T extends Annotation> {
 	 * to travel back up the chain (something javac AST can't do) to the parent of the annotation, as well
 	 * as access useful methods such as generating warnings or errors focused on the annotation.
 	 */
-	void handle(AnnotationValues<T> annotation, JCAnnotation ast, JavacNode annotationNode);
+	public abstract void handle(AnnotationValues<T> annotation, JCAnnotation ast, JavacNode annotationNode);
 	
 	/**
 	 * Return true if this handler requires resolution.
 	 */
-	boolean isResolutionBased();
+	public boolean isResolutionBased() {
+		return false;
+	}
 }

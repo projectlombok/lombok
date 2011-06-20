@@ -63,7 +63,7 @@ import com.sun.tools.javac.util.Name;
  * Handles the {@code lombok.Setter} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
-public class HandleSetter implements JavacAnnotationHandler<Setter> {
+public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	public void generateSetterForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelSetter) {
 		if (checkForTypeLevelSetter) {
 			if (typeNode != null) for (JavacNode child : typeNode.down()) {
@@ -246,9 +246,5 @@ public class HandleSetter implements JavacAnnotationHandler<Setter> {
 		public <R, P> R accept(TypeVisitor<R, P> v, P p) {
 			return v.visitNoType(this, p);
 		}
-	}
-	
-	@Override public boolean isResolutionBased() {
-		return false;
 	}
 }

@@ -51,7 +51,7 @@ import com.sun.tools.javac.util.List;
  * Handles the {@code lombok.SneakyThrows} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
-public class HandleSneakyThrows implements JavacAnnotationHandler<SneakyThrows> {
+public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 	@Override public void handle(AnnotationValues<SneakyThrows> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		deleteAnnotationIfNeccessary(annotationNode, SneakyThrows.class);
 		Collection<String> exceptionNames = annotation.getRawExpressions("value");
@@ -110,9 +110,5 @@ public class HandleSneakyThrows implements JavacAnnotationHandler<SneakyThrows> 
 				List.<JCExpression>of(maker.Ident(node.toName("$ex")))))));
 		
 		return Javac.setGeneratedBy(maker.Try(tryBlock, List.of(Javac.recursiveSetGeneratedBy(maker.Catch(catchParam, catchBody), source)), null), source);
-	}
-	
-	@Override public boolean isResolutionBased() {
-		return false;
 	}
 }

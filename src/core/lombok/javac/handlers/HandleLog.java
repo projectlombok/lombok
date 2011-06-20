@@ -104,13 +104,9 @@ public class HandleLog {
 	 * Handles the {@link lombok.extern.apachecommons.CommonsLog} annotation for javac.
 	 */
 	@ProviderFor(JavacAnnotationHandler.class)
-	public static class HandleCommonsLog implements JavacAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
+	public static class HandleCommonsLog extends JavacAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			processAnnotation(LoggingFramework.COMMONS, annotation, annotationNode);
-		}
-		
-		@Override public boolean isResolutionBased() {
-			return false;
 		}
 	}
 	
@@ -118,13 +114,9 @@ public class HandleLog {
 	 * Handles the {@link lombok.extern.java.Log} annotation for javac.
 	 */
 	@ProviderFor(JavacAnnotationHandler.class)
-	public static class HandleJulLog implements JavacAnnotationHandler<lombok.extern.java.Log> {
+	public static class HandleJulLog extends JavacAnnotationHandler<lombok.extern.java.Log> {
 		@Override public void handle(AnnotationValues<lombok.extern.java.Log> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			processAnnotation(LoggingFramework.JUL, annotation, annotationNode);
-		}
-		
-		@Override public boolean isResolutionBased() {
-			return false;
 		}
 	}
 	
@@ -132,13 +124,9 @@ public class HandleLog {
 	 * Handles the {@link lombok.extern.log4j.Log4j} annotation for javac.
 	 */
 	@ProviderFor(JavacAnnotationHandler.class)
-	public static class HandleLog4jLog implements JavacAnnotationHandler<lombok.extern.log4j.Log4j> {
+	public static class HandleLog4jLog extends JavacAnnotationHandler<lombok.extern.log4j.Log4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			processAnnotation(LoggingFramework.LOG4J, annotation, annotationNode);
-		}
-		
-		@Override public boolean isResolutionBased() {
-			return false;
 		}
 	}
 	
@@ -146,13 +134,9 @@ public class HandleLog {
 	 * Handles the {@link lombok.extern.slf4j.Slf4j} annotation for javac.
 	 */
 	@ProviderFor(JavacAnnotationHandler.class)
-	public static class HandleSlf4jLog implements JavacAnnotationHandler<lombok.extern.slf4j.Slf4j> {
+	public static class HandleSlf4jLog extends JavacAnnotationHandler<lombok.extern.slf4j.Slf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			processAnnotation(LoggingFramework.SLF4J, annotation, annotationNode);
-		}
-		
-		@Override public boolean isResolutionBased() {
-			return false;
 		}
 	}
 	

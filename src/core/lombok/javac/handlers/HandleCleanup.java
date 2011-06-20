@@ -58,7 +58,7 @@ import com.sun.tools.javac.util.Name;
  * Handles the {@code lombok.Cleanup} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
-public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
+public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 	@Override public void handle(AnnotationValues<Cleanup> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		deleteAnnotationIfNeccessary(annotationNode, Cleanup.class);
 		String cleanupName = annotation.getInstance().value();
@@ -160,9 +160,5 @@ public class HandleCleanup implements JavacAnnotationHandler<Cleanup> {
 				"You're assigning an auto-cleanup variable to something else. This is a bad idea.");
 			}
 		}
-	}
-	
-	@Override public boolean isResolutionBased() {
-		return false;
 	}
 }

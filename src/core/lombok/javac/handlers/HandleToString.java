@@ -55,7 +55,7 @@ import com.sun.tools.javac.util.ListBuffer;
  * Handles the {@code ToString} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
-public class HandleToString implements JavacAnnotationHandler<ToString> {
+public class HandleToString extends JavacAnnotationHandler<ToString> {
 	private void checkForBogusFieldNames(JavacNode type, AnnotationValues<ToString> annotation) {
 		if (annotation.isExplicit("exclude")) {
 			for (int i : createListOfNonExistentFields(List.from(annotation.getInstance().exclude()), type, true, false)) {
@@ -249,9 +249,5 @@ public class HandleToString implements JavacAnnotationHandler<ToString> {
 			upType = upType.up();
 		}
 		return typeName;
-	}
-	
-	@Override public boolean isResolutionBased() {
-		return false;
 	}
 }
