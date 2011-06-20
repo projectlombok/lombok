@@ -82,7 +82,7 @@ public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 		if (fieldExists(new String(lockName), annotationNode) == MemberExistsResult.NOT_EXISTS) {
 			if (!autoMake) {
 				if (reportErrors) annotationNode.addError(String.format("The field %s does not exist.", new String(lockName)));
-				return lockName;
+				return null;
 			}
 			FieldDeclaration fieldDecl = new FieldDeclaration(lockName, 0, -1);
 			Eclipse.setGeneratedBy(fieldDecl, source);
@@ -123,6 +123,7 @@ public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 		}
 		
 		char[] lockName = createLockField(annotation, annotationNode, method.isStatic(), true);
+		if (lockName == null) return;
 		if (method.statements == null) return;
 		
 		Block block = new Block(0);
