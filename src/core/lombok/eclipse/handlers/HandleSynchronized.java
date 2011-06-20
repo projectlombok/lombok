@@ -61,6 +61,51 @@ public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 		return true;
 	}
 	
+	@Override public void preHandle(AnnotationValues<Synchronized> annotation, Annotation source, EclipseNode annotationNode) {
+		EclipseNode methodNode = annotationNode.up();
+		if (methodNode == null || methodNode.getKind() != Kind.METHOD || !(methodNode.get() instanceof MethodDeclaration)) return;
+		MethodDeclaration method = (MethodDeclaration)methodNode.get();
+		if (method.isAbstract()) return;
+		
+		createLockField(annotation, annotationNode, method.isStatic(), false);
+	}
+	
+	private char[] createLockField(AnnotationValues<Synchronized> annotation, EclipseNode annotationNode, boolean isStatic, boolean reportErrors) {
+		char[] lockName = annotation.getInstance().value().toCharArray();
+		Annotation source = (Annotation) annotationNode.get();
+		boolean autoMake = false;
+		if (lockName.length == 0) {
+			autoMake = true;
+			lockName = isStatic ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
+		}
+		
+		if (fieldExists(new String(lockName), annotationNode) == MemberExistsResult.NOT_EXISTS) {
+			if (!autoMake) {
+				if (reportErrors) annotationNode.addError(String.format("The field %s does not exist.", new String(lockName)));
+				return lockName;
+			}
+			FieldDeclaration fieldDecl = new FieldDeclaration(lockName, 0, -1);
+			Eclipse.setGeneratedBy(fieldDecl, source);
+			fieldDecl.declarationSourceEnd = -1;
+			
+			fieldDecl.modifiers = (isStatic ? Modifier.STATIC : 0) | Modifier.FINAL | Modifier.PRIVATE;
+			
+			//We use 'new Object[0];' because unlike 'new Object();', empty arrays *ARE* serializable!
+			ArrayAllocationExpression arrayAlloc = new ArrayAllocationExpression();
+			Eclipse.setGeneratedBy(arrayAlloc, source);
+			arrayAlloc.dimensions = new Expression[] { new IntLiteral(new char[] { '0' }, 0, 0) };
+			Eclipse.setGeneratedBy(arrayAlloc.dimensions[0], source);
+			arrayAlloc.type = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { 0, 0, 0 });
+			Eclipse.setGeneratedBy(arrayAlloc.type, source);
+			fieldDecl.type = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { 0, 0, 0 });
+			Eclipse.setGeneratedBy(fieldDecl.type, source);
+			fieldDecl.initialization = arrayAlloc;
+			injectFieldSuppressWarnings(annotationNode.up().up(), fieldDecl);
+		}
+		
+		return lockName;
+	}
+	
 	@Override public void handle(AnnotationValues<Synchronized> annotation, Annotation source, EclipseNode annotationNode) {
 		int p1 = source.sourceStart -1;
 		int p2 = source.sourceStart -2;
@@ -77,37 +122,7 @@ public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 			return;
 		}
 		
-		char[] lockName = annotation.getInstance().value().toCharArray();
-		boolean autoMake = false;
-		if (lockName.length == 0) {
-			autoMake = true;
-			lockName = method.isStatic() ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
-		}
-		
-		if (fieldExists(new String(lockName), methodNode) == MemberExistsResult.NOT_EXISTS) {
-			if (!autoMake) {
-				annotationNode.addError(String.format("The field %s does not exist.", new String(lockName)));
-				return;
-			}
-			FieldDeclaration fieldDecl = new FieldDeclaration(lockName, 0, -1);
-			Eclipse.setGeneratedBy(fieldDecl, source);
-			fieldDecl.declarationSourceEnd = -1;
-			
-			fieldDecl.modifiers = (method.isStatic() ? Modifier.STATIC : 0) | Modifier.FINAL | Modifier.PRIVATE;
-			
-			//We use 'new Object[0];' because unlike 'new Object();', empty arrays *ARE* serializable!
-			ArrayAllocationExpression arrayAlloc = new ArrayAllocationExpression();
-			Eclipse.setGeneratedBy(arrayAlloc, source);
-			arrayAlloc.dimensions = new Expression[] { new IntLiteral(new char[] { '0' }, 0, 0) };
-			Eclipse.setGeneratedBy(arrayAlloc.dimensions[0], source);
-			arrayAlloc.type = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { 0, 0, 0 });
-			Eclipse.setGeneratedBy(arrayAlloc.type, source);
-			fieldDecl.type = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { 0, 0, 0 });
-			Eclipse.setGeneratedBy(fieldDecl.type, source);
-			fieldDecl.initialization = arrayAlloc;
-			injectFieldSuppressWarnings(annotationNode.up().up(), fieldDecl);
-		}
-		
+		char[] lockName = createLockField(annotation, annotationNode, method.isStatic(), true);
 		if (method.statements == null) return;
 		
 		Block block = new Block(0);
