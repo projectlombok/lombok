@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2010 Reinier Zwitserloot and Roel Spilker.
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ package lombok.core;
  */
 public class Version {
 	// ** CAREFUL ** - this class must always compile with 0 dependencies (it must not refer to any other sources or libraries).
-	private static final String VERSION = "0.10.0-BETA2-HEAD";
+	private static final String VERSION = "0.10.0-RC1";
 	private static final String RELEASE_NAME = "Burning Emu";
 	
 	private Version() {
