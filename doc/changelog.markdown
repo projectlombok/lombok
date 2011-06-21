@@ -36,7 +36,7 @@ Lombok Changelog
 * BUGFIX: delombok now no longer forgets to remove `import lombok.AccessLevel;`. In netbeans, that import will no longer be flagged erroneously as being unused. [Issue #100](http://code.google.com/p/projectlombok/issues/detail?id=100) and [Issue #103](http://code.google.com/p/projectlombok/issues/detail?id=103)
 * BUGFIX: While its discouraged, `import lombok.*;` is supposed to work in the vast majority of cases. In eclipse, however, it didn't. Now it does. [Issue #102](http://code.google.com/p/projectlombok/issues/detail?id=102)
 * BUGFIX: When `@Getter` or `@Setter` is applied to a multiple field declaration, such as `@Getter int x, y;`, the annotation now applies to all fields, not just the first. [Issue #54](http://code.google.com/p/projectlombok/issues/detail?id=54)
-* BUGFIX: delombok on most javacs would quit with a NoSuchFieldError if it contains <?> style wildcards anywhere in the source, as well as at least 1 lombok annotation. No longer. [Issue #134](http://code.google.com/p/projectlombok/issues/detail?id=134)
+* BUGFIX: delombok on most javacs would quit with a NoSuchFieldError if it contains `<?>` style wildcards anywhere in the source, as well as at least 1 lombok annotation. No longer. [Issue #134](http://code.google.com/p/projectlombok/issues/detail?id=134)
 * BUILD: dependencies are now fetched automatically via ivy, and most dependencies now include sources by default, which is particularly handy for those working on the lombok sources themselves.
 
 ### v0.9.2 "Hailbunny" (December 15th, 2009)
