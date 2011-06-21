@@ -3,7 +3,7 @@ Lombok Changelog
 
 ### v0.10.0 "Burning Emu" (June 20th, 2011)
 * FEATURE: New annotation: @Delegate. This annotation lets lombok generate delegation methods for a given field. [More&hellip;](http://projectlombok.org/features/Delegate.html)
-* FEATURE: Added support for 'val'. Val is an immutable variable that infers it's type from the right hand side of an expression. [More&hellip;](http://projectlombok.org/features/val.html)
+* FEATURE: Added support for 'val'. Val is an immutable variable that infers its type from the right hand side of an expression. [More&hellip;](http://projectlombok.org/features/val.html)
 * FEATURE: Added support for several logging frameworks via the `@Log`, `@Slf4j`, etc. annotation. [More&hellip;](http://projectlombok.org/features/Log.html)
 * FEATURE: Lombok now supports post-compile transformers. [Issue #144](http://code.google.com/p/projectlombok/issues/detail?id=144)
 * FEATURE: `@Getter`, `@Setter`, `@XArgsConstructor` now all support `onMethod=`, `onParam=` and/or `onConstructor=`, which lets you add annotations to generated methods. [More&hellip;](http://projectlombok.org/features/onX.html)
