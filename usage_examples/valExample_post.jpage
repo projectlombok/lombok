@@ -6,7 +6,7 @@ public class ValExample {
 	public String example() {
 		final ArrayList<String> example = new ArrayList<String>();
 		example.add("Hello, World!");
-		String foo = example.get(0);
+		final String foo = example.get(0);
 		return foo.toLowerCase();
 	}
 	
