@@ -58,15 +58,12 @@
 				</p><p>
 				Because <code>@SneakyThrows</code> is an implementation detail and not part of your method signature, it is an error if you try to
 				declare a checked exception as sneakily thrown when you don't call any methods that throw this exception. (Doing so is perfectly legal
-				for <code>throws</code> statements to accomodate subclasses). Similarly, <code>@SneakyThrows</code> does not inherit.
+				for <code>throws</code> statements to accommodate subclasses). Similarly, <code>@SneakyThrows</code> does not inherit.
 				</p><p>
 				For the nay-sayers in the crowd: Out of the box, Eclipse will offer a 'quick-fix' for uncaught exceptions that wraps the offending
 				statement in a try/catch block with just <code>e.printStackTrace()</code> in the catch block. This is so spectacularly non-productive
 				compared to just sneakily throwing the exception onwards, that Roel and Reinier feel more than justified in claiming that the
 				checked exception system is far from perfect, and thus an opt-out mechanism is warranted.
-				</p><p>
-				Currently usage of <code>@SneakyThrows</code> requires you to have <code>lombok.jar</code> in the classpath at runtime. However, in the future
-				we will attempt to eliminate this requirement - when we figure out how we can do that. If anyone has a good idea on how to make that happen, let us know!
 				</p>
 			</div>
 		</div>
