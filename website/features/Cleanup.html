@@ -24,7 +24,7 @@
 			If the type of object you'd like to cleanup does not have a <code>close()</code> method, but some other no-argument method, you can
 			specify the name of this method like so:<br />
 			<code>@Cleanup("dispose") org.eclipse.swt.widgets.CoolBar bar = new CoolBar(parent, 0);</code><br />
-			By default, the cleanup method is presumed to be <code>close()</code>. A cleanup method that takes argument cannot be called via
+			By default, the cleanup method is presumed to be <code>close()</code>. A cleanup method that takes 1 or more arguments cannot be called via
 			<code>@Cleanup</code>.
 			</p>
 		</div>
