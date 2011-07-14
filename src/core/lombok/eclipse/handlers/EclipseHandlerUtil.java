@@ -25,6 +25,7 @@ import static lombok.eclipse.Eclipse.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +38,7 @@ import lombok.Getter;
 import lombok.Lombok;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
+import lombok.core.debug.DebugSnapshotStore;
 import lombok.core.handlers.TransformationsUtil;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseNode;
@@ -464,9 +466,11 @@ public class EclipseHandlerUtil {
 			}
 			
 			if (report) {
-				Eclipse.warning("We believe you may have just stumbled on lombok issue #164. Please " +
-						"report the stack trace associated with this message at:\n" +
-						"http://code.google.com/p/projectlombok/issues/detail?id=164", new Throwable());
+				CompilationUnitDeclaration cud = (CompilationUnitDeclaration) type.top().get();
+				DebugSnapshotStore.INSTANCE.print(cud, "Printing: injecting whilst scope is already built.");
+//				Eclipse.warning("State: " + Issue164Fixer.getState(cud) + " -- We believe you may have just stumbled on lombok issue #164. Please " +
+//						"report the stack trace associated with this message at:\n" +
+//						"http://code.google.com/p/projectlombok/issues/detail?id=164. Occurred on class " + new String(parent.name), new Throwable());
 			}
 		}
 		
