@@ -8,7 +8,6 @@ public class DelegationExample {
 		boolean remove(Object item);
 	}
 	
-	@Delegate(types=SimpleCollection.class)
 	private final Collection<String> collection = new ArrayList<String>();
 	
 	@java.lang.SuppressWarnings("all")
@@ -30,7 +29,6 @@ class ExcludesDelegateExample {
 		boolean addAll(Collection<? extends String> x);
 	}
 	
-	@Delegate(excludes=Add.class)
 	private final Collection<String> collection = new ArrayList<String>();
 	
 	public boolean add(String item) {
