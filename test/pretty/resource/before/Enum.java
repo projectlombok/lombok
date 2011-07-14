@@ -1,5 +1,5 @@
 enum Ranks {
-	CLUBS, HEARTS, DIAMONDS, SPADES
+	CLUBS, HEARTS, DIAMONDS, SPADES;;
 }
 
 enum Complex {

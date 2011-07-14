@@ -103,6 +103,7 @@ import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
 import com.sun.tools.javac.util.Convert;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Position;
 
 /** Prints out a tree as an indented Java source program.
  *
@@ -480,14 +481,18 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     /** Print a block.
      */
     public void printBlock(List<? extends JCTree> stats, JCTree container) throws IOException {
-        print("{");
-        println();
-        indent();
-        printStats(stats);
-        consumeComments(endPos(container));
-        undent();
-        align();
-        print("}");
+        if ((Position.NOPOS == container.pos) && stats.isEmpty()) {
+            print(";");
+        } else {
+            print("{");
+            println();
+            indent();
+            printStats(stats);
+            consumeComments(endPos(container));
+            undent();
+            align();
+            print("}");
+        }
     }
 
     /** Print a block.
