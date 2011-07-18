@@ -1,5 +1,8 @@
 package lombok.core.debug;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,14 +42,26 @@ public class DebugSnapshotStore {
 		
 		Collections.sort(list);
 		int idx = 1;
-		System.out.println("---------------------------");
+		StringBuilder out = new StringBuilder();
+		out.append("---------------------------\n");
 		for (DebugSnapshot snapshot : list) {
-			System.out.printf("%3d: %s\n", idx++, snapshot.shortToString());
+			out.append(String.format("%3d: %s\n", idx++, snapshot.shortToString()));
 		}
-		System.out.println("******");
+		out.append("******\n");
 		idx = 1;
 		for (DebugSnapshot snapshot : list) {
-			System.out.printf("%3d: %s", idx++, snapshot.toString());
+			out.append(String.format("%3d: %s", idx++, snapshot.toString()));
+		}
+		
+		try {
+			OutputStream stream = new FileOutputStream(new File(System.getProperty("user.home", "."), String.format("lombok164-%d.err", System.currentTimeMillis())));
+			try {
+				stream.write(out.toString().getBytes("UTF-8"));
+			} finally {
+				stream.close();
+			}
+		} catch (Exception e) {
+			System.err.println(out);
 		}
 	}
 }
