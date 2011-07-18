@@ -35,6 +35,7 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.Modifier;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Modifier.ModifierKeyword;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
@@ -101,7 +102,17 @@ public class PatchValEclipse {
 		}
 	}
 	
+	public static void addFinalAndValAnnotationToSingleVariableDeclaration(Object converter, SingleVariableDeclaration out, LocalDeclaration in) {
+		@SuppressWarnings("unchecked") List<IExtendedModifier> modifiers = out.modifiers();
+		addFinalAndValAnnotationToModifierList(converter, modifiers, out.getAST(), in);
+	}
+	
 	public static void addFinalAndValAnnotationToVariableDeclarationStatement(Object converter, VariableDeclarationStatement out, LocalDeclaration in) {
+		@SuppressWarnings("unchecked") List<IExtendedModifier> modifiers = out.modifiers();
+		addFinalAndValAnnotationToModifierList(converter, modifiers, out.getAST(), in);
+	}
+	
+	public static void addFinalAndValAnnotationToModifierList(Object converter, List<IExtendedModifier> modifiers, AST ast, LocalDeclaration in) {
 		// First check that 'in' has the final flag on, and a @val / @lombok.val annotation.
 		if ((in.modifiers & ClassFileConstants.AccFinal) == 0) return;
 		if (in.annotations == null) return;
@@ -130,8 +141,6 @@ public class PatchValEclipse {
 		
 		// Now check that 'out' is missing either of these.
 		
-		@SuppressWarnings("unchecked") List<IExtendedModifier> modifiers = out.modifiers();
-		
 		if (modifiers == null) return; // This is null only if the project is 1.4 or less. Lombok doesn't work in that.
 		boolean finalIsPresent = false;
 		boolean valIsPresent = false;
@@ -156,11 +165,11 @@ public class PatchValEclipse {
 		
 		if (!finalIsPresent) {
 			modifiers.add(
-					createModifier(out.getAST(), ModifierKeyword.FINAL_KEYWORD, valAnnotation.sourceStart, valAnnotation.sourceEnd));
+					createModifier(ast, ModifierKeyword.FINAL_KEYWORD, valAnnotation.sourceStart, valAnnotation.sourceEnd));
 		}
 		
 		if (!valIsPresent) {
-			MarkerAnnotation newAnnotation = createValAnnotation(out.getAST(), valAnnotation, valAnnotation.sourceStart, valAnnotation.sourceEnd);
+			MarkerAnnotation newAnnotation = createValAnnotation(ast, valAnnotation, valAnnotation.sourceStart, valAnnotation.sourceEnd);
 			try {
 				Reflection.astConverterRecordNodes.invoke(converter, newAnnotation, valAnnotation);
 				Reflection.astConverterRecordNodes.invoke(converter, newAnnotation.getTypeName(), valAnnotation.type);

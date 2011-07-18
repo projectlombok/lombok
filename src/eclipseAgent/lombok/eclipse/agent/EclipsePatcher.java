@@ -315,6 +315,7 @@ public class EclipsePatcher extends Agent {
 		final String LOCALDECLARATION_SIG = "org.eclipse.jdt.internal.compiler.ast.LocalDeclaration";
 		final String PARSER_SIG = "org.eclipse.jdt.internal.compiler.parser.Parser";
 		final String VARIABLEDECLARATIONSTATEMENT_SIG = "org.eclipse.jdt.core.dom.VariableDeclarationStatement";
+		final String SINGLEVARIABLEDECLARATION_SIG = "org.eclipse.jdt.core.dom.SingleVariableDeclaration";
 		final String ASTCONVERTER_SIG = "org.eclipse.jdt.core.dom.ASTConverter";
 		
 		sm.addScript(ScriptBuilder.addField()
@@ -348,6 +349,12 @@ public class EclipsePatcher extends Agent {
 		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget(ASTCONVERTER_SIG, "setModifiers", "void", VARIABLEDECLARATIONSTATEMENT_SIG, LOCALDECLARATION_SIG))
 				.wrapMethod(new Hook("lombok.eclipse.agent.PatchValEclipsePortal", "addFinalAndValAnnotationToVariableDeclarationStatement",
+						"void", "java.lang.Object", "java.lang.Object", "java.lang.Object"))
+				.request(StackRequest.THIS, StackRequest.PARAM1, StackRequest.PARAM2).build());
+		
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget(ASTCONVERTER_SIG, "setModifiers", "void", SINGLEVARIABLEDECLARATION_SIG, LOCALDECLARATION_SIG))
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchValEclipsePortal", "addFinalAndValAnnotationToSingleVariableDeclaration",
 						"void", "java.lang.Object", "java.lang.Object", "java.lang.Object"))
 				.request(StackRequest.THIS, StackRequest.PARAM1, StackRequest.PARAM2).build());
 	}
