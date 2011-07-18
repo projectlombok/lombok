@@ -5,6 +5,7 @@ ivyCache
 google.properties
 debug
 LombokizedEclipse.launch
+RunLombokTests.launch
 escudo-upload.key
 findbugsReport.html
 lib

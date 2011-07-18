@@ -223,6 +223,10 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<os family="mac" />
 		</condition>
 		
+		<condition property="putJavacOnBootclasspath" value="-Xbootclasspath/p:lib/test/javac.jar" else="">
+			<os family="mac" />
+		</condition>
+		
 		<copy
 				file="buildScripts/eclipse-debug-target.template"
 				tofile="LombokizedEclipse.launch"
@@ -230,6 +234,15 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 				overwrite="true">
 			<filterset>
 				<filter token="START_ON_FIRST_THREAD" value="${startOnFirstThread}" />
+			</filterset>
+		</copy>
+		<copy
+				file="buildScripts/eclipse-run-tests.template"
+				tofile="RunLombokTests.launch"
+				preservelastmodified="true"
+				overwrite="true">
+			<filterset>
+				<filter token="JAVAC_ON_BOOTCLASSPATH" value="${putJavacOnBootclasspath}" />
 			</filterset>
 		</copy>
 	</target>
