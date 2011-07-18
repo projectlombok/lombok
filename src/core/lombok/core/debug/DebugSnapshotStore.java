@@ -31,7 +31,7 @@ public class DebugSnapshotStore {
 		}
 	}
 	
-	public void print(CompilationUnitDeclaration owner, String message, Object... params) {
+	public String print(CompilationUnitDeclaration owner, String message, Object... params) {
 		List<DebugSnapshot> list;
 		
 		synchronized (map) {
@@ -54,14 +54,17 @@ public class DebugSnapshotStore {
 		}
 		
 		try {
-			OutputStream stream = new FileOutputStream(new File(System.getProperty("user.home", "."), String.format("lombok164-%d.err", System.currentTimeMillis())));
+			File logFile = new File(System.getProperty("user.home", "."), String.format("lombok164-%d.err", System.currentTimeMillis()));
+			OutputStream stream = new FileOutputStream(logFile);
 			try {
 				stream.write(out.toString().getBytes("UTF-8"));
 			} finally {
 				stream.close();
 			}
+			return logFile.getAbsolutePath();
 		} catch (Exception e) {
 			System.err.println(out);
+			return "(can't write log file - emitted to system err)";
 		}
 	}
 }

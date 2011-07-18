@@ -43,7 +43,7 @@ public class DebugSnapshot implements Comparable<DebugSnapshot> {
 	public String shortToString() {
 		StringBuilder out = new StringBuilder();
 		out.append(String.format("WHEN: %14d THREAD: %s AST: %s", when, threadName, ownerName()));
-		if (message != null) out.append(String.format(message, params));
+		if (message != null) out.append(" ").append(String.format(message, params));
 		return out.toString();
 	}
 	

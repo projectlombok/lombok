@@ -467,10 +467,8 @@ public class EclipseHandlerUtil {
 			
 			if (report) {
 				CompilationUnitDeclaration cud = (CompilationUnitDeclaration) type.top().get();
-				DebugSnapshotStore.INSTANCE.print(cud, "Printing: injecting whilst scope is already built.");
-//				Eclipse.warning("State: " + Issue164Fixer.getState(cud) + " -- We believe you may have just stumbled on lombok issue #164. Please " +
-//						"report the stack trace associated with this message at:\n" +
-//						"http://code.google.com/p/projectlombok/issues/detail?id=164. Occurred on class " + new String(parent.name), new Throwable());
+				String logFileLocation = DebugSnapshotStore.INSTANCE.print(cud, "Printing: injecting whilst scope is already built.");
+				Eclipse.warning("We believe you may have stumbled on issue 164. Please upload file " + logFileLocation + " to: http://code.google.com/p/projectlombok/issues/detail?id=164", new Throwable());
 			}
 		}
 		
