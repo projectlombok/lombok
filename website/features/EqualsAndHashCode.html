@@ -65,9 +65,9 @@
 				return false. This is analogous to <code>java.lang.Double</code>'s equals method, and is in fact required to ensure that comparing an object
 				to an exact copy of itself returns <code>true</code> for equality.
 				</p><p>
-				If there is <em>any</em> method named either <code>hashCode</code> or <code>equals</code>, regardless of parameters or return type,
-				that method will not be generated, and a warning is emitted instead. <code>hashCode</code> and <code>equals</code> need to be in sync with
-				each other, which lombok cannot guarantee if it is only generating one of the two methods, hence you always get a warning if one <em>or</em> both
+				If there is <em>any</em> method named either <code>hashCode</code>, <code>equals</code> or <code>canEqual</code>, regardless of
+				parameters or return type, no methods will be generated, and a warning is emitted instead. These 3 methods need to be in sync with
+				each other, which lombok cannot guarantee unless it generates all the methods, hence you always get a warning if one <em>or</em> more
 				of the methods already exist.
 				</p><p>
 				Attempting to exclude fields that don't exist or would have been excluded anyway (because they are static or transient) results in warnings on the named fields.

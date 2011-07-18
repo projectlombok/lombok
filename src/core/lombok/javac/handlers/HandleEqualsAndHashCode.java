@@ -22,6 +22,10 @@
 package lombok.javac.handlers;
 
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+
+import java.util.ArrayList;
+import java.util.Collections;
+
 import lombok.EqualsAndHashCode;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
@@ -170,51 +174,36 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			}
 		}
 		
-		boolean needsCanEqual = false;
-		switch (methodExists("equals", typeNode)) {
-		case NOT_EXISTS:
-			boolean isFinal = (((JCClassDecl)typeNode.get()).mods.flags & Flags.FINAL) != 0;
-			needsCanEqual = !isFinal || !isDirectDescendantOfObject;
-			
-			JCMethodDecl method = createEquals(typeNode, nodesForEquality.toList(), callSuper, fieldAccess, needsCanEqual, source.get());
-			injectMethod(typeNode, method);
-			break;
+		boolean isFinal = (((JCClassDecl)typeNode.get()).mods.flags & Flags.FINAL) != 0;
+		boolean needsCanEqual = !isFinal || !isDirectDescendantOfObject;
+		java.util.List<MemberExistsResult> existsResults = new ArrayList<MemberExistsResult>();
+		existsResults.add(methodExists("equals", typeNode));
+		existsResults.add(methodExists("hashCode", typeNode));
+		existsResults.add(methodExists("canEqual", typeNode));
+		switch (Collections.max(existsResults)) {
 		case EXISTS_BY_LOMBOK:
-			break;
-		default:
+			return;
 		case EXISTS_BY_USER:
 			if (whineIfExists) {
-				source.addWarning("Not generating equals(Object other): A method with that name already exists");
+				String msg = String.format("Not generating equals%s: A method with one of those names already exists. (Either all or none of these methods will be generated).", needsCanEqual ? ", hashCode and canEquals" : " and hashCode");
+				source.addWarning(msg);
 			}
-			break;
+			return;
+		case NOT_EXISTS:
+		default:
+			//fallthrough
 		}
 		
+		JCMethodDecl equalsMethod = createEquals(typeNode, nodesForEquality.toList(), callSuper, fieldAccess, needsCanEqual, source.get());
+		injectMethod(typeNode, equalsMethod);
+		
 		if (needsCanEqual) {
-			switch (methodExists("canEqual", typeNode)) {
-			case NOT_EXISTS:
-				JCMethodDecl method = createCanEqual(typeNode, source.get());
-				injectMethod(typeNode, method);
-				break;
-			case EXISTS_BY_LOMBOK:
-			case EXISTS_BY_USER:
-			default:
-				break;
-			}
+			JCMethodDecl canEqualMethod = createCanEqual(typeNode, source.get());
+			injectMethod(typeNode, canEqualMethod);
 		}
-		switch (methodExists("hashCode", typeNode)) {
-		case NOT_EXISTS:
-			JCMethodDecl method = createHashCode(typeNode, nodesForEquality.toList(), callSuper, fieldAccess, source.get());
-			injectMethod(typeNode, method);
-			break;
-		case EXISTS_BY_LOMBOK:
-			break;
-		default:
-		case EXISTS_BY_USER:
-			if (whineIfExists) {
-				source.addWarning("Not generating hashCode(): A method with that name already exists");
-			}
-			break;
-		}
+		
+		JCMethodDecl hashCodeMethod = createHashCode(typeNode, nodesForEquality.toList(), callSuper, fieldAccess, source.get());
+		injectMethod(typeNode, hashCodeMethod);
 	}
 	
 	private JCMethodDecl createHashCode(JavacNode typeNode, List<JavacNode> fields, boolean callSuper, FieldAccess fieldAccess, JCTree source) {

@@ -203,52 +203,36 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			}
 		}
 		
-		boolean needsCanEqual = false;
-		switch (methodExists("equals", typeNode)) {
-		case NOT_EXISTS:
-			boolean isFinal = (typeDecl.modifiers & ClassFileConstants.AccFinal) != 0;
-			needsCanEqual = !isDirectDescendantOfObject || !isFinal;
-			
-			MethodDeclaration equals = createEquals(typeNode, nodesForEquality, callSuper, errorNode.get(), fieldAccess, needsCanEqual);
-			injectMethod(typeNode, equals);
-			break;
+		boolean isFinal = (typeDecl.modifiers & ClassFileConstants.AccFinal) != 0;
+		boolean needsCanEqual = !isDirectDescendantOfObject || !isFinal;
+		java.util.List<MemberExistsResult> existsResults = new ArrayList<MemberExistsResult>();
+		existsResults.add(methodExists("equals", typeNode));
+		existsResults.add(methodExists("hashCode", typeNode));
+		existsResults.add(methodExists("canEqual", typeNode));
+		switch (Collections.max(existsResults)) {
 		case EXISTS_BY_LOMBOK:
-			break;
-		default:
+			return;
 		case EXISTS_BY_USER:
 			if (whineIfExists) {
-				errorNode.addWarning("Not generating equals(Object other): A method with that name already exists");
+				String msg = String.format("Not generating equals%s: A method with one of those names already exists. (Either all or none of these methods will be generated).", needsCanEqual ? ", hashCode and canEquals" : " and hashCode");
+				errorNode.addWarning(msg);
 			}
-			break;
+			return;
+		case NOT_EXISTS:
+		default:
+			//fallthrough
 		}
+		
+		MethodDeclaration equalsMethod = createEquals(typeNode, nodesForEquality, callSuper, errorNode.get(), fieldAccess, needsCanEqual);
+		injectMethod(typeNode, equalsMethod);
 		
 		if (needsCanEqual) {
-			switch (methodExists("canEqual", typeNode)) {
-			case NOT_EXISTS:
-				MethodDeclaration equals = createCanEqual(typeNode, errorNode.get());
-				injectMethod(typeNode, equals);
-				break;
-			case EXISTS_BY_LOMBOK:
-			case EXISTS_BY_USER:
-			default:
-				break;
-			}
+			MethodDeclaration canEqualMethod = createCanEqual(typeNode, errorNode.get());
+			injectMethod(typeNode, canEqualMethod);
 		}
 		
-		switch (methodExists("hashCode", typeNode)) {
-		case NOT_EXISTS:
-			MethodDeclaration hashCode = createHashCode(typeNode, nodesForEquality, callSuper, errorNode.get(), fieldAccess);
-			injectMethod(typeNode, hashCode);
-			break;
-		case EXISTS_BY_LOMBOK:
-			break;
-		default:
-		case EXISTS_BY_USER:
-			if (whineIfExists) {
-				errorNode.addWarning("Not generating hashCode(): A method with that name already exists");
-			}
-			break;
-		}
+		MethodDeclaration hashCodeMethod = createHashCode(typeNode, nodesForEquality, callSuper, errorNode.get(), fieldAccess);
+		injectMethod(typeNode, hashCodeMethod);
 	}
 	
 	private MethodDeclaration createHashCode(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {

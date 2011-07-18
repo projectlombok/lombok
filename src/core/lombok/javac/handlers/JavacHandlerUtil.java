@@ -185,7 +185,7 @@ public class JavacHandlerUtil {
 	
 	/** Serves as return value for the methods that check for the existence of fields and methods. */
 	public enum MemberExistsResult {
-		NOT_EXISTS, EXISTS_BY_USER, EXISTS_BY_LOMBOK;
+		NOT_EXISTS, EXISTS_BY_LOMBOK, EXISTS_BY_USER;
 	}
 	
 	/**

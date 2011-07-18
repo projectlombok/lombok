@@ -1,0 +1,3 @@
+1 warning Not generating equals, hashCode and canEquals: A method with one of those names already exists. (Either all or none of these methods will be generated).
+10 warning Not generating equals and hashCode: A method with one of those names already exists. (Either all or none of these methods will be generated).
+19 warning Not generating equals, hashCode and canEquals: A method with one of those names already exists. (Either all or none of these methods will be generated).
