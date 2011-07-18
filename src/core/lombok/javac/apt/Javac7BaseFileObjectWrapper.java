@@ -36,8 +36,8 @@ import javax.lang.model.element.NestingKind;
 class Javac7BaseFileObjectWrapper extends com.sun.tools.javac.file.BaseFileObject {
 	private final LombokFileObject delegate;
 	
-	public Javac7BaseFileObjectWrapper(com.sun.tools.javac.file.JavacFileManager jfm, LombokFileObject delegate) {
-		super(jfm);
+	public Javac7BaseFileObjectWrapper(LombokFileObject delegate) {
+		super(null);
 		this.delegate = delegate;
 	}
 	

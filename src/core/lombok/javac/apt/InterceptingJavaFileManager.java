@@ -43,12 +43,12 @@ final class InterceptingJavaFileManager extends ForwardingJavaFileManager<JavaFi
 	@Override public JavaFileObject getJavaFileForOutput(Location location, String className, final Kind kind, FileObject sibling) throws IOException {
 		if (className.startsWith("lombok.dummy.ForceNewRound")) {
 			final String name = className.replace(".", "/") + kind.extension;
-			return LombokFileObjects.createEmpty(fileManager, name, kind);
+			return LombokFileObjects.createEmpty(name, kind);
 		}
 		JavaFileObject fileObject = fileManager.getJavaFileForOutput(location, className, kind, sibling);
 		if (kind != Kind.CLASS) {
 			return fileObject;
 		}
-		return LombokFileObjects.createIntercepting(fileManager, fileObject, className, diagnostics);
+		return LombokFileObjects.createIntercepting(fileObject, className, diagnostics);
 	}
 }

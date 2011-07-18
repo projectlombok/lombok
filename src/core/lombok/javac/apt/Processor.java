@@ -87,8 +87,9 @@ public class Processor extends AbstractProcessor {
 	private void placePostCompileAndDontMakeForceRoundDummiesHook() {
 		stopJavacProcessingEnvironmentFromClosingOurClassloader();
 		
+		forceMultipleRoundsInNetBeansEditor();
 		Context context = processingEnv.getContext();
-		
+		disablePartialReparseInNetBeansEditor(context);
 		try {
 			Method keyMethod = Context.class.getDeclaredMethod("key", Class.class);
 			keyMethod.setAccessible(true);
@@ -111,6 +112,39 @@ public class Processor extends AbstractProcessor {
 			}
 		} catch (Exception e) {
 			throw Lombok.sneakyThrow(e);
+		}
+	}
+	
+	private void forceMultipleRoundsInNetBeansEditor() {
+		try {
+			Field f = JavacProcessingEnvironment.class.getDeclaredField("isBackgroundCompilation");
+			f.setAccessible(true);
+			f.set(processingEnv, true);
+		} catch (NoSuchFieldException e) {
+			// only NetBeans has it
+		} catch (Throwable t) {
+			throw Lombok.sneakyThrow(t);
+		}
+	}
+	
+	private void disablePartialReparseInNetBeansEditor(Context context) {
+		try {
+			Class<?> cancelServiceClass = Class.forName("com.sun.tools.javac.util.CancelService");
+			Method cancelServiceInstace = cancelServiceClass.getDeclaredMethod("instance", Context.class);
+			Object cancelService = cancelServiceInstace.invoke(null, context);
+			if (cancelService == null) return;
+			Field parserField = cancelService.getClass().getDeclaredField("parser");
+			parserField.setAccessible(true);
+			Object parser = parserField.get(cancelService);
+			Field supportsReparseField = parser.getClass().getDeclaredField("supportsReparse");
+			supportsReparseField.setAccessible(true);
+			supportsReparseField.set(parser, false);
+		} catch (ClassNotFoundException e) {
+			// only NetBeans has it
+		} catch (NoSuchFieldException e) {
+			// only NetBeans has it
+		} catch (Throwable t) {
+			throw Lombok.sneakyThrow(t);
 		}
 	}
 	

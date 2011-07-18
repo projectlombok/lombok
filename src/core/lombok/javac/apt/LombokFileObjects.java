@@ -24,7 +24,6 @@ package lombok.javac.apt;
 
 import java.lang.reflect.Method;
 
-import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 
@@ -36,17 +35,17 @@ final class LombokFileObjects {
 	
 	private enum Compiler {
 		JAVAC6 {
-			@Override public JavaFileObject wrap(JavaFileManager fileManager, LombokFileObject fileObject) {
+			@Override public JavaFileObject wrap(LombokFileObject fileObject) {
 				return new Javac6BaseFileObjectWrapper(fileObject);
 			}
 		}, 
 		JAVAC7 {
-			@Override public JavaFileObject wrap(JavaFileManager fileManager, LombokFileObject fileObject) {
-				return new Javac7BaseFileObjectWrapper((com.sun.tools.javac.file.JavacFileManager)fileManager, fileObject);
+			@Override public JavaFileObject wrap(LombokFileObject fileObject) {
+				return new Javac7BaseFileObjectWrapper(fileObject);
 			}
 		};
 		
-		abstract JavaFileObject wrap(JavaFileManager fileManager, LombokFileObject fileObject);
+		abstract JavaFileObject wrap(LombokFileObject fileObject);
 	}
 	
 	private static final Compiler compiler;
@@ -85,11 +84,11 @@ final class LombokFileObjects {
 	
 	private LombokFileObjects() {}
 	
-	static JavaFileObject createEmpty(JavaFileManager fileManager, String name, Kind kind) {
-		return compiler.wrap(fileManager, new EmptyLombokFileObject(name, kind));
+	static JavaFileObject createEmpty(String name, Kind kind) {
+		return compiler.wrap(new EmptyLombokFileObject(name, kind));
 	}
 	
-	static JavaFileObject createIntercepting(JavaFileManager fileManager, JavaFileObject delegate, String fileName, DiagnosticsReceiver diagnostics) {
-		return compiler.wrap(fileManager, new InterceptingJavaFileObject(delegate, fileName, diagnostics, decoderMethod));
+	static JavaFileObject createIntercepting(JavaFileObject delegate, String fileName, DiagnosticsReceiver diagnostics) {
+		return compiler.wrap(new InterceptingJavaFileObject(delegate, fileName, diagnostics, decoderMethod));
 	}
 }
