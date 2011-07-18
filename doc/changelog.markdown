@@ -1,6 +1,5 @@
 Lombok Changelog
 ----------------
-
 ### v0.10.0 "Burning Emu" (June 20th, 2011)
 * FEATURE: New annotation: @Delegate. This annotation lets lombok generate delegation methods for a given field. [More&hellip;](http://projectlombok.org/features/Delegate.html)
 * FEATURE: Added support for 'val'. Val is an immutable variable that infers its type from the right hand side of an expression. [More&hellip;](http://projectlombok.org/features/val.html)
@@ -18,6 +17,7 @@ Lombok Changelog
 * BUGFIX: Add null check for `@Cleanup` [Issue #154](http://code.google.com/p/projectlombok/issues/detail?id=154)
 * BUGFIX: The Eclipse source generator would place the generated code outside the class [Issue #155](http://code.google.com/p/projectlombok/issues/detail?id=155)
 * BUGFIX: When using m2eclipse, occasionally you'd see a ClassNotFoundError on JavacProcessingEnvironment. This has been fixed. [Issue #177](http://code.google.com/p/projectlombok/issues/detail?id=177)
+* BUGFIX: Either all or none of `equals`, `hashCode` and `canEqual` will be generated. [Issue #240](http://code.google.com/p/projectlombok/issues/detail?id=240)
 
 ### v0.9.3 "Burrowing Whale" (July 25th, 2010)
 * FEATURE: Adding `@Getter` or `@Setter` to a class is now legal and is like adding those annotations to every non-static field in it. [Issue #129](http://code.google.com/p/projectlombok/issues/detail?id=129)
