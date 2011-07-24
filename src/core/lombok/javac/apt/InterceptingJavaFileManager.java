@@ -32,23 +32,24 @@ import javax.tools.JavaFileObject.Kind;
 import lombok.core.DiagnosticsReceiver;
 
 final class InterceptingJavaFileManager extends ForwardingJavaFileManager<JavaFileManager> {
-	
 	private final DiagnosticsReceiver diagnostics;
+	private final LombokFileObjects.Compiler compiler;
 	
 	InterceptingJavaFileManager(JavaFileManager original, DiagnosticsReceiver diagnostics) {
 		super(original);
+		this.compiler = LombokFileObjects.getCompiler(original);
 		this.diagnostics = diagnostics;
 	}
 	
 	@Override public JavaFileObject getJavaFileForOutput(Location location, String className, final Kind kind, FileObject sibling) throws IOException {
 		if (className.startsWith("lombok.dummy.ForceNewRound")) {
 			final String name = className.replace(".", "/") + kind.extension;
-			return LombokFileObjects.createEmpty(name, kind);
+			return LombokFileObjects.createEmpty(compiler, name, kind);
 		}
 		JavaFileObject fileObject = fileManager.getJavaFileForOutput(location, className, kind, sibling);
 		if (kind != Kind.CLASS) {
 			return fileObject;
 		}
-		return LombokFileObjects.createIntercepting(fileObject, className, diagnostics);
+		return LombokFileObjects.createIntercepting(compiler, fileObject, className, diagnostics);
 	}
 }
