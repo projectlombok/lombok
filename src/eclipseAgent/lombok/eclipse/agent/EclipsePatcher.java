@@ -21,11 +21,15 @@
  */
 package lombok.eclipse.agent;
 
+import java.lang.instrument.ClassFileTransformer;
+import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
+import java.security.ProtectionDomain;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.bytecode.ClassFileMetaData;
 import lombok.core.Agent;
 import lombok.patcher.Hook;
 import lombok.patcher.MethodTarget;
@@ -68,6 +72,15 @@ public class EclipsePatcher extends Agent {
 		else ecj = injected;
 		
 		registerPatchScripts(instrumentation, injected, ecj);
+		instrumentation.addTransformer(new ClassFileTransformer() {
+			@Override public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
+				ClassFileMetaData meta = new ClassFileMetaData(classfileBuffer);
+				if (meta.usesField("org/eclipse/jdt/internal/compiler/ast/TypeDeclaration", "scope")) {
+					return Issue164Fixer.fix(classfileBuffer);
+				}
+				return null;
+			}
+		}, true);
 	}
 	
 	private static void registerPatchScripts(Instrumentation instrumentation, boolean reloadExistingClasses, boolean ecjOnly) {

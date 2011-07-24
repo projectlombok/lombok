@@ -23,6 +23,7 @@ package lombok.eclipse;
 
 import java.lang.reflect.Field;
 
+import lombok.core.debug.DebugSnapshotStore;
 import lombok.patcher.Symbols;
 
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -126,9 +127,12 @@ public class TransformEclipseAST {
 		// Do NOT abort if (ast.bits & ASTNode.HasAllMethodBodies) != 0 - that doesn't work.
 		
 		try {
+			DebugSnapshotStore.INSTANCE.snapshot(ast, "transform entry");
 			EclipseAST existing = getAST(ast, false);
 			new TransformEclipseAST(existing).go();
+			DebugSnapshotStore.INSTANCE.snapshot(ast, "transform exit");
 		} catch (Throwable t) {
+			DebugSnapshotStore.INSTANCE.snapshot(ast, "transform error: %s", t.getClass().getSimpleName());
 			try {
 				String message = "Lombok can't parse this source: " + t.toString();
 				
