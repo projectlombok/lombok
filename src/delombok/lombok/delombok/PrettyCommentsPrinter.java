@@ -384,9 +384,23 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     /** Derived visitor method: print statement tree.
      */
     public void printStat(JCTree tree) throws IOException {
-        printExpr(tree, TreeInfo.notExpression);
+        if (isEmptyStat(tree)) {
+            printEmptyStat();
+        } else {
+            printExpr(tree, TreeInfo.notExpression);
+        }
     }
     
+    public void printEmptyStat() throws IOException {
+        print(";");
+    }
+
+    public boolean isEmptyStat(JCTree tree) {
+        if (!(tree instanceof JCBlock)) return false;
+        JCBlock block = (JCBlock) tree;
+        return (Position.NOPOS == block.pos) && block.stats.isEmpty();
+    }
+
     /** Derived visitor method: print list of expression trees, separated by given string.
      *  @param sep the separator string
      */
@@ -481,18 +495,14 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     /** Print a block.
      */
     public void printBlock(List<? extends JCTree> stats, JCTree container) throws IOException {
-        if ((Position.NOPOS == container.pos) && stats.isEmpty()) {
-            print(";");
-        } else {
-            print("{");
-            println();
-            indent();
-            printStats(stats);
-            consumeComments(endPos(container));
-            undent();
-            align();
-            print("}");
-        }
+        print("{");
+        println();
+        indent();
+        printStats(stats);
+        consumeComments(endPos(container));
+        undent();
+        align();
+        print("}");
     }
 
     /** Print a block.
@@ -722,7 +732,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
             }
             if (tree.body != null) {
                 print(" ");
-                printStat(tree.body);
+                printBlock(tree.body.stats, tree.body);
             } else {
                 print(";");
             }
