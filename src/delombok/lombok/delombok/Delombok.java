@@ -175,7 +175,7 @@ public class Delombok {
 		
 		try {
 			for (String in : args.input) {
-				File f = new File(in);
+				File f = new File(in).getAbsoluteFile();
 				if (f.isFile()) {
 					delombok.addFile(f.getParentFile(), f.getName());
 				} else if (f.isDirectory()) {
@@ -332,7 +332,7 @@ public class Delombok {
 			in.close();
 		}
 	}
-
+	
 	public void addFile(File base, String fileName) throws IOException {
 		if (output != null && canonical(base).equals(canonical(output))) throw new IOException(
 				"DELOMBOK: Output file and input file refer to the same filesystem location. Specify a separate path for output.");
