@@ -81,6 +81,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 	
 	private static final List<String> METHODS_IN_OBJECT = Collections.unmodifiableList(Arrays.asList(
 			"hashCode()",
+			"canEqual(java.lang.Object)",  //Not in j.l.Object, but it goes with hashCode and equals so if we ignore those two, we should ignore this one.
 			"equals(java.lang.Object)",
 			"wait()",
 			"wait(long)",
