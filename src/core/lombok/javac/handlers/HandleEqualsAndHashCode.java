@@ -136,7 +136,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			}
 		}
 		
-		JCTree extending = ((JCClassDecl)typeNode.get()).extending;
+		JCTree extending = ((JCClassDecl)typeNode.get()).getExtendsClause();
 		if (extending != null) {
 			String p = extending.toString();
 			isDirectDescendantOfObject = p.equals("Object") || p.equals("java.lang.Object");
