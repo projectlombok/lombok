@@ -22,9 +22,13 @@ public class DebugSnapshot implements Comparable<DebugSnapshot> {
 	public DebugSnapshot(CompilationUnitDeclaration owner, int stackHiding, String message, Object... params) {
 		this.when = System.currentTimeMillis();
 		this.bits = owner.bits;
-		StackTraceElement[] stackTrace = new Throwable().getStackTrace();
-		this.trace = new ArrayList<StackTraceElement>(Math.max(0, stackTrace.length - stackHiding - 1));
-		for (int i = 1 + stackHiding; i < stackTrace.length; i++) trace.add(stackTrace[i]);
+		if (stackHiding < 0) {
+			this.trace = null;
+		} else {
+			StackTraceElement[] stackTrace = new Throwable().getStackTrace();
+			this.trace = new ArrayList<StackTraceElement>(Math.max(0, stackTrace.length - stackHiding - 1));
+			for (int i = 1 + stackHiding; i < stackTrace.length; i++) trace.add(stackTrace[i]);
+		}
 		this.threadName = Thread.currentThread().getName();
 		this.message = message;
 		this.params = params == null ? new Object[0] : params;
@@ -53,8 +57,12 @@ public class DebugSnapshot implements Comparable<DebugSnapshot> {
 	@Override public String toString() {
 		StringBuilder out = new StringBuilder();
 		out.append(shortToString()).append("\n");
-		for (StackTraceElement elem : trace) {
-			out.append("    ").append(elem.toString()).append("\n");
+		if (trace == null) {
+			out.append("    Stack Omitted");
+		} else {
+			for (StackTraceElement elem : trace) {
+				out.append("    ").append(elem.toString()).append("\n");
+			}
 		}
 		return out.toString();
 	}
