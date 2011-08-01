@@ -111,7 +111,7 @@ public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode,
 				visitor.visitAnnotationOnLocal((LocalDeclaration)parent.get(), this, (Annotation)get());
 				break;
 			default:
-				throw new AssertionError("Annotion not expected as child of a " + up().getKind());
+				throw new AssertionError("Annotation not expected as child of a " + up().getKind());
 			}
 			break;
 		case STATEMENT:

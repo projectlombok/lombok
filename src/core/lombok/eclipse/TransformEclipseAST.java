@@ -163,41 +163,45 @@ public class TransformEclipseAST {
 	 * then handles any PrintASTs.
 	 */
 	public void go() {
-		handlers.skipPrintAST();
-		ast.traverse(new AnnotationVisitor());
+		ast.traverse(new AnnotationVisitor(true));
 		handlers.callASTVisitors(ast);
-		handlers.skipAllButPrintAST();
-		ast.traverse(new AnnotationVisitor());
+		ast.traverse(new AnnotationVisitor(false));
 	}
 	
 	private static class AnnotationVisitor extends EclipseASTAdapter {
+		private final boolean skipPrintAst;
+		
+		public AnnotationVisitor(boolean skipAllButPrintAST) {
+			this.skipPrintAst = skipAllButPrintAST;
+		}
+		
 		public boolean deferUntilPostDiet() {
 			return false;
 		}
 		
 		@Override public void visitAnnotationOnField(FieldDeclaration field, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation);
+			handlers.handleAnnotation(top, annotationNode, annotation, skipPrintAst);
 		}
 		
 		@Override public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation);
+			handlers.handleAnnotation(top, annotationNode, annotation, skipPrintAst);
 		}
 		
 		@Override public void visitAnnotationOnLocal(LocalDeclaration local, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation);
+			handlers.handleAnnotation(top, annotationNode, annotation, skipPrintAst);
 		}
 		
 		@Override public void visitAnnotationOnMethod(AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation);
+			handlers.handleAnnotation(top, annotationNode, annotation, skipPrintAst);
 		}
 		
 		@Override public void visitAnnotationOnType(TypeDeclaration type, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation);
+			handlers.handleAnnotation(top, annotationNode, annotation, skipPrintAst);
 		}
 	}
 }

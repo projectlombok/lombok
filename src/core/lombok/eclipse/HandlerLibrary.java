@@ -89,8 +89,6 @@ public class HandlerLibrary {
 	
 	private Collection<EclipseASTVisitor> visitorHandlers = new ArrayList<EclipseASTVisitor>();
 
-	private boolean skipPrintAST;
-	
 	/**
 	 * Creates a new HandlerLibrary.  Errors will be reported to the Eclipse Error log.
 	 * then uses SPI discovery to load all annotation and visitor based handlers so that future calls
@@ -170,16 +168,17 @@ public class HandlerLibrary {
 	 * @param annotationNode The Lombok AST Node representing the Annotation AST Node.
 	 * @param annotation 'node.get()' - convenience parameter.
 	 */
-	public void handleAnnotation(CompilationUnitDeclaration ast, EclipseNode annotationNode, org.eclipse.jdt.internal.compiler.ast.Annotation annotation) {
+	public void handleAnnotation(CompilationUnitDeclaration ast, EclipseNode annotationNode, org.eclipse.jdt.internal.compiler.ast.Annotation annotation, boolean skipPrintAst) {
 		String pkgName = annotationNode.getPackageDeclaration();
 		Collection<String> imports = annotationNode.getImportStatements();
 		
 		TypeResolver resolver = new TypeResolver(typeLibrary, pkgName, imports);
 		TypeReference rawType = annotation.type;
 		if (rawType == null) return;
+		
 		for (String fqn : resolver.findTypeMatches(annotationNode, toQualifiedName(annotation.type.getTypeName()))) {
 			boolean isPrintAST = fqn.equals(PrintAST.class.getName());
-			if (isPrintAST == skipPrintAST) continue;
+			if (isPrintAST == skipPrintAst) continue;
 			AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
 			
 			if (container == null) continue;
@@ -208,21 +207,5 @@ public class HandlerLibrary {
 			Eclipse.error((CompilationUnitDeclaration) ast.top().get(),
 					String.format("Lombok visitor handler %s failed", visitor.getClass()), t);
 		}
-	}
-	
-	/**
-	 * Lombok does not currently support triggering annotations in a specified order; the order is essentially
-	 * random right now. This lack of order is particularly annoying for the {@code PrintAST} annotation,
-	 * which is almost always intended to run last. Hence, this hack, which lets it in fact run last.
-	 * 
-	 * @see #skipAllButPrintAST()
-	 */
-	public void skipPrintAST() {
-		skipPrintAST = true;
-	}
-	
-	/** @see #skipPrintAST() */
-	public void skipAllButPrintAST() {
-		skipPrintAST = false;
 	}
 }
