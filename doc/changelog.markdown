@@ -12,6 +12,7 @@ Lombok Changelog
 * FEATURE: `@EqualsAndHashCode` (and by extension, `@Data`) now add a `canEqual` method which improves the sanity of equality amongst a hierarchy of classes. [More&hellip;](file://localhost/Users/rzwitserloot/ws/LOMBOK/lombok/website/features/EqualsAndHashCode.html)
 * FEATURE: `@Getter` now supports a `lazy=true` attribute. [More&hellip;](http://projectlombok.org/features/GetterLazy.html)
 * ENHANCEMENT: The installer will now find Eclipse installations when they are located in a subdirectory of a directory containing the word 'eclipse' . [Issue #210](http://code.google.com/p/projectlombok/issues/detail?id=210)
+* BUGFIX: Hard to reproduce `NullPointerException` in Eclipse on the `getTypeBinding` method in the error log has been fixed. [Issue #164](http://code.google.com/p/projectlombok/issues/detail?id=164)
 * BUGFIX: `@Setter` and `@Getter` can now be applied to static fields again (was broken in v0.9.3 only). [Issue #136](http://code.google.com/p/projectlombok/issues/detail?id=136)
 * BUGFIX: delombok added type parameters to constructors that mirror the type's own type parameters. This resulted in delombok turning any generated constructor that takes at least 1 parameter of type 'T' into something that didn't compile, and to boot, a confusing error message ('T is not compatible with T'). This is now fixed. [Issue #140](http://code.google.com/p/projectlombok/issues/detail?id=140)
 * BUGFIX: Add null check for `@Cleanup` [Issue #154](http://code.google.com/p/projectlombok/issues/detail?id=154)
