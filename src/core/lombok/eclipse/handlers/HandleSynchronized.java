@@ -39,7 +39,6 @@ import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
-import org.eclipse.jdt.internal.compiler.ast.IntLiteral;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
@@ -93,8 +92,7 @@ public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 			//We use 'new Object[0];' because unlike 'new Object();', empty arrays *ARE* serializable!
 			ArrayAllocationExpression arrayAlloc = new ArrayAllocationExpression();
 			Eclipse.setGeneratedBy(arrayAlloc, source);
-			arrayAlloc.dimensions = new Expression[] { new IntLiteral(new char[] { '0' }, 0, 0) };
-			Eclipse.setGeneratedBy(arrayAlloc.dimensions[0], source);
+			arrayAlloc.dimensions = new Expression[] { makeIntLiteral("0".toCharArray(), source) };
 			arrayAlloc.type = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { 0, 0, 0 });
 			Eclipse.setGeneratedBy(arrayAlloc.type, source);
 			fieldDecl.type = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, new long[] { 0, 0, 0 });

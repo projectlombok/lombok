@@ -271,8 +271,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 				primeDecl.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 				primeDecl.type.sourceStart = pS; primeDecl.type.sourceEnd = pE;
 				Eclipse.setGeneratedBy(primeDecl.type, source);
-				primeDecl.initialization = new IntLiteral("31".toCharArray(), pS, pE);
-				Eclipse.setGeneratedBy(primeDecl.initialization, source);
+				primeDecl.initialization = makeIntLiteral("31".toCharArray(), source);
 				statements.add(primeDecl);
 			}
 		}
@@ -280,8 +279,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		/* int result = 1; */ {
 			LocalDeclaration resultDecl = new LocalDeclaration(RESULT, pS, pE);
 			Eclipse.setGeneratedBy(resultDecl, source);
-			resultDecl.initialization = new IntLiteral("1".toCharArray(), pS, pE);
-			Eclipse.setGeneratedBy(resultDecl.initialization, source);
+			resultDecl.initialization = makeIntLiteral("1".toCharArray(), source);
 			resultDecl.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 			resultDecl.type.sourceStart = pS; resultDecl.type.sourceEnd = pE;
 			Eclipse.setGeneratedBy(resultDecl.type, source);
@@ -337,10 +335,8 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 					intoResult.add(longToIntForHashCode(copy1, copy2, source));
 				} else if (Arrays.equals(TypeConstants.BOOLEAN, token)) {
 					/* booleanField ? 1231 : 1237 */
-					IntLiteral int1231 = new IntLiteral("1231".toCharArray(), pS, pE);
-					Eclipse.setGeneratedBy(int1231, source);
-					IntLiteral int1237 = new IntLiteral("1237".toCharArray(), pS, pE);
-					Eclipse.setGeneratedBy(int1237, source);
+					IntLiteral int1231 = makeIntLiteral("1231".toCharArray(), source);
+					IntLiteral int1237 = makeIntLiteral("1237".toCharArray(), source);
 					ConditionalExpression int1231or1237 = new ConditionalExpression(fieldAccessor, int1231, int1237);
 					Eclipse.setGeneratedBy(int1231or1237, source);
 					intoResult.add(int1231or1237);
@@ -359,8 +355,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 					Eclipse.setGeneratedBy(nullLiteral, source);
 					EqualExpression objIsNull = new EqualExpression(fieldAccessor, nullLiteral, OperatorIds.EQUAL_EQUAL);
 					Eclipse.setGeneratedBy(objIsNull, source);
-					IntLiteral int0 = new IntLiteral("0".toCharArray(), pS, pE);
-					Eclipse.setGeneratedBy(int0, source);
+					IntLiteral int0 = makeIntLiteral("0".toCharArray(), source);
 					ConditionalExpression nullOrHashCode = new ConditionalExpression(objIsNull, int0, hashCodeCall);
 					nullOrHashCode.sourceStart = pS; nullOrHashCode.sourceEnd = pE;
 					Eclipse.setGeneratedBy(nullOrHashCode, source);
@@ -714,8 +709,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		floatCompare.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA, TypeConstants.LANG, floatOrDouble);
 		floatCompare.selector = "compare".toCharArray();
 		floatCompare.arguments = new Expression[] {thisRef, otherRef};
-		IntLiteral int0 = new IntLiteral(new char[] {'0'}, pS, pE);
-		Eclipse.setGeneratedBy(int0, source);
+		IntLiteral int0 = makeIntLiteral("0".toCharArray(), source);
 		EqualExpression ifFloatCompareIsNot0 = new EqualExpression(floatCompare, int0, OperatorIds.NOT_EQUAL);
 		ifFloatCompareIsNot0.sourceStart = pS; ifFloatCompareIsNot0.sourceEnd = pE;
 		Eclipse.setGeneratedBy(ifFloatCompareIsNot0, source);
@@ -732,8 +726,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	private Expression longToIntForHashCode(Expression ref1, Expression ref2, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		/* (int)(ref >>> 32 ^ ref) */
-		IntLiteral int32 = new IntLiteral("32".toCharArray(), pS, pE);
-		Eclipse.setGeneratedBy(int32, source);
+		IntLiteral int32 = makeIntLiteral("32".toCharArray(), source);
 		BinaryExpression higherBits = new BinaryExpression(ref1, int32, OperatorIds.UNSIGNED_RIGHT_SHIFT);
 		Eclipse.setGeneratedBy(higherBits, source);
 		BinaryExpression xorParts = new BinaryExpression(ref2, higherBits, OperatorIds.XOR);

@@ -22,6 +22,7 @@
 package lombok.eclipse.handlers;
 
 import static lombok.eclipse.handlers.EclipseHandlerUtil.createNameReference;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.makeIntLiteral;
 
 import java.util.Arrays;
 
@@ -42,7 +43,6 @@ import org.eclipse.jdt.internal.compiler.ast.CastExpression;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
-import org.eclipse.jdt.internal.compiler.ast.IntLiteral;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
@@ -228,7 +228,7 @@ public class HandleCleanup extends EclipseAnnotationHandler<Cleanup> {
 		preventNullAnalysis.receiver = singletonList;
 		preventNullAnalysis.selector = "get".toCharArray();
 		
-		preventNullAnalysis.arguments = new Expression[] { new IntLiteral(new char[] { '0' }, pS, pE) };
+		preventNullAnalysis.arguments = new Expression[] { makeIntLiteral("0".toCharArray(), ast) };
 		preventNullAnalysis.nameSourcePosition = p;
 		preventNullAnalysis.sourceStart = pS;
 		preventNullAnalysis.sourceEnd = singletonList.statementEnd = pE;

@@ -25,6 +25,7 @@ import static lombok.eclipse.Eclipse.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,6 +56,7 @@ import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
+import org.eclipse.jdt.internal.compiler.ast.IntLiteral;
 import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
@@ -663,11 +665,59 @@ public class EclipseHandlerUtil {
 		}
 		
 		@SuppressWarnings("unchecked")
-		Constructor<CastExpression> constructor_ = (Constructor<CastExpression>) constructor;
-		castExpressionConstructor = constructor_;
+		Constructor<CastExpression> castExpressionConstructor_ = (Constructor<CastExpression>) constructor;
+		castExpressionConstructor = castExpressionConstructor_;
 		
 		castExpressionConstructorIsTypeRefBased =
 				(castExpressionConstructor.getParameterTypes()[1] == TypeReference.class);
+	}
+	
+	/**
+	 * In eclipse 3.7+, IntLiterals are created using a factory-method 
+	 * Unfortunately that means we need to use reflection as we want to be compatible
+	 * with eclipse versions before 3.7.
+	 * 
+	 * @param token
+	 */
+	public static IntLiteral makeIntLiteral(char[] token, ASTNode source) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		IntLiteral result;
+		try {
+			if (intLiteralConstructor != null) {
+				result = intLiteralConstructor.newInstance(token, pS, pE);
+			} else {
+				result = (IntLiteral) intLiteralFactoryMethod.invoke(null, token, pS, pE);
+			}
+		} catch (InvocationTargetException e) {
+			throw Lombok.sneakyThrow(e.getCause());
+		} catch (IllegalAccessException e) {
+			throw Lombok.sneakyThrow(e);
+		} catch (InstantiationException e) {
+			throw Lombok.sneakyThrow(e);
+		}
+		Eclipse.setGeneratedBy(result, source);
+		return result;
+	}
+	
+	private static final Constructor<IntLiteral> intLiteralConstructor;
+	private static final Method intLiteralFactoryMethod;
+	
+	static {
+		Class<?>[] parameterTypes = {char[].class, int.class, int.class};
+		Constructor<IntLiteral> intLiteralConstructor_ = null;
+		Method intLiteralFactoryMethod_ = null;
+		try { 
+			intLiteralConstructor_ = IntLiteral.class.getConstructor(parameterTypes);
+		} catch (Exception ignore) {
+			// probably eclipse 3.7++
+		}
+		try { 
+			intLiteralFactoryMethod_ = IntLiteral.class.getMethod("buildIntLiteral", parameterTypes);
+		} catch (Exception ignore) {
+			// probably eclipse versions before 3.7
+		}
+		intLiteralConstructor = intLiteralConstructor_;
+		intLiteralFactoryMethod = intLiteralFactoryMethod_;
 	}
 	
 	private static final Annotation[] EMPTY_ANNOTATION_ARRAY = new Annotation[0];
