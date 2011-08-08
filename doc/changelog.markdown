@@ -19,6 +19,7 @@ Lombok Changelog
 * BUGFIX: The Eclipse source generator would place the generated code outside the class [Issue #155](http://code.google.com/p/projectlombok/issues/detail?id=155)
 * BUGFIX: When using m2eclipse, occasionally you'd see a ClassNotFoundError on JavacProcessingEnvironment. This has been fixed. [Issue #177](http://code.google.com/p/projectlombok/issues/detail?id=177)
 * BUGFIX: Either all or none of `equals`, `hashCode` and `canEqual` will be generated. [Issue #240](http://code.google.com/p/projectlombok/issues/detail?id=240)
+* BUGFIX: Delombok in output-to-directory mode was generating very long paths on mac and linux. [Issue #249](http://code.google.com/p/projectlombok/issues/detail?id=249)
 
 ### v0.9.3 "Burrowing Whale" (July 25th, 2010)
 * FEATURE: Adding `@Getter` or `@Setter` to a class is now legal and is like adding those annotations to every non-static field in it. [Issue #129](http://code.google.com/p/projectlombok/issues/detail?id=129)
