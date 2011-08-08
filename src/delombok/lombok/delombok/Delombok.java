@@ -428,7 +428,8 @@ public class Delombok {
 	}
 	
 	private Writer createFileWriter(File outBase, File inBase, URI file) throws IOException {
-		URI relative = inBase.toURI().relativize(file);
+		URI base = inBase.toURI();
+		URI relative = base.relativize(base.resolve(file));
 		File outFile;
 		if (relative.isAbsolute()) {
 			outFile = new File(outBase, new File(relative).getName());
