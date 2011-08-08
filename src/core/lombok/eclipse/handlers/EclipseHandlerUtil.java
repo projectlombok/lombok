@@ -676,8 +676,6 @@ public class EclipseHandlerUtil {
 	 * In eclipse 3.7+, IntLiterals are created using a factory-method 
 	 * Unfortunately that means we need to use reflection as we want to be compatible
 	 * with eclipse versions before 3.7.
-	 * 
-	 * @param token
 	 */
 	public static IntLiteral makeIntLiteral(char[] token, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
