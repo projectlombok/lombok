@@ -38,7 +38,6 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -47,7 +46,6 @@ import javax.tools.Diagnostic.Kind;
 import lombok.patcher.inject.LiveInjector;
 
 @SupportedAnnotationTypes("*")
-@SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class AnnotationProcessor extends AbstractProcessor {
 	private static String trace(Throwable t) {
 		StringWriter w = new StringWriter();
@@ -172,5 +170,12 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		
 		return handled;
+	}
+	
+	/**
+	 * We just return the latest version of whatever JDK we run on. Stupid? Yeah, but it's either that or warnings on all versions but 1. Blame Joe.
+	 */
+	@Override public SourceVersion getSupportedSourceVersion() {
+		return SourceVersion.values()[SourceVersion.values().length - 1];
 	}
 }
