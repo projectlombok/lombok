@@ -37,6 +37,8 @@ import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
@@ -64,6 +66,7 @@ import com.sun.tools.javac.util.Context;
  * To actually enable lombok in a javac compilation run, this class should be in the classpath when
  * running javac; that's the only requirement.
  */
+@SupportedAnnotationTypes("*")
 public class Processor extends AbstractProcessor {
 
 	private JavacProcessingEnvironment processingEnv;
@@ -247,5 +250,12 @@ public class Processor extends AbstractProcessor {
 		if (path == null) return null;
 		
 		return (JCCompilationUnit) path.getCompilationUnit();
+	}
+	
+	/**
+	 * We just return the latest version of whatever JDK we run on. Stupid? Yeah, but it's either that or warnings on all versions but 1.
+	 */
+	@Override public SourceVersion getSupportedSourceVersion() {
+		return SourceVersion.values()[SourceVersion.values().length - 1];
 	}
 }
