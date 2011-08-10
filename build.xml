@@ -149,6 +149,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<classpath location="build/lombok" />
 			<classpath refid="build.path" />
 		</ivy:compile>
+		<ivy:compile destdir="build/lombok" source="1.6" target="1.6" includeantruntime="false">
+			<src path="experimental/delombok_java7/src/main" />
+			<include name="lombok/delombok/**" />
+			<classpath location="build/lombok" />
+			<classpath location="experimental/delombok_java7/lib/javac7.jar" />
+		</ivy:compile>
 		<mkdir dir="build/lombok/META-INF" />
 		<mkdir dir="build/lombok/META-INF/services" />
 		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.core.AnnotationProcessor</echo>
