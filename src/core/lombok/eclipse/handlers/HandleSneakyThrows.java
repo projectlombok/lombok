@@ -155,21 +155,25 @@ public class HandleSneakyThrows extends EclipseAnnotationHandler<SneakyThrows> {
 		Statement[] contents = method.statements;
 		
 		for (DeclaredException exception : exceptions) {
-			contents = new Statement[] { buildTryCatchBlock(contents, exception, exception.node) };
+			contents = new Statement[] { buildTryCatchBlock(contents, exception, exception.node, method) };
 		}
 		
 		method.statements = contents;
 		annotation.up().rebuild();
 	}
 	
-	private Statement buildTryCatchBlock(Statement[] contents, DeclaredException exception, ASTNode source) {
+	private Statement buildTryCatchBlock(Statement[] contents, DeclaredException exception, ASTNode source, AbstractMethodDeclaration method) {
 		long p = exception.getPos();
 		int pS = (int)(p >> 32), pE = (int)p;
 		
 		TryStatement tryStatement = new TryStatement();
 		Eclipse.setGeneratedBy(tryStatement, source);
 		tryStatement.tryBlock = new Block(0);
+
+		// Positions for in-method generated nodes are special
+//		tryStatement.tryBlock.sourceStart = method.bodyStart; tryStatement.tryBlock.sourceEnd = method.bodyEnd;
 		tryStatement.tryBlock.sourceStart = pS; tryStatement.tryBlock.sourceEnd = pE;
+		
 		Eclipse.setGeneratedBy(tryStatement.tryBlock, source);
 		tryStatement.tryBlock.statements = contents;
 		TypeReference typeReference;
@@ -212,13 +216,23 @@ public class HandleSneakyThrows extends EclipseAnnotationHandler<SneakyThrows> {
 		sneakyThrowStatement.sourceStart = pS;
 		sneakyThrowStatement.sourceEnd = sneakyThrowStatement.statementEnd = pE;
 		Statement rethrowStatement = new ThrowStatement(sneakyThrowStatement, pS, pE);
+		
+		// Positions for in-method generated nodes are special
+		rethrowStatement.sourceStart = method.bodyEnd;
+		rethrowStatement.sourceEnd = method.bodyEnd;
+
 		Eclipse.setGeneratedBy(rethrowStatement, source);
 		Block block = new Block(0);
 		block.sourceStart = pS;
 		block.sourceEnd = pE;
 		Eclipse.setGeneratedBy(block, source);
 		block.statements = new Statement[] { rethrowStatement };
+		
 		tryStatement.catchBlocks = new Block[] { block };
+		
+		// Positions for in-method generated nodes are special
+		tryStatement.sourceStart = method.bodyStart;
+		tryStatement.sourceEnd = method.bodyEnd;
 		tryStatement.sourceStart = pS;
 		tryStatement.sourceEnd = pE;
 		return tryStatement;

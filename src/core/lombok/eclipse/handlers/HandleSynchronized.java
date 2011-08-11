@@ -129,6 +129,11 @@ public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 		Block block = new Block(0);
 		Eclipse.setGeneratedBy(block, source);
 		block.statements = method.statements;
+		
+		// Positions for in-method generated nodes are special
+		block.sourceEnd = method.bodyEnd;
+		block.sourceStart = method.bodyStart;
+		
 		Expression lockVariable;
 		if (method.isStatic()) lockVariable = new QualifiedNameReference(new char[][] {
 				methodNode.up().getName().toCharArray(), lockName }, new long[] { pos, pos }, p1, p2);
@@ -143,6 +148,11 @@ public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 		method.statements = new Statement[] {
 				new SynchronizedStatement(lockVariable, block, 0, 0)
 		};
+		
+		// Positions for in-method generated nodes are special
+		method.statements[0].sourceEnd = method.bodyEnd;
+		method.statements[0].sourceStart = method.bodyStart;
+		
 		Eclipse.setGeneratedBy(method.statements[0], source);
 		
 		methodNode.rebuild();

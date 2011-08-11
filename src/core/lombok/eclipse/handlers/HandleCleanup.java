@@ -127,7 +127,7 @@ public class HandleCleanup extends EclipseAnnotationHandler<Cleanup> {
 		//At this point:
 		//  start-1 = Local Declaration marked with @Cleanup
 		//  start = first instruction that needs to be wrapped into a try block
-		//  end = last intruction of the scope -OR- last instruction before the next case label in switch statements.
+		//  end = last instruction of the scope -OR- last instruction before the next case label in switch statements.
 		//  hence:
 		//  [start, end) = statements for the try block.
 		
@@ -146,6 +146,20 @@ public class HandleCleanup extends EclipseAnnotationHandler<Cleanup> {
 		Eclipse.setGeneratedBy(tryStatement, ast);
 		tryStatement.tryBlock = new Block(0);
 		tryStatement.tryBlock.statements = tryBlock;
+		Eclipse.setGeneratedBy(tryStatement.tryBlock, ast);
+		
+		// Positions for in-method generated nodes are special
+		int ss = decl.declarationSourceEnd + 1;
+		int se = ss;
+		if (tryBlock.length > 0) {
+			se = tryBlock[tryBlock.length - 1].sourceEnd + 1; //+1 for the closing semicolon. Yes, there could be spaces. Bummer.
+			tryStatement.sourceStart = ss;
+			tryStatement.sourceEnd = se;
+			tryStatement.tryBlock.sourceStart = ss;
+			tryStatement.tryBlock.sourceEnd = se;
+		}
+		
+		
 		newStatements[start] = tryStatement;
 		
 		Statement[] finallyBlock = new Statement[1];
@@ -190,6 +204,12 @@ public class HandleCleanup extends EclipseAnnotationHandler<Cleanup> {
 		
 		finallyBlock[0] = ifStatement;
 		tryStatement.finallyBlock = new Block(0);
+		
+		// Positions for in-method generated nodes are special
+		if (!isSwitch) {
+			tryStatement.finallyBlock.sourceStart = blockNode.sourceEnd;
+			tryStatement.finallyBlock.sourceEnd = blockNode.sourceEnd;
+		}
 		Eclipse.setGeneratedBy(tryStatement.finallyBlock, ast);
 		tryStatement.finallyBlock.statements = finallyBlock;
 		
