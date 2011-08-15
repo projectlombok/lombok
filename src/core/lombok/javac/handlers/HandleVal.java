@@ -72,7 +72,7 @@ public class HandleVal extends JavacASTAdapter {
 			return;
 		}
 		
-		JavacHandlerUtil.deleteImportFromCompilationUnit(localNode, "lombok.val");
+		if (localNode.shouldDeleteLombokAnnotations()) JavacHandlerUtil.deleteImportFromCompilationUnit(localNode, "lombok.val");
 		
 		local.mods.flags |= Flags.FINAL;
 		
@@ -115,7 +115,7 @@ public class HandleVal extends JavacASTAdapter {
 				if (replacement != null) {
 					local.vartype = replacement;
 				} else {
-					local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());;
+					local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
 				}
 				localNode.getAst().setChanged();
 			} catch (JavacResolution.TypeNotConvertibleException e) {

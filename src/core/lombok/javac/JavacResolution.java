@@ -5,7 +5,9 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.ArrayDeque;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 
 import javax.lang.model.type.TypeKind;
 import javax.tools.DiagnosticListener;
@@ -13,10 +15,10 @@ import javax.tools.DiagnosticListener;
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Type.ClassType;
-import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
 import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.code.Types;
@@ -53,6 +55,7 @@ public class JavacResolution {
 	private static final class LogDisabler {
 		private final Log log;
 		private static final Field errWriterField, warnWriterField, noticeWriterField, dumpOnErrorField, promptOnErrorField, diagnosticListenerField;
+		private static final Field deferDiagnosticsField, deferredDiagnosticsField;
 		private PrintWriter errWriter, warnWriter, noticeWriter;
 		private Boolean dumpOnError, promptOnError;
 		private DiagnosticListener<?> contextDiagnosticListener, logDiagnosticListener;
@@ -61,9 +64,11 @@ public class JavacResolution {
 		// If this is true, the fields changed. Better to print weird error messages than to fail outright.
 		private static final boolean dontBother;
 		
+		private static final ThreadLocal<Queue<?>> queueCache = new ThreadLocal<Queue<?>>();
+		
 		static {
 			boolean z;
-			Field a = null, b = null, c = null, d = null, e = null, f = null;
+			Field a = null, b = null, c = null, d = null, e = null, f = null, g = null, h = null;
 			try {
 				a = Log.class.getDeclaredField("errWriter");
 				b = Log.class.getDeclaredField("warnWriter");
@@ -82,12 +87,22 @@ public class JavacResolution {
 				z = true;
 			}
 			
+			try {
+				g = Log.class.getDeclaredField("deferDiagnostics");
+				h = Log.class.getDeclaredField("deferredDiagnostics");
+				g.setAccessible(true);
+				h.setAccessible(true);
+			} catch (Exception x) {
+			}
+			
 			errWriterField = a;
 			warnWriterField = b;
 			noticeWriterField = c;
 			dumpOnErrorField = d;
 			promptOnErrorField = e;
 			diagnosticListenerField = f;
+			deferDiagnosticsField = g;
+			deferredDiagnosticsField = h;
 			dontBother = z;
 		}
 		
@@ -107,6 +122,14 @@ public class JavacResolution {
 					// Do nothing on purpose
 				}
 			});
+			
+			if (deferDiagnosticsField != null) try {
+				if (Boolean.TRUE.equals(deferDiagnosticsField.get(log))) {
+					queueCache.set((Queue<?>) deferredDiagnosticsField.get(log));
+					Queue<?> empty = new LinkedList<Object>();
+					deferredDiagnosticsField.set(log, empty);
+				}
+			} catch (Exception e) {}
 			
 			if (!dontBotherInstance) try {
 				errWriter = (PrintWriter) errWriterField.get(log);
@@ -159,6 +182,7 @@ public class JavacResolution {
 				context.put(DiagnosticListener.class, contextDiagnosticListener);
 				contextDiagnosticListener = null;
 			}
+			
 			if (errWriter != null) try {
 				errWriterField.set(log, errWriter);
 				errWriter = null;
@@ -187,6 +211,11 @@ public class JavacResolution {
 			if (logDiagnosticListener != null) try {
 				diagnosticListenerField.set(log, logDiagnosticListener);
 				logDiagnosticListener = null;
+			} catch (Exception e) {}
+			
+			if (deferDiagnosticsField != null && queueCache.get() != null) try {
+				deferredDiagnosticsField.set(log, queueCache.get());
+				queueCache.set(null);
 			} catch (Exception e) {}
 		}
 	}
@@ -217,8 +246,17 @@ public class JavacResolution {
 		
 		@Override public void visitClassDef(JCClassDecl tree) {
 			if (copyAt != null) return;
-			// The commented out one leaves the 'lint' field unset, which causes NPEs during attrib. So, we use the other one.
-			//env = enter.classEnv((JCClassDecl) tree, env);
+			// The commented out stuff requires reflection tricks to avoid leaving lint unset which causes NPEs during attrib. So, we use the other one, much less code.
+//			env = enter.classEnv((JCClassDecl) tree, env);
+//			try {
+//				Field f = env.info.getClass().getDeclaredField("lint");
+//				f.setAccessible(true);
+//				Constructor<?> c = Lint.class.getDeclaredConstructor(Lint.class);
+//				c.setAccessible(true);
+//				f.set(env.info, c.newInstance(lint));
+//			} catch (Exception e) {
+//				throw Lombok.sneakyThrow(e);
+//			}
 			env = enter.getClassEnv(tree.sym);
 		}
 		
