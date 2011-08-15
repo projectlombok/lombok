@@ -69,14 +69,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<target name="deps" depends="ensureBuildDeps, ensureRuntimeDeps, ensureTestDeps, contrib" description="Downloads all dependencies." />
 	
 	<target name="contrib" depends="config-ivy" description="Downloads various non-crucial documentation, sources, etc that are useful when developing lombok.ast.">
-		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="contrib" />
-		<ivy:retrieve />
-		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="ecj" />
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="contrib, ecj" />
 		<ivy:retrieve />
 	</target>
 	
 	<target name="ensureBuildDeps" depends="config-ivy">
-		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build" />
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build, javac7" />
 		<ivy:retrieve />
 	</target>
 	
