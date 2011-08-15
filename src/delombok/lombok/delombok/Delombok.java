@@ -358,14 +358,14 @@ public class Delombok {
 		options.put("compilePolicy", "attr");
 		
 		try {
-			Class.forName("lombok.delombok.java7.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
-		} catch (Throwable t1) {
-			if (!(t1 instanceof NoClassDefFoundError)) Lombok.sneakyThrow(t1);
-			try {
+			if (JavaCompiler.version().startsWith("1.6")) {
 				Class.forName("lombok.delombok.java6.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
-			} catch (Exception t2) {
-				Lombok.sneakyThrow(t2);
+			} else {
+				Class.forName("lombok.delombok.java7.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
 			}
+			
+		} catch (Throwable t) {
+			throw Lombok.sneakyThrow(t);
 		}
 		
 		JavaCompiler compiler = new JavaCompiler(context);

@@ -118,7 +118,7 @@ public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 				maker.Apply(List.<JCExpression>nil(), cleanupMethod, List.<JCExpression>nil())));
 		
 		JCMethodInvocation preventNullAnalysis = preventNullAnalysis(maker, annotationNode, maker.Ident(decl.name));
-		JCBinary isNull = maker.Binary(Javac.getCTCint(JCTree.class, "NE"), preventNullAnalysis, maker.Literal(Javac.getCTCint(TypeTags.class, "BOT"), null));
+		JCBinary isNull = maker.Binary(Javac.getCtcInt(JCTree.class, "NE"), preventNullAnalysis, maker.Literal(Javac.getCtcInt(TypeTags.class, "BOT"), null));
 		
 		JCIf ifNotNullCleanup = maker.If(isNull, maker.Block(0, cleanupCall), null);
 		
