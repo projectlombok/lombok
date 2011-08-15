@@ -187,7 +187,7 @@ public class Javac {
 	 * @param ctcLocation location of the compile time constant
 	 * @param identifier the name of the field of the compile time constant.
 	 */
-	public static int getCTCint(Class<?> ctcLocation, String identifier) {
+	public static int getCtcInt(Class<?> ctcLocation, String identifier) {
 		try {
 			return (Integer)ctcLocation.getField(identifier).get(null);
 		} catch (NoSuchFieldException e) {

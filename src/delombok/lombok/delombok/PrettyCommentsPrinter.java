@@ -36,10 +36,12 @@ import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 
 import lombok.delombok.Comment.EndConnection;
 import lombok.delombok.Comment.StartConnection;
+import lombok.javac.Javac;
 
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.BoundKind;
@@ -117,7 +119,14 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 
     private static final Method GET_TAG_METHOD;
     private static final Field TAG_FIELD; 
+    
+    private static final int PARENS = Javac.getCtcInt(JCTree.class, "PARENS");
+    private static final int IMPORT = Javac.getCtcInt(JCTree.class, "IMPORT");
+    private static final int VARDEF = Javac.getCtcInt(JCTree.class, "VARDEF");
+    private static final int SELECT = Javac.getCtcInt(JCTree.class, "SELECT");
 
+    private static final Map<Integer, String> OPERATORS;
+    
     static {
     	Method m = null;
     	Field f = null;
@@ -134,6 +143,39 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 		}
 		GET_TAG_METHOD = m;
 		TAG_FIELD = f;
+		
+		Map<Integer, String> map = new HashMap<Integer, String>();
+		
+        map.put(Javac.getCtcInt(JCTree.class, "POS"), "+");
+        map.put(Javac.getCtcInt(JCTree.class, "NEG"), "-");
+        map.put(Javac.getCtcInt(JCTree.class, "NOT"), "!");
+        map.put(Javac.getCtcInt(JCTree.class, "COMPL"), "~");
+        map.put(Javac.getCtcInt(JCTree.class, "PREINC"), "++");
+        map.put(Javac.getCtcInt(JCTree.class, "PREDEC"), "--");
+        map.put(Javac.getCtcInt(JCTree.class, "POSTINC"), "++");
+        map.put(Javac.getCtcInt(JCTree.class, "POSTDEC"), "--");
+        map.put(Javac.getCtcInt(JCTree.class, "NULLCHK"), "<*nullchk*>");
+        map.put(Javac.getCtcInt(JCTree.class, "OR"), "||");
+        map.put(Javac.getCtcInt(JCTree.class, "AND"), "&&");
+        map.put(Javac.getCtcInt(JCTree.class, "EQ"), "==");
+        map.put(Javac.getCtcInt(JCTree.class, "NE"), "!=");
+        map.put(Javac.getCtcInt(JCTree.class, "LT"), "<");
+        map.put(Javac.getCtcInt(JCTree.class, "GT"), ">");
+        map.put(Javac.getCtcInt(JCTree.class, "LE"), "<=");
+        map.put(Javac.getCtcInt(JCTree.class, "GE"), ">=");
+        map.put(Javac.getCtcInt(JCTree.class, "BITOR"), "|");
+        map.put(Javac.getCtcInt(JCTree.class, "BITXOR"), "^");
+        map.put(Javac.getCtcInt(JCTree.class, "BITAND"), "&");
+        map.put(Javac.getCtcInt(JCTree.class, "SL"), "<<");
+        map.put(Javac.getCtcInt(JCTree.class, "SR"), ">>");
+        map.put(Javac.getCtcInt(JCTree.class, "USR"), ">>>");
+        map.put(Javac.getCtcInt(JCTree.class, "PLUS"), "+");
+        map.put(Javac.getCtcInt(JCTree.class, "MINUS"), "-");
+        map.put(Javac.getCtcInt(JCTree.class, "MUL"), "*");
+        map.put(Javac.getCtcInt(JCTree.class, "DIV"), "/");
+        map.put(Javac.getCtcInt(JCTree.class, "MOD"), "%");
+		
+		OPERATORS = map;
     }
     
     static int getTag(JCTree tree) {
@@ -555,7 +597,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 
     /** Is the given tree an enumerator definition? */
     boolean isEnumerator(JCTree t) {
-        return getTag(t) == JCTree.VARDEF && (((JCVariableDecl) t).mods.flags & ENUM) != 0;
+        return getTag(t) == VARDEF && (((JCVariableDecl) t).mods.flags & ENUM) != 0;
     }
 
     /** Print unit consisting of package clause and import statements in toplevel,
@@ -577,9 +619,9 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         }
         boolean firstImport = true;
         for (List<JCTree> l = tree.defs;
-        l.nonEmpty() && (cdef == null || getTag(l.head) == JCTree.IMPORT);
+        l.nonEmpty() && (cdef == null || getTag(l.head) == IMPORT);
         l = l.tail) {
-            if (getTag(l.head) == JCTree.IMPORT) {
+            if (getTag(l.head) == IMPORT) {
                 JCImport imp = (JCImport)l.head;
                 Name name = TreeInfo.name(imp.qualid);
                 if (name == name.table.fromChars(new char[] {'*'}, 0, 1) ||
@@ -793,7 +835,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
             printStat(tree.body);
             align();
             print(" while ");
-            if (getTag(tree.cond) == JCTree.PARENS) {
+            if (getTag(tree.cond) == PARENS) {
                 printExpr(tree.cond);
             } else {
                 print("(");
@@ -809,7 +851,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitWhileLoop(JCWhileLoop tree) {
         try {
             print("while ");
-            if (getTag(tree.cond) == JCTree.PARENS) {
+            if (getTag(tree.cond) == PARENS) {
                 printExpr(tree.cond);
             } else {
                 print("(");
@@ -827,7 +869,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         try {
             print("for (");
             if (tree.init.nonEmpty()) {
-                if (getTag(tree.init.head) == JCTree.VARDEF) {
+                if (getTag(tree.init.head) == VARDEF) {
                     printExpr(tree.init.head);
                     for (List<JCStatement> l = tree.init.tail; l.nonEmpty(); l = l.tail) {
                         JCVariableDecl vdef = (JCVariableDecl)l.head;
@@ -874,7 +916,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitSwitch(JCSwitch tree) {
         try {
             print("switch ");
-            if (getTag(tree.selector) == JCTree.PARENS) {
+            if (getTag(tree.selector) == PARENS) {
                 printExpr(tree.selector);
             } else {
                 print("(");
@@ -913,7 +955,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitSynchronized(JCSynchronized tree) {
         try {
             print("synchronized ");
-            if (getTag(tree.lock) == JCTree.PARENS) {
+            if (getTag(tree.lock) == PARENS) {
                 printExpr(tree.lock);
             } else {
                 print("(");
@@ -971,7 +1013,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitIf(JCIf tree) {
         try {
             print("if ");
-            if (getTag(tree.cond) == JCTree.PARENS) {
+            if (getTag(tree.cond) == PARENS) {
                 printExpr(tree.cond);
             } else {
                 print("(");
@@ -1058,7 +1100,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitApply(JCMethodInvocation tree) {
         try {
             if (!tree.typeargs.isEmpty()) {
-                if (getTag(tree.meth) == JCTree.SELECT) {
+                if (getTag(tree.meth) == SELECT) {
                     JCFieldAccess left = (JCFieldAccess)tree.meth;
                     printExpr(left.selected);
                     print(".<");
@@ -1163,37 +1205,9 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     }
 
     public String operatorName(int tag) {
-        switch(tag) {
-            case JCTree.POS:     return "+";
-            case JCTree.NEG:     return "-";
-            case JCTree.NOT:     return "!";
-            case JCTree.COMPL:   return "~";
-            case JCTree.PREINC:  return "++";
-            case JCTree.PREDEC:  return "--";
-            case JCTree.POSTINC: return "++";
-            case JCTree.POSTDEC: return "--";
-            case JCTree.NULLCHK: return "<*nullchk*>";
-            case JCTree.OR:      return "||";
-            case JCTree.AND:     return "&&";
-            case JCTree.EQ:      return "==";
-            case JCTree.NE:      return "!=";
-            case JCTree.LT:      return "<";
-            case JCTree.GT:      return ">";
-            case JCTree.LE:      return "<=";
-            case JCTree.GE:      return ">=";
-            case JCTree.BITOR:   return "|";
-            case JCTree.BITXOR:  return "^";
-            case JCTree.BITAND:  return "&";
-            case JCTree.SL:      return "<<";
-            case JCTree.SR:      return ">>";
-            case JCTree.USR:     return ">>>";
-            case JCTree.PLUS:    return "+";
-            case JCTree.MINUS:   return "-";
-            case JCTree.MUL:     return "*";
-            case JCTree.DIV:     return "/";
-            case JCTree.MOD:     return "%";
-            default: throw new Error();
-        }
+        String result = OPERATORS.get(tag);
+        if (result == null) throw new Error();
+        return result;
     }
 
     public void visitAssignop(JCAssignOp tree) {

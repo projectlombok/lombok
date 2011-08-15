@@ -566,7 +566,7 @@ public class JavacHandlerUtil {
 		JCExpression npe = chainDots(treeMaker, variable, "java", "lang", "NullPointerException");
 		JCTree exception = treeMaker.NewClass(null, List.<JCExpression>nil(), npe, List.<JCExpression>of(treeMaker.Literal(fieldName.toString())), null);
 		JCStatement throwStatement = treeMaker.Throw(exception);
-		return treeMaker.If(treeMaker.Binary(Javac.getCTCint(JCTree.class, "EQ"), treeMaker.Ident(fieldName), treeMaker.Literal(Javac.getCTCint(TypeTags.class, "BOT"), null)), throwStatement, null);
+		return treeMaker.If(treeMaker.Binary(Javac.getCtcInt(JCTree.class, "EQ"), treeMaker.Ident(fieldName), treeMaker.Literal(Javac.getCtcInt(TypeTags.class, "BOT"), null)), throwStatement, null);
 	}
 	
 	/**

@@ -211,7 +211,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		List<JCAnnotation> annsOnParam = nonNulls.appendList(nullables);
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(Flags.FINAL, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
 		//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.
-		JCExpression methodType = treeMaker.Type(new JCNoType(Javac.getCTCint(TypeTags.class, "VOID")));
+		JCExpression methodType = treeMaker.Type(new JCNoType(Javac.getCtcInt(TypeTags.class, "VOID")));
 		
 		List<JCTypeParameter> methodGenericParams = List.nil();
 		List<JCVariableDecl> parameters = List.of(param);
@@ -229,8 +229,8 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		
 		@Override
 		public TypeKind getKind() {
-			if (tag == Javac.getCTCint(TypeTags.class, "VOID")) return TypeKind.VOID;
-			if (tag == Javac.getCTCint(TypeTags.class, "NONE")) return TypeKind.NONE;
+			if (tag == Javac.getCtcInt(TypeTags.class, "VOID")) return TypeKind.VOID;
+			if (tag == Javac.getCtcInt(TypeTags.class, "NONE")) return TypeKind.NONE;
 			throw new AssertionError("Unexpected tag: " + tag);
 		}
 		

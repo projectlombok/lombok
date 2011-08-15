@@ -86,7 +86,7 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 			JCExpression objectType = chainDots(maker, methodNode, "java", "lang", "Object");
 			//We use 'new Object[0];' because unlike 'new Object();', empty arrays *ARE* serializable!
 			JCNewArray newObjectArray = maker.NewArray(chainDots(maker, methodNode, "java", "lang", "Object"),
-					List.<JCExpression>of(maker.Literal(Javac.getCTCint(TypeTags.class, "INT"), 0)), null);
+					List.<JCExpression>of(maker.Literal(Javac.getCtcInt(TypeTags.class, "INT"), 0)), null);
 			JCVariableDecl fieldDecl = Javac.recursiveSetGeneratedBy(maker.VarDef(
 					maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic ? Flags.STATIC : 0)),
 					methodNode.toName(lockName), objectType, newObjectArray), ast);
