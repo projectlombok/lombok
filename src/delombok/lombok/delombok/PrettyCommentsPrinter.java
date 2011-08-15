@@ -663,9 +663,9 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
                 else
                     print("class " + tree.name);
                 printTypeParameters(tree.typarams);
-                if (tree.extending != null) {
+                if (tree.getExtendsClause() != null) {
                     print(" extends ");
-                    printExpr(tree.extending);
+                    printExpr(tree.getExtendsClause());
                 }
                 if (tree.implementing.nonEmpty()) {
                     print(" implements ");

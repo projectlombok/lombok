@@ -36,6 +36,10 @@ public class CommentCollectingScannerFactory extends Scanner.Factory {
 			public CommentCollectingScanner.Factory make() {
 				return new CommentCollectingScannerFactory(context);
 			}
+			
+			public CommentCollectingScanner.Factory make(Context c) {
+				return new CommentCollectingScannerFactory(c);
+			}
 		});
 	}
 	

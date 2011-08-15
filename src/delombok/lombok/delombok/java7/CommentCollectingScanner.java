@@ -32,7 +32,7 @@ import com.sun.tools.javac.parser.Scanner;
 
 public class CommentCollectingScanner extends Scanner {
 	private final Comments comments;
-	private int endComment = 0;	
+	private int endComment = 0;
 	
 	public CommentCollectingScanner(CommentCollectingScannerFactory factory, CharBuffer charBuffer, Comments comments) {
 		super(factory, charBuffer);

@@ -37,6 +37,10 @@ public class CommentCollectingScannerFactory extends ScannerFactory {
 			public ScannerFactory make() {
 				return new CommentCollectingScannerFactory(context);
 			}
+			
+			@Override public ScannerFactory make(Context c) {
+				return new CommentCollectingScannerFactory(c);
+			}
 		});
 	}
 	
