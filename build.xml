@@ -69,14 +69,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<target name="deps" depends="ensureBuildDeps, ensureRuntimeDeps, ensureTestDeps, contrib" description="Downloads all dependencies." />
 	
 	<target name="contrib" depends="config-ivy" description="Downloads various non-crucial documentation, sources, etc that are useful when developing lombok.ast.">
-		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="contrib" />
-		<ivy:retrieve />
-		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="ecj" />
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="contrib, ecj" />
 		<ivy:retrieve />
 	</target>
 	
 	<target name="ensureBuildDeps" depends="config-ivy">
-		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build" />
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build, javac7" />
 		<ivy:retrieve />
 	</target>
 	
@@ -132,7 +130,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		anymore until you 'ant clean'. That's very much not desired, so we kill the processor, which stops lombok from running.
 		We re-create the file at the end of this target. -->
 		<delete file="build/lombok/META-INF/services/javax.annotation.processing.Processor" quiet="true" />
+		<ivy:compile destdir="build/stubs" source="1.5" target="1.5" includeantruntime="false">
+			<src path="src/stubs" />
+		</ivy:compile>
+		
 		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" includeantruntime="false">
+			<compilerarg value="-Xbootclasspath/p:build/stubs" />
 			<src path="src/core" />
 			<src path="src/installer" />
 			<src path="src/eclipseAgent" />
@@ -140,7 +143,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<classpath refid="build.path" />
 		</ivy:compile>
 		<ivy:compile destdir="build/lombok" source="1.6" target="1.6" includeantruntime="false">
-			<src path="src/contrib" />
+			<compilerarg value="-Xbootclasspath/p:build/stubs" />
 			<src path="src/core" />
 			<src path="src/delombok" />
 			<include name="com/sun/**" />
@@ -187,7 +190,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 				<srcdir dir="src/eclipseAgent" />
 				<srcdir dir="src/installer" />
 				<srcdir dir="src/delombok" />
-				<srcdir dir="src/contrib" />
+				<srcdir dir="src/stubs" />
 				<srcdir dir="experimental/src" />
 				<srcdir dir="test/transform/src" test="true" />
 				<srcdir dir="test/core/src" test="true" />
@@ -206,7 +209,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<srcdir dir="src/eclipseAgent" />
 			<srcdir dir="src/installer" />
 			<srcdir dir="src/delombok" />
-			<srcdir dir="src/contrib" />
+			<srcdir dir="src/stubs" />
 			<srcdir dir="experimental/src" />
 			<srcdir dir="test/transform/src" />
 			<srcdir dir="test/core/src" />

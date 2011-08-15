@@ -663,9 +663,9 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
                 else
                     print("class " + tree.name);
                 printTypeParameters(tree.typarams);
-                if (tree.extending != null) {
+                if (tree.getExtendsClause() != null) {
                     print(" extends ");
-                    printExpr(tree.extending);
+                    printExpr(tree.getExtendsClause());
                 }
                 if (tree.implementing.nonEmpty()) {
                     print(" implements ");
@@ -1495,8 +1495,13 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 
     public void visitTree(JCTree tree) {
         try {
-            print("(UNKNOWN: " + tree + ")");
-            println();
+            if ("JCTypeUnion".equals(tree.getClass().getSimpleName())) {
+                print(tree.toString());
+                return;
+            } else {
+                print("(UNKNOWN: " + tree + ")");
+                println();
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

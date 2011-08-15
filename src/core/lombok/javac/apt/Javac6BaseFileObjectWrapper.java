@@ -33,6 +33,8 @@ import java.nio.charset.CharsetDecoder;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 
+// Weird SuppressWarnings, but javac doesn't understand 'all' and eclipse doesn't understand that this file contains deprecation references.
+@SuppressWarnings({"all", "deprecation"})
 class Javac6BaseFileObjectWrapper extends com.sun.tools.javac.util.BaseFileObject {
 	private final LombokFileObject delegate;
 	
@@ -48,7 +50,6 @@ class Javac6BaseFileObjectWrapper extends com.sun.tools.javac.util.BaseFileObjec
 		return delegate.toUri();
 	}
 	
-	@SuppressWarnings("all")
 	@Override public String getName() {
 		return delegate.getName();
 	}

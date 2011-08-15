@@ -87,7 +87,7 @@ public class DelombokApp implements LombokApp {
 		final JarFile toolsJarFile = new JarFile(toolsJar);
 		
 		ClassLoader loader = new ClassLoader() {
-			private Class<?>loadStreamAsClass(String name, boolean resolve, InputStream in) throws ClassNotFoundException {
+			private Class<?> loadStreamAsClass(String name, boolean resolve, InputStream in) throws ClassNotFoundException {
 				try {
 					try {
 						byte[] b = new byte[65536];

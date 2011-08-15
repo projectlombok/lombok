@@ -8,6 +8,7 @@
 		<conf name="test" extends="build, runtime" />
 		<conf name="contrib" />
 		<conf name="ecj" />
+		<conf name="javac7" />
 	</configurations>
 	<dependencies>
 		<dependency org="org.projectlombok" name="lombok.patcher" rev="0.5" conf="build; runtime->build" />
@@ -27,7 +28,8 @@
 		<dependency org="projectlombok.org" name="markdownj" rev="1.02b4" conf="build" />
 		<dependency org="de.java2html" name="java2html" rev="5.0" conf="build->default" />
 		
-		<dependency org="projectlombok.org" name="javac" rev="1.6.0.18" conf="build->runtime; contrib->sources" />
+		<dependency org="net.java.openjdk.custom" name="javac6" rev="1.6.0.18" conf="build->runtime; contrib->sources" />
+		<dependency org="net.java.openjdk.custom" name="javac7" rev="1.7.0" conf="javac7->runtime; contrib->sources" />
 		<dependency org="org.eclipse.custom" name="ecj" rev="3.6.2" conf="ecj->default; contrib->sources" />
 		
 		<dependency org="netbeans.org" name="boot" rev="6.8beta" conf="netbeansBuild->build" />

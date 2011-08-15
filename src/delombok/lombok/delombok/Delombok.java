@@ -44,6 +44,7 @@ import java.util.Map;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 
+import lombok.Lombok;
 import lombok.javac.LombokOptions;
 
 import com.sun.tools.javac.main.JavaCompiler;
@@ -355,7 +356,17 @@ public class Delombok {
 		if (classpath != null) options.put(OptionName.CLASSPATH, classpath);
 		if (sourcepath != null) options.put(OptionName.SOURCEPATH, sourcepath);
 		options.put("compilePolicy", "attr");
-		CommentCollectingScanner.Factory.preRegister(context);
+		
+		try {
+			Class.forName("lombok.delombok.java7.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
+		} catch (Throwable t1) {
+			if (!(t1 instanceof NoClassDefFoundError)) Lombok.sneakyThrow(t1);
+			try {
+				Class.forName("lombok.delombok.java6.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
+			} catch (Exception t2) {
+				Lombok.sneakyThrow(t2);
+			}
+		}
 		
 		JavaCompiler compiler = new JavaCompiler(context);
 		compiler.keepComments = true;
@@ -408,7 +419,7 @@ public class Delombok {
 	public static class Comments {
 		public com.sun.tools.javac.util.ListBuffer<Comment> comments = com.sun.tools.javac.util.ListBuffer.lb();
 		
-		void add(Comment comment) {
+		public void add(Comment comment) {
 			comments.append(comment);
 		}
 	}
