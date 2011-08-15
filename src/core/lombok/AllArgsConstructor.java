@@ -59,18 +59,4 @@ public @interface AllArgsConstructor {
 	 */
 	@Deprecated
 	boolean suppressConstructorProperties() default false;
-	
-	/**
-	 * If you want your constructor to have additional annotations, you can specify them here.
-	 */
-	AnyAnnotation[] onConstructor() default {};
-	
-	/**
-	 * Placeholder annotation to enable the placement of annotations on the constructor.
-	 * @deprecated Don't use this annotation, since we might remove it. 
-	 */
-	@Deprecated
-	@Retention(RetentionPolicy.SOURCE)
-	@Target({})
-	@interface AnyAnnotation {}
 }

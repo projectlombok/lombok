@@ -96,7 +96,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			//Skip final fields.
 			if ((fieldDecl.mods.flags & Flags.FINAL) != 0) continue;
 			
-			generateSetterForField(field, errorNode.get(), level, List.<JCExpression>nil(), List.<JCExpression>nil());
+			generateSetterForField(field, errorNode.get(), level);
 		}
 	}
 	
@@ -115,7 +115,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	 * @param fieldNode The node representing the field you want a setter for.
 	 * @param pos The node responsible for generating the setter (the {@code @Data} or {@code @Setter} annotation).
 	 */
-	public void generateSetterForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level, List<JCExpression> onMethod, List<JCExpression> onParam) {
+	public void generateSetterForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level) {
 		for (JavacNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				if (Javac.annotationTypeMatches(Setter.class, child)) {
@@ -125,7 +125,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			}
 		}
 		
-		createSetterForField(level, fieldNode, fieldNode, false, onMethod, onParam);
+		createSetterForField(level, fieldNode, fieldNode, false);
 	}
 	
 	@Override public void handle(AnnotationValues<Setter> annotation, JCAnnotation ast, JavacNode annotationNode) {
@@ -137,32 +137,25 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		
 		if (level == AccessLevel.NONE || node == null) return;
 		
-		List<JCExpression> onParamList = getAndRemoveAnnotationParameter(ast, "onParam");
-		List<JCExpression> onMethodList = getAndRemoveAnnotationParameter(ast, "onMethod");
-		
 		switch (node.getKind()) {
 		case FIELD:
-			createSetterForFields(level, fields, annotationNode, true, onMethodList, onParamList);
+			createSetterForFields(level, fields, annotationNode, true);
 			break;
 		case TYPE:
-			if (!onMethodList.isEmpty()) annotationNode.addError("'onMethod' is not supported for @Setter on a type.");
-			if (!onParamList.isEmpty()) annotationNode.addError("'onParam' is not supported for @Setter on a type.");
-			
 			generateSetterForType(node, annotationNode, level, false);
 			break;
 		}
 	}
 	
-	private void createSetterForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists,
-			List<JCExpression> onMethod, List<JCExpression> onParam) {
+	private void createSetterForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists) {
 		
 		for (JavacNode fieldNode : fieldNodes) {
-			createSetterForField(level, fieldNode, errorNode, whineIfExists, onMethod, onParam);
+			createSetterForField(level, fieldNode, errorNode, whineIfExists);
 		}
 	}
 	
 	private void createSetterForField(AccessLevel level,
-			JavacNode fieldNode, JavacNode source, boolean whineIfExists, List<JCExpression> onMethod, List<JCExpression> onParam) {
+			JavacNode fieldNode, JavacNode source, boolean whineIfExists) {
 		
 		if (fieldNode.getKind() != Kind.FIELD) {
 			fieldNode.addError("@Setter is only supported on a class or a field.");
@@ -192,10 +185,10 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
 		
-		injectMethod(fieldNode.up(), createSetter(access, fieldNode, fieldNode.getTreeMaker(), onMethod, onParam, source.get()));
+		injectMethod(fieldNode.up(), createSetter(access, fieldNode, fieldNode.getTreeMaker(), source.get()));
 	}
 	
-	private JCMethodDecl createSetter(long access, JavacNode field, TreeMaker treeMaker, List<JCExpression> onMethod, List<JCExpression> onParam, JCTree source) {
+	private JCMethodDecl createSetter(long access, JavacNode field, TreeMaker treeMaker, JCTree source) {
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
 		
 		JCExpression fieldRef = createFieldAccessor(treeMaker, field, FieldAccess.ALWAYS_FIELD);
@@ -215,8 +208,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		
 		JCBlock methodBody = treeMaker.Block(0, statements);
 		Name methodName = field.toName(toSetterName(fieldDecl));
-		List<JCAnnotation> annsOnParam = copyAnnotations(onParam);
-		annsOnParam = annsOnParam.appendList(nonNulls).appendList(nullables);
+		List<JCAnnotation> annsOnParam = nonNulls.appendList(nullables);
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(Flags.FINAL, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
 		//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.
 		JCExpression methodType = treeMaker.Type(new JCNoType(Javac.getCTCint(TypeTags.class, "VOID")));
@@ -226,7 +218,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		List<JCExpression> throwsClauses = List.nil();
 		JCExpression annotationMethodDefaultValue = null;
 		
-		return Javac.recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, copyAnnotations(onMethod)), methodName, methodType,
+		return Javac.recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, List.<JCAnnotation>nil()), methodName, methodType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
 	}
 	

@@ -59,20 +59,5 @@ public @interface Getter {
 	 */
 	lombok.AccessLevel value() default lombok.AccessLevel.PUBLIC;
 	
-	/**
-	 * If you want your getter method to have additional annotations, you can specify them here.<br/>
-	 * If the {@code @Getter} is put on a type, {@code onMethod} may not be specified.
-	 */
-	AnyAnnotation[] onMethod() default {};
-	
 	boolean lazy() default false;
-	
-	/**
-	 * Placeholder annotation to enable the placement of annotations on the getter method. 
-	 * @deprecated Don't use this annotation, since we might remove it. 
-	 */
-	@Deprecated
-	@Retention(RetentionPolicy.SOURCE)
-	@Target({})
-	@interface AnyAnnotation {}
 }

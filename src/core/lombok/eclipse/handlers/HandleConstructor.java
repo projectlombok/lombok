@@ -81,8 +81,7 @@ public class HandleConstructor {
 			String staticName = ann.staticName();
 			if (level == AccessLevel.NONE) return;
 			List<EclipseNode> fields = new ArrayList<EclipseNode>();
-			Annotation[] onConstructor = getAndRemoveAnnotationParameter(ast, "onConstructor");
-			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, onConstructor, false, false, ast);
+			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, false, false, ast);
 		}
 	}
 	
@@ -97,8 +96,7 @@ public class HandleConstructor {
 			@SuppressWarnings("deprecation")
 			boolean suppressConstructorProperties = ann.suppressConstructorProperties();
 			if (level == AccessLevel.NONE) return;
-			Annotation[] onConstructor = getAndRemoveAnnotationParameter(ast, "onConstructor");
-			new HandleConstructor().generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, onConstructor, false, suppressConstructorProperties, ast);
+			new HandleConstructor().generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, false, suppressConstructorProperties, ast);
 		}
 	}
 	
@@ -137,8 +135,7 @@ public class HandleConstructor {
 				
 				fields.add(child);
 			}
-			Annotation[] onConstructor = getAndRemoveAnnotationParameter(ast, "onConstructor");
-			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, onConstructor, false, suppressConstructorProperties, ast);
+			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, false, suppressConstructorProperties, ast);
 		}
 	}
 	
@@ -157,10 +154,10 @@ public class HandleConstructor {
 	}
 	
 	public void generateRequiredArgsConstructor(EclipseNode typeNode, AccessLevel level, String staticName, boolean skipIfConstructorExists, ASTNode source) {
-		generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, null, skipIfConstructorExists, false, source);
+		generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, skipIfConstructorExists, false, source);
 	}
 	
-	public void generateConstructor(EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, String staticName, Annotation[] onConstructor, boolean skipIfConstructorExists, boolean suppressConstructorProperties, ASTNode source) {
+	public void generateConstructor(EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, String staticName, boolean skipIfConstructorExists, boolean suppressConstructorProperties, ASTNode source) {
 		if (skipIfConstructorExists && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) return;
 		if (skipIfConstructorExists) {
 			for (EclipseNode child : typeNode.down()) {
@@ -175,7 +172,7 @@ public class HandleConstructor {
 		
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
 		
-		ConstructorDeclaration constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields, suppressConstructorProperties, onConstructor, source);
+		ConstructorDeclaration constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields, suppressConstructorProperties, source);
 		injectMethod(typeNode, constr);
 		if (staticConstrRequired) {
 			MethodDeclaration staticConstr = createStaticConstructor(level, staticName, typeNode, fields, source);
@@ -218,7 +215,7 @@ public class HandleConstructor {
 	}
 	
 	private ConstructorDeclaration createConstructor(AccessLevel level,
-			EclipseNode type, Collection<EclipseNode> fields, boolean suppressConstructorProperties, Annotation[] onConstructor, ASTNode source) {
+			EclipseNode type, Collection<EclipseNode> fields, boolean suppressConstructorProperties, ASTNode source) {
 		long p = (long)source.sourceStart << 32 | source.sourceEnd;
 		
 		boolean isEnum = (((TypeDeclaration)type.get()).modifiers & ClassFileConstants.AccEnum) != 0;
@@ -230,7 +227,6 @@ public class HandleConstructor {
 		Eclipse.setGeneratedBy(constructor, source);
 		
 		constructor.modifiers = EclipseHandlerUtil.toEclipseModifier(level);
-		constructor.annotations = onConstructor;
 		constructor.selector = ((TypeDeclaration)type.get()).name;
 		constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
 		Eclipse.setGeneratedBy(constructor.constructorCall, source);

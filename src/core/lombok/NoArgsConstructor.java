@@ -51,18 +51,4 @@ public @interface NoArgsConstructor {
 	 * Sets the access level of the constructor. By default, generated constructors are {@code public}.
 	 */
 	AccessLevel access() default lombok.AccessLevel.PUBLIC;
-	
-	/**
-	 * If you want your constructor to have additional annotations, you can specify them here.
-	 */
-	AnyAnnotation[] onConstructor() default {};
-	
-	/**
-	 * Placeholder annotation to enable the placement of annotations on the constructor.
-	 * @deprecated Don't use this annotation, since we might remove it. 
-	 */
-	@Deprecated
-	@Retention(RetentionPolicy.SOURCE)
-	@Target({})
-	@interface AnyAnnotation {}
 }

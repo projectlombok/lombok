@@ -55,25 +55,4 @@ public @interface Setter {
 	 * If you want your setter to be non-public, you can specify an alternate access level here.
 	 */
 	lombok.AccessLevel value() default lombok.AccessLevel.PUBLIC;
-	
-	/**
-	 * If you want your setter method to have additional annotations, you can specify them here.
-	 * If the {@code @Setter} is put on a type, {@code onMethod} may not be specified.
-	 */
-	AnyAnnotation[] onMethod() default {};
-	
-	/**
-	 * If you want the parameter of your setter to have additional annotations, you can specify them here.
-	 * If the {@code @Setter} is put on a type, {@code onParam} may not be specified.
-	 */
-	AnyAnnotation[] onParam() default {};
-	
-	/**
-	 * Placeholder annotation to enable the placement of annotations on the setter method or its parameter.
-	 * @deprecated Don't use this annotation, since we might remove it. 
-	 */
-	@Deprecated
-	@Retention(RetentionPolicy.SOURCE)
-	@Target({})
-	@interface AnyAnnotation {}
 }

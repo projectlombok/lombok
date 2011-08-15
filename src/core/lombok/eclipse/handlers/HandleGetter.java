@@ -95,7 +95,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		}
 		
 		for (EclipseNode field : typeNode.down()) {
-			if (fieldQualifiesForGetterGeneration(field)) generateGetterForField(field, pos.get(), level, null, false);
+			if (fieldQualifiesForGetterGeneration(field)) generateGetterForField(field, pos.get(), level, false);
 		}
 		return true;
 	}
@@ -118,7 +118,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	 * If not, the getter is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
 	 */
-	public void generateGetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level, Annotation[] onMethod, boolean lazy) {
+	public void generateGetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level, boolean lazy) {
 		for (EclipseNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				if (annotationTypeMatches(Getter.class, child)) {
@@ -128,7 +128,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 			}
 		}
 		
-		createGetterForField(level, fieldNode, fieldNode, pos, false, onMethod, lazy);
+		createGetterForField(level, fieldNode, fieldNode, pos, false, lazy);
 	}
 	
 	public void handle(AnnotationValues<Getter> annotation, Annotation ast, EclipseNode annotationNode) {
@@ -145,27 +145,25 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		
 		if (node == null) return;
 		
-		Annotation[] onMethod = getAndRemoveAnnotationParameter(ast, "onMethod");
 		switch (node.getKind()) {
 		case FIELD:
-			createGetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true, onMethod, lazy);
+			createGetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true, lazy);
 			break;
 		case TYPE:
-			if (onMethod != null && onMethod.length != 0) annotationNode.addError("'onMethod' is not supported for @Getter on a type.");
 			if (lazy) annotationNode.addError("'lazy' is not supported for @Getter on a type.");
 			generateGetterForType(node, annotationNode, level, false);
 			break;
 		}
 	}
 	
-	private void createGetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, Annotation[] onMethod, boolean lazy) {
+	private void createGetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, boolean lazy) {
 		for (EclipseNode fieldNode : fieldNodes) {
-			createGetterForField(level, fieldNode, errorNode, source, whineIfExists, onMethod, lazy);
+			createGetterForField(level, fieldNode, errorNode, source, whineIfExists, lazy);
 		}
 	}
 	
 	private void createGetterForField(AccessLevel level,
-			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists, Annotation[] onMethod, boolean lazy) {
+			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists, boolean lazy) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			errorNode.addError("@Getter is only supported on a class or a field.");
 			return;
@@ -209,7 +207,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		}
 		
 		MethodDeclaration method = generateGetter((TypeDeclaration) fieldNode.up().get(), fieldNode, getterName, modifier, source, lazy);
-		Annotation[] copiedAnnotations = copyAnnotations(source, findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN), onMethod);
+		Annotation[] copiedAnnotations = copyAnnotations(source, findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN));
 		if (copiedAnnotations.length != 0) {
 			method.annotations = copiedAnnotations;
 		}
