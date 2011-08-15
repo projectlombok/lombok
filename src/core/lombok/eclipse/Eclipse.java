@@ -581,7 +581,10 @@ public class Eclipse {
 	 * @param typeRef A type reference to check.
 	 */
 	public static boolean typeMatches(Class<?> type, EclipseNode node, TypeReference typeRef) {
-		if (typeRef == null || typeRef.getTypeName() == null) return false;
+		if (typeRef == null || typeRef.getTypeName() == null || typeRef.getTypeName().length == 0) return false;
+		String lastPartA = new String(typeRef.getTypeName()[typeRef.getTypeName().length -1]);
+		String lastPartB = type.getSimpleName();
+		if (!lastPartA.equals(lastPartB)) return false;
 		String typeName = toQualifiedName(typeRef.getTypeName());
 		
 		TypeLibrary library = new TypeLibrary();
