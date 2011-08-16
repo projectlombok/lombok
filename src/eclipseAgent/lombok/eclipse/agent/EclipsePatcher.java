@@ -86,7 +86,6 @@ public class EclipsePatcher extends Agent {
 			patchRetrieveEllipsisStartPosition(sm);
 			patchSetGeneratedFlag(sm);
 			patchHideGeneratedNodes(sm);
-			patchLiveDebug(sm);
 			patchPostCompileHookEclipse(sm);
 			patchFixSourceTypeConverter(sm);
 		} else {
@@ -234,20 +233,6 @@ public class EclipsePatcher extends Agent {
 				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlagForSimpleName", "void",
 						"org.eclipse.jdt.core.dom.SimpleName", "java.lang.Object"))
 				.transplant().build());
-	}
-	
-	/**
-	 * XXX LIVE DEBUG
-	 * 
-	 * Adds patches to improve error reporting in cases of extremely rare bugs that are hard to reproduce. These should be removed
-	 * once the issue has been solved!
-	 */
-	private static void patchLiveDebug(ScriptManager sm) {
-		sm.addScript(ScriptBuilder.exitEarly()
-				.target(new MethodTarget(
-						"org.eclipse.jdt.internal.compiler.ast.MethodDeclaration", "resolveStatements", "void"))
-				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "debugPrintStateOfScope", "boolean", "java.lang.Object"))
-				.request(StackRequest.THIS).build());
 	}
 	
 	private static void patchAvoidReparsingGeneratedCode(ScriptManager sm) {
