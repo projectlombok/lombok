@@ -85,6 +85,7 @@ public class EclipsePatcher extends Agent {
 			patchIdentifierEndReparse(sm);
 			patchRetrieveEllipsisStartPosition(sm);
 			patchSetGeneratedFlag(sm);
+			patchDomAstReparseIssues(sm);
 			patchHideGeneratedNodes(sm);
 			patchPostCompileHookEclipse(sm);
 			patchFixSourceTypeConverter(sm);
@@ -98,6 +99,17 @@ public class EclipsePatcher extends Agent {
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
 	}
 	
+	private static void patchDomAstReparseIssues(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.replaceMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.core.dom.rewrite.ASTRewriteAnalyzer", "visit"))
+				.methodToReplace(new Hook("org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner", "getTokenEndOffset", "int", "int", "int"))
+				.replacementMethod(new Hook("lombok.eclipse.agent.PatchFixes", "getTokenEndOffsetFixed", "int", "org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner", "int", "int", "java.lang.Object"))
+				.requestExtra(StackRequest.PARAM1)
+				.transplant()
+				.build());
+		
+	}
+
 	private static void patchPostCompileHookEclipse(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.builder.IncrementalImageBuilder", "writeClassFileContents"))

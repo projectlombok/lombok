@@ -231,8 +231,10 @@ public class HandleSneakyThrows extends EclipseAnnotationHandler<SneakyThrows> {
 		tryStatement.catchBlocks = new Block[] { block };
 		
 		// Positions for in-method generated nodes are special
-		tryStatement.sourceStart = method.bodyStart;
-		tryStatement.sourceEnd = method.bodyEnd;
+//		tryStatement.sourceStart = method.bodyStart;
+//		tryStatement.sourceEnd = method.bodyEnd;
+		tryStatement.sourceStart = pS;
+		tryStatement.sourceEnd = pE;
 
 		return tryStatement;
 	}

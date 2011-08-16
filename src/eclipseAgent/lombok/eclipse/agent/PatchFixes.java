@@ -32,11 +32,13 @@ import java.util.List;
 import lombok.core.DiagnosticsReceiver;
 import lombok.core.PostCompiler;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
 
 public class PatchFixes {
 	public static int fixRetrieveStartingCatchPosition(int original, int start) {
@@ -78,6 +80,17 @@ public class PatchFixes {
 				name.getClass().getField("$isGenerated").set(name, true);
 			}
 		}
+	}
+	
+	public static int getTokenEndOffsetFixed(TokenScanner scanner, int token, int startOffset, Object domNode) throws CoreException {
+		boolean isGenerated = false;
+		try {
+			isGenerated = (Boolean) domNode.getClass().getField("$isGenerated").get(domNode);
+		} catch (Exception e) {
+			// If this fails, better to break some refactor scripts than to crash eclipse.
+		}
+		if (isGenerated) return -1;
+		return scanner.getTokenEndOffset(token, startOffset);
 	}
 	
 	public static IMethod[] removeGeneratedMethods(IMethod[] methods) throws Exception {
