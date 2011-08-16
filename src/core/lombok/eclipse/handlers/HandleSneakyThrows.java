@@ -23,6 +23,7 @@ package lombok.eclipse.handlers;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import lombok.SneakyThrows;
@@ -55,6 +56,7 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleSneakyThrows extends EclipseAnnotationHandler<SneakyThrows> {
+	
 	private static class DeclaredException {
 		final String exceptionName;
 		final ASTNode node;
@@ -62,10 +64,6 @@ public class HandleSneakyThrows extends EclipseAnnotationHandler<SneakyThrows> {
 		DeclaredException(String exceptionName, ASTNode node) {
 			this.exceptionName = exceptionName;
 			this.node = node;
-		}
-		
-		public long getPos() {
-			return (long)node.sourceStart << 32 | node.sourceEnd;
 		}
 	}
 	
@@ -163,79 +161,76 @@ public class HandleSneakyThrows extends EclipseAnnotationHandler<SneakyThrows> {
 	}
 	
 	private Statement buildTryCatchBlock(Statement[] contents, DeclaredException exception, ASTNode source, AbstractMethodDeclaration method) {
-		long p = exception.getPos();
-		int pS = (int)(p >> 32), pE = (int)p;
+		int methodStart =  method.bodyStart;
+		int methodEnd =  method.bodyEnd;
+		long methodPosEnd = methodEnd << 32 | (methodEnd & 0xFFFFFFFFL);
 		
 		TryStatement tryStatement = new TryStatement();
 		Eclipse.setGeneratedBy(tryStatement, source);
 		tryStatement.tryBlock = new Block(0);
-
+		
 		// Positions for in-method generated nodes are special
-//		tryStatement.tryBlock.sourceStart = method.bodyStart; tryStatement.tryBlock.sourceEnd = method.bodyEnd;
-		tryStatement.tryBlock.sourceStart = pS; tryStatement.tryBlock.sourceEnd = pE;
+		tryStatement.tryBlock.sourceStart = methodStart; tryStatement.tryBlock.sourceEnd = methodEnd;
 		
 		Eclipse.setGeneratedBy(tryStatement.tryBlock, source);
 		tryStatement.tryBlock.statements = contents;
 		TypeReference typeReference;
 		if (exception.exceptionName.indexOf('.') == -1) {
-			typeReference = new SingleTypeReference(exception.exceptionName.toCharArray(), p);
-			typeReference.statementEnd = pE;
+			typeReference = new SingleTypeReference(exception.exceptionName.toCharArray(), methodPosEnd);
+			typeReference.statementEnd = methodEnd;
 		} else {
 			String[] x = exception.exceptionName.split("\\.");
 			char[][] elems = new char[x.length][];
 			long[] poss = new long[x.length];
-			int start = pS;
+			Arrays.fill(poss, methodPosEnd);
 			for (int i = 0; i < x.length; i++) {
 				elems[i] = x[i].trim().toCharArray();
-				int end = start + x[i].length();
-				poss[i] = (long)start << 32 | end;
-				start = end + 1;
 			}
 			typeReference = new QualifiedTypeReference(elems, poss);
 		}
 		Eclipse.setGeneratedBy(typeReference, source);
 		
-		Argument catchArg = new Argument("$ex".toCharArray(), p, typeReference, Modifier.FINAL);
+		Argument catchArg = new Argument("$ex".toCharArray(), methodPosEnd, typeReference, Modifier.FINAL);
 		Eclipse.setGeneratedBy(catchArg, source);
-		catchArg.declarationSourceEnd = catchArg.declarationEnd = catchArg.sourceEnd = pE;
-		catchArg.declarationSourceStart = catchArg.modifiersSourceStart = catchArg.sourceStart = pS;
+		catchArg.declarationSourceEnd = catchArg.declarationEnd = catchArg.sourceEnd = methodEnd;
+		catchArg.declarationSourceStart = catchArg.modifiersSourceStart = catchArg.sourceStart = methodEnd;
 		
 		tryStatement.catchArguments = new Argument[] { catchArg };
 		
 		MessageSend sneakyThrowStatement = new MessageSend();
 		Eclipse.setGeneratedBy(sneakyThrowStatement, source);
-		sneakyThrowStatement.receiver = new QualifiedNameReference(new char[][] { "lombok".toCharArray(), "Lombok".toCharArray() }, new long[] { p, p }, pS, pE);
+		sneakyThrowStatement.receiver = new QualifiedNameReference(new char[][] { "lombok".toCharArray(), "Lombok".toCharArray() }, new long[2], methodEnd, methodEnd);
 		Eclipse.setGeneratedBy(sneakyThrowStatement.receiver, source);
-		sneakyThrowStatement.receiver.statementEnd = pE;
+		sneakyThrowStatement.receiver.statementEnd = methodEnd;
 		sneakyThrowStatement.selector = "sneakyThrow".toCharArray();
-		SingleNameReference exRef = new SingleNameReference("$ex".toCharArray(), p);
+		SingleNameReference exRef = new SingleNameReference("$ex".toCharArray(), methodPosEnd);
 		Eclipse.setGeneratedBy(exRef, source);
-		exRef.statementEnd = pE;
+		exRef.statementEnd = methodEnd;
 		sneakyThrowStatement.arguments = new Expression[] { exRef };
-		sneakyThrowStatement.nameSourcePosition = p;
-		sneakyThrowStatement.sourceStart = pS;
-		sneakyThrowStatement.sourceEnd = sneakyThrowStatement.statementEnd = pE;
-		Statement rethrowStatement = new ThrowStatement(sneakyThrowStatement, pS, pE);
 		
-		// Positions for in-method generated nodes are special
-		rethrowStatement.sourceStart = method.bodyEnd;
-		rethrowStatement.sourceEnd = method.bodyEnd;
-
+		// This is the magic fix for rendering issues
+		// In org.eclipse.jdt.core.dom.ASTConverter#convert(org.eclipse.jdt.internal.compiler.ast.MessageSend)
+		// a new SimpleName is created and the setSourceRange should receive -1, 0. That's why we provide -2L :-)
+		sneakyThrowStatement.nameSourcePosition = -2L;
+		
+		sneakyThrowStatement.sourceStart = methodEnd;
+		sneakyThrowStatement.sourceEnd = sneakyThrowStatement.statementEnd = methodEnd;
+		
+		Statement rethrowStatement = new ThrowStatement(sneakyThrowStatement, methodEnd, methodEnd);
 		Eclipse.setGeneratedBy(rethrowStatement, source);
+		
 		Block block = new Block(0);
-		block.sourceStart = pS;
-		block.sourceEnd = pE;
+		block.sourceStart = methodEnd;
+		block.sourceEnd = methodEnd;
 		Eclipse.setGeneratedBy(block, source);
 		block.statements = new Statement[] { rethrowStatement };
 		
 		tryStatement.catchBlocks = new Block[] { block };
 		
 		// Positions for in-method generated nodes are special
-//		tryStatement.sourceStart = method.bodyStart;
-//		tryStatement.sourceEnd = method.bodyEnd;
-		tryStatement.sourceStart = pS;
-		tryStatement.sourceEnd = pE;
-
+		tryStatement.sourceStart = method.bodyStart;
+		tryStatement.sourceEnd = method.bodyEnd;
+		
 		return tryStatement;
 	}
 }
