@@ -1,24 +1,26 @@
 Lombok Changelog
 ----------------
-### v0.10.0 "Burning Emu" (June 20th, 2011)
+### v0.10.0 "Burning Emu" (August 19th, 2011)
 * FEATURE: New annotation: @Delegate. This annotation lets lombok generate delegation methods for a given field. [More&hellip;](http://projectlombok.org/features/Delegate.html)
-* FEATURE: Added support for 'val'. Val is an immutable variable that infers its type from the right hand side of an expression. [More&hellip;](http://projectlombok.org/features/val.html)
+* FEATURE: Added support for 'val'. Val is an immutable variable that infers its type from the right hand side of the initializing expression. [More&hellip;](http://projectlombok.org/features/val.html)
 * FEATURE: Added support for several logging frameworks via the `@Log`, `@Slf4j`, etc. annotation. [More&hellip;](http://projectlombok.org/features/Log.html)
 * FEATURE: Lombok now supports post-compile transformers. [Issue #144](http://code.google.com/p/projectlombok/issues/detail?id=144)
 * FEATURE: Using `@SneakyThrows` no longer requires a runtime dependency on lombok.jar. In fact, any call to `Lombok.sneakyThrows(ex)` is optimized at the bytecode level and no longer requires you to actually have lombok.jar or lombok-runtime.jar on the classpath.
-* FEATURE: @XArgsConstructor, @Getter, and @ToString can now be used on enum declarations. Previously, behaviour of these annotations on enums was undefined.
-* FEATURE: @Getter/@Setter (and thus, also @Data) in v0.9.3 and earlier would generate getter and setter method names that did not conform to the beanspec, primarily when faced with boolean properties. This has been fixed. In practice this won't affect you unless you have properties named `isFoo` or `hasFoo`. Now the setter generated for this will be called `setFoo` (as the property name is `foo`) and not `setIsFoo`. Also, `hasFoo` is now no longer special; the names would be `isHasFoo` and `setHasFoo`. The java bean spec does not give `has` special meaning.
+* FEATURE: @*X*ArgsConstructor, @Getter, and @ToString can now be used on enum declarations. Previously, behaviour of these annotations on enums was undefined.
+* FEATURE: @Getter/@Setter (and by extension, @Data) in v0.9.3 and earlier would generate getter and setter method names that did not conform to the beanspec, primarily when faced with boolean properties. This has been fixed. In practice this won't affect you unless you have properties named `isFoo` or `hasFoo`. Now the setter generated for this will be called `setFoo` (as the property name is `foo`) and not `setIsFoo`. Also, `hasFoo` is now no longer special; the names would be `isHasFoo` and `setHasFoo`. The java bean spec does not give `has` special meaning.
 * FEATURE: `@EqualsAndHashCode` (and by extension, `@Data`) now add a `canEqual` method which improves the sanity of equality amongst a hierarchy of classes. [More&hellip;](file://localhost/Users/rzwitserloot/ws/LOMBOK/lombok/website/features/EqualsAndHashCode.html)
 * FEATURE: `@Getter` now supports a `lazy=true` attribute. [More&hellip;](http://projectlombok.org/features/GetterLazy.html)
 * ENHANCEMENT: The installer will now find Eclipse installations when they are located in a subdirectory of a directory containing the word 'eclipse' . [Issue #210](http://code.google.com/p/projectlombok/issues/detail?id=210)
+* ENHANCEMENT: Add null check for `@Cleanup` [Issue #154](http://code.google.com/p/projectlombok/issues/detail?id=154)
+* BUGFIX: Lombok is now compatible with javac 7.
 * BUGFIX: Hard to reproduce `NullPointerException` in Eclipse on the `getTypeBinding` method in the error log has been fixed. [Issue #164](http://code.google.com/p/projectlombok/issues/detail?id=164)
 * BUGFIX: `@Setter` and `@Getter` can now be applied to static fields again (was broken in v0.9.3 only). [Issue #136](http://code.google.com/p/projectlombok/issues/detail?id=136)
 * BUGFIX: delombok added type parameters to constructors that mirror the type's own type parameters. This resulted in delombok turning any generated constructor that takes at least 1 parameter of type 'T' into something that didn't compile, and to boot, a confusing error message ('T is not compatible with T'). This is now fixed. [Issue #140](http://code.google.com/p/projectlombok/issues/detail?id=140)
-* BUGFIX: Add null check for `@Cleanup` [Issue #154](http://code.google.com/p/projectlombok/issues/detail?id=154)
 * BUGFIX: The Eclipse source generator would place the generated code outside the class [Issue #155](http://code.google.com/p/projectlombok/issues/detail?id=155)
 * BUGFIX: When using m2eclipse, occasionally you'd see a ClassNotFoundError on JavacProcessingEnvironment. This has been fixed. [Issue #177](http://code.google.com/p/projectlombok/issues/detail?id=177)
 * BUGFIX: Either all or none of `equals`, `hashCode` and `canEqual` will be generated. [Issue #240](http://code.google.com/p/projectlombok/issues/detail?id=240)
 * BUGFIX: Delombok in output-to-directory mode was generating very long paths on mac and linux. [Issue #249](http://code.google.com/p/projectlombok/issues/detail?id=249)
+* BUGFIX: Various refactor scripts and save actions bugs have been fixed in eclipse, though most remain.
 
 ### v0.9.3 "Burrowing Whale" (July 25th, 2010)
 * FEATURE: Adding `@Getter` or `@Setter` to a class is now legal and is like adding those annotations to every non-static field in it. [Issue #129](http://code.google.com/p/projectlombok/issues/detail?id=129)
