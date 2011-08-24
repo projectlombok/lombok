@@ -226,9 +226,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<os family="mac" />
 		</condition>
 		
-		<condition property="putJavacOnBootclasspath" value="-Xbootclasspath/p:lib/test/javac.jar" else="">
-			<os family="mac" />
-		</condition>
+		<property name="putJavacOnBootclasspath" value="-Xbootclasspath/p:lib/test/javac.jar" />
 		
 		<copy
 				file="buildScripts/eclipse-debug-target.template"
