@@ -42,6 +42,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<delete dir=".settings" quiet="true" />
 		<delete dir=".idea" quiet="true" />
 		<delete file="lombok.iml" quiet="true" />
+		<delete dir="ivyCache" quiet="true" />
 	</target>
 	
 	<target name="download-ipp" unless="ivyplusplus.available">
