@@ -1,0 +1,48 @@
+#
+# General patterns to exclude everywhere
+#
+# These are in regulare expression format so they work in the root directory, too
+#
+syntax:regexp
+ 
+# Eclipse project settings folders
+(^|/)\.settings/
+ 
+# Jenkins' local Maven repository
+(^|/)\.repository/
+ 
+# Log folders
+(^|/)log/
+
+# Maven build folder
+(^|/)target/
+ 
+# Eclipse classpath settings
+(^|/)\.classpath$
+ 
+# Eclipse project settings
+(^|/)\.project$
+
+# Backup files
+(^|/).+\.bak$
+ 
+# Database files
+(^|/).+\.db$
+ 
+# Log files
+(^|/).+\.log$
+
+# class binaries
+(^|/)bin/
+ 
+# Some maven stuff
+(^|/)${env.LOCALAPPDATA}/
+
+
+#
+# Custom ignores
+#
+# They are in glob-format for easier editing
+#
+syntax:glob
+*.class

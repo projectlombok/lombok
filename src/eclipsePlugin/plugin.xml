@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            label="Refactor Test Action Set"
+            visible="true"
+            id="lombokRefactor.actionSet">
+         <menu
+               label="Refactor &amp;Test &amp;Menu"
+               id="refactorTestMenu">
+            <separator
+                  name="refactorTestGroup">
+            </separator>
+         </menu>
+         <action
+               label="&amp;Refactoring Action"
+               icon="icons/lombok.gif"
+               class="lombokRefactorings.actions.BuildRefactoringTests"
+               tooltip="Refactoring Test"
+               menubarPath="refactorTestMenu/refactorTestGroup"
+               toolbarPath="refactorTestGroup"
+               id="lombokRefactorings.actions.RunRefactoringTests">
+         </action>
+      </actionSet>
+   </extension>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="false"
+            id="lombokRefactorings.folderContribution"
+            objectClass="org.eclipse.core.resources.IFolder">
+         <action
+               class="lombokRefactorings.guiAction.LombokResourceAction"
+               icon="icons/lombok.gif"
+               id="lombokRefactorings.folderAction"
+               label="Execute Lombok Tests">
+         </action>
+      </objectContribution>
+      <objectContribution
+            adaptable="false"
+            id="lombokRefactorings.fileContribution"
+            objectClass="org.eclipse.core.resources.IFile">
+         <action
+               class="lombokRefactorings.guiAction.LombokResourceAction"
+               icon="icons/lombok.gif"
+               id="lombokRefactorings.fileAction"
+               label="Execute Lombok Test">
+         </action>
+      </objectContribution>
+   </extension>
+</plugin>
+
