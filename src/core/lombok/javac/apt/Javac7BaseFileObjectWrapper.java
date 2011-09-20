@@ -108,4 +108,8 @@ class Javac7BaseFileObjectWrapper extends com.sun.tools.javac.file.BaseFileObjec
 	@Override public int hashCode() {
 		return delegate.hashCode();
 	}
+	
+	@Override public String toString() {
+		return delegate.toString();
+	}
 }

@@ -148,4 +148,9 @@ final class InterceptingJavaFileObject implements LombokFileObject {
 	public URI toUri() {
 		return delegate.toUri();
 	}
+	
+	@Override
+	public String toString() {
+		return delegate.toString();
+	}
 }
