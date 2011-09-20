@@ -1,5 +1,9 @@
 Lombok Changelog
 ----------------
+### v0.10.1 (edge)
+* BUGFIX: `@Delegate` in eclipse could cause memory leaks in 0.10.0. [Issue #264](http://code.google.com/p/projectlombok/issues/detail?id=264)
+* ENHANCEMENT: `@NotNull` is now also recognized as an annotation indicating that lombok should generate nullcheck guards in generated constructors and setters. [Issue #271](http://code.google.com/p/projectlombok/issues/detail?id=271)
+
 ### v0.10.0 "Burning Emu" (August 19th, 2011)
 * FEATURE: New annotation: @Delegate. This annotation lets lombok generate delegation methods for a given field. [More&hellip;](http://projectlombok.org/features/Delegate.html)
 * FEATURE: Added support for 'val'. Val is an immutable variable that infers its type from the right hand side of the initializing expression. [More&hellip;](http://projectlombok.org/features/val.html)
