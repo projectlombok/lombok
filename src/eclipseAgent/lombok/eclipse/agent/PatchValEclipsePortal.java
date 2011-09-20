@@ -1,10 +1,3 @@
-package lombok.eclipse.agent;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-import lombok.Lombok;
-
 /*
  * Copyright © 2011 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
@@ -26,6 +19,13 @@ import lombok.Lombok;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+package lombok.eclipse.agent;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import lombok.Lombok;
+
 public class PatchValEclipsePortal {
 	static final String LOCALDECLARATION_SIG = "org.eclipse.jdt.internal.compiler.ast.LocalDeclaration";
 	static final String PARSER_SIG = "org.eclipse.jdt.internal.compiler.parser.Parser";
@@ -43,6 +43,9 @@ public class PatchValEclipsePortal {
 			Lombok.sneakyThrow(e);
 		} catch (InvocationTargetException e) {
 			Lombok.sneakyThrow(e);
+		} catch (NullPointerException e) {
+			e.initCause(Reflection.problem);
+			throw e;
 		}
 	}
 	
@@ -57,6 +60,9 @@ public class PatchValEclipsePortal {
 			Lombok.sneakyThrow(e);
 		} catch (InvocationTargetException e) {
 			Lombok.sneakyThrow(e);
+		} catch (NullPointerException e) {
+			e.initCause(Reflection.problem);
+			throw e;
 		}
 	}
 	
@@ -70,6 +76,9 @@ public class PatchValEclipsePortal {
 			Lombok.sneakyThrow(e);
 		} catch (InvocationTargetException e) {
 			Lombok.sneakyThrow(e);
+		} catch (NullPointerException e) {
+			e.initCause(Reflection.problem);
+			throw e;
 		}
 	}
 	
@@ -83,6 +92,9 @@ public class PatchValEclipsePortal {
 			Lombok.sneakyThrow(e);
 		} catch (InvocationTargetException e) {
 			Lombok.sneakyThrow(e);
+		} catch (NullPointerException e) {
+			e.initCause(Reflection.problem);
+			throw e;
 		}
 	}
 	
@@ -91,9 +103,11 @@ public class PatchValEclipsePortal {
 		public static final Method copyInitializationOfLocalDeclaration;
 		public static final Method addFinalAndValAnnotationToVariableDeclarationStatement;
 		public static final Method addFinalAndValAnnotationToSingleVariableDeclaration;
+		public static final Throwable problem;
 		
 		static {
 			Method m = null, n = null, o = null, p = null;
+			Throwable problem_ = null;
 			try {
 				m = PatchValEclipse.class.getMethod("copyInitializationOfForEachIterable", Class.forName(PARSER_SIG));
 				n = PatchValEclipse.class.getMethod("copyInitializationOfLocalDeclaration", Class.forName(PARSER_SIG));
@@ -108,12 +122,13 @@ public class PatchValEclipsePortal {
 			} catch (Exception e) {
 				// That's problematic, but as long as no local classes are used we don't actually need it.
 				// Better fail on local classes than crash altogether.
+				problem_ = e;
 			}
 			copyInitializationOfForEachIterable = m;
 			copyInitializationOfLocalDeclaration = n;
 			addFinalAndValAnnotationToVariableDeclarationStatement = o;
 			addFinalAndValAnnotationToSingleVariableDeclaration = p;
-			
+			problem = problem_;
 		}
 	}
 }
