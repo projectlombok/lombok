@@ -580,6 +580,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     }
 
     public void printEnumMember(JCVariableDecl tree) throws IOException {
+        printAnnotations(tree.mods.annotations);
         print(tree.name);
         if (tree.init instanceof JCNewClass) {
             JCNewClass constructor = (JCNewClass) tree.init;
