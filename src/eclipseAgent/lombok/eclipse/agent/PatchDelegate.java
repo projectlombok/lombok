@@ -32,6 +32,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
@@ -177,7 +178,7 @@ public class PatchDelegate {
 		return null;
 	}
 	
-	private static Map<ASTNode, Object> alreadyApplied = new IdentityHashMap<ASTNode, Object>();
+	private static Map<ASTNode, Object> alreadyApplied = new WeakHashMap<ASTNode, Object>();
 	private static final Object MARKER = new Object();
 	
 	private static void fillMethodBindings(CompilationUnitDeclaration cud, ClassScope scope, List<BindingTuple> methodsToDelegate) {
