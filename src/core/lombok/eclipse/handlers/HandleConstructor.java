@@ -131,7 +131,7 @@ public class HandleConstructor {
 				if (!EclipseHandlerUtil.filterField(fieldDecl)) continue;
 				
 				// Skip initialized final fields.
-				if (((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) && fieldDecl.initialization != null) return;
+				if (((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) && fieldDecl.initialization != null) continue;
 				
 				fields.add(child);
 			}
