@@ -3,6 +3,7 @@ Lombok Changelog
 ### v0.10.1 (edge)
 * BUGFIX: `@Delegate` in eclipse could cause memory leaks in 0.10.0. [Issue #264](http://code.google.com/p/projectlombok/issues/detail?id=264)
 * BUGFIX: Annotations on enum values were being deleted by delombok. [Issue #269](http://code.google.com/p/projectlombok/issues/detail?id=269)
+* BUGFIX: `@AllArgsConstructor` was erroneously generating a parameter and an assignment for final variables already assigned in their declaration. [Issue #278](http://code.google.com/p/projectlombok/issues/detail?id=278)
 * ENHANCEMENT: `@NotNull` is now also recognized as an annotation indicating that lombok should generate nullcheck guards in generated constructors and setters. [Issue #271](http://code.google.com/p/projectlombok/issues/detail?id=271)
 
 ### v0.10.0 "Burning Emu" (August 19th, 2011)
