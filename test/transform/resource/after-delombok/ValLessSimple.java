@@ -22,5 +22,12 @@ public class ValLessSimple {
 			final java.lang.String foo = fieldV + methodV;
 		}
 	}
+	private void testValInCatchBlock() {
+		try {
+			final int x = 1 / 0;
+		} catch (ArithmeticException e) {
+			final int y = 0;
+		}
+	}
 	private String field = "field";
 }

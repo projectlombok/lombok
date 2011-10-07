@@ -29,5 +29,13 @@ public class ValLessSimple {
 		}
 	}
 	
+	private void testValInCatchBlock() {
+		try {
+			val x = 1 / 0;
+		} catch (ArithmeticException e) {
+			val y = 0;
+		}
+	}
+	
 	private String field = "field";
 }
