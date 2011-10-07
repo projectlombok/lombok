@@ -36,6 +36,7 @@ import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCCatch;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -275,9 +276,10 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	/** For javac, both JCExpression and JCStatement are considered as valid children types. */
 	@Override
 	protected Collection<Class<? extends JCTree>> getStatementTypes() {
-		Collection<Class<? extends JCTree>> collection = new ArrayList<Class<? extends JCTree>>(2);
+		Collection<Class<? extends JCTree>> collection = new ArrayList<Class<? extends JCTree>>(3);
 		collection.add(JCStatement.class);
 		collection.add(JCExpression.class);
+		collection.add(JCCatch.class);
 		return collection;
 	}
 	
