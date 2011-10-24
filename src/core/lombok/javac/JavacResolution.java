@@ -48,6 +48,7 @@ public class JavacResolution {
 		attr = Attr.instance(context);
 		logDisabler = new LogDisabler(context);
 	}
+	
 	/**
 	 * During resolution, the resolver will emit resolution errors, but without appropriate file names and line numbers. If these resolution errors stick around
 	 * then they will be generated AGAIN, this time with proper names and line numbers, at the end. Therefore, we want to suppress the logger.
@@ -297,7 +298,7 @@ public class JavacResolution {
 			EnvFinder finder = new EnvFinder(node.getContext());
 			while (!stack.isEmpty()) stack.pop().accept(finder);
 			
-			TreeMirrorMaker mirrorMaker = new TreeMirrorMaker(node);
+			TreeMirrorMaker mirrorMaker = new TreeMirrorMaker(node.getTreeMaker());
 			JCTree copy = mirrorMaker.copy(finder.copyAt());
 			
 			attrib(copy, finder.get());

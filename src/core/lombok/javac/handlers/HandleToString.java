@@ -22,14 +22,13 @@
 package lombok.javac.handlers;
 
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+import static lombok.javac.Javac.getCtcInt;
 
 import lombok.ToString;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
-import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
-import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -98,7 +97,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 	public void generateToStringForType(JavacNode typeNode, JavacNode errorNode) {
 		for (JavacNode child : typeNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
-				if (Javac.annotationTypeMatches(ToString.class, child)) {
+				if (annotationTypeMatches(ToString.class, child)) {
 					//The annotation will make it happen, so we can skip it.
 					return;
 				}
@@ -171,9 +170,9 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 	private JCMethodDecl createToString(JavacNode typeNode, List<JavacNode> fields, boolean includeFieldNames, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		
-		JCAnnotation overrideAnnotation = maker.Annotation(chainDots(maker, typeNode, "java", "lang", "Override"), List.<JCExpression>nil());
+		JCAnnotation overrideAnnotation = maker.Annotation(chainDots(typeNode, "java", "lang", "Override"), List.<JCExpression>nil());
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
-		JCExpression returnType = chainDots(maker, typeNode, "java", "lang", "String");
+		JCExpression returnType = chainDots(typeNode, "java", "lang", "String");
 		
 		boolean first = true;
 		
@@ -197,7 +196,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			JCMethodInvocation callToSuper = maker.Apply(List.<JCExpression>nil(),
 					maker.Select(maker.Ident(typeNode.toName("super")), typeNode.toName("toString")),
 					List.<JCExpression>nil());
-			current = maker.Binary(Javac.getCtcInt(JCTree.class, "PLUS"), current, callToSuper);
+			current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, callToSuper);
 			first = false;
 		}
 		
@@ -212,32 +211,32 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 				boolean primitiveArray = ((JCArrayTypeTree)field.vartype).elemtype instanceof JCPrimitiveTypeTree;
 				boolean useDeepTS = multiDim || !primitiveArray;
 				
-				JCExpression hcMethod = chainDots(maker, typeNode, "java", "util", "Arrays", useDeepTS ? "deepToString" : "toString");
+				JCExpression hcMethod = chainDots(typeNode, "java", "util", "Arrays", useDeepTS ? "deepToString" : "toString");
 				expr = maker.Apply(List.<JCExpression>nil(), hcMethod, List.<JCExpression>of(fieldAccessor));
 			} else expr = fieldAccessor;
 			
 			if (first) {
-				current = maker.Binary(Javac.getCtcInt(JCTree.class, "PLUS"), current, expr);
+				current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, expr);
 				first = false;
 				continue;
 			}
 			
 			if (includeFieldNames) {
-				current = maker.Binary(Javac.getCtcInt(JCTree.class, "PLUS"), current, maker.Literal(infix + fieldNode.getName() + "="));
+				current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, maker.Literal(infix + fieldNode.getName() + "="));
 			} else {
-				current = maker.Binary(Javac.getCtcInt(JCTree.class, "PLUS"), current, maker.Literal(infix));
+				current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, maker.Literal(infix));
 			}
 			
-			current = maker.Binary(Javac.getCtcInt(JCTree.class, "PLUS"), current, expr);
+			current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, expr);
 		}
 		
-		if (!first) current = maker.Binary(Javac.getCtcInt(JCTree.class, "PLUS"), current, maker.Literal(suffix));
+		if (!first) current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, maker.Literal(suffix));
 		
 		JCStatement returnStatement = maker.Return(current);
 		
 		JCBlock body = maker.Block(0, List.of(returnStatement));
 		
-		return Javac.recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("toString"), returnType,
+		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("toString"), returnType,
 				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source);
 	}
 	

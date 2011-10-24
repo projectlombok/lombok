@@ -38,7 +38,6 @@ import lombok.core.AST.Kind;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
-import lombok.eclipse.handlers.EclipseHandlerUtil.FieldAccess;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -84,7 +83,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 	public void generateToStringForType(EclipseNode typeNode, EclipseNode errorNode) {
 		for (EclipseNode child : typeNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
-				if (Eclipse.annotationTypeMatches(ToString.class, child)) {
+				if (annotationTypeMatches(ToString.class, child)) {
 					//The annotation will make it happen, so we can skip it.
 					return;
 				}
@@ -151,7 +150,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
 				FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
-				if (!EclipseHandlerUtil.filterField(fieldDecl)) continue;
+				if (!filterField(fieldDecl)) continue;
 				
 				//Skip excluded fields.
 				if (excludes != null && excludes.contains(new String(fieldDecl.name))) continue;
@@ -199,17 +198,17 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		
 		boolean first = true;
 		Expression current = new StringLiteral(prefix, pS, pE, 0);
-		Eclipse.setGeneratedBy(current, source);
+		setGeneratedBy(current, source);
 		
 		if (callSuper) {
 			MessageSend callToSuper = new MessageSend();
 			callToSuper.sourceStart = pS; callToSuper.sourceEnd = pE;
-			Eclipse.setGeneratedBy(callToSuper, source);
+			setGeneratedBy(callToSuper, source);
 			callToSuper.receiver = new SuperReference(pS, pE);
-			Eclipse.setGeneratedBy(callToSuper, source);
+			setGeneratedBy(callToSuper, source);
 			callToSuper.selector = "toString".toCharArray();
 			current = new BinaryExpression(current, callToSuper, PLUS);
-			Eclipse.setGeneratedBy(current, source);
+			setGeneratedBy(current, source);
 			first = false;
 		}
 		
@@ -223,7 +222,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 				arrayToString.sourceStart = pS; arrayToString.sourceEnd = pE;
 				arrayToString.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA, TypeConstants.UTIL, "Arrays".toCharArray());
 				arrayToString.arguments = new Expression[] { fieldAccessor };
-				Eclipse.setGeneratedBy(arrayToString.arguments[0], source);
+				setGeneratedBy(arrayToString.arguments[0], source);
 				if (fType.dimensions() > 1 || !BUILT_IN_TYPES.contains(new String(fType.getLastToken()))) {
 					arrayToString.selector = "deepToString".toCharArray();
 				} else {
@@ -233,12 +232,12 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 			} else {
 				ex = fieldAccessor;
 			}
-			Eclipse.setGeneratedBy(ex, source);
+			setGeneratedBy(ex, source);
 			
 			if (first) {
 				current = new BinaryExpression(current, ex, PLUS);
 				current.sourceStart = pS; current.sourceEnd = pE;
-				Eclipse.setGeneratedBy(current, source);
+				setGeneratedBy(current, source);
 				first = false;
 				continue;
 			}
@@ -250,27 +249,27 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 			} else {
 				fieldNameLiteral = new StringLiteral(infix, pS, pE, 0);
 			}
-			Eclipse.setGeneratedBy(fieldNameLiteral, source);
+			setGeneratedBy(fieldNameLiteral, source);
 			current = new BinaryExpression(current, fieldNameLiteral, PLUS);
-			Eclipse.setGeneratedBy(current, source);
+			setGeneratedBy(current, source);
 			current = new BinaryExpression(current, ex, PLUS);
-			Eclipse.setGeneratedBy(current, source);
+			setGeneratedBy(current, source);
 		}
 		if (!first) {
 			StringLiteral suffixLiteral = new StringLiteral(suffix, pS, pE, 0);
-			Eclipse.setGeneratedBy(suffixLiteral, source);
+			setGeneratedBy(suffixLiteral, source);
 			current = new BinaryExpression(current, suffixLiteral, PLUS);
-			Eclipse.setGeneratedBy(current, source);
+			setGeneratedBy(current, source);
 		}
 		
 		ReturnStatement returnStatement = new ReturnStatement(current, pS, pE);
-		Eclipse.setGeneratedBy(returnStatement, source);
+		setGeneratedBy(returnStatement, source);
 		
 		MethodDeclaration method = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
-		Eclipse.setGeneratedBy(method, source);
+		setGeneratedBy(method, source);
 		method.modifiers = toEclipseModifier(AccessLevel.PUBLIC);
 		method.returnType = new QualifiedTypeReference(TypeConstants.JAVA_LANG_STRING, new long[] {p, p, p});
-		Eclipse.setGeneratedBy(method.returnType, source);
+		setGeneratedBy(method.returnType, source);
 		method.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, source)};
 		method.arguments = null;
 		method.selector = "toString".toCharArray();
@@ -308,7 +307,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		NameReference ref;
 		if (varNames.length > 1) ref = new QualifiedNameReference(varNames, new long[varNames.length], pS, pE);
 		else ref = new SingleNameReference(varNames[0], p);
-		Eclipse.setGeneratedBy(ref, source);
+		setGeneratedBy(ref, source);
 		return ref;
 	}
 }

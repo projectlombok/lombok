@@ -27,12 +27,10 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.core.AnnotationValues;
+import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
-import lombok.core.handlers.TransformationsUtil;
-import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
-import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -160,9 +158,9 @@ public class HandleConstructor {
 		if (skipIfConstructorExists) {
 			for (JavacNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
-					if (Javac.annotationTypeMatches(NoArgsConstructor.class, child) ||
-							Javac.annotationTypeMatches(AllArgsConstructor.class, child) ||
-							Javac.annotationTypeMatches(RequiredArgsConstructor.class, child))
+					if (annotationTypeMatches(NoArgsConstructor.class, child) ||
+							annotationTypeMatches(AllArgsConstructor.class, child) ||
+							annotationTypeMatches(RequiredArgsConstructor.class, child))
 						return;
 				}
 			}
@@ -181,7 +179,7 @@ public class HandleConstructor {
 	private static void addConstructorProperties(JCModifiers mods, JavacNode node, List<JavacNode> fields) {
 		if (fields.isEmpty()) return;
 		TreeMaker maker = node.getTreeMaker();
-		JCExpression constructorPropertiesType = chainDots(maker, node, "java", "beans", "ConstructorProperties");
+		JCExpression constructorPropertiesType = chainDots(node, "java", "beans", "ConstructorProperties");
 		ListBuffer<JCExpression> fieldNames = ListBuffer.lb();
 		for (JavacNode field : fields) {
 			fieldNames.append(maker.Literal(field.getName()));
@@ -221,7 +219,7 @@ public class HandleConstructor {
 		if (!suppressConstructorProperties && level != AccessLevel.PRIVATE && !isLocalType(typeNode)) {
 			addConstructorProperties(mods, typeNode, fields);
 		}
-		return Javac.recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
+		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
 				null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(), maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source);
 	}
 	
@@ -280,6 +278,6 @@ public class HandleConstructor {
 		JCReturn returnStatement = maker.Return(maker.NewClass(null, List.<JCExpression>nil(), constructorType, args.toList(), null));
 		JCBlock body = maker.Block(0, List.<JCStatement>of(returnStatement));
 		
-		return Javac.recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName(name), returnType, typeParams.toList(), params.toList(), List.<JCExpression>nil(), body, null), source);
+		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName(name), returnType, typeParams.toList(), params.toList(), List.<JCExpression>nil(), body, null), source);
 	}
 }

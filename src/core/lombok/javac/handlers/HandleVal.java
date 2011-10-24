@@ -21,8 +21,9 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.javac.handlers.JavacHandlerUtil.*;
+
 import lombok.val;
-import lombok.javac.Javac;
 import lombok.javac.JavacASTAdapter;
 import lombok.javac.JavacASTVisitor;
 import lombok.javac.JavacNode;
@@ -51,7 +52,7 @@ public class HandleVal extends JavacASTAdapter {
 		
 		JCTree source = local.vartype;
 		
-		if (!Javac.typeMatches(val.class, localNode, local.vartype)) return;
+		if (!typeMatches(val.class, localNode, local.vartype)) return;
 		
 		JCExpression rhsOfEnhancedForLoop = null;
 		if (local.init == null) {
@@ -77,7 +78,7 @@ public class HandleVal extends JavacASTAdapter {
 		local.mods.flags |= Flags.FINAL;
 		
 		if (!localNode.shouldDeleteLombokAnnotations()) {
-			JCAnnotation valAnnotation = Javac.recursiveSetGeneratedBy(localNode.getTreeMaker().Annotation(local.vartype, List.<JCExpression>nil()), source);
+			JCAnnotation valAnnotation = recursiveSetGeneratedBy(localNode.getTreeMaker().Annotation(local.vartype, List.<JCExpression>nil()), source);
 			local.mods.annotations = local.mods.annotations == null ? List.of(valAnnotation) : local.mods.annotations.append(valAnnotation);
 		}
 		
@@ -126,7 +127,7 @@ public class HandleVal extends JavacASTAdapter {
 			local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
 			throw e;
 		} finally {
-			Javac.recursiveSetGeneratedBy(local.vartype, source);
+			recursiveSetGeneratedBy(local.vartype, source);
 		}
 	}
 }

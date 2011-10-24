@@ -37,6 +37,7 @@ import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
 import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
+import lombok.javac.handlers.JavacHandlerUtil;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -77,7 +78,7 @@ public class HandlerLibrary {
 		}
 		
 		public void handle(final JavacNode node) {
-			handler.handle(Javac.createAnnotation(annotationClass, node), (JCAnnotation)node.get(), node);
+			handler.handle(JavacHandlerUtil.createAnnotation(annotationClass, node), (JCAnnotation)node.get(), node);
 		}
 	}
 	

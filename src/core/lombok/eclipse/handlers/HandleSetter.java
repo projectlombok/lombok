@@ -30,12 +30,10 @@ import java.util.Collection;
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.core.AnnotationValues;
+import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
-import lombok.core.handlers.TransformationsUtil;
-import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
-import lombok.eclipse.handlers.EclipseHandlerUtil.FieldAccess;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -84,7 +82,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		for (EclipseNode field : typeNode.down()) {
 			if (field.getKind() != Kind.FIELD) continue;
 			FieldDeclaration fieldDecl = (FieldDeclaration) field.get();
-			if (!EclipseHandlerUtil.filterField(fieldDecl)) continue;
+			if (!filterField(fieldDecl)) continue;
 			
 			//Skip final fields.
 			if ((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) continue;
@@ -181,15 +179,15 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
-		Eclipse.setGeneratedBy(method, source);
+		setGeneratedBy(method, source);
 		method.modifiers = modifier;
 		method.returnType = TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		method.returnType.sourceStart = pS; method.returnType.sourceEnd = pE;
-		Eclipse.setGeneratedBy(method.returnType, source);
+		setGeneratedBy(method.returnType, source);
 		method.annotations = null;
 		Argument param = new Argument(field.name, p, copyType(field.type, source), Modifier.FINAL);
 		param.sourceStart = pS; param.sourceEnd = pE;
-		Eclipse.setGeneratedBy(param, source);
+		setGeneratedBy(param, source);
 		method.arguments = new Argument[] { param };
 		method.selector = name.toCharArray();
 		method.binding = null;
@@ -198,10 +196,10 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		Expression fieldRef = createFieldAccessor(fieldNode, FieldAccess.ALWAYS_FIELD, source);
 		NameReference fieldNameRef = new SingleNameReference(field.name, p);
-		Eclipse.setGeneratedBy(fieldNameRef, source);
+		setGeneratedBy(fieldNameRef, source);
 		Assignment assignment = new Assignment(fieldRef, fieldNameRef, (int)p);
 		assignment.sourceStart = pS; assignment.sourceEnd = pE;
-		Eclipse.setGeneratedBy(assignment, source);
+		setGeneratedBy(assignment, source);
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
 		

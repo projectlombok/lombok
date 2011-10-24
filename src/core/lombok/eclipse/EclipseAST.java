@@ -144,7 +144,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	 * Adds a problem to the provided CompilationResult object so that it will show up
 	 * in the Problems/Warnings view.
 	 */
-	static void addProblemToCompilationResult(CompilationUnitDeclaration ast,
+	public static void addProblemToCompilationResult(CompilationUnitDeclaration ast,
 			boolean isWarning, String message, int sourceStart, int sourceEnd) {
 		if (ast.compilationResult == null) return;
 		char[] fileNameArray = ast.getFileName();

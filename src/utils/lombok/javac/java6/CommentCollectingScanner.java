@@ -19,22 +19,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.delombok.java6;
+package lombok.javac.java6;
 
 import java.nio.CharBuffer;
 
-import lombok.delombok.Comment;
-import lombok.delombok.Comment.EndConnection;
-import lombok.delombok.Comment.StartConnection;
-import lombok.delombok.Delombok.Comments;
-
+import lombok.javac.Comment;
+import lombok.javac.Comments;
+import lombok.javac.Comment.EndConnection;
+import lombok.javac.Comment.StartConnection;
 
 import com.sun.tools.javac.parser.Scanner;
 
 public class CommentCollectingScanner extends Scanner {
 	private final Comments comments;
 	private int endComment = 0;
-	
 	
 	public CommentCollectingScanner(CommentCollectingScannerFactory factory, CharBuffer charBuffer, Comments comments) {
 		super(factory, charBuffer);

@@ -21,7 +21,7 @@
  */
 package lombok.bytecode;
 
-import static lombok.bytecode.PostCompilationUtil.fixJSRInlining;
+import static lombok.bytecode.AsmUtil.fixJSRInlining;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

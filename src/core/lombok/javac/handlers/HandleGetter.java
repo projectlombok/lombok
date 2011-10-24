@@ -22,6 +22,7 @@
 package lombok.javac.handlers;
 
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+import static lombok.javac.Javac.*;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -31,9 +32,8 @@ import java.util.Map;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.core.AnnotationValues;
+import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
-import lombok.core.handlers.TransformationsUtil;
-import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
@@ -74,7 +74,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		if (checkForTypeLevelGetter) {
 			if (typeNode != null) for (JavacNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
-					if (Javac.annotationTypeMatches(Getter.class, child)) {
+					if (annotationTypeMatches(Getter.class, child)) {
 						//The annotation will make it happen, so we can skip it.
 						return;
 					}
@@ -125,7 +125,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	public void generateGetterForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level, boolean lazy) {
 		for (JavacNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
-				if (Javac.annotationTypeMatches(Getter.class, child)) {
+				if (annotationTypeMatches(Getter.class, child)) {
 					//The annotation will make it happen, so we can skip it.
 					return;
 				}
@@ -242,10 +242,10 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		List<JCAnnotation> annsOnMethod = nonNulls.appendList(nullables);
 		
-		JCMethodDecl decl = Javac.recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
+		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
 		
-		if (toClearOfMarkers != null) Javac.recursiveSetGeneratedBy(toClearOfMarkers, null);
+		if (toClearOfMarkers != null) recursiveSetGeneratedBy(toClearOfMarkers, null);
 		
 		return decl;
 	}
@@ -260,14 +260,14 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	private static final java.util.Map<Integer, String> TYPE_MAP;
 	static {
 		Map<Integer, String> m = new HashMap<Integer, String>();
-		m.put(Javac.getCtcInt(TypeTags.class, "INT"), "java.lang.Integer");
-		m.put(Javac.getCtcInt(TypeTags.class, "DOUBLE"), "java.lang.Double");
-		m.put(Javac.getCtcInt(TypeTags.class, "FLOAT"), "java.lang.Float");
-		m.put(Javac.getCtcInt(TypeTags.class, "SHORT"), "java.lang.Short");
-		m.put(Javac.getCtcInt(TypeTags.class, "BYTE"), "java.lang.Byte");
-		m.put(Javac.getCtcInt(TypeTags.class, "LONG"), "java.lang.Long");
-		m.put(Javac.getCtcInt(TypeTags.class, "BOOLEAN"), "java.lang.Boolean");
-		m.put(Javac.getCtcInt(TypeTags.class, "CHAR"), "java.lang.Character");
+		m.put(getCtcInt(TypeTags.class, "INT"), "java.lang.Integer");
+		m.put(getCtcInt(TypeTags.class, "DOUBLE"), "java.lang.Double");
+		m.put(getCtcInt(TypeTags.class, "FLOAT"), "java.lang.Float");
+		m.put(getCtcInt(TypeTags.class, "SHORT"), "java.lang.Short");
+		m.put(getCtcInt(TypeTags.class, "BYTE"), "java.lang.Byte");
+		m.put(getCtcInt(TypeTags.class, "LONG"), "java.lang.Long");
+		m.put(getCtcInt(TypeTags.class, "BOOLEAN"), "java.lang.Boolean");
+		m.put(getCtcInt(TypeTags.class, "CHAR"), "java.lang.Character");
 		TYPE_MAP = Collections.unmodifiableMap(m);
 	}
 	
@@ -293,14 +293,14 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		if (field.vartype instanceof JCPrimitiveTypeTree) {
 			String boxed = TYPE_MAP.get(((JCPrimitiveTypeTree)field.vartype).typetag);
 			if (boxed != null) {
-				field.vartype = chainDotsString(maker, fieldNode, boxed);
+				field.vartype = chainDotsString(fieldNode, boxed);
 			}
 		}
 		
 		Name valueName = fieldNode.toName("value");
 		
 		/* java.util.concurrent.atomic.AtomicReference<ValueType> value = this.fieldName.get();*/ {
-			JCTypeApply valueVarType = maker.TypeApply(chainDotsString(maker, fieldNode, AR), List.of(copyType(maker, field)));
+			JCTypeApply valueVarType = maker.TypeApply(chainDotsString(fieldNode, AR), List.of(copyType(maker, field)));
 			statements.append(maker.VarDef(maker.Modifiers(0), valueName, valueVarType, callGet(fieldNode, createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD))));
 		}
 		
@@ -316,7 +316,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 				/* if (value == null) { */ {
 					ListBuffer<JCStatement> innerIfStatements = ListBuffer.lb();
 					/* value = new java.util.concurrent.atomic.AtomicReference<ValueType>(new ValueType());*/ {
-						JCTypeApply valueVarType = maker.TypeApply(chainDotsString(maker, fieldNode, AR), List.of(copyType(maker, field)));
+						JCTypeApply valueVarType = maker.TypeApply(chainDotsString(fieldNode, AR), List.of(copyType(maker, field)));
 						JCNewClass newInstance = maker.NewClass(null, NIL_EXPRESSION, valueVarType, List.<JCExpression>of(field.init), null);
 						
 						JCStatement statement = maker.Exec(maker.Assign(maker.Ident(valueName), newInstance));
@@ -327,7 +327,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 						innerIfStatements.append(statement);
 					}
 					
-					JCBinary isNull = maker.Binary(Javac.getCtcInt(JCTree.class, "EQ"), maker.Ident(valueName), maker.Literal(Javac.getCtcInt(TypeTags.class, "BOT"), null));
+					JCBinary isNull = maker.Binary(getCtcInt(JCTree.class, "EQ"), maker.Ident(valueName), maker.Literal(getCtcInt(TypeTags.class, "BOT"), null));
 					JCIf ifStatement = maker.If(isNull, maker.Block(0, innerIfStatements.toList()), null);
 					synchronizedStatements.append(ifStatement);
 				}
@@ -335,7 +335,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 				synchronizedStatement = maker.Synchronized(createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD), maker.Block(0, synchronizedStatements.toList()));
 			}
 			
-			JCBinary isNull = maker.Binary(Javac.getCtcInt(JCTree.class, "EQ"), maker.Ident(valueName), maker.Literal(Javac.getCtcInt(TypeTags.class, "BOT"), null));
+			JCBinary isNull = maker.Binary(getCtcInt(JCTree.class, "EQ"), maker.Ident(valueName), maker.Literal(getCtcInt(TypeTags.class, "BOT"), null));
 			JCIf ifStatement = maker.If(isNull, maker.Block(0, List.<JCStatement>of(synchronizedStatement)), null);
 			statements.append(ifStatement);
 		}
@@ -345,10 +345,10 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		// update the field type and init last
 		
 		/* 	private final java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<ValueType> fieldName = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<ValueType>>(); */ {
-			field.vartype = Javac.recursiveSetGeneratedBy(
-					maker.TypeApply(chainDotsString(maker, fieldNode, AR), List.<JCExpression>of(maker.TypeApply(chainDotsString(maker, fieldNode, AR), List.of(copyType(maker, field))))),
+			field.vartype = recursiveSetGeneratedBy(
+					maker.TypeApply(chainDotsString(fieldNode, AR), List.<JCExpression>of(maker.TypeApply(chainDotsString(fieldNode, AR), List.of(copyType(maker, field))))),
 					source);
-			field.init = Javac.recursiveSetGeneratedBy(maker.NewClass(null, NIL_EXPRESSION, copyType(maker, field), NIL_EXPRESSION, null), source);
+			field.init = recursiveSetGeneratedBy(maker.NewClass(null, NIL_EXPRESSION, copyType(maker, field), NIL_EXPRESSION, null), source);
 		}
 		
 		return statements.toList();

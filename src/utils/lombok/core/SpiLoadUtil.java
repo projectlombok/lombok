@@ -37,8 +37,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import lombok.Lombok;
-
 /**
  * The java core libraries have a SPI discovery system, but it works only in Java 1.6 and up. For at least Eclipse,
  * lombok actually works in java 1.5, so we've rolled our own SPI discovery system.
@@ -111,8 +109,9 @@ public class SpiLoadUtil {
 					@Override public C next() {
 						try {
 							return target.cast(Class.forName(names.next(), true, fLoader).newInstance());
-						} catch (Throwable t) {
-							throw Lombok.sneakyThrow(t);
+						} catch (Exception e) {
+							if (e instanceof RuntimeException) throw (RuntimeException)e;
+							throw new RuntimeException(e);
 						}
 					}
 					

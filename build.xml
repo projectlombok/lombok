@@ -137,17 +137,33 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		
 		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" includeantruntime="false">
 			<compilerarg value="-Xbootclasspath/p:build/stubs" />
+			<src path="src/utils" />
+			<exclude name="lombok/javac/**" />
+			<classpath refid="build.path" />
+		</ivy:compile>
+		
+		<ivy:compile destdir="build/lombok" source="1.6" target="1.6" includeantruntime="false">
+			<compilerarg value="-Xbootclasspath/p:build/stubs" />
+			<src path="src/utils" />
+			<include name="lombok/javac/**" />
+			<classpath location="build/lombok" />
+			<classpath refid="build.path" />
+		</ivy:compile>
+		
+		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" includeantruntime="false">
+			<compilerarg value="-Xbootclasspath/p:build/stubs" />
 			<src path="src/core" />
 			<src path="src/installer" />
 			<src path="src/eclipseAgent" />
 			<exclude name="lombok/javac/**" />
+			<classpath location="build/lombok" />
 			<classpath refid="build.path" />
 		</ivy:compile>
+		
 		<ivy:compile destdir="build/lombok" source="1.6" target="1.6" includeantruntime="false">
 			<compilerarg value="-Xbootclasspath/p:build/stubs" />
 			<src path="src/core" />
 			<src path="src/delombok" />
-			<include name="com/sun/**" />
 			<include name="lombok/javac/**" />
 			<include name="lombok/delombok/**" />
 			<classpath location="build/lombok" />

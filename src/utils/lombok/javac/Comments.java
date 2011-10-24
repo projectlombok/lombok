@@ -1,5 +1,5 @@
 /*
- * Copyright © 2010 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
+ * Copyright © 2011 Reinier Zwitserloot, Roel Spilker and Robbert Jan Grootjans.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,32 +19,34 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.bytecode;
+package lombok.javac;
 
-import org.objectweb.asm.ClassAdapter;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
-import org.objectweb.asm.MethodVisitor;
-import org.objectweb.asm.commons.JSRInlinerAdapter;
+import com.sun.tools.javac.main.JavaCompiler;
+import com.sun.tools.javac.util.Context;
 
-class PostCompilationUtil {
-	
-	private PostCompilationUtil() {
-		throw new UnsupportedOperationException();
+public class Comments {
+	public void register(Context context) {
+		try {
+			if (JavaCompiler.version().startsWith("1.6")) {
+				Class.forName("lombok.javac.java6.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
+			} else {
+				Class.forName("lombok.javac.java7.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
+			}
+		} catch (Exception e) {
+			if (e instanceof RuntimeException) throw (RuntimeException)e;
+			throw new RuntimeException(e);
+		}
+		context.put(Comments.class, (Comments) null);
+		context.put(Comments.class, this);
 	}
 	
-	static byte[] fixJSRInlining(byte[] byteCode) {
-		ClassReader reader = new ClassReader(byteCode);
-		ClassWriter writer = new FixedClassWriter(reader, 0);
-		
-		ClassVisitor visitor = new ClassAdapter(writer) {
-			@Override public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-				return new JSRInlinerAdapter(super.visitMethod(access, name, desc, signature, exceptions), access, name, desc, signature, exceptions);
-			}
-		};
-		
-		reader.accept(visitor, 0);
-		return writer.toByteArray();
+	private com.sun.tools.javac.util.ListBuffer<Comment> comments = com.sun.tools.javac.util.ListBuffer.lb();
+	
+	public com.sun.tools.javac.util.ListBuffer<Comment> getComments() {
+		return comments;
+	}
+	
+	public void add(Comment comment) {
+		comments.append(comment);
 	}
 }

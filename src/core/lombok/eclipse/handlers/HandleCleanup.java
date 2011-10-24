@@ -21,15 +21,13 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.eclipse.handlers.EclipseHandlerUtil.createNameReference;
-import static lombok.eclipse.handlers.EclipseHandlerUtil.makeIntLiteral;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.util.Arrays;
 
 import lombok.Cleanup;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
-import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 
@@ -143,10 +141,10 @@ public class HandleCleanup extends EclipseAnnotationHandler<Cleanup> {
 		doAssignmentCheck(annotationNode, tryBlock, decl.name);
 		
 		TryStatement tryStatement = new TryStatement();
-		Eclipse.setGeneratedBy(tryStatement, ast);
+		setGeneratedBy(tryStatement, ast);
 		tryStatement.tryBlock = new Block(0);
 		tryStatement.tryBlock.statements = tryBlock;
-		Eclipse.setGeneratedBy(tryStatement.tryBlock, ast);
+		setGeneratedBy(tryStatement.tryBlock, ast);
 		
 		// Positions for in-method generated nodes are special
 		int ss = decl.declarationSourceEnd + 1;
@@ -164,11 +162,11 @@ public class HandleCleanup extends EclipseAnnotationHandler<Cleanup> {
 		
 		Statement[] finallyBlock = new Statement[1];
 		MessageSend unsafeClose = new MessageSend();
-		Eclipse.setGeneratedBy(unsafeClose, ast);
+		setGeneratedBy(unsafeClose, ast);
 		unsafeClose.sourceStart = ast.sourceStart;
 		unsafeClose.sourceEnd = ast.sourceEnd;
 		SingleNameReference receiver = new SingleNameReference(decl.name, 0);
-		Eclipse.setGeneratedBy(receiver, ast);
+		setGeneratedBy(receiver, ast);
 		unsafeClose.receiver = receiver;
 		long nameSourcePosition = (long)ast.sourceStart << 32 | ast.sourceEnd;
 		if (ast.memberValuePairs() != null) for (MemberValuePair pair : ast.memberValuePairs()) {
@@ -185,22 +183,22 @@ public class HandleCleanup extends EclipseAnnotationHandler<Cleanup> {
 		long p = (long)pS << 32 | pE;
 
 		SingleNameReference varName = new SingleNameReference(decl.name, p);
-		Eclipse.setGeneratedBy(varName, ast);
+		setGeneratedBy(varName, ast);
 		NullLiteral nullLiteral = new NullLiteral(pS, pE);
-		Eclipse.setGeneratedBy(nullLiteral, ast);
+		setGeneratedBy(nullLiteral, ast);
 		
 		MessageSend preventNullAnalysis = preventNullAnalysis(ast, varName);
 		
 		EqualExpression equalExpression = new EqualExpression(preventNullAnalysis, nullLiteral, OperatorIds.NOT_EQUAL);
 		equalExpression.sourceStart = pS; equalExpression.sourceEnd = pE;
-		Eclipse.setGeneratedBy(equalExpression, ast);
+		setGeneratedBy(equalExpression, ast);
 		
 		Block closeBlock = new Block(0);
 		closeBlock.statements = new Statement[1];
 		closeBlock.statements[0] = unsafeClose;
-		Eclipse.setGeneratedBy(closeBlock, ast);
+		setGeneratedBy(closeBlock, ast);
 		IfStatement ifStatement = new IfStatement(equalExpression, closeBlock, 0, 0);
-		Eclipse.setGeneratedBy(ifStatement, ast);
+		setGeneratedBy(ifStatement, ast);
 		
 		finallyBlock[0] = ifStatement;
 		tryStatement.finallyBlock = new Block(0);
@@ -210,7 +208,7 @@ public class HandleCleanup extends EclipseAnnotationHandler<Cleanup> {
 			tryStatement.finallyBlock.sourceStart = blockNode.sourceEnd;
 			tryStatement.finallyBlock.sourceEnd = blockNode.sourceEnd;
 		}
-		Eclipse.setGeneratedBy(tryStatement.finallyBlock, ast);
+		setGeneratedBy(tryStatement.finallyBlock, ast);
 		tryStatement.finallyBlock.statements = finallyBlock;
 		
 		tryStatement.catchArguments = null;
@@ -229,7 +227,7 @@ public class HandleCleanup extends EclipseAnnotationHandler<Cleanup> {
 	
 	private MessageSend preventNullAnalysis(Annotation ast, Expression expr) {
 		MessageSend singletonList = new MessageSend();
-		Eclipse.setGeneratedBy(singletonList, ast);
+		setGeneratedBy(singletonList, ast);
 		
 		int pS = ast.sourceStart, pE = ast.sourceEnd;
 		long p = (long)pS << 32 | pE;
@@ -243,7 +241,7 @@ public class HandleCleanup extends EclipseAnnotationHandler<Cleanup> {
 		singletonList.sourceEnd = singletonList.statementEnd = pE;
 		
 		MessageSend preventNullAnalysis = new MessageSend();
-		Eclipse.setGeneratedBy(preventNullAnalysis, ast);
+		setGeneratedBy(preventNullAnalysis, ast);
 		
 		preventNullAnalysis.receiver = singletonList;
 		preventNullAnalysis.selector = "get".toCharArray();

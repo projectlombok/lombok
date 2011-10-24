@@ -22,6 +22,7 @@
 package lombok.javac.handlers;
 
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+import static lombok.javac.Javac.*;
 
 import java.util.Collection;
 
@@ -33,11 +34,9 @@ import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.core.handlers.TransformationsUtil;
-import lombok.javac.Javac;
+import lombok.core.TransformationsUtil;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
-import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -68,7 +67,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		if (checkForTypeLevelSetter) {
 			if (typeNode != null) for (JavacNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
-					if (Javac.annotationTypeMatches(Setter.class, child)) {
+					if (annotationTypeMatches(Setter.class, child)) {
 						//The annotation will make it happen, so we can skip it.
 						return;
 					}
@@ -118,7 +117,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	public void generateSetterForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level) {
 		for (JavacNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
-				if (Javac.annotationTypeMatches(Setter.class, child)) {
+				if (annotationTypeMatches(Setter.class, child)) {
 					//The annotation will make it happen, so we can skip it.
 					return;
 				}
@@ -211,14 +210,14 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		List<JCAnnotation> annsOnParam = nonNulls.appendList(nullables);
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(Flags.FINAL, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
 		//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.
-		JCExpression methodType = treeMaker.Type(new JCNoType(Javac.getCtcInt(TypeTags.class, "VOID")));
+		JCExpression methodType = treeMaker.Type(new JCNoType(getCtcInt(TypeTags.class, "VOID")));
 		
 		List<JCTypeParameter> methodGenericParams = List.nil();
 		List<JCVariableDecl> parameters = List.of(param);
 		List<JCExpression> throwsClauses = List.nil();
 		JCExpression annotationMethodDefaultValue = null;
 		
-		return Javac.recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, List.<JCAnnotation>nil()), methodName, methodType,
+		return recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, List.<JCAnnotation>nil()), methodName, methodType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
 	}
 	
@@ -229,8 +228,8 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		
 		@Override
 		public TypeKind getKind() {
-			if (tag == Javac.getCtcInt(TypeTags.class, "VOID")) return TypeKind.VOID;
-			if (tag == Javac.getCtcInt(TypeTags.class, "NONE")) return TypeKind.NONE;
+			if (tag == getCtcInt(TypeTags.class, "VOID")) return TypeKind.VOID;
+			if (tag == getCtcInt(TypeTags.class, "NONE")) return TypeKind.NONE;
 			throw new AssertionError("Unexpected tag: " + tag);
 		}
 		

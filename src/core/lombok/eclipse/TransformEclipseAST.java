@@ -21,6 +21,8 @@
  */
 package lombok.eclipse;
 
+import static lombok.eclipse.handlers.EclipseHandlerUtil.error;
+
 import java.lang.reflect.Field;
 
 import lombok.core.debug.DebugSnapshotStore;
@@ -64,7 +66,7 @@ public class TransformEclipseAST {
 			h = HandlerLibrary.load();
 		} catch (Throwable t) {
 			try {
-				Eclipse.error(null, "Problem initializing lombok", t);
+				error(null, "Problem initializing lombok", t);
 			} catch (Throwable t2) {
 				System.err.println("Problem initializing lombok");
 				t.printStackTrace();
@@ -140,7 +142,7 @@ public class TransformEclipseAST {
 				t.printStackTrace();
 			} catch (Throwable t2) {
 				try {
-					Eclipse.error(ast, "Can't create an error in the problems dialog while adding: " + t.toString(), t2);
+					error(ast, "Can't create an error in the problems dialog while adding: " + t.toString(), t2);
 				} catch (Throwable t3) {
 					//This seems risky to just silently turn off lombok, but if we get this far, something pretty
 					//drastic went wrong. For example, the eclipse help system's JSP compiler will trigger a lombok call,

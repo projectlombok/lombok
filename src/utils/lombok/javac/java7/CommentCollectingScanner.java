@@ -19,14 +19,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.delombok.java7;
+package lombok.javac.java7;
 
 import java.nio.CharBuffer;
 
-import lombok.delombok.Comment;
-import lombok.delombok.Comment.EndConnection;
-import lombok.delombok.Comment.StartConnection;
-import lombok.delombok.Delombok.Comments;
+import lombok.javac.Comment;
+import lombok.javac.Comment.EndConnection;
+import lombok.javac.Comment.StartConnection;
+import lombok.javac.Comments;
 
 import com.sun.tools.javac.parser.Scanner;
 

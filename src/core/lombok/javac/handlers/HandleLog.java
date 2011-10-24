@@ -26,10 +26,8 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 import java.lang.annotation.Annotation;
 
 import lombok.core.AnnotationValues;
-import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
-import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -86,13 +84,13 @@ public class HandleLog {
 		TreeMaker maker = typeNode.getTreeMaker();
 		
 		// 	private static final <loggerType> log = <factoryMethod>(<parameter>);
-		JCExpression loggerType = chainDotsString(maker, typeNode, framework.getLoggerTypeName());
-		JCExpression factoryMethod = chainDotsString(maker, typeNode, framework.getLoggerFactoryMethodName());
+		JCExpression loggerType = chainDotsString(typeNode, framework.getLoggerTypeName());
+		JCExpression factoryMethod = chainDotsString(typeNode, framework.getLoggerFactoryMethodName());
 		
 		JCExpression loggerName = framework.createFactoryParameter(typeNode, loggingType);
 		JCMethodInvocation factoryMethodCall = maker.Apply(List.<JCExpression>nil(), factoryMethod, List.<JCExpression>of(loggerName));
 		
-		JCVariableDecl fieldDecl = Javac.recursiveSetGeneratedBy(maker.VarDef(
+		JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
 				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | Flags.STATIC),
 				typeNode.toName("log"), loggerType, factoryMethodCall), source);
 		

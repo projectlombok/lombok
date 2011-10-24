@@ -19,10 +19,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.delombok;
+package lombok.javac;
 
 public final class Comment {
-	
 	public enum StartConnection {
 		START_OF_LINE,
 		ON_NEXT_LINE,
@@ -36,12 +35,12 @@ public final class Comment {
 		ON_NEXT_LINE
 	}
 	
-	final int pos;
-	final int prevEndPos;
-	final String content;
-	final int endPos;
-	final StartConnection start;
-	final EndConnection end;
+	public final int pos;
+	public final int prevEndPos;
+	public final String content;
+	public final int endPos;
+	public final StartConnection start;
+	public final EndConnection end;
 	
 	public Comment(int prevEndPos, int pos, int endPos, String content, StartConnection start, EndConnection end) {
 		this.pos = pos;

@@ -1,0 +1,175 @@
+/*
+ * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+package lombok.eclipse;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Pattern;
+
+import lombok.core.TransformationsUtil;
+
+import org.eclipse.jdt.internal.compiler.ast.ASTNode;
+import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
+import org.eclipse.jdt.internal.compiler.ast.Clinit;
+import org.eclipse.jdt.internal.compiler.ast.Expression;
+import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.Literal;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
+import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
+import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
+
+public class Eclipse {
+	/**
+	 * Eclipse's Parser class is instrumented to not attempt to fill in the body of any method or initializer
+	 * or field initialization if this flag is set. Set it on the flag field of
+	 * any method, field, or initializer you create!
+	 */
+	public static final int ECLIPSE_DO_NOT_TOUCH_FLAG = ASTNode.Bit24;
+	
+	private Eclipse() {
+		//Prevent instantiation
+	}
+	
+	/**
+	 * For 'speed' reasons, Eclipse works a lot with char arrays. I have my doubts this was a fruitful exercise,
+	 * but we need to deal with it. This turns [[java][lang][String]] into "java.lang.String".
+	 */
+	public static String toQualifiedName(char[][] typeName) {
+		StringBuilder sb = new StringBuilder();
+		boolean first = true;
+		for (char[] c : typeName) {
+			sb.append(first ? "" : ".").append(c);
+			first = false;
+		}
+		return sb.toString();
+	}
+	
+	public static char[][] fromQualifiedName(String typeName) {
+		String[] split = typeName.split("\\.");
+		char[][] result = new char[split.length][];
+		for (int i = 0; i < split.length; i++) {
+			result[i] = split[i].toCharArray();
+		}
+		return result;
+	}
+	
+	public static long pos(ASTNode node) {
+		return ((long) node.sourceStart << 32) | (node.sourceEnd & 0xFFFFFFFFL);
+	}
+	
+	public static long[] poss(ASTNode node, int repeat) {
+		long p = ((long) node.sourceStart << 32) | (node.sourceEnd & 0xFFFFFFFFL);
+		long[] out = new long[repeat];
+		Arrays.fill(out, p);
+		return out;
+	}
+	
+	/**
+	 * Checks if an eclipse-style array-of-array-of-characters to represent a fully qualified name ('foo.bar.baz'), matches a plain
+	 * string containing the same fully qualified name with dots in the string.
+	 */
+	public static boolean nameEquals(char[][] typeName, String string) {
+		StringBuilder sb = new StringBuilder();
+		boolean first = true;
+		for (char[] elem : typeName) {
+			if (first) first = false;
+			else sb.append('.');
+			sb.append(elem);
+		}
+		
+		return string.contentEquals(sb);
+	}
+	
+	public static boolean hasClinit(TypeDeclaration parent) {
+		if (parent.methods == null) return false;
+		
+		for (AbstractMethodDeclaration method : parent.methods) {
+			if (method instanceof Clinit) return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * Searches the given field node for annotations and returns each one that matches the provided regular expression pattern.
+	 * 
+	 * Only the simple name is checked - the package and any containing class are ignored.
+	 */
+	public static Annotation[] findAnnotations(FieldDeclaration field, Pattern namePattern) {
+		List<Annotation> result = new ArrayList<Annotation>();
+		if (field.annotations == null) return new Annotation[0];
+		for (Annotation annotation : field.annotations) {
+			TypeReference typeRef = annotation.type;
+			if (typeRef != null && typeRef.getTypeName()!= null) {
+				char[][] typeName = typeRef.getTypeName();
+				String suspect = new String(typeName[typeName.length - 1]);
+				if (namePattern.matcher(suspect).matches()) {
+					result.add(annotation);
+				}
+			}
+		}	
+		return result.toArray(new Annotation[0]);
+	}
+	
+	/**
+	 * Checks if the given type reference represents a primitive type.
+	 */
+	public static boolean isPrimitive(TypeReference ref) {
+		if (ref.dimensions() > 0) return false;
+		return TransformationsUtil.PRIMITIVE_TYPE_NAME_PATTERN.matcher(toQualifiedName(ref.getTypeName())).matches();
+	}
+	
+	/**
+	 * Returns the actual value of the given Literal or Literal-like node.
+	 */
+	public static Object calculateValue(Expression e) {
+		if (e instanceof Literal) {
+			((Literal)e).computeConstant();
+			switch (e.constant.typeID()) {
+			case TypeIds.T_int: return e.constant.intValue();
+			case TypeIds.T_byte: return e.constant.byteValue();
+			case TypeIds.T_short: return e.constant.shortValue();
+			case TypeIds.T_char: return e.constant.charValue();
+			case TypeIds.T_float: return e.constant.floatValue();
+			case TypeIds.T_double: return e.constant.doubleValue();
+			case TypeIds.T_boolean: return e.constant.booleanValue();
+			case TypeIds.T_long: return e.constant.longValue();
+			case TypeIds.T_JavaLangString: return e.constant.stringValue();
+			default: return null;
+			}
+		} else if (e instanceof ClassLiteralAccess) {
+			return Eclipse.toQualifiedName(((ClassLiteralAccess)e).type.getTypeName());
+		} else if (e instanceof SingleNameReference) {
+			return new String(((SingleNameReference)e).token);
+		} else if (e instanceof QualifiedNameReference) {
+			String qName = Eclipse.toQualifiedName(((QualifiedNameReference)e).tokens);
+			int idx = qName.lastIndexOf('.');
+			return idx == -1 ? qName : qName.substring(idx+1);
+		}
+		
+		return null;
+	}
+}

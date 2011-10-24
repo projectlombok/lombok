@@ -39,9 +39,10 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.delombok.Comment.EndConnection;
-import lombok.delombok.Comment.StartConnection;
+import lombok.javac.Comment;
 import lombok.javac.Javac;
+import lombok.javac.Comment.EndConnection;
+import lombok.javac.Comment.StartConnection;
 
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.BoundKind;

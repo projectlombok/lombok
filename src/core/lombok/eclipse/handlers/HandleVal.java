@@ -22,7 +22,6 @@
 package lombok.eclipse.handlers;
 
 import lombok.val;
-import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseASTAdapter;
 import lombok.eclipse.EclipseASTVisitor;
 import lombok.eclipse.EclipseNode;
@@ -42,7 +41,7 @@ public class HandleVal extends EclipseASTAdapter {
 	}
 	
 	@Override public void visitLocal(EclipseNode localNode, LocalDeclaration local) {
-		if (!Eclipse.typeMatches(val.class, localNode, local.type)) return;
+		if (!EclipseHandlerUtil.typeMatches(val.class, localNode, local.type)) return;
 		boolean variableOfForEach = false;
 		
 		if (localNode.directUp().get() instanceof ForeachStatement) {

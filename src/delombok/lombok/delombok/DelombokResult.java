@@ -26,6 +26,8 @@ import java.util.Date;
 
 import javax.tools.JavaFileObject;
 
+import lombok.javac.Comment;
+
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.List;
 

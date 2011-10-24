@@ -21,6 +21,7 @@
  */
 package lombok.eclipse.agent;
 
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import static lombok.eclipse.Eclipse.*;
 
 import java.lang.reflect.Method;
@@ -34,11 +35,9 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import lombok.core.AST.Kind;
-import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.TransformEclipseAST;
-import lombok.eclipse.handlers.EclipseHandlerUtil;
 
 import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
@@ -325,7 +324,7 @@ public class PatchDelegate {
 		for (BindingTuple pair : methods) {
 			EclipseNode annNode = typeNode.getAst().get(pair.responsible);
 			MethodDeclaration method = createDelegateMethod(pair.fieldName, typeNode, pair, top.compilationResult, annNode);
-			if (method != null) EclipseHandlerUtil.injectMethod(typeNode, method);
+			if (method != null) injectMethod(typeNode, method);
 		}
 	}
 	
@@ -489,11 +488,11 @@ public class PatchDelegate {
 		
 		MethodBinding binding = pair.parameterized;
 		MethodDeclaration method = new MethodDeclaration(compilationResult);
-		Eclipse.setGeneratedBy(method, source);
+		setGeneratedBy(method, source);
 		method.sourceStart = pS; method.sourceEnd = pE;
 		method.modifiers = ClassFileConstants.AccPublic;
 		
-		method.returnType = Eclipse.makeType(binding.returnType, source, false);
+		method.returnType = makeType(binding.returnType, source, false);
 		boolean isDeprecated = hasDeprecatedAnnotation(binding);
 		
 		method.selector = binding.selector;
@@ -501,18 +500,18 @@ public class PatchDelegate {
 		if (binding.thrownExceptions != null && binding.thrownExceptions.length > 0) {
 			method.thrownExceptions = new TypeReference[binding.thrownExceptions.length];
 			for (int i = 0; i < method.thrownExceptions.length; i++) {
-				method.thrownExceptions[i] = Eclipse.makeType(binding.thrownExceptions[i], source, false);
+				method.thrownExceptions[i] = makeType(binding.thrownExceptions[i], source, false);
 			}
 		}
 		
 		MessageSend call = new MessageSend();
 		call.sourceStart = pS; call.sourceEnd = pE;
 		call.nameSourcePosition = pos(source);
-		Eclipse.setGeneratedBy(call, source);
+		setGeneratedBy(call, source);
 		FieldReference fieldRef = new FieldReference(name, pos(source));
 		fieldRef.receiver = new ThisReference(pS, pE);
-		Eclipse.setGeneratedBy(fieldRef, source);
-		Eclipse.setGeneratedBy(fieldRef.receiver, source);
+		setGeneratedBy(fieldRef, source);
+		setGeneratedBy(fieldRef.receiver, source);
 		call.receiver = fieldRef;
 		call.selector = binding.selector;
 		
@@ -522,21 +521,21 @@ public class PatchDelegate {
 			for (int i = 0; i < method.typeParameters.length; i++) {
 				method.typeParameters[i] = new TypeParameter();
 				method.typeParameters[i].sourceStart = pS; method.typeParameters[i].sourceEnd = pE;
-				Eclipse.setGeneratedBy(method.typeParameters[i], source);
+				setGeneratedBy(method.typeParameters[i], source);
 				method.typeParameters[i].name = binding.typeVariables[i].sourceName;
 				call.typeArguments[i] = new SingleTypeReference(binding.typeVariables[i].sourceName, pos(source));
-				Eclipse.setGeneratedBy(call.typeArguments[i], source);
+				setGeneratedBy(call.typeArguments[i], source);
 				ReferenceBinding super1 = binding.typeVariables[i].superclass;
 				ReferenceBinding[] super2 = binding.typeVariables[i].superInterfaces;
 				if (super2 == null) super2 = new ReferenceBinding[0];
 				if (super1 != null || super2.length > 0) {
 					int offset = super1 == null ? 0 : 1;
 					method.typeParameters[i].bounds = new TypeReference[super2.length + offset - 1];
-					if (super1 != null) method.typeParameters[i].type = Eclipse.makeType(super1, source, false);
-					else method.typeParameters[i].type = Eclipse.makeType(super2[0], source, false);
+					if (super1 != null) method.typeParameters[i].type = makeType(super1, source, false);
+					else method.typeParameters[i].type = makeType(super2[0], source, false);
 					int ctr = 0;
 					for (int j = (super1 == null) ? 1 : 0; j < super2.length; j++) {
-						method.typeParameters[i].bounds[ctr] = Eclipse.makeType(super2[j], source, false);
+						method.typeParameters[i].bounds[ctr] = makeType(super2[j], source, false);
 						method.typeParameters[i].bounds[ctr++].bits |= ASTNode.IsSuperType;
 					}
 				}
@@ -546,7 +545,7 @@ public class PatchDelegate {
 		if (isDeprecated) {
 			QualifiedTypeReference qtr = new QualifiedTypeReference(new char[][] {
 					{'j', 'a', 'v', 'a'}, {'l', 'a', 'n', 'g'}, {'D', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd'}}, poss(source, 3));
-			Eclipse.setGeneratedBy(qtr, source);
+			setGeneratedBy(qtr, source);
 			MarkerAnnotation ann = new MarkerAnnotation(qtr, pS);
 			method.annotations = new Annotation[] {ann};
 		}
@@ -565,11 +564,11 @@ public class PatchDelegate {
 				}
 				method.arguments[i] = new Argument(
 						argName, pos(source),
-						Eclipse.makeType(binding.parameters[i], source, false),
+						makeType(binding.parameters[i], source, false),
 						ClassFileConstants.AccFinal);
-				Eclipse.setGeneratedBy(method.arguments[i], source);
+				setGeneratedBy(method.arguments[i], source);
 				call.arguments[i] = new SingleNameReference(argName, pos(source));
-				Eclipse.setGeneratedBy(call.arguments[i], source);
+				setGeneratedBy(call.arguments[i], source);
 			}
 			if (isVarargs) {
 				method.arguments[method.arguments.length - 1].type.bits |= ASTNode.IsVarArgs;
@@ -581,7 +580,7 @@ public class PatchDelegate {
 			body = call;
 		} else {
 			body = new ReturnStatement(call, source.sourceStart, source.sourceEnd);
-			Eclipse.setGeneratedBy(body, source);
+			setGeneratedBy(body, source);
 		}
 		
 		method.statements = new Statement[] {body};

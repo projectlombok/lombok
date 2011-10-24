@@ -44,7 +44,7 @@ import java.util.Map;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 
-import lombok.Lombok;
+import lombok.javac.Comments;
 import lombok.javac.LombokOptions;
 
 import com.sun.tools.javac.main.JavaCompiler;
@@ -357,17 +357,6 @@ public class Delombok {
 		if (sourcepath != null) options.put(OptionName.SOURCEPATH, sourcepath);
 		options.put("compilePolicy", "attr");
 		
-		try {
-			if (JavaCompiler.version().startsWith("1.6")) {
-				Class.forName("lombok.delombok.java6.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
-			} else {
-				Class.forName("lombok.delombok.java7.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
-			}
-			
-		} catch (Throwable t) {
-			throw Lombok.sneakyThrow(t);
-		}
-		
 		JavaCompiler compiler = new JavaCompiler(context);
 		compiler.keepComments = true;
 		compiler.genEndPos = true;
@@ -380,8 +369,7 @@ public class Delombok {
 		
 		for (File fileToParse : filesToParse) {
 			Comments comments = new Comments();
-			context.put(Comments.class, (Comments) null);
-			context.put(Comments.class, comments);
+			comments.register(context);
 			
 			@SuppressWarnings("deprecation")
 			JCCompilationUnit unit = compiler.parse(fileToParse.getAbsolutePath());
@@ -398,7 +386,7 @@ public class Delombok {
 		
 		JavaCompiler delegate = compiler.processAnnotations(compiler.enterTrees(toJavacList(roots)));
 		for (JCCompilationUnit unit : roots) {
-			DelombokResult result = new DelombokResult(commentsMap.get(unit).comments.toList(), unit, force || options.changed.contains(unit));
+			DelombokResult result = new DelombokResult(commentsMap.get(unit).getComments().toList(), unit, force || options.changed.contains(unit));
 			if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged");
 			Writer rawWriter;
 			if (presetWriter != null) rawWriter = presetWriter;
@@ -414,14 +402,6 @@ public class Delombok {
 		delegate.close();
 		
 		return true;
-	}
-	
-	public static class Comments {
-		public com.sun.tools.javac.util.ListBuffer<Comment> comments = com.sun.tools.javac.util.ListBuffer.lb();
-		
-		public void add(Comment comment) {
-			comments.append(comment);
-		}
 	}
 	
 	private static String canonical(File dir) {

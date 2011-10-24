@@ -22,6 +22,7 @@
 package lombok.eclipse;
 
 import static lombok.eclipse.Eclipse.toQualifiedName;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -69,13 +70,13 @@ public class HandlerLibrary {
 		
 		public void handle(org.eclipse.jdt.internal.compiler.ast.Annotation annotation,
 				final EclipseNode annotationNode) {
-			AnnotationValues<T> annValues = Eclipse.createAnnotation(annotationClass, annotationNode);
+			AnnotationValues<T> annValues = createAnnotation(annotationClass, annotationNode);
 			handler.handle(annValues, annotation, annotationNode);
 		}
 		
 		public void preHandle(org.eclipse.jdt.internal.compiler.ast.Annotation annotation,
 				final EclipseNode annotationNode) {
-			AnnotationValues<T> annValues = Eclipse.createAnnotation(annotationClass, annotationNode);
+			AnnotationValues<T> annValues = createAnnotation(annotationClass, annotationNode);
 			handler.preHandle(annValues, annotation, annotationNode);
 		}
 		
@@ -113,11 +114,11 @@ public class HandlerLibrary {
 						SpiLoadUtil.findAnnotationClass(handler.getClass(), EclipseAnnotationHandler.class);
 					AnnotationHandlerContainer<?> container = new AnnotationHandlerContainer(handler, annotationClass);
 					if (lib.annotationHandlers.put(container.annotationClass.getName(), container) != null) {
-						Eclipse.error(null, "Duplicate handlers for annotation type: " + container.annotationClass.getName(), null);
+						error(null, "Duplicate handlers for annotation type: " + container.annotationClass.getName(), null);
 					}
 					lib.typeLibrary.addType(container.annotationClass.getName());
 				} catch (Throwable t) {
-					Eclipse.error(null, "Can't load Lombok annotation handler for Eclipse: ", t);
+					error(null, "Can't load Lombok annotation handler for Eclipse: ", t);
 				}
 			}
 		} catch (IOException e) {
@@ -192,7 +193,7 @@ public class HandlerLibrary {
 			} catch (AnnotationValueDecodeFail fail) {
 				fail.owner.setError(fail.getMessage(), fail.idx);
 			} catch (Throwable t) {
-				Eclipse.error(ast, String.format("Lombok annotation handler %s failed", container.handler.getClass()), t);
+				error(ast, String.format("Lombok annotation handler %s failed", container.handler.getClass()), t);
 			}
 		}
 	}
@@ -204,7 +205,7 @@ public class HandlerLibrary {
 		for (EclipseASTVisitor visitor : visitorHandlers) try {
 			ast.traverse(visitor);
 		} catch (Throwable t) {
-			Eclipse.error((CompilationUnitDeclaration) ast.top().get(),
+			error((CompilationUnitDeclaration) ast.top().get(),
 					String.format("Lombok visitor handler %s failed", visitor.getClass()), t);
 		}
 	}

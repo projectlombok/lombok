@@ -83,11 +83,11 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 				annotationNode.addError("The field " + lockName + " does not exist.");
 				return;
 			}
-			JCExpression objectType = chainDots(maker, methodNode, "java", "lang", "Object");
+			JCExpression objectType = chainDots(methodNode, "java", "lang", "Object");
 			//We use 'new Object[0];' because unlike 'new Object();', empty arrays *ARE* serializable!
-			JCNewArray newObjectArray = maker.NewArray(chainDots(maker, methodNode, "java", "lang", "Object"),
+			JCNewArray newObjectArray = maker.NewArray(chainDots(methodNode, "java", "lang", "Object"),
 					List.<JCExpression>of(maker.Literal(Javac.getCtcInt(TypeTags.class, "INT"), 0)), null);
-			JCVariableDecl fieldDecl = Javac.recursiveSetGeneratedBy(maker.VarDef(
+			JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
 					maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic ? Flags.STATIC : 0)),
 					methodNode.toName(lockName), objectType, newObjectArray), ast);
 			injectFieldSuppressWarnings(methodNode.up(), fieldDecl);
@@ -97,13 +97,13 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 		
 		JCExpression lockNode;
 		if (isStatic) {
-			lockNode = chainDots(maker, methodNode, methodNode.up().getName(), lockName);
+			lockNode = chainDots(methodNode, methodNode.up().getName(), lockName);
 		} else {
 			lockNode = maker.Select(maker.Ident(methodNode.toName("this")), methodNode.toName(lockName));
 		}
 		
-		Javac.recursiveSetGeneratedBy(lockNode, ast);
-		method.body = Javac.setGeneratedBy(maker.Block(0, List.<JCStatement>of(Javac.setGeneratedBy(maker.Synchronized(lockNode, method.body), ast))), ast);
+		recursiveSetGeneratedBy(lockNode, ast);
+		method.body = setGeneratedBy(maker.Block(0, List.<JCStatement>of(setGeneratedBy(maker.Synchronized(lockNode, method.body), ast))), ast);
 		
 		methodNode.rebuild();
 	}

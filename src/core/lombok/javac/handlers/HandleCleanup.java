@@ -21,7 +21,7 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.handlers.JavacHandlerUtil.deleteAnnotationIfNeccessary;
+import static lombok.javac.handlers.JavacHandlerUtil.*;
 import lombok.Cleanup;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
@@ -122,9 +122,9 @@ public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 		
 		JCIf ifNotNullCleanup = maker.If(isNull, maker.Block(0, cleanupCall), null);
 		
-		JCBlock finalizer = Javac.recursiveSetGeneratedBy(maker.Block(0, List.<JCStatement>of(ifNotNullCleanup)), ast);
+		JCBlock finalizer = recursiveSetGeneratedBy(maker.Block(0, List.<JCStatement>of(ifNotNullCleanup)), ast);
 		
-		newStatements.append(Javac.setGeneratedBy(maker.Try(Javac.setGeneratedBy(maker.Block(0, tryBlock.toList()), ast), List.<JCCatch>nil(), finalizer), ast));
+		newStatements.append(setGeneratedBy(maker.Try(setGeneratedBy(maker.Block(0, tryBlock.toList()), ast), List.<JCCatch>nil(), finalizer), ast));
 		
 		if (blockNode instanceof JCBlock) {
 			((JCBlock)blockNode).stats = newStatements.toList();
@@ -138,7 +138,7 @@ public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 	}
 	
 	private JCMethodInvocation preventNullAnalysis(TreeMaker maker, JavacNode node, JCExpression expression) {
-		JCMethodInvocation singletonList = maker.Apply(List.<JCExpression>nil(), JavacHandlerUtil.chainDotsString(maker, node, "java.util.Collections.singletonList"), List.of(expression));
+		JCMethodInvocation singletonList = maker.Apply(List.<JCExpression>nil(), chainDotsString(node, "java.util.Collections.singletonList"), List.of(expression));
 		JCMethodInvocation cleanedExpr = maker.Apply(List.<JCExpression>nil(), maker.Select(singletonList, node.toName("get")) , List.<JCExpression>of(maker.Literal(TypeTags.INT, 0)));
 		return cleanedExpr;
 	}

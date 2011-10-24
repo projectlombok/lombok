@@ -28,10 +28,8 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
 import lombok.core.AnnotationValues;
-import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
-import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
@@ -88,10 +86,10 @@ public class HandleLog {
 
 		TypeDeclaration typeDeclaration = (TypeDeclaration)type.get();
 		TypeReference typeReference = new SingleTypeReference(typeDeclaration.name, p);
-		Eclipse.setGeneratedBy(typeReference, source);
+		setGeneratedBy(typeReference, source);
 
 		ClassLiteralAccess result = new ClassLiteralAccess(source.sourceEnd, typeReference);
-		Eclipse.setGeneratedBy(result, source);
+		setGeneratedBy(result, source);
 		
 		return result;
 	}
@@ -103,14 +101,14 @@ public class HandleLog {
 		// 	private static final <loggerType> log = <factoryMethod>(<parameter>);
 
 		FieldDeclaration fieldDecl = new FieldDeclaration("log".toCharArray(), 0, -1);
-		Eclipse.setGeneratedBy(fieldDecl, source);
+		setGeneratedBy(fieldDecl, source);
 		fieldDecl.declarationSourceEnd = -1;
 		fieldDecl.modifiers = Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL;
 		
 		fieldDecl.type = createTypeReference(framework.getLoggerTypeName(), source);
 		
 		MessageSend factoryMethodCall = new MessageSend();
-		Eclipse.setGeneratedBy(factoryMethodCall, source);
+		setGeneratedBy(factoryMethodCall, source);
 
 		factoryMethodCall.receiver = createNameReference(framework.getLoggerFactoryTypeName(), source);
 		factoryMethodCall.selector = framework.getLoggerFactoryMethodName().toCharArray();
@@ -144,7 +142,7 @@ public class HandleLog {
 			typeReference = null;
 		}
 		
-		Eclipse.setGeneratedBy(typeReference, source);
+		setGeneratedBy(typeReference, source);
 		return typeReference;
 	}
 	
@@ -199,7 +197,7 @@ public class HandleLog {
 				long p = (long)pS << 32 | pE;
 				
 				MessageSend factoryParameterCall = new MessageSend();
-				Eclipse.setGeneratedBy(factoryParameterCall, source);
+				setGeneratedBy(factoryParameterCall, source);
 				
 				factoryParameterCall.receiver = super.createFactoryParameter(type, source);
 				factoryParameterCall.selector = "getName".toCharArray();
@@ -243,9 +241,9 @@ public class HandleLog {
 		}
 		
 		Expression createFactoryParameter(ClassLiteralAccess loggingType, Annotation source){
-			TypeReference copy = Eclipse.copyType(loggingType.type, source);
+			TypeReference copy = copyType(loggingType.type, source);
 			ClassLiteralAccess result = new ClassLiteralAccess(source.sourceEnd, copy);
-			Eclipse.setGeneratedBy(result, source);
+			setGeneratedBy(result, source);
 			return result;
 		};
 	}

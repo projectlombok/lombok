@@ -21,9 +21,10 @@
  */
 package lombok.eclipse.agent;
 
-import java.lang.reflect.Field;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
+import static lombok.eclipse.Eclipse.*;
 
-import lombok.eclipse.Eclipse;
+import java.lang.reflect.Field;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
@@ -142,13 +143,13 @@ public class PatchVal {
 		if (init != null) {
 			TypeBinding resolved = decomponent ? getForEachComponentType(init, scope) : init.resolveType(scope);
 			if (resolved != null) {
-				replacement = Eclipse.makeType(resolved, local.type, false);
+				replacement = makeType(resolved, local.type, false);
 			}
 		}
 		
 		local.modifiers |= ClassFileConstants.AccFinal;
 		local.annotations = addValAnnotation(local.annotations, local.type, scope);
-		local.type = replacement != null ? replacement : new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, Eclipse.poss(local.type, 3));
+		local.type = replacement != null ? replacement : new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(local.type, 3));
 		
 		return false;
 	}
@@ -160,12 +161,12 @@ public class PatchVal {
 		
 		TypeBinding component = getForEachComponentType(forEach.collection, scope);
 		if (component == null) return false;
-		TypeReference replacement = Eclipse.makeType(component, forEach.elementVariable.type, false);
+		TypeReference replacement = makeType(component, forEach.elementVariable.type, false);
 		
 		forEach.elementVariable.modifiers |= ClassFileConstants.AccFinal;
 		forEach.elementVariable.annotations = addValAnnotation(forEach.elementVariable.annotations, forEach.elementVariable.type, scope);
 		forEach.elementVariable.type = replacement != null ? replacement :
-				new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, Eclipse.poss(forEach.elementVariable.type, 3));
+				new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(forEach.elementVariable.type, 3));
 		
 		return false;
 	}

@@ -21,7 +21,7 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.handlers.JavacHandlerUtil.deleteAnnotationIfNeccessary;
+import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,7 +43,6 @@ import lombok.Delegate;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.javac.FindTypeVarScanner;
-import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacResolution;
@@ -186,7 +185,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		}
 		
 		for (JCMethodDecl method : toAdd) {
-			JavacHandlerUtil.injectMethod(annotation.up().up(), method);
+			injectMethod(annotation.up().up(), method);
 		}
 	}
 	
@@ -254,7 +253,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		com.sun.tools.javac.util.List<JCAnnotation> annotations;
 		if (sig.isDeprecated) {
 			annotations = com.sun.tools.javac.util.List.of(maker.Annotation(
-					JavacHandlerUtil.chainDots(maker, annotation, "java", "lang", "Deprecated"),
+					chainDots(annotation, "java", "lang", "Deprecated"),
 					com.sun.tools.javac.util.List.<JCExpression>nil()));
 		} else {
 			annotations = com.sun.tools.javac.util.List.nil();
@@ -295,7 +294,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		JCStatement body = useReturn ? maker.Return(delegateCall) : maker.Exec(delegateCall);
 		JCBlock bodyBlock = maker.Block(0, com.sun.tools.javac.util.List.of(body));
 		
-		return Javac.recursiveSetGeneratedBy(maker.MethodDef(mods, sig.name, returnType, toList(typeParams), toList(params), toList(thrown), bodyBlock, null), annotation.get());
+		return recursiveSetGeneratedBy(maker.MethodDef(mods, sig.name, returnType, toList(typeParams), toList(params), toList(thrown), bodyBlock, null), annotation.get());
 	}
 	
 	private static <T> com.sun.tools.javac.util.List<T> toList(ListBuffer<T> collection) {

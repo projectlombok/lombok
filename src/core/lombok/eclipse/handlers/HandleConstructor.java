@@ -36,11 +36,9 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.core.handlers.TransformationsUtil;
-import lombok.eclipse.Eclipse;
+import lombok.core.TransformationsUtil;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
-import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
@@ -105,7 +103,7 @@ public class HandleConstructor {
 		for (EclipseNode child : typeNode.down()) {
 			if (child.getKind() != Kind.FIELD) continue;
 			FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
-			if (!EclipseHandlerUtil.filterField(fieldDecl)) continue;
+			if (!filterField(fieldDecl)) continue;
 			boolean isFinal = (fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0;
 			boolean isNonNull = findAnnotations(fieldDecl, TransformationsUtil.NON_NULL_PATTERN).length != 0;
 			if ((isFinal || isNonNull) && fieldDecl.initialization == null) fields.add(child);
@@ -128,7 +126,7 @@ public class HandleConstructor {
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
 				FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
-				if (!EclipseHandlerUtil.filterField(fieldDecl)) continue;
+				if (!filterField(fieldDecl)) continue;
 				
 				// Skip initialized final fields.
 				if (((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) && fieldDecl.initialization != null) continue;
@@ -162,9 +160,9 @@ public class HandleConstructor {
 		if (skipIfConstructorExists) {
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
-					if (Eclipse.annotationTypeMatches(NoArgsConstructor.class, child) ||
-							Eclipse.annotationTypeMatches(AllArgsConstructor.class, child) ||
-							Eclipse.annotationTypeMatches(RequiredArgsConstructor.class, child))
+					if (annotationTypeMatches(NoArgsConstructor.class, child) ||
+							annotationTypeMatches(AllArgsConstructor.class, child) ||
+							annotationTypeMatches(RequiredArgsConstructor.class, child))
 						return;
 				}
 			}
@@ -189,7 +187,7 @@ public class HandleConstructor {
 		long[] poss = new long[3];
 		Arrays.fill(poss, p);
 		QualifiedTypeReference constructorPropertiesType = new QualifiedTypeReference(JAVA_BEANS_CONSTRUCTORPROPERTIES, poss);
-		Eclipse.setGeneratedBy(constructorPropertiesType, source);
+		setGeneratedBy(constructorPropertiesType, source);
 		SingleMemberAnnotation ann = new SingleMemberAnnotation(constructorPropertiesType, pS);
 		ann.declarationSourceEnd = pE;
 		
@@ -201,13 +199,13 @@ public class HandleConstructor {
 		int ctr = 0;
 		for (EclipseNode field : fields) {
 			fieldNames.expressions[ctr] = new StringLiteral(field.getName().toCharArray(), pS, pE, 0);
-			Eclipse.setGeneratedBy(fieldNames.expressions[ctr], source);
+			setGeneratedBy(fieldNames.expressions[ctr], source);
 			ctr++;
 		}
 		
 		ann.memberValue = fieldNames;
-		Eclipse.setGeneratedBy(ann, source);
-		Eclipse.setGeneratedBy(ann.memberValue, source);
+		setGeneratedBy(ann, source);
+		setGeneratedBy(ann.memberValue, source);
 		if (originalAnnotationArray == null) return new Annotation[] { ann };
 		Annotation[] newAnnotationArray = Arrays.copyOf(originalAnnotationArray, originalAnnotationArray.length + 1);
 		newAnnotationArray[originalAnnotationArray.length] = ann;
@@ -224,15 +222,15 @@ public class HandleConstructor {
 		
 		ConstructorDeclaration constructor = new ConstructorDeclaration(
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
-		Eclipse.setGeneratedBy(constructor, source);
+		setGeneratedBy(constructor, source);
 		
-		constructor.modifiers = EclipseHandlerUtil.toEclipseModifier(level);
+		constructor.modifiers = toEclipseModifier(level);
 		constructor.selector = ((TypeDeclaration)type.get()).name;
 		constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
-		Eclipse.setGeneratedBy(constructor.constructorCall, source);
+		setGeneratedBy(constructor.constructorCall, source);
 		constructor.thrownExceptions = null;
 		constructor.typeParameters = null;
-		constructor.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
+		constructor.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = source.sourceStart;
 		constructor.bodyEnd = constructor.declarationSourceEnd = constructor.sourceEnd = source.sourceEnd;
 		constructor.arguments = null;
@@ -244,18 +242,18 @@ public class HandleConstructor {
 		for (EclipseNode fieldNode : fields) {
 			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 			FieldReference thisX = new FieldReference(field.name, p);
-			Eclipse.setGeneratedBy(thisX, source);
+			setGeneratedBy(thisX, source);
 			thisX.receiver = new ThisReference((int)(p >> 32), (int)p);
-			Eclipse.setGeneratedBy(thisX.receiver, source);
+			setGeneratedBy(thisX.receiver, source);
 			
 			SingleNameReference assignmentNameRef = new SingleNameReference(field.name, p);
-			Eclipse.setGeneratedBy(assignmentNameRef, source);
+			setGeneratedBy(assignmentNameRef, source);
 			Assignment assignment = new Assignment(thisX, assignmentNameRef, (int)p);
-			Eclipse.setGeneratedBy(assignment, source);
+			setGeneratedBy(assignment, source);
 			assigns.add(assignment);
 			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
 			Argument parameter = new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL);
-			Eclipse.setGeneratedBy(parameter, source);
+			setGeneratedBy(parameter, source);
 			Annotation[] nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
 			Annotation[] nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
 			if (nonNulls.length != 0) {
@@ -291,26 +289,26 @@ public class HandleConstructor {
 		
 		MethodDeclaration constructor = new MethodDeclaration(
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
-		Eclipse.setGeneratedBy(constructor, source);
+		setGeneratedBy(constructor, source);
 		
-		constructor.modifiers = EclipseHandlerUtil.toEclipseModifier(level) | Modifier.STATIC;
+		constructor.modifiers = toEclipseModifier(level) | Modifier.STATIC;
 		TypeDeclaration typeDecl = (TypeDeclaration) type.get();
 		if (typeDecl.typeParameters != null && typeDecl.typeParameters.length > 0) {
 			TypeReference[] refs = new TypeReference[typeDecl.typeParameters.length];
 			int idx = 0;
 			for (TypeParameter param : typeDecl.typeParameters) {
 				TypeReference typeRef = new SingleTypeReference(param.name, (long)param.sourceStart << 32 | param.sourceEnd);
-				Eclipse.setGeneratedBy(typeRef, source);
+				setGeneratedBy(typeRef, source);
 				refs[idx++] = typeRef;
 			}
 			constructor.returnType = new ParameterizedSingleTypeReference(typeDecl.name, refs, 0, p);
 		} else constructor.returnType = new SingleTypeReference(((TypeDeclaration)type.get()).name, p);
-		Eclipse.setGeneratedBy(constructor.returnType, source);
+		setGeneratedBy(constructor.returnType, source);
 		constructor.annotations = null;
 		constructor.selector = name.toCharArray();
 		constructor.thrownExceptions = null;
 		constructor.typeParameters = copyTypeParams(((TypeDeclaration)type.get()).typeParameters, source);
-		constructor.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
+		constructor.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = source.sourceStart;
 		constructor.bodyEnd = constructor.declarationSourceEnd = constructor.sourceEnd = source.sourceEnd;
 		
@@ -318,18 +316,18 @@ public class HandleConstructor {
 		List<Expression> assigns = new ArrayList<Expression>();
 		AllocationExpression statement = new AllocationExpression();
 		statement.sourceStart = pS; statement.sourceEnd = pE;
-		Eclipse.setGeneratedBy(statement, source);
+		setGeneratedBy(statement, source);
 		statement.type = copyType(constructor.returnType, source);
 		
 		for (EclipseNode fieldNode : fields) {
 			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
 			SingleNameReference nameRef = new SingleNameReference(field.name, fieldPos);
-			Eclipse.setGeneratedBy(nameRef, source);
+			setGeneratedBy(nameRef, source);
 			assigns.add(nameRef);
 			
 			Argument parameter = new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL);
-			Eclipse.setGeneratedBy(parameter, source);
+			setGeneratedBy(parameter, source);
 
 			Annotation[] copiedAnnotations = copyAnnotations(source, findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN));
 			if (copiedAnnotations.length != 0) parameter.annotations = copiedAnnotations;
@@ -339,7 +337,7 @@ public class HandleConstructor {
 		statement.arguments = assigns.isEmpty() ? null : assigns.toArray(new Expression[assigns.size()]);
 		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[params.size()]);
 		constructor.statements = new Statement[] { new ReturnStatement(statement, (int)(p >> 32), (int)p) };
-		Eclipse.setGeneratedBy(constructor.statements[0], source);
+		setGeneratedBy(constructor.statements[0], source);
 		return constructor;
 	}
 }

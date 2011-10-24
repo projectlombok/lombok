@@ -19,11 +19,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.delombok.java7;
+package lombok.javac.java7;
 
 import java.nio.CharBuffer;
 
-import lombok.delombok.Delombok.Comments;
+import lombok.javac.Comments;
 
 import com.sun.tools.javac.parser.Scanner;
 import com.sun.tools.javac.parser.ScannerFactory;
@@ -33,15 +33,17 @@ public class CommentCollectingScannerFactory extends ScannerFactory {
 	private final Context context;
 	
 	public static void preRegister(final Context context) {
-		context.put(scannerFactoryKey, new Context.Factory<ScannerFactory>() {
-			public ScannerFactory make() {
-				return new CommentCollectingScannerFactory(context);
-			}
-			
-			@Override public ScannerFactory make(Context c) {
-				return new CommentCollectingScannerFactory(c);
-			}
-		});
+		if (context.get(scannerFactoryKey) == null) {
+			context.put(scannerFactoryKey, new Context.Factory<ScannerFactory>() {
+				public ScannerFactory make() {
+					return new CommentCollectingScannerFactory(context);
+				}
+				
+				@Override public ScannerFactory make(Context c) {
+					return new CommentCollectingScannerFactory(c);
+				}
+			});
+		}
 	}
 	
 	/** Create a new scanner factory. */
