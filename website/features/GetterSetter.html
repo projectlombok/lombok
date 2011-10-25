@@ -58,7 +58,7 @@
 				Any variation on <code>boolean</code> will <em>not</em> result in using the <code>is</code> prefix instead of the <code>get</code> prefix; for example,
 				returning <code>java.lang.Boolean</code> results in a <code>get</code> prefix, not an <code>is</code> prefix.
 				</p><p>
-				Any annotations named <code>@NonNull</code> or <code>@NotNull</code> (case insensitive) on the field are interpreted as: This field must not ever hold
+				Any annotations named <code>@NonNull</code> (case insensitive) on the field are interpreted as: This field must not ever hold
 				<em>null</em>. Therefore, these annotations result in an explicit null check in the generated setter. Also, these
 				annotations (as well as any annotation named <code>@Nullable</code> or <code>@CheckForNull</code>) are copied to setter parameter and getter method.
 				</p><p>

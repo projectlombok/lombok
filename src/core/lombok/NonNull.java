@@ -28,12 +28,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Lombok is smart enough to translate any annotation named {@code @NonNull} or {@code @NotNull} in any casing and
+ * Lombok is smart enough to translate any annotation named {@code @NonNull} in any casing and
  * with any package name to the return type of generated getters and the parameter of generated setters and constructors,
  * as well as generate the appropriate null checks in the setter and constructor.
  * 
  * You can use this annotation for the purpose, though you can also use JSR305's annotation, findbugs's, pmd's, or IDEA's, or just
- * about anyone elses. As long as it is named {@code @NonNull} or {@code @NotNull}.
+ * about anyone elses. As long as it is named {@code @NonNull}.
  * 
  * WARNING: If the java community ever does decide on supporting a single {@code @NonNull} annotation (for example via JSR305), then
  * this annotation will <strong>be deleted</strong> from the lombok package. If the need to update an import statement scares
