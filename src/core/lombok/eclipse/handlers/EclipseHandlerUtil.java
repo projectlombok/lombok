@@ -1211,6 +1211,9 @@ public class EclipseHandlerUtil {
 			throw Lombok.sneakyThrow(e);
 		}
 		
+		result.sourceStart = source.sourceStart;
+		result.sourceEnd = source.sourceEnd;
+		
 		setGeneratedBy(result, source);
 		return result;
 	}

@@ -320,6 +320,26 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		return maker.TypeCast(maker.TypeIdent(getCtcInt(TypeTags.class, "INT")), xorBits);
 	}
 	
+	private JCExpression createTypeReference(JavacNode type) {
+		java.util.List<String> list = new ArrayList<String>();
+		list.add(type.getName());
+		JavacNode tNode = type.up();
+		while (tNode != null && tNode.getKind() == Kind.TYPE) {
+			list.add(tNode.getName());
+			tNode = tNode.up();
+		}
+		Collections.reverse(list);
+		
+		TreeMaker maker = type.getTreeMaker();
+		JCExpression chain = maker.Ident(type.toName(list.get(0)));
+		
+		for (int i = 1; i < list.size(); i++) {
+			chain = maker.Select(chain, type.toName(list.get(i)));
+		}
+		
+		return chain;
+	}
+	
 	private JCMethodDecl createEquals(JavacNode typeNode, List<JavacNode> fields, boolean callSuper, FieldAccess fieldAccess, boolean needsCanEqual, JCTree source) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		JCClassDecl type = (JCClassDecl) typeNode.get();
@@ -341,8 +361,8 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 					maker.Ident(thisName)), returnBool(maker, true), null));
 		}
 		
-		/* if (!(o instanceof MyType) return false; */ {
-			JCUnary notInstanceOf = maker.Unary(getCtcInt(JCTree.class, "NOT"), maker.TypeTest(maker.Ident(oName), maker.Ident(type.name)));
+		/* if (!(o instanceof Outer.Inner.MyType) return false; */ {
+			JCUnary notInstanceOf = maker.Unary(getCtcInt(JCTree.class, "NOT"), maker.TypeTest(maker.Ident(oName), createTypeReference(typeNode)));
 			statements.append(maker.If(notInstanceOf, returnBool(maker, false), null));
 		}
 		
@@ -444,11 +464,10 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 
 	private JCMethodDecl createCanEqual(JavacNode typeNode, JCTree source) {
 		/* public boolean canEqual(final java.lang.Object other) {
-		 *     return other instanceof MyType;
+		 *     return other instanceof Outer.Inner.MyType;
 		 * }
 		 */
 		TreeMaker maker = typeNode.getTreeMaker();
-		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, List.<JCAnnotation>nil());
 		JCExpression returnType = maker.TypeIdent(getCtcInt(TypeTags.class, "BOOLEAN"));
@@ -458,7 +477,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		List<JCVariableDecl> params = List.of(maker.VarDef(maker.Modifiers(Flags.FINAL), otherName, objectType, null));
 		
 		JCBlock body = maker.Block(0, List.<JCStatement>of(
-				maker.Return(maker.TypeTest(maker.Ident(otherName), maker.Ident(type.name)))));
+				maker.Return(maker.TypeTest(maker.Ident(otherName), createTypeReference(typeNode)))));
 		
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, canEqualName, returnType, List.<JCTypeParameter>nil(), params, List.<JCExpression>nil(), body, null), source);
 	}

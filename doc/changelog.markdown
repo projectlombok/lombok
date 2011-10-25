@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v0.10.2 (edge)
 * BUGFIX: Turns out treating `@NotNull` as an annotation that indicates lombok should generate nullcheck guards causes all sorts of problems. This has been removed again, and documentation has been updated to reflect this. [Issue #287](http://code.google.com/p/projectlombok/issues/detail?id=287)
+* BUGFIX: `@EqualsAndHashCode` or `@Data` did not work on non-static inner classes whose outer class has a type variable. It does now. [Issue #289](http://code.google.com/p/projectlombok/issues/detail?id=289)
 
 ### v0.10.1 (October 3rd, 2011)
 * BUGFIX: `@Delegate` in eclipse could cause memory leaks in 0.10.0. [Issue #264](http://code.google.com/p/projectlombok/issues/detail?id=264)

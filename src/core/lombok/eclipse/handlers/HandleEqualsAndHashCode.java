@@ -408,6 +408,27 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		return method;
 	}
 	
+	private TypeReference createTypeReference(EclipseNode type, long p) {
+		List<String> list = new ArrayList<String>();
+		list.add(type.getName());
+		EclipseNode tNode = type.up();
+		while (tNode != null && tNode.getKind() == Kind.TYPE) {
+			list.add(tNode.getName());
+			tNode = tNode.up();
+		}
+		Collections.reverse(list);
+		
+		if (list.size() == 1) return new SingleTypeReference(list.get(0).toCharArray(), p);
+		long[] ps = new long[list.size()];
+		char[][] tokens = new char[list.size()][];
+		for (int i = 0; i < list.size(); i++) {
+			ps[i] = p;
+			tokens[i] = list.get(i).toCharArray();
+		}
+		
+		return new QualifiedTypeReference(tokens, ps);
+	}
+	
 	private MethodDeclaration createEquals(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess, boolean needsCanEqual) {
 		int pS = source.sourceStart; int pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
@@ -452,12 +473,11 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			statements.add(ifOtherEqualsThis);
 		}
 		
-		/* if (!(o instanceof MyType) return false; */ {
+		/* if (!(o instanceof Outer.Inner.MyType) return false; */ {
 			SingleNameReference oRef = new SingleNameReference(new char[] { 'o' }, p);
 			setGeneratedBy(oRef, source);
 			
-			SingleTypeReference typeReference = new SingleTypeReference(typeDecl.name, p);
-			setGeneratedBy(typeReference, source);
+			TypeReference typeReference = createTypeReference(type, p);
 			
 			InstanceOfExpression instanceOf = new InstanceOfExpression(oRef, typeReference);
 			instanceOf.sourceStart = pS; instanceOf.sourceEnd = pE;
@@ -505,6 +525,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 				}
 				NameReference oRef = new SingleNameReference(new char[] { 'o' }, p);
 				setGeneratedBy(oRef, source);
+				other.annotations = createSuppressWarningsAll(source, null);
 				other.initialization = makeCastExpression(oRef, targetType, source);
 				statements.add(other);
 			}
@@ -653,7 +674,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	
 	private MethodDeclaration createCanEqual(EclipseNode type, ASTNode source) {
 		/* public boolean canEqual(final java.lang.Object other) {
-		 *     return other instanceof MyType;
+		 *     return other instanceof Outer.Inner.MyType;
 		 * }
 		 */
 		int pS = source.sourceStart; int pE = source.sourceEnd;
@@ -683,7 +704,8 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		SingleNameReference otherRef = new SingleNameReference(otherName, p);
 		setGeneratedBy(otherRef, source);
 		
-		SingleTypeReference typeReference = new SingleTypeReference(((TypeDeclaration)type.get()).name, p);
+		TypeReference typeReference = createTypeReference(type, p);
+		
 		setGeneratedBy(typeReference, source);
 		
 		InstanceOfExpression instanceOf = new InstanceOfExpression(otherRef, typeReference);
