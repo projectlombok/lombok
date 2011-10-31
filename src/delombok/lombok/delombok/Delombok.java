@@ -44,7 +44,7 @@ import java.util.Map;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 
-import lombok.javac.Comments;
+import lombok.javac.Comment;
 import lombok.javac.LombokOptions;
 
 import com.sun.tools.javac.main.JavaCompiler;
@@ -357,24 +357,27 @@ public class Delombok {
 		if (sourcepath != null) options.put(OptionName.SOURCEPATH, sourcepath);
 		options.put("compilePolicy", "attr");
 		
+		
 		JavaCompiler compiler = new JavaCompiler(context);
+
+		Map<JCCompilationUnit, com.sun.tools.javac.util.List<Comment>> commentsMap = new IdentityHashMap<JCCompilationUnit, com.sun.tools.javac.util.List<Comment>>();
+		setInCompiler(compiler, context, commentsMap);
+		
 		compiler.keepComments = true;
 		compiler.genEndPos = true;
 		
 		List<JCCompilationUnit> roots = new ArrayList<JCCompilationUnit>();
-		Map<JCCompilationUnit, Comments> commentsMap = new IdentityHashMap<JCCompilationUnit, Comments>();
 		Map<JCCompilationUnit, File> baseMap = new IdentityHashMap<JCCompilationUnit, File>();
+		
+		registerCommentsCollectingScannerFactory(context);
 		
 		compiler.initProcessAnnotations(Collections.singleton(new lombok.javac.apt.Processor()));
 		
 		for (File fileToParse : filesToParse) {
-			Comments comments = new Comments();
-			comments.register(context);
 			
 			@SuppressWarnings("deprecation")
 			JCCompilationUnit unit = compiler.parse(fileToParse.getAbsolutePath());
 			
-			commentsMap.put(unit, comments);
 			baseMap.put(unit, fileToBase.get(fileToParse));
 			roots.add(unit);
 		}
@@ -386,7 +389,7 @@ public class Delombok {
 		
 		JavaCompiler delegate = compiler.processAnnotations(compiler.enterTrees(toJavacList(roots)));
 		for (JCCompilationUnit unit : roots) {
-			DelombokResult result = new DelombokResult(commentsMap.get(unit).getComments().toList(), unit, force || options.changed.contains(unit));
+			DelombokResult result = new DelombokResult(commentsMap.get(unit), unit, force || options.changed.contains(unit));
 			if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged");
 			Writer rawWriter;
 			if (presetWriter != null) rawWriter = presetWriter;
@@ -402,6 +405,35 @@ public class Delombok {
 		delegate.close();
 		
 		return true;
+	}
+	
+	public static void setInCompiler(JavaCompiler compiler, Context context, Map<JCCompilationUnit, com.sun.tools.javac.util.List<Comment>> commentsMap) {
+		
+		try {
+			if (JavaCompiler.version().startsWith("1.6")) {
+				Class<?> parserFactory = Class.forName("lombok.javac.java6.CommentCollectingParserFactory");
+				parserFactory.getMethod("setInCompiler",JavaCompiler.class, Context.class, Map.class).invoke(null, compiler, context, commentsMap);
+			} else {
+				Class<?> parserFactory = Class.forName("lombok.javac.java7.CommentCollectingParserFactory");
+				parserFactory.getMethod("setInCompiler",JavaCompiler.class, Context.class, Map.class).invoke(null, compiler, context, commentsMap);
+			}
+		} catch (Exception e) {
+			if (e instanceof RuntimeException) throw (RuntimeException)e;
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public static void registerCommentsCollectingScannerFactory(Context context) {
+		try {
+			if (JavaCompiler.version().startsWith("1.6")) {
+				Class.forName("lombok.javac.java6.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
+			} else {
+				Class.forName("lombok.javac.java7.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
+			}
+		} catch (Exception e) {
+			if (e instanceof RuntimeException) throw (RuntimeException)e;
+			throw new RuntimeException(e);
+		}
 	}
 	
 	private static String canonical(File dir) {

@@ -23,13 +23,10 @@ package lombok.javac.java6;
 
 import java.nio.CharBuffer;
 
-import lombok.javac.Comments;
-
 import com.sun.tools.javac.parser.Scanner;
 import com.sun.tools.javac.util.Context;
 
 public class CommentCollectingScannerFactory extends Scanner.Factory {
-	private final Context context;
 	
 	public static void preRegister(final Context context) {
 		if (context.get(scannerFactoryKey) == null) {
@@ -48,13 +45,12 @@ public class CommentCollectingScannerFactory extends Scanner.Factory {
 	/** Create a new scanner factory. */
 	protected CommentCollectingScannerFactory(Context context) {
 		super(context);
-		this.context = context;
 	}
 	
 	@Override
 	public Scanner newScanner(CharSequence input) {
 		if (input instanceof CharBuffer) {
-			return new CommentCollectingScanner(this, (CharBuffer)input, context.get(Comments.class));
+			return new CommentCollectingScanner(this, (CharBuffer)input);
 		}
 		char[] array = input.toString().toCharArray();
 		return newScanner(array, array.length);
@@ -62,6 +58,6 @@ public class CommentCollectingScannerFactory extends Scanner.Factory {
 	
 	@Override
 	public Scanner newScanner(char[] input, int inputLength) {
-		return new CommentCollectingScanner(this, input, inputLength, context.get(Comments.class));
+		return new CommentCollectingScanner(this, input, inputLength);
 	}
 }
