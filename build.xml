@@ -204,6 +204,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<conf name="test" sources="contrib" />
 			<module name="lombok" depends="build, test">
 				<srcdir dir="src/core" />
+				<srcdir dir="src/utils" />
 				<srcdir dir="src/eclipseAgent" />
 				<srcdir dir="src/installer" />
 				<srcdir dir="src/delombok" />
@@ -223,6 +224,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<target name="eclipse" depends="deps, contrib" description="Creates eclipse project files and downloads all dependencies. Open this directory as project in eclipse after running this target.">
 		<ivy:eclipsegen>
 			<srcdir dir="src/core" />
+			<srcdir dir="src/utils" />
 			<srcdir dir="src/eclipseAgent" />
 			<srcdir dir="src/installer" />
 			<srcdir dir="src/delombok" />
@@ -311,6 +313,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</jar>
 		<jar destfile="dist/lombok-${lombok.version}-sources.jar">
 			<fileset dir="src/core" />
+			<fileset dir="src/utils" />
 			<fileset dir="src/eclipseAgent" />
 			<fileset dir="src/installer" />
 			<fileset dir="src/delombok" />
