@@ -11,6 +11,10 @@ public class ScannerFactory {
 	protected ScannerFactory(Context c) {
 	}
 	
+	public static ScannerFactory instance(Context c) {
+		return null;
+	}
+	
 	public Scanner newScanner(CharSequence input, boolean keepDocComments) {
 		return null;
 	}

@@ -358,8 +358,9 @@ public class Delombok {
 		options.put("compilePolicy", "attr");
 		
 		
+		registerCommentsCollectingScannerFactory(context);
 		JavaCompiler compiler = new JavaCompiler(context);
-
+		
 		Map<JCCompilationUnit, com.sun.tools.javac.util.List<Comment>> commentsMap = new IdentityHashMap<JCCompilationUnit, com.sun.tools.javac.util.List<Comment>>();
 		setInCompiler(compiler, context, commentsMap);
 		
@@ -369,7 +370,6 @@ public class Delombok {
 		List<JCCompilationUnit> roots = new ArrayList<JCCompilationUnit>();
 		Map<JCCompilationUnit, File> baseMap = new IdentityHashMap<JCCompilationUnit, File>();
 		
-		registerCommentsCollectingScannerFactory(context);
 		
 		compiler.initProcessAnnotations(Collections.singleton(new lombok.javac.apt.Processor()));
 		

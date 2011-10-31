@@ -131,8 +131,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		anymore until you 'ant clean'. That's very much not desired, so we kill the processor, which stops lombok from running.
 		We re-create the file at the end of this target. -->
 		<delete file="build/lombok/META-INF/services/javax.annotation.processing.Processor" quiet="true" />
+		<ivy:compile destdir="build/stubsstubs" source="1.5" target="1.5" includeantruntime="false">
+			<src path="src/stubsstubs" />
+		</ivy:compile>
 		<ivy:compile destdir="build/stubs" source="1.5" target="1.5" includeantruntime="false">
 			<src path="src/stubs" />
+			<classpath location="build/stubsstubs" />
 		</ivy:compile>
 		
 		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" includeantruntime="false">

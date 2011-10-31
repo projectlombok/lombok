@@ -7,7 +7,7 @@ import java.nio.CharBuffer;
 
 import com.sun.tools.javac.util.Context;
 
-public class Scanner {
+public class Scanner implements Lexer {
 	protected Scanner(Factory fac, CharBuffer buffer) {
 	}
 	
