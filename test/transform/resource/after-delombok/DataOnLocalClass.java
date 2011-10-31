@@ -77,7 +77,7 @@ class DataOnLocalClass2 {
 				@java.lang.SuppressWarnings("all")
 				public boolean equals(final java.lang.Object o) {
 					if (o == this) return true;
-					if (!(o instanceof InnerLocal)) return false;
+					if (!(o instanceof Local.InnerLocal)) return false;
 					final InnerLocal other = (InnerLocal)o;
 					if (!other.canEqual((java.lang.Object)this)) return false;
 					if (this.getName() == null ? other.getName() != null : !this.getName().equals((java.lang.Object)other.getName())) return false;
@@ -85,7 +85,7 @@ class DataOnLocalClass2 {
 				}
 				@java.lang.SuppressWarnings("all")
 				public boolean canEqual(final java.lang.Object other) {
-					return other instanceof InnerLocal;
+					return other instanceof Local.InnerLocal;
 				}
 				@java.lang.Override
 				@java.lang.SuppressWarnings("all")

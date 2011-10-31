@@ -25,7 +25,7 @@
         return true;
     if ((! (o instanceof GetterLazyEahcToString)))
         return false;
-    final GetterLazyEahcToString other = (GetterLazyEahcToString) o;
+    final @java.lang.SuppressWarnings("all") GetterLazyEahcToString other = (GetterLazyEahcToString) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if (((this.getValue() == null) ? (other.getValue() != null) : (! this.getValue().equals((java.lang.Object) other.getValue()))))

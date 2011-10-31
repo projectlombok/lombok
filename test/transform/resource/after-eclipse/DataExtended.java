@@ -14,7 +14,7 @@
         return true;
     if ((! (o instanceof DataExtended)))
         return false;
-    final DataExtended other = (DataExtended) o;
+    final @java.lang.SuppressWarnings("all") DataExtended other = (DataExtended) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((this.getX() != other.getX()))

@@ -13,7 +13,7 @@
         return true;
     if ((! (o instanceof DataIgnore)))
         return false;
-    final DataIgnore other = (DataIgnore) o;
+    final @java.lang.SuppressWarnings("all") DataIgnore other = (DataIgnore) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((this.getX() != other.getX()))

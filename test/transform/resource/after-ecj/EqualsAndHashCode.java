@@ -8,7 +8,7 @@
         return true;
     if ((! (o instanceof EqualsAndHashCode)))
         return false;
-    final EqualsAndHashCode other = (EqualsAndHashCode) o;
+    final @java.lang.SuppressWarnings("all") EqualsAndHashCode other = (EqualsAndHashCode) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((this.x != other.x))
@@ -44,7 +44,7 @@ final @lombok.EqualsAndHashCode class EqualsAndHashCode2 {
         return true;
     if ((! (o instanceof EqualsAndHashCode2)))
         return false;
-    final EqualsAndHashCode2 other = (EqualsAndHashCode2) o;
+    final @java.lang.SuppressWarnings("all") EqualsAndHashCode2 other = (EqualsAndHashCode2) o;
     if ((this.x != other.x))
         return false;
     return true;
@@ -65,7 +65,7 @@ final @lombok.EqualsAndHashCode(callSuper = false) class EqualsAndHashCode3 exte
         return true;
     if ((! (o instanceof EqualsAndHashCode3)))
         return false;
-    final EqualsAndHashCode3 other = (EqualsAndHashCode3) o;
+    final @java.lang.SuppressWarnings("all") EqualsAndHashCode3 other = (EqualsAndHashCode3) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     return true;
@@ -87,7 +87,7 @@ final @lombok.EqualsAndHashCode(callSuper = false) class EqualsAndHashCode3 exte
         return true;
     if ((! (o instanceof EqualsAndHashCode4)))
         return false;
-    final EqualsAndHashCode4 other = (EqualsAndHashCode4) o;
+    final @java.lang.SuppressWarnings("all") EqualsAndHashCode4 other = (EqualsAndHashCode4) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((! super.equals(o)))

@@ -25,7 +25,7 @@ class DataOnLocalClass1 {
             return true;
         if ((! (o instanceof Local)))
             return false;
-        final Local other = (Local) o;
+        final @java.lang.SuppressWarnings("all") Local other = (Local) o;
         if ((! other.canEqual((java.lang.Object) this)))
             return false;
         if ((this.getX() != other.getX()))
@@ -72,9 +72,9 @@ class DataOnLocalClass2 {
         public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
           if ((o == this))
               return true;
-          if ((! (o instanceof InnerLocal)))
+          if ((! (o instanceof Local.InnerLocal)))
               return false;
-          final InnerLocal other = (InnerLocal) o;
+          final @java.lang.SuppressWarnings("all") InnerLocal other = (InnerLocal) o;
           if ((! other.canEqual((java.lang.Object) this)))
               return false;
           if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals((java.lang.Object) other.getName()))))
@@ -82,7 +82,7 @@ class DataOnLocalClass2 {
           return true;
         }
         public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
-          return (other instanceof InnerLocal);
+          return (other instanceof Local.InnerLocal);
         }
         public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
           final int PRIME = 31;
@@ -107,7 +107,7 @@ class DataOnLocalClass2 {
             return true;
         if ((! (o instanceof Local)))
             return false;
-        final Local other = (Local) o;
+        final @java.lang.SuppressWarnings("all") Local other = (Local) o;
         if ((! other.canEqual((java.lang.Object) this)))
             return false;
         if ((this.getX() != other.getX()))

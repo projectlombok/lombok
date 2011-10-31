@@ -20,7 +20,7 @@ import lombok.Data;
         return true;
     if ((! (o instanceof Data1)))
         return false;
-    final Data1 other = (Data1) o;
+    final @java.lang.SuppressWarnings("all") Data1 other = (Data1) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((this.getX() != other.getX()))
@@ -64,7 +64,7 @@ import lombok.Data;
         return true;
     if ((! (o instanceof Data2)))
         return false;
-    final Data2 other = (Data2) o;
+    final @java.lang.SuppressWarnings("all") Data2 other = (Data2) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((this.getX() != other.getX()))
@@ -108,7 +108,7 @@ final @Data class Data3 {
         return true;
     if ((! (o instanceof Data3)))
         return false;
-    final Data3 other = (Data3) o;
+    final @java.lang.SuppressWarnings("all") Data3 other = (Data3) o;
     if ((this.getX() != other.getX()))
         return false;
     if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals((java.lang.Object) other.getName()))))
@@ -139,7 +139,7 @@ final @Data @lombok.EqualsAndHashCode(callSuper = true) class Data4 extends java
         return true;
     if ((! (o instanceof Data4)))
         return false;
-    final Data4 other = (Data4) o;
+    final @java.lang.SuppressWarnings("all") Data4 other = (Data4) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((! super.equals(o)))
@@ -171,7 +171,7 @@ final @Data @lombok.EqualsAndHashCode(callSuper = true) class Data4 extends java
         return true;
     if ((! (o instanceof Data5)))
         return false;
-    final Data5 other = (Data5) o;
+    final @java.lang.SuppressWarnings("all") Data5 other = (Data5) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     return true;

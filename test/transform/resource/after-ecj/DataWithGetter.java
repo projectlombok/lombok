@@ -17,7 +17,7 @@
         return true;
     if ((! (o instanceof DataWithGetter)))
         return false;
-    final DataWithGetter other = (DataWithGetter) o;
+    final @java.lang.SuppressWarnings("all") DataWithGetter other = (DataWithGetter) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((this.getX() != other.getX()))

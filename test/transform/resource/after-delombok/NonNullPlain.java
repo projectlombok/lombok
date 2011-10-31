@@ -13,14 +13,12 @@ class NonNullPlain {
 	public @interface NotNull {
 	}
 	
-	@java.beans.ConstructorProperties({"i", "s", "o"})
+	@java.beans.ConstructorProperties({"i", "s"})
 	@java.lang.SuppressWarnings("all")
-	public NonNullPlain(@lombok.NonNull final int i, @lombok.NonNull final String s, @NotNull final Object o) {
+	public NonNullPlain(@lombok.NonNull final int i, @lombok.NonNull final String s) {
 		if (s == null) throw new java.lang.NullPointerException("s");
-		if (o == null) throw new java.lang.NullPointerException("o");
 		this.i = i;
 		this.s = s;
-		this.o = o;
 	}
 	
 	@lombok.NonNull
@@ -35,7 +33,6 @@ class NonNullPlain {
 		return this.s;
 	}
 	
-	@NotNull
 	@java.lang.SuppressWarnings("all")
 	public Object getO() {
 		return this.o;
@@ -53,8 +50,7 @@ class NonNullPlain {
 	}
 	
 	@java.lang.SuppressWarnings("all")
-	public void setO(@NotNull final Object o) {
-		if (o == null) throw new java.lang.NullPointerException("o");
+	public void setO(final Object o) {
 		this.o = o;
 	}
 }
