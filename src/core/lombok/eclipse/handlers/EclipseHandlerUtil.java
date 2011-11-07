@@ -1095,7 +1095,8 @@ public class EclipseHandlerUtil {
 		setGeneratedBy(ann, source);
 		setGeneratedBy(ann.memberValue, source);
 		if (originalAnnotationArray == null) return new Annotation[] { ann };
-		Annotation[] newAnnotationArray = Arrays.copyOf(originalAnnotationArray, originalAnnotationArray.length + 1);
+		Annotation[] newAnnotationArray = new Annotation[originalAnnotationArray.length + 1];
+		System.arraycopy(originalAnnotationArray, 0, newAnnotationArray, 0, originalAnnotationArray.length);
 		newAnnotationArray[originalAnnotationArray.length] = ann;
 		return newAnnotationArray;
 	}
