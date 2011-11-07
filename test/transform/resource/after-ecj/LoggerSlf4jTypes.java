@@ -11,8 +11,8 @@
   }
 }
 @lombok.extern.slf4j.Slf4j enum LoggerSlf4jTypesEnumWithElement {
-  FOO(),
   private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(LoggerSlf4jTypesEnumWithElement.class);
+  FOO(),
   <clinit>() {
   }
   LoggerSlf4jTypesEnumWithElement() {
