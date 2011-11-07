@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v0.10.3
+* BUGFIX: Using the `log` field from `@Log`, etc, now works in static initializers. [Issue #295](http://code.google.com/p/projectlombok/issues/detail?id=295)
+
 ### v0.10.2 (November 1st, 2011)
 * BUGFIX: Delombok will no longer jumble up comments from different files when using -sourcepath option. [Issue #284](http://code.google.com/p/projectlombok/issues/detail?id=284)
 * BUGFIX: Turns out treating `@NotNull` as an annotation that indicates lombok should generate nullcheck guards causes all sorts of problems. This has been removed again, and documentation has been updated to reflect this. [Issue #287](http://code.google.com/p/projectlombok/issues/detail?id=287)

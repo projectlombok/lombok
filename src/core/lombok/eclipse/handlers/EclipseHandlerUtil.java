@@ -1014,8 +1014,8 @@ public class EclipseHandlerUtil {
 			parent.fields[0] = field;
 		} else {
 			FieldDeclaration[] newArray = new FieldDeclaration[parent.fields.length + 1];
-			System.arraycopy(parent.fields, 0, newArray, 0, parent.fields.length);
-			newArray[parent.fields.length] = field;
+			System.arraycopy(parent.fields, 0, newArray, 1, parent.fields.length);
+			newArray[0] = field;
 			parent.fields = newArray;
 		}
 		
