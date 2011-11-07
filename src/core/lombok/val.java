@@ -26,6 +26,6 @@ package lombok;
  * For example: {@code val x = 10.0;} will infer {@code double}, and {@code val y = new ArrayList<String>();} will infer {@code ArrayList<String>}. The local variable
  * will also be made final.
  * 
- * Note that this is an interface because {@code val x = 10;} will be desugared to <code>&#64;val int x = 10;</code>
+ * Note that this is an interface because {@code val x = 10;} will be desugared to {@code &#64;val int x = 10;}
  */
 public @interface val {}
