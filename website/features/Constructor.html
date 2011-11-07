@@ -31,7 +31,7 @@
 			those parameters.
 			</p><p>
 			Each of these annotations allows an alternate form, where the generated constructor is always private, and an additional static factory method that wraps around the
-			private constructor is generated. This mode is enabled by supplying the <code>staticName</code> value for the annotation, like so: <code>@RequiredArgsConstructor(staticName = "of")</code>.
+			private constructor is generated. This mode is enabled by supplying the <code>staticName</code> value for the annotation, like so: <code>@RequiredArgsConstructor(staticName="of")</code>.
 			Such a static factory method will infer generics, unlike a normal constructor. This means your API users get write <code>MapEntry.of("foo", 5)</code> instead of the much longer
 			<code>new MapEntry&lt;String, Integer&gt;("foo", 5)</code>.
 			</p><p>
