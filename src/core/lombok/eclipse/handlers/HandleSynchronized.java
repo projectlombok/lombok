@@ -1,5 +1,5 @@
 /*
- * Copyright © 2009-2011 Reinier Zwitserloot and Roel Spilker.
+ * Copyright (C) 2009-2011 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
