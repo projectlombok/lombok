@@ -225,6 +225,13 @@ public class EclipsePatcher extends Agent {
 						"org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
 				.transplant().build());
 		
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convert", "org.eclipse.jdt.core.dom.ASTNode", "boolean", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration"))
+				.request(StackRequest.PARAM2, StackRequest.RETURN_VALUE)
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlag", "void",
+						"org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.transplant().build());
+		
 		sm.addScript(ScriptBuilder.wrapMethodCall()
 				.target(new TargetMatcher() {
 					@Override public boolean matches(String classSpec, String methodName, String descriptor) {
