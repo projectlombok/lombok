@@ -36,8 +36,12 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.core.dom.rewrite.NodeRewriteEvent;
+import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
 
 public class PatchFixes {
@@ -80,6 +84,35 @@ public class PatchFixes {
 				name.getClass().getField("$isGenerated").set(name, true);
 			}
 		}
+	}
+	
+	public static RewriteEvent[] listRewriteHandleGeneratedMethods(RewriteEvent parent) {
+		RewriteEvent[] children = parent.getChildren();
+		List<RewriteEvent> newChildren = new ArrayList<RewriteEvent>();
+		List<RewriteEvent> modifiedChildren = new ArrayList<RewriteEvent>();
+		for (int i=0; i<children.length; i++) {
+			RewriteEvent child = children[i];
+			boolean isGenerated = false;
+			try {
+				ASTNode originalValue = (ASTNode)child.getOriginalValue();
+				isGenerated = (Boolean) originalValue.getClass().getField("$isGenerated").get(originalValue);
+			} catch (Exception e) {
+				// If this fails, better to break some refactor scripts than to crash eclipse.
+			}
+			if (isGenerated
+				&& (child.getChangeKind() == RewriteEvent.REPLACED || child.getChangeKind() == RewriteEvent.REMOVED) 
+				&& child.getOriginalValue() instanceof MethodDeclaration
+			) {
+				if (child.getNewValue() != null)
+					modifiedChildren.add(new NodeRewriteEvent(null, child.getNewValue()));
+			} else {
+				newChildren.add(child);
+			}
+		}
+		// Since Eclipse doesn't honor the "insert at specified location" for already existing members,
+		// we'll just add them last
+		newChildren.addAll(modifiedChildren);
+		return newChildren.toArray(new RewriteEvent[newChildren.size()]);
 	}
 	
 	public static int getTokenEndOffsetFixed(TokenScanner scanner, int token, int startOffset, Object domNode) throws CoreException {
