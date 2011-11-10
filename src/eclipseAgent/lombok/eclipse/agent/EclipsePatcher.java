@@ -89,6 +89,7 @@ public class EclipsePatcher extends Agent {
 			patchHideGeneratedNodes(sm);
 			patchPostCompileHookEclipse(sm);
 			patchFixSourceTypeConverter(sm);
+			patchListRewriteHandleGeneratedMethods(sm);
 		} else {
 			patchPostCompileHookEcj(sm);
 		}
@@ -99,6 +100,14 @@ public class EclipsePatcher extends Agent {
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
 	}
 	
+	private static void patchListRewriteHandleGeneratedMethods(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.replaceMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.core.dom.rewrite.ASTRewriteAnalyzer$ListRewriter", "rewriteList"))
+				.methodToReplace(new Hook("org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent", "getChildren", "org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent[]"))
+				.replacementMethod(new Hook("lombok.eclipse.agent.PatchFixes", "listRewriteHandleGeneratedMethods", "org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent[]", "org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent"))
+				.build());
+	}
+
 	private static void patchDomAstReparseIssues(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.replaceMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.dom.rewrite.ASTRewriteAnalyzer", "visit"))
@@ -221,6 +230,13 @@ public class EclipsePatcher extends Agent {
 						return Collections.singleton("org.eclipse.jdt.core.dom.ASTConverter");
 					}
 				}).request(StackRequest.PARAM1, StackRequest.RETURN_VALUE)
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlag", "void",
+						"org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.transplant().build());
+		
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convert", "org.eclipse.jdt.core.dom.ASTNode", "boolean", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration"))
+				.request(StackRequest.PARAM2, StackRequest.RETURN_VALUE)
 				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlag", "void",
 						"org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
 				.transplant().build());
