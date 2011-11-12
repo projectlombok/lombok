@@ -106,12 +106,17 @@ public class EclipsePatcher extends Agent {
 				.callToWrap(new Hook("org.eclipse.jdt.internal.core.util.CodeSnippetParsingUtil", "parseCompilationUnit", "org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration", "char[]", "java.util.Map", "boolean"))
 				.symbol("lombok.disable")
 				.build());
-	
-		sm.addScript(ScriptBuilder.setSymbolDuringMethodCall()
-				.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CleanUpPostSaveListener", "createAst"))
-				.callToWrap(new Hook("org.eclipse.jdt.core.dom.ASTParser", "createAST", "org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.core.runtime.IProgressMonitor"))
-				.symbol("lombok.disable")
-				.build());
+		
+		sm.addScript(ScriptBuilder.exitEarly()
+			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.DoStatement"))
+			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.EnhancedForStatement"))
+			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.ForStatement"))
+			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.IfStatement"))
+			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.WhileStatement"))
+			.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.core.dom.Statement"))
+			.request(StackRequest.PARAM1)
+			.valueMethod(new Hook("lombok.eclipse.agent.PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.core.dom.Statement"))
+			.build());
 	}
 	
 
