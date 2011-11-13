@@ -532,9 +532,33 @@ public class JavacHandlerUtil {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
 		if (addSuppressWarnings) addSuppressWarningsAll(field.mods, typeNode, field.pos, getGeneratedBy(field));
-		type.defs = type.defs.append(field);
+		
+		List<JCTree> insertAfter = null;
+		List<JCTree> insertBefore = type.defs;
+		while (insertBefore.tail != null) {
+			if (insertBefore.head instanceof JCVariableDecl) {
+				JCVariableDecl f = (JCVariableDecl) insertBefore.head;
+				if (isEnumConstant(f) || isGenerated(f)) {
+					insertAfter = insertBefore;
+					insertBefore = insertBefore.tail;
+					continue;
+				}
+			}
+			break;
+		}
+		List<JCTree> fieldEntry = List.<JCTree>of(field);
+		fieldEntry.tail = insertBefore;
+		if (insertAfter == null) {
+			type.defs = fieldEntry;
+		} else {
+			insertAfter.tail = fieldEntry;
+		}
 		
 		typeNode.add(field, Kind.FIELD);
+	}
+	
+	private static boolean isEnumConstant(final JCVariableDecl field) {
+		return (field.mods.flags & Flags.ENUM) != 0;
 	}
 	
 	/**

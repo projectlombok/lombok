@@ -1013,9 +1013,17 @@ public class EclipseHandlerUtil {
 			parent.fields = new FieldDeclaration[1];
 			parent.fields[0] = field;
 		} else {
-			FieldDeclaration[] newArray = new FieldDeclaration[parent.fields.length + 1];
-			System.arraycopy(parent.fields, 0, newArray, 1, parent.fields.length);
-			newArray[0] = field;
+			int size = parent.fields.length;
+			FieldDeclaration[] newArray = new FieldDeclaration[size + 1];
+			System.arraycopy(parent.fields, 0, newArray, 0, size);
+			int index = 0;
+			for (; index < size; index++) {
+				FieldDeclaration f = newArray[index];
+				if (isEnumConstant(f) || isGenerated(f)) continue;
+				break;
+			}
+			System.arraycopy(newArray, index, newArray, index + 1, size - index);
+			newArray[index] = field;
 			parent.fields = newArray;
 		}
 		
@@ -1026,6 +1034,10 @@ public class EclipseHandlerUtil {
 		}
 		
 		type.add(field, Kind.FIELD);
+	}
+	
+	private static boolean isEnumConstant(final FieldDeclaration field) {
+		return ((field.initialization instanceof AllocationExpression) && (((AllocationExpression) field.initialization).enumConstant == field));
 	}
 	
 	/**

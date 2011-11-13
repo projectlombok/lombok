@@ -1,4 +1,6 @@
 class SynchronizedPlain1 {
+	@java.lang.SuppressWarnings("all")
+	private final java.lang.Object $lock = new java.lang.Object[0];
 	void test() {
 		synchronized (this.$lock) {
 			System.out.println("one");
@@ -9,10 +11,10 @@ class SynchronizedPlain1 {
 			System.out.println("two");
 		}
 	}
-	@java.lang.SuppressWarnings("all")
-	private final java.lang.Object $lock = new java.lang.Object[0];
 }
 class SynchronizedPlain2 {
+	@java.lang.SuppressWarnings("all")
+	private static final java.lang.Object $LOCK = new java.lang.Object[0];
 	static void test() {
 		synchronized (SynchronizedPlain2.$LOCK) {
 			System.out.println("three");
@@ -23,6 +25,4 @@ class SynchronizedPlain2 {
 			System.out.println("four");
 		}
 	}
-	@java.lang.SuppressWarnings("all")
-	private static final java.lang.Object $LOCK = new java.lang.Object[0];
 }
