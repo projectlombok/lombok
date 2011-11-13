@@ -89,6 +89,7 @@ public class EclipsePatcher extends Agent {
 			patchHideGeneratedNodes(sm);
 			patchPostCompileHookEclipse(sm);
 			patchFixSourceTypeConverter(sm);
+			patchListRewriteHandleGeneratedMethods(sm);
 		} else {
 			patchPostCompileHookEcj(sm);
 		}
@@ -99,6 +100,14 @@ public class EclipsePatcher extends Agent {
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
 	}
 	
+	private static void patchListRewriteHandleGeneratedMethods(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.replaceMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.core.dom.rewrite.ASTRewriteAnalyzer$ListRewriter", "rewriteList"))
+				.methodToReplace(new Hook("org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent", "getChildren", "org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent[]"))
+				.replacementMethod(new Hook("lombok.eclipse.agent.PatchFixes", "listRewriteHandleGeneratedMethods", "org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent[]", "org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent"))
+				.build());
+	}
+
 	private static void patchDomAstReparseIssues(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.replaceMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.dom.rewrite.ASTRewriteAnalyzer", "visit"))
@@ -225,6 +234,13 @@ public class EclipsePatcher extends Agent {
 						"org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
 				.transplant().build());
 		
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convert", "org.eclipse.jdt.core.dom.ASTNode", "boolean", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration"))
+				.request(StackRequest.PARAM2, StackRequest.RETURN_VALUE)
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlag", "void",
+						"org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.transplant().build());
+		
 		sm.addScript(ScriptBuilder.wrapMethodCall()
 				.target(new TargetMatcher() {
 					@Override public boolean matches(String classSpec, String methodName, String descriptor) {
@@ -242,6 +258,14 @@ public class EclipsePatcher extends Agent {
 					}
 				}).methodToWrap(new Hook("org.eclipse.jdt.core.dom.SimpleName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM1)
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlagForSimpleName", "void",
+						"org.eclipse.jdt.core.dom.SimpleName", "java.lang.Object"))
+				.transplant().build());
+
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convert", "org.eclipse.jdt.core.dom.ASTNode", "boolean", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration"))
+				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.SimpleName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
+				.requestExtra(StackRequest.PARAM2)
 				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlagForSimpleName", "void",
 						"org.eclipse.jdt.core.dom.SimpleName", "java.lang.Object"))
 				.transplant().build());

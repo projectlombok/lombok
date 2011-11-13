@@ -38,6 +38,8 @@ import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.core.dom.rewrite.NodeRewriteEvent;
+import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
 
 public class PatchFixes {
@@ -82,6 +84,35 @@ public class PatchFixes {
 		}
 	}
 	
+	public static RewriteEvent[] listRewriteHandleGeneratedMethods(RewriteEvent parent) {
+		RewriteEvent[] children = parent.getChildren();
+		List<RewriteEvent> newChildren = new ArrayList<RewriteEvent>();
+		List<RewriteEvent> modifiedChildren = new ArrayList<RewriteEvent>();
+		for (int i=0; i<children.length; i++) {
+			RewriteEvent child = children[i];
+			boolean isGenerated = false;
+			try {
+				org.eclipse.jdt.core.dom.ASTNode originalValue = (org.eclipse.jdt.core.dom.ASTNode)child.getOriginalValue();
+				isGenerated = (Boolean) originalValue.getClass().getField("$isGenerated").get(originalValue);
+			} catch (Exception e) {
+				// If this fails, better to break some refactor scripts than to crash eclipse.
+			}
+			if (isGenerated
+				&& (child.getChangeKind() == RewriteEvent.REPLACED || child.getChangeKind() == RewriteEvent.REMOVED) 
+				&& child.getOriginalValue() instanceof org.eclipse.jdt.core.dom.MethodDeclaration
+			) {
+				if (child.getNewValue() != null)
+					modifiedChildren.add(new NodeRewriteEvent(null, child.getNewValue()));
+			} else {
+				newChildren.add(child);
+			}
+		}
+		// Since Eclipse doesn't honor the "insert at specified location" for already existing members,
+		// we'll just add them last
+		newChildren.addAll(modifiedChildren);
+		return newChildren.toArray(new RewriteEvent[newChildren.size()]);
+	}
+
 	public static int getTokenEndOffsetFixed(TokenScanner scanner, int token, int startOffset, Object domNode) throws CoreException {
 		boolean isGenerated = false;
 		try {
