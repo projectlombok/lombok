@@ -41,6 +41,16 @@ import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
 
 public class PatchFixes {
+	public static boolean isGenerated(org.eclipse.jdt.core.dom.Statement statement) {
+		boolean result = false;
+		try {
+			result =  ((Boolean)statement.getClass().getField("$isGenerated").get(statement)).booleanValue();
+		} catch (Exception e) {
+			// better to assume it isn't generated
+		}
+		return result;
+	}
+
 	public static int fixRetrieveStartingCatchPosition(int original, int start) {
 		return original == -1 ? start : original;
 	}

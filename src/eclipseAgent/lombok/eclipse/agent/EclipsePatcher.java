@@ -89,6 +89,7 @@ public class EclipsePatcher extends Agent {
 			patchHideGeneratedNodes(sm);
 			patchPostCompileHookEclipse(sm);
 			patchFixSourceTypeConverter(sm);
+			patchDisableLombokForCodeFormatterAndCleanup(sm);
 		} else {
 			patchPostCompileHookEcj(sm);
 		}
@@ -99,6 +100,26 @@ public class EclipsePatcher extends Agent {
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
 	}
 	
+	private static void patchDisableLombokForCodeFormatterAndCleanup(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.setSymbolDuringMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.formatter.DefaultCodeFormatter", "formatCompilationUnit"))
+				.callToWrap(new Hook("org.eclipse.jdt.internal.core.util.CodeSnippetParsingUtil", "parseCompilationUnit", "org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration", "char[]", "java.util.Map", "boolean"))
+				.symbol("lombok.disable")
+				.build());
+		
+		sm.addScript(ScriptBuilder.exitEarly()
+			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.DoStatement"))
+			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.EnhancedForStatement"))
+			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.ForStatement"))
+			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.IfStatement"))
+			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.WhileStatement"))
+			.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.core.dom.Statement"))
+			.request(StackRequest.PARAM1)
+			.valueMethod(new Hook("lombok.eclipse.agent.PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.core.dom.Statement"))
+			.build());
+	}
+	
+
 	private static void patchDomAstReparseIssues(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.replaceMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.dom.rewrite.ASTRewriteAnalyzer", "visit"))
