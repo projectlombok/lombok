@@ -198,7 +198,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		NameReference fieldNameRef = new SingleNameReference(field.name, p);
 		setGeneratedBy(fieldNameRef, source);
 		Assignment assignment = new Assignment(fieldRef, fieldNameRef, (int)p);
-		assignment.sourceStart = pS; assignment.sourceEnd = pE;
+		assignment.sourceStart = pS; assignment.sourceEnd = assignment.statementEnd = pE;
 		setGeneratedBy(assignment, source);
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;

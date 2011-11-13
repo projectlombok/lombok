@@ -84,6 +84,7 @@ public class EclipsePatcher extends Agent {
 			patchCatchReparse(sm);
 			patchIdentifierEndReparse(sm);
 			patchRetrieveEllipsisStartPosition(sm);
+			patchRetrieveRightBraceOrSemiColonPosition(sm);
 			patchSetGeneratedFlag(sm);
 			patchDomAstReparseIssues(sm);
 			patchHideGeneratedNodes(sm);
@@ -98,7 +99,7 @@ public class EclipsePatcher extends Agent {
 		
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
 	}
-	
+
 	private static void patchDomAstReparseIssues(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.replaceMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.dom.rewrite.ASTRewriteAnalyzer", "visit"))
@@ -193,6 +194,14 @@ public class EclipsePatcher extends Agent {
 				.transplant().request(StackRequest.RETURN_VALUE, StackRequest.PARAM2).build());
 	}
 	
+	private static void patchRetrieveRightBraceOrSemiColonPosition(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveRightBraceOrSemiColonPosition"))
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "retrieveRightBrace"))
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "fixRetrieveRightBraceOrSemiColonPosition", "int", "int", "int"))
+				.transplant().request(StackRequest.RETURN_VALUE, StackRequest.PARAM2).build());
+	}
+
 	private static void patchSetGeneratedFlag(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.addField()
 				.targetClass("org.eclipse.jdt.internal.compiler.ast.ASTNode")
