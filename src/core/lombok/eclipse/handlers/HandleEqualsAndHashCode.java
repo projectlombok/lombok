@@ -391,7 +391,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 				resultRef = new SingleNameReference(RESULT, p);
 				setGeneratedBy(resultRef, source);
 				Assignment assignment = new Assignment(resultRef, addItem, pE);
-				assignment.sourceStart = pS; assignment.sourceEnd = pE;
+				assignment.sourceStart = pS; assignment.sourceEnd = assignment.statementEnd = pE;
 				setGeneratedBy(assignment, source);
 				statements.add(assignment);
 			}

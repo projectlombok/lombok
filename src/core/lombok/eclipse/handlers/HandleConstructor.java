@@ -249,6 +249,7 @@ public class HandleConstructor {
 			SingleNameReference assignmentNameRef = new SingleNameReference(field.name, p);
 			setGeneratedBy(assignmentNameRef, source);
 			Assignment assignment = new Assignment(thisX, assignmentNameRef, (int)p);
+			assignment.sourceStart = (int)(p >> 32); assignment.sourceEnd = assignment.statementEnd = (int)(p >> 32);
 			setGeneratedBy(assignment, source);
 			assigns.add(assignment);
 			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
