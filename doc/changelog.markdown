@@ -3,6 +3,10 @@ Lombok Changelog
 
 ### v0.10.3
 * BUGFIX: Using the `log` field from `@Log`, etc, now works in static initializers. [Issue #295](http://code.google.com/p/projectlombok/issues/detail?id=295)
+* BUGFIX: Auto-formatting code containing lombok on eclipse, even via an auto-save action, now works. [Issue #90](http://code.google.com/p/projectlombok/issues/detail?id=90)
+* BUGFIX: Letting eclipse generate various methods when a lombok annotation is present now works. [Issue #138](http://code.google.com/p/projectlombok/issues/detail?id=138)
+* BUGFIX: Renaming a @Data-annotated class in eclipse no longer mangles the data annotation. [Issue #286](http://code.google.com/p/projectlombok/issues/detail?id=286)
+* BUGFIX: Eclipse save action *Add final modifier to private fields* no longer adds final keyword to `@Setter` fields. [Issue #263](http://code.google.com/p/projectlombok/issues/detail?id=263)
 
 ### v0.10.2 (November 1st, 2011)
 * BUGFIX: Delombok will no longer jumble up comments from different files when using -sourcepath option. [Issue #284](http://code.google.com/p/projectlombok/issues/detail?id=284)
