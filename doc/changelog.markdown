@@ -7,6 +7,7 @@ Lombok Changelog
 * BUGFIX: Letting eclipse generate various methods when a lombok annotation is present now works. [Issue #138](http://code.google.com/p/projectlombok/issues/detail?id=138)
 * BUGFIX: Renaming a @Data-annotated class in eclipse no longer mangles the data annotation. [Issue #286](http://code.google.com/p/projectlombok/issues/detail?id=286)
 * BUGFIX: Eclipse save action *Add final modifier to private fields* no longer adds final keyword to `@Setter` fields. [Issue #263](http://code.google.com/p/projectlombok/issues/detail?id=263)
+* BUGFIX: Mixing labels and `lombok.val` would cause NPEs in javac. [Issue #299](http://code.google.com/p/projectlombok/issues/detail?id=299)
 
 ### v0.10.2 (November 1st, 2011)
 * BUGFIX: Delombok will no longer jumble up comments from different files when using -sourcepath option. [Issue #284](http://code.google.com/p/projectlombok/issues/detail?id=284)
