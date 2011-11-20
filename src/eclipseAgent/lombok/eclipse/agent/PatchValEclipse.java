@@ -35,9 +35,11 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.Modifier;
-import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.Modifier.ModifierKeyword;
 import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
@@ -197,15 +199,47 @@ public class PatchValEclipse {
 		}
 		
 		if (out != null) {
+			SimpleName valName = ast.newSimpleName("val");
+			valName.setSourceRange(start, end - start + 1);
 			if (original.type instanceof SingleTypeReference) {
-				out.setTypeName(ast.newSimpleName("val"));
+				out.setTypeName(valName);
+				setIndex(valName, 1);
 			} else {
-				out.setTypeName(ast.newQualifiedName(ast.newSimpleName("lombok"), ast.newSimpleName("val")));
+				SimpleName lombokName = ast.newSimpleName("lombok");
+				lombokName.setSourceRange(start, end - start + 1);
+				setIndex(lombokName, 1);
+				setIndex(valName, 2);
+				QualifiedName fullName = ast.newQualifiedName(lombokName, valName);
+				setIndex(fullName, 1);
+				fullName.setSourceRange(start, end - start + 1);
+				out.setTypeName(fullName);
 			}
 			out.setSourceRange(start, end - start + 1);
 		}
 		
 		return out;
+	}
+	
+	private static final Field FIELD_NAME_INDEX;
+	
+	static {
+		Field f = null;
+		try {
+			f = Name.class.getDeclaredField("index");
+			f.setAccessible(true);
+		} catch (Exception e) {
+			// Leave it null, in which case we don't set index. That'll result in error log messages but its better than crashing here.
+		}
+		
+		FIELD_NAME_INDEX = f;
+	}
+	
+	private static void setIndex(Name name, int index) {
+		try {
+			if (FIELD_NAME_INDEX != null) FIELD_NAME_INDEX.set(name, index);
+		} catch (Exception e) {
+			// Don't do anything - safest fallback behaviour.
+		}
 	}
 	
 	public static final class Reflection {
