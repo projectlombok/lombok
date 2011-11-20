@@ -221,6 +221,11 @@ public class JavacResolution {
 		}
 	}
 	
+	/*
+	 * We need to dig down to the level of the method or field declaration or (static) initializer block, then attribute that entire method/field/block using
+	 * the appropriate environment. So, we start from the top and walk down the node tree until we hit that method/field/block and stop there, recording both
+	 * the environment object (`env`) and the exact tree node (`copyAt`) at which to begin the attr process.
+	 */
 	private static final class EnvFinder extends JCTree.Visitor {
 		private Env<AttrContext> env = null;
 		private Enter enter;

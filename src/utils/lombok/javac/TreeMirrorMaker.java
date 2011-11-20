@@ -26,6 +26,7 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import com.sun.source.tree.LabeledStatementTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
@@ -33,6 +34,16 @@ import com.sun.tools.javac.tree.TreeCopier;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 
+/**
+ * Makes a copy of any AST node, with some exceptions.
+ * Exceptions:<ul>
+ * <li>The symbol ('sym') of a copied variable isn't copied.
+ * <li>all labels are removed.
+ * </ul>
+ * 
+ * The purpose of this class is to make a copy, and then the copy is attributed (resolution info is added). These exceptions
+ * are to work around apparent bugs (or at least inconsistencies) in javac sources.
+ */
 public class TreeMirrorMaker extends TreeCopier<Void> {
 	private final IdentityHashMap<JCTree, JCTree> originalToCopy = new IdentityHashMap<JCTree, JCTree>();
 	
@@ -82,5 +93,11 @@ public class TreeMirrorMaker extends TreeCopier<Void> {
 		JCVariableDecl copy = (JCVariableDecl) super.visitVariable(node, p);
 		copy.sym = ((JCVariableDecl) node).sym;
 		return copy;
+	}
+	
+	// Fix for NPE in HandleVal. See http://code.google.com/p/projectlombok/issues/detail?id=299
+	// This and visitVariable is rather hacky but we're working around evident bugs or at least inconsistencies in javac.
+	@Override public JCTree visitLabeledStatement(LabeledStatementTree node, Void p) {
+		return node.getStatement().accept(this, p);
 	}
 }
