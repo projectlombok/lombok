@@ -70,7 +70,7 @@ public class PatchVal {
 		return true;
 	}
 	
-	private static boolean couldBeVal(TypeReference ref) {
+	public static boolean couldBeVal(TypeReference ref) {
 		if (ref instanceof SingleTypeReference) {
 			char[] token = ((SingleTypeReference)ref).token;
 			return matches("val", token);

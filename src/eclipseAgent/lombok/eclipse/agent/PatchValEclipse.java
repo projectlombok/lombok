@@ -44,7 +44,6 @@ import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.parser.Parser;
@@ -64,10 +63,7 @@ public class PatchValEclipse {
 		ForeachStatement foreachDecl = (ForeachStatement) astStack[astPtr];
 		ASTNode init = foreachDecl.collection;
 		if (init == null) return;
-		if (foreachDecl.elementVariable != null && foreachDecl.elementVariable.type instanceof SingleTypeReference) {
-			SingleTypeReference ref = (SingleTypeReference) foreachDecl.elementVariable.type;
-			if (ref.token == null || ref.token.length != 3 || ref.token[0] != 'v' || ref.token[1] != 'a' || ref.token[2] != 'l') return;
-		} else return;
+		if (foreachDecl.elementVariable == null || !PatchVal.couldBeVal(foreachDecl.elementVariable.type)) return;
 		
 		try {
 			if (Reflection.iterableCopyField != null) Reflection.iterableCopyField.set(foreachDecl.elementVariable, init);
@@ -90,10 +86,7 @@ public class PatchValEclipse {
 		if (!(variableDecl instanceof LocalDeclaration)) return;
 		ASTNode init = variableDecl.initialization;
 		if (init == null) return;
-		if (variableDecl.type instanceof SingleTypeReference) {
-			SingleTypeReference ref = (SingleTypeReference) variableDecl.type;
-			if (ref.token == null || ref.token.length != 3 || ref.token[0] != 'v' || ref.token[1] != 'a' || ref.token[2] != 'l') return;
-		} else return;
+		if (!PatchVal.couldBeVal(variableDecl.type)) return;
 		
 		try {
 			if (Reflection.initCopyField != null) Reflection.initCopyField.set(variableDecl, init);
@@ -120,20 +113,10 @@ public class PatchValEclipse {
 		Annotation valAnnotation = null;
 		
 		for (Annotation ann : in.annotations) {
-			if (ann.type instanceof SingleTypeReference) {
-				if (PatchVal.matches("val", ((SingleTypeReference)ann.type).token)) {
-					found = true;
-					valAnnotation = ann;
-					break;
-				}
-			}
-			if (ann.type instanceof QualifiedTypeReference) {
-				char[][] tokens = ((QualifiedTypeReference)ann.type).tokens;
-				if (tokens != null && tokens.length == 2 && PatchVal.matches("lombok", tokens[0]) && PatchVal.matches("val", tokens[1])) {
-					found = true;
-					valAnnotation = ann;
-					break;
-				}
+			if (PatchVal.couldBeVal(ann.type)) {
+				found = true;
+				valAnnotation = ann;
+				break;
 			}
 		}
 		
