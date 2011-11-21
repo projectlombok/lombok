@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v0.10.3
+### v0.10.4 (November 21st, 2011)
 * BUGFIX: Using the `log` field from `@Log`, etc, now works in static initializers. [Issue #295](http://code.google.com/p/projectlombok/issues/detail?id=295)
 * BUGFIX: Auto-formatting code containing lombok on eclipse, even via an auto-save action, now works. [Issue #90](http://code.google.com/p/projectlombok/issues/detail?id=90)
 * BUGFIX: Letting eclipse generate various methods when a lombok annotation is present now works. [Issue #138](http://code.google.com/p/projectlombok/issues/detail?id=138)
