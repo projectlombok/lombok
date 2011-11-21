@@ -399,7 +399,11 @@ public class Delombok {
 			try {
 				result.print(writer);
 			} finally {
-				writer.close();
+				if (output != null) {
+					writer.close();
+				} else {
+					writer.flush();
+				}
 			}
 		}
 		delegate.close();
