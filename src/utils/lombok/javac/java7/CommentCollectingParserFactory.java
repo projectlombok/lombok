@@ -1,6 +1,7 @@
 package lombok.javac.java7;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 
 import lombok.javac.Comment;
@@ -12,7 +13,6 @@ import com.sun.tools.javac.parser.ParserFactory;
 import com.sun.tools.javac.parser.ScannerFactory;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.List;
 
 public class CommentCollectingParserFactory extends ParserFactory {
 	private final Map<JCCompilationUnit, List<Comment>> commentsMap;

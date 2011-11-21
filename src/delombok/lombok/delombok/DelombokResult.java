@@ -23,13 +23,13 @@
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Date;
+import java.util.List;
 
 import javax.tools.JavaFileObject;
 
 import lombok.javac.Comment;
 
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.util.List;
 
 public class DelombokResult {
 	private final List<Comment> comments;
@@ -55,7 +55,11 @@ public class DelombokResult {
 		out.write(String.valueOf(new Date()));
 		out.write(System.getProperty("line.separator"));
 		
-		compilationUnit.accept(new PrettyCommentsPrinter(out, compilationUnit, comments));
+		com.sun.tools.javac.util.List<Comment> comments_;
+		if (comments instanceof com.sun.tools.javac.util.List) comments_ = (com.sun.tools.javac.util.List<Comment>) comments;
+		else comments_ = com.sun.tools.javac.util.List.from(comments.toArray(new Comment[0]));
+		
+		compilationUnit.accept(new PrettyCommentsPrinter(out, compilationUnit, comments_));
 	}
 	
 	public boolean isChanged() {

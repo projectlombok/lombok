@@ -29,16 +29,29 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Options;
 
 public class LombokOptions extends Options {
+	private boolean deleteLombokAnnotations = true;
+	private final Set<JCCompilationUnit> changed = new HashSet<JCCompilationUnit>();
 	
-	public boolean deleteLombokAnnotations = true;
-	public final Set<JCCompilationUnit> changed = new HashSet<JCCompilationUnit>();
-
 	public static LombokOptions replaceWithDelombokOptions(Context context) {
 		Options options = Options.instance(context);
 		context.put(optionsKey, (Options)null);
 		LombokOptions result = new LombokOptions(context);
 		result.putAll(options);
 		return result;
+	}
+	
+	public boolean isChanged(JCCompilationUnit ast) {
+		return changed.contains(ast);
+	}
+	
+	public static void markChanged(Context context, JCCompilationUnit ast) {
+		Options options = context.get(Options.optionsKey);
+		if (options instanceof LombokOptions) ((LombokOptions) options).changed.add(ast);
+	}
+	
+	public static boolean shouldDeleteLombokAnnotations(Context context) {
+		Options options = context.get(Options.optionsKey);
+		return (options instanceof LombokOptions) && ((LombokOptions) options).deleteLombokAnnotations;
 	}
 	
 	private LombokOptions(Context context) {

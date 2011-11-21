@@ -39,7 +39,6 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
-import com.sun.tools.javac.util.Options;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
 /**
@@ -198,8 +197,7 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 	}
 	
 	public boolean shouldDeleteLombokAnnotations() {
-		Options options = ast.getContext().get(Options.optionsKey);
-		return options instanceof LombokOptions && ((LombokOptions)options).deleteLombokAnnotations;
+		return LombokOptions.shouldDeleteLombokAnnotations(ast.getContext());
 	}
 	
 	/**

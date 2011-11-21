@@ -1,5 +1,6 @@
 package lombok.javac.java7;
 
+import java.util.List;
 import java.util.Map;
 
 import lombok.javac.Comment;
@@ -8,10 +9,8 @@ import com.sun.tools.javac.parser.EndPosParser;
 import com.sun.tools.javac.parser.Lexer;
 import com.sun.tools.javac.parser.ParserFactory;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.util.List;
 
 class CommentCollectingParser extends EndPosParser {
-	
 	private final Map<JCCompilationUnit, List<Comment>> commentsMap;
 	private final Lexer lexer;
 	

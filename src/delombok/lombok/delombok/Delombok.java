@@ -44,7 +44,7 @@ import java.util.Map;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 
-import lombok.javac.Comment;
+import lombok.javac.CommentCatcher;
 import lombok.javac.LombokOptions;
 
 import com.sun.tools.javac.main.JavaCompiler;
@@ -357,15 +357,8 @@ public class Delombok {
 		if (sourcepath != null) options.put(OptionName.SOURCEPATH, sourcepath);
 		options.put("compilePolicy", "attr");
 		
-		
-		registerCommentsCollectingScannerFactory(context);
-		JavaCompiler compiler = new JavaCompiler(context);
-		
-		Map<JCCompilationUnit, com.sun.tools.javac.util.List<Comment>> commentsMap = new IdentityHashMap<JCCompilationUnit, com.sun.tools.javac.util.List<Comment>>();
-		setInCompiler(compiler, context, commentsMap);
-		
-		compiler.keepComments = true;
-		compiler.genEndPos = true;
+		CommentCatcher catcher = CommentCatcher.create(context);
+		JavaCompiler compiler = catcher.getCompiler();
 		
 		List<JCCompilationUnit> roots = new ArrayList<JCCompilationUnit>();
 		Map<JCCompilationUnit, File> baseMap = new IdentityHashMap<JCCompilationUnit, File>();
@@ -389,7 +382,7 @@ public class Delombok {
 		
 		JavaCompiler delegate = compiler.processAnnotations(compiler.enterTrees(toJavacList(roots)));
 		for (JCCompilationUnit unit : roots) {
-			DelombokResult result = new DelombokResult(commentsMap.get(unit), unit, force || options.changed.contains(unit));
+			DelombokResult result = new DelombokResult(catcher.getComments(unit), unit, force || options.isChanged(unit));
 			if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged");
 			Writer rawWriter;
 			if (presetWriter != null) rawWriter = presetWriter;
@@ -409,35 +402,6 @@ public class Delombok {
 		delegate.close();
 		
 		return true;
-	}
-	
-	public static void setInCompiler(JavaCompiler compiler, Context context, Map<JCCompilationUnit, com.sun.tools.javac.util.List<Comment>> commentsMap) {
-		
-		try {
-			if (JavaCompiler.version().startsWith("1.6")) {
-				Class<?> parserFactory = Class.forName("lombok.javac.java6.CommentCollectingParserFactory");
-				parserFactory.getMethod("setInCompiler",JavaCompiler.class, Context.class, Map.class).invoke(null, compiler, context, commentsMap);
-			} else {
-				Class<?> parserFactory = Class.forName("lombok.javac.java7.CommentCollectingParserFactory");
-				parserFactory.getMethod("setInCompiler",JavaCompiler.class, Context.class, Map.class).invoke(null, compiler, context, commentsMap);
-			}
-		} catch (Exception e) {
-			if (e instanceof RuntimeException) throw (RuntimeException)e;
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public static void registerCommentsCollectingScannerFactory(Context context) {
-		try {
-			if (JavaCompiler.version().startsWith("1.6")) {
-				Class.forName("lombok.javac.java6.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
-			} else {
-				Class.forName("lombok.javac.java7.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
-			}
-		} catch (Exception e) {
-			if (e instanceof RuntimeException) throw (RuntimeException)e;
-			throw new RuntimeException(e);
-		}
 	}
 	
 	private static String canonical(File dir) {

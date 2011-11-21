@@ -33,7 +33,6 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
-import com.sun.tools.javac.util.Options;
 
 public class JavacTransformer {
 	private final HandlerLibrary handlers;
@@ -80,10 +79,7 @@ public class JavacTransformer {
 			}
 		}
 		
-		Options options = context.get(Options.optionsKey);
-		if (options instanceof LombokOptions) for (JavacAST ast : asts) {
-			if (ast.isChanged()) ((LombokOptions)options).changed.add((JCCompilationUnit) ast.top().get());
-		}
+		for (JavacAST ast : asts) if (ast.isChanged()) LombokOptions.markChanged(context, (JCCompilationUnit) ast.top().get());
 	}
 	
 	private class AnnotationVisitor extends JavacASTAdapter {
