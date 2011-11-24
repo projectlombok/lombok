@@ -848,7 +848,7 @@ public class EclipseHandlerUtil {
 		
 		MessageSend call = new MessageSend();
 		setGeneratedBy(call, source);
-		call.sourceStart = pS; call.sourceEnd = pE;
+		call.sourceStart = pS; call.statementEnd = call.sourceEnd = pE;
 		call.receiver = new ThisReference(pS, pE);
 		setGeneratedBy(call.receiver, source);
 		call.selector = getter.name;
@@ -878,7 +878,7 @@ public class EclipseHandlerUtil {
 		
 		MessageSend call = new MessageSend();
 		setGeneratedBy(call, source);
-		call.sourceStart = pS; call.sourceEnd = pE;
+		call.sourceStart = pS; call.statementEnd = call.sourceEnd = pE;
 		call.receiver = new SingleNameReference(receiver, p);
 		setGeneratedBy(call.receiver, source);
 		call.selector = getter.name;
@@ -1136,7 +1136,7 @@ public class EclipseHandlerUtil {
 		NullLiteral nullLiteral = new NullLiteral(pS, pE);
 		setGeneratedBy(nullLiteral, source);
 		EqualExpression equalExpression = new EqualExpression(varName, nullLiteral, OperatorIds.EQUAL_EQUAL);
-		equalExpression.sourceStart = pS; equalExpression.sourceEnd = pE;
+		equalExpression.sourceStart = pS; equalExpression.statementEnd = equalExpression.sourceEnd = pE;
 		setGeneratedBy(equalExpression, source);
 		IfStatement ifStatement = new IfStatement(equalExpression, throwStatement, 0, 0);
 		setGeneratedBy(ifStatement, source);
@@ -1226,6 +1226,7 @@ public class EclipseHandlerUtil {
 		
 		result.sourceStart = source.sourceStart;
 		result.sourceEnd = source.sourceEnd;
+		result.statementEnd = source.sourceEnd;
 		
 		setGeneratedBy(result, source);
 		return result;
