@@ -43,16 +43,22 @@ import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
 
 public class PatchFixes {
-	public static boolean isGenerated(org.eclipse.jdt.core.dom.Statement statement) {
+	public static boolean isGenerated(org.eclipse.jdt.core.dom.ASTNode node) {
 		boolean result = false;
 		try {
-			result =  ((Boolean)statement.getClass().getField("$isGenerated").get(statement)).booleanValue();
+			result =  ((Boolean)node.getClass().getField("$isGenerated").get(node)).booleanValue();
+			if (!result && node.getParent() != null && node.getParent() instanceof org.eclipse.jdt.core.dom.QualifiedName)
+				result = isGenerated(node.getParent());
 		} catch (Exception e) {
 			// better to assume it isn't generated
 		}
 		return result;
 	}
-
+	
+	public static boolean returnFalse(java.lang.Object object) {
+		return false;
+	}
+	
 	public static int fixRetrieveStartingCatchPosition(int original, int start) {
 		return original == -1 ? start : original;
 	}
