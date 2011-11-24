@@ -110,19 +110,14 @@ public class PatchFixes {
 		List<RewriteEvent> modifiedChildren = new ArrayList<RewriteEvent>();
 		for (int i=0; i<children.length; i++) {
 			RewriteEvent child = children[i];
-			boolean isGenerated = false;
-			try {
-				org.eclipse.jdt.core.dom.ASTNode originalValue = (org.eclipse.jdt.core.dom.ASTNode)child.getOriginalValue();
-				isGenerated = (Boolean) originalValue.getClass().getField("$isGenerated").get(originalValue);
-			} catch (Exception e) {
-				// If this fails, better to break some refactor scripts than to crash eclipse.
-			}
-			if (isGenerated
-				&& (child.getChangeKind() == RewriteEvent.REPLACED || child.getChangeKind() == RewriteEvent.REMOVED) 
-				&& child.getOriginalValue() instanceof org.eclipse.jdt.core.dom.MethodDeclaration
-			) {
-				if (child.getNewValue() != null)
+			boolean isGenerated = isGenerated( (org.eclipse.jdt.core.dom.ASTNode)child.getOriginalValue() );
+			if (isGenerated) {
+				if ((child.getChangeKind() == RewriteEvent.REPLACED || child.getChangeKind() == RewriteEvent.REMOVED) 
+					&& child.getOriginalValue() instanceof org.eclipse.jdt.core.dom.MethodDeclaration
+					&& child.getNewValue() != null
+				) {
 					modifiedChildren.add(new NodeRewriteEvent(null, child.getNewValue()));
+				}
 			} else {
 				newChildren.add(child);
 			}
