@@ -43,16 +43,46 @@ import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
 
 public class PatchFixes {
-	public static boolean isGenerated(org.eclipse.jdt.core.dom.Statement statement) {
+	public static boolean isGenerated(org.eclipse.jdt.core.dom.ASTNode node) {
 		boolean result = false;
 		try {
-			result =  ((Boolean)statement.getClass().getField("$isGenerated").get(statement)).booleanValue();
+			result =  ((Boolean)node.getClass().getField("$isGenerated").get(node)).booleanValue();
+			if (!result && node.getParent() != null && node.getParent() instanceof org.eclipse.jdt.core.dom.QualifiedName)
+				result = isGenerated(node.getParent());
 		} catch (Exception e) {
 			// better to assume it isn't generated
 		}
 		return result;
 	}
-
+	
+	public static boolean returnFalse(java.lang.Object object) {
+		return false;
+	}
+	
+	/* Very practical implementation, but works for getter and setter even with type parameters */
+	public static java.lang.String getRealMethodDeclarationSource(java.lang.String original, org.eclipse.jdt.core.dom.MethodDeclaration declaration) {
+		if(isGenerated(declaration)) {
+			String returnType = declaration.getReturnType2().toString();
+			String params = "";
+			for (Object object : declaration.parameters()) {
+				org.eclipse.jdt.core.dom.ASTNode parameter = ((org.eclipse.jdt.core.dom.ASTNode)object);
+				params += ","+parameter.toString();
+			}
+			return returnType + " "+declaration.getName().getFullyQualifiedName()+"("+(params.isEmpty() ? "" : params.substring(1))+");";
+		}
+		return original;
+	}
+	
+	public static int getSourceEndFixed(int sourceEnd, org.eclipse.jdt.internal.compiler.ast.ASTNode node) throws Exception {
+		if (sourceEnd == -1) {
+			org.eclipse.jdt.internal.compiler.ast.ASTNode object = (org.eclipse.jdt.internal.compiler.ast.ASTNode)node.getClass().getField("$generatedBy").get(node);
+			if (object != null) {
+				return object.sourceEnd;
+			}
+		}
+		return sourceEnd;
+	}
+	
 	public static int fixRetrieveStartingCatchPosition(int original, int start) {
 		return original == -1 ? start : original;
 	}
