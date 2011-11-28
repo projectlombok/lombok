@@ -167,6 +167,25 @@ public class EclipsePatcher extends Agent {
 	}
 	
 	private static void patchHideGeneratedNodes(ScriptManager sm) {
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.SourceElementNotifier", "notifySourceElementRequestor", "void", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration", "org.eclipse.jdt.internal.compiler.ast.TypeDeclaration", "org.eclipse.jdt.internal.compiler.ast.ImportReference"))
+				.methodToWrap(new Hook("org.eclipse.jdt.internal.compiler.util.HashtableOfObjectToInt", "get", "int", "java.lang.Object"))
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "getSourceEndFixed", "int", "int", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.requestExtra(StackRequest.PARAM1)
+				.transplant().build());
+		
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+		.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.structure.ExtractInterfaceProcessor", "createMethodDeclaration", "void",
+				"org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewrite", 
+				"org.eclipse.jdt.core.dom.rewrite.ASTRewrite",
+				"org.eclipse.jdt.core.dom.AbstractTypeDeclaration", 
+				"org.eclipse.jdt.core.dom.MethodDeclaration"
+			))
+			.methodToWrap(new Hook("org.eclipse.jface.text.IDocument", "get", "java.lang.String", "int", "int"))
+			.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "getRealMethodDeclarationSource", "java.lang.String", "java.lang.String", "org.eclipse.jdt.core.dom.MethodDeclaration"))
+			.requestExtra(StackRequest.PARAM4)
+			.build());
+
 		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.dom.LinkedNodeFinder", "findByNode"))
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.dom.LinkedNodeFinder", "findByBinding"))
