@@ -59,6 +59,30 @@ public class PatchFixes {
 		return false;
 	}
 	
+	/* Very practical implementation, but works for getter and setter even with type parameters */
+	public static java.lang.String getRealMethodDeclarationSource(java.lang.String original, org.eclipse.jdt.core.dom.MethodDeclaration declaration) {
+		if(isGenerated(declaration)) {
+			String returnType = declaration.getReturnType2().toString();
+			String params = "";
+			for (Object object : declaration.parameters()) {
+				org.eclipse.jdt.core.dom.ASTNode parameter = ((org.eclipse.jdt.core.dom.ASTNode)object);
+				params += ","+parameter.toString();
+			}
+			return returnType + " "+declaration.getName().getFullyQualifiedName()+"("+(params.isEmpty() ? "" : params.substring(1))+");";
+		}
+		return original;
+	}
+	
+	public static int getSourceEndFixed(int sourceEnd, org.eclipse.jdt.internal.compiler.ast.ASTNode node) throws Exception {
+		if (sourceEnd == -1) {
+			org.eclipse.jdt.internal.compiler.ast.ASTNode object = (org.eclipse.jdt.internal.compiler.ast.ASTNode)node.getClass().getField("$generatedBy").get(node);
+			if (object != null) {
+				return object.sourceEnd;
+			}
+		}
+		return sourceEnd;
+	}
+	
 	public static int fixRetrieveStartingCatchPosition(int original, int start) {
 		return original == -1 ? start : original;
 	}
