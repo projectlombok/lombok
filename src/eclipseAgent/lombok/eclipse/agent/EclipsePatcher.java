@@ -92,6 +92,7 @@ public class EclipsePatcher extends Agent {
 			patchFixSourceTypeConverter(sm);
 			patchDisableLombokForCodeFormatterAndCleanup(sm);
 			patchListRewriteHandleGeneratedMethods(sm);
+			patchSyntaxAndOccurrencesHighlighting(sm);
 		} else {
 			patchPostCompileHookEcj(sm);
 		}
@@ -100,6 +101,20 @@ public class EclipsePatcher extends Agent {
 		patchEcjTransformers(sm, ecjOnly);
 		
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
+	}
+
+	private static void patchSyntaxAndOccurrencesHighlighting(ScriptManager sm) {
+		/*
+		 *	Skip generated nodes for "visual effects" (syntax highlighting && highlight occurrences)
+		 */
+		sm.addScript(ScriptBuilder.exitEarly()
+				.target(new MethodTarget("org.eclipse.jdt.internal.ui.search.OccurrencesFinder", "addUsage"))
+				.target(new MethodTarget("org.eclipse.jdt.internal.ui.search.OccurrencesFinder", "addWrite"))
+				.target(new MethodTarget("org.eclipse.jdt.internal.ui.javaeditor.SemanticHighlightingReconciler$PositionCollector", "visit", "boolean", "org.eclipse.jdt.core.dom.SimpleName"))
+				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.core.dom.ASTNode"))
+				.valueMethod(new Hook("lombok.eclipse.agent.PatchFixes", "returnFalse", "boolean", "java.lang.Object"))
+				.request(StackRequest.PARAM1)
+				.build());
 	}
 	
 	private static void patchDisableLombokForCodeFormatterAndCleanup(ScriptManager sm) {
