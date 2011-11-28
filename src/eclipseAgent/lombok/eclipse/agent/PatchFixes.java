@@ -43,16 +43,22 @@ import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
 
 public class PatchFixes {
-	public static boolean isGenerated(org.eclipse.jdt.core.dom.Statement statement) {
+	public static boolean isGenerated(org.eclipse.jdt.core.dom.ASTNode node) {
 		boolean result = false;
 		try {
-			result =  ((Boolean)statement.getClass().getField("$isGenerated").get(statement)).booleanValue();
+			result =  ((Boolean)node.getClass().getField("$isGenerated").get(node)).booleanValue();
+			if (!result && node.getParent() != null && node.getParent() instanceof org.eclipse.jdt.core.dom.QualifiedName)
+				result = isGenerated(node.getParent());
 		} catch (Exception e) {
 			// better to assume it isn't generated
 		}
 		return result;
 	}
-
+	
+	public static boolean returnFalse(java.lang.Object object) {
+		return false;
+	}
+	
 	public static int fixRetrieveStartingCatchPosition(int original, int start) {
 		return original == -1 ? start : original;
 	}
@@ -104,19 +110,14 @@ public class PatchFixes {
 		List<RewriteEvent> modifiedChildren = new ArrayList<RewriteEvent>();
 		for (int i=0; i<children.length; i++) {
 			RewriteEvent child = children[i];
-			boolean isGenerated = false;
-			try {
-				org.eclipse.jdt.core.dom.ASTNode originalValue = (org.eclipse.jdt.core.dom.ASTNode)child.getOriginalValue();
-				isGenerated = (Boolean) originalValue.getClass().getField("$isGenerated").get(originalValue);
-			} catch (Exception e) {
-				// If this fails, better to break some refactor scripts than to crash eclipse.
-			}
-			if (isGenerated
-				&& (child.getChangeKind() == RewriteEvent.REPLACED || child.getChangeKind() == RewriteEvent.REMOVED) 
-				&& child.getOriginalValue() instanceof org.eclipse.jdt.core.dom.MethodDeclaration
-			) {
-				if (child.getNewValue() != null)
+			boolean isGenerated = isGenerated( (org.eclipse.jdt.core.dom.ASTNode)child.getOriginalValue() );
+			if (isGenerated) {
+				if ((child.getChangeKind() == RewriteEvent.REPLACED || child.getChangeKind() == RewriteEvent.REMOVED) 
+					&& child.getOriginalValue() instanceof org.eclipse.jdt.core.dom.MethodDeclaration
+					&& child.getNewValue() != null
+				) {
 					modifiedChildren.add(new NodeRewriteEvent(null, child.getNewValue()));
+				}
 			} else {
 				newChildren.add(child);
 			}
