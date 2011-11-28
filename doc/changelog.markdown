@@ -1,6 +1,10 @@
 Lombok Changelog
 ----------------
 
+### v0.10.5 (EDGE)
+* BUGFIX: Eclipse quickfix "Add unimplemented methods" would sometimes insert the new method stubs in strange places, especially if `@Data` was present. [Issue #51](http://code.google.com/p/projectlombok/issues/detail?id=51)
+* BUGFIX: Using save action 'Use this qualifier for field accesses, only if necessary' did not work together with `@Data` in certain cases. [Issue #301](http://code.google.com/p/projectlombok/issues/detail?id=301)
+
 ### v0.10.4 (November 21st, 2011)
 * BUGFIX: Using the `log` field from `@Log`, etc, now works in static initializers. [Issue #295](http://code.google.com/p/projectlombok/issues/detail?id=295)
 * BUGFIX: Auto-formatting code containing lombok on eclipse, even via an auto-save action, now works. [Issue #90](http://code.google.com/p/projectlombok/issues/detail?id=90)
