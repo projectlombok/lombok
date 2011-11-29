@@ -478,7 +478,8 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			setGeneratedBy(oRef, source);
 			
 			TypeReference typeReference = createTypeReference(type, p);
-			
+			setGeneratedBy(typeReference, source);
+
 			InstanceOfExpression instanceOf = new InstanceOfExpression(oRef, typeReference);
 			instanceOf.sourceStart = pS; instanceOf.sourceEnd = pE;
 			setGeneratedBy(instanceOf, source);
@@ -705,7 +706,6 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		setGeneratedBy(otherRef, source);
 		
 		TypeReference typeReference = createTypeReference(type, p);
-		
 		setGeneratedBy(typeReference, source);
 		
 		InstanceOfExpression instanceOf = new InstanceOfExpression(otherRef, typeReference);
