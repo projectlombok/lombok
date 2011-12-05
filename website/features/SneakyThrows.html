@@ -20,9 +20,6 @@
 			or otherwise modify the thrown checked exception; it simply fakes out the compiler. On the JVM (class file) level, all exceptions, checked or not,
 			can be thrown regardless of the <code>throws</code> clause of your methods, which is why this works.
 			</p><p>
-			<em><strong>CAREFUL: </strong></em>Unlike other lombok transformations, you need to put <strong>lombok.jar</strong> on your classpath when
-			you run your program.
-			</p><p>
 			Common use cases for when you want to opt out of the checked exception mechanism center around 2 situations:<br /><ul>
 			<li>A needlessly strict interface, such as <code>Runnable</code> - whatever exception propagates out of your <code>run()</code> method,
 				checked or not, it will be passed to the <code>Thread</code>'s unhandled exception handler. Catching a checked exception and wrapping it
@@ -38,6 +35,9 @@
 			</p><p>
 			You can pass any number of exceptions to the <code>@SneakyThrows</code> annotation. If you pass no exceptions, you may throw any
 			exception sneakily.
+			</p><p>
+			<em>NOTE: </em> with lombok versions older than 0.10, unlike other lombok transformations, you need to put <strong>lombok.jar</strong> on your
+                        classpath when you run your program.
 		</div>
 		<div class="snippets">
 			<div class="pre">
