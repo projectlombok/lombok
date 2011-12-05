@@ -94,23 +94,42 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 	
 	@Override public void handle(AnnotationValues<Delegate> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		deleteAnnotationIfNeccessary(annotationNode, Delegate.class);
-		if (annotationNode.up().getKind() != Kind.FIELD) {
-			// As the annotation is legal on fields only, javac itself will take care of printing an error message for this.
+		
+		Type delegateType;
+		Name delegateName = annotationNode.toName(annotationNode.up().getName());
+		DelegateReceiver delegateReceiver;
+		JavacResolution reso = new JavacResolution(annotationNode.getContext());
+		if (annotationNode.up().getKind() == Kind.FIELD) {
+			delegateReceiver = DelegateReceiver.FIELD;
+			delegateType = annotationNode.up().get().type;
+			if (delegateType == null) reso.resolveClassMember(annotationNode.up());
+			delegateType = annotationNode.up().get().type;
+		} else if (annotationNode.up().getKind() == Kind.METHOD) {
+			if (!(annotationNode.up().get() instanceof JCMethodDecl)) {
+				annotationNode.addError("@Delegate is legal only on no-argument methods.");
+				return;
+			}
+			JCMethodDecl methodDecl = (JCMethodDecl) annotationNode.up().get();
+			if (!methodDecl.params.isEmpty()) {
+				annotationNode.addError("@Delegate is legal only on no-argument methods.");
+				return;
+			}
+			delegateReceiver = DelegateReceiver.METHOD;
+			delegateType = methodDecl.restype.type;
+			if (delegateType == null) reso.resolveClassMember(annotationNode.up());
+			delegateType = methodDecl.restype.type;
+		} else {
+			// As the annotation is legal on fields and methods only, javac itself will take care of printing an error message for this.
 			return;
 		}
 		
 		List<Object> delegateTypes = annotation.getActualExpressions("types");
 		List<Object> excludeTypes = annotation.getActualExpressions("excludes");
-		JavacResolution reso = new JavacResolution(annotationNode.getContext());
 		List<Type> toDelegate = new ArrayList<Type>();
 		List<Type> toExclude = new ArrayList<Type>();
 		
 		if (delegateTypes.isEmpty()) {
-			Type type = ((JCVariableDecl)annotationNode.up().get()).type;
-			if (type == null) reso.resolveClassMember(annotationNode.up());
-			//TODO I'm fairly sure the above line (and that entire method) does effectively bupkis!
-			type = ((JCVariableDecl)annotationNode.up().get()).type;
-			if (type != null) toDelegate.add(type);
+			if (delegateType != null) toDelegate.add(delegateType); 
 		} else {
 			for (Object dt : delegateTypes) {
 				if (dt instanceof JCFieldAccess && ((JCFieldAccess)dt).name.toString().equals("class")) {
@@ -167,15 +186,13 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 			}
 		}
 		
-		Name delegateFieldName = annotationNode.toName(annotationNode.up().getName());
-		
-		for (MethodSig sig : signaturesToDelegate) generateAndAdd(sig, annotationNode, delegateFieldName);
+		for (MethodSig sig : signaturesToDelegate) generateAndAdd(sig, annotationNode, delegateName, delegateReceiver);
 	}
 	
-	private void generateAndAdd(MethodSig sig, JavacNode annotation, Name delegateFieldName) {
+	private void generateAndAdd(MethodSig sig, JavacNode annotation, Name delegateName, DelegateReceiver delegateReceiver) {
 		List<JCMethodDecl> toAdd = new ArrayList<JCMethodDecl>();
 		try {
-			toAdd.add(createDelegateMethod(sig, annotation, delegateFieldName));
+			toAdd.add(createDelegateMethod(sig, annotation, delegateName, delegateReceiver));
 		} catch (TypeNotConvertibleException e) {
 			annotation.addError("Can't create delegate method for " + sig.name + ": " + e.getMessage());
 			return;
@@ -240,7 +257,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		}
 	}
 	
-	private JCMethodDecl createDelegateMethod(MethodSig sig, JavacNode annotation, Name delegateFieldName) throws TypeNotConvertibleException, CantMakeDelegates {
+	private JCMethodDecl createDelegateMethod(MethodSig sig, JavacNode annotation, Name delegateName, DelegateReceiver delegateReceiver) throws TypeNotConvertibleException, CantMakeDelegates {
 		/* public <T, U, ...> ReturnType methodName(ParamType1 name1, ParamType2 name2, ...) throws T1, T2, ... {
 		 *      (return) delegate.<T, U>methodName(name1, name2);
 		 *  }
@@ -288,9 +305,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 			args.append(maker.Ident(name));
 		}
 		
-		JCExpression delegateFieldRef = maker.Select(maker.Ident(annotation.toName("this")), delegateFieldName);
-		
-		JCExpression delegateCall = maker.Apply(toList(typeArgs), maker.Select(delegateFieldRef, sig.name), toList(args));
+		JCExpression delegateCall = maker.Apply(toList(typeArgs), maker.Select(delegateReceiver.get(annotation, delegateName), sig.name), toList(args));
 		JCStatement body = useReturn ? maker.Return(delegateCall) : maker.Exec(delegateCall);
 		JCBlock bodyBlock = maker.Block(0, com.sun.tools.javac.util.List.of(body));
 		
@@ -366,5 +381,23 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 	private static String typeBindingToSignature(TypeMirror binding, JavacTypes types) {
 		binding = types.erasure(binding);
 		return binding.toString();
+	}
+	
+	private enum DelegateReceiver {
+		METHOD {
+			public JCExpression get(final JavacNode node, final Name name) {
+				com.sun.tools.javac.util.List<JCExpression> nilExprs = com.sun.tools.javac.util.List.nil();
+				final TreeMaker maker = node.getTreeMaker();
+				return maker.Apply(nilExprs, maker.Select(maker.Ident(node.toName("this")), name), nilExprs);
+			}
+		},
+		FIELD {
+			public JCExpression get(final JavacNode node, final Name name) {
+				final TreeMaker maker = node.getTreeMaker();
+				return maker.Select(maker.Ident(node.toName("this")), name);
+			}
+		};
+		
+		public abstract JCExpression get(final JavacNode node, final Name name);
 	}
 }
