@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2009-2011 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -160,6 +160,8 @@ public class CreateLombokRuntimeApp implements LombokApp {
 		boolean success = false;
 		try {
 			JarOutputStream jar = new JarOutputStream(out);
+			deps.put("LICENSE", CreateLombokRuntimeApp.class);
+			deps.put("AUTHORS", CreateLombokRuntimeApp.class);
 			for (Entry<String, Class<?>> dep : deps.entrySet()) {
 				InputStream in = dep.getValue().getResourceAsStream("/" + dep.getKey());
 				try {
