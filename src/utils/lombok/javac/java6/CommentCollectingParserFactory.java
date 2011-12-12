@@ -3,7 +3,7 @@ package lombok.javac.java6;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import lombok.javac.Comment;
+import lombok.javac.CommentInfo;
 
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.parser.Lexer;
@@ -13,13 +13,13 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 
 public class CommentCollectingParserFactory extends Parser.Factory {
-	private final Map<JCCompilationUnit, List<Comment>> commentsMap;
+	private final Map<JCCompilationUnit, List<CommentInfo>> commentsMap;
 	
 	static Context.Key<Parser.Factory> key() {
 		return parserFactoryKey;
 	}
 	
-	protected CommentCollectingParserFactory(Context context, Map<JCCompilationUnit, List<Comment>> commentsMap) {
+	protected CommentCollectingParserFactory(Context context, Map<JCCompilationUnit, List<CommentInfo>> commentsMap) {
 		super(context);
 		this.commentsMap = commentsMap;
 	}
@@ -32,7 +32,7 @@ public class CommentCollectingParserFactory extends Parser.Factory {
 		//Either way this will work out.
 	}
 	
-	public static void setInCompiler(JavaCompiler compiler, Context context, Map<JCCompilationUnit, List<Comment>> commentsMap) {
+	public static void setInCompiler(JavaCompiler compiler, Context context, Map<JCCompilationUnit, List<CommentInfo>> commentsMap) {
 		context.put(CommentCollectingParserFactory.key(), (Parser.Factory)null);
 		Field field;
 		try {

@@ -21,24 +21,23 @@
  */
 package lombok.javac;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.List;
 
 public class CommentCatcher {
 	private final JavaCompiler compiler;
-	private final Map<JCCompilationUnit, List<Comment>> commentsMap;
+	private final Map<JCCompilationUnit, List<CommentInfo>> commentsMap;
 	
 	public static CommentCatcher create(Context context) {
 		registerCommentsCollectingScannerFactory(context);
 		JavaCompiler compiler = new JavaCompiler(context);
 		
-		Map<JCCompilationUnit, List<Comment>> commentsMap = new WeakHashMap<JCCompilationUnit, List<Comment>>();
+		Map<JCCompilationUnit, List<CommentInfo>> commentsMap = new WeakHashMap<JCCompilationUnit, List<CommentInfo>>();
 		setInCompiler(compiler, context, commentsMap);
 		
 		compiler.keepComments = true;
@@ -47,7 +46,7 @@ public class CommentCatcher {
 		return new CommentCatcher(compiler, commentsMap);
 	}
 	
-	private CommentCatcher(JavaCompiler compiler, Map<JCCompilationUnit, List<Comment>> commentsMap) {
+	private CommentCatcher(JavaCompiler compiler, Map<JCCompilationUnit, List<CommentInfo>> commentsMap) {
 		this.compiler = compiler;
 		this.commentsMap = commentsMap;
 	}
@@ -56,9 +55,9 @@ public class CommentCatcher {
 		return compiler;
 	}
 	
-	public List<Comment> getComments(JCCompilationUnit ast) {
-		List<Comment> list = commentsMap.get(ast);
-		return list == null ? Collections.<Comment>emptyList() : list;
+	public List<CommentInfo> getComments(JCCompilationUnit ast) {
+		List<CommentInfo> list = commentsMap.get(ast);
+		return list == null ? List.<CommentInfo>nil() : list;
 	}
 	
 	private static void registerCommentsCollectingScannerFactory(Context context) {
@@ -74,7 +73,7 @@ public class CommentCatcher {
 		}
 	}
 	
-	private static void setInCompiler(JavaCompiler compiler, Context context, Map<JCCompilationUnit, List<Comment>> commentsMap) {
+	private static void setInCompiler(JavaCompiler compiler, Context context, Map<JCCompilationUnit, List<CommentInfo>> commentsMap) {
 		
 		try {
 			if (JavaCompiler.version().startsWith("1.6")) {

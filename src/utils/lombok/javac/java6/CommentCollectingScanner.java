@@ -23,9 +23,9 @@ package lombok.javac.java6;
 
 import java.nio.CharBuffer;
 
-import lombok.javac.Comment;
-import lombok.javac.Comment.EndConnection;
-import lombok.javac.Comment.StartConnection;
+import lombok.javac.CommentInfo;
+import lombok.javac.CommentInfo.EndConnection;
+import lombok.javac.CommentInfo.StartConnection;
 
 import com.sun.tools.javac.parser.Scanner;
 import com.sun.tools.javac.util.List;
@@ -33,7 +33,7 @@ import com.sun.tools.javac.util.ListBuffer;
 
 
 public class CommentCollectingScanner extends Scanner {
-	private final ListBuffer<Comment> comments = ListBuffer.lb();
+	private final ListBuffer<CommentInfo> comments = ListBuffer.lb();
 	private int endComment = 0;
 	
 	public CommentCollectingScanner(CommentCollectingScannerFactory factory, CharBuffer charBuffer) {
@@ -54,14 +54,19 @@ public class CommentCollectingScanner extends Scanner {
 		StartConnection start = determineStartConnection(prevEndPos, pos);
 		EndConnection end = determineEndConnection(endPos); 
 
-		Comment comment = new Comment(prevEndPos, pos, endPos, content, start, end);
+		CommentInfo comment = new CommentInfo(prevEndPos, pos, endPos, content, start, end);
 		comments.append(comment);
 	}
 	
 	private EndConnection determineEndConnection(int pos) {
 		boolean first = true;
 		for (int i = pos;; i++) {
-			char c = getRawCharacters(i, i + 1)[0];
+			char c;
+			try {
+				c = getRawCharacters(i, i + 1)[0];
+			} catch (IndexOutOfBoundsException e) {
+				c = '\n';
+			}
 			if (isNewLine(c)) {
 				return EndConnection.ON_NEXT_LINE;
 			}
@@ -93,7 +98,7 @@ public class CommentCollectingScanner extends Scanner {
 		return c == '\n' || c == '\r';
 	}
 
-	public List<Comment> getComments() {
+	public List<CommentInfo> getComments() {
 		return comments.toList();
 	}
 }

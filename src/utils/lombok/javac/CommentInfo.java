@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2009-2011 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,17 +21,31 @@
  */
 package lombok.javac;
 
-public final class Comment {
+public final class CommentInfo {
 	public enum StartConnection {
+		/* Comment's start immediately follows a newline. */
 		START_OF_LINE,
+		
+		/* Comment's start does not immediately follow a newline, but there is a newline between this
+		 * and the previous comment (or pos 0 if first comment). */
 		ON_NEXT_LINE,
+		
+		/* Comment's start immediately follows previous comment's end  (or pos 0 if first comment). */
 		DIRECT_AFTER_PREVIOUS,
+		
+		/* Comment's start does not immediately follow previous comment's end, but there is no newline in
+		 * between this and previous comment (or pos 0 if first comment). */
 		AFTER_PREVIOUS
 	}
 
 	public enum EndConnection {
+		/* Comment is followed immediately by another node (not whitespace, not newline). */
 		DIRECT_AFTER_COMMENT,
+		
+		/* Comment is followed by some non-newline whitespace then by another node. */
 		AFTER_COMMENT,
+		
+		/* Comment is followed by optionally some whitespace then a newline. */
 		ON_NEXT_LINE
 	}
 	
@@ -42,13 +56,17 @@ public final class Comment {
 	public final StartConnection start;
 	public final EndConnection end;
 	
-	public Comment(int prevEndPos, int pos, int endPos, String content, StartConnection start, EndConnection end) {
+	public CommentInfo(int prevEndPos, int pos, int endPos, String content, StartConnection start, EndConnection end) {
 		this.pos = pos;
 		this.prevEndPos = prevEndPos;
 		this.endPos = endPos;
 		this.content = content;
 		this.start = start;
 		this.end = end;
+	}
+	
+	public boolean isJavadoc() {
+		return content.startsWith("/**");
 	}
 	
 	@Override

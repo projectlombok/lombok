@@ -39,10 +39,10 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.javac.Comment;
+import lombok.javac.CommentInfo;
 import lombok.javac.Javac;
-import lombok.javac.Comment.EndConnection;
-import lombok.javac.Comment.StartConnection;
+import lombok.javac.CommentInfo.EndConnection;
+import lombok.javac.CommentInfo.StartConnection;
 
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.BoundKind;
@@ -199,7 +199,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 		}
     }
 	
-	private List<Comment> comments;
+	private List<CommentInfo> comments;
 	private final JCCompilationUnit cu;
 	private boolean onNewLine = true;
 	private boolean aligned = false;
@@ -209,7 +209,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 	private boolean needsNewLine = false;
 	private boolean needsAlign = false;
 	
-    public PrettyCommentsPrinter(Writer out, JCCompilationUnit cu, List<Comment> comments) {
+    public PrettyCommentsPrinter(Writer out, JCCompilationUnit cu, List<CommentInfo> comments) {
         this.out = out;
 		this.comments = comments;
 		this.cu = cu;
@@ -222,7 +222,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     private void consumeComments(int till) throws IOException {
     	boolean prevNewLine = onNewLine;
     	boolean found = false;
-    	Comment head = comments.head;
+    	CommentInfo head = comments.head;
 		while (comments.nonEmpty() && head.pos < till) {
 			printComment(head);
 			comments = comments.tail;
@@ -235,7 +235,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 
     private void consumeTrailingComments(int from) throws IOException {
     	boolean prevNewLine = onNewLine;
-		Comment head = comments.head;
+		CommentInfo head = comments.head;
 		boolean stop = false;
 		while (comments.nonEmpty() && head.prevEndPos == from && !stop && !(head.start == StartConnection.ON_NEXT_LINE || head.start == StartConnection.START_OF_LINE)) {
 			from = head.endPos;
@@ -249,7 +249,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 		}
 	}
 
-	private void printComment(Comment comment) throws IOException {
+	private void printComment(CommentInfo comment) throws IOException {
     	prepareComment(comment.start);
     	print(comment.content);
     	switch (comment.end) {

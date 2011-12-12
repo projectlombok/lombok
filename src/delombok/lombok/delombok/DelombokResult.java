@@ -27,16 +27,16 @@ import java.util.List;
 
 import javax.tools.JavaFileObject;
 
-import lombok.javac.Comment;
+import lombok.javac.CommentInfo;
 
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
 public class DelombokResult {
-	private final List<Comment> comments;
+	private final List<CommentInfo> comments;
 	private final JCCompilationUnit compilationUnit;
 	private final boolean changed;
 	
-	public DelombokResult(List<Comment> comments, JCCompilationUnit compilationUnit, boolean changed) {
+	public DelombokResult(List<CommentInfo> comments, JCCompilationUnit compilationUnit, boolean changed) {
 		this.comments = comments;
 		this.compilationUnit = compilationUnit;
 		this.changed = changed;
@@ -55,9 +55,9 @@ public class DelombokResult {
 		out.write(String.valueOf(new Date()));
 		out.write(System.getProperty("line.separator"));
 		
-		com.sun.tools.javac.util.List<Comment> comments_;
-		if (comments instanceof com.sun.tools.javac.util.List) comments_ = (com.sun.tools.javac.util.List<Comment>) comments;
-		else comments_ = com.sun.tools.javac.util.List.from(comments.toArray(new Comment[0]));
+		com.sun.tools.javac.util.List<CommentInfo> comments_;
+		if (comments instanceof com.sun.tools.javac.util.List) comments_ = (com.sun.tools.javac.util.List<CommentInfo>) comments;
+		else comments_ = com.sun.tools.javac.util.List.from(comments.toArray(new CommentInfo[0]));
 		
 		compilationUnit.accept(new PrettyCommentsPrinter(out, compilationUnit, comments_));
 	}
