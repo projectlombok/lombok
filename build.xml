@@ -188,6 +188,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			</fileset>
 			<fileset dir="build" includes="changelog.txt" />
 			<fileset dir="." includes="LICENSE" />
+			<fileset dir="." includes="AUTHORS" />
 			<rule pattern="com.zwitserloot.cmdreader.**" result="lombok.libs.com.zwitserloot.cmdreader.@1" />
 			<rule pattern="org.objectweb.asm.**" result="lombok.libs.org.objectweb.asm.@1" />
 			<manifest>
