@@ -171,9 +171,9 @@ public class HandlerLibrary {
 	 * @param annotation 'node.get()' - convenience parameter.
 	 */
 	public void handleAnnotation(JCCompilationUnit unit, JavacNode node, JCAnnotation annotation) {
-		TypeResolver resolver = new TypeResolver(typeLibrary, node.getPackageDeclaration(), node.getImportStatements());
+		TypeResolver resolver = new TypeResolver(node.getPackageDeclaration(), node.getImportStatements());
 		String rawType = annotation.annotationType.toString();
-		for (String fqn : resolver.findTypeMatches(node, rawType)) {
+		for (String fqn : resolver.findTypeMatches(node, typeLibrary, rawType)) {
 			boolean isPrintAST = fqn.equals(PrintAST.class.getName());
 			if (isPrintAST && phase != 2) continue;
 			if (!isPrintAST && phase == 2) continue;

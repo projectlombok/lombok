@@ -173,11 +173,11 @@ public class HandlerLibrary {
 		String pkgName = annotationNode.getPackageDeclaration();
 		Collection<String> imports = annotationNode.getImportStatements();
 		
-		TypeResolver resolver = new TypeResolver(typeLibrary, pkgName, imports);
+		TypeResolver resolver = new TypeResolver(pkgName, imports);
 		TypeReference rawType = annotation.type;
 		if (rawType == null) return;
 		
-		for (String fqn : resolver.findTypeMatches(annotationNode, toQualifiedName(annotation.type.getTypeName()))) {
+		for (String fqn : resolver.findTypeMatches(annotationNode, typeLibrary, toQualifiedName(annotation.type.getTypeName()))) {
 			boolean isPrintAST = fqn.equals(PrintAST.class.getName());
 			if (isPrintAST == skipPrintAst) continue;
 			AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
