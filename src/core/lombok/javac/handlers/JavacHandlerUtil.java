@@ -24,6 +24,7 @@ package lombok.javac.handlers;
 import static lombok.javac.Javac.*;
 
 import java.lang.annotation.Annotation;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -89,11 +90,12 @@ public class JavacHandlerUtil {
 		}
 	}
 	
-	private static Map<JCTree, JCTree> generatedNodes = new WeakHashMap<JCTree, JCTree>();
+	private static Map<JCTree, WeakReference<JCTree>> generatedNodes = new WeakHashMap<JCTree, WeakReference<JCTree>>();
 	
 	public static JCTree getGeneratedBy(JCTree node) {
 		synchronized (generatedNodes) {
-			return generatedNodes.get(node);
+			WeakReference<JCTree> ref = generatedNodes.get(node);
+			return ref == null ? null : ref.get();
 		}
 	}
 	
@@ -111,7 +113,7 @@ public class JavacHandlerUtil {
 	public static <T extends JCTree> T setGeneratedBy(T node, JCTree source) {
 		synchronized (generatedNodes) {
 			if (source == null) generatedNodes.remove(node);
-			else generatedNodes.put(node, source);
+			else generatedNodes.put(node, new WeakReference<JCTree>(source));
 		}
 		return node;
 	}
