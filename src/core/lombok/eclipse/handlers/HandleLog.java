@@ -71,7 +71,9 @@ public class HandleLog {
 			
 			ClassLiteralAccess loggingType = selfType(owner, source);
 			
-			injectField(owner, createField(framework, source, loggingType));
+			FieldDeclaration fieldDeclaration = createField(framework, source, loggingType);
+			fieldDeclaration.traverse(new SetGeneratedByVisitor(source), typeDecl.staticInitializerScope);
+			injectField(owner, fieldDeclaration);
 			owner.rebuild();
 			break;
 		default:

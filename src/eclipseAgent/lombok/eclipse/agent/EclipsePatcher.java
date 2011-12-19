@@ -310,6 +310,13 @@ public class EclipsePatcher extends Agent {
 				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlag", "void",
 						"org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
 				.transplant().build());
+
+		sm.addScript(ScriptBuilder.wrapReturnValue()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertToFieldDeclaration", "org.eclipse.jdt.core.dom.FieldDeclaration", "org.eclipse.jdt.internal.compiler.ast.FieldDeclaration"))
+				.request(StackRequest.PARAM1, StackRequest.RETURN_VALUE)
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlag", "void",
+						"org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.transplant().build());
 		
 		sm.addScript(ScriptBuilder.wrapMethodCall()
 				.target(new TargetMatcher() {
