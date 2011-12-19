@@ -38,6 +38,7 @@ import lombok.core.AST.Kind;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.TransformEclipseAST;
+import lombok.eclipse.handlers.SetGeneratedByVisitor;
 
 import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
@@ -325,7 +326,11 @@ public class PatchDelegate {
 		for (BindingTuple pair : methods) {
 			EclipseNode annNode = typeNode.getAst().get(pair.responsible);
 			MethodDeclaration method = createDelegateMethod(pair.fieldName, typeNode, pair, top.compilationResult, annNode);
-			if (method != null) injectMethod(typeNode, method);
+			if (method != null) { 
+				SetGeneratedByVisitor visitor = new SetGeneratedByVisitor(annNode.get());
+				method.traverse(visitor, ((TypeDeclaration)typeNode.get()).scope);
+				injectMethod(typeNode, method);
+			}
 		}
 	}
 	
