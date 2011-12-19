@@ -28,7 +28,6 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -38,7 +37,6 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.core.AnnotationValues;
-import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues.AnnotationValue;
@@ -139,16 +137,8 @@ public class JavacHandlerUtil {
 	public static boolean typeMatches(Class<?> type, JavacNode node, JCTree typeNode) {
 		String typeName = typeNode.toString();
 		
-		TypeLibrary library = new TypeLibrary();
-		library.addType(type.getName());
-		TypeResolver resolver = new TypeResolver(library, node.getPackageDeclaration(), node.getImportStatements());
-		Collection<String> typeMatches = resolver.findTypeMatches(node, typeName);
-		
-		for (String match : typeMatches) {
-			if (match.equals(type.getName())) return true;
-		}
-		
-		return false;
+		TypeResolver resolver = new TypeResolver(node.getPackageDeclaration(), node.getImportStatements());
+		return resolver.typeMatches(node, type.getName(), typeName);
 	}
 	
 	/**

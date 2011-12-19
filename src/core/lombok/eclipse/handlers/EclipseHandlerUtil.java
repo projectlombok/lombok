@@ -30,7 +30,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,7 +45,6 @@ import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.core.TransformationsUtil;
-import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
 
 import org.eclipse.core.runtime.ILog;
@@ -260,16 +258,9 @@ public class EclipseHandlerUtil {
 		if (!lastPartA.equals(lastPartB)) return false;
 		String typeName = toQualifiedName(typeRef.getTypeName());
 		
-		TypeLibrary library = new TypeLibrary();
-		library.addType(type.getName());
-		TypeResolver resolver = new TypeResolver(library, node.getPackageDeclaration(), node.getImportStatements());
-		Collection<String> typeMatches = resolver.findTypeMatches(node, typeName);
+		TypeResolver resolver = new TypeResolver(node.getPackageDeclaration(), node.getImportStatements());
+		return resolver.typeMatches(node, type.getName(), typeName);
 		
-		for (String match : typeMatches) {
-			if (match.equals(type.getName())) return true;
-		}
-		
-		return false;
 	}
 	
 	public static Annotation copyAnnotation(Annotation annotation, ASTNode source) {

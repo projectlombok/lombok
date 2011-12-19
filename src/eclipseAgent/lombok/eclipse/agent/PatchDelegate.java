@@ -108,6 +108,7 @@ public class PatchDelegate {
 			for (Annotation ann : field.annotations) {
 				if (ann.type == null) continue;
 				TypeBinding tb = ann.type.resolveType(decl.initializerScope);
+				if (tb == null) continue;
 				if (!charArrayEquals("lombok", tb.qualifiedPackageName())) continue;
 				if (!charArrayEquals("Delegate", tb.qualifiedSourceName())) continue;
 				return true;

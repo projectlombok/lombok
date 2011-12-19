@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2009-2011 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,24 +21,49 @@
  */
 package lombok.core;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Library of types, which can be used to look up potential matching types.
  * 
- * For example, if you put 'foo.Spork' and 'bar.Spork' into the library, and then ask for
- * all compatible types given the type 'Spork', you'll get both of them, but you'll only
- * get the one if you ask for compatible types given 'foo.Spork'.
- * 
- * Useful to 'guess' if a given annotation AST node matches an annotation handler's target annotation.
+ * For example, if you put {@code foo.Spork} and {@code bar.Spork} into the library, and then ask for
+ * all compatible types given the type {@code Spork}, you'll get both of them, but you'll only
+ * get the one if you ask for compatible types given {@code foo.Spork}.
+ * <p>
+ * When adding {@code foo.Spork}, that FQN (Fully Qualified Name) will be returned as an option for any of these queries:
+ * <ul><li>foo.Spork</li><li>Spork</li><li>foo.*</li></ul>
  */
 public class TypeLibrary {
-	private final Map<String, Set<String>> simpleToQualifiedMap = new HashMap<String, Set<String>>();
+	private final Map<String, List<String>> keyToFqnMap;
+	private final String singletonValue;
+	private final List<String> singletonKeys;
+	
+	public TypeLibrary() {
+		keyToFqnMap = new HashMap<String, List<String>>();
+		singletonKeys = null;
+		singletonValue = null;
+	}
+	
+	private TypeLibrary(String fqnSingleton) {
+		keyToFqnMap = null;
+		singletonValue = fqnSingleton;
+		int idx = fqnSingleton.lastIndexOf('.');
+		if (idx == -1) {
+			singletonKeys = Collections.singletonList(fqnSingleton);
+		} else {
+			singletonKeys = Arrays.asList(fqnSingleton, fqnSingleton.substring(idx + 1), fqnSingleton.substring(0, idx) + ".*");
+		}
+	}
+	
+	public static TypeLibrary createLibraryForSingleType(String fqnSingleton) {
+		return new TypeLibrary(fqnSingleton);
+	}
 	
 	/**
 	 * Add a type to the library.
@@ -46,6 +71,7 @@ public class TypeLibrary {
 	 * @param fullyQualifiedTypeName the FQN type name, such as 'java.lang.String'.
 	 */
 	public void addType(String fullyQualifiedTypeName) {
+		if (keyToFqnMap == null) throw new IllegalStateException("SingleType library");
 		int idx = fullyQualifiedTypeName.lastIndexOf('.');
 		if (idx == -1) throw new IllegalArgumentException(
 				"Only fully qualified types are allowed (and stuff in the default package is not palatable to us either!)");
@@ -53,27 +79,33 @@ public class TypeLibrary {
 		final String simpleName = fullyQualifiedTypeName.substring(idx +1);
 		final String packageName = fullyQualifiedTypeName.substring(0, idx);
 		
-		if (simpleToQualifiedMap.put(fullyQualifiedTypeName, Collections.singleton(fullyQualifiedTypeName)) != null) return;
+		if (keyToFqnMap.put(fullyQualifiedTypeName, Collections.singletonList(fullyQualifiedTypeName)) != null) return;
 		
 		addToMap(simpleName, fullyQualifiedTypeName);
 		addToMap(packageName + ".*", fullyQualifiedTypeName);
 	}
 	
 	private TypeLibrary addToMap(String keyName, String fullyQualifiedTypeName) {
-		Set<String> existing = simpleToQualifiedMap.get(keyName);
-		Set<String> set = (existing == null) ? new HashSet<String>() : new HashSet<String>(existing);
-		set.add(fullyQualifiedTypeName);
-		simpleToQualifiedMap.put(keyName, Collections.unmodifiableSet(set));
+		List<String> list = keyToFqnMap.get(keyName);
+		if (list == null) {
+			list = new ArrayList<String>();
+			keyToFqnMap.put(keyName, list);
+		}
+		
+		list.add(fullyQualifiedTypeName);
 		return this;
 	}
 	
 	/**
 	 * Returns all items in the type library that may be a match to the provided type.
 	 * 
-	 * @param typeReference something like 'String' or even 'java.lang.String'.
+	 * @param typeReference something like 'String', 'java.lang.String', or 'java.lang.*'.
+	 * @return A list of Fully Qualified Names for all types in the library that fit the reference.
 	 */
 	public Collection<String> findCompatible(String typeReference) {
-		Set<String> result = simpleToQualifiedMap.get(typeReference);
-		return result == null ? Collections.<String>emptySet() : result;
+		if (singletonKeys != null) return singletonKeys.contains(typeReference) ? Collections.singletonList(singletonValue) : Collections.<String>emptyList();
+		
+		List<String> result = keyToFqnMap.get(typeReference);
+		return result == null ? Collections.<String>emptyList() : Collections.unmodifiableList(result);
 	}
 }
