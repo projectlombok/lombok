@@ -1,0 +1,9 @@
+2:10 ERROR cannot find symbol
+symbol  : class Getter
+location: class SimpleTypeResolutionFail
+2:10 ERROR cannot find symbol
+symbol  : class Getter
+location: class SimpleTypeResolutionFail
+2:10 ERROR cannot find symbol
+symbol  : class Getter
+location: class SimpleTypeResolutionFail

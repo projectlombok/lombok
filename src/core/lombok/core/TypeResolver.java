@@ -73,7 +73,7 @@ public class TypeResolver {
 		// because if you want to know if 'Foo' could refer to 'bar.Foo' when 'baz.Foo' is explicitly imported, the answer is no.
 		if (nameConflictInImportList(typeRef, potentialMatches)) return Collections.emptyList();
 		
-		// Check if any of our potentials is even imported in the first place. If not: no matches.
+		// Check if any of our potentials are even imported in the first place. If not: no matches.
 		// Note that (ourPackage.*) is added to the imports.
 		potentialMatches = eliminateImpossibleMatches(potentialMatches, library);
 		if (potentialMatches.isEmpty()) return Collections.emptyList();
@@ -84,7 +84,7 @@ public class TypeResolver {
 		LombokNode<?, ?, ?> n = context;
 		
 		mainLoop:
-		while (n != null && n.getKind() != Kind.COMPILATION_UNIT) {
+		while (n != null) {
 			if (n.getKind() == Kind.TYPE && typeRef.equals(n.getName())) {
 				// Our own class or one of our outer classes is named 'typeRef' so that's what 'typeRef' is referring to, not one of our type library classes.
 				return Collections.emptyList();
@@ -106,7 +106,7 @@ public class TypeResolver {
 				continue mainLoop;
 			}
 			
-			if (n.getKind() == Kind.TYPE) {
+			if (n.getKind() == Kind.TYPE || n.getKind() == Kind.COMPILATION_UNIT) {
 				for (LombokNode<?, ?, ?> child : n.down()) {
 					// Inner class that's visible to us has 'typeRef' as name, so that's the one being referred to, not one of our type library classes.
 					if (child.getKind() == Kind.TYPE && typeRef.equals(child.getName())) return Collections.emptyList();
