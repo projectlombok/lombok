@@ -102,24 +102,25 @@ public class PatchDelegate {
 		return new String(decl.name);
 	}
 	
-	private static boolean hasDelegateMarkedFields(TypeDeclaration decl) {
+	private static boolean hasDelegateMarkedFieldsOrMethods(TypeDeclaration decl) {
 		if (decl.fields != null) for (FieldDeclaration field : decl.fields) {
 			if (field.annotations == null) continue;
 			for (Annotation ann : field.annotations) {
-				if (ann.type == null) continue;
-				TypeBinding tb = ann.type.resolveType(decl.initializerScope);
-				if (!charArrayEquals("lombok", tb.qualifiedPackageName())) continue;
-				if (!charArrayEquals("Delegate", tb.qualifiedSourceName())) continue;
-				return true;
+				if (isDelegate(ann, decl)) return true;
 			}
 		}
-		
+		if (decl.methods != null) for (AbstractMethodDeclaration method : decl.methods) {
+			if (method.annotations == null) continue;
+			for (Annotation ann : method.annotations) {
+				if (isDelegate(ann, decl)) return true;
+			}
+		}
 		return false;
 	}
 	
 	public static boolean handleDelegateForType(ClassScope scope) {
 		if (TransformEclipseAST.disableLombok) return false;
-		if (!hasDelegateMarkedFields(scope.referenceContext)) return false;
+		if (!hasDelegateMarkedFieldsOrMethods(scope.referenceContext)) return false;
 		
 		List<ClassScopeEntry> stack = visited.get();
 		StringBuilder corrupted = null;
@@ -143,16 +144,23 @@ public class PatchDelegate {
 			stack.add(entry);
 			
 			try {
-				List<BindingTuple> methodsToDelegate = new ArrayList<BindingTuple>();
 				TypeDeclaration decl = scope.referenceContext;
 				if (decl != null) {
 					CompilationUnitDeclaration cud = scope.compilationUnitScope().referenceContext;
 					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
-					fillMethodBindings(cud, scope, methodsToDelegate);
+					List<BindingTuple> methodsToDelegate = new ArrayList<BindingTuple>();
+					fillMethodBindingsForFields(cud, scope, methodsToDelegate);
 					if (entry.corruptedPath != null) {
 						eclipseAst.get(scope.referenceContext).addError("No @Delegate methods created because there's a loop: " + entry.corruptedPath);
 					} else {
-						generateDelegateMethods(eclipseAst.get(decl), methodsToDelegate);
+						generateDelegateMethods(eclipseAst.get(decl), methodsToDelegate, DelegateReceiver.FIELD);
+					}
+					methodsToDelegate.clear();
+					fillMethodBindingsForMethods(cud, scope, methodsToDelegate);
+					if (entry.corruptedPath != null) {
+						eclipseAst.get(scope.referenceContext).addError("No @Delegate methods created because there's a loop: " + entry.corruptedPath);
+					} else {
+						generateDelegateMethods(eclipseAst.get(decl), methodsToDelegate, DelegateReceiver.METHOD);
 					}
 				}
 			} finally {
@@ -179,43 +187,18 @@ public class PatchDelegate {
 	private static Map<ASTNode, Object> alreadyApplied = new WeakHashMap<ASTNode, Object>();
 	private static final Object MARKER = new Object();
 	
-	private static void fillMethodBindings(CompilationUnitDeclaration cud, ClassScope scope, List<BindingTuple> methodsToDelegate) {
+	private static void fillMethodBindingsForFields(CompilationUnitDeclaration cud, ClassScope scope, List<BindingTuple> methodsToDelegate) {
 		TypeDeclaration decl = scope.referenceContext;
 		if (decl == null) return;
 		
 		if (decl.fields != null) for (FieldDeclaration field : decl.fields) {
 			if (field.annotations == null) continue;
 			for (Annotation ann : field.annotations) {
-				if (ann.type == null) continue;
-				TypeBinding tb = ann.type.resolveType(decl.initializerScope);
-				if (!charArrayEquals("lombok", tb.qualifiedPackageName())) continue;
-				if (!charArrayEquals("Delegate", tb.qualifiedSourceName())) continue;
+				if (!isDelegate(ann, decl)) continue;
 				if (alreadyApplied.put(ann, MARKER) == MARKER) continue;
 				
-				List<ClassLiteralAccess> rawTypes = new ArrayList<ClassLiteralAccess>();
-				List<ClassLiteralAccess> excludedRawTypes = new ArrayList<ClassLiteralAccess>();
-				for (MemberValuePair pair : ann.memberValuePairs()) {
-					if (charArrayEquals("types", pair.name)) {
-						if (pair.value instanceof ArrayInitializer) {
-							for (Expression expr : ((ArrayInitializer)pair.value).expressions) {
-								if (expr instanceof ClassLiteralAccess) rawTypes.add((ClassLiteralAccess) expr);
-							}
-						}
-						if (pair.value instanceof ClassLiteralAccess) {
-							rawTypes.add((ClassLiteralAccess) pair.value);
-						}
-					}
-					if (charArrayEquals("excludes", pair.name)) {
-						if (pair.value instanceof ArrayInitializer) {
-							for (Expression expr : ((ArrayInitializer)pair.value).expressions) {
-								if (expr instanceof ClassLiteralAccess) excludedRawTypes.add((ClassLiteralAccess) expr);
-							}
-						}
-						if (pair.value instanceof ClassLiteralAccess) {
-							excludedRawTypes.add((ClassLiteralAccess) pair.value);
-						}
-					}
-				}
+				List<ClassLiteralAccess> rawTypes = rawTypes(ann, "types");
+				List<ClassLiteralAccess> excludedRawTypes = rawTypes(ann, "excludes");
 				
 				List<BindingTuple> methodsToExclude = new ArrayList<BindingTuple>();
 				for (ClassLiteralAccess cla : excludedRawTypes) {
@@ -247,6 +230,87 @@ public class PatchDelegate {
 				}
 			}
 		}
+	}
+	
+	private static void fillMethodBindingsForMethods(CompilationUnitDeclaration cud, ClassScope scope, List<BindingTuple> methodsToDelegate) {
+		TypeDeclaration decl = scope.referenceContext;
+		if (decl == null) return;
+		
+		if (decl.methods != null) for (AbstractMethodDeclaration methodDecl : decl.methods) {
+			if (methodDecl.annotations == null) continue;
+			for (Annotation ann : methodDecl.annotations) {
+				if (!isDelegate(ann, decl)) continue;
+				if (alreadyApplied.put(ann, MARKER) == MARKER) continue;
+				if (!(methodDecl instanceof MethodDeclaration)) {
+					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
+					eclipseAst.get(ann).addError("@Delegate is legal only on no-argument methods.");
+					continue;
+				}
+				if (methodDecl.arguments != null) {
+					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
+					eclipseAst.get(ann).addError("@Delegate is legal only on no-argument methods.");
+					continue;
+				}
+				MethodDeclaration method = (MethodDeclaration) methodDecl;
+				
+				List<ClassLiteralAccess> rawTypes = rawTypes(ann, "types");
+				List<ClassLiteralAccess> excludedRawTypes = rawTypes(ann, "excludes");
+				
+				List<BindingTuple> methodsToExclude = new ArrayList<BindingTuple>();
+				for (ClassLiteralAccess cla : excludedRawTypes) {
+					addAllMethodBindings(methodsToExclude, cla.type.resolveType(decl.initializerScope), new HashSet<String>(), method.selector, ann);
+				}
+				
+				Set<String> banList = new HashSet<String>();
+				for (BindingTuple excluded : methodsToExclude) banList.add(printSig(excluded.parameterized));
+				
+				List<BindingTuple> methodsToDelegateForThisAnn = new ArrayList<BindingTuple>();
+				
+				if (rawTypes.isEmpty()) {
+					addAllMethodBindings(methodsToDelegateForThisAnn, method.returnType.resolveType(decl.initializerScope), banList, method.selector, ann);
+				} else {
+					for (ClassLiteralAccess cla : rawTypes) {
+						addAllMethodBindings(methodsToDelegateForThisAnn, cla.type.resolveType(decl.initializerScope), banList, method.selector, ann);
+					}
+				}
+				
+				// Not doing this right now because of problems - see commented-out-method for info.
+				// removeExistingMethods(methodsToDelegate, decl, scope);
+				
+				String dupe = containsDuplicates(methodsToDelegateForThisAnn);
+				if (dupe != null) {
+					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
+					eclipseAst.get(ann).addError("The method '" + dupe + "' is being delegated by more than one specified type.");
+				} else {
+					methodsToDelegate.addAll(methodsToDelegateForThisAnn);
+				}
+			}
+		}
+	}
+	
+	private static boolean isDelegate(Annotation ann, TypeDeclaration decl) {
+		if (ann.type == null) return false;
+		TypeBinding tb = ann.type.resolveType(decl.initializerScope);
+		if (!charArrayEquals("lombok", tb.qualifiedPackageName())) return false;
+		if (!charArrayEquals("Delegate", tb.qualifiedSourceName())) return false;
+		return true;
+	}
+	
+	private static List<ClassLiteralAccess> rawTypes(Annotation ann, String name) {
+		List<ClassLiteralAccess> rawTypes = new ArrayList<ClassLiteralAccess>();
+		for (MemberValuePair pair : ann.memberValuePairs()) {
+			if (charArrayEquals(name, pair.name)) {
+				if (pair.value instanceof ArrayInitializer) {
+					for (Expression expr : ((ArrayInitializer)pair.value).expressions) {
+						if (expr instanceof ClassLiteralAccess) rawTypes.add((ClassLiteralAccess) expr);
+					}
+				}
+				if (pair.value instanceof ClassLiteralAccess) {
+					rawTypes.add((ClassLiteralAccess) pair.value);
+				}
+			}
+		}
+		return rawTypes;
 	}
 	
 	/*
@@ -319,11 +383,11 @@ public class PatchDelegate {
 //		}
 //	}
 	
-	private static void generateDelegateMethods(EclipseNode typeNode, List<BindingTuple> methods) {
+	private static void generateDelegateMethods(EclipseNode typeNode, List<BindingTuple> methods, DelegateReceiver delegateReceiver) {
 		CompilationUnitDeclaration top = (CompilationUnitDeclaration) typeNode.top().get();
 		for (BindingTuple pair : methods) {
 			EclipseNode annNode = typeNode.getAst().get(pair.responsible);
-			MethodDeclaration method = createDelegateMethod(pair.fieldName, typeNode, pair, top.compilationResult, annNode);
+			MethodDeclaration method = createDelegateMethod(pair.fieldName, typeNode, pair, top.compilationResult, annNode, delegateReceiver);
 			if (method != null) injectMethod(typeNode, method);
 		}
 	}
@@ -467,7 +531,7 @@ public class PatchDelegate {
 		}
 	}
 	
-	private static MethodDeclaration createDelegateMethod(char[] name, EclipseNode typeNode, BindingTuple pair, CompilationResult compilationResult, EclipseNode annNode) {
+	private static MethodDeclaration createDelegateMethod(char[] name, EclipseNode typeNode, BindingTuple pair, CompilationResult compilationResult, EclipseNode annNode, DelegateReceiver delegateReceiver) {
 		/* public <T, U, ...> ReturnType methodName(ParamType1 name1, ParamType2 name2, ...) throws T1, T2, ... {
 		 *      (return) delegate.<T, U>methodName(name1, name2);
 		 *  }
@@ -508,11 +572,7 @@ public class PatchDelegate {
 		call.sourceStart = pS; call.sourceEnd = pE;
 		call.nameSourcePosition = pos(source);
 		setGeneratedBy(call, source);
-		FieldReference fieldRef = new FieldReference(name, pos(source));
-		fieldRef.receiver = new ThisReference(pS, pE);
-		setGeneratedBy(fieldRef, source);
-		setGeneratedBy(fieldRef.receiver, source);
-		call.receiver = fieldRef;
+		call.receiver = delegateReceiver.get(source, name);
 		call.selector = binding.selector;
 		
 		if (binding.typeVariables != null && binding.typeVariables.length > 0) {
@@ -736,7 +796,31 @@ public class PatchDelegate {
 		if (s.length() != c.length) return false;
 		for (int i = 0; i < s.length(); i++) if (s.charAt(i) != c[i]) return false;
 		return true;
+	}
+	
+	private enum DelegateReceiver {
+		METHOD {
+			public Expression get(final ASTNode source, char[] name) {
+				MessageSend call = new MessageSend();
+				call.sourceStart = source.sourceStart; call.sourceEnd = source.sourceEnd;
+				call.nameSourcePosition = pos(source);
+				setGeneratedBy(call, source);
+				call.selector = name;
+				call.receiver = new ThisReference(source.sourceStart, source.sourceEnd);
+				setGeneratedBy(call.receiver, source);
+				return call;
+			}
+		},
+		FIELD {
+			public Expression get(final ASTNode source, char[] name) {
+				FieldReference fieldRef = new FieldReference(name, pos(source));
+				setGeneratedBy(fieldRef, source);
+				fieldRef.receiver = new ThisReference(source.sourceStart, source.sourceEnd);
+				setGeneratedBy(fieldRef.receiver, source);
+				return fieldRef;
+			}
+		};
 		
-		
+		public abstract Expression get(final ASTNode source, char[] name);
 	}
 }
