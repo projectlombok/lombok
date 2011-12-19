@@ -1,10 +1,10 @@
 Lombok Changelog
 ----------------
 
-### v0.10.5 (EDGE)
+### v0.10.6 (December 19th, 2011)
+* PERFORMANCE: Performance issues (memory leaks) when using lombok in netbeans, introduced in 0.10, have been fixed. [Issue #242](http://code.google.com/p/projectlombok/issues/detail?id=242)
 * BUGFIX: Eclipse quickfix "Add unimplemented methods" would sometimes insert the new method stubs in strange places, especially if `@Data` was present. [Issue #51](http://code.google.com/p/projectlombok/issues/detail?id=51)
 * BUGFIX: Eclipse quickfix "Assign parameter to new field" would insert it outside the class body if `@Data` was present. [Issue #222](http://code.google.com/p/projectlombok/issues/detail?id=222)
-* BUGFIX: Performance issues (memory leaks) when using lombok in netbeans, introduced in 0.10, have been fixed. [Issue #242](http://code.google.com/p/projectlombok/issues/detail?id=242)
 * BUGFIX: Renaming a @Data-annotated class in eclipse using Alt+Shift+R no longer mangles the data annotation. [Issue #286](http://code.google.com/p/projectlombok/issues/detail?id=286)
 * BUGFIX: Using save action 'Use this qualifier for field accesses, only if necessary' did not work together with `@Data` in certain cases. [Issue #301](http://code.google.com/p/projectlombok/issues/detail?id=301)
 * BUGFIX: Organize imports, either run manually or as save action, would throw an exception. [Issue #308](http://code.google.com/p/projectlombok/issues/detail?id=308)
