@@ -261,7 +261,7 @@ public final class SetGeneratedByVisitor extends ASTVisitor {
 //		start = newSourceStart;
 //		end = newSourceStart;
 //		return ((start<<32)+end); 
-		return ((long)newSourceStart << 32) | (newSourceStart & INT_TO_LONG_MASK);
+		return ((long)newSourceStart << 32) | (newSourceEnd & INT_TO_LONG_MASK);
 	}
 	
 	@Override public boolean visit(AllocationExpression node, BlockScope scope) {
