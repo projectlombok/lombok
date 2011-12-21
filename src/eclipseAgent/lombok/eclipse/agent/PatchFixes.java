@@ -36,11 +36,15 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.core.dom.rewrite.NodeRewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
+import org.eclipse.jdt.internal.corext.refactoring.structure.ASTNodeSearchUtil;
 
 public class PatchFixes {
 	public static boolean isGenerated(org.eclipse.jdt.core.dom.ASTNode node) {
@@ -53,6 +57,10 @@ public class PatchFixes {
 			// better to assume it isn't generated
 		}
 		return result;
+	}
+	
+	public static boolean isListRewriteOnGeneratedNode(org.eclipse.jdt.core.dom.rewrite.ListRewrite rewrite) {
+		return isGenerated(rewrite.getParent());
 	}
 	
 	public static boolean returnFalse(java.lang.Object object) {
@@ -85,6 +93,30 @@ public class PatchFixes {
 			return returnType + " "+declaration.getName().getFullyQualifiedName()+"("+(params.isEmpty() ? "" : params.substring(1))+");";
 		}
 		return original;
+	}
+	
+	
+//	lombok.eclipse.agent.PatchFixes.getRealMethodDeclarationNode(Lorg/eclipse/jdt/core/IMethod;Lorg/eclipse/jdt/core/dom/CompilationUnit;)Lorg/eclipse/jdt/core/dom/MethodDeclaration;
+	public static org.eclipse.jdt.core.dom.MethodDeclaration getRealMethodDeclarationNode(org.eclipse.jdt.core.IMethod sourceMethod, org.eclipse.jdt.core.dom.CompilationUnit cuUnit) throws JavaModelException {
+		MethodDeclaration methodDeclarationNode = ASTNodeSearchUtil.getMethodDeclarationNode(sourceMethod, cuUnit);
+		if (isGenerated(methodDeclarationNode)) {
+			String typeName = sourceMethod.getTypeRoot().getElementName();
+			String methodName = sourceMethod.getElementName();
+			for (Object type : cuUnit.types()) {
+				org.eclipse.jdt.core.dom.AbstractTypeDeclaration typeDeclaration = (AbstractTypeDeclaration)type;
+				if ((typeDeclaration.getName()+".java").equals(typeName)) {
+					for (Object declaration : typeDeclaration.bodyDeclarations()) {
+						if (declaration instanceof org.eclipse.jdt.core.dom.MethodDeclaration) {
+							org.eclipse.jdt.core.dom.MethodDeclaration methodDeclaration = (org.eclipse.jdt.core.dom.MethodDeclaration) declaration;
+							if (methodDeclaration.getName().toString().equals(methodName)) {
+								return methodDeclaration;
+							}
+						}
+					}
+				}
+			}
+		}
+		return methodDeclarationNode;
 	}
 	
 	public static int getSourceEndFixed(int sourceEnd, org.eclipse.jdt.internal.compiler.ast.ASTNode node) throws Exception {
