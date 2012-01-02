@@ -58,6 +58,20 @@ public class PatchFixes {
 	public static boolean returnFalse(java.lang.Object object) {
 		return false;
 	}
+
+	@java.lang.SuppressWarnings({"unchecked", "rawtypes"}) public static java.util.List removeGeneratedNodes(java.util.List list) {
+		try {
+			java.util.List realNodes = new java.util.ArrayList(list.size());
+			for (java.lang.Object node : list) {
+				if(!isGenerated(((org.eclipse.jdt.core.dom.ASTNode)node))) {
+					realNodes.add(node);
+				}
+			}
+			return realNodes;
+		} catch (Exception e) {
+		}
+		return list;
+	}
 	
 	/* Very practical implementation, but works for getter and setter even with type parameters */
 	public static java.lang.String getRealMethodDeclarationSource(java.lang.String original, org.eclipse.jdt.core.dom.MethodDeclaration declaration) {
