@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v0.10.7 (edge)
+* BUGFIX: 0.10.6 causes ClassNotFoundErrors when using ecj (and thus, play framework, gwt, etc). [Issue #320](http://code.google.com/p/projectlombok/issues/detail?id=320)
+
 ### v0.10.6 (December 19th, 2011)
 * PERFORMANCE: Performance issues (memory leaks) when using lombok in netbeans, introduced in 0.10, have been fixed. [Issue #242](http://code.google.com/p/projectlombok/issues/detail?id=242)
 * BUGFIX: Eclipse quickfix "Add unimplemented methods" would sometimes insert the new method stubs in strange places, especially if `@Data` was present. [Issue #51](http://code.google.com/p/projectlombok/issues/detail?id=51)

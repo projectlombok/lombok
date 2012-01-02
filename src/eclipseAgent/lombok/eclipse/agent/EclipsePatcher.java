@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -178,6 +178,7 @@ public class EclipsePatcher extends Agent {
 				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.tool.EclipseCompilerImpl", "outputClassFiles"))
 				.methodToWrap(new Hook("javax.tools.JavaFileObject", "openOutputStream", "java.io.OutputStream"))
 				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "runPostCompiler", "java.io.OutputStream", "java.io.OutputStream"))
+				.transplant()
 				.build());
 		
 		sm.addScript(ScriptBuilder.wrapMethodCall()
@@ -185,6 +186,7 @@ public class EclipsePatcher extends Agent {
 				.methodToWrap(new Hook("java.io.BufferedOutputStream", "<init>", "void", "java.io.OutputStream", "int"))
 				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "runPostCompiler", "java.io.BufferedOutputStream", "java.io.BufferedOutputStream", "java.lang.String", "java.lang.String"))
 				.requestExtra(StackRequest.PARAM2, StackRequest.PARAM3)
+				.transplant()
 				.build());
 	}
 	
@@ -355,6 +357,7 @@ public class EclipsePatcher extends Agent {
 						"org.eclipse.jdt.internal.compiler.ast.MethodDeclaration",
 						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration"))
 				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "checkBit24", "boolean", "java.lang.Object"))
+				.transplant()
 				.request(StackRequest.PARAM1).build());
 		
 		sm.addScript(ScriptBuilder.exitEarly()
@@ -362,6 +365,7 @@ public class EclipsePatcher extends Agent {
 						"org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration",
 						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration", "boolean"))
 				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "checkBit24", "boolean", "java.lang.Object"))
+				.transplant()
 				.request(StackRequest.PARAM1).build());
 		
 		sm.addScript(ScriptBuilder.exitEarly()
@@ -370,6 +374,7 @@ public class EclipsePatcher extends Agent {
 						"org.eclipse.jdt.internal.compiler.ast.TypeDeclaration",
 						"org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration"))
 				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "checkBit24", "boolean", "java.lang.Object"))
+				.transplant()
 				.request(StackRequest.PARAM1).build());
 	}
 	
