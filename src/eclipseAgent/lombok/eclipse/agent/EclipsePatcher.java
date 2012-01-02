@@ -78,8 +78,6 @@ public class EclipsePatcher extends Agent {
 			EquinoxClassLoader.registerScripts(sm);
 		}
 		
-		patchAvoidReparsingGeneratedCode(sm);
-		
 		if (!ecjOnly) {
 			patchCatchReparse(sm);
 			patchIdentifierEndReparse(sm);
@@ -98,6 +96,7 @@ public class EclipsePatcher extends Agent {
 			patchPostCompileHookEcj(sm);
 		}
 		
+		patchAvoidReparsingGeneratedCode(sm);
 		patchLombokizeAST(sm);
 		patchEcjTransformers(sm, ecjOnly);
 		
@@ -153,7 +152,7 @@ public class EclipsePatcher extends Agent {
 	}
 
 	private static void patchSortMembersOperation(ScriptManager sm) {
-		/* Fixes "sort members" action with @Data @Log 
+		/* Fixes "sort members" action with @Data @Log
 		 * I would have liked to patch sortMembers, but kept getting a VerifyError: Illegal type in constant pool
 		 * So now I just patch all calling methods
 		 */
