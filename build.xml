@@ -307,7 +307,18 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</copy>
 	</target>
 	
-	<target name="test" depends="-test-compile, dist" unless="tests.skip" description="Runs the tests.">
+	<target name="test-ecj" depends="dist, contrib" unless="tests.skip">
+		<java jar="lib/ecj/ecj.jar" fork="true" failonerror="true">
+			<jvmarg value="-javaagent:dist/lombok.jar=ecj" />
+			<arg value="-source" />
+			<arg value="1.6" />
+			<arg value="-target" />
+			<arg value="1.6" />
+			<arg value="test/ecj/SimpleTest.java" />
+		</java>
+	</target>
+	
+	<target name="test" depends="-test-compile, dist, test-ecj" unless="tests.skip" description="Runs the tests.">
 		<junit haltonfailure="yes" fork="on">
 			<jvmarg value="-javaagent:dist/lombok.jar" />
 			<formatter type="plain" usefile="false" unless="tests.quiet" />
