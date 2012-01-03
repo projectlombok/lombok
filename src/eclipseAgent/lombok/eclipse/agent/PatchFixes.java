@@ -186,7 +186,7 @@ public class PatchFixes {
 		}
 	}
 	
-	public static void setIsGeneratedFlagForSimpleName(SimpleName name, Object internalNode) throws Exception {
+	public static void setIsGeneratedFlagForName(org.eclipse.jdt.core.dom.Name name, Object internalNode) throws Exception {
 		if (internalNode instanceof org.eclipse.jdt.internal.compiler.ast.ASTNode) {
 			if (internalNode.getClass().getField("$generatedBy").get(internalNode) != null) {
 				name.getClass().getField("$isGenerated").set(name, true);
