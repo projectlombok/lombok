@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import lombok.core.DiagnosticsReceiver;
 import lombok.core.PostCompiler;
@@ -36,8 +37,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -96,27 +97,46 @@ public class PatchFixes {
 	}
 	
 	
-//	lombok.eclipse.agent.PatchFixes.getRealMethodDeclarationNode(Lorg/eclipse/jdt/core/IMethod;Lorg/eclipse/jdt/core/dom/CompilationUnit;)Lorg/eclipse/jdt/core/dom/MethodDeclaration;
 	public static org.eclipse.jdt.core.dom.MethodDeclaration getRealMethodDeclarationNode(org.eclipse.jdt.core.IMethod sourceMethod, org.eclipse.jdt.core.dom.CompilationUnit cuUnit) throws JavaModelException {
 		MethodDeclaration methodDeclarationNode = ASTNodeSearchUtil.getMethodDeclarationNode(sourceMethod, cuUnit);
 		if (isGenerated(methodDeclarationNode)) {
-			String typeName = sourceMethod.getTypeRoot().getElementName();
-			String methodName = sourceMethod.getElementName();
-			for (Object type : cuUnit.types()) {
-				org.eclipse.jdt.core.dom.AbstractTypeDeclaration typeDeclaration = (AbstractTypeDeclaration)type;
-				if ((typeDeclaration.getName()+".java").equals(typeName)) {
-					for (Object declaration : typeDeclaration.bodyDeclarations()) {
-						if (declaration instanceof org.eclipse.jdt.core.dom.MethodDeclaration) {
-							org.eclipse.jdt.core.dom.MethodDeclaration methodDeclaration = (org.eclipse.jdt.core.dom.MethodDeclaration) declaration;
-							if (methodDeclaration.getName().toString().equals(methodName)) {
-								return methodDeclaration;
-							}
+			IType declaringType = sourceMethod.getDeclaringType();
+			Stack<IType> typeStack = new Stack<IType>();
+			while (declaringType != null) {
+				typeStack.push(declaringType);
+				declaringType = declaringType.getDeclaringType();
+			}
+			
+			IType rootType = typeStack.pop();
+			org.eclipse.jdt.core.dom.AbstractTypeDeclaration typeDeclaration = findTypeDeclaration(rootType, cuUnit.types());
+			while (!typeStack.isEmpty() && typeDeclaration != null) {
+				typeDeclaration = findTypeDeclaration(typeStack.pop(), typeDeclaration.bodyDeclarations());
+			}
+
+			if (typeStack.isEmpty() && typeDeclaration != null) {
+				String methodName = sourceMethod.getElementName();
+				for (Object declaration : typeDeclaration.bodyDeclarations()) {
+					if (declaration instanceof org.eclipse.jdt.core.dom.MethodDeclaration) {
+						org.eclipse.jdt.core.dom.MethodDeclaration methodDeclaration = (org.eclipse.jdt.core.dom.MethodDeclaration) declaration;
+						if (methodDeclaration.getName().toString().equals(methodName)) {
+							return methodDeclaration;
 						}
 					}
 				}
 			}
 		}
 		return methodDeclarationNode;
+	}
+	
+	private static org.eclipse.jdt.core.dom.AbstractTypeDeclaration findTypeDeclaration(IType searchType, List<?> nodes) {
+		for (Object object : nodes) {
+			if (object instanceof org.eclipse.jdt.core.dom.AbstractTypeDeclaration) {
+				org.eclipse.jdt.core.dom.AbstractTypeDeclaration typeDeclaration = (org.eclipse.jdt.core.dom.AbstractTypeDeclaration) object;
+				if (typeDeclaration.getName().toString().equals(searchType.getElementName()))
+					return typeDeclaration;
+			}
+		}
+		return null;
 	}
 	
 	public static int getSourceEndFixed(int sourceEnd, org.eclipse.jdt.internal.compiler.ast.ASTNode node) throws Exception {

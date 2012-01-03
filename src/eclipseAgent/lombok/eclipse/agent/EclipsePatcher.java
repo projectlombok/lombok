@@ -113,13 +113,20 @@ public class EclipsePatcher extends Agent {
 				.replacementMethod(new Hook("lombok.eclipse.agent.PatchFixes", "getRealMethodDeclarationNode", "org.eclipse.jdt.core.dom.MethodDeclaration", "org.eclipse.jdt.core.IMethod", "org.eclipse.jdt.core.dom.CompilationUnit"))
 				.build());
 
-		/* Do not add  @Override's for generated methods */
+		/* Do not add @Override's for generated methods */
 		sm.addScript(ScriptBuilder.exitEarly()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.rewrite.ListRewrite", "insertFirst"))
 				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "isListRewriteOnGeneratedNode", "boolean", "org.eclipse.jdt.core.dom.rewrite.ListRewrite"))
 				.request(StackRequest.THIS)
 				.build());
 		
+		/* Do not add comments for generated methods */
+		sm.addScript(ScriptBuilder.exitEarly()
+				.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.structure.ExtractInterfaceProcessor", "createMethodComment"))
+				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.core.dom.ASTNode"))
+				.request(StackRequest.PARAM2)
+				.build());
+
 	}
 
 	private static void patchSyntaxAndOccurrencesHighlighting(ScriptManager sm) {
