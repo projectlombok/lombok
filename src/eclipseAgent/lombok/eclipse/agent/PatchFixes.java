@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Project Lombok Authors.
+ * Copyright (C) 2010-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import lombok.core.DiagnosticsReceiver;
 import lombok.core.PostCompiler;
@@ -36,11 +37,15 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.core.dom.rewrite.NodeRewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
+import org.eclipse.jdt.internal.corext.refactoring.structure.ASTNodeSearchUtil;
 
 public class PatchFixes {
 	public static boolean isGenerated(org.eclipse.jdt.core.dom.ASTNode node) {
@@ -53,6 +58,10 @@ public class PatchFixes {
 			// better to assume it isn't generated
 		}
 		return result;
+	}
+	
+	public static boolean isListRewriteOnGeneratedNode(org.eclipse.jdt.core.dom.rewrite.ListRewrite rewrite) {
+		return isGenerated(rewrite.getParent());
 	}
 	
 	public static boolean returnFalse(java.lang.Object object) {
@@ -75,16 +84,76 @@ public class PatchFixes {
 	
 	/* Very practical implementation, but works for getter and setter even with type parameters */
 	public static java.lang.String getRealMethodDeclarationSource(java.lang.String original, org.eclipse.jdt.core.dom.MethodDeclaration declaration) {
-		if(isGenerated(declaration)) {
-			String returnType = declaration.getReturnType2().toString();
-			String params = "";
-			for (Object object : declaration.parameters()) {
-				org.eclipse.jdt.core.dom.ASTNode parameter = ((org.eclipse.jdt.core.dom.ASTNode)object);
-				params += ","+parameter.toString();
-			}
-			return returnType + " "+declaration.getName().getFullyQualifiedName()+"("+(params.isEmpty() ? "" : params.substring(1))+");";
+		if (!isGenerated(declaration)) return original;
+		
+		StringBuilder signature = new StringBuilder();
+		
+		// We should get these from the refactor action
+		boolean needsPublic = true, needsAbstract = true;
+		
+		if (needsPublic) signature.append("public ");
+		if (needsAbstract) signature.append("abstract ");
+		
+		signature
+			.append(declaration.getReturnType2().toString())
+			.append(" ").append(declaration.getName().getFullyQualifiedName())
+			.append("(");
+		
+		boolean first = true;
+		for (Object parameter : declaration.parameters()) {
+			if (!first) signature.append(", ");
+			first = false;
+			// The annotations are still missing
+			// Note: what happens to imports for the annotations? 
+			// I assume they have been taken care of by the default extraction system
+			signature.append(parameter);
 		}
-		return original;
+		
+		signature.append(");");
+		return signature.toString();
+	}
+	
+	
+	public static org.eclipse.jdt.core.dom.MethodDeclaration getRealMethodDeclarationNode(org.eclipse.jdt.core.IMethod sourceMethod, org.eclipse.jdt.core.dom.CompilationUnit cuUnit) throws JavaModelException {
+		MethodDeclaration methodDeclarationNode = ASTNodeSearchUtil.getMethodDeclarationNode(sourceMethod, cuUnit);
+		if (isGenerated(methodDeclarationNode)) {
+			IType declaringType = sourceMethod.getDeclaringType();
+			Stack<IType> typeStack = new Stack<IType>();
+			while (declaringType != null) {
+				typeStack.push(declaringType);
+				declaringType = declaringType.getDeclaringType();
+			}
+			
+			IType rootType = typeStack.pop();
+			org.eclipse.jdt.core.dom.AbstractTypeDeclaration typeDeclaration = findTypeDeclaration(rootType, cuUnit.types());
+			while (!typeStack.isEmpty() && typeDeclaration != null) {
+				typeDeclaration = findTypeDeclaration(typeStack.pop(), typeDeclaration.bodyDeclarations());
+			}
+
+			if (typeStack.isEmpty() && typeDeclaration != null) {
+				String methodName = sourceMethod.getElementName();
+				for (Object declaration : typeDeclaration.bodyDeclarations()) {
+					if (declaration instanceof org.eclipse.jdt.core.dom.MethodDeclaration) {
+						org.eclipse.jdt.core.dom.MethodDeclaration methodDeclaration = (org.eclipse.jdt.core.dom.MethodDeclaration) declaration;
+						if (methodDeclaration.getName().toString().equals(methodName)) {
+							return methodDeclaration;
+						}
+					}
+				}
+			}
+		}
+		return methodDeclarationNode;
+	}
+	
+	private static org.eclipse.jdt.core.dom.AbstractTypeDeclaration findTypeDeclaration(IType searchType, List<?> nodes) {
+		for (Object object : nodes) {
+			if (object instanceof org.eclipse.jdt.core.dom.AbstractTypeDeclaration) {
+				org.eclipse.jdt.core.dom.AbstractTypeDeclaration typeDeclaration = (org.eclipse.jdt.core.dom.AbstractTypeDeclaration) object;
+				if (typeDeclaration.getName().toString().equals(searchType.getElementName()))
+					return typeDeclaration;
+			}
+		}
+		return null;
 	}
 	
 	public static int getSourceEndFixed(int sourceEnd, org.eclipse.jdt.internal.compiler.ast.ASTNode node) throws Exception {
