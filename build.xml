@@ -48,8 +48,10 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</fileset>
 	</path>
 	
-	<taskdef name="scp" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.Scp" classpathref="build.path" />
-	<taskdef name="sshexec" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="build.path" />
+	<target name="-defSSH" depends="ensureBuildDeps">
+		<taskdef name="scp" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.Scp" classpathref="build.path" />
+		<taskdef name="sshexec" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="build.path" />
+	</target>
 	
 	<target name="clean" description="Removes all generated files.">
 		<delete dir="build" quiet="true" />
@@ -414,7 +416,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</tar>
 	</target>
 	
-	<target name="maven-publish" depends="maven, utils-maven" description="Build a maven artifact bundle then upload it to projectlombok.org and ask the server to upload it to maven central">
+	<target name="maven-publish" depends="maven, utils-maven, -defSSH" description="Build a maven artifact bundle then upload it to projectlombok.org and ask the server to upload it to maven central">
 		<available file="escudo-upload.key" property="escudo.key.available" />
 		<fail unless="escudo.key.available">You don't have the escudo-upload.key; you'll need it to get write access to the server.</fail>
 		<scp
@@ -452,7 +454,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<fail message="fill in ${credentialsFile} to provide your credentials" />
 	</target>
 	
-	<target name="publish" description="Publishes the latest build to googlecode." depends="version, -checkCredentialsFile, dist, dist-utils, test">
+	<target name="publish" description="Publishes the latest build to googlecode." depends="version, -checkCredentialsFile, dist, dist-utils, test, -defSSH">
 		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpathref="build.path" name="gcupload" />
 		<available file="escudo-upload.key" property="escudo.key.available" />
 		<fail unless="escudo.key.available">You don't have the escudo-upload.key; you'll need it to get write access to the server.</fail>
