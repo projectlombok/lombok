@@ -28,6 +28,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 import lombok.core.DiagnosticsReceiver;
 import lombok.core.PostCompiler;
@@ -36,11 +37,15 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IAnnotation;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.core.dom.rewrite.NodeRewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
+import org.eclipse.jdt.internal.corext.refactoring.structure.ASTNodeSearchUtil;
 
 public class PatchFixes {
 	public static boolean isGenerated(org.eclipse.jdt.core.dom.ASTNode node) {
@@ -53,6 +58,10 @@ public class PatchFixes {
 			// better to assume it isn't generated
 		}
 		return result;
+	}
+	
+	public static boolean isListRewriteOnGeneratedNode(org.eclipse.jdt.core.dom.rewrite.ListRewrite rewrite) {
+		return isGenerated(rewrite.getParent());
 	}
 	
 	public static boolean returnFalse(java.lang.Object object) {
@@ -85,6 +94,49 @@ public class PatchFixes {
 			return returnType + " "+declaration.getName().getFullyQualifiedName()+"("+(params.isEmpty() ? "" : params.substring(1))+");";
 		}
 		return original;
+	}
+	
+	
+	public static org.eclipse.jdt.core.dom.MethodDeclaration getRealMethodDeclarationNode(org.eclipse.jdt.core.IMethod sourceMethod, org.eclipse.jdt.core.dom.CompilationUnit cuUnit) throws JavaModelException {
+		MethodDeclaration methodDeclarationNode = ASTNodeSearchUtil.getMethodDeclarationNode(sourceMethod, cuUnit);
+		if (isGenerated(methodDeclarationNode)) {
+			IType declaringType = sourceMethod.getDeclaringType();
+			Stack<IType> typeStack = new Stack<IType>();
+			while (declaringType != null) {
+				typeStack.push(declaringType);
+				declaringType = declaringType.getDeclaringType();
+			}
+			
+			IType rootType = typeStack.pop();
+			org.eclipse.jdt.core.dom.AbstractTypeDeclaration typeDeclaration = findTypeDeclaration(rootType, cuUnit.types());
+			while (!typeStack.isEmpty() && typeDeclaration != null) {
+				typeDeclaration = findTypeDeclaration(typeStack.pop(), typeDeclaration.bodyDeclarations());
+			}
+
+			if (typeStack.isEmpty() && typeDeclaration != null) {
+				String methodName = sourceMethod.getElementName();
+				for (Object declaration : typeDeclaration.bodyDeclarations()) {
+					if (declaration instanceof org.eclipse.jdt.core.dom.MethodDeclaration) {
+						org.eclipse.jdt.core.dom.MethodDeclaration methodDeclaration = (org.eclipse.jdt.core.dom.MethodDeclaration) declaration;
+						if (methodDeclaration.getName().toString().equals(methodName)) {
+							return methodDeclaration;
+						}
+					}
+				}
+			}
+		}
+		return methodDeclarationNode;
+	}
+	
+	private static org.eclipse.jdt.core.dom.AbstractTypeDeclaration findTypeDeclaration(IType searchType, List<?> nodes) {
+		for (Object object : nodes) {
+			if (object instanceof org.eclipse.jdt.core.dom.AbstractTypeDeclaration) {
+				org.eclipse.jdt.core.dom.AbstractTypeDeclaration typeDeclaration = (org.eclipse.jdt.core.dom.AbstractTypeDeclaration) object;
+				if (typeDeclaration.getName().toString().equals(searchType.getElementName()))
+					return typeDeclaration;
+			}
+		}
+		return null;
 	}
 	
 	public static int getSourceEndFixed(int sourceEnd, org.eclipse.jdt.internal.compiler.ast.ASTNode node) throws Exception {
