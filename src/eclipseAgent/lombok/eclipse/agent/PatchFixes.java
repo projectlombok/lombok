@@ -32,7 +32,9 @@ import java.util.Stack;
 
 import lombok.core.DiagnosticsReceiver;
 import lombok.core.PostCompiler;
+import lombok.core.Version;
 
+import org.eclipse.core.internal.runtime.Product;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IAnnotation;
@@ -48,6 +50,14 @@ import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
 import org.eclipse.jdt.internal.corext.refactoring.structure.ASTNodeSearchUtil;
 
 public class PatchFixes {
+	public static String addLombokNotesToEclipseAboutDialog(String origReturnValue, Product product, String key) {
+		if ("Eclipse SDK".equals(product.getName()) && "aboutText".equals(key)) {
+			return origReturnValue + "\n\nLombok " + Version.getFullVersion() + " is installed. http://projectlombok.org/";
+		}
+		
+		return origReturnValue;
+	}
+	
 	public static boolean isGenerated(org.eclipse.jdt.core.dom.ASTNode node) {
 		boolean result = false;
 		try {
@@ -67,7 +77,7 @@ public class PatchFixes {
 	public static boolean returnFalse(java.lang.Object object) {
 		return false;
 	}
-
+	
 	@java.lang.SuppressWarnings({"unchecked", "rawtypes"}) public static java.util.List removeGeneratedNodes(java.util.List list) {
 		try {
 			java.util.List realNodes = new java.util.ArrayList(list.size());
