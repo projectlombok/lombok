@@ -146,7 +146,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		for (Type t : toExclude) {
 			if (t instanceof ClassType) {
 				ClassType ct = (ClassType) t;
-				addMethodBindings(signaturesToExclude, ct, annotationNode, banList);
+				addMethodBindings(signaturesToExclude, ct, annotationNode.getTypesUtil(), banList);
 			} else {
 				annotationNode.addError("@Delegate can only use concrete class types, not wildcards, arrays, type variables, or primitives.");
 				return;
@@ -160,7 +160,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		for (Type t : toDelegate) {
 			if (t instanceof ClassType) {
 				ClassType ct = (ClassType) t;
-				addMethodBindings(signaturesToDelegate, ct, annotationNode, banList);
+				addMethodBindings(signaturesToDelegate, ct, annotationNode.getTypesUtil(), banList);
 			} else {
 				annotationNode.addError("@Delegate can only use concrete class types, not wildcards, arrays, type variables, or primitives.");
 				return;
@@ -301,25 +301,26 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		return collection == null ? com.sun.tools.javac.util.List.<T>nil() : collection.toList();
 	}
 	
-	private void addMethodBindings(List<MethodSig> signatures, ClassType ct, JavacNode node, Set<String> banList) {
+	private void addMethodBindings(List<MethodSig> signatures, ClassType ct, JavacTypes types, Set<String> banList) {
 		TypeSymbol tsym = ct.asElement();
 		if (tsym == null) return;
+		
 		for (Symbol member : tsym.getEnclosedElements()) {
 			if (member.getKind() != ElementKind.METHOD) continue;
 			if (member.isStatic()) continue;
 			if (member.isConstructor()) continue;
 			ExecutableElement exElem = (ExecutableElement)member;
 			if (!exElem.getModifiers().contains(Modifier.PUBLIC)) continue;
-			ExecutableType methodType = (ExecutableType) node.getTypesUtil().asMemberOf(ct, member);
-			String sig = printSig(methodType, member.name, node.getTypesUtil());
+			ExecutableType methodType = (ExecutableType) types.asMemberOf(ct, member);
+			String sig = printSig(methodType, member.name, types);
 			if (!banList.add(sig)) continue; //If add returns false, it was already in there
 			boolean isDeprecated = exElem.getAnnotation(Deprecated.class) != null;
 			signatures.add(new MethodSig(member.name, methodType, isDeprecated, exElem));
 		}
 		
-		if (ct.supertype_field instanceof ClassType) addMethodBindings(signatures, (ClassType) ct.supertype_field, node, banList);
+		if (ct.supertype_field instanceof ClassType) addMethodBindings(signatures, (ClassType) ct.supertype_field, types, banList);
 		if (ct.interfaces_field != null) for (Type iface : ct.interfaces_field) {
-			if (iface instanceof ClassType) addMethodBindings(signatures, (ClassType) iface, node, banList);
+			if (iface instanceof ClassType) addMethodBindings(signatures, (ClassType) iface, types, banList);
 		}
 	}
 	
