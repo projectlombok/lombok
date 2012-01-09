@@ -84,16 +84,33 @@ public class PatchFixes {
 	
 	/* Very practical implementation, but works for getter and setter even with type parameters */
 	public static java.lang.String getRealMethodDeclarationSource(java.lang.String original, org.eclipse.jdt.core.dom.MethodDeclaration declaration) {
-		if(isGenerated(declaration)) {
-			String returnType = declaration.getReturnType2().toString();
-			String params = "";
-			for (Object object : declaration.parameters()) {
-				org.eclipse.jdt.core.dom.ASTNode parameter = ((org.eclipse.jdt.core.dom.ASTNode)object);
-				params += ","+parameter.toString();
-			}
-			return returnType + " "+declaration.getName().getFullyQualifiedName()+"("+(params.isEmpty() ? "" : params.substring(1))+");";
+		if (!isGenerated(declaration)) return original;
+		
+		StringBuilder signature = new StringBuilder();
+		
+		// We should get these from the refactor action
+		boolean needsPublic = true, needsAbstract = true;
+		
+		if (needsPublic) signature.append("public ");
+		if (needsAbstract) signature.append("abstract ");
+		
+		signature
+			.append(declaration.getReturnType2().toString())
+			.append(" ").append(declaration.getName().getFullyQualifiedName())
+			.append("(");
+		
+		boolean first = true;
+		for (Object parameter : declaration.parameters()) {
+			if (!first) signature.append(", ");
+			first = false;
+			// The annotations are still missing
+			// Note: what happens to imports for the annotations? 
+			// I assume they have been taken care of by the default extraction system
+			signature.append(parameter);
 		}
-		return original;
+		
+		signature.append(");");
+		return signature.toString();
 	}
 	
 	

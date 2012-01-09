@@ -115,7 +115,7 @@ public class EclipsePatcher extends Agent {
 
 		/* Make sure the generated source element is found instead of the annotation */
 		sm.addScript(ScriptBuilder.wrapMethodCall()
-		.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.structure.ExtractInterfaceProcessor", "createMethodDeclaration", "void",
+			.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.structure.ExtractInterfaceProcessor", "createMethodDeclaration", "void",
 				"org.eclipse.jdt.internal.corext.refactoring.structure.CompilationUnitRewrite", 
 				"org.eclipse.jdt.core.dom.rewrite.ASTRewrite",
 				"org.eclipse.jdt.core.dom.AbstractTypeDeclaration", 
