@@ -332,7 +332,7 @@ public class HandleConstructor {
 
 			Annotation[] copiedAnnotations = copyAnnotations(source, findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN));
 			if (copiedAnnotations.length != 0) parameter.annotations = copiedAnnotations;
-			params.add(new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL));
+			params.add(parameter);
 		}
 		
 		statement.arguments = assigns.isEmpty() ? null : assigns.toArray(new Expression[assigns.size()]);
