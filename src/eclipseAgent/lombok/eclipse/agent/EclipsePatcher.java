@@ -158,8 +158,8 @@ public class EclipsePatcher extends Agent {
 		 */
 		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.core.internal.runtime.Product", "getProperty", "java.lang.String", "java.lang.String"))
-				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "addLombokNotesToEclipseAboutDialog", "java.lang.String", "java.lang.String", "org.eclipse.core.internal.runtime.Product", "java.lang.String"))
-				.request(StackRequest.RETURN_VALUE, StackRequest.THIS, StackRequest.PARAM1)
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "addLombokNotesToEclipseAboutDialog", "java.lang.String", "java.lang.String", "java.lang.String"))
+				.request(StackRequest.RETURN_VALUE, StackRequest.PARAM1)
 				.transplant().build());
 	}
 	

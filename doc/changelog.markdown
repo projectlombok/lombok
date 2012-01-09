@@ -5,6 +5,7 @@ Lombok Changelog
 * REGRESSION: 0.10.6 causes ClassNotFoundErrors when using ecj (and thus, play framework, gwt, etc). [Issue #320](http://code.google.com/p/projectlombok/issues/detail?id=320)
 * BUGFIX: Eclipse refactoring Extract Interface was broken when using lombok annotation to generate methods. [Issue #86](http://code.google.com/p/projectlombok/issues/detail?id=86)
 * BUGFIX: Eclipse action Sort Members was broken when using lombok annotation to generate methods or fields. [Issue #265](http://code.google.com/p/projectlombok/issues/detail?id=265)
+* ENHANCEMENT: Lombok now adds a line to the Eclipse About dialog about itself.
 
 ### v0.10.6 (December 19th, 2011)
 * PERFORMANCE: Performance issues (memory leaks) when using lombok in netbeans, introduced in 0.10, have been fixed. [Issue #242](http://code.google.com/p/projectlombok/issues/detail?id=242)

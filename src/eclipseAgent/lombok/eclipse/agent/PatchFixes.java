@@ -34,7 +34,6 @@ import lombok.core.DiagnosticsReceiver;
 import lombok.core.PostCompiler;
 import lombok.core.Version;
 
-import org.eclipse.core.internal.runtime.Product;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IAnnotation;
@@ -50,8 +49,8 @@ import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
 import org.eclipse.jdt.internal.corext.refactoring.structure.ASTNodeSearchUtil;
 
 public class PatchFixes {
-	public static String addLombokNotesToEclipseAboutDialog(String origReturnValue, Product product, String key) {
-		if ("Eclipse SDK".equals(product.getName()) && "aboutText".equals(key)) {
+	public static String addLombokNotesToEclipseAboutDialog(String origReturnValue, String key) {
+		if ("aboutText".equals(key)) {
 			return origReturnValue + "\n\nLombok " + Version.getFullVersion() + " is installed. http://projectlombok.org/";
 		}
 		
