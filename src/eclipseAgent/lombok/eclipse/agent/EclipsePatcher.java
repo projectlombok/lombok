@@ -395,14 +395,26 @@ public class EclipsePatcher extends Agent {
 				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlag", "void",
 						"org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
 				.transplant().build());
-
+		
 		sm.addScript(ScriptBuilder.wrapReturnValue()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertToFieldDeclaration", "org.eclipse.jdt.core.dom.FieldDeclaration", "org.eclipse.jdt.internal.compiler.ast.FieldDeclaration"))
+/* Targets beneath are only patched because the resulting dom nodes should be marked if generated.
+ * However I couldn't find a usecase where these were actually used
+ */
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertToType", "org.eclipse.jdt.core.dom.Type", "org.eclipse.jdt.internal.compiler.ast.NameReference"))
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertType", "org.eclipse.jdt.core.dom.Type", "org.eclipse.jdt.internal.compiler.ast.TypeReference"))
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertToVariableDeclarationExpression", "org.eclipse.jdt.core.dom.VariableDeclarationExpression", "org.eclipse.jdt.internal.compiler.ast.LocalDeclaration"))
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertToSingleVariableDeclaration", "org.eclipse.jdt.core.dom.SingleVariableDeclaration", "org.eclipse.jdt.internal.compiler.ast.LocalDeclaration"))
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertToVariableDeclarationFragment", "org.eclipse.jdt.core.dom.VariableDeclarationFragment", "org.eclipse.jdt.internal.compiler.ast.FieldDeclaration"))
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertToVariableDeclarationFragment", "org.eclipse.jdt.core.dom.VariableDeclarationFragment", "org.eclipse.jdt.internal.compiler.ast.LocalDeclaration"))
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convertToVariableDeclarationStatement", "org.eclipse.jdt.core.dom.VariableDeclarationStatement", "org.eclipse.jdt.internal.compiler.ast.LocalDeclaration"))
+/* Targets above are only patched because the resulting dom nodes should be marked if generated. */
 				.request(StackRequest.PARAM1, StackRequest.RETURN_VALUE)
 				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlag", "void",
 						"org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
 				.transplant().build());
 		
+		/* Set generated flag for SimpleNames */
 		sm.addScript(ScriptBuilder.wrapMethodCall()
 				.target(new TargetMatcher() {
 					@Override public boolean matches(String classSpec, String methodName, String descriptor) {
@@ -420,16 +432,49 @@ public class EclipsePatcher extends Agent {
 					}
 				}).methodToWrap(new Hook("org.eclipse.jdt.core.dom.SimpleName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM1)
-				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlagForSimpleName", "void",
-						"org.eclipse.jdt.core.dom.SimpleName", "java.lang.Object"))
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlagForName", "void",
+						"org.eclipse.jdt.core.dom.Name", "java.lang.Object"))
 				.transplant().build());
 
 		sm.addScript(ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "convert", "org.eclipse.jdt.core.dom.ASTNode", "boolean", "org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration"))
 				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.SimpleName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
 				.requestExtra(StackRequest.PARAM2)
-				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlagForSimpleName", "void",
-						"org.eclipse.jdt.core.dom.SimpleName", "java.lang.Object"))
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlagForName", "void",
+						"org.eclipse.jdt.core.dom.Name", "java.lang.Object"))
+				.transplant().build());
+
+		/* Set generated flag for QualifiedNames */
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setQualifiedNameNameAndSourceRanges", "org.eclipse.jdt.core.dom.QualifiedName", "char[][]", "long[]", "int", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.SimpleName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
+				.requestExtra(StackRequest.PARAM4)
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlagForName", "void",
+						"org.eclipse.jdt.core.dom.Name", "java.lang.Object"))
+				.transplant().build());
+
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setQualifiedNameNameAndSourceRanges", "org.eclipse.jdt.core.dom.QualifiedName", "char[][]", "long[]", "int", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.QualifiedName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
+				.requestExtra(StackRequest.PARAM4)
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlagForName", "void",
+						"org.eclipse.jdt.core.dom.Name", "java.lang.Object"))
+				.transplant().build());
+
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setQualifiedNameNameAndSourceRanges", "org.eclipse.jdt.core.dom.QualifiedName", "char[][]", "long[]", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.SimpleName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
+				.requestExtra(StackRequest.PARAM3)
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlagForName", "void",
+						"org.eclipse.jdt.core.dom.Name", "java.lang.Object"))
+				.transplant().build());
+
+		sm.addScript(ScriptBuilder.wrapMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.core.dom.ASTConverter", "setQualifiedNameNameAndSourceRanges", "org.eclipse.jdt.core.dom.QualifiedName", "char[][]", "long[]", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.methodToWrap(new Hook("org.eclipse.jdt.core.dom.QualifiedName", "<init>", "void", "org.eclipse.jdt.core.dom.AST"))
+				.requestExtra(StackRequest.PARAM3)
+				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "setIsGeneratedFlagForName", "void",
+						"org.eclipse.jdt.core.dom.Name", "java.lang.Object"))
 				.transplant().build());
 	}
 	
