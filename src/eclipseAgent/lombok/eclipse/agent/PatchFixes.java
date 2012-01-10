@@ -258,9 +258,9 @@ public class PatchFixes {
 	public static IMethod[] removeGeneratedMethods(IMethod[] methods) throws Exception {
 		List<IMethod> result = new ArrayList<IMethod>();
 		for (IMethod m : methods) {
-			if (m.getNameRange().getLength() > 0) result.add(m);
+			if (m.getNameRange().getLength() > 0 && !m.getNameRange().equals(m.getSourceRange())) result.add(m);
 		}
-		return result.size() == methods.length ? methods : result.toArray(new IMethod[0]);
+		return result.size() == methods.length ? methods : result.toArray(new IMethod[result.size()]);
 	}
 	
 	public static SimpleName[] removeGeneratedSimpleNames(SimpleName[] in) throws Exception {
