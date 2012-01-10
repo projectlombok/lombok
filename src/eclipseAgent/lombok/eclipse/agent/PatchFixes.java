@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 
@@ -91,15 +92,49 @@ public class PatchFixes {
 		return list;
 	}
 	
-	/* Very practical implementation, but works for getter and setter even with type parameters */
-	public static java.lang.String getRealMethodDeclarationSource(java.lang.String original, org.eclipse.jdt.core.dom.MethodDeclaration declaration) {
+	public static java.lang.String getRealMethodDeclarationSource(java.lang.String original, Object processor, org.eclipse.jdt.core.dom.MethodDeclaration declaration) throws Exception {
 		if (!isGenerated(declaration)) return original;
 		
+		boolean fPublic = (Boolean)processor.getClass().getDeclaredField("fPublic").get(processor);
+		boolean fAbstract = (Boolean)processor.getClass().getDeclaredField("fAbstract").get(processor);
+		
+		final List<String> skippedAnnotations = new ArrayList<String>();
+		skippedAnnotations.add("java.lang.Override"); // always skipped by extract interface
+		skippedAnnotations.add("java.lang.SuppressWarnings"); // always added by lombok
+
+		// Near copy of ExtractInterFaceProcessor.createMethodDeclaration(...)
+		// couldn't find a way to pass these as parameters
+		boolean publicFound= false;
+		boolean abstractFound= false;
+		
+		List<org.eclipse.jdt.core.dom.Annotation> annotations = new ArrayList<org.eclipse.jdt.core.dom.Annotation>();
+		org.eclipse.jdt.core.dom.Modifier modifier= null;
+		org.eclipse.jdt.core.dom.IExtendedModifier extended= null;
+		for (final Iterator<?> iterator= declaration.modifiers().iterator(); iterator.hasNext();) {
+			extended= (org.eclipse.jdt.core.dom.IExtendedModifier) iterator.next();
+			if (!extended.isAnnotation()) {
+				modifier= (org.eclipse.jdt.core.dom.Modifier) extended;
+				if (fPublic && modifier.getKeyword().equals(org.eclipse.jdt.core.dom.Modifier.ModifierKeyword.PUBLIC_KEYWORD)) {
+					publicFound= true;
+					continue;
+				}
+				if (fAbstract && modifier.getKeyword().equals(org.eclipse.jdt.core.dom.Modifier.ModifierKeyword.ABSTRACT_KEYWORD)) {
+					abstractFound= true;
+					continue;
+				}
+			} else {
+				org.eclipse.jdt.core.dom.Annotation annotation = (org.eclipse.jdt.core.dom.Annotation)extended;
+				if (!skippedAnnotations.contains(annotation.resolveTypeBinding().getQualifiedName()))
+					annotations.add(annotation);
+			}
+		}
+	
+		boolean needsPublic = fPublic && !publicFound; 
+		boolean needsAbstract = fAbstract && !abstractFound;
+		// END Near copy of ExtractInterFaceProcessor.createMethodDeclaration(...)
+		
 		StringBuilder signature = new StringBuilder();
-		
-		// We should get these from the refactor action
-		boolean needsPublic = true, needsAbstract = true;
-		
+		addAnnotations(annotations, signature);
 		if (needsPublic) signature.append("public ");
 		if (needsAbstract) signature.append("abstract ");
 		
@@ -112,14 +147,47 @@ public class PatchFixes {
 		for (Object parameter : declaration.parameters()) {
 			if (!first) signature.append(", ");
 			first = false;
-			// The annotations are still missing
-			// Note: what happens to imports for the annotations? 
-			// I assume they have been taken care of by the default extraction system
 			signature.append(parameter);
 		}
 		
 		signature.append(");");
 		return signature.toString();
+	}
+
+	// part of getRealMethodDeclarationSource(...)
+	public static void addAnnotations(List<org.eclipse.jdt.core.dom.Annotation> annotations, StringBuilder signature) {
+		for (org.eclipse.jdt.core.dom.Annotation annotation : annotations) {
+			boolean lombokFound = false;
+			List<String> values = new ArrayList<String>();
+			if (annotation.isSingleMemberAnnotation()) {
+				org.eclipse.jdt.core.dom.SingleMemberAnnotation smAnn = (org.eclipse.jdt.core.dom.SingleMemberAnnotation) annotation;
+				values.add(smAnn.getValue().toString());
+				
+			} else if (annotation.isNormalAnnotation()) {
+				org.eclipse.jdt.core.dom.NormalAnnotation normalAnn = (org.eclipse.jdt.core.dom.NormalAnnotation) annotation;
+				for (Object value : normalAnn.values()) {
+					values.add(value.toString());
+				}
+			}
+
+			if (!lombokFound) {
+				signature.append("@").append(annotation.resolveTypeBinding().getQualifiedName());
+				if (!values.isEmpty()) {
+					signature.append("(");
+					boolean first = true;
+					for (String string : values) {
+						if (first) {
+							first = false;
+						} else {
+							signature.append(",");
+						}
+						signature.append('"').append(string).append('"');
+					}
+					signature.append(")");
+				}
+				signature.append(" ");
+			}
+		}
 	}
 	
 	
@@ -154,7 +222,8 @@ public class PatchFixes {
 		return methodDeclarationNode;
 	}
 	
-	private static org.eclipse.jdt.core.dom.AbstractTypeDeclaration findTypeDeclaration(IType searchType, List<?> nodes) {
+	// part of getRealMethodDeclarationNode
+	public static org.eclipse.jdt.core.dom.AbstractTypeDeclaration findTypeDeclaration(IType searchType, List<?> nodes) {
 		for (Object object : nodes) {
 			if (object instanceof org.eclipse.jdt.core.dom.AbstractTypeDeclaration) {
 				org.eclipse.jdt.core.dom.AbstractTypeDeclaration typeDeclaration = (org.eclipse.jdt.core.dom.AbstractTypeDeclaration) object;
