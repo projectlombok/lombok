@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Project Lombok Authors.
+ * Copyright (C) 2010-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 package lombok.bytecode;
 
-import static lombok.bytecode.AsmUtil.*;
+import static lombok.bytecode.AsmUtil.fixJSRInlining;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -31,11 +31,10 @@ import lombok.core.PostCompilerTransformation;
 import org.mangosdk.spi.ProviderFor;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
-import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
-import org.objectweb.asm.MethodAdapter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
@@ -52,11 +51,11 @@ public class SneakyThrowsRemover implements PostCompilerTransformation {
 		
 		final AtomicBoolean changesMade = new AtomicBoolean();
 		
-		class SneakyThrowsRemoverVisitor extends MethodAdapter {
+		class SneakyThrowsRemoverVisitor extends MethodVisitor {
 			boolean justAddedAthrow = false;
 			
 			SneakyThrowsRemoverVisitor(MethodVisitor mv) {
-				super(mv);
+				super(Opcodes.ASM4, mv);
 			}
 			
 			@Override public void visitMethodInsn(int opcode, String owner, String name, String desc) {
@@ -168,7 +167,7 @@ public class SneakyThrowsRemover implements PostCompilerTransformation {
 			}
 		}
 		
-		reader.accept(new ClassAdapter(writer) {
+		reader.accept(new ClassVisitor(Opcodes.ASM4, writer) {
 			@Override public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 				return new SneakyThrowsRemoverVisitor(super.visitMethod(access, name, desc, signature, exceptions));
 			}

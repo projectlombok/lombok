@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Project Lombok Authors.
+ * Copyright (C) 2010-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,11 @@
  */
 package lombok.bytecode;
 
-import org.objectweb.asm.ClassAdapter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 
 class AsmUtil {
@@ -38,7 +38,7 @@ class AsmUtil {
 		ClassReader reader = new ClassReader(byteCode);
 		ClassWriter writer = new FixedClassWriter(reader, 0);
 		
-		ClassVisitor visitor = new ClassAdapter(writer) {
+		ClassVisitor visitor = new ClassVisitor(Opcodes.ASM4, writer) {
 			@Override public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 				return new JSRInlinerAdapter(super.visitMethod(access, name, desc, signature, exceptions), access, name, desc, signature, exceptions);
 			}
