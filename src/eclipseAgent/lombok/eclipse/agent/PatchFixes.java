@@ -237,7 +237,8 @@ public class PatchFixes {
 	}
 	
 	public static int fixRetrieveRightBraceOrSemiColonPosition(int original, int end) {
-		return original == -1 ? end : original;
+		return original;
+		// return original == -1 ? end : original;  // Need to fix: see issue 325.
 	}
 	
 	public static final int ALREADY_PROCESSED_FLAG = 0x800000;  //Bit 24
