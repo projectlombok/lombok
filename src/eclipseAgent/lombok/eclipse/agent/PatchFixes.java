@@ -42,7 +42,9 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.core.dom.rewrite.NodeRewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
@@ -95,48 +97,20 @@ public class PatchFixes {
 	public static java.lang.String getRealMethodDeclarationSource(java.lang.String original, Object processor, org.eclipse.jdt.core.dom.MethodDeclaration declaration) throws Exception {
 		if (!isGenerated(declaration)) return original;
 		
-		boolean fPublic = (Boolean)processor.getClass().getDeclaredField("fPublic").get(processor);
-		boolean fAbstract = (Boolean)processor.getClass().getDeclaredField("fAbstract").get(processor);
-		
-		final List<String> skippedAnnotations = new ArrayList<String>();
-		skippedAnnotations.add("java.lang.Override"); // always skipped by extract interface
-		skippedAnnotations.add("java.lang.SuppressWarnings"); // always added by lombok
-
-		// Near copy of ExtractInterFaceProcessor.createMethodDeclaration(...)
-		// couldn't find a way to pass these as parameters
-		boolean publicFound= false;
-		boolean abstractFound= false;
-		
 		List<org.eclipse.jdt.core.dom.Annotation> annotations = new ArrayList<org.eclipse.jdt.core.dom.Annotation>();
-		org.eclipse.jdt.core.dom.Modifier modifier= null;
-		org.eclipse.jdt.core.dom.IExtendedModifier extended= null;
-		for (final Iterator<?> iterator= declaration.modifiers().iterator(); iterator.hasNext();) {
-			extended= (org.eclipse.jdt.core.dom.IExtendedModifier) iterator.next();
-			if (!extended.isAnnotation()) {
-				modifier= (org.eclipse.jdt.core.dom.Modifier) extended;
-				if (fPublic && modifier.getKeyword().equals(org.eclipse.jdt.core.dom.Modifier.ModifierKeyword.PUBLIC_KEYWORD)) {
-					publicFound= true;
-					continue;
-				}
-				if (fAbstract && modifier.getKeyword().equals(org.eclipse.jdt.core.dom.Modifier.ModifierKeyword.ABSTRACT_KEYWORD)) {
-					abstractFound= true;
-					continue;
-				}
-			} else {
-				org.eclipse.jdt.core.dom.Annotation annotation = (org.eclipse.jdt.core.dom.Annotation)extended;
-				if (!skippedAnnotations.contains(annotation.resolveTypeBinding().getQualifiedName()))
-					annotations.add(annotation);
+		for (Object modifier : declaration.modifiers()) {
+			if (modifier instanceof org.eclipse.jdt.core.dom.Annotation) {
+				org.eclipse.jdt.core.dom.Annotation annotation = (org.eclipse.jdt.core.dom.Annotation)modifier;
+				String qualifiedAnnotationName = annotation.resolveTypeBinding().getQualifiedName();
+				if (!"java.lang.Override".equals(qualifiedAnnotationName) && !"java.lang.SuppressWarnings".equals(qualifiedAnnotationName)) annotations.add(annotation);
 			}
 		}
-	
-		boolean needsPublic = fPublic && !publicFound; 
-		boolean needsAbstract = fAbstract && !abstractFound;
-		// END Near copy of ExtractInterFaceProcessor.createMethodDeclaration(...)
 		
 		StringBuilder signature = new StringBuilder();
 		addAnnotations(annotations, signature);
-		if (needsPublic) signature.append("public ");
-		if (needsAbstract) signature.append("abstract ");
+		
+		if ((Boolean)processor.getClass().getDeclaredField("fPublic").get(processor)) signature.append("public ");
+		if ((Boolean)processor.getClass().getDeclaredField("fAbstract").get(processor)) signature.append("abstract ");
 		
 		signature
 			.append(declaration.getReturnType2().toString())
@@ -147,49 +121,55 @@ public class PatchFixes {
 		for (Object parameter : declaration.parameters()) {
 			if (!first) signature.append(", ");
 			first = false;
+			// We should also add the annotations of the parameters
 			signature.append(parameter);
 		}
 		
 		signature.append(");");
 		return signature.toString();
 	}
-
+	
 	// part of getRealMethodDeclarationSource(...)
 	public static void addAnnotations(List<org.eclipse.jdt.core.dom.Annotation> annotations, StringBuilder signature) {
+		/*
+		 * We SHOULD be able to handle the following cases:
+		 * @Override
+		 * @Override()
+		 * @SuppressWarnings("all")
+		 * @SuppressWarnings({"all", "unused"})
+		 * @SuppressWarnings(value = "all")
+		 * @SuppressWarnings(value = {"all", "unused"})
+		 * @EqualsAndHashCode(callSuper=true, of="id")
+		 * 
+		 * Currently, we only seem to correctly support:
+		 * @Override
+		 * @Override() N.B. We lose the parentheses here, since there are no values. No big deal.
+		 * @SuppressWarnings("all")
+		 */
 		for (org.eclipse.jdt.core.dom.Annotation annotation : annotations) {
-			boolean lombokFound = false;
 			List<String> values = new ArrayList<String>();
 			if (annotation.isSingleMemberAnnotation()) {
 				org.eclipse.jdt.core.dom.SingleMemberAnnotation smAnn = (org.eclipse.jdt.core.dom.SingleMemberAnnotation) annotation;
 				values.add(smAnn.getValue().toString());
-				
 			} else if (annotation.isNormalAnnotation()) {
 				org.eclipse.jdt.core.dom.NormalAnnotation normalAnn = (org.eclipse.jdt.core.dom.NormalAnnotation) annotation;
-				for (Object value : normalAnn.values()) {
-					values.add(value.toString());
-				}
+				for (Object value : normalAnn.values()) values.add(value.toString());
 			}
-
-			if (!lombokFound) {
-				signature.append("@").append(annotation.resolveTypeBinding().getQualifiedName());
-				if (!values.isEmpty()) {
-					signature.append("(");
-					boolean first = true;
-					for (String string : values) {
-						if (first) {
-							first = false;
-						} else {
-							signature.append(",");
-						}
-						signature.append('"').append(string).append('"');
-					}
-					signature.append(")");
+			
+			signature.append("@").append(annotation.resolveTypeBinding().getQualifiedName());
+			if (!values.isEmpty()) {
+				signature.append("(");
+				boolean first = true;
+				for (String string : values) {
+					if (!first) signature.append(", ");
+					first = false;
+					signature.append('"').append(string).append('"');
 				}
-				signature.append(" ");
+				signature.append(")");
 			}
+			signature.append(" ");
 		}
 	}
-	
 	
 	public static org.eclipse.jdt.core.dom.MethodDeclaration getRealMethodDeclarationNode(org.eclipse.jdt.core.IMethod sourceMethod, org.eclipse.jdt.core.dom.CompilationUnit cuUnit) throws JavaModelException {
 		MethodDeclaration methodDeclarationNode = ASTNodeSearchUtil.getMethodDeclarationNode(sourceMethod, cuUnit);
