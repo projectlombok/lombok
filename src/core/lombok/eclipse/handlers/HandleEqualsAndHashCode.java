@@ -222,14 +222,17 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		}
 		
 		MethodDeclaration equalsMethod = createEquals(typeNode, nodesForEquality, callSuper, errorNode.get(), fieldAccess, needsCanEqual);
+		equalsMethod.traverse(new SetGeneratedByVisitor(errorNode.get()), ((TypeDeclaration)typeNode.get()).scope);
 		injectMethod(typeNode, equalsMethod);
 		
 		if (needsCanEqual) {
 			MethodDeclaration canEqualMethod = createCanEqual(typeNode, errorNode.get());
+			canEqualMethod.traverse(new SetGeneratedByVisitor(errorNode.get()), ((TypeDeclaration)typeNode.get()).scope);
 			injectMethod(typeNode, canEqualMethod);
 		}
 		
 		MethodDeclaration hashCodeMethod = createHashCode(typeNode, nodesForEquality, callSuper, errorNode.get(), fieldAccess);
+		hashCodeMethod.traverse(new SetGeneratedByVisitor(errorNode.get()), ((TypeDeclaration)typeNode.get()).scope);
 		injectMethod(typeNode, hashCodeMethod);
 	}
 	
