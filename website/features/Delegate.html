@@ -15,20 +15,20 @@
 		<div class="overview">
 			<h3>Overview</h3>
 			<p>
-			<em> NEW IN Lombok 0.10: </em> Any field can be annotated with <code>@Delegate</code> to let lombok generate delegate methods that forward the call 
-			to this field. 
+			<em> NEW IN Lombok 0.10: </em> Any field or no-argument method can be annotated with <code>@Delegate</code> to let lombok generate delegate methods
+			that forward the call to this field (or the result of invoking this method).
 			</p>
 			<p>
-			Lombok delegates all <code>public</code> methods of the field's type, as well as those of its supertype except for all methods declared 
-			in <code>java.lang.Object</code>.
+			Lombok delegates all <code>public</code> methods of the field's type (or method's return type), as well as those of its supertype except for all
+			methods declared in <code>java.lang.Object</code>.
 			</p>
 			<p>
 			You can pass any number of classes into the <code>@Delegate</code> annotation's <code>types</code> parameter.
 			If you do that, then lombok will delegate all <code>public</code> methods in those types (and their supertypes, except
-			<code>java.lang.Object</code>) instead of looking at the field's type.
+			<code>java.lang.Object</code>) instead of looking at the field/method's type.
 			</p>
 			<p>
-			All public non-Object methods that are part of the field's type (or, if you used <code>types</code> parameter, the methods of those types) are
+			All public non-<code>Object</code> methods that are part of the calculated type(s) are
 			copied, whether or not you also wrote implementations for those methods. That would thus result in duplicate method errors. You can avoid these
 			by using the <code>@Delegate(excludes=SomeType.class)</code> parameter to exclude all public methods in the excluded type(s), and their supertypes.
 			</p>
@@ -59,6 +59,8 @@
 			<p>
 			When passing classes to the annotation, these classes do not need to be supertypes of the field. See the example.
 			</p>
+			<p>
+			<code>@Delegate</code> cannot be used on static fields or methods.
 			<div>
 		</div>
 		<div class="footer">
