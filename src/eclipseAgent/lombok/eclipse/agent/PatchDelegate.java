@@ -198,6 +198,12 @@ public class PatchDelegate {
 				if (!isDelegate(ann, decl)) continue;
 				if (alreadyApplied.put(ann, MARKER) == MARKER) continue;
 				
+				if ((field.modifiers & ClassFileConstants.AccStatic) != 0) {
+					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
+					eclipseAst.get(ann).addError(LEGALITY_OF_DELEGATE);
+					break;
+				}
+				
 				List<ClassLiteralAccess> rawTypes = rawTypes(ann, "types");
 				List<ClassLiteralAccess> excludedRawTypes = rawTypes(ann, "excludes");
 				
@@ -233,6 +239,8 @@ public class PatchDelegate {
 		}
 	}
 	
+	private static final String LEGALITY_OF_DELEGATE = "@Delegate is legal only on instance fields or no-argument instance methods.";
+	
 	private static void fillMethodBindingsForMethods(CompilationUnitDeclaration cud, ClassScope scope, List<BindingTuple> methodsToDelegate) {
 		TypeDeclaration decl = scope.referenceContext;
 		if (decl == null) return;
@@ -244,13 +252,18 @@ public class PatchDelegate {
 				if (alreadyApplied.put(ann, MARKER) == MARKER) continue;
 				if (!(methodDecl instanceof MethodDeclaration)) {
 					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
-					eclipseAst.get(ann).addError("@Delegate is legal only on no-argument methods.");
-					continue;
+					eclipseAst.get(ann).addError(LEGALITY_OF_DELEGATE);
+					break;
 				}
 				if (methodDecl.arguments != null) {
 					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
-					eclipseAst.get(ann).addError("@Delegate is legal only on no-argument methods.");
-					continue;
+					eclipseAst.get(ann).addError(LEGALITY_OF_DELEGATE);
+					break;
+				}
+				if ((methodDecl.modifiers & ClassFileConstants.AccStatic) != 0) {
+					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
+					eclipseAst.get(ann).addError(LEGALITY_OF_DELEGATE);
+					break;
 				}
 				MethodDeclaration method = (MethodDeclaration) methodDecl;
 				
