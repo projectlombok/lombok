@@ -3,7 +3,6 @@ Lombok Changelog
 
 ### v0.10.7 (edge)
 * FEATURE: `@Delegate` can now be used on a no-argument method, which works similarly to adding it to fields. See [documentation](http://projectlombok.org/features/Delegate.html).
-* REGRESSION: Eclipse save action *Add final modifier to private fields* again adds final keyword to `@Setter` fields, caused by fix to [issue #325](http://code.google.com/p/projectlombok/issues/detail?id=325). Reopened [Issue #263](http://code.google.com/p/projectlombok/issues/detail?id=263)
 * BUGFIX: Eclipse refactoring Extract Interface was broken when using lombok annotation to generate methods. [Issue #86](http://code.google.com/p/projectlombok/issues/detail?id=86)
 * BUGFIX: Eclipse action Sort Members was broken when using lombok annotations to generate methods or fields. [Issue #265](http://code.google.com/p/projectlombok/issues/detail?id=265)
 * BUGFIX: Eclipse action Refactor/Rename on an inner type was broken when using lombok annotations. [Issue #316](http://code.google.com/p/projectlombok/issues/detail?id=316)
