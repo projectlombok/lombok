@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v0.10.7 (edge)
+### v0.10.8 (January 19th, 2012)
 * FEATURE: `@Delegate` can now be used on a no-argument method, which works similarly to adding it to fields. See [documentation](http://projectlombok.org/features/Delegate.html).
 * BUGFIX: Eclipse refactoring Extract Interface was broken when using lombok annotation to generate methods. [Issue #86](http://code.google.com/p/projectlombok/issues/detail?id=86)
 * BUGFIX: Eclipse action Sort Members was broken when using lombok annotations to generate methods or fields. [Issue #265](http://code.google.com/p/projectlombok/issues/detail?id=265)
