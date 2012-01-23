@@ -16,3 +16,4 @@
 /lombok.iml
 /.idea
 *.markdown.html
+/junit*.properties
