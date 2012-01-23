@@ -281,6 +281,7 @@ public class PatchDelegate {
 				List<BindingTuple> methodsToDelegateForThisAnn = new ArrayList<BindingTuple>();
 				
 				if (rawTypes.isEmpty()) {
+					if (method.returnType == null) continue;
 					addAllMethodBindings(methodsToDelegateForThisAnn, method.returnType.resolveType(decl.initializerScope), banList, method.selector, ann);
 				} else {
 					for (ClassLiteralAccess cla : rawTypes) {
