@@ -169,6 +169,7 @@ public class TestClassFileMetaData {
 	@Test
 	public void testContainsLong() {
 		assertTrue(foo.containsLong(123));
+		assertTrue(foo.containsLong(0x1FFFFFFFFL));
 		
 		assertFalse(foo.containsLong(1));
 		assertFalse(buux.containsLong(1));
