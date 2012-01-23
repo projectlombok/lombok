@@ -108,7 +108,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</target>
 	
 	<target name="ensureTestDeps" depends="config-ivy">
-		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="test" />
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="test, javac6" />
 		<ivy:retrieve />
 	</target>
 	
@@ -321,10 +321,11 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</target>
 	
 	<target name="test" depends="-test-compile, dist, test-ecj" unless="tests.skip" description="Runs the tests.">
-		<junit haltonfailure="yes" fork="on">
+		<junit haltonfailure="yes" fork="true">
 			<jvmarg value="-javaagent:dist/lombok.jar" />
 			<formatter type="plain" usefile="false" unless="tests.quiet" />
 			<classpath refid="test.path" />
+			<classpath path="lib/javac6/javac6.jar" />
 			<classpath path="build/lombok" />
 			<classpath path="build/tests" />
 			<batchtest>
