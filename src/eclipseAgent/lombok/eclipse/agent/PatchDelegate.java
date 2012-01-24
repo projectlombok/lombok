@@ -188,6 +188,10 @@ public class PatchDelegate {
 	private static Map<ASTNode, Object> alreadyApplied = new WeakHashMap<ASTNode, Object>();
 	private static final Object MARKER = new Object();
 	
+	public static void markHandled(Annotation annotation) {
+		alreadyApplied.put(annotation, MARKER);
+	}
+	
 	private static void fillMethodBindingsForFields(CompilationUnitDeclaration cud, ClassScope scope, List<BindingTuple> methodsToDelegate) {
 		TypeDeclaration decl = scope.referenceContext;
 		if (decl == null) return;

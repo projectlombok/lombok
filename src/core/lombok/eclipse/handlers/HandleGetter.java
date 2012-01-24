@@ -24,18 +24,23 @@ package lombok.eclipse.handlers;
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import lombok.AccessLevel;
+import lombok.Delegate;
 import lombok.Getter;
+import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
-import lombok.core.AST.Kind;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.eclipse.agent.PatchDelegate;
+import lombok.eclipse.handlers.EclipseHandlerUtil.FieldAccess;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
@@ -69,6 +74,8 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleGetter extends EclipseAnnotationHandler<Getter> {
+	private static final Annotation[] EMPTY_ANNOTATIONS_ARRAY = new Annotation[0];
+
 	public boolean generateGetterForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelGetter) {
 		if (checkForTypeLevelGetter) {
 			if (typeNode != null) for (EclipseNode child : typeNode.down()) {
@@ -205,12 +212,24 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		}
 		
 		MethodDeclaration method = generateGetter((TypeDeclaration) fieldNode.up().get(), fieldNode, getterName, modifier, source, lazy);
-		Annotation[] copiedAnnotations = copyAnnotations(source, findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN));
+		Annotation[] copiedAnnotations = copyAnnotations(source, findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN), findDelegatesAndMarkAsHandled(fieldNode));
 		if (copiedAnnotations.length != 0) {
 			method.annotations = copiedAnnotations;
 		}
 		
 		injectMethod(fieldNode.up(), method);
+	}
+
+	private static Annotation[] findDelegatesAndMarkAsHandled(EclipseNode fieldNode) {
+		List<Annotation> delegates = new ArrayList<Annotation>();
+		for (EclipseNode child : fieldNode.down()) {
+			if (annotationTypeMatches(Delegate.class, child)) {
+				Annotation delegate = (Annotation)child.get();
+				PatchDelegate.markHandled(delegate);
+				delegates.add(delegate);
+			}
+		}
+		return delegates.toArray(EMPTY_ANNOTATIONS_ARRAY);
 	}
 	
 	private MethodDeclaration generateGetter(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, ASTNode source, boolean lazy) {

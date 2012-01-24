@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import lombok.AccessLevel;
+import lombok.Delegate;
 import lombok.Getter;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
@@ -240,14 +241,40 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		List<JCAnnotation> nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
 		List<JCAnnotation> nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
 		
+		List<JCAnnotation> delegates = findDelegatesAndRemoveFromField(field);
+		
 		List<JCAnnotation> annsOnMethod = nonNulls.appendList(nullables);
 		
 		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
 		
 		if (toClearOfMarkers != null) recursiveSetGeneratedBy(toClearOfMarkers, null);
+		decl.mods.annotations = decl.mods.annotations.appendList(delegates);
 		
 		return decl;
+	}
+	
+	private static List<JCAnnotation> findDelegatesAndRemoveFromField(JavacNode field) {
+		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
+		
+		List<JCAnnotation> delegates = List.nil();
+		for (JCAnnotation annotation : fieldNode.mods.annotations) {
+			if (typeMatches(Delegate.class, field, annotation.annotationType)) {
+				delegates = delegates.append(annotation);
+			}
+		}
+		
+		if (!delegates.isEmpty()) {
+			ListBuffer<JCAnnotation> withoutDelegates = ListBuffer.lb();
+			for (JCAnnotation annotation : fieldNode.mods.annotations) {
+				if (!delegates.contains(annotation)) {
+					withoutDelegates.append(annotation);
+				}
+			}
+			fieldNode.mods.annotations = withoutDelegates.toList();
+			field.rebuild();
+		}
+		return delegates;
 	}
 	
 	private List<JCStatement> createSimpleGetterBody(TreeMaker treeMaker, JavacNode field) {
