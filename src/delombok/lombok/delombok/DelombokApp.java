@@ -40,7 +40,7 @@ import lombok.core.LombokApp;
 import org.mangosdk.spi.ProviderFor;
 
 @ProviderFor(LombokApp.class)
-public class DelombokApp implements LombokApp {
+public class DelombokApp extends LombokApp {
 	@Override public int runApp(List<String> args) throws Exception {
 		try {
 			Class.forName("com.sun.tools.javac.main.JavaCompiler");
@@ -245,7 +245,7 @@ public class DelombokApp implements LombokApp {
 	}
 	
 	@Override public List<String> getAppAliases() {
-		return Arrays.asList("unlombok", "delombok");
+		return Arrays.asList("unlombok");
 	}
 	
 	@Override public String getAppDescription() {

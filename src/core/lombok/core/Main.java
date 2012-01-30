@@ -44,7 +44,7 @@ public class Main {
 	}
 	
 	@ProviderFor(LombokApp.class)
-	public static class VersionApp implements LombokApp {
+	public static class VersionApp extends LombokApp {
 		@Override public String getAppName() {
 			return "version";
 		}
@@ -54,7 +54,7 @@ public class Main {
 		}
 		
 		@Override public List<String> getAppAliases() {
-			return Arrays.asList("version", "-version", "--version");
+			return Arrays.asList("-version", "--version");
 		}
 		
 		@Override public int runApp(List<String> args) {
@@ -64,7 +64,7 @@ public class Main {
 	}
 	
 	@ProviderFor(LombokApp.class)
-	public static class LicenseApp implements LombokApp {
+	public static class LicenseApp extends LombokApp {
 		@Override public String getAppName() {
 			return "license";
 		}
@@ -74,7 +74,7 @@ public class Main {
 		}
 		
 		@Override public List<String> getAppAliases() {
-			return Arrays.asList("license", "licence", "copyright", "copyleft", "gpl");
+			return Arrays.asList("licence", "copyright", "copyleft", "gpl");
 		}
 		
 		@Override public int runApp(List<String> args) {

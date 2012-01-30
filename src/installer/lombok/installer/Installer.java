@@ -111,7 +111,7 @@ public class Installer {
 	}
 	
 	@ProviderFor(LombokApp.class)
-	public static class GraphicalInstallerApp implements LombokApp {
+	public static class GraphicalInstallerApp extends LombokApp {
 		@Override public String getAppName() {
 			return "installer";
 		}
@@ -121,7 +121,7 @@ public class Installer {
 		}
 		
 		@Override public List<String> getAppAliases() {
-			return Arrays.asList("installer", "");
+			return Arrays.asList("");
 		}
 		
 		@Override public int runApp(List<String> args) throws Exception {
@@ -130,7 +130,7 @@ public class Installer {
 	}
 	
 	@ProviderFor(LombokApp.class)
-	public static class CommandLineInstallerApp implements LombokApp {
+	public static class CommandLineInstallerApp extends LombokApp {
 		@Override public String getAppName() {
 			return "install";
 		}
@@ -139,27 +139,19 @@ public class Installer {
 			return "Runs the 'handsfree' command line scriptable installer.";
 		}
 		
-		@Override public List<String> getAppAliases() {
-			return Arrays.asList("install");
-		}
-		
 		@Override public int runApp(List<String> args) throws Exception {
 			return cliInstaller(false, args);
 		}
 	}
 	
 	@ProviderFor(LombokApp.class)
-	public static class CommandLineUninstallerApp implements LombokApp {
+	public static class CommandLineUninstallerApp extends LombokApp {
 		@Override public String getAppName() {
 			return "uninstall";
 		}
 		
 		@Override public String getAppDescription() {
 			return "Runs the 'handsfree' command line scriptable uninstaller.";
-		}
-		
-		@Override public List<String> getAppAliases() {
-			return Arrays.asList("uninstall");
 		}
 		
 		@Override public int runApp(List<String> args) throws Exception {

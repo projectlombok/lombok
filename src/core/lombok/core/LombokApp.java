@@ -21,6 +21,7 @@
  */
 package lombok.core;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -28,25 +29,34 @@ import java.util.List;
  * 
  * @see lombok.core.Main.VersionApp
  */
-public interface LombokApp {
+public abstract class LombokApp {
 	/**
 	 * @param args The arguments; analogous to what's passed to {@code public static void main(String[] args)} methods.
 	 * @return The return value. Don't call {@code System.exit} yourself.
 	 */
-	public int runApp(List<String> args) throws Exception;
+	public abstract int runApp(List<String> args) throws Exception;
 	
 	/**
 	 * @return Your app name. For example {@code delombok}.
 	 */
-	public String getAppName();
+	public abstract String getAppName();
 	
 	/**
 	 * @return Description of this app, for the command line.
 	 */
-	public String getAppDescription();
+	public abstract String getAppDescription();
 	
 	/**
 	 * @return When lombok.jar is executed with any of these strings as first argument, your app will be started.
 	 */
-	public List<String> getAppAliases();
+	public List<String> getAppAliases() {
+		return Collections.emptyList();
+	}
+	
+	/**
+	 * @return {@code true} if this app is an internal debugging tool and won't be listed by the default help message.
+	 */
+	public boolean isDebugTool() {
+		return false;
+	}
 }

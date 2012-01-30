@@ -44,7 +44,7 @@ import com.zwitserloot.cmdreader.Sequential;
 import com.zwitserloot.cmdreader.Shorthand;
 
 @ProviderFor(LombokApp.class)
-public class PostCompilerApp implements LombokApp {
+public class PostCompilerApp extends LombokApp {
 	@Override public List<String> getAppAliases() {
 		return Arrays.asList("post", "postcompile");
 	}
@@ -87,11 +87,8 @@ public class PostCompilerApp implements LombokApp {
 			return 1;
 		}
 		
-		List<File> filesToProcess = new ArrayList<File>();
-		for (String f : args.classFiles) addFiles(filesToProcess, f);
-		
 		int filesVisited = 0, filesTouched = 0;
-		for (File file : filesToProcess) {
+		for (File file : cmdArgsToFiles(args.classFiles)) {
 			if (!file.exists() || !file.isFile()) {
 				System.out.printf("Cannot find file '%s'\n", file);
 				continue;
@@ -115,7 +112,13 @@ public class PostCompilerApp implements LombokApp {
 		return filesVisited == 0 ? 1 : 0;
 	}
 	
-	private void addFiles(List<File> filesToProcess, String f) {
+	static List<File> cmdArgsToFiles(List<String> fileNames) {
+		List<File> filesToProcess = new ArrayList<File>();
+		for (String f : fileNames) addFiles(filesToProcess, f);
+		return filesToProcess;
+	}
+	
+	static void addFiles(List<File> filesToProcess, String f) {
 		File file = new File(f);
 		if (file.isDirectory()) {
 			addRecursively(filesToProcess, file);
@@ -124,7 +127,7 @@ public class PostCompilerApp implements LombokApp {
 		}
 	}
 	
-	private void addRecursively(List<File> filesToProcess, File file) {
+	static void addRecursively(List<File> filesToProcess, File file) {
 		for (File f : file.listFiles()) {
 			if (f.isDirectory()) addRecursively(filesToProcess, f);
 			else if (f.getName().endsWith(".class")) filesToProcess.add(f);

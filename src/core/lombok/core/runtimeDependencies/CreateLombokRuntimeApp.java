@@ -49,7 +49,7 @@ import com.zwitserloot.cmdreader.Requires;
 import com.zwitserloot.cmdreader.Shorthand;
 
 @ProviderFor(LombokApp.class)
-public class CreateLombokRuntimeApp implements LombokApp {
+public class CreateLombokRuntimeApp extends LombokApp {
 	private List<RuntimeDependencyInfo> infoObjects;
 	
 	@Override public String getAppName() {
@@ -64,7 +64,7 @@ public class CreateLombokRuntimeApp implements LombokApp {
 	}
 	
 	@Override public List<String> getAppAliases() {
-		return Arrays.asList("createRuntime", "runtime");
+		return Arrays.asList("runtime");
 	}
 	
 	private static class CmdArgs {
