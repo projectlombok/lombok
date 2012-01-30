@@ -214,6 +214,7 @@ public class ClassFileMetaData {
 	 * Checks if the constant pool contains the provided string constant, which implies the constant is used somewhere in the code.
 	 * 
 	 * NB: String literals get concatenated by the compiler.
+	 * NB2: This method does NOT do any kind of normalization.
 	 */
 	public boolean containsStringConstant(String value) {
 		int index = findUtf8(value);
@@ -282,25 +283,23 @@ public class ClassFileMetaData {
 	
 	private long readLong(int index) {
 		int pos = offsets[index];
-		return ((long)read32(pos)) << 32 | read32(pos + 4);
+		return ((long)read32(pos)) << 32 | (read32(pos + 4) & 0x00000000FFFFFFFFL);
 	}
 	
 	private double readDouble(int index) {
-		int pos = offsets[index];
-		long bits = ((long)read32(pos)) << 32 | (read32(pos + 4) & 0x00000000FFFFFFFF);
-		return Double.longBitsToDouble(bits);
+		return Double.longBitsToDouble(readLong(index));
 	}
 	
-	private long readInteger(int index) {
+	private int readInteger(int index) {
 		return read32(offsets[index]);
 	}
 	
 	private float readFloat(int index) {
-		return Float.intBitsToFloat(read32(offsets[index]));
+		return Float.intBitsToFloat(readInteger(index));
 	}
 	
 	private int read32(int pos) {
-		return (byteCode[pos] & 0xFF) << 24 | (byteCode[pos + 1] & 0xFF) << 16 | (byteCode[pos + 2] & 0xFF) << 8 | (byteCode[pos + 3] &0xFF);
+		return (byteCode[pos] & 0xFF) << 24 | (byteCode[pos + 1] & 0xFF) << 16 | (byteCode[pos + 2] & 0xFF) << 8 | (byteCode[pos + 3] & 0xFF);
 	}
 	
 	/**

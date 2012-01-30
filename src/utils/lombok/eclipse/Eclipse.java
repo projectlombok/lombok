@@ -43,6 +43,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 
 public class Eclipse {
+	private static final Annotation[] EMPTY_ANNOTATIONS_ARRAY = new Annotation[0];
 	/**
 	 * Eclipse's Parser class is instrumented to not attempt to fill in the body of any method or initializer
 	 * or field initialization if this flag is set. Set it on the flag field of
@@ -120,7 +121,7 @@ public class Eclipse {
 	 */
 	public static Annotation[] findAnnotations(FieldDeclaration field, Pattern namePattern) {
 		List<Annotation> result = new ArrayList<Annotation>();
-		if (field.annotations == null) return new Annotation[0];
+		if (field.annotations == null) return EMPTY_ANNOTATIONS_ARRAY;
 		for (Annotation annotation : field.annotations) {
 			TypeReference typeRef = annotation.type;
 			if (typeRef != null && typeRef.getTypeName()!= null) {
@@ -131,7 +132,7 @@ public class Eclipse {
 				}
 			}
 		}	
-		return result.toArray(new Annotation[0]);
+		return result.toArray(EMPTY_ANNOTATIONS_ARRAY);
 	}
 	
 	/**

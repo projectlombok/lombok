@@ -48,6 +48,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</fileset>
 	</path>
 	
+	<path id="eclipseBuild.path">
+		<fileset dir="lib/eclipseBuild">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+	
 	<target name="-defSSH" depends="ensureBuildDeps">
 		<taskdef name="scp" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.Scp" classpathref="build.path" />
 		<taskdef name="sshexec" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="build.path" />
@@ -108,7 +114,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</target>
 	
 	<target name="ensureTestDeps" depends="config-ivy">
-		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="test" />
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="test, javac6, eclipseBuild" />
 		<ivy:retrieve />
 	</target>
 	
@@ -272,7 +278,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<os family="mac" />
 		</condition>
 		
-		<property name="putJavacOnBootclasspath" value="-Xbootclasspath/p:lib/test/javac6.jar" />
+		<property name="putJavacOnBootclasspath" value="-Xbootclasspath/p:lib/javac6/javac6.jar" />
 		
 		<copy
 				file="buildScripts/eclipse-debug-target.template"
@@ -298,6 +304,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<mkdir dir="build/tests" />
 		<ivy:compile destdir="build/tests" source="1.5" target="1.5" includeantruntime="false">
 			<classpath refid="test.path" />
+			<classpath refid="build.path" />
 			<classpath path="build/lombok" />
 			<src path="test/core/src" />
 			<src path="test/transform/src" />
@@ -321,10 +328,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</target>
 	
 	<target name="test" depends="-test-compile, dist, test-ecj" unless="tests.skip" description="Runs the tests.">
-		<junit haltonfailure="yes" fork="on">
+		<junit haltonfailure="yes" fork="true">
 			<jvmarg value="-javaagent:dist/lombok.jar" />
 			<formatter type="plain" usefile="false" unless="tests.quiet" />
 			<classpath refid="test.path" />
+			<classpath refid="eclipseBuild.path" />
+			<classpath path="lib/javac6/javac6.jar" />
 			<classpath path="build/lombok" />
 			<classpath path="build/tests" />
 			<batchtest>

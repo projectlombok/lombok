@@ -1,10 +1,16 @@
 Lombok Changelog
 ----------------
 
-### v0.10.7 (edge)
-* REGRESSION: 0.10.6 causes ClassNotFoundErrors when using ecj (and thus, play framework, gwt, etc). [Issue #320](http://code.google.com/p/projectlombok/issues/detail?id=320)
+### v0.10.9 (edge)
+* FEATURE: The combination of `@Delegate` and `@Getter` or `@Data` will now delegate to the result of a generated getter. [Issue #328](http://code.google.com/p/projectlombok/issues/detail?id=328)
+
+### v0.10.8 (January 19th, 2012)
+* FEATURE: `@Delegate` can now be used on a no-argument method, which works similarly to adding it to fields. See [documentation](http://projectlombok.org/features/Delegate.html).
 * BUGFIX: Eclipse refactoring Extract Interface was broken when using lombok annotation to generate methods. [Issue #86](http://code.google.com/p/projectlombok/issues/detail?id=86)
-* BUGFIX: Eclipse action Sort Members was broken when using lombok annotation to generate methods or fields. [Issue #265](http://code.google.com/p/projectlombok/issues/detail?id=265)
+* BUGFIX: Eclipse action Sort Members was broken when using lombok annotations to generate methods or fields. [Issue #265](http://code.google.com/p/projectlombok/issues/detail?id=265)
+* BUGFIX: Eclipse action Refactor/Rename on an inner type was broken when using lombok annotations. [Issue #316](http://code.google.com/p/projectlombok/issues/detail?id=316)
+* BUGFIX: 0.10.6 causes ClassNotFoundErrors when using ecj (and thus, play framework, gwt, etc). [Issue #320](http://code.google.com/p/projectlombok/issues/detail?id=320)
+* BUGFIX: Eclipse parsing was broken when using lombok annotations with parentheses. [Issue #325](http://code.google.com/p/projectlombok/issues/detail?id=325)
 * ENHANCEMENT: Lombok now adds a line to the Eclipse About dialog about itself.
 
 ### v0.10.6 (December 19th, 2011)

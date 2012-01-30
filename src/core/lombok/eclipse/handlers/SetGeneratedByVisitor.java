@@ -247,6 +247,13 @@ public final class SetGeneratedByVisitor extends ASTVisitor {
 		node.nameSourcePosition = recalcSourcePosition(node.nameSourcePosition);
 	}
 	
+	private void applyOffsetQualifiedNameReference(QualifiedNameReference node) {
+		applyOffsetExpression(node);
+		for (int i = 0; i < node.sourcePositions.length; i++) {
+			node.sourcePositions[i] = recalcSourcePosition(node.sourcePositions[i]);
+		}
+	}
+	
 	private void applyOffsetQualifiedTypeReference(QualifiedTypeReference node) {
 		applyOffsetExpression(node);
 		for (int i = 0; i < node.sourcePositions.length; i++) {
@@ -787,8 +794,8 @@ public final class SetGeneratedByVisitor extends ASTVisitor {
 	}
 	
 	@Override public boolean visit(QualifiedNameReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		setGeneratedBy(node, source);	
+		applyOffsetQualifiedNameReference(node);
 		return super.visit(node, scope);
 	}
 	

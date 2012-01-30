@@ -19,7 +19,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package lombok.eclipse.agent;
 
 import java.io.BufferedOutputStream;
@@ -91,17 +90,23 @@ public class PatchFixes {
 		return list;
 	}
 	
-	/* Very practical implementation, but works for getter and setter even with type parameters */
-	public static java.lang.String getRealMethodDeclarationSource(java.lang.String original, org.eclipse.jdt.core.dom.MethodDeclaration declaration) {
+	public static java.lang.String getRealMethodDeclarationSource(java.lang.String original, Object processor, org.eclipse.jdt.core.dom.MethodDeclaration declaration) throws Exception {
 		if (!isGenerated(declaration)) return original;
 		
+		List<org.eclipse.jdt.core.dom.Annotation> annotations = new ArrayList<org.eclipse.jdt.core.dom.Annotation>();
+		for (Object modifier : declaration.modifiers()) {
+			if (modifier instanceof org.eclipse.jdt.core.dom.Annotation) {
+				org.eclipse.jdt.core.dom.Annotation annotation = (org.eclipse.jdt.core.dom.Annotation)modifier;
+				String qualifiedAnnotationName = annotation.resolveTypeBinding().getQualifiedName();
+				if (!"java.lang.Override".equals(qualifiedAnnotationName) && !"java.lang.SuppressWarnings".equals(qualifiedAnnotationName)) annotations.add(annotation);
+			}
+		}
+		
 		StringBuilder signature = new StringBuilder();
+		addAnnotations(annotations, signature);
 		
-		// We should get these from the refactor action
-		boolean needsPublic = true, needsAbstract = true;
-		
-		if (needsPublic) signature.append("public ");
-		if (needsAbstract) signature.append("abstract ");
+		if ((Boolean)processor.getClass().getDeclaredField("fPublic").get(processor)) signature.append("public ");
+		if ((Boolean)processor.getClass().getDeclaredField("fAbstract").get(processor)) signature.append("abstract ");
 		
 		signature
 			.append(declaration.getReturnType2().toString())
@@ -112,9 +117,7 @@ public class PatchFixes {
 		for (Object parameter : declaration.parameters()) {
 			if (!first) signature.append(", ");
 			first = false;
-			// The annotations are still missing
-			// Note: what happens to imports for the annotations? 
-			// I assume they have been taken care of by the default extraction system
+			// We should also add the annotations of the parameters
 			signature.append(parameter);
 		}
 		
@@ -122,6 +125,47 @@ public class PatchFixes {
 		return signature.toString();
 	}
 	
+	// part of getRealMethodDeclarationSource(...)
+	public static void addAnnotations(List<org.eclipse.jdt.core.dom.Annotation> annotations, StringBuilder signature) {
+		/*
+		 * We SHOULD be able to handle the following cases:
+		 * @Override
+		 * @Override()
+		 * @SuppressWarnings("all")
+		 * @SuppressWarnings({"all", "unused"})
+		 * @SuppressWarnings(value = "all")
+		 * @SuppressWarnings(value = {"all", "unused"})
+		 * @EqualsAndHashCode(callSuper=true, of="id")
+		 * 
+		 * Currently, we only seem to correctly support:
+		 * @Override
+		 * @Override() N.B. We lose the parentheses here, since there are no values. No big deal.
+		 * @SuppressWarnings("all")
+		 */
+		for (org.eclipse.jdt.core.dom.Annotation annotation : annotations) {
+			List<String> values = new ArrayList<String>();
+			if (annotation.isSingleMemberAnnotation()) {
+				org.eclipse.jdt.core.dom.SingleMemberAnnotation smAnn = (org.eclipse.jdt.core.dom.SingleMemberAnnotation) annotation;
+				values.add(smAnn.getValue().toString());
+			} else if (annotation.isNormalAnnotation()) {
+				org.eclipse.jdt.core.dom.NormalAnnotation normalAnn = (org.eclipse.jdt.core.dom.NormalAnnotation) annotation;
+				for (Object value : normalAnn.values()) values.add(value.toString());
+			}
+			
+			signature.append("@").append(annotation.resolveTypeBinding().getQualifiedName());
+			if (!values.isEmpty()) {
+				signature.append("(");
+				boolean first = true;
+				for (String string : values) {
+					if (!first) signature.append(", ");
+					first = false;
+					signature.append('"').append(string).append('"');
+				}
+				signature.append(")");
+			}
+			signature.append(" ");
+		}
+	}
 	
 	public static org.eclipse.jdt.core.dom.MethodDeclaration getRealMethodDeclarationNode(org.eclipse.jdt.core.IMethod sourceMethod, org.eclipse.jdt.core.dom.CompilationUnit cuUnit) throws JavaModelException {
 		MethodDeclaration methodDeclarationNode = ASTNodeSearchUtil.getMethodDeclarationNode(sourceMethod, cuUnit);
@@ -154,7 +198,8 @@ public class PatchFixes {
 		return methodDeclarationNode;
 	}
 	
-	private static org.eclipse.jdt.core.dom.AbstractTypeDeclaration findTypeDeclaration(IType searchType, List<?> nodes) {
+	// part of getRealMethodDeclarationNode
+	public static org.eclipse.jdt.core.dom.AbstractTypeDeclaration findTypeDeclaration(IType searchType, List<?> nodes) {
 		for (Object object : nodes) {
 			if (object instanceof org.eclipse.jdt.core.dom.AbstractTypeDeclaration) {
 				org.eclipse.jdt.core.dom.AbstractTypeDeclaration typeDeclaration = (org.eclipse.jdt.core.dom.AbstractTypeDeclaration) object;
@@ -188,7 +233,8 @@ public class PatchFixes {
 	}
 	
 	public static int fixRetrieveRightBraceOrSemiColonPosition(int original, int end) {
-		return original == -1 ? end : original;
+//		return original;
+		 return original == -1 ? end : original;  // Need to fix: see issue 325.
 	}
 	
 	public static final int ALREADY_PROCESSED_FLAG = 0x800000;  //Bit 24
@@ -212,7 +258,7 @@ public class PatchFixes {
 		}
 	}
 	
-	public static void setIsGeneratedFlagForSimpleName(SimpleName name, Object internalNode) throws Exception {
+	public static void setIsGeneratedFlagForName(org.eclipse.jdt.core.dom.Name name, Object internalNode) throws Exception {
 		if (internalNode instanceof org.eclipse.jdt.internal.compiler.ast.ASTNode) {
 			if (internalNode.getClass().getField("$generatedBy").get(internalNode) != null) {
 				name.getClass().getField("$isGenerated").set(name, true);
@@ -258,9 +304,9 @@ public class PatchFixes {
 	public static IMethod[] removeGeneratedMethods(IMethod[] methods) throws Exception {
 		List<IMethod> result = new ArrayList<IMethod>();
 		for (IMethod m : methods) {
-			if (m.getNameRange().getLength() > 0) result.add(m);
+			if (m.getNameRange().getLength() > 0 && !m.getNameRange().equals(m.getSourceRange())) result.add(m);
 		}
-		return result.size() == methods.length ? methods : result.toArray(new IMethod[0]);
+		return result.size() == methods.length ? methods : result.toArray(new IMethod[result.size()]);
 	}
 	
 	public static SimpleName[] removeGeneratedSimpleNames(SimpleName[] in) throws Exception {
