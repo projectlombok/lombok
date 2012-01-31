@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -142,12 +142,13 @@ public class Main {
 			out.println("------------------------------");
 		}
 		out.println("projectlombok.org v" + Version.getVersion());
-		out.println("Copyright (C) 2009-2010 The Project Lombok Authors.");
+		out.println("Copyright (C) 2009-2012 The Project Lombok Authors.");
 		out.println("Run 'lombok license' to see the lombok license agreement.");
 		out.println();
 		out.println("Run lombok without any parameters to start the graphical installer.");
 		out.println("Other available commands:");
 		for (LombokApp app : apps) {
+			if (app.isDebugTool()) continue;
 			String[] desc = app.getAppDescription().split("\n");
 			for (int i = 0; i < desc.length; i++) {
 				out.printf("  %15s    %s\n", i == 0 ? app.getAppName() : "", desc[i]);
