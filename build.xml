@@ -495,7 +495,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			host="projectlombok.org"
 			username="lombokup"
 			keyfile="escudo-upload.key" passphrase=""
-			trust="true" command="./deployLombokUtil '${lombok.version}'" />
+			trust="true" command="./deployLombokUtils '${lombok.version}'" />
 	</target>
 	
 	<target name="publish-all" depends="clean, version, website-publish, maven-publish, publish"
