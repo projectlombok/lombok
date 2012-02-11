@@ -49,7 +49,6 @@ public class PatchValEclipsePortal {
 		}
 	}
 	
-	
 	public static void copyInitializationOfLocalDeclaration(Object parser) {
 		try {
 			Reflection.copyInitializationOfLocalDeclaration.invoke(null, parser);
