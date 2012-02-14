@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Project Lombok Authors.
+ * Copyright (C) 2010-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,7 +60,7 @@ public class HandleLog {
 					(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation)) != 0;
 			
 			if (typeDecl == null || notAClass) {
-				annotationNode.addError("@Log is legal only on classes and enums.");
+				annotationNode.addError(framework.getAnnotationAsString() + " is legal only on classes and enums.");
 				return;
 			}
 			
@@ -77,7 +77,6 @@ public class HandleLog {
 			owner.rebuild();
 			break;
 		default:
-			annotationNode.addError("@Log is legal only on types.");
 			break;
 		}
 	}
@@ -190,10 +189,10 @@ public class HandleLog {
 	
 	enum LoggingFramework {
 		// private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(TargetType.class);
-		COMMONS("org.apache.commons.logging.Log", "org.apache.commons.logging.LogFactory", "getLog"),
+		COMMONS("org.apache.commons.logging.Log", "org.apache.commons.logging.LogFactory", "getLog", "@CommonsLog"),
 		
 		// private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(TargetType.class.getName());
-		JUL("java.util.logging.Logger", "java.util.logging.Logger", "getLogger") {
+		JUL("java.util.logging.Logger", "java.util.logging.Logger", "getLogger", "@Log") {
 			@Override public Expression createFactoryParameter(ClassLiteralAccess type, Annotation source) {
 				int pS = source.sourceStart, pE = source.sourceEnd;
 				long p = (long)pS << 32 | pE;
@@ -213,21 +212,27 @@ public class HandleLog {
 		},
 		
 		// private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(TargetType.class);
-		LOG4J("org.apache.log4j.Logger", "org.apache.log4j.Logger", "getLogger"),
+		LOG4J("org.apache.log4j.Logger", "org.apache.log4j.Logger", "getLogger", "@Log4j"),
 
 		// private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TargetType.class);
-		SLF4J("org.slf4j.Logger", "org.slf4j.LoggerFactory", "getLogger"),
+		SLF4J("org.slf4j.Logger", "org.slf4j.LoggerFactory", "getLogger", "@Slf4j"),
 		
 		;
 		
 		private final String loggerTypeName;
 		private final String loggerFactoryTypeName;
 		private final String loggerFactoryMethodName;
+		private final String annotationAsString;
 
-		LoggingFramework(String loggerTypeName, String loggerFactoryTypeName, String loggerFactoryMethodName) {
+		LoggingFramework(String loggerTypeName, String loggerFactoryTypeName, String loggerFactoryMethodName, String annotationAsString) {
 			this.loggerTypeName = loggerTypeName;
 			this.loggerFactoryTypeName = loggerFactoryTypeName;
 			this.loggerFactoryMethodName = loggerFactoryMethodName;
+			this.annotationAsString = annotationAsString;
+		}
+		
+		final String getAnnotationAsString() {
+			return annotationAsString;
 		}
 		
 		final String getLoggerTypeName() {
