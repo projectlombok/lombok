@@ -37,7 +37,7 @@ import org.junit.runner.notification.RunNotifier;
 
 public class DirectoryRunner extends Runner {
 	public enum Compiler {
-		DELOMBOK, JAVAC, ECJ, ECLIPSE;
+		DELOMBOK, JAVAC, ECJ;
 	}
 	
 	public interface TestParams {
@@ -119,8 +119,6 @@ public class DirectoryRunner extends Runner {
 		switch (params.getCompiler()) {
 		case DELOMBOK:
 			return new RunTestsViaDelombok().compareFile(params, file);
-		case ECLIPSE:
-			return new RunTestsViaEclipse().compareFile(params, file);
 		case ECJ:
 			return new RunTestsViaEcj().compareFile(params, file);
 		default:

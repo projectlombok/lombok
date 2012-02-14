@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,10 @@ import java.io.File;
 import lombok.DirectoryRunner;
 
 import org.junit.runner.RunWith;
+
+// You need to add the following vm-parameter to run the test:
+// -javaagent:${project_loc:lombok}/dist/lombok.jar
+// When running inside eclipse's junit tester, you don't actually need to run 'ant dist' after updating code, though.
 
 @RunWith(DirectoryRunner.class)
 public class TestWithEcj implements DirectoryRunner.TestParams {

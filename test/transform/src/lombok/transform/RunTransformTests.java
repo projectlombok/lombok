@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 The Project Lombok Authors.
+ * Copyright (C) 2011-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,6 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({TestLombokFilesIdempotent.class, TestSourceFiles.class, TestWithDelombok.class, TestWithEcj.class, TestWithEclipse.class})
+@SuiteClasses({TestLombokFilesIdempotent.class, TestSourceFiles.class, TestWithDelombok.class, TestWithEcj.class})
 public class RunTransformTests {
 }
