@@ -30,6 +30,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -562,10 +563,38 @@ public class EclipseHandlerUtil {
 			}
 		}
 		
+		// Keep moving up via 'binding.enclosingType()' and gather generics from each binding. We stop after a local type, or a static type, or a top-level type.
+		// Finally, add however many nullTypeArgument[] arrays as that are missing, inverse the list, toArray it, and use that as PTR's typeArgument argument.
+		
+		List<TypeReference[]> params = new ArrayList<TypeReference[]>();
+		/* Calculate generics */ {
+			TypeBinding b = binding;
+			while (true) {
+				boolean isFinalStop = b.isLocalType() || !b.isMemberType() || b.enclosingType() == null;
+				
+				TypeReference[] tyParams = null;
+				if (b instanceof ParameterizedTypeBinding) {
+					ParameterizedTypeBinding paramized = (ParameterizedTypeBinding) b;
+					if (paramized.arguments != null) {
+						tyParams = new TypeReference[paramized.arguments.length];
+						for (int i = 0; i < tyParams.length; i++) {
+							tyParams[i] = makeType(paramized.arguments[i], pos, true);
+						}
+					}
+				}
+				
+				params.add(tyParams);
+				if (isFinalStop) break;
+				b = b.enclosingType();
+			}
+		}
+		
 		char[][] parts;
 		
-		if (binding.isLocalType() || binding.isTypeVariable()) {
+		if (binding.isTypeVariable()) {
 			parts = new char[][] { binding.shortReadableName() };
+		} else if (binding.isLocalType()) {
+			parts = new char[][] { binding.sourceName() };
 		} else {
 			String[] pkg = new String(binding.qualifiedPackageName()).split("\\.");
 			String[] name = new String(binding.qualifiedSourceName()).split("\\.");
@@ -576,27 +605,25 @@ public class EclipseHandlerUtil {
 			for (; ptr < pkg.length + name.length; ptr++) parts[ptr] = name[ptr - pkg.length].toCharArray();
 		}
 		
-		TypeReference[] params = new TypeReference[0];
+		while (params.size() < parts.length) params.add(null);
+		Collections.reverse(params);
 		
-		if (binding instanceof ParameterizedTypeBinding) {
-			ParameterizedTypeBinding paramized = (ParameterizedTypeBinding) binding;
-			if (paramized.arguments != null) {
-				params = new TypeReference[paramized.arguments.length];
-				for (int i = 0; i < params.length; i++) {
-					params[i] = makeType(paramized.arguments[i], pos, true);
-				}
+		boolean isParamized = false;
+		
+		for (TypeReference[] tyParams : params) {
+			if (tyParams != null) {
+				isParamized = true;
+				break;
 			}
 		}
-		
-		if (params.length > 0) {
+		if (isParamized) {
 			if (parts.length > 1) {
-				TypeReference[][] typeArguments = new TypeReference[parts.length][];
-				typeArguments[typeArguments.length - 1] = params;
+				TypeReference[][] typeArguments = params.toArray(new TypeReference[0][]);
 				TypeReference result = new ParameterizedQualifiedTypeReference(parts, typeArguments, dims, poss(pos, parts.length));
 				setGeneratedBy(result, pos);
 				return result;
 			}
-			TypeReference result = new ParameterizedSingleTypeReference(parts[0], params, dims, pos(pos));
+			TypeReference result = new ParameterizedSingleTypeReference(parts[0], params.get(0), dims, pos(pos));
 			setGeneratedBy(result, pos);
 			return result;
 		}

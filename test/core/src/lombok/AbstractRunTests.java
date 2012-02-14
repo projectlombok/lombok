@@ -103,8 +103,7 @@ public abstract class AbstractRunTests {
 		}
 		try {
 			compareContent(name, expectedMessages, actualMessages);
-		}
-		catch (Throwable e) {
+		} catch (Throwable e) {
 			if (printErrors) {
 				System.out.println("***** " + name + " *****");
 				System.out.println(e.getMessage());

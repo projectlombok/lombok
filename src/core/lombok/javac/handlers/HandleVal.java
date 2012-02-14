@@ -82,7 +82,7 @@ public class HandleVal extends JavacASTAdapter {
 			local.mods.annotations = local.mods.annotations == null ? List.of(valAnnotation) : local.mods.annotations.append(valAnnotation);
 		}
 		
-		local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
+		local.vartype = JavacResolution.createJavaLangObject(localNode.getAst());
 		
 		Type type;
 		try {
@@ -107,24 +107,24 @@ public class HandleVal extends JavacASTAdapter {
 				
 				if (rhsOfEnhancedForLoop != null) {
 					Type componentType = JavacResolution.ifTypeIsIterableToComponent(type, localNode.getAst());
-					if (componentType == null) replacement = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
-					else replacement = JavacResolution.typeToJCTree(componentType, localNode.getTreeMaker(), localNode.getAst(), false);
+					if (componentType == null) replacement = JavacResolution.createJavaLangObject(localNode.getAst());
+					else replacement = JavacResolution.typeToJCTree(componentType, localNode.getAst(), false);
 				} else {
-					replacement = JavacResolution.typeToJCTree(type, localNode.getTreeMaker(), localNode.getAst(), false);
+					replacement = JavacResolution.typeToJCTree(type, localNode.getAst(), false);
 				}
 				
 				if (replacement != null) {
 					local.vartype = replacement;
 				} else {
-					local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
+					local.vartype = JavacResolution.createJavaLangObject(localNode.getAst());
 				}
 				localNode.getAst().setChanged();
 			} catch (JavacResolution.TypeNotConvertibleException e) {
 				localNode.addError("Cannot use 'val' here because initializer expression does not have a representable type: " + e.getMessage());
-				local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
+				local.vartype = JavacResolution.createJavaLangObject(localNode.getAst());
 			}
 		} catch (RuntimeException e) {
-			local.vartype = JavacResolution.createJavaLangObject(localNode.getTreeMaker(), localNode.getAst());
+			local.vartype = JavacResolution.createJavaLangObject(localNode.getAst());
 			throw e;
 		} finally {
 			recursiveSetGeneratedBy(local.vartype, source);

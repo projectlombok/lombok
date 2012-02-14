@@ -277,7 +277,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		}
 		
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, annotations);
-		JCExpression returnType = JavacResolution.typeToJCTree((Type) sig.type.getReturnType(), maker, annotation.getAst(), true);
+		JCExpression returnType = JavacResolution.typeToJCTree((Type) sig.type.getReturnType(), annotation.getAst(), true);
 		boolean useReturn = sig.type.getReturnType().getKind() != TypeKind.VOID;
 		ListBuffer<JCVariableDecl> params = sig.type.getParameterTypes().isEmpty() ? null : new ListBuffer<JCVariableDecl>();
 		ListBuffer<JCExpression> args = sig.type.getParameterTypes().isEmpty() ? null : new ListBuffer<JCExpression>();
@@ -293,7 +293,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		}
 		
 		for (TypeMirror ex : sig.type.getThrownTypes()) {
-			thrown.append(JavacResolution.typeToJCTree((Type) ex, maker, annotation.getAst(), true));
+			thrown.append(JavacResolution.typeToJCTree((Type) ex, annotation.getAst(), true));
 		}
 		
 		int idx = 0;
@@ -301,7 +301,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 			JCModifiers paramMods = maker.Modifiers(Flags.FINAL);
 			String[] paramNames = sig.getParameterNames();
 			Name name = annotation.toName(paramNames[idx++]);
-			params.append(maker.VarDef(paramMods, name, JavacResolution.typeToJCTree((Type) param, maker, annotation.getAst(), true), null));
+			params.append(maker.VarDef(paramMods, name, JavacResolution.typeToJCTree((Type) param, annotation.getAst(), true), null));
 			args.append(maker.Ident(name));
 		}
 		

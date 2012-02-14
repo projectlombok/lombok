@@ -362,18 +362,19 @@ public class JavacResolution {
 		return iterableParams.isEmpty() ? syms.objectType : types.upperBound(iterableParams.head);
 	}
 	
-	public static JCExpression typeToJCTree(Type type, TreeMaker maker, JavacAST ast, boolean allowVoid) throws TypeNotConvertibleException {
-		return typeToJCTree(type, maker, ast, false, allowVoid);
+	public static JCExpression typeToJCTree(Type type, JavacAST ast, boolean allowVoid) throws TypeNotConvertibleException {
+		return typeToJCTree(type, ast, false, allowVoid);
 	}
 	
-	public static JCExpression createJavaLangObject(TreeMaker maker, JavacAST ast) {
+	public static JCExpression createJavaLangObject(JavacAST ast) {
+		TreeMaker maker = ast.getTreeMaker();
 		JCExpression out = maker.Ident(ast.toName("java"));
 		out = maker.Select(out, ast.toName("lang"));
 		out = maker.Select(out, ast.toName("Object"));
 		return out;
 	}
 	
-	private static JCExpression typeToJCTree(Type type, TreeMaker maker, JavacAST ast, boolean allowCompound, boolean allowVoid) throws TypeNotConvertibleException {
+	private static JCExpression typeToJCTree(Type type, JavacAST ast, boolean allowCompound, boolean allowVoid) throws TypeNotConvertibleException {
 		int dims = 0;
 		Type type0 = type;
 		while (type0 instanceof ArrayType) {
@@ -381,20 +382,22 @@ public class JavacResolution {
 			type0 = ((ArrayType)type0).elemtype;
 		}
 		
-		JCExpression result = typeToJCTree0(type0, maker, ast, allowCompound, allowVoid);
+		JCExpression result = typeToJCTree0(type0, ast, allowCompound, allowVoid);
 		while (dims > 0) {
-			result = maker.TypeArray(result);
+			result = ast.getTreeMaker().TypeArray(result);
 			dims--;
 		}
 		return result;
 	}
 	
-	private static JCExpression typeToJCTree0(Type type, TreeMaker maker, JavacAST ast, boolean allowCompound, boolean allowVoid) throws TypeNotConvertibleException {
+	private static JCExpression typeToJCTree0(Type type, JavacAST ast, boolean allowCompound, boolean allowVoid) throws TypeNotConvertibleException {
 		// NB: There's such a thing as maker.Type(type), but this doesn't work very well; it screws up anonymous classes, captures, and adds an extra prefix dot for some reason too.
 		//  -- so we write our own take on that here.
 		
-		if (type.tag == Javac.getCtcInt(TypeTags.class, "BOT")) return createJavaLangObject(maker, ast);
-		if (type.tag == Javac.getCtcInt(TypeTags.class, "VOID")) return allowVoid ? primitiveToJCTree(type.getKind(), maker) : createJavaLangObject(maker, ast);
+		TreeMaker maker = ast.getTreeMaker();
+		
+		if (type.tag == Javac.getCtcInt(TypeTags.class, "BOT")) return createJavaLangObject(ast);
+		if (type.tag == Javac.getCtcInt(TypeTags.class, "VOID")) return allowVoid ? primitiveToJCTree(type.getKind(), maker) : createJavaLangObject(ast);
 		if (type.isPrimitive()) return primitiveToJCTree(type.getKind(), maker);
 		if (type.isErroneous()) throw new TypeNotConvertibleException("Type cannot be resolved");
 		
@@ -411,9 +414,9 @@ public class JavacResolution {
 				List<Type> ifaces = ((ClassType)type).interfaces_field;
 				Type supertype = ((ClassType)type).supertype_field;
 				if (ifaces != null && ifaces.length() == 1) {
-					return typeToJCTree(ifaces.get(0), maker, ast, allowCompound, allowVoid);
+					return typeToJCTree(ifaces.get(0), ast, allowCompound, allowVoid);
 				}
-				if (supertype != null) return typeToJCTree(supertype, maker, ast, allowCompound, allowVoid);
+				if (supertype != null) return typeToJCTree(supertype, ast, allowCompound, allowVoid);
 			}
 			throw new TypeNotConvertibleException("Anonymous inner class");
 		}
@@ -432,34 +435,52 @@ public class JavacResolution {
 					if (upper == null || upper.toString().equals("java.lang.Object")) {
 						return maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
 					}
-					return maker.Wildcard(maker.TypeBoundKind(BoundKind.EXTENDS), typeToJCTree(upper, maker, ast, false, false));
+					return maker.Wildcard(maker.TypeBoundKind(BoundKind.EXTENDS), typeToJCTree(upper, ast, false, false));
 				} else {
-					return maker.Wildcard(maker.TypeBoundKind(BoundKind.SUPER), typeToJCTree(lower, maker, ast, false, false));
+					return maker.Wildcard(maker.TypeBoundKind(BoundKind.SUPER), typeToJCTree(lower, ast, false, false));
 				}
 			}
 			if (upper != null) {
-				return typeToJCTree(upper, maker, ast, allowCompound, allowVoid);
+				return typeToJCTree(upper, ast, allowCompound, allowVoid);
 			}
 			
-			return createJavaLangObject(maker, ast);
+			return createJavaLangObject(ast);
 		}
 		
-		String qName = symbol.getQualifiedName().toString();
+		String qName;
+		if (symbol.isLocal()) {
+			qName = symbol.getSimpleName().toString();
+		} else if (symbol.type != null && symbol.type.getEnclosingType() != null && symbol.type.getEnclosingType().tag == TypeTags.CLASS) {
+			replacement = typeToJCTree0(type.getEnclosingType(), ast, false, false);
+			qName = symbol.getSimpleName().toString();
+		} else {
+			qName = symbol.getQualifiedName().toString();
+		}
+		
 		if (qName.isEmpty()) throw new TypeNotConvertibleException("unknown type");
 		if (qName.startsWith("<")) throw new TypeNotConvertibleException(qName);
-		String[] baseNames = symbol.getQualifiedName().toString().split("\\.");
-		replacement = maker.Ident(ast.toName(baseNames[0]));
-		for (int i = 1; i < baseNames.length; i++) {
+		String[] baseNames = qName.split("\\.");
+		int i = 0;
+		
+		if (replacement == null) {
+			replacement = maker.Ident(ast.toName(baseNames[0]));
+			i = 1;
+		}
+		for (; i < baseNames.length; i++) {
 			replacement = maker.Select(replacement, ast.toName(baseNames[i]));
 		}
 		
+		return genericsToJCTreeNodes(generics, ast, replacement);
+	}
+	
+	private static JCExpression genericsToJCTreeNodes(List<Type> generics, JavacAST ast, JCExpression rawTypeNode) throws TypeNotConvertibleException {
 		if (generics != null && !generics.isEmpty()) {
 			ListBuffer<JCExpression> args = ListBuffer.lb();
-			for (Type t : generics) args.append(typeToJCTree(t, maker, ast, true, false));
-			replacement = maker.TypeApply(replacement, args.toList());
+			for (Type t : generics) args.append(typeToJCTree(t, ast, true, false));
+			return ast.getTreeMaker().TypeApply(rawTypeNode, args.toList());
 		}
 		
-		return replacement;
+		return rawTypeNode;
 	}
 	
 	private static JCExpression primitiveToJCTree(TypeKind kind, TreeMaker maker) throws TypeNotConvertibleException {
