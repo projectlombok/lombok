@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -305,7 +305,8 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 			synchronized (this.fieldName) {
 				value = this.fieldName.get();
 				if (value == null) { 
-					value = new java.util.concurrent.atomic.AtomicReference<ValueType>(new ValueType());
+					final ValueType actualValue = new ValueType();
+					value = new java.util.concurrent.atomic.AtomicReference<ValueType>(actualValue);
 					this.fieldName.set(value);
 				}
 			}
@@ -316,6 +317,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		ListBuffer<JCStatement> statements = ListBuffer.lb();
 		
 		JCVariableDecl field = (JCVariableDecl) fieldNode.get();
+		JCExpression copyOfRawFieldType = copyType(maker, field);
 		field.type = null;
 		if (field.vartype instanceof JCPrimitiveTypeTree) {
 			String boxed = TYPE_MAP.get(((JCPrimitiveTypeTree)field.vartype).typetag);
@@ -325,6 +327,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		}
 		
 		Name valueName = fieldNode.toName("value");
+		Name actualValueName = fieldNode.toName("actualValue");
 		
 		/* java.util.concurrent.atomic.AtomicReference<ValueType> value = this.fieldName.get();*/ {
 			JCTypeApply valueVarType = maker.TypeApply(chainDotsString(fieldNode, AR), List.of(copyType(maker, field)));
@@ -342,9 +345,12 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 				
 				/* if (value == null) { */ {
 					ListBuffer<JCStatement> innerIfStatements = ListBuffer.lb();
-					/* value = new java.util.concurrent.atomic.AtomicReference<ValueType>(new ValueType());*/ {
+					/* ValueType actualValue = new ValueType(); */ {
+						innerIfStatements.append(maker.VarDef(maker.Modifiers(Flags.FINAL), actualValueName, copyOfRawFieldType, field.init));
+					}
+					/* value = new java.util.concurrent.atomic.AtomicReference<ValueType>(actualValue);*/ {
 						JCTypeApply valueVarType = maker.TypeApply(chainDotsString(fieldNode, AR), List.of(copyType(maker, field)));
-						JCNewClass newInstance = maker.NewClass(null, NIL_EXPRESSION, valueVarType, List.<JCExpression>of(field.init), null);
+						JCNewClass newInstance = maker.NewClass(null, NIL_EXPRESSION, valueVarType, List.<JCExpression>of(maker.Ident(actualValueName)), null);
 						
 						JCStatement statement = maker.Exec(maker.Assign(maker.Ident(valueName), newInstance));
 						innerIfStatements.append(statement);

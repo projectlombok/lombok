@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -287,6 +287,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	}
 	
 	private static char[] valueName = "value".toCharArray();
+	private static char[] actualValueName = "actualValue".toCharArray();
 	
 	private Statement[] createLazyGetterBody(ASTNode source, EclipseNode fieldNode) {
 		/*
@@ -294,8 +295,9 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		if (value == null) {
 			synchronized (this.fieldName) {
 				value = this.fieldName.get();
-				if (value == null) { 
-					value = new java.util.concurrent.atomic.AtomicReference<ValueType>(new ValueType());
+				if (value == null) {
+					final ValueType actualValue = new ValueType();
+					value = new java.util.concurrent.atomic.AtomicReference<ValueType>(actualValue);
 					this.fieldName.set(value);
 				}
 			}
@@ -343,7 +345,8 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 			synchronized (this.fieldName) {
 				value = this.fieldName.get();
 				if (value == null) { 
-					value = new java.util.concurrent.atomic.AtomicReference<ValueType>(new ValueType());
+					final ValueType actualValue = new ValueType();
+					value = new java.util.concurrent.atomic.AtomicReference<ValueType>(actualValue);
 					this.fieldName.set(value);
 				}
 			}
@@ -382,8 +385,18 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 				setGeneratedBy(innerCond, source);
 				Block innerThen = new Block(0);
 				setGeneratedBy(innerThen, source);
-				innerThen.statements = new Statement[2];
-				/*value = new java.util.concurrent.atomic.AtomicReference<ValueType>(new ValueType()); */ {
+				innerThen.statements = new Statement[3];
+				/* final ValueType actualValue = new ValueType(); */ {
+					LocalDeclaration actualValueDecl = new LocalDeclaration(actualValueName, pS, pE);
+					setGeneratedBy(actualValueDecl, source);
+					actualValueDecl.type = copyType(field.type, source);
+					actualValueDecl.type.sourceStart = pS; actualValueDecl.type.sourceEnd = actualValueDecl.type.statementEnd = pE;
+					setGeneratedBy(actualValueDecl.type, source);
+					actualValueDecl.initialization = field.initialization;
+					actualValueDecl.modifiers = ClassFileConstants.AccFinal;
+					innerThen.statements[0] = actualValueDecl;
+				}
+				/* value = new java.util.concurrent.atomic.AtomicReference<ValueType>(actualValue); */ {
 					AllocationExpression create = new AllocationExpression();
 					setGeneratedBy(create, source);
 					create.sourceStart = pS; create.sourceEnd = create.statementEnd = pE;
@@ -392,16 +405,17 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 					create.type = new ParameterizedQualifiedTypeReference(AR, typeParams, 0, poss(source, 5));
 					create.type.sourceStart = pS; create.type.sourceEnd = create.type.statementEnd = pE;
 					setGeneratedBy(create.type, source);
-					create.arguments = new Expression[] {field.initialization};
+					create.arguments = new Expression[] {new SingleNameReference(actualValueName, p)};
+					setGeneratedBy(create.arguments[0], source);
 					Assignment innerAssign = new Assignment(new SingleNameReference(valueName, p), create, pE);
 					innerAssign.sourceStart = pS; innerAssign.statementEnd = innerAssign.sourceEnd = pE;
 
 					setGeneratedBy(innerAssign, source);
 					setGeneratedBy(innerAssign.lhs, source);
-					innerThen.statements[0] = innerAssign;
+					innerThen.statements[1] = innerAssign;
 				}
 				
-				/*this.fieldName.set(value);*/ {
+				/* this.fieldName.set(value); */ {
 					MessageSend setter = new MessageSend();
 					setGeneratedBy(setter, source);
 					setter.sourceStart = pS; setter.sourceEnd = setter.statementEnd =  pE;
@@ -410,7 +424,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 					setter.arguments = new Expression[] {
 							new SingleNameReference(valueName, p)};
 					setGeneratedBy(setter.arguments[0], source);
-					innerThen.statements[1] = setter;
+					innerThen.statements[2] = setter;
 				}
 				
 				IfStatement innerIf = new IfStatement(innerCond, innerThen, pS, pE);
