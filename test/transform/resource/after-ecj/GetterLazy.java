@@ -14,7 +14,8 @@ class GetterLazy {
               value = this.fieldName.get();
               if ((value == null))
                   {
-                    value = new java.util.concurrent.atomic.AtomicReference<ValueType>(new ValueType());
+                    final ValueType actualValue = new ValueType();
+                    value = new java.util.concurrent.atomic.AtomicReference<ValueType>(actualValue);
                     this.fieldName.set(value);
                   }
             }

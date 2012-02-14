@@ -43,7 +43,8 @@ class GetterLazyEahcToString {
 			synchronized (this.value) {
 				value = this.value.get();
 				if (value == null) {
-					value = new java.util.concurrent.atomic.AtomicReference<String>("");
+					final String actualValue = "";
+					value = new java.util.concurrent.atomic.AtomicReference<String>(actualValue);
 					this.value.set(value);
 				}
 			}

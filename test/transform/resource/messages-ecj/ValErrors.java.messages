@@ -1,0 +1,2 @@
+5 error d cannot be resolved to a variable
+9 error 'val' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })

@@ -35,7 +35,7 @@
   }
 }
 @lombok.NoArgsConstructor class NoArgsConstructor1 {
-  final int x;
+  int x;
   String name;
   public @java.lang.SuppressWarnings("all") NoArgsConstructor1() {
     super();

@@ -1,8 +1,8 @@
 public class ValComplex {
-	private ValSimple field = new ValSimple();
+	private String field = "";
 	private static final int CONSTANT = 20;
-	public void testReferencingOtherFiles() {
-		final java.lang.String shouldBeString = field.method();
+	public void testComplex() {
+		final char[] shouldBeCharArray = field.toCharArray();
 		final int shouldBeInt = CONSTANT;
 		final java.lang.Object lock = new Object();
 		synchronized (lock) {
@@ -10,11 +10,11 @@ public class ValComplex {
 			final int inner = 10;
 			switch (field) {
 			case 5: 
-				final java.lang.String shouldBeString2 = shouldBeString;
+				final char[] shouldBeCharArray2 = shouldBeCharArray;
 				final int innerInner = inner;
 			
 			}
 		}
-		final ValSimple shouldBeValSimple = field; //Unshadowing
+		final java.lang.String shouldBeString = field; //Unshadowing
 	}
 }

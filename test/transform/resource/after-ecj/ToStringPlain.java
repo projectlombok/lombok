@@ -1,6 +1,6 @@
 import lombok.ToString;
 @lombok.ToString class ToString1 {
-  final int x;
+  int x;
   String name;
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
     return (((("ToString1(x=" + this.x) + ", name=") + this.name) + ")");
@@ -10,7 +10,7 @@ import lombok.ToString;
   }
 }
 @ToString class ToString2 {
-  final int x;
+  int x;
   String name;
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
     return (((("ToString2(x=" + this.x) + ", name=") + this.name) + ")");

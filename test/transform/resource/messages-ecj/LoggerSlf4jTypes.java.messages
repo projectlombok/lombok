@@ -1,2 +1,2 @@
-1 error @Log is legal only on classes and enums.
-4 error @Log is legal only on classes and enums.
+1 error @Slf4j is legal only on classes and enums.
+4 error @Slf4j is legal only on classes and enums.

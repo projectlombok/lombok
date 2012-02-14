@@ -144,13 +144,17 @@ final class Data3 {
 	}
 }
 final class Data4 extends java.util.Timer {
-	final int x;
+	int x;
 	Data4() {
 		super();
 	}
 	@java.lang.SuppressWarnings("all")
 	public int getX() {
 		return this.x;
+	}
+	@java.lang.SuppressWarnings("all")
+	public void setX(final int x) {
+		this.x = x;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")

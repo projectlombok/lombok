@@ -166,7 +166,7 @@ class Getter16 {
     super();
   }
   static String hasFoo() {
-    return false;
+    return "";
   }
 }
 class Getter17 {
@@ -178,7 +178,7 @@ class Getter17 {
     super();
   }
   static String isFoo() {
-    return false;
+    return "";
   }
 }
 class Getter18 {
@@ -187,6 +187,6 @@ class Getter18 {
     super();
   }
   static String getFoo() {
-    return false;
+    return "";
   }
 }

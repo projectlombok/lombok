@@ -17,7 +17,8 @@ class GetterLazyNative {
               value = this.booleanField.get();
               if ((value == null))
                   {
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>(true);
+                    final boolean actualValue = true;
+                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>(actualValue);
                     this.booleanField.set(value);
                   }
             }
@@ -33,7 +34,8 @@ class GetterLazyNative {
               value = this.byteField.get();
               if ((value == null))
                   {
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Byte>(1);
+                    final byte actualValue = 1;
+                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Byte>(actualValue);
                     this.byteField.set(value);
                   }
             }
@@ -49,7 +51,8 @@ class GetterLazyNative {
               value = this.shortField.get();
               if ((value == null))
                   {
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Short>(1);
+                    final short actualValue = 1;
+                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Short>(actualValue);
                     this.shortField.set(value);
                   }
             }
@@ -65,7 +68,8 @@ class GetterLazyNative {
               value = this.intField.get();
               if ((value == null))
                   {
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Integer>(1);
+                    final int actualValue = 1;
+                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Integer>(actualValue);
                     this.intField.set(value);
                   }
             }
@@ -81,7 +85,8 @@ class GetterLazyNative {
               value = this.longField.get();
               if ((value == null))
                   {
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Long>(1);
+                    final long actualValue = 1;
+                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Long>(actualValue);
                     this.longField.set(value);
                   }
             }
@@ -97,7 +102,8 @@ class GetterLazyNative {
               value = this.floatField.get();
               if ((value == null))
                   {
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Float>(1.0f);
+                    final float actualValue = 1.0f;
+                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Float>(actualValue);
                     this.floatField.set(value);
                   }
             }
@@ -113,7 +119,8 @@ class GetterLazyNative {
               value = this.doubleField.get();
               if ((value == null))
                   {
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Double>(1.0);
+                    final double actualValue = 1.0;
+                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Double>(actualValue);
                     this.doubleField.set(value);
                   }
             }
@@ -129,7 +136,8 @@ class GetterLazyNative {
               value = this.charField.get();
               if ((value == null))
                   {
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Character>('1');
+                    final char actualValue = '1';
+                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Character>(actualValue);
                     this.charField.set(value);
                   }
             }
@@ -145,7 +153,8 @@ class GetterLazyNative {
               value = this.intArrayField.get();
               if ((value == null))
                   {
-                    value = new java.util.concurrent.atomic.AtomicReference<int[]>(new int[]{1});
+                    final int[] actualValue = new int[]{1};
+                    value = new java.util.concurrent.atomic.AtomicReference<int[]>(actualValue);
                     this.intArrayField.set(value);
                   }
             }

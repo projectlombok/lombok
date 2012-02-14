@@ -39,7 +39,7 @@ class AllArgsConstructor1 {
 	}
 }
 class NoArgsConstructor1 {
-	final int x;
+	int x;
 	String name;
 	@java.lang.SuppressWarnings("all")
 	public NoArgsConstructor1() {

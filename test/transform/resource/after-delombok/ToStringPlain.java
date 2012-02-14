@@ -1,5 +1,5 @@
 class ToString1 {
-	final int x;
+	int x;
 	String name;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
@@ -8,7 +8,7 @@ class ToString1 {
 	}
 }
 class ToString2 {
-	final int x;
+	int x;
 	String name;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")

@@ -1,8 +1,8 @@
 class ToStringOuter {
-	final int x;
+	int x;
 	String name;
 	class ToStringInner {
-		final int y;
+		int y;
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
@@ -10,7 +10,7 @@ class ToStringOuter {
 		}
 	}
 	static class ToStringStaticInner {
-		final int y;
+		int y;
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
@@ -19,7 +19,7 @@ class ToStringOuter {
 	}
 	class ToStringMiddle {
 		class ToStringMoreInner {
-			final String name;
+			String name;
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {

@@ -15,6 +15,6 @@
 	String name;
 }
 @lombok.NoArgsConstructor class NoArgsConstructor1 {
-	final int x;
+	int x;
 	String name;
 }

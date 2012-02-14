@@ -127,9 +127,12 @@ final @Data class Data3 {
   }
 }
 final @Data @lombok.EqualsAndHashCode(callSuper = true) class Data4 extends java.util.Timer {
-  final int x;
+  int x;
   public @java.lang.SuppressWarnings("all") int getX() {
     return this.x;
+  }
+  public @java.lang.SuppressWarnings("all") void setX(final int x) {
+    this.x = x;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
     return (("Data4(x=" + this.getX()) + ")");

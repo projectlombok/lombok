@@ -91,18 +91,18 @@ class Getter15 {
 class Getter16 {
 	@lombok.Getter String foo;
 	static String hasFoo() {
-		return false;
+		return "";
 	}
 }
 class Getter17 {
 	@lombok.Getter String foo;
 	static String isFoo() {
-		return false;
+		return "";
 	}
 }
 class Getter18 {
 	@lombok.Getter String foo;
 	static String getFoo() {
-		return false;
+		return "";
 	}
 }

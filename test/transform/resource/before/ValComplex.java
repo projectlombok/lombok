@@ -1,11 +1,11 @@
 import lombok.val;
 
 public class ValComplex {
-	private ValSimple field = new ValSimple();
+	private String field = "";
 	private static final int CONSTANT = 20;
 	
-	public void testReferencingOtherFiles() {
-		val shouldBeString = field.method();
+	public void testComplex() {
+		val shouldBeCharArray = field.toCharArray();
 		val shouldBeInt = CONSTANT;
 		val lock = new Object();
 		synchronized (lock) {
@@ -13,10 +13,10 @@ public class ValComplex {
 			val inner = 10;
 			switch (field) {
 				case 5:
-					val shouldBeString2 = shouldBeString;
+					val shouldBeCharArray2 = shouldBeCharArray;
 					val innerInner = inner;
 			}
 		}
-		val shouldBeValSimple = field; //Unshadowing
+		val shouldBeString = field; //Unshadowing
 	}
 }

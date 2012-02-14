@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Project Lombok Authors.
+ * Copyright (C) 2010-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,56 +23,103 @@ package lombok;
 
 import java.io.File;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
-
-import lombok.eclipse.TransformEclipseAST;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.jdt.core.compiler.CategorizedProblem;
 import org.eclipse.jdt.internal.compiler.CompilationResult;
+import org.eclipse.jdt.internal.compiler.Compiler;
+import org.eclipse.jdt.internal.compiler.ICompilerRequestor;
 import org.eclipse.jdt.internal.compiler.IErrorHandlingPolicy;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.batch.CompilationUnit;
+import org.eclipse.jdt.internal.compiler.batch.FileSystem;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
-import org.eclipse.jdt.internal.compiler.parser.Parser;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
-import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
 
 public class RunTestsViaEcj extends AbstractRunTests {
-	protected static CompilerOptions ecjCompilerOptions() {
+	protected CompilerOptions ecjCompilerOptions() {
 		CompilerOptions options = new CompilerOptions();
 		options.complianceLevel = ClassFileConstants.JDK1_6;
 		options.sourceLevel = ClassFileConstants.JDK1_6;
 		options.targetJDK = ClassFileConstants.JDK1_6;
 		options.parseLiteralExpressionsAsConstants = true;
+		options.inlineJsrBytecode = true;
+		options.reportUnusedDeclaredThrownExceptionExemptExceptionAndThrowable = false;
+		options.reportUnusedDeclaredThrownExceptionIncludeDocCommentReference = false;
+		options.reportUnusedDeclaredThrownExceptionWhenOverriding = false;
+		options.reportUnusedParameterIncludeDocCommentReference = false;
+		options.reportUnusedParameterWhenImplementingAbstract = false;
+		options.reportUnusedParameterWhenOverridingConcrete = false;
+		options.reportDeadCodeInTrivialIfStatement = false;
+		options.generateClassFiles = false;
+		options.docCommentSupport = false;
+		Map<String, String> warnings = new HashMap<String, String>();
+		warnings.put(CompilerOptions.OPTION_ReportUnusedLocal, "ignore");
+		warnings.put(CompilerOptions.OPTION_ReportUnusedLabel, "ignore");
+		warnings.put(CompilerOptions.OPTION_ReportUnusedImport, "ignore");
+		warnings.put(CompilerOptions.OPTION_ReportUnusedPrivateMember, "ignore");
+		options.set(warnings);
 		return options;
+	}
+	
+	protected IErrorHandlingPolicy ecjErrorHandlingPolicy() {
+		return new IErrorHandlingPolicy() {
+			@Override public boolean stopOnFirstError() {
+				return true;
+			}
+			
+			@Override public boolean proceedOnErrors() {
+				return false;
+			}
+		};
 	}
 	
 	@Override
 	public void transformCode(final StringBuilder messages, StringWriter result, File file) throws Throwable {
-		ProblemReporter problemReporter = new ProblemReporter(new IErrorHandlingPolicy() {
-			public boolean proceedOnErrors() {
-				return true;
+		final AtomicReference<CompilationResult> compilationResult_ = new AtomicReference<CompilationResult>();
+		final AtomicReference<CompilationUnitDeclaration> compilationUnit_ = new AtomicReference<CompilationUnitDeclaration>();
+		ICompilerRequestor bitbucketRequestor = new ICompilerRequestor() {
+			@Override public void acceptResult(CompilationResult result) {
+				compilationResult_.set(result);
 			}
-			
-			public boolean stopOnFirstError() {
-				return false;
-			}
-		}, ecjCompilerOptions(), new DefaultProblemFactory(Locale.ENGLISH));
+		};
 		
-		Parser parser = new Parser(problemReporter, true);
+		List<String> classpath = new ArrayList<String>();
+		classpath.addAll(Arrays.asList(System.getProperty("sun.boot.class.path").split(File.pathSeparator)));
+		classpath.add("dist/lombok.jar");
+		classpath.add("lib/test/commons-logging.jar");
+		classpath.add("lib/test/slf4j-api.jar");
+		classpath.add("lib/test/log4j.jar");
+		FileSystem fileAccess = new FileSystem(classpath.toArray(new String[0]), new String[] {file.getAbsolutePath()}, "UTF-8");
+		
 		String source = readFile(file);
-		CompilationUnit sourceUnit = new CompilationUnit(source.toCharArray(), file.getName(), "UTF-8");
-		CompilationResult compilationResult = new CompilationResult(sourceUnit, 0, 0, 0);
-		CompilationUnitDeclaration cud = parser.parse(sourceUnit, compilationResult);
+		final CompilationUnit sourceUnit = new CompilationUnit(source.toCharArray(), file.getName(), "UTF-8");
 		
-		TransformEclipseAST.transform(parser, cud);
+		Compiler ecjCompiler = new Compiler(fileAccess, ecjErrorHandlingPolicy(), ecjCompilerOptions(), bitbucketRequestor, new DefaultProblemFactory(Locale.ENGLISH)) {
+			@Override protected synchronized void addCompilationUnit(ICompilationUnit inUnit, CompilationUnitDeclaration parsedUnit) {
+				if (inUnit == sourceUnit) compilationUnit_.set(parsedUnit);
+				super.addCompilationUnit(inUnit, parsedUnit);
+			}
+		};
 		
+		ecjCompiler.compile(new ICompilationUnit[] {sourceUnit});
+		
+		CompilationResult compilationResult = compilationResult_.get();
 		CategorizedProblem[] problems = compilationResult.getAllProblems();
 		
 		if (problems != null) for (CategorizedProblem p : problems) {
 			messages.append(String.format("%d %s %s\n", p.getSourceLineNumber(), p.isError() ? "error" : p.isWarning() ? "warning" : "unknown", p.getMessage()));
 		}
+		
+		CompilationUnitDeclaration cud = compilationUnit_.get();
 		
 		result.append(cud.toString());
 	}

@@ -11,13 +11,14 @@ class DelegateOnGetter {
 			synchronized (this.bar) {
 				value = this.bar.get();
 				if (value == null) {
-					value = new java.util.concurrent.atomic.AtomicReference<Bar>(new Bar(){
+					final Bar actualValue = new Bar(){
 						public void setList(java.util.ArrayList<String> list) {
 						}
 						public int getInt() {
 							return 42;
 						}
-					});
+					};
+					value = new java.util.concurrent.atomic.AtomicReference<Bar>(actualValue);
 					this.bar.set(value);
 				}
 			}

@@ -1,5 +1,5 @@
 class DelegateOnGetterNone {
-	private final Bar bar;
+	private final Bar bar = null;
 	private interface Bar {
 		void setList(java.util.ArrayList<java.lang.String> list);
 		int getInt();

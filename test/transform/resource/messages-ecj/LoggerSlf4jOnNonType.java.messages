@@ -1,1 +1,1 @@
-2 error @Log is legal only on types.
+2 error The annotation @Slf4j is disallowed for this location

@@ -1,1 +1,2 @@
 8 error The field write does not exist.
+11 error Cannot make a static reference to the non-static field SynchronizedName.read

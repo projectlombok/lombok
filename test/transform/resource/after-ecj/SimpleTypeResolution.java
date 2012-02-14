@@ -1,7 +1,6 @@
 class SimpleTypeResolutionFail {
   private @Getter int x;
   SimpleTypeResolutionFail() {
-    super();
   }
 }
 class SimpleTypeResolutionSuccess {
@@ -10,6 +9,5 @@ class SimpleTypeResolutionSuccess {
     return this.x;
   }
   SimpleTypeResolutionSuccess() {
-    super();
   }
 }
