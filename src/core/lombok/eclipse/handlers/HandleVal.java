@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The Project Lombok Authors.
+ * Copyright (C) 2010-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,13 @@ import lombok.eclipse.EclipseASTVisitor;
 import lombok.eclipse.EclipseNode;
 
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
+import org.eclipse.jdt.internal.compiler.ast.ForStatement;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.mangosdk.spi.ProviderFor;
 
 /*
- * This class just handles 2 basic error cases. The real meat of eclipse 'val' support is in {@code EclipsePatcher}'s {@code patchHandleVal} method.
+ * This class just handles 3 basic error cases. The real meat of eclipse 'val' support is in {@code PatchVal} and {@code PatchValEclipse}.
  */
 @ProviderFor(EclipseASTVisitor.class)
 public class HandleVal extends EclipseASTAdapter {
@@ -56,6 +57,11 @@ public class HandleVal extends EclipseASTAdapter {
 		
 		if (local.initialization instanceof ArrayInitializer) {
 			localNode.addError("'val' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })");
+			return;
+		}
+		
+		if (localNode.directUp().get() instanceof ForStatement) {
+			localNode.addError("'val' is not allowed in old-style for loops");
 			return;
 		}
 	}

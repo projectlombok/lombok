@@ -120,6 +120,8 @@ public class PatchVal {
 		
 		if (!isVal(local.type, scope)) return false;
 		
+		if (new Throwable().getStackTrace()[2].getClassName().contains("ForStatement")) return false;
+		
 		Expression init = local.initialization;
 		if (init == null && Reflection.initCopyField != null) {
 			try {

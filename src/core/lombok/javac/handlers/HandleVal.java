@@ -37,6 +37,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCForLoop;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
@@ -54,9 +55,14 @@ public class HandleVal extends JavacASTAdapter {
 		
 		if (!typeMatches(val.class, localNode, local.vartype)) return;
 		
+		JCTree parentRaw = localNode.directUp().get();
+		if (parentRaw instanceof JCForLoop) {
+			localNode.addError("'val' is not allowed in old-style for loops");
+			return;
+		}
+		
 		JCExpression rhsOfEnhancedForLoop = null;
 		if (local.init == null) {
-			JCTree parentRaw = localNode.directUp().get();
 			if (parentRaw instanceof JCEnhancedForLoop) {
 				JCEnhancedForLoop efl = (JCEnhancedForLoop) parentRaw;
 				if (efl.var == local) rhsOfEnhancedForLoop = efl.expr;
