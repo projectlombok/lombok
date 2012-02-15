@@ -1,0 +1,4 @@
+6 error 'val' is not allowed in old-style for loops
+6 error Type mismatch: cannot convert from int to val
+6 error 'val' is not allowed in old-style for loops
+6 error 'val' is not allowed in old-style for loops
