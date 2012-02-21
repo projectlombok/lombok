@@ -22,6 +22,7 @@
 package lombok.javac.handlers;
 
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+import static com.sun.tools.javac.code.Flags.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -329,7 +330,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 			ExecutableType methodType = (ExecutableType) types.asMemberOf(ct, member);
 			String sig = printSig(methodType, member.name, types);
 			if (!banList.add(sig)) continue; //If add returns false, it was already in there
-			boolean isDeprecated = exElem.getAnnotation(Deprecated.class) != null;
+			boolean isDeprecated = exElem.getAnnotation(Deprecated.class) != null || (member.flags() & DEPRECATED) != 0;
 			signatures.add(new MethodSig(member.name, methodType, isDeprecated, exElem));
 		}
 		
