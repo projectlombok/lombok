@@ -26,6 +26,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -92,18 +93,10 @@ public class RunTestsViaEcj extends AbstractRunTests {
 			}
 		};
 		
-		List<String> classpath = new ArrayList<String>();
-		classpath.addAll(Arrays.asList(System.getProperty("sun.boot.class.path").split(File.pathSeparator)));
-		classpath.add("dist/lombok.jar");
-		classpath.add("lib/test/commons-logging.jar");
-		classpath.add("lib/test/slf4j-api.jar");
-		classpath.add("lib/test/log4j.jar");
-		FileSystem fileAccess = new FileSystem(classpath.toArray(new String[0]), new String[] {file.getAbsolutePath()}, "UTF-8");
-		
 		String source = readFile(file);
 		final CompilationUnit sourceUnit = new CompilationUnit(source.toCharArray(), file.getName(), "UTF-8");
 		
-		Compiler ecjCompiler = new Compiler(fileAccess, ecjErrorHandlingPolicy(), ecjCompilerOptions(), bitbucketRequestor, new DefaultProblemFactory(Locale.ENGLISH)) {
+		Compiler ecjCompiler = new Compiler(createFileSystem(file), ecjErrorHandlingPolicy(), ecjCompilerOptions(), bitbucketRequestor, new DefaultProblemFactory(Locale.ENGLISH)) {
 			@Override protected synchronized void addCompilationUnit(ICompilationUnit inUnit, CompilationUnitDeclaration parsedUnit) {
 				if (inUnit == sourceUnit) compilationUnit_.set(parsedUnit);
 				super.addCompilationUnit(inUnit, parsedUnit);
@@ -122,5 +115,20 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		CompilationUnitDeclaration cud = compilationUnit_.get();
 		
 		result.append(cud.toString());
+	}
+	
+	private FileSystem createFileSystem(File file) {
+		List<String> classpath = new ArrayList<String>();
+		classpath.addAll(Arrays.asList(System.getProperty("sun.boot.class.path").split(File.pathSeparator)));
+		for (Iterator<String> i = classpath.iterator(); i.hasNext();) {
+			if (FileSystem.getClasspath(i.next(), "UTF-8", null) == null) {
+				i.remove();
+			}
+		}
+		classpath.add("dist/lombok.jar");
+		classpath.add("lib/test/commons-logging.jar");
+		classpath.add("lib/test/slf4j-api.jar");
+		classpath.add("lib/test/log4j.jar");
+		return new FileSystem(classpath.toArray(new String[0]), new String[] {file.getAbsolutePath()}, "UTF-8");
 	}
 }
