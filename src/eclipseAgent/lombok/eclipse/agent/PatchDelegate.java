@@ -21,8 +21,8 @@
  */
 package lombok.eclipse.agent;
 
-import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import static lombok.eclipse.Eclipse.*;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -65,7 +65,6 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
@@ -416,19 +415,6 @@ public class PatchDelegate {
 		}
 	}
 	
-	private static boolean hasDeprecatedAnnotation(MethodBinding binding) {
-		AnnotationBinding[] annotations = binding.getAnnotations();
-		if (annotations != null) for (AnnotationBinding ann : annotations) {
-			ReferenceBinding annType = ann.getAnnotationType();
-			char[] pkg = annType.qualifiedPackageName();
-			char[] src = annType.qualifiedSourceName();
-			
-			if (charArrayEquals("java.lang", pkg) && charArrayEquals("Deprecated", src)) return true;
-		}
-		
-		return false;
-	}
-	
 	public static void checkConflictOfTypeVarNames(BindingTuple binding, EclipseNode typeNode) throws CantMakeDelegates {
 		TypeVariableBinding[] typeVars = binding.parameterized.typeVariables();
 		if (typeVars == null || typeVars.length == 0) return;
@@ -581,7 +567,7 @@ public class PatchDelegate {
 		method.modifiers = ClassFileConstants.AccPublic;
 		
 		method.returnType = makeType(binding.returnType, source, false);
-		boolean isDeprecated = hasDeprecatedAnnotation(binding) || binding.isDeprecated();
+		boolean isDeprecated = binding.isDeprecated();
 		
 		method.selector = binding.selector;
 		
