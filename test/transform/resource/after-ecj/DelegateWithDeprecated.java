@@ -1,24 +1,21 @@
+import lombok.Delegate;
 class DelegateWithDeprecated {
-	private Bar bar;
-	private interface Bar {
-		@Deprecated
-		void deprecatedAnnotation();
-		/** @deprecated */
-		void deprecatedComment();
-		void notDeprecated();
-	}
-	@java.lang.Deprecated
-	@java.lang.SuppressWarnings("all")
-	public void deprecatedAnnotation() {
-		this.bar.deprecatedAnnotation();
-	}
-	@java.lang.Deprecated
-	@java.lang.SuppressWarnings("all")
-	public void deprecatedComment() {
-		this.bar.deprecatedComment();
-	}
-	@java.lang.SuppressWarnings("all")
-	public void notDeprecated() {
-		this.bar.notDeprecated();
-	}
+  private interface Bar {
+    @Deprecated void deprecatedAnnotation();
+    void deprecatedComment();
+    void notDeprecated();
+  }
+  private @Delegate Bar bar;
+  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") void deprecatedAnnotation() {
+    this.bar.deprecatedAnnotation();
+  }
+  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") void deprecatedComment() {
+    this.bar.deprecatedComment();
+  }
+  public @java.lang.SuppressWarnings("all") void notDeprecated() {
+    this.bar.notDeprecated();
+  }
+  DelegateWithDeprecated() {
+    super();
+  }
 }

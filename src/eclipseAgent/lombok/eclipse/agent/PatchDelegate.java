@@ -581,7 +581,7 @@ public class PatchDelegate {
 		method.modifiers = ClassFileConstants.AccPublic;
 		
 		method.returnType = makeType(binding.returnType, source, false);
-		boolean isDeprecated = hasDeprecatedAnnotation(binding);
+		boolean isDeprecated = hasDeprecatedAnnotation(binding) || binding.isDeprecated();
 		
 		method.selector = binding.selector;
 		
