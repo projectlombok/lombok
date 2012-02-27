@@ -288,7 +288,13 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		
 		for (TypeMirror param : sig.type.getTypeVariables()) {
 			Name name = ((TypeVar) param).tsym.name;
-			typeParams.append(maker.TypeParameter(name, maker.Types(types.getBounds((TypeVar) param))));
+			
+			ListBuffer<JCExpression> bounds = types.getBounds((TypeVar) param).isEmpty() ? null : new ListBuffer<JCExpression>();
+			for (Type type : types.getBounds((TypeVar) param)) {
+				bounds.append(JavacResolution.typeToJCTree(type, annotation.getAst(), true));
+			}
+			
+			typeParams.append(maker.TypeParameter(name, bounds.toList()));
 			typeArgs.append(maker.Ident(name));
 		}
 		
