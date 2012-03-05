@@ -57,8 +57,8 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 		delombok.setSourcepath(file.getAbsoluteFile().getParent());
 		delombok.setWriter(result);
 		Locale originalLocale = Locale.getDefault();
-		Locale.setDefault(Locale.ENGLISH);
 		try {
+			Locale.setDefault(Locale.ENGLISH);
 			delombok.delombok();
 		} finally {
 			Locale.setDefault(originalLocale);
