@@ -56,6 +56,12 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 		delombok.addFile(file.getAbsoluteFile().getParentFile(), file.getName());
 		delombok.setSourcepath(file.getAbsoluteFile().getParent());
 		delombok.setWriter(result);
-		delombok.delombok();
+		Locale originalLocale = Locale.getDefault();
+		try {
+			Locale.setDefault(Locale.ENGLISH);
+			delombok.delombok();
+		} finally {
+			Locale.setDefault(originalLocale);
+		}
 	}
 }
