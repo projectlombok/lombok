@@ -774,6 +774,10 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
                 print(" throws ");
                 printExprs(tree.thrown);
             }
+            if (tree.defaultValue != null) {
+              print(" default ");
+              print(tree.defaultValue);
+            }
             if (tree.body != null) {
                 print(" ");
                 printBlock(tree.body.stats, tree.body);

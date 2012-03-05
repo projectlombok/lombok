@@ -7,6 +7,7 @@ Lombok Changelog
 * BUGFIX: Using `val` with a type like `Outer<TypeArgs>.Inner` now works. [Issue #343](http://code.google.com/p/projectlombok/issues/detail?id=343)
 * BUGFIX: `@Getter(lazy=true)` where the variable type is a primitive and the initializing expression is of a different primitive type that would type coerce implicitly, i.e. ints can be assigned to longs without a cast, didn't work before. [Issue #345](http://code.google.com/p/projectlombok/issues/detail?id=345)
 * BUGFIX: `val` is no longer legal inside basic for loops (the old kind, not the foreach kind). These variables should rarely be final, and in practice it wasn't possible to delombok this code properly. [Issue #346](http://code.google.com/p/projectlombok/issues/detail?id=346)
+* BUGFIX: PrettyCommentsPrinter now prints default clause of annotation methods. Fixes [Issue #350](http://code.google.com/p/projectlombok/issues/detail?id=350)
 
 ### v0.10.8 (January 19th, 2012)
 * FEATURE: `@Delegate` can now be used on a no-argument method, which works similarly to adding it to fields. See [documentation](http://projectlombok.org/features/Delegate.html).
