@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -139,6 +139,24 @@ public class JavacHandlerUtil {
 		
 		TypeResolver resolver = new TypeResolver(node.getPackageDeclaration(), node.getImportStatements());
 		return resolver.typeMatches(node, type.getName(), typeName);
+	}
+	
+	/**
+	 * Returns if a field is marked deprecated, either by {@code @Deprecated} or in javadoc
+	 * @param field the field to check
+	 * @return {@code true} if a field is marked deprecated, either by {@code @Deprecated} or in javadoc, otherwise {@code false}
+	 */
+	public static boolean isFieldDeprecated(JavacNode field) {
+		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
+		if ((fieldNode.mods.flags & Flags.DEPRECATED) != 0) {
+			return true;
+		}
+		for (JavacNode child : field.down()) {
+			if (annotationTypeMatches(Deprecated.class, child)) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**

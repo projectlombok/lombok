@@ -245,6 +245,27 @@ public class EclipseHandlerUtil {
 		return node;
 	}
 	
+	public static MarkerAnnotation generateDeprecatedAnnotation(ASTNode source) {
+		QualifiedTypeReference qtr = new QualifiedTypeReference(new char[][] {
+				{'j', 'a', 'v', 'a'}, {'l', 'a', 'n', 'g'}, {'D', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd'}}, poss(source, 3));
+		setGeneratedBy(qtr, source);
+		return new MarkerAnnotation(qtr, source.sourceStart);
+	}
+	
+	public static boolean isFieldDeprecated(EclipseNode fieldNode) {
+		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
+		if ((field.modifiers & ClassFileConstants.AccDeprecated) != 0) {
+			return true;
+		}
+		if (field.annotations == null) return false;
+		for (Annotation annotation : field.annotations) {
+			if (typeMatches(Deprecated.class, fieldNode, annotation.type)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * Checks if the given TypeReference node is likely to be a reference to the provided class.
 	 * 
