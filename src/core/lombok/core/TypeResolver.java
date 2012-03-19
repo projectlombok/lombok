@@ -48,6 +48,7 @@ public class TypeResolver {
 		Set<String> imports = new HashSet<String>();
 		if (packageString != null) imports.add(packageString + ".*");
 		imports.addAll(importStrings == null ? Collections.<String>emptySet() : importStrings);
+		imports.add("java.lang.*");
 		return imports;
 	}
 	
