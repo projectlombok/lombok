@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -116,6 +116,18 @@ public class AnnotationValues<A extends Annotation> {
 		this.type = type;
 		this.values = values;
 		this.ast = ast;
+	}
+	
+	public static <A extends Annotation> AnnotationValues<A> of(Class<A> type) {
+		return new AnnotationValues<A>(type, Collections.<String, AnnotationValue>emptyMap(), null);
+	}
+	
+	/**
+	 * Creates a new annotation wrapper with all default values, and using the provided ast as lookup anchor for
+	 * class literals.
+	 */
+	public static <A extends Annotation> AnnotationValues<A> of(Class<A> type, LombokNode<?, ?, ?> ast) {
+		return new AnnotationValues<A>(type, Collections.<String, AnnotationValue>emptyMap(), ast);
 	}
 	
 	/**
@@ -423,7 +435,7 @@ public class AnnotationValues<A extends Annotation> {
 		}
 		
 		/* 2. Walk through non-star imports and search for a match. */ {
-			for (String im : ast.getImportStatements()) {
+			for (String im : ast == null ? Collections.<String>emptyList() : ast.getImportStatements()) {
 				if (im.endsWith(".*")) continue;
 				int idx = im.lastIndexOf('.');
 				String simple = idx == -1 ? im : im.substring(idx+1);
@@ -434,7 +446,7 @@ public class AnnotationValues<A extends Annotation> {
 		}
 		
 		/* 3. Walk through star imports and, if they start with "java.", use Class.forName based resolution. */ {
-			List<String> imports = new ArrayList<String>(ast.getImportStatements());
+			List<String> imports = ast == null ? Collections.<String>emptyList() : new ArrayList<String>(ast.getImportStatements());
 			imports.add("java.lang.*");
 			for (String im : imports) {
 				if (!im.endsWith(".*") || !im.startsWith("java.")) continue;
@@ -465,7 +477,7 @@ public class AnnotationValues<A extends Annotation> {
 	
 	private static String inLocalPackage(LombokNode<?, ?, ?> node, String typeName) {
 		StringBuilder result = new StringBuilder();
-		if (node.getPackageDeclaration() != null) result.append(node.getPackageDeclaration());
+		if (node != null && node.getPackageDeclaration() != null) result.append(node.getPackageDeclaration());
 		if (result.length() > 0) result.append('.');
 		result.append(typeName);
 		return result.toString();
