@@ -148,11 +148,15 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		TypeReference fieldType = copyType(field.type, source);
 		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
-		String setterName = TransformationsUtil.toSetterName(new String(field.name), isBoolean);
+		String setterName = toSetterName(fieldNode, isBoolean);
+		if (setterName == null) {
+			errorNode.addWarning("Not generating setter for this field: It does not fit your @Accessors prefix list.");
+			return;
+		}
 		
 		int modifier = toEclipseModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		
-		for (String altName : TransformationsUtil.toAllSetterNames(new String(field.name), isBoolean)) {
+		for (String altName : toAllSetterNames(fieldNode, isBoolean)) {
 			switch (methodExists(altName, fieldNode, false)) {
 			case EXISTS_BY_LOMBOK:
 				return;

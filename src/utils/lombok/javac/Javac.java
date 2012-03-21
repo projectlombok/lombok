@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,6 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
 /**
  * Container for static utility methods relevant to lombok's operation on javac.
@@ -35,56 +34,6 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 public class Javac {
 	private Javac() {
 		//prevent instantiation
-	}
-	
-	/**
-	 * Translates the given field into all possible getter names.
-	 * Convenient wrapper around {@link TransformationsUtil#toAllGetterNames(CharSequence, boolean)}.
-	 */
-	public static java.util.List<String> toAllGetterNames(JCVariableDecl field) {
-		CharSequence fieldName = field.name;
-		
-		boolean isBoolean = field.vartype.toString().equals("boolean");
-		
-		return TransformationsUtil.toAllGetterNames(fieldName, isBoolean);
-	}
-	
-	/**
-	 * @return the likely getter name for the stated field. (e.g. private boolean foo; to isFoo).
-	 * 
-	 * Convenient wrapper around {@link TransformationsUtil#toGetterName(CharSequence, boolean)}.
-	 */
-	public static String toGetterName(JCVariableDecl field) {
-		CharSequence fieldName = field.name;
-		
-		boolean isBoolean = field.vartype.toString().equals("boolean");
-		
-		return TransformationsUtil.toGetterName(fieldName, isBoolean);
-	}
-	
-	/**
-	 * Translates the given field into all possible setter names.
-	 * Convenient wrapper around {@link TransformationsUtil#toAllSetterNames(CharSequence, boolean)}.
-	 */
-	public static java.util.List<String> toAllSetterNames(JCVariableDecl field) {
-		CharSequence fieldName = field.name;
-		
-		boolean isBoolean = field.vartype.toString().equals("boolean");
-		
-		return TransformationsUtil.toAllSetterNames(fieldName, isBoolean);
-	}
-	
-	/**
-	 * @return the likely setter name for the stated field. (e.g. private boolean foo; to setFoo).
-	 * 
-	 * Convenient wrapper around {@link TransformationsUtil#toSetterName(CharSequence, boolean)}.
-	 */
-	public static String toSetterName(JCVariableDecl field) {
-		CharSequence fieldName = field.name;
-		
-		boolean isBoolean = field.vartype.toString().equals("boolean");
-		
-		return TransformationsUtil.toSetterName(fieldName, isBoolean);
 	}
 	
 	/**

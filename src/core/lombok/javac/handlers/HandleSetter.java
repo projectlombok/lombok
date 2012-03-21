@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -162,9 +162,14 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		}
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl)fieldNode.get();
-		String methodName = toSetterName(fieldDecl);
+		String methodName = toSetterName(fieldNode);
 		
-		for (String altName : toAllSetterNames(fieldDecl)) {
+		if (methodName == null) {
+			source.addWarning("Not generating setter for this field: It does not fit your @Accessors prefix list.");
+			return;
+		}
+		
+		for (String altName : toAllSetterNames(fieldNode)) {
 			switch (methodExists(altName, fieldNode, false)) {
 			case EXISTS_BY_LOMBOK:
 				return;
@@ -184,10 +189,14 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
 		
-		injectMethod(fieldNode.up(), createSetter(access, fieldNode, fieldNode.getTreeMaker(), source.get()));
+		JCMethodDecl createdSetter = createSetter(access, fieldNode, fieldNode.getTreeMaker(), source.get());
+		injectMethod(fieldNode.up(), createdSetter);
 	}
 	
 	private JCMethodDecl createSetter(long access, JavacNode field, TreeMaker treeMaker, JCTree source) {
+		String setterName = toSetterName(field);
+		if (setterName == null) return null;
+		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
 		
 		JCExpression fieldRef = createFieldAccessor(treeMaker, field, FieldAccess.ALWAYS_FIELD);
@@ -206,7 +215,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		}
 		
 		JCBlock methodBody = treeMaker.Block(0, statements);
-		Name methodName = field.toName(toSetterName(fieldDecl));
+		Name methodName = field.toName(setterName);
 		List<JCAnnotation> annsOnParam = nonNulls.appendList(nullables);
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(Flags.FINAL, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
 		//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.

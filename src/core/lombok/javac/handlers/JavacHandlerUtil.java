@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,9 +37,11 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.core.AnnotationValues;
+import lombok.core.TransformationsUtil;
 import lombok.core.TypeResolver;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues.AnnotationValue;
+import lombok.experimental.Accessors;
 import lombok.javac.Javac;
 import lombok.javac.JavacNode;
 
@@ -272,6 +274,84 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
+	 * Translates the given field into all possible getter names.
+	 * Convenient wrapper around {@link TransformationsUtil#toAllGetterNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static java.util.List<String> toAllGetterNames(JavacNode field) {
+		String fieldName = field.getName();
+		
+		boolean isBoolean = ((JCVariableDecl) field.get()).vartype.toString().equals("boolean");
+		
+		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
+		
+		return TransformationsUtil.toAllGetterNames(accessors, fieldName, isBoolean);
+	}
+	
+	/**
+	 * @return the likely getter name for the stated field. (e.g. private boolean foo; to isFoo).
+	 * 
+	 * Convenient wrapper around {@link TransformationsUtil#toGetterName(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static String toGetterName(JavacNode field) {
+		String fieldName = field.getName();
+		
+		boolean isBoolean = ((JCVariableDecl) field.get()).vartype.toString().equals("boolean");
+		
+		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
+		
+		return TransformationsUtil.toGetterName(accessors, fieldName, isBoolean);
+	}
+	
+	/**
+	 * Translates the given field into all possible setter names.
+	 * Convenient wrapper around {@link TransformationsUtil#toAllSetterNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static java.util.List<String> toAllSetterNames(JavacNode field) {
+		String fieldName = field.getName();
+		
+		boolean isBoolean = ((JCVariableDecl) field.get()).vartype.toString().equals("boolean");
+		
+		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
+		
+		return TransformationsUtil.toAllSetterNames(accessors, fieldName, isBoolean);
+	}
+	
+	/**
+	 * @return the likely setter name for the stated field. (e.g. private boolean foo; to setFoo).
+	 * 
+	 * Convenient wrapper around {@link TransformationsUtil#toSetterName(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static String toSetterName(JavacNode field) {
+		String fieldName = field.getName();
+		
+		boolean isBoolean = ((JCVariableDecl) field.get()).toString().equals("boolean");
+		
+		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
+		
+		return TransformationsUtil.toSetterName(accessors, fieldName, isBoolean);
+	}
+	
+	public static AnnotationValues<Accessors> getAccessorsForField(JavacNode field) {
+		for (JavacNode node : field.down()) {
+			if (annotationTypeMatches(Accessors.class, node)) {
+				return createAnnotation(Accessors.class, node);
+			}
+		}
+		
+		JavacNode current = field.up();
+		while (current != null) {
+			for (JavacNode node : field.down()) {
+				if (annotationTypeMatches(Accessors.class, node)) {
+					return createAnnotation(Accessors.class, node);
+				}
+			}
+			current = field.up();
+		}
+		
+		return AnnotationValues.of(Accessors.class, field);
+	}
+	
+	/**
 	 * Checks if there is a field with the provided name.
 	 * 
 	 * @param fieldName the field name to check for.
@@ -382,7 +462,7 @@ public class JavacHandlerUtil {
 	private static GetterMethod findGetter(JavacNode field) {
 		JCVariableDecl decl = (JCVariableDecl)field.get();
 		JavacNode typeNode = field.up();
-		for (String potentialGetterName : toAllGetterNames(decl)) {
+		for (String potentialGetterName : toAllGetterNames(field)) {
 			for (JavacNode potentialGetter : typeNode.down()) {
 				if (potentialGetter.getKind() != Kind.METHOD) continue;
 				JCMethodDecl method = (JCMethodDecl) potentialGetter.get();
@@ -424,7 +504,8 @@ public class JavacHandlerUtil {
 		}
 		
 		if (hasGetterAnnotation) {
-			String getterName = toGetterName(decl);
+			String getterName = toGetterName(field);
+			if (getterName == null) return null;
 			return new GetterMethod(field.toName(getterName), decl.vartype);
 		}
 		

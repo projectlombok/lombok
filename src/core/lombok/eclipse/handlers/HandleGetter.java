@@ -187,13 +187,17 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		}
 		
 		TypeReference fieldType = copyType(field.type, source);
-		String fieldName = new String(field.name);
 		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
-		String getterName = TransformationsUtil.toGetterName(fieldName, isBoolean);
+		String getterName = toGetterName(fieldNode, isBoolean);
+		
+		if (getterName == null) {
+			errorNode.addWarning("Not generating getter for this field: It does not fit your @Accessors prefix list.");
+			return;
+		}
 		
 		int modifier = toEclipseModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		
-		for (String altName : TransformationsUtil.toAllGetterNames(fieldName, isBoolean)) {
+		for (String altName : toAllGetterNames(fieldNode, isBoolean)) {
 			switch (methodExists(altName, fieldNode, false)) {
 			case EXISTS_BY_LOMBOK:
 				return;

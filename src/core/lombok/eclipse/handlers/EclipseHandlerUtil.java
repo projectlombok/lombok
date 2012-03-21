@@ -41,11 +41,12 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Lombok;
 import lombok.core.AnnotationValues;
+import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
-import lombok.core.TransformationsUtil;
+import lombok.experimental.Accessors;
 import lombok.core.TypeResolver;
 
 import org.eclipse.core.runtime.ILog;
@@ -756,7 +757,7 @@ public class EclipseHandlerUtil {
 		TypeReference fieldType = ((FieldDeclaration)field.get()).type;
 		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
 		EclipseNode typeNode = field.up();
-		for (String potentialGetterName : TransformationsUtil.toAllGetterNames(field.getName(), isBoolean)) {
+		for (String potentialGetterName : toAllGetterNames(field, isBoolean)) {
 			for (EclipseNode potentialGetter : typeNode.down()) {
 				if (potentialGetter.getKind() != Kind.METHOD) continue;
 				if (!(potentialGetter.get() instanceof MethodDeclaration)) continue;
@@ -799,7 +800,8 @@ public class EclipseHandlerUtil {
 		}
 		
 		if (hasGetterAnnotation) {
-			String getterName = TransformationsUtil.toGetterName(field.getName(), isBoolean);
+			String getterName = toGetterName(field, isBoolean);
+			if (getterName == null) return null;
 			return new GetterMethod(getterName.toCharArray(), fieldType);
 		}
 		
@@ -909,6 +911,52 @@ public class EclipseHandlerUtil {
 	}
 	
 	/**
+	 * Translates the given field into all possible getter names.
+	 * Convenient wrapper around {@link TransformationsUtil#toAllGetterNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static List<String> toAllGetterNames(EclipseNode field, boolean isBoolean) {
+		String fieldName = field.getName();
+		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
+		
+		return TransformationsUtil.toAllGetterNames(accessors, fieldName, isBoolean);
+	}
+	
+	/**
+	 * @return the likely getter name for the stated field. (e.g. private boolean foo; to isFoo).
+	 * 
+	 * Convenient wrapper around {@link TransformationsUtil#toGetterName(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static String toGetterName(EclipseNode field, boolean isBoolean) {
+		String fieldName = field.getName();
+		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
+		
+		return TransformationsUtil.toGetterName(accessors, fieldName, isBoolean);
+	}
+	
+	/**
+	 * Translates the given field into all possible setter names.
+	 * Convenient wrapper around {@link TransformationsUtil#toAllSetterNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static java.util.List<String> toAllSetterNames(EclipseNode field, boolean isBoolean) {
+		String fieldName = field.getName();
+		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
+		
+		return TransformationsUtil.toAllSetterNames(accessors, fieldName, isBoolean);
+	}
+	
+	/**
+	 * @return the likely setter name for the stated field. (e.g. private boolean foo; to setFoo).
+	 * 
+	 * Convenient wrapper around {@link TransformationsUtil#toSetterName(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static String toSetterName(EclipseNode field, boolean isBoolean) {
+		String fieldName = field.getName();
+		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
+		
+		return TransformationsUtil.toSetterName(accessors, fieldName, isBoolean);
+	}
+	
+	/**
 	 * Checks if the field should be included in operations that work on 'all' fields:
 	 *    If the field is static, or starts with a '$', or is actually an enum constant, 'false' is returned, indicating you should skip it.
 	 */
@@ -926,6 +974,26 @@ public class EclipseHandlerUtil {
 		if ((declaration.modifiers & ClassFileConstants.AccStatic) != 0) return false;
 		
 		return true;
+	}
+	
+	public static AnnotationValues<Accessors> getAccessorsForField(EclipseNode field) {
+		for (EclipseNode node : field.down()) {
+			if (annotationTypeMatches(Accessors.class, node)) {
+				return createAnnotation(Accessors.class, node);
+			}
+		}
+		
+		EclipseNode current = field.up();
+		while (current != null) {
+			for (EclipseNode node : field.down()) {
+				if (annotationTypeMatches(Accessors.class, node)) {
+					return createAnnotation(Accessors.class, node);
+				}
+			}
+			current = field.up();
+		}
+		
+		return AnnotationValues.of(Accessors.class, field);
 	}
 	
 	/**

@@ -190,9 +190,14 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 			}
 		}
 		
-		String methodName = toGetterName(fieldDecl);
+		String methodName = toGetterName(fieldNode);
 		
-		for (String altName : toAllGetterNames(fieldDecl)) {
+		if (methodName == null) {
+			source.addWarning("Not generating getter for this field: It does not fit your @Accessors prefix list.");
+			return;
+		}
+		
+		for (String altName : toAllGetterNames(fieldNode)) {
 			switch (methodExists(altName, fieldNode, false)) {
 			case EXISTS_BY_LOMBOK:
 				return;
@@ -231,7 +236,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		}
 		
 		JCBlock methodBody = treeMaker.Block(0, statements);
-		Name methodName = field.toName(toGetterName(fieldNode));
+		Name methodName = field.toName(toGetterName(field));
 		
 		List<JCTypeParameter> methodGenericParams = List.nil();
 		List<JCVariableDecl> parameters = List.nil();
