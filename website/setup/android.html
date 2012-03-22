@@ -55,7 +55,9 @@
 				In eclipse, create a 'lightweight' lombok jar that contains only the annotations by running:
 				<pre>
 java -jar lombok.jar publicApi</pre>
-				Then, add this jar to your android project, and, as usual, install lombok into eclipse.
+				Then, add the <code>lombok-api.jar</code> file created by running this command
+				to your android project instead of the complete <code>lombok.jar</code>, and,
+				as usual, install lombok into eclipse by double-clicking <code>lombok.jar</code>.
 			</div>
 			<h3>Ant</h3>
 			<div>
@@ -70,6 +72,9 @@ java -jar lombok.jar publicApi</pre>
 			<h3>Maven</h3>
 			<div>
 				You should be able to just follow the normal <a href="../mavenrepo/index.html">lombok with maven instructions</a>.<br />
+				Note that if you use android, eclipse, and maven together you may have to replace <code>lombok.jar</code> in your eclipse android project's build path
+				(which you can modify in that project's properties page) with <code>lombok-api.jar</code>, as produced in the procedure explained for <em>Eclipse</em>,
+				above.
 			</div>
 		<div class="endBar">
 		</div>
