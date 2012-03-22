@@ -150,14 +150,15 @@ public class TransformationsUtil {
 		fieldName = removePrefix(fieldName, ac.prefix());
 		if (fieldName == null) return null;
 		
-		if (ac.fluent()) return fieldName.toString();
+		String fName = fieldName.toString();
+		if (ac.fluent()) return fName;
 		
-		if (isBoolean && fieldName.toString().startsWith("is") && fieldName.length() > 2 && !Character.isLowerCase(fieldName.charAt(2))) {
+		if (isBoolean && fName.startsWith("is") && fieldName.length() > 2 && !Character.isLowerCase(fName.charAt(2))) {
 			// The field is for example named 'isRunning'.
-			return "set" + fieldName.toString().substring(2);
+			return "set" + fName.substring(2);
 		}
 		
-		return buildName("set", fieldName.toString());
+		return buildName("set", fName);
 	}
 	
 	/**
@@ -215,7 +216,7 @@ public class TransformationsUtil {
 			if (acc.fluent()) {
 				names.add(baseName);
 			} else {
-				names.add("set" + baseName);
+				names.add(buildName("set", baseName));
 			}
 		}
 		

@@ -990,7 +990,7 @@ public class EclipseHandlerUtil {
 					return createAnnotation(Accessors.class, node);
 				}
 			}
-			current = field.up();
+			current = current.up();
 		}
 		
 		return AnnotationValues.of(Accessors.class, field);

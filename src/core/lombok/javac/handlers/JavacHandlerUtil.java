@@ -279,9 +279,7 @@ public class JavacHandlerUtil {
 	 */
 	public static java.util.List<String> toAllGetterNames(JavacNode field) {
 		String fieldName = field.getName();
-		
-		boolean isBoolean = ((JCVariableDecl) field.get()).vartype.toString().equals("boolean");
-		
+		boolean isBoolean = isBoolean(field);
 		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
 		
 		return TransformationsUtil.toAllGetterNames(accessors, fieldName, isBoolean);
@@ -294,9 +292,7 @@ public class JavacHandlerUtil {
 	 */
 	public static String toGetterName(JavacNode field) {
 		String fieldName = field.getName();
-		
-		boolean isBoolean = ((JCVariableDecl) field.get()).vartype.toString().equals("boolean");
-		
+		boolean isBoolean = isBoolean(field);
 		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
 		
 		return TransformationsUtil.toGetterName(accessors, fieldName, isBoolean);
@@ -308,9 +304,7 @@ public class JavacHandlerUtil {
 	 */
 	public static java.util.List<String> toAllSetterNames(JavacNode field) {
 		String fieldName = field.getName();
-		
-		boolean isBoolean = ((JCVariableDecl) field.get()).vartype.toString().equals("boolean");
-		
+		boolean isBoolean = isBoolean(field);
 		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
 		
 		return TransformationsUtil.toAllSetterNames(accessors, fieldName, isBoolean);
@@ -323,12 +317,15 @@ public class JavacHandlerUtil {
 	 */
 	public static String toSetterName(JavacNode field) {
 		String fieldName = field.getName();
-		
-		boolean isBoolean = ((JCVariableDecl) field.get()).toString().equals("boolean");
-		
+		boolean isBoolean = isBoolean(field);
 		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
 		
 		return TransformationsUtil.toSetterName(accessors, fieldName, isBoolean);
+	}
+	
+	private static boolean isBoolean(JavacNode field) {
+		JCExpression varType = ((JCVariableDecl) field.get()).vartype;
+		return varType != null && varType.toString().equals("boolean");
 	}
 	
 	public static AnnotationValues<Accessors> getAccessorsForField(JavacNode field) {
@@ -345,7 +342,7 @@ public class JavacHandlerUtil {
 					return createAnnotation(Accessors.class, node);
 				}
 			}
-			current = field.up();
+			current = current.up();
 		}
 		
 		return AnnotationValues.of(Accessors.class, field);
