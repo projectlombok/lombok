@@ -4,6 +4,7 @@ Lombok Changelog
 ### v0.10.9 (edge)
 * FEATURE: The combination of `@Delegate` and `@Getter` or `@Data` will now delegate to the result of a generated getter. [Issue #328](http://code.google.com/p/projectlombok/issues/detail?id=328)
 * BUGFIX: When `@Delegate` would generate a method with type parameters of the type `T extends package.Class`, a dot would be prepended to the type name. [Issue #341](http://code.google.com/p/projectlombok/issues/detail?id=341)
+* BUGFIX: @Getter and @Setter now generate deprecated methods for deprecated fields. Fixes [Issue #342](http://code.google.com/p/projectlombok/issues/detail?id=342)
 * BUGFIX: Using `val` with a type like `Outer<TypeArgs>.Inner` now works. [Issue #343](http://code.google.com/p/projectlombok/issues/detail?id=343)
 * BUGFIX: `@Getter(lazy=true)` where the variable type is a primitive and the initializing expression is of a different primitive type that would type coerce implicitly, i.e. ints can be assigned to longs without a cast, didn't work before. [Issue #345](http://code.google.com/p/projectlombok/issues/detail?id=345)
 * BUGFIX: `val` is no longer legal inside basic for loops (the old kind, not the foreach kind). These variables should rarely be final, and in practice it wasn't possible to delombok this code properly. [Issue #346](http://code.google.com/p/projectlombok/issues/detail?id=346)

@@ -212,14 +212,20 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		}
 		
 		MethodDeclaration method = generateGetter((TypeDeclaration) fieldNode.up().get(), fieldNode, getterName, modifier, source, lazy);
-		Annotation[] copiedAnnotations = copyAnnotations(source, findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN), findDelegatesAndMarkAsHandled(fieldNode));
+		
+		Annotation[] deprecated = null;
+		if (isFieldDeprecated(fieldNode)) {
+			deprecated = new Annotation[] { generateDeprecatedAnnotation(source) };
+		}
+		
+		Annotation[] copiedAnnotations = copyAnnotations(source, findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN), findDelegatesAndMarkAsHandled(fieldNode), deprecated);
 		if (copiedAnnotations.length != 0) {
 			method.annotations = copiedAnnotations;
 		}
 		
 		injectMethod(fieldNode.up(), method);
 	}
-
+	
 	private static Annotation[] findDelegatesAndMarkAsHandled(EclipseNode fieldNode) {
 		List<Annotation> delegates = new ArrayList<Annotation>();
 		for (EclipseNode child : fieldNode.down()) {
