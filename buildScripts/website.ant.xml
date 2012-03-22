@@ -303,6 +303,7 @@ such as converting the changelog into HTML, and creating javadoc.
 		]]></echo>
 		<javadoc sourcepath="src/core" defaultexcludes="yes" destdir="build/api" windowtitle="Lombok" Overview="${javadoc.overview.html}">
 			<classpath refid="build.path" />
+			<classpath location="build/lombok" />
 			<link href="http://download.oracle.com/javase/6/docs/api/" />
 			<link href="http://www.slf4j.org/api/" />
 			<link href="http://commons.apache.org/logging/apidocs/" />
