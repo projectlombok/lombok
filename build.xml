@@ -397,10 +397,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ant>
 	</target>
 	
-	<target name="maven" depends="version, dist, test" description="Build a maven artifact bundle.">
-		<ant antfile="buildScripts/website.ant.xml" target="javadoc" inheritAll="false">
-			<property name="lombok.version" value="${lombok.version}" />
-		</ant>
+	<target name="maven" depends="version, dist, test, javadoc" description="Build a maven artifact bundle.">
 		<jar destfile="dist/lombok-${lombok.version}-javadoc.jar">
 			<fileset dir="doc/api" />
 		</jar>
