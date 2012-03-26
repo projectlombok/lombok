@@ -72,10 +72,6 @@ public class TransformationsUtil {
 		return null;
 	}
 	
-	/** Matches any of the 8 primitive names, such as {@code boolean}. */
-	public static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern.compile(
-			"^(boolean|byte|short|int|long|float|double|char)$");
-	
 	/* NB: 'notnull' is not part of the pattern because there are lots of @NotNull annotations out there that are crappily named and actually mean
 	        something else, such as 'this field must not be null _when saved to the db_ but its perfectly okay to start out as such, and a no-args
 	        constructor and the implied starts-out-as-null state that goes with it is in fact mandatory' which happens with javax.validation.constraints.NotNull.

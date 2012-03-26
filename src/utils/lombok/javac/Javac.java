@@ -21,7 +21,7 @@
  */
 package lombok.javac;
 
-import lombok.core.TransformationsUtil;
+import java.util.regex.Pattern;
 
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
@@ -36,12 +36,16 @@ public class Javac {
 		//prevent instantiation
 	}
 	
+	/** Matches any of the 8 primitive names, such as {@code boolean}. */
+	private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern.compile(
+			"^(boolean|byte|short|int|long|float|double|char)$");
+	
 	/**
 	 * Checks if the given expression (that really ought to refer to a type expression) represents a primitive type.
 	 */
 	public static boolean isPrimitive(JCExpression ref) {
 		String typeName = ref.toString();
-		return TransformationsUtil.PRIMITIVE_TYPE_NAME_PATTERN.matcher(typeName).matches();
+		return PRIMITIVE_TYPE_NAME_PATTERN.matcher(typeName).matches();
 	}
 	
 	/**

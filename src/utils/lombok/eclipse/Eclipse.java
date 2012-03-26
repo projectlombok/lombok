@@ -26,8 +26,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import lombok.core.TransformationsUtil;
-
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -135,12 +133,16 @@ public class Eclipse {
 		return result.toArray(EMPTY_ANNOTATIONS_ARRAY);
 	}
 	
+	/** Matches any of the 8 primitive names, such as {@code boolean}. */
+	private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern.compile(
+			"^(boolean|byte|short|int|long|float|double|char)$");
+	
 	/**
 	 * Checks if the given type reference represents a primitive type.
 	 */
 	public static boolean isPrimitive(TypeReference ref) {
 		if (ref.dimensions() > 0) return false;
-		return TransformationsUtil.PRIMITIVE_TYPE_NAME_PATTERN.matcher(toQualifiedName(ref.getTypeName())).matches();
+		return PRIMITIVE_TYPE_NAME_PATTERN.matcher(toQualifiedName(ref.getTypeName())).matches();
 	}
 	
 	/**
