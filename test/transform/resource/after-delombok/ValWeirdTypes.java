@@ -23,7 +23,7 @@ public class ValWeirdTypes<Z> {
 			}
 		};
 	}
-	public <T extends Number>void testTypeParams(List<T> param) {
+	public <T extends Number> void testTypeParams(List<T> param) {
 		final T t = param.get(0);
 		final Z z = fieldList.get(0);
 		final java.util.List<T> k = param;

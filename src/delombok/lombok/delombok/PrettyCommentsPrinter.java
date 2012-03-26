@@ -759,6 +759,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
             printDocComment(tree);
             printExpr(tree.mods);
             printTypeParameters(tree.typarams);
+            if (tree.typarams != null && tree.typarams.length() > 0) print(" ");
             if (tree.name == tree.name.table.fromChars("<init>".toCharArray(), 0, 6)) {
                 print(enclClassName != null ? enclClassName : tree.name);
             } else {
