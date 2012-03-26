@@ -159,7 +159,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 			}
 		}
 		
-		switch (methodExists("toString", typeNode)) {
+		switch (methodExists("toString", typeNode, 0)) {
 		case NOT_EXISTS:
 			MethodDeclaration toString = createToString(typeNode, nodesForToString, includeFieldNames, callSuper, errorNode.get(), fieldAccess);
 			injectMethod(typeNode, toString);

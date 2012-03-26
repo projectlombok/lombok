@@ -191,7 +191,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		String methodName = toGetterName(fieldDecl);
 		
 		for (String altName : toAllGetterNames(fieldDecl)) {
-			switch (methodExists(altName, fieldNode, false)) {
+			switch (methodExists(altName, fieldNode, false, 0)) {
 			case EXISTS_BY_LOMBOK:
 				return;
 			case EXISTS_BY_USER:

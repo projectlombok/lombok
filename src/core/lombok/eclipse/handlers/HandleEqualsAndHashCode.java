@@ -204,9 +204,9 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		boolean isFinal = (typeDecl.modifiers & ClassFileConstants.AccFinal) != 0;
 		boolean needsCanEqual = !isDirectDescendantOfObject || !isFinal;
 		java.util.List<MemberExistsResult> existsResults = new ArrayList<MemberExistsResult>();
-		existsResults.add(methodExists("equals", typeNode));
-		existsResults.add(methodExists("hashCode", typeNode));
-		existsResults.add(methodExists("canEqual", typeNode));
+		existsResults.add(methodExists("equals", typeNode, 1));
+		existsResults.add(methodExists("hashCode", typeNode, 0));
+		existsResults.add(methodExists("canEqual", typeNode, 1));
 		switch (Collections.max(existsResults)) {
 		case EXISTS_BY_LOMBOK:
 			return;

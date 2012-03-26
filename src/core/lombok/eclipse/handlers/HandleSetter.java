@@ -153,7 +153,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		int modifier = toEclipseModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		
 		for (String altName : TransformationsUtil.toAllSetterNames(new String(field.name), isBoolean)) {
-			switch (methodExists(altName, fieldNode, false)) {
+			switch (methodExists(altName, fieldNode, false, 1)) {
 			case EXISTS_BY_LOMBOK:
 				return;
 			case EXISTS_BY_USER:

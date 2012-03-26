@@ -165,7 +165,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		String methodName = toSetterName(fieldDecl);
 		
 		for (String altName : toAllSetterNames(fieldDecl)) {
-			switch (methodExists(altName, fieldNode, false)) {
+			switch (methodExists(altName, fieldNode, false, 1)) {
 			case EXISTS_BY_LOMBOK:
 				return;
 			case EXISTS_BY_USER:
