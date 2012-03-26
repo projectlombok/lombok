@@ -21,9 +21,6 @@
  */
 package lombok.bytecode;
 
-import java.io.InputStream;
-import java.util.Arrays;
-
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -37,45 +34,10 @@ class FixedClassWriter extends ClassWriter {
 		//environment with custom classloaders, such as Equinox. It's just an optimization; returning Object is always legal.
 		try {
 			return super.getCommonSuperClass(type1, type2);
-		} catch (Exception e) {
+		} catch (OutOfMemoryError e) {
+			throw e;
+		} catch (Throwable t) {
 			return "java/lang/Object";
-		} catch (ClassFormatError e) {
-			ClassLoader cl = this.getClass().getClassLoader();
-			if (cl == null) cl = ClassLoader.getSystemClassLoader();
-			String message = debugCheckClassFormatErrorIssue(cl, type1) +
-					debugCheckClassFormatErrorIssue(cl, type2);
-			throw new ClassFormatError(message);
-		}
-	}
-	
-	
-	// This is debug-aiding code in an attempt to find the cause of issue:
-	// http://code.google.com/p/projectlombok/issues/detail?id=339
-	private static String debugCheckClassFormatErrorIssue(ClassLoader cl, String type) {
-		try {
-			Class.forName(type.replace('/', '.'), false, cl);
-			return String.format("Class.forName debug on %s: no issues\n", type);
-		} catch (ClassFormatError e) {
-			// expected
-		} catch (Throwable e) {
-			return String.format("Class.forName debug on %s: Exception: %s\n", type, e);
-		}
-		
-		try {
-			InputStream in = cl.getResourceAsStream(type + ".class");
-			if (in == null) return String.format("Class.forName debug on %s: Can't find resource %s\n", type, type + ".class");
-			try {
-				int[] firstBytes = new int[4];
-				for (int i = 0; i < 4; i++) firstBytes[0] = in.read();
-				if (firstBytes[0] == -1) return String.format("Class.forName debug on %s: file size is 0\n", type);
-				if (firstBytes[3] == -1) return String.format("Class.forName debug on %s: Less than 4 bytes in class file\n", type);
-				if (!Arrays.equals(new int[] {0xCA, 0xFE, 0xBA, 0xBE}, firstBytes)) return String.format("Class.forName debug on %s: no CAFEBABE: %s\n", type, Arrays.toString(firstBytes));
-				return String.format("Class.forName debug on %s: No immediately obvious reason for failure found\n", type);
-			} finally {
-				in.close();
-			}
-		} catch (Throwable e) {
-			return String.format("Class.forName debug on %s: Can't read as stream: %s\n", type, e);
 		}
 	}
 }
