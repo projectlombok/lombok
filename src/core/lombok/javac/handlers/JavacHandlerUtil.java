@@ -36,11 +36,11 @@ import java.util.regex.Pattern;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
+import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TransformationsUtil;
 import lombok.core.TypeResolver;
-import lombok.core.AST.Kind;
-import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.experimental.Accessors;
 import lombok.javac.Javac;
 import lombok.javac.JavacNode;
@@ -48,10 +48,6 @@ import lombok.javac.JavacNode;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeScanner;
-import com.sun.tools.javac.tree.JCTree.JCLiteral;
-import com.sun.tools.javac.tree.JCTree.JCModifiers;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -59,15 +55,19 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
+import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.tree.TreeScanner;
+import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
-import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
 /**
  * Container for static utility methods useful to handlers written for javac.
@@ -701,6 +701,9 @@ public class JavacHandlerUtil {
 						JavacNode tossMe = typeNode.getNodeFor(def);
 						if (tossMe != null) tossMe.up().removeChild(tossMe);
 						type.defs = addAllButOne(type.defs, idx);
+						if (type.sym != null && type.sym.members_field != null) {
+							 type.sym.members_field.remove(((JCMethodDecl)def).sym);
+						}
 						break;
 					}
 				}
