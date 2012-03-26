@@ -1,5 +1,4 @@
 class AccessorsFluent {
-	@lombok.experimental.Accessors(fluent = true)
 	private String fieldName = "";
 	
 	@java.lang.SuppressWarnings("all")
@@ -14,10 +13,8 @@ class AccessorsFluent {
 	}
 }
 
-@lombok.experimental.Accessors(fluent = true)
 class AccessorsFluentOnClass {
 	private String fieldName = "";
-	@lombok.experimental.Accessors
 	private String otherFieldWithOverride = "";
 	
 	@java.lang.SuppressWarnings("all")
@@ -38,7 +35,6 @@ class AccessorsFluentOnClass {
 }
 
 class AccessorsChain {
-	@lombok.experimental.Accessors(chain = true)
 	private boolean isRunning;
 	
 	@java.lang.SuppressWarnings("all")
@@ -48,7 +44,6 @@ class AccessorsChain {
 	}
 }
 
-@lombok.experimental.Accessors(prefix = "f")
 class AccessorsPrefix {
 	
 	private String fieldName;
@@ -60,7 +55,6 @@ class AccessorsPrefix {
 	}
 }
 
-@lombok.experimental.Accessors(prefix = {"f", ""})
 class AccessorsPrefix2 {
 	
 	private String fieldName;
@@ -77,7 +71,6 @@ class AccessorsPrefix2 {
 	}
 }
 
-@lombok.experimental.Accessors(prefix = "f")
 class AccessorsPrefix3 {
 	private String fName;
 	
