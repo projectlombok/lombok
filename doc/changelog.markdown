@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v0.10.9 (edge)
 * FEATURE: The combination of `@Delegate` and `@Getter` or `@Data` will now delegate to the result of a generated getter. [Issue #328](http://code.google.com/p/projectlombok/issues/detail?id=328)
+* BUGFIX: In NetBeans the generated default constructor would still be generated even if Lombok also generated constructors. [Issue #326](http://code.google.com/p/projectlombok/issues/detail?id=326)
 * BUGFIX: Some classes that contain @SneakyThrows would not compile (throw ClassFormatError). [Issue 339](http://code.google.com/p/projectlombok/issues/detail?id=339)
 * BUGFIX: delombok: When `@Delegate` would generate a method with type parameters of the type `T extends package.Class`, a dot would be prepended to the type name. [Issue #341](http://code.google.com/p/projectlombok/issues/detail?id=341)
 * BUGFIX: @Getter and @Setter now generate deprecated methods for deprecated fields. Fixes [Issue #342](http://code.google.com/p/projectlombok/issues/detail?id=342)
