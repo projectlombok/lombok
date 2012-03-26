@@ -1055,7 +1055,7 @@ public class EclipseHandlerUtil {
 	}
 	
 	/**
-	 * Wrapper for {@link #methodExists(String, EclipseNode, boolean)} with {@code caseSensitive} = {@code true}.
+	 * Wrapper for {@link #methodExists(String, EclipseNode, boolean, int)} with {@code caseSensitive} = {@code true}.
 	 */
 	public static MemberExistsResult methodExists(String methodName, EclipseNode node, int params) {
 		return methodExists(methodName, node, true, params);

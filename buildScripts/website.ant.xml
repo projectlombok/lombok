@@ -145,6 +145,9 @@ such as converting the changelog into HTML, and creating javadoc.
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="Delegate" />
 		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="experimental/Accessors" />
+		</antcall>
 	</target>
 	
 	<target name="-website-dist">
@@ -199,7 +202,7 @@ such as converting the changelog into HTML, and creating javadoc.
 			</filterchain>
 		</loadfile>
 		<delete dir="build/temp" quiet="true" />
-		<copy file="${htmlfile}" todir="build/website/features" overwrite="true">
+		<copy file="${htmlfile}" tofile="build/website/features/${transformationName}.html" overwrite="true">
 			<filterchain>
 				<replacetokens>
 					<token key="HTML_PRE" value="${pre}" />

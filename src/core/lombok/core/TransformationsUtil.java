@@ -93,7 +93,7 @@ public class TransformationsUtil {
 	 * Strategy:
 	 * <ul>
 	 * <li>Reduce the field's name to its base name by stripping off any prefix (from {@code Accessors}). If the field name does not fit
-	 * the prefix list, this method immediately returns {@null}.</li>
+	 * the prefix list, this method immediately returns {@code null}.</li>
 	 * <li>If {@code Accessors} has {@code fluent=true}, then return the basename.</li>
 	 * <li>Pick a prefix. 'get' normally, but 'is' if {@code isBoolean} is true.</li>
 	 * <li>Only if {@code isBoolean} is true: Check if the field starts with {@code is} followed by a non-lowercase character. If so, return the field name verbatim.</li> 
@@ -130,7 +130,7 @@ public class TransformationsUtil {
 	 * Strategy:
 	 * <ul>
 	 * <li>Reduce the field's name to its base name by stripping off any prefix (from {@code Accessors}). If the field name does not fit
-	 * the prefix list, this method immediately returns {@null}.</li>
+	 * the prefix list, this method immediately returns {@code null}.</li>
 	 * <li>If {@code Accessors} has {@code fluent=true}, then return the basename.</li>
 	 * <li>Only if {@code isBoolean} is true: Check if the field starts with {@code is} followed by a non-lowercase character.
 	 * If so, replace {@code is} with {@code set} and return that.</li> 
