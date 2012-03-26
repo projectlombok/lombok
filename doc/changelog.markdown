@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v0.10.9 (edge)
+* FEATURE: [Experimental] 'fluent' getters and setters (using just `fieldName` as methodname instead of `getFieldName`), setters that return `this` instead of `void`, and support for fields with prefixes is introduced with this lombok version. Also, the number of parameters of any existing methods with the same name that lombok would generate are now taken into account; previously if you had any method named `setX` regardless of how many parameters it has, lombok would avoid generating a `setX` method. Now lombok generates the method if all present `setX` methods have a number of parameters other than 1. [documentation](http://projectlombok.org/features/experimental/Accessors.html).
 * FEATURE: The combination of `@Delegate` and `@Getter` or `@Data` will now delegate to the result of a generated getter. [Issue #328](http://code.google.com/p/projectlombok/issues/detail?id=328)
 * BUGFIX: In NetBeans the generated default constructor would still be generated even if Lombok also generated constructors. [Issue #326](http://code.google.com/p/projectlombok/issues/detail?id=326)
 * BUGFIX: Some classes that contain @SneakyThrows would not compile (throw ClassFormatError). [Issue 339](http://code.google.com/p/projectlombok/issues/detail?id=339)
