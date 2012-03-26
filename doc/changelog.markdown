@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v0.10.9 (edge)
 * FEATURE: The combination of `@Delegate` and `@Getter` or `@Data` will now delegate to the result of a generated getter. [Issue #328](http://code.google.com/p/projectlombok/issues/detail?id=328)
+* BUGFIX: Some classes that contain @SneakyThrows would not compile (throw ClassFormatError). [Issue 339](http://code.google.com/p/projectlombok/issues/detail?id=339)
 * BUGFIX: When `@Delegate` would generate a method with type parameters of the type `T extends package.Class`, a dot would be prepended to the type name. [Issue #341](http://code.google.com/p/projectlombok/issues/detail?id=341)
 * BUGFIX: @Getter and @Setter now generate deprecated methods for deprecated fields. Fixes [Issue #342](http://code.google.com/p/projectlombok/issues/detail?id=342)
 * BUGFIX: Using `val` with a type like `Outer<TypeArgs>.Inner` now works. [Issue #343](http://code.google.com/p/projectlombok/issues/detail?id=343)
