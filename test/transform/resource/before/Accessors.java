@@ -36,3 +36,15 @@ class AccessorsPrefix3 {
 		return fName;
 	}
 }
+
+class AccessorsFluentGenerics<T extends Number> {
+	@lombok.Setter @lombok.experimental.Accessors(fluent=true) private String name;
+}
+
+class AccessorsFluentNoChaining {
+	@lombok.Setter @lombok.experimental.Accessors(fluent=true,chain=false) private String name;
+}
+
+class AccessorsFluentStatic<T extends Number> {
+	@lombok.Setter @lombok.experimental.Accessors(fluent=true) private static String name;
+}

@@ -109,3 +109,25 @@ class AccessorsPrefix3 {
 		return result;
 	}
 }
+class AccessorsFluentGenerics<T extends Number> {
+	private String name;
+	@java.lang.SuppressWarnings("all")
+	public AccessorsFluentGenerics<T> name(final String name) {
+		this.name = name;
+		return this;
+	}
+}
+class AccessorsFluentNoChaining {
+	private String name;
+	@java.lang.SuppressWarnings("all")
+	public void name(final String name) {
+		this.name = name;
+	}
+}
+class AccessorsFluentStatic<T extends Number> {
+	private static String name;
+	@java.lang.SuppressWarnings("all")
+	public static void name(final String name) {
+		AccessorsFluentStatic.name = name;
+	}
+}

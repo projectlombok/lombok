@@ -30,16 +30,16 @@ class Setter6 {
 }
 class Setter7 {
 	@lombok.Setter String foo;
-	static void setFoo() {
+	void setFoo(String foo, Object... x) {
 	}
 }
 class Setter8 {
 	@lombok.Setter boolean isFoo;
-	void setIsFoo() {
+	void setIsFoo(boolean foo) {
 	}
 }
 class Setter9 {
 	@lombok.Setter boolean isFoo;
-	void setFoo() {
+	void setFoo(boolean foo) {
 	}
 }

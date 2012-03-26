@@ -45,3 +45,17 @@ class NoArgsConstructor1 {
 	public NoArgsConstructor1() {
 	}
 }
+class RequiredArgsConstructorStaticNameGenerics<T extends Number> {
+	final T x;
+	String name;
+	
+	@java.lang.SuppressWarnings("all")
+	private RequiredArgsConstructorStaticNameGenerics(final T x) {
+		this.x = x;
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public static <T extends Number> RequiredArgsConstructorStaticNameGenerics<T> of(final T x) {
+		return new RequiredArgsConstructorStaticNameGenerics<T>(x);
+	}
+}

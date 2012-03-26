@@ -94,3 +94,33 @@ class AccessorsChain {
     return fName;
   }
 }
+class AccessorsFluentGenerics<T extends Number> {
+  private @lombok.Setter @lombok.experimental.Accessors(fluent = true) String name;
+  public @java.lang.SuppressWarnings("all") AccessorsFluentGenerics<T> name(final String name) {
+    this.name = name;
+    return this;
+  }
+  AccessorsFluentGenerics() {
+    super();
+  }
+}
+class AccessorsFluentNoChaining {
+  private @lombok.Setter @lombok.experimental.Accessors(fluent = true,chain = false) String name;
+  public @java.lang.SuppressWarnings("all") void name(final String name) {
+    this.name = name;
+  }
+  AccessorsFluentNoChaining() {
+    super();
+  }
+}
+class AccessorsFluentStatic<T extends Number> {
+  private static @lombok.Setter @lombok.experimental.Accessors(fluent = true) String name;
+  <clinit>() {
+  }
+  public static @java.lang.SuppressWarnings("all") void name(final String name) {
+    AccessorsFluentStatic.name = name;
+  }
+  AccessorsFluentStatic() {
+    super();
+  }
+}

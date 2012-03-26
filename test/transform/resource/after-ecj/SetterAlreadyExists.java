@@ -32,6 +32,9 @@ class Setter4 {
 }
 class Setter5 {
   @lombok.Setter String foo;
+  public @java.lang.SuppressWarnings("all") void setFoo(final String foo) {
+    this.foo = foo;
+  }
   Setter5() {
     super();
   }
@@ -40,6 +43,9 @@ class Setter5 {
 }
 class Setter6 {
   @lombok.Setter String foo;
+  public @java.lang.SuppressWarnings("all") void setFoo(final String foo) {
+    this.foo = foo;
+  }
   Setter6() {
     super();
   }
@@ -51,7 +57,7 @@ class Setter7 {
   Setter7() {
     super();
   }
-  static void setFoo() {
+  void setFoo(String foo, Object... x) {
   }
 }
 class Setter8 {
@@ -59,7 +65,7 @@ class Setter8 {
   Setter8() {
     super();
   }
-  void setIsFoo() {
+  void setIsFoo(boolean foo) {
   }
 }
 class Setter9 {
@@ -67,6 +73,6 @@ class Setter9 {
   Setter9() {
     super();
   }
-  void setFoo() {
+  void setFoo(boolean foo) {
   }
 }

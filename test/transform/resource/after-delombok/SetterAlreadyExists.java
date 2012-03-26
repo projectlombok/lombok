@@ -22,24 +22,32 @@ class Setter5 {
 	String foo;
 	void setFoo() {
 	}
+	@java.lang.SuppressWarnings("all")
+	public void setFoo(final String foo) {
+		this.foo = foo;
+	}
 }
 class Setter6 {
 	String foo;
 	void setFoo(String foo, int x) {
 	}
+	@java.lang.SuppressWarnings("all")
+	public void setFoo(final String foo) {
+		this.foo = foo;
+	}
 }
 class Setter7 {
 	String foo;
-	static void setFoo() {
+	void setFoo(String foo, Object... x) {
 	}
 }
 class Setter8 {
 	boolean isFoo;
-	void setIsFoo() {
+	void setIsFoo(boolean foo) {
 	}
 }
 class Setter9 {
 	boolean isFoo;
-	void setFoo() {
+	void setFoo(boolean foo) {
 	}
 }
