@@ -50,12 +50,14 @@ import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCReturn;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
 /**
@@ -195,6 +197,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	
 	private JCMethodDecl createSetter(long access, JavacNode field, TreeMaker treeMaker, JCTree source) {
 		String setterName = toSetterName(field);
+		boolean returnThis = shouldReturnThis(field);
 		if (setterName == null) return null;
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
@@ -202,26 +205,53 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		JCExpression fieldRef = createFieldAccessor(treeMaker, field, FieldAccess.ALWAYS_FIELD);
 		JCAssign assign = treeMaker.Assign(fieldRef, treeMaker.Ident(fieldDecl.name));
 		
-		List<JCStatement> statements;
+		ListBuffer<JCStatement> statements = ListBuffer.lb();
 		List<JCAnnotation> nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
 		List<JCAnnotation> nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
 		
-		if (nonNulls.isEmpty()) {
-			statements = List.<JCStatement>of(treeMaker.Exec(assign));
-		} else {
-			JCStatement nullCheck = generateNullCheck(treeMaker, field);
-			if (nullCheck != null) statements = List.<JCStatement>of(nullCheck, treeMaker.Exec(assign));
-			else statements = List.<JCStatement>of(treeMaker.Exec(assign));
-		}
-		
-		JCBlock methodBody = treeMaker.Block(0, statements);
 		Name methodName = field.toName(setterName);
 		List<JCAnnotation> annsOnParam = nonNulls.appendList(nullables);
 		
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(Flags.FINAL, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
-		//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.
-		JCExpression methodType = treeMaker.Type(new JCNoType(getCtcInt(TypeTags.class, "VOID")));
 		
+		if (nonNulls.isEmpty()) {
+			statements.append(treeMaker.Exec(assign));
+		} else {
+			JCStatement nullCheck = generateNullCheck(treeMaker, field);
+			if (nullCheck != null) statements.append(nullCheck);
+			statements.append(treeMaker.Exec(assign));
+		}
+		
+		JCExpression methodType = null;
+		if (returnThis) {
+			JavacNode typeNode = field;
+			while (typeNode != null && typeNode.getKind() != Kind.TYPE) typeNode = typeNode.up();
+			if (typeNode != null && typeNode.get() instanceof JCClassDecl) {
+				JCClassDecl type = (JCClassDecl) typeNode.get();
+				ListBuffer<JCExpression> typeArgs = ListBuffer.lb();
+				if (!type.typarams.isEmpty()) {
+					for (JCTypeParameter tp : type.typarams) {
+						typeArgs.append(treeMaker.Ident(tp.name));
+					}
+					methodType = treeMaker.TypeApply(treeMaker.Ident(type.name), typeArgs.toList());
+				} else {
+					methodType = treeMaker.Ident(type.name);
+				}
+			}
+		}
+		
+		if (methodType == null) {
+			//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.
+			methodType = treeMaker.Type(new JCNoType(getCtcInt(TypeTags.class, "VOID")));
+			returnThis = false;
+		}
+		
+		if (returnThis) {
+			JCReturn returnStatement = treeMaker.Return(treeMaker.Ident(field.toName("this")));
+			statements.append(returnStatement);
+		}
+		
+		JCBlock methodBody = treeMaker.Block(0, statements.toList());
 		List<JCTypeParameter> methodGenericParams = List.nil();
 		List<JCVariableDecl> parameters = List.of(param);
 		List<JCExpression> throwsClauses = List.nil();

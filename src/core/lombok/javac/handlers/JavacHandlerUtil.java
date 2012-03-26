@@ -341,6 +341,20 @@ public class JavacHandlerUtil {
 		return TransformationsUtil.toSetterName(accessors, fieldName, isBoolean);
 	}
 	
+	/**
+	 * When generating a setter, the setter either returns void (beanspec) or Self (fluent).
+	 * This method scans for the {@code Accessors} annotation to figure that out.
+	 */
+	public static boolean shouldReturnThis(JavacNode field) {
+		if ((((JCVariableDecl) field.get()).mods.flags & Flags.STATIC) != 0) return false;
+		
+		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
+		
+		boolean forced = (accessors.getActualExpression("chain") != null);
+		Accessors instance = accessors.getInstance();
+		return instance.chain() || (instance.fluent() && !forced);
+	}
+	
 	private static boolean isBoolean(JavacNode field) {
 		JCExpression varType = ((JCVariableDecl) field.get()).vartype;
 		return varType != null && varType.toString().equals("boolean");
@@ -355,7 +369,7 @@ public class JavacHandlerUtil {
 		
 		JavacNode current = field.up();
 		while (current != null) {
-			for (JavacNode node : field.down()) {
+			for (JavacNode node : current.down()) {
 				if (annotationTypeMatches(Accessors.class, node)) {
 					return createAnnotation(Accessors.class, node);
 				}

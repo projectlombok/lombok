@@ -937,7 +937,7 @@ public class EclipseHandlerUtil {
 	 */
 	public static List<String> toAllGetterNames(EclipseNode field, boolean isBoolean) {
 		String fieldName = field.getName();
-		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
+		AnnotationValues<Accessors> accessors = getAccessorsForField(field);
 		
 		return TransformationsUtil.toAllGetterNames(accessors, fieldName, isBoolean);
 	}
@@ -978,6 +978,18 @@ public class EclipseHandlerUtil {
 	}
 	
 	/**
+	 * When generating a setter, the setter either returns void (beanspec) or Self (fluent).
+	 * This method scans for the {@code Accessors} annotation to figure that out.
+	 */
+	public static boolean shouldReturnThis(EclipseNode field) {
+		if ((((FieldDeclaration) field.get()).modifiers & ClassFileConstants.AccStatic) != 0) return false;
+		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
+		boolean forced = (accessors.getActualExpression("chain") != null);
+		Accessors instance = accessors.getInstance();
+		return instance.chain() || (instance.fluent() && !forced);
+	}
+	
+	/**
 	 * Checks if the field should be included in operations that work on 'all' fields:
 	 *    If the field is static, or starts with a '$', or is actually an enum constant, 'false' is returned, indicating you should skip it.
 	 */
@@ -1006,7 +1018,7 @@ public class EclipseHandlerUtil {
 		
 		EclipseNode current = field.up();
 		while (current != null) {
-			for (EclipseNode node : field.down()) {
+			for (EclipseNode node : current.down()) {
 				if (annotationTypeMatches(Accessors.class, node)) {
 					return createAnnotation(Accessors.class, node);
 				}
