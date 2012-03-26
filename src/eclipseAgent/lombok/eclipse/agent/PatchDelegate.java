@@ -51,11 +51,9 @@ import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
-import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
@@ -613,11 +611,7 @@ public class PatchDelegate {
 		}
 		
 		if (isDeprecated) {
-			QualifiedTypeReference qtr = new QualifiedTypeReference(new char[][] {
-					{'j', 'a', 'v', 'a'}, {'l', 'a', 'n', 'g'}, {'D', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd'}}, poss(source, 3));
-			setGeneratedBy(qtr, source);
-			MarkerAnnotation ann = new MarkerAnnotation(qtr, pS);
-			method.annotations = new Annotation[] {ann};
+			method.annotations = new Annotation[] { generateDeprecatedAnnotation(source) };
 		}
 		
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;

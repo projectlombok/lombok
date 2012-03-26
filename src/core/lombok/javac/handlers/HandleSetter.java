@@ -170,7 +170,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		}
 		
 		for (String altName : toAllSetterNames(fieldNode)) {
-			switch (methodExists(altName, fieldNode, false)) {
+			switch (methodExists(altName, fieldNode, false, 1)) {
 			case EXISTS_BY_LOMBOK:
 				return;
 			case EXISTS_BY_USER:
@@ -217,6 +217,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		JCBlock methodBody = treeMaker.Block(0, statements);
 		Name methodName = field.toName(setterName);
 		List<JCAnnotation> annsOnParam = nonNulls.appendList(nullables);
+		
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(Flags.FINAL, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
 		//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.
 		JCExpression methodType = treeMaker.Type(new JCNoType(getCtcInt(TypeTags.class, "VOID")));
@@ -226,7 +227,11 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		List<JCExpression> throwsClauses = List.nil();
 		JCExpression annotationMethodDefaultValue = null;
 		
-		return recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, List.<JCAnnotation>nil()), methodName, methodType,
+		List<JCAnnotation> annsOnMethod = List.nil();
+		if (isFieldDeprecated(field)) {
+			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(chainDots(field, "java", "lang", "Deprecated"), List.<JCExpression>nil()));
+		}
+		return recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
 	}
 	

@@ -144,6 +144,24 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
+	 * Returns if a field is marked deprecated, either by {@code @Deprecated} or in javadoc
+	 * @param field the field to check
+	 * @return {@code true} if a field is marked deprecated, either by {@code @Deprecated} or in javadoc, otherwise {@code false}
+	 */
+	public static boolean isFieldDeprecated(JavacNode field) {
+		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
+		if ((fieldNode.mods.flags & Flags.DEPRECATED) != 0) {
+			return true;
+		}
+		for (JavacNode child : field.down()) {
+			if (annotationTypeMatches(Deprecated.class, child)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
 	 * Creates an instance of {@code AnnotationValues} for the provided AST Node.
 	 * 
 	 * @param type An annotation class type, such as {@code lombok.Getter.class}.
@@ -372,8 +390,8 @@ public class JavacHandlerUtil {
 		return MemberExistsResult.NOT_EXISTS;
 	}
 	
-	public static MemberExistsResult methodExists(String methodName, JavacNode node) {
-		return methodExists(methodName, node, true);
+	public static MemberExistsResult methodExists(String methodName, JavacNode node, int params) {
+		return methodExists(methodName, node, true, params);
 	}
 	
 	/**
@@ -383,8 +401,9 @@ public class JavacHandlerUtil {
 	 * @param methodName the method name to check for.
 	 * @param node Any node that represents the Type (JCClassDecl) to look in, or any child node thereof.
 	 * @param caseSensitive If the search should be case sensitive.
+	 * @param params The number of parameters the method should have; varargs count as 0-*. Set to -1 to find any method with the appropriate name regardless of parameter count.
 	 */
-	public static MemberExistsResult methodExists(String methodName, JavacNode node, boolean caseSensitive) {
+	public static MemberExistsResult methodExists(String methodName, JavacNode node, boolean caseSensitive, int params) {
 		while (node != null && !(node.get() instanceof JCClassDecl)) {
 			node = node.up();
 		}
@@ -392,9 +411,28 @@ public class JavacHandlerUtil {
 		if (node != null && node.get() instanceof JCClassDecl) {
 			for (JCTree def : ((JCClassDecl)node.get()).defs) {
 				if (def instanceof JCMethodDecl) {
-					String name = ((JCMethodDecl)def).name.toString();
+					JCMethodDecl md = (JCMethodDecl) def;
+					String name = md.name.toString();
 					boolean matches = caseSensitive ? name.equals(methodName) : name.equalsIgnoreCase(methodName);
-					if (matches) return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
+					if (matches) {
+						if (params > -1) {
+							List<JCVariableDecl> ps = md.params;
+							int minArgs = 0;
+							int maxArgs = 0;
+							if (ps != null && ps.length() > 0) {
+								minArgs = ps.length();
+								if ((ps.last().mods.flags & Flags.VARARGS) != 0) {
+									maxArgs = Integer.MAX_VALUE;
+									minArgs--;
+								} else {
+									maxArgs = minArgs;
+								}
+							}
+							
+							if (params < minArgs || params > maxArgs) continue;
+						}
+						return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
+					}
 				}
 			}
 		}

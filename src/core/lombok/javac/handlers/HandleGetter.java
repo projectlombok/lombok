@@ -74,11 +74,9 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	public void generateGetterForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelGetter) {
 		if (checkForTypeLevelGetter) {
 			if (typeNode != null) for (JavacNode child : typeNode.down()) {
-				if (child.getKind() == Kind.ANNOTATION) {
-					if (annotationTypeMatches(Getter.class, child)) {
-						//The annotation will make it happen, so we can skip it.
-						return;
-					}
+				if (annotationTypeMatches(Getter.class, child)) {
+					//The annotation will make it happen, so we can skip it.
+					return;
 				}
 			}
 		}
@@ -198,7 +196,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		}
 		
 		for (String altName : toAllGetterNames(fieldNode)) {
-			switch (methodExists(altName, fieldNode, false)) {
+			switch (methodExists(altName, fieldNode, false, 0)) {
 			case EXISTS_BY_LOMBOK:
 				return;
 			case EXISTS_BY_USER:
@@ -249,6 +247,9 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		List<JCAnnotation> delegates = findDelegatesAndRemoveFromField(field);
 		
 		List<JCAnnotation> annsOnMethod = nonNulls.appendList(nullables);
+		if (isFieldDeprecated(field)) {
+			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(chainDots(field, "java", "lang", "Deprecated"), List.<JCExpression>nil()));
+		}
 		
 		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);

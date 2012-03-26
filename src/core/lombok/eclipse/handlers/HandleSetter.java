@@ -157,7 +157,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		int modifier = toEclipseModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		
 		for (String altName : toAllSetterNames(fieldNode, isBoolean)) {
-			switch (methodExists(altName, fieldNode, false)) {
+			switch (methodExists(altName, fieldNode, false, 1)) {
 			case EXISTS_BY_LOMBOK:
 				return;
 			case EXISTS_BY_USER:
@@ -188,7 +188,9 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		method.returnType = TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		method.returnType.sourceStart = pS; method.returnType.sourceEnd = pE;
 		setGeneratedBy(method.returnType, source);
-		method.annotations = null;
+		if (isFieldDeprecated(fieldNode)) {
+			method.annotations = new Annotation[] { generateDeprecatedAnnotation(source) };
+		}
 		Argument param = new Argument(field.name, p, copyType(field.type, source), Modifier.FINAL);
 		param.sourceStart = pS; param.sourceEnd = pE;
 		setGeneratedBy(param, source);

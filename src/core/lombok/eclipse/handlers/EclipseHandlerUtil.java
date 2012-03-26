@@ -246,6 +246,27 @@ public class EclipseHandlerUtil {
 		return node;
 	}
 	
+	public static MarkerAnnotation generateDeprecatedAnnotation(ASTNode source) {
+		QualifiedTypeReference qtr = new QualifiedTypeReference(new char[][] {
+				{'j', 'a', 'v', 'a'}, {'l', 'a', 'n', 'g'}, {'D', 'e', 'p', 'r', 'e', 'c', 'a', 't', 'e', 'd'}}, poss(source, 3));
+		setGeneratedBy(qtr, source);
+		return new MarkerAnnotation(qtr, source.sourceStart);
+	}
+	
+	public static boolean isFieldDeprecated(EclipseNode fieldNode) {
+		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
+		if ((field.modifiers & ClassFileConstants.AccDeprecated) != 0) {
+			return true;
+		}
+		if (field.annotations == null) return false;
+		for (Annotation annotation : field.annotations) {
+			if (typeMatches(Deprecated.class, fieldNode, annotation.type)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * Checks if the given TypeReference node is likely to be a reference to the provided class.
 	 * 
@@ -1024,8 +1045,8 @@ public class EclipseHandlerUtil {
 	/**
 	 * Wrapper for {@link #methodExists(String, EclipseNode, boolean)} with {@code caseSensitive} = {@code true}.
 	 */
-	public static MemberExistsResult methodExists(String methodName, EclipseNode node) {
-		return methodExists(methodName, node, true);
+	public static MemberExistsResult methodExists(String methodName, EclipseNode node, int params) {
+		return methodExists(methodName, node, true, params);
 	}
 	
 	/**
@@ -1035,8 +1056,9 @@ public class EclipseHandlerUtil {
 	 * @param methodName the method name to check for.
 	 * @param node Any node that represents the Type (TypeDeclaration) to look in, or any child node thereof.
 	 * @param caseSensitive If the search should be case sensitive.
+	 * @param params The number of parameters the method should have; varargs count as 0-*. Set to -1 to find any method with the appropriate name regardless of parameter count.
 	 */
-	public static MemberExistsResult methodExists(String methodName, EclipseNode node, boolean caseSensitive) {
+	public static MemberExistsResult methodExists(String methodName, EclipseNode node, boolean caseSensitive, int params) {
 		while (node != null && !(node.get() instanceof TypeDeclaration)) {
 			node = node.up();
 		}
@@ -1048,7 +1070,24 @@ public class EclipseHandlerUtil {
 					char[] mName = def.selector;
 					if (mName == null) continue;
 					boolean nameEquals = caseSensitive ? methodName.equals(new String(mName)) : methodName.equalsIgnoreCase(new String(mName));
-					if (nameEquals) return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
+					if (nameEquals) {
+						if (params > -1) {
+							int minArgs = 0;
+							int maxArgs = 0;
+							if (def.arguments != null && def.arguments.length > 0) {
+								minArgs = def.arguments.length;
+								if ((def.arguments[def.arguments.length - 1].type.bits & ASTNode.IsVarArgs) != 0) {
+									minArgs--;
+									maxArgs = Integer.MAX_VALUE;
+								} else {
+									maxArgs = minArgs;
+								}
+							}
+							
+							if (params < minArgs || params > maxArgs) continue;
+						}
+						return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
+					}
 				}
 			}
 		}

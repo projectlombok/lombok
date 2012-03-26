@@ -151,7 +151,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			}
 		}
 		
-		switch (methodExists("toString", typeNode)) {
+		switch (methodExists("toString", typeNode, 0)) {
 		case NOT_EXISTS:
 			JCMethodDecl method = createToString(typeNode, nodesForToString.toList(), includeFieldNames, callSuper, fieldAccess, source.get());
 			injectMethod(typeNode, method);
