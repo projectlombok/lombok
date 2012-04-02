@@ -6,6 +6,11 @@ public class ValOutersWithGenerics<Z> {
       super();
     }
   }
+  class InnerWithGenerics<H> {
+    InnerWithGenerics() {
+      super();
+    }
+  }
   static class SubClass extends ValOutersWithGenerics<String> {
     SubClass() {
       super();
@@ -30,5 +35,15 @@ public class ValOutersWithGenerics<Z> {
       }
     }
     final @val Local<java.lang.String> q = new Local<String>();
+  }
+  public static void test() {
+    final @val ValOutersWithGenerics<java.lang.String> outer = new ValOutersWithGenerics<String>();
+    final @val ValOutersWithGenerics<java.lang.String>.Inner inner1 = outer.new Inner();
+    final @val ValOutersWithGenerics<java.lang.String>.InnerWithGenerics<java.lang.Integer> inner2 = outer.new InnerWithGenerics<Integer>();
+  }
+  public static void loop(Map<String, String> map) {
+    for (final @val java.util.Map.Entry<java.lang.String, java.lang.String> e : map.entrySet()) 
+      {
+      }
   }
 }
