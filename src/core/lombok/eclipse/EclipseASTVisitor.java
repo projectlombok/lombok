@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,13 +44,6 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
  * calling the appropriate visit and endVisit methods.
  */
 public interface EclipseASTVisitor {
-	/**
-	 * Return true if this handler should not be run in the diet parse phase.
-	 * 'diet parse' is where method bodies aren't filled in yet. If you have a method-level annotation that modifies the contents of that method,
-	 * return {@code true} here. Otherwise, return {@code false} here.
-	 */
-	boolean deferUntilPostDiet();
-	
 	/**
 	 * Called at the very beginning and end.
 	 */

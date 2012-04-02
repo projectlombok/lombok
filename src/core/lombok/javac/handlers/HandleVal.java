@@ -28,6 +28,7 @@ import lombok.javac.JavacASTAdapter;
 import lombok.javac.JavacASTVisitor;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacResolution;
+import lombok.javac.ResolutionBased;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -43,11 +44,8 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 
 @ProviderFor(JavacASTVisitor.class)
+@ResolutionBased
 public class HandleVal extends JavacASTAdapter {
-	@Override public boolean isResolutionBased() {
-		return true;
-	}
-	
 	@Override public void visitLocal(JavacNode localNode, JCVariableDecl local) {
 		if (local.vartype == null || (!local.vartype.toString().equals("val") && !local.vartype.toString().equals("lombok.val"))) return;
 		

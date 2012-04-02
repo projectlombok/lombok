@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,12 +37,6 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
  * calling the appropriate visit and endVisit methods.
  */
 public interface JavacASTVisitor {
-	/**
-	 * If true, you'll be called after all the non-resolution based visitors.
-	 * NB: Temporary solution - will be rewritten to a different style altogether in a future release.
-	 */
-	boolean isResolutionBased();
-	
 	/**
 	 * Called at the very beginning and end.
 	 */
@@ -106,10 +100,6 @@ public interface JavacASTVisitor {
 		private final boolean printContent;
 		private int disablePrinting = 0;
 		private int indent = 0;
-		
-		@Override public boolean isResolutionBased() {
-			return false;
-		}
 		
 		/**
 		 * @param printContent if true, bodies are printed directly, as java code,

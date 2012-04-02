@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -175,10 +175,6 @@ public class TransformEclipseAST {
 		
 		public AnnotationVisitor(boolean skipAllButPrintAST) {
 			this.skipPrintAst = skipAllButPrintAST;
-		}
-		
-		public boolean deferUntilPostDiet() {
-			return false;
 		}
 		
 		@Override public void visitAnnotationOnField(FieldDeclaration field, EclipseNode annotationNode, Annotation annotation) {

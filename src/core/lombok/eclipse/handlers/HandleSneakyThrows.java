@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@ import java.util.List;
 
 import lombok.SneakyThrows;
 import lombok.core.AnnotationValues;
+import lombok.eclipse.DeferUntilPostDiet;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 
@@ -56,6 +57,7 @@ import org.mangosdk.spi.ProviderFor;
  * Handles the {@code lombok.HandleSneakyThrows} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
+@DeferUntilPostDiet
 public class HandleSneakyThrows extends EclipseAnnotationHandler<SneakyThrows> {
 	
 	private static class DeclaredException {
@@ -66,10 +68,6 @@ public class HandleSneakyThrows extends EclipseAnnotationHandler<SneakyThrows> {
 			this.exceptionName = exceptionName;
 			this.node = node;
 		}
-	}
-	
-	@Override public boolean deferUntilPostDiet() {
-		return true;
 	}
 	
 	@Override public void handle(AnnotationValues<SneakyThrows> annotation, Annotation source, EclipseNode annotationNode) {

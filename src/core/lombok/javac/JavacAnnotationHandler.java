@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,11 +53,4 @@ public abstract class JavacAnnotationHandler<T extends Annotation> {
 	 * as access useful methods such as generating warnings or errors focused on the annotation.
 	 */
 	public abstract void handle(AnnotationValues<T> annotation, JCAnnotation ast, JavacNode annotationNode);
-	
-	/**
-	 * Return true if this handler requires resolution.
-	 */
-	public boolean isResolutionBased() {
-		return false;
-	}
 }

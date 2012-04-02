@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,11 +34,6 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
  * has been implemented with an empty body. Override whichever methods you need.
  */
 public class JavacASTAdapter implements JavacASTVisitor {
-	/** {@inheritDoc} */
-	@Override public boolean isResolutionBased() {
-		return false;
-	}
-	
 	/** {@inheritDoc} */
 	@Override public void visitCompilationUnit(JavacNode top, JCCompilationUnit unit) {}
 	

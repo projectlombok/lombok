@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,14 +58,5 @@ public abstract class EclipseAnnotationHandler<T extends java.lang.annotation.An
 	 * have to create the field, if its not already there, in 'handle', because for example preHandle would never even be called in ecj mode.
 	 */
 	public void preHandle(AnnotationValues<T> annotation, org.eclipse.jdt.internal.compiler.ast.Annotation ast, EclipseNode annotationNode) {
-	}
-	
-	/**
-	 * Return true if this handler should not be run in the diet parse phase.
-	 * 'diet parse' is where method bodies aren't filled in yet. If you have a method-level annotation that modifies the contents of that method,
-	 * return {@code true} here. Otherwise, return {@code false} here.
-	 */
-	public boolean deferUntilPostDiet() {
-		return false;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@ import java.lang.reflect.Modifier;
 import lombok.Synchronized;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
+import lombok.eclipse.DeferUntilPostDiet;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 
@@ -50,13 +51,10 @@ import org.mangosdk.spi.ProviderFor;
  * Handles the {@code lombok.Synchronized} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
+@DeferUntilPostDiet
 public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 	private static final char[] INSTANCE_LOCK_NAME = "$lock".toCharArray();
 	private static final char[] STATIC_LOCK_NAME = "$LOCK".toCharArray();
-	
-	@Override public boolean deferUntilPostDiet() {
-		return true;
-	}
 	
 	@Override public void preHandle(AnnotationValues<Synchronized> annotation, Annotation source, EclipseNode annotationNode) {
 		EclipseNode methodNode = annotationNode.up();

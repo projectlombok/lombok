@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,7 +74,7 @@ public class HandlerLibrary {
 		}
 		
 		public boolean isResolutionBased() {
-			return handler.isResolutionBased();
+			return handler.getClass().isAnnotationPresent(ResolutionBased.class);
 		}
 		
 		public void handle(final JavacNode node) {
@@ -205,8 +205,9 @@ public class HandlerLibrary {
 	 */
 	public void callASTVisitors(JavacAST ast) {
 		for (JavacASTVisitor visitor : visitorHandlers) try {
-			if (!visitor.isResolutionBased() && phase == 0) ast.traverse(visitor);
-			if (visitor.isResolutionBased() && phase == 1) ast.traverse(visitor);
+			boolean isResolutionBased = visitor.getClass().isAnnotationPresent(ResolutionBased.class);
+			if (!isResolutionBased && phase == 0) ast.traverse(visitor);
+			if (isResolutionBased && phase == 1) ast.traverse(visitor);
 		} catch (Throwable t) {
 			javacError(String.format("Lombok visitor handler %s failed", visitor.getClass()), t);
 		}
