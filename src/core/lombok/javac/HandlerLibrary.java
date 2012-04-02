@@ -108,8 +108,9 @@ public class HandlerLibrary {
 			Class<? extends Annotation> annotationClass =
 				SpiLoadUtil.findAnnotationClass(handler.getClass(), JavacAnnotationHandler.class);
 			AnnotationHandlerContainer<?> container = new AnnotationHandlerContainer(handler, annotationClass);
-			if (lib.annotationHandlers.put(container.annotationClass.getName(), container) != null) {
-				lib.javacWarning("Duplicate handlers for annotation type: " + container.annotationClass.getName());
+			String annotationClassName = container.annotationClass.getName().replace("$", ".");
+			if (lib.annotationHandlers.put(annotationClassName, container) != null) {
+				lib.javacWarning("Duplicate handlers for annotation type: " + annotationClassName);
 			}
 			lib.typeLibrary.addType(container.annotationClass.getName());
 		}

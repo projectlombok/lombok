@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,6 +76,7 @@ public class TypeLibrary {
 		if (idx == -1) throw new IllegalArgumentException(
 				"Only fully qualified types are allowed (and stuff in the default package is not palatable to us either!)");
 		
+		fullyQualifiedTypeName = fullyQualifiedTypeName.replace("$", ".");
 		final String simpleName = fullyQualifiedTypeName.substring(idx +1);
 		final String packageName = fullyQualifiedTypeName.substring(0, idx);
 		
