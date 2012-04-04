@@ -338,9 +338,9 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 			signatures.add(new MethodSig(member.name, methodType, isDeprecated, exElem));
 		}
 		
-		if (ct.supertype_field instanceof ClassType) addMethodBindings(signatures, (ClassType) ct.supertype_field, types, banList);
-		if (ct.interfaces_field != null) for (Type iface : ct.interfaces_field) {
-			if (iface instanceof ClassType) addMethodBindings(signatures, (ClassType) iface, types, banList);
+		for (Type stype : types.directSupertypes(ct)) {
+			if (stype instanceof ClassType)
+				addMethodBindings(signatures, (ClassType) stype, types, banList);
 		}
 	}
 	
