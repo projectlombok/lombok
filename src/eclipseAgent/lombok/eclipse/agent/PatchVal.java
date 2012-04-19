@@ -189,7 +189,8 @@ public class PatchVal {
 	
 	private static TypeBinding getForEachComponentType(Expression collection, BlockScope scope) {
 		if (collection != null) {
-			TypeBinding resolved = collection.resolveType(scope);
+			TypeBinding resolved = collection.resolvedType;
+			if (resolved == null) resolved = collection.resolveType(scope);
 			if (resolved == null) return null;
 			if (resolved.isArrayType()) {
 				resolved = ((ArrayBinding) resolved).elementsType();
@@ -205,6 +206,8 @@ public class PatchVal {
 					case Binding.PARAMETERIZED_TYPE : // for(E e : Iterable<E>)
 						arguments = ((ParameterizedTypeBinding)iterableType).arguments;
 						break;
+					case Binding.RAW_TYPE : // for(Object e : Iterable)
+						return null;
 				}
 				
 				if (arguments != null && arguments.length == 1) {
