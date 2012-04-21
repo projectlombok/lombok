@@ -1164,7 +1164,7 @@ public class EclipseHandlerUtil {
 			parent.fields = newArray;
 		}
 		
-		if ((field.modifiers & Modifier.STATIC) != 0) {
+		if (isEnumConstant(field) || (field.modifiers & Modifier.STATIC) != 0) {
 			if (!hasClinit(parent)) {
 				parent.addClinit();
 			}
