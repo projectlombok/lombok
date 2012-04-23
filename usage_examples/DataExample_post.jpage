@@ -44,9 +44,9 @@ public class DataExample {
 	
 	@Override public boolean equals(Object o) {
 		if (o == this) return true;
-		if (o == null) return false;
-		if (o.getClass() != this.getClass()) return false;
+		if (!(o instanceof DataExample)) return false;
 		DataExample other = (DataExample) o;
+		if (!other.canEqual((Object)this)) return false;
 		if (this.getName() == null ? other.getName() != null : !this.getName().equals(other.getName())) return false;
 		if (this.getAge() != other.getAge()) return false;
 		if (Double.compare(this.getScore(), other.getScore()) != 0) return false;
@@ -92,9 +92,9 @@ public class DataExample {
 		
 		@Override public boolean equals(Object o) {
 			if (o == this) return true;
-			if (o == null) return false;
-			if (o.getClass() != this.getClass()) return false;
+			if (!(o instanceof Exercise)) return false;
 			Exercise<?> other = (Exercise<?>) o;
+			if (!other.canEqual((Object)this)) return false;
 			if (this.getName() == null ? other.getValue() != null : !this.getName().equals(other.getName())) return false;
 			if (this.getValue() == null ? other.getValue() != null : !this.getValue().equals(other.getValue())) return false;
 			return true;
