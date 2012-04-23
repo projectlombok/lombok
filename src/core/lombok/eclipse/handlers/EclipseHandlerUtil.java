@@ -1421,12 +1421,12 @@ public class EclipseHandlerUtil {
 		Method intLiteralFactoryMethod_ = null;
 		try { 
 			intLiteralConstructor_ = IntLiteral.class.getConstructor(parameterTypes);
-		} catch (Exception ignore) {
+		} catch (Throwable ignore) {
 			// probably eclipse 3.7++
 		}
 		try { 
 			intLiteralFactoryMethod_ = IntLiteral.class.getMethod("buildIntLiteral", parameterTypes);
-		} catch (Exception ignore) {
+		} catch (Throwable ignore) {
 			// probably eclipse versions before 3.7
 		}
 		intLiteralConstructor = intLiteralConstructor_;

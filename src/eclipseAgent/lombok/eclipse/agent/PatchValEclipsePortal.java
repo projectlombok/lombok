@@ -118,10 +118,10 @@ public class PatchValEclipsePortal {
 						Object.class,
 						Class.forName(SINGLEVARIABLEDECLARATION_SIG),
 						Class.forName(LOCALDECLARATION_SIG));
-			} catch (Exception e) {
+			} catch (Throwable t) {
 				// That's problematic, but as long as no local classes are used we don't actually need it.
 				// Better fail on local classes than crash altogether.
-				problem_ = e;
+				problem_ = t;
 			}
 			copyInitializationOfForEachIterable = m;
 			copyInitializationOfLocalDeclaration = n;

@@ -227,7 +227,7 @@ public class PatchValEclipse {
 		try {
 			f = Name.class.getDeclaredField("index");
 			f.setAccessible(true);
-		} catch (Exception e) {
+		} catch (Throwable t) {
 			// Leave it null, in which case we don't set index. That'll result in error log messages but its better than crashing here.
 		}
 		
@@ -274,7 +274,7 @@ public class PatchValEclipse {
 				Class<?> z = Class.forName("org.eclipse.jdt.core.dom.ASTConverter");
 				h = z.getDeclaredMethod("recordNodes", org.eclipse.jdt.core.dom.ASTNode.class, org.eclipse.jdt.internal.compiler.ast.ASTNode.class);
 				h.setAccessible(true);
-			} catch (Exception e) {
+			} catch (Throwable t) {
 				// Most likely we're in ecj or some other plugin usage of the eclipse compiler. No need for this.
 			}
 			

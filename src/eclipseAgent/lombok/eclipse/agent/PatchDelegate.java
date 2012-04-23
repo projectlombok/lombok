@@ -659,7 +659,7 @@ public class PatchDelegate {
 			try {
 				m = ClassScope.class.getDeclaredMethod("buildFieldsAndMethods");
 				m.setAccessible(true);
-			} catch (Exception e) {
+			} catch (Throwable t) {
 				// That's problematic, but as long as no local classes are used we don't actually need it.
 				// Better fail on local classes than crash altogether.
 			}

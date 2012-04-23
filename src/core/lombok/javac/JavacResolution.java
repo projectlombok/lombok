@@ -105,7 +105,7 @@ public class JavacResolution {
 				d.setAccessible(true);
 				e.setAccessible(true);
 				f.setAccessible(true);
-			} catch (Exception x) {
+			} catch (Throwable x) {
 				z = true;
 			}
 			
@@ -114,7 +114,7 @@ public class JavacResolution {
 				h = Log.class.getDeclaredField("deferredDiagnostics");
 				g.setAccessible(true);
 				h.setAccessible(true);
-			} catch (Exception x) {
+			} catch (Throwable x) {
 			}
 			
 			errWriterField = a;
