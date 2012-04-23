@@ -331,7 +331,7 @@ public class EclipsePatcher extends Agent {
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.rename.TempOccurrenceAnalyzer", "visit", "boolean", "org.eclipse.jdt.core.dom.SimpleName"))
 				.target(new MethodTarget("org.eclipse.jdt.internal.corext.refactoring.rename.RenameAnalyzeUtil$ProblemNodeFinder$NameNodeVisitor", "visit", "boolean", "org.eclipse.jdt.core.dom.SimpleName"))
 				.decisionMethod(new Hook("lombok.eclipse.agent.PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.core.dom.ASTNode"))
-				.valueMethod(new Hook("lombok.eclipse.agent.PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.core.dom.ASTNode"))
+				.valueMethod(new Hook("lombok.eclipse.agent.PatchFixes", "returnTrue", "boolean", "java.lang.Object"))
 				.request(StackRequest.PARAM1)
 				.transplant().build());
 	}
