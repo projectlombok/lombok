@@ -25,7 +25,7 @@
     final java.lang.Object this$b = this.b;
     final java.lang.Object other$b = other.b;
     if (((this$b == null) ? (other$b != null) : (! this$b.equals(other$b))))
-    	return false;
+        return false;
     return true;
   }
   public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {

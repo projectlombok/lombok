@@ -24,7 +24,9 @@
         return false;
     if ((this.y != other.y))
         return false;
-    if (((this.z == null) ? (other.z != null) : (! this.z.equals((java.lang.Object) other.z))))
+    final java.lang.Object this$z = this.z;
+    final java.lang.Object other$z = other.z;
+    if (((this$z == null) ? (other$z != null) : (! this$z.equals(other$z))))
         return false;
     return true;
   }
@@ -36,7 +38,8 @@
     int result = 1;
     result = ((result * PRIME) + this.x);
     result = ((result * PRIME) + this.y);
-    result = ((result * PRIME) + ((this.z == null) ? 0 : this.z.hashCode()));
+    final java.lang.Object $z = this.z;
+    result = ((result * PRIME) + (($z == null) ? 0 : $z.hashCode()));
     return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {

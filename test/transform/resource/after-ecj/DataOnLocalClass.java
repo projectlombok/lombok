@@ -30,7 +30,9 @@ class DataOnLocalClass1 {
             return false;
         if ((this.getX() != other.getX()))
             return false;
-        if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals((java.lang.Object) other.getName()))))
+        final java.lang.Object this$name = this.getName();
+        final java.lang.Object other$name = other.getName();
+        if (((this$name == null) ? (other$name != null) : (! this$name.equals(other$name))))
             return false;
         return true;
       }
@@ -41,7 +43,8 @@ class DataOnLocalClass1 {
         final int PRIME = 31;
         int result = 1;
         result = ((result * PRIME) + this.getX());
-        result = ((result * PRIME) + ((this.getName() == null) ? 0 : this.getName().hashCode()));
+        final java.lang.Object $name = this.getName();
+        result = ((result * PRIME) + (($name == null) ? 0 : $name.hashCode()));
         return result;
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
@@ -77,7 +80,9 @@ class DataOnLocalClass2 {
           final @java.lang.SuppressWarnings("all") InnerLocal other = (InnerLocal) o;
           if ((! other.canEqual((java.lang.Object) this)))
               return false;
-          if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals((java.lang.Object) other.getName()))))
+          final java.lang.Object this$name = this.getName();
+          final java.lang.Object other$name = other.getName();
+          if (((this$name == null) ? (other$name != null) : (! this$name.equals(other$name))))
               return false;
           return true;
         }
@@ -87,7 +92,8 @@ class DataOnLocalClass2 {
         public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
           final int PRIME = 31;
           int result = 1;
-          result = ((result * PRIME) + ((this.getName() == null) ? 0 : this.getName().hashCode()));
+          final java.lang.Object $name = this.getName();
+          result = ((result * PRIME) + (($name == null) ? 0 : $name.hashCode()));
           return result;
         }
         public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {

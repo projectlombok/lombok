@@ -434,7 +434,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 					statements.append(generateCompareFloatOrDouble(thisFieldAccessor, otherFieldAccessor, maker, typeNode, false));
 					break;
 				case DOUBLE:
-					/* if (Double(this.fieldName, other.fieldName) != 0) return false; */
+					/* if (Double.compare(this.fieldName, other.fieldName) != 0) return false; */
 					statements.append(generateCompareFloatOrDouble(thisFieldAccessor, otherFieldAccessor, maker, typeNode, true));
 					break;
 				default:

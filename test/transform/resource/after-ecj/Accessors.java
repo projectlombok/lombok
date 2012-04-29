@@ -74,7 +74,9 @@ class AccessorsChain {
     final @java.lang.SuppressWarnings("all") AccessorsPrefix3 other = (AccessorsPrefix3) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
-    if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals((java.lang.Object) other.getName()))))
+    final java.lang.Object this$fName = this.getName();
+    final java.lang.Object other$fName = other.getName();
+    if (((this$fName == null) ? (other$fName != null) : (! this$fName.equals(other$fName))))
         return false;
     return true;
   }
@@ -84,7 +86,8 @@ class AccessorsChain {
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
     final int PRIME = 31;
     int result = 1;
-    result = ((result * PRIME) + ((this.getName() == null) ? 0 : this.getName().hashCode()));
+    final java.lang.Object $fName = this.getName();
+    result = ((result * PRIME) + (($fName == null) ? 0 : $fName.hashCode()));
     return result;
   }
   AccessorsPrefix3() {

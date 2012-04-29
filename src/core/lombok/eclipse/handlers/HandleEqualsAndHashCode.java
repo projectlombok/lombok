@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,16 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import lombok.AccessLevel;
+import lombok.EqualsAndHashCode;
+import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
+import lombok.eclipse.Eclipse;
+import lombok.eclipse.EclipseAnnotationHandler;
+import lombok.eclipse.EclipseNode;
+import lombok.eclipse.handlers.EclipseHandlerUtil.FieldAccess;
+import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -72,19 +82,15 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.mangosdk.spi.ProviderFor;
 
-import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
-import lombok.core.AnnotationValues;
-import lombok.core.AST.Kind;
-import lombok.eclipse.Eclipse;
-import lombok.eclipse.EclipseAnnotationHandler;
-import lombok.eclipse.EclipseNode;
-
 /**
  * Handles the {@code EqualsAndHashCode} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndHashCode> {
+	
+	private final char[] PRIME = "PRIME".toCharArray();
+	private final char[] RESULT = "result".toCharArray();
+	
 	private static final Set<String> BUILT_IN_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
 			"byte", "short", "int", "long", "char", "boolean", "double", "float")));
 	
@@ -257,10 +263,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		method.arguments = null;
 		
 		List<Statement> statements = new ArrayList<Statement>();
-		List<Expression> intoResult = new ArrayList<Expression>();
 		
-		final char[] PRIME = "PRIME".toCharArray();
-		final char[] RESULT = "result".toCharArray();
 		final boolean isEmpty = fields.isEmpty();
 		
 		/* final int PRIME = 31; */ {
@@ -294,16 +297,30 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			callToSuper.receiver = new SuperReference(pS, pE);
 			setGeneratedBy(callToSuper.receiver, source);
 			callToSuper.selector = "hashCode".toCharArray();
-			intoResult.add(callToSuper);
+			statements.add(createResultCalculation(source, callToSuper));
 		}
 		
-		int tempCounter = 0;
 		for (EclipseNode field : fields) {
 			TypeReference fType = getFieldType(field, fieldAccess);
+			char[] dollarFieldName = ("$" + field.getName()).toCharArray();
 			char[] token = fType.getLastToken();
 			Expression fieldAccessor = createFieldAccessor(field, fieldAccess, source);
 			if (fType.dimensions() == 0 && token != null) {
-				if (Arrays.equals(TypeConstants.FLOAT, token)) {
+				if (Arrays.equals(TypeConstants.BOOLEAN, token)) {
+					/* booleanField ? 1231 : 1237 */
+					IntLiteral int1231 = makeIntLiteral("1231".toCharArray(), source);
+					IntLiteral int1237 = makeIntLiteral("1237".toCharArray(), source);
+					ConditionalExpression int1231or1237 = new ConditionalExpression(fieldAccessor, int1231, int1237);
+					setGeneratedBy(int1231or1237, source);
+					statements.add(createResultCalculation(source, int1231or1237));
+				} else if (Arrays.equals(TypeConstants.LONG, token)) {
+					statements.add(createLocalDeclaration(source, dollarFieldName, TypeReference.baseTypeReference(TypeIds.T_long, 0), fieldAccessor));
+					SingleNameReference copy1 = new SingleNameReference(dollarFieldName, p);
+					setGeneratedBy(copy1, source);
+					SingleNameReference copy2 = new SingleNameReference(dollarFieldName, p);
+					setGeneratedBy(copy2, source);
+					statements.add(createResultCalculation(source, longToIntForHashCode(copy1, copy2, source)));
+				} else if (Arrays.equals(TypeConstants.FLOAT, token)) {
 					/* Float.floatToIntBits(fieldName) */
 					MessageSend floatToIntBits = new MessageSend();
 					floatToIntBits.sourceStart = pS; floatToIntBits.sourceEnd = pE;
@@ -311,7 +328,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 					floatToIntBits.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA_LANG_FLOAT);
 					floatToIntBits.selector = "floatToIntBits".toCharArray();
 					floatToIntBits.arguments = new Expression[] { fieldAccessor };
-					intoResult.add(floatToIntBits);
+					statements.add(createResultCalculation(source, floatToIntBits));
 				} else if (Arrays.equals(TypeConstants.DOUBLE, token)) {
 					/* longToIntForHashCode(Double.doubleToLongBits(fieldName)) */
 					MessageSend doubleToLongBits = new MessageSend();
@@ -320,47 +337,38 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 					doubleToLongBits.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA_LANG_DOUBLE);
 					doubleToLongBits.selector = "doubleToLongBits".toCharArray();
 					doubleToLongBits.arguments = new Expression[] { fieldAccessor };
-					final char[] tempName = ("temp" + ++tempCounter).toCharArray();
-					LocalDeclaration tempVar = new LocalDeclaration(tempName, pS, pE);
-					setGeneratedBy(tempVar, source);
-					tempVar.initialization = doubleToLongBits;
-					tempVar.type = TypeReference.baseTypeReference(TypeIds.T_long, 0);
-					tempVar.type.sourceStart = pS; tempVar.type.sourceEnd = pE;
-					setGeneratedBy(tempVar.type, source);
-					tempVar.modifiers = Modifier.FINAL;
-					statements.add(tempVar);
-					SingleNameReference copy1 = new SingleNameReference(tempName, p);
+					statements.add(createLocalDeclaration(source, dollarFieldName, TypeReference.baseTypeReference(TypeIds.T_long, 0), doubleToLongBits));
+					SingleNameReference copy1 = new SingleNameReference(dollarFieldName, p);
 					setGeneratedBy(copy1, source);
-					SingleNameReference copy2 = new SingleNameReference(tempName, p);
+					SingleNameReference copy2 = new SingleNameReference(dollarFieldName, p);
 					setGeneratedBy(copy2, source);
-					intoResult.add(longToIntForHashCode(copy1, copy2, source));
-				} else if (Arrays.equals(TypeConstants.BOOLEAN, token)) {
-					/* booleanField ? 1231 : 1237 */
-					IntLiteral int1231 = makeIntLiteral("1231".toCharArray(), source);
-					IntLiteral int1237 = makeIntLiteral("1237".toCharArray(), source);
-					ConditionalExpression int1231or1237 = new ConditionalExpression(fieldAccessor, int1231, int1237);
-					setGeneratedBy(int1231or1237, source);
-					intoResult.add(int1231or1237);
-				} else if (Arrays.equals(TypeConstants.LONG, token)) {
-					intoResult.add(longToIntForHashCode(fieldAccessor, createFieldAccessor(field, fieldAccess, source), source));
+					statements.add(createResultCalculation(source, longToIntForHashCode(copy1, copy2, source)));
 				} else if (BUILT_IN_TYPES.contains(new String(token))) {
-					intoResult.add(fieldAccessor);
+					statements.add(createResultCalculation(source, fieldAccessor));
 				} else /* objects */ {
-					/* this.fieldName == null ? 0 : this.fieldName.hashCode() */
+					/* final java.lang.Object $fieldName = this.fieldName; */
+					/* $fieldName == null ? 0 : $fieldName.hashCode() */
+					statements.add(createLocalDeclaration(source, dollarFieldName, generateQualifiedTypeRef(source, TypeConstants.JAVA_LANG_OBJECT), fieldAccessor));
+					
+					SingleNameReference copy1 = new SingleNameReference(dollarFieldName, p);
+					setGeneratedBy(copy1, source);
+					SingleNameReference copy2 = new SingleNameReference(dollarFieldName, p);
+					setGeneratedBy(copy2, source);
+					
 					MessageSend hashCodeCall = new MessageSend();
 					hashCodeCall.sourceStart = pS; hashCodeCall.sourceEnd = pE;
 					setGeneratedBy(hashCodeCall, source);
-					hashCodeCall.receiver = createFieldAccessor(field, fieldAccess, source);
+					hashCodeCall.receiver = copy1;
 					hashCodeCall.selector = "hashCode".toCharArray();
 					NullLiteral nullLiteral = new NullLiteral(pS, pE);
 					setGeneratedBy(nullLiteral, source);
-					EqualExpression objIsNull = new EqualExpression(fieldAccessor, nullLiteral, OperatorIds.EQUAL_EQUAL);
+					EqualExpression objIsNull = new EqualExpression(copy2, nullLiteral, OperatorIds.EQUAL_EQUAL);
 					setGeneratedBy(objIsNull, source);
 					IntLiteral int0 = makeIntLiteral("0".toCharArray(), source);
 					ConditionalExpression nullOrHashCode = new ConditionalExpression(objIsNull, int0, hashCodeCall);
 					nullOrHashCode.sourceStart = pS; nullOrHashCode.sourceEnd = pE;
 					setGeneratedBy(nullOrHashCode, source);
-					intoResult.add(nullOrHashCode);
+					statements.add(createResultCalculation(source, nullOrHashCode));
 				}
 			} else if (fType.dimensions() > 0 && token != null) {
 				/* Arrays.deepHashCode(array)  //just hashCode for simple arrays */
@@ -374,29 +382,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 					arraysHashCodeCall.selector = "hashCode".toCharArray();
 				}
 				arraysHashCodeCall.arguments = new Expression[] { fieldAccessor };
-				intoResult.add(arraysHashCodeCall);
-			}
-		}
-		
-		/* fold each intoResult entry into:
-		   result = result * PRIME + (item); */ {
-			for (Expression ex : intoResult) {
-				SingleNameReference resultRef = new SingleNameReference(RESULT, p);
-				setGeneratedBy(resultRef, source);
-				SingleNameReference primeRef = new SingleNameReference(PRIME, p);
-				setGeneratedBy(primeRef, source);
-				BinaryExpression multiplyByPrime = new BinaryExpression(resultRef, primeRef, OperatorIds.MULTIPLY);
-				multiplyByPrime.sourceStart = pS; multiplyByPrime.sourceEnd = pE;
-				setGeneratedBy(multiplyByPrime, source);
-				BinaryExpression addItem = new BinaryExpression(multiplyByPrime, ex, OperatorIds.PLUS);
-				addItem.sourceStart = pS; addItem.sourceEnd = pE;
-				setGeneratedBy(addItem, source);
-				resultRef = new SingleNameReference(RESULT, p);
-				setGeneratedBy(resultRef, source);
-				Assignment assignment = new Assignment(resultRef, addItem, pE);
-				assignment.sourceStart = pS; assignment.sourceEnd = assignment.statementEnd = pE;
-				setGeneratedBy(assignment, source);
-				statements.add(assignment);
+				statements.add(createResultCalculation(source, arraysHashCodeCall));
 			}
 		}
 		
@@ -409,6 +395,40 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		}
 		method.statements = statements.toArray(new Statement[statements.size()]);
 		return method;
+	}
+
+	private LocalDeclaration createLocalDeclaration(ASTNode source, char[] dollarFieldName, TypeReference type, Expression initializer) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		LocalDeclaration tempVar = new LocalDeclaration(dollarFieldName, pS, pE);
+		setGeneratedBy(tempVar, source);
+		tempVar.initialization = initializer;
+		tempVar.type = type;
+		tempVar.type.sourceStart = pS; tempVar.type.sourceEnd = pE;
+		setGeneratedBy(tempVar.type, source);
+		tempVar.modifiers = Modifier.FINAL;
+		return tempVar;
+	}
+
+	private Expression createResultCalculation(ASTNode source, Expression ex) {
+		/* result = result * PRIME + (ex); */
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long)pS << 32 | pE;
+		SingleNameReference resultRef = new SingleNameReference(RESULT, p);
+		setGeneratedBy(resultRef, source);
+		SingleNameReference primeRef = new SingleNameReference(PRIME, p);
+		setGeneratedBy(primeRef, source);
+		BinaryExpression multiplyByPrime = new BinaryExpression(resultRef, primeRef, OperatorIds.MULTIPLY);
+		multiplyByPrime.sourceStart = pS; multiplyByPrime.sourceEnd = pE;
+		setGeneratedBy(multiplyByPrime, source);
+		BinaryExpression addItem = new BinaryExpression(multiplyByPrime, ex, OperatorIds.PLUS);
+		addItem.sourceStart = pS; addItem.sourceEnd = pE;
+		setGeneratedBy(addItem, source);
+		resultRef = new SingleNameReference(RESULT, p);
+		setGeneratedBy(resultRef, source);
+		Assignment assignment = new Assignment(resultRef, addItem, pE);
+		assignment.sourceStart = pS; assignment.sourceEnd = assignment.statementEnd = pE;
+		setGeneratedBy(assignment, source);
+		return assignment;
 	}
 	
 	private TypeReference createTypeReference(EclipseNode type, long p) {
@@ -611,21 +631,37 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 					setGeneratedBy(ifStatement, source);
 					statements.add(ifStatement);
 				} else /* objects */ {
+					/* final java.lang.Object this$fieldName = this.fieldName; */
+					/* final java.lang.Object other$fieldName = other.fieldName; */
+					/* if (this$fieldName == null ? other$fieldName != null : !this$fieldName.equals(other$fieldName)) return false;; */
+					char[] thisDollarFieldName = ("this$" + field.getName()).toCharArray();
+					char[] otherDollarFieldName = ("other$" + field.getName()).toCharArray();
+					
+					statements.add(createLocalDeclaration(source, thisDollarFieldName, generateQualifiedTypeRef(source, TypeConstants.JAVA_LANG_OBJECT), thisFieldAccessor));
+					statements.add(createLocalDeclaration(source, otherDollarFieldName, generateQualifiedTypeRef(source, TypeConstants.JAVA_LANG_OBJECT), otherFieldAccessor));
+					
+					SingleNameReference this1 = new SingleNameReference(thisDollarFieldName, p);
+					setGeneratedBy(this1, source);
+					SingleNameReference this2 = new SingleNameReference(thisDollarFieldName, p);
+					setGeneratedBy(this2, source);
+					SingleNameReference other1 = new SingleNameReference(otherDollarFieldName, p);
+					setGeneratedBy(other1, source);
+					SingleNameReference other2 = new SingleNameReference(otherDollarFieldName, p);
+					setGeneratedBy(other2, source);
+
+					
 					NullLiteral nullLiteral = new NullLiteral(pS, pE);
 					setGeneratedBy(nullLiteral, source);
-					EqualExpression fieldIsNull = new EqualExpression(thisFieldAccessor, nullLiteral, OperatorIds.EQUAL_EQUAL);
+					EqualExpression fieldIsNull = new EqualExpression(this1, nullLiteral, OperatorIds.EQUAL_EQUAL);
 					nullLiteral = new NullLiteral(pS, pE);
 					setGeneratedBy(nullLiteral, source);
-					EqualExpression otherFieldIsntNull = new EqualExpression(otherFieldAccessor, nullLiteral, OperatorIds.NOT_EQUAL);
+					EqualExpression otherFieldIsntNull = new EqualExpression(other1, nullLiteral, OperatorIds.NOT_EQUAL);
 					MessageSend equalsCall = new MessageSend();
 					equalsCall.sourceStart = pS; equalsCall.sourceEnd = pE;
 					setGeneratedBy(equalsCall, source);
-					equalsCall.receiver = createFieldAccessor(field, fieldAccess, source);
+					equalsCall.receiver = this2;
 					equalsCall.selector = "equals".toCharArray();
-					Expression equalsArg = createFieldAccessor(field, fieldAccess, source, otherName);
-					CastExpression castEqualsArg = makeCastExpression(equalsArg, generateQualifiedTypeRef(source, TypeConstants.JAVA_LANG_OBJECT), source);
-					castEqualsArg.sourceStart = pS; castEqualsArg.sourceEnd = pE;
-					equalsCall.arguments = new Expression[] { castEqualsArg };
+					equalsCall.arguments = new Expression[] { other2 };
 					UnaryExpression fieldsNotEqual = new UnaryExpression(equalsCall, OperatorIds.NOT);
 					fieldsNotEqual.sourceStart = pS; fieldsNotEqual.sourceEnd = pE;
 					setGeneratedBy(fieldsNotEqual, source);

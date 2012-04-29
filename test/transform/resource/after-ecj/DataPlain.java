@@ -25,7 +25,9 @@ import lombok.Data;
         return false;
     if ((this.getX() != other.getX()))
         return false;
-    if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals((java.lang.Object) other.getName()))))
+    final java.lang.Object this$name = this.getName();
+    final java.lang.Object other$name = other.getName();
+    if (((this$name == null) ? (other$name != null) : (! this$name.equals(other$name))))
         return false;
     return true;
   }
@@ -36,7 +38,8 @@ import lombok.Data;
     final int PRIME = 31;
     int result = 1;
     result = ((result * PRIME) + this.getX());
-    result = ((result * PRIME) + ((this.getName() == null) ? 0 : this.getName().hashCode()));
+    final java.lang.Object $name = this.getName();
+    result = ((result * PRIME) + (($name == null) ? 0 : $name.hashCode()));
     return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
@@ -69,7 +72,9 @@ import lombok.Data;
         return false;
     if ((this.getX() != other.getX()))
         return false;
-    if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals((java.lang.Object) other.getName()))))
+    final java.lang.Object this$name = this.getName();
+    final java.lang.Object other$name = other.getName();
+    if (((this$name == null) ? (other$name != null) : (! this$name.equals(other$name))))
         return false;
     return true;
   }
@@ -80,7 +85,8 @@ import lombok.Data;
     final int PRIME = 31;
     int result = 1;
     result = ((result * PRIME) + this.getX());
-    result = ((result * PRIME) + ((this.getName() == null) ? 0 : this.getName().hashCode()));
+    final java.lang.Object $name = this.getName();
+    result = ((result * PRIME) + (($name == null) ? 0 : $name.hashCode()));
     return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
@@ -111,7 +117,9 @@ final @Data class Data3 {
     final @java.lang.SuppressWarnings("all") Data3 other = (Data3) o;
     if ((this.getX() != other.getX()))
         return false;
-    if (((this.getName() == null) ? (other.getName() != null) : (! this.getName().equals((java.lang.Object) other.getName()))))
+    final java.lang.Object this$name = this.getName();
+    final java.lang.Object other$name = other.getName();
+    if (((this$name == null) ? (other$name != null) : (! this$name.equals(other$name))))
         return false;
     return true;
   }
@@ -119,7 +127,8 @@ final @Data class Data3 {
     final int PRIME = 31;
     int result = 1;
     result = ((result * PRIME) + this.getX());
-    result = ((result * PRIME) + ((this.getName() == null) ? 0 : this.getName().hashCode()));
+    final java.lang.Object $name = this.getName();
+    result = ((result * PRIME) + (($name == null) ? 0 : $name.hashCode()));
     return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
