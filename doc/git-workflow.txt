@@ -1,5 +1,7 @@
 # git workflow for Project Lombok
 
+# FIXME public branch 'develop' disappeared. Guess currently checkout happens from 'master' but merging via 'import'?
+
 public branch 'master' tracks major releases and should always be in an effectively working condition. It is updated only occasionally, and virtually always just points at a particularly stable point on the more dynamic 'develop' branch.
 
 public branch 'develop' is still intended to run more or less stable, but is less tested and is what developers check completed features into.
