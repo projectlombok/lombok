@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v0.11.1 (EDGE)
+* ENHANCEMENT: Small performance enhancements in `equals` and `hashCode`. [Issue #366](http://code.google.com/p/projectlombok/issues/detail?id=366)
 * BUGFIX: Eclipse refactor script 'rename method arguments' should work more often with lombok-affected methods.
 * BUGFIX: Using 'val' in an enhanced for loop did not work if the iterable was a raw type.
 * FEATURE: ONGOING: Fix for using lombok together with gwt-designer.
