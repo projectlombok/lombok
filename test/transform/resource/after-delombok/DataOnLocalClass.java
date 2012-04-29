@@ -27,7 +27,9 @@ class DataOnLocalClass1 {
 				final Local other = (Local)o;
 				if (!other.canEqual((java.lang.Object)this)) return false;
 				if (this.getX() != other.getX()) return false;
-				if (this.getName() == null ? other.getName() != null : !this.getName().equals((java.lang.Object)other.getName())) return false;
+				final java.lang.Object this$name = this.getName();
+				final java.lang.Object other$name = other.getName();
+				if (this$name == null ? other$name != null : !this$name.equals(other$name)) return false;
 				return true;
 			}
 			@java.lang.SuppressWarnings("all")
@@ -40,7 +42,8 @@ class DataOnLocalClass1 {
 				final int PRIME = 31;
 				int result = 1;
 				result = result * PRIME + this.getX();
-				result = result * PRIME + (this.getName() == null ? 0 : this.getName().hashCode());
+				final java.lang.Object $name = this.getName();
+				result = result * PRIME + ($name == null ? 0 : $name.hashCode());
 				return result;
 			}
 			@java.lang.Override
@@ -80,7 +83,9 @@ class DataOnLocalClass2 {
 					if (!(o instanceof Local.InnerLocal)) return false;
 					final InnerLocal other = (InnerLocal)o;
 					if (!other.canEqual((java.lang.Object)this)) return false;
-					if (this.getName() == null ? other.getName() != null : !this.getName().equals((java.lang.Object)other.getName())) return false;
+					final java.lang.Object this$name = this.getName();
+					final java.lang.Object other$name = other.getName();
+					if (this$name == null ? other$name != null : !this$name.equals(other$name)) return false;
 					return true;
 				}
 				@java.lang.SuppressWarnings("all")
@@ -92,7 +97,8 @@ class DataOnLocalClass2 {
 				public int hashCode() {
 					final int PRIME = 31;
 					int result = 1;
-					result = result * PRIME + (this.getName() == null ? 0 : this.getName().hashCode());
+					final java.lang.Object $name = this.getName();
+					result = result * PRIME + ($name == null ? 0 : $name.hashCode());
 					return result;
 				}
 				@java.lang.Override

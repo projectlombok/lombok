@@ -26,7 +26,9 @@ class Data1 {
 		final Data1 other = (Data1)o;
 		if (!other.canEqual((java.lang.Object)this)) return false;
 		if (this.getX() != other.getX()) return false;
-		if (this.getName() == null ? other.getName() != null : !this.getName().equals((java.lang.Object)other.getName())) return false;
+		final java.lang.Object this$name = this.getName();
+		final java.lang.Object other$name = other.getName();
+		if (this$name == null ? other$name != null : !this$name.equals(other$name)) return false;
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
@@ -39,7 +41,8 @@ class Data1 {
 		final int PRIME = 31;
 		int result = 1;
 		result = result * PRIME + this.getX();
-		result = result * PRIME + (this.getName() == null ? 0 : this.getName().hashCode());
+		final java.lang.Object $name = this.getName();
+		result = result * PRIME + ($name == null ? 0 : $name.hashCode());
 		return result;
 	}
 	@java.lang.Override
@@ -76,7 +79,9 @@ class Data2 {
 		final Data2 other = (Data2)o;
 		if (!other.canEqual((java.lang.Object)this)) return false;
 		if (this.getX() != other.getX()) return false;
-		if (this.getName() == null ? other.getName() != null : !this.getName().equals((java.lang.Object)other.getName())) return false;
+		final java.lang.Object this$name = this.getName();
+		final java.lang.Object other$name = other.getName();
+		if (this$name == null ? other$name != null : !this$name.equals(other$name)) return false;
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
@@ -89,7 +94,8 @@ class Data2 {
 		final int PRIME = 31;
 		int result = 1;
 		result = result * PRIME + this.getX();
-		result = result * PRIME + (this.getName() == null ? 0 : this.getName().hashCode());
+		final java.lang.Object $name = this.getName();
+		result = result * PRIME + ($name == null ? 0 : $name.hashCode());
 		return result;
 	}
 	@java.lang.Override
@@ -125,7 +131,9 @@ final class Data3 {
 		if (!(o instanceof Data3)) return false;
 		final Data3 other = (Data3)o;
 		if (this.getX() != other.getX()) return false;
-		if (this.getName() == null ? other.getName() != null : !this.getName().equals((java.lang.Object)other.getName())) return false;
+		final java.lang.Object this$name = this.getName();
+		final java.lang.Object other$name = other.getName();
+		if (this$name == null ? other$name != null : !this$name.equals(other$name)) return false;
 		return true;
 	}
 	@java.lang.Override
@@ -134,7 +142,8 @@ final class Data3 {
 		final int PRIME = 31;
 		int result = 1;
 		result = result * PRIME + this.getX();
-		result = result * PRIME + (this.getName() == null ? 0 : this.getName().hashCode());
+		final java.lang.Object $name = this.getName();
+		result = result * PRIME + ($name == null ? 0 : $name.hashCode());
 		return result;
 	}
 	@java.lang.Override

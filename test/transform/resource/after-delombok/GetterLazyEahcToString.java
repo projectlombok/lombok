@@ -10,8 +10,12 @@ class GetterLazyEahcToString {
 		if (!(o instanceof GetterLazyEahcToString)) return false;
 		final GetterLazyEahcToString other = (GetterLazyEahcToString)o;
 		if (!other.canEqual((java.lang.Object)this)) return false;
-		if (this.getValue() == null ? other.getValue() != null : !this.getValue().equals((java.lang.Object)other.getValue())) return false;
-		if (this.value2 == null ? other.value2 != null : !this.value2.equals((java.lang.Object)other.value2)) return false;
+		final java.lang.Object this$value = this.getValue();
+		final java.lang.Object other$value = other.getValue();
+		if (this$value == null ? other$value != null : !this$value.equals(other$value)) return false;
+		final java.lang.Object this$value2 = this.value2;
+		final java.lang.Object other$value2 = other.value2;
+		if (this$value2 == null ? other$value2 != null : !this$value2.equals(other$value2)) return false;
 		return true;
 	}
 	
@@ -25,8 +29,10 @@ class GetterLazyEahcToString {
 	public int hashCode() {
 		final int PRIME = 31;
 		int result = 1;
-		result = result * PRIME + (this.getValue() == null ? 0 : this.getValue().hashCode());
-		result = result * PRIME + (this.value2 == null ? 0 : this.value2.hashCode());
+		final java.lang.Object $value = this.getValue();
+		result = result * PRIME + ($value == null ? 0 : $value.hashCode());
+		final java.lang.Object $value2 = this.value2;
+		result = result * PRIME + ($value2 == null ? 0 : $value2.hashCode());
 		return result;
 	}
 	

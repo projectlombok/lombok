@@ -4,11 +4,15 @@ class EqualsAndHashCode {
 	boolean[] y;
 	Object[] z;
 	String a;
+	String b;
 }
 
 @lombok.EqualsAndHashCode
 final class EqualsAndHashCode2 {
 	int x;
+	long y;
+	float f;
+	double d;
 }
 
 @lombok.EqualsAndHashCode(callSuper=false)

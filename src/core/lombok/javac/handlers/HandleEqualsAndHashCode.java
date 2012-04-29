@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,17 +21,19 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.handlers.JavacHandlerUtil.*;
 import static lombok.javac.Javac.getCtcInt;
+import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
 
 import lombok.EqualsAndHashCode;
-import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
+import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -39,13 +41,13 @@ import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
@@ -54,6 +56,7 @@ import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCUnary;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
@@ -63,6 +66,9 @@ import com.sun.tools.javac.util.Name;
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHashCode> {
+	private static final String RESULT_NAME = "result";
+	private static final String PRIME_NAME = "PRIME";
+
 	private void checkForBogusFieldNames(JavacNode type, AnnotationValues<EqualsAndHashCode> annotation) {
 		if (annotation.isExplicit("exclude")) {
 			for (int i : createListOfNonExistentFields(List.from(annotation.getInstance().exclude()), type, true, true)) {
@@ -214,8 +220,8 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		JCExpression returnType = maker.TypeIdent(getCtcInt(TypeTags.class, "INT"));
 		ListBuffer<JCStatement> statements = ListBuffer.lb();
 		
-		Name primeName = typeNode.toName("PRIME");
-		Name resultName = typeNode.toName("result");
+		Name primeName = typeNode.toName(PRIME_NAME);
+		Name resultName = typeNode.toName(RESULT_NAME);
 		/* final int PRIME = 31; */ {
 			if (!fields.isEmpty() || callSuper) {
 				statements.append(maker.VarDef(maker.Modifiers(Flags.FINAL),
@@ -227,16 +233,14 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			statements.append(maker.VarDef(maker.Modifiers(0), resultName, maker.TypeIdent(getCtcInt(TypeTags.class, "INT")), maker.Literal(1)));
 		}
 		
-		ListBuffer<JCExpression> intoResult = ListBuffer.lb();
-		
 		if (callSuper) {
 			JCMethodInvocation callToSuper = maker.Apply(List.<JCExpression>nil(),
 					maker.Select(maker.Ident(typeNode.toName("super")), typeNode.toName("hashCode")),
 					List.<JCExpression>nil());
-			intoResult.append(callToSuper);
+			statements.append(createResultCalculation(typeNode, callToSuper));
 		}
 		
-		int tempCounter = 0;
+		Name dollar = typeNode.toName("$");
 		for (JavacNode fieldNode : fields) {
 			JCExpression fType = getFieldType(fieldNode, fieldAccess);
 			JCExpression fieldAccessor = createFieldAccessor(maker, fieldNode, fieldAccess);
@@ -244,28 +248,31 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				switch (((JCPrimitiveTypeTree)fType).getPrimitiveTypeKind()) {
 				case BOOLEAN:
 					/* this.fieldName ? 1231 : 1237 */
-					intoResult.append(maker.Conditional(fieldAccessor, maker.Literal(1231), maker.Literal(1237)));
+					statements.append(createResultCalculation(typeNode, maker.Conditional(fieldAccessor, maker.Literal(1231), maker.Literal(1237))));
 					break;
-				case LONG:
-					intoResult.append(longToIntForHashCode(maker, fieldAccessor, createFieldAccessor(maker, fieldNode, fieldAccess)));
+				case LONG: {
+						Name dollarFieldName = dollar.append(((JCVariableDecl)fieldNode.get()).name);
+						statements.append(maker.VarDef(maker.Modifiers(Flags.FINAL), dollarFieldName, maker.TypeIdent(TypeTags.LONG), fieldAccessor));
+						statements.append(createResultCalculation(typeNode, longToIntForHashCode(maker, maker.Ident(dollarFieldName), maker.Ident(dollarFieldName))));
+					}
 					break;
 				case FLOAT:
 					/* Float.floatToIntBits(this.fieldName) */
-					intoResult.append(maker.Apply(
+					statements.append(createResultCalculation(typeNode, maker.Apply(
 							List.<JCExpression>nil(),
 							chainDots(typeNode, "java", "lang", "Float", "floatToIntBits"),
-							List.of(fieldAccessor)));
+							List.of(fieldAccessor))));
 					break;
-				case DOUBLE:
-					/* longToIntForHashCode(Double.doubleToLongBits(this.fieldName)) */
-					Name tempVar = typeNode.toName("temp" + (++tempCounter));
-					JCExpression init = maker.Apply(
-							List.<JCExpression>nil(),
-							chainDots(typeNode, "java", "lang", "Double", "doubleToLongBits"),
-							List.of(fieldAccessor));
-					statements.append(
-							maker.VarDef(maker.Modifiers(Flags.FINAL), tempVar, maker.TypeIdent(TypeTags.LONG), init));
-					intoResult.append(longToIntForHashCode(maker, maker.Ident(tempVar), maker.Ident(tempVar)));
+				case DOUBLE: {
+						/* longToIntForHashCode(Double.doubleToLongBits(this.fieldName)) */
+						Name dollarFieldName = dollar.append(((JCVariableDecl)fieldNode.get()).name);
+						JCExpression init = maker.Apply(
+								List.<JCExpression>nil(),
+								chainDots(typeNode, "java", "lang", "Double", "doubleToLongBits"),
+								List.of(fieldAccessor));
+						statements.append(maker.VarDef(maker.Modifiers(Flags.FINAL), dollarFieldName, maker.TypeIdent(TypeTags.LONG), init));
+						statements.append(createResultCalculation(typeNode, longToIntForHashCode(maker, maker.Ident(dollarFieldName), maker.Ident(dollarFieldName))));
+					}
 					break;
 				default:
 				case BYTE:
@@ -273,7 +280,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				case INT:
 				case CHAR:
 					/* just the field */
-					intoResult.append(fieldAccessor);
+					statements.append(createResultCalculation(typeNode, fieldAccessor));
 					break;
 				}
 			} else if (fType instanceof JCArrayTypeTree) {
@@ -283,24 +290,19 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				boolean useDeepHC = multiDim || !primitiveArray;
 				
 				JCExpression hcMethod = chainDots(typeNode, "java", "util", "Arrays", useDeepHC ? "deepHashCode" : "hashCode");
-				intoResult.append(
-						maker.Apply(List.<JCExpression>nil(), hcMethod, List.of(fieldAccessor)));
+				statements.append(createResultCalculation(typeNode, maker.Apply(List.<JCExpression>nil(), hcMethod, List.of(fieldAccessor))));
 			} else /* objects */ {
-				/* this.fieldName == null ? 0 : this.fieldName.hashCode() */
-				JCExpression hcCall = maker.Apply(List.<JCExpression>nil(), maker.Select(createFieldAccessor(maker, fieldNode, fieldAccess), typeNode.toName("hashCode")),
+				/* final java.lang.Object $fieldName = this.fieldName; */
+				/* $fieldName == null ? 0 : $fieldName.hashCode() */
+				
+				Name dollarFieldName = dollar.append(((JCVariableDecl)fieldNode.get()).name);
+				statements.append(maker.VarDef(maker.Modifiers(Flags.FINAL), dollarFieldName, chainDots(typeNode, "java", "lang", "Object"), fieldAccessor));
+				
+				JCExpression hcCall = maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(dollarFieldName), typeNode.toName("hashCode")),
 						List.<JCExpression>nil());
-				JCExpression thisEqualsNull = maker.Binary(getCtcInt(JCTree.class, "EQ"), fieldAccessor, maker.Literal(getCtcInt(TypeTags.class, "BOT"), null));
-				intoResult.append(
-						maker.Conditional(thisEqualsNull, maker.Literal(0), hcCall));
+				JCExpression thisEqualsNull = maker.Binary(getCtcInt(JCTree.class, "EQ"), maker.Ident(dollarFieldName), maker.Literal(getCtcInt(TypeTags.class, "BOT"), null));
+				statements.append(createResultCalculation(typeNode, maker.Conditional(thisEqualsNull, maker.Literal(0), hcCall)));
 			}
-		}
-		
-		/* fold each intoResult entry into:
-		   result = result * PRIME + (item); */
-		for (JCExpression expr : intoResult) {
-			JCExpression mult = maker.Binary(getCtcInt(JCTree.class, "MUL"), maker.Ident(resultName), maker.Ident(primeName));
-			JCExpression add = maker.Binary(getCtcInt(JCTree.class, "PLUS"), mult, expr);
-			statements.append(maker.Exec(maker.Assign(maker.Ident(resultName), add)));
 		}
 		
 		/* return result; */ {
@@ -310,6 +312,15 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		JCBlock body = maker.Block(0, statements.toList());
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("hashCode"), returnType,
 				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source);
+	}
+
+	private JCExpressionStatement createResultCalculation(JavacNode typeNode, JCExpression expr) {
+		/* result = result * PRIME + (expr); */
+		TreeMaker maker = typeNode.getTreeMaker();
+		Name resultName = typeNode.toName(RESULT_NAME);
+		JCExpression mult = maker.Binary(getCtcInt(JCTree.class, "MUL"), maker.Ident(resultName), maker.Ident(typeNode.toName(PRIME_NAME)));
+		JCExpression add = maker.Binary(getCtcInt(JCTree.class, "PLUS"), mult, expr);
+		return maker.Exec(maker.Assign(maker.Ident(resultName), add));
 	}
 	
 	/** The 2 references must be clones of each other. */
@@ -410,6 +421,8 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			statements.append(maker.If(superNotEqual, returnBool(maker, false), null));
 		}
 		
+		Name thisDollar = typeNode.toName("this$");
+		Name otherDollar = typeNode.toName("other$");
 		for (JavacNode fieldNode : fields) {
 			JCExpression fType = getFieldType(fieldNode, fieldAccess);
 			JCExpression thisFieldAccessor = createFieldAccessor(maker, fieldNode, fieldAccess);
@@ -441,14 +454,21 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				statements.append(maker.If(maker.Unary(getCtcInt(JCTree.class, "NOT"),
 						maker.Apply(List.<JCExpression>nil(), eqMethod, args)), returnBool(maker, false), null));
 			} else /* objects */ {
-				/* if (this.fieldName == null ? other.fieldName != null : !this.fieldName.equals(other.fieldName)) return false; */
-				JCExpression thisEqualsNull = maker.Binary(getCtcInt(JCTree.class, "EQ"), thisFieldAccessor, maker.Literal(getCtcInt(TypeTags.class, "BOT"), null));
-				JCExpression otherNotEqualsNull = maker.Binary(getCtcInt(JCTree.class, "NE"), otherFieldAccessor, maker.Literal(getCtcInt(TypeTags.class, "BOT"), null));
-				JCExpression equalsArg = createFieldAccessor(maker, fieldNode, fieldAccess, maker.Ident(otherName));
-				JCExpression castEqualsArg = maker.TypeCast(chainDots(typeNode, "java", "lang", "Object"), equalsArg);
+				/* final java.lang.Object this$fieldName = this.fieldName; */
+				/* final java.lang.Object other$fieldName = other.fieldName; */
+				/* if (this$fieldName == null ? other$fieldName != null : !this$fieldName.equals(other$fieldName)) return false;; */
+				Name fieldName = ((JCVariableDecl)fieldNode.get()).name;
+				Name thisDollarFieldName = thisDollar.append(fieldName);
+				Name otherDollarFieldName = otherDollar.append(fieldName);
+				
+				statements.append(maker.VarDef(maker.Modifiers(Flags.FINAL), thisDollarFieldName, chainDots(typeNode, "java", "lang", "Object"), thisFieldAccessor));
+				statements.append(maker.VarDef(maker.Modifiers(Flags.FINAL), otherDollarFieldName, chainDots(typeNode, "java", "lang", "Object"), otherFieldAccessor));
+
+				JCExpression thisEqualsNull = maker.Binary(getCtcInt(JCTree.class, "EQ"), maker.Ident(thisDollarFieldName), maker.Literal(getCtcInt(TypeTags.class, "BOT"), null));
+				JCExpression otherNotEqualsNull = maker.Binary(getCtcInt(JCTree.class, "NE"), maker.Ident(otherDollarFieldName), maker.Literal(getCtcInt(TypeTags.class, "BOT"), null));
 				JCExpression thisEqualsThat = maker.Apply(List.<JCExpression>nil(),
-						maker.Select(createFieldAccessor(maker, fieldNode, fieldAccess), typeNode.toName("equals")),
-						List.of(castEqualsArg));
+						maker.Select(maker.Ident(thisDollarFieldName), typeNode.toName("equals")),
+						List.<JCExpression>of(maker.Ident(otherDollarFieldName)));
 				JCExpression fieldsAreNotEqual = maker.Conditional(thisEqualsNull, otherNotEqualsNull, maker.Unary(getCtcInt(JCTree.class, "NOT"), thisEqualsThat));
 				statements.append(maker.If(fieldsAreNotEqual, returnBool(maker, false), null));
 			}

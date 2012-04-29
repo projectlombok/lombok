@@ -24,7 +24,9 @@ class DataWithGetterNone {
 		if (!other.canEqual((java.lang.Object)this)) return false;
 		if (this.x != other.x) return false;
 		if (this.y != other.y) return false;
-		if (this.z == null ? other.z != null : !this.z.equals((java.lang.Object)other.z)) return false;
+		final java.lang.Object this$z = this.z;
+		final java.lang.Object other$z = other.z;
+		if (this$z == null ? other$z != null : !this$z.equals(other$z)) return false;
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
@@ -38,7 +40,8 @@ class DataWithGetterNone {
 		int result = 1;
 		result = result * PRIME + this.x;
 		result = result * PRIME + this.y;
-		result = result * PRIME + (this.z == null ? 0 : this.z.hashCode());
+		final java.lang.Object $z = this.z;
+		result = result * PRIME + ($z == null ? 0 : $z.hashCode());
 		return result;
 	}
 	@java.lang.Override
