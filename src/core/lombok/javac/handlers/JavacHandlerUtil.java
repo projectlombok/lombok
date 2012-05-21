@@ -387,9 +387,7 @@ public class JavacHandlerUtil {
 	 * @param node Any node that represents the Type (JCClassDecl) to look in, or any child node thereof.
 	 */
 	public static MemberExistsResult fieldExists(String fieldName, JavacNode node) {
-		while (node != null && !(node.get() instanceof JCClassDecl)) {
-			node = node.up();
-		}
+		node = upToTypeNode(node);
 		
 		if (node != null && node.get() instanceof JCClassDecl) {
 			for (JCTree def : ((JCClassDecl)node.get()).defs) {
@@ -418,9 +416,7 @@ public class JavacHandlerUtil {
 	 * @param params The number of parameters the method should have; varargs count as 0-*. Set to -1 to find any method with the appropriate name regardless of parameter count.
 	 */
 	public static MemberExistsResult methodExists(String methodName, JavacNode node, boolean caseSensitive, int params) {
-		while (node != null && !(node.get() instanceof JCClassDecl)) {
-			node = node.up();
-		}
+		node = upToTypeNode(node);
 		
 		if (node != null && node.get() instanceof JCClassDecl) {
 			for (JCTree def : ((JCClassDecl)node.get()).defs) {
@@ -461,9 +457,7 @@ public class JavacHandlerUtil {
 	 * @param node Any node that represents the Type (JCClassDecl) to look in, or any child node thereof.
 	 */
 	public static MemberExistsResult constructorExists(JavacNode node) {
-		while (node != null && !(node.get() instanceof JCClassDecl)) {
-			node = node.up();
-		}
+		node = upToTypeNode(node);
 		
 		if (node != null && node.get() instanceof JCClassDecl) {
 			for (JCTree def : ((JCClassDecl)node.get()).defs) {
@@ -870,5 +864,29 @@ public class JavacHandlerUtil {
 			out.append((JCAnnotation) expr.clone());
 		}
 		return out.toList();
+	}
+	
+	static boolean isClass(JavacNode typeNode) {
+		return isClassAndDoesNotHaveFlags(typeNode, Flags.INTERFACE | Flags.ENUM | Flags.ANNOTATION);
+	}
+	
+	static boolean isClassOrEnum(JavacNode typeNode) {
+		return isClassAndDoesNotHaveFlags(typeNode, Flags.INTERFACE | Flags.ANNOTATION);
+	}
+	
+	private static boolean isClassAndDoesNotHaveFlags(JavacNode typeNode, int flags) {
+		JCClassDecl typeDecl = null;
+		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl)typeNode.get();
+		else return false;
+		
+		long typeDeclflags = typeDecl == null ? 0 : typeDecl.mods.flags;
+		return (typeDeclflags & flags) == 0;
+	}
+	
+	public static JavacNode upToTypeNode(JavacNode node) {
+		if (node == null) throw new NullPointerException("node");
+		while ((node != null) && !(node.get() instanceof JCClassDecl)) node = node.up();
+		
+		return node;
 	}
 }
