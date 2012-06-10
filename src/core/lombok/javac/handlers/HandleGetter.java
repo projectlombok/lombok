@@ -215,10 +215,10 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
 		
-		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker(), lazy, source.get()));
+		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker(), lazy, source.get(), methodName));
 	}
 	
-	private JCMethodDecl createGetter(long access, JavacNode field, TreeMaker treeMaker, boolean lazy, JCTree source) {
+	private JCMethodDecl createGetter(long access, JavacNode field, TreeMaker treeMaker, boolean lazy, JCTree source, String methodNameString) {
 		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
 		
 		// Remember the type; lazy will change it;
@@ -234,7 +234,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		}
 		
 		JCBlock methodBody = treeMaker.Block(0, statements);
-		Name methodName = field.toName(toGetterName(field));
+		Name methodName = field.toName(methodNameString);
 		
 		List<JCTypeParameter> methodGenericParams = List.nil();
 		List<JCVariableDecl> parameters = List.nil();
