@@ -60,5 +60,9 @@ public @interface ExtensionMethod {
 	/** All types whose static methods will be exposed as extension methods. */
 	Class<?>[] value();
 
+	/**
+	 * If {@code true}, an applicable extension method is used (if found) even if the method call already was compilable (this is the default).
+	 * If {@code false}, an extension method is only used if the method call is not also defined by the type itself.
+	 */
 	boolean suppressBaseMethods() default true;
 }
