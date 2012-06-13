@@ -198,7 +198,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		int modifier = toEclipseModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 		
 		for (String altName : toAllGetterNames(fieldNode, isBoolean)) {
-			switch (methodExists(altName, fieldNode, false, 0)) {
+			switch (methodExists(altName, fieldNode, true, 0)) {
 			case EXISTS_BY_LOMBOK:
 				return;
 			case EXISTS_BY_USER:
