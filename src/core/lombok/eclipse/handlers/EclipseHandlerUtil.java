@@ -777,12 +777,14 @@ public class EclipseHandlerUtil {
 	private static GetterMethod findGetter(EclipseNode field) {
 		TypeReference fieldType = ((FieldDeclaration)field.get()).type;
 		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
+		boolean isLazyGotBoolean = (fieldType instanceof ParameterizedQualifiedTypeReference) && nameEquals(((ParameterizedQualifiedTypeReference) fieldType).getParameterizedTypeName(), "java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>>");
 		EclipseNode typeNode = field.up();
-		for (String potentialGetterName : toAllGetterNames(field, isBoolean)) {
+		for (String potentialGetterName : toAllGetterNames(field, isLazyGotBoolean || isBoolean)) {
 			for (EclipseNode potentialGetter : typeNode.down()) {
 				if (potentialGetter.getKind() != Kind.METHOD) continue;
 				if (!(potentialGetter.get() instanceof MethodDeclaration)) continue;
 				MethodDeclaration method = (MethodDeclaration) potentialGetter.get();
+				if (isLazyGotBoolean && ! nameEquals(((MethodDeclaration) potentialGetter.get()).returnType.getTypeName(), "boolean")) continue;
 				if (!potentialGetterName.equalsIgnoreCase(new String(method.selector))) continue;
 				/** static getX() methods don't count. */
 				if ((method.modifiers & ClassFileConstants.AccStatic) != 0) continue;
@@ -821,7 +823,7 @@ public class EclipseHandlerUtil {
 		}
 		
 		if (hasGetterAnnotation) {
-			String getterName = toGetterName(field, isBoolean);
+			String getterName = toGetterName(field, isLazyGotBoolean || isBoolean);
 			if (getterName == null) return null;
 			return new GetterMethod(getterName.toCharArray(), fieldType);
 		}
