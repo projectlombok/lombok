@@ -21,15 +21,16 @@
  */
 package lombok.eclipse;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.Lombok;
 import lombok.core.AST;
 
-import org.eclipse.jdt.core.compiler.CategorizedProblem;
-import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -42,9 +43,6 @@ import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
-import org.eclipse.jdt.internal.compiler.problem.DefaultProblem;
-import org.eclipse.jdt.internal.compiler.problem.ProblemSeverities;
-import org.eclipse.jdt.internal.compiler.util.Util;
 
 /**
  * Wraps around Eclipse's internal AST view to add useful features as well as the ability to visit parents from children,
@@ -147,44 +145,25 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	public static void addProblemToCompilationResult(CompilationUnitDeclaration ast,
 			boolean isWarning, String message, int sourceStart, int sourceEnd) {
 		if (ast.compilationResult == null) return;
-		char[] fileNameArray = ast.getFileName();
-		if (fileNameArray == null) fileNameArray = "(unknown).java".toCharArray();
-		int lineNumber = 0;
-		int columnNumber = 1;
-		CompilationResult result = ast.compilationResult;
-		int[] lineEnds = null;
-		lineNumber = sourceStart >= 0
-				? Util.getLineNumber(sourceStart, lineEnds = result.getLineSeparatorPositions(), 0, lineEnds.length-1)
-				: 0;
-		columnNumber = sourceStart >= 0
-				? Util.searchColumnNumber(result.getLineSeparatorPositions(), lineNumber,sourceStart)
-				: 0;
-		
-		CategorizedProblem ecProblem = new LombokProblem(
-				fileNameArray, message, 0, new String[0],
-				isWarning ? ProblemSeverities.Warning : ProblemSeverities.Error,
-				sourceStart, sourceEnd, lineNumber, columnNumber);
-		ast.compilationResult.record(ecProblem, null);
-	}
-	
-	private static class LombokProblem extends DefaultProblem {
-		private static final String MARKER_ID = "org.eclipse.jdt.apt.pluggable.core.compileProblem";  //$NON-NLS-1$
-		
-		public LombokProblem(char[] originatingFileName, String message, int id,
-				String[] stringArguments, int severity,
-				int startPosition, int endPosition, int line, int column) {
-			super(originatingFileName, message, id, stringArguments, severity, startPosition, endPosition, line, column);
-		}
-		
-		@Override public int getCategoryID() {
-			return CAT_UNSPECIFIED;
-		}
-		
-		@Override public String getMarkerType() {
-			return MARKER_ID;
+		try {
+			EcjReflectionCheck.addProblemToCompilationResult.invoke(null, ast, isWarning, message, sourceStart, sourceEnd);
+		} catch (NoClassDefFoundError e) {
+			//ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
+			//do anything useful here.
+		} catch (IllegalAccessException e) {
+			throw Lombok.sneakyThrow(e);
+		} catch (InvocationTargetException e) {
+			throw Lombok.sneakyThrow(e);
+		} catch (NullPointerException e) {
+			if (!"false".equals(System.getProperty("lombok.debug.reflection", "false"))) {
+				e.initCause(EcjReflectionCheck.problem);
+				throw e;
+			}
+			//ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
+			//do anything useful here.
 		}
 	}
-	
+
 	private final CompilationUnitDeclaration compilationUnitDeclaration;
 	private boolean completeParse;
 	
@@ -371,5 +350,26 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	 * entirely correct according to the JLS spec (only some expressions can be used as statements, not all of them). */
 	@Override protected Collection<Class<? extends ASTNode>> getStatementTypes() {
 		return Collections.<Class<? extends ASTNode>>singleton(Statement.class);
+	}
+	
+	private static class EcjReflectionCheck {
+		private static final String CUD_TYPE = "org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration";
+		
+		public static Method addProblemToCompilationResult;
+		public static final Throwable problem;
+		
+		static {
+			Throwable problem_ = null;
+			Method m = null;
+			try {
+				m = EclipseAstProblemView.class.getMethod("addProblemToCompilationResult", Class.forName(CUD_TYPE), boolean.class, String.class, int.class, int.class);
+			} catch (Throwable t) {
+				// That's problematic, but as long as no local classes are used we don't actually need it.
+				// Better fail on local classes than crash altogether.
+				problem_ = t;
+			}
+			addProblemToCompilationResult = m;
+			problem = problem_;
+		}
 	}
 }

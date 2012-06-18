@@ -24,9 +24,9 @@ package lombok.eclipse.agent;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
-
 import lombok.Lombok;
+
+import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
 
 
 public class PatchExtensionMethodCompletionProposalPortal {
@@ -44,10 +44,15 @@ public class PatchExtensionMethodCompletionProposalPortal {
 		} catch (IllegalAccessException e) {
 			throw Lombok.sneakyThrow(e);
 		} catch (InvocationTargetException e) {
-			throw Lombok.sneakyThrow(e);
+			throw Lombok.sneakyThrow(e.getCause());
 		} catch (NullPointerException e) {
-			e.initCause(ReflectionForUi.problem);
-			throw e;
+			if (!"false".equals(System.getProperty("lombok.debug.reflection", "false"))) {
+				e.initCause(ReflectionForUi.problem);
+				throw e;
+			}
+			//ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
+			//do anything useful here.
+			return (IJavaCompletionProposal[])javaCompletionProposals;
 		}
 	}
 	

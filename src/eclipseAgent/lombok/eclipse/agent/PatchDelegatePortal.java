@@ -39,10 +39,15 @@ public class PatchDelegatePortal {
 		} catch (IllegalAccessException e) {
 			throw Lombok.sneakyThrow(e);
 		} catch (InvocationTargetException e) {
-			throw Lombok.sneakyThrow(e);
+			throw Lombok.sneakyThrow(e.getCause());
 		} catch (NullPointerException e) {
-			e.initCause(Reflection.problem);
-			throw e;
+			if (!"false".equals(System.getProperty("lombok.debug.reflection", "false"))) {
+				e.initCause(Reflection.problem);
+				throw e;
+			}
+			//ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
+			//do anything useful here.
+			return false;
 		}
 	}
 	

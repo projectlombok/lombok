@@ -23,9 +23,6 @@ package lombok.eclipse.agent;
 
 import static lombok.eclipse.handlers.EclipseHandlerUtil.createAnnotation;
 
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -41,39 +38,25 @@ import lombok.eclipse.TransformEclipseAST;
 import lombok.eclipse.handlers.EclipseHandlerUtil;
 import lombok.experimental.ExtensionMethod;
 
-import org.eclipse.jdt.core.CompletionProposal;
-import org.eclipse.jdt.internal.codeassist.InternalCompletionContext;
-import org.eclipse.jdt.internal.codeassist.InternalCompletionProposal;
-import org.eclipse.jdt.internal.codeassist.InternalExtendedCompletionContext;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnMemberAccess;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnQualifiedNameReference;
-import org.eclipse.jdt.internal.codeassist.complete.CompletionOnSingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
-import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
-import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
-import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
 import org.eclipse.jdt.internal.compiler.lookup.CompilationUnitScope;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ProblemMethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
-import org.eclipse.jdt.internal.compiler.lookup.Scope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
-import org.eclipse.jdt.internal.compiler.lookup.VariableBinding;
 import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
-import org.eclipse.jdt.internal.ui.text.java.AbstractJavaCompletionProposal;
-import org.eclipse.jdt.ui.text.java.CompletionProposalCollector;
 
 public class PatchExtensionMethod {
 	static class Extension {
@@ -138,7 +121,7 @@ public class PatchExtensionMethod {
 		return null;
 	}
 	
-	private static EclipseNode upToType(EclipseNode typeNode) {
+	static EclipseNode upToType(EclipseNode typeNode) {
 		EclipseNode node = typeNode;
 		do {
 			node = node.up();
@@ -146,7 +129,7 @@ public class PatchExtensionMethod {
 		return node;
 	}
 	
-	private static List<Extension> getApplicableExtensionMethods(EclipseNode typeNode, Annotation ann, TypeBinding receiverType) {
+	static List<Extension> getApplicableExtensionMethods(EclipseNode typeNode, Annotation ann, TypeBinding receiverType) {
 		List<Extension> extensions = new ArrayList<Extension>();
 		if ((typeNode != null) && (ann != null) && (receiverType != null)) {
 			BlockScope blockScope = ((TypeDeclaration) typeNode.get()).initializerScope;
@@ -295,118 +278,7 @@ public class PatchExtensionMethod {
 			return new QualifiedNameReference(sources, poss, source.sourceStart, source.sourceEnd);
 		}
 	}
-	
-	static List<Extension> getExtensionMethods(CompletionProposalCollector completionProposalCollector) {
-		List<Extension> extensions = new ArrayList<Extension>();
-		ClassScope classScope = getClassScope(completionProposalCollector);
-		if (classScope != null) {
-			TypeDeclaration decl = classScope.referenceContext;
-			TypeBinding firstParameterType = getFirstParameterType(decl, completionProposalCollector);
-			for (EclipseNode typeNode = getTypeNode(decl); typeNode != null; typeNode = upToType(typeNode)) {
-				Annotation ann = getAnnotation(ExtensionMethod.class, typeNode);
-				extensions.addAll(0, getApplicableExtensionMethods(typeNode, ann, firstParameterType));
-			}
-		}
-		return extensions;
-	}
-	
-	private static ClassScope getClassScope(CompletionProposalCollector completionProposalCollector) {
-		ClassScope scope = null;
-		try {
-			InternalCompletionContext context = (InternalCompletionContext) Reflection.contextField.get(completionProposalCollector);
-			InternalExtendedCompletionContext extendedContext = (InternalExtendedCompletionContext) Reflection.extendedContextField.get(context);
-			if (extendedContext != null) {
-				Scope assistScope = ((Scope) Reflection.assistScopeField.get(extendedContext));
-				if (assistScope != null) {
-					scope = assistScope.classScope();
-				}
-			}
-		} catch (IllegalAccessException ignore) {
-			// ignore
-		}
-		return scope;
-	}
-	
-	private static TypeBinding getFirstParameterType(TypeDeclaration decl, CompletionProposalCollector completionProposalCollector) {
-		TypeBinding firstParameterType = null;
-		ASTNode node = getAssistNode(completionProposalCollector);
-		if (node == null) return null;
-		if (!(node instanceof CompletionOnQualifiedNameReference) && !(node instanceof CompletionOnSingleNameReference) && !(node instanceof CompletionOnMemberAccess)) return null;
-		
-		if (node instanceof NameReference) {
-			Binding binding = ((NameReference) node).binding;
-			if ((node instanceof SingleNameReference) && (((SingleNameReference) node).token.length == 0)) {
-				firstParameterType = decl.binding;
-			} else if (binding instanceof VariableBinding) {
-				firstParameterType = ((VariableBinding) binding).type;
-			} else if (binding instanceof TypeBinding) {
-				firstParameterType = (TypeBinding) binding;
-			}
-		} else if (node instanceof FieldReference) {
-			firstParameterType = ((FieldReference) node).actualReceiverType;
-		}
-		return firstParameterType;
-	}
-	
-	static ASTNode getAssistNode(CompletionProposalCollector completionProposalCollector) {
-		try {
-			InternalCompletionContext context = (InternalCompletionContext) Reflection.contextField.get(completionProposalCollector);
-			InternalExtendedCompletionContext extendedContext = (InternalExtendedCompletionContext) Reflection.extendedContextField.get(context);
-			if (extendedContext == null) return null;
-			return (ASTNode) Reflection.assistNodeField.get(extendedContext);
-		} catch (Exception ignore) {
-			return null;
-		}
-	}
-	
-	static class Reflection {
-		public static final Field replacementOffsetField;
-		public static final Field contextField;
-		public static final Field extendedContextField;
-		public static final Field assistNodeField;
-		public static final Field assistScopeField;
-		public static final Field lookupEnvironmentField;
-		public static final Field completionEngineField;
-		public static final Field nameLookupField;
-		public static final Method createJavaCompletionProposalMethod;
 
-		static {
-			replacementOffsetField = accessField(AbstractJavaCompletionProposal.class, "fReplacementOffset");
-			contextField = accessField(CompletionProposalCollector.class, "fContext");
-			extendedContextField = accessField(InternalCompletionContext.class, "extendedContext");
-			assistNodeField = accessField(InternalExtendedCompletionContext.class, "assistNode");
-			assistScopeField = accessField(InternalExtendedCompletionContext.class, "assistScope");
-			lookupEnvironmentField = accessField(InternalExtendedCompletionContext.class, "lookupEnvironment");
-			completionEngineField = accessField(InternalCompletionProposal.class, "completionEngine");
-			nameLookupField = accessField(InternalCompletionProposal.class, "nameLookup");
-			createJavaCompletionProposalMethod = accessMethod(CompletionProposalCollector.class, "createJavaCompletionProposal", CompletionProposal.class);
-		}
-		
-		static boolean isComplete() {
-			Object[] requiredFieldsAndMethods = { replacementOffsetField, contextField, extendedContextField, assistNodeField, assistScopeField, lookupEnvironmentField, completionEngineField, nameLookupField, createJavaCompletionProposalMethod };
-			for (Object o : requiredFieldsAndMethods) if (o == null) return false;
-			return true;
-		}
-		
-		private static Field accessField(Class<?> clazz, String fieldName) {
-			try {
-				return makeAccessible(clazz.getDeclaredField(fieldName));
-			} catch (Exception e) {
-				return null;
-			}
-		}
+	
 
-		private static Method accessMethod(Class<?> clazz, String methodName, Class<?> parameter) {
-			try {
-				return makeAccessible(clazz.getDeclaredMethod(methodName, parameter));
-			} catch (Exception e) {
-				return null;
-			}
-		}
-
-		private static <T extends AccessibleObject> T makeAccessible(T object) {
-			object.setAccessible(true);
-			return object;
-		}
-	}
 }
