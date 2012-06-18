@@ -64,7 +64,6 @@ import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
 import org.eclipse.jdt.internal.compiler.lookup.CompilationUnitScope;
-import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ProblemMethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
@@ -73,13 +72,11 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.VariableBinding;
 import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
-import org.eclipse.jdt.internal.core.SearchableEnvironment;
 import org.eclipse.jdt.internal.ui.text.java.AbstractJavaCompletionProposal;
 import org.eclipse.jdt.ui.text.java.CompletionProposalCollector;
-import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
 
 public class PatchExtensionMethod {
-	private static class Extension {
+	static class Extension {
 		List<MethodBinding> extensionMethods;
 		boolean suppressBaseMethods;
 	}
@@ -299,63 +296,7 @@ public class PatchExtensionMethod {
 		}
 	}
 	
-	public static IJavaCompletionProposal[] getJavaCompletionProposals(IJavaCompletionProposal[] javaCompletionProposals,
-			CompletionProposalCollector completionProposalCollector) {
-		
-		List<IJavaCompletionProposal> proposals = new ArrayList<IJavaCompletionProposal>(Arrays.asList(javaCompletionProposals));
-		if (canExtendCodeAssist(proposals)) {
-			IJavaCompletionProposal firstProposal = proposals.get(0);
-			int replacementOffset = getReplacementOffset(firstProposal);
-			for (Extension extension : getExtensionMethods(completionProposalCollector)) {
-				for (MethodBinding method : extension.extensionMethods) {
-					ExtensionMethodCompletionProposal newProposal = new ExtensionMethodCompletionProposal(replacementOffset);
-					copyNameLookupAndCompletionEngine(completionProposalCollector, firstProposal, newProposal);
-					ASTNode node = getAssistNode(completionProposalCollector);
-					newProposal.setMethodBinding(method, node);
-					createAndAddJavaCompletionProposal(completionProposalCollector, newProposal, proposals);
-				}
-			}
-		}
-		return proposals.toArray(new IJavaCompletionProposal[proposals.size()]);
-	}
-	
-	private static void copyNameLookupAndCompletionEngine(CompletionProposalCollector completionProposalCollector, IJavaCompletionProposal proposal,
-			InternalCompletionProposal newProposal) {
-		
-		try {
-			InternalCompletionContext context = (InternalCompletionContext) Reflection.contextField.get(completionProposalCollector);
-			InternalExtendedCompletionContext extendedContext = (InternalExtendedCompletionContext) Reflection.extendedContextField.get(context);
-			LookupEnvironment lookupEnvironment = (LookupEnvironment) Reflection.lookupEnvironmentField.get(extendedContext);
-			Reflection.nameLookupField.set(newProposal, ((SearchableEnvironment) lookupEnvironment.nameEnvironment).nameLookup);
-			Reflection.completionEngineField.set(newProposal, lookupEnvironment.typeRequestor);
-		} catch (IllegalAccessException ignore) {
-			// ignore
-		}
-	}
-	
-	private static void createAndAddJavaCompletionProposal(CompletionProposalCollector completionProposalCollector, CompletionProposal newProposal,
-			List<IJavaCompletionProposal> proposals) {
-		
-		try {
-			proposals.add((IJavaCompletionProposal) Reflection.createJavaCompletionProposalMethod.invoke(completionProposalCollector, newProposal));
-		} catch (Exception ignore) {
-			// ignore
-		}
-	}
-	
-	private static boolean canExtendCodeAssist(List<IJavaCompletionProposal> proposals) {
-		return !proposals.isEmpty() && Reflection.isComplete();
-	}
-	
-	private static int getReplacementOffset(IJavaCompletionProposal proposal) {
-		try {
-			return Reflection.replacementOffsetField.getInt(proposal);
-		} catch (Exception ignore) {
-			return 0;
-		}
-	}
-	
-	private static List<Extension> getExtensionMethods(CompletionProposalCollector completionProposalCollector) {
+	static List<Extension> getExtensionMethods(CompletionProposalCollector completionProposalCollector) {
 		List<Extension> extensions = new ArrayList<Extension>();
 		ClassScope classScope = getClassScope(completionProposalCollector);
 		if (classScope != null) {
@@ -407,7 +348,7 @@ public class PatchExtensionMethod {
 		return firstParameterType;
 	}
 	
-	private static ASTNode getAssistNode(CompletionProposalCollector completionProposalCollector) {
+	static ASTNode getAssistNode(CompletionProposalCollector completionProposalCollector) {
 		try {
 			InternalCompletionContext context = (InternalCompletionContext) Reflection.contextField.get(completionProposalCollector);
 			InternalExtendedCompletionContext extendedContext = (InternalExtendedCompletionContext) Reflection.extendedContextField.get(context);
@@ -418,7 +359,7 @@ public class PatchExtensionMethod {
 		}
 	}
 	
-	private static class Reflection {
+	static class Reflection {
 		public static final Field replacementOffsetField;
 		public static final Field contextField;
 		public static final Field extendedContextField;
@@ -441,7 +382,7 @@ public class PatchExtensionMethod {
 			createJavaCompletionProposalMethod = accessMethod(CompletionProposalCollector.class, "createJavaCompletionProposal", CompletionProposal.class);
 		}
 		
-		private static boolean isComplete() {
+		static boolean isComplete() {
 			Object[] requiredFieldsAndMethods = { replacementOffsetField, contextField, extendedContextField, assistNodeField, assistScopeField, lookupEnvironmentField, completionEngineField, nameLookupField, createJavaCompletionProposalMethod };
 			for (Object o : requiredFieldsAndMethods) if (o == null) return false;
 			return true;

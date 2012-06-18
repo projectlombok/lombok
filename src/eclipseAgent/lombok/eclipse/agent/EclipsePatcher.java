@@ -646,7 +646,8 @@ public class EclipsePatcher extends Agent {
 	}
 	
 	private static void patchExtensionMethod(ScriptManager sm, boolean ecj) {
-		final String PATCH_EXTENSIONMETHOD_PORTAL = "lombok.eclipse.agent.PatchExtensionMethodPortal";
+		final String PATCH_EXTENSIONMETHOD = "lombok.eclipse.agent.PatchExtensionMethod";
+		final String PATCH_EXTENSIONMETHOD_COMPLETIONPROPOSAL_PORTAL = "lombok.eclipse.agent.PatchExtensionMethodCompletionProposalPortal";
 		final String MESSAGE_SEND_SIG = "org.eclipse.jdt.internal.compiler.ast.MessageSend";
 		final String TYPE_BINDING_SIG = "org.eclipse.jdt.internal.compiler.lookup.TypeBinding";
 		final String BLOCK_SCOPE_SIG = "org.eclipse.jdt.internal.compiler.lookup.BlockScope";
@@ -661,18 +662,18 @@ public class EclipsePatcher extends Agent {
 			.request(StackRequest.RETURN_VALUE)
 			.request(StackRequest.THIS)
 			.request(StackRequest.PARAM1)
-			.wrapMethod(new Hook(PATCH_EXTENSIONMETHOD_PORTAL, "resolveType", TYPE_BINDING_SIG, "java.lang.Object", "java.lang.Object", "java.lang.Object"))
+			.wrapMethod(new Hook(PATCH_EXTENSIONMETHOD, "resolveType", TYPE_BINDING_SIG, TYPE_BINDING_SIG, MESSAGE_SEND_SIG, BLOCK_SCOPE_SIG))
+			.build());
+		sm.addScript(replaceMethodCall()
+			.target(new MethodTarget(MESSAGE_SEND_SIG, "resolveType", TYPE_BINDING_SIG, BLOCK_SCOPE_SIG))
+			.methodToReplace(new Hook(PROBLEM_REPORTER_SIG, "errorNoMethodFor", "void", MESSAGE_SEND_SIG, TYPE_BINDING_SIG, TYPE_BINDINGS_SIG))
+			.replacementMethod(new Hook(PATCH_EXTENSIONMETHOD, "errorNoMethodFor", "void", PROBLEM_REPORTER_SIG, MESSAGE_SEND_SIG, TYPE_BINDING_SIG, TYPE_BINDINGS_SIG))
 			.build());
 		
 		sm.addScript(replaceMethodCall()
 			.target(new MethodTarget(MESSAGE_SEND_SIG, "resolveType", TYPE_BINDING_SIG, BLOCK_SCOPE_SIG))
-			.methodToReplace(new Hook(PROBLEM_REPORTER_SIG, "errorNoMethodFor", "void", MESSAGE_SEND_SIG, TYPE_BINDING_SIG, TYPE_BINDINGS_SIG))
-			.replacementMethod(new Hook(PATCH_EXTENSIONMETHOD_PORTAL, "errorNoMethodFor", "void", "java.lang.Object", "java.lang.Object", "java.lang.Object", "java.lang.Object"))
-			.build());
-		sm.addScript(replaceMethodCall()
-			.target(new MethodTarget(MESSAGE_SEND_SIG, "resolveType", TYPE_BINDING_SIG, BLOCK_SCOPE_SIG))
 			.methodToReplace(new Hook(PROBLEM_REPORTER_SIG, "invalidMethod", "void", MESSAGE_SEND_SIG, METHOD_BINDING_SIG))
-			.replacementMethod(new Hook(PATCH_EXTENSIONMETHOD_PORTAL, "invalidMethod", "void", "java.lang.Object", "java.lang.Object", "java.lang.Object"))
+			.replacementMethod(new Hook(PATCH_EXTENSIONMETHOD, "invalidMethod", "void", PROBLEM_REPORTER_SIG, MESSAGE_SEND_SIG, METHOD_BINDING_SIG))
 			.build());
 		
 		if (!ecj) {
@@ -680,8 +681,7 @@ public class EclipsePatcher extends Agent {
 				.target(new MethodTarget(COMPLETION_PROPOSAL_COLLECTOR_SIG, "getJavaCompletionProposals", I_JAVA_COMPLETION_PROPOSAL_SIG))
 				.request(StackRequest.RETURN_VALUE)
 				.request(StackRequest.THIS)
-//				.wrapMethod(new Hook(PATCH_EXTENSIONMETHOD_PORTAL, "getJavaCompletionProposals", I_JAVA_COMPLETION_PROPOSAL_SIG, I_JAVA_COMPLETION_PROPOSAL_SIG, COMPLETION_PROPOSAL_COLLECTOR_SIG))
-				.wrapMethod(new Hook(PATCH_EXTENSIONMETHOD_PORTAL, "getJavaCompletionProposals", "java.lang.Object", "java.lang.Object", "java.lang.Object"))
+				.wrapMethod(new Hook(PATCH_EXTENSIONMETHOD_COMPLETIONPROPOSAL_PORTAL, "getJavaCompletionProposals", I_JAVA_COMPLETION_PROPOSAL_SIG, "java.lang.Object[]", "java.lang.Object"))
 				.build());
 		}
 	}
