@@ -221,8 +221,10 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	private JCMethodDecl createGetter(long access, JavacNode field, TreeMaker treeMaker, boolean lazy, JCTree source) {
 		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
 		
-		// Remember the type; lazy will change it;
+		// Remember the type; lazy will change it
 		JCExpression methodType = copyType(treeMaker, fieldNode);
+		// Generate the methodName; lazy will change the field type
+		Name methodName = field.toName(toGetterName(field));
 		
 		List<JCStatement> statements;
 		JCTree toClearOfMarkers = null;
@@ -234,7 +236,6 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		}
 		
 		JCBlock methodBody = treeMaker.Block(0, statements);
-		Name methodName = field.toName(toGetterName(field));
 		
 		List<JCTypeParameter> methodGenericParams = List.nil();
 		List<JCVariableDecl> parameters = List.nil();
