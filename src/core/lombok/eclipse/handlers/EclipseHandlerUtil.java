@@ -774,9 +774,19 @@ public class EclipseHandlerUtil {
 		}
 	}
 	
+	private static final Map<FieldDeclaration, GetterMethod> generatedLazyGetters = new WeakHashMap<FieldDeclaration, GetterMethod>();
+	
+	static void registerCreatedLazyGetter(FieldDeclaration field, char[] methodName, TypeReference returnType) {
+		generatedLazyGetters.put(field, new GetterMethod(methodName, returnType));
+	}
+	
 	private static GetterMethod findGetter(EclipseNode field) {
-		TypeReference fieldType = ((FieldDeclaration)field.get()).type;
+		FieldDeclaration fieldDeclaration = (FieldDeclaration) field.get();
+		GetterMethod gm = generatedLazyGetters.get(fieldDeclaration);
+		if (gm != null) return gm;
+		TypeReference fieldType = fieldDeclaration.type;
 		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
+		
 		EclipseNode typeNode = field.up();
 		for (String potentialGetterName : toAllGetterNames(field, isBoolean)) {
 			for (EclipseNode potentialGetter : typeNode.down()) {

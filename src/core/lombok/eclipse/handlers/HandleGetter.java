@@ -268,6 +268,9 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
 		method.statements = statements;
+		
+		EclipseHandlerUtil.registerCreatedLazyGetter((FieldDeclaration) fieldNode.get(), method.selector, returnType);
+		
 		return method;
 	}
 

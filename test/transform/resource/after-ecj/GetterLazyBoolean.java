@@ -1,4 +1,4 @@
-class GetterLazyBoolean {
+@lombok.EqualsAndHashCode(of = "booleanValue") @lombok.ToString(of = "booleanValue") class GetterLazyBoolean {
   private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>> booleanValue = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>>();
   private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>> otherBooleanValue = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>>();
   public @java.lang.SuppressWarnings("all") boolean isBooleanValue() {
@@ -43,7 +43,7 @@ class GetterLazyBoolean {
     final @java.lang.SuppressWarnings("all") GetterLazyBoolean other = (GetterLazyBoolean) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
-    if (this.isBooleanValue() != other.isBooleanValue())
+    if ((this.isBooleanValue() != other.isBooleanValue()))
         return false;
     return true;
   }
@@ -53,7 +53,7 @@ class GetterLazyBoolean {
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
     final int PRIME = 31;
     int result = 1;
-    result = result * PRIME + (this.isBooleanValue() ? 1231 : 1237);
+    result = ((result * PRIME) + (this.isBooleanValue() ? 1231 : 1237));
     return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
