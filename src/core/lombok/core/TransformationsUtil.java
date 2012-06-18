@@ -168,7 +168,10 @@ public class TransformationsUtil {
 	 * @param isBoolean if the field is of type 'boolean'. For fields of type 'java.lang.Boolean', you should provide {@code false}.
 	 */
 	public static List<String> toAllGetterNames(AnnotationValues<Accessors> accessors, CharSequence fieldName, boolean isBoolean) {
-		if (!isBoolean) return Collections.singletonList(toGetterName(accessors, fieldName, false));
+		if (!isBoolean) {
+			String getterName = toGetterName(accessors, fieldName, false);
+			return (getterName == null) ? Collections.<String>emptyList() : Collections.singletonList(getterName);
+		}
 		
 		Accessors acc = accessors.getInstance();
 		fieldName = removePrefix(fieldName, acc.prefix());
@@ -199,7 +202,10 @@ public class TransformationsUtil {
 	 * @param isBoolean if the field is of type 'boolean'. For fields of type 'java.lang.Boolean', you should provide {@code false}.
 	 */
 	public static List<String> toAllSetterNames(AnnotationValues<Accessors> accessors, CharSequence fieldName, boolean isBoolean) {
-		if (!isBoolean) return Collections.singletonList(toSetterName(accessors, fieldName, false));
+		if (!isBoolean) {
+			String setterName = toSetterName(accessors, fieldName, false);
+			return (setterName == null) ? Collections.<String>emptyList() : Collections.singletonList(setterName);
+		}
 		
 		Accessors acc = accessors.getInstance();
 		fieldName = removePrefix(fieldName, acc.prefix());
