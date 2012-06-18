@@ -9,7 +9,7 @@ class GetterLazyNative {
 	private final java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Character>> charField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Character>>();
 	private final java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<int[]>> intArrayField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<int[]>>();
 	@java.lang.SuppressWarnings("all")
-	public boolean getBooleanField() {
+	public boolean isBooleanField() {
 		java.util.concurrent.atomic.AtomicReference<java.lang.Boolean> value = this.booleanField.get();
 		if (value == null) {
 			synchronized (this.booleanField) {

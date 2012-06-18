@@ -30,7 +30,7 @@ class GetterLazyBoolean {
 	@java.lang.SuppressWarnings("all")
 	public java.lang.String toString() {
 		return "GetterLazyBoolean(booleanValue=" + this.isBooleanValue() + ")";
-	}	
+	}
 	@java.lang.SuppressWarnings("all")
 	public boolean isBooleanValue() {
 		java.util.concurrent.atomic.AtomicReference<java.lang.Boolean> value = this.booleanValue.get();
