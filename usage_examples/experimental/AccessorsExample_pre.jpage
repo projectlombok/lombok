@@ -1,4 +1,4 @@
-import lombok.Accessors;
+import lombok.experimental.Accessors;
 import lombok.Getter;
 import lombok.Setter;
 
