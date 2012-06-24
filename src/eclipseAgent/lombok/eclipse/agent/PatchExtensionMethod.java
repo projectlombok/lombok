@@ -198,8 +198,6 @@ public class PatchExtensionMethod {
 			}
 		}
 		
-		if (methodCall.binding == null) return resolvedType;
-		
 		for (Extension extension : extensions) {
 			if (!extension.suppressBaseMethods && !(methodCall.binding instanceof ProblemMethodBinding)) continue;
 			for (MethodBinding extensionMethod : extension.extensionMethods) {
@@ -212,8 +210,9 @@ public class PatchExtensionMethod {
 				arguments.add(methodCall.receiver);
 				if (methodCall.arguments != null) arguments.addAll(Arrays.asList(methodCall.arguments));
 				List<TypeBinding> argumentTypes = new ArrayList<TypeBinding>();
-				argumentTypes.add(methodCall.receiver.resolvedType);
-				if (methodCall.binding.parameters != null) argumentTypes.addAll(Arrays.asList(methodCall.binding.parameters));
+				for (Expression argument : arguments) {
+					argumentTypes.add(argument.resolvedType);
+				}
 				MethodBinding fixedBinding = scope.getMethod(extensionMethod.declaringClass, methodCall.selector, argumentTypes.toArray(new TypeBinding[0]), methodCall);
 				if (fixedBinding instanceof ProblemMethodBinding) {
 					if (fixedBinding.declaringClass != null) {
