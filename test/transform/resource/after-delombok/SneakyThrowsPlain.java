@@ -1,4 +1,12 @@
 class SneakyThrowsPlain {
+	SneakyThrowsPlain() {
+		super();
+		try {
+			System.out.println("constructor");
+		} catch (final java.lang.Throwable $ex) {
+			throw lombok.Lombok.sneakyThrow($ex);
+		}
+	}
 	public void test() {
 		try {
 			System.out.println("test1");

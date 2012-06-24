@@ -1,7 +1,14 @@
 import lombok.SneakyThrows;
 class SneakyThrowsPlain {
-  SneakyThrowsPlain() {
+  @lombok.SneakyThrows SneakyThrowsPlain() {
     super();
+    try 
+      {
+        System.out.println("constructor");
+      }
+    catch (final java.lang.Throwable $ex)       {
+        throw lombok.Lombok.sneakyThrow($ex);
+      }
   }
   public @lombok.SneakyThrows void test() {
     try 

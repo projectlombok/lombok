@@ -36,6 +36,8 @@ import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
+import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -83,17 +85,28 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 		}
 		
 		if (method.body == null) return;
+		if (method.body.stats.isEmpty()) return;
 		
-		List<JCStatement> contents = method.body.stats;
+		final JCStatement constructorCall = method.body.stats.get(0);
+		final boolean isConstructorCall = isConstructorCall(constructorCall);
+		List<JCStatement> contents = isConstructorCall ? method.body.stats.tail : method.body.stats;
 		
 		for (String exception : exceptions) {
 			contents = List.of(buildTryCatchBlock(methodNode, contents, exception, annotation.get()));
 		}
 		
-		method.body.stats = contents;
+		method.body.stats = isConstructorCall ? List.of(constructorCall).appendList(contents) : contents;
 		methodNode.rebuild();
 	}
-
+	
+	private boolean isConstructorCall(final JCStatement supect) {
+		if (!(supect instanceof JCExpressionStatement)) return false;
+		final JCExpression supectExpression = ((JCExpressionStatement) supect).expr;
+		if (!(supectExpression instanceof JCMethodInvocation)) return false;
+		final String methodName = ((JCMethodInvocation) supectExpression).meth.toString();
+		return "super".equals(methodName) || "this".equals(methodName);
+	}
+	
 	private JCStatement buildTryCatchBlock(JavacNode node, List<JCStatement> contents, String exception, JCTree source) {
 		TreeMaker maker = node.getTreeMaker();
 		
