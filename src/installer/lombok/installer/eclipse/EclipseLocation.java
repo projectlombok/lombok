@@ -111,9 +111,13 @@ public class EclipseLocation extends IdeLocation {
 			BufferedReader br = new BufferedReader(new InputStreamReader(fis));
 			String line;
 			while ((line = br.readLine()) != null) {
-				if (JAVA_AGENT_LINE_MATCHER.matcher(line.trim()).matches()) return true;
+				if (JAVA_AGENT_LINE_MATCHER.matcher(line.trim()).matches()) {
+					br.close();
+					return true;
+				}
 			}
 			
+			br.close();
 			return false;
 		} finally {
 			fis.close();
@@ -171,8 +175,8 @@ public class EclipseLocation extends IdeLocation {
 						}
 						
 						newContents.append(line).append(OS_NEWLINE);
+						br.close();
 					}
-					
 				} finally {
 					fis.close();
 				}
@@ -323,6 +327,7 @@ public class EclipseLocation extends IdeLocation {
 					}
 					
 					newContents.append(line).append(OS_NEWLINE);
+					br.close();
 				}
 			} finally {
 				fis.close();
