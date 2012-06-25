@@ -8,6 +8,7 @@ any type in the form of static methods that take as first parameter an object of
 * BUGFIX: Eclipse refactor script 'rename method arguments' should work more often with lombok-affected methods.
 * BUGFIX: Using `val` in an enhanced for loop did not work if the iterable was a raw type.
 * BUGFIX: Using `@Getter(lazy=true)` when the data type is boolean, int, array, or some other type that requires special treatment for hashCode/equals, now works properly with `@Data`, `@EqualsHashCode` and `@ToString`. [Issue #376](http://code.google.com/p/projectlombok/issues/detail?id=376)
+* BUGFIX: `SneakyThrows` in constructor should not wrap this/super call in try-block [Issue #381](http://code.google.com/p/projectlombok/issues/detail?id=381)
 * FEATURE: ONGOING: Fix for using lombok together with gwt-designer.
 
 ### v0.11.0 (March 26th, 2012)

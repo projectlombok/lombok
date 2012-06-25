@@ -10,6 +10,16 @@ class SneakyThrowsPlain {
         throw lombok.Lombok.sneakyThrow($ex);
       }
   }
+  @lombok.SneakyThrows SneakyThrowsPlain(int x) {
+    this();
+    try 
+      {
+        System.out.println("constructor2");
+      }
+    catch (final java.lang.Throwable $ex)       {
+        throw lombok.Lombok.sneakyThrow($ex);
+      }
+  }
   public @lombok.SneakyThrows void test() {
     try 
       {
