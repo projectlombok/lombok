@@ -228,6 +228,8 @@ public class HandleConstructor {
 		constructor.selector = ((TypeDeclaration)type.get()).name;
 		constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
 		setGeneratedBy(constructor.constructorCall, source);
+		constructor.constructorCall.sourceStart = source.sourceStart;
+		constructor.constructorCall.sourceEnd = source.sourceEnd;
 		constructor.thrownExceptions = null;
 		constructor.typeParameters = null;
 		constructor.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
