@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 import java.util.Collection;
-import lombok.Delegate;
 
 public class DelegationExample {
 	private interface SimpleCollection {
