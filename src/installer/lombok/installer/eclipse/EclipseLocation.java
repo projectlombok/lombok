@@ -327,8 +327,8 @@ public class EclipseLocation extends IdeLocation {
 					}
 					
 					newContents.append(line).append(OS_NEWLINE);
-					br.close();
 				}
+				br.close();
 			} finally {
 				fis.close();
 			}
