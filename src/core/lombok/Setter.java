@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,8 +42,8 @@ import java.lang.annotation.Target;
  *     }
  * </pre>
  * 
- * If any method named {@code setFoo} exists, regardless of return type or parameters, no method is generated,
- * and instead a compiler warning is emitted.
+ * If any method named {@code setFoo} (case insensitive) exists, regardless of return type or parameters,
+ * no method is generated, and instead a compiler warning is emitted.
  * <p>
  * This annotation can also be applied to a class, in which case it'll be as if all non-static fields that don't already have
  * a {@code Setter} annotation have the annotation.

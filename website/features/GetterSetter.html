@@ -48,7 +48,7 @@
 				For generating the method names, the first character of the field, if it is a lowercase character, is title-cased, otherwise, it is left unmodified.
 				Then, get/set/is is prefixed.
 				</p><p>
-				No method is generated if any method already exists with the same name and same parameter count. For example, <code>getFoo()</code>
+				No method is generated if any method already exists with the same name (case insensitive) and same parameter count. For example, <code>getFoo()</code>
 				will not be generated if there's already a method <code>getFoo(String... x)</code> even though it is technically possible to make the method. This caveat
 				exists to prevent confusion. If the generation of a method is skipped for this reason, a warning is emitted instead. Varargs count as 0 to N parameters.
 				</p><p>
