@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,4 +48,9 @@ public @interface PrintAST {
 	 * its node structure (e.g. node classname) is printed, and this process is repeated for all children.
 	 */
 	boolean printContent() default false;
+	
+	/**
+	 * if {@code true} prints the start and end position of each node.
+	 */
+	boolean printPositions() default false;
 }
