@@ -4,13 +4,14 @@ Lombok Changelog
 ### v0.11.1 (EDGE)
 * FEATURE: {Experimental} `@ExtensionMethod` is now available to add extensions to
 any type in the form of static methods that take as first parameter an object of that type. [Documentation on @ExtensionMethod](http://projectlombok.org/features/experimental/ExtensionMethod.html)
+* FEATURE: ONGOING: Fix for using lombok together with gwt-designer.
 * ENHANCEMENT: Small performance enhancements in `equals` and `hashCode`. [Issue #366](http://code.google.com/p/projectlombok/issues/detail?id=366)
 * BUGFIX: Eclipse would display and error message regarding an invalid super constructor in the wrong location. [Issue #336](http://code.google.com/p/projectlombok/issues/detail?id=336)
 * BUGFIX: Eclipse refactor script 'rename method arguments' should work more often with lombok-affected methods.
 * BUGFIX: Using `val` in an enhanced for loop did not work if the iterable was a raw type.
 * BUGFIX: Using `@Getter(lazy=true)` when the data type is boolean, int, array, or some other type that requires special treatment for hashCode/equals, now works properly with `@Data`, `@EqualsHashCode` and `@ToString`. [Issue #376](http://code.google.com/p/projectlombok/issues/detail?id=376)
 * BUGFIX: `SneakyThrows` in constructor should not wrap this/super call in try-block [Issue #381](http://code.google.com/p/projectlombok/issues/detail?id=381)
-* FEATURE: ONGOING: Fix for using lombok together with gwt-designer.
+* BUGFIX: Setting breakpoints on code above the first generated method was not possible. [Issue #377](http://code.google.com/p/projectlombok/issues/detail?id=377)
 
 ### v0.11.0 (March 26th, 2012)
 * FEATURE: {Experimental} 'fluent' getters and setters (using just `fieldName` as methodname instead of `getFieldName`), setters that return `this` instead of `void`, and support for fields with prefixes is introduced with this lombok version. Also, the number of parameters of any existing methods with the same name that lombok would generate are now taken into account; previously if you had any method named `setX` regardless of how many parameters it has, lombok would avoid generating a `setX` method. Now lombok generates the method if all present `setX` methods have a number of parameters other than 1. [documentation](http://projectlombok.org/features/experimental/Accessors.html).
