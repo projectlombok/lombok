@@ -40,14 +40,14 @@ import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Lombok;
-import lombok.core.AnnotationValues;
-import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValue;
+import lombok.core.TransformationsUtil;
+import lombok.core.TypeResolver;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.Accessors;
-import lombok.core.TypeResolver;
 
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
@@ -62,7 +62,6 @@ import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ArrayQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ArrayTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.CastExpression;
-import org.eclipse.jdt.internal.compiler.ast.Clinit;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
@@ -1215,24 +1214,11 @@ public class EclipseHandlerUtil {
 					}
 				}
 			}
-			int insertionPoint;
-			for (insertionPoint = 0; insertionPoint < parent.methods.length; insertionPoint++) {
-				AbstractMethodDeclaration current = parent.methods[insertionPoint];
-				if (current instanceof Clinit) continue;
-				if (method instanceof ConstructorDeclaration) {
-					if (current instanceof ConstructorDeclaration) continue;
-					break;
-				}
-				if (isGenerated(current)) continue;
-				break;
-			}
+			//We insert the method in the last position of the methods registered to the type
+			//When changing this behavior, this may trigger issue #155 and #377
 			AbstractMethodDeclaration[] newArray = new AbstractMethodDeclaration[parent.methods.length + 1];
-			System.arraycopy(parent.methods, 0, newArray, 0, insertionPoint);
-			if (insertionPoint < parent.methods.length) {
-				System.arraycopy(parent.methods, insertionPoint, newArray, insertionPoint + 1, parent.methods.length - insertionPoint);
-			}
-			
-			newArray[insertionPoint] = method;
+			System.arraycopy(parent.methods, 0, newArray, 0, parent.methods.length);
+			newArray[parent.methods.length] = method;
 			parent.methods = newArray;
 		}
 		
