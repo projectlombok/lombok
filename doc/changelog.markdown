@@ -5,9 +5,11 @@ Lombok Changelog
 * FEATURE: {Experimental} `@ExtensionMethod` is now available to add extensions to
 any type in the form of static methods that take as first parameter an object of that type. [Documentation on @ExtensionMethod](http://projectlombok.org/features/experimental/ExtensionMethod.html)
 * ENHANCEMENT: Small performance enhancements in `equals` and `hashCode`. [Issue #366](http://code.google.com/p/projectlombok/issues/detail?id=366)
+* BUGFIX: Eclipse would display and error message regarding an invalid super constructor in the wrong location. [Issue #336](http://code.google.com/p/projectlombok/issues/detail?id=336)
 * BUGFIX: Eclipse refactor script 'rename method arguments' should work more often with lombok-affected methods.
 * BUGFIX: Using `val` in an enhanced for loop did not work if the iterable was a raw type.
 * BUGFIX: Using `@Getter(lazy=true)` when the data type is boolean, int, array, or some other type that requires special treatment for hashCode/equals, now works properly with `@Data`, `@EqualsHashCode` and `@ToString`. [Issue #376](http://code.google.com/p/projectlombok/issues/detail?id=376)
+* BUGFIX: `SneakyThrows` in constructor should not wrap this/super call in try-block [Issue #381](http://code.google.com/p/projectlombok/issues/detail?id=381)
 * FEATURE: ONGOING: Fix for using lombok together with gwt-designer.
 
 ### v0.11.0 (March 26th, 2012)

@@ -49,7 +49,8 @@ public @interface Accessors {
 	
 	/**
 	 * If present, only fields with any of the stated prefixes are given the getter/setter treatment.
-	 * Note that a prefix only counts if the next character is NOT a lowercase character. If multiple fields
+	 * Note that a prefix only counts if the next character is NOT a lowercase character or the last
+	 * letter of the prefix is not a letter (for instance an underscore). If multiple fields
 	 * all turn into the same name when the prefix is stripped, an error will be generated.
 	 */
 	String[] prefix() default {};

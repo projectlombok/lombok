@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -327,8 +327,8 @@ public class EclipseLocation extends IdeLocation {
 					}
 					
 					newContents.append(line).append(OS_NEWLINE);
-					br.close();
 				}
+				br.close();
 			} finally {
 				fis.close();
 			}

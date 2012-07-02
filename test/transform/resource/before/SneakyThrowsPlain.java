@@ -5,6 +5,11 @@ class SneakyThrowsPlain {
 		System.out.println("constructor");
 	}
 	
+	@lombok.SneakyThrows SneakyThrowsPlain(int x) {
+		this();
+		System.out.println("constructor2");
+	}
+	
 	@lombok.SneakyThrows public void test() {
 		System.out.println("test1");
 	}
