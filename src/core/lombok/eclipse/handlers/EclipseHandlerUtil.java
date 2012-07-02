@@ -1228,7 +1228,7 @@ public class EclipseHandlerUtil {
 			}
 			AbstractMethodDeclaration[] newArray = new AbstractMethodDeclaration[parent.methods.length + 1];
 			System.arraycopy(parent.methods, 0, newArray, 0, insertionPoint);
-			if (insertionPoint <= parent.methods.length) {
+			if (insertionPoint < parent.methods.length) {
 				System.arraycopy(parent.methods, insertionPoint, newArray, insertionPoint + 1, parent.methods.length - insertionPoint);
 			}
 			
