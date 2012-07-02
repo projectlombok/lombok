@@ -21,7 +21,7 @@
 		<dependency org="org.slf4j" name="slf4j-api" rev="1.6.1" conf="test->default; contrib->sources"/>
 		<dependency org="com.googlecode.jarjar" name="jarjar" rev="1.1" conf="build->default" />
 		
-		<dependency org="org.apache.ant" name="ant" rev="1.8.0" conf="build->default; contrib->sources" />
+		<dependency org="org.apache.ant" name="ant" rev="1.8.1" conf="build->default; contrib->sources" />
 		<dependency org="projectlombok.org" name="spi" rev="0.2.4" conf="build" />
 		<dependency org="projectlombok.org" name="ant-googlecode" rev="0.0.2" conf="build" />
 		<dependency org="com.jcraft" name="jsch" rev="0.1.42" conf="build->default" />
