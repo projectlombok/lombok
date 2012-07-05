@@ -23,6 +23,7 @@ package lombok.eclipse.agent;
 
 import static lombok.eclipse.handlers.EclipseHandlerUtil.createAnnotation;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -66,35 +67,37 @@ public class PatchExtensionMethod {
 	
 	private static class PostponedNoMethodError implements PostponedError {
 		private final ProblemReporter problemReporter;
-		private final MessageSend messageSend;
+		private final WeakReference<MessageSend> messageSendRef;
 		private final TypeBinding recType;
 		private final TypeBinding[] params;
 		
 		PostponedNoMethodError(ProblemReporter problemReporter, MessageSend messageSend, TypeBinding recType, TypeBinding[] params) {
 			this.problemReporter = problemReporter;
-			this.messageSend = messageSend;
+			this.messageSendRef = new WeakReference<MessageSend>(messageSend);
 			this.recType = recType;
 			this.params = params;
 		}
 		
 		public void fire() {
-			problemReporter.errorNoMethodFor(messageSend, recType, params);
+			MessageSend messageSend = messageSendRef.get();
+			if (messageSend != null) problemReporter.errorNoMethodFor(messageSend, recType, params);
 		}
 	}
 	
 	private static class PostponedInvalidMethodError implements PostponedError {
 		private final ProblemReporter problemReporter;
-		private final MessageSend messageSend;
+		private final WeakReference<MessageSend> messageSendRef;
 		private final MethodBinding method;
 		
 		PostponedInvalidMethodError(ProblemReporter problemReporter, MessageSend messageSend, MethodBinding method) {
 			this.problemReporter = problemReporter;
-			this.messageSend = messageSend;
+			this.messageSendRef = new WeakReference<MessageSend>(messageSend);
 			this.method = method;
 		}
 		
 		public void fire() {
-			problemReporter.invalidMethod(messageSend, method);
+			MessageSend messageSend = messageSendRef.get();
+			if (messageSend != null) problemReporter.invalidMethod(messageSend, method);
 		}
 	}
 	
@@ -277,7 +280,4 @@ public class PatchExtensionMethod {
 			return new QualifiedNameReference(sources, poss, source.sourceStart, source.sourceEnd);
 		}
 	}
-
-	
-
 }
