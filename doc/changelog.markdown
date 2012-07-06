@@ -1,6 +1,10 @@
 Lombok Changelog
 ----------------
 
+### v0.11.3 Edge
+* BUGFIX: Eclipse would throw an OOME. [Issue #390](http://code.google.com/p/projectlombok/issues/detail?id=390)
+
+
 ### v0.11.2 "Dashing Kakapo" (July 3rd, 2012)
 * FEATURE: {Experimental} `@ExtensionMethod` is now available to add extensions to
 any type in the form of static methods that take as first parameter an object of that type. [Documentation on @ExtensionMethod](http://projectlombok.org/features/experimental/ExtensionMethod.html)
