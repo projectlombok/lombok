@@ -68,6 +68,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Options;
 
 /**
  * Container for static utility methods useful to handlers written for javac.
@@ -91,6 +92,16 @@ public class JavacHandlerUtil {
 	}
 	
 	private static Map<JCTree, WeakReference<JCTree>> generatedNodes = new WeakHashMap<JCTree, WeakReference<JCTree>>();
+	
+	/**
+	 * Contributed by Jan Lahoda; many lombok transformations should not be run (or a lite version should be run) when the netbeans editor
+	 * is running javac on the open source file to find inline errors and such. As class files are compiled separately this does not affect
+	 * actual runtime behaviour or file output of the netbeans IDE.
+	 */
+	public static boolean inNetbeansEditor(JavacNode node) {
+		Options options = Options.instance(node.getContext());
+		return (options.keySet().contains("ide") && !options.keySet().contains("backgroundCompilation"));
+	}
 	
 	public static JCTree getGeneratedBy(JCTree node) {
 		synchronized (generatedNodes) {
