@@ -141,7 +141,7 @@ public class Main {
 			out.println(message);
 			out.println("------------------------------");
 		}
-		out.println("projectlombok.org v" + Version.getVersion());
+		out.println("projectlombok.org " + Version.getFullVersion());
 		out.println("Copyright (C) 2009-2012 The Project Lombok Authors.");
 		out.println("Run 'lombok license' to see the lombok license agreement.");
 		out.println();
