@@ -4,6 +4,7 @@ Lombok Changelog
 ### v0.11.3 (Edgy Guinea Pig)
 * BUGFIX: Eclipse would throw an OOME. [Issue #390](http://code.google.com/p/projectlombok/issues/detail?id=390)
 * BUGFIX: [Netbeans] `@Cleanup` and `@Synchronized` cause far fewer issues in the netbeans editor. [Issue #393](http://code.google.com/p/projectlombok/issues/detail?id=393)
+* BUGFIX: [Installer] Erroneous messages about the installer complaining about needing root access when installing or removing lombok from eclipse installs has been fixed.
 
 
 ### v0.11.2 "Dashing Kakapo" (July 3rd, 2012)
