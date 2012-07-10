@@ -111,7 +111,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, FieldAccess.GETTER);
 	}
 	
-	private void generateToString(JavacNode typeNode, JavacNode source, List<String> excludes, List<String> includes,
+	public void generateToString(JavacNode typeNode, JavacNode source, List<String> excludes, List<String> includes,
 			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
 		boolean notAClass = true;
 		if (typeNode.get() instanceof JCClassDecl) {

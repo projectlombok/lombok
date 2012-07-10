@@ -566,7 +566,7 @@ public class JavacHandlerUtil {
 		return null;
 	}
 	
-	enum FieldAccess {
+	public enum FieldAccess {
 		GETTER, PREFER_FIELD, ALWAYS_FIELD;
 	}
 	

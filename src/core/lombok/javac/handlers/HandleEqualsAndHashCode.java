@@ -119,7 +119,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		generateMethods(typeNode, source, null, null, null, false, FieldAccess.GETTER);
 	}
 	
-	private void generateMethods(JavacNode typeNode, JavacNode source, List<String> excludes, List<String> includes,
+	public void generateMethods(JavacNode typeNode, JavacNode source, List<String> excludes, List<String> includes,
 			Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
 		boolean notAClass = true;
 		if (typeNode.get() instanceof JCClassDecl) {
