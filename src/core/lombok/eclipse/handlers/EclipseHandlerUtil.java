@@ -945,10 +945,7 @@ public class EclipseHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toAllGetterNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static List<String> toAllGetterNames(EclipseNode field, boolean isBoolean) {
-		String fieldName = field.getName();
-		AnnotationValues<Accessors> accessors = getAccessorsForField(field);
-		
-		return TransformationsUtil.toAllGetterNames(accessors, fieldName, isBoolean);
+		return TransformationsUtil.toAllGetterNames(getAccessorsForField(field), field.getName(), isBoolean);
 	}
 	
 	/**
@@ -957,10 +954,7 @@ public class EclipseHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toGetterName(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static String toGetterName(EclipseNode field, boolean isBoolean) {
-		String fieldName = field.getName();
-		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
-		
-		return TransformationsUtil.toGetterName(accessors, fieldName, isBoolean);
+		return TransformationsUtil.toGetterName(getAccessorsForField(field), field.getName(), isBoolean);
 	}
 	
 	/**
@@ -968,10 +962,7 @@ public class EclipseHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toAllSetterNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static java.util.List<String> toAllSetterNames(EclipseNode field, boolean isBoolean) {
-		String fieldName = field.getName();
-		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
-		
-		return TransformationsUtil.toAllSetterNames(accessors, fieldName, isBoolean);
+		return TransformationsUtil.toAllSetterNames(getAccessorsForField(field), field.getName(), isBoolean);
 	}
 	
 	/**
@@ -980,10 +971,24 @@ public class EclipseHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toSetterName(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static String toSetterName(EclipseNode field, boolean isBoolean) {
-		String fieldName = field.getName();
-		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
-		
-		return TransformationsUtil.toSetterName(accessors, fieldName, isBoolean);
+		return TransformationsUtil.toSetterName(getAccessorsForField(field), field.getName(), isBoolean);
+	}
+	
+	/**
+	 * Translates the given field into all possible wither names.
+	 * Convenient wrapper around {@link TransformationsUtil#toAllWitherNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static java.util.List<String> toAllWitherNames(EclipseNode field, boolean isBoolean) {
+		return TransformationsUtil.toAllWitherNames(getAccessorsForField(field), field.getName(), isBoolean);
+	}
+	
+	/**
+	 * @return the likely wither name for the stated field. (e.g. private boolean foo; to withFoo).
+	 * 
+	 * Convenient wrapper around {@link TransformationsUtil#toWitherName(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static String toWitherName(EclipseNode field, boolean isBoolean) {
+		return TransformationsUtil.toWitherName(getAccessorsForField(field), field.getName(), isBoolean);
 	}
 	
 	/**

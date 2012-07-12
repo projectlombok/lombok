@@ -1,7 +1,7 @@
 2:9 WARNING Not generating setFoo(): A method with that name already exists
-7:9 WARNING Not generating setFoo(): A method with that name already exists
-12:9 WARNING Not generating setFoo(): A method with that name already exists
-17:9 WARNING Not generating setFoo(): A method with that name already exists
-32:9 WARNING Not generating setFoo(): A method with that name already exists
-37:9 WARNING Not generating setFoo(): A method with that name already exists (setIsFoo)
-42:9 WARNING Not generating setFoo(): A method with that name already exists
+8:9 WARNING Not generating setFoo(): A method with that name already exists
+14:9 WARNING Not generating setFoo(): A method with that name already exists
+20:9 WARNING Not generating setFoo(): A method with that name already exists
+38:9 WARNING Not generating setFoo(): A method with that name already exists
+44:9 WARNING Not generating setFoo(): A method with that name already exists (setIsFoo)
+50:9 WARNING Not generating setFoo(): A method with that name already exists

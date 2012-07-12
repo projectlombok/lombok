@@ -61,6 +61,7 @@ import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
+import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.TreeScanner;
@@ -307,11 +308,7 @@ public class JavacHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toAllGetterNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static java.util.List<String> toAllGetterNames(JavacNode field) {
-		String fieldName = field.getName();
-		boolean isBoolean = isBoolean(field);
-		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
-		
-		return TransformationsUtil.toAllGetterNames(accessors, fieldName, isBoolean);
+		return TransformationsUtil.toAllGetterNames(getAccessorsForField(field), field.getName(), isBoolean(field));
 	}
 	
 	/**
@@ -320,11 +317,7 @@ public class JavacHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toGetterName(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static String toGetterName(JavacNode field) {
-		String fieldName = field.getName();
-		boolean isBoolean = isBoolean(field);
-		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
-		
-		return TransformationsUtil.toGetterName(accessors, fieldName, isBoolean);
+		return TransformationsUtil.toGetterName(getAccessorsForField(field), field.getName(), isBoolean(field));
 	}
 	
 	/**
@@ -332,11 +325,7 @@ public class JavacHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toAllSetterNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static java.util.List<String> toAllSetterNames(JavacNode field) {
-		String fieldName = field.getName();
-		boolean isBoolean = isBoolean(field);
-		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
-		
-		return TransformationsUtil.toAllSetterNames(accessors, fieldName, isBoolean);
+		return TransformationsUtil.toAllSetterNames(getAccessorsForField(field), field.getName(), isBoolean(field));
 	}
 	
 	/**
@@ -345,11 +334,24 @@ public class JavacHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toSetterName(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static String toSetterName(JavacNode field) {
-		String fieldName = field.getName();
-		boolean isBoolean = isBoolean(field);
-		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
-		
-		return TransformationsUtil.toSetterName(accessors, fieldName, isBoolean);
+		return TransformationsUtil.toSetterName(getAccessorsForField(field), field.getName(), isBoolean(field));
+	}
+	
+	/**
+	 * Translates the given field into all possible wither names.
+	 * Convenient wrapper around {@link TransformationsUtil#toAllWitherNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static java.util.List<String> toAllWitherNames(JavacNode field) {
+		return TransformationsUtil.toAllWitherNames(getAccessorsForField(field), field.getName(), isBoolean(field));
+	}
+	
+	/**
+	 * @return the likely wither name for the stated field. (e.g. private boolean foo; to withFoo).
+	 * 
+	 * Convenient wrapper around {@link TransformationsUtil#toWitherName(lombok.core.AnnotationValues, CharSequence, boolean)}.
+	 */
+	public static String toWitherName(JavacNode field) {
+		return TransformationsUtil.toWitherName(getAccessorsForField(field), field.getName(), isBoolean(field));
 	}
 	
 	/**
@@ -364,6 +366,26 @@ public class JavacHandlerUtil {
 		boolean forced = (accessors.getActualExpression("chain") != null);
 		Accessors instance = accessors.getInstance();
 		return instance.chain() || (instance.fluent() && !forced);
+	}
+	
+	public static JCExpression cloneSelfType(JavacNode field) {
+		JavacNode typeNode = field;
+		TreeMaker maker = field.getTreeMaker();
+		while (typeNode != null && typeNode.getKind() != Kind.TYPE) typeNode = typeNode.up();
+		if (typeNode != null && typeNode.get() instanceof JCClassDecl) {
+			JCClassDecl type = (JCClassDecl) typeNode.get();
+			ListBuffer<JCExpression> typeArgs = ListBuffer.lb();
+			if (!type.typarams.isEmpty()) {
+				for (JCTypeParameter tp : type.typarams) {
+					typeArgs.append(maker.Ident(tp.name));
+				}
+				return maker.TypeApply(maker.Ident(type.name), typeArgs.toList());
+			} else {
+				return maker.Ident(type.name);
+			}
+		} else {
+			return null;
+		}
 	}
 	
 	private static boolean isBoolean(JavacNode field) {

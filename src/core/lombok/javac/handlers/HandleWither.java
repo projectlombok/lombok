@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,15 +26,11 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.Collection;
 
-import javax.lang.model.type.NoType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeVisitor;
-
 import lombok.AccessLevel;
-import lombok.Setter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
+import lombok.experimental.Wither;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
@@ -42,15 +38,14 @@ import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
-import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCConditional;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCReturn;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
@@ -62,15 +57,15 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
 /**
- * Handles the {@code lombok.Setter} annotation for javac.
+ * Handles the {@code lombok.experimental.Wither} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
-public class HandleSetter extends JavacAnnotationHandler<Setter> {
-	public void generateSetterForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelSetter) {
-		if (checkForTypeLevelSetter) {
+public class HandleWither extends JavacAnnotationHandler<Wither> {
+	public void generateWitherForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelWither) {
+		if (checkForTypeLevelWither) {
 			if (typeNode != null) for (JavacNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
-					if (annotationTypeMatches(Setter.class, child)) {
+					if (annotationTypeMatches(Wither.class, child)) {
 						//The annotation will make it happen, so we can skip it.
 						return;
 					}
@@ -84,7 +79,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION | Flags.ENUM)) != 0;
 		
 		if (typeDecl == null || notAClass) {
-			errorNode.addError("@Setter is only supported on a class or a field.");
+			errorNode.addError("@Wither is only supported on a class or a field.");
 			return;
 		}
 		
@@ -95,44 +90,44 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			if (fieldDecl.name.toString().startsWith("$")) continue;
 			//Skip static fields.
 			if ((fieldDecl.mods.flags & Flags.STATIC) != 0) continue;
-			//Skip final fields.
-			if ((fieldDecl.mods.flags & Flags.FINAL) != 0) continue;
+			//Skip final initialized fields.
+			if ((fieldDecl.mods.flags & Flags.FINAL) != 0 && fieldDecl.init != null) continue;
 			
-			generateSetterForField(field, errorNode.get(), level);
+			generateWitherForField(field, errorNode.get(), level);
 		}
 	}
 	
 	/**
-	 * Generates a setter on the stated field.
+	 * Generates a wither on the stated field.
 	 * 
-	 * Used by {@link HandleData}.
+	 * Used by {@link HandleValue}.
 	 * 
 	 * The difference between this call and the handle method is as follows:
 	 * 
-	 * If there is a {@code lombok.Setter} annotation on the field, it is used and the
+	 * If there is a {@code lombok.experimental.Wither} annotation on the field, it is used and the
 	 * same rules apply (e.g. warning if the method already exists, stated access level applies).
-	 * If not, the setter is still generated if it isn't already there, though there will not
+	 * If not, the wither is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
 	 * 
-	 * @param fieldNode The node representing the field you want a setter for.
-	 * @param pos The node responsible for generating the setter (the {@code @Data} or {@code @Setter} annotation).
+	 * @param fieldNode The node representing the field you want a wither for.
+	 * @param pos The node responsible for generating the wither (the {@code @Value} or {@code @Wither} annotation).
 	 */
-	public void generateSetterForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level) {
+	public void generateWitherForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level) {
 		for (JavacNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
-				if (annotationTypeMatches(Setter.class, child)) {
+				if (annotationTypeMatches(Wither.class, child)) {
 					//The annotation will make it happen, so we can skip it.
 					return;
 				}
 			}
 		}
 		
-		createSetterForField(level, fieldNode, fieldNode, false);
+		createWitherForField(level, fieldNode, fieldNode, false);
 	}
 	
-	@Override public void handle(AnnotationValues<Setter> annotation, JCAnnotation ast, JavacNode annotationNode) {
+	@Override public void handle(AnnotationValues<Wither> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		Collection<JavacNode> fields = annotationNode.upFromAnnotationToFields();
-		deleteAnnotationIfNeccessary(annotationNode, Setter.class);
+		deleteAnnotationIfNeccessary(annotationNode, Wither.class);
 		deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 		JavacNode node = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
@@ -141,43 +136,52 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		
 		switch (node.getKind()) {
 		case FIELD:
-			createSetterForFields(level, fields, annotationNode, true);
+			createWitherForFields(level, fields, annotationNode, true);
 			break;
 		case TYPE:
-			generateSetterForType(node, annotationNode, level, false);
+			generateWitherForType(node, annotationNode, level, false);
 			break;
 		}
 	}
 	
-	private void createSetterForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists) {
-		
+	private void createWitherForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists) {
 		for (JavacNode fieldNode : fieldNodes) {
-			createSetterForField(level, fieldNode, errorNode, whineIfExists);
+			createWitherForField(level, fieldNode, errorNode, whineIfExists);
 		}
 	}
 	
-	private void createSetterForField(AccessLevel level,
+	private void createWitherForField(AccessLevel level,
 			JavacNode fieldNode, JavacNode source, boolean whineIfExists) {
 		
 		if (fieldNode.getKind() != Kind.FIELD) {
-			fieldNode.addError("@Setter is only supported on a class or a field.");
+			fieldNode.addError("@Wither is only supported on a class or a field.");
 			return;
 		}
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl)fieldNode.get();
-		String methodName = toSetterName(fieldNode);
+		String methodName = toWitherName(fieldNode);
 		
 		if (methodName == null) {
-			source.addWarning("Not generating setter for this field: It does not fit your @Accessors prefix list.");
+			source.addWarning("Not generating wither for this field: It does not fit your @Accessors prefix list.");
 			return;
 		}
 		
-		if ((fieldDecl.mods.flags & Flags.FINAL) != 0) {
-			source.addWarning("Not generating setter for this field: Setters cannot be generated for final fields.");
+		if ((fieldDecl.mods.flags & Flags.STATIC) != 0) {
+			source.addWarning("Not generating wither for this field: Withers cannot be generated for static fields.");
 			return;
 		}
 		
-		for (String altName : toAllSetterNames(fieldNode)) {
+		if ((fieldDecl.mods.flags & Flags.FINAL) != 0 && fieldDecl.init != null) {
+			source.addWarning("Not generating wither for this field: Withers cannot be generated for final, initialized fields.");
+			return;
+		}
+		
+		if (fieldDecl.name.toString().startsWith("$")) {
+			source.addWarning("Not generating wither for this field: Withers cannot be generated for fields starting with $.");
+			return;
+		}
+		
+		for (String altName : toAllWitherNames(fieldNode)) {
 			switch (methodExists(altName, fieldNode, false, 1)) {
 			case EXISTS_BY_LOMBOK:
 				return;
@@ -195,54 +199,64 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			}
 		}
 		
-		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
+		long access = toJavacModifier(level);
 		
-		JCMethodDecl createdSetter = createSetter(access, fieldNode, fieldNode.getTreeMaker(), source.get());
-		injectMethod(fieldNode.up(), createdSetter);
+		JCMethodDecl createdWither = createWither(access, fieldNode, fieldNode.getTreeMaker(), source.get());
+		injectMethod(fieldNode.up(), createdWither);
 	}
 	
-	private JCMethodDecl createSetter(long access, JavacNode field, TreeMaker treeMaker, JCTree source) {
-		String setterName = toSetterName(field);
-		boolean returnThis = shouldReturnThis(field);
-		if (setterName == null) return null;
+	private JCMethodDecl createWither(long access, JavacNode field, TreeMaker treeMaker, JCTree source) {
+		String witherName = toWitherName(field);
+		if (witherName == null) return null;
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
-		
-		JCExpression fieldRef = createFieldAccessor(treeMaker, field, FieldAccess.ALWAYS_FIELD);
-		JCAssign assign = treeMaker.Assign(fieldRef, treeMaker.Ident(fieldDecl.name));
 		
 		ListBuffer<JCStatement> statements = ListBuffer.lb();
 		List<JCAnnotation> nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
 		List<JCAnnotation> nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
 		
-		Name methodName = field.toName(setterName);
+		Name methodName = field.toName(witherName);
 		List<JCAnnotation> annsOnParam = nonNulls.appendList(nullables);
 		
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(Flags.FINAL, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
 		
+		JCExpression selfType = cloneSelfType(field);
+		if (selfType == null) return null;
+		
+		TreeMaker maker = field.getTreeMaker();
+		
+		ListBuffer<JCExpression> args = ListBuffer.lb();
+		for (JavacNode child : field.up().down()) {
+			if (child.getKind() != Kind.FIELD) continue;
+			JCVariableDecl childDecl = (JCVariableDecl) child.get();
+			// Skip fields that start with $
+			if (childDecl.name.toString().startsWith("$")) continue;
+			long fieldFlags = childDecl.mods.flags;
+			// Skip static fields.
+			if ((fieldFlags & Flags.STATIC) != 0) continue;
+			// Skip initialized final fields.
+			if (((fieldFlags & Flags.FINAL) != 0) && childDecl.init != null) continue;
+			if (child.get() == field.get()) {
+				args.append(maker.Ident(fieldDecl.name));
+			} else {
+				args.append(createFieldAccessor(maker, child, FieldAccess.ALWAYS_FIELD));
+			}
+		}
+		
+		JCNewClass newClass = maker.NewClass(null, List.<JCExpression>nil(), selfType, args.toList(), null);
+		JCExpression identityCheck = maker.Binary(getCtcInt(JCTree.class, "EQ"), createFieldAccessor(maker, field, FieldAccess.ALWAYS_FIELD), maker.Ident(fieldDecl.name));
+		JCConditional conditional = maker.Conditional(identityCheck, maker.Ident(field.toName("this")), newClass);
+		JCReturn returnStatement = maker.Return(conditional);
+		
 		if (nonNulls.isEmpty()) {
-			statements.append(treeMaker.Exec(assign));
+			statements.append(returnStatement);
 		} else {
 			JCStatement nullCheck = generateNullCheck(treeMaker, field);
 			if (nullCheck != null) statements.append(nullCheck);
-			statements.append(treeMaker.Exec(assign));
-		}
-		
-		JCExpression methodType = null;
-		if (returnThis) {
-			methodType = cloneSelfType(field);
-		}
-		
-		if (methodType == null) {
-			//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.
-			methodType = treeMaker.Type(new JCNoType(getCtcInt(TypeTags.class, "VOID")));
-			returnThis = false;
-		}
-		
-		if (returnThis) {
-			JCReturn returnStatement = treeMaker.Return(treeMaker.Ident(field.toName("this")));
 			statements.append(returnStatement);
 		}
+		
+		JCExpression returnType = cloneSelfType(field);
 		
 		JCBlock methodBody = treeMaker.Block(0, statements.toList());
 		List<JCTypeParameter> methodGenericParams = List.nil();
@@ -254,25 +268,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		if (isFieldDeprecated(field)) {
 			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(chainDots(field, "java", "lang", "Deprecated"), List.<JCExpression>nil()));
 		}
-		return recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
+		return recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, returnType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
-	}
-	
-	private static class JCNoType extends Type implements NoType {
-		public JCNoType(int tag) {
-			super(tag, null);
-		}
-		
-		@Override
-		public TypeKind getKind() {
-			if (tag == getCtcInt(TypeTags.class, "VOID")) return TypeKind.VOID;
-			if (tag == getCtcInt(TypeTags.class, "NONE")) return TypeKind.NONE;
-			throw new AssertionError("Unexpected tag: " + tag);
-		}
-		
-		@Override
-		public <R, P> R accept(TypeVisitor<R, P> v, P p) {
-			return v.visitNoType(this, p);
-		}
 	}
 }
