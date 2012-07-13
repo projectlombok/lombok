@@ -55,7 +55,6 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
-import com.sun.tools.javac.tree.TreeMaker;
 
 /**
  * Handles the {@link ExtensionMethod} annotation for javac.
@@ -180,10 +179,7 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 					Type firstArgType = types.erasure(extensionMethodType.asMethodType().argtypes.get(0));
 					if (!types.isAssignable(receiverType, firstArgType)) continue;
 					methodCall.args = methodCall.args.prepend(receiver);
-					
-					TreeMaker maker = annotationNode.getTreeMaker();
-					JCIdent extensionClassIdent = maker.Ident(annotationNode.toName(extensionProvider.toString()));
-					methodCall.meth = maker.Select(extensionClassIdent, annotationNode.toName(methodName));
+					methodCall.meth = chainDotsString(annotationNode, extensionProvider.toString() + "." + methodName);
 					return;
 				}
 			}
