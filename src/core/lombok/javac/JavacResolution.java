@@ -456,12 +456,18 @@ public class JavacResolution {
 					if (upper == null || upper.toString().equals("java.lang.Object")) {
 						return maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
 					}
+					if (upper.getTypeArguments().contains(type)) {
+						return maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
+					}
 					return maker.Wildcard(maker.TypeBoundKind(BoundKind.EXTENDS), typeToJCTree(upper, ast, false, false));
 				} else {
 					return maker.Wildcard(maker.TypeBoundKind(BoundKind.SUPER), typeToJCTree(lower, ast, false, false));
 				}
 			}
 			if (upper != null) {
+				if (upper.getTypeArguments().contains(type)) {
+					return maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
+				}
 				return typeToJCTree(upper, ast, allowCompound, allowVoid);
 			}
 			
