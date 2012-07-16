@@ -5,6 +5,8 @@ Lombok Changelog
 * BUGFIX: Eclipse would throw an OOME if using `@ExtensionMethod`. [Issue #390](http://code.google.com/p/projectlombok/issues/detail?id=390)
 * BUGFIX: {Netbeans} `@Cleanup` and `@Synchronized` cause far fewer issues in the netbeans editor. [Issue #393](http://code.google.com/p/projectlombok/issues/detail?id=393)
 * BUGFIX: {Installer} Erroneous messages about the installer complaining about needing root access when installing or removing lombok from eclipse installs has been fixed. The installer edge of this problem was actually already fixed in v0.11.2. [Issue #363](http://code.google.com/p/projectlombok/issues/detail?id=363)
+* BUGFIX: `@ExtensionMethod` had all sorts of issues in javac. [Issue #399](http://code.google.com/p/projectlombok/issues/detail?id=399)
+* BUGFIX: Generating static constructors with javac when you have fields with generics, i.e. `Class<T>`, caused errors. [Issue #396](http://code.google.com/p/projectlombok/issues/detail?id=396)
 
 ### v0.11.2 "Dashing Kakapo" (July 3rd, 2012)
 * FEATURE: {Experimental} `@ExtensionMethod` is now available to add extensions to
