@@ -43,12 +43,10 @@ import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCReturn;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
-import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
@@ -268,16 +266,7 @@ public class HandleConstructor {
 		
 		for (JavacNode fieldNode : fields) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
-			JCExpression pType;
-			if (field.vartype instanceof JCIdent) pType = maker.Ident(((JCIdent)field.vartype).name);
-			else if (field.vartype instanceof JCTypeApply) {
-				JCTypeApply typeApply = (JCTypeApply) field.vartype;
-				ListBuffer<JCExpression> tArgs = ListBuffer.lb();
-				for (JCExpression arg : typeApply.arguments) tArgs.append(arg);
-				pType = maker.TypeApply(typeApply.clazz, tArgs.toList());
-			} else {
-				pType = field.vartype;
-			}
+			JCExpression pType = cloneType(maker, field.vartype, source);
 			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, TransformationsUtil.NON_NULL_PATTERN);
 			List<JCAnnotation> nullables = findAnnotations(fieldNode, TransformationsUtil.NULLABLE_PATTERN);
 			JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL, nonNulls.appendList(nullables)), field.name, pType, null);

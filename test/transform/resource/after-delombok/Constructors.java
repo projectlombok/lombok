@@ -59,3 +59,17 @@ class RequiredArgsConstructorStaticNameGenerics<T extends Number> {
 		return new RequiredArgsConstructorStaticNameGenerics<T>(x);
 	}
 }
+class RequiredArgsConstructorStaticNameGenerics2<T extends Number> {
+	final Class<T> x;
+	String name;
+	
+	@java.lang.SuppressWarnings("all")
+	private RequiredArgsConstructorStaticNameGenerics2(final Class<T> x) {
+		this.x = x;
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public static <T extends Number> RequiredArgsConstructorStaticNameGenerics2<T> of(final Class<T> x) {
+		return new RequiredArgsConstructorStaticNameGenerics2<T>(x);
+	}
+}

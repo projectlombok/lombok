@@ -22,3 +22,7 @@
 	final T x;
 	String name;
 }
+@lombok.RequiredArgsConstructor(staticName="of") class RequiredArgsConstructorStaticNameGenerics2<T extends Number> {
+	final Class<T> x;
+	String name;
+}

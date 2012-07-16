@@ -52,3 +52,14 @@
     return new RequiredArgsConstructorStaticNameGenerics<T>(x);
   }
 }
+@lombok.RequiredArgsConstructor(staticName = "of") class RequiredArgsConstructorStaticNameGenerics2<T extends Number> {
+  final Class<T> x;
+  String name;
+  private @java.lang.SuppressWarnings("all") RequiredArgsConstructorStaticNameGenerics2(final Class<T> x) {
+    super();
+    this.x = x;
+  }
+  public static @java.lang.SuppressWarnings("all") <T extends Number>RequiredArgsConstructorStaticNameGenerics2<T> of(final Class<T> x) {
+    return new RequiredArgsConstructorStaticNameGenerics2<T>(x);
+  }
+}
