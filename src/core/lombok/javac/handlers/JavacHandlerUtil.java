@@ -746,6 +746,8 @@ public class JavacHandlerUtil {
 	 * In javac, dotted access of any kind, from {@code java.lang.String} to {@code var.methodName}
 	 * is represented by a fold-left of {@code Select} nodes with the leftmost string represented by
 	 * a {@code Ident} node. This method generates such an expression.
+	 * <p>
+	 * The position of the generated node(s) will be unpositioned (-1).
 	 * 
 	 * For example, maker.Select(maker.Select(maker.Ident(NAME[java]), NAME[lang]), NAME[String]).
 	 * 
@@ -753,12 +755,30 @@ public class JavacHandlerUtil {
 	 * @see com.sun.tools.javac.tree.JCTree.JCFieldAccess
 	 */
 	public static JCExpression chainDots(JavacNode node, String... elems) {
+		return chainDots(node, -1, elems);
+	}
+	
+	/**
+	 * In javac, dotted access of any kind, from {@code java.lang.String} to {@code var.methodName}
+	 * is represented by a fold-left of {@code Select} nodes with the leftmost string represented by
+	 * a {@code Ident} node. This method generates such an expression.
+	 * <p>
+	 * The position of the generated node(s) will be equal to the {@code pos} parameter.
+	 *
+	 * For example, maker.Select(maker.Select(maker.Ident(NAME[java]), NAME[lang]), NAME[String]).
+	 * 
+	 * @see com.sun.tools.javac.tree.JCTree.JCIdent
+	 * @see com.sun.tools.javac.tree.JCTree.JCFieldAccess
+	 */
+	public static JCExpression chainDots(JavacNode node, int pos, String... elems) {
 		assert elems != null;
 		assert elems.length > 0;
 		
-		JCExpression e = node.getTreeMaker().Ident(node.toName(elems[0]));
+		TreeMaker maker = node.getTreeMaker();
+		if (pos != -1) maker = maker.at(pos);
+		JCExpression e = maker.Ident(node.toName(elems[0]));
 		for (int i = 1 ; i < elems.length ; i++) {
-			e = node.getTreeMaker().Select(e, node.toName(elems[i]));
+			e = maker.Select(e, node.toName(elems[i]));
 		}
 		
 		return e;
@@ -776,7 +796,7 @@ public class JavacHandlerUtil {
 	 * @see com.sun.tools.javac.tree.JCTree.JCFieldAccess
 	 */
 	public static JCExpression chainDotsString(JavacNode node, String elems) {
-		return chainDots(node, elems.split("\\."));	
+		return chainDots(node, elems.split("\\."));
 	}
 	
 	/**
