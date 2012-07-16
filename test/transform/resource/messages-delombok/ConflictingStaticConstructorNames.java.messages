@@ -1,0 +1,1 @@
+1:1 WARNING Ignoring static constructor name: explicit @XxxArgsConstructor annotation present; its `staticName` parameter will be used.
