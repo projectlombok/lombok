@@ -381,6 +381,7 @@ public class Delombok {
 		}
 		
 		JavaCompiler delegate = compiler.processAnnotations(compiler.enterTrees(toJavacList(roots)));
+		delegate.flow(delegate.attribute(delegate.todo));
 		for (JCCompilationUnit unit : roots) {
 			DelombokResult result = new DelombokResult(catcher.getComments(unit), unit, force || options.isChanged(unit));
 			if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged");
