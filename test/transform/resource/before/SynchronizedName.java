@@ -5,12 +5,6 @@ class SynchronizedName {
 	@lombok.Synchronized("read") void test1() {
 		System.out.println("one");
 	}
-	@lombok.Synchronized("write") void test2() {
-		System.out.println("two");
-	}
-	@lombok.Synchronized("read") static void test3() {
-		System.out.println("three");
-	}	
 	@lombok.Synchronized("READ") void test4() {
 		System.out.println("four");
 	}	

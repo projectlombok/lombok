@@ -1,6 +1,5 @@
 class SneakyThrowsPlain {
 	SneakyThrowsPlain() {
-		super();
 		try {
 			System.out.println("constructor");
 		} catch (final java.lang.Throwable $ex) {

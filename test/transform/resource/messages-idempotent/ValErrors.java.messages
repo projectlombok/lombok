@@ -1,0 +1,7 @@
+3:44 ERROR cannot find symbol
+symbol  : variable d
+location: class ValErrors
+6:17 ERROR cannot find symbol
+symbol  : class val
+location: class ValErrors
+6:25 ERROR illegal initializer for <none>
