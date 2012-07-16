@@ -26,6 +26,7 @@ import static org.junit.Assert.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -35,6 +36,11 @@ import java.util.List;
 
 public abstract class AbstractRunTests {
 	protected static final String LINE_SEPARATOR = System.getProperty("line.separator");
+	private final File dumpActualFilesHere;
+	
+	public AbstractRunTests() {
+		this.dumpActualFilesHere = findPlaceToDumpActualFiles();
+	}
 	
 	public boolean compareFile(DirectoryRunner.TestParams params, File file) throws Throwable {
 		StringBuilder messages = new StringBuilder();
@@ -82,6 +88,25 @@ public abstract class AbstractRunTests {
 		return readFile(new File(dir, file.getName() + (messages ? ".messages" : "")));
 	}
 	
+	private static File findPlaceToDumpActualFiles() {
+		String location = System.getProperty("lombok.tests.dump_actual_files");
+		if (location != null) {
+			File dumpActualFilesHere = new File(location);
+			dumpActualFilesHere.mkdirs();
+			return dumpActualFilesHere;
+		}
+		return null;
+	}
+	
+	private static void dumpToFile(File file, String content) throws IOException {
+		FileOutputStream fos = new FileOutputStream(file);
+		try {
+			fos.write(content.getBytes("UTF-8"));
+		} finally {
+			fos.close();
+		}
+	}
+	
 	private void compare(String name, String expectedFile, String actualFile, String expectedMessages, String actualMessages, boolean printErrors) throws Throwable {
 		try {
 			compareContent(name, expectedFile, actualFile);
@@ -99,6 +124,9 @@ public abstract class AbstractRunTests {
 				}
 				System.out.println("*******************");
 			}
+			if (dumpActualFilesHere != null) {
+				dumpToFile(new File(dumpActualFilesHere, name), actualFile);
+			}
 			throw e;
 		}
 		try {
@@ -112,6 +140,9 @@ public abstract class AbstractRunTests {
 				System.out.println("****  Actual  ******");
 				System.out.println(actualMessages);
 				System.out.println("*******************");
+			}
+			if (dumpActualFilesHere != null) {
+				dumpToFile(new File(dumpActualFilesHere, name + ".messages"), actualMessages);
 			}
 			throw e;
 		}
