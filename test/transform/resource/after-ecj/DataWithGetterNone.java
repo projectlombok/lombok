@@ -2,10 +2,6 @@
   private int x;
   private int y;
   private final String z;
-  public @java.beans.ConstructorProperties({"z"}) @java.lang.SuppressWarnings("all") DataWithGetterNone(final String z) {
-    super();
-    this.z = z;
-  }
   public @java.lang.SuppressWarnings("all") void setX(final int x) {
     this.x = x;
   }
@@ -44,5 +40,9 @@
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
     return (((((("DataWithGetterNone(x=" + this.x) + ", y=") + this.y) + ", z=") + this.z) + ")");
+  }
+  public @java.beans.ConstructorProperties({"z"}) @java.lang.SuppressWarnings("all") DataWithGetterNone(final String z) {
+    super();
+    this.z = z;
   }
 }

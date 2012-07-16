@@ -1,10 +1,6 @@
 @lombok.Data class DataIgnore {
   final int x;
   String $name;
-  public @java.beans.ConstructorProperties({"x"}) @java.lang.SuppressWarnings("all") DataIgnore(final int x) {
-    super();
-    this.x = x;
-  }
   public @java.lang.SuppressWarnings("all") int getX() {
     return this.x;
   }
@@ -31,5 +27,9 @@
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
     return (("DataIgnore(x=" + this.getX()) + ")");
+  }
+  public @java.beans.ConstructorProperties({"x"}) @java.lang.SuppressWarnings("all") DataIgnore(final int x) {
+    super();
+    this.x = x;
   }
 }

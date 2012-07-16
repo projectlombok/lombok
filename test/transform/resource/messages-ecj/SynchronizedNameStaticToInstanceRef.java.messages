@@ -1,0 +1,1 @@
+5 error Cannot make a static reference to the non-static field SynchronizedNameStaticToInstanceRef.read

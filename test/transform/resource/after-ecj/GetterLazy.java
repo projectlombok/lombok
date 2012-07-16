@@ -5,6 +5,9 @@ class GetterLazy {
     }
   }
   private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<ValueType>> fieldName = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<ValueType>>();
+  GetterLazy() {
+    super();
+  }
   public @java.lang.SuppressWarnings("all") ValueType getFieldName() {
     java.util.concurrent.atomic.AtomicReference<ValueType> value = this.fieldName.get();
     if ((value == null))
@@ -21,8 +24,5 @@ class GetterLazy {
             }
         }
     return value.get();
-  }
-  GetterLazy() {
-    super();
   }
 }

@@ -7,10 +7,6 @@ class DataOnLocalClass1 {
     @Data class Local {
       final int x;
       String name;
-      public @java.lang.SuppressWarnings("all") Local(final int x) {
-        super();
-        this.x = x;
-      }
       public @java.lang.SuppressWarnings("all") int getX() {
         return this.x;
       }
@@ -50,6 +46,10 @@ class DataOnLocalClass1 {
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (((("Local(x=" + this.getX()) + ", name=") + this.getName()) + ")");
       }
+      public @java.lang.SuppressWarnings("all") Local(final int x) {
+        super();
+        this.x = x;
+      }
     }
   }
 }
@@ -58,12 +58,6 @@ class DataOnLocalClass2 {
     @Data class Local {
       @Data class InnerLocal {
         @lombok.NonNull String name;
-        public @java.lang.SuppressWarnings("all") InnerLocal(final @lombok.NonNull String name) {
-          super();
-          if ((name == null))
-              throw new java.lang.NullPointerException("name");
-          this.name = name;
-        }
         public @lombok.NonNull @java.lang.SuppressWarnings("all") String getName() {
           return this.name;
         }
@@ -99,12 +93,14 @@ class DataOnLocalClass2 {
         public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
           return (("Local.InnerLocal(name=" + this.getName()) + ")");
         }
+        public @java.lang.SuppressWarnings("all") InnerLocal(final @lombok.NonNull String name) {
+          super();
+          if ((name == null))
+              throw new java.lang.NullPointerException("name");
+          this.name = name;
+        }
       }
       final int x;
-      public @java.lang.SuppressWarnings("all") Local(final int x) {
-        super();
-        this.x = x;
-      }
       public @java.lang.SuppressWarnings("all") int getX() {
         return this.x;
       }
@@ -131,6 +127,10 @@ class DataOnLocalClass2 {
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
         return (("Local(x=" + this.getX()) + ")");
+      }
+      public @java.lang.SuppressWarnings("all") Local(final int x) {
+        super();
+        this.x = x;
       }
     }
   }

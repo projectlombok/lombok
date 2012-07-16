@@ -17,11 +17,11 @@ class TrickyDoNothing2 {
 }
 class TrickySuccess {
   @Getter int x;
-  public @java.lang.SuppressWarnings("all") int getX() {
-    return this.x;
-  }
   TrickySuccess() {
     super();
+  }
+  public @java.lang.SuppressWarnings("all") int getX() {
+    return this.x;
   }
 }
 class TrickyDoNothing3 {

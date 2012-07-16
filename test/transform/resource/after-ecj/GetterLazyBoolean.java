@@ -1,6 +1,12 @@
 @lombok.EqualsAndHashCode(of = "booleanValue") @lombok.ToString(of = "booleanValue") class GetterLazyBoolean {
   private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>> booleanValue = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>>();
   private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>> otherBooleanValue = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>>();
+  GetterLazyBoolean() {
+    super();
+  }
+  private static boolean calculateBoolean() {
+    return true;
+  }
   public @java.lang.SuppressWarnings("all") boolean isBooleanValue() {
     java.util.concurrent.atomic.AtomicReference<java.lang.Boolean> value = this.booleanValue.get();
     if ((value == null))
@@ -58,11 +64,5 @@
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
     return (("GetterLazyBoolean(booleanValue=" + this.isBooleanValue()) + ")");
-  }
-  GetterLazyBoolean() {
-    super();
-  }
-  private static boolean calculateBoolean() {
-    return true;
   }
 }

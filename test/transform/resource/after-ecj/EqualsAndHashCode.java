@@ -4,6 +4,9 @@
   Object[] z;
   String a;
   String b;
+  EqualsAndHashCode() {
+    super();
+  }
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
@@ -43,15 +46,15 @@
     result = ((result * PRIME) + (($b == null) ? 0 : $b.hashCode()));
     return result;
   }
-  EqualsAndHashCode() {
-    super();
-  }
 }
 final @lombok.EqualsAndHashCode class EqualsAndHashCode2 {
   int x;
   long y;
   float f;
   double d;
+  EqualsAndHashCode2() {
+    super();
+  }
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
@@ -79,11 +82,11 @@ final @lombok.EqualsAndHashCode class EqualsAndHashCode2 {
     result = ((result * PRIME) + (int) ($d ^ ($d >>> 32)));
     return result;
   }
-  EqualsAndHashCode2() {
-    super();
-  }
 }
 final @lombok.EqualsAndHashCode(callSuper = false) class EqualsAndHashCode3 extends EqualsAndHashCode {
+  EqualsAndHashCode3() {
+    super();
+  }
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
@@ -101,11 +104,11 @@ final @lombok.EqualsAndHashCode(callSuper = false) class EqualsAndHashCode3 exte
     int result = 1;
     return result;
   }
-  EqualsAndHashCode3() {
-    super();
-  }
 }
 @lombok.EqualsAndHashCode(callSuper = true) class EqualsAndHashCode4 extends EqualsAndHashCode {
+  EqualsAndHashCode4() {
+    super();
+  }
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
@@ -126,8 +129,5 @@ final @lombok.EqualsAndHashCode(callSuper = false) class EqualsAndHashCode3 exte
     int result = 1;
     result = ((result * PRIME) + super.hashCode());
     return result;
-  }
-  EqualsAndHashCode4() {
-    super();
   }
 }

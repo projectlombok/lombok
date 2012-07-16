@@ -24,13 +24,13 @@ class DelegatePlain {
   }
   private final @Delegate(types = Bar.class) BarImpl bar = new BarImpl();
   private final @Delegate(types = Foo.class,excludes = Bar.class) FooImpl foo = new FooImpl();
+  DelegatePlain() {
+    super();
+  }
   public @java.lang.SuppressWarnings("all") void bar(final java.util.ArrayList<java.lang.String> list) {
     this.bar.bar(list);
   }
   public @java.lang.SuppressWarnings("all") void foo() {
     this.foo.foo();
-  }
-  DelegatePlain() {
-    super();
   }
 }

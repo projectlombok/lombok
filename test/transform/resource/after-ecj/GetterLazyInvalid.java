@@ -24,11 +24,11 @@ class GetterLazyInvalidNone {
 }
 @lombok.Getter(lazy = true) class GetterLazyInvalidClass {
   private final String fieldName = "";
-  public @java.lang.SuppressWarnings("all") String getFieldName() {
-    return this.fieldName;
-  }
   GetterLazyInvalidClass() {
     super();
+  }
+  public @java.lang.SuppressWarnings("all") String getFieldName() {
+    return this.fieldName;
   }
 }
 class GetterLazyInvalidNoInit {

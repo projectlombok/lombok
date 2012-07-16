@@ -2,6 +2,9 @@ class Getter {
   @lombok.Getter boolean foo;
   @lombok.Getter boolean isBar;
   @lombok.Getter boolean hasBaz;
+  Getter() {
+    super();
+  }
   public @java.lang.SuppressWarnings("all") boolean isFoo() {
     return this.foo;
   }
@@ -11,20 +14,17 @@ class Getter {
   public @java.lang.SuppressWarnings("all") boolean isHasBaz() {
     return this.hasBaz;
   }
-  Getter() {
-    super();
-  }
 }
 class MoreGetter {
   @lombok.Getter boolean foo;
-  public @java.lang.SuppressWarnings("all") boolean isFoo() {
-    return this.foo;
-  }
   MoreGetter() {
     super();
   }
   boolean hasFoo() {
     return true;
+  }
+  public @java.lang.SuppressWarnings("all") boolean isFoo() {
+    return this.foo;
   }
 }
 class YetMoreGetter {
