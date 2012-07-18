@@ -250,6 +250,7 @@ public class JavacHandlerUtil {
 	 * Only does this if the DeleteLombokAnnotations class is in the context.
 	 */
 	public static void deleteAnnotationIfNeccessary(JavacNode annotation, Class<? extends Annotation> annotationType) {
+		if (inNetbeansEditor(annotation)) return;
 		if (!annotation.shouldDeleteLombokAnnotations()) return;
 		JavacNode parentNode = annotation.directUp();
 		switch (parentNode.getKind()) {
@@ -280,6 +281,7 @@ public class JavacHandlerUtil {
 	}
 	
 	public static void deleteImportFromCompilationUnit(JavacNode node, String name) {
+		if (inNetbeansEditor(node)) return;
 		if (!node.shouldDeleteLombokAnnotations()) return;
 		ListBuffer<JCTree> newDefs = ListBuffer.lb();
 		
