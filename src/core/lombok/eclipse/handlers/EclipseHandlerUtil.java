@@ -466,6 +466,24 @@ public class EclipseHandlerUtil {
 		return result.toArray(EMPTY_ANNOTATION_ARRAY);
 	}
 	
+	public static boolean hasAnnotation(Class<? extends java.lang.annotation.Annotation> type, EclipseNode node) {
+		if (node == null) return false;
+		if (type == null) return false;
+		switch (node.getKind()) {
+		case ARGUMENT:
+		case FIELD:
+		case LOCAL:
+		case TYPE:
+		case METHOD:
+			for (EclipseNode child : node.down()) {
+				if (annotationTypeMatches(type, child)) return true;
+			}
+			// intentional fallthrough
+		default:
+			return false;
+		}
+	}
+	
 	/**
 	 * Checks if the provided annotation type is likely to be the intended type for the given annotation node.
 	 * 
@@ -1034,6 +1052,10 @@ public class EclipseHandlerUtil {
 	 *    If the field is static, or starts with a '$', or is actually an enum constant, 'false' is returned, indicating you should skip it.
 	 */
 	public static boolean filterField(FieldDeclaration declaration) {
+		return filterField(declaration, true);
+	}
+	
+	public static boolean filterField(FieldDeclaration declaration, boolean skipStatic) {
 		// Skip the fake fields that represent enum constants.
 		if (declaration.initialization instanceof AllocationExpression &&
 				((AllocationExpression)declaration.initialization).enumConstant != null) return false;
@@ -1044,7 +1066,7 @@ public class EclipseHandlerUtil {
 		if (declaration.name.length > 0 && declaration.name[0] == '$') return false;
 		
 		// Skip static fields.
-		if ((declaration.modifiers & ClassFileConstants.AccStatic) != 0) return false;
+		if (skipStatic && (declaration.modifiers & ClassFileConstants.AccStatic) != 0) return false;
 		
 		return true;
 	}

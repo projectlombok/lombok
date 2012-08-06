@@ -73,11 +73,9 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	public void generateGetterForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelGetter) {
 		if (checkForTypeLevelGetter) {
-			if (typeNode != null) for (JavacNode child : typeNode.down()) {
-				if (annotationTypeMatches(Getter.class, child)) {
-					//The annotation will make it happen, so we can skip it.
-					return;
-				}
+			if (hasAnnotation(Getter.class, typeNode)) {
+				//The annotation will make it happen, so we can skip it.
+				return;
 			}
 		}
 		
@@ -122,13 +120,9 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	 * @param pos The node responsible for generating the getter (the {@code @Data} or {@code @Getter} annotation).
 	 */
 	public void generateGetterForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level, boolean lazy) {
-		for (JavacNode child : fieldNode.down()) {
-			if (child.getKind() == Kind.ANNOTATION) {
-				if (annotationTypeMatches(Getter.class, child)) {
-					//The annotation will make it happen, so we can skip it.
-					return;
-				}
-			}
+		if (hasAnnotation(Getter.class, fieldNode)) {
+			//The annotation will make it happen, so we can skip it.
+			return;
 		}
 		
 		createGetterForField(level, fieldNode, fieldNode, false, lazy);

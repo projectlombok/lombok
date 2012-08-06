@@ -68,13 +68,9 @@ import com.sun.tools.javac.util.Name;
 public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	public void generateSetterForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelSetter) {
 		if (checkForTypeLevelSetter) {
-			if (typeNode != null) for (JavacNode child : typeNode.down()) {
-				if (child.getKind() == Kind.ANNOTATION) {
-					if (annotationTypeMatches(Setter.class, child)) {
-						//The annotation will make it happen, so we can skip it.
-						return;
-					}
-				}
+			if (hasAnnotation(Setter.class, typeNode)) {
+				//The annotation will make it happen, so we can skip it.
+				return;
 			}
 		}
 		
@@ -118,13 +114,9 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	 * @param pos The node responsible for generating the setter (the {@code @Data} or {@code @Setter} annotation).
 	 */
 	public void generateSetterForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level) {
-		for (JavacNode child : fieldNode.down()) {
-			if (child.getKind() == Kind.ANNOTATION) {
-				if (annotationTypeMatches(Setter.class, child)) {
-					//The annotation will make it happen, so we can skip it.
-					return;
-				}
-			}
+		if (hasAnnotation(Setter.class, fieldNode)) {
+			//The annotation will make it happen, so we can skip it.
+			return;
 		}
 		
 		createSetterForField(level, fieldNode, fieldNode, false);

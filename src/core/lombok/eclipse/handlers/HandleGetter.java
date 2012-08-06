@@ -78,13 +78,9 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 
 	public boolean generateGetterForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelGetter) {
 		if (checkForTypeLevelGetter) {
-			if (typeNode != null) for (EclipseNode child : typeNode.down()) {
-				if (child.getKind() == Kind.ANNOTATION) {
-					if (annotationTypeMatches(Getter.class, child)) {
-						//The annotation will make it happen, so we can skip it.
-						return true;
-					}
-				}
+			if (hasAnnotation(Getter.class, typeNode)) {
+				//The annotation will make it happen, so we can skip it.
+				return true;
 			}
 		}
 		
@@ -124,13 +120,9 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	 * be a warning if its already there. The default access level is used.
 	 */
 	public void generateGetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level, boolean lazy) {
-		for (EclipseNode child : fieldNode.down()) {
-			if (child.getKind() == Kind.ANNOTATION) {
-				if (annotationTypeMatches(Getter.class, child)) {
-					//The annotation will make it happen, so we can skip it.
-					return;
-				}
-			}
+		if (hasAnnotation(Getter.class, fieldNode)) {
+			//The annotation will make it happen, so we can skip it.
+			return;
 		}
 		
 		createGetterForField(level, fieldNode, fieldNode, pos, false, lazy);

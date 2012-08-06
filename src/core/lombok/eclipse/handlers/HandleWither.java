@@ -61,13 +61,9 @@ import org.mangosdk.spi.ProviderFor;
 public class HandleWither extends EclipseAnnotationHandler<Wither> {
 	public boolean generateWitherForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelWither) {
 		if (checkForTypeLevelWither) {
-			if (typeNode != null) for (EclipseNode child : typeNode.down()) {
-				if (child.getKind() == Kind.ANNOTATION) {
-					if (annotationTypeMatches(Wither.class, child)) {
-						//The annotation will make it happen, so we can skip it.
-						return true;
-					}
-				}
+			if (hasAnnotation(Wither.class, typeNode)) {
+				//The annotation will make it happen, so we can skip it.
+				return true;
 			}
 		}
 		

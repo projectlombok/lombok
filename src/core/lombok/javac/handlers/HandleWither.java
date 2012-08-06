@@ -63,13 +63,9 @@ import com.sun.tools.javac.util.Name;
 public class HandleWither extends JavacAnnotationHandler<Wither> {
 	public void generateWitherForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelWither) {
 		if (checkForTypeLevelWither) {
-			if (typeNode != null) for (JavacNode child : typeNode.down()) {
-				if (child.getKind() == Kind.ANNOTATION) {
-					if (annotationTypeMatches(Wither.class, child)) {
-						//The annotation will make it happen, so we can skip it.
-						return;
-					}
-				}
+			if (hasAnnotation(Wither.class, typeNode)) {
+				//The annotation will make it happen, so we can skip it.
+				return;
 			}
 		}
 		

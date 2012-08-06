@@ -137,6 +137,35 @@ public class JavacHandlerUtil {
 		return node;
 	}
 	
+	public static boolean hasAnnotation(Class<? extends Annotation> type, JavacNode node) {
+		return hasAnnotation(type, node, false);
+	}
+	
+	public static boolean hasAnnotationAndDeleteIfNeccessary(Class<? extends Annotation> type, JavacNode node) {
+		return hasAnnotation(type, node, true);
+	}
+	
+	private static boolean hasAnnotation(Class<? extends Annotation> type, JavacNode node, boolean delete) {
+		if (node == null) return false;
+		if (type == null) return false;
+		switch (node.getKind()) {
+		case ARGUMENT:
+		case FIELD:
+		case LOCAL:
+		case TYPE:
+		case METHOD:
+			for (JavacNode child : node.down()) {
+				if (annotationTypeMatches(type, child)) {
+					if (delete) deleteAnnotationIfNeccessary(child, type);
+					return true;
+				}
+			}
+			// intentional fallthrough
+		default:
+			return false;
+		}
+	}
+	
 	/**
 	 * Checks if the Annotation AST Node provided is likely to be an instance of the provided annotation type.
 	 * 

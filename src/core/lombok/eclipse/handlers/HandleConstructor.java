@@ -111,6 +111,21 @@ public class HandleConstructor {
 		return fields;
 	}
 	
+	private static List<EclipseNode> findAllFields(EclipseNode typeNode) {
+		List<EclipseNode> fields = new ArrayList<EclipseNode>();
+		for (EclipseNode child : typeNode.down()) {
+			if (child.getKind() != Kind.FIELD) continue;
+			FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
+			if (!filterField(fieldDecl)) continue;
+			
+			// Skip initialized final fields.
+			if (((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) && fieldDecl.initialization != null) continue;
+			
+			fields.add(child);
+		}
+		return fields;
+	}
+	
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleAllArgsConstructor extends EclipseAnnotationHandler<AllArgsConstructor> {
 		@Override public void handle(AnnotationValues<AllArgsConstructor> annotation, Annotation ast, EclipseNode annotationNode) {
@@ -122,18 +137,7 @@ public class HandleConstructor {
 			@SuppressWarnings("deprecation")
 			boolean suppressConstructorProperties = ann.suppressConstructorProperties();
 			if (level == AccessLevel.NONE) return;
-			List<EclipseNode> fields = new ArrayList<EclipseNode>();
-			for (EclipseNode child : typeNode.down()) {
-				if (child.getKind() != Kind.FIELD) continue;
-				FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
-				if (!filterField(fieldDecl)) continue;
-				
-				// Skip initialized final fields.
-				if (((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) && fieldDecl.initialization != null) continue;
-				
-				fields.add(child);
-			}
-			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, false, suppressConstructorProperties, ast);
+			new HandleConstructor().generateConstructor(typeNode, level, findAllFields(typeNode), staticName, false, suppressConstructorProperties, ast);
 		}
 	}
 	
@@ -153,6 +157,10 @@ public class HandleConstructor {
 	
 	public void generateRequiredArgsConstructor(EclipseNode typeNode, AccessLevel level, String staticName, boolean skipIfConstructorExists, ASTNode source) {
 		generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, skipIfConstructorExists, false, source);
+	}
+	
+	public void generateAllArgsConstructor(EclipseNode typeNode, AccessLevel level, String staticName, boolean skipIfConstructorExists, ASTNode source) {
+		generateConstructor(typeNode, level, findAllFields(typeNode), staticName, skipIfConstructorExists, false, source);
 	}
 	
 	public void generateConstructor(EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, String staticName, boolean skipIfConstructorExists, boolean suppressConstructorProperties, ASTNode source) {

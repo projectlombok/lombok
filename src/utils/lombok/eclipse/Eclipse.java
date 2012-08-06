@@ -122,7 +122,7 @@ public class Eclipse {
 		if (field.annotations == null) return EMPTY_ANNOTATIONS_ARRAY;
 		for (Annotation annotation : field.annotations) {
 			TypeReference typeRef = annotation.type;
-			if (typeRef != null && typeRef.getTypeName()!= null) {
+			if (typeRef != null && typeRef.getTypeName() != null) {
 				char[][] typeName = typeRef.getTypeName();
 				String suspect = new String(typeName[typeName.length - 1]);
 				if (namePattern.matcher(suspect).matches()) {

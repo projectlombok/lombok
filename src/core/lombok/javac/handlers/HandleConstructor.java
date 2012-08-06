@@ -116,21 +116,25 @@ public class HandleConstructor {
 			@SuppressWarnings("deprecation")
 			boolean suppressConstructorProperties = ann.suppressConstructorProperties();
 			if (level == AccessLevel.NONE) return;
-			ListBuffer<JavacNode> fields = ListBuffer.lb();
-			for (JavacNode child : typeNode.down()) {
-				if (child.getKind() != Kind.FIELD) continue;
-				JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
-				// Skip fields that start with $
-				if (fieldDecl.name.toString().startsWith("$")) continue;
-				long fieldFlags = fieldDecl.mods.flags;
-				// Skip static fields.
-				if ((fieldFlags & Flags.STATIC) != 0) continue;
-				// Skip initialized final fields.
-				if (((fieldFlags & Flags.FINAL) != 0) && fieldDecl.init != null) continue;
-				fields.append(child);
-			}
-			new HandleConstructor().generateConstructor(typeNode, level, fields.toList(), staticName, false, suppressConstructorProperties, annotationNode);
+			new HandleConstructor().generateConstructor(typeNode, level, findAllFields(typeNode), staticName, false, suppressConstructorProperties, annotationNode);
 		}
+	}
+	
+	private static List<JavacNode> findAllFields(JavacNode typeNode) {
+		ListBuffer<JavacNode> fields = ListBuffer.lb();
+		for (JavacNode child : typeNode.down()) {
+			if (child.getKind() != Kind.FIELD) continue;
+			JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
+			//Skip fields that start with $
+			if (fieldDecl.name.toString().startsWith("$")) continue;
+			long fieldFlags = fieldDecl.mods.flags;
+			//Skip static fields.
+			if ((fieldFlags & Flags.STATIC) != 0) continue;
+			//Skip initialized final fields
+			boolean isFinal = (fieldFlags & Flags.FINAL) != 0;
+			if (!isFinal || fieldDecl.init == null) fields.append(child);
+		}
+		return fields.toList();
 	}
 	
 	static boolean checkLegality(JavacNode typeNode, JavacNode errorNode, String name) {
@@ -149,6 +153,10 @@ public class HandleConstructor {
 	
 	public void generateRequiredArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, boolean skipIfConstructorExists, JavacNode source) {
 		generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, skipIfConstructorExists, false, source);
+	}
+	
+	public void generateAllArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, boolean skipIfConstructorExists, JavacNode source) {
+		generateConstructor(typeNode, level, findAllFields(typeNode), staticName, skipIfConstructorExists, false, source);
 	}
 	
 	public void generateConstructor(JavacNode typeNode, AccessLevel level, List<JavacNode> fields, String staticName, boolean skipIfConstructorExists, boolean suppressConstructorProperties, JavacNode source) {
