@@ -78,16 +78,16 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 			lockName = isStatic ? STATIC_LOCK_NAME : INSTANCE_LOCK_NAME;
 		}
 		
-		TreeMaker maker = methodNode.getTreeMaker();
+		TreeMaker maker = methodNode.getTreeMaker().at(ast.pos);
 		
 		if (fieldExists(lockName, methodNode) == MemberExistsResult.NOT_EXISTS) {
 			if (!autoMake) {
 				annotationNode.addError("The field " + lockName + " does not exist.");
 				return;
 			}
-			JCExpression objectType = chainDots(methodNode, "java", "lang", "Object");
+			JCExpression objectType = chainDots(methodNode, ast.pos, "java", "lang", "Object");
 			//We use 'new Object[0];' because unlike 'new Object();', empty arrays *ARE* serializable!
-			JCNewArray newObjectArray = maker.NewArray(chainDots(methodNode, "java", "lang", "Object"),
+			JCNewArray newObjectArray = maker.NewArray(chainDots(methodNode, ast.pos, "java", "lang", "Object"),
 					List.<JCExpression>of(maker.Literal(Javac.getCtcInt(TypeTags.class, "INT"), 0)), null);
 			JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
 					maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic ? Flags.STATIC : 0)),
@@ -99,7 +99,7 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 		
 		JCExpression lockNode;
 		if (isStatic) {
-			lockNode = chainDots(methodNode, methodNode.up().getName(), lockName);
+			lockNode = chainDots(methodNode, ast.pos, methodNode.up().getName(), lockName);
 		} else {
 			lockNode = maker.Select(maker.Ident(methodNode.toName("this")), methodNode.toName(lockName));
 		}

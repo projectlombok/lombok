@@ -1,6 +1,9 @@
 @lombok.EqualsAndHashCode(doNotUseGetters = true) @lombok.ToString(doNotUseGetters = true) class GetterLazyEahcToString {
   private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<String>> value = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<String>>();
   private final @lombok.Getter String value2 = "";
+  GetterLazyEahcToString() {
+    super();
+  }
   public @java.lang.SuppressWarnings("all") String getValue() {
     java.util.concurrent.atomic.AtomicReference<String> value = this.value.get();
     if ((value == null))
@@ -53,8 +56,5 @@
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
     return (((("GetterLazyEahcToString(value=" + this.getValue()) + ", value2=") + this.value2) + ")");
-  }
-  GetterLazyEahcToString() {
-    super();
   }
 }

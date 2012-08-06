@@ -8,6 +8,9 @@ class GetterLazyNative {
   private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Double>> doubleField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Double>>();
   private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Character>> charField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Character>>();
   private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<int[]>> intArrayField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<int[]>>();
+  GetterLazyNative() {
+    super();
+  }
   public @java.lang.SuppressWarnings("all") boolean isBooleanField() {
     java.util.concurrent.atomic.AtomicReference<java.lang.Boolean> value = this.booleanField.get();
     if ((value == null))
@@ -160,8 +163,5 @@ class GetterLazyNative {
             }
         }
     return value.get();
-  }
-  GetterLazyNative() {
-    super();
   }
 }

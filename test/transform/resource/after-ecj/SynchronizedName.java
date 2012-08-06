@@ -12,15 +12,6 @@ class SynchronizedName {
         System.out.println("one");
       }
   }
-  @lombok.Synchronized("write") void test2() {
-    System.out.println("two");
-  }
-  static @lombok.Synchronized("read") void test3() {
-    synchronized (SynchronizedName.read)
-      {
-        System.out.println("three");
-      }
-  }
   @lombok.Synchronized("READ") void test4() {
     synchronized (this.READ)
       {

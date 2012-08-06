@@ -10,6 +10,9 @@ class GetterAccessLevel {
   @lombok.Getter(lombok.AccessLevel.PROTECTED) String protectedString;
   @lombok.Getter(lombok.AccessLevel.PUBLIC) String publicString;
   @lombok.Getter(value = lombok.AccessLevel.PUBLIC) String value;
+  GetterAccessLevel() {
+    super();
+  }
   private @java.lang.SuppressWarnings("all") boolean isPrivate() {
     return this.isPrivate;
   }
@@ -36,8 +39,5 @@ class GetterAccessLevel {
   }
   public @java.lang.SuppressWarnings("all") String getValue() {
     return this.value;
-  }
-  GetterAccessLevel() {
-    super();
   }
 }

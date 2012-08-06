@@ -6,6 +6,9 @@ class DelegateOnGetter {
     int getInt();
   }
   private final @Delegate @Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<Bar>> bar = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<Bar>>();
+  DelegateOnGetter() {
+    super();
+  }
   public @Delegate @java.lang.SuppressWarnings("all") Bar getBar() {
     java.util.concurrent.atomic.AtomicReference<Bar> value = this.bar.get();
     if ((value == null))
@@ -37,8 +40,5 @@ class DelegateOnGetter {
   }
   public @java.lang.SuppressWarnings("all") void setList(final java.util.ArrayList<java.lang.String> list) {
     this.getBar().setList(list);
-  }
-  DelegateOnGetter() {
-    super();
   }
 }

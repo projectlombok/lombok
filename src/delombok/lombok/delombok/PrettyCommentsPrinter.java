@@ -1037,8 +1037,17 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
             throw new UncheckedIOException(e);
         }
     }
-
+    
+    private boolean isNoArgsSuperCall(JCExpression expr) {
+        if (!(expr instanceof JCMethodInvocation)) return false;
+        JCMethodInvocation tree = (JCMethodInvocation) expr;
+        if (!tree.typeargs.isEmpty() || !tree.args.isEmpty()) return false;
+        if (!(tree.meth instanceof JCIdent)) return false;
+        return ((JCIdent) tree.meth).name.toString().equals("super");
+    }
+    
     public void visitExec(JCExpressionStatement tree) {
+        if (isNoArgsSuperCall(tree.expr)) return;
         try {
             printExpr(tree.expr);
             if (prec == TreeInfo.notExpression) print(";");

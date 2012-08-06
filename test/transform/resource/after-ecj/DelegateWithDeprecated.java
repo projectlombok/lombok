@@ -6,6 +6,9 @@ class DelegateWithDeprecated {
     void notDeprecated();
   }
   private @Delegate Bar bar;
+  DelegateWithDeprecated() {
+    super();
+  }
   public @java.lang.Deprecated @java.lang.SuppressWarnings("all") void deprecatedAnnotation() {
     this.bar.deprecatedAnnotation();
   }
@@ -14,8 +17,5 @@ class DelegateWithDeprecated {
   }
   public @java.lang.SuppressWarnings("all") void notDeprecated() {
     this.bar.notDeprecated();
-  }
-  DelegateWithDeprecated() {
-    super();
   }
 }

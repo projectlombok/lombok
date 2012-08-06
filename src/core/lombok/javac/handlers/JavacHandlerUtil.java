@@ -45,14 +45,17 @@ import lombok.experimental.Accessors;
 import lombok.javac.Javac;
 import lombok.javac.JavacNode;
 
+import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
@@ -60,9 +63,13 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
+import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
+import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.JCTree.JCWildcard;
+import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
@@ -244,6 +251,7 @@ public class JavacHandlerUtil {
 	 * Only does this if the DeleteLombokAnnotations class is in the context.
 	 */
 	public static void deleteAnnotationIfNeccessary(JavacNode annotation, Class<? extends Annotation> annotationType) {
+		if (inNetbeansEditor(annotation)) return;
 		if (!annotation.shouldDeleteLombokAnnotations()) return;
 		JavacNode parentNode = annotation.directUp();
 		switch (parentNode.getKind()) {
@@ -274,6 +282,7 @@ public class JavacHandlerUtil {
 	}
 	
 	public static void deleteImportFromCompilationUnit(JavacNode node, String name) {
+		if (inNetbeansEditor(node)) return;
 		if (!node.shouldDeleteLombokAnnotations()) return;
 		ListBuffer<JCTree> newDefs = ListBuffer.lb();
 		
@@ -768,6 +777,8 @@ public class JavacHandlerUtil {
 	 * In javac, dotted access of any kind, from {@code java.lang.String} to {@code var.methodName}
 	 * is represented by a fold-left of {@code Select} nodes with the leftmost string represented by
 	 * a {@code Ident} node. This method generates such an expression.
+	 * <p>
+	 * The position of the generated node(s) will be unpositioned (-1).
 	 * 
 	 * For example, maker.Select(maker.Select(maker.Ident(NAME[java]), NAME[lang]), NAME[String]).
 	 * 
@@ -775,12 +786,30 @@ public class JavacHandlerUtil {
 	 * @see com.sun.tools.javac.tree.JCTree.JCFieldAccess
 	 */
 	public static JCExpression chainDots(JavacNode node, String... elems) {
+		return chainDots(node, -1, elems);
+	}
+	
+	/**
+	 * In javac, dotted access of any kind, from {@code java.lang.String} to {@code var.methodName}
+	 * is represented by a fold-left of {@code Select} nodes with the leftmost string represented by
+	 * a {@code Ident} node. This method generates such an expression.
+	 * <p>
+	 * The position of the generated node(s) will be equal to the {@code pos} parameter.
+	 *
+	 * For example, maker.Select(maker.Select(maker.Ident(NAME[java]), NAME[lang]), NAME[String]).
+	 * 
+	 * @see com.sun.tools.javac.tree.JCTree.JCIdent
+	 * @see com.sun.tools.javac.tree.JCTree.JCFieldAccess
+	 */
+	public static JCExpression chainDots(JavacNode node, int pos, String... elems) {
 		assert elems != null;
 		assert elems.length > 0;
 		
-		JCExpression e = node.getTreeMaker().Ident(node.toName(elems[0]));
+		TreeMaker maker = node.getTreeMaker();
+		if (pos != -1) maker = maker.at(pos);
+		JCExpression e = maker.Ident(node.toName(elems[0]));
 		for (int i = 1 ; i < elems.length ; i++) {
-			e = node.getTreeMaker().Select(e, node.toName(elems[i]));
+			e = maker.Select(e, node.toName(elems[i]));
 		}
 		
 		return e;
@@ -798,7 +827,7 @@ public class JavacHandlerUtil {
 	 * @see com.sun.tools.javac.tree.JCTree.JCFieldAccess
 	 */
 	public static JCExpression chainDotsString(JavacNode node, String elems) {
-		return chainDots(node, elems.split("\\."));	
+		return chainDots(node, elems.split("\\."));
 	}
 	
 	/**
@@ -921,5 +950,72 @@ public class JavacHandlerUtil {
 		while ((node != null) && !(node.get() instanceof JCClassDecl)) node = node.up();
 		
 		return node;
+	}
+	
+	/**
+	 * Creates a full clone of a given javac AST type node. Every part is cloned (every identifier, every select, every wildcard, every type apply).
+	 * 
+	 * If there's any node in the tree that we don't know how to clone, that part isn't cloned. However, we wouldn't know what could possibly show up that we
+	 * can't currently clone; that's just a safeguard.
+	 * 
+	 * This should be used if the type looks the same in the code, but resolves differently. For example, a static method that has some generics in it named after
+	 * the class's own parameter, but as its a static method, the static method's notion of {@code T} is different from the class notion of {@code T}. If you're duplicating
+	 * a type used in the class context, you need to use this method.
+	 */
+	public static JCExpression cloneType(TreeMaker maker, JCExpression in, JCTree source) {
+		JCExpression out = cloneType0(maker, in);
+		if (out != null) recursiveSetGeneratedBy(out, source);
+		return out;
+	}
+	
+	private static JCExpression cloneType0(TreeMaker maker, JCTree in) {
+		if (in == null) return null;
+		
+		if (in instanceof JCPrimitiveTypeTree) return (JCExpression) in;
+		
+		if (in instanceof JCIdent) {
+			return maker.Ident(((JCIdent) in).name);
+		}
+		
+		if (in instanceof JCFieldAccess) {
+			JCFieldAccess fa = (JCFieldAccess) in;
+			return maker.Select(cloneType0(maker, fa.selected), fa.name);
+		}
+		
+		if (in instanceof JCArrayTypeTree) {
+			JCArrayTypeTree att = (JCArrayTypeTree) in;
+			return maker.TypeArray(cloneType0(maker, att.elemtype));
+		}
+		
+		if (in instanceof JCTypeApply) {
+			JCTypeApply ta = (JCTypeApply) in;
+			ListBuffer<JCExpression> lb = ListBuffer.lb();
+			for (JCExpression typeArg : ta.arguments) {
+				lb.append(cloneType0(maker, typeArg));
+			}
+			return maker.TypeApply(cloneType0(maker, ta.clazz), lb.toList());
+		}
+		
+		if (in instanceof JCWildcard) {
+			JCWildcard w = (JCWildcard) in;
+			JCExpression newInner = cloneType0(maker, w.inner);
+			TypeBoundKind newKind;
+			switch (w.getKind()) {
+			case SUPER_WILDCARD:
+				newKind = maker.TypeBoundKind(BoundKind.SUPER);
+				break;
+			case EXTENDS_WILDCARD:
+				newKind = maker.TypeBoundKind(BoundKind.EXTENDS);
+				break;
+			default:
+			case UNBOUNDED_WILDCARD:
+				newKind = maker.TypeBoundKind(BoundKind.UNBOUND);
+				break;
+			}
+			return maker.Wildcard(newKind, newInner);
+		}
+		
+		// This is somewhat unsafe, but it's better than outright throwing an exception here. Returning null will just cause an exception down the pipeline.
+		return (JCExpression) in;
 	}
 }

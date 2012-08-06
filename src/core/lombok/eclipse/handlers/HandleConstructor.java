@@ -156,19 +156,28 @@ public class HandleConstructor {
 	}
 	
 	public void generateConstructor(EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, String staticName, boolean skipIfConstructorExists, boolean suppressConstructorProperties, ASTNode source) {
+		boolean staticConstrRequired = staticName != null && !staticName.equals("");
+		
 		if (skipIfConstructorExists && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) return;
 		if (skipIfConstructorExists) {
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
 					if (annotationTypeMatches(NoArgsConstructor.class, child) ||
 							annotationTypeMatches(AllArgsConstructor.class, child) ||
-							annotationTypeMatches(RequiredArgsConstructor.class, child))
+							annotationTypeMatches(RequiredArgsConstructor.class, child)) {
+						
+						if (staticConstrRequired) {
+							// @Data has asked us to generate a constructor, but we're going to skip this instruction, as an explicit 'make a constructor' annotation
+							// will take care of it. However, @Data also wants a specific static name; this will be ignored; the appropriate way to do this is to use
+							// the 'staticName' parameter of the @XArgsConstructor you've stuck on your type.
+							// We should warn that we're ignoring @Data's 'staticConstructor' param.
+							typeNode.addWarning("Ignoring static constructor name: explicit @XxxArgsConstructor annotation present; its `staticName` parameter will be used.", source.sourceStart, source.sourceEnd);
+						}
 						return;
+					}
 				}
 			}
 		}
-		
-		boolean staticConstrRequired = staticName != null && !staticName.equals("");
 		
 		ConstructorDeclaration constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields, suppressConstructorProperties, source);
 		injectMethod(typeNode, constr);

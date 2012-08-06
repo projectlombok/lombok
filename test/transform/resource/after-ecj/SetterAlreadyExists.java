@@ -32,24 +32,24 @@ class Setter4 {
 }
 class Setter5 {
   @lombok.Setter String foo;
-  public @java.lang.SuppressWarnings("all") void setFoo(final String foo) {
-    this.foo = foo;
-  }
   Setter5() {
     super();
   }
   void setFoo() {
   }
-}
-class Setter6 {
-  @lombok.Setter String foo;
   public @java.lang.SuppressWarnings("all") void setFoo(final String foo) {
     this.foo = foo;
   }
+}
+class Setter6 {
+  @lombok.Setter String foo;
   Setter6() {
     super();
   }
   void setFoo(String foo, int x) {
+  }
+  public @java.lang.SuppressWarnings("all") void setFoo(final String foo) {
+    this.foo = foo;
   }
 }
 class Setter7 {

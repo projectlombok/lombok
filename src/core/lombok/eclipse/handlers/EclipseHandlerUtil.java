@@ -798,18 +798,19 @@ public class EclipseHandlerUtil {
 		}
 	}
 	
-	private static final Map<FieldDeclaration, GetterMethod> generatedLazyGetters = new WeakHashMap<FieldDeclaration, GetterMethod>();
+	private static final Map<FieldDeclaration, Object> generatedLazyGettersWithPrimitiveBoolean = new WeakHashMap<FieldDeclaration, Object>();
+	private static final Object MARKER = new Object();
 	
 	static void registerCreatedLazyGetter(FieldDeclaration field, char[] methodName, TypeReference returnType) {
-		generatedLazyGetters.put(field, new GetterMethod(methodName, returnType));
+		if (!nameEquals(returnType.getTypeName(), "boolean") || returnType.dimensions() > 0) return;
+		generatedLazyGettersWithPrimitiveBoolean.put(field, MARKER);
 	}
 	
 	private static GetterMethod findGetter(EclipseNode field) {
 		FieldDeclaration fieldDeclaration = (FieldDeclaration) field.get();
-		GetterMethod gm = generatedLazyGetters.get(fieldDeclaration);
-		if (gm != null) return gm;
+		boolean forceBool = generatedLazyGettersWithPrimitiveBoolean.containsKey(fieldDeclaration);
 		TypeReference fieldType = fieldDeclaration.type;
-		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
+		boolean isBoolean = forceBool || (nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0);
 		
 		EclipseNode typeNode = field.up();
 		for (String potentialGetterName : toAllGetterNames(field, isBoolean)) {
