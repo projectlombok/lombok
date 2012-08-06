@@ -476,6 +476,31 @@ public class EclipseHandlerUtil {
 		return typeMatches(type, node, ((Annotation)node.get()).type);
 	}
 	
+	public static TypeReference cloneSelfType(EclipseNode context, ASTNode source) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long)pS << 32 | pE;
+		EclipseNode type = context;
+		TypeReference result = null;
+		while (type != null && type.getKind() != Kind.TYPE) type = type.up();
+		if (type != null && type.get() instanceof TypeDeclaration) {
+			TypeDeclaration typeDecl = (TypeDeclaration) type.get();
+			if (typeDecl.typeParameters != null && typeDecl.typeParameters.length > 0) {
+				TypeReference[] refs = new TypeReference[typeDecl.typeParameters.length];
+				int idx = 0;
+				for (TypeParameter param : typeDecl.typeParameters) {
+					TypeReference typeRef = new SingleTypeReference(param.name, (long)param.sourceStart << 32 | param.sourceEnd);
+					setGeneratedBy(typeRef, source);
+					refs[idx++] = typeRef;
+				}
+				result = new ParameterizedSingleTypeReference(typeDecl.name, refs, 0, p);
+			} else {
+				result = new SingleTypeReference(((TypeDeclaration)type.get()).name, p);
+			}
+		}
+		if (result != null) setGeneratedBy(result, source);
+		return result;
+	}
+	
 	public static TypeReference makeType(TypeBinding binding, ASTNode pos, boolean allowCompound) {
 		int dims = binding.dimensions();
 		binding = binding.leafComponentType();

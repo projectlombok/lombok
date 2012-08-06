@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,22 +30,24 @@ import java.util.Collection;
 import java.util.List;
 
 import lombok.AccessLevel;
-import lombok.Setter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseHandlerUtil.FieldAccess;
+import lombok.experimental.Wither;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
+import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
-import org.eclipse.jdt.internal.compiler.ast.Assignment;
+import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
+import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.NameReference;
+import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
@@ -53,19 +55,15 @@ import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.mangosdk.spi.ProviderFor;
 
-/**
- * Handles the {@code lombok.Setter} annotation for eclipse.
- */
 @ProviderFor(EclipseAnnotationHandler.class)
-public class HandleSetter extends EclipseAnnotationHandler<Setter> {
-	public boolean generateSetterForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelSetter) {
-		if (checkForTypeLevelSetter) {
+public class HandleWither extends EclipseAnnotationHandler<Wither> {
+	public boolean generateWitherForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelWither) {
+		if (checkForTypeLevelWither) {
 			if (typeNode != null) for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
-					if (annotationTypeMatches(Setter.class, child)) {
+					if (annotationTypeMatches(Wither.class, child)) {
 						//The annotation will make it happen, so we can skip it.
 						return true;
 					}
@@ -80,7 +78,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0;
 		
 		if (typeDecl == null || notAClass) {
-			pos.addError("@Setter is only supported on a class or a field.");
+			pos.addError("@Wither is only supported on a class or a field.");
 			return false;
 		}
 		
@@ -90,88 +88,102 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			if (!filterField(fieldDecl)) continue;
 			
 			//Skip final fields.
-			if ((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) continue;
+			if ((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0 && fieldDecl.initialization != null) continue;
 			
-			generateSetterForField(field, pos.get(), level);
+			generateWitherForField(field, pos.get(), level);
 		}
 		return true;
 	}
 	
+	
 	/**
-	 * Generates a setter on the stated field.
+	 * Generates a wither on the stated field.
 	 * 
-	 * Used by {@link HandleData}.
+	 * Used by {@link HandleValue}.
 	 * 
 	 * The difference between this call and the handle method is as follows:
 	 * 
-	 * If there is a {@code lombok.Setter} annotation on the field, it is used and the
+	 * If there is a {@code lombok.experimental.Wither} annotation on the field, it is used and the
 	 * same rules apply (e.g. warning if the method already exists, stated access level applies).
-	 * If not, the setter is still generated if it isn't already there, though there will not
+	 * If not, the wither is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
 	 */
-	public void generateSetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level) {
+	public void generateWitherForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level) {
 		for (EclipseNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
-				if (annotationTypeMatches(Setter.class, child)) {
+				if (annotationTypeMatches(Wither.class, child)) {
 					//The annotation will make it happen, so we can skip it.
 					return;
 				}
 			}
 		}
 		
-		createSetterForField(level, fieldNode, fieldNode, pos, false);
+		createWitherForField(level, fieldNode, fieldNode, pos, false);
 	}
 	
-	public void handle(AnnotationValues<Setter> annotation, Annotation ast, EclipseNode annotationNode) {
+	@Override public void handle(AnnotationValues<Wither> annotation, Annotation ast, EclipseNode annotationNode) {
 		EclipseNode node = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
 		if (level == AccessLevel.NONE || node == null) return;
 		
 		switch (node.getKind()) {
 		case FIELD:
-			createSetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true);
+			createWitherForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true);
 			break;
 		case TYPE:
-			generateSetterForType(node, annotationNode, level, false);
+			generateWitherForType(node, annotationNode, level, false);
 			break;
 		}
 	}
 	
-	private void createSetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists) {
+	private void createWitherForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists) {
 		for (EclipseNode fieldNode : fieldNodes) {
-			createSetterForField(level, fieldNode, errorNode, source, whineIfExists);
+			createWitherForField(level, fieldNode, errorNode, source, whineIfExists);
 		}
 	}
 	
-	private void createSetterForField(AccessLevel level,
+	private void createWitherForField(AccessLevel level,
 			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists) {
 		if (fieldNode.getKind() != Kind.FIELD) {
-			errorNode.addError("@Setter is only supported on a class or a field.");
+			errorNode.addError("@Wither is only supported on a class or a field.");
 			return;
 		}
 		
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		TypeReference fieldType = copyType(field.type, source);
 		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
-		String setterName = toSetterName(fieldNode, isBoolean);
-		boolean shouldReturnThis = shouldReturnThis(fieldNode);
-		if (setterName == null) {
-			errorNode.addWarning("Not generating setter for this field: It does not fit your @Accessors prefix list.");
+		String witherName = toWitherName(fieldNode, isBoolean);
+		
+		if (witherName == null) {
+			errorNode.addWarning("Not generating wither for this field: It does not fit your @Accessors prefix list.");
 			return;
 		}
 		
-		int modifier = toEclipseModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
+		if ((field.modifiers & ClassFileConstants.AccStatic) != 0) {
+			errorNode.addWarning("Not generating wither for this field: Withers cannot be generated for static fields.");
+			return;
+		}
 		
-		for (String altName : toAllSetterNames(fieldNode, isBoolean)) {
+		if ((field.modifiers & ClassFileConstants.AccFinal) != 0 && field.initialization != null) {
+			errorNode.addWarning("Not generating wither for this field: Withers cannot be generated for final, initialized fields.");
+			return;
+		}
+		
+		if (field.name != null && field.name.length > 0 && field.name[0] == '$') {
+			errorNode.addWarning("Not generating wither for this field: Withers cannot be generated for fields starting with $.");
+			return;
+		}
+		
+		for (String altName : toAllWitherNames(fieldNode, isBoolean)) {
 			switch (methodExists(altName, fieldNode, false, 1)) {
 			case EXISTS_BY_LOMBOK:
 				return;
 			case EXISTS_BY_USER:
 				if (whineIfExists) {
 					String altNameExpl = "";
-					if (!altName.equals(setterName)) altNameExpl = String.format(" (%s)", altName);
+					if (!altName.equals(witherName)) altNameExpl = String.format(" (%s)", altName);
 					errorNode.addWarning(
-						String.format("Not generating %s(): A method with that name already exists%s", setterName, altNameExpl));
+						String.format("Not generating %s(): A method with that name already exists%s", witherName, altNameExpl));
 				}
 				return;
 			default:
@@ -180,70 +192,80 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			}
 		}
 		
-		MethodDeclaration method = createSetter((TypeDeclaration) fieldNode.up().get(), fieldNode, setterName, shouldReturnThis, modifier, source);
+		int modifier = toEclipseModifier(level);
+		
+		MethodDeclaration method = createWither((TypeDeclaration) fieldNode.up().get(), fieldNode, witherName, modifier, source);
 		injectMethod(fieldNode.up(), method);
 	}
 	
-	private MethodDeclaration createSetter(TypeDeclaration parent, EclipseNode fieldNode, String name, boolean shouldReturnThis, int modifier, ASTNode source) {
+	private MethodDeclaration createWither(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, ASTNode source) {
+		if (name == null) return null;
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
-		setGeneratedBy(method, source);
 		method.modifiers = modifier;
-		if (shouldReturnThis) {
-			method.returnType = cloneSelfType(fieldNode, source);
-		}
+		method.returnType = cloneSelfType(fieldNode, source);
+		if (method.returnType == null) return null;
 		
-		if (method.returnType == null) {
-			method.returnType = TypeReference.baseTypeReference(TypeIds.T_void, 0);
-			method.returnType.sourceStart = pS; method.returnType.sourceEnd = pE;
-			setGeneratedBy(method.returnType, source);
-			shouldReturnThis = false;
-		}
 		if (isFieldDeprecated(fieldNode)) {
 			method.annotations = new Annotation[] { generateDeprecatedAnnotation(source) };
 		}
 		Argument param = new Argument(field.name, p, copyType(field.type, source), Modifier.FINAL);
 		param.sourceStart = pS; param.sourceEnd = pE;
-		setGeneratedBy(param, source);
 		method.arguments = new Argument[] { param };
 		method.selector = name.toCharArray();
 		method.binding = null;
 		method.thrownExceptions = null;
 		method.typeParameters = null;
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		Expression fieldRef = createFieldAccessor(fieldNode, FieldAccess.ALWAYS_FIELD, source);
-		NameReference fieldNameRef = new SingleNameReference(field.name, p);
-		setGeneratedBy(fieldNameRef, source);
-		Assignment assignment = new Assignment(fieldRef, fieldNameRef, (int)p);
-		assignment.sourceStart = pS; assignment.sourceEnd = assignment.statementEnd = pE;
-		setGeneratedBy(assignment, source);
+		
+		List<Expression> args = new ArrayList<Expression>();
+		for (EclipseNode child : fieldNode.up().down()) {
+			if (child.getKind() != Kind.FIELD) continue;
+			FieldDeclaration childDecl = (FieldDeclaration) child.get();
+			// Skip fields that start with $
+			if (childDecl.name.toString().startsWith("$")) continue;
+			long fieldFlags = childDecl.modifiers;
+			// Skip static fields.
+			if ((fieldFlags & ClassFileConstants.AccStatic) != 0) continue;
+			// Skip initialized final fields.
+			if (((fieldFlags & ClassFileConstants.AccFinal) != 0) && childDecl.initialization != null) continue;
+			if (child.get() == fieldNode.get()) {
+				args.add(new SingleNameReference(field.name, p));
+			} else {
+				args.add(createFieldAccessor(child, FieldAccess.ALWAYS_FIELD, source));
+			}
+		}
+		
+		AllocationExpression constructorCall = new AllocationExpression();
+		constructorCall.arguments = args.toArray(new Expression[0]);
+		constructorCall.type = cloneSelfType(fieldNode, source);
+		
+		Expression identityCheck = new EqualExpression(
+				new SingleNameReference(field.name, p),
+				createFieldAccessor(fieldNode, FieldAccess.ALWAYS_FIELD, source),
+				OperatorIds.EQUAL_EQUAL);
+		ThisReference thisRef = new ThisReference(pS, pE);
+		Expression conditional = new ConditionalExpression(identityCheck, thisRef, constructorCall);
+		Statement returnStatement = new ReturnStatement(conditional, pS, pE);
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
 		
 		Annotation[] nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
 		Annotation[] nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
 		List<Statement> statements = new ArrayList<Statement>(5);
-		if (nonNulls.length == 0) {
-			statements.add(assignment);
-		} else {
+		if (nonNulls.length > 0) {
 			Statement nullCheck = generateNullCheck(field, source);
 			if (nullCheck != null) statements.add(nullCheck);
-			statements.add(assignment);
 		}
+		statements.add(returnStatement);
 		
-		if (shouldReturnThis) {
-			ThisReference thisRef = new ThisReference(pS, pE);
-			setGeneratedBy(thisRef, source);
-			ReturnStatement returnThis = new ReturnStatement(thisRef, pS, pE);
-			setGeneratedBy(returnThis, source);
-			statements.add(returnThis);
-		}
 		method.statements = statements.toArray(new Statement[0]);
 		
 		Annotation[] copiedAnnotations = copyAnnotations(source, nonNulls, nullables);
 		if (copiedAnnotations.length != 0) param.annotations = copiedAnnotations;
+		method.traverse(new SetGeneratedByVisitor(source), parent.scope);
 		return method;
 	}
 }
