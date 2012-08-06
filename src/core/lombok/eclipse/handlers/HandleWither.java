@@ -225,7 +225,7 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 			if (child.getKind() != Kind.FIELD) continue;
 			FieldDeclaration childDecl = (FieldDeclaration) child.get();
 			// Skip fields that start with $
-			if (childDecl.name.toString().startsWith("$")) continue;
+			if (childDecl.name != null && childDecl.name.length > 0 && childDecl.name[0] == '$') continue;
 			long fieldFlags = childDecl.modifiers;
 			// Skip static fields.
 			if ((fieldFlags & ClassFileConstants.AccStatic) != 0) continue;
@@ -243,8 +243,8 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		constructorCall.type = cloneSelfType(fieldNode, source);
 		
 		Expression identityCheck = new EqualExpression(
-				new SingleNameReference(field.name, p),
 				createFieldAccessor(fieldNode, FieldAccess.ALWAYS_FIELD, source),
+				new SingleNameReference(field.name, p),
 				OperatorIds.EQUAL_EQUAL);
 		ThisReference thisRef = new ThisReference(pS, pE);
 		Expression conditional = new ConditionalExpression(identityCheck, thisRef, constructorCall);

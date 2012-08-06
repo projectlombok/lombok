@@ -2,6 +2,8 @@ class WitherPlain {
 	int i;
 	final int foo;
 	WitherPlain(int i, int foo) {
+		this.i = i;
+		this.foo = foo;
 	}
 	@java.lang.SuppressWarnings("all")
 	public WitherPlain withI(final int i) {
