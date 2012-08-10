@@ -29,6 +29,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,10 +86,12 @@ public class Processor extends AbstractProcessor {
 		SortedSet<Long> p = transformer.getPriorities();
 		if (p.isEmpty()) {
 			this.priorityLevels = new long[] {0L};
+			this.priorityLevelsRequiringResolutionReset = new HashSet<Long>();
 		} else {
 			this.priorityLevels = new long[p.size()];
 			int i = 0;
 			for (Long prio : p) this.priorityLevels[i++] = prio;
+			this.priorityLevelsRequiringResolutionReset = transformer.getPrioritiesRequiringResolutionReset();
 		}
 	}
 	
@@ -216,6 +219,7 @@ public class Processor extends AbstractProcessor {
 	
 	private final IdentityHashMap<JCCompilationUnit, Long> roots = new IdentityHashMap<JCCompilationUnit, Long>();
 	private long[] priorityLevels;
+	private Set<Long> priorityLevelsRequiringResolutionReset;
 	
 	/** {@inheritDoc} */
 	@Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -232,37 +236,47 @@ public class Processor extends AbstractProcessor {
 			roots.put(unit, priorityLevels[0]);
 		}
 		
-		// Step 2: For all CUs (in the map, not the roundEnv!), run them across all handlers at their current prio level.
-		
-		for (long prio : priorityLevels) {
-			List<JCCompilationUnit> cusForThisRound = new ArrayList<JCCompilationUnit>();
-			for (Map.Entry<JCCompilationUnit, Long> entry : roots.entrySet()) {
-				Long prioOfCu = entry.getValue();
-				if (prioOfCu == null || prioOfCu != prio) continue;
-				cusForThisRound.add(entry.getKey());
+		while (true) {
+			// Step 2: For all CUs (in the map, not the roundEnv!), run them across all handlers at their current prio level.
+			
+			for (long prio : priorityLevels) {
+				List<JCCompilationUnit> cusForThisRound = new ArrayList<JCCompilationUnit>();
+				for (Map.Entry<JCCompilationUnit, Long> entry : roots.entrySet()) {
+					Long prioOfCu = entry.getValue();
+					if (prioOfCu == null || prioOfCu != prio) continue;
+					cusForThisRound.add(entry.getKey());
+				}
+				transformer.transform(prio, processingEnv.getContext(), cusForThisRound);
 			}
-			transformer.transform(prio, processingEnv.getContext(), cusForThisRound);
-		}
-		
-		// Step 3: Push up all CUs to the next level. Set level to null if there is no next level.
-		
-		boolean nextRoundNeeded = false;
-		for (int i = priorityLevels.length - 1; i >= 0; i--) {
-			Long curLevel = priorityLevels[i];
-			Long nextLevel = (i == priorityLevels.length - 1) ? null : priorityLevels[i + 1];
-			for (Map.Entry<JCCompilationUnit, Long> entry : roots.entrySet()) {
-				if (curLevel.equals(entry.getValue())) {
-					entry.setValue(nextLevel);
-					if (nextLevel != null) nextRoundNeeded = true;
+			
+			// Step 3: Push up all CUs to the next level. Set level to null if there is no next level.
+			
+			Set<Long> newLevels = new HashSet<Long>();
+			for (int i = priorityLevels.length - 1; i >= 0; i--) {
+				Long curLevel = priorityLevels[i];
+				Long nextLevel = (i == priorityLevels.length - 1) ? null : priorityLevels[i + 1];
+				for (Map.Entry<JCCompilationUnit, Long> entry : roots.entrySet()) {
+					if (curLevel.equals(entry.getValue())) {
+						entry.setValue(nextLevel);
+						newLevels.add(nextLevel);
+					}
 				}
 			}
+			newLevels.remove(null);
+			
+			// Step 4: If ALL values are null, quit. Else, either do another loop right now or force a resolution reset by forcing a new round in the annotation processor.
+			
+			if (newLevels.isEmpty()) return false;
+			newLevels.retainAll(priorityLevelsRequiringResolutionReset);
+			if (newLevels.isEmpty()) {
+				// None of the new levels need resolution, so just keep going.
+				continue;
+			} else {
+				// Force a new round to reset resolution. The next round will cause this method (process) to be called again.
+				forceNewRound((JavacFiler) processingEnv.getFiler());
+				return false;
+			}
 		}
-		
-		// Step 4: If ALL values are null, quit. Else, force new round.
-		
-		if (nextRoundNeeded) forceNewRound((JavacFiler) processingEnv.getFiler());
-		
-		return false;
 	}
 	
 	private int dummyCount = 0;

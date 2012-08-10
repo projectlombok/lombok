@@ -69,15 +69,21 @@ public class HandlerLibrary {
 	private static class VisitorContainer {
 		private final JavacASTVisitor visitor;
 		private final long priority;
+		private final boolean resolutionResetNeeded;
 		
 		VisitorContainer(JavacASTVisitor visitor) {
 			this.visitor = visitor;
 			HandlerPriority hp = visitor.getClass().getAnnotation(HandlerPriority.class);
 			this.priority = hp == null ? 0L : (((long)hp.value()) << 32) + hp.subValue();
+			this.resolutionResetNeeded = visitor.getClass().isAnnotationPresent(ResolutionResetNeeded.class);
 		}
 		
 		public long getPriority() {
 			return priority;
+		}
+		
+		public boolean isResolutionResetNeeded() {
+			return resolutionResetNeeded;
 		}
 	}
 	
@@ -85,12 +91,14 @@ public class HandlerLibrary {
 		private final JavacAnnotationHandler<T> handler;
 		private final Class<T> annotationClass;
 		private final long priority;
+		private final boolean resolutionResetNeeded;
 		
 		AnnotationHandlerContainer(JavacAnnotationHandler<T> handler, Class<T> annotationClass) {
 			this.handler = handler;
 			this.annotationClass = annotationClass;
 			HandlerPriority hp = handler.getClass().getAnnotation(HandlerPriority.class);
 			this.priority = hp == null ? 0L : (((long)hp.value()) << 32) + hp.subValue();
+			this.resolutionResetNeeded = handler.getClass().isAnnotationPresent(ResolutionResetNeeded.class);
 		}
 		
 		public void handle(final JavacNode node) {
@@ -100,19 +108,36 @@ public class HandlerLibrary {
 		public long getPriority() {
 			return priority;
 		}
+		
+		public boolean isResolutionResetNeeded() {
+			return resolutionResetNeeded;
+		}
 	}
 	
 	private SortedSet<Long> priorities;
+	private SortedSet<Long> prioritiesRequiringResolutionReset;
 	
 	public SortedSet<Long> getPriorities() {
 		return priorities;
 	}
 	
+	public SortedSet<Long> getPrioritiesRequiringResolutionReset() {
+		return prioritiesRequiringResolutionReset;
+	}
+	
 	private void calculatePriorities() {
 		SortedSet<Long> set = new TreeSet<Long>();
-		for (AnnotationHandlerContainer<?> container : annotationHandlers.values()) set.add(container.getPriority());
-		for (VisitorContainer container : visitorHandlers) set.add(container.getPriority());
+		SortedSet<Long> resetNeeded = new TreeSet<Long>();
+		for (AnnotationHandlerContainer<?> container : annotationHandlers.values()) {
+			set.add(container.getPriority());
+			if (container.isResolutionResetNeeded()) resetNeeded.add(container.getPriority());
+		}
+		for (VisitorContainer container : visitorHandlers) {
+			set.add(container.getPriority());
+			if (container.isResolutionResetNeeded()) resetNeeded.add(container.getPriority());
+		}
 		this.priorities = Collections.unmodifiableSortedSet(set);
+		this.prioritiesRequiringResolutionReset = Collections.unmodifiableSortedSet(resetNeeded);
 	}
 	
 	/**

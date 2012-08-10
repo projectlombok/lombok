@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,10 @@ public class JavacTransformer {
 	
 	public SortedSet<Long> getPriorities() {
 		return handlers.getPriorities();
+	}
+	
+	public SortedSet<Long> getPrioritiesRequiringResolutionReset() {
+		return handlers.getPrioritiesRequiringResolutionReset();
 	}
 	
 	public void transform(long priority, Context context, java.util.List<JCCompilationUnit> compilationUnitsRaw) {
