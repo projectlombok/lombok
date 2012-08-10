@@ -25,6 +25,7 @@ import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import lombok.AccessLevel;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.FieldDefaults;
@@ -42,6 +43,7 @@ import org.mangosdk.spi.ProviderFor;
  * Handles the {@code lombok.FieldDefaults} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
+@HandlerPriority(-512) //-2^9; to ensure @Setter and such pick up on messing with the fields' 'final' state, run earlier.
 public class HandleFieldDefaults extends EclipseAnnotationHandler<FieldDefaults> {
 	public boolean generateFieldDefaultsForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean makeFinal, boolean checkForTypeLevelFieldDefaults) {
 		if (checkForTypeLevelFieldDefaults) {

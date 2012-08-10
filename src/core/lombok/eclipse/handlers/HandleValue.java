@@ -21,11 +21,14 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.eclipse.handlers.EclipseHandlerUtil.hasAnnotation;
 import lombok.AccessLevel;
-import lombok.experimental.Value;
 import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.experimental.NonFinal;
+import lombok.experimental.Value;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
@@ -36,6 +39,7 @@ import org.mangosdk.spi.ProviderFor;
  * Handles the {@code lombok.Value} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
+@HandlerPriority(-512) //-2^9; to ensure @EqualsAndHashCode and such pick up on this handler making the class final and messing with the fields' access levels, run earlier.
 public class HandleValue extends EclipseAnnotationHandler<Value> {
 	public void handle(AnnotationValues<Value> annotation, Annotation ast, EclipseNode annotationNode) {
 		Value ann = annotation.getInstance();
@@ -52,6 +56,11 @@ public class HandleValue extends EclipseAnnotationHandler<Value> {
 			return;
 		}
 		
+		// Make class final.
+		if (!hasAnnotation(NonFinal.class, typeNode)) typeDecl.modifiers |= ClassFileConstants.AccFinal;
+		
+		new HandleFieldDefaults().generateFieldDefaultsForType(typeNode, annotationNode, AccessLevel.PRIVATE, true, true);
+		
 		//Careful: Generate the public static constructor (if there is one) LAST, so that any attempt to
 		//'find callers' on the annotation node will find callers of the constructor, which is by far the
 		//most useful of the many methods built by @Value. This trick won't work for the non-static constructor,
@@ -62,7 +71,6 @@ public class HandleValue extends EclipseAnnotationHandler<Value> {
 		new HandleWither().generateWitherForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
 		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		new HandleToString().generateToStringForType(typeNode, annotationNode);
-		new HandleFieldDefaults().generateFieldDefaultsForType(typeNode, annotationNode, AccessLevel.PRIVATE, true, true);
 		new HandleConstructor().generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, ann.staticConstructor(), true, ast);
 	}
 }

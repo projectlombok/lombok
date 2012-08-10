@@ -31,10 +31,10 @@ import java.util.List;
 import javax.lang.model.element.ElementKind;
 
 import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
 import lombok.experimental.ExtensionMethod;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
-import lombok.javac.ResolutionBased;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -60,7 +60,7 @@ import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
  * Handles the {@link ExtensionMethod} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
-@ResolutionBased
+@HandlerPriority(66560) // 2^16 + 2^10; we must run AFTER HandleVal which is at 2^16
 public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMethod> {
 	@Override
 	public void handle(final AnnotationValues<ExtensionMethod> annotation, final JCAnnotation source, final JavacNode annotationNode) {
@@ -83,9 +83,6 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 		final List<Extension> extensions = getExtensions(annotationNode, extensionProviders);
 		if (extensions.isEmpty()) return;
 		
-		// call HandleVal explicitly to ensure val gets handled before @ExtensionMethdod gets handled.
-		// TODO maybe we should prioritize lombok handler
-		annotationNode.traverse(new HandleVal());
 		new ExtensionMethodReplaceVisitor(annotationNode, extensions, suppressBaseMethods).replace();
 		
 		annotationNode.rebuild();

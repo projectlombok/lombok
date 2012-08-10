@@ -22,6 +22,7 @@
 package lombok.eclipse.handlers;
 
 import lombok.val;
+import lombok.core.HandlerPriority;
 import lombok.eclipse.DeferUntilPostDiet;
 import lombok.eclipse.EclipseASTAdapter;
 import lombok.eclipse.EclipseASTVisitor;
@@ -38,6 +39,7 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseASTVisitor.class)
 @DeferUntilPostDiet
+@HandlerPriority(65536) // 2^16; resolution needs to work, so if the RHS expression is i.e. a call to a generated getter, we have to run after that getter has been generated.
 public class HandleVal extends EclipseASTAdapter {
 	@Override public void visitLocal(EclipseNode localNode, LocalDeclaration local) {
 		if (!EclipseHandlerUtil.typeMatches(val.class, localNode, local.type)) return;

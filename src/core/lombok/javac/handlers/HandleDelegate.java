@@ -43,11 +43,11 @@ import javax.lang.model.type.TypeMirror;
 import lombok.Delegate;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
 import lombok.javac.FindTypeVarScanner;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacResolution;
-import lombok.javac.ResolutionBased;
 import lombok.javac.JavacResolution.TypeNotConvertibleException;
 
 import org.mangosdk.spi.ProviderFor;
@@ -75,7 +75,7 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
 @ProviderFor(JavacAnnotationHandler.class)
-@ResolutionBased
+@HandlerPriority(65536) //2^16; to make sure that we also delegate generated methods.
 public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 	private static final List<String> METHODS_IN_OBJECT = Collections.unmodifiableList(Arrays.asList(
 			"hashCode()",

@@ -31,6 +31,7 @@ import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 
 import lombok.Lombok;
 import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
 import lombok.core.PrintAST;
 import lombok.javac.JavacASTVisitor;
 import lombok.javac.JavacAnnotationHandler;
@@ -40,6 +41,7 @@ import lombok.javac.JavacNode;
  * Handles the {@code lombok.core.PrintAST} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
+@HandlerPriority(536870912) // 2^29; this handler is customarily run at the very end.
 public class HandlePrintAST extends JavacAnnotationHandler<PrintAST> {
 	@Override public void handle(AnnotationValues<PrintAST> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		PrintStream stream = System.out;

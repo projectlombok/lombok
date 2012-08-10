@@ -24,18 +24,23 @@ package lombok.javac.handlers;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 import lombok.AccessLevel;
 import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
+import lombok.experimental.NonFinal;
 import lombok.experimental.Value;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 
 import org.mangosdk.spi.ProviderFor;
 
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 
 /**
  * Handles the {@code lombok.Value} annotation for javac.
  */
 @ProviderFor(JavacAnnotationHandler.class)
+@HandlerPriority(-512) //-2^9; to ensure @EqualsAndHashCode and such pick up on this handler making the class final and messing with the fields' access levels, run earlier.
 public class HandleValue extends JavacAnnotationHandler<Value> {
 	@Override public void handle(AnnotationValues<Value> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		deleteAnnotationIfNeccessary(annotationNode, Value.class);
@@ -49,12 +54,16 @@ public class HandleValue extends JavacAnnotationHandler<Value> {
 		
 		String staticConstructorName = annotation.getInstance().staticConstructor();
 		
+		if (!hasAnnotationAndDeleteIfNeccessary(NonFinal.class, typeNode)) {
+			((JCClassDecl) typeNode.get()).mods.flags |= Flags.FINAL;
+		}
+		new HandleFieldDefaults().generateFieldDefaultsForType(typeNode, annotationNode, AccessLevel.PRIVATE, true, true);
+		
 		// TODO move this to the end OR move it to the top in eclipse.
 		new HandleConstructor().generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, true, annotationNode);
 		new HandleGetter().generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
 		new HandleWither().generateWitherForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
 		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		new HandleToString().generateToStringForType(typeNode, annotationNode);
-		new HandleFieldDefaults().generateFieldDefaultsForType(typeNode, annotationNode, AccessLevel.PRIVATE, true, true);
 	}
 }

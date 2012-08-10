@@ -25,6 +25,7 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 import lombok.AccessLevel;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.experimental.PackagePrivate;
@@ -43,6 +44,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
  * Handles the {@code lombok.FieldDefaults} annotation for eclipse.
  */
 @ProviderFor(JavacAnnotationHandler.class)
+@HandlerPriority(-512) //-2^9; to ensure @Setter and such pick up on messing with the fields' 'final' state, run earlier.
 public class HandleFieldDefaults extends JavacAnnotationHandler<FieldDefaults> {
 	public boolean generateFieldDefaultsForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean makeFinal, boolean checkForTypeLevelFieldDefaults) {
 		if (checkForTypeLevelFieldDefaults) {

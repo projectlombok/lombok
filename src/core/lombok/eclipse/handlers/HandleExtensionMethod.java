@@ -26,13 +26,17 @@ import java.util.List;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.mangosdk.spi.ProviderFor;
 
 import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.ExtensionMethod;
 
 // This handler just does some additional error checking; the real work is done in the agent.
+@ProviderFor(EclipseAnnotationHandler.class)
+@HandlerPriority(66560) // 2^16 + 2^10; we must run AFTER HandleVal which is at 2^16
 public class HandleExtensionMethod extends EclipseAnnotationHandler<ExtensionMethod> {
 	@Override public void handle(AnnotationValues<ExtensionMethod> annotation, Annotation ast, EclipseNode annotationNode) {
 		TypeDeclaration typeDecl = null;

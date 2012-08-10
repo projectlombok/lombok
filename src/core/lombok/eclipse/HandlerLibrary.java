@@ -28,17 +28,20 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.WeakHashMap;
 
 import lombok.Lombok;
 import lombok.core.AnnotationValues;
-import lombok.core.PrintAST;
+import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
+import lombok.core.HandlerPriority;
 import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
-import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -59,13 +62,39 @@ public class HandlerLibrary {
 	
 	private TypeLibrary typeLibrary = new TypeLibrary();
 	
+	private static class VisitorContainer {
+		private final EclipseASTVisitor visitor;
+		private final long priority;
+		private final boolean deferUntilPostDiet;
+		
+		VisitorContainer(EclipseASTVisitor visitor) {
+			this.visitor = visitor;
+			this.deferUntilPostDiet = visitor.getClass().isAnnotationPresent(DeferUntilPostDiet.class);
+			HandlerPriority hp = visitor.getClass().getAnnotation(HandlerPriority.class);
+			this.priority = hp == null ? 0L : (((long)hp.value()) << 32) + hp.subValue();
+		}
+		
+		public boolean deferUntilPostDiet() {
+			return deferUntilPostDiet;
+		}
+		
+		public long getPriority() {
+			return priority;
+		}
+	}
+	
 	private static class AnnotationHandlerContainer<T extends Annotation> {
-		private EclipseAnnotationHandler<T> handler;
-		private Class<T> annotationClass;
+		private final EclipseAnnotationHandler<T> handler;
+		private final Class<T> annotationClass;
+		private final long priority;
+		private final boolean deferUntilPostDiet;
 		
 		AnnotationHandlerContainer(EclipseAnnotationHandler<T> handler, Class<T> annotationClass) {
 			this.handler = handler;
 			this.annotationClass = annotationClass;
+			this.deferUntilPostDiet = handler.getClass().isAnnotationPresent(DeferUntilPostDiet.class);
+			HandlerPriority hp = handler.getClass().getAnnotation(HandlerPriority.class);
+			this.priority = hp == null ? 0L : (((long)hp.value()) << 32) + hp.subValue();
 		}
 		
 		public void handle(org.eclipse.jdt.internal.compiler.ast.Annotation annotation,
@@ -81,14 +110,18 @@ public class HandlerLibrary {
 		}
 		
 		public boolean deferUntilPostDiet() {
-			return handler.getClass().isAnnotationPresent(DeferUntilPostDiet.class);
+			return deferUntilPostDiet;
+		}
+		
+		public long getPriority() {
+			return priority;
 		}
 	}
 	
 	private Map<String, AnnotationHandlerContainer<?>> annotationHandlers =
 		new HashMap<String, AnnotationHandlerContainer<?>>();
 	
-	private Collection<EclipseASTVisitor> visitorHandlers = new ArrayList<EclipseASTVisitor>();
+	private Collection<VisitorContainer> visitorHandlers = new ArrayList<VisitorContainer>();
 
 	/**
 	 * Creates a new HandlerLibrary.  Errors will be reported to the Eclipse Error log.
@@ -101,7 +134,22 @@ public class HandlerLibrary {
 		loadAnnotationHandlers(lib);
 		loadVisitorHandlers(lib);
 		
+		lib.calculatePriorities();
+		
 		return lib;
+	}
+	
+	private SortedSet<Long> priorities;
+	
+	public SortedSet<Long> getPriorities() {
+		return priorities;
+	}
+	
+	private void calculatePriorities() {
+		SortedSet<Long> set = new TreeSet<Long>();
+		for (AnnotationHandlerContainer<?> container : annotationHandlers.values()) set.add(container.getPriority());
+		for (VisitorContainer container : visitorHandlers) set.add(container.getPriority());
+		this.priorities = Collections.unmodifiableSortedSet(set);
 	}
 	
 	/** Uses SPI Discovery to find implementations of {@link EclipseAnnotationHandler}. */
@@ -131,7 +179,7 @@ public class HandlerLibrary {
 	private static void loadVisitorHandlers(HandlerLibrary lib) {
 		try {
 			for (EclipseASTVisitor visitor : SpiLoadUtil.findServices(EclipseASTVisitor.class, EclipseASTVisitor.class.getClassLoader())) {
-				lib.visitorHandlers.add(visitor);
+				lib.visitorHandlers.add(new VisitorContainer(visitor));
 			}
 		} catch (Throwable t) {
 			throw Lombok.sneakyThrow(t);
@@ -170,7 +218,7 @@ public class HandlerLibrary {
 	 * @param annotationNode The Lombok AST Node representing the Annotation AST Node.
 	 * @param annotation 'node.get()' - convenience parameter.
 	 */
-	public void handleAnnotation(CompilationUnitDeclaration ast, EclipseNode annotationNode, org.eclipse.jdt.internal.compiler.ast.Annotation annotation, boolean skipPrintAst) {
+	public void handleAnnotation(CompilationUnitDeclaration ast, EclipseNode annotationNode, org.eclipse.jdt.internal.compiler.ast.Annotation annotation, long priority) {
 		String pkgName = annotationNode.getPackageDeclaration();
 		Collection<String> imports = annotationNode.getImportStatements();
 		
@@ -179,11 +227,10 @@ public class HandlerLibrary {
 		if (rawType == null) return;
 		
 		for (String fqn : resolver.findTypeMatches(annotationNode, typeLibrary, toQualifiedName(annotation.type.getTypeName()))) {
-			boolean isPrintAST = fqn.equals(PrintAST.class.getName());
-			if (isPrintAST == skipPrintAst) continue;
 			AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
-			
 			if (container == null) continue;
+			if (priority != container.getPriority()) continue;
+			
 			if (!annotationNode.isCompleteParse() && container.deferUntilPostDiet()) {
 				if (needsHandling(annotation)) container.preHandle(annotation, annotationNode);
 				continue;
@@ -202,12 +249,16 @@ public class HandlerLibrary {
 	/**
 	 * Will call all registered {@link EclipseASTVisitor} instances.
 	 */
-	public void callASTVisitors(EclipseAST ast) {
-		for (EclipseASTVisitor visitor : visitorHandlers) try {
-			ast.traverse(visitor);
-		} catch (Throwable t) {
-			error((CompilationUnitDeclaration) ast.top().get(),
-					String.format("Lombok visitor handler %s failed", visitor.getClass()), t);
+	public void callASTVisitors(EclipseAST ast, long priority, boolean isCompleteParse) {
+		for (VisitorContainer container : visitorHandlers) {
+			if (!isCompleteParse && container.deferUntilPostDiet()) continue;
+			if (priority != container.getPriority()) continue;
+			try {
+				ast.traverse(container.visitor);
+			} catch (Throwable t) {
+				error((CompilationUnitDeclaration) ast.top().get(),
+						String.format("Lombok visitor handler %s failed", container.visitor.getClass()), t);
+			}
 		}
 	}
 }

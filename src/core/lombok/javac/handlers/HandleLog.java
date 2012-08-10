@@ -44,7 +44,6 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 
 public class HandleLog {
-	
 	private HandleLog() {
 		throw new UnsupportedOperationException();
 	}

@@ -165,41 +165,42 @@ public class TransformEclipseAST {
 	 * then handles any PrintASTs.
 	 */
 	public void go() {
-		ast.traverse(new AnnotationVisitor(true));
-		handlers.callASTVisitors(ast);
-		ast.traverse(new AnnotationVisitor(false));
+		for (Long d : handlers.getPriorities()) {
+			ast.traverse(new AnnotationVisitor(d));
+			handlers.callASTVisitors(ast, d, ast.isCompleteParse());
+		}
 	}
 	
 	private static class AnnotationVisitor extends EclipseASTAdapter {
-		private final boolean skipPrintAst;
+		private final long priority;
 		
-		public AnnotationVisitor(boolean skipAllButPrintAST) {
-			this.skipPrintAst = skipAllButPrintAST;
+		public AnnotationVisitor(long priority) {
+			this.priority = priority;
 		}
 		
 		@Override public void visitAnnotationOnField(FieldDeclaration field, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation, skipPrintAst);
+			handlers.handleAnnotation(top, annotationNode, annotation, priority);
 		}
 		
 		@Override public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation, skipPrintAst);
+			handlers.handleAnnotation(top, annotationNode, annotation, priority);
 		}
 		
 		@Override public void visitAnnotationOnLocal(LocalDeclaration local, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation, skipPrintAst);
+			handlers.handleAnnotation(top, annotationNode, annotation, priority);
 		}
 		
 		@Override public void visitAnnotationOnMethod(AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation, skipPrintAst);
+			handlers.handleAnnotation(top, annotationNode, annotation, priority);
 		}
 		
 		@Override public void visitAnnotationOnType(TypeDeclaration type, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation, skipPrintAst);
+			handlers.handleAnnotation(top, annotationNode, annotation, priority);
 		}
 	}
 }

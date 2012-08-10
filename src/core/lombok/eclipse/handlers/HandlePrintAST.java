@@ -30,6 +30,7 @@ import org.mangosdk.spi.ProviderFor;
 
 import lombok.Lombok;
 import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
 import lombok.core.PrintAST;
 import lombok.eclipse.DeferUntilPostDiet;
 import lombok.eclipse.EclipseASTVisitor;
@@ -41,6 +42,7 @@ import lombok.eclipse.EclipseNode;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 @DeferUntilPostDiet
+@HandlerPriority(536870912) // 2^29; this handler is customarily run at the very end.
 public class HandlePrintAST extends EclipseAnnotationHandler<PrintAST> {
 	public void handle(AnnotationValues<PrintAST> annotation, Annotation ast, EclipseNode annotationNode) {
 		PrintStream stream = System.out;
