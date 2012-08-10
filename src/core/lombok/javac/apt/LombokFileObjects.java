@@ -63,7 +63,7 @@ final class LombokFileObjects {
 			@Override public Method getDecoderMethod() {
 				synchronized (decoderIsSet) {
 					if (decoderIsSet.get()) return decoderMethod;
-					decoderMethod = getDecoderMethod("com.sun.tools.javac.util.BaseFileObject");
+					decoderMethod = getDecoderMethod("com.sun.tools.javac.file.BaseFileObject");
 					decoderIsSet.set(true);
 					return decoderMethod;
 				}
@@ -92,6 +92,7 @@ final class LombokFileObjects {
 	static Compiler getCompiler(JavaFileManager jfm) {
 		String jfmClassName = jfm != null ? jfm.getClass().getName() : "null";
 		if (jfmClassName.equals("com.sun.tools.javac.util.DefaultFileManager")) return Compiler.JAVAC6;
+		if (jfmClassName.equals("com.sun.tools.javac.util.JavacFileManager")) return Compiler.JAVAC6;
 		if (jfmClassName.equals("com.sun.tools.javac.file.JavacFileManager")) return Compiler.JAVAC7;
 		try {
 			if (Class.forName("com.sun.tools.javac.file.BaseFileObject") == null) throw new NullPointerException();
