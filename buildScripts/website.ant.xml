@@ -151,6 +151,15 @@ such as converting the changelog into HTML, and creating javadoc.
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="experimental/ExtensionMethod" />
 		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="experimental/FieldDefaultsExample" />
+		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="experimental/WitherExample" />
+		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="experimental/ValueExample" />
+		</antcall>
 	</target>
 	
 	<target name="-website-dist">

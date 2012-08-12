@@ -1,0 +1,14 @@
+import lombok.AccessLevel;
+import lombok.NonNull;
+import lombok.experimental.Wither;
+
+public class WitherExample {
+	@Wither private final int age;
+	@Wither(AccessLevel.PROTECTED) @NonNull private final String name;
+	
+	public WitherExample(String name, int age) {
+		if (name == null) throw new NullPointerException();
+		this.name = name;
+		this.age = age;
+	}
+}

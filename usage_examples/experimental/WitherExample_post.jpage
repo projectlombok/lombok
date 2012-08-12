@@ -1,0 +1,21 @@
+import lombok.NonNull;
+
+public class WitherExample {
+	private final int age;
+	private @NonNull final String name;
+	
+	public WitherExample(String name, int age) {
+		if (name == null) throw new NullPointerException();
+		this.name = name;
+		this.age = age;
+	}
+	
+	public WitherExample withAge(int age) {
+		return this.age == age ? this : new WitherExample(age, name);
+	}
+	
+	protected WitherExample withName(@NonNull String name) {
+		if (name == null) throw new java.lang.NullPointerException("name");
+		return this.name == name ? this : new WitherExample(age, name);
+	}
+}
