@@ -99,7 +99,7 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 			if (providerType == null) continue;
 			if ((providerType.tsym.flags() & (INTERFACE | ANNOTATION)) != 0) continue;
 			
-			extensions.add(getExtension(typeNode, (ClassType) providerType));	
+			extensions.add(getExtension(typeNode, (ClassType) providerType));
 		}
 		return extensions;
 	}

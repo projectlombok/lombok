@@ -57,7 +57,12 @@ public class HandleValue extends EclipseAnnotationHandler<Value> {
 		}
 		
 		// Make class final.
-		if (!hasAnnotation(NonFinal.class, typeNode)) typeDecl.modifiers |= ClassFileConstants.AccFinal;
+		if (!hasAnnotation(NonFinal.class, typeNode)) {
+			if ((typeDecl.modifiers & ClassFileConstants.AccFinal) == 0) {
+				typeDecl.modifiers |= ClassFileConstants.AccFinal;
+				typeNode.rebuild();
+			}
+		}
 		
 		new HandleFieldDefaults().generateFieldDefaultsForType(typeNode, annotationNode, AccessLevel.PRIVATE, true, true);
 		

@@ -35,6 +35,7 @@ import org.mangosdk.spi.ProviderFor;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCModifiers;
 
 /**
  * Handles the {@code lombok.Value} annotation for javac.
@@ -55,7 +56,11 @@ public class HandleValue extends JavacAnnotationHandler<Value> {
 		String staticConstructorName = annotation.getInstance().staticConstructor();
 		
 		if (!hasAnnotationAndDeleteIfNeccessary(NonFinal.class, typeNode)) {
-			((JCClassDecl) typeNode.get()).mods.flags |= Flags.FINAL;
+			JCModifiers jcm = ((JCClassDecl) typeNode.get()).mods;
+			if ((jcm.flags & Flags.FINAL) == 0) {
+				jcm.flags |= Flags.FINAL;
+				typeNode.rebuild();
+			}
 		}
 		new HandleFieldDefaults().generateFieldDefaultsForType(typeNode, annotationNode, AccessLevel.PRIVATE, true, true);
 		

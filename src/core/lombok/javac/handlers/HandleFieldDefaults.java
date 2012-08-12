@@ -91,6 +91,8 @@ public class HandleFieldDefaults extends JavacAnnotationHandler<FieldDefaults> {
 				field.mods.flags |= Flags.FINAL;
 			}
 		}
+		
+		fieldNode.rebuild();
 	}
 	
 	@Override public void handle(AnnotationValues<FieldDefaults> annotation, JCAnnotation ast, JavacNode annotationNode) {

@@ -89,6 +89,8 @@ public class HandleFieldDefaults extends EclipseAnnotationHandler<FieldDefaults>
 				field.modifiers |= ClassFileConstants.AccFinal;
 			}
 		}
+		
+		fieldNode.rebuild();
 	}
 	
 	public void handle(AnnotationValues<FieldDefaults> annotation, Annotation ast, EclipseNode annotationNode) {
