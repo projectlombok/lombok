@@ -3,7 +3,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.experimental.PackagePrivate;
 
-@FieldDefaults(makeFinal = true, level=AccessLevel.PRIVATE)
+@FieldDefaults(makeFinal=true, level=AccessLevel.PRIVATE)
 public class FieldDefaultsExample {
 	public final int a;
 	int b;

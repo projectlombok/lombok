@@ -152,13 +152,13 @@ such as converting the changelog into HTML, and creating javadoc.
 			<param name="transformationName" value="experimental/ExtensionMethod" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/FieldDefaultsExample" />
+			<param name="transformationName" value="experimental/FieldDefaults" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/WitherExample" />
+			<param name="transformationName" value="experimental/Wither" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/ValueExample" />
+			<param name="transformationName" value="experimental/Value" />
 		</antcall>
 	</target>
 	
