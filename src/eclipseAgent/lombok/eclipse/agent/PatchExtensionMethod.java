@@ -48,8 +48,10 @@ import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
+import org.eclipse.jdt.internal.compiler.ast.SuperReference;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
 import org.eclipse.jdt.internal.compiler.lookup.CompilationUnitScope;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
@@ -201,7 +203,16 @@ public class PatchExtensionMethod {
 			}
 		}
 		
-		for (Extension extension : extensions) {
+		boolean skip = false;
+		
+		if (methodCall.receiver instanceof ThisReference && (((ThisReference)methodCall.receiver).bits & ASTNode.IsImplicitThis) != 0) skip = true;
+		if (methodCall.receiver instanceof SuperReference) skip = true;
+		if (methodCall.receiver instanceof NameReference) {
+			Binding binding = ((NameReference)methodCall.receiver).binding;
+			if (binding instanceof TypeBinding) skip = true;
+		}
+		
+		if (!skip) for (Extension extension : extensions) {
 			if (!extension.suppressBaseMethods && !(methodCall.binding instanceof ProblemMethodBinding)) continue;
 			for (MethodBinding extensionMethod : extension.extensionMethods) {
 				if (!Arrays.equals(methodCall.selector, extensionMethod.selector)) continue;

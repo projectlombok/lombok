@@ -45,7 +45,7 @@ import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
-import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
+import org.eclipse.jdt.internal.compiler.ast.SuperReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
@@ -103,14 +103,18 @@ public class PatchExtensionMethodCompletionProposal {
 		if (node == null) return null;
 		if (!(node instanceof CompletionOnQualifiedNameReference) && !(node instanceof CompletionOnSingleNameReference) && !(node instanceof CompletionOnMemberAccess)) return null;
 		
+		// Never offer on 'super.<autocomplete>'.
+		if (node instanceof FieldReference && ((FieldReference)node).receiver instanceof SuperReference) return null;
+		
 		if (node instanceof NameReference) {
 			Binding binding = ((NameReference) node).binding;
-			if ((node instanceof SingleNameReference) && (((SingleNameReference) node).token.length == 0)) {
+			// Unremark next block to allow a 'blank' autocomplete to list any extensions that apply to the current scope, but make sure we're not in a static context first, which this doesn't do.
+			// Lacking good use cases, and having this particular concept be a little tricky on javac, means for now we don't support extension methods like this. this.X() will be fine, though.
+			
+/*			if ((node instanceof SingleNameReference) && (((SingleNameReference) node).token.length == 0)) {
 				firstParameterType = decl.binding;
-			} else if (binding instanceof VariableBinding) {
+			} else */if (binding instanceof VariableBinding) {
 				firstParameterType = ((VariableBinding) binding).type;
-			} else if (binding instanceof TypeBinding) {
-				firstParameterType = (TypeBinding) binding;
 			}
 		} else if (node instanceof FieldReference) {
 			firstParameterType = ((FieldReference) node).actualReceiverType;
