@@ -1,13 +1,14 @@
 Lombok Changelog
 ----------------
 
-### v0.11.3 (Edgy Guinea Pig)
+### v0.11.4 (August 13th, 2012)
 * FEATURE: {Experimental} `@Value`, `@Wither` and `@FieldDefaults` are now available. These are a lot like `@Data` but geared towards immutable classes. [Documentation on @Value](http://projectlombok.org/features/experimental/Value.html), [Documentation on @Wither](http://projectlombok.org/features/experimental/Wither.html) and [Documentation on @FieldDefaults](http://projectlombok.org/features/experimental/FieldDefaults.html).
 * BUGFIX: Eclipse would throw an OOME if using `@ExtensionMethod`. [Issue #390](http://code.google.com/p/projectlombok/issues/detail?id=390)
 * BUGFIX: {Netbeans} `@Cleanup` and `@Synchronized` cause far fewer issues in the netbeans editor. [Issue #393](http://code.google.com/p/projectlombok/issues/detail?id=393)
 * BUGFIX: {Installer} Erroneous messages about the installer complaining about needing root access when installing or removing lombok from eclipse installs has been fixed. The installer edge of this problem was actually already fixed in v0.11.2. [Issue #363](http://code.google.com/p/projectlombok/issues/detail?id=363)
 * BUGFIX: `@ExtensionMethod` had all sorts of issues in javac. [Issue #399](http://code.google.com/p/projectlombok/issues/detail?id=399)
 * BUGFIX: Generating static constructors with javac when you have fields with generics, i.e. `Class<T>`, caused errors. [Issue #396](http://code.google.com/p/projectlombok/issues/detail?id=396)
+* BUGFIX: Minor `@ExtensionMethod` issues in eclipse, such as the ability to call extension methods on a `super` reference which is now no longer possible. [Issue #406](http://code.google.com/p/projectlombok/issues/detail?id=406)
 
 ### v0.11.2 "Dashing Kakapo" (July 3rd, 2012)
 * FEATURE: {Experimental} `@ExtensionMethod` is now available to add extensions to
