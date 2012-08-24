@@ -165,8 +165,7 @@ public class HandlerLibrary {
 	private static void loadAnnotationHandlers(HandlerLibrary lib) throws IOException {
 		//No, that seemingly superfluous reference to JavacAnnotationHandler's classloader is not in fact superfluous!
 		for (JavacAnnotationHandler handler : SpiLoadUtil.findServices(JavacAnnotationHandler.class, JavacAnnotationHandler.class.getClassLoader())) {
-			Class<? extends Annotation> annotationClass =
-				SpiLoadUtil.findAnnotationClass(handler.getClass(), JavacAnnotationHandler.class);
+			Class<? extends Annotation> annotationClass = handler.getAnnotationHandledByThisHandler();
 			AnnotationHandlerContainer<?> container = new AnnotationHandlerContainer(handler, annotationClass);
 			String annotationClassName = container.annotationClass.getName().replace("$", ".");
 			if (lib.annotationHandlers.put(annotationClassName, container) != null) {

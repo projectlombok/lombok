@@ -158,8 +158,7 @@ public class HandlerLibrary {
 		try {
 			for (EclipseAnnotationHandler<?> handler : SpiLoadUtil.findServices(EclipseAnnotationHandler.class, EclipseAnnotationHandler.class.getClassLoader())) {
 				try {
-					Class<? extends Annotation> annotationClass =
-						SpiLoadUtil.findAnnotationClass(handler.getClass(), EclipseAnnotationHandler.class);
+					Class<? extends Annotation> annotationClass = handler.getAnnotationHandledByThisHandler();
 					AnnotationHandlerContainer<?> container = new AnnotationHandlerContainer(handler, annotationClass);
 					String annotationClassName = container.annotationClass.getName().replace("$", ".");
 					if (lib.annotationHandlers.put(annotationClassName, container) != null) {

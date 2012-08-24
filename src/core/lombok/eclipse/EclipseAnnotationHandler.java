@@ -22,6 +22,7 @@
 package lombok.eclipse;
 
 import lombok.core.AnnotationValues;
+import lombok.core.SpiLoadUtil;
 
 /**
  * Implement this interface if you want to be triggered for a specific annotation.
@@ -58,5 +59,14 @@ public abstract class EclipseAnnotationHandler<T extends java.lang.annotation.An
 	 * have to create the field, if its not already there, in 'handle', because for example preHandle would never even be called in ecj mode.
 	 */
 	public void preHandle(AnnotationValues<T> annotation, org.eclipse.jdt.internal.compiler.ast.Annotation ast, EclipseNode annotationNode) {
+	}
+	
+	/**
+	 * This handler is a handler for the given annotation; you don't normally need to override this class
+	 * as the annotation type is extracted from your {@code extends EclipseAnnotationHandler<AnnotationTypeHere>}
+	 * signature.
+	 */
+	@SuppressWarnings("unchecked") public Class<T> getAnnotationHandledByThisHandler() {
+		return (Class<T>) SpiLoadUtil.findAnnotationClass(getClass(), EclipseAnnotationHandler.class);
 	}
 }
