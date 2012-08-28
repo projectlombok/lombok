@@ -62,25 +62,31 @@ public class TransformEclipseAST {
 		Field f = null;
 		HandlerLibrary h = null;
 		
-		try {
-			h = HandlerLibrary.load();
-		} catch (Throwable t) {
-			try {
-				error(null, "Problem initializing lombok", t);
-			} catch (Throwable t2) {
-				System.err.println("Problem initializing lombok");
-				t.printStackTrace();
-			}
+		if (System.getProperty("lombok.disable") != null) {
 			disableLombok = true;
+			astCacheField = null;
+			handlers = null;
+		} else {
+			try {
+				h = HandlerLibrary.load();
+			} catch (Throwable t) {
+				try {
+					error(null, "Problem initializing lombok", t);
+				} catch (Throwable t2) {
+					System.err.println("Problem initializing lombok");
+					t.printStackTrace();
+				}
+				disableLombok = true;
+			}
+			try {
+				f = CompilationUnitDeclaration.class.getDeclaredField("$lombokAST");
+			} catch (Throwable t) {
+				//I guess we're in an ecj environment; we'll just not cache stuff then.
+			}
+			
+			astCacheField = f;
+			handlers = h;
 		}
-		try {
-			f = CompilationUnitDeclaration.class.getDeclaredField("$lombokAST");
-		} catch (Throwable t) {
-			//I guess we're in an ecj environment; we'll just not cache stuff then.
-		}
-		
-		astCacheField = f;
-		handlers = h;
 	}
 	
 	public static void transform_swapped(CompilationUnitDeclaration ast, Parser parser) {

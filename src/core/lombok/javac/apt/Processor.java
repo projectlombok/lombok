@@ -75,10 +75,16 @@ public class Processor extends AbstractProcessor {
 	private JavacProcessingEnvironment processingEnv;
 	private JavacTransformer transformer;
 	private Trees trees;
+	private boolean lombokDisabled = false;
 	
 	/** {@inheritDoc} */
 	@Override public void init(ProcessingEnvironment procEnv) {
 		super.init(procEnv);
+		if (System.getProperty("lombok.disable") != null) {
+			lombokDisabled = true;
+			return;
+		}
+		
 		this.processingEnv = (JavacProcessingEnvironment) procEnv;
 		placePostCompileAndDontMakeForceRoundDummiesHook();
 		transformer = new JavacTransformer(procEnv.getMessager());
@@ -223,6 +229,7 @@ public class Processor extends AbstractProcessor {
 	
 	/** {@inheritDoc} */
 	@Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+		if (lombokDisabled) return false;
 		if (roundEnv.processingOver()) return false;
 		
 		// We have: A sorted set of all priority levels: 'priorityLevels'
