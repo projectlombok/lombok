@@ -69,7 +69,15 @@ public class HandleFieldDefaults extends EclipseAnnotationHandler<FieldDefaults>
 			FieldDeclaration fieldDecl = (FieldDeclaration) field.get();
 			if (!filterField(fieldDecl, false)) continue;
 			
-			setFieldDefaultsForField(field, pos.get(), level, makeFinal);
+			Class<?> t = field.get().getClass();
+			if (t == FieldDeclaration.class) {
+				// There are various other things that extend FieldDeclaration that really
+				// aren't field declarations. Typing 'ma' in an otherwise blank class is a
+				// CompletionOnFieldType object (extends FieldDeclaration). If we mess with the
+				// modifiers of such a thing, you take away template suggestions such as
+				// 'main method'. See issue 411.
+				setFieldDefaultsForField(field, pos.get(), level, makeFinal);
+			}
 		}
 		return true;
 	}
