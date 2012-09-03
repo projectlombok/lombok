@@ -351,6 +351,45 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<echo level="info">All tests successful.</echo>
 	</target>
 	
+	<target name="utils-updatesite" depends="dist">
+		<!--remove -->
+		<delete dir="build/updatesite" quiet="true" />
+		<!--remove -->
+		
+		<mkdir dir="build/updatesite/templates" />
+		<mkdir dir="build/updatesite/features" />
+		<mkdir dir="build/updatesite/plugins" />
+		
+		<copy todir="build/updatesite/templates">
+			<fileset dir="buildScripts/eclipse-updatesite" />
+		</copy>
+		<replaceregexp match="\{VERSION\}" replace="${lombok.version}" flags="g">
+			<fileset dir="build/updatesite/templates" includes="*.template" />
+			<fileset dir="build/updatesite/templates/META-INF" includes="*.template" />
+		</replaceregexp>
+		
+		<move todir="build/updatesite/templates">
+			<fileset dir="build/updatesite/templates" />
+			<mapper type="glob" from="*.template" to="*"/>
+		</move>
+		<move file="build/updatesite/templates/site.xml" tofile="build/updatesite/site.xml" />
+		<zip destfile="build/updatesite/content.jar">
+			<fileset file="build/updatesite/templates/content.xml" />
+		</zip>
+		<zip destfile="build/updatesite/artifacts.jar">
+			<fileset file="build/updatesite/templates/artifacts.xml" />
+		</zip>
+		<jar destfile="build/updatesite/plugins/lombok_update_plugin_${lombok.version}.jar" manifest="build/updatesite/templates/META-INF/MANIFEST.MF">
+			<fileset dir="build/updatesite/templates/" includes="plugin.xml" />
+			<fileset dir="build/updatesite/templates/" includes="META-INF/p2.inf" />			
+		</jar>
+		<zip destfile="build/updatesite/features/lombok_update_${lombok.version}.jar">
+			<fileset file="build/updatesite/templates/feature.xml" />
+		</zip>
+		<delete dir="build/updatesite/templates" quiet="true" />
+
+	</target>
+	
 	<target name="utils-javadoc" depends="compile">
 		<mkdir dir="build/utils-api" />
 		<javadoc sourcepath="src/utils" defaultexcludes="yes" destdir="build/utils-api" windowtitle="Lombok Utils">

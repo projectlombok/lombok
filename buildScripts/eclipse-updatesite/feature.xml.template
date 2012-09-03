@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="lombok_feature"
+      label="Lombok_feature"
+      version="{VERSION}">
+
+   <description url="http://projectlombok.org/">
+      Project Lombok makes java a spicier language by adding 'handlers' that know how to build and compile simple, boilerplate-free, not-quite-java code.
+   </description>
+
+   <copyright url="http://projectlombok.org/">
+      [Enter Copyright Description here.]
+   </copyright>
+
+   <license url="http://opensource.org/licenses/mit-license.php">
+      [Enter License Description here.]
+   </license>
+
+   <plugin
+         id="lombok"
+         download-size="0"
+         install-size="0"
+         version="{VERSION}"
+         unpack="false"/>
+
+   <data
+         id="lib/lombok.jar"
+         download-size=""
+         install-size=""/>
+
+</feature>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/lombok_feature_{VERSION}.jar" id="lombok_feature" version="{VERSION}">
+      <category name="lombok_tooling"/>
+   </feature>
+   <category-def name="lombok_tooling" label="Lombok Tooling"/>
+</site>

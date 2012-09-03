@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<?metadataRepository version='1.1.0'?>
+<repository name='Update Site' type='org.eclipse.equinox.internal.p2.metadata.repository.LocalMetadataRepository' version='1'>
+  <properties size='2'>
+    <property name='p2.timestamp' value='1346100430920'/>
+    <property name='p2.compressed' value='true'/>
+  </properties>
+  <units size='4'>
+    <unit id='lombok_tooling' version='1.0.0.2--dOfh--3'>
+      <properties size='2'>
+        <property name='org.eclipse.equinox.p2.name' value='Lombok Tooling'/>
+        <property name='org.eclipse.equinox.p2.type.category' value='true'/>
+      </properties>
+      <provides size='1'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='lombok_tooling' version='1.0.0.2--dOfh--3'/>
+      </provides>
+      <requires size='1'>
+        <required namespace='org.eclipse.equinox.p2.iu' name='lombok_update.feature.group' range='[{VERSION},{VERSION}]'/>
+      </requires>
+      <touchpoint id='null' version='0.0.0'/>
+    </unit>
+    <unit id='lombok_update_plugin' version='{VERSION}'>
+      <update id='lombok_update_plugin' range='[0.0.0,{VERSION})' severity='0'/>
+      <properties size='1'>
+        <property name='org.eclipse.equinox.p2.name' value='Lombok Update Plugin'/>
+      </properties>
+      <provides size='3'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='lombok_update_plugin' version='{VERSION}'/>
+        <provided namespace='osgi.bundle' name='lombok_update_plugin' version='{VERSION}'/>
+        <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
+      </provides>
+      <requires size='1'>
+        <required namespace='osgi.bundle' name='org.eclipse.core.runtime' range='0.0.0'/>
+      </requires>
+      <artifacts size='1'>
+        <artifact classifier='osgi.bundle' id='lombok_update_plugin' version='{VERSION}'/>
+      </artifacts>
+      <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+      <touchpointData size='1'>
+        <instructions size='3'>
+          <instruction key='install'>
+            addJvmArg(jvmArg: -javaagent:lombok.jar); addJvmArg(jvmArg: -Xbootclasspath/a:lombok.jar);
+          </instruction>
+          <instruction key='uninstall'>
+            removeJvmArg(jvmArg: -javaagent:lombok.jar); removeJvmArg(jvmArg: -Xbootclasspath/a:lombok.jar);
+          </instruction>
+          <instruction key='manifest'>
+            Bundle-SymbolicName: lombok_update_plugin;singleton:=true&#xA;Bundle-Version: {VERSION}
+          </instruction>
+        </instructions>
+      </touchpointData>
+    </unit>
+    <unit id='lombok_update.feature.jar' version='{VERSION}'>
+      <properties size='3'>
+        <property name='org.eclipse.equinox.p2.name' value='Lombok Update Feature'/>
+        <property name='org.eclipse.equinox.p2.description' value='[Enter Feature Description here.]'/>
+        <property name='org.eclipse.equinox.p2.description.url' value='http://www.example.com/description'/>
+      </properties>
+      <provides size='3'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='lombok_update.feature.jar' version='{VERSION}'/>
+        <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='feature' version='1.0.0'/>
+        <provided namespace='org.eclipse.update.feature' name='lombok_update' version='{VERSION}'/>
+      </provides>
+      <filter>
+        (org.eclipse.update.install.features=true)
+      </filter>
+      <artifacts size='1'>
+        <artifact classifier='org.eclipse.update.feature' id='lombok_update' version='{VERSION}'/>
+      </artifacts>
+      <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
+      <touchpointData size='1'>
+        <instructions size='1'>
+          <instruction key='zipped'>
+            true
+          </instruction>
+        </instructions>
+      </touchpointData>
+      <licenses size='1'>
+        <license uri='http://www.example.com/license' url='http://www.example.com/license'>
+          [Enter License Description here.]
+        </license>
+      </licenses>
+      <copyright uri='http://www.example.com/copyright' url='http://www.example.com/copyright'>
+        [Enter Copyright Description here.]
+      </copyright>
+    </unit>
+    <unit id='lombok_update.feature.group' version='{VERSION}' singleton='false'>
+      <update id='lombok_update.feature.group' range='[0.0.0,{VERSION})' severity='0'/>
+      <properties size='4'>
+        <property name='org.eclipse.equinox.p2.name' value='Lombok'/>
+        <property name='org.eclipse.equinox.p2.description' value='[Enter Feature Description here.]'/>
+        <property name='org.eclipse.equinox.p2.description.url' value='http://www.example.com/description'/>
+        <property name='org.eclipse.equinox.p2.type.group' value='true'/>
+      </properties>
+      <provides size='1'>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='lombok_update.feature.group' version='{VERSION}'/>
+      </provides>
+      <requires size='2'>
+        <required namespace='org.eclipse.equinox.p2.iu' name='lombok_update_plugin' range='[{VERSION},{VERSION}]'/>
+        <required namespace='org.eclipse.equinox.p2.iu' name='lombok_update.feature.jar' range='[{VERSION},{VERSION}]'>
+          <filter>
+            (org.eclipse.update.install.features=true)
+          </filter>
+        </required>
+      </requires>
+      <touchpoint id='null' version='0.0.0'/>
+      <licenses size='1'>
+        <license uri='http://www.example.com/license' url='http://www.example.com/license'>
+          [Enter License Description here.]
+        </license>
+      </licenses>
+      <copyright uri='http://www.example.com/copyright' url='http://www.example.com/copyright'>
+        [Enter Copyright Description here.]
+      </copyright>
+    </unit>
+  </units>
+</repository>
