@@ -95,7 +95,12 @@ public class HandleVal extends JavacASTAdapter {
 			if (rhsOfEnhancedForLoop == null) {
 				if (local.init.type == null) {
 					JavacResolution resolver = new JavacResolution(localNode.getContext());
-					type = ((JCExpression) resolver.resolveMethodMember(localNode).get(local.init)).type;
+					try {
+						type = ((JCExpression) resolver.resolveMethodMember(localNode).get(local.init)).type;
+					} catch (RuntimeException e) {
+						System.err.println("Exception while resolving: " + localNode);
+						throw e;
+					}
 				} else {
 					type = local.init.type;
 				}
