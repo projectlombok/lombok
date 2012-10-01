@@ -10,6 +10,7 @@
       <properties size='2'>
         <property name='org.eclipse.equinox.p2.name' value='Lombok Tooling'/>
         <property name='org.eclipse.equinox.p2.type.category' value='true'/>
+        <property name='org.eclipse.equinox.p2.description' value='Lombok tooling'/>
       </properties>
       <provides size='1'>
         <provided namespace='org.eclipse.equinox.p2.iu' name='lombok_tooling' version='1.0.0.2--dOfh--3'/>
