@@ -1,8 +1,8 @@
 instructions.install = \
-    addJvmArg(jvmArg: -javaagent:lombok.jar); \
-    addJvmArg(jvmArg: -Xbootclasspath/a:lombok.jar);
+    addJvmArg(jvmArg: -javaagent:${installFolder}/plugins/lombok_{VERSION}/lombok.jar); \
+    addJvmArg(jvmArg: -Xbootclasspath/a:${installFolder}/plugins/lombok_{VERSION}/lombok.jar);
     
 instructions.uninstall = \
-    removeJvmArg(jvmArg: -javaagent:lombok.jar); \
-    removeJvmArg(jvmArg: -Xbootclasspath/a:lombok.jar); 
-    
+    removeJvmArg(jvmArg: -javaagent:${installFolder}/plugins/lombok_{VERSION}/lombok.jar); \
+    removeJvmArg(jvmArg: -Xbootclasspath/a:${installFolder}/plugins/lombok_{VERSION}/lombok.jar);
+ 
