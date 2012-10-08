@@ -96,6 +96,7 @@ public class EclipsePatcher extends Agent {
 			patchSortMembersOperation(sm);
 			patchExtractInterface(sm);
 			patchAboutDialog(sm);
+			patchEclipseDebugPatches(sm);
 		} else {
 			patchPostCompileHookEcj(sm);
 		}
@@ -643,6 +644,19 @@ public class EclipsePatcher extends Agent {
 				.target(new MethodTarget(SOURCE_TYPE_CONVERTER_SIG, "convertAnnotations", ANNOTATION_SIG + "[]", I_ANNOTATABLE_SIG))
 				.wrapMethod(new Hook("lombok.eclipse.agent.PatchFixes", "convertAnnotations", ANNOTATION_SIG + "[]", ANNOTATION_SIG + "[]", I_ANNOTATABLE_SIG))
 				.request(StackRequest.PARAM1, StackRequest.RETURN_VALUE).build());
+	}
+	
+	private static void patchEclipseDebugPatches(ScriptManager sm) {
+		final String ASTNODE_SIG = "org.eclipse.jdt.core.dom.ASTNode";
+		final String PATCH_DEBUG = "lombok.eclipse.agent.PatchDiagnostics";
+		
+		sm.addScript(exitEarly()
+				.target(new MethodTarget(ASTNODE_SIG, "setSourceRange", "void", "int", "int"))
+				.request(StackRequest.THIS)
+				.request(StackRequest.PARAM1)
+				.request(StackRequest.PARAM2)
+				.decisionMethod(new Hook(PATCH_DEBUG, "setSourceRangeCheck", "boolean", "java.lang.Object", "int", "int"))
+				.build());
 	}
 	
 	private static void patchExtensionMethod(ScriptManager sm, boolean ecj) {
