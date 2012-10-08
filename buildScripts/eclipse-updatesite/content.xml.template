@@ -16,29 +16,29 @@
         <provided namespace='org.eclipse.equinox.p2.iu' name='lombok_tooling' version='1.0.0.2--dOfh--3'/>
       </provides>
       <requires size='1'>
-        <required namespace='org.eclipse.equinox.p2.iu' name='lombok_update.feature.group' range='[{VERSION},{VERSION}]'/>
+        <required namespace='org.eclipse.equinox.p2.iu' name='lombok_feature.feature.group' range='[{VERSION},{VERSION}]'/>
       </requires>
       <touchpoint id='null' version='0.0.0'/>
     </unit>
-    <unit id='lombok_update_plugin' version='{VERSION}'>
-      <update id='lombok_update_plugin' range='[0.0.0,{VERSION})' severity='0'/>
+    <unit id='lombok' version='{VERSION}'>
+      <update id='lombok' range='[0.0.0,{VERSION})' severity='0'/>
       <properties size='1'>
         <property name='org.eclipse.equinox.p2.name' value='Lombok Update Plugin'/>
       </properties>
       <provides size='3'>
-        <provided namespace='org.eclipse.equinox.p2.iu' name='lombok_update_plugin' version='{VERSION}'/>
-        <provided namespace='osgi.bundle' name='lombok_update_plugin' version='{VERSION}'/>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='lombok' version='{VERSION}'/>
+        <provided namespace='osgi.bundle' name='lombok' version='{VERSION}'/>
         <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='bundle' version='1.0.0'/>
       </provides>
       <requires size='1'>
         <required namespace='osgi.bundle' name='org.eclipse.core.runtime' range='0.0.0'/>
       </requires>
       <artifacts size='1'>
-        <artifact classifier='osgi.bundle' id='lombok_update_plugin' version='{VERSION}'/>
+        <artifact classifier='osgi.bundle' id='lombok' version='{VERSION}'/>
       </artifacts>
       <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
       <touchpointData size='1'>
-        <instructions size='3'>
+        <instructions size='4'>
           <instruction key='install'>
             addJvmArg(jvmArg: -javaagent:lombok.jar); addJvmArg(jvmArg: -Xbootclasspath/a:lombok.jar);
           </instruction>
@@ -46,27 +46,30 @@
             removeJvmArg(jvmArg: -javaagent:lombok.jar); removeJvmArg(jvmArg: -Xbootclasspath/a:lombok.jar);
           </instruction>
           <instruction key='manifest'>
-            Bundle-SymbolicName: lombok_update_plugin;singleton:=true&#xA;Bundle-Version: {VERSION}
+            Bundle-ManifestVersion: 2&#xA;Bundle-Version: 1.0.0&#xA;Manifest-Version: 1.0&#xA;Bundle-SymbolicName: lombok&#xA;Bundle-Name: lombok&#xA;Bundle-RequiredExecutionEnvironment: JavaSE-1.6&#xA;Bundle-ClassPath: lombok.jar
+          </instruction>
+	<instruction key='zipped'>
+            true
           </instruction>
         </instructions>
       </touchpointData>
     </unit>
-    <unit id='lombok_update.feature.jar' version='{VERSION}'>
+    <unit id='lombok_feature.feature.jar' version='{VERSION}'>
       <properties size='3'>
         <property name='org.eclipse.equinox.p2.name' value='Lombok Update Feature'/>
         <property name='org.eclipse.equinox.p2.description' value='[Enter Feature Description here.]'/>
         <property name='org.eclipse.equinox.p2.description.url' value='http://www.example.com/description'/>
       </properties>
       <provides size='3'>
-        <provided namespace='org.eclipse.equinox.p2.iu' name='lombok_update.feature.jar' version='{VERSION}'/>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='lombok_feature.feature.jar' version='{VERSION}'/>
         <provided namespace='org.eclipse.equinox.p2.eclipse.type' name='feature' version='1.0.0'/>
-        <provided namespace='org.eclipse.update.feature' name='lombok_update' version='{VERSION}'/>
+        <provided namespace='org.eclipse.update.feature' name='lombok_feature' version='{VERSION}'/>
       </provides>
       <filter>
         (org.eclipse.update.install.features=true)
       </filter>
       <artifacts size='1'>
-        <artifact classifier='org.eclipse.update.feature' id='lombok_update' version='{VERSION}'/>
+        <artifact classifier='org.eclipse.update.feature' id='lombok_feature' version='{VERSION}'/>
       </artifacts>
       <touchpoint id='org.eclipse.equinox.p2.osgi' version='1.0.0'/>
       <touchpointData size='1'>
@@ -85,8 +88,8 @@
         [Enter Copyright Description here.]
       </copyright>
     </unit>
-    <unit id='lombok_update.feature.group' version='{VERSION}' singleton='false'>
-      <update id='lombok_update.feature.group' range='[0.0.0,{VERSION})' severity='0'/>
+    <unit id='lombok_feature.feature.group' version='{VERSION}' singleton='false'>
+      <update id='lombok_feature.feature.group' range='[0.0.0,{VERSION})' severity='0'/>
       <properties size='4'>
         <property name='org.eclipse.equinox.p2.name' value='Lombok'/>
         <property name='org.eclipse.equinox.p2.description' value='[Enter Feature Description here.]'/>
@@ -94,11 +97,11 @@
         <property name='org.eclipse.equinox.p2.type.group' value='true'/>
       </properties>
       <provides size='1'>
-        <provided namespace='org.eclipse.equinox.p2.iu' name='lombok_update.feature.group' version='{VERSION}'/>
+        <provided namespace='org.eclipse.equinox.p2.iu' name='lombok_feature.feature.group' version='{VERSION}'/>
       </provides>
       <requires size='2'>
-        <required namespace='org.eclipse.equinox.p2.iu' name='lombok_update_plugin' range='[{VERSION},{VERSION}]'/>
-        <required namespace='org.eclipse.equinox.p2.iu' name='lombok_update.feature.jar' range='[{VERSION},{VERSION}]'>
+        <required namespace='org.eclipse.equinox.p2.iu' name='lombok' range='[{VERSION},{VERSION}]'/>
+        <required namespace='org.eclipse.equinox.p2.iu' name='lombok_feature.feature.jar' range='[{VERSION},{VERSION}]'>
           <filter>
             (org.eclipse.update.install.features=true)
           </filter>

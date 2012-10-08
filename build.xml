@@ -379,11 +379,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<zip destfile="build/updatesite/artifacts.jar">
 			<fileset file="build/updatesite/templates/artifacts.xml" />
 		</zip>
-		<jar destfile="build/updatesite/plugins/lombok_update_plugin_${lombok.version}.jar" manifest="build/updatesite/templates/META-INF/MANIFEST.MF">
+		<jar destfile="build/updatesite/plugins/lombok_${lombok.version}.jar" manifest="build/updatesite/templates/META-INF/MANIFEST.MF">
 			<fileset dir="build/updatesite/templates/" includes="plugin.xml" />
 			<fileset dir="build/updatesite/templates/" includes="META-INF/p2.inf" />			
+			<fileset dir="dist/" includes="lombok.jar" />
 		</jar>
-		<zip destfile="build/updatesite/features/lombok_update_${lombok.version}.jar">
+		<zip destfile="build/updatesite/features/lombok_feature_${lombok.version}.jar">
 			<fileset file="build/updatesite/templates/feature.xml" />
 		</zip>
 		<delete dir="build/updatesite/templates" quiet="true" />

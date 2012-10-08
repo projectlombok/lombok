@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
       id="lombok_feature"
-      label="Lombok_feature"
+      label="Lombok"
       version="{VERSION}">
 
    <description url="http://projectlombok.org/">
@@ -20,12 +20,6 @@
          id="lombok"
          download-size="0"
          install-size="0"
-         version="{VERSION}"
-         unpack="false"/>
-
-   <data
-         id="lib/lombok.jar"
-         download-size=""
-         install-size=""/>
+         version="{VERSION}"/>
 
 </feature>

@@ -11,13 +11,13 @@
     <rule filter='(&amp; (classifier=org.eclipse.update.feature))' output='${repoUrl}/features/${id}_${version}.jar'/>
   </mappings>
   <artifacts size='2'>
-    <artifact classifier='osgi.bundle' id='lombok_update_plugin' version='{VERSION}'>
+    <artifact classifier='osgi.bundle' id='lombok' version='{VERSION}'>
       <properties size='2'>
         <property name='artifact.size' value='4096'/>
-        <property name='download.size' value='7151'/>
+        <property name='download.size' value='1738527'/>
       </properties>
     </artifact>
-    <artifact classifier='org.eclipse.update.feature' id='lombok_update' version='{VERSION}'>
+    <artifact classifier='org.eclipse.update.feature' id='lombok_feature' version='{VERSION}'>
       <properties size='2'>
         <property name='download.contentType' value='application/zip'/>
         <property name='download.size' value='415'/>
