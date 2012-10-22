@@ -68,15 +68,11 @@ public class Delombok {
 		this.presetWriter = writer;
 	}
 	
-	public Delombok() {
-//		context.put(DeleteLombokAnnotations.class, new DeleteLombokAnnotations(true));
-	}
-	
 	private PrintStream feedback = System.err;
 	private boolean verbose;
 	private boolean noCopy;
 	private boolean force = false;
-	private String classpath, sourcepath;
+	private String classpath, sourcepath, bootclasspath;
 	private LinkedHashMap<File, File> fileToBase = new LinkedHashMap<File, File>();
 	private List<File> filesToParse = new ArrayList<File>();
 	
@@ -114,6 +110,9 @@ public class Delombok {
 		@Shorthand("s")
 		@Description("Sourcepath (analogous to javac -sourcepath option)")
 		private String sourcepath;
+		
+		@Description("override Bootclasspath (analogous to javac -bootclasspath option)")
+		private String bootclasspath;
 		
 		@Description("Files to delombok. Provide either a file, or a directory. If you use a directory, all files in it (recursive) are delombok-ed")
 		@Sequential
@@ -173,6 +172,7 @@ public class Delombok {
 		
 		if (args.classpath != null) delombok.setClasspath(args.classpath);
 		if (args.sourcepath != null) delombok.setSourcepath(args.sourcepath);
+		if (args.bootclasspath != null) delombok.setBootclasspath(args.bootclasspath);
 		
 		try {
 			for (String in : args.input) {
@@ -228,6 +228,10 @@ public class Delombok {
 	
 	public void setSourcepath(String sourcepath) {
 		this.sourcepath = sourcepath;
+	}
+	
+	public void setBootclasspath(String bootclasspath) {
+		this.bootclasspath = bootclasspath;
 	}
 	
 	public void setVerbose(boolean verbose) {
@@ -355,6 +359,7 @@ public class Delombok {
 		options.put(OptionName.ENCODING, charset.name());
 		if (classpath != null) options.put(OptionName.CLASSPATH, classpath);
 		if (sourcepath != null) options.put(OptionName.SOURCEPATH, sourcepath);
+		if (bootclasspath != null) options.put(OptionName.BOOTCLASSPATH, bootclasspath);
 		options.put("compilePolicy", "attr");
 		
 		CommentCatcher catcher = CommentCatcher.create(context);
@@ -362,7 +367,6 @@ public class Delombok {
 		
 		List<JCCompilationUnit> roots = new ArrayList<JCCompilationUnit>();
 		Map<JCCompilationUnit, File> baseMap = new IdentityHashMap<JCCompilationUnit, File>();
-		
 		
 		compiler.initProcessAnnotations(Collections.singleton(new lombok.javac.apt.Processor()));
 		

@@ -55,6 +55,8 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 		
 		delombok.addFile(file.getAbsoluteFile().getParentFile(), file.getName());
 		delombok.setSourcepath(file.getAbsoluteFile().getParent());
+		String bcp = System.getProperty("delombok.bootclasspath");
+		if (bcp != null) delombok.setBootclasspath(bcp);
 		delombok.setWriter(result);
 		Locale originalLocale = Locale.getDefault();
 		try {
