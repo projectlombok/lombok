@@ -30,6 +30,8 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -44,9 +46,11 @@ import java.util.Map;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 
+import lombok.Lombok;
 import lombok.javac.CommentCatcher;
 import lombok.javac.LombokOptions;
 
+import com.sun.tools.javac.comp.Todo;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.main.OptionName;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -378,14 +382,13 @@ public class Delombok {
 			baseMap.put(unit, fileToBase.get(fileToParse));
 			roots.add(unit);
 		}
-		
 		if (compiler.errorCount() > 0) {
 			// At least one parse error. No point continuing (a real javac run doesn't either).
 			return false;
 		}
 		
 		JavaCompiler delegate = compiler.processAnnotations(compiler.enterTrees(toJavacList(roots)));
-		delegate.flow(delegate.attribute(delegate.todo));
+		callFlowMethodOnJavaCompiler(delegate, callAttributeMethodOnJavaCompiler(delegate, delegate.todo));
 		for (JCCompilationUnit unit : roots) {
 			DelombokResult result = new DelombokResult(catcher.getComments(unit), unit, force || options.isChanged(unit));
 			if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged");
@@ -407,6 +410,50 @@ public class Delombok {
 		delegate.close();
 		
 		return true;
+	}
+	
+	private static Method attributeMethod;
+	/** Method is needed because the call signature has changed between javac6 and javac7; no matter what we compile against, using delombok in the other means VerifyErrors. */
+	private static Object callAttributeMethodOnJavaCompiler(JavaCompiler compiler, Todo arg) {
+		if (attributeMethod == null) {
+			try {
+				attributeMethod = JavaCompiler.class.getDeclaredMethod("attribute", java.util.Queue.class);
+			} catch (NoSuchMethodException e) {
+				try {
+					attributeMethod = JavaCompiler.class.getDeclaredMethod("attribute", com.sun.tools.javac.util.ListBuffer.class);
+				} catch (NoSuchMethodException e2) {
+					throw Lombok.sneakyThrow(e2);
+				}
+			}
+		}
+		try {
+			return attributeMethod.invoke(compiler, arg);
+		} catch (Exception e) {
+			if (e instanceof InvocationTargetException) throw Lombok.sneakyThrow(e.getCause());
+			throw Lombok.sneakyThrow(e);
+		}
+	}
+	
+	private static Method flowMethod;
+	/** Method is needed because the call signature has changed between javac6 and javac7; no matter what we compile against, using delombok in the other means VerifyErrors. */
+	private static void callFlowMethodOnJavaCompiler(JavaCompiler compiler, Object arg) {
+		if (flowMethod == null) {
+			try {
+				flowMethod = JavaCompiler.class.getDeclaredMethod("flow", java.util.Queue.class);
+			} catch (NoSuchMethodException e) {
+				try {
+					flowMethod = JavaCompiler.class.getDeclaredMethod("flow", com.sun.tools.javac.util.List.class);
+				} catch (NoSuchMethodException e2) {
+					throw Lombok.sneakyThrow(e2);
+				}
+			}
+		}
+		try {
+			flowMethod.invoke(compiler, arg);
+		} catch (Exception e) {
+			if (e instanceof InvocationTargetException) throw Lombok.sneakyThrow(e.getCause());
+			throw Lombok.sneakyThrow(e);
+		}
 	}
 	
 	private static String canonical(File dir) {
