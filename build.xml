@@ -354,17 +354,17 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</target>
 
 	<target name="-failIfNoTestEnvironmentProperties" unless="test.location.javac">
-		<fail unless="test.location.javac">ERROR: No test environment set up.
+		<fail>ERROR: No test environment set up.
 
 You need to set up a test environment, which consists of a version of javac, and a JRE runtime classpath ('rt.jar').
-Eventually, this environment concept will be extended to also includes an ecj and/or eclipse to test against.
+Eventually, this environment concept will be extended to also include an ecj and/or eclipse to test against.
 
 You can let this ant script set them up for you:
 
 * ant setupJava6TestEnvironment
 * ant setupJava7TestEnvironment
 
-These will set up test environments based on OpenJDK6 and OpenJDK7 and some recent version of eclipse, and download all required files automatically. This will be a relatively large download. You can switch by running this command again; the downloads are cached so switching is fast.
+These will set up test environments based on OpenJDK6 and OpenJDK7, and download all required files automatically. This will be a relatively large download. You can switch by running this command again; the downloads are cached so switching is fast.
 
 You can also create your own by writing a 'testenvironment.properties' file. The relevant properties are:
 
