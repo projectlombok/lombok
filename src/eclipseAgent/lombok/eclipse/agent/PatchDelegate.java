@@ -620,7 +620,12 @@ public class PatchDelegate {
 			method.arguments = new Argument[binding.parameters.length];
 			call.arguments = new Expression[method.arguments.length];
 			for (int i = 0; i < method.arguments.length; i++) {
-				AbstractMethodDeclaration sourceElem = pair.base.sourceMethod();
+				AbstractMethodDeclaration sourceElem;
+				try {
+					sourceElem = pair.base.sourceMethod();
+				} catch (Exception e) {
+					sourceElem = null;
+				}
 				char[] argName;
 				if (sourceElem == null) argName = ("arg" + i).toCharArray();
 				else {
