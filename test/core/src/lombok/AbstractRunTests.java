@@ -25,13 +25,19 @@ import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 public abstract class AbstractRunTests {
@@ -43,11 +49,23 @@ public abstract class AbstractRunTests {
 	}
 	
 	public boolean compareFile(DirectoryRunner.TestParams params, File file) throws Throwable {
-		StringBuilder messages = new StringBuilder();
+		LinkedHashSet<CompilerMessage> messages = new LinkedHashSet<CompilerMessage>();
 		StringWriter writer = new StringWriter();
 		transformCode(messages, writer, file);
 		String expectedFile = readFile(params.getAfterDirectory(), file, false);
-		String expectedMessages = readFile(params.getMessagesDirectory(), file, true);
+		List<CompilerMessageMatcher> expectedMessages = Collections.emptyList();
+		if (params.getMessagesDirectory() != null) {
+			try {
+				InputStream in = new FileInputStream(new File(params.getMessagesDirectory(), file.getName() + ".messages"));
+				try {
+					expectedMessages = CompilerMessageMatcher.readAll(in);
+				} finally {
+					in.close();
+				}
+			} catch (FileNotFoundException ex) {
+				// That's okay - then we expect no messages, and expectedMessages already gets initialized to the empty list.
+			}
+		}
 		
 		StringReader r = new StringReader(expectedFile);
 		BufferedReader br = new BufferedReader(r);
@@ -58,13 +76,13 @@ public abstract class AbstractRunTests {
 				expectedFile,
 				writer.toString(),
 				expectedMessages,
-				messages.toString(),
+				messages,
 				params.printErrors());
 		
 		return true;
 	}
 	
-	protected abstract void transformCode(StringBuilder message, StringWriter result, File file) throws Throwable;
+	protected abstract void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file) throws Throwable;
 	
 	protected String readFile(File file) throws IOException {
 		BufferedReader reader;
@@ -107,7 +125,19 @@ public abstract class AbstractRunTests {
 		}
 	}
 	
-	private void compare(String name, String expectedFile, String actualFile, String expectedMessages, String actualMessages, boolean printErrors) throws Throwable {
+	private static void dumpToFile(File file, Collection<CompilerMessage> content) throws IOException {
+		FileOutputStream fos = new FileOutputStream(file);
+		try {
+			for (CompilerMessage message : content) {
+				fos.write(message.asCompilerMessageMatcher().toString().getBytes("UTF-8"));
+				fos.write('\n');
+			}
+		} finally {
+			fos.close();
+		}
+	}
+	
+	private void compare(String name, String expectedFile, String actualFile, List<CompilerMessageMatcher> expectedMessages, LinkedHashSet<CompilerMessage> actualMessages, boolean printErrors) throws Throwable {
 		try {
 			compareContent(name, expectedFile, actualFile);
 		} catch (Throwable e) {
@@ -129,8 +159,9 @@ public abstract class AbstractRunTests {
 			}
 			throw e;
 		}
+		
 		try {
-			compareContent(name, expectedMessages, actualMessages);
+			compareMessages(name, expectedMessages, actualMessages);
 		} catch (Throwable e) {
 			if (printErrors) {
 				System.out.println("***** " + name + " *****");
@@ -145,6 +176,27 @@ public abstract class AbstractRunTests {
 				dumpToFile(new File(dumpActualFilesHere, name + ".messages"), actualMessages);
 			}
 			throw e;
+		}
+	}
+	
+	private static void compareMessages(String name, List<CompilerMessageMatcher> expected, LinkedHashSet<CompilerMessage> actual) {
+		Iterator<CompilerMessageMatcher> expectedIterator = expected.iterator();
+		Iterator<CompilerMessage> actualIterator = actual.iterator();
+		
+		while (true) {
+			boolean exHasNext = expectedIterator.hasNext();
+			boolean acHasNext = actualIterator.hasNext();
+			if (!exHasNext && !acHasNext) break;
+			if (exHasNext && acHasNext) {
+				CompilerMessageMatcher cmm = expectedIterator.next();
+				CompilerMessage cm = actualIterator.next();
+				if (cmm.matches(cm)) continue;
+				fail(String.format("[%s] Expected message '%s' but got message '%s'", name, cmm, cm));
+				throw new AssertionError("fail should have aborted already.");
+			}
+			if (exHasNext) fail(String.format("[%s] Expected message '%s' but ran out of actual messages", name, expectedIterator.next()));
+			if (acHasNext) fail(String.format("[%s] Unexpected message: %s", name, actualIterator.next()));
+			throw new AssertionError("fail should have aborted already.");
 		}
 	}
 	

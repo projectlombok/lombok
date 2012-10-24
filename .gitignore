@@ -5,8 +5,7 @@
 /ivyCache
 /google.properties
 /debug
-/LombokizedEclipse.launch
-/RunLombokTests.launch
+/*.launch
 /escudo-upload.key
 /findbugsReport.html
 /lib

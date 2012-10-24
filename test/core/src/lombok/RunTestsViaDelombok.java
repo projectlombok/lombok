@@ -23,11 +23,13 @@ package lombok;
 
 import java.io.File;
 import java.io.StringWriter;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.tools.Diagnostic;
+import javax.tools.Diagnostic.Kind;
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 
@@ -37,7 +39,7 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 	private Delombok delombok = new Delombok();
 	
 	@Override
-	public void transformCode(final StringBuilder messages, StringWriter result, final File file) throws Throwable {
+	public void transformCode(final Collection<CompilerMessage> messages, StringWriter result, final File file) throws Throwable {
 		delombok.setVerbose(false);
 		delombok.setForceProcess(true);
 		delombok.setCharset("UTF-8");
@@ -49,7 +51,7 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 						"^" + Pattern.quote(file.getAbsolutePath()) +
 						"\\s*:\\s*\\d+\\s*:\\s*(?:warning:\\s*)?(.*)$", Pattern.DOTALL).matcher(msg);
 				if (m.matches()) msg = m.group(1);
-				messages.append(String.format("%d:%d %s %s\n", d.getLineNumber(), d.getColumnNumber(), d.getKind(), msg));
+				messages.add(new CompilerMessage(d.getLineNumber(), d.getColumnNumber(), d.getKind() == Kind.ERROR, msg));
 			}
 		});
 		

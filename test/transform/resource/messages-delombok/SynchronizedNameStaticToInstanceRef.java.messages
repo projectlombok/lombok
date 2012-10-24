@@ -1,1 +1,1 @@
-5:9 ERROR non-static variable read cannot be referenced from a static context
+5:9 non-static variable read cannot be referenced from a static context

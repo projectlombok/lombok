@@ -1,7 +1,3 @@
-3:44 ERROR cannot find symbol
-symbol  : variable d
-location: class ValErrors
-6:17 ERROR cannot find symbol
-symbol  : class val
-location: class ValErrors
-6:25 ERROR illegal initializer for <none>
+3:44 cannot find symbol
+6:17 cannot find symbol
+6:25 illegal initializer for <none>

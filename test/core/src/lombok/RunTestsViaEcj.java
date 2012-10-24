@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -84,7 +85,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 	}
 	
 	@Override
-	public void transformCode(final StringBuilder messages, StringWriter result, File file) throws Throwable {
+	public void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file) throws Throwable {
 		final AtomicReference<CompilationResult> compilationResult_ = new AtomicReference<CompilationResult>();
 		final AtomicReference<CompilationUnitDeclaration> compilationUnit_ = new AtomicReference<CompilationUnitDeclaration>();
 		ICompilerRequestor bitbucketRequestor = new ICompilerRequestor() {
@@ -109,7 +110,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		CategorizedProblem[] problems = compilationResult.getAllProblems();
 		
 		if (problems != null) for (CategorizedProblem p : problems) {
-			messages.append(String.format("%d %s %s\n", p.getSourceLineNumber(), p.isError() ? "error" : p.isWarning() ? "warning" : "unknown", p.getMessage()));
+			messages.add(new CompilerMessage(p.getSourceLineNumber(), p.getSourceStart(), p.isError(), p.getMessage()));
 		}
 		
 		CompilationUnitDeclaration cud = compilationUnit_.get();

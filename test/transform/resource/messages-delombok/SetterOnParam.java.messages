@@ -1,17 +1,7 @@
-3:33 ERROR incompatible types
-found   : java.lang.SuppressWarnings
-required: lombok.Setter.AnyAnnotation
-4:43 ERROR incompatible types
-found   : java.lang.SuppressWarnings
-required: lombok.Setter.AnyAnnotation
-6:25 ERROR incompatible types
-found   : java.lang.SuppressWarnings
-required: lombok.Setter.AnyAnnotation
-11:25 ERROR incompatible types
-found   : java.lang.SuppressWarnings
-required: lombok.Setter.AnyAnnotation
-14:43 ERROR incompatible types
-found   : java.lang.SuppressWarnings
-required: lombok.Setter.AnyAnnotation
-6:1 ERROR 'onParam' is not supported for @Setter on a type.
-11:1 ERROR 'onParam' is not supported for @Setter on a type.
+3:33 incompatible types
+4:43 incompatible types
+6:25 incompatible types
+11:25 incompatible types
+14:43 incompatible types
+6:1 'onParam' is not supported for @Setter on a type.
+11:1 'onParam' is not supported for @Setter on a type.

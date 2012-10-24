@@ -1,1 +1,1 @@
-8 warning The static field SynchronizedName.READ should be accessed in a static way
+8:185 The static field SynchronizedName.READ should be accessed in a static way

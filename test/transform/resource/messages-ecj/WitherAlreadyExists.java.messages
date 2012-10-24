@@ -1,7 +1,7 @@
-2 warning Not generating withFoo(): A method with that name already exists
-12 warning Not generating withFoo(): A method with that name already exists
-22 warning Not generating withFoo(): A method with that name already exists
-32 warning Not generating withFoo(): A method with that name already exists
-62 warning Not generating withFoo(): A method with that name already exists
-72 warning Not generating withFoo(): A method with that name already exists (withIsFoo)
-82 warning Not generating withFoo(): A method with that name already exists
+2:17 Not generating withFoo(): A method with that name already exists
+12:141 Not generating withFoo(): A method with that name already exists
+22:264 Not generating withFoo(): A method with that name already exists
+32:386 Not generating withFoo(): A method with that name already exists
+62:746 Not generating withFoo(): A method with that name already exists
+72:880 Not generating withFoo(): A method with that name already exists (withIsFoo)
+82:1008 Not generating withFoo(): A method with that name already exists
