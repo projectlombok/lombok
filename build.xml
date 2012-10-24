@@ -278,8 +278,6 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<os family="mac" />
 		</condition>
 		
-		<property name="putJavacOnBootclasspath" value="-Xbootclasspath/p:lib/javac6/javac6.jar" />
-		
 		<copy
 				file="buildScripts/eclipse-debug-target.template"
 				tofile="LombokizedEclipse.launch"
@@ -287,15 +285,6 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 				overwrite="true">
 			<filterset>
 				<filter token="START_ON_FIRST_THREAD" value="${startOnFirstThread}" />
-			</filterset>
-		</copy>
-		<copy
-				file="buildScripts/eclipse-run-tests.template"
-				tofile="RunLombokTests.launch"
-				preservelastmodified="true"
-				overwrite="true">
-			<filterset>
-				<filter token="JAVAC_ON_BOOTCLASSPATH" value="${putJavacOnBootclasspath}" />
 			</filterset>
 		</copy>
 	</target>
@@ -329,6 +318,24 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	
 	<target name="-loadTestEnvironmentProperties">
 		<property file="testenvironment.properties" />
+		<available file=".project" property="isEclipseProject" />
+	</target>
+
+	<target name="-createEclipseLaunchForTestEnvironmentIfEclipseProject" depends="-loadTestEnvironmentProperties" if="isEclipseProject">
+		<antcall target="createEclipseLaunchForTestEnvironment" />
+	</target>
+
+	<target name="createEclipseLaunchForTestEnvironment" depends="-loadTestEnvironmentProperties, -failIfNoTestEnvironmentProperties" description="Creates an eclipse launch target for the current test environment.">
+		<copy
+				file="buildScripts/eclipse-run-tests.template"
+				tofile="RunLombokTests ${test.location.name}.launch"
+				preservelastmodified="true"
+				overwrite="true">
+			<filterset>
+				<filter token="JAVAC_LOCATION" value="${test.location.javac}" />
+				<filter token="RT_LOCATION" value="${test.location.bootclasspath}" />
+			</filterset>
+		</copy>
 	</target>
 
 	<target name="setupJava6TestEnvironment" description="Sets up the test so that 'ant test' will test against OpenJDK6.">
@@ -338,8 +345,10 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<propertyfile file="testenvironment.properties">
 			<entry key="test.location.javac" value="lib/openJDK6Environment/javac6.jar" />
 			<entry key="test.location.bootclasspath" value="lib/openJDK6Environment/rt-openjdk6.jar" />
+			<entry key="test.location.name" value="OpenJDK6" />
 		</propertyfile>
 		<echo>Tests will now run against OpenJDK6</echo>
+		<antcall target="-createEclipseLaunchForTestEnvironmentIfEclipseProject" />
 	</target>
 
 	<target name="setupJava7TestEnvironment" description="Sets up the test so that 'ant test' will test against OpenJDK7.">
@@ -349,8 +358,10 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<propertyfile file="testenvironment.properties">
 			<entry key="test.location.javac" value="lib/openJDK7Environment/javac7.jar" />
 			<entry key="test.location.bootclasspath" value="lib/openJDK7Environment/rt-openjdk7.jar" />
+			<entry key="test.location.name" value="OpenJDK7" />
 		</propertyfile>
 		<echo>Tests will now run against OpenJDK7</echo>
+		<antcall target="-createEclipseLaunchForTestEnvironmentIfEclipseProject" />
 	</target>
 
 	<target name="-failIfNoTestEnvironmentProperties" unless="test.location.javac">

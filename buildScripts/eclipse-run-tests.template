@@ -15,5 +15,5 @@
 <stringAttribute key="org.eclipse.jdt.junit.TEST_KIND" value="org.eclipse.jdt.junit.loader.junit4"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="lombok.RunAllTests"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="lombok"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-javaagent:dist/lombok.jar @JAVAC_ON_BOOTCLASSPATH@"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-javaagent:dist/lombok.jar -Xbootclasspath/p:@JAVAC_LOCATION@ -Ddelombok.bootclasspath=@RT_LOCATION@"/>
 </launchConfiguration>
