@@ -428,7 +428,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
      */
     public void printStat(JCTree tree) throws IOException {
         if (isEmptyStat(tree)) {
-            printEmptyStat();
+            // printEmptyStat(); // -- starting in java 7, these get lost, so to be consistent, we never print them.
         } else {
             printExpr(tree, TreeInfo.notExpression);
         }
@@ -568,7 +568,9 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         }
         print(";");
         println();
+        int x = 0;
         for (List<JCTree> l = stats; l.nonEmpty(); l = l.tail) {
+        	x++;
             if (!isEnumerator(l.head)) {
                 align();
                 printStat(l.head);

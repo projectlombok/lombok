@@ -3,7 +3,6 @@ enum Ranks {
 	HEARTS,
 	DIAMONDS,
 	SPADES;
-	;
 }
 enum Complex {
 	RED("ff0000"),

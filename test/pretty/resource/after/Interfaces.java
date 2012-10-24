@@ -6,8 +6,6 @@ interface Interfaces {
 		DIAMONDS,
 		SPADES;
 	}
-	;
-	;
 	int x = 10;
 	void y();
 	int a = 20;
