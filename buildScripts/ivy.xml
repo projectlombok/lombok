@@ -19,6 +19,7 @@
 		<dependency org="log4j" name="log4j" rev="1.2.16" conf="test->default; contrib->sources" />
 		<dependency org="commons-logging" name="commons-logging" rev="1.1.1" conf="test->default; contrib->sources"/>
 		<dependency org="org.slf4j" name="slf4j-api" rev="1.6.1" conf="test->default; contrib->sources"/>
+		<dependency org="org.slf4j" name="slf4j-ext" rev="1.6.1" conf="test->default; contrib->sources"/>
 		<dependency org="com.googlecode.jarjar" name="jarjar" rev="1.1" conf="build->default" />
 		
 		<dependency org="org.apache.ant" name="ant" rev="1.8.1" conf="build->default; contrib->sources" />

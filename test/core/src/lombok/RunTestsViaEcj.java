@@ -129,6 +129,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		classpath.add("dist/lombok.jar");
 		classpath.add("lib/test/commons-logging.jar");
 		classpath.add("lib/test/slf4j-api.jar");
+		classpath.add("lib/test/slf4j-ext.jar");
 		classpath.add("lib/test/log4j.jar");
 		return new FileSystem(classpath.toArray(new String[0]), new String[] {file.getAbsolutePath()}, "UTF-8");
 	}

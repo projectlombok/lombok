@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 The Project Lombok Authors.
+ * Copyright (C) 2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,18 +19,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.extern.log4j;
+package lombok.extern.slf4j;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
 /**
  * Causes lombok to generate a logger field.
  * Example:
  * <pre>
- * &#64;Log4j
+ * &#64;XSlf4j
  * public class LogExample {
  * }
  * </pre>
@@ -39,20 +38,19 @@ import java.lang.annotation.Target;
  * 
  * <pre>
  * public class LogExample {
- *     private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(LogExample.class);
+ *     private static final org.slf4j.ext.XLogger log = org.slf4j.ext.XLoggerFactory.getXLogger(LogExample.class);
  * }
  * </pre>
  * 
  * This annotation is valid for classes and enumerations.<br />
- * 
- * @see org.apache.log4j.Logger org.apache.log4j.Logger
- * @see org.apache.log4j.Logger#getLogger(java.lang.Class) org.apache.log4j.Logger.getLogger(Class target)
+ * @see org.slf4j.ext.XLogger org.slf4j.ext.XLogger
+ * @see org.slf4j.ext.XLoggerFactory#getLogger(java.lang.Class) org.slf4j.ext.XLoggerFactory.getXLogger(Class target)
  * @see lombok.extern.apachecommons.CommonsLog &#64;CommonsLog
  * @see lombok.extern.java.Log &#64;Log
+ * @see lombok.extern.log4j.Log4j &#64;Log4j
  * @see lombok.extern.slf4j.Slf4j &#64;Slf4j
- * @see lombok.extern.slf4j.XSlf4j &#64;XSlf4j
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
-public @interface Log4j {
+public @interface XSlf4j {
 }

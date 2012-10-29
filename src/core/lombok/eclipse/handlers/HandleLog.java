@@ -187,6 +187,16 @@ public class HandleLog {
 		}
 	}
 	
+	/**
+	 * Handles the {@link lombok.extern.slf4j.XSlf4j} annotation for Eclipse.
+	 */
+	@ProviderFor(EclipseAnnotationHandler.class)
+	public static class HandleXSlf4jLog extends EclipseAnnotationHandler<lombok.extern.slf4j.XSlf4j> {
+		@Override public void handle(AnnotationValues<lombok.extern.slf4j.XSlf4j> annotation, Annotation source, EclipseNode annotationNode) {
+			processAnnotation(LoggingFramework.XSLF4J, annotation, source, annotationNode);
+		}
+	}
+	
 	enum LoggingFramework {
 		// private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(TargetType.class);
 		COMMONS("org.apache.commons.logging.Log", "org.apache.commons.logging.LogFactory", "getLog", "@CommonsLog"),
@@ -216,6 +226,9 @@ public class HandleLog {
 
 		// private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TargetType.class);
 		SLF4J("org.slf4j.Logger", "org.slf4j.LoggerFactory", "getLogger", "@Slf4j"),
+		
+		// private static final org.slf4j.ext.XLogger log = org.slf4j.ext.XLoggerFactory.getXLogger(TargetType.class);
+		XSLF4J("org.slf4j.ext.XLogger", "org.slf4j.ext.XLoggerFactory", "getXLogger", "@XSlf4j"),
 		
 		;
 		
