@@ -173,7 +173,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 	private MethodDeclaration createToString(EclipseNode type, Collection<EclipseNode> fields,
 			boolean includeFieldNames, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {
 		String typeName = getTypeName(type);
-		char[] suffix = ")".toCharArray();
+		char[] suffix = ")eclipse".toCharArray();
 		String infixS = ", ";
 		char[] infix = infixS.toCharArray();
 		int pS = source.sourceStart, pE = source.sourceEnd;
