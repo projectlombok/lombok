@@ -103,8 +103,7 @@ public class DirectoryRunner extends Runner {
 				if (!runTest(entry.getKey())) {
 					notifier.fireTestIgnored(testDescription);
 				}
-			}
-			catch (Throwable t) {
+			} catch (Throwable t) {
 				notifier.fireTestFailure(new Failure(testDescription, t));
 			}
 			notifier.fireTestFinished(testDescription);
