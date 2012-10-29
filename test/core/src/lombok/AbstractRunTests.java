@@ -69,7 +69,8 @@ public abstract class AbstractRunTests {
 		
 		StringReader r = new StringReader(expectedFile);
 		BufferedReader br = new BufferedReader(r);
-		if ("//ignore".equals(br.readLine())) return false;
+		String firstLine = br.readLine();
+		if (firstLine != null && firstLine.startsWith("//ignore")) return false;
 		
 		compare(
 				file.getName(),

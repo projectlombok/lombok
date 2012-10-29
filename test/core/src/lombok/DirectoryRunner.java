@@ -131,6 +131,6 @@ public class DirectoryRunner extends Runner {
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		String line = reader.readLine();
 		reader.close();
-		return "//ignore".equals(line);
+		return line != null && line.startsWith("//ignore");
 	}
 }
