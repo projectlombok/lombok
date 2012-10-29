@@ -147,9 +147,14 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 			handleMethodCall((JCMethodInvocation) tree);
 			return super.visitMethodInvocation(tree, p);
 		}
-
+		
 		private void handleMethodCall(final JCMethodInvocation methodCall) {
 			JavacNode methodCallNode = annotationNode.getAst().get(methodCall);
+			
+			if (methodCallNode == null) {
+				// This should mean the node does not exist in the source at all. This is the case for generated nodes, such as implicit super() calls.
+				return;
+			}
 			
 			JavacNode surroundingType = upToTypeNode(methodCallNode);
 			

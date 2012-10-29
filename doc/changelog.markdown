@@ -3,8 +3,9 @@ Lombok Changelog
 
 ### v0.11.5 (Edgy Guinea Pig)
 * FEATURE: Lombok can be disabled entirely for any given compile run by using JVM switch `-Dlombok.disable`. This might be useful for code style checkers and such.
-* BUGFIX: {Delombok} Running delombok has been causing VerifyError errors when used with javac 1.7 since 0.11.0.
-* BUGFIX: A conflict between lombok and certain eclipse plugins would result in NullPointerExceptions in the log when using @Delegate.
+* BUGFIX: {Delombok} Running delombok has been causing VerifyError errors when used with javac 1.7 since 0.11.0. [Issue #422](http://code.google.com/p/projectlombok/issues/detail?id=422)
+* BUGFIX: A conflict between lombok and certain eclipse plugins would result in NullPointerExceptions in the log when using `@Delegate`.
+* BUGFIX: `NullPointerException in lombok.javac.handlers.JavacHandlerUtil.upToTypeNode(JavacHandlerUtil.java:978)` when compiling with `@ExtensionMethod` in javac and generated constructors are involved. [Issue #423](http://code.google.com/p/projectlombok/issues/detail?id=423)
 
 ### v0.11.4 (August 13th, 2012)
 * FEATURE: {Experimental} `@Value`, `@Wither` and `@FieldDefaults` are now available. These are a lot like `@Data` but geared towards immutable classes. [Documentation on @Value](http://projectlombok.org/features/experimental/Value.html), [Documentation on @Wither](http://projectlombok.org/features/experimental/Wither.html) and [Documentation on @FieldDefaults](http://projectlombok.org/features/experimental/FieldDefaults.html).
