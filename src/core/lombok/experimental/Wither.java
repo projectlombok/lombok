@@ -21,8 +21,6 @@
  */
 package lombok.experimental;
 
-import static lombok.AccessLevel.PUBLIC;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -58,5 +56,5 @@ public @interface Wither {
 	/**
 	 * If you want your wither to be non-public, you can specify an alternate access level here.
 	 */
-	AccessLevel value() default PUBLIC;
+	AccessLevel value() default AccessLevel.PUBLIC;
 }

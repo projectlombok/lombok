@@ -56,9 +56,6 @@ import com.sun.tools.javac.util.ListBuffer;
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleToString extends JavacAnnotationHandler<ToString> {
-	private static final int PLUS = getCtcInt(JCTree.class, "PLUS");
-	private static final int EQUALS = getCtcInt(JCTree.class, "EQ");
-
 	private void checkForBogusFieldNames(JavacNode type, AnnotationValues<ToString> annotation) {
 		if (annotation.isExplicit("exclude")) {
 			for (int i : createListOfNonExistentFields(List.from(annotation.getInstance().exclude()), type, true, false)) {
@@ -180,20 +177,30 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
 		JCExpression returnType = chainDots(typeNode, "java", "lang", "String");
 		
-		String typeName = getTypeName(typeNode);
-		String prefix = "(";
-		String infix = ", ";
-		String suffix = ")";
+		boolean first = true;
 		
-		JCExpression current = maker.Literal(typeName + prefix);
+		String typeName = getTypeName(typeNode);
+		String infix = ", ";
+		String suffix = ")javac";
+		String prefix;
+		if (callSuper) {
+			prefix = typeName + "(super=";
+		} else if (fields.isEmpty()) {
+			prefix = typeName + "()";
+		} else if (includeFieldNames && !ignoreNullFields) {
+			prefix = typeName + "(" + ((JCVariableDecl)fields.iterator().next().get()).name.toString() + "=";
+		} else {
+			prefix = typeName + "(";
+		}
+		
+		JCExpression current = maker.Literal(prefix);
 		
 		if (callSuper) {
-			current = maker.Binary(PLUS, current, maker.Literal("super="));
 			JCMethodInvocation callToSuper = maker.Apply(List.<JCExpression>nil(),
 					maker.Select(maker.Ident(typeNode.toName("super")), typeNode.toName("toString")),
 					List.<JCExpression>nil());
-			current = maker.Binary(PLUS, current, callToSuper);
-			current = maker.Binary(PLUS, current, maker.Literal(infix));
+			current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, callToSuper);
+			first = false;
 		}
 		
 		for (JavacNode fieldNode : fields) {
@@ -213,22 +220,26 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			} else expr = fieldAccessor;
 			
 			if (includeFieldNames) {
-				fieldExpr = maker.Binary(PLUS, maker.Literal(fieldNode.getName() + "="), expr);
+				fieldExpr = maker.Binary(getCtcInt(JCTree.class, "PLUS"), maker.Literal(fieldNode.getName() + "="), expr);
 			} else {
 				fieldExpr = expr;
 			}
 			
-			if (ignoreNullFields) {
-				JCExpression isNull = maker.Binary(EQUALS, expr, maker.Literal(TypeTags.BOT, null));
-				current = maker.Binary(PLUS, current, maker.Conditional(isNull, maker.Literal(""), fieldExpr));
+			if (first) {
+				first = false;
 			} else {
-				current = maker.Binary(PLUS, current, fieldExpr);
+				fieldExpr = maker.Binary(getCtcInt(JCTree.class, "PLUS"), maker.Literal(infix), fieldExpr);
 			}
 			
-			current = maker.Binary(PLUS, current, maker.Literal(infix));
+			if (ignoreNullFields) {
+				JCExpression isNull = maker.Binary(getCtcInt(JCTree.class, "EQ"), expr, maker.Literal(TypeTags.BOT, null));
+				current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, maker.Conditional(isNull, maker.Literal(""), fieldExpr));
+			} else {
+				current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, fieldExpr);
+			}
 		}
 		
-		current = maker.Binary(PLUS, current, maker.Literal(suffix));
+		if (!first) current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, maker.Literal(suffix));
 		
 		JCStatement returnStatement = maker.Return(current);
 		
