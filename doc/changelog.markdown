@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v0.11.5 (Edgy Guinea Pig)
+### v0.11.6 (October 30th, 2012)
 * FEATURE: Lombok can be disabled entirely for any given compile run by using JVM switch `-Dlombok.disable`. This might be useful for code style checkers and such.
 * FEATURE: Added support for Slf4j extended logger [Issue #421](http://code.google.com/p/projectlombok/issues/detail?id=421)
 * BUGFIX: {Delombok} Running delombok has been causing VerifyError errors when used with javac 1.7 since 0.11.0. [Issue #422](http://code.google.com/p/projectlombok/issues/detail?id=422)
