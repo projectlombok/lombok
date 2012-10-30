@@ -84,4 +84,9 @@ public @interface ToString {
 	 * <strong>default: false</strong>
 	 */
 	boolean doNotUseGetters() default false;
+	
+	/**
+	 * Perform run-time null check to determine whether to ignore null value fields
+	 */
+	boolean ignoreNullFields() default false;
 }
