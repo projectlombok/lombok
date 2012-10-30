@@ -181,7 +181,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		
 		String typeName = getTypeName(typeNode);
 		String infix = ", ";
-		String suffix = ")javac";
+		String suffix = ")";
 		String prefix;
 		if (callSuper) {
 			prefix = typeName + "(super=";
