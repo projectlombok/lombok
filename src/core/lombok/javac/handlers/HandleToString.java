@@ -21,20 +21,20 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.Javac.getCtcInt;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+import static lombok.javac.Javac.getCtcInt;
+
 import lombok.ToString;
-import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.AST.Kind;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
-import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -47,7 +47,6 @@ import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 
@@ -92,7 +91,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		
 		FieldAccess fieldAccess = ann.doNotUseGetters() ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
 		
-		generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, ann.ignoreNullFields(), true, fieldAccess);
+		generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true, fieldAccess);
 	}
 	
 	public void generateToStringForType(JavacNode typeNode, JavacNode errorNode) {
@@ -106,20 +105,15 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		try {
 			includeFieldNames = ((Boolean)ToString.class.getMethod("includeFieldNames").getDefaultValue()).booleanValue();
 		} catch (Exception ignore) {}
-		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, null, false, FieldAccess.GETTER);
+		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, FieldAccess.GETTER);
 	}
 	
 	public void generateToString(JavacNode typeNode, JavacNode source, List<String> excludes, List<String> includes,
-			boolean includeFieldNames, Boolean callSuper, Boolean ignoreNullFields, boolean whineIfExists, FieldAccess fieldAccess) {
+			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
 		boolean notAClass = true;
 		if (typeNode.get() instanceof JCClassDecl) {
 			long flags = ((JCClassDecl)typeNode.get()).mods.flags;
 			notAClass = (flags & (Flags.INTERFACE | Flags.ANNOTATION)) != 0;
-		}
-		
-		if (notAClass) {
-			source.addError("@ToString is only supported on a class or enum.");
-			return;
 		}
 		
 		if (callSuper == null) {
@@ -127,10 +121,10 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 				callSuper = ((Boolean)ToString.class.getMethod("callSuper").getDefaultValue()).booleanValue();
 			} catch (Exception ignore) {}
 		}
-		if (ignoreNullFields == null) {
-			try {
-				ignoreNullFields = ((Boolean)ToString.class.getMethod("ignoreNullFields").getDefaultValue()).booleanValue();
-			} catch (Exception ignore) {}
+		
+		if (notAClass) {
+			source.addError("@ToString is only supported on a class or enum.");
+			return;
 		}
 		
 		ListBuffer<JavacNode> nodesForToString = ListBuffer.lb();
@@ -156,7 +150,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		
 		switch (methodExists("toString", typeNode, 0)) {
 		case NOT_EXISTS:
-			JCMethodDecl method = createToString(typeNode, nodesForToString.toList(), includeFieldNames, callSuper, ignoreNullFields, fieldAccess, source.get());
+			JCMethodDecl method = createToString(typeNode, nodesForToString.toList(), includeFieldNames, callSuper, fieldAccess, source.get());
 			injectMethod(typeNode, method);
 			break;
 		case EXISTS_BY_LOMBOK:
@@ -170,7 +164,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		}
 	}
 	
-	private JCMethodDecl createToString(JavacNode typeNode, List<JavacNode> fields, boolean includeFieldNames, boolean callSuper, boolean ignoreNullFields, FieldAccess fieldAccess, JCTree source) {
+	private JCMethodDecl createToString(JavacNode typeNode, List<JavacNode> fields, boolean includeFieldNames, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(chainDots(typeNode, "java", "lang", "Override"), List.<JCExpression>nil());
@@ -187,7 +181,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			prefix = typeName + "(super=";
 		} else if (fields.isEmpty()) {
 			prefix = typeName + "()";
-		} else if (includeFieldNames && !ignoreNullFields) {
+		} else if (includeFieldNames) {
 			prefix = typeName + "(" + ((JCVariableDecl)fields.iterator().next().get()).name.toString() + "=";
 		} else {
 			prefix = typeName + "(";
@@ -206,7 +200,6 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		for (JavacNode fieldNode : fields) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			JCExpression expr;
-			JCExpression fieldExpr;
 			
 			JCExpression fieldAccessor = createFieldAccessor(maker, fieldNode, fieldAccess);
 			
@@ -219,24 +212,19 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 				expr = maker.Apply(List.<JCExpression>nil(), hcMethod, List.<JCExpression>of(fieldAccessor));
 			} else expr = fieldAccessor;
 			
-			if (includeFieldNames) {
-				fieldExpr = maker.Binary(getCtcInt(JCTree.class, "PLUS"), maker.Literal(fieldNode.getName() + "="), expr);
-			} else {
-				fieldExpr = expr;
-			}
-			
 			if (first) {
+				current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, expr);
 				first = false;
-			} else {
-				fieldExpr = maker.Binary(getCtcInt(JCTree.class, "PLUS"), maker.Literal(infix), fieldExpr);
+				continue;
 			}
 			
-			if (ignoreNullFields) {
-				JCExpression isNull = maker.Binary(getCtcInt(JCTree.class, "EQ"), expr, maker.Literal(TypeTags.BOT, null));
-				current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, maker.Conditional(isNull, maker.Literal(""), fieldExpr));
+			if (includeFieldNames) {
+				current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, maker.Literal(infix + fieldNode.getName() + "="));
 			} else {
-				current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, fieldExpr);
+				current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, maker.Literal(infix));
 			}
+			
+			current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, expr);
 		}
 		
 		if (!first) current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, maker.Literal(suffix));
