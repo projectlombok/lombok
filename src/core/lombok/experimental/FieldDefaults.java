@@ -21,6 +21,8 @@
  */
 package lombok.experimental;
 
+import static lombok.AccessLevel.NONE;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -40,6 +42,6 @@ import lombok.AccessLevel;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface FieldDefaults {
-	AccessLevel level() default AccessLevel.NONE;
+	AccessLevel level() default NONE;
 	boolean makeFinal() default false;
 }
