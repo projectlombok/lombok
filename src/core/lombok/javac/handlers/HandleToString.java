@@ -33,6 +33,7 @@ import lombok.javac.JavacNode;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -55,6 +56,10 @@ import com.sun.tools.javac.util.ListBuffer;
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleToString extends JavacAnnotationHandler<ToString> {
+	
+	private static final int PLUS = getCtcInt(JCTree.class, "PLUS");
+	private static final int EQUALS = getCtcInt(JCTree.class, "EQ");
+	
 	private void checkForBogusFieldNames(JavacNode type, AnnotationValues<ToString> annotation) {
 		if (annotation.isExplicit("exclude")) {
 			for (int i : createListOfNonExistentFields(List.from(annotation.getInstance().exclude()), type, true, false)) {
@@ -91,7 +96,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		
 		FieldAccess fieldAccess = ann.doNotUseGetters() ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
 		
-		generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true, fieldAccess);
+		generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, ann.ignoreNullFields(), true, fieldAccess);
 	}
 	
 	public void generateToStringForType(JavacNode typeNode, JavacNode errorNode) {
@@ -105,20 +110,25 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		try {
 			includeFieldNames = ((Boolean)ToString.class.getMethod("includeFieldNames").getDefaultValue()).booleanValue();
 		} catch (Exception ignore) {}
-		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, FieldAccess.GETTER);
+		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, null, false, FieldAccess.GETTER);
 	}
 	
 	public void generateToString(JavacNode typeNode, JavacNode source, List<String> excludes, List<String> includes,
-			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
+			boolean includeFieldNames, Boolean callSuper, Boolean ignoreNullFields, boolean whineIfExists, FieldAccess fieldAccess) {
 		boolean notAClass = true;
 		if (typeNode.get() instanceof JCClassDecl) {
 			long flags = ((JCClassDecl)typeNode.get()).mods.flags;
 			notAClass = (flags & (Flags.INTERFACE | Flags.ANNOTATION)) != 0;
 		}
-		
+
 		if (callSuper == null) {
 			try {
 				callSuper = ((Boolean)ToString.class.getMethod("callSuper").getDefaultValue()).booleanValue();
+			} catch (Exception ignore) {}
+		}
+		if (ignoreNullFields == null) {
+			try {
+				ignoreNullFields = ((Boolean)ToString.class.getMethod("ignoreNullFields").getDefaultValue()).booleanValue();
 			} catch (Exception ignore) {}
 		}
 		
@@ -150,7 +160,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		
 		switch (methodExists("toString", typeNode, 0)) {
 		case NOT_EXISTS:
-			JCMethodDecl method = createToString(typeNode, nodesForToString.toList(), includeFieldNames, callSuper, fieldAccess, source.get());
+			JCMethodDecl method = createToString(typeNode, nodesForToString.toList(), includeFieldNames, callSuper, ignoreNullFields, fieldAccess, source.get());
 			injectMethod(typeNode, method);
 			break;
 		case EXISTS_BY_LOMBOK:
@@ -164,77 +174,67 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		}
 	}
 	
-	private JCMethodDecl createToString(JavacNode typeNode, List<JavacNode> fields, boolean includeFieldNames, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
+	private JCMethodDecl createToString(JavacNode typeNode, List<JavacNode> fields, boolean includeFieldNames, boolean callSuper, boolean ignoreNullFields, FieldAccess fieldAccess, JCTree source) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(chainDots(typeNode, "java", "lang", "Override"), List.<JCExpression>nil());
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
 		JCExpression returnType = chainDots(typeNode, "java", "lang", "String");
 		
-		boolean first = true;
-		
 		String typeName = getTypeName(typeNode);
+		String prefix = "(";
 		String infix = ", ";
 		String suffix = ")";
-		String prefix;
-		if (callSuper) {
-			prefix = typeName + "(super=";
-		} else if (fields.isEmpty()) {
-			prefix = typeName + "()";
-		} else if (includeFieldNames) {
-			prefix = typeName + "(" + ((JCVariableDecl)fields.iterator().next().get()).name.toString() + "=";
-		} else {
-			prefix = typeName + "(";
-		}
 		
-		JCExpression current = maker.Literal(prefix);
+		JCExpression current = maker.Literal(typeName + prefix);
 		
 		if (callSuper) {
-			JCMethodInvocation callToSuper = maker.Apply(List.<JCExpression>nil(),
-					maker.Select(maker.Ident(typeNode.toName("super")), typeNode.toName("toString")),
-					List.<JCExpression>nil());
-			current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, callToSuper);
-			first = false;
+			current = maker.Binary(PLUS, current, maker.Literal("super="));
+			JCMethodInvocation callToSuper = maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(typeNode.toName("super")), typeNode.toName("toString")), List.<JCExpression>nil());
+			current = maker.Binary(PLUS, current, callToSuper);
+			current = maker.Binary(PLUS, current, maker.Literal(infix));
 		}
 		
 		for (JavacNode fieldNode : fields) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			JCExpression expr;
+			JCExpression fieldExpr;
 			
 			JCExpression fieldAccessor = createFieldAccessor(maker, fieldNode, fieldAccess);
 			
 			if (getFieldType(fieldNode, fieldAccess) instanceof JCArrayTypeTree) {
-				boolean multiDim = ((JCArrayTypeTree)field.vartype).elemtype instanceof JCArrayTypeTree;
-				boolean primitiveArray = ((JCArrayTypeTree)field.vartype).elemtype instanceof JCPrimitiveTypeTree;
+				boolean multiDim = ((JCArrayTypeTree) field.vartype).elemtype instanceof JCArrayTypeTree;
+				boolean primitiveArray = ((JCArrayTypeTree) field.vartype).elemtype instanceof JCPrimitiveTypeTree;
 				boolean useDeepTS = multiDim || !primitiveArray;
 				
 				JCExpression hcMethod = chainDots(typeNode, "java", "util", "Arrays", useDeepTS ? "deepToString" : "toString");
 				expr = maker.Apply(List.<JCExpression>nil(), hcMethod, List.<JCExpression>of(fieldAccessor));
-			} else expr = fieldAccessor;
-			
-			if (first) {
-				current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, expr);
-				first = false;
-				continue;
-			}
+			} else
+				expr = fieldAccessor;
 			
 			if (includeFieldNames) {
-				current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, maker.Literal(infix + fieldNode.getName() + "="));
+				fieldExpr = maker.Binary(PLUS, maker.Literal(fieldNode.getName() + "="), expr);
 			} else {
-				current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, maker.Literal(infix));
+				fieldExpr = expr;
 			}
 			
-			current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, expr);
+			if (ignoreNullFields) {
+				JCExpression isNull = maker.Binary(EQUALS, expr, maker.Literal(TypeTags.BOT, null));
+				current = maker.Binary(PLUS, current, maker.Conditional(isNull, maker.Literal(""), fieldExpr));
+			} else {
+				current = maker.Binary(PLUS, current, fieldExpr);
+			}
+			
+			current = maker.Binary(PLUS, current, maker.Literal(infix));
 		}
 		
-		if (!first) current = maker.Binary(getCtcInt(JCTree.class, "PLUS"), current, maker.Literal(suffix));
+		current = maker.Binary(PLUS, current, maker.Literal(suffix));
 		
 		JCStatement returnStatement = maker.Return(current);
 		
 		JCBlock body = maker.Block(0, List.of(returnStatement));
 		
-		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("toString"), returnType,
-				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source);
+		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("toString"), returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source);
 	}
 	
 	private String getTypeName(JavacNode typeNode) {
