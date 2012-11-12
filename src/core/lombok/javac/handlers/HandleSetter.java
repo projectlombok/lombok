@@ -21,7 +21,7 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.Javac.getCtcInt;
+import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.Collection;
@@ -43,7 +43,6 @@ import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
@@ -227,7 +226,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		
 		if (methodType == null) {
 			//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.
-			methodType = treeMaker.Type(new JCNoType(getCtcInt(TypeTags.class, "VOID")));
+			methodType = treeMaker.Type(new JCNoType(CTC_VOID));
 			returnThis = false;
 		}
 		
@@ -257,8 +256,8 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		
 		@Override
 		public TypeKind getKind() {
-			if (tag == getCtcInt(TypeTags.class, "VOID")) return TypeKind.VOID;
-			if (tag == getCtcInt(TypeTags.class, "NONE")) return TypeKind.NONE;
+			if (tag == CTC_VOID) return TypeKind.VOID;
+			if (tag == CTC_NONE) return TypeKind.NONE;
 			throw new AssertionError("Unexpected tag: " + tag);
 		}
 		

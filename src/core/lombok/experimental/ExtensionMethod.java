@@ -22,7 +22,7 @@
 package lombok.experimental;
 
 import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.RetentionPolicy.SOURCE;
+import static java.lang.annotation.RetentionPolicy.*;
 
 import java.lang.annotation.*;
 

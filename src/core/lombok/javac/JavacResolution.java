@@ -21,6 +21,8 @@
  */
 package lombok.javac;
 
+import static lombok.javac.Javac.*;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -417,8 +419,8 @@ public class JavacResolution {
 		
 		TreeMaker maker = ast.getTreeMaker();
 		
-		if (type.tag == Javac.getCtcInt(TypeTags.class, "BOT")) return createJavaLangObject(ast);
-		if (type.tag == Javac.getCtcInt(TypeTags.class, "VOID")) return allowVoid ? primitiveToJCTree(type.getKind(), maker) : createJavaLangObject(ast);
+		if (type.tag == CTC_BOT) return createJavaLangObject(ast);
+		if (type.tag == CTC_VOID) return allowVoid ? primitiveToJCTree(type.getKind(), maker) : createJavaLangObject(ast);
 		if (type.isPrimitive()) return primitiveToJCTree(type.getKind(), maker);
 		if (type.isErroneous()) throw new TypeNotConvertibleException("Type cannot be resolved");
 		
@@ -452,7 +454,7 @@ public class JavacResolution {
 				upper = type.getUpperBound();
 			}
 			if (allowCompound) {
-				if (lower == null || lower.tag == Javac.getCtcInt(TypeTags.class, "BOT")) {
+				if (lower == null || lower.tag == CTC_BOT) {
 					if (upper == null || upper.toString().equals("java.lang.Object")) {
 						return maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
 					}
@@ -513,23 +515,23 @@ public class JavacResolution {
 	private static JCExpression primitiveToJCTree(TypeKind kind, TreeMaker maker) throws TypeNotConvertibleException {
 		switch (kind) {
 		case BYTE:
-			return maker.TypeIdent(Javac.getCtcInt(TypeTags.class, "BYTE"));
+			return maker.TypeIdent(CTC_BYTE);
 		case CHAR:
-			return maker.TypeIdent(Javac.getCtcInt(TypeTags.class, "CHAR"));
+			return maker.TypeIdent(CTC_CHAR);
 		case SHORT:
-			return maker.TypeIdent(Javac.getCtcInt(TypeTags.class, "SHORT"));
+			return maker.TypeIdent(CTC_SHORT);
 		case INT:
-			return maker.TypeIdent(Javac.getCtcInt(TypeTags.class, "INT"));
+			return maker.TypeIdent(CTC_INT);
 		case LONG:
-			return maker.TypeIdent(Javac.getCtcInt(TypeTags.class, "LONG"));
+			return maker.TypeIdent(CTC_LONG);
 		case FLOAT:
-			return maker.TypeIdent(Javac.getCtcInt(TypeTags.class, "FLOAT"));
+			return maker.TypeIdent(CTC_FLOAT);
 		case DOUBLE:
-			return maker.TypeIdent(Javac.getCtcInt(TypeTags.class, "DOUBLE"));
+			return maker.TypeIdent(CTC_DOUBLE);
 		case BOOLEAN:
-			return maker.TypeIdent(Javac.getCtcInt(TypeTags.class, "BOOLEAN"));
+			return maker.TypeIdent(CTC_BOOLEAN);
 		case VOID:
-			return maker.TypeIdent(Javac.getCtcInt(TypeTags.class, "VOID"));
+			return maker.TypeIdent(CTC_VOID);
 		case NULL:
 		case NONE:
 		case OTHER:

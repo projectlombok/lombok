@@ -42,12 +42,10 @@ import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TransformationsUtil;
 import lombok.core.TypeResolver;
 import lombok.experimental.Accessors;
-import lombok.javac.Javac;
 import lombok.javac.JavacNode;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
@@ -891,7 +889,7 @@ public class JavacHandlerUtil {
 		JCExpression npe = chainDots(variable, "java", "lang", "NullPointerException");
 		JCTree exception = treeMaker.NewClass(null, List.<JCExpression>nil(), npe, List.<JCExpression>of(treeMaker.Literal(fieldName.toString())), null);
 		JCStatement throwStatement = treeMaker.Throw(exception);
-		return treeMaker.If(treeMaker.Binary(Javac.getCtcInt(JCTree.class, "EQ"), treeMaker.Ident(fieldName), treeMaker.Literal(Javac.getCtcInt(TypeTags.class, "BOT"), null)), throwStatement, null);
+		return treeMaker.If(treeMaker.Binary(CTC_EQUAL, treeMaker.Ident(fieldName), treeMaker.Literal(CTC_BOT, null)), throwStatement, null);
 	}
 	
 	/**

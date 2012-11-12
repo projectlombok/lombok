@@ -21,7 +21,7 @@
  */
 package lombok.eclipse;
 
-import static lombok.eclipse.handlers.EclipseHandlerUtil.isGenerated;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.io.PrintStream;
 import java.lang.reflect.Modifier;

@@ -1,6 +1,6 @@
 package lombok.eclipse.handlers;
 
-import static lombok.eclipse.handlers.EclipseHandlerUtil.setGeneratedBy;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import org.eclipse.jdt.internal.compiler.ASTVisitor;
 import org.eclipse.jdt.internal.compiler.ast.AND_AND_Expression;

@@ -21,7 +21,7 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.Javac.getCtcInt;
+import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.Collection;
@@ -240,7 +240,7 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		}
 		
 		JCNewClass newClass = maker.NewClass(null, List.<JCExpression>nil(), selfType, args.toList(), null);
-		JCExpression identityCheck = maker.Binary(getCtcInt(JCTree.class, "EQ"), createFieldAccessor(maker, field, FieldAccess.ALWAYS_FIELD), maker.Ident(fieldDecl.name));
+		JCExpression identityCheck = maker.Binary(CTC_EQUAL, createFieldAccessor(maker, field, FieldAccess.ALWAYS_FIELD), maker.Ident(fieldDecl.name));
 		JCConditional conditional = maker.Conditional(identityCheck, maker.Ident(field.toName("this")), newClass);
 		JCReturn returnStatement = maker.Return(conditional);
 		

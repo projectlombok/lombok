@@ -21,7 +21,7 @@
  */
 package lombok.eclipse;
 
-import static lombok.eclipse.Eclipse.toQualifiedName;
+import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.io.IOException;

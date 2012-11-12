@@ -42,7 +42,6 @@ import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -288,14 +287,14 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	private static final java.util.Map<Integer, String> TYPE_MAP;
 	static {
 		Map<Integer, String> m = new HashMap<Integer, String>();
-		m.put(getCtcInt(TypeTags.class, "INT"), "java.lang.Integer");
-		m.put(getCtcInt(TypeTags.class, "DOUBLE"), "java.lang.Double");
-		m.put(getCtcInt(TypeTags.class, "FLOAT"), "java.lang.Float");
-		m.put(getCtcInt(TypeTags.class, "SHORT"), "java.lang.Short");
-		m.put(getCtcInt(TypeTags.class, "BYTE"), "java.lang.Byte");
-		m.put(getCtcInt(TypeTags.class, "LONG"), "java.lang.Long");
-		m.put(getCtcInt(TypeTags.class, "BOOLEAN"), "java.lang.Boolean");
-		m.put(getCtcInt(TypeTags.class, "CHAR"), "java.lang.Character");
+		m.put(CTC_INT, "java.lang.Integer");
+		m.put(CTC_DOUBLE, "java.lang.Double");
+		m.put(CTC_FLOAT, "java.lang.Float");
+		m.put(CTC_SHORT, "java.lang.Short");
+		m.put(CTC_BYTE, "java.lang.Byte");
+		m.put(CTC_LONG, "java.lang.Long");
+		m.put(CTC_BOOLEAN, "java.lang.Boolean");
+		m.put(CTC_CHAR, "java.lang.Character");
 		TYPE_MAP = Collections.unmodifiableMap(m);
 	}
 	
@@ -361,7 +360,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 						innerIfStatements.append(statement);
 					}
 					
-					JCBinary isNull = maker.Binary(getCtcInt(JCTree.class, "EQ"), maker.Ident(valueName), maker.Literal(getCtcInt(TypeTags.class, "BOT"), null));
+					JCBinary isNull = maker.Binary(CTC_EQUAL, maker.Ident(valueName), maker.Literal(CTC_BOT, null));
 					JCIf ifStatement = maker.If(isNull, maker.Block(0, innerIfStatements.toList()), null);
 					synchronizedStatements.append(ifStatement);
 				}
@@ -369,7 +368,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 				synchronizedStatement = maker.Synchronized(createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD), maker.Block(0, synchronizedStatements.toList()));
 			}
 			
-			JCBinary isNull = maker.Binary(getCtcInt(JCTree.class, "EQ"), maker.Ident(valueName), maker.Literal(getCtcInt(TypeTags.class, "BOT"), null));
+			JCBinary isNull = maker.Binary(CTC_EQUAL, maker.Ident(valueName), maker.Literal(CTC_BOT, null));
 			JCIf ifStatement = maker.If(isNull, maker.Block(0, List.<JCStatement>of(synchronizedStatement)), null);
 			statements.append(ifStatement);
 		}

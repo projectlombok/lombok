@@ -21,7 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.eclipse.Eclipse.fromQualifiedName;
+import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;

@@ -21,7 +21,7 @@
  */
 package lombok.core;
 
-import static lombok.Lombok.sneakyThrow;
+import static lombok.Lombok.*;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;

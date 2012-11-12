@@ -21,7 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.eclipse.handlers.EclipseHandlerUtil.hasAnnotation;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import lombok.AccessLevel;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;

@@ -21,7 +21,7 @@
  */
 package lombok.eclipse;
 
-import static lombok.eclipse.handlers.EclipseHandlerUtil.error;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Field;
 

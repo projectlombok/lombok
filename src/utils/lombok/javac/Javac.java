@@ -23,6 +23,8 @@ package lombok.javac;
 
 import java.util.regex.Pattern;
 
+import com.sun.tools.javac.code.TypeTags;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
@@ -70,6 +72,26 @@ public class Javac {
 			return x;
 		} else return null;
 	}
+	
+	public static final int CTC_BOOLEAN = getCtcInt(TypeTags.class, "BOOLEAN");
+	public static final int CTC_INT = getCtcInt(TypeTags.class, "INT");
+	public static final int CTC_DOUBLE = getCtcInt(TypeTags.class, "DOUBLE");
+	public static final int CTC_FLOAT = getCtcInt(TypeTags.class, "FLOAT");
+	public static final int CTC_SHORT = getCtcInt(TypeTags.class, "SHORT");
+	public static final int CTC_BYTE = getCtcInt(TypeTags.class, "BYTE");
+	public static final int CTC_LONG = getCtcInt(TypeTags.class, "LONG");
+	public static final int CTC_CHAR = getCtcInt(TypeTags.class, "CHAR");
+	public static final int CTC_VOID = getCtcInt(TypeTags.class, "VOID");
+	public static final int CTC_NONE = getCtcInt(TypeTags.class, "NONE");
+	
+	public static final int CTC_NOT_EQUAL = getCtcInt(JCTree.class, "NE");
+	public static final int CTC_NOT = getCtcInt(JCTree.class, "NOT");
+	public static final int CTC_BITXOR = getCtcInt(JCTree.class, "BITXOR");
+	public static final int CTC_UNSIGNED_SHIFT_RIGHT = getCtcInt(JCTree.class, "USR");
+	public static final int CTC_MUL = getCtcInt(JCTree.class, "MUL");
+	public static final int CTC_PLUS = getCtcInt(JCTree.class, "PLUS");
+	public static final int CTC_BOT = getCtcInt(TypeTags.class, "BOT");
+	public static final int CTC_EQUAL = getCtcInt(JCTree.class, "EQ");
 	
 	/**
 	 * Retrieves a compile time constant of type int from the specified class location.
