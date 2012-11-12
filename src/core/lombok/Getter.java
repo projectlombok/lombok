@@ -55,7 +55,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 public @interface Getter {
 	/**
-	 * If you want your setter to be non-public, you can specify an alternate access level here.
+	 * If you want your getter to be non-public, you can specify an alternate access level here.
 	 */
 	lombok.AccessLevel value() default lombok.AccessLevel.PUBLIC;
 	
