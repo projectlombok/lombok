@@ -27,6 +27,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 /**
  * Causes lombok to generate a logger field.
+ * <p>
+ * Complete documentation is found at <a href="http://projectlombok.org/features/Log.html">the project lombok features page for lombok log annotations</a>.
+ * <p>
  * Example:
  * <pre>
  * &#64;XSlf4j

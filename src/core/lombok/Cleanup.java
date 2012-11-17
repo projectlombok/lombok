@@ -31,6 +31,8 @@ import java.lang.annotation.Target;
  * of what happens. Implemented by wrapping all statements following the local variable declaration to the
  * end of your scope into a try block that, as a finally action, closes the resource.
  * <p>
+ * Complete documentation is found at <a href="http://projectlombok.org/features/Cleanup.html">the project lombok features page for &#64;Cleanup</a>.
+ * <p>
  * Example:
  * <pre>
  * public void copyFile(String in, String out) throws IOException {
@@ -59,20 +61,13 @@ import java.lang.annotation.Target;
  *                 outStream.write(b, 0, r);
  *             }
  *         } finally {
- *             out.close();
+ *             if (out != null) out.close();
  *         }
  *     } finally {
- *         in.close();
+ *         if (in != null) in.close();
  *     }
  * }
  * </pre>
- * 
- * Note that the final close method call, if it throws an exception, will overwrite any exception thrown
- * in the main body of the generated try block. You should NOT rely on this behaviour - future versions of
- * lombok intend to silently swallow any exception thrown by the cleanup method <i>_IF</i> the main body
- * throws an exception as well, as the earlier exception is usually far more useful.
- * <p>
- * However, in java 1.6, generating the code to do this is prohibitively complicated.
  */
 @Target(ElementType.LOCAL_VARIABLE)
 @Retention(RetentionPolicy.SOURCE)

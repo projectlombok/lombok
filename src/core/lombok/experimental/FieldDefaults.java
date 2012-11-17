@@ -30,12 +30,13 @@ import lombok.AccessLevel;
 
 /**
  * Adds modifiers to each field in the type with this annotation.
+ * <p>
+ * Complete documentation is found at <a href="http://projectlombok.org/features/experimental/FieldDefaults.html">the project lombok features page for &#64;FieldDefaults</a>.
+ * <p>
  * If {@code makeFinal} is {@code true}, then each field that is not annotated with {@code @NonFinal} will have the {@code final} modifier added.
  * <p>
  * If {@code level} is set, then each field that is package private (i.e. no access modifier) and does not have the {@code @PackagePrivate} annotation will
  * have the appropriate access level modifier added.
- * <p>
- * The only fields that are skipped are those that start with a '$'; everything else, including static, volatile, and transient fields, are modified.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)

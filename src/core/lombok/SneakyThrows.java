@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,21 +34,7 @@ import java.lang.annotation.Target;
  * checked exception types. The JVM does not check for the consistency of the checked exception system; javac does,
  * and this annotation lets you opt out of its mechanism.
  * <p>
- * You should use this annotation ONLY in the following two cases:<ol>
- * <li>You are certain the listed exception can't actually ever happen, or only in vanishingly rare situations.
- * You don't try to catch OutOfMemoryError on every statement either. Examples:<br>
- * {@code IOException} in {@code ByteArrayOutputStream}<br>
- * {@code UnsupportedEncodingException} in new String(byteArray, "UTF-8").</li>
- * <li>You know for certain the caller can handle the exception (for example, because the caller is
- * an app manager that will handle all throwables that fall out of your method the same way), but due
- * to interface restrictions you can't just add these exceptions to your 'throws' clause.
- * <p>
- * Note that, as SneakyThrow is an implementation detail and <i>NOT</i> part of your method signature, it is
- * a compile time error if none of the statements in your method body can throw a listed exception.
- * <p>
- * <b><i>WARNING: </b></i>You must have lombok.jar available at the runtime of your app if you use SneakyThrows,
- * because your code is rewritten to use {@link Lombok#sneakyThrow(Throwable)}. 
- * <p>
+ * Complete documentation is found at <a href="http://projectlombok.org/features/SneakyThrows.html">the project lombok features page for &#64;SneakyThrows</a>.
  * <p>
  * Example:
  * <pre>
@@ -58,10 +44,17 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * 
- * {@code @SneakyThrows} without a parameter defaults to allowing <i>every</i> checked exception.
- * (The default is {@code Throwable.class}).
- * 
- * @see Lombok#sneakyThrow(Throwable)
+ * Becomes:
+ * <pre>
+ * public void utf8ToString(byte[] bytes) {
+ *     try {
+ *         return new String(bytes, "UTF-8");
+ *     } catch (UnsupportedEncodingException $uniqueName) {
+ *         throw useMagicTrickeryToHideThisFromTheCompiler($uniqueName);
+ *         // This trickery involves a bytecode transformer run automatically during the final stages of compilation;
+ *         // there is no runtime dependency on lombok.
+ *     }
+ * </pre>
  */
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @Retention(RetentionPolicy.SOURCE)

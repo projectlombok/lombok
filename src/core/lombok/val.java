@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Project Lombok Authors.
+ * Copyright (C) 2010-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,9 @@ package lombok;
  * Use {@code val} as the type of any local variable declaration (even in a for-each statement), and the type will be inferred from the initializing expression.
  * For example: {@code val x = 10.0;} will infer {@code double}, and {@code val y = new ArrayList<String>();} will infer {@code ArrayList<String>}. The local variable
  * will also be made final.
- * 
- * Note that this is an interface because {@code val x = 10;} will be desugared to {@code &#64;val int x = 10;}
+ * <p>
+ * Note that this is an annotation type because {@code val x = 10;} will be desugared to {@code @val final int x = 10;}
+ * <p>
+ * Complete documentation is found at <a href="http://projectlombok.org/features/val.html">the project lombok features page for &#64;val</a>.
  */
 public @interface val {}

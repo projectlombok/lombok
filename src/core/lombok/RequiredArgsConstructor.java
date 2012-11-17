@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The Project Lombok Authors.
+ * Copyright (C) 2010-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,11 @@ import java.lang.annotation.Target;
 /**
  * Generates a constructor with required arguments.
  * Required arguments are final fields and fields with constraints such as {@code @NonNull}.
- *  
+ * <p>
+ * Complete documentation is found at <a href="http://projectlombok.org/features/Constructor.html">the project lombok features page for &#64;Constructor</a>.
+ * <p>
+ * Even though it is not listed, this annotation also has the {@code onConstructor} parameter. See the full documentation for more details.
+ * 
  * @see NoArgsConstructor
  * @see AllArgsConstructor
  */

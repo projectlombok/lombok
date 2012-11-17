@@ -31,6 +31,9 @@ import java.lang.annotation.*;
  * otherwise modifying the original type. Extension methods are a special kind of static method, but they are called as
  * if they were instance methods on the extended type.
  * <p>
+ * Complete documentation is found at <a href="http://projectlombok.org/features/experimental/ExtensionMethod.html">the project lombok features page for &#64;ExtensionMethod</a>.
+ * <p>
+ * <p>
  * Before:
  * 
  * <pre>

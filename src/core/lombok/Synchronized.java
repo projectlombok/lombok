@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,8 @@ import java.lang.annotation.Target;
  * For non-static methods, a field named {@code $lock} is used, and for static methods,
  * {@code $LOCK} is used. These will be generated if needed and if they aren't already present. The contents
  * of the fields will be serializable.
+ * <p>
+ * Complete documentation is found at <a href="http://projectlombok.org/features/Synchronized.html">the project lombok features page for &#64;Synchronized</a>.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.SOURCE)

@@ -28,7 +28,11 @@ import java.lang.annotation.Target;
 
 /**
  * Put on any field to make lombok build a standard getter.
- * 
+ * <p>
+ * Complete documentation is found at <a href="http://projectlombok.org/features/GetterSetter.html">the project lombok features page for &#64;Getter and &#64;Setter</a>.
+ * <p>
+ * Even though it is not listed, this annotation also has the {@code onMethod} parameter. See the full documentation for more details.
+ * <p>
  * Example:
  * <pre>
  *     private &#64;Getter int foo;
@@ -41,12 +45,6 @@ import java.lang.annotation.Target;
  *         return this.foo;
  *     }
  * </pre>
- * 
- * Note that fields of type {@code boolean} (but not {@code java.lang.Boolean}) will result in an
- * {@code isFoo} name instead of {@code getFoo}.
- * <p>
- * If any method named {@code getFoo}/{@code isFoo} (case insensitive) exists, regardless of return type or parameters,
- * no method is generated, and instead a compiler warning is emitted.
  * <p>
  * This annotation can also be applied to a class, in which case it'll be as if all non-static fields that don't already have
  * a {@code @Getter} annotation have the annotation.

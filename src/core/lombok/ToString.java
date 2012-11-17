@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 The Project Lombok Authors.
+ * Copyright (C) 2009-2012 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,28 +27,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Generates an implementation for the {@code toString} method inherited by all objects.
+ * Generates an implementation for the {@code toString} method inherited by all objects, consisting of printing the values of relevant fields.
  * <p>
- * If the method already exists, then {@code ToString} will not generate any method, and instead warns
- * that it's doing nothing at all. The parameter list and return type are not relevant when deciding to skip generation of
- * the method; any method named {@code toString} will make {@code ToString} not generate anything.
- * <p>
- * By default, all fields that are non-static are used in the toString generation. You can exclude fields by specifying them
- * in the {@code exclude} parameter. You can also explicitly specify the fields that
- * are to be used by specifying them in the {@code of} parameter.
- * <p>
- * Array fields are handled by way of {@link java.util.Arrays#deepToString(Object[])} where necessary.
- * The downside is that arrays with circular references (arrays that contain themselves,
- * possibly indirectly) results in calls to {@code toString} throwing a
- * {@link java.lang.StackOverflowError}. However, the implementations for java's own {@link java.util.ArrayList} suffer
- * from the same flaw.
- * <p>
- * The {@code toString} method that is generated will print the class name as well as each field (both the name
- * and the value). You can optionally choose to suppress the printing of the field name, by setting the
- * {@code includeFieldNames} flag to <em>false</em>.
- * <p>
- * You can also choose to include the result of {@code toString} in your class's superclass by setting the
- * {@code callSuper} to <em>true</em>.
+ * Complete documentation is found at <a href="http://projectlombok.org/features/ToString.html">the project lombok features page for &#64;ToString</a>.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
