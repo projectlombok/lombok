@@ -646,7 +646,7 @@ public class JavacHandlerUtil {
 	/**
 	 * Returns the type of the field, unless a getter exists for this field, in which case the return type of the getter is returned.
 	 * 
-	 * @see #createFieldAccessor(TreeMaker, JavacNode)
+	 * @see #createFieldAccessor(TreeMaker, JavacNode, FieldAccess)
 	 */
 	static JCExpression getFieldType(JavacNode field, FieldAccess fieldAccess) {
 		boolean lookForGetter = lookForGetter(field, fieldAccess);

@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v0.11.7 (Edgy Guinea Pig)
+* FEATURE: Reintroduced `onMethod`, `onConstructor` and `onParam` to `@Getter`, `@Setter`, `@Wither`, and `@XArgsConstructor`. These parameters allow you to add annotations to the methods/constructors that lombok will generate. This is a workaround feature: The stability of the feature on future versions of javac is not guaranteed, and if a better way to implement this feature is found, this feature's current incarnation will be removed without a reasonable period of deprecation. [Documentation on the onX feature](http://projectlombok.org/feature/onX.html)
+
 ### v0.11.6 (October 30th, 2012)
 * FEATURE: Lombok can be disabled entirely for any given compile run by using JVM switch `-Dlombok.disable`. This might be useful for code style checkers and such.
 * FEATURE: Added support for Slf4j extended logger [Issue #421](http://code.google.com/p/projectlombok/issues/detail?id=421)

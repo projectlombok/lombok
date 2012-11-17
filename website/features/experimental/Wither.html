@@ -44,6 +44,8 @@
 				Like <a href="../GetterSetter.html"><code>@Setter</code></a>, you can specify an access level in case you want the generated wither to be something other than <code>public</code>:<br />
 				<code>@Wither(level = AccessLevel.PROTECTED)</code>. Also like <a href="../GetterSetter.html"><code>@Setter</code></a>, you can also put a <code>@Wither</code> annotation on a type, which means
 				a 'wither' is generated for each field (even non-final fields).
+			</p><p>
+				To put annotations on the generated method, you can use <code>onMethod={@AnnotationsHere}</code>; to put annotations on the only parameter of this method, you can use <code>onParam={@AnnotationsHere}</code>. For more details see the documentation on the <a href="onX.html">onX</a> feature.
 			</p>
 		</div>
 		<div class="snippets">
