@@ -1245,7 +1245,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
             int ownprec = TreeInfo.opPrec(getTag(tree));
             String opname = operatorName(getTag(tree));
             open(prec, ownprec);
-            if (getTag(tree) <= JCTree.PREDEC) {
+            if (getTag(tree) <= Javac.getCtcInt(JCTree.class, "PREDEC")) {
                 print(opname);
                 printExpr(tree.arg, ownprec);
             } else {
