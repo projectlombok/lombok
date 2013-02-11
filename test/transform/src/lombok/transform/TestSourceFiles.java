@@ -28,19 +28,23 @@ import lombok.DirectoryRunner;
 import org.junit.runner.RunWith;
 
 @RunWith(DirectoryRunner.class)
-public class TestSourceFiles implements DirectoryRunner.TestParams {
+public class TestSourceFiles extends DirectoryRunner.TestParams {
+	@Override
 	public DirectoryRunner.Compiler getCompiler() {
 		return DirectoryRunner.Compiler.DELOMBOK;
 	}
 	
+	@Override
 	public boolean printErrors() {
 		return true;
 	}
 	
+	@Override
 	public File getBeforeDirectory() {
 		return new File("test/pretty/resource/before");
 	}
 	
+	@Override
 	public File getAfterDirectory() {
 		return new File("test/pretty/resource/after");
 	}

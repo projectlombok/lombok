@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,5 +57,19 @@ public @interface Getter {
 	 */
 	lombok.AccessLevel value() default lombok.AccessLevel.PUBLIC;
 	
+	/**
+	 * Any annotations listed here are put on the generated method. The syntax for this feature is: {@code @Getter(onMethod=@_({@AnnotationsGoHere}))}
+	 */
+	AnyAnnotation[] onMethod() default @AnyAnnotation;
+	
 	boolean lazy() default false;
+	
+	/**
+	  * Placeholder annotation to enable the placement of annotations on the generated code.
+	  * @deprecated Don't use this annotation, ever - Read the documentation.
+	  */
+	@Deprecated
+	@Retention(RetentionPolicy.SOURCE)
+	@Target({})
+	@interface AnyAnnotation {}
 }

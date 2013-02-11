@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,8 +63,8 @@ import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
-import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
+import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
@@ -920,33 +920,77 @@ public class JavacHandlerUtil {
 		return problematic.toList();
 	}
 	
-	static List<JCExpression> getAndRemoveAnnotationParameter(JCAnnotation ast, String parameterName) {
+	static List<JCAnnotation> unboxAndRemoveAnnotationParameter(JCAnnotation ast, String parameterName, String errorName, JavacNode errorNode) {
 		ListBuffer<JCExpression> params = ListBuffer.lb();
-		List<JCExpression> result = List.nil();
+		ListBuffer<JCAnnotation> result = ListBuffer.lb();
 		
+		errorNode.removeDeferredErrors();
+		
+		outer:
 		for (JCExpression param : ast.args) {
+			String nameOfParam = "value";
+			JCExpression valueOfParam = null;
 			if (param instanceof JCAssign) {
 				JCAssign assign = (JCAssign) param;
 				if (assign.lhs instanceof JCIdent) {
 					JCIdent ident = (JCIdent) assign.lhs;
-					if (parameterName.equals(ident.name.toString())) {
-						if (assign.rhs instanceof JCNewArray) {
-							result = ((JCNewArray) assign.rhs).elems;
-						} else {
-							result = result.append(assign.rhs);
-						}
-						continue;
-					}
+					nameOfParam = ident.name.toString();
 				}
+				valueOfParam = assign.rhs;
 			}
 			
-			params.append(param);
+			if (!parameterName.equals(nameOfParam)) {
+				params.append(param);
+				continue outer;
+			}
+			
+			if (valueOfParam instanceof JCAnnotation) {
+				String dummyAnnotationName = ((JCAnnotation) valueOfParam).annotationType.toString();
+				dummyAnnotationName = dummyAnnotationName.replace("_", "");
+				if (dummyAnnotationName.length() > 0) {
+					errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+					continue outer;
+				}
+				for (JCExpression expr : ((JCAnnotation) valueOfParam).args) {
+					if (expr instanceof JCAssign && ((JCAssign) expr).lhs instanceof JCIdent) {
+						JCIdent id = (JCIdent) ((JCAssign) expr).lhs;
+						if ("value".equals(id.name.toString())) {
+							expr = ((JCAssign) expr).rhs;
+						} else {
+							errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+							continue outer;
+						}
+					}
+					
+					if (expr instanceof JCAnnotation) {
+						result.append((JCAnnotation) expr);
+					} else if (expr instanceof JCNewArray) {
+						for (JCExpression expr2 : ((JCNewArray) expr).elems) {
+							if (expr2 instanceof JCAnnotation) {
+								result.append((JCAnnotation) expr2);
+							} else {
+								errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+								continue outer;
+							}
+						}
+					} else {
+						errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+						continue outer;
+					}
+				}
+			} else {
+				if (valueOfParam instanceof JCNewArray && ((JCNewArray) valueOfParam).elems.isEmpty()) {
+					// Then we just remove it and move on (it's onMethod={} for example).
+				} else {
+					errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+				}
+			}
 		}
 		ast.args = params.toList();
-		return result;
+		return result.toList();
 	}
 	
-	static List<JCAnnotation> copyAnnotations(List<JCExpression> in) {
+	static List<JCAnnotation> copyAnnotations(List<? extends JCExpression> in) {
 		ListBuffer<JCAnnotation> out = ListBuffer.lb();
 		for (JCExpression expr : in) {
 			if (!(expr instanceof JCAnnotation)) continue;

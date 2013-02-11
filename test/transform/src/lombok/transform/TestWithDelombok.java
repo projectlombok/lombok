@@ -28,7 +28,7 @@ import lombok.DirectoryRunner;
 import org.junit.runner.RunWith;
 
 @RunWith(DirectoryRunner.class)
-public class TestWithDelombok implements DirectoryRunner.TestParams {
+public class TestWithDelombok extends DirectoryRunner.TestParams {
 	@Override
 	public DirectoryRunner.Compiler getCompiler() {
 		return DirectoryRunner.Compiler.DELOMBOK;

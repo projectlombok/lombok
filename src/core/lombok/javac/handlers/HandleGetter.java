@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,8 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.handlers.JavacHandlerUtil.*;
 import static lombok.javac.Javac.*;
+import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -32,9 +32,9 @@ import java.util.Map;
 import lombok.AccessLevel;
 import lombok.Delegate;
 import lombok.Getter;
+import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
-import lombok.core.AST.Kind;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
@@ -43,7 +43,6 @@ import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -60,10 +59,11 @@ import com.sun.tools.javac.tree.JCTree.JCSynchronized;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
-import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
 /**
  * Handles the {@code lombok.Getter} annotation for javac.
@@ -123,8 +123,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 			//The annotation will make it happen, so we can skip it.
 			return;
 		}
-		
-		createGetterForField(level, fieldNode, fieldNode, false, lazy);
+		createGetterForField(level, fieldNode, fieldNode, false, lazy, List.<JCAnnotation>nil());
 	}
 	
 	@Override public void handle(AnnotationValues<Getter> annotation, JCAnnotation ast, JavacNode annotationNode) {
@@ -144,25 +143,30 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		if (node == null) return;
 		
+		List<JCAnnotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Getter(onMethod=", annotationNode);
+		
 		switch (node.getKind()) {
 		case FIELD:
-			createGetterForFields(level, fields, annotationNode, true, lazy);
+			createGetterForFields(level, fields, annotationNode, true, lazy, onMethod);
 			break;
 		case TYPE:
+			if (!onMethod.isEmpty()) {
+				annotationNode.addError("'onMethod' is not supported for @Getter on a type.");
+			}
 			if (lazy) annotationNode.addError("'lazy' is not supported for @Getter on a type.");
 			generateGetterForType(node, annotationNode, level, false);
 			break;
 		}
 	}
 	
-	private void createGetterForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists, boolean lazy) {
+	private void createGetterForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists, boolean lazy, List<JCAnnotation> onMethod) {
 		for (JavacNode fieldNode : fieldNodes) {
-			createGetterForField(level, fieldNode, errorNode, whineIfExists, lazy);
+			createGetterForField(level, fieldNode, errorNode, whineIfExists, lazy, onMethod);
 		}
 	}
 	
 	private void createGetterForField(AccessLevel level,
-			JavacNode fieldNode, JavacNode source, boolean whineIfExists, boolean lazy) {
+			JavacNode fieldNode, JavacNode source, boolean whineIfExists, boolean lazy, List<JCAnnotation> onMethod) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			source.addError("@Getter is only supported on a class or a field.");
 			return;
@@ -208,10 +212,10 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
 		
-		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker(), lazy, source.get()));
+		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker(), source.get(), lazy, onMethod));
 	}
 	
-	private JCMethodDecl createGetter(long access, JavacNode field, TreeMaker treeMaker, boolean lazy, JCTree source) {
+	private JCMethodDecl createGetter(long access, JavacNode field, TreeMaker treeMaker, JCTree source, boolean lazy, List<JCAnnotation> onMethod) {
 		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
 		
 		// Remember the type; lazy will change it
@@ -240,7 +244,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		List<JCAnnotation> delegates = findDelegatesAndRemoveFromField(field);
 		
-		List<JCAnnotation> annsOnMethod = nonNulls.appendList(nullables);
+		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod).appendList(nonNulls).appendList(nullables);
 		if (isFieldDeprecated(field)) {
 			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(chainDots(field, "java", "lang", "Deprecated"), List.<JCExpression>nil()));
 		}

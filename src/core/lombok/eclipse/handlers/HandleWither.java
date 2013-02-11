@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Project Lombok Authors.
+ * Copyright (C) 2012-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import lombok.AccessLevel;
@@ -114,7 +115,8 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 			}
 		}
 		
-		createWitherForField(level, fieldNode, fieldNode, pos, false);
+		List<Annotation> empty = Collections.emptyList();
+		createWitherForField(level, fieldNode, fieldNode, pos, false, empty, empty);
 	}
 	
 	@Override public void handle(AnnotationValues<Wither> annotation, Annotation ast, EclipseNode annotationNode) {
@@ -122,24 +124,35 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		AccessLevel level = annotation.getInstance().value();
 		if (level == AccessLevel.NONE || node == null) return;
 		
+		List<Annotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Setter(onMethod=", annotationNode);
+		List<Annotation> onParam = unboxAndRemoveAnnotationParameter(ast, "onParam", "@Setter(onParam=", annotationNode);
+		
 		switch (node.getKind()) {
 		case FIELD:
-			createWitherForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true);
+			createWitherForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true, onMethod, onParam);
 			break;
 		case TYPE:
+			if (!onMethod.isEmpty()) {
+				annotationNode.addError("'onMethod' is not supported for @Wither on a type.");
+			}
+			if (!onParam.isEmpty()) {
+				annotationNode.addError("'onParam' is not supported for @Wither on a type.");
+			}
 			generateWitherForType(node, annotationNode, level, false);
 			break;
 		}
 	}
 	
-	private void createWitherForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists) {
+	private void createWitherForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam) {
 		for (EclipseNode fieldNode : fieldNodes) {
-			createWitherForField(level, fieldNode, errorNode, source, whineIfExists);
+			createWitherForField(level, fieldNode, errorNode, source, whineIfExists, onMethod, onParam);
 		}
 	}
 	
-	private void createWitherForField(AccessLevel level,
-			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists) {
+	private void createWitherForField(
+			AccessLevel level, EclipseNode fieldNode, EclipseNode errorNode,
+			ASTNode source, boolean whineIfExists, List<Annotation> onMethod,
+			List<Annotation> onParam) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			errorNode.addError("@Wither is only supported on a class or a field.");
 			return;
@@ -190,11 +203,11 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		
 		int modifier = toEclipseModifier(level);
 		
-		MethodDeclaration method = createWither((TypeDeclaration) fieldNode.up().get(), fieldNode, witherName, modifier, source);
+		MethodDeclaration method = createWither((TypeDeclaration) fieldNode.up().get(), fieldNode, witherName, modifier, source, onMethod, onParam);
 		injectMethod(fieldNode.up(), method);
 	}
 	
-	private MethodDeclaration createWither(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, ASTNode source) {
+	private MethodDeclaration createWither(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, ASTNode source, List<Annotation> onMethod, List<Annotation> onParam) {
 		if (name == null) return null;
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		int pS = source.sourceStart, pE = source.sourceEnd;
@@ -204,8 +217,13 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		method.returnType = cloneSelfType(fieldNode, source);
 		if (method.returnType == null) return null;
 		
+		Annotation[] deprecated = null;
 		if (isFieldDeprecated(fieldNode)) {
-			method.annotations = new Annotation[] { generateDeprecatedAnnotation(source) };
+			deprecated = new Annotation[] { generateDeprecatedAnnotation(source) };
+		}
+		Annotation[] copiedAnnotations = copyAnnotations(source, onMethod.toArray(new Annotation[0]), deprecated);
+		if (copiedAnnotations.length != 0) {
+			method.annotations = copiedAnnotations;
 		}
 		Argument param = new Argument(field.name, p, copyType(field.type, source), Modifier.FINAL);
 		param.sourceStart = pS; param.sourceEnd = pE;
@@ -259,8 +277,9 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		
 		method.statements = statements.toArray(new Statement[0]);
 		
-		Annotation[] copiedAnnotations = copyAnnotations(source, nonNulls, nullables);
-		if (copiedAnnotations.length != 0) param.annotations = copiedAnnotations;
+		Annotation[] copiedAnnotationsParam = copyAnnotations(source, nonNulls, nullables, onParam.toArray(new Annotation[0]));
+		if (copiedAnnotationsParam.length != 0) param.annotations = copiedAnnotationsParam;
+		
 		method.traverse(new SetGeneratedByVisitor(source), parent.scope);
 		return method;
 	}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -473,7 +473,7 @@ public class EclipseHandlerUtil {
 			}
 		}
 		if (allNull) return null;
-		return result.toArray(EMPTY_ANNOTATION_ARRAY);
+		return result.toArray(new Annotation[0]);
 	}
 	
 	public static boolean hasAnnotation(Class<? extends java.lang.annotation.Annotation> type, EclipseNode node) {
@@ -1492,40 +1492,102 @@ public class EclipseHandlerUtil {
 		intLiteralFactoryMethod = intLiteralFactoryMethod_;
 	}
 	
-	private static final Annotation[] EMPTY_ANNOTATION_ARRAY = new Annotation[0];
-	static Annotation[] getAndRemoveAnnotationParameter(Annotation annotation, String annotationName) {
+	private static boolean isAllUnderscores(char[] in) {
+		if (in == null || in.length == 0) return false;
+		for (char c : in) if (c != '_') return false;
+		return true;
+	}
+	
+	static List<Annotation> unboxAndRemoveAnnotationParameter(Annotation annotation, String annotationName, String errorName, EclipseNode errorNode) {
+		if ("value".equals(annotationName)) {
+			// We can't unbox this, because SingleMemberAnnotation REQUIRES a value, and this method
+			// is supposed to remove the value. That means we need to replace the SMA with either
+			// MarkerAnnotation or NormalAnnotation and that is beyond the scope of this method as we
+			// don't need that at the time of writing this method; we only unbox onMethod, onParameter
+			// and onConstructor. Let's exit early and very obviously:
+			throw new UnsupportedOperationException("Lombok cannot unbox 'value' from SingleMemberAnnotation at this time.");
+		}
+		if (!NormalAnnotation.class.equals(annotation.getClass())) {
+			// Prevent MarkerAnnotation, SingleMemberAnnotation, and
+			// CompletionOnAnnotationMemberValuePair from triggering this handler.
+			return Collections.emptyList();
+		}
 		
-		List<Annotation> result = new ArrayList<Annotation>();
-		if (annotation instanceof NormalAnnotation) {
-			NormalAnnotation normalAnnotation = (NormalAnnotation)annotation;
-			MemberValuePair[] memberValuePairs = normalAnnotation.memberValuePairs;
-			List<MemberValuePair> pairs = new ArrayList<MemberValuePair>();
-			if (memberValuePairs != null) for (MemberValuePair memberValuePair : memberValuePairs) {
-				if (annotationName.equals(new String(memberValuePair.name))) {
-					Expression value = memberValuePair.value;
-					if (value instanceof ArrayInitializer) {
-						ArrayInitializer array = (ArrayInitializer) value;
-						for(Expression expression : array.expressions) {
-							if (expression instanceof Annotation) {
-								result.add((Annotation)expression);
-							}
-						}
-					}
-					else if (value instanceof Annotation) {
-						result.add((Annotation)value);
-					}
-					continue;
-				}
-				pairs.add(memberValuePair);
+		NormalAnnotation normalAnnotation = (NormalAnnotation) annotation;
+		MemberValuePair[] pairs = normalAnnotation.memberValuePairs;
+		
+		if (pairs == null) return Collections.emptyList();
+		
+		char[] nameAsCharArray = annotationName.toCharArray();
+		
+		for (int i = 0; i < pairs.length; i++) {
+			if (pairs[i].name == null || !Arrays.equals(nameAsCharArray, pairs[i].name)) continue;
+			Expression value = pairs[i].value;
+			MemberValuePair[] newPairs = new MemberValuePair[pairs.length - 1];
+			if (i > 0) System.arraycopy(pairs, 0, newPairs, 0, i);
+			if (i < pairs.length - 1) System.arraycopy(pairs, i + 1, newPairs, i, pairs.length - i - 1);
+			normalAnnotation.memberValuePairs = newPairs;
+			// We have now removed the annotation parameter and stored '@_({... annotations ...})',
+			// which we must now unbox.
+			if (!(value instanceof Annotation)) {
+				errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+				return Collections.emptyList();
 			}
 			
-			if (!result.isEmpty()) {
-				normalAnnotation.memberValuePairs = pairs.isEmpty() ? null : pairs.toArray(new MemberValuePair[0]);
-				return result.toArray(EMPTY_ANNOTATION_ARRAY);
+			Annotation atUnderscore = (Annotation) value;
+			if (!(atUnderscore.type instanceof SingleTypeReference) ||
+					!isAllUnderscores(((SingleTypeReference) atUnderscore.type).token)) {
+				errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+				return Collections.emptyList();
+			}
+			
+			if (atUnderscore instanceof MarkerAnnotation) {
+				// It's @getter(onMethod=@_). This is weird, but fine.
+				return Collections.emptyList();
+			}
+			
+			Expression content = null;
+			
+			if (atUnderscore instanceof NormalAnnotation) {
+				MemberValuePair[] mvps = ((NormalAnnotation) atUnderscore).memberValuePairs;
+				if (mvps == null || mvps.length == 0) {
+					// It's @getter(onMethod=@_()). This is weird, but fine.
+					return Collections.emptyList();
+				}
+				if (mvps.length == 1 && Arrays.equals("value".toCharArray(), mvps[0].name)) {
+					content = mvps[0].value;
+				}
+			}
+			
+			if (atUnderscore instanceof SingleMemberAnnotation) {
+				content = ((SingleMemberAnnotation) atUnderscore).memberValue;
+			}
+			
+			if (content == null) {
+				errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+				return Collections.emptyList();
+			}
+			
+			if (content instanceof Annotation) {
+				return Collections.singletonList((Annotation) content);
+			} else if (content instanceof ArrayInitializer) {
+				Expression[] expressions = ((ArrayInitializer) content).expressions;
+				List<Annotation> result = new ArrayList<Annotation>();
+				if (expressions != null) for (Expression ex : expressions) {
+					if (ex instanceof Annotation) result.add((Annotation) ex);
+					else {
+						errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+						return Collections.emptyList();
+					}
+				}
+				return result;
+			} else {
+				errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+				return Collections.emptyList();
 			}
 		}
 		
-		return EMPTY_ANNOTATION_ARRAY;
+		return Collections.emptyList();
 	}
 	
 	static NameReference createNameReference(String name, Annotation source) {

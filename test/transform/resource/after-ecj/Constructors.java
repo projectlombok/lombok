@@ -25,6 +25,14 @@
     return new RequiredArgsConstructorStaticName(x);
   }
 }
+@lombok.RequiredArgsConstructor() class RequiredArgsConstructorWithAnnotations {
+  final int x;
+  String name;
+  public @Deprecated @java.beans.ConstructorProperties({"x"}) @java.lang.SuppressWarnings("all") RequiredArgsConstructorWithAnnotations(final int x) {
+    super();
+    this.x = x;
+  }
+}
 @lombok.AllArgsConstructor class AllArgsConstructor1 {
   final int x;
   String name;

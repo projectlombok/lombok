@@ -28,6 +28,16 @@ class RequiredArgsConstructorStaticName {
 		return new RequiredArgsConstructorStaticName(x);
 	}
 }
+class RequiredArgsConstructorWithAnnotations {
+	final int x;
+	String name;
+	@java.beans.ConstructorProperties({"x"})
+	@Deprecated
+	@java.lang.SuppressWarnings("all")
+	public RequiredArgsConstructorWithAnnotations(final int x) {
+		this.x = x;
+	}
+}
 class AllArgsConstructor1 {
 	final int x;
 	String name;

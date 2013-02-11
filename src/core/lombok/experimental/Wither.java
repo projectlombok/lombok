@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Project Lombok Authors.
+ * Copyright (C) 2012-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,4 +58,23 @@ public @interface Wither {
 	 * If you want your wither to be non-public, you can specify an alternate access level here.
 	 */
 	AccessLevel value() default AccessLevel.PUBLIC;
+	
+	/**
+	 * Any annotations listed here are put on the generated method. The syntax for this feature is: {@code @Setter(onMethod=@_({@AnnotationsGoHere}))}
+	 */
+	AnyAnnotation[] onMethod() default {};
+	
+	/**
+	 * Any annotations listed here are put on the generated method's parameter. The syntax for this feature is: {@code @Setter(onParam=@_({@AnnotationsGoHere}))}
+	 */
+	AnyAnnotation[] onParam() default {};
+	
+	/**
+	  * Placeholder annotation to enable the placement of annotations on the generated code.
+	  * @deprecated Don't use this annotation, ever - Read the documentation.
+	  */
+	@Deprecated
+	@Retention(RetentionPolicy.SOURCE)
+	@Target({})
+	@interface AnyAnnotation {}
 }

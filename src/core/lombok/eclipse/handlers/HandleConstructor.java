@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The Project Lombok Authors.
+ * Copyright (C) 2010-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,7 +79,10 @@ public class HandleConstructor {
 			String staticName = ann.staticName();
 			if (level == AccessLevel.NONE) return;
 			List<EclipseNode> fields = new ArrayList<EclipseNode>();
-			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, false, false, ast);
+			
+			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@NoArgsConstructor(onConstructor=", annotationNode);
+			
+			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, false, false, onConstructor, ast);
 		}
 	}
 	
@@ -94,7 +97,10 @@ public class HandleConstructor {
 			@SuppressWarnings("deprecation")
 			boolean suppressConstructorProperties = ann.suppressConstructorProperties();
 			if (level == AccessLevel.NONE) return;
-			new HandleConstructor().generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, false, suppressConstructorProperties, ast);
+			
+			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@RequiredArgsConstructor(onConstructor=", annotationNode);
+			
+			new HandleConstructor().generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, false, suppressConstructorProperties, onConstructor, ast);
 		}
 	}
 	
@@ -137,7 +143,10 @@ public class HandleConstructor {
 			@SuppressWarnings("deprecation")
 			boolean suppressConstructorProperties = ann.suppressConstructorProperties();
 			if (level == AccessLevel.NONE) return;
-			new HandleConstructor().generateConstructor(typeNode, level, findAllFields(typeNode), staticName, false, suppressConstructorProperties, ast);
+			
+			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@AllArgsConstructor(onConstructor=", annotationNode);
+			
+			new HandleConstructor().generateConstructor(typeNode, level, findAllFields(typeNode), staticName, false, suppressConstructorProperties, onConstructor, ast);
 		}
 	}
 	
@@ -155,15 +164,15 @@ public class HandleConstructor {
 		return true;
 	}
 	
-	public void generateRequiredArgsConstructor(EclipseNode typeNode, AccessLevel level, String staticName, boolean skipIfConstructorExists, ASTNode source) {
-		generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, skipIfConstructorExists, false, source);
+	public void generateRequiredArgsConstructor(EclipseNode typeNode, AccessLevel level, String staticName, boolean skipIfConstructorExists, List<Annotation> onConstructor, ASTNode source) {
+		generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, skipIfConstructorExists, false, onConstructor, source);
 	}
 	
-	public void generateAllArgsConstructor(EclipseNode typeNode, AccessLevel level, String staticName, boolean skipIfConstructorExists, ASTNode source) {
-		generateConstructor(typeNode, level, findAllFields(typeNode), staticName, skipIfConstructorExists, false, source);
+	public void generateAllArgsConstructor(EclipseNode typeNode, AccessLevel level, String staticName, boolean skipIfConstructorExists, List<Annotation> onConstructor, ASTNode source) {
+		generateConstructor(typeNode, level, findAllFields(typeNode), staticName, skipIfConstructorExists, false, onConstructor, source);
 	}
 	
-	public void generateConstructor(EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, String staticName, boolean skipIfConstructorExists, boolean suppressConstructorProperties, ASTNode source) {
+	public void generateConstructor(EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, String staticName, boolean skipIfConstructorExists, boolean suppressConstructorProperties, List<Annotation> onConstructor, ASTNode source) {
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
 		
 		if (skipIfConstructorExists && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) return;
@@ -187,7 +196,7 @@ public class HandleConstructor {
 			}
 		}
 		
-		ConstructorDeclaration constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields, suppressConstructorProperties, source);
+		ConstructorDeclaration constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields, suppressConstructorProperties, source, onConstructor);
 		injectMethod(typeNode, constr);
 		if (staticConstrRequired) {
 			MethodDeclaration staticConstr = createStaticConstructor(level, staticName, typeNode, fields, source);
@@ -196,8 +205,8 @@ public class HandleConstructor {
 	}
 	
 	private static final char[][] JAVA_BEANS_CONSTRUCTORPROPERTIES = new char[][] { "java".toCharArray(), "beans".toCharArray(), "ConstructorProperties".toCharArray() };
-	private static Annotation[] createConstructorProperties(ASTNode source, Annotation[] originalAnnotationArray, Collection<EclipseNode> fields) {
-		if (fields.isEmpty()) return originalAnnotationArray;
+	private static Annotation[] createConstructorProperties(ASTNode source, Collection<EclipseNode> fields) {
+		if (fields.isEmpty()) return null;
 		
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
@@ -223,14 +232,14 @@ public class HandleConstructor {
 		ann.memberValue = fieldNames;
 		setGeneratedBy(ann, source);
 		setGeneratedBy(ann.memberValue, source);
-		if (originalAnnotationArray == null) return new Annotation[] { ann };
-		Annotation[] newAnnotationArray = Arrays.copyOf(originalAnnotationArray, originalAnnotationArray.length + 1);
-		newAnnotationArray[originalAnnotationArray.length] = ann;
-		return newAnnotationArray;
+		return new Annotation[] { ann };
 	}
 	
-	private ConstructorDeclaration createConstructor(AccessLevel level,
-			EclipseNode type, Collection<EclipseNode> fields, boolean suppressConstructorProperties, ASTNode source) {
+	private ConstructorDeclaration createConstructor(
+			AccessLevel level, EclipseNode type, Collection<EclipseNode> fields,
+			boolean suppressConstructorProperties, ASTNode source, List<Annotation> onConstructor) {
+		
+		TypeDeclaration typeDeclaration = ((TypeDeclaration)type.get());
 		long p = (long)source.sourceStart << 32 | source.sourceEnd;
 		
 		boolean isEnum = (((TypeDeclaration)type.get()).modifiers & ClassFileConstants.AccEnum) != 0;
@@ -239,12 +248,10 @@ public class HandleConstructor {
 		
 		ConstructorDeclaration constructor = new ConstructorDeclaration(
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
-		setGeneratedBy(constructor, source);
 		
 		constructor.modifiers = toEclipseModifier(level);
-		constructor.selector = ((TypeDeclaration)type.get()).name;
+		constructor.selector = typeDeclaration.name;
 		constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
-		setGeneratedBy(constructor.constructorCall, source);
 		constructor.constructorCall.sourceStart = source.sourceStart;
 		constructor.constructorCall.sourceEnd = source.sourceEnd;
 		constructor.thrownExceptions = null;
@@ -261,19 +268,14 @@ public class HandleConstructor {
 		for (EclipseNode fieldNode : fields) {
 			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 			FieldReference thisX = new FieldReference(field.name, p);
-			setGeneratedBy(thisX, source);
 			thisX.receiver = new ThisReference((int)(p >> 32), (int)p);
-			setGeneratedBy(thisX.receiver, source);
 			
 			SingleNameReference assignmentNameRef = new SingleNameReference(field.name, p);
-			setGeneratedBy(assignmentNameRef, source);
 			Assignment assignment = new Assignment(thisX, assignmentNameRef, (int)p);
 			assignment.sourceStart = (int)(p >> 32); assignment.sourceEnd = assignment.statementEnd = (int)(p >> 32);
-			setGeneratedBy(assignment, source);
 			assigns.add(assignment);
 			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
 			Argument parameter = new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL);
-			setGeneratedBy(parameter, source);
 			Annotation[] nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
 			Annotation[] nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
 			if (nonNulls.length != 0) {
@@ -289,10 +291,19 @@ public class HandleConstructor {
 		constructor.statements = nullChecks.isEmpty() ? null : nullChecks.toArray(new Statement[nullChecks.size()]);
 		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[params.size()]);
 		
-		if (!suppressConstructorProperties && level != AccessLevel.PRIVATE && !isLocalType(type)) {
-			constructor.annotations = createConstructorProperties(source, constructor.annotations, fields);
+		/* Generate annotations that must  be put on the generated method, and attach them. */ {
+			Annotation[] constructorProperties = null;
+			if (!suppressConstructorProperties && level != AccessLevel.PRIVATE && !isLocalType(type)) {
+				constructorProperties = createConstructorProperties(source, fields);
+			}
+			
+			Annotation[] copiedAnnotations = copyAnnotations(source,
+					onConstructor.toArray(new Annotation[0]),
+					constructorProperties);
+			if (copiedAnnotations.length != 0) constructor.annotations = copiedAnnotations;
 		}
 		
+		constructor.traverse(new SetGeneratedByVisitor(source), typeDeclaration.scope);
 		return constructor;
 	}
 	
@@ -309,7 +320,6 @@ public class HandleConstructor {
 		
 		MethodDeclaration constructor = new MethodDeclaration(
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
-		setGeneratedBy(constructor, source);
 		
 		constructor.modifiers = toEclipseModifier(level) | Modifier.STATIC;
 		TypeDeclaration typeDecl = (TypeDeclaration) type.get();
@@ -323,7 +333,6 @@ public class HandleConstructor {
 			}
 			constructor.returnType = new ParameterizedSingleTypeReference(typeDecl.name, refs, 0, p);
 		} else constructor.returnType = new SingleTypeReference(((TypeDeclaration)type.get()).name, p);
-		setGeneratedBy(constructor.returnType, source);
 		constructor.annotations = null;
 		constructor.selector = name.toCharArray();
 		constructor.thrownExceptions = null;
@@ -336,18 +345,15 @@ public class HandleConstructor {
 		List<Expression> assigns = new ArrayList<Expression>();
 		AllocationExpression statement = new AllocationExpression();
 		statement.sourceStart = pS; statement.sourceEnd = pE;
-		setGeneratedBy(statement, source);
 		statement.type = copyType(constructor.returnType, source);
 		
 		for (EclipseNode fieldNode : fields) {
 			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
 			SingleNameReference nameRef = new SingleNameReference(field.name, fieldPos);
-			setGeneratedBy(nameRef, source);
 			assigns.add(nameRef);
 			
 			Argument parameter = new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL);
-			setGeneratedBy(parameter, source);
 
 			Annotation[] copiedAnnotations = copyAnnotations(source, findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN));
 			if (copiedAnnotations.length != 0) parameter.annotations = copiedAnnotations;
@@ -357,7 +363,8 @@ public class HandleConstructor {
 		statement.arguments = assigns.isEmpty() ? null : assigns.toArray(new Expression[assigns.size()]);
 		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[params.size()]);
 		constructor.statements = new Statement[] { new ReturnStatement(statement, (int)(p >> 32), (int)p) };
-		setGeneratedBy(constructor.statements[0], source);
+		
+		constructor.traverse(new SetGeneratedByVisitor(source), typeDecl.scope);
 		return constructor;
 	}
 }

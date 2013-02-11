@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Project Lombok Authors.
+ * Copyright (C) 2012-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,9 @@
 package lombok.eclipse.handlers;
 
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
+
+import java.util.Collections;
+
 import lombok.AccessLevel;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
@@ -76,6 +79,6 @@ public class HandleValue extends EclipseAnnotationHandler<Value> {
 		new HandleWither().generateWitherForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
 		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		new HandleToString().generateToStringForType(typeNode, annotationNode);
-		new HandleConstructor().generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, ann.staticConstructor(), true, ast);
+		new HandleConstructor().generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, ann.staticConstructor(), true, Collections.<Annotation>emptyList(), ast);
 	}
 }

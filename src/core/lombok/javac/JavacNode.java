@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -209,31 +209,35 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 		return ast.toName(name);
 	}
 	
+	public void removeDeferredErrors() {
+		ast.removeDeferredErrors(this);
+	}
+	
 	/**
 	 * Generates an compiler error focused on the AST node represented by this node object.
 	 */
 	@Override public void addError(String message) {
-		ast.printMessage(Diagnostic.Kind.ERROR, message, this, null);
+		ast.printMessage(Diagnostic.Kind.ERROR, message, this, null, true);
 	}
 	
 	/**
 	 * Generates an compiler error focused on the AST node represented by this node object.
 	 */
 	public void addError(String message, DiagnosticPosition pos) {
-		ast.printMessage(Diagnostic.Kind.ERROR, message, null, pos);
+		ast.printMessage(Diagnostic.Kind.ERROR, message, null, pos, true);
 	}
 	
 	/**
 	 * Generates a compiler warning focused on the AST node represented by this node object.
 	 */
 	@Override public void addWarning(String message) {
-		ast.printMessage(Diagnostic.Kind.WARNING, message, this, null);
+		ast.printMessage(Diagnostic.Kind.WARNING, message, this, null, false);
 	}
 	
 	/**
 	 * Generates a compiler warning focused on the AST node represented by this node object.
 	 */
 	public void addWarning(String message, DiagnosticPosition pos) {
-		ast.printMessage(Diagnostic.Kind.WARNING, message, null, pos);
+		ast.printMessage(Diagnostic.Kind.WARNING, message, null, pos, false);
 	}
 }

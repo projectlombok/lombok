@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 The Project Lombok Authors.
+ * Copyright (C) 2010-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,21 @@ public @interface NoArgsConstructor {
 	String staticName() default "";
 	
 	/**
+	 * Any annotations listed here are put on the generated constructor. The syntax for this feature is: {@code @NoArgsConstructor(onConstructor=@_({@AnnotationsGoHere}))}
+	 */
+	AnyAnnotation[] onConstructor() default {};
+	
+	/**
 	 * Sets the access level of the constructor. By default, generated constructors are {@code public}.
 	 */
 	AccessLevel access() default lombok.AccessLevel.PUBLIC;
+	
+	/**
+	  * Placeholder annotation to enable the placement of annotations on the generated code.
+	  * @deprecated Don't use this annotation, ever - Read the documentation.
+	  */
+	@Deprecated
+	@Retention(RetentionPolicy.SOURCE)
+	@Target({})
+	@interface AnyAnnotation {}
 }

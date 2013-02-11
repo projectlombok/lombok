@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -118,7 +118,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			return;
 		}
 		
-		createSetterForField(level, fieldNode, fieldNode, false);
+		createSetterForField(level, fieldNode, fieldNode, false, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
 	}
 	
 	@Override public void handle(AnnotationValues<Setter> annotation, JCAnnotation ast, JavacNode annotationNode) {
@@ -130,26 +130,28 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		
 		if (level == AccessLevel.NONE || node == null) return;
 		
+		List<JCAnnotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Setter(onMethod=", annotationNode);
+		List<JCAnnotation> onParam = unboxAndRemoveAnnotationParameter(ast, "onParam", "@Setter(onParam=", annotationNode);
+		
 		switch (node.getKind()) {
 		case FIELD:
-			createSetterForFields(level, fields, annotationNode, true);
+			createSetterForFields(level, fields, annotationNode, true, onMethod, onParam);
 			break;
 		case TYPE:
+			if (!onMethod.isEmpty()) annotationNode.addError("'onMethod' is not supported for @Setter on a type.");
+			if (!onParam.isEmpty()) annotationNode.addError("'onParam' is not supported for @Setter on a type.");
 			generateSetterForType(node, annotationNode, level, false);
 			break;
 		}
 	}
 	
-	private void createSetterForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists) {
-		
+	private void createSetterForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		for (JavacNode fieldNode : fieldNodes) {
-			createSetterForField(level, fieldNode, errorNode, whineIfExists);
+			createSetterForField(level, fieldNode, errorNode, whineIfExists, onMethod, onParam);
 		}
 	}
 	
-	private void createSetterForField(AccessLevel level,
-			JavacNode fieldNode, JavacNode source, boolean whineIfExists) {
-		
+	private void createSetterForField(AccessLevel level, JavacNode fieldNode, JavacNode source, boolean whineIfExists, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			fieldNode.addError("@Setter is only supported on a class or a field.");
 			return;
@@ -188,11 +190,11 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
 		
-		JCMethodDecl createdSetter = createSetter(access, fieldNode, fieldNode.getTreeMaker(), source.get());
+		JCMethodDecl createdSetter = createSetter(access, fieldNode, fieldNode.getTreeMaker(), source.get(), onMethod, onParam);
 		injectMethod(fieldNode.up(), createdSetter);
 	}
 	
-	private JCMethodDecl createSetter(long access, JavacNode field, TreeMaker treeMaker, JCTree source) {
+	private JCMethodDecl createSetter(long access, JavacNode field, TreeMaker treeMaker, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		String setterName = toSetterName(field);
 		boolean returnThis = shouldReturnThis(field);
 		if (setterName == null) return null;
@@ -207,7 +209,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		List<JCAnnotation> nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
 		
 		Name methodName = field.toName(setterName);
-		List<JCAnnotation> annsOnParam = nonNulls.appendList(nullables);
+		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(nonNulls).appendList(nullables);
 		
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(Flags.FINAL, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
 		
@@ -241,10 +243,11 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		List<JCExpression> throwsClauses = List.nil();
 		JCExpression annotationMethodDefaultValue = null;
 		
-		List<JCAnnotation> annsOnMethod = List.nil();
+		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod);
 		if (isFieldDeprecated(field)) {
 			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(chainDots(field, "java", "lang", "Deprecated"), List.<JCExpression>nil()));
 		}
+		
 		return recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
 	}

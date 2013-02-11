@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Project Lombok Authors.
+ * Copyright (C) 2012-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -109,16 +109,12 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 	 * @param pos The node responsible for generating the wither (the {@code @Value} or {@code @Wither} annotation).
 	 */
 	public void generateWitherForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level) {
-		for (JavacNode child : fieldNode.down()) {
-			if (child.getKind() == Kind.ANNOTATION) {
-				if (annotationTypeMatches(Wither.class, child)) {
-					//The annotation will make it happen, so we can skip it.
-					return;
-				}
-			}
+		if (hasAnnotation(Wither.class, fieldNode)) {
+			//The annotation will make it happen, so we can skip it.
+			return;
 		}
 		
-		createWitherForField(level, fieldNode, fieldNode, false);
+		createWitherForField(level, fieldNode, fieldNode, false, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
 	}
 	
 	@Override public void handle(AnnotationValues<Wither> annotation, JCAnnotation ast, JavacNode annotationNode) {
@@ -130,25 +126,28 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		
 		if (level == AccessLevel.NONE || node == null) return;
 		
+		List<JCAnnotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Setter(onMethod=", annotationNode);
+		List<JCAnnotation> onParam = unboxAndRemoveAnnotationParameter(ast, "onParam", "@Setter(onParam=", annotationNode);
+		
 		switch (node.getKind()) {
 		case FIELD:
-			createWitherForFields(level, fields, annotationNode, true);
+			createWitherForFields(level, fields, annotationNode, true, onMethod, onParam);
 			break;
 		case TYPE:
+			if (!onMethod.isEmpty()) annotationNode.addError("'onMethod' is not supported for @Wither on a type.");
+			if (!onParam.isEmpty()) annotationNode.addError("'onParam' is not supported for @Wither on a type.");
 			generateWitherForType(node, annotationNode, level, false);
 			break;
 		}
 	}
 	
-	private void createWitherForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists) {
+	private void createWitherForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		for (JavacNode fieldNode : fieldNodes) {
-			createWitherForField(level, fieldNode, errorNode, whineIfExists);
+			createWitherForField(level, fieldNode, errorNode, whineIfExists, onMethod, onParam);
 		}
 	}
 	
-	private void createWitherForField(AccessLevel level,
-			JavacNode fieldNode, JavacNode source, boolean whineIfExists) {
-		
+	private void createWitherForField(AccessLevel level, JavacNode fieldNode, JavacNode source, boolean whineIfExists, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			fieldNode.addError("@Wither is only supported on a class or a field.");
 			return;
@@ -197,11 +196,11 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		
 		long access = toJavacModifier(level);
 		
-		JCMethodDecl createdWither = createWither(access, fieldNode, fieldNode.getTreeMaker(), source.get());
+		JCMethodDecl createdWither = createWither(access, fieldNode, fieldNode.getTreeMaker(), source.get(), onMethod, onParam);
 		injectMethod(fieldNode.up(), createdWither);
 	}
 	
-	private JCMethodDecl createWither(long access, JavacNode field, TreeMaker treeMaker, JCTree source) {
+	private JCMethodDecl createWither(long access, JavacNode field, TreeMaker treeMaker, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		String witherName = toWitherName(field);
 		if (witherName == null) return null;
 		
@@ -212,7 +211,7 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		List<JCAnnotation> nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
 		
 		Name methodName = field.toName(witherName);
-		List<JCAnnotation> annsOnParam = nonNulls.appendList(nullables);
+		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(nonNulls).appendList(nullables);
 		
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(Flags.FINAL, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
 		
@@ -260,7 +259,8 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		List<JCExpression> throwsClauses = List.nil();
 		JCExpression annotationMethodDefaultValue = null;
 		
-		List<JCAnnotation> annsOnMethod = List.nil();
+		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod);
+		
 		if (isFieldDeprecated(field)) {
 			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(chainDots(field, "java", "lang", "Deprecated"), List.<JCExpression>nil()));
 		}

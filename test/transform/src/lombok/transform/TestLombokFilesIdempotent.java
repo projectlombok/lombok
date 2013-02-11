@@ -28,7 +28,7 @@ import lombok.DirectoryRunner;
 import org.junit.runner.RunWith;
 
 @RunWith(DirectoryRunner.class)
-public class TestLombokFilesIdempotent implements DirectoryRunner.TestParams {
+public class TestLombokFilesIdempotent extends DirectoryRunner.TestParams {
 	@Override
 	public File getBeforeDirectory() {
 		return getAfterDirectory();

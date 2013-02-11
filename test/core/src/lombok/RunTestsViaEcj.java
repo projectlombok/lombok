@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 The Project Lombok Authors.
+ * Copyright (C) 2010-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+
+import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
 
 import org.eclipse.jdt.core.compiler.CategorizedProblem;
 import org.eclipse.jdt.internal.compiler.CompilationResult;
@@ -110,7 +112,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		CategorizedProblem[] problems = compilationResult.getAllProblems();
 		
 		if (problems != null) for (CategorizedProblem p : problems) {
-			messages.add(new CompilerMessage(p.getSourceLineNumber(), p.getSourceStart(), p.isError(), p.getMessage()));
+			messages.add(new CompilerMessage(p.getSourceLineNumber(), p.getSourceStart(), p.getSourceStart(), p.isError(), p.getMessage()));
 		}
 		
 		CompilationUnitDeclaration cud = compilationUnit_.get();

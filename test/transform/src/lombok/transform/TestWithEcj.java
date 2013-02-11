@@ -32,7 +32,7 @@ import org.junit.runner.RunWith;
 // When running inside eclipse's junit tester, you don't actually need to run 'ant dist' after updating code, though.
 
 @RunWith(DirectoryRunner.class)
-public class TestWithEcj implements DirectoryRunner.TestParams {
+public class TestWithEcj extends DirectoryRunner.TestParams {
 	@Override
 	public DirectoryRunner.Compiler getCompiler() {
 		return DirectoryRunner.Compiler.ECJ;

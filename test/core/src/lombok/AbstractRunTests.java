@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+
+import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
 
 public abstract class AbstractRunTests {
 	protected static final String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -130,7 +132,7 @@ public abstract class AbstractRunTests {
 		FileOutputStream fos = new FileOutputStream(file);
 		try {
 			for (CompilerMessage message : content) {
-				fos.write(message.asCompilerMessageMatcher().toString().getBytes("UTF-8"));
+				fos.write(CompilerMessageMatcher.asCompilerMessageMatcher(message).toString().getBytes("UTF-8"));
 				fos.write('\n');
 			}
 		} finally {
@@ -151,7 +153,9 @@ public abstract class AbstractRunTests {
 				System.out.println(actualFile);
 				if (actualMessages != null && !actualMessages.isEmpty()) {
 					System.out.println("**** Actual Errors *****");
-					System.out.println(actualMessages);
+					for (CompilerMessage actualMessage : actualMessages) {
+						System.out.println(actualMessage);
+					}
 				}
 				System.out.println("*******************");
 			}
@@ -168,9 +172,13 @@ public abstract class AbstractRunTests {
 				System.out.println("***** " + name + " *****");
 				System.out.println(e.getMessage());
 				System.out.println("**** Expected ******");
-				System.out.println(expectedMessages);
+				for (CompilerMessageMatcher expectedMessage : expectedMessages) {
+					System.out.println(expectedMessage);
+				}
 				System.out.println("****  Actual  ******");
-				System.out.println(actualMessages);
+				for (CompilerMessage actualMessage : actualMessages) {
+					System.out.println(actualMessage);
+				}
 				System.out.println("*******************");
 			}
 			if (dumpActualFilesHere != null) {

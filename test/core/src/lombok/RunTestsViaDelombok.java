@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,35 +25,21 @@ import java.io.File;
 import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.tools.Diagnostic;
-import javax.tools.Diagnostic.Kind;
-import javax.tools.DiagnosticListener;
-import javax.tools.JavaFileObject;
 
 import lombok.delombok.Delombok;
+import lombok.javac.CapturingDiagnosticListener;
+import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
 
 public class RunTestsViaDelombok extends AbstractRunTests {
 	private Delombok delombok = new Delombok();
 	
 	@Override
-	public void transformCode(final Collection<CompilerMessage> messages, StringWriter result, final File file) throws Throwable {
+	public void transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file) throws Throwable {
 		delombok.setVerbose(false);
 		delombok.setForceProcess(true);
 		delombok.setCharset("UTF-8");
 		
-		delombok.setDiagnosticsListener(new DiagnosticListener<JavaFileObject>() {
-			@Override public void report(Diagnostic<? extends JavaFileObject> d) {
-				String msg = d.getMessage(Locale.ENGLISH);
-				Matcher m = Pattern.compile(
-						"^" + Pattern.quote(file.getAbsolutePath()) +
-						"\\s*:\\s*\\d+\\s*:\\s*(?:warning:\\s*)?(.*)$", Pattern.DOTALL).matcher(msg);
-				if (m.matches()) msg = m.group(1);
-				messages.add(new CompilerMessage(d.getLineNumber(), d.getColumnNumber(), d.getKind() == Kind.ERROR, msg));
-			}
-		});
+		delombok.setDiagnosticsListener(new CapturingDiagnosticListener(file, messages));
 		
 		delombok.addFile(file.getAbsoluteFile().getParentFile(), file.getName());
 		delombok.setSourcepath(file.getAbsoluteFile().getParent());

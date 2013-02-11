@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,12 +40,16 @@ public class DirectoryRunner extends Runner {
 		DELOMBOK, JAVAC, ECJ;
 	}
 	
-	public interface TestParams {
-		Compiler getCompiler();
-		boolean printErrors();
-		File getBeforeDirectory();
-		File getAfterDirectory();
-		File getMessagesDirectory();
+	public static abstract class TestParams {
+		public abstract Compiler getCompiler();
+		public abstract boolean printErrors();
+		public abstract File getBeforeDirectory();
+		public abstract File getAfterDirectory();
+		public abstract File getMessagesDirectory();
+		
+		public boolean accept(File file) {
+			return true;
+		}
 	}
 	
 	private static final FileFilter JAVA_FILE_FILTER = new FileFilter() {
@@ -76,6 +80,7 @@ public class DirectoryRunner extends Runner {
 	
 	private void addTests(Class<?> testClass) throws Exception {
 		for (File file : params.getBeforeDirectory().listFiles(JAVA_FILE_FILTER)) {
+			if (!params.accept(file)) continue;
 			Description testDescription = Description.createTestDescription(testClass, file.getName());
 			description.addChild(testDescription);
 			tests.put(file.getName(), testDescription);

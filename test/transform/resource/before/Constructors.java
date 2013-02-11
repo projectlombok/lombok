@@ -10,6 +10,10 @@
 	final int x;
 	String name;
 }
+@lombok.RequiredArgsConstructor(onConstructor=@_(@Deprecated)) class RequiredArgsConstructorWithAnnotations {
+	final int x;
+	String name;
+}
 @lombok.AllArgsConstructor class AllArgsConstructor1 {
 	final int x;
 	String name;
