@@ -35,7 +35,7 @@
 			Such a static factory method will infer generics, unlike a normal constructor. This means your API users get write <code>MapEntry.of("foo", 5)</code> instead of the much longer
 			<code>new MapEntry&lt;String, Integer&gt;("foo", 5)</code>.
 			</p><p>
-			To put annotations on the generated constructor, you can use <code>onConstructor={@AnnotationsHere}</code>. For more details see the documentation on the <a href="onX.html">onX</a> feature.
+			To put annotations on the generated constructor, you can use <code>onConstructor=@_({@AnnotationsHere})</code>, but be careful; this is an experimental feature. For more details see the documentation on the <a href="experimental/onX.html">onX</a> feature.
 			</p><p>
 			Static fields are skipped by these annotations. Also, a <code>@java.beans.ConstructorProperties</code> annotation is added for all constructors with at least 1 argument,
 			which allows bean editor tools to call the generated constructors. <code>@ConstructorProperties</code> is now in Java 1.6, which means that if your code is intended for

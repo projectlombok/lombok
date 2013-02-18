@@ -7,9 +7,9 @@ import javax.persistence.Id;
 import javax.persistence.Column;
 import javax.validation.constraints.Max;
 
-@AllArgsConstructor(onConstructor=@Inject)
+@AllArgsConstructor(onConstructor=@_(@Inject))
 public class OnXExample {
-	@Getter(onMethod={@Id, @Column(name="unique-id"})
-	@Setter(onParam=@Max(10000))
+	@Getter(onMethod=@_({@Id, @Column(name="unique-id")}))
+	@Setter(onParam=@_(@Max(10000)))
 	private long unid;
 }

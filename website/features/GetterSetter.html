@@ -29,7 +29,7 @@
 			You can always manually disable getter/setter generation for any field by using the special <code>AccessLevel.NONE</code> access level. This lets you override the
 			behaviour of a <code>@Getter</code>, <code>@Setter</code> or <code>@Data</code> annotation on a class.
 			</p><p>
-				To put annotations on the generated method, you can use <code>onMethod={@AnnotationsHere}</code>; to put annotations on the only parameter of a generated setter method, you can use <code>onParam={@AnnotationsHere}</code>. For more details see the documentation on the <a href="onX.html">onX</a> feature.
+			To put annotations on the generated method, you can use <code>onMethod=@_({@AnnotationsHere})</code>; to put annotations on the only parameter of a generated setter method, you can use <code>onParam=@_({@AnnotationsHere})</code>. Be careful though! This is an experimental feature. For more details see the documentation on the <a href="experimental/onX.html">onX</a> feature.
 			</p>
 		</div>
 		<div class="snippets">
