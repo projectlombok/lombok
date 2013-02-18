@@ -30,18 +30,6 @@ public final class ValueExample {
 		return this.tags;
 	}
 	
-	public ValueExample withName(String name) {
-		return this.name == name ? this : new ValueExample(name, age, score, tags);
-	}
-	
-	public ValueExample withScore(double score) {
-		return this.score == score ? this : new ValueExample(name, age, score, tags);
-	}
-	
-	public ValueExample withTags(String[] tags) {
-		return this.tags == tags ? this : new ValueExample(name, age, score, tags);
-	}
-	
 	@java.lang.Override
 	public boolean equals(Object o) {
 		if (o == this) return true;
@@ -97,14 +85,6 @@ public final class ValueExample {
 		
 		public T getValue() {
 			return this.value;
-		}
-		
-		public Exercise<T> withName(String name) {
-			return this.name == name ? this : new Exercise<T>(name, value);
-		}
-		
-		public Exercise<T> withValue(T value) {
-			return this.value == value ? this : new Exercise<T>(name, value);
 		}
 		
 		@java.lang.Override

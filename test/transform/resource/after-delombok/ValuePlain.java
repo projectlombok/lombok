@@ -15,14 +15,6 @@ final class Value1 {
 	public String getName() {
 		return this.name;
 	}
-	@java.lang.SuppressWarnings("all")
-	public Value1 withX(final int x) {
-		return this.x == x ? this : new Value1(x, this.name);
-	}
-	@java.lang.SuppressWarnings("all")
-	public Value1 withName(final String name) {
-		return this.name == name ? this : new Value1(this.x, name);
-	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public boolean equals(final java.lang.Object o) {
@@ -67,14 +59,6 @@ class Value2 {
 	@java.lang.SuppressWarnings("all")
 	public String getName() {
 		return this.name;
-	}
-	@java.lang.SuppressWarnings("all")
-	public Value2 withX(final int x) {
-		return this.x == x ? this : new Value2(x, this.name);
-	}
-	@java.lang.SuppressWarnings("all")
-	public Value2 withName(final String name) {
-		return this.name == name ? this : new Value2(this.x, name);
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
@@ -125,14 +109,6 @@ final class Value3 {
 	@java.lang.SuppressWarnings("all")
 	public int getY() {
 		return this.y;
-	}
-	@java.lang.SuppressWarnings("all")
-	public Value3 withX(final int x) {
-		return this.x == x ? this : new Value3(x, this.y);
-	}
-	@java.lang.SuppressWarnings("all")
-	public Value3 withY(final int y) {
-		return this.y == y ? this : new Value3(this.x, y);
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")

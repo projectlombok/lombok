@@ -8,12 +8,6 @@ final @lombok.experimental.Value class Value1 {
   public @java.lang.SuppressWarnings("all") String getName() {
     return this.name;
   }
-  public @java.lang.SuppressWarnings("all") Value1 withX(final int x) {
-    return ((this.x == x) ? this : new Value1(x, this.name));
-  }
-  public @java.lang.SuppressWarnings("all") Value1 withName(final String name) {
-    return ((this.name == name) ? this : new Value1(this.x, name));
-  }
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
@@ -53,12 +47,6 @@ final @lombok.experimental.Value class Value1 {
   }
   public @java.lang.SuppressWarnings("all") String getName() {
     return this.name;
-  }
-  public @java.lang.SuppressWarnings("all") Value2 withX(final int x) {
-    return ((this.x == x) ? this : new Value2(x, this.name));
-  }
-  public @java.lang.SuppressWarnings("all") Value2 withName(final String name) {
-    return ((this.name == name) ? this : new Value2(this.x, name));
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
@@ -104,12 +92,6 @@ final @Value class Value3 {
   }
   public @java.lang.SuppressWarnings("all") int getY() {
     return this.y;
-  }
-  public @java.lang.SuppressWarnings("all") Value3 withX(final int x) {
-    return ((this.x == x) ? this : new Value3(x, this.y));
-  }
-  public @java.lang.SuppressWarnings("all") Value3 withY(final int y) {
-    return ((this.y == y) ? this : new Value3(this.x, y));
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
