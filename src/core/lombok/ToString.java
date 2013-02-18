@@ -65,4 +65,10 @@ public @interface ToString {
 	 * <strong>default: false</strong>
 	 */
 	boolean doNotUseGetters() default false;
+	
+	/**
+	 * Normally, lombok print all fields no matter if there is information to be showed or not.  By setting this to {@code true} all null values will be omitted.
+	 * <strong>default: false</strong>
+	 */
+	boolean hideNulls() default false;
 }

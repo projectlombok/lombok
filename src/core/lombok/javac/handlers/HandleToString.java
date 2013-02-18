@@ -79,10 +79,12 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		checkForBogusFieldNames(typeNode, annotation);
 		
 		Boolean callSuper = ann.callSuper();
+		Boolean hideNulls = ann.hideNulls();
 		
 		if (!annotation.isExplicit("callSuper")) callSuper = null;
 		if (!annotation.isExplicit("exclude")) excludes = null;
 		if (!annotation.isExplicit("of")) includes = null;
+		if (!annotation.isExplicit("hideNulls")) hideNulls = null;
 		
 		if (excludes != null && includes != null) {
 			excludes = null;
@@ -91,7 +93,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		
 		FieldAccess fieldAccess = ann.doNotUseGetters() ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
 		
-		generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true, fieldAccess);
+		generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true, fieldAccess, hideNulls);
 	}
 	
 	public void generateToStringForType(JavacNode typeNode, JavacNode errorNode) {
@@ -105,11 +107,11 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		try {
 			includeFieldNames = ((Boolean)ToString.class.getMethod("includeFieldNames").getDefaultValue()).booleanValue();
 		} catch (Exception ignore) {}
-		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, FieldAccess.GETTER);
+		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, FieldAccess.GETTER, null);
 	}
 	
 	public void generateToString(JavacNode typeNode, JavacNode source, List<String> excludes, List<String> includes,
-			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
+			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess, Boolean hideNulls) {
 		boolean notAClass = true;
 		if (typeNode.get() instanceof JCClassDecl) {
 			long flags = ((JCClassDecl)typeNode.get()).mods.flags;
@@ -119,6 +121,12 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		if (callSuper == null) {
 			try {
 				callSuper = ((Boolean)ToString.class.getMethod("callSuper").getDefaultValue()).booleanValue();
+			} catch (Exception ignore) {}
+		}
+		
+		if (hideNulls == null) {
+			try {
+				hideNulls = ((Boolean)ToString.class.getMethod("hideNulls").getDefaultValue()).booleanValue();
 			} catch (Exception ignore) {}
 		}
 		
@@ -150,7 +158,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		
 		switch (methodExists("toString", typeNode, 0)) {
 		case NOT_EXISTS:
-			JCMethodDecl method = createToString(typeNode, nodesForToString.toList(), includeFieldNames, callSuper, fieldAccess, source.get());
+			JCMethodDecl method = createToString(typeNode, nodesForToString.toList(), includeFieldNames, callSuper, hideNulls, fieldAccess, source.get());
 			injectMethod(typeNode, method);
 			break;
 		case EXISTS_BY_LOMBOK:
@@ -164,7 +172,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		}
 	}
 	
-	private JCMethodDecl createToString(JavacNode typeNode, List<JavacNode> fields, boolean includeFieldNames, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
+	private JCMethodDecl createToString(JavacNode typeNode, List<JavacNode> fields, boolean includeFieldNames, boolean callSuper, boolean hideNulls, FieldAccess fieldAccess, JCTree source) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(chainDots(typeNode, "java", "lang", "Override"), List.<JCExpression>nil());
