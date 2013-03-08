@@ -64,8 +64,10 @@ public class CommentCatcher {
 		try {
 			if (JavaCompiler.version().startsWith("1.6")) {
 				Class.forName("lombok.javac.java6.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
-			} else {
+			} else if (JavaCompiler.version().startsWith("1.7") || JavaCompiler.version().startsWith("1.8")) {
 				Class.forName("lombok.javac.java7.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
+			} else {
+				throw new IllegalStateException("No comments parser for compiler version " + JavaCompiler.version());
 			}
 		} catch (Exception e) {
 			if (e instanceof RuntimeException) throw (RuntimeException)e;
@@ -79,10 +81,13 @@ public class CommentCatcher {
 			if (JavaCompiler.version().startsWith("1.6")) {
 				Class<?> parserFactory = Class.forName("lombok.javac.java6.CommentCollectingParserFactory");
 				parserFactory.getMethod("setInCompiler",JavaCompiler.class, Context.class, Map.class).invoke(null, compiler, context, commentsMap);
-			} else {
+			} else if (JavaCompiler.version().startsWith("1.7") || JavaCompiler.version().startsWith("1.8")) {
 				Class<?> parserFactory = Class.forName("lombok.javac.java7.CommentCollectingParserFactory");
 				parserFactory.getMethod("setInCompiler",JavaCompiler.class, Context.class, Map.class).invoke(null, compiler, context, commentsMap);
+			} else {
+				throw new IllegalStateException("No comments parser for compiler version " + JavaCompiler.version());
 			}
+			
 		} catch (Exception e) {
 			if (e instanceof RuntimeException) throw (RuntimeException)e;
 			throw new RuntimeException(e);
