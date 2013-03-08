@@ -52,7 +52,6 @@ import lombok.javac.LombokOptions;
 
 import com.sun.tools.javac.comp.Todo;
 import com.sun.tools.javac.main.JavaCompiler;
-import com.sun.tools.javac.main.OptionName;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import com.zwitserloot.cmdreader.CmdReader;
@@ -359,11 +358,11 @@ public class Delombok {
 	}
 	
 	public boolean delombok() throws IOException {
-		LombokOptions options = LombokOptions.replaceWithDelombokOptions(context);
-		options.put(OptionName.ENCODING, charset.name());
-		if (classpath != null) options.put(OptionName.CLASSPATH, classpath);
-		if (sourcepath != null) options.put(OptionName.SOURCEPATH, sourcepath);
-		if (bootclasspath != null) options.put(OptionName.BOOTCLASSPATH, bootclasspath);
+		LombokOptions options = LombokOptionsFactory.getDelombokOptions(context);
+		options.putJavacOption("ENCODING", charset.name());
+		if (classpath != null) options.putJavacOption("CLASSPATH", classpath);
+		if (sourcepath != null) options.putJavacOption("SOURCEPATH", sourcepath);
+		if (bootclasspath != null) options.putJavacOption("BOOTCLASSPATH", bootclasspath);
 		options.put("compilePolicy", "attr");
 		
 		CommentCatcher catcher = CommentCatcher.create(context);

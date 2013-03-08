@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Project Lombok Authors.
+ * Copyright (C) 2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,34 +21,25 @@
  */
 package lombok.javac;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.main.OptionName;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Options;
 
-public abstract class LombokOptions extends Options {
-	private boolean deleteLombokAnnotations = true;
-	private final Set<JCCompilationUnit> changed = new HashSet<JCCompilationUnit>();
+public class Javac6BasedLombokOptions extends LombokOptions {
 	
-	public boolean isChanged(JCCompilationUnit ast) {
-		return changed.contains(ast);
+	public static Javac6BasedLombokOptions replaceWithDelombokOptions(Context context) {
+		Options options = Options.instance(context);
+		context.put(optionsKey, (Options)null);
+		Javac6BasedLombokOptions result = new Javac6BasedLombokOptions(context);
+		result.putAll(options);
+		return result;
 	}
 	
-	public static void markChanged(Context context, JCCompilationUnit ast) {
-		Options options = context.get(Options.optionsKey);
-		if (options instanceof LombokOptions) ((LombokOptions) options).changed.add(ast);
-	}
-	
-	public static boolean shouldDeleteLombokAnnotations(Context context) {
-		Options options = context.get(Options.optionsKey);
-		return (options instanceof LombokOptions) && ((LombokOptions) options).deleteLombokAnnotations;
-	}
-	
-	protected LombokOptions(Context context) {
+	private Javac6BasedLombokOptions(Context context) {
 		super(context);
 	}
 
-	public abstract void putJavacOption(String optionName, String value);
+	@Override public void putJavacOption(String optionName, String value) {
+		put(OptionName.valueOf(optionName), value);
+	}
 }
