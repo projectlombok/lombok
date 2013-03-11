@@ -31,11 +31,13 @@ import java.util.Collections;
 import java.util.List;
 
 import lombok.AccessLevel;
+import lombok.Lombok;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.eclipse.EclipseProjectSearcher;
 import lombok.eclipse.handlers.EclipseHandlerUtil.FieldAccess;
 import lombok.experimental.Wither;
 
@@ -56,6 +58,7 @@ import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.core.JavaProject;
 import org.mangosdk.spi.ProviderFor;
 
 @ProviderFor(EclipseAnnotationHandler.class)
@@ -123,6 +126,18 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		EclipseNode node = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
 		if (level == AccessLevel.NONE || node == null) return;
+		
+		/** hackery */ {
+			JavaProject project = annotationNode.getAst().getProject();
+			if (project != null) try {
+				new EclipseProjectSearcher(project).findAllWithName("/java/lang/String.class");
+			} catch (Exception e) {
+				throw Lombok.sneakyThrow(e);
+			} else {
+				Thread.dumpStack();
+				System.err.println("****!!!!*!*!*!*!*!*!!*!********!!!! PROJECT IS NULL!!!!");
+			}
+		}
 		
 		List<Annotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Setter(onMethod=", annotationNode);
 		List<Annotation> onParam = unboxAndRemoveAnnotationParameter(ast, "onParam", "@Setter(onParam=", annotationNode);

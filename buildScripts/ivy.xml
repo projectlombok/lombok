@@ -41,9 +41,11 @@
 		<dependency org="netbeans.org" name="modules.java.source" rev="6.8beta" conf="netbeansBuild->build" />
 		
 		<dependency org="org.eclipse.custom" name="core.runtime" rev="3.6.0" conf="eclipseBuild->default; contrib->sources" />
+		<dependency org="org.eclipse.custom" name="core.resources" rev="3.7.0" conf="eclipseBuild->default; contrib->sources" />
 		<dependency org="org.eclipse.custom" name="jdt.core" rev="3.6.0" conf="eclipseBuild->default; contrib->sources" />
 		<dependency org="org.eclipse.custom" name="jdt.ui" rev="3.6.0" conf="eclipseBuild->default; contrib->sources" />
 		<dependency org="org.eclipse.custom" name="equinox.common" rev="3.6.0" conf="eclipseBuild->default; contrib->sources" />
 		<dependency org="org.eclipse.custom" name="osgi" rev="3.6.0" conf="eclipseBuild->default; contrib->sources" />
+		<dependency org="org.eclipse.custom" name="core.jobs" rev="3.5.200" conf="eclipseBuild->default; contrib->sources" />
 	</dependencies>
 </ivy-module>

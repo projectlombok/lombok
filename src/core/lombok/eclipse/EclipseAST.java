@@ -28,6 +28,8 @@ import org.eclipse.jdt.internal.compiler.CompilationResult;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import lombok.Lombok;
 import lombok.core.AST;
@@ -45,6 +47,9 @@ import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.core.BasicCompilationUnit;
+import org.eclipse.jdt.internal.core.JavaElement;
+import org.eclipse.jdt.internal.core.JavaProject;
 
 /**
  * Wraps around Eclipse's internal AST view to add useful features as well as the ability to visit parents from children,
@@ -175,6 +180,30 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	
 	private static String toFileName(CompilationUnitDeclaration ast) {
 		return ast.compilationResult.fileName == null ? null : new String(ast.compilationResult.fileName);
+	}
+	
+	private static final Pattern PROJECT_NAME_FROM_FILEPATH = Pattern.compile("^/([^/]+)/(.*)$");
+	/**
+	 * Returns the JavaProject object (eclipse's abstraction of the project) associated with the source file that is represented by this AST.
+	 */
+	public JavaProject getProject() {
+		CompilationUnitDeclaration cud = (CompilationUnitDeclaration) top().get();
+		
+		if (cud.compilationResult().getCompilationUnit() instanceof JavaElement) {
+			JavaElement icu = (JavaElement) cud.compilationResult.compilationUnit;
+			return (JavaProject) icu.getJavaProject();
+		}
+		
+		char[] fn = cud.compilationResult().getFileName();
+		
+		Matcher m = PROJECT_NAME_FROM_FILEPATH.matcher(new String(fn));
+		if (m.matches()) {
+			String projName = m.group(1);
+			String path = m.group(2);
+			return EclipseProjectSearcher.getProject(projName);
+		}
+		
+		return null;
 	}
 	
 	/**
