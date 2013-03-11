@@ -27,7 +27,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	
 	<property name="credentialsFile" value="google.properties" />
 	<property name="build.compiler" value="javac1.6" />
-	<property name="ivy.retrieve.pattern" value="lib/[conf]/[artifact].[ext]" />
+	<property name="ivy.retrieve.pattern" value="lib/[conf]/[organisation]-[artifact].[ext]" />
 	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
 	
 	<path id="build.path">
@@ -196,7 +196,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<target name="dist" description="Builds THE lombok.jar file which contains everything." depends="version, compile">
 		<mkdir dir="dist" />
 		<copy file="doc/changelog.markdown" tofile="build/changelog.txt" />
-		<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="lib/build/jarjar.jar" />
+		<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="lib/build/com.googlecode.jarjar-jarjar.jar" />
 		<jarjar destfile="dist/lombok-${lombok.version}.jar">
 			<fileset dir="build/lombok">
 				<exclude name="com/sun/tools/javac/**"/>
@@ -271,7 +271,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<settings>
 				<url url="http://projectlombok.org/downloads/lombok.eclipse.settings" />
 			</settings>
-			<apt location="lib/build/spi.jar" />
+			<apt location="lib/build/projectlombok.org-spi.jar" />
 		</ivy:eclipsegen>
 		
 		<copy
@@ -299,7 +299,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</target>
 	
 	<target name="test-ecj" depends="dist, contrib" unless="tests.skip">
-		<java jar="lib/ecj/ecj.jar" fork="true" failonerror="true">
+		<java jar="lib/ecj/org.eclipse.custom-ecj.jar" fork="true" failonerror="true">
 			<jvmarg value="-javaagent:dist/lombok.jar=ecj" />
 			<arg value="-source" />
 			<arg value="1.6" />
