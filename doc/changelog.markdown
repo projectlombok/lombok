@@ -4,6 +4,7 @@ Lombok Changelog
 ### v0.11.7 (Edgy Guinea Pig)
 * CHANGE: {Experimental} The experimental `@Value` feature no longer implies the also experimental `@Wither`. If you like your `@Value` classes to make withers, add `@Wither` to the class right next to `@Value`.
 * FEATURE: {Experimental} Reintroduced `onMethod`, `onConstructor` and `onParam` to `@Getter`, `@Setter`, `@Wither`, and `@XArgsConstructor`. These parameters allow you to add annotations to the methods/constructors that lombok will generate. This is a workaround feature: The stability of the feature on future versions of javac is not guaranteed, and if a better way to implement this feature is found, this feature's current incarnation will be removed without a reasonable period of deprecation. [Documentation on the onX feature](http://projectlombok.org/features/experimental/onX.html)
+* FEATURE: Added support for Log4j v2.0 via `@Log4j2` [Issue #432](http://code.google.com/p/projectlombok/issues/detail?id=432)
 
 ### v0.11.6 (October 30th, 2012)
 * FEATURE: Lombok can be disabled entirely for any given compile run by using JVM switch `-Dlombok.disable`. This might be useful for code style checkers and such.
