@@ -84,12 +84,19 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 			return;
 		}
 		
-		if (method.body == null) return;
-		if (method.body.stats.isEmpty()) return;
+		if (method.body == null || method.body.stats.isEmpty()) {
+			generateEmptyBlockWarning(methodNode, annotation, false);
+			return;
+		}
 		
 		final JCStatement constructorCall = method.body.stats.get(0);
 		final boolean isConstructorCall = isConstructorCall(constructorCall);
 		List<JCStatement> contents = isConstructorCall ? method.body.stats.tail : method.body.stats;
+		
+		if (contents == null || contents.isEmpty()) {
+			generateEmptyBlockWarning(methodNode, annotation, true);
+			return;
+		}
 		
 		for (String exception : exceptions) {
 			contents = List.of(buildTryCatchBlock(methodNode, contents, exception, annotation.get()));
@@ -99,6 +106,14 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 		methodNode.rebuild();
 	}
 	
+	private void generateEmptyBlockWarning(JavacNode methodNode, JavacNode annotation, boolean hasConstructorCall) {
+		if (hasConstructorCall) {
+			annotation.addWarning("Calls to sibling / super constructors are always excluded from @SneakyThrows; @SneakyThrows has been ignored because there is no other code in this constructor.");
+		} else {
+			annotation.addWarning("This method or constructor is empty; @SneakyThrows has been ignored.");
+		}
+	}
+
 	private boolean isConstructorCall(final JCStatement supect) {
 		if (!(supect instanceof JCExpressionStatement)) return false;
 		final JCExpression supectExpression = ((JCExpressionStatement) supect).expr;

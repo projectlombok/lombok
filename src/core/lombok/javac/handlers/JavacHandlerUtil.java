@@ -305,6 +305,7 @@ public class JavacHandlerUtil {
 			return;
 		}
 		
+		parentNode.getAst().setChanged();
 		deleteImportFromCompilationUnit(annotation, annotationType.getName());
 	}
 	
