@@ -7,6 +7,7 @@ Lombok Changelog
 * FEATURE: Added support for Log4j v2.0 via `@Log4j2` [Issue #432](http://code.google.com/p/projectlombok/issues/detail?id=432)
 * ENHANCEMENT: The Lombok installer can now find and install lombok into [JBoss Developer Studio](http://www.redhat.com/products/jbossenterprisemiddleware/developer-studio/). The installer will now also look for eclipse and eclipse variants in your home directory. [Issue #434](http://code.google.com/p/projectlombok/issues/detail?id=432)
 * BUGFIX: `@ExtensionMethods` no longer causes `VerifyError` exceptions when running eclipse-compiled code if extension methods are called on expressions which are method calls whose return type is a type variable. For example, `someList.get(i).extensionMethod()` would fail that way. [Issue #436](http://code.google.com/p/projectlombok/issues/detail?id=436)
+* BUGFIX: java 7's try-with-resources statement did not delombok correctly. [Issue #459](http://code.google.com/p/projectlombok/issues/detail?id=459)
 
 ### v0.11.6 (October 30th, 2012)
 * FEATURE: Lombok can be disabled entirely for any given compile run by using JVM switch `-Dlombok.disable`. This might be useful for code style checkers and such.

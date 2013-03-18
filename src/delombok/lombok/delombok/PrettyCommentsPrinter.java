@@ -22,6 +22,11 @@
  * CA 95054 USA or visit www.sun.com if you need additional information or
  * have any questions.
  */
+
+/*
+ * Code derived from com.sun.tools.javac.tree.Pretty, from the langtools project.
+ * A version can be found at, for example, http://hg.openjdk.java.net/jdk7/build/langtools
+ */
 package lombok.delombok;
 
 import static com.sun.tools.javac.code.Flags.ANNOTATION;
@@ -981,6 +986,29 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitTry(JCTry tree) {
         try {
             print("try ");
+            List<?> resources = null;
+            try {
+                Field f = JCTry.class.getField("resources");
+                resources = (List<?>) f.get(tree);
+            } catch (Exception ignore) {
+                // In JDK6 and down this field does not exist; resources will retain its initializer value which is what we want.
+            }
+            
+            if (resources != null && resources.nonEmpty()) {
+                boolean first = true;
+                print("(");
+                for (Object var0 : resources) {
+                    JCTree var = (JCTree) var0;
+                    if (!first) {
+                        println();
+                        indent();
+                    }
+                    printStat(var);
+                    first = false;
+                }
+                print(") ");
+            }
+            
             printStat(tree.body);
             for (List<JCCatch> l = tree.catchers; l.nonEmpty(); l = l.tail) {
                 printStat(l.head);
