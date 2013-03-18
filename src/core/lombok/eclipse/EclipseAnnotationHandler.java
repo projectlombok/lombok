@@ -29,7 +29,7 @@ import lombok.core.SpiLoadUtil;
  * 
  * You MUST replace 'T' with a specific annotation type, such as:
  * 
- * {@code public class HandleGetter implements EclipseAnnotationHandler<Getter>}
+ * {@code public class HandleGetter extends EclipseAnnotationHandler<Getter>}
  * 
  * Because this generics parameter is inspected to figure out which class you're interested in.
  * 
