@@ -198,18 +198,22 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		}
 		
 		for (JavacNode fieldNode : fields) {
-			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			JCExpression expr;
 			
 			JCExpression fieldAccessor = createFieldAccessor(maker, fieldNode, fieldAccess);
 			
-			if (getFieldType(fieldNode, fieldAccess) instanceof JCArrayTypeTree) {
-				boolean multiDim = ((JCArrayTypeTree)field.vartype).elemtype instanceof JCArrayTypeTree;
-				boolean primitiveArray = ((JCArrayTypeTree)field.vartype).elemtype instanceof JCPrimitiveTypeTree;
-				boolean useDeepTS = multiDim || !primitiveArray;
-				
-				JCExpression hcMethod = chainDots(typeNode, "java", "util", "Arrays", useDeepTS ? "deepToString" : "toString");
-				expr = maker.Apply(List.<JCExpression>nil(), hcMethod, List.<JCExpression>of(fieldAccessor));
+			JCExpression fieldType = getFieldType(fieldNode, fieldAccess);
+			
+			// The distinction between primitive and object will be useful if we ever add a 'hideNulls' option.
+			boolean fieldIsPrimitive = fieldType instanceof JCPrimitiveTypeTree;
+			boolean fieldIsPrimitiveArray = fieldType instanceof JCArrayTypeTree && ((JCArrayTypeTree) fieldType).elemtype instanceof JCPrimitiveTypeTree;
+			boolean fieldIsObjectArray = !fieldIsPrimitiveArray && fieldType instanceof JCArrayTypeTree;
+			@SuppressWarnings("unused")
+			boolean fieldIsObject = !fieldIsPrimitive && !fieldIsPrimitiveArray && !fieldIsObjectArray;
+			
+			if (fieldIsPrimitiveArray || fieldIsObjectArray) {
+				JCExpression tsMethod = chainDots(typeNode, "java", "util", "Arrays", fieldIsObjectArray ? "deepToString" : "toString");
+				expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of(fieldAccessor));
 			} else expr = fieldAccessor;
 			
 			if (first) {
