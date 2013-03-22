@@ -48,7 +48,8 @@ import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.TypeTags;
+//import com.sun.tools.javac.code.TypeTags;
+import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeScanner;
@@ -121,12 +122,12 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     private static final Method GET_TAG_METHOD;
     private static final Field TAG_FIELD; 
     
-    private static final int PARENS = Javac.getCtcInt(JCTree.class, "PARENS");
-    private static final int IMPORT = Javac.getCtcInt(JCTree.class, "IMPORT");
-    private static final int VARDEF = Javac.getCtcInt(JCTree.class, "VARDEF");
-    private static final int SELECT = Javac.getCtcInt(JCTree.class, "SELECT");
+    private static final Object PARENS = Javac.getTreeTag("PARENS");
+    private static final Object IMPORT = Javac.getTreeTag("IMPORT");
+    private static final Object VARDEF = Javac.getTreeTag("VARDEF");
+    private static final Object SELECT = Javac.getTreeTag("SELECT");
 
-    private static final Map<Integer, String> OPERATORS;
+    private static final Map<Object, String> OPERATORS;
     
     static {
     	Method m = null;
@@ -145,44 +146,44 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 		GET_TAG_METHOD = m;
 		TAG_FIELD = f;
 		
-		Map<Integer, String> map = new HashMap<Integer, String>();
+		Map<Object, String> map = new HashMap<Object, String>();
 		
-        map.put(Javac.getCtcInt(JCTree.class, "POS"), "+");
-        map.put(Javac.getCtcInt(JCTree.class, "NEG"), "-");
-        map.put(Javac.getCtcInt(JCTree.class, "NOT"), "!");
-        map.put(Javac.getCtcInt(JCTree.class, "COMPL"), "~");
-        map.put(Javac.getCtcInt(JCTree.class, "PREINC"), "++");
-        map.put(Javac.getCtcInt(JCTree.class, "PREDEC"), "--");
-        map.put(Javac.getCtcInt(JCTree.class, "POSTINC"), "++");
-        map.put(Javac.getCtcInt(JCTree.class, "POSTDEC"), "--");
-        map.put(Javac.getCtcInt(JCTree.class, "NULLCHK"), "<*nullchk*>");
-        map.put(Javac.getCtcInt(JCTree.class, "OR"), "||");
-        map.put(Javac.getCtcInt(JCTree.class, "AND"), "&&");
-        map.put(Javac.getCtcInt(JCTree.class, "EQ"), "==");
-        map.put(Javac.getCtcInt(JCTree.class, "NE"), "!=");
-        map.put(Javac.getCtcInt(JCTree.class, "LT"), "<");
-        map.put(Javac.getCtcInt(JCTree.class, "GT"), ">");
-        map.put(Javac.getCtcInt(JCTree.class, "LE"), "<=");
-        map.put(Javac.getCtcInt(JCTree.class, "GE"), ">=");
-        map.put(Javac.getCtcInt(JCTree.class, "BITOR"), "|");
-        map.put(Javac.getCtcInt(JCTree.class, "BITXOR"), "^");
-        map.put(Javac.getCtcInt(JCTree.class, "BITAND"), "&");
-        map.put(Javac.getCtcInt(JCTree.class, "SL"), "<<");
-        map.put(Javac.getCtcInt(JCTree.class, "SR"), ">>");
-        map.put(Javac.getCtcInt(JCTree.class, "USR"), ">>>");
-        map.put(Javac.getCtcInt(JCTree.class, "PLUS"), "+");
-        map.put(Javac.getCtcInt(JCTree.class, "MINUS"), "-");
-        map.put(Javac.getCtcInt(JCTree.class, "MUL"), "*");
-        map.put(Javac.getCtcInt(JCTree.class, "DIV"), "/");
-        map.put(Javac.getCtcInt(JCTree.class, "MOD"), "%");
+        map.put(Javac.getTreeTag("POS"), "+");
+        map.put(Javac.getTreeTag("NEG"), "-");
+        map.put(Javac.getTreeTag("NOT"), "!");
+        map.put(Javac.getTreeTag("COMPL"), "~");
+        map.put(Javac.getTreeTag("PREINC"), "++");
+        map.put(Javac.getTreeTag("PREDEC"), "--");
+        map.put(Javac.getTreeTag("POSTINC"), "++");
+        map.put(Javac.getTreeTag("POSTDEC"), "--");
+        map.put(Javac.getTreeTag("NULLCHK"), "<*nullchk*>");
+        map.put(Javac.getTreeTag("OR"), "||");
+        map.put(Javac.getTreeTag("AND"), "&&");
+        map.put(Javac.getTreeTag("EQ"), "==");
+        map.put(Javac.getTreeTag("NE"), "!=");
+        map.put(Javac.getTreeTag("LT"), "<");
+        map.put(Javac.getTreeTag("GT"), ">");
+        map.put(Javac.getTreeTag("LE"), "<=");
+        map.put(Javac.getTreeTag("GE"), ">=");
+        map.put(Javac.getTreeTag("BITOR"), "|");
+        map.put(Javac.getTreeTag("BITXOR"), "^");
+        map.put(Javac.getTreeTag("BITAND"), "&");
+        map.put(Javac.getTreeTag("SL"), "<<");
+        map.put(Javac.getTreeTag("SR"), ">>");
+        map.put(Javac.getTreeTag("USR"), ">>>");
+        map.put(Javac.getTreeTag("PLUS"), "+");
+        map.put(Javac.getTreeTag("MINUS"), "-");
+        map.put(Javac.getTreeTag("MUL"), "*");
+        map.put(Javac.getTreeTag("DIV"), "/");
+        map.put(Javac.getTreeTag("MOD"), "%");
 		
 		OPERATORS = map;
     }
     
-    static int getTag(JCTree tree) {
+    static Object getTag(JCTree tree) {
     	if (GET_TAG_METHOD != null) {
     		try {
-				return (Integer)GET_TAG_METHOD.invoke(tree);
+				return GET_TAG_METHOD.invoke(tree);
 			} 
     		catch (IllegalAccessException e) {
     			throw new RuntimeException(e);
@@ -192,7 +193,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 			} 
     	}
     	try {
-			return TAG_FIELD.getInt(tree);
+			return TAG_FIELD.get(tree);
 		} 
     	catch (IllegalAccessException e) {
     		throw new RuntimeException(e);
@@ -1222,7 +1223,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         }
     }
 
-    public String operatorName(int tag) {
+    public String operatorName(Object tag) {
         String result = OPERATORS.get(tag);
         if (result == null) throw new Error();
         return result;
@@ -1232,7 +1233,8 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         try {
             open(prec, TreeInfo.assignopPrec);
             printExpr(tree.lhs, TreeInfo.assignopPrec + 1);
-            print(" " + operatorName(getTag(tree) - JCTree.ASGOffset) + "= ");
+//            print(" " + operatorName(getTag(tree) - JCTree.ASGOffset) + "= ");
+            print(" = ");
             printExpr(tree.rhs, TreeInfo.assignopPrec);
             close(prec, TreeInfo.assignopPrec);
         } catch (IOException e) {
@@ -1242,10 +1244,10 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 
     public void visitUnary(JCUnary tree) {
         try {
-            int ownprec = TreeInfo.opPrec(getTag(tree));
+            int ownprec = isOwnPrec(tree);
             String opname = operatorName(getTag(tree));
             open(prec, ownprec);
-            if (getTag(tree) <= Javac.getCtcInt(JCTree.class, "PREDEC")) {
+            if (isPostUnary(tree)) {
                 print(opname);
                 printExpr(tree.arg, ownprec);
             } else {
@@ -1257,10 +1259,63 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
             throw new UncheckedIOException(e);
         }
     }
+    
+    private String assignOpName(JCExpression tree) {
+		try {
+			Object tag = getTag(tree);
+			if (JavaCompiler.version().startsWith("1.8")) {
+				return operatorName(tag.getClass().getMethod("noAssignOp").invoke(tree));
+			} else {
+				return operatorName((Integer)((Integer)tag - (Integer)JCTree.class.getField("ASGOffset").get(null)));
+			}
+		} catch (NoSuchMethodException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		} catch (Exception e) {
+			if (e instanceof RuntimeException) throw (RuntimeException) e;
+			throw new RuntimeException(e);
+		}
+    }
+    
+    private int isOwnPrec(JCExpression tree) {
+    	try {
+	    	if (JavaCompiler.version().startsWith("1.8")) {
+				return (Integer)TreeInfo.class.getMethod("opPrec", Class.forName("com.sun.tools.javac.code.TypeTag")).invoke(tree, getTag(tree));
+			} else {
+				return (Integer)TreeInfo.class.getMethod("opPrec", Integer.TYPE).invoke(tree, getTag(tree));
+			}
+		} catch (NoSuchMethodException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		} catch (Exception e) {
+			if (e instanceof RuntimeException) throw (RuntimeException) e;
+			throw new RuntimeException(e);
+		}
+    }
+    
+	private boolean isPostUnary(JCUnary tree) {
+		try {
+			Object tag = getTag(tree);
+			if (JavaCompiler.version().startsWith("1.8")) {
+				return (Boolean) tag.getClass().getMethod("isPostUnaryOp").invoke(tree);
+			} else {
+				return ((Integer) tag) <= ((Integer) Javac.getTreeTag("PREDEC"));
+			}
+		} catch (NoSuchMethodException e) {
+			throw new RuntimeException(e);
+		} catch (IllegalAccessException e) {
+			throw new RuntimeException(e);
+		} catch (Exception e) {
+			if (e instanceof RuntimeException) throw (RuntimeException) e;
+			throw new RuntimeException(e);
+		}
+	}
 
     public void visitBinary(JCBinary tree) {
         try {
-            int ownprec = TreeInfo.opPrec(getTag(tree));
+            int ownprec = isOwnPrec(tree);
             String opname = operatorName(getTag(tree));
             open(prec, ownprec);
             printExpr(tree.lhs, ownprec);
@@ -1327,77 +1382,40 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 
     public void visitLiteral(JCLiteral tree) {
         try {
-            switch (tree.typetag) {
-                case TypeTags.INT:
-                    print(tree.value.toString());
-                    break;
-                case TypeTags.LONG:
-                    print(tree.value + "L");
-                    break;
-                case TypeTags.FLOAT:
-                    print(tree.value + "F");
-                    break;
-                case TypeTags.DOUBLE:
-                    print(tree.value.toString());
-                    break;
-                case TypeTags.CHAR:
-                    print("\'" +
-                            Convert.quote(
-                            String.valueOf((char)((Number)tree.value).intValue())) +
-                            "\'");
-                    break;
-                case TypeTags.BOOLEAN:
-                    print(((Number)tree.value).intValue() == 1 ? "true" : "false");
-                    break;
-                case TypeTags.BOT:
-                    print("null");
-                    break;
-                default:
-                    print("\"" + Convert.quote(tree.value.toString()) + "\"");
-                    break;
+            if (Javac.compareCTC(Javac.getTreeTypeTag(tree), Javac.CTC_INT)) print(tree.value.toString());
+            else if (Javac.compareCTC(Javac.getTreeTypeTag(tree), Javac.CTC_LONG)) print(tree.value + "L");
+            else if (Javac.compareCTC(Javac.getTreeTypeTag(tree), Javac.CTC_FLOAT)) print(tree.value + "F");
+            else if (Javac.compareCTC(Javac.getTreeTypeTag(tree), Javac.CTC_DOUBLE)) print(tree.value.toString());
+            else if (Javac.compareCTC(Javac.getTreeTypeTag(tree), Javac.CTC_CHAR)) {
+            	print("\'" +
+            			Convert.quote(
+                        String.valueOf((char)((Number)tree.value).intValue()))+
+                        "\'");
             }
+            else if (Javac.compareCTC(Javac.getTreeTypeTag(tree), Javac.CTC_BOOLEAN)) print(((Number)tree.value).intValue() == 1 ? "true" : "false");
+            else if (Javac.compareCTC(Javac.getTreeTypeTag(tree), Javac.CTC_BOT)) print("null");
+            else print("\"" + Convert.quote(tree.value.toString()) + "\"");
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    public void visitTypeIdent(JCPrimitiveTypeTree tree) {
-        try {
-            switch(tree.typetag) {
-                case TypeTags.BYTE:
-                    print("byte");
-                    break;
-                case TypeTags.CHAR:
-                    print("char");
-                    break;
-                case TypeTags.SHORT:
-                    print("short");
-                    break;
-                case TypeTags.INT:
-                    print("int");
-                    break;
-                case TypeTags.LONG:
-                    print("long");
-                    break;
-                case TypeTags.FLOAT:
-                    print("float");
-                    break;
-                case TypeTags.DOUBLE:
-                    print("double");
-                    break;
-                case TypeTags.BOOLEAN:
-                    print("boolean");
-                    break;
-                case TypeTags.VOID:
-                    print("void");
-                    break;
-                default:
-                    print("error");
-                    break;
-            }
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+	public void visitTypeIdent(JCPrimitiveTypeTree tree) {
+		Object typetag = Javac.getTreeTypeTag(tree); 
+		try {
+			if (Javac.compareCTC(typetag, Javac.CTC_BYTE)) print("byte");
+			else if (Javac.compareCTC(typetag, Javac.CTC_CHAR)) print("char");
+			else if (Javac.compareCTC(typetag,  Javac.CTC_SHORT)) print("short");
+			else if (Javac.compareCTC(typetag, Javac.CTC_INT)) print("int");
+			else if (Javac.compareCTC(typetag, Javac.CTC_LONG)) print("long"); 
+			else if (Javac.compareCTC(typetag, Javac.CTC_FLOAT)) print("float");
+			else if (Javac.compareCTC(typetag, Javac.CTC_DOUBLE)) print("double");
+			else if (Javac.compareCTC(typetag, Javac.CTC_BOOLEAN)) print("boolean");
+			else if (Javac.compareCTC(typetag, Javac.CTC_VOID)) print("void");
+			else print("error");
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
     }
 
     public void visitTypeArray(JCArrayTypeTree tree) {

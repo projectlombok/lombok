@@ -27,6 +27,7 @@ import static lombok.javac.Javac.*;
 import lombok.ToString;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
+import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 
@@ -193,7 +194,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			JCMethodInvocation callToSuper = maker.Apply(List.<JCExpression>nil(),
 					maker.Select(maker.Ident(typeNode.toName("super")), typeNode.toName("toString")),
 					List.<JCExpression>nil());
-			current = maker.Binary(CTC_PLUS, current, callToSuper);
+			current = Javac.makeBinary(maker, CTC_PLUS, current, callToSuper);
 			first = false;
 		}
 		
@@ -213,21 +214,21 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			} else expr = fieldAccessor;
 			
 			if (first) {
-				current = maker.Binary(CTC_PLUS, current, expr);
+				current = Javac.makeBinary(maker, CTC_PLUS, current, expr);
 				first = false;
 				continue;
 			}
 			
 			if (includeFieldNames) {
-				current = maker.Binary(CTC_PLUS, current, maker.Literal(infix + fieldNode.getName() + "="));
+				current = Javac.makeBinary(maker, CTC_PLUS, current, maker.Literal(infix + fieldNode.getName() + "="));
 			} else {
-				current = maker.Binary(CTC_PLUS, current, maker.Literal(infix));
+				current = Javac.makeBinary(maker, CTC_PLUS, current, maker.Literal(infix));
 			}
 			
-			current = maker.Binary(CTC_PLUS, current, expr);
+			current = Javac.makeBinary(maker, CTC_PLUS, current, expr);
 		}
 		
-		if (!first) current = maker.Binary(CTC_PLUS, current, maker.Literal(suffix));
+		if (!first) current = Javac.makeBinary(maker, CTC_PLUS, current, maker.Literal(suffix));
 		
 		JCStatement returnStatement = maker.Return(current);
 		

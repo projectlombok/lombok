@@ -31,6 +31,7 @@ import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.experimental.Wither;
+import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
@@ -239,7 +240,7 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		}
 		
 		JCNewClass newClass = maker.NewClass(null, List.<JCExpression>nil(), selfType, args.toList(), null);
-		JCExpression identityCheck = maker.Binary(CTC_EQUAL, createFieldAccessor(maker, field, FieldAccess.ALWAYS_FIELD), maker.Ident(fieldDecl.name));
+		JCExpression identityCheck = Javac.makeBinary(maker, CTC_EQUAL, createFieldAccessor(maker, field, FieldAccess.ALWAYS_FIELD), maker.Ident(fieldDecl.name));
 		JCConditional conditional = maker.Conditional(identityCheck, maker.Ident(field.toName("this")), newClass);
 		JCReturn returnStatement = maker.Return(conditional);
 		

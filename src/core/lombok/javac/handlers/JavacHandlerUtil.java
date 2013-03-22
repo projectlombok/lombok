@@ -42,6 +42,7 @@ import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TransformationsUtil;
 import lombok.core.TypeResolver;
 import lombok.experimental.Accessors;
+import lombok.javac.Javac;
 import lombok.javac.JavacNode;
 
 import com.sun.tools.javac.code.BoundKind;
@@ -882,14 +883,14 @@ public class JavacHandlerUtil {
 	 * Generates a new statement that checks if the given variable is null, and if so, throws a {@code NullPointerException} with the
 	 * variable name as message.
 	 */
-	public static JCStatement generateNullCheck(TreeMaker treeMaker, JavacNode variable) {
+	public static JCStatement generateNullCheck(TreeMaker maker, JavacNode variable) {
 		JCVariableDecl varDecl = (JCVariableDecl) variable.get();
 		if (isPrimitive(varDecl.vartype)) return null;
 		Name fieldName = varDecl.name;
 		JCExpression npe = chainDots(variable, "java", "lang", "NullPointerException");
-		JCTree exception = treeMaker.NewClass(null, List.<JCExpression>nil(), npe, List.<JCExpression>of(treeMaker.Literal(fieldName.toString())), null);
-		JCStatement throwStatement = treeMaker.Throw(exception);
-		return treeMaker.If(treeMaker.Binary(CTC_EQUAL, treeMaker.Ident(fieldName), treeMaker.Literal(CTC_BOT, null)), throwStatement, null);
+		JCTree exception = maker.NewClass(null, List.<JCExpression>nil(), npe, List.<JCExpression>of(maker.Literal(fieldName.toString())), null);
+		JCStatement throwStatement = maker.Throw(exception);
+		return maker.If(Javac.makeBinary(maker, CTC_EQUAL, maker.Ident(fieldName), Javac.makeLiteral(maker, CTC_BOT, null)), throwStatement, null);
 	}
 	
 	/**

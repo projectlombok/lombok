@@ -26,6 +26,7 @@ import static lombok.javac.Javac.*;
 import lombok.Cleanup;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 
@@ -120,7 +121,7 @@ public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 				maker.Apply(List.<JCExpression>nil(), cleanupMethod, List.<JCExpression>nil())));
 		
 		JCMethodInvocation preventNullAnalysis = preventNullAnalysis(maker, annotationNode, maker.Ident(decl.name));
-		JCBinary isNull = maker.Binary(CTC_NOT_EQUAL, preventNullAnalysis, maker.Literal(CTC_BOT, null));
+		JCBinary isNull = Javac.makeBinary(maker, CTC_NOT_EQUAL, preventNullAnalysis, Javac.makeLiteral(maker, CTC_BOT, null));
 		
 		JCIf ifNotNullCleanup = maker.If(isNull, maker.Block(0, cleanupCall), null);
 		
@@ -141,7 +142,7 @@ public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 	
 	private JCMethodInvocation preventNullAnalysis(TreeMaker maker, JavacNode node, JCExpression expression) {
 		JCMethodInvocation singletonList = maker.Apply(List.<JCExpression>nil(), chainDotsString(node, "java.util.Collections.singletonList"), List.of(expression));
-		JCMethodInvocation cleanedExpr = maker.Apply(List.<JCExpression>nil(), maker.Select(singletonList, node.toName("get")) , List.<JCExpression>of(maker.Literal(TypeTags.INT, 0)));
+		JCMethodInvocation cleanedExpr = maker.Apply(List.<JCExpression>nil(), maker.Select(singletonList, node.toName("get")) , List.<JCExpression>of(Javac.makeLiteral(maker, CTC_INT, 0)));
 		return cleanedExpr;
 	}
 	

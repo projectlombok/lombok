@@ -35,6 +35,7 @@ import lombok.Setter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
+import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
@@ -253,14 +254,15 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	}
 	
 	private static class JCNoType extends Type implements NoType {
-		public JCNoType(int tag) {
-			super(tag, null);
+		public JCNoType(Object tag) {
+			//FIX
+			super(1, null);
 		}
 		
 		@Override
 		public TypeKind getKind() {
-			if (tag == CTC_VOID) return TypeKind.VOID;
-			if (tag == CTC_NONE) return TypeKind.NONE;
+			if (Javac.compareCTC(tag, CTC_VOID)) return TypeKind.VOID;
+			if (Javac.compareCTC(tag, CTC_NONE)) return TypeKind.NONE;
 			throw new AssertionError("Unexpected tag: " + tag);
 		}
 		

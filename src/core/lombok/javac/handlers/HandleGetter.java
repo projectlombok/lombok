@@ -35,6 +35,7 @@ import lombok.Getter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
+import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
@@ -288,9 +289,9 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	private static final String AR = "java.util.concurrent.atomic.AtomicReference";
 	private static final List<JCExpression> NIL_EXPRESSION = List.nil();
 	
-	private static final java.util.Map<Integer, String> TYPE_MAP;
+	private static final java.util.Map<Object, String> TYPE_MAP;
 	static {
-		Map<Integer, String> m = new HashMap<Integer, String>();
+		Map<Object, String> m = new HashMap<Object, String>();
 		m.put(CTC_INT, "java.lang.Integer");
 		m.put(CTC_DOUBLE, "java.lang.Double");
 		m.put(CTC_FLOAT, "java.lang.Float");
@@ -364,7 +365,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 						innerIfStatements.append(statement);
 					}
 					
-					JCBinary isNull = maker.Binary(CTC_EQUAL, maker.Ident(valueName), maker.Literal(CTC_BOT, null));
+					JCBinary isNull = Javac.makeBinary(maker, CTC_EQUAL, maker.Ident(valueName), Javac.makeLiteral(maker, CTC_BOT, null));
 					JCIf ifStatement = maker.If(isNull, maker.Block(0, innerIfStatements.toList()), null);
 					synchronizedStatements.append(ifStatement);
 				}
@@ -372,7 +373,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 				synchronizedStatement = maker.Synchronized(createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD), maker.Block(0, synchronizedStatements.toList()));
 			}
 			
-			JCBinary isNull = maker.Binary(CTC_EQUAL, maker.Ident(valueName), maker.Literal(CTC_BOT, null));
+			JCBinary isNull = Javac.makeBinary(maker, CTC_EQUAL, maker.Ident(valueName), Javac.makeLiteral(maker, CTC_BOT, null));
 			JCIf ifStatement = maker.If(isNull, maker.Block(0, List.<JCStatement>of(synchronizedStatement)), null);
 			statements.append(ifStatement);
 		}
