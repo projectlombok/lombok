@@ -62,7 +62,7 @@ public class CommentCatcher {
 	
 	private static void registerCommentsCollectingScannerFactory(Context context) {
 		try {
-			if (JavaCompiler.version().startsWith("1.6")) {
+			if (Javac.getJavaCompilerVersion() <= 6) {
 				Class.forName("lombok.javac.java6.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
 			} else {
 				Class.forName("lombok.javac.java7.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
@@ -76,7 +76,7 @@ public class CommentCatcher {
 	private static void setInCompiler(JavaCompiler compiler, Context context, Map<JCCompilationUnit, List<CommentInfo>> commentsMap) {
 		
 		try {
-			if (JavaCompiler.version().startsWith("1.6")) {
+			if (Javac.getJavaCompilerVersion() <= 6) {
 				Class<?> parserFactory = Class.forName("lombok.javac.java6.CommentCollectingParserFactory");
 				parserFactory.getMethod("setInCompiler",JavaCompiler.class, Context.class, Map.class).invoke(null, compiler, context, commentsMap);
 			} else {

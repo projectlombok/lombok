@@ -146,6 +146,14 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 		return nodeMap.get(node);
 	}
 	
+	/**
+	 * Returns the latest version of the java language specification supported by the host compiler.
+	 * For example, if compiling with javac v1.7, this returns {@code 7}.
+	 */
+	public int getLatestJavaSpecSupported() {
+		return 6;
+	}
+	
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	L replaceNewWithExistingOld(Map<N, L> oldNodes, L newNode) {
 		L oldNode = oldNodes.get(newNode.get());

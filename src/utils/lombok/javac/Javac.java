@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,9 +21,11 @@
  */
 package lombok.javac;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.sun.tools.javac.code.TypeTags;
+import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
@@ -41,6 +43,22 @@ public class Javac {
 	/** Matches any of the 8 primitive names, such as {@code boolean}. */
 	private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern.compile(
 			"^(boolean|byte|short|int|long|float|double|char)$");
+	
+	private static final Pattern VERSION_PARSER = Pattern.compile("^(\\d{1,6})\\.(\\d{1,6}).*$");
+	
+	/**
+	 * Returns the version of this java compiler, i.e. the JDK that it shipped in. For example, for javac v1.7, this returns {@code 7}.
+	 */
+	public static int getJavaCompilerVersion() {
+		Matcher m = VERSION_PARSER.matcher(JavaCompiler.version());
+		if (m.matches()) {
+			int major = Integer.parseInt(m.group(1));
+			int minor = Integer.parseInt(m.group(2));
+			if (major == 1) return minor;
+		}
+		
+		return 6;
+	}
 	
 	/**
 	 * Checks if the given expression (that really ought to refer to a type expression) represents a primitive type.

@@ -181,6 +181,15 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	}
 	
 	/**
+	 * Convenient shortcut to the owning ast object's getLatestJavaSpecSupported method.
+	 * 
+	 * @see AST#getLatestJavaSpecSupported()
+	 */
+	public int getLatestJavaSpecSupported() {
+		return ast.getLatestJavaSpecSupported();
+	}
+	
+	/**
 	 * Convenient shortcut to the owning ast object's top method.
 	 * 
 	 * @see AST#top()

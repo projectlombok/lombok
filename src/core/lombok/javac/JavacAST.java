@@ -113,6 +113,10 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		for (JavacNode child : node.down()) child.traverse(visitor);
 	}
 	
+	@Override public int getLatestJavaSpecSupported() {
+		return Javac.getJavaCompilerVersion();
+	}
+	
 	/** @return A Name object generated for the proper name table belonging to this AST. */
 	public Name toName(String name) {
 		return elements.getName(name);
