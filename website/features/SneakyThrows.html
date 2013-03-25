@@ -64,7 +64,11 @@
 				statement in a try/catch block with just <code>e.printStackTrace()</code> in the catch block. This is so spectacularly non-productive
 				compared to just sneakily throwing the exception onwards, that Roel and Reinier feel more than justified in claiming that the
 				checked exception system is far from perfect, and thus an opt-out mechanism is warranted.
-				</p>
+				</p><p>
+				If you put <code>@SneakyThrows</code> on a constructor, any call to a sibling or super constructor is <em>excluded</em> from the <code>@SneakyThrows</code> treatment. This is a
+				java restriction we cannot work around: Calls to sibling/super constructors MUST be the first statement in the constructor; they cannot be placed inside try/catch blocks.
+				</p><p>
+				<code>@SneakyThrows</code> on an empty method, or a constructor that is empty or only has a call to a sibling / super constructor results in no try/catch block and a warning.
 			</div>
 		</div>
 		<div class="footer">

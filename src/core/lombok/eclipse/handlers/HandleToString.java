@@ -209,21 +209,25 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		}
 		
 		for (EclipseNode field : fields) {
-			TypeReference fType = getFieldType(field, fieldAccess);
+			TypeReference fieldType = getFieldType(field, fieldAccess);
 			Expression fieldAccessor = createFieldAccessor(field, fieldAccess, source);
 			
+			// The distinction between primitive and object will be useful if we ever add a 'hideNulls' option.
+			boolean fieldBaseTypeIsPrimitive = BUILT_IN_TYPES.contains(new String(fieldType.getLastToken()));
+			boolean fieldIsPrimitive = fieldType.dimensions() == 0 && fieldBaseTypeIsPrimitive;
+			boolean fieldIsPrimitiveArray = fieldType.dimensions() == 1 && fieldBaseTypeIsPrimitive;
+			boolean fieldIsObjectArray = fieldType.dimensions() > 0 && !fieldIsPrimitiveArray;
+			@SuppressWarnings("unused")
+			boolean fieldIsObject = !fieldIsPrimitive && !fieldIsPrimitiveArray && !fieldIsObjectArray;
+			
 			Expression ex;
-			if (fType.dimensions() > 0) {
+			if (fieldIsPrimitiveArray || fieldIsObjectArray) {
 				MessageSend arrayToString = new MessageSend();
 				arrayToString.sourceStart = pS; arrayToString.sourceEnd = pE;
 				arrayToString.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA, TypeConstants.UTIL, "Arrays".toCharArray());
 				arrayToString.arguments = new Expression[] { fieldAccessor };
 				setGeneratedBy(arrayToString.arguments[0], source);
-				if (fType.dimensions() > 1 || !BUILT_IN_TYPES.contains(new String(fType.getLastToken()))) {
-					arrayToString.selector = "deepToString".toCharArray();
-				} else {
-					arrayToString.selector = "toString".toCharArray();
-				}
+				arrayToString.selector = (fieldIsObjectArray ? "deepToString" : "toString").toCharArray();
 				ex = arrayToString;
 			} else {
 				ex = fieldAccessor;

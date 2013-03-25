@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,40 +31,40 @@ import lombok.installer.IdeLocation;
 import org.mangosdk.spi.ProviderFor;
 
 /**
- * STS (Springsource Tool Suite) is an eclipse variant.
+ * JBDS (JBoss Developer Studio) is an eclipse variant.
  * Other than different executable names, it's the same as eclipse, as far as lombok support goes.
  */
 @ProviderFor(IdeFinder.class)
-public class STSFinder extends EclipseFinder {
+public class JbdsFinder extends EclipseFinder {
 	@Override protected IdeLocation createLocation(String guess) throws CorruptedIdeLocationException {
-		return new STSLocationProvider().create0(guess);
+		return new JbdsLocationProvider().create0(guess);
 	}
 	
 	@Override protected String getDirName() {
-		return "sts";
+		return "studio";
 	}
 	
 	@Override protected String getMacExecutableName() {
-		return "STS.app";
+		return "jbdevstudio.app";
 	}
 	
 	@Override protected String getUnixExecutableName() {
-		return "STS";
+		return "jbdevstudio";
 	}
 	
 	@Override protected String getWindowsExecutableName() {
-		return "STS.exe";
+		return "jbdevstudio.exe";
 	}
 	
 	@Override protected List<String> getSourceDirsOnWindows() {
-		return Arrays.asList("\\", "\\springsource", "\\Program Files", "\\Program Files (x86)", "\\Program Files\\springsource", "\\Program Files (x86)\\springsource", System.getProperty("user.home", "."), System.getProperty("user.home", ".") + "\\springsource");
+		return Arrays.asList("\\", "\\Program Files", "\\Program Files (x86)", System.getProperty("user.home", "."));
 	}
 	
 	@Override protected List<String> getSourceDirsOnMac() {
-		return Arrays.asList("/Applications", "/Applications/springsource", System.getProperty("user.home", "."), System.getProperty("user.home", ".") + "/springsource");
+		return Arrays.asList("/Applications", System.getProperty("user.home", "."));
 	}
 	
 	@Override protected List<String> getSourceDirsOnUnix() {
-		return Arrays.asList(System.getProperty("user.home", "."), System.getProperty("user.home", ".") + "/springsource");
+		return Arrays.asList(System.getProperty("user.home", "."));
 	}
 }

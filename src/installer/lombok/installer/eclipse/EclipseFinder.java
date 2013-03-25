@@ -64,14 +64,10 @@ public class EclipseFinder extends IdeFinder {
 	
 	/**
 	 * Returns a list of paths of Eclipse installations.
-	 * Eclipse installations are found by checking for the existence of 'eclipse.exe' in the following locations:
-	 * <ul>
-	 * <li>X:\*Program Files*\*Eclipse*</li>
-	 * <li>X:\*Eclipse*</li>
-	 * </ul>
 	 * 
-	 * Where 'X' is tried for all local disk drives, unless there's a problem calling fsutil, in which case only
-	 * C: is tried.
+	 * The search process works by scanning for each 'source dir' for either an eclipse installation or a folder containing the text returned
+	 * by getDirName(). If such a folder is found, this process is applied recursively. On windows, this process is run on each drive letter
+	 * which represents a physical hard disk. If the native windows API call to determine these drive letters fails, only 'C:' is checked.
 	 */
 	private List<String> getSourceDirsOnWindowsWithDriveLetters() {
 		List<String> driveLetters = asList("C");
@@ -83,10 +79,20 @@ public class EclipseFinder extends IdeFinder {
 		List<String> sourceDirs = new ArrayList<String>();
 		for (String letter : driveLetters) {
 			for (String possibleSource : getSourceDirsOnWindows()) {
-				sourceDirs.add(letter + ":" + possibleSource);
+				if (!isDriveSpecificOnWindows(possibleSource)) {
+					sourceDirs.add(letter + ":" + possibleSource);
+				}
 			}
 		}
+		for (String possibleSource : getSourceDirsOnWindows()) {
+			if (isDriveSpecificOnWindows(possibleSource)) sourceDirs.add(possibleSource);
+		}
+		
 		return sourceDirs;
+	}
+	
+	public boolean isDriveSpecificOnWindows(String path) {
+		return path.length() > 1 && path.charAt(1) == ':';
 	}
 	
 	protected List<String> getSourceDirsOnMac() {

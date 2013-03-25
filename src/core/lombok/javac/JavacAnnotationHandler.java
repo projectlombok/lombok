@@ -33,7 +33,7 @@ import com.sun.tools.javac.tree.JCTree.JCAnnotation;
  * 
  * You MUST replace 'T' with a specific annotation type, such as:
  * 
- * {@code public class HandleGetter implements JavacAnnotationHandler<Getter>}
+ * {@code public class HandleGetter extends JavacAnnotationHandler<Getter>}
  * 
  * Because this generics parameter is inspected to figure out which class you're interested in.
  * 
