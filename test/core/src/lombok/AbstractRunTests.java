@@ -43,7 +43,6 @@ import java.util.List;
 import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
 
 public abstract class AbstractRunTests {
-	protected static final String LINE_SEPARATOR = System.getProperty("line.separator");
 	private final File dumpActualFilesHere;
 	
 	public AbstractRunTests() {
@@ -98,7 +97,7 @@ public abstract class AbstractRunTests {
 		String line;
 		while ((line = reader.readLine()) != null) {
 			result.append(line);
-			result.append(LINE_SEPARATOR);
+			result.append("\n");
 		}
 		reader.close();
 		return result.toString();
