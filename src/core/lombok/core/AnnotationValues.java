@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -435,23 +435,16 @@ public class AnnotationValues<A extends Annotation> {
 		}
 		
 		/* 2. Walk through non-star imports and search for a match. */ {
-			for (String im : ast == null ? Collections.<String>emptyList() : ast.getImportStatements()) {
-				if (im.endsWith(".*")) continue;
-				int idx = im.lastIndexOf('.');
-				String simple = idx == -1 ? im : im.substring(idx+1);
-				if (simple.equals(prefix)) {
-					return im + typeName.substring(prefix.length());
-				}
+			if (prefix.equals(typeName)) {
+				String fqn = ast.getImportList().getFullyQualifiedNameForSimpleName(typeName);
+				if (fqn != null) return fqn;
 			}
 		}
 		
 		/* 3. Walk through star imports and, if they start with "java.", use Class.forName based resolution. */ {
-			List<String> imports = ast == null ? Collections.<String>emptyList() : new ArrayList<String>(ast.getImportStatements());
-			imports.add("java.lang.*");
-			for (String im : imports) {
-				if (!im.endsWith(".*") || !im.startsWith("java.")) continue;
+			for (String potential : ast.getImportList().applyNameToStarImports("java", typeName)) {
 				try {
-					Class<?> c = Class.forName(im.substring(0, im.length()-1) + typeName);
+					Class<?> c = Class.forName(potential);
 					if (c != null) return c.getName();
 				} catch (Throwable t) {
 					//Class.forName failed for whatever reason - it most likely does not exist, continue.

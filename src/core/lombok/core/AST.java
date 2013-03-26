@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -54,15 +53,15 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	private L top;
 	private final String fileName;
 	private final String packageDeclaration;
-	private final Collection<String> imports;
+	private final ImportList imports;
 	Map<N, Void> identityDetector = new IdentityHashMap<N, Void>();
 	private Map<N, L> nodeMap = new IdentityHashMap<N, L>();
 	private boolean changed = false;
 	
-	protected AST(String fileName, String packageDeclaration, Collection<String> imports) {
+	protected AST(String fileName, String packageDeclaration, ImportList imports) {
 		this.fileName = fileName == null ? "(unknown).java" : fileName;
 		this.packageDeclaration = packageDeclaration;
-		this.imports = Collections.unmodifiableCollection(new ArrayList<String>(imports));
+		this.imports = imports;
 	}
 	
 	public void setChanged() {
@@ -96,7 +95,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	 * 
 	 * Example: "java.util.IOException".
 	 */
-	public final Collection<String> getImportStatements() {
+	public final ImportList getImportList() {
 		return imports;
 	}
 	
@@ -159,8 +158,8 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 			oldChild.parent = targetNode;
 		}
 		
-		targetNode.children.clear();
-		((List)targetNode.children).addAll(children);
+		targetNode.children = ImmutableList.copyOf(children);
+		
 		return targetNode;
 	}
 	

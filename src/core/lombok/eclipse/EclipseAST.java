@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@ import java.util.List;
 
 import lombok.Lombok;
 import lombok.core.AST;
+import lombok.core.ImmutableList;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -55,7 +56,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	 * @param ast The compilation unit, which serves as the top level node in the tree to be built.
 	 */
 	public EclipseAST(CompilationUnitDeclaration ast) {
-		super(toFileName(ast), packageDeclaration(ast), imports(ast));
+		super(toFileName(ast), packageDeclaration(ast), new EclipseImportList(ast));
 		this.compilationUnitDeclaration = ast;
 		setTop(buildCompilationUnit(ast));
 		this.completeParse = isComplete(ast);
@@ -67,18 +68,6 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		return pkg == null ? null : Eclipse.toQualifiedName(pkg.getImportName());
 	}
 	
-	private static Collection<String> imports(CompilationUnitDeclaration cud) { 
-		List<String> imports = new ArrayList<String>();
-		if (cud.imports == null) return imports;
-		for (ImportReference imp : cud.imports) {
-			if (imp == null) continue;
-			String qualifiedName = Eclipse.toQualifiedName(imp.getImportName());
-			if ((imp.bits & ASTNode.OnDemand) != 0) qualifiedName += ".*";
-			imports.add(qualifiedName);
-		}
-		return imports;
-	}
-	
 	/**
 	 * Runs through the entire AST, starting at the compilation unit, calling the provided visitor's visit methods
 	 * for each node, depth first.
@@ -88,8 +77,10 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	}
 	
 	void traverseChildren(EclipseASTVisitor visitor, EclipseNode node) {
-		for (EclipseNode child : node.down()) {
-			child.traverse(visitor);
+		ImmutableList<EclipseNode> children = node.down();
+		int len = children.size();
+		for (int i = 0; i < len; i++) {
+			children.get(i).traverse(visitor);
 		}
 	}
 	

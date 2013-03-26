@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -218,30 +218,27 @@ public class HandlerLibrary {
 	 * @param annotation 'node.get()' - convenience parameter.
 	 */
 	public void handleAnnotation(CompilationUnitDeclaration ast, EclipseNode annotationNode, org.eclipse.jdt.internal.compiler.ast.Annotation annotation, long priority) {
-		String pkgName = annotationNode.getPackageDeclaration();
-		Collection<String> imports = annotationNode.getImportStatements();
-		
-		TypeResolver resolver = new TypeResolver(pkgName, imports);
+		TypeResolver resolver = new TypeResolver(annotationNode.getImportList());
 		TypeReference rawType = annotation.type;
 		if (rawType == null) return;
 		
-		for (String fqn : resolver.findTypeMatches(annotationNode, typeLibrary, toQualifiedName(annotation.type.getTypeName()))) {
-			AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
-			if (container == null) continue;
-			if (priority != container.getPriority()) continue;
-			
-			if (!annotationNode.isCompleteParse() && container.deferUntilPostDiet()) {
-				if (needsHandling(annotation)) container.preHandle(annotation, annotationNode);
-				continue;
-			}
-			
-			try {
-				if (checkAndSetHandled(annotation)) container.handle(annotation, annotationNode);
-			} catch (AnnotationValueDecodeFail fail) {
-				fail.owner.setError(fail.getMessage(), fail.idx);
-			} catch (Throwable t) {
-				error(ast, String.format("Lombok annotation handler %s failed", container.handler.getClass()), t);
-			}
+		String fqn = resolver.typeRefToFullyQualifiedName(annotationNode, typeLibrary, toQualifiedName(annotation.type.getTypeName()));
+		if (fqn == null) return;
+		AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
+		if (container == null) return;
+		if (priority != container.getPriority()) return;
+		
+		if (!annotationNode.isCompleteParse() && container.deferUntilPostDiet()) {
+			if (needsHandling(annotation)) container.preHandle(annotation, annotationNode);
+			return;
+		}
+		
+		try {
+			if (checkAndSetHandled(annotation)) container.handle(annotation, annotationNode);
+		} catch (AnnotationValueDecodeFail fail) {
+			fail.owner.setError(fail.getMessage(), fail.idx);
+		} catch (Throwable t) {
+			error(ast, String.format("Lombok annotation handler %s failed", container.handler.getClass()), t);
 		}
 	}
 	
