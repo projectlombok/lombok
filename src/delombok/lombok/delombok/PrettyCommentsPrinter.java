@@ -602,7 +602,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 
     /** Is the given tree an enumerator definition? */
     boolean isEnumerator(JCTree t) {
-        return getTag(t) == VARDEF && (((JCVariableDecl) t).mods.flags & ENUM) != 0;
+        return Javac.compareCTC(getTag(t), VARDEF) && (((JCVariableDecl) t).mods.flags & ENUM) != 0;
     }
 
     /** Print unit consisting of package clause and import statements in toplevel,
@@ -626,7 +626,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         for (List<JCTree> l = tree.defs;
         l.nonEmpty() && (cdef == null || getTag(l.head) == IMPORT);
         l = l.tail) {
-            if (getTag(l.head) == IMPORT) {
+            if (Javac.compareCTC(getTag(l.head), IMPORT)) {
                 JCImport imp = (JCImport)l.head;
                 Name name = TreeInfo.name(imp.qualid);
                 if (name == name.table.fromChars(new char[] {'*'}, 0, 1) ||
@@ -845,7 +845,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
             printStat(tree.body);
             align();
             print(" while ");
-            if (getTag(tree.cond) == PARENS) {
+            if (Javac.compareCTC(getTag(tree.cond), PARENS)) {
                 printExpr(tree.cond);
             } else {
                 print("(");
@@ -861,7 +861,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitWhileLoop(JCWhileLoop tree) {
         try {
             print("while ");
-            if (getTag(tree.cond) == PARENS) {
+            if (Javac.compareCTC(getTag(tree.cond), PARENS)) {
                 printExpr(tree.cond);
             } else {
                 print("(");
@@ -879,7 +879,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         try {
             print("for (");
             if (tree.init.nonEmpty()) {
-                if (getTag(tree.init.head) == VARDEF) {
+                if (Javac.compareCTC(getTag(tree.init.head), VARDEF)) {
                     printExpr(tree.init.head);
                     for (List<JCStatement> l = tree.init.tail; l.nonEmpty(); l = l.tail) {
                         JCVariableDecl vdef = (JCVariableDecl)l.head;
@@ -926,7 +926,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitSwitch(JCSwitch tree) {
         try {
             print("switch ");
-            if (getTag(tree.selector) == PARENS) {
+            if (Javac.compareCTC(getTag(tree.selector), PARENS)) {
                 printExpr(tree.selector);
             } else {
                 print("(");
@@ -965,7 +965,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitSynchronized(JCSynchronized tree) {
         try {
             print("synchronized ");
-            if (getTag(tree.lock) == PARENS) {
+            if (Javac.compareCTC(getTag(tree.lock), PARENS)) {
                 printExpr(tree.lock);
             } else {
                 print("(");
@@ -1023,7 +1023,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitIf(JCIf tree) {
         try {
             print("if ");
-            if (getTag(tree.cond) == PARENS) {
+            if (Javac.compareCTC(getTag(tree.cond), PARENS)) {
                 printExpr(tree.cond);
             } else {
                 print("(");
@@ -1119,7 +1119,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitApply(JCMethodInvocation tree) {
         try {
             if (!tree.typeargs.isEmpty()) {
-                if (getTag(tree.meth) == SELECT) {
+                if (Javac.compareCTC(getTag(tree.meth), SELECT)) {
                     JCFieldAccess left = (JCFieldAccess)tree.meth;
                     printExpr(left.selected);
                     print(".<");

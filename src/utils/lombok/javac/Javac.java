@@ -26,7 +26,6 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 import com.sun.tools.javac.main.JavaCompiler;
-import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
@@ -101,42 +100,6 @@ public class Javac {
 	public static final Object CTC_MUL = getTreeTag("MUL");
 	public static final Object CTC_PLUS = getTreeTag("PLUS");
 	public static final Object CTC_EQUAL = getTreeTag("EQ");
-	
-//	/**
-//	 * Retrieves the current ordinal position of a type tag.
-//	 * 
-//	 * For JDK 8 this is the ordinal position within the
-//	 * <code>com.sun.tools.javac.code.TypeTag enum</code> for JDK 7 and lower,
-//	 * this is the value of the constant within
-//	 * <code>com.sun.tools.javac.code.TypeTags</code>
-//	 * 
-//	 * Solves the problem of compile time constant inlining, resulting in lombok
-//	 * having the wrong value (javac compiler changes private api constants from
-//	 * time to time).
-//	 * 
-//	 * @param identifier
-//	 * @return the ordinal value of the typetag constant
-//	 */
-//	public static int getTypeTag(String identifier) {
-//		try {
-//			if (JavaCompiler.version().startsWith("1.8")) {
-//				Object enumInstance = Class.forName("com.sun.tools.javac.code.TypeTag").getField(identifier).get(null);
-//				return (int) Class.forName("com.sun.tools.javac.code.TypeTag").getField("order").get(enumInstance);
-//				
-//			} else {
-//				return (int) Class.forName("com.sun.tools.javac.code.TypeTags").getField(identifier).get(null);
-//			}
-//		} catch (NoSuchFieldException e) {
-//			throw new RuntimeException(e);
-//		} catch (IllegalAccessException e) {
-//			throw new RuntimeException(e);
-//		} catch (Exception e) {
-//			if (e instanceof RuntimeException) throw (RuntimeException) e;
-//			throw new RuntimeException(e);
-//		}
-//	}
-	
-	
 	
 	public static boolean compareCTC(Object ctc1, Object ctc2) {
 		return Objects.equals(ctc1, ctc2);
