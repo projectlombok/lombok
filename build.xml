@@ -375,7 +375,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<antcall target="-createEclipseLaunchForTestEnvironmentIfEclipseProject" />
 	</target>
 	
-	<target name="setupJavaOracle8TestEnvironment" description="Sets up the test so that 'ant test' will test against OpenJDK7.">
+	<target name="setupJavaOracle8TestEnvironment" description="Sets up the test so that 'ant test' will test against OpenJDK8.">
 		<mkdir dir="lib/oracleJDK8Environment" />
 		<!--get src="http://projectlombok.org/ivyrepo/langtools/javac-1.7.0.jar" dest="lib/openJDK7Environment/javac7.jar" verbose="true" usetimestamp="true" /-->
 		<!--get src="http://projectlombok.org/ivyrepo/langtools/rt-openjdk7.jar" dest="lib/openJDK7Environment/rt-openjdk7.jar" verbose="true" usetimestamp="true" /-->
