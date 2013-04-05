@@ -1281,9 +1281,9 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     private int isOwnPrec(JCExpression tree) {
     	try {
 	    	if (JavaCompiler.version().startsWith("1.8")) {
-				return (Integer)TreeInfo.class.getMethod("opPrec", Class.forName("com.sun.tools.javac.code.TypeTag")).invoke(tree, getTag(tree));
+				return (Integer)TreeInfo.class.getMethod("opPrec", Class.forName("com.sun.tools.javac.code.TypeTag")).invoke(null, getTag(tree));
 			} else {
-				return (Integer)TreeInfo.class.getMethod("opPrec", Integer.TYPE).invoke(tree, getTag(tree));
+				return (Integer)TreeInfo.class.getMethod("opPrec", Integer.TYPE).invoke(null, getTag(tree));
 			}
 		} catch (NoSuchMethodException e) {
 			throw new RuntimeException(e);

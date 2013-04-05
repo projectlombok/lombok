@@ -22,6 +22,7 @@
 package lombok.javac;
 
 import java.lang.reflect.Method;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import com.sun.tools.javac.main.JavaCompiler;
@@ -31,6 +32,7 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
+import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCUnary;
 import com.sun.tools.javac.tree.TreeMaker;
 
@@ -137,7 +139,7 @@ public class Javac {
 	
 	
 	public static boolean compareCTC(Object ctc1, Object ctc2) {
-		return ctc1.equals(ctc2);
+		return Objects.equals(ctc1, ctc2);
 	}
 	
 	/**
@@ -187,20 +189,14 @@ public class Javac {
 		}
 	}
 
-
-	public static Object getTreeTypeTag(JCTree tree) {
-		try {
-			return TreeMaker.class.getField("typetag").get(tree);
-		} catch (NoSuchFieldException e) {
-			throw new RuntimeException(e);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
-		} catch (Exception e) {
-			if (e instanceof RuntimeException) throw (RuntimeException) e;
-			throw new RuntimeException(e);
-		}
+	public static Object getTreeTypeTag(JCPrimitiveTypeTree tree) {
+		return tree.typetag;
 	}
 	
+	public static Object getTreeTypeTag(JCLiteral tree) {
+		return tree.typetag;
+	}
+
 	public static JCExpression makeTypeIdent(TreeMaker maker, Object ctc) {
 		try {
 			Method createIdent;
