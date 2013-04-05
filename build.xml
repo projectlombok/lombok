@@ -81,7 +81,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	
 	<target name="load-ipp" depends="download-ipp">
 		<taskdef classpath="lib/ivyplusplus.jar" resource="com/zwitserloot/ivyplusplus/antlib.xml" uri="antlib:com.zwitserloot.ivyplusplus" />
-		<ivy:ensureippversion version="1.7" property="ivyplusplus.minimumAvailable" />
+		<ivy:ensureippversion version="1.12" property="ivyplusplus.minimumAvailable" />
 	</target>
 	
 	<target name="redownload-ipp" unless="ivyplusplus.minimumAvailable">
