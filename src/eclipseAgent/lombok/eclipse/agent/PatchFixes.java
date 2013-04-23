@@ -330,15 +330,18 @@ public class PatchFixes {
 	}
 	
 	public static byte[] runPostCompiler(byte[] bytes, String fileName) {
+		if (System.getProperty("lombok.disablePostCompiler", null) != null) return bytes;
 		byte[] transformed = PostCompiler.applyTransformations(bytes, fileName, DiagnosticsReceiver.CONSOLE);
 		return transformed == null ? bytes : transformed;
 	}
 	
 	public static OutputStream runPostCompiler(OutputStream out) throws IOException {
+		if (System.getProperty("lombok.disablePostCompiler", null) != null) return out;
 		return PostCompiler.wrapOutputStream(out, "TEST", DiagnosticsReceiver.CONSOLE);
 	}
 	
 	public static BufferedOutputStream runPostCompiler(BufferedOutputStream out, String path, String name) throws IOException {
+		if (System.getProperty("lombok.disablePostCompiler", null) != null) return out;
 		String fileName = path + "/" + name;
 		return new BufferedOutputStream(PostCompiler.wrapOutputStream(out, fileName, DiagnosticsReceiver.CONSOLE));
 	}
