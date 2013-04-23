@@ -61,6 +61,7 @@ public class PreventNullAnalysisRemover implements PostCompilerTransformation {
 				if (hit && !"(Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) hit = false;
 				if (hit) {
 					changesMade.set(true);
+					if (System.getProperty("lombok.debugAsmOnly", null) != null) super.visitMethodInsn(opcode, owner, name, desc); // DEBUG for issue 470!
 				} else {
 					super.visitMethodInsn(opcode, owner, name, desc);
 				}

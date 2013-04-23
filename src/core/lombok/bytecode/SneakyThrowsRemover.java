@@ -61,7 +61,11 @@ public class SneakyThrowsRemover implements PostCompilerTransformation {
 						"(Ljava/lang/Throwable;)Ljava/lang/RuntimeException;".equals(desc)) {
 					
 					changesMade.set(true);
-					super.visitInsn(Opcodes.ATHROW);
+					if (System.getProperty("lombok.debugAsmOnly", null) != null) {
+						super.visitMethodInsn(opcode, owner, name, desc); // DEBUG for issue 470!
+					} else {
+						super.visitInsn(Opcodes.ATHROW);
+					}
 				} else {
 					super.visitMethodInsn(opcode, owner, name, desc);
 				}
