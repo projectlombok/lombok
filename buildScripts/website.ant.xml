@@ -76,7 +76,7 @@ such as converting the changelog into HTML, and creating javadoc.
 	</target>
 	
 	<target name="-website-main" depends="-website-clean, version, javadoc, changelogToHtml">
-		<taskdef classpath="lib/build/java2html.jar" name="java2html" classname="de.java2html.anttasks.Java2HtmlTask" />
+		<taskdef classpath="lib/build/de.java2html-java2html.jar" name="java2html" classname="de.java2html.anttasks.Java2HtmlTask" />
 		<mkdir dir="build/website" />
 		<copy todir="build/website">
 			<fileset dir="website">
