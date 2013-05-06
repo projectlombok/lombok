@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v0.11.9 (Edgy Guinea Pig)
+* BUGFIX: When using `@Data`, warnings are not generated if certain aspects are not generated because you wrote explicit versions of them. However, this gets confusing with `equals` / `hashCode` / `canEqual`, as nothing is generated if any one of those methods is present. Now, if one of `equals` or `hashCode` is present but not the other one (or `canEqual` is present but `equals` and/or `hashCode` is missing), a warning is emitted to explain that lombok will not generate any of the equals / hashCode methods, and that you should either write them all yourself or remove them all. [Issue #513](https://code.google.com/p/projectlombok/issues/detail?id=513)
+
 ### v0.11.8 (April 23rd, 2013)
 * FEATURE: Major performance improvements in eclipse by profiling the project clean process.
 * CHANGE: {Experimental} The experimental `@Value` feature no longer implies the also experimental `@Wither`. If you like your `@Value` classes to make withers, add `@Wither` to the class right next to `@Value`.

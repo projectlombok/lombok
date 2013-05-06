@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@ import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 import lombok.EqualsAndHashCode;
@@ -178,16 +179,25 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		
 		boolean isFinal = (((JCClassDecl)typeNode.get()).mods.flags & Flags.FINAL) != 0;
 		boolean needsCanEqual = !isFinal || !isDirectDescendantOfObject;
-		java.util.List<MemberExistsResult> existsResults = new ArrayList<MemberExistsResult>();
-		existsResults.add(methodExists("equals", typeNode, 1));
-		existsResults.add(methodExists("hashCode", typeNode, 0));
-		existsResults.add(methodExists("canEqual", typeNode, 1));
-		switch (Collections.max(existsResults)) {
+		MemberExistsResult equalsExists = methodExists("equals", typeNode, 1);
+		MemberExistsResult hashCodeExists = methodExists("hashCode", typeNode, 0);
+		MemberExistsResult canEqualExists = methodExists("canEqual", typeNode, 1);
+		switch (Collections.max(Arrays.asList(equalsExists, hashCodeExists, canEqualExists))) {
 		case EXISTS_BY_LOMBOK:
 			return;
 		case EXISTS_BY_USER:
 			if (whineIfExists) {
 				String msg = String.format("Not generating equals%s: A method with one of those names already exists. (Either all or none of these methods will be generated).", needsCanEqual ? ", hashCode and canEquals" : " and hashCode");
+				source.addWarning(msg);
+			} else if (equalsExists == MemberExistsResult.NOT_EXISTS || hashCodeExists == MemberExistsResult.NOT_EXISTS) {
+				// This means equals OR hashCode exists and not both (or neither, but canEqual is there).
+				// Even though we should suppress the message about not generating these, this is such a weird and surprising situation we should ALWAYS generate a warning.
+				// The user code couldn't possibly (barring really weird subclassing shenanigans) be in a shippable state anyway; the implementations of these 3 methods are
+				// all inter-related and should be written by the same entity.
+				String msg = String.format("Not generating %s: One of equals, hashCode, and canEqual exists. " +
+						"You should either write all of these are none of these (in the latter case, lombok generates them).",
+						equalsExists == MemberExistsResult.NOT_EXISTS && hashCodeExists == MemberExistsResult.NOT_EXISTS ? "equals and hashCode" :
+						equalsExists == MemberExistsResult.NOT_EXISTS ? "equals" : "hashCode");
 				source.addWarning(msg);
 			}
 			return;
