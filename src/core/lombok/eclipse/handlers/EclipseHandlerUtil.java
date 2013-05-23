@@ -1289,6 +1289,27 @@ public class EclipseHandlerUtil {
 		type.add(method, Kind.METHOD);
 	}
 	
+	/**
+	 * Adds an inner type (class, interface, enum) to the given type. Cannot inject top-level types.
+	 * 
+	 * @param typeNode parent type to inject new type into
+	 * @param type New type (class, interface, etc) to inject.
+	 */
+	public static void injectType(final EclipseNode typeNode, final TypeDeclaration type) {
+		type.annotations = createSuppressWarningsAll(type, type.annotations);
+		TypeDeclaration parent = (TypeDeclaration) typeNode.get();
+
+		if (parent.memberTypes == null) {
+			parent.memberTypes = new TypeDeclaration[] { type };
+		} else {
+			TypeDeclaration[] newArray = new TypeDeclaration[parent.memberTypes.length + 1];
+			System.arraycopy(parent.memberTypes, 0, newArray, 0, parent.memberTypes.length);
+			newArray[parent.memberTypes.length] = type;
+			parent.memberTypes = newArray;
+		}
+		typeNode.add(type, Kind.TYPE);
+	}
+	
 	private static final char[] ALL = "all".toCharArray();
 	
 	public static Annotation[] createSuppressWarningsAll(ASTNode source, Annotation[] originalAnnotationArray) {

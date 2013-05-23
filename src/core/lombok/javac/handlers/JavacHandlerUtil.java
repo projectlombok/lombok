@@ -801,6 +801,19 @@ public class JavacHandlerUtil {
 		typeNode.add(method, Kind.METHOD);
 	}
 	
+	/**
+	 * Adds an inner type (class, interface, enum) to the given type. Cannot inject top-level types.
+	 * 
+	 * @param typeNode parent type to inject new type into
+	 * @param type New type (class, interface, etc) to inject.
+	 */
+	public static void injectType(final JavacNode typeNode, final JCClassDecl type) {
+		JCClassDecl typeDecl = (JCClassDecl) typeNode.get();
+		addSuppressWarningsAll(type.mods, typeNode, type.pos, getGeneratedBy(type));
+		typeDecl.defs = typeDecl.defs.append(type);
+		typeNode.add(type, Kind.TYPE);
+	}
+	
 	private static void addSuppressWarningsAll(JCModifiers mods, JavacNode node, int pos, JCTree source) {
 		TreeMaker maker = node.getTreeMaker();
 		JCExpression suppressWarningsType = chainDots(node, "java", "lang", "SuppressWarnings");
