@@ -24,6 +24,7 @@ package lombok.javac;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.processing.Messager;
@@ -39,6 +40,7 @@ import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
+import com.sun.tools.javac.tree.JCTree.JCTry;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -224,6 +226,46 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		return putInMap(new JavacNode(this, local, childNodes, kind));
 	}
 	
+	private static boolean JCTRY_RESOURCES_FIELD_INITIALIZED;
+	private static Field JCTRY_RESOURCES_FIELD;
+	
+	@SuppressWarnings("unchecked")
+	private static List<JCTree> getResourcesForTryNode(JCTry tryNode) {
+		if (!JCTRY_RESOURCES_FIELD_INITIALIZED) {
+			try {
+				JCTRY_RESOURCES_FIELD = JCTry.class.getField("resources");
+			} catch (NoSuchFieldException ignore) {
+				// Java 1.6 or lower won't have this at all.
+			} catch (Exception ignore) {
+				// Shouldn't happen. Best thing we can do is just carry on and break on try/catch.
+			}
+			JCTRY_RESOURCES_FIELD_INITIALIZED = true;
+		}
+		
+		if (JCTRY_RESOURCES_FIELD == null) return Collections.emptyList();
+		Object rv = null;
+		try {
+			rv = JCTRY_RESOURCES_FIELD.get(tryNode);
+		} catch (Exception ignore) {}
+		
+		if (rv instanceof List) return (List<JCTree>) rv;
+		return Collections.emptyList();
+	}
+	
+	private JavacNode buildTry(JCTry tryNode) {
+		if (setAndGetAsHandled(tryNode)) return null;
+		List<JavacNode> childNodes = new ArrayList<JavacNode>();
+		for (JCTree varDecl : getResourcesForTryNode(tryNode)) {
+			if (varDecl instanceof JCVariableDecl) {
+				addIfNotNull(childNodes, buildLocalVar((JCVariableDecl) varDecl, Kind.LOCAL));
+			}
+		}
+		addIfNotNull(childNodes, buildStatement(tryNode.body));
+		for (JCCatch jcc : tryNode.catchers) addIfNotNull(childNodes, buildTree(jcc, Kind.STATEMENT));
+		addIfNotNull(childNodes, buildStatement(tryNode.finalizer));
+		return putInMap(new JavacNode(this, tryNode, childNodes, Kind.STATEMENT));
+	}
+	
 	private JavacNode buildInitializer(JCBlock initializer) {
 		if (setAndGetAsHandled(initializer)) return null;
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
@@ -265,6 +307,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		if (statement instanceof JCAnnotation) return null;
 		if (statement instanceof JCClassDecl) return buildType((JCClassDecl)statement);
 		if (statement instanceof JCVariableDecl) return buildLocalVar((JCVariableDecl)statement, Kind.LOCAL);
+		if (statement instanceof JCTry) return buildTry((JCTry) statement);
 		
 		if (setAndGetAsHandled(statement)) return null;
 		

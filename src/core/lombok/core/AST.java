@@ -54,7 +54,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	private final String fileName;
 	private final String packageDeclaration;
 	private final ImportList imports;
-	Map<N, Void> identityDetector = new IdentityHashMap<N, Void>();
+	Map<N, N> identityDetector = new IdentityHashMap<N, N>();
 	private Map<N, L> nodeMap = new IdentityHashMap<N, L>();
 	private boolean changed = false;
 	
@@ -105,7 +105,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	 */
 	protected L putInMap(L node) {
 		nodeMap.put(node.get(), node);
-		identityDetector.put(node.get(), null);
+		identityDetector.put(node.get(), node.get());
 		return node;
 	}
 	
@@ -117,7 +117,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	/** Clears the registry that avoids endless loops, and empties the node map. The existing node map
 	 * object is left untouched, and instead a new map is created. */
 	protected void clearState() {
-		identityDetector = new IdentityHashMap<N, Void>();
+		identityDetector = new IdentityHashMap<N, N>();
 		nodeMap = new IdentityHashMap<N, L>();
 	}
 	
@@ -127,9 +127,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	 * case you should do nothing lest the AST build process loops endlessly.
 	 */
 	protected boolean setAndGetAsHandled(N node) {
-		if (identityDetector.containsKey(node)) return true;
-		identityDetector.put(node, null);
-		return false;
+		return identityDetector.put(node, node) != null;
 	}
 	
 	public String getFileName() {
@@ -234,14 +232,12 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 				}
 			}
 			
-			for (Class<?> statementType : getStatementTypes()) {
-				if (statementType.isAssignableFrom(t)) {
-					f.setAccessible(true);
-					fields.add(new FieldAccess(f, dim));
-					break;
-				}
+			if (shouldDrill(c, t, f.getName())) {
+				f.setAccessible(true);
+				fields.add(new FieldAccess(f, dim));
 			}
 		}
+		
 		getFields(c.getSuperclass(), fields);
 	}
 	
@@ -257,6 +253,14 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	 * The supertypes which are considered AST Node children. Usually, the Statement, and the Expression,
 	 * though some platforms (such as Eclipse) group these under one common supertype. */
 	protected abstract Collection<Class<? extends N>> getStatementTypes();
+	
+	protected boolean shouldDrill(Class<?> parentType, Class<?> childType, String fieldName) {
+		for (Class<?> statementType : getStatementTypes()) {
+			if (statementType.isAssignableFrom(childType)) return true;
+		}
+		
+		return false;
+	}
 	
 	/**
 	 * buildTree implementation that uses reflection to find all child nodes by way of inspecting
