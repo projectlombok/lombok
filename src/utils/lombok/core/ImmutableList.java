@@ -57,7 +57,7 @@ public final class ImmutableList<T> implements Iterable<T> {
 		return new ImmutableList<T>(new Object[] {a, b, c, d, e});
 	}
 	
-	public static <T> ImmutableList<T> of(T a, T b, T c, T d, T e, T f, @SuppressWarnings("unchecked") T... g) {
+	public static <T> ImmutableList<T> of(T a, T b, T c, T d, T e, T f, T... g) {
 		Object[] rest = g == null ? new Object[] {null} : g;
 		Object[] val = new Object[rest.length + 6];
 		System.arraycopy(rest, 0, val, 6, rest.length);
