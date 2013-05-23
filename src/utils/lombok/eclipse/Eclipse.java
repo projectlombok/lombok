@@ -21,6 +21,7 @@
  */
 package lombok.eclipse;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 
 public class Eclipse {
@@ -176,5 +178,22 @@ public class Eclipse {
 		}
 		
 		return null;
+	}
+	
+	private static int ecjCompilerVersionCached = -1;
+	
+	public static int getEcjCompilerVersion() {
+		if (ecjCompilerVersionCached >= 0) return ecjCompilerVersionCached;
+		
+		for (Field f : CompilerOptions.class.getDeclaredFields()) {
+			try {
+				if (f.getName().startsWith("VERSION_1_")) {
+					ecjCompilerVersionCached = Math.max(ecjCompilerVersionCached, Integer.parseInt(f.getName().substring("VERSION_1_".length())));
+				}
+			} catch (Exception ignore) {}
+		}
+		
+		if (ecjCompilerVersionCached < 5) ecjCompilerVersionCached = 5;
+		return ecjCompilerVersionCached;
 	}
 }

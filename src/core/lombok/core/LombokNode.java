@@ -190,6 +190,15 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	}
 	
 	/**
+	 * Convenient shortcut to the owning ast object's getSourceVersion method.
+	 * 
+	 * @see AST#getSourceVersion()
+	 */
+	public int getSourceVersion() {
+		return ast.getSourceVersion();
+	}
+	
+	/**
 	 * Convenient shortcut to the owning ast object's top method.
 	 * 
 	 * @see AST#top()

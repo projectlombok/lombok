@@ -68,6 +68,20 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		return pkg == null ? null : Eclipse.toQualifiedName(pkg.getImportName());
 	}
 	
+	@Override public int getSourceVersion() {
+		long sl = compilationUnitDeclaration.problemReporter.options.sourceLevel;
+		long cl = compilationUnitDeclaration.problemReporter.options.complianceLevel;
+		sl >>= 16;
+		cl >>= 16;
+		if (sl == 0) sl = cl;
+		if (cl == 0) cl = sl;
+		return Math.min((int)(sl - 44), (int)(cl - 44));
+	}
+	
+	@Override public int getLatestJavaSpecSupported() {
+		return Eclipse.getEcjCompilerVersion();
+	}
+	
 	/**
 	 * Runs through the entire AST, starting at the compilation unit, calling the provided visitor's visit methods
 	 * for each node, depth first.

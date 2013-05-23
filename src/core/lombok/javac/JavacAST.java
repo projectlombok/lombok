@@ -34,6 +34,7 @@ import javax.tools.JavaFileObject;
 import lombok.core.AST;
 
 import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.tree.JCTree;
@@ -111,6 +112,15 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	
 	void traverseChildren(JavacASTVisitor visitor, JavacNode node) {
 		for (JavacNode child : node.down()) child.traverse(visitor);
+	}
+	
+	@Override public int getSourceVersion() {
+		try {
+			String nm = Source.instance(context).name();
+			int underscoreIdx = nm.indexOf('_');
+			if (underscoreIdx > -1) return Integer.parseInt(nm.substring(underscoreIdx + 1));
+		} catch (Exception ignore) {}
+		return 6;
 	}
 	
 	@Override public int getLatestJavaSpecSupported() {

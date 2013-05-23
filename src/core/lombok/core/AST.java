@@ -147,8 +147,18 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	}
 	
 	/**
+	 * Returns the JLS spec version that the compiler uses to parse and compile this AST.
+	 * For example, if -source 1.6 is on the command line, this will return {@code 6}.
+	 */
+	public int getSourceVersion() {
+		return 6;
+	}
+	
+	/**
 	 * Returns the latest version of the java language specification supported by the host compiler.
 	 * For example, if compiling with javac v1.7, this returns {@code 7}.
+	 * 
+	 * NB: Even if -source (lower than maximum) is specified, this method still returns the maximum supported number.
 	 */
 	public int getLatestJavaSpecSupported() {
 		return 6;

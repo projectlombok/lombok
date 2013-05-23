@@ -32,6 +32,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lombok.eclipse.Eclipse;
 import lombok.javac.Javac;
 
 import org.junit.runner.Description;
@@ -53,7 +54,7 @@ public class DirectoryRunner extends Runner {
 		},
 		ECJ {
 			@Override public int getVersion() {
-				return 6;
+				return Eclipse.getEcjCompilerVersion();
 			}
 		};
 		
