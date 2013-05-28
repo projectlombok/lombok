@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v0.11.9 (Edgy Guinea Pig)
+* BUGFIX: Usage of `Lombok.sneakyThrow()` or `@SneakyThrows` would sometimes result in invalid classes (classes which fail with `VerifyError`). [Issue #470](https://code.google.com/p/projectlombok/issues/detail?id=470)
 * BUGFIX: Using `val` in try-with-resources did not work for javac. [Issue #520](https://code.google.com/p/projectlombok/issues/detail?id=520)
 * BUGFIX: When using `@Data`, warnings are not generated if certain aspects are not generated because you wrote explicit versions of them. However, this gets confusing with `equals` / `hashCode` / `canEqual`, as nothing is generated if any one of those methods is present. Now, if one of `equals` or `hashCode` is present but not the other one (or `canEqual` is present but `equals` and/or `hashCode` is missing), a warning is emitted to explain that lombok will not generate any of the equals / hashCode methods, and that you should either write them all yourself or remove them all. [Issue #513](https://code.google.com/p/projectlombok/issues/detail?id=513)
 

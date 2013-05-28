@@ -144,7 +144,7 @@ public class TransformEclipseAST {
 			try {
 				String message = "Lombok can't parse this source: " + t.toString();
 				
-				EclipseAST.addProblemToCompilationResult(ast, false, message, 0, 0);
+				EclipseAST.addProblemToCompilationResult(ast.getFileName(), ast.compilationResult, false, message, 0, 0);
 				t.printStackTrace();
 			} catch (Throwable t2) {
 				try {

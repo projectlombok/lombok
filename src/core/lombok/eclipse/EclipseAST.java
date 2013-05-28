@@ -24,6 +24,7 @@ package lombok.eclipse;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import org.eclipse.jdt.internal.compiler.CompilationResult;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -123,7 +124,8 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		}
 		
 		void addToCompilationResult() {
-			addProblemToCompilationResult((CompilationUnitDeclaration) top().get(),
+			CompilationUnitDeclaration cud = (CompilationUnitDeclaration) top().get();
+			addProblemToCompilationResult(cud.getFileName(), cud.compilationResult,
 					isWarning, message, sourceStart, sourceEnd);
 		}
 	}
@@ -147,11 +149,10 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	 * Adds a problem to the provided CompilationResult object so that it will show up
 	 * in the Problems/Warnings view.
 	 */
-	public static void addProblemToCompilationResult(CompilationUnitDeclaration ast,
+	public static void addProblemToCompilationResult(char[] fileNameArray, CompilationResult result,
 			boolean isWarning, String message, int sourceStart, int sourceEnd) {
-		if (ast.compilationResult == null) return;
 		try {
-			EcjReflectionCheck.addProblemToCompilationResult.invoke(null, ast, isWarning, message, sourceStart, sourceEnd);
+			EcjReflectionCheck.addProblemToCompilationResult.invoke(null, fileNameArray, result, isWarning, message, sourceStart, sourceEnd);
 		} catch (NoClassDefFoundError e) {
 			//ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
 			//do anything useful here.
@@ -168,7 +169,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 			//do anything useful here.
 		}
 	}
-
+	
 	private final CompilationUnitDeclaration compilationUnitDeclaration;
 	private boolean completeParse;
 	
@@ -358,7 +359,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	}
 	
 	private static class EcjReflectionCheck {
-		private static final String CUD_TYPE = "org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration";
+		private static final String COMPILATIONRESULT_TYPE = "org.eclipse.jdt.internal.compiler.CompilationResult";
 		
 		public static Method addProblemToCompilationResult;
 		public static final Throwable problem;
@@ -367,7 +368,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 			Throwable problem_ = null;
 			Method m = null;
 			try {
-				m = EclipseAstProblemView.class.getMethod("addProblemToCompilationResult", Class.forName(CUD_TYPE), boolean.class, String.class, int.class, int.class);
+				m = EclipseAstProblemView.class.getMethod("addProblemToCompilationResult", char[].class, Class.forName(COMPILATIONRESULT_TYPE), boolean.class, String.class, int.class, int.class);
 			} catch (Throwable t) {
 				// That's problematic, but as long as no local classes are used we don't actually need it.
 				// Better fail on local classes than crash altogether.

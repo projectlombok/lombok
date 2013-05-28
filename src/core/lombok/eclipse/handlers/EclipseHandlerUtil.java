@@ -142,7 +142,7 @@ public class EclipseHandlerUtil {
 		} catch (NoClassDefFoundError e) {  //standalone ecj does not jave Platform, ILog, IStatus, and friends.
 			new TerminalLogger().error(message, bundleName, error);
 		}
-		if (cud != null) EclipseAST.addProblemToCompilationResult(cud, false, message + " - See error log.", 0, 0);
+		if (cud != null) EclipseAST.addProblemToCompilationResult(cud.getFileName(), cud.compilationResult, false, message + " - See error log.", 0, 0);
 	}
 	
 	/**

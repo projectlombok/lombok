@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Project Lombok Authors.
+ * Copyright (C) 2010-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@ public final class PostCompiler {
 	private static List<PostCompilerTransformation> transformations;
 	
 	public static byte[] applyTransformations(byte[] original, String fileName, DiagnosticsReceiver diagnostics) {
+		if (System.getProperty("lombok.disablePostCompiler", null) != null) return original;
 		init(diagnostics);
 		byte[] previous = original;
 		for (PostCompilerTransformation transformation : transformations) {
@@ -59,6 +60,7 @@ public final class PostCompiler {
 	}
 
 	public static OutputStream wrapOutputStream(final OutputStream originalStream, final String fileName, final DiagnosticsReceiver diagnostics) throws IOException {
+		if (System.getProperty("lombok.disablePostCompiler", null) != null) return originalStream;
 		return new ByteArrayOutputStream() {
 			@Override public void close() throws IOException {
 				// no need to call super

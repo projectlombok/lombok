@@ -3,7 +3,6 @@ package lombok.eclipse;
 
 import org.eclipse.jdt.core.compiler.CategorizedProblem;
 import org.eclipse.jdt.internal.compiler.CompilationResult;
-import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblem;
 import org.eclipse.jdt.internal.compiler.problem.ProblemSeverities;
 import org.eclipse.jdt.internal.compiler.util.Util;
@@ -13,14 +12,12 @@ public class EclipseAstProblemView {
 	 * Adds a problem to the provided CompilationResult object so that it will show up
 	 * in the Problems/Warnings view.
 	 */
-	public static void addProblemToCompilationResult(CompilationUnitDeclaration ast,
+	public static void addProblemToCompilationResult(char[] fileNameArray, CompilationResult result,
 			boolean isWarning, String message, int sourceStart, int sourceEnd) {
-		if (ast.compilationResult == null) return;
-		char[] fileNameArray = ast.getFileName();
+		if (result == null) return;
 		if (fileNameArray == null) fileNameArray = "(unknown).java".toCharArray();
 		int lineNumber = 0;
 		int columnNumber = 1;
-		CompilationResult result = ast.compilationResult;
 		int[] lineEnds = null;
 		lineNumber = sourceStart >= 0
 				? Util.getLineNumber(sourceStart, lineEnds = result.getLineSeparatorPositions(), 0, lineEnds.length-1)
@@ -33,7 +30,7 @@ public class EclipseAstProblemView {
 				fileNameArray, message, 0, new String[0],
 				isWarning ? ProblemSeverities.Warning : ProblemSeverities.Error,
 				sourceStart, sourceEnd, lineNumber, columnNumber);
-		ast.compilationResult.record(ecProblem, null);
+		result.record(ecProblem, null);
 	}
 	
 	private static class LombokProblem extends DefaultProblem {
