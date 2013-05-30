@@ -63,7 +63,9 @@
   }
   public @java.lang.SuppressWarnings("all") void setNonNull(final @lombok.NonNull String nonNull) {
     if ((nonNull == null))
-        throw new java.lang.NullPointerException("nonNull");
+        {
+          throw new java.lang.NullPointerException("nonNull");
+        }
     this.nonNull = nonNull;
   }
 }

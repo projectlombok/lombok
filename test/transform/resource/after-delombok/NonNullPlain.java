@@ -16,7 +16,9 @@ class NonNullPlain {
 	@java.beans.ConstructorProperties({"i", "s"})
 	@java.lang.SuppressWarnings("all")
 	public NonNullPlain(@lombok.NonNull final int i, @lombok.NonNull final String s) {
-		if (s == null) throw new java.lang.NullPointerException("s");
+		if (s == null) {
+			throw new java.lang.NullPointerException("s");
+		}
 		this.i = i;
 		this.s = s;
 	}
@@ -45,7 +47,9 @@ class NonNullPlain {
 	
 	@java.lang.SuppressWarnings("all")
 	public void setS(@lombok.NonNull final String s) {
-		if (s == null) throw new java.lang.NullPointerException("s");
+		if (s == null) {
+			throw new java.lang.NullPointerException("s");
+		}
 		this.s = s;
 	}
 	

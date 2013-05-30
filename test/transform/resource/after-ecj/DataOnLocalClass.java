@@ -63,7 +63,9 @@ class DataOnLocalClass2 {
         }
         public @java.lang.SuppressWarnings("all") void setName(final @lombok.NonNull String name) {
           if ((name == null))
-              throw new java.lang.NullPointerException("name");
+              {
+                throw new java.lang.NullPointerException("name");
+              }
           this.name = name;
         }
         public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
@@ -96,7 +98,9 @@ class DataOnLocalClass2 {
         public @java.lang.SuppressWarnings("all") InnerLocal(final @lombok.NonNull String name) {
           super();
           if ((name == null))
-              throw new java.lang.NullPointerException("name");
+              {
+                throw new java.lang.NullPointerException("name");
+              }
           this.name = name;
         }
       }

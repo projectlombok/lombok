@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,6 @@ import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -114,14 +112,6 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 		}
 	}
 
-	private boolean isConstructorCall(final JCStatement supect) {
-		if (!(supect instanceof JCExpressionStatement)) return false;
-		final JCExpression supectExpression = ((JCExpressionStatement) supect).expr;
-		if (!(supectExpression instanceof JCMethodInvocation)) return false;
-		final String methodName = ((JCMethodInvocation) supectExpression).meth.toString();
-		return "super".equals(methodName) || "this".equals(methodName);
-	}
-	
 	private JCStatement buildTryCatchBlock(JavacNode node, List<JCStatement> contents, String exception, JCTree source) {
 		TreeMaker maker = node.getTreeMaker();
 		

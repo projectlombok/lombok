@@ -50,9 +50,11 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
+import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
@@ -121,6 +123,7 @@ public class JavacHandlerUtil {
 	}
 	
 	public static <T extends JCTree> T recursiveSetGeneratedBy(T node, JCTree source) {
+		if (node == null) return null;
 		setGeneratedBy(node, source);
 		node.accept(new MarkingScanner(source));
 		
@@ -543,6 +546,23 @@ public class JavacHandlerUtil {
 		return MemberExistsResult.NOT_EXISTS;
 	}
 	
+	public static boolean isConstructorCall(final JCStatement statement) {
+		if (!(statement instanceof JCExpressionStatement)) return false;
+		JCExpression expr = ((JCExpressionStatement) statement).expr;
+		if (!(expr instanceof JCMethodInvocation)) return false;
+		JCExpression invocation = ((JCMethodInvocation) expr).meth;
+		String name;
+		if (invocation instanceof JCFieldAccess) {
+			name = ((JCFieldAccess) invocation).name.toString();
+		} else if (invocation instanceof JCIdent) {
+			name = ((JCIdent) invocation).name.toString();
+		} else {
+			name = "";
+		}
+		
+		return "super".equals(name) || "this".equals(name);
+	}
+	
 	/**
 	 * Turns an {@code AccessLevel} instance into the flag bit used by javac.
 	 */
@@ -890,7 +910,8 @@ public class JavacHandlerUtil {
 		JCExpression npe = chainDots(variable, "java", "lang", "NullPointerException");
 		JCTree exception = treeMaker.NewClass(null, List.<JCExpression>nil(), npe, List.<JCExpression>of(treeMaker.Literal(fieldName.toString())), null);
 		JCStatement throwStatement = treeMaker.Throw(exception);
-		return treeMaker.If(treeMaker.Binary(CTC_EQUAL, treeMaker.Ident(fieldName), treeMaker.Literal(CTC_BOT, null)), throwStatement, null);
+		JCBlock throwBlock = treeMaker.Block(0, List.of(throwStatement));
+		return treeMaker.If(treeMaker.Binary(CTC_EQUAL, treeMaker.Ident(fieldName), treeMaker.Literal(CTC_BOT, null)), throwBlock, null);
 	}
 	
 	/**

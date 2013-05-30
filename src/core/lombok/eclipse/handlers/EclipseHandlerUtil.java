@@ -61,6 +61,7 @@ import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ArrayQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ArrayTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.CastExpression;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
@@ -1334,7 +1335,11 @@ public class EclipseHandlerUtil {
 		EqualExpression equalExpression = new EqualExpression(varName, nullLiteral, OperatorIds.EQUAL_EQUAL);
 		equalExpression.sourceStart = pS; equalExpression.statementEnd = equalExpression.sourceEnd = pE;
 		setGeneratedBy(equalExpression, source);
-		IfStatement ifStatement = new IfStatement(equalExpression, throwStatement, 0, 0);
+		Block throwBlock = new Block(0);
+		throwBlock.statements = new Statement[] {throwStatement};
+		throwBlock.sourceStart = pS; throwBlock.sourceEnd = pE;
+		setGeneratedBy(throwBlock, source);
+		IfStatement ifStatement = new IfStatement(equalExpression, throwBlock, 0, 0);
 		setGeneratedBy(ifStatement, source);
 		return ifStatement;
 	}

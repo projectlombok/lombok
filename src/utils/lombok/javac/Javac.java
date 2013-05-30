@@ -21,6 +21,8 @@
  */
 package lombok.javac;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -129,4 +131,34 @@ public class Javac {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	private static final Field JCTREE_TAG;
+	private static final Method JCTREE_GETTAG;
+	static {
+		Field f = null;
+		try {
+			f = JCTree.class.getDeclaredField("tag");
+		} catch (NoSuchFieldException e) {}
+		JCTREE_TAG = f;
+		
+		Method m = null;
+		try {
+			m = JCTree.class.getDeclaredMethod("getTag");
+		} catch (NoSuchMethodException e) {}
+		JCTREE_GETTAG = m;
+	}
+	
+	public static int getTag(JCTree node) {
+		if (JCTREE_GETTAG != null) {
+			try {
+				return (Integer) JCTREE_GETTAG.invoke(node);
+			} catch (Exception e) {}
+		}
+		try {
+			return (Integer) JCTREE_TAG.get(node);
+		} catch (Exception e) {
+			throw new IllegalStateException("Can't get node tag");
+		}
+	}
+	
 }
