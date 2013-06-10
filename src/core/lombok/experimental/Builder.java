@@ -109,4 +109,13 @@ import java.lang.annotation.Target;
 public @interface Builder {
 	/** Name of the static method that creates a new builder instance. Default: {@code builder}. */
 	String builderMethodName() default "builder";
+	
+	/** Name of the instance method in the builder class that creates an instance of your {@code @Builder}-annotated class. */
+	String buildMethodName() default "build";
+	
+	/** Name of the builder class.
+	 * Default for {@code @Builder} on types and constructors: {@code (TypeName)Builder}.
+	 * Default for {@code @Builder} on static methods: {@code (ReturnTypeName)Builder}.
+	 */
+	String builderClassName() default "";
 }

@@ -28,6 +28,7 @@ import lombok.Data;
 import lombok.core.AnnotationValues;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.eclipse.handlers.HandleConstructor.SkipIfConstructorExists;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
@@ -64,6 +65,6 @@ public class HandleData extends EclipseAnnotationHandler<Data> {
 		new HandleSetter().generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
 		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		new HandleToString().generateToStringForType(typeNode, annotationNode);
-		new HandleConstructor().generateRequiredArgsConstructor(typeNode, AccessLevel.PUBLIC, ann.staticConstructor(), true, Collections.<Annotation>emptyList(), ast);
+		new HandleConstructor().generateRequiredArgsConstructor(typeNode, AccessLevel.PUBLIC, ann.staticConstructor(), SkipIfConstructorExists.YES, Collections.<Annotation>emptyList(), ast);
 	}
 }

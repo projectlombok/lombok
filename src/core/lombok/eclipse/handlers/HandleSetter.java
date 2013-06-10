@@ -192,7 +192,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		injectMethod(fieldNode.up(), method);
 	}
 	
-	private MethodDeclaration createSetter(TypeDeclaration parent, EclipseNode fieldNode, String name, boolean shouldReturnThis, int modifier, ASTNode source, List<Annotation> onMethod, List<Annotation> onParam) {
+	static MethodDeclaration createSetter(TypeDeclaration parent, EclipseNode fieldNode, String name, boolean shouldReturnThis, int modifier, ASTNode source, List<Annotation> onMethod, List<Annotation> onParam) {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;

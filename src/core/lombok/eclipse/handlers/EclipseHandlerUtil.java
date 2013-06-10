@@ -359,6 +359,20 @@ public class EclipseHandlerUtil {
 		return out;
 	}
 	
+	public static TypeReference namePlusTypeParamsToTypeReference(char[] typeName, TypeParameter[] params, long p) {
+		if (params != null && params.length > 0) {
+			TypeReference[] refs = new TypeReference[params.length];
+			int idx = 0;
+			for (TypeParameter param : params) {
+				TypeReference typeRef = new SingleTypeReference(param.name, p);
+				refs[idx++] = typeRef;
+			}
+			return new ParameterizedSingleTypeReference(typeName, refs, 0, p);
+		}
+		
+		return new SingleTypeReference(typeName, p);
+	}
+	
 	/**
 	 * Convenience method that creates a new array and copies each TypeReference in the source array via
 	 * {@link #copyType(TypeReference, ASTNode)}.
@@ -1208,15 +1222,15 @@ public class EclipseHandlerUtil {
 	 * Inserts a field into an existing type. The type must represent a {@code TypeDeclaration}.
 	 * The field carries the &#64;{@link SuppressWarnings}("all") annotation.
 	 */
-	public static void injectFieldSuppressWarnings(EclipseNode type, FieldDeclaration field) {
+	public static EclipseNode injectFieldSuppressWarnings(EclipseNode type, FieldDeclaration field) {
 		field.annotations = createSuppressWarningsAll(field, field.annotations);
-		injectField(type, field);
+		return injectField(type, field);
 	}
 	
 	/**
 	 * Inserts a field into an existing type. The type must represent a {@code TypeDeclaration}.
 	 */
-	public static void injectField(EclipseNode type, FieldDeclaration field) {
+	public static EclipseNode injectField(EclipseNode type, FieldDeclaration field) {
 		TypeDeclaration parent = (TypeDeclaration) type.get();
 		
 		if (parent.fields == null) {
@@ -1243,7 +1257,7 @@ public class EclipseHandlerUtil {
 			}
 		}
 		
-		type.add(field, Kind.FIELD);
+		return type.add(field, Kind.FIELD);
 	}
 	
 	private static boolean isEnumConstant(final FieldDeclaration field) {
@@ -1253,7 +1267,7 @@ public class EclipseHandlerUtil {
 	/**
 	 * Inserts a method into an existing type. The type must represent a {@code TypeDeclaration}.
 	 */
-	public static void injectMethod(EclipseNode type, AbstractMethodDeclaration method) {
+	public static EclipseNode injectMethod(EclipseNode type, AbstractMethodDeclaration method) {
 		method.annotations = createSuppressWarningsAll(method, method.annotations);
 		TypeDeclaration parent = (TypeDeclaration) type.get();
 		
@@ -1286,7 +1300,7 @@ public class EclipseHandlerUtil {
 			parent.methods = newArray;
 		}
 		
-		type.add(method, Kind.METHOD);
+		return type.add(method, Kind.METHOD);
 	}
 	
 	/**
@@ -1295,7 +1309,7 @@ public class EclipseHandlerUtil {
 	 * @param typeNode parent type to inject new type into
 	 * @param type New type (class, interface, etc) to inject.
 	 */
-	public static void injectType(final EclipseNode typeNode, final TypeDeclaration type) {
+	public static EclipseNode injectType(final EclipseNode typeNode, final TypeDeclaration type) {
 		type.annotations = createSuppressWarningsAll(type, type.annotations);
 		TypeDeclaration parent = (TypeDeclaration) typeNode.get();
 
@@ -1307,7 +1321,8 @@ public class EclipseHandlerUtil {
 			newArray[parent.memberTypes.length] = type;
 			parent.memberTypes = newArray;
 		}
-		typeNode.add(type, Kind.TYPE);
+		
+		return typeNode.add(type, Kind.TYPE);
 	}
 	
 	private static final char[] ALL = "all".toCharArray();
