@@ -315,9 +315,18 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	}
 	
 	private JavacNode drill(JCTree statement) {
-		List<JavacNode> childNodes = new ArrayList<JavacNode>();
-		for (FieldAccess fa : fieldsOf(statement.getClass())) childNodes.addAll(buildWithField(JavacNode.class, statement, fa));
-		return putInMap(new JavacNode(this, statement, childNodes, Kind.STATEMENT));
+		try {
+			List<JavacNode> childNodes = new ArrayList<JavacNode>();
+			for (FieldAccess fa : fieldsOf(statement.getClass())) childNodes.addAll(buildWithField(JavacNode.class, statement, fa));
+			return putInMap(new JavacNode(this, statement, childNodes, Kind.STATEMENT));
+		} catch (OutOfMemoryError oome) {
+			String msg = oome.getMessage();
+			if (msg == null) msg = "(no original message)";
+			OutOfMemoryError newError = new OutOfMemoryError(getFileName() + "@pos" + statement.getPreferredPosition() + ": " + msg);
+			// We could try to set the stack trace of the new exception to the same one as the old exception, but this costs memory,
+			// and we're already in an extremely fragile situation in regards to remaining heap space, so let's not do that.
+			throw newError;
+		}
 	}
 	
 	/** For javac, both JCExpression and JCStatement are considered as valid children types. */
