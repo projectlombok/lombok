@@ -62,10 +62,6 @@ import com.sun.tools.javac.util.Context;
 /**
  * This Annotation Processor is the standard injection mechanism for lombok-enabling the javac compiler.
  * 
- * Due to lots of changes in the core javac code, as well as lombok's heavy usage of non-public API, this
- * code only works for the javac v1.6 compiler; it definitely won't work for javac v1.5, and it probably
- * won't work for javac v1.7 without modifications.
- * 
  * To actually enable lombok in a javac compilation run, this class should be in the classpath when
  * running javac; that's the only requirement.
  */
