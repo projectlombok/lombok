@@ -806,12 +806,13 @@ public class JavacHandlerUtil {
 	 * 
 	 * @param typeNode parent type to inject new type into
 	 * @param type New type (class, interface, etc) to inject.
+	 * @return 
 	 */
-	public static void injectType(final JavacNode typeNode, final JCClassDecl type) {
+	public static JavacNode injectType(final JavacNode typeNode, final JCClassDecl type) {
 		JCClassDecl typeDecl = (JCClassDecl) typeNode.get();
 		addSuppressWarningsAll(type.mods, typeNode, type.pos, getGeneratedBy(type));
 		typeDecl.defs = typeDecl.defs.append(type);
-		typeNode.add(type, Kind.TYPE);
+		return typeNode.add(type, Kind.TYPE);
 	}
 	
 	private static void addSuppressWarningsAll(JCModifiers mods, JavacNode node, int pos, JCTree source) {
@@ -1023,6 +1024,20 @@ public class JavacHandlerUtil {
 		}
 		ast.args = params.toList();
 		return result.toList();
+	}
+	
+	public static JCExpression namePlusTypeParamsToTypeReference(TreeMaker maker, Name typeName, List<JCTypeParameter> params) {
+		ListBuffer<JCExpression> typeArgs = ListBuffer.lb();
+		
+		if (!params.isEmpty()) {
+			for (JCTypeParameter param : params) {
+				typeArgs.append(maker.Ident(param.name));
+			}
+			
+			return maker.TypeApply(maker.Ident(typeName), typeArgs.toList());
+		}
+		
+		return maker.Ident(typeName);
 	}
 	
 	static List<JCAnnotation> copyAnnotations(List<? extends JCExpression> in) {

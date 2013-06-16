@@ -29,6 +29,7 @@ import lombok.experimental.NonFinal;
 import lombok.experimental.Value;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.handlers.HandleConstructor.SkipIfConstructorExists;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -65,7 +66,7 @@ public class HandleValue extends JavacAnnotationHandler<Value> {
 		new HandleFieldDefaults().generateFieldDefaultsForType(typeNode, annotationNode, AccessLevel.PRIVATE, true, true);
 		
 		// TODO move this to the end OR move it to the top in eclipse.
-		new HandleConstructor().generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, true, annotationNode);
+		new HandleConstructor().generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, SkipIfConstructorExists.YES, annotationNode);
 		new HandleGetter().generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
 		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		new HandleToString().generateToStringForType(typeNode, annotationNode);

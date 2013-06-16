@@ -22,6 +22,7 @@
 package lombok.eclipse.handlers;
 
 import static lombok.eclipse.Eclipse.*;
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.util.ArrayList;
@@ -57,7 +58,6 @@ import org.mangosdk.spi.ProviderFor;
 import lombok.AccessLevel;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.core.JavaIdentifiers;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
@@ -78,9 +78,11 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		if (buildMethodName == null) builderMethodName = "build";
 		if (builderClassName == null) builderClassName = "";
 		
-		checkName("builderMethodName", builderMethodName, annotationNode);
-		checkName("buildMethodName", buildMethodName, annotationNode);
-		if (!builderClassName.isEmpty()) checkName("builderClassName", builderClassName, annotationNode);
+		if (checkName("builderMethodName", builderMethodName, annotationNode)) return;
+		if (!checkName("buildMethodName", buildMethodName, annotationNode)) return;
+		if (!builderClassName.isEmpty()) {
+			if (!checkName("builderClassName", builderClassName, annotationNode)) return;
+		}
 		
 		EclipseNode parent = annotationNode.up();
 		
@@ -97,9 +99,9 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		if (parent.get() instanceof TypeDeclaration) {
 			tdParent = parent;
 			TypeDeclaration td = (TypeDeclaration) tdParent.get();
-			new HandleConstructor().generateAllArgsConstructor(parent, AccessLevel.PRIVATE, null, SkipIfConstructorExists.I_AM_BUILDER, Collections.<Annotation>emptyList(), ast);
+			new HandleConstructor().generateAllArgsConstructor(tdParent, AccessLevel.PRIVATE, null, SkipIfConstructorExists.I_AM_BUILDER, Collections.<Annotation>emptyList(), ast);
 			
-			for (EclipseNode fieldNode : HandleConstructor.findAllFields(parent)) {
+			for (EclipseNode fieldNode : HandleConstructor.findAllFields(tdParent)) {
 				FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
 				namesOfParameters.add(fd.name);
 				typesOfParameters.add(fd.type);
@@ -202,9 +204,6 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			MethodDeclaration md = generateBuilderMethod(builderMethodName, builderClassName, tdParent, typeParams, ast);
 			if (md != null) injectMethod(tdParent, md);
 		}
-		
-		
-		// create builder method in parent.
 	}
 	
 	private MethodDeclaration generateBuilderMethod(String builderMethodName, String builderClassName, EclipseNode type, TypeParameter[] typeParams, ASTNode source) {
@@ -348,17 +347,5 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		builder.name = builderClassName.toCharArray();
 		builder.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return injectType(tdParent, builder);
-	}
-	
-	private static void checkName(String nameSpec, String identifier, EclipseNode annotationNode) {
-		if (identifier.isEmpty()) {
-			annotationNode.addError(nameSpec + " cannot be the empty string.");
-			return;
-		}
-		
-		if (!JavaIdentifiers.isValidJavaIdentifier(identifier)) {
-			annotationNode.addError(nameSpec + " must be a valid java identifier.");
-			return;
-		}
 	}
 }
