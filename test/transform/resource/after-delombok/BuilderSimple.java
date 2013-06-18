@@ -30,6 +30,11 @@ class BuilderSimple<T> {
 		public BuilderSimple<T> build() {
 			return new BuilderSimple<T>(yes, also);
 		}
+		@java.lang.Override
+		@java.lang.SuppressWarnings("all")
+		public java.lang.String toString() {
+			return "BuilderSimple.BuilderSimpleBuilder(yes=" + this.yes + ", also=" + this.also + ")";
+		}
 	}
 	@java.lang.SuppressWarnings("all")
 	public static <T> BuilderSimpleBuilder<T> builder() {

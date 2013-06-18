@@ -194,9 +194,13 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		injectMethod(fieldNode.up(), createdSetter);
 	}
 	
-	private JCMethodDecl createSetter(long access, JavacNode field, TreeMaker treeMaker, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	static JCMethodDecl createSetter(long access, JavacNode field, TreeMaker treeMaker, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		String setterName = toSetterName(field);
 		boolean returnThis = shouldReturnThis(field);
+		return createSetter(access, field, treeMaker, setterName, returnThis, source, onMethod, onParam);
+	}
+	
+	static JCMethodDecl createSetter(long access, JavacNode field, TreeMaker treeMaker, String setterName, boolean shouldReturnThis, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (setterName == null) return null;
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
@@ -222,17 +226,17 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		}
 		
 		JCExpression methodType = null;
-		if (returnThis) {
+		if (shouldReturnThis) {
 			methodType = cloneSelfType(field);
 		}
 		
 		if (methodType == null) {
 			//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.
 			methodType = treeMaker.Type(new JCNoType(CTC_VOID));
-			returnThis = false;
+			shouldReturnThis = false;
 		}
 		
-		if (returnThis) {
+		if (shouldReturnThis) {
 			JCReturn returnStatement = treeMaker.Return(treeMaker.Ident(field.toName("this")));
 			statements.append(returnStatement);
 		}

@@ -25,6 +25,11 @@ class BuilderWithExistingBuilderClass<T, K extends Number> {
 		public BuilderWithExistingBuilderClass build() {
 			return BuilderWithExistingBuilderClass.<Z>staticMethod(arg1, arg2, arg3);
 		}
+		@java.lang.Override
+		@java.lang.SuppressWarnings("all")
+		public java.lang.String toString() {
+			return "BuilderWithExistingBuilderClass.BuilderWithExistingBuilderClassBuilder(arg1=" + this.arg1 + ", arg2=" + this.arg2 + ", arg3=" + this.arg3 + ")";
+		}
 	}
 	@java.lang.SuppressWarnings("all")
 	public static <Z extends Number> BuilderWithExistingBuilderClassBuilder<Z> builder() {

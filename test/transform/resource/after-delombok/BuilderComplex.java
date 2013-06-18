@@ -35,6 +35,11 @@ class BuilderComplex {
 		public void execute() {
 			BuilderComplex.<T>testVoidWithGenerics(number, arg2, arg3, selfRef);
 		}
+		@java.lang.Override
+		@java.lang.SuppressWarnings("all")
+		public java.lang.String toString() {
+			return "BuilderComplex.VoidBuilder(number=" + this.number + ", arg2=" + this.arg2 + ", arg3=" + this.arg3 + ", selfRef=" + this.selfRef + ")";
+		}
 	}
 	@java.lang.SuppressWarnings("all")
 	public static <T extends Number> VoidBuilder<T> builder() {

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html><head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="../../logi/reset.css" />
+	<link rel="stylesheet" type="text/css" href="../features.css" />
+	<link rel="shortcut icon" href="../../favicon.ico" type="image/x-icon" />
+	<meta name="description" content="Spice up your java" />
+	<title>EXPERIMENTAL - @Builder</title>
+</head><body><div id="pepper">
+	<div class="minimumHeight"></div>
+	<div class="meat">
+		<div class="header"><a href="../../index.html">Project Lombok</a></div>
+		<h1>@Builder</h1>
+		<div class="byline">It's like drinking tea with an extended pinky while wearing a monocle: No-hassle fancy-pants APIs for object creation!</div>
+		<div class="since">
+			<h3>Since</h3>
+			<p>
+				@Builder was introduced as experimental feature in lombok v0.11.10.
+			</p>
+		</div>
+		<div class="experimental">
+			<h3>Experimental</h3>
+			<p>
+			Experimental because:
+			<ul>
+				<li>New feature - community feedback requested.</li>
+				<li>This feature will move to the core package soon.</li>
+			</ul>
+			Current status: <em>sure thing</em> - This feature will move to the core package soon.
+		</div>
+		<div class="overview">
+			<h3>Overview</h3>
+			<p>
+			The <code>@Builder</code> annotation produces complex builder APIs for your classes.
+			</p><p>
+			<code>@Builder</code> lets you automatically produce the code required to have your class be instantiable with code such as:<br />
+			<code>Person.builder().name("Adam Savage").city("San Francisco").worksAt("Mythbusters").build();</code>
+			</p><p>
+			<code>@Builder</code> can be placed on a class, or on a constructor, or on a static method. While the "on a class" and "on a constructor"
+			mode are the most common use-case, <code>@Builder</code> is most easily explained with the "static method" use-case.
+			</p><p>
+			A static method annotated with <code>@Builder</code> (from now on called the <em>target</em>)  causes the following 7 things to be generated:<ul>
+			<li>An inner static class named <code><em>Foo</em>Builder</code>, with the same type arguments as the static method (called the <em>builder</em>).</li>
+			<li>In the <em>builder</em>: One private non-static non-final field for each parameter of the <em>target</em>.</li>
+			<li>In the <em>builder</em>: A package private no-args empty constructor.</li>
+			<li>In the <em>builder</em>: A 'setter'-like method for each parmeter of the <em>target</em>: It has the same type as that parameter and the same name.
+				It returns the builder itself, so that the setter calls can be chained, as in the above example.</li>
+			<li>In the <em>builder</em>: A <code>build()</code> method which calls the static method, passing in each field. It returns the same type that the
+				<em>target</em> returns.</li>
+			<li>In the <em>builder</em>: A sensible <code>toString()</code> implementation.</li>
+			<li>In the class containing the <em>target</em>: A <code>builder()</code> method, which creates a new instance of the <em>builder</em>.</li>
+			</ul>
+			Each listed generated element will be silently skipped if that element already exists (disregarding parameter counts and looking only at names). This
+			includes the <em>builder</em> itself: If that class already exists, lombok will simply start injecting fields and methods inside this already existing
+			class, unless of course the fields / methods to be injected already exist.
+			</p><p>
+			Now that the "static method" mode is clear, putting a <code>@Builder</code> annotation on a constructor functions similarly; effectively,
+			constructors are just static methods that have a special syntax to invoke them: Their 'return type' is the class they construct, and their
+			type parameters are the same as the type parameters of the class itself.
+			</p><p>
+			Finally, applying <code>@Builder</code> to a class is as if you added <code>@AllArgsConstructor(acces = AccessLevel.PACKAGE)</code> to the class and applied the
+			<code>@Builder</code> annotation to this all-args-constructor. Note that this constructor is only generated if there is no explicit
+			constructor present in the so annotated class, but this <code>@AllArgsConstructor</code> has priority over any other implicitly
+			generated lombok constructor (such as <code>@Data</code> and <code>@Value</code>). If an explicit constructor is present, no constructor is generated,
+			but the builder will be created with the assumption that this constructor exists. If you've written another constructor, you'll get a compilation error.<br />
+			The solution is to either let lombok write this constructor (delete your own), or, annotate your constructor instead.
+			</p><p>
+			The name of the builder class is <code><em>Foobar</em>Builder</code>, where <em>Foobar</em> is the simplified, title-cased form of the return type of the 
+			<em>target</em> - that is, the name of your type for <code>@Builder</code> on constructors and types, and the name of the return type for <code>@Builder</code>
+			on static methods. For example, if <code>@Builder</code> is applied to a class named <code>com.yoyodyne.FancyList&lt;T&gt;</code>, then the builder name will be
+			<code>FancyListBuilder&lt;T&gt;</code>. If <code>@Builder</code> is applied to a static method that returns <code>void</code>, the builder will be named
+			<code>VoidBuilder</code>.
+			</p><p>
+			The only configurable aspect of builder are the <em>builder's class name</em> (default: return type + 'Builder'), the <em>build()</em> method's name, and the
+			<em>builder()</em> method's name:<br />
+			<code>@Builder(builderClassName = "HelloWorldBuilder", buildMethodName = "execute", builderMethodName = "helloWorld")</code>
+			</p>
+		</div>
+		<div class="snippets">
+			<div class="pre">
+				<h3>With Lombok</h3>
+				<div class="snippet">@HTML_PRE@</div>
+			</div>
+			<div class="sep"></div>
+			<div class="post">
+				<h3>Vanilla Java</h3>
+				<div class="snippet">@HTML_POST@</div>
+			</div>
+		</div>
+		<div style="clear: left;"></div>
+		<div class="overview">
+			<h3>Small print</h3><div class="smallprint">
+				<p>
+				Another strategy for fluent APIs is that the programmer using your library statically imports your 'builder' method. In this case, you might want to name your builder
+				method equal to your type's name. So, the builder method for a class called <code>Person</code> would become <code>person()</code>. This is nicer if the builder method
+				is statically imported.
+				</p><p>
+				If the return type of your target static method is a type parameter (such as <code>T</code>), lombok will enforce an explicit builder class name.
+				</p><p>
+				You don't HAVE to use <code>@Builder</code> to build anything; you can for example put it on a static method that has lots of parameter to improve the API of it.
+				In this case, we suggest you use <code>buildMethodName = </code> to rename the build method to <code>execute()</code> instead.
+				</p><p>
+				The builder class will NOT get an auto-generated implementation of <code>hashCode</code> or <code>equals</code> methods! These would suggest that it is sensible to use
+				instances of a builder as keys in a set or map. However, that's not a sensible thing to do. Hence, no <code>hashCode</code> or <code>equals</code>.
+				</p><p>
+				Generics are sorted out for you.
+				</p>
+			</div>
+		</div>
+		<div class="footer">
+			<a href="index.html">Back to experimental features</a> | <span class="disabled">Previous feature</span> | <a href="Accessors.html">Next feature (@Accessors)</a><br />
+			<a href="../../credits.html" class="creditsLink">credits</a> | <span class="copyright">Copyright &copy; 2009-2013 The Project Lombok Authors, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.</span>
+		</div>
+		<div style="clear: both;"></div>
+	</div>
+</div>
+<script type="text/javascript">
+	var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+	document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+	try {
+		var pageTracker = _gat._getTracker("UA-9884254-1");
+		pageTracker._trackPageview();
+	} catch(err) {}
+</script>
+</body></html>

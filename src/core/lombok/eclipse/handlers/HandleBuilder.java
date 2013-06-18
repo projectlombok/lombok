@@ -78,7 +78,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		if (buildMethodName == null) builderMethodName = "build";
 		if (builderClassName == null) builderClassName = "";
 		
-		if (checkName("builderMethodName", builderMethodName, annotationNode)) return;
+		if (!checkName("builderMethodName", builderMethodName, annotationNode)) return;
 		if (!checkName("buildMethodName", buildMethodName, annotationNode)) return;
 		if (!builderClassName.isEmpty()) {
 			if (!checkName("builderClassName", builderClassName, annotationNode)) return;
@@ -197,6 +197,11 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		for (AbstractMethodDeclaration newMethod : newMethods) injectMethod(builderType, newMethod);
 		if (methodExists(buildMethodName, builderType, -1) == MemberExistsResult.NOT_EXISTS) {
 			MethodDeclaration md = generateBuildMethod(buildMethodName, nameOfStaticBuilderMethod, returnType, namesOfParameters, builderType, ast, thrownExceptions);
+			if (md != null) injectMethod(builderType, md);
+		}
+		
+		if (methodExists("toString", builderType, 0) == MemberExistsResult.NOT_EXISTS) {
+			MethodDeclaration md = HandleToString.createToString(builderType, fieldNodes, true, false, ast, FieldAccess.ALWAYS_FIELD);
 			if (md != null) injectMethod(builderType, md);
 		}
 		

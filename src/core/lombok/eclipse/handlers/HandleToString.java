@@ -170,7 +170,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		}
 	}
 	
-	private MethodDeclaration createToString(EclipseNode type, Collection<EclipseNode> fields,
+	static MethodDeclaration createToString(EclipseNode type, Collection<EclipseNode> fields,
 			boolean includeFieldNames, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {
 		String typeName = getTypeName(type);
 		char[] suffix = ")".toCharArray();
@@ -282,7 +282,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		return method;
 	}
 	
-	private String getTypeName(EclipseNode type) {
+	private static String getTypeName(EclipseNode type) {
 		String typeName = getSingleTypeName(type);
 		EclipseNode upType = type.up();
 		while (upType.getKind() == Kind.TYPE) {
@@ -292,7 +292,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		return typeName;
 	}
 	
-	private String getSingleTypeName(EclipseNode type) {
+	private static String getSingleTypeName(EclipseNode type) {
 		TypeDeclaration typeDeclaration = (TypeDeclaration)type.get();
 		char[] rawTypeName = typeDeclaration.name;
 		return rawTypeName == null ? "" : new String(rawTypeName);
@@ -301,7 +301,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 	private static final Set<String> BUILT_IN_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
 			"byte", "short", "int", "long", "char", "boolean", "double", "float")));
 	
-	private NameReference generateQualifiedNameRef(ASTNode source, char[]... varNames) {
+	private static NameReference generateQualifiedNameRef(ASTNode source, char[]... varNames) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		NameReference ref;

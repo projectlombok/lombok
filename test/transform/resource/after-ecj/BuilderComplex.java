@@ -28,6 +28,9 @@ class BuilderComplex {
     public @java.lang.SuppressWarnings("all") void execute() {
       BuilderComplex.<T>testVoidWithGenerics(number, arg2, arg3, selfRef);
     }
+    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+      return (((((((("BuilderComplex.VoidBuilder(number=" + this.number) + ", arg2=") + this.arg2) + ", arg3=") + this.arg3) + ", selfRef=") + this.selfRef) + ")");
+    }
   }
   BuilderComplex() {
     super();
