@@ -730,11 +730,11 @@ public class JavacHandlerUtil {
 	 * 
 	 * Also takes care of updating the JavacAST.
 	 */
-	public static void injectField(JavacNode typeNode, JCVariableDecl field) {
-		injectField(typeNode, field, false);
+	public static JavacNode injectField(JavacNode typeNode, JCVariableDecl field) {
+		return injectField(typeNode, field, false);
 	}
 
-	private static void injectField(JavacNode typeNode, JCVariableDecl field, boolean addSuppressWarnings) {
+	private static JavacNode injectField(JavacNode typeNode, JCVariableDecl field, boolean addSuppressWarnings) {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
 		if (addSuppressWarnings) addSuppressWarningsAll(field.mods, typeNode, field.pos, getGeneratedBy(field));
@@ -760,7 +760,7 @@ public class JavacHandlerUtil {
 			insertAfter.tail = fieldEntry;
 		}
 		
-		typeNode.add(field, Kind.FIELD);
+		return typeNode.add(field, Kind.FIELD);
 	}
 	
 	private static boolean isEnumConstant(final JCVariableDecl field) {
@@ -1024,6 +1024,13 @@ public class JavacHandlerUtil {
 		}
 		ast.args = params.toList();
 		return result.toList();
+	}
+	
+	public static List<JCTypeParameter> copyTypeParams(TreeMaker maker, List<JCTypeParameter> params) {
+		if (params == null || params.isEmpty()) return params;
+		ListBuffer<JCTypeParameter> out = ListBuffer.lb();
+		for (JCTypeParameter tp : params) out.append(maker.TypeParameter(tp.name, tp.bounds));
+		return out.toList();
 	}
 	
 	public static JCExpression namePlusTypeParamsToTypeReference(TreeMaker maker, Name typeName, List<JCTypeParameter> params) {

@@ -22,17 +22,25 @@
 package lombok.javac;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
+import com.sun.tools.javac.tree.JCTree.JCModifiers;
+import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
+import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Name;
 
 /**
  * Container for static utility methods relevant to lombok's operation on javac.
@@ -161,4 +169,38 @@ public class Javac {
 		}
 	}
 	
+	private static Method method;
+	
+	public static JCClassDecl ClassDef(TreeMaker maker, JCModifiers mods, Name name, List<JCTypeParameter> typarams, JCExpression extending, List<JCExpression> implementing, List<JCTree> defs) {
+		if (method == null) try {
+			method = TreeMaker.class.getDeclaredMethod("ClassDef", JCModifiers.class, Name.class, List.class, JCExpression.class, List.class, List.class);
+		} catch (NoSuchMethodException ignore) {}
+		if (method == null) try {
+			method = TreeMaker.class.getDeclaredMethod("ClassDef", JCModifiers.class, Name.class, List.class, JCTree.class, List.class, List.class);
+		} catch (NoSuchMethodException ignore) {}
+		
+		if (method == null) throw new IllegalStateException("Lombok bug #20130617-1310: ClassDef doesn't look like anything we thought it would look like.");
+		if (!Modifier.isPublic(method.getModifiers()) && !method.isAccessible()) {
+			method.setAccessible(true);
+		}
+		
+		try {
+			return (JCClassDecl) method.invoke(maker, mods, name, typarams, extending, implementing, defs);
+		} catch (InvocationTargetException e) {
+			throw sneakyThrow(e.getCause());
+		} catch (IllegalAccessException e) {
+			throw sneakyThrow(e.getCause());
+		}
+	}
+	
+	private static RuntimeException sneakyThrow(Throwable t) {
+		if (t == null) throw new NullPointerException("t");
+		Javac.<RuntimeException>sneakyThrow0(t);
+		return null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static <T extends Throwable> void sneakyThrow0(Throwable t) throws T {
+		throw (T)t;
+	}
 }
