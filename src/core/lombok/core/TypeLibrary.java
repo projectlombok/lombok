@@ -74,6 +74,9 @@ public class TypeLibrary {
 		
 		unqualifiedToQualifiedMap.put(unqualified, fullyQualifiedTypeName);
 		unqualifiedToQualifiedMap.put(fullyQualifiedTypeName, fullyQualifiedTypeName);
+		for (Map.Entry<String, String> e : LombokInternalAliasing.ALIASES.entrySet()) {
+			if (fullyQualifiedTypeName.equals(e.getValue())) unqualifiedToQualifiedMap.put(e.getKey(), fullyQualifiedTypeName);
+		}
 	}
 	
 	/**
@@ -85,6 +88,9 @@ public class TypeLibrary {
 	public String toQualified(String typeReference) {
 		if (unqualifiedToQualifiedMap == null) {
 			if (typeReference.equals(unqualified) || typeReference.equals(qualified)) return qualified;
+			for (Map.Entry<String, String> e : LombokInternalAliasing.ALIASES.entrySet()) {
+				if (e.getKey().equals(typeReference)) return e.getValue();
+			}
 			return null;
 		}
 		return unqualifiedToQualifiedMap.get(typeReference);

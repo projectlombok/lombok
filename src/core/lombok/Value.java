@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2012-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,23 +27,22 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Generates getters for all fields, a useful toString method, and hashCode and equals implementations that check
- * all non-transient fields. Will also generate setters for all non-final fields, as well as a constructor.
+ * Generates a lot of code which fits with a class that is a representation of an immutable entity.
  * <p>
- * Equivalent to {@code @Getter @Setter @RequiredArgsConstructor @ToString @EqualsAndHashCode}.
+ * Equivalent to {@code @Getter @FieldDefaults(makeFinal=true, level=AccessLevel.PRIVATE) @RequiredArgsConstructor @ToString @EqualsAndHashCode}.
  * <p>
- * Complete documentation is found at <a href="http://projectlombok.org/features/Data.html">the project lombok features page for &#64;Data</a>.
+ * Complete documentation is found at <a href="http://projectlombok.org/features/experimental/Value.html">the project lombok features page for &#64;Value</a>.
  * 
- * @see Getter
- * @see Setter
- * @see RequiredArgsConstructor
- * @see ToString
- * @see EqualsAndHashCode
- * @see lombok.Value
+ * @see lombok.Getter
+ * @see lombok.experimental.FieldDefaults
+ * @see lombok.RequiredArgsConstructor
+ * @see lombok.ToString
+ * @see lombok.EqualsAndHashCode
+ * @see lombok.Data
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
-public @interface Data {
+public @interface Value {
 	/**
 	 * If you specify a static constructor name, then the generated constructor will be private, and
 	 * instead a static factory method is created that other classes can use to create instances.

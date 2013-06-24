@@ -280,7 +280,22 @@ public class JavacHandlerUtil {
 	 * then removes any import statement that imports this exact annotation (not star imports).
 	 * Only does this if the DeleteLombokAnnotations class is in the context.
 	 */
+	@SuppressWarnings("unchecked")
 	public static void deleteAnnotationIfNeccessary(JavacNode annotation, Class<? extends Annotation> annotationType) {
+		deleteAnnotationIfNeccessary0(annotation, annotationType);
+	}
+	
+	/**
+	 * Removes the annotation from javac's AST (it remains in lombok's AST),
+	 * then removes any import statement that imports this exact annotation (not star imports).
+	 * Only does this if the DeleteLombokAnnotations class is in the context.
+	 */
+	@SuppressWarnings("unchecked")
+	public static void deleteAnnotationIfNeccessary(JavacNode annotation, Class<? extends Annotation> annotationType1, Class<? extends Annotation> annotationType2) {
+		deleteAnnotationIfNeccessary0(annotation, annotationType1, annotationType2);
+	}
+	
+	private static void deleteAnnotationIfNeccessary0(JavacNode annotation, Class<? extends Annotation>... annotationTypes) {
 		if (inNetbeansEditor(annotation)) return;
 		if (!annotation.shouldDeleteLombokAnnotations()) return;
 		JavacNode parentNode = annotation.directUp();
@@ -309,7 +324,9 @@ public class JavacHandlerUtil {
 		}
 		
 		parentNode.getAst().setChanged();
-		deleteImportFromCompilationUnit(annotation, annotationType.getName());
+		for (Class<?> annotationType : annotationTypes) {
+			deleteImportFromCompilationUnit(annotation, annotationType.getName());
+		}
 	}
 	
 	public static void deleteImportFromCompilationUnit(JavacNode node, String name) {

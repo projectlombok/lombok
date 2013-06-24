@@ -21,18 +21,20 @@
  */
 package lombok.eclipse;
 
-import static lombok.eclipse.Eclipse.*;
+import static lombok.eclipse.Eclipse.toQualifiedName;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
+import lombok.core.ImportList;
+import lombok.core.LombokInternalAliasing;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ImportReference;
-
-import lombok.core.ImportList;
 
 public class EclipseImportList implements ImportList {
 	private ImportReference[] imports;
@@ -53,13 +55,16 @@ public class EclipseImportList implements ImportList {
 				int len = token.length;
 				if (len != unqualified.length()) continue;
 				for (int i = 0; i < len; i++) if (token[i] != unqualified.charAt(i)) continue outer;
-				return toQualifiedName(tokens);
+				return LombokInternalAliasing.processAliases(toQualifiedName(tokens));
 			}
 		}
 		return null;
 	}
 	
 	@Override public boolean hasStarImport(String packageName) {
+		for (Map.Entry<String, String> e : LombokInternalAliasing.IMPLIED_EXTRA_STAR_IMPORTS.entrySet()) {
+			if (e.getValue().equals(packageName) && hasStarImport(e.getKey())) return true;
+		}
 		if (isEqual(packageName, pkg)) return true;
 		if ("java.lang".equals(packageName)) return true;
 		if (imports != null) for (ImportReference imp : imports) {

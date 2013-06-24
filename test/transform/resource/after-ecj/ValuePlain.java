@@ -1,5 +1,5 @@
-import lombok.experimental.Value;
-final @lombok.experimental.Value class Value1 {
+import lombok.Value;
+final @lombok.Value class Value1 {
   private final int x;
   private final String name;
   public @java.lang.SuppressWarnings("all") int getX() {

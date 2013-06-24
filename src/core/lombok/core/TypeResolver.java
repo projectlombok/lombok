@@ -39,19 +39,12 @@ public class TypeResolver {
 		this.imports = importList;
 	}
 	
-//	private static ImportList makeImportList(String packageString, Collection<String> importStrings) {
-//		Set<String> imports = new HashSet<String>();
-//		if (packageString != null) imports.add(packageString + ".*");
-//		imports.addAll(importStrings == null ? Collections.<String>emptySet() : importStrings);
-//		imports.add("java.lang.*");
-//		return imports;
-//	}
-//	
 	public boolean typeMatches(LombokNode<?, ?, ?> context, String fqn, String typeRef) {
 		return typeRefToFullyQualifiedName(context, TypeLibrary.createLibraryForSingleType(fqn), typeRef) != null;
 	}
 	
 	public String typeRefToFullyQualifiedName(LombokNode<?, ?, ?> context, TypeLibrary library, String typeRef) {
+		typeRef = LombokInternalAliasing.processAliases(typeRef);
 		// When asking if 'Foo' could possibly  be referring to 'bar.Baz', the answer is obviously no.
 		String qualified = library.toQualified(typeRef);
 		if (qualified == null) return null;

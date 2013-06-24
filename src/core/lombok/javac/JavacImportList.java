@@ -23,6 +23,7 @@ package lombok.javac;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -32,6 +33,7 @@ import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.util.List;
 
 import lombok.core.ImportList;
+import lombok.core.LombokInternalAliasing;
 
 public class JavacImportList implements ImportList {
 	private final JCExpression pkg;
@@ -48,13 +50,18 @@ public class JavacImportList implements ImportList {
 			JCTree qual = ((JCImport) def).qualid;
 			if (!(qual instanceof JCFieldAccess)) continue;
 			String simpleName = ((JCFieldAccess) qual).name.toString();
-			if (simpleName.equals(unqualified)) return qual.toString();
+			if (simpleName.equals(unqualified)) {
+				return LombokInternalAliasing.processAliases(qual.toString());
+			}
 		}
 		
 		return null;
 	}
 	
 	@Override public boolean hasStarImport(String packageName) {
+		for (Map.Entry<String, String> e : LombokInternalAliasing.IMPLIED_EXTRA_STAR_IMPORTS.entrySet()) {
+			if (e.getValue().equals(packageName) && hasStarImport(e.getKey())) return true;
+		}
 		if (pkg != null && pkg.toString().equals(packageName)) return true;
 		if ("java.lang".equals(packageName)) return true;
 		

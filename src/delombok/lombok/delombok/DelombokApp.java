@@ -84,6 +84,7 @@ public class DelombokApp extends LombokApp {
 			return null;
 		}
 		
+		@SuppressWarnings("resource")
 		final JarFile toolsJarFile = new JarFile(toolsJar);
 		
 		ClassLoader loader = new ClassLoader() {
