@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v0.11.9 (Edgy Guinea Pig)
+* PROMOTION: `@Value` has been promoted from experimental to the main package with no changes. The 'old' experimental one is still around but is deprecated, and is an alias for the new main package one. [@Value documentation](http://projectlombok.org/features/Value.html).
 * FEATURE: {Experimental} `@Builder` support. One of our earliest feature request issues, [Issue #16](https://code.google.com/p/projectlombok/issues/detail?id=16), has finally been addressed. [@Builder documentation](http://projectlombok.org/features/experimental/Builder.html).
 * FEATURE: `@NonNull` on a method or constructor parameter now generates a null-check statement at the start of your method. This nullcheck will throw a `NullPointerException` with the name of the parameter as the message. [Issue #514](https://code.google.com/p/projectlombok/issues/detail?id=514)
 * BUGFIX: Usage of `Lombok.sneakyThrow()` or `@SneakyThrows` would sometimes result in invalid classes (classes which fail with `VerifyError`). [Issue #470](https://code.google.com/p/projectlombok/issues/detail?id=470)
