@@ -42,6 +42,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
+@Deprecated
 public @interface Value {
 	/**
 	 * If you specify a static constructor name, then the generated constructor will be private, and
