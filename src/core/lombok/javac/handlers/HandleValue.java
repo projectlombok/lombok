@@ -22,6 +22,9 @@
 package lombok.javac.handlers;
 
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+
+import java.lang.annotation.Annotation;
+
 import lombok.AccessLevel;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
@@ -45,7 +48,9 @@ import com.sun.tools.javac.tree.JCTree.JCModifiers;
 @HandlerPriority(-512) //-2^9; to ensure @EqualsAndHashCode and such pick up on this handler making the class final and messing with the fields' access levels, run earlier.
 public class HandleValue extends JavacAnnotationHandler<Value> {
 	@Override public void handle(AnnotationValues<Value> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		deleteAnnotationIfNeccessary(annotationNode, Value.class, lombok.experimental.Value.class);
+		@SuppressWarnings("deprecation")
+		Class<? extends Annotation> oldExperimentalValue = lombok.experimental.Value.class;
+		deleteAnnotationIfNeccessary(annotationNode, Value.class, oldExperimentalValue);
 		JavacNode typeNode = annotationNode.up();
 		boolean notAClass = !isClass(typeNode);
 		
