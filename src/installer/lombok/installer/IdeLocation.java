@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
+import lombok.installer.eclipse.EclipseFinder;
 import lombok.patcher.inject.LiveInjector;
 
 /**
@@ -66,11 +67,12 @@ public abstract class IdeLocation {
 	}
 	
 	private static final String LEGAL_PATH_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_/";
+	private static final String LEGAL_PATH_CHARS_WINDOWS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_/:\\ ";
 	public static String escapePath(String path) {
 		StringBuilder out = new StringBuilder();
-		
+		String legalChars = IdeFinder.getOS() == EclipseFinder.OS.UNIX ? LEGAL_PATH_CHARS : LEGAL_PATH_CHARS_WINDOWS; 
 		for (char c : path.toCharArray()) {
-			if (LEGAL_PATH_CHARS.indexOf(c) == -1) out.append('\\');
+			if (legalChars.indexOf(c) == -1) out.append('\\');
 			out.append(c);
 		}
 		return out.toString();
