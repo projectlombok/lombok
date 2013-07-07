@@ -1,18 +1,19 @@
 public class GetterLazyExample {
-	private double[] $lombok$lazy1v;
-	private volatile boolean $lombok$lazy1i;
-	private final Object $lombok$lazyLock = new Object[0];
+	private final java.util.concurrent.AtomicReference<java.lang.Object> cached = new java.util.concurrent.AtomicReference<java.lang.Object>();
 	
 	public double[] getCached() {
-		if (!this.$lombok$lazy1i) {
-			synchronized (this.$lombok$lazyLock) {
-				if (!this.$lombok$lazy1i) {
-					this.$lombok$lazy1v = expensive();
-					this.$lombok$lazy1i = true;
+		java.lang.Object value = this.cached.get();
+		if (value == null) {
+			synchronized(value) {
+				value = this.cached.get();
+				if (value == null) {
+					final double[] actualValue = expensive();
+					value = actualValue == null ? this.cached : actualValue;
+					this.cached.set(value);
 				}
 			}
 		}
-		return this.$lombok$lazy1v;
+		return (double[])(value == this.cached ? null : value);
 	}
 	
 	private double[] expensive() {
