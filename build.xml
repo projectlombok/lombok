@@ -256,7 +256,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</target>
 	
 	<target name="eclipse" depends="deps, contrib" description="Creates eclipse project files and downloads all dependencies. Open this directory as project in eclipse after running this target.">
-		<ivy:eclipsegen>
+		<ivy:eclipsegen source="1.6">
 			<srcdir dir="src/core" />
 			<srcdir dir="src/utils" />
 			<srcdir dir="src/eclipseAgent" />
