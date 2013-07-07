@@ -1,18 +1,18 @@
 class GetterLazyNative {
-  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>> booleanField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>>();
-  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Byte>> byteField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Byte>>();
-  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Short>> shortField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Short>>();
-  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Integer>> intField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Integer>>();
-  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Long>> longField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Long>>();
-  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Float>> floatField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Float>>();
-  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Double>> doubleField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Double>>();
-  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Character>> charField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Character>>();
-  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<int[]>> intArrayField = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<int[]>>();
+  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.lang.Object> booleanField = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
+  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.lang.Object> byteField = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
+  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.lang.Object> shortField = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
+  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.lang.Object> intField = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
+  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.lang.Object> longField = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
+  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.lang.Object> floatField = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
+  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.lang.Object> doubleField = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
+  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.lang.Object> charField = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
+  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.lang.Object> intArrayField = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
   GetterLazyNative() {
     super();
   }
   public @java.lang.SuppressWarnings("all") boolean isBooleanField() {
-    java.util.concurrent.atomic.AtomicReference<java.lang.Boolean> value = this.booleanField.get();
+    java.lang.Object value = this.booleanField.get();
     if ((value == null))
         {
           synchronized (this.booleanField)
@@ -21,15 +21,15 @@ class GetterLazyNative {
               if ((value == null))
                   {
                     final boolean actualValue = true;
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>(actualValue);
+                    value = actualValue;
                     this.booleanField.set(value);
                   }
             }
         }
-    return value.get();
+    return (java.lang.Boolean) value;
   }
   public @java.lang.SuppressWarnings("all") byte getByteField() {
-    java.util.concurrent.atomic.AtomicReference<java.lang.Byte> value = this.byteField.get();
+    java.lang.Object value = this.byteField.get();
     if ((value == null))
         {
           synchronized (this.byteField)
@@ -38,15 +38,15 @@ class GetterLazyNative {
               if ((value == null))
                   {
                     final byte actualValue = 1;
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Byte>(actualValue);
+                    value = actualValue;
                     this.byteField.set(value);
                   }
             }
         }
-    return value.get();
+    return (java.lang.Byte) value;
   }
   public @java.lang.SuppressWarnings("all") short getShortField() {
-    java.util.concurrent.atomic.AtomicReference<java.lang.Short> value = this.shortField.get();
+    java.lang.Object value = this.shortField.get();
     if ((value == null))
         {
           synchronized (this.shortField)
@@ -55,15 +55,15 @@ class GetterLazyNative {
               if ((value == null))
                   {
                     final short actualValue = 1;
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Short>(actualValue);
+                    value = actualValue;
                     this.shortField.set(value);
                   }
             }
         }
-    return value.get();
+    return (java.lang.Short) value;
   }
   public @java.lang.SuppressWarnings("all") int getIntField() {
-    java.util.concurrent.atomic.AtomicReference<java.lang.Integer> value = this.intField.get();
+    java.lang.Object value = this.intField.get();
     if ((value == null))
         {
           synchronized (this.intField)
@@ -72,15 +72,15 @@ class GetterLazyNative {
               if ((value == null))
                   {
                     final int actualValue = 1;
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Integer>(actualValue);
+                    value = actualValue;
                     this.intField.set(value);
                   }
             }
         }
-    return value.get();
+    return (java.lang.Integer) value;
   }
   public @java.lang.SuppressWarnings("all") long getLongField() {
-    java.util.concurrent.atomic.AtomicReference<java.lang.Long> value = this.longField.get();
+    java.lang.Object value = this.longField.get();
     if ((value == null))
         {
           synchronized (this.longField)
@@ -89,15 +89,15 @@ class GetterLazyNative {
               if ((value == null))
                   {
                     final long actualValue = 1;
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Long>(actualValue);
+                    value = actualValue;
                     this.longField.set(value);
                   }
             }
         }
-    return value.get();
+    return (java.lang.Long) value;
   }
   public @java.lang.SuppressWarnings("all") float getFloatField() {
-    java.util.concurrent.atomic.AtomicReference<java.lang.Float> value = this.floatField.get();
+    java.lang.Object value = this.floatField.get();
     if ((value == null))
         {
           synchronized (this.floatField)
@@ -106,15 +106,15 @@ class GetterLazyNative {
               if ((value == null))
                   {
                     final float actualValue = 1.0f;
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Float>(actualValue);
+                    value = actualValue;
                     this.floatField.set(value);
                   }
             }
         }
-    return value.get();
+    return (java.lang.Float) value;
   }
   public @java.lang.SuppressWarnings("all") double getDoubleField() {
-    java.util.concurrent.atomic.AtomicReference<java.lang.Double> value = this.doubleField.get();
+    java.lang.Object value = this.doubleField.get();
     if ((value == null))
         {
           synchronized (this.doubleField)
@@ -123,15 +123,15 @@ class GetterLazyNative {
               if ((value == null))
                   {
                     final double actualValue = 1.0;
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Double>(actualValue);
+                    value = actualValue;
                     this.doubleField.set(value);
                   }
             }
         }
-    return value.get();
+    return (java.lang.Double) value;
   }
   public @java.lang.SuppressWarnings("all") char getCharField() {
-    java.util.concurrent.atomic.AtomicReference<java.lang.Character> value = this.charField.get();
+    java.lang.Object value = this.charField.get();
     if ((value == null))
         {
           synchronized (this.charField)
@@ -140,15 +140,15 @@ class GetterLazyNative {
               if ((value == null))
                   {
                     final char actualValue = '1';
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Character>(actualValue);
+                    value = actualValue;
                     this.charField.set(value);
                   }
             }
         }
-    return value.get();
+    return (java.lang.Character) value;
   }
   public @java.lang.SuppressWarnings("all") int[] getIntArrayField() {
-    java.util.concurrent.atomic.AtomicReference<int[]> value = this.intArrayField.get();
+    java.lang.Object value = this.intArrayField.get();
     if ((value == null))
         {
           synchronized (this.intArrayField)
@@ -157,11 +157,11 @@ class GetterLazyNative {
               if ((value == null))
                   {
                     final int[] actualValue = new int[]{1};
-                    value = new java.util.concurrent.atomic.AtomicReference<int[]>(actualValue);
+                    value = ((actualValue == null) ? this.intArrayField : actualValue);
                     this.intArrayField.set(value);
                   }
             }
         }
-    return value.get();
+    return (int[]) ((value == this.intArrayField) ? null : value);
   }
 }

@@ -308,7 +308,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 			synchronized (this.fieldName) {
 				value = this.fieldName.get();
 				if (value == null) {
-					RawValueType actualValue = INITIALIZER_EXPRESSION;
+					final RawValueType actualValue = INITIALIZER_EXPRESSION;
 					[IF PRIMITIVE]
 					value = actualValue;
 					[ELSE]
@@ -361,7 +361,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 				
 				/* if (value == null) { */ {
 					ListBuffer<JCStatement> innerIfStatements = ListBuffer.lb();
-					/* RawValueType actualValue = INITIALIZER_EXPRESSION; */ {
+					/* final RawValueType actualValue = INITIALIZER_EXPRESSION; */ {
 						innerIfStatements.append(maker.VarDef(maker.Modifiers(Flags.FINAL), actualValueName, copyOfRawFieldType, field.init));
 					}
 					/* [IF primitive] value = actualValue; */ {

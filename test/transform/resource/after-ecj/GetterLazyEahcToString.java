@@ -1,11 +1,11 @@
 @lombok.EqualsAndHashCode(doNotUseGetters = true) @lombok.ToString(doNotUseGetters = true) class GetterLazyEahcToString {
-  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<String>> value = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<String>>();
+  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.lang.Object> value = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
   private final @lombok.Getter String value2 = "";
   GetterLazyEahcToString() {
     super();
   }
   public @java.lang.SuppressWarnings("all") String getValue() {
-    java.util.concurrent.atomic.AtomicReference<String> value = this.value.get();
+    java.lang.Object value = this.value.get();
     if ((value == null))
         {
           synchronized (this.value)
@@ -14,12 +14,12 @@
               if ((value == null))
                   {
                     final String actualValue = "";
-                    value = new java.util.concurrent.atomic.AtomicReference<String>(actualValue);
+                    value = ((actualValue == null) ? this.value : actualValue);
                     this.value.set(value);
                   }
             }
         }
-    return value.get();
+    return (String) ((value == this.value) ? null : value);
   }
   public @java.lang.SuppressWarnings("all") String getValue2() {
     return this.value2;
