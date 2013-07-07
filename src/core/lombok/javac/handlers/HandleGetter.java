@@ -52,11 +52,9 @@ import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCIf;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
-import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCSynchronized;
-import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeMaker;
@@ -286,6 +284,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	}
 	
 	private static final String AR = "java.util.concurrent.atomic.AtomicReference";
+	private static final String JLO = "java.lang.Object";
 	private static final List<JCExpression> NIL_EXPRESSION = List.nil();
 	
 	private static final java.util.Map<Integer, String> TYPE_MAP;
@@ -304,37 +303,50 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	
 	private List<JCStatement> createLazyGetterBody(TreeMaker maker, JavacNode fieldNode, JCTree source) {
 		/*
-		java.util.concurrent.atomic.AtomicReference<ValueType> value = this.fieldName.get();
+		java.lang.Object value = this.fieldName.get();
 		if (value == null) {
 			synchronized (this.fieldName) {
 				value = this.fieldName.get();
-				if (value == null) { 
-					final ValueType actualValue = new ValueType();
-					value = new java.util.concurrent.atomic.AtomicReference<ValueType>(actualValue);
+				if (value == null) {
+					RawValueType actualValue = INITIALIZER_EXPRESSION;
+					[IF PRIMITIVE]
+					value = actualValue;
+					[ELSE]
+					value = actualValue == null ? this.fieldName : actualValue;
+					[END IF]
 					this.fieldName.set(value);
 				}
 			}
 		}
-		return value.get();
+		[IF PRIMITIVE]
+		return (BoxedValueType) value;
+		[ELSE]
+		return (BoxedValueType) (value == this.fieldName ? null : value);
+		[END IF]
 		*/
 		
 		ListBuffer<JCStatement> statements = ListBuffer.lb();
 		
 		JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 		JCExpression copyOfRawFieldType = copyType(maker, field);
+		JCExpression copyOfBoxedFieldType = null;
 		field.type = null;
+		boolean isPrimitive = false;
 		if (field.vartype instanceof JCPrimitiveTypeTree) {
 			String boxed = TYPE_MAP.get(((JCPrimitiveTypeTree)field.vartype).typetag);
 			if (boxed != null) {
+				isPrimitive = true;
 				field.vartype = chainDotsString(fieldNode, boxed);
+				copyOfBoxedFieldType = chainDotsString(fieldNode, boxed);
 			}
 		}
+		if (copyOfBoxedFieldType == null) copyOfBoxedFieldType = copyType(maker, field);
 		
 		Name valueName = fieldNode.toName("value");
 		Name actualValueName = fieldNode.toName("actualValue");
 		
-		/* java.util.concurrent.atomic.AtomicReference<ValueType> value = this.fieldName.get();*/ {
-			JCTypeApply valueVarType = maker.TypeApply(chainDotsString(fieldNode, AR), List.of(copyType(maker, field)));
+		/* java.lang.Object value = this.fieldName.get();*/ {
+			JCExpression valueVarType = chainDotsString(fieldNode, JLO);
 			statements.append(maker.VarDef(maker.Modifiers(0), valueName, valueVarType, callGet(fieldNode, createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD))));
 		}
 		
@@ -349,15 +361,23 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 				
 				/* if (value == null) { */ {
 					ListBuffer<JCStatement> innerIfStatements = ListBuffer.lb();
-					/* ValueType actualValue = new ValueType(); */ {
+					/* RawValueType actualValue = INITIALIZER_EXPRESSION; */ {
 						innerIfStatements.append(maker.VarDef(maker.Modifiers(Flags.FINAL), actualValueName, copyOfRawFieldType, field.init));
 					}
-					/* value = new java.util.concurrent.atomic.AtomicReference<ValueType>(actualValue);*/ {
-						JCTypeApply valueVarType = maker.TypeApply(chainDotsString(fieldNode, AR), List.of(copyType(maker, field)));
-						JCNewClass newInstance = maker.NewClass(null, NIL_EXPRESSION, valueVarType, List.<JCExpression>of(maker.Ident(actualValueName)), null);
-						
-						JCStatement statement = maker.Exec(maker.Assign(maker.Ident(valueName), newInstance));
-						innerIfStatements.append(statement);
+					/* [IF primitive] value = actualValue; */ {
+						if (isPrimitive) {
+							JCStatement statement = maker.Exec(maker.Assign(maker.Ident(valueName), maker.Ident(actualValueName)));
+							innerIfStatements.append(statement);
+						}
+					}
+					/* [ELSE] value = actualValue == null ? this.fieldName : actualValue; */ {
+						if (!isPrimitive) {
+							JCExpression actualValueIsNull = maker.Binary(CTC_EQUAL, maker.Ident(actualValueName), maker.Literal(CTC_BOT, null));
+							JCExpression thisDotFieldName = createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD);
+							JCExpression ternary = maker.Conditional(actualValueIsNull, thisDotFieldName, maker.Ident(actualValueName));
+							JCStatement statement = maker.Exec(maker.Assign(maker.Ident(valueName), ternary));
+							innerIfStatements.append(statement);
+						}
 					}
 					/* this.fieldName.set(value); */ {
 						JCStatement statement = callSet(fieldNode, createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD), maker.Ident(valueName));
@@ -376,15 +396,25 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 			JCIf ifStatement = maker.If(isNull, maker.Block(0, List.<JCStatement>of(synchronizedStatement)), null);
 			statements.append(ifStatement);
 		}
-		/* return value.get(); */
-		statements.append(maker.Return(callGet(fieldNode, maker.Ident(valueName))));
+		/* [IF PRIMITIVE] return (BoxedValueType) value; */ {
+			if (isPrimitive) {
+				statements.append(maker.Return(maker.TypeCast(copyOfBoxedFieldType, maker.Ident(valueName))));
+			}
+		}
+		/* [ELSE] return (BoxedValueType) (value == this.fieldName ? null : value); */ {
+			if (!isPrimitive) {
+				JCExpression valueEqualsSelf = maker.Binary(CTC_EQUAL, maker.Ident(valueName), createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD));
+				JCExpression ternary = maker.Conditional(valueEqualsSelf, maker.Literal(CTC_BOT,  null), maker.Ident(valueName));
+				JCExpression typeCast = maker.TypeCast(copyOfBoxedFieldType, maker.Parens(ternary));
+				statements.append(maker.Return(typeCast));
+			}
+		}
 		
 		// update the field type and init last
 		
-		/* 	private final java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<ValueType> fieldName = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<ValueType>>(); */ {
+		/*	private final java.util.concurrent.atomic.AtomicReference<Object> fieldName = new java.util.concurrent.atomic.AtomicReference<Object>(); */ {
 			field.vartype = recursiveSetGeneratedBy(
-					maker.TypeApply(chainDotsString(fieldNode, AR), List.<JCExpression>of(maker.TypeApply(chainDotsString(fieldNode, AR), List.of(copyType(maker, field))))),
-					source);
+					maker.TypeApply(chainDotsString(fieldNode, AR), List.<JCExpression>of(chainDotsString(fieldNode, JLO))), source);
 			field.init = recursiveSetGeneratedBy(maker.NewClass(null, NIL_EXPRESSION, copyType(maker, field), NIL_EXPRESSION, null), source);
 		}
 		

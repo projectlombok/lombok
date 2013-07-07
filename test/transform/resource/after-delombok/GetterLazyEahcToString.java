@@ -1,6 +1,6 @@
 class GetterLazyEahcToString {
 	
-	private final java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<String>> value = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<String>>();
+	private final java.util.concurrent.atomic.AtomicReference<java.lang.Object> value = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
 	private final String value2 = "";
 	
 	@java.lang.Override
@@ -44,18 +44,18 @@ class GetterLazyEahcToString {
 	
 	@java.lang.SuppressWarnings("all")
 	public String getValue() {
-		java.util.concurrent.atomic.AtomicReference<String> value = this.value.get();
+		java.lang.Object value = this.value.get();
 		if (value == null) {
 			synchronized (this.value) {
 				value = this.value.get();
 				if (value == null) {
 					final String actualValue = "";
-					value = new java.util.concurrent.atomic.AtomicReference<String>(actualValue);
+					value = actualValue == null ? this.value : actualValue;
 					this.value.set(value);
 				}
 			}
 		}
-		return value.get();
+		return (String)(value == this.value ? null : value);
 	}
 	
 	@java.lang.SuppressWarnings("all")
