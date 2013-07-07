@@ -147,6 +147,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ivy:compile>
 		<ivy:compile destdir="build/stubs" source="1.5" target="1.5" includeantruntime="false">
 			<src path="src/stubs" />
+			<src path="src/javac-only-stubs" />
 			<classpath location="build/stubsstubs" />
 		</ivy:compile>
 		
