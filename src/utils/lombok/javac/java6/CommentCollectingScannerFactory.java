@@ -49,15 +49,21 @@ public class CommentCollectingScannerFactory extends Scanner.Factory {
 			// * Leave the return types as 'j.l.Object'.
 			// * Leave both make methods intact; deleting one has no effect on javac6- / javac7+, but breaks the other. Hard to test for.
 			// * Do not stub com.sun.tools.javac.util.Context or any of its inner types, like Factory.
-			context.put(scannerFactoryKey, new Context.Factory() {
+			@SuppressWarnings("all")
+			class MyFactory implements Context.Factory {
+				// This overrides the javac6- version of make.
 				public Object make() {
 					return new CommentCollectingScannerFactory(context);
 				}
 				
+				// This overrides the javac7+ version of make.
 				public Object make(Context c) {
 					return new CommentCollectingScannerFactory(c);
 				}
-			});
+			}
+			
+			@SuppressWarnings("unchecked") Context.Factory<Scanner.Factory> factory = new MyFactory();
+			context.put(scannerFactoryKey, factory);
 		}
 	}
 	
