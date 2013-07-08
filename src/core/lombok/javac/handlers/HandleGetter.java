@@ -253,6 +253,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		if (toClearOfMarkers != null) recursiveSetGeneratedBy(toClearOfMarkers, null);
 		decl.mods.annotations = decl.mods.annotations.appendList(delegates);
 		
+		copyJavadoc(field, decl, CopyJavadoc.GETTER);
 		return decl;
 	}
 	

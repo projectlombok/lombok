@@ -30,6 +30,8 @@
 			behaviour of a <code>@Getter</code>, <code>@Setter</code> or <code>@Data</code> annotation on a class.
 			</p><p>
 			To put annotations on the generated method, you can use <code>onMethod=@_({@AnnotationsHere})</code>; to put annotations on the only parameter of a generated setter method, you can use <code>onParam=@_({@AnnotationsHere})</code>. Be careful though! This is an experimental feature. For more details see the documentation on the <a href="experimental/onX.html">onX</a> feature.
+			</p><p>
+			<em>NEW in lombok v1.12.0:</em> javadoc on the field will now be copied to generated getters and setters. Normally, all text is copied, and <code>@return</code> is <em>moved</em> to the getter, whilst <code>@param</code> lines are <em>moved</em> to the setter. Moved means: Deleted from the field's javadoc. It is also possible to define unique text for each getter/setter. To do that, you create a 'section' named <code>GETTER</code> and/or <code>SETTER</code>. A section is a line in your javadoc containing 2 or more dashes, then the text 'GETTER' or 'SETTER', followed by 2 or more dashes, and nothing else on the line. If you use sections, <code>@return</code> and <code>@param</code> stripping for that section is no longer done (move the <code>@return</code> or <code>@param</code> line into the section).
 			</p>
 		</div>
 		<div class="snippets">

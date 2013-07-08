@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lombok.AccessLevel;
@@ -1162,5 +1163,95 @@ public class JavacHandlerUtil {
 		
 		// This is somewhat unsafe, but it's better than outright throwing an exception here. Returning null will just cause an exception down the pipeline.
 		return (JCExpression) in;
+	}
+	
+	private static final Pattern SECTION_FINDER = Pattern.compile("^\\s*\\**\\s*[-*][-*]+\\s*(GETTER|SETTER)\\s*[-*][-*]+\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+	
+	private static String stripLinesWithTagFromJavadoc(String javadoc, String regexpFragment) {
+		Pattern p = Pattern.compile("^\\s*\\**\\s*" + regexpFragment + "\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+		Matcher m = p.matcher(javadoc);
+		return m.replaceAll("");
+	}
+	
+	private static String[] splitJavadocOnSectionIfPresent(String javadoc, String sectionName) {
+		Matcher m = SECTION_FINDER.matcher(javadoc);
+		int getterSectionHeaderStart = -1;
+		int getterSectionStart = -1;
+		int getterSectionEnd = -1;
+		while (m.find()) {
+			if (m.group(1).equalsIgnoreCase(sectionName)) {
+				getterSectionStart = m.end() + 1;
+				getterSectionHeaderStart = m.start();
+			} else if (getterSectionStart != -1) {
+				getterSectionEnd = m.start();
+			}
+		}
+		
+		if (getterSectionStart != -1) {
+			if (getterSectionEnd != -1) {
+				return new String[] {javadoc.substring(getterSectionStart, getterSectionEnd), javadoc.substring(0, getterSectionHeaderStart) + javadoc.substring(getterSectionEnd)};
+			} else {
+				return new String[] {javadoc.substring(getterSectionStart), javadoc.substring(0, getterSectionHeaderStart)};
+			}
+		}
+		
+		return null;
+	}
+	
+	public static enum CopyJavadoc {
+		VERBATIM, GETTER {
+			@Override public String[] split(String javadoc) {
+				// step 1: Check if there is a 'GETTER' section. If yes, that becomes the new one and we strip that from the original.
+				String[] out = splitJavadocOnSectionIfPresent(javadoc, "GETTER");
+				if (out != null) return out;
+				// failing that, create a copy, but strip @return from the original and @param from the copy.
+				String copy = javadoc;
+				javadoc = stripLinesWithTagFromJavadoc(javadoc, "@returns?\\s+.*");
+				copy = stripLinesWithTagFromJavadoc(copy, "@param(?:eter)?\\s+.*");
+				return new String[] {copy, javadoc};
+			}
+		},
+		SETTER {
+			@Override public String[] split(String javadoc) {
+				// step 1: Check if there is a 'SETTER' section. If yes, that becomes the new one and we strip that from the original.
+				String[] out = splitJavadocOnSectionIfPresent(javadoc, "SETTER");
+				if (out != null) return out;
+				// failing that, create a copy, but strip @param from the original and @return from the copy.
+				String copy = javadoc;
+				javadoc = stripLinesWithTagFromJavadoc(javadoc, "@param(?:eter)?\\s+.*");
+				copy = stripLinesWithTagFromJavadoc(copy, "@returns?\\s+.*");
+				return new String[] {copy, javadoc};
+			}
+		};
+		
+		/** Splits the javadoc into the section to be copied (ret[0]) and the section to replace the original with (ret[1]) */
+		public String[] split(String javadoc) {
+			return new String[] {javadoc, javadoc};
+		}
+	}
+	
+	/**
+	 * Copies javadoc on one node to the other.
+	 * 
+	 * in 'GETTER' copyMode, first a 'GETTER' segment is searched for. If it exists, that will become the javadoc for the 'to' node, and this section is
+	 * stripped out of the 'from' node. If no 'GETTER' segment is found, then the entire javadoc is taken minus any {@code @param} lines. any {@code @return} lines
+	 * are stripped from 'from'.
+	 * 
+	 * in 'SETTER' mode, stripping works similarly to 'GETTER' mode, except {@code param} are copied and stripped from the original and {@code @return} are skipped.
+	 */
+	public static void copyJavadoc(JavacNode from, JCTree to, CopyJavadoc copyMode) {
+		if (copyMode == null) copyMode = CopyJavadoc.VERBATIM;
+		try {
+			JCCompilationUnit cu = ((JCCompilationUnit) from.top().get());
+			if (cu.docComments != null) {
+				String javadoc = cu.docComments.get(from.get());
+				
+				if (javadoc != null) {
+					String[] filtered = copyMode.split(javadoc);
+					cu.docComments.put(to, filtered[0]);
+					cu.docComments.put(from.get(), filtered[1]);
+				}
+			}
+		} catch (Exception ignore) {}
 	}
 }

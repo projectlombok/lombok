@@ -252,8 +252,10 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(chainDots(field, "java", "lang", "Deprecated"), List.<JCExpression>nil()));
 		}
 		
-		return recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
+		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
+		copyJavadoc(field, decl, CopyJavadoc.SETTER);
+		return decl;
 	}
 	
 	private static class JCNoType extends Type implements NoType {
