@@ -1,0 +1,100 @@
+class GetterSetterJavadoc1 {
+	/**
+	 * Some text
+	 */
+	private int fieldName;
+	@java.lang.SuppressWarnings("all")
+	public GetterSetterJavadoc1() {
+	}
+	/**
+	 * Getter section
+	 *
+	 * @return Sky is blue
+	 */
+	@java.lang.SuppressWarnings("all")
+	public int getFieldName() {
+		return this.fieldName;
+	}
+	/**
+	 * Some text
+	 *
+	 * @param fieldName Hello, World
+	 */
+	@java.lang.SuppressWarnings("all")
+	public void setFieldName(final int fieldName) {
+		this.fieldName = fieldName;
+	}
+	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
+	public boolean equals(final java.lang.Object o) {
+		if (o == this) return true;
+		if (!(o instanceof GetterSetterJavadoc1)) return false;
+		final GetterSetterJavadoc1 other = (GetterSetterJavadoc1)o;
+		if (!other.canEqual((java.lang.Object)this)) return false;
+		if (this.getFieldName() != other.getFieldName()) return false;
+		return true;
+	}
+	@java.lang.SuppressWarnings("all")
+	public boolean canEqual(final java.lang.Object other) {
+		return other instanceof GetterSetterJavadoc1;
+	}
+	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
+	public int hashCode() {
+		final int PRIME = 31;
+		int result = 1;
+		result = result * PRIME + this.getFieldName();
+		return result;
+	}
+	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
+	public java.lang.String toString() {
+		return "GetterSetterJavadoc1(fieldName=" + this.getFieldName() + ")";
+	}
+}
+class GetterSetterJavadoc2 {
+	/**
+	 * Some text
+	 */
+	private int fieldName;
+	/**
+	 * Some text
+	 *
+	 * @return Sky is blue
+	 */
+	@java.lang.SuppressWarnings("all")
+	public int getFieldName() {
+		return this.fieldName;
+	}
+	/**
+	 * Some text
+	 *
+	 * @param fieldName Hello, World
+	 */
+	@java.lang.SuppressWarnings("all")
+	public void setFieldName(final int fieldName) {
+		this.fieldName = fieldName;
+	}
+}
+class GetterSetterJavadoc3 {
+	/**
+	 * Some text
+	 */
+	private int fieldName;
+	/**
+	 * Getter section
+	 * @return Sky is blue
+	 */
+	@java.lang.SuppressWarnings("all")
+	public int getFieldName() {
+		return this.fieldName;
+	}
+	/**
+	 * Setter section
+	 * @param fieldName Hello, World
+	 */
+	@java.lang.SuppressWarnings("all")
+	public void setFieldName(final int fieldName) {
+		this.fieldName = fieldName;
+	}
+}

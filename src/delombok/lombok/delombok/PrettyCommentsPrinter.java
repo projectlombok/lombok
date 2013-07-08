@@ -530,7 +530,14 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
                 print("/**"); println();
                 int pos = 0;
                 int endpos = lineEndPos(dc, pos);
+                boolean atStart = true;
                 while (pos < dc.length()) {
+                    String line = dc.substring(pos, endpos);
+                    if (line.trim().isEmpty() && atStart) {
+                        atStart = false;
+                        continue;
+                    }
+                    atStart = false;
                     align();
                     print(" *");
                     if (pos < dc.length() && dc.charAt(pos) > ' ') print(" ");
