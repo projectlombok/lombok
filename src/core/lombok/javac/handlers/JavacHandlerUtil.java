@@ -1165,7 +1165,7 @@ public class JavacHandlerUtil {
 		return (JCExpression) in;
 	}
 	
-	private static final Pattern SECTION_FINDER = Pattern.compile("^\\s*\\**\\s*[-*][-*]+\\s*(GETTER|SETTER)\\s*[-*][-*]+\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+	private static final Pattern SECTION_FINDER = Pattern.compile("^\\s*\\**\\s*[-*][-*]+\\s*([GS]ETTER)\\s*[-*][-*]+\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 	
 	private static String stripLinesWithTagFromJavadoc(String javadoc, String regexpFragment) {
 		Pattern p = Pattern.compile("^\\s*\\**\\s*" + regexpFragment + "\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
@@ -1201,7 +1201,7 @@ public class JavacHandlerUtil {
 	public static enum CopyJavadoc {
 		VERBATIM, GETTER {
 			@Override public String[] split(String javadoc) {
-				// step 1: Check if there is a 'GETTER' section. If yes, that becomes the new one and we strip that from the original.
+				// step 1: Check if there is a 'GETTER' section. If yes, that becomes the new method's javadoc and we strip that from the original.
 				String[] out = splitJavadocOnSectionIfPresent(javadoc, "GETTER");
 				if (out != null) return out;
 				// failing that, create a copy, but strip @return from the original and @param from the copy.

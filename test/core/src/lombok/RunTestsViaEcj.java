@@ -54,6 +54,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		options.complianceLevel = Eclipse.getLatestEcjCompilerVersionConstant();
 		options.sourceLevel = Eclipse.getLatestEcjCompilerVersionConstant();
 		options.targetJDK = Eclipse.getLatestEcjCompilerVersionConstant();
+		options.docCommentSupport = false;
 		options.parseLiteralExpressionsAsConstants = true;
 		options.inlineJsrBytecode = true;
 		options.reportUnusedDeclaredThrownExceptionExemptExceptionAndThrowable = false;
@@ -64,7 +65,6 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		options.reportUnusedParameterWhenOverridingConcrete = false;
 		options.reportDeadCodeInTrivialIfStatement = false;
 		options.generateClassFiles = false;
-		options.docCommentSupport = false;
 		Map<String, String> warnings = new HashMap<String, String>();
 		warnings.put(CompilerOptions.OPTION_ReportUnusedLocal, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedLabel, "ignore");
