@@ -12,6 +12,9 @@ class WitherDeprecated {
 	public WitherDeprecated withAnnotation(final int annotation) {
 		return this.annotation == annotation ? this : new WitherDeprecated(annotation, this.javadoc);
 	}
+	/**
+	 * @deprecated
+	 */
 	@java.lang.Deprecated
 	@java.lang.SuppressWarnings("all")
 	public WitherDeprecated withJavadoc(final int javadoc) {
