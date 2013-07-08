@@ -78,10 +78,10 @@ public class CommentCatcher {
 		try {
 			if (Javac.getJavaCompilerVersion() <= 6) {
 				Class<?> parserFactory = Class.forName("lombok.javac.java6.CommentCollectingParserFactory");
-				parserFactory.getMethod("setInCompiler",JavaCompiler.class, Context.class, Map.class).invoke(null, compiler, context, commentsMap);
+				parserFactory.getMethod("setInCompiler", JavaCompiler.class, Context.class, Map.class).invoke(null, compiler, context, commentsMap);
 			} else {
 				Class<?> parserFactory = Class.forName("lombok.javac.java7.CommentCollectingParserFactory");
-				parserFactory.getMethod("setInCompiler",JavaCompiler.class, Context.class, Map.class).invoke(null, compiler, context, commentsMap);
+				parserFactory.getMethod("setInCompiler", JavaCompiler.class, Context.class, Map.class).invoke(null, compiler, context, commentsMap);
 			}
 		} catch (Exception e) {
 			if (e instanceof RuntimeException) throw (RuntimeException)e;

@@ -224,12 +224,21 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 		return tree.getEndPosition(cu.endPositions);
 	}
     
-    private void consumeComments(int till) throws IOException {
+	private void consumeComments(int until) throws IOException {
+		consumeComments(until, null);
+	}
+    private void consumeComments(int until, JCTree tree) throws IOException {
     	boolean prevNewLine = onNewLine;
     	boolean found = false;
     	CommentInfo head = comments.head;
-		while (comments.nonEmpty() && head.pos < till) {
-			printComment(head);
+		while (comments.nonEmpty() && head.pos < until) {
+			if (tree != null && docComments != null && docComments.containsKey(tree) && head.isJavadoc() && noFurtherJavadocForthcoming(until)) {
+				// This is (presumably) the exact same javadoc that has already been associated with the node that we're just about to
+				// print. These javadoc can be modified by lombok handlers, and as such we should NOT print them from the consumed comments db,
+				// and instead print the actual javadoc associated with the upcoming node (which the visit method for that node will take care of).
+			} else {
+				printComment(head);
+			}
 			comments = comments.tail;
 			head = comments.head;
 		}
@@ -237,6 +246,17 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 			println();
 		}
 	}
+    
+    private boolean noFurtherJavadocForthcoming(int until) {
+    	List<CommentInfo> c = comments;
+    	if (c.nonEmpty()) c = c.tail;
+    	while (c.nonEmpty()) {
+    		if (c.head.pos >= until) return true;
+    		if (c.head.isJavadoc()) return false;
+    		c = c.tail;
+    	}
+    	return true;
+    }
 
     private void consumeTrailingComments(int from) throws IOException {
     	boolean prevNewLine = onNewLine;
@@ -408,7 +428,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
             this.prec = prec;
             if (tree == null) print("/*missing*/");
             else {
-            	consumeComments(tree.pos);
+            	consumeComments(tree.pos, tree);
                	tree.accept(this);
                	int endPos = endPos(tree);
 				consumeTrailingComments(endPos);
@@ -620,7 +640,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         docComments = tree.docComments;
         printDocComment(tree);
         if (tree.pid != null) {
-            consumeComments(tree.pos);
+            consumeComments(tree.pos, tree);
             print("package ");
             printExpr(tree.pid);
             print(";");
@@ -694,7 +714,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 
     public void visitClassDef(JCClassDecl tree) {
         try {
-        	consumeComments(tree.pos);
+        	consumeComments(tree.pos, tree);
             println(); align();
             printDocComment(tree);
             printAnnotations(tree.mods.annotations);
