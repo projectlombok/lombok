@@ -42,7 +42,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	protected final A ast;
 	protected final Kind kind;
 	protected final N node;
-	protected ImmutableList<L> children;
+	protected LombokImmutableList<L> children;
 	protected L parent;
 	
 	/** structurally significant are those nodes that can be annotated in java 1.6 or are method-like toplevels,
@@ -62,7 +62,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 		this.ast = ast;
 		this.kind = kind;
 		this.node = node;
-		this.children = children != null ? ImmutableList.copyOf(children) : ImmutableList.<L>of();
+		this.children = children != null ? LombokImmutableList.copyOf(children) : LombokImmutableList.<L>of();
 		for (L child : this.children) {
 			child.parent = (L) this;
 			if (!child.isStructurallySignificant)
@@ -176,7 +176,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	/**
 	 * Returns all children nodes.
 	 */
-	public ImmutableList<L> down() {
+	public LombokImmutableList<L> down() {
 		return children;
 	}
 	
@@ -253,7 +253,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 		for (LombokNode child : children) child.gatherAndRemoveChildren(map);
 		ast.identityDetector.remove(get());
 		map.put(get(), (L) this);
-		children = ImmutableList.of();
+		children = LombokImmutableList.of();
 		ast.getNodeMap().remove(get());
 	}
 	

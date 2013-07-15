@@ -27,7 +27,7 @@ package lombok.core;
 public class JavaIdentifiers {
 	private JavaIdentifiers() {}
 	
-	private static final ImmutableList<String> KEYWORDS = ImmutableList.of(
+	private static final LombokImmutableList<String> KEYWORDS = LombokImmutableList.of(
 			"public", "private", "protected",
 			"default", "switch", "case",
 			"for", "do", "goto", "const", "strictfp", "while", "if", "else",

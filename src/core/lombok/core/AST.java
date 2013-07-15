@@ -174,7 +174,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 			oldChild.parent = targetNode;
 		}
 		
-		targetNode.children = ImmutableList.copyOf(children);
+		targetNode.children = LombokImmutableList.copyOf(children);
 		
 		return targetNode;
 	}

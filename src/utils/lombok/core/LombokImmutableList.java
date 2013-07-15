@@ -28,36 +28,36 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public final class ImmutableList<T> implements Iterable<T> {
+public final class LombokImmutableList<T> implements Iterable<T> {
 	private Object[] content;
-	private static final ImmutableList<?> EMPTY = new ImmutableList<Object>(new Object[0]);
+	private static final LombokImmutableList<?> EMPTY = new LombokImmutableList<Object>(new Object[0]);
 	
 	@SuppressWarnings("unchecked")
-	public static <T> ImmutableList<T> of() {
-		return (ImmutableList<T>) EMPTY;
+	public static <T> LombokImmutableList<T> of() {
+		return (LombokImmutableList<T>) EMPTY;
 	}
 	
-	public static <T> ImmutableList<T> of(T a) {
-		return new ImmutableList<T>(new Object[] {a});
+	public static <T> LombokImmutableList<T> of(T a) {
+		return new LombokImmutableList<T>(new Object[] {a});
 	}
 	
-	public static <T> ImmutableList<T> of(T a, T b) {
-		return new ImmutableList<T>(new Object[] {a, b});
+	public static <T> LombokImmutableList<T> of(T a, T b) {
+		return new LombokImmutableList<T>(new Object[] {a, b});
 	}
 	
-	public static <T> ImmutableList<T> of(T a, T b, T c) {
-		return new ImmutableList<T>(new Object[] {a, b, c});
+	public static <T> LombokImmutableList<T> of(T a, T b, T c) {
+		return new LombokImmutableList<T>(new Object[] {a, b, c});
 	}
 	
-	public static <T> ImmutableList<T> of(T a, T b, T c, T d) {
-		return new ImmutableList<T>(new Object[] {a, b, c, d});
+	public static <T> LombokImmutableList<T> of(T a, T b, T c, T d) {
+		return new LombokImmutableList<T>(new Object[] {a, b, c, d});
 	}
 	
-	public static <T> ImmutableList<T> of(T a, T b, T c, T d, T e) {
-		return new ImmutableList<T>(new Object[] {a, b, c, d, e});
+	public static <T> LombokImmutableList<T> of(T a, T b, T c, T d, T e) {
+		return new LombokImmutableList<T>(new Object[] {a, b, c, d, e});
 	}
 	
-	public static <T> ImmutableList<T> of(T a, T b, T c, T d, T e, T f, T... g) {
+	public static <T> LombokImmutableList<T> of(T a, T b, T c, T d, T e, T f, T... g) {
 		Object[] rest = g == null ? new Object[] {null} : g;
 		Object[] val = new Object[rest.length + 6];
 		System.arraycopy(rest, 0, val, 6, rest.length);
@@ -67,43 +67,43 @@ public final class ImmutableList<T> implements Iterable<T> {
 		val[3] = d;
 		val[4] = e;
 		val[5] = f;
-		return new ImmutableList<T>(val);
+		return new LombokImmutableList<T>(val);
 	}
 	
-	public static <T> ImmutableList<T> copyOf(Collection<? extends T> list) {
-		return new ImmutableList<T>(list.toArray());
+	public static <T> LombokImmutableList<T> copyOf(Collection<? extends T> list) {
+		return new LombokImmutableList<T>(list.toArray());
 	}
 	
-	public static <T> ImmutableList<T> copyOf(Iterable<? extends T> iterable) {
+	public static <T> LombokImmutableList<T> copyOf(Iterable<? extends T> iterable) {
 		List<T> list = new ArrayList<T>();
 		for (T o : iterable) list.add(o);
 		return copyOf(list);
 	}
 	
-	private ImmutableList(Object[] content) {
+	private LombokImmutableList(Object[] content) {
 		this.content = content;
 	}
 	
-	public ImmutableList<T> replaceElementAt(int idx, T newValue) {
+	public LombokImmutableList<T> replaceElementAt(int idx, T newValue) {
 		Object[] newContent = content.clone();
 		newContent[idx] = newValue;
-		return new ImmutableList<T>(newContent);
+		return new LombokImmutableList<T>(newContent);
 	}
 	
-	public ImmutableList<T> append(T newValue) {
+	public LombokImmutableList<T> append(T newValue) {
 		int len = content.length;
 		Object[] newContent = new Object[len + 1];
 		System.arraycopy(content, 0, newContent, 0, len);
 		newContent[len] = newValue;
-		return new ImmutableList<T>(newContent);
+		return new LombokImmutableList<T>(newContent);
 	}
 	
-	public ImmutableList<T> prepend(T newValue) {
+	public LombokImmutableList<T> prepend(T newValue) {
 		int len = content.length;
 		Object[] newContent = new Object[len + 1];
 		System.arraycopy(content, 0, newContent, 1, len);
 		newContent[0] = newValue;
-		return new ImmutableList<T>(newContent);
+		return new LombokImmutableList<T>(newContent);
 	}
 	
 	public int indexOf(T val) {
@@ -117,17 +117,17 @@ public final class ImmutableList<T> implements Iterable<T> {
 		return -1;
 	}
 	
-	public ImmutableList<T> removeElement(T val) {
+	public LombokImmutableList<T> removeElement(T val) {
 		int idx = indexOf(val);
 		return idx == -1 ? this : removeElementAt(idx);
 	}
 	
-	public ImmutableList<T> removeElementAt(int idx) {
+	public LombokImmutableList<T> removeElementAt(int idx) {
 		int len = content.length;
 		Object[] newContent = new Object[len - 1];
 		if (idx > 0) System.arraycopy(content, 0, newContent, 0, idx);
 		if (idx < len - 1) System.arraycopy(content, idx + 1, newContent, idx, len - idx - 1);
-		return new ImmutableList<T>(newContent);
+		return new LombokImmutableList<T>(newContent);
 	}
 	
 	public boolean isEmpty() {
@@ -177,9 +177,9 @@ public final class ImmutableList<T> implements Iterable<T> {
 	}
 	
 	@Override public boolean equals(Object obj) {
-		if (!(obj instanceof ImmutableList)) return false;
+		if (!(obj instanceof LombokImmutableList)) return false;
 		if (obj == this) return true;
-		return Arrays.equals(content, ((ImmutableList<?>) obj).content);
+		return Arrays.equals(content, ((LombokImmutableList<?>) obj).content);
 	}
 	
 	@Override public int hashCode() {

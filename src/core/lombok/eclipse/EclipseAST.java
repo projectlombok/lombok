@@ -31,7 +31,7 @@ import java.util.List;
 
 import lombok.Lombok;
 import lombok.core.AST;
-import lombok.core.ImmutableList;
+import lombok.core.LombokImmutableList;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -92,7 +92,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	}
 	
 	void traverseChildren(EclipseASTVisitor visitor, EclipseNode node) {
-		ImmutableList<EclipseNode> children = node.down();
+		LombokImmutableList<EclipseNode> children = node.down();
 		int len = children.size();
 		for (int i = 0; i < len; i++) {
 			children.get(i).traverse(visitor);
