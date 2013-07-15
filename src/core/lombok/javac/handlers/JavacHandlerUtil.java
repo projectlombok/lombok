@@ -21,6 +21,7 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.core.TransformationsUtil.INVALID_ON_BUILDERS;
 import static lombok.javac.Javac.*;
 
 import java.lang.annotation.Annotation;
@@ -446,8 +447,12 @@ public class JavacHandlerUtil {
 		}
 	}
 	
-	private static boolean isBoolean(JavacNode field) {
+	public static boolean isBoolean(JavacNode field) {
 		JCExpression varType = ((JCVariableDecl) field.get()).vartype;
+		return isBoolean(varType);
+	}
+	
+	public static boolean isBoolean(JCExpression varType) {
 		return varType != null && varType.toString().equals("boolean");
 	}
 	
@@ -1063,6 +1068,28 @@ public class JavacHandlerUtil {
 		}
 		
 		return maker.Ident(typeName);
+	}
+	
+	public static void sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(JavacNode typeNode, JavacNode errorNode) {
+		List<String> disallowed = List.nil();
+		for (JavacNode child : typeNode.down()) {
+			for (Class<? extends java.lang.annotation.Annotation> annType : INVALID_ON_BUILDERS) {
+				if (annotationTypeMatches(annType, child)) {
+					disallowed = disallowed.append(annType.getSimpleName());
+				}
+			}
+		}
+		
+		int size = disallowed.size();
+		if (size == 0) return;
+		if (size == 1) {
+			errorNode.addError("@" + disallowed.head + " is not allowed on builder classes.");
+			return;
+		}
+		StringBuilder out = new StringBuilder();
+		for (String a : disallowed) out.append("@").append(a).append(", ");
+		out.setLength(out.length() - 2);
+		errorNode.addError(out.append(" are not allowed on builder classes.").toString());
 	}
 	
 	static List<JCAnnotation> copyAnnotations(List<? extends JCExpression> in) {

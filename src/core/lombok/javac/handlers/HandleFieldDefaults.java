@@ -44,7 +44,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
  * Handles the {@code lombok.FieldDefaults} annotation for eclipse.
  */
 @ProviderFor(JavacAnnotationHandler.class)
-@HandlerPriority(-512) //-2^9; to ensure @Setter and such pick up on messing with the fields' 'final' state, run earlier.
+@HandlerPriority(-2048) //-2^11; to ensure @Value picks up on messing with the fields' 'final' state, run earlier.
 public class HandleFieldDefaults extends JavacAnnotationHandler<FieldDefaults> {
 	public boolean generateFieldDefaultsForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean makeFinal, boolean checkForTypeLevelFieldDefaults) {
 		if (checkForTypeLevelFieldDefaults) {
@@ -106,6 +106,14 @@ public class HandleFieldDefaults extends JavacAnnotationHandler<FieldDefaults> {
 		if (level == AccessLevel.NONE && !makeFinal) {
 			annotationNode.addError("This does nothing; provide either level or makeFinal or both.");
 			return;
+		}
+		
+		if (level == AccessLevel.PACKAGE) {
+			annotationNode.addError("Setting 'level' to PACKAGE does nothing. To force fields as package private, use the @PackagePrivate annotation on the field.");
+		}
+		
+		if (!makeFinal && annotation.isExplicit("makeFinal")) {
+			annotationNode.addError("Setting 'makeFinal' to false does nothing. To force fields to be non-final, use the @NonFinal annotation on the field.");
 		}
 		
 		if (node == null) return;

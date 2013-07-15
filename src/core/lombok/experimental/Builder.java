@@ -118,4 +118,20 @@ public @interface Builder {
 	 * Default for {@code @Builder} on static methods: {@code (ReturnTypeName)Builder}.
 	 */
 	String builderClassName() default "";
+	
+	/**
+	 * Normally the builder's 'set' methods are fluent, meaning, they have the same name as the field. Set this
+	 * to {@code false} to name the setter method for field {@code someField}: {@code setSomeField}.
+	 * <p>
+	 * <strong>Default: true</strong>
+	 */
+	boolean fluent() default true;
+	
+	/**
+	 * Normally the builder's 'set' methods are chaining, meaning, they return the builder so that you can chain
+	 * calls to set methods. Set this to {@code false} to have these 'set' methods return {@code void} instead.
+	 * <p>
+	 * <strong>Default: true</strong>
+	 */
+	boolean chain() default true;
 }

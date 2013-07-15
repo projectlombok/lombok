@@ -22,6 +22,7 @@
 package lombok.eclipse.handlers;
 
 import static lombok.eclipse.Eclipse.*;
+import static lombok.core.TransformationsUtil.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -294,6 +295,29 @@ public class EclipseHandlerUtil {
 		TypeResolver resolver = new TypeResolver(node.getImportList());
 		return resolver.typeMatches(node, type.getName(), typeName);
 		
+	}
+	
+	public static void sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(EclipseNode typeNode, EclipseNode errorNode) {
+		List<String> disallowed = null;
+		for (EclipseNode child : typeNode.down()) {
+			for (Class<? extends java.lang.annotation.Annotation> annType : INVALID_ON_BUILDERS) {
+				if (annotationTypeMatches(annType, child)) {
+					if (disallowed == null) disallowed = new ArrayList<String>();
+					disallowed.add(annType.getSimpleName());
+				}
+			}
+		}
+		
+		int size = disallowed == null ? 0 : disallowed.size();
+		if (size == 0) return;
+		if (size == 1) {
+			errorNode.addError("@" + disallowed.get(0) + " is not allowed on builder classes.");
+			return;
+		}
+		StringBuilder out = new StringBuilder();
+		for (String a : disallowed) out.append("@").append(a).append(", ");
+		out.setLength(out.length() - 2);
+		errorNode.addError(out.append(" are not allowed on builder classes.").toString());
 	}
 	
 	public static Annotation copyAnnotation(Annotation annotation, ASTNode source) {
@@ -845,15 +869,20 @@ public class EclipseHandlerUtil {
 	private static final Object MARKER = new Object();
 	
 	static void registerCreatedLazyGetter(FieldDeclaration field, char[] methodName, TypeReference returnType) {
-		if (!nameEquals(returnType.getTypeName(), "boolean") || returnType.dimensions() > 0) return;
-		generatedLazyGettersWithPrimitiveBoolean.put(field, MARKER);
+		if (isBoolean(returnType)) {
+			generatedLazyGettersWithPrimitiveBoolean.put(field, MARKER);
+		}
+	}
+	
+	public static boolean isBoolean(TypeReference typeReference) {
+		return nameEquals(typeReference.getTypeName(), "boolean") && typeReference.dimensions() == 0;
 	}
 	
 	private static GetterMethod findGetter(EclipseNode field) {
 		FieldDeclaration fieldDeclaration = (FieldDeclaration) field.get();
 		boolean forceBool = generatedLazyGettersWithPrimitiveBoolean.containsKey(fieldDeclaration);
 		TypeReference fieldType = fieldDeclaration.type;
-		boolean isBoolean = forceBool || (nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0);
+		boolean isBoolean = forceBool || isBoolean(fieldType);
 		
 		EclipseNode typeNode = field.up();
 		for (String potentialGetterName : toAllGetterNames(field, isBoolean)) {

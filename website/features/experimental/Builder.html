@@ -11,7 +11,7 @@
 	<div class="meat">
 		<div class="header"><a href="../../index.html">Project Lombok</a></div>
 		<h1>@Builder</h1>
-		<div class="byline">It's like drinking tea with an extended pinky while wearing a monocle: No-hassle fancy-pants APIs for object creation!</div>
+		<div class="byline">... and Bob's your uncle: No-hassle fancy-pants APIs for object creation!</div>
 		<div class="since">
 			<h3>Since</h3>
 			<p>
@@ -24,7 +24,6 @@
 			Experimental because:
 			<ul>
 				<li>New feature - community feedback requested.</li>
-				<li>This feature will move to the core package soon.</li>
 			</ul>
 			Current status: <em>sure thing</em> - This feature will move to the core package soon.
 		</div>
@@ -43,7 +42,7 @@
 			<li>An inner static class named <code><em>Foo</em>Builder</code>, with the same type arguments as the static method (called the <em>builder</em>).</li>
 			<li>In the <em>builder</em>: One private non-static non-final field for each parameter of the <em>target</em>.</li>
 			<li>In the <em>builder</em>: A package private no-args empty constructor.</li>
-			<li>In the <em>builder</em>: A 'setter'-like method for each parmeter of the <em>target</em>: It has the same type as that parameter and the same name.
+			<li>In the <em>builder</em>: A 'setter'-like method for each parameter of the <em>target</em>: It has the same type as that parameter and the same name.
 				It returns the builder itself, so that the setter calls can be chained, as in the above example.</li>
 			<li>In the <em>builder</em>: A <code>build()</code> method which calls the static method, passing in each field. It returns the same type that the
 				<em>target</em> returns.</li>
@@ -52,18 +51,16 @@
 			</ul>
 			Each listed generated element will be silently skipped if that element already exists (disregarding parameter counts and looking only at names). This
 			includes the <em>builder</em> itself: If that class already exists, lombok will simply start injecting fields and methods inside this already existing
-			class, unless of course the fields / methods to be injected already exist.
+			class, unless of course the fields / methods to be injected already exist. You may not put any other method (or constructor) generating lombok annotation
+			on a builder class though; for example, you can not put <code>@EqualsAndHashCode</code> on the builder class.
 			</p><p>
 			Now that the "static method" mode is clear, putting a <code>@Builder</code> annotation on a constructor functions similarly; effectively,
 			constructors are just static methods that have a special syntax to invoke them: Their 'return type' is the class they construct, and their
 			type parameters are the same as the type parameters of the class itself.
 			</p><p>
-			Finally, applying <code>@Builder</code> to a class is as if you added <code>@AllArgsConstructor(acces = AccessLevel.PACKAGE)</code> to the class and applied the
-			<code>@Builder</code> annotation to this all-args-constructor. Note that this constructor is only generated if there is no explicit
-			constructor present in the so annotated class, but this <code>@AllArgsConstructor</code> has priority over any other implicitly
-			generated lombok constructor (such as <code>@Data</code> and <code>@Value</code>). If an explicit constructor is present, no constructor is generated,
-			but the builder will be created with the assumption that this constructor exists. If you've written another constructor, you'll get a compilation error.<br />
-			The solution is to either let lombok write this constructor (delete your own), or, annotate your constructor instead.
+			Finally, applying <code>@Builder</code> to a class is as if you added <code>@AllArgsConstructor(access = AccessLevel.PACKAGE)</code> to the class and applied the
+			<code>@Builder</code> annotation to this all-args-constructor. This only works if you haven't written any explicit constructors yourself. If you do have an
+			explicit constructor, put the <code>@Builder</code> annotation on the constructor instead of on the class.
 			</p><p>
 			The name of the builder class is <code><em>Foobar</em>Builder</code>, where <em>Foobar</em> is the simplified, title-cased form of the return type of the 
 			<em>target</em> - that is, the name of your type for <code>@Builder</code> on constructors and types, and the name of the return type for <code>@Builder</code>
@@ -71,9 +68,15 @@
 			<code>FancyListBuilder&lt;T&gt;</code>. If <code>@Builder</code> is applied to a static method that returns <code>void</code>, the builder will be named
 			<code>VoidBuilder</code>.
 			</p><p>
-			The only configurable aspect of builder are the <em>builder's class name</em> (default: return type + 'Builder'), the <em>build()</em> method's name, and the
-			<em>builder()</em> method's name:<br />
-			<code>@Builder(builderClassName = "HelloWorldBuilder", buildMethodName = "execute", builderMethodName = "helloWorld")</code>
+			The configurable aspects of builder are:<ul>
+			<li>The <em>builder's class name</em> (default: return type + 'Builder')</li>
+			<li>The <em>build()</em> method's name (default: <code>"build"</code>)</li>
+			<li>The <em>builder()</em> method's name (default: <code>"builder"</code>)</li>
+			<li>The 'fluent' nature of the generated 'setter'-like methods. A fluent 'setter' is named just <code>fieldName()</code>, a non-fluent one is named <code>setFieldName()</code>. (default: <code>true</code>)</li>
+			<li>The 'chain' nature of the generated 'setter'-like methods. A chainable 'setter' returns the builder object itself, letting you chain 'set' calls. A non-chainable setter returns <code>void</code>. (default: <code>true</code>)</li>
+			</ul>
+			Example usage where all options are changed from their defaults:<br />
+			<code>@Builder(builderClassName = "HelloWorldBuilder", buildMethodName = "execute", builderMethodName = "helloWorld", fluent = false, chain = false)</code><br />
 			</p>
 		</div>
 		<div class="snippets">
@@ -104,6 +107,10 @@
 				instances of a builder as keys in a set or map. However, that's not a sensible thing to do. Hence, no <code>hashCode</code> or <code>equals</code>.
 				</p><p>
 				Generics are sorted out for you.
+				</p><p>
+				If an explicit constructor is present, but <code>@Builder</code> is placed on the class, then the builder will be generated as if an explicit constructor is present with the
+				same arguments list as what <code>@AllArgsConstructor</code> would produce. If this constructor does not exist, a compile time error will result. Usually you should just either let
+				lombok make this constructor (delete your constructor from the source), or, move the <code>@Builder</code> annotation to the constructor.
 				</p>
 			</div>
 		</div>

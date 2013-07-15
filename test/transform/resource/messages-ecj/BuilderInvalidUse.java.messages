@@ -1,0 +1,2 @@
+1:0 @Getter, @Setter, @FieldDefaults, @Wither, @Data, @ToString, @EqualsAndHashCode, @AllArgsConstructor are not allowed on builder classes.
+12:331 @Value is not allowed on builder classes.

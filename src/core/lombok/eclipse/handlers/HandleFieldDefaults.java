@@ -43,7 +43,7 @@ import org.mangosdk.spi.ProviderFor;
  * Handles the {@code lombok.FieldDefaults} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
-@HandlerPriority(-512) //-2^9; to ensure @Setter and such pick up on messing with the fields' 'final' state, run earlier.
+@HandlerPriority(-2048) //-2^11; to ensure @Value picks up on messing with the fields' 'final' state, run earlier.
 public class HandleFieldDefaults extends EclipseAnnotationHandler<FieldDefaults> {
 	public boolean generateFieldDefaultsForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean makeFinal, boolean checkForTypeLevelFieldDefaults) {
 		if (checkForTypeLevelFieldDefaults) {
@@ -110,6 +110,14 @@ public class HandleFieldDefaults extends EclipseAnnotationHandler<FieldDefaults>
 		if (level == AccessLevel.NONE && !makeFinal) {
 			annotationNode.addError("This does nothing; provide either level or makeFinal or both.");
 			return;
+		}
+		
+		if (level == AccessLevel.PACKAGE) {
+			annotationNode.addError("Setting 'level' to PACKAGE does nothing. To force fields as package private, use the @PackagePrivate annotation on the field.");
+		}
+		
+		if (!makeFinal && annotation.isExplicit("makeFinal")) {
+			annotationNode.addError("Setting 'makeFinal' to false does nothing. To force fields to be non-final, use the @NonFinal annotation on the field.");
 		}
 		
 		if (node == null) return;

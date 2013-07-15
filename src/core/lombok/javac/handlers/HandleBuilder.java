@@ -49,16 +49,19 @@ import com.sun.tools.javac.util.Name;
 import lombok.AccessLevel;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
+import lombok.core.TransformationsUtil;
 import lombok.experimental.Builder;
+import lombok.experimental.NonFinal;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.handlers.HandleConstructor.SkipIfConstructorExists;
-
 import static lombok.javac.Javac.*;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 @ProviderFor(JavacAnnotationHandler.class)
+@HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
 public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	@Override public void handle(AnnotationValues<Builder> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		Builder builderInstance = annotation.getInstance();
@@ -94,13 +97,21 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		if (parent.get() instanceof JCClassDecl) {
 			tdParent = parent;
 			JCClassDecl td = (JCClassDecl) tdParent.get();
-			new HandleConstructor().generateAllArgsConstructor(tdParent, AccessLevel.PRIVATE, null, SkipIfConstructorExists.I_AM_BUILDER, annotationNode);
-			
+			ListBuffer<JavacNode> allFields = ListBuffer.lb();
+			@SuppressWarnings("deprecation")
+			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation(lombok.experimental.Value.class, parent));
 			for (JavacNode fieldNode : HandleConstructor.findAllFields(tdParent)) {
 				JCVariableDecl fd = (JCVariableDecl) fieldNode.get();
+				// final fields with an initializer cannot be written to, so they can't be 'builderized'. Unfortunately presence of @Value makes
+				// non-final fields final, but @Value's handler hasn't done this yet, so we have to do this math ourselves.
+				// Value will only skip making a field final if it has an explicit @NonFinal annotation, so we check for that.
+				if (fd.init != null && valuePresent && !hasAnnotation(NonFinal.class, fieldNode)) continue;
 				namesOfParameters.add(fd.name);
 				typesOfParameters.add(fd.vartype);
+				allFields.append(fieldNode);
 			}
+			
+			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, List.<JCAnnotation>nil(), allFields.toList(), null, SkipIfConstructorExists.I_AM_BUILDER, true, annotationNode);
 			
 			returnType = namePlusTypeParamsToTypeReference(tdParent.getTreeMaker(), td.name, td.typarams);
 			typeParams = td.typarams;
@@ -171,11 +182,15 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		JavacNode builderType = findInnerClass(tdParent, builderClassName);
-		if (builderType == null) builderType = makeBuilderClass(tdParent, builderClassName, typeParams, ast);
+		if (builderType == null) {
+			builderType = makeBuilderClass(tdParent, builderClassName, typeParams, ast);
+		} else {
+			sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(builderType, annotationNode);
+		}
 		java.util.List<JavacNode> fieldNodes = addFieldsToBuilder(builderType, namesOfParameters, typesOfParameters, ast);
 		java.util.List<JCMethodDecl> newMethods = new ArrayList<JCMethodDecl>();
 		for (JavacNode fieldNode : fieldNodes) {
-			JCMethodDecl newMethod = makeSetterMethodForBuilder(builderType, fieldNode, ast);
+			JCMethodDecl newMethod = makeSetterMethodForBuilder(builderType, fieldNode, ast, builderInstance.fluent(), builderInstance.chain());
 			if (newMethod != null) newMethods.add(newMethod);
 		}
 		
@@ -281,16 +296,20 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	}
 	
 	
-	private JCMethodDecl makeSetterMethodForBuilder(JavacNode builderType, JavacNode fieldNode, JCTree source) {
+	private JCMethodDecl makeSetterMethodForBuilder(JavacNode builderType, JavacNode fieldNode, JCTree source, boolean fluent, boolean chain) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
+		
 		for (JavacNode child : builderType.down()) {
 			if (child.getKind() != Kind.METHOD) continue;
 			Name existingName = ((JCMethodDecl) child.get()).name;
 			if (existingName.equals(fieldName)) return null;
 		}
 		
+		boolean isBoolean = isBoolean(fieldNode);
+		String setterName = fluent ? fieldNode.getName() : TransformationsUtil.toSetterName(null, fieldNode.getName(), isBoolean);
+		
 		TreeMaker maker = builderType.getTreeMaker();
-		return HandleSetter.createSetter(Flags.PUBLIC, fieldNode, maker, fieldName.toString(), true, source, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
+		return HandleSetter.createSetter(Flags.PUBLIC, fieldNode, maker, setterName, chain, source, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
 	}
 	
 	private JavacNode findInnerClass(JavacNode parent, String name) {

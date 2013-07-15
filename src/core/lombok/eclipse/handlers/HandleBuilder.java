@@ -58,13 +58,17 @@ import org.mangosdk.spi.ProviderFor;
 import lombok.AccessLevel;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
+import lombok.core.TransformationsUtil;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.HandleConstructor.SkipIfConstructorExists;
 import lombok.experimental.Builder;
+import lombok.experimental.NonFinal;
 
 @ProviderFor(EclipseAnnotationHandler.class)
+@HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
 public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	@Override public void handle(AnnotationValues<Builder> annotation, Annotation ast, EclipseNode annotationNode) {
 		long p = (long) ast.sourceStart << 32 | ast.sourceEnd;
@@ -99,13 +103,22 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		if (parent.get() instanceof TypeDeclaration) {
 			tdParent = parent;
 			TypeDeclaration td = (TypeDeclaration) tdParent.get();
-			new HandleConstructor().generateAllArgsConstructor(tdParent, AccessLevel.PRIVATE, null, SkipIfConstructorExists.I_AM_BUILDER, Collections.<Annotation>emptyList(), ast);
 			
+			List<EclipseNode> fields = new ArrayList<EclipseNode>();
+			@SuppressWarnings("deprecation")
+			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation(lombok.experimental.Value.class, parent));
 			for (EclipseNode fieldNode : HandleConstructor.findAllFields(tdParent)) {
 				FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
+				// final fields with an initializer cannot be written to, so they can't be 'builderized'. Unfortunately presence of @Value makes
+				// non-final fields final, but @Value's handler hasn't done this yet, so we have to do this math ourselves.
+				// Value will only skip making a field final if it has an explicit @NonFinal annotation, so we check for that.
+				if (fd.initialization != null && valuePresent && !hasAnnotation(NonFinal.class, fieldNode)) continue;
 				namesOfParameters.add(fd.name);
 				typesOfParameters.add(fd.type);
+				fields.add(fieldNode);
 			}
+			
+			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, fields, null, SkipIfConstructorExists.I_AM_BUILDER, true, Collections.<Annotation>emptyList(), ast);
 			
 			returnType = namePlusTypeParamsToTypeReference(td.name, td.typeParameters, p);
 			typeParams = td.typeParameters;
@@ -181,11 +194,15 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		EclipseNode builderType = findInnerClass(tdParent, builderClassName);
-		if (builderType == null) builderType = makeBuilderClass(tdParent, builderClassName, typeParams, ast);
+		if (builderType == null) {
+			builderType = makeBuilderClass(tdParent, builderClassName, typeParams, ast);
+		} else {
+			sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(builderType, annotationNode);
+		}
 		List<EclipseNode> fieldNodes = addFieldsToBuilder(builderType, namesOfParameters, typesOfParameters, ast);
 		List<AbstractMethodDeclaration> newMethods = new ArrayList<AbstractMethodDeclaration>();
 		for (EclipseNode fieldNode : fieldNodes) {
-			MethodDeclaration newMethod = makeSetterMethodForBuilder(builderType, fieldNode, ast);
+			MethodDeclaration newMethod = makeSetterMethodForBuilder(builderType, fieldNode, ast, builderInstance.fluent(), builderInstance.chain());
 			if (newMethod != null) newMethods.add(newMethod);
 		}
 		
@@ -315,7 +332,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	
 	private static final AbstractMethodDeclaration[] EMPTY = {};
 	
-	private MethodDeclaration makeSetterMethodForBuilder(EclipseNode builderType, EclipseNode fieldNode, ASTNode source) {
+	private MethodDeclaration makeSetterMethodForBuilder(EclipseNode builderType, EclipseNode fieldNode, ASTNode source, boolean fluent, boolean chain) {
 		TypeDeclaration td = (TypeDeclaration) builderType.get();
 		AbstractMethodDeclaration[] existing = td.methods;
 		if (existing == null) existing = EMPTY;
@@ -329,7 +346,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			if (Arrays.equals(name, existingName)) return null;
 		}
 		
-		return HandleSetter.createSetter(td, fieldNode, fieldNode.getName(), true, ClassFileConstants.AccPublic,
+		boolean isBoolean = isBoolean(fd.type);
+		String setterName = fluent ? fieldNode.getName() : TransformationsUtil.toSetterName(null, fieldNode.getName(), isBoolean);
+		
+		return HandleSetter.createSetter(td, fieldNode, setterName, chain, ClassFileConstants.AccPublic,
 				source, Collections.<Annotation>emptyList(), Collections.<Annotation>emptyList());
 	}
 	

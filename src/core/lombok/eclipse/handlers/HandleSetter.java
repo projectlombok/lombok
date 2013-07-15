@@ -159,7 +159,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		TypeReference fieldType = copyType(field.type, source);
-		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
+		boolean isBoolean = isBoolean(fieldType);
 		String setterName = toSetterName(fieldNode, isBoolean);
 		boolean shouldReturnThis = shouldReturnThis(fieldNode);
 		

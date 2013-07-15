@@ -68,10 +68,12 @@ public abstract class AbstractRunTests {
 			}
 		}
 		
-		StringReader r = new StringReader(expectedFile);
-		BufferedReader br = new BufferedReader(r);
-		String firstLine = br.readLine();
-		if (firstLine != null && (firstLine.startsWith("//ignore") || params.shouldIgnoreBasedOnVersion(firstLine))) return false;
+		if (expectedFile != null) {
+			StringReader r = new StringReader(expectedFile);
+			BufferedReader br = new BufferedReader(r);
+			String firstLine = br.readLine();
+			if (firstLine != null && (firstLine.startsWith("//ignore") || params.shouldIgnoreBasedOnVersion(firstLine))) return false;
+		}
 		
 		compare(
 				file.getName(),
@@ -91,7 +93,7 @@ public abstract class AbstractRunTests {
 		try {
 			reader = new BufferedReader(new FileReader(file));
 		} catch (FileNotFoundException e) {
-			return "";
+			return null;
 		}
 		StringBuilder result = new StringBuilder();
 		String line;
@@ -104,7 +106,7 @@ public abstract class AbstractRunTests {
 	}
 	
 	private String readFile(File dir, File file, boolean messages) throws IOException {
-		if (dir == null) return "";
+		if (dir == null) return null;
 		return readFile(new File(dir, file.getName() + (messages ? ".messages" : "")));
 	}
 	
@@ -140,7 +142,9 @@ public abstract class AbstractRunTests {
 	}
 	
 	private void compare(String name, String expectedFile, String actualFile, List<CompilerMessageMatcher> expectedMessages, LinkedHashSet<CompilerMessage> actualMessages, boolean printErrors) throws Throwable {
-		try {
+		if (expectedFile == null && expectedMessages.isEmpty()) expectedFile = "";
+		
+		if (expectedFile != null) try {
 			compareContent(name, expectedFile, actualFile);
 		} catch (Throwable e) {
 			if (printErrors) {

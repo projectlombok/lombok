@@ -31,7 +31,7 @@
 			</p><p>
 				It is possible to override the final-by-default and private-by-default behaviour using either an explicit access level on a field, or by using the <code>@NonFinal</code> or <code>@PackagePrivate</code> annotations.<br />
 				It is possible to override any default behaviour for any of the 'parts' that make up <code>@Value</code> by explicitly using that annotation.
-			</p>
+				</p>
 		</div>
 		<div class="snippets">
 			<div class="pre">
@@ -54,6 +54,9 @@
 				</p><p>
 					<code>@Value</code> was an experimental feature from v0.11.4 to v0.11.9 (as <code>@lombok.experimental.Value</code>). It has since been moved into the core package. The old annotation is still
 					around (and is an alias). It will eventually be removed in a future version, though.
+				</p><p>
+					It is not possible to use <code>@FieldDefaults</code> to 'undo' the private-by-default and final-by-default aspect of fields in the annotated class. Use <code>@NonFinal</code> and <code>@PackagePrivate</code> on the fields in the class to override this behaviour.
+				</p>
 			</div>
 		</div>
 		<div class="footer">

@@ -25,7 +25,7 @@ import java.util.List;
   private final int yes;
   private List<T> also;
   private int $butNotMe;
-  private @java.lang.SuppressWarnings("all") BuilderSimple(final int yes, final List<T> also) {
+  @java.lang.SuppressWarnings("all") BuilderSimple(final int yes, final List<T> also) {
     super();
     this.yes = yes;
     this.also = also;
