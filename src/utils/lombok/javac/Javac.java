@@ -35,22 +35,23 @@ import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVisitor;
 
-import lombok.Lombok;
-
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
+import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCUnary;
 import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 
@@ -61,6 +62,9 @@ public class Javac {
 	private Javac() {
 		// prevent instantiation
 	}
+	
+	private static final ConcurrentMap<String, Object> TYPE_TAG_CACHE = new ConcurrentHashMap<String, Object>();
+	private static final ConcurrentMap<String, Object> TREE_TAG_CACHE = new ConcurrentHashMap<String, Object>();
 	
 	/** Matches any of the 8 primitive names, such as {@code boolean}. */
 	private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern.compile("^(boolean|byte|short|int|long|float|double|char)$");
@@ -148,10 +152,6 @@ public class Javac {
 		return ctc1 == null ? ctc2 == null : ctc1.equals(ctc2);
 	}
 	
-	private static final ConcurrentMap<String, Object> TYPE_TAG_CACHE = new ConcurrentHashMap<String, Object>();
-	private static final ConcurrentMap<String, Object> TREE_TAG_CACHE = new ConcurrentHashMap<String, Object>();
-	
-	
 	/**
 	 * Retrieves the provided TypeTag value, in a compiler version independent manner.
 	 * 
@@ -168,7 +168,7 @@ public class Javac {
 	 * @return the value of the typetag constant (either enum instance or an Integer object).
 	 */
 	public static Object getTypeTag(String identifier) {
-		return getFieldCached(TYPE_TAG_CACHE, getJavaCompilerVersion() < 8 ? "com.sun.tools.javac.code.TypeTag" : "com.sun.tools.javac.code.TypeTags", identifier);
+		return getFieldCached(TYPE_TAG_CACHE, getJavaCompilerVersion() < 8 ? "com.sun.tools.javac.code.TypeTags" : "com.sun.tools.javac.code.TypeTag", identifier);
 	}
 	
 	public static Object getTreeTag(String identifier) {
@@ -181,11 +181,11 @@ public class Javac {
 		try {
 			value = Class.forName(className).getField(fieldName).get(null);
 		} catch (NoSuchFieldException e) {
-			throw Lombok.sneakyThrow(e);
+			throw sneakyThrow(e);
 		} catch (IllegalAccessException e) {
-			throw Lombok.sneakyThrow(e);
+			throw sneakyThrow(e);
 		} catch (ClassNotFoundException e) {
-			throw Lombok.sneakyThrow(e);
+			throw sneakyThrow(e);
 		}
 		
 		cache.putIfAbsent(fieldName, value);
@@ -200,8 +200,8 @@ public class Javac {
 		return tree.typetag;
 	}
 	
-	private static final Method createIdent, createLiteral, createUnary, createBinary;
-
+	private static final Method createIdent, createLiteral, createUnary, createBinary, createThrow, getExtendsClause, getEndPosition;
+	
 	static {
 		if (getJavaCompilerVersion() < 8) {
 			createIdent = getMethod(TreeMaker.class, "TypeIdent", int.class);
@@ -220,23 +220,40 @@ public class Javac {
 		if (getJavaCompilerVersion() < 8) {
 			createUnary = getMethod(TreeMaker.class, "Unary", int.class, JCExpression.class);
 		} else {
-			createUnary = getMethod(TreeMaker.class, "Unary", "com.sun.tools.javac.code.TypeTag", JCExpression.class.getName());
+			createUnary = getMethod(TreeMaker.class, "Unary", "com.sun.tools.javac.tree.JCTree$Tag", JCExpression.class.getName());
 		}
 		createUnary.setAccessible(true);
 		
 		if (getJavaCompilerVersion() < 8) {
 			createBinary = getMethod(TreeMaker.class, "Binary", Integer.TYPE, JCExpression.class, JCExpression.class);
 		} else {
-			createBinary = getMethod(TreeMaker.class, "Binary", "com.sun.tools.javac.code.TypeTag", JCExpression.class.getName(), JCExpression.class.getName());
+			createBinary = getMethod(TreeMaker.class, "Binary", "com.sun.tools.javac.tree.JCTree$Tag", JCExpression.class.getName(), JCExpression.class.getName());
 		}
 		createBinary.setAccessible(true);
+		
+		if (getJavaCompilerVersion() < 8) {
+			createThrow = getMethod(TreeMaker.class, "Throw", JCTree.class);
+		} else {
+			createThrow = getMethod(TreeMaker.class, "Throw", JCExpression.class);
+		}
+		createBinary.setAccessible(true);
+		
+		getExtendsClause = getMethod(JCClassDecl.class, "getExtendsClause", new Class<?>[0]);
+		getExtendsClause.setAccessible(true);
+		
+		if (getJavaCompilerVersion() < 8) {
+			getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", java.util.Map.class);
+		} else {
+			getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", "com.sun.tools.javac.tree.EndPosTable");
+		}
+		getEndPosition.setAccessible(true);
 	}
 	
 	private static Method getMethod(Class<?> clazz, String name, Class<?>... paramTypes) {
 		try {
 			return clazz.getMethod(name, paramTypes);
 		} catch (NoSuchMethodException e) {
-			throw Lombok.sneakyThrow(e);
+			throw sneakyThrow(e);
 		}
 	}
 	
@@ -246,9 +263,9 @@ public class Javac {
 			for (int i = 0; i < paramTypes.length; i++) c[i] = Class.forName(paramTypes[i]);
 			return clazz.getMethod(name, c);
 		} catch (NoSuchMethodException e) {
-			throw Lombok.sneakyThrow(e);
+			throw sneakyThrow(e);
 		} catch (ClassNotFoundException e) {
-			throw Lombok.sneakyThrow(e);
+			throw sneakyThrow(e);
 		}
 	}
 	
@@ -256,9 +273,9 @@ public class Javac {
 		try {
 			return (JCExpression) createIdent.invoke(maker, ctc);
 		} catch (IllegalAccessException e) {
-			throw Lombok.sneakyThrow(e);
+			throw sneakyThrow(e);
 		} catch (InvocationTargetException e) {
-			throw Lombok.sneakyThrow(e.getCause());
+			throw sneakyThrow(e.getCause());
 		}
 	}
 	
@@ -266,9 +283,9 @@ public class Javac {
 		try {
 			return (JCLiteral) createLiteral.invoke(maker, ctc, argument);
 		} catch (IllegalAccessException e) {
-			throw Lombok.sneakyThrow(e);
+			throw sneakyThrow(e);
 		} catch (InvocationTargetException e) {
-			throw Lombok.sneakyThrow(e.getCause());
+			throw sneakyThrow(e.getCause());
 		}
 	}
 	
@@ -276,9 +293,9 @@ public class Javac {
 		try {
 			return (JCUnary) createUnary.invoke(maker, ctc, argument);
 		} catch (IllegalAccessException e) {
-			throw Lombok.sneakyThrow(e);
+			throw sneakyThrow(e);
 		} catch (InvocationTargetException e) {
-			throw Lombok.sneakyThrow(e.getCause());
+			throw sneakyThrow(e.getCause());
 		}
 	}
 	
@@ -286,9 +303,48 @@ public class Javac {
 		try {
 			return (JCBinary) createBinary.invoke(maker, ctc, lhsArgument, rhsArgument);
 		} catch (IllegalAccessException e) {
-			throw Lombok.sneakyThrow(e);
+			throw sneakyThrow(e);
 		} catch (InvocationTargetException e) {
-			throw Lombok.sneakyThrow(e.getCause());
+			throw sneakyThrow(e.getCause());
+		}
+	}
+	
+	public static JCStatement makeThrow(TreeMaker maker, JCExpression expression) {
+		try {
+			return (JCStatement) createThrow.invoke(maker, expression);
+		} catch (IllegalAccessException e) {
+			throw sneakyThrow(e);
+		} catch (InvocationTargetException e) {
+			throw sneakyThrow(e.getCause());
+		}
+	}
+	
+	public static JCTree getExtendsClause(JCClassDecl decl) {
+		try {
+			return (JCTree) getExtendsClause.invoke(decl);
+		} catch (IllegalAccessException e) {
+			throw sneakyThrow(e);
+		} catch (InvocationTargetException e) {
+			throw sneakyThrow(e.getCause());
+		}
+	}
+	
+	public static Object getDocComments(JCCompilationUnit cu) {
+		try {
+			return JCCOMPILATIONUNIT_DOCCOMMENTS.get(cu);
+		} catch (IllegalAccessException e) {
+			throw sneakyThrow(e);
+		}
+	}
+	
+	public static int getEndPosition(DiagnosticPosition pos, JCCompilationUnit top) {
+		try {
+			Object endPositions = JCCOMPILATIONUNIT_ENDPOSITIONS.get(top);
+			return (Integer) getEndPosition.invoke(pos, endPositions);
+		} catch (IllegalAccessException e) {
+			throw sneakyThrow(e);
+		} catch (InvocationTargetException e) {
+			throw sneakyThrow(e.getCause());
 		}
 	}
 	
@@ -318,9 +374,9 @@ public class Javac {
 					return (Type) JC_NO_TYPE.newInstance();
 				}
 			} catch (IllegalAccessException e) {
-				throw Lombok.sneakyThrow(e);
+				throw sneakyThrow(e);
 			} catch (InstantiationException e) {
-				throw Lombok.sneakyThrow(e);
+				throw sneakyThrow(e);
 			}
 		}
 	}
@@ -343,7 +399,7 @@ public class Javac {
 		}
 	}
 	
-	private static final Field JCTREE_TAG, JCLITERAL_TYPETAG, JCPRIMITIVETYPETREE_TYPETAG;
+	private static final Field JCTREE_TAG, JCLITERAL_TYPETAG, JCPRIMITIVETYPETREE_TYPETAG, JCCOMPILATIONUNIT_ENDPOSITIONS, JCCOMPILATIONUNIT_DOCCOMMENTS;
 	private static final Method JCTREE_GETTAG;
 	static {
 		Field f = null;
@@ -363,6 +419,18 @@ public class Javac {
 			f = JCPrimitiveTypeTree.class.getDeclaredField("typetag");
 		} catch (NoSuchFieldException e) {}
 		JCPRIMITIVETYPETREE_TYPETAG = f;
+		
+		f = null;
+		try {
+			f = JCCompilationUnit.class.getDeclaredField("endPositions");
+		} catch (NoSuchFieldException e) {}
+		JCCOMPILATIONUNIT_ENDPOSITIONS = f;
+		
+		f = null;
+		try {
+			f = JCCompilationUnit.class.getDeclaredField("docComments");
+		} catch (NoSuchFieldException e) {}
+		JCCOMPILATIONUNIT_DOCCOMMENTS = f;
 		
 		Method m = null;
 		try {
@@ -424,7 +492,7 @@ public class Javac {
 		}
 	}
 	
-	private static RuntimeException sneakyThrow(Throwable t) {
+	static RuntimeException sneakyThrow(Throwable t) {
 		if (t == null) throw new NullPointerException("t");
 		Javac.<RuntimeException>sneakyThrow0(t);
 		return null;

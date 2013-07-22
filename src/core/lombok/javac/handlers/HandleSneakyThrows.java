@@ -29,6 +29,7 @@ import java.util.Collections;
 
 import lombok.SneakyThrows;
 import lombok.core.AnnotationValues;
+import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 
@@ -121,7 +122,7 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 		
 		JCVariableDecl catchParam = maker.VarDef(maker.Modifiers(Flags.FINAL), node.toName("$ex"), varType, null);
 		JCExpression lombokLombokSneakyThrowNameRef = chainDots(node, "lombok", "Lombok", "sneakyThrow");
-		JCBlock catchBody = maker.Block(0, List.<JCStatement>of(maker.Throw(maker.Apply(
+		JCBlock catchBody = maker.Block(0, List.<JCStatement>of(Javac.makeThrow(maker, maker.Apply(
 				List.<JCExpression>nil(), lombokLombokSneakyThrowNameRef,
 				List.<JCExpression>of(maker.Ident(node.toName("$ex")))))));
 		

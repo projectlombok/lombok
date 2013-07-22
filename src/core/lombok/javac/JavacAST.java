@@ -360,7 +360,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	void removeDeferredErrors(JavacNode node) {
 		DiagnosticPosition pos = node.get().pos();
 		JCCompilationUnit top = (JCCompilationUnit) top().get();
-		removeFromDeferredDiagnostics(pos.getStartPosition(), pos.getEndPosition(top.endPositions));
+		removeFromDeferredDiagnostics(pos.getStartPosition(), Javac.getEndPosition(pos, top));
 	}
 	
 	/** Supply either a position or a node (in that case, position of the node is used) */

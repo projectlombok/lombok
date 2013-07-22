@@ -946,8 +946,8 @@ public class JavacHandlerUtil {
 		if (isPrimitive(varDecl.vartype)) return null;
 		Name fieldName = varDecl.name;
 		JCExpression npe = chainDots(variable, "java", "lang", "NullPointerException");
-		JCTree exception = maker.NewClass(null, List.<JCExpression>nil(), npe, List.<JCExpression>of(maker.Literal(fieldName.toString())), null);
-		JCStatement throwStatement = maker.Throw(exception);
+		JCExpression exception = maker.NewClass(null, List.<JCExpression>nil(), npe, List.<JCExpression>of(maker.Literal(fieldName.toString())), null);
+		JCStatement throwStatement = Javac.makeThrow(maker, exception);
 		JCBlock throwBlock = maker.Block(0, List.of(throwStatement));
 		return maker.If(Javac.makeBinary(maker, CTC_EQUAL, maker.Ident(fieldName), Javac.makeLiteral(maker, CTC_BOT, null)), throwBlock, null);
 	}

@@ -25,8 +25,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import lombok.Lombok;
-
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
@@ -73,9 +71,9 @@ public class CommentCatcher {
 			}
 			scannerFactory.getMethod("preRegister", Context.class).invoke(null, context);
 		} catch (InvocationTargetException e) {
-			throw Lombok.sneakyThrow(e.getCause());
+			throw Javac.sneakyThrow(e.getCause());
 		} catch (Exception e) {
-			throw Lombok.sneakyThrow(e);
+			throw Javac.sneakyThrow(e);
 		}
 	}
 	
@@ -89,9 +87,9 @@ public class CommentCatcher {
 			}
 			parserFactory.getMethod("setInCompiler", JavaCompiler.class, Context.class, Map.class).invoke(null, compiler, context, commentsMap);
 		} catch (InvocationTargetException e) {
-			throw Lombok.sneakyThrow(e.getCause());
+			throw Javac.sneakyThrow(e.getCause());
 		} catch (Exception e) {
-			throw Lombok.sneakyThrow(e);
+			throw Javac.sneakyThrow(e);
 		}
 	}
 }
