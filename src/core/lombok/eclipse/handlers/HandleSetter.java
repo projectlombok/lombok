@@ -159,7 +159,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		TypeReference fieldType = copyType(field.type, source);
-		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
+		boolean isBoolean = isBoolean(fieldType);
 		String setterName = toSetterName(fieldNode, isBoolean);
 		boolean shouldReturnThis = shouldReturnThis(fieldNode);
 		
@@ -192,7 +192,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		injectMethod(fieldNode.up(), method);
 	}
 	
-	private MethodDeclaration createSetter(TypeDeclaration parent, EclipseNode fieldNode, String name, boolean shouldReturnThis, int modifier, ASTNode source, List<Annotation> onMethod, List<Annotation> onParam) {
+	static MethodDeclaration createSetter(TypeDeclaration parent, EclipseNode fieldNode, String name, boolean shouldReturnThis, int modifier, ASTNode source, List<Annotation> onMethod, List<Annotation> onParam) {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;

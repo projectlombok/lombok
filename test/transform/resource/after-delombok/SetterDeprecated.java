@@ -10,6 +10,9 @@ class SetterDeprecated {
 	public void setAnnotation(final int annotation) {
 		this.annotation = annotation;
 	}
+	/**
+	 * @deprecated
+	 */
 	@java.lang.Deprecated
 	@java.lang.SuppressWarnings("all")
 	public void setJavadoc(final int javadoc) {

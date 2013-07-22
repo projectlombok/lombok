@@ -1,9 +1,25 @@
 Lombok Changelog
 ----------------
 
-### v0.11.7 (Edgy Guinea Pig)
+### v0.12.0 "Angry Butterfly" (July 16th, 2013)
+* FEATURE: javadoc on fields will now be copied to generated getters / setters / withers. There are ways to specify separate javadoc for the field, the setter, and the getter, and `@param` and `@return` are handled appropriately. Addresses feature request [Issue #59](https://code.google.com/p/projectlombok/issues/detail?id=59). [@Getter and @Setter documentation](http://projectlombok.org/features/GetterSetter.html). [@Wither documentation](http://projectlombok.org/features/experimental/Wither.html).
+* CHANGE: The desugaring of @Getter(lazy=true) is now less object creation intensive. Documentation has been updated to reflect what the new desugaring looks like. [@Getter(lazy=true) documentation](http://projectlombok.org/features/GetterLazy.html).
+* PROMOTION: `@Value` has been promoted from experimental to the main package with no changes. The 'old' experimental one is still around but is deprecated, and is an alias for the new main package one. [@Value documentation](http://projectlombok.org/features/Value.html).
+* FEATURE: {Experimental} `@Builder` support. One of our earliest feature request issues, [Issue #16](https://code.google.com/p/projectlombok/issues/detail?id=16), has finally been addressed. [@Builder documentation](http://projectlombok.org/features/experimental/Builder.html).
+* FEATURE: `@NonNull` on a method or constructor parameter now generates a null-check statement at the start of your method. This nullcheck will throw a `NullPointerException` with the name of the parameter as the message. [Issue #514](https://code.google.com/p/projectlombok/issues/detail?id=514)
+* BUGFIX: Usage of `Lombok.sneakyThrow()` or `@SneakyThrows` would sometimes result in invalid classes (classes which fail with `VerifyError`). [Issue #470](https://code.google.com/p/projectlombok/issues/detail?id=470)
+* BUGFIX: Using `val` in try-with-resources did not work for javac. [Issue #520](https://code.google.com/p/projectlombok/issues/detail?id=520)
+* BUGFIX: When using `@Data`, warnings are not generated if certain aspects are not generated because you wrote explicit versions of them. However, this gets confusing with `equals` / `hashCode` / `canEqual`, as nothing is generated if any one of those methods is present. Now, if one of `equals` or `hashCode` is present but not the other one (or `canEqual` is present but `equals` and/or `hashCode` is missing), a warning is emitted to explain that lombok will not generate any of the equals / hashCode methods, and that you should either write them all yourself or remove them all. [Issue #513](https://code.google.com/p/projectlombok/issues/detail?id=513)
+* BUGFIX: Possibly fixed a race condition in patcher [Issue #531](https://code.google.com/p/projectlombok/issues/detail?id=531).
+
+### v0.11.8 (April 23rd, 2013)
+* FEATURE: Major performance improvements in eclipse by profiling the project clean process.
 * CHANGE: {Experimental} The experimental `@Value` feature no longer implies the also experimental `@Wither`. If you like your `@Value` classes to make withers, add `@Wither` to the class right next to `@Value`.
 * FEATURE: {Experimental} Reintroduced `onMethod`, `onConstructor` and `onParam` to `@Getter`, `@Setter`, `@Wither`, and `@XArgsConstructor`. These parameters allow you to add annotations to the methods/constructors that lombok will generate. This is a workaround feature: The stability of the feature on future versions of javac is not guaranteed, and if a better way to implement this feature is found, this feature's current incarnation will be removed without a reasonable period of deprecation. [Documentation on the onX feature](http://projectlombok.org/features/experimental/onX.html)
+* FEATURE: Added support for Log4j v2.0 via `@Log4j2` [Issue #432](http://code.google.com/p/projectlombok/issues/detail?id=432)
+* ENHANCEMENT: The Lombok installer can now find and install lombok into [JBoss Developer Studio](http://www.redhat.com/products/jbossenterprisemiddleware/developer-studio/). The installer will now also look for eclipse and eclipse variants in your home directory. [Issue #434](http://code.google.com/p/projectlombok/issues/detail?id=432)
+* BUGFIX: `@ExtensionMethods` no longer causes `VerifyError` exceptions when running eclipse-compiled code if extension methods are called on expressions which are method calls whose return type is a type variable. For example, `someList.get(i).extensionMethod()` would fail that way. [Issue #436](http://code.google.com/p/projectlombok/issues/detail?id=436)
+* BUGFIX: java 7's try-with-resources statement did not delombok correctly. [Issue #459](http://code.google.com/p/projectlombok/issues/detail?id=459)
 
 ### v0.11.6 (October 30th, 2012)
 * FEATURE: Lombok can be disabled entirely for any given compile run by using JVM switch `-Dlombok.disable`. This might be useful for code style checkers and such.

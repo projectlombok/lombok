@@ -22,6 +22,11 @@
  * CA 95054 USA or visit www.sun.com if you need additional information or
  * have any questions.
  */
+
+/*
+ * Code derived from com.sun.tools.javac.tree.Pretty, from the langtools project.
+ * A version can be found at, for example, http://hg.openjdk.java.net/jdk7/build/langtools
+ */
 package lombok.delombok;
 
 import static com.sun.tools.javac.code.Flags.ANNOTATION;
@@ -220,12 +225,21 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 		return tree.getEndPosition(cu.endPositions);
 	}
     
-    private void consumeComments(int till) throws IOException {
+	private void consumeComments(int until) throws IOException {
+		consumeComments(until, null);
+	}
+    private void consumeComments(int until, JCTree tree) throws IOException {
     	boolean prevNewLine = onNewLine;
     	boolean found = false;
     	CommentInfo head = comments.head;
-		while (comments.nonEmpty() && head.pos < till) {
-			printComment(head);
+		while (comments.nonEmpty() && head.pos < until) {
+			if (tree != null && docComments != null && docComments.containsKey(tree) && head.isJavadoc() && noFurtherJavadocForthcoming(until)) {
+				// This is (presumably) the exact same javadoc that has already been associated with the node that we're just about to
+				// print. These javadoc can be modified by lombok handlers, and as such we should NOT print them from the consumed comments db,
+				// and instead print the actual javadoc associated with the upcoming node (which the visit method for that node will take care of).
+			} else {
+				printComment(head);
+			}
 			comments = comments.tail;
 			head = comments.head;
 		}
@@ -233,6 +247,17 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 			println();
 		}
 	}
+    
+    private boolean noFurtherJavadocForthcoming(int until) {
+    	List<CommentInfo> c = comments;
+    	if (c.nonEmpty()) c = c.tail;
+    	while (c.nonEmpty()) {
+    		if (c.head.pos >= until) return true;
+    		if (c.head.isJavadoc()) return false;
+    		c = c.tail;
+    	}
+    	return true;
+    }
 
     private void consumeTrailingComments(int from) throws IOException {
     	boolean prevNewLine = onNewLine;
@@ -404,7 +429,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
             this.prec = prec;
             if (tree == null) print("/*missing*/");
             else {
-            	consumeComments(tree.pos);
+            	consumeComments(tree.pos, tree);
                	tree.accept(this);
                	int endPos = endPos(tree);
 				consumeTrailingComments(endPos);
@@ -506,7 +531,14 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
                 print("/**"); println();
                 int pos = 0;
                 int endpos = lineEndPos(dc, pos);
+                boolean atStart = true;
                 while (pos < dc.length()) {
+                    String line = dc.substring(pos, endpos);
+                    if (line.trim().isEmpty() && atStart) {
+                        atStart = false;
+                        continue;
+                    }
+                    atStart = false;
                     align();
                     print(" *");
                     if (pos < dc.length() && dc.charAt(pos) > ' ') print(" ");
@@ -616,7 +648,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         docComments = tree.docComments;
         printDocComment(tree);
         if (tree.pid != null) {
-            consumeComments(tree.pos);
+            consumeComments(tree.pos, tree);
             print("package ");
             printExpr(tree.pid);
             print(";");
@@ -690,7 +722,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 
     public void visitClassDef(JCClassDecl tree) {
         try {
-        	consumeComments(tree.pos);
+        	consumeComments(tree.pos, tree);
             println(); align();
             printDocComment(tree);
             printAnnotations(tree.mods.annotations);
@@ -982,6 +1014,29 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitTry(JCTry tree) {
         try {
             print("try ");
+            List<?> resources = null;
+            try {
+                Field f = JCTry.class.getField("resources");
+                resources = (List<?>) f.get(tree);
+            } catch (Exception ignore) {
+                // In JDK6 and down this field does not exist; resources will retain its initializer value which is what we want.
+            }
+            
+            if (resources != null && resources.nonEmpty()) {
+                boolean first = true;
+                print("(");
+                for (Object var0 : resources) {
+                    JCTree var = (JCTree) var0;
+                    if (!first) {
+                        println();
+                        indent();
+                    }
+                    printStat(var);
+                    first = false;
+                }
+                print(") ");
+            }
+            
             printStat(tree.body);
             for (List<JCCatch> l = tree.catchers; l.nonEmpty(); l = l.tail) {
                 printStat(l.head);

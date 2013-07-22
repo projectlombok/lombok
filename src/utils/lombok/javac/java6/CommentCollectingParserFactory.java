@@ -25,7 +25,7 @@ public class CommentCollectingParserFactory extends Parser.Factory {
 	}
 	
 	@Override public Parser newParser(Lexer S, boolean keepDocComments, boolean genEndPos) {
-		Object x = new CommentCollectingParser(this, S, keepDocComments, commentsMap);
+		Object x = new CommentCollectingParser(this, S, true, commentsMap);
 		return (Parser) x;
 		// CCP is based on a stub which extends nothing, but at runtime the stub is replaced with either
 		//javac6's EndPosParser which extends Parser, or javac7's EndPosParser which implements Parser.

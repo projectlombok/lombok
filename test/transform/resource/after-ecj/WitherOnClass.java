@@ -33,7 +33,9 @@
   }
   public @java.lang.SuppressWarnings("all") WitherOnClass3 withNonNull(final @lombok.NonNull String nonNull) {
     if ((nonNull == null))
-        throw new java.lang.NullPointerException("nonNull");
+        {
+          throw new java.lang.NullPointerException("nonNull");
+        }
     return ((this.nonNull == nonNull) ? this : new WitherOnClass3(this.couldBeNull, nonNull));
   }
 }

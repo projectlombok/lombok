@@ -433,8 +433,8 @@ public class JavacResolution {
 		if (symbol.name.length() == 0) {
 			// Anonymous inner class
 			if (type instanceof ClassType) {
-				List<Type> ifaces = ((ClassType)type).interfaces_field;
-				Type supertype = ((ClassType)type).supertype_field;
+				List<Type> ifaces = ((ClassType) type).interfaces_field;
+				Type supertype = ((ClassType) type).supertype_field;
 				if (ifaces != null && ifaces.length() == 1) {
 					return typeToJCTree(ifaces.get(0), ast, allowCompound, allowVoid);
 				}

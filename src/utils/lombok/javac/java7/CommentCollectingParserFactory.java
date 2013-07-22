@@ -30,8 +30,8 @@ public class CommentCollectingParserFactory extends ParserFactory {
 	
 	public Parser newParser(CharSequence input, boolean keepDocComments, boolean keepEndPos, boolean keepLineMap) {
 		ScannerFactory scannerFactory = ScannerFactory.instance(context);
-		Lexer lexer = scannerFactory.newScanner(input, keepDocComments);
-		Object x = new CommentCollectingParser(this, lexer, keepDocComments, keepLineMap, commentsMap);
+		Lexer lexer = scannerFactory.newScanner(input, true);
+		Object x = new CommentCollectingParser(this, lexer, true, keepLineMap, commentsMap);
 		return (Parser) x;
 		// CCP is based on a stub which extends nothing, but at runtime the stub is replaced with either
 		//javac6's EndPosParser which extends Parser, or javac7's EndPosParser which implements Parser.

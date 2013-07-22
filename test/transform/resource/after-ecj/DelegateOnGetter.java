@@ -5,12 +5,12 @@ class DelegateOnGetter {
     void setList(java.util.ArrayList<java.lang.String> list);
     int getInt();
   }
-  private final @Delegate @Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<Bar>> bar = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<Bar>>();
+  private final @Delegate @Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.lang.Object> bar = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
   DelegateOnGetter() {
     super();
   }
   public @Delegate @java.lang.SuppressWarnings("all") Bar getBar() {
-    java.util.concurrent.atomic.AtomicReference<Bar> value = this.bar.get();
+    java.lang.Object value = this.bar.get();
     if ((value == null))
         {
           synchronized (this.bar)
@@ -28,12 +28,12 @@ class DelegateOnGetter {
                         return 42;
                       }
                     };
-                    value = new java.util.concurrent.atomic.AtomicReference<Bar>(actualValue);
+                    value = ((actualValue == null) ? this.bar : actualValue);
                     this.bar.set(value);
                   }
             }
         }
-    return value.get();
+    return (Bar) ((value == this.bar) ? null : value);
   }
   public @java.lang.SuppressWarnings("all") int getInt() {
     return this.getBar().getInt();

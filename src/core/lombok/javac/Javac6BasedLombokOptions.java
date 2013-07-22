@@ -26,7 +26,6 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Options;
 
 public class Javac6BasedLombokOptions extends LombokOptions {
-	
 	public static Javac6BasedLombokOptions replaceWithDelombokOptions(Context context) {
 		Options options = Options.instance(context);
 		context.put(optionsKey, (Options)null);
@@ -38,7 +37,7 @@ public class Javac6BasedLombokOptions extends LombokOptions {
 	private Javac6BasedLombokOptions(Context context) {
 		super(context);
 	}
-
+	
 	@Override public void putJavacOption(String optionName, String value) {
 		put(OptionName.valueOf(optionName), value);
 	}

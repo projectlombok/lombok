@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -231,23 +231,23 @@ public class HandlerLibrary {
 	 * @param annotation 'node.get()' - convenience parameter.
 	 */
 	public void handleAnnotation(JCCompilationUnit unit, JavacNode node, JCAnnotation annotation, long priority) {
-		TypeResolver resolver = new TypeResolver(node.getPackageDeclaration(), node.getImportStatements());
+		TypeResolver resolver = new TypeResolver(node.getImportList());
 		String rawType = annotation.annotationType.toString();
-		for (String fqn : resolver.findTypeMatches(node, typeLibrary, rawType)) {
-			AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
-			if (container == null) continue;
-			
-			try {
-				if (container.getPriority() == priority) {
-					if (checkAndSetHandled(annotation)) container.handle(node);
-				}
-			} catch (AnnotationValueDecodeFail fail) {
-				fail.owner.setError(fail.getMessage(), fail.idx);
-			} catch (Throwable t) {
-				String sourceName = "(unknown).java";
-				if (unit != null && unit.sourcefile != null) sourceName = unit.sourcefile.getName();
-				javacError(String.format("Lombok annotation handler %s failed on " + sourceName, container.handler.getClass()), t);
+		String fqn = resolver.typeRefToFullyQualifiedName(node, typeLibrary, rawType);
+		if (fqn == null) return;
+		AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
+		if (container == null) return;
+		
+		try {
+			if (container.getPriority() == priority) {
+				if (checkAndSetHandled(annotation)) container.handle(node);
 			}
+		} catch (AnnotationValueDecodeFail fail) {
+			fail.owner.setError(fail.getMessage(), fail.idx);
+		} catch (Throwable t) {
+			String sourceName = "(unknown).java";
+			if (unit != null && unit.sourcefile != null) sourceName = unit.sourcefile.getName();
+			javacError(String.format("Lombok annotation handler %s failed on " + sourceName, container.handler.getClass()), t);
 		}
 	}
 	

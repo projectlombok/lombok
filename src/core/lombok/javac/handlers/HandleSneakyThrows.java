@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,6 @@ import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -84,12 +82,19 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 			return;
 		}
 		
-		if (method.body == null) return;
-		if (method.body.stats.isEmpty()) return;
+		if (method.body == null || method.body.stats.isEmpty()) {
+			generateEmptyBlockWarning(methodNode, annotation, false);
+			return;
+		}
 		
 		final JCStatement constructorCall = method.body.stats.get(0);
 		final boolean isConstructorCall = isConstructorCall(constructorCall);
 		List<JCStatement> contents = isConstructorCall ? method.body.stats.tail : method.body.stats;
+		
+		if (contents == null || contents.isEmpty()) {
+			generateEmptyBlockWarning(methodNode, annotation, true);
+			return;
+		}
 		
 		for (String exception : exceptions) {
 			contents = List.of(buildTryCatchBlock(methodNode, contents, exception, annotation.get()));
@@ -99,14 +104,14 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 		methodNode.rebuild();
 	}
 	
-	private boolean isConstructorCall(final JCStatement supect) {
-		if (!(supect instanceof JCExpressionStatement)) return false;
-		final JCExpression supectExpression = ((JCExpressionStatement) supect).expr;
-		if (!(supectExpression instanceof JCMethodInvocation)) return false;
-		final String methodName = ((JCMethodInvocation) supectExpression).meth.toString();
-		return "super".equals(methodName) || "this".equals(methodName);
+	private void generateEmptyBlockWarning(JavacNode methodNode, JavacNode annotation, boolean hasConstructorCall) {
+		if (hasConstructorCall) {
+			annotation.addWarning("Calls to sibling / super constructors are always excluded from @SneakyThrows; @SneakyThrows has been ignored because there is no other code in this constructor.");
+		} else {
+			annotation.addWarning("This method or constructor is empty; @SneakyThrows has been ignored.");
+		}
 	}
-	
+
 	private JCStatement buildTryCatchBlock(JavacNode node, List<JCStatement> contents, String exception, JCTree source) {
 		TreeMaker maker = node.getTreeMaker();
 		

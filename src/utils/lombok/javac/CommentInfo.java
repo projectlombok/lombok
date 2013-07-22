@@ -66,7 +66,7 @@ public final class CommentInfo {
 	}
 	
 	public boolean isJavadoc() {
-		return content.startsWith("/**");
+		return content.startsWith("/**") && content.length() > 4;
 	}
 	
 	@Override

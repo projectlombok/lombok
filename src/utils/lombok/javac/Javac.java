@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,19 +21,38 @@
  */
 package lombok.javac;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Objects;
+import java.lang.reflect.Modifier;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.lang.model.type.NoType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeVisitor;
+
+import lombok.Lombok;
+
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.main.JavaCompiler;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
+import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
+import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCUnary;
 import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Name;
 
 /**
  * Container for static utility methods relevant to lombok's operation on javac.
@@ -45,6 +64,30 @@ public class Javac {
 	
 	/** Matches any of the 8 primitive names, such as {@code boolean}. */
 	private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern.compile("^(boolean|byte|short|int|long|float|double|char)$");
+	
+	private static final Pattern VERSION_PARSER = Pattern.compile("^(\\d{1,6})\\.(\\d{1,6}).*$");
+	
+	private static final AtomicInteger compilerVersion = new AtomicInteger(-1);
+	
+	/**
+	 * Returns the version of this java compiler, i.e. the JDK that it shipped in. For example, for javac v1.7, this returns {@code 7}.
+	 */
+	public static int getJavaCompilerVersion() {
+		int cv = compilerVersion.get();
+		if (cv != -1) return cv;
+		Matcher m = VERSION_PARSER.matcher(JavaCompiler.version());
+		if (m.matches()) {
+			int major = Integer.parseInt(m.group(1));
+			int minor = Integer.parseInt(m.group(2));
+			if (major == 1) {
+				compilerVersion.set(minor);
+				return minor;
+			}
+		}
+		
+		compilerVersion.set(6);
+		return 6;
+	}
 	
 	/**
 	 * Checks if the given expression (that really ought to refer to a type
@@ -102,56 +145,53 @@ public class Javac {
 	public static final Object CTC_EQUAL = getTreeTag("EQ");
 	
 	public static boolean compareCTC(Object ctc1, Object ctc2) {
-		return Objects.equals(ctc1, ctc2);
+		return ctc1 == null ? ctc2 == null : ctc1.equals(ctc2);
 	}
 	
+	private static final ConcurrentMap<String, Object> TYPE_TAG_CACHE = new ConcurrentHashMap<String, Object>();
+	private static final ConcurrentMap<String, Object> TREE_TAG_CACHE = new ConcurrentHashMap<String, Object>();
+	
+	
 	/**
-	 * Retrieves the current type tag. The actual type object differs depending on the Compiler version
+	 * Retrieves the provided TypeTag value, in a compiler version independent manner.
 	 * 
-	 * For JDK 8 this is an enum value of type <code>com.sun.tools.javac.code.TypeTag</code> 
-	 * for JDK 7 and lower, this is the value of the constant within <code>com.sun.tools.javac.code.TypeTags</code>
-	 * 
+	 * The actual type object differs depending on the Compiler version:
+	 * <ul>
+	 * <li>For JDK 8 this is an enum value of type <code>com.sun.tools.javac.code.TypeTag</code> 
+	 * <li>for JDK 7 and lower, this is the value of the constant within <code>com.sun.tools.javac.code.TypeTags</code>
+	 * </ul>
 	 * Solves the problem of compile time constant inlining, resulting in lombok
 	 * having the wrong value (javac compiler changes private api constants from
 	 * time to time).
 	 * 
-	 * @param identifier
-	 * @return the ordinal value of the typetag constant
+	 * @param identifier Identifier to turn into a TypeTag.
+	 * @return the value of the typetag constant (either enum instance or an Integer object).
 	 */
 	public static Object getTypeTag(String identifier) {
-		try {
-			if (JavaCompiler.version().startsWith("1.8")) {
-				return Class.forName("com.sun.tools.javac.code.TypeTag").getField(identifier).get(null);
-			} else {
-				return Class.forName("com.sun.tools.javac.code.TypeTags").getField(identifier).get(null);
-			}
-		} catch (NoSuchFieldException e) {
-			throw new RuntimeException(e);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
-		} catch (Exception e) {
-			if (e instanceof RuntimeException) throw (RuntimeException) e;
-			throw new RuntimeException(e);
-		}	
+		return getFieldCached(TYPE_TAG_CACHE, getJavaCompilerVersion() < 8 ? "com.sun.tools.javac.code.TypeTag" : "com.sun.tools.javac.code.TypeTags", identifier);
 	}
 	
 	public static Object getTreeTag(String identifier) {
- 		try {
-			if (JavaCompiler.version().startsWith("1.8")) {
-				return Class.forName("com.sun.tools.javac.tree.JCTree$Tag").getField(identifier).get(null);
-			} else {
-				return Class.forName("com.sun.tools.javac.tree.JCTree").getField(identifier).get(null);
-			}
-		} catch (NoSuchFieldException e) {
-			throw new RuntimeException(e);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
-		} catch (Exception e) {
-			if (e instanceof RuntimeException) throw (RuntimeException) e;
-			throw new RuntimeException(e);
-		}
+		return getFieldCached(TREE_TAG_CACHE, getJavaCompilerVersion() < 8 ? "com.sun.tools.javac.tree.JCTree" : "com.sun.tools.javac.tree.JCTree$Tag", identifier);
 	}
-
+	
+	private static Object getFieldCached(ConcurrentMap<String, Object> cache, String className, String fieldName) {
+		Object value = cache.get(fieldName);
+		if (value != null) return value;
+		try {
+			value = Class.forName(className).getField(fieldName).get(null);
+		} catch (NoSuchFieldException e) {
+			throw Lombok.sneakyThrow(e);
+		} catch (IllegalAccessException e) {
+			throw Lombok.sneakyThrow(e);
+		} catch (ClassNotFoundException e) {
+			throw Lombok.sneakyThrow(e);
+		}
+		
+		cache.putIfAbsent(fieldName, value);
+		return value;
+	}
+	
 	public static Object getTreeTypeTag(JCPrimitiveTypeTree tree) {
 		return tree.typetag;
 	}
@@ -159,82 +199,239 @@ public class Javac {
 	public static Object getTreeTypeTag(JCLiteral tree) {
 		return tree.typetag;
 	}
+	
+	private static final Method createIdent, createLiteral, createUnary, createBinary;
 
+	static {
+		if (getJavaCompilerVersion() < 8) {
+			createIdent = getMethod(TreeMaker.class, "TypeIdent", int.class);
+		} else {
+			createIdent = getMethod(TreeMaker.class, "TypeIdent", "com.sun.tools.javac.code.TypeTag");
+		}
+		createIdent.setAccessible(true);
+		
+		if (getJavaCompilerVersion() < 8) {
+			createLiteral = getMethod(TreeMaker.class, "Literal", int.class, Object.class);
+		} else {
+			createLiteral = getMethod(TreeMaker.class, "Literal", "com.sun.tools.javac.code.TypeTag", "java.lang.Object");
+		}
+		createLiteral.setAccessible(true);
+		
+		if (getJavaCompilerVersion() < 8) {
+			createUnary = getMethod(TreeMaker.class, "Unary", int.class, JCExpression.class);
+		} else {
+			createUnary = getMethod(TreeMaker.class, "Unary", "com.sun.tools.javac.code.TypeTag", JCExpression.class.getName());
+		}
+		createUnary.setAccessible(true);
+		
+		if (getJavaCompilerVersion() < 8) {
+			createBinary = getMethod(TreeMaker.class, "Binary", Integer.TYPE, JCExpression.class, JCExpression.class);
+		} else {
+			createBinary = getMethod(TreeMaker.class, "Binary", "com.sun.tools.javac.code.TypeTag", JCExpression.class.getName(), JCExpression.class.getName());
+		}
+		createBinary.setAccessible(true);
+	}
+	
+	private static Method getMethod(Class<?> clazz, String name, Class<?>... paramTypes) {
+		try {
+			return clazz.getMethod(name, paramTypes);
+		} catch (NoSuchMethodException e) {
+			throw Lombok.sneakyThrow(e);
+		}
+	}
+	
+	private static Method getMethod(Class<?> clazz, String name, String... paramTypes) {
+		try {
+			Class<?>[] c = new Class[paramTypes.length];
+			for (int i = 0; i < paramTypes.length; i++) c[i] = Class.forName(paramTypes[i]);
+			return clazz.getMethod(name, c);
+		} catch (NoSuchMethodException e) {
+			throw Lombok.sneakyThrow(e);
+		} catch (ClassNotFoundException e) {
+			throw Lombok.sneakyThrow(e);
+		}
+	}
+	
 	public static JCExpression makeTypeIdent(TreeMaker maker, Object ctc) {
 		try {
-			Method createIdent;
-			if (JavaCompiler.version().startsWith("1.8")) {
-				createIdent = TreeMaker.class.getMethod("TypeIdent", Class.forName("com.sun.tools.javac.code.TypeTag"));
-			} else {
-				createIdent = TreeMaker.class.getMethod("TypeIdent", Integer.TYPE);
-			}
 			return (JCExpression) createIdent.invoke(maker, ctc);
-		} catch (NoSuchMethodException e) {
-			throw new RuntimeException(e);
 		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
-		} catch (Exception e) {
-			if (e instanceof RuntimeException) throw (RuntimeException) e;
-			throw new RuntimeException(e);
+			throw Lombok.sneakyThrow(e);
+		} catch (InvocationTargetException e) {
+			throw Lombok.sneakyThrow(e.getCause());
 		}
 	}
 	
 	public static JCLiteral makeLiteral(TreeMaker maker, Object ctc, Object argument) {
 		try {
-			Method createLiteral;
-			if (JavaCompiler.version().startsWith("1.8")) {
-				createLiteral = TreeMaker.class.getMethod("Literal", Class.forName("com.sun.tools.javac.code.TypeTag"), Object.class);
-			} else {
-				createLiteral = TreeMaker.class.getMethod("Literal", Integer.TYPE, Object.class);
-			}
 			return (JCLiteral) createLiteral.invoke(maker, ctc, argument);
-		} catch (NoSuchMethodException e) {
-			throw new RuntimeException(e);
 		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
-		} catch (Exception e) {
-			if (e instanceof RuntimeException) throw (RuntimeException) e;
-			throw new RuntimeException(e);
+			throw Lombok.sneakyThrow(e);
+		} catch (InvocationTargetException e) {
+			throw Lombok.sneakyThrow(e.getCause());
 		}
 	}
 	
 	public static JCUnary makeUnary(TreeMaker maker, Object ctc, JCExpression argument) {
 		try {
-			Method createUnary;
-			if (JavaCompiler.version().startsWith("1.8")) {
-				createUnary = TreeMaker.class.getMethod("Unary", Class.forName("com.sun.tools.javac.code.TypeTag"), JCExpression.class);
-			} else {
-				createUnary = TreeMaker.class.getMethod("Unary", Integer.TYPE, JCExpression.class);
-			}
 			return (JCUnary) createUnary.invoke(maker, ctc, argument);
-		} catch (NoSuchMethodException e) {
-			throw new RuntimeException(e);
 		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
-		} catch (Exception e) {
-			if (e instanceof RuntimeException) throw (RuntimeException) e;
-			throw new RuntimeException(e);
+			throw Lombok.sneakyThrow(e);
+		} catch (InvocationTargetException e) {
+			throw Lombok.sneakyThrow(e.getCause());
 		}
 	}
 	
-	public static JCBinary makeBinary(TreeMaker maker, Object ctc, JCExpression rhsArgument, JCExpression lhsArgument) {
+	public static JCBinary makeBinary(TreeMaker maker, Object ctc, JCExpression lhsArgument, JCExpression rhsArgument) {
 		try {
-			Method createUnary;
-			if (JavaCompiler.version().startsWith("1.8")) {
-				createUnary = TreeMaker.class.getMethod("Binary", Class.forName("com.sun.tools.javac.code.TypeTag"), JCExpression.class, JCExpression.class);
-			} else {
-				createUnary = TreeMaker.class.getMethod("Binary", Integer.TYPE, JCExpression.class, JCExpression.class);
-			}
-			return (JCBinary) createUnary.invoke(maker, ctc, rhsArgument, lhsArgument);
-		} catch (NoSuchMethodException e) {
-			throw new RuntimeException(e);
+			return (JCBinary) createBinary.invoke(maker, ctc, lhsArgument, rhsArgument);
 		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
-		} catch (Exception e) {
-			if (e instanceof RuntimeException) throw (RuntimeException) e;
-			throw new RuntimeException(e);
+			throw Lombok.sneakyThrow(e);
+		} catch (InvocationTargetException e) {
+			throw Lombok.sneakyThrow(e.getCause());
 		}
 	}
 	
-
+	private static final Class<?> JC_VOID_TYPE, JC_NO_TYPE;
+	
+	static {
+		Class<?> c = null;
+		try {
+			c = Class.forName("com.sun.tools.javac.code.Type$JCVoidType");
+		} catch (Exception ignore) {}
+		JC_VOID_TYPE = c;
+		c = null;
+		try {
+			c = Class.forName("com.sun.tools.javac.code.Type$JCNoType");
+		} catch (Exception ignore) {}
+		JC_NO_TYPE = c;
+	}
+	
+	public static Type createVoidType(TreeMaker maker, Object tag) {
+		if (Javac.getJavaCompilerVersion() < 8) {
+			return new JCNoType(((Integer) tag).intValue());
+		} else {
+			try {
+				if (compareCTC(tag, CTC_VOID)) {
+					return (Type) JC_VOID_TYPE.newInstance();
+				} else {
+					return (Type) JC_NO_TYPE.newInstance();
+				}
+			} catch (IllegalAccessException e) {
+				throw Lombok.sneakyThrow(e);
+			} catch (InstantiationException e) {
+				throw Lombok.sneakyThrow(e);
+			}
+		}
+	}
+	
+	private static class JCNoType extends Type implements NoType {
+		public JCNoType(int tag) {
+			super(tag, null);
+		}
+		
+		@Override
+		public TypeKind getKind() {
+			if (Javac.compareCTC(tag, CTC_VOID)) return TypeKind.VOID;
+			if (Javac.compareCTC(tag, CTC_NONE)) return TypeKind.NONE;
+			throw new AssertionError("Unexpected tag: " + tag);
+		}
+		
+		@Override
+		public <R, P> R accept(TypeVisitor<R, P> v, P p) {
+			return v.visitNoType(this, p);
+		}
+	}
+	
+	private static final Field JCTREE_TAG, JCLITERAL_TYPETAG, JCPRIMITIVETYPETREE_TYPETAG;
+	private static final Method JCTREE_GETTAG;
+	static {
+		Field f = null;
+		try {
+			f = JCTree.class.getDeclaredField("tag");
+		} catch (NoSuchFieldException e) {}
+		JCTREE_TAG = f;
+		
+		f = null;
+		try {
+			f = JCLiteral.class.getDeclaredField("typetag");
+		} catch (NoSuchFieldException e) {}
+		JCLITERAL_TYPETAG = f;
+		
+		f = null;
+		try {
+			f = JCPrimitiveTypeTree.class.getDeclaredField("typetag");
+		} catch (NoSuchFieldException e) {}
+		JCPRIMITIVETYPETREE_TYPETAG = f;
+		
+		Method m = null;
+		try {
+			m = JCTree.class.getDeclaredMethod("getTag");
+		} catch (NoSuchMethodException e) {}
+		JCTREE_GETTAG = m;
+	}
+	
+	public static Object getTag(JCTree node) {
+		if (JCTREE_GETTAG != null) {
+			try {
+				return JCTREE_GETTAG.invoke(node);
+			} catch (Exception e) {}
+		}
+		try {
+			return JCTREE_TAG.get(node);
+		} catch (Exception e) {
+			throw new IllegalStateException("Can't get node tag");
+		}
+	}
+	
+	public static Object getTypeTag(JCLiteral node) {
+		try {
+			return JCLITERAL_TYPETAG.get(node);
+		} catch (Exception e) {
+			throw new IllegalStateException("Can't get JCLiteral typetag");
+		}
+	}
+	
+	public static Object getTypeTag(JCPrimitiveTypeTree node) {
+		try {
+			return JCPRIMITIVETYPETREE_TYPETAG.get(node);
+		} catch (Exception e) {
+			throw new IllegalStateException("Can't get JCPrimitiveTypeTree typetag");
+		}
+	}
+	
+	private static Method classDef;
+	
+	public static JCClassDecl ClassDef(TreeMaker maker, JCModifiers mods, Name name, List<JCTypeParameter> typarams, JCExpression extending, List<JCExpression> implementing, List<JCTree> defs) {
+		if (classDef == null) try {
+			classDef = TreeMaker.class.getDeclaredMethod("ClassDef", JCModifiers.class, Name.class, List.class, JCExpression.class, List.class, List.class);
+		} catch (NoSuchMethodException ignore) {}
+		if (classDef == null) try {
+			classDef = TreeMaker.class.getDeclaredMethod("ClassDef", JCModifiers.class, Name.class, List.class, JCTree.class, List.class, List.class);
+		} catch (NoSuchMethodException ignore) {}
+		
+		if (classDef == null) throw new IllegalStateException("Lombok bug #20130617-1310: ClassDef doesn't look like anything we thought it would look like.");
+		if (!Modifier.isPublic(classDef.getModifiers()) && !classDef.isAccessible()) {
+			classDef.setAccessible(true);
+		}
+		
+		try {
+			return (JCClassDecl) classDef.invoke(maker, mods, name, typarams, extending, implementing, defs);
+		} catch (InvocationTargetException e) {
+			throw sneakyThrow(e.getCause());
+		} catch (IllegalAccessException e) {
+			throw sneakyThrow(e.getCause());
+		}
+	}
+	
+	private static RuntimeException sneakyThrow(Throwable t) {
+		if (t == null) throw new NullPointerException("t");
+		Javac.<RuntimeException>sneakyThrow0(t);
+		return null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static <T extends Throwable> void sneakyThrow0(Throwable t) throws T {
+		throw (T)t;
+	}
 }

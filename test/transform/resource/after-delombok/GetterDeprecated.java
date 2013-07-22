@@ -10,6 +10,9 @@ class GetterDeprecated {
 	public int getAnnotation() {
 		return this.annotation;
 	}
+	/**
+	 * @deprecated
+	 */
 	@java.lang.Deprecated
 	@java.lang.SuppressWarnings("all")
 	public int getJavadoc() {

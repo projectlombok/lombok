@@ -267,7 +267,7 @@ public class EclipsePatcher extends Agent {
 				.build());
 		
 	}
-
+	
 	private static void patchPostCompileHookEclipse(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.wrapMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.core.builder.IncrementalImageBuilder", "writeClassFileContents"))

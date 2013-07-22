@@ -1,5 +1,5 @@
-import lombok.experimental.Value;
-@lombok.experimental.Value class Value1 {
+import lombok.Value;
+@lombok.Value class Value1 {
 	final int x;
 	String name;
 }

@@ -30,8 +30,9 @@ import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.eclipse.handlers.HandleConstructor.SkipIfConstructorExists;
 import lombok.experimental.NonFinal;
-import lombok.experimental.Value;
+import lombok.Value;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
@@ -78,6 +79,6 @@ public class HandleValue extends EclipseAnnotationHandler<Value> {
 		new HandleGetter().generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
 		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		new HandleToString().generateToStringForType(typeNode, annotationNode);
-		new HandleConstructor().generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, ann.staticConstructor(), true, Collections.<Annotation>emptyList(), ast);
+		new HandleConstructor().generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, ann.staticConstructor(), SkipIfConstructorExists.YES, Collections.<Annotation>emptyList(), ast);
 	}
 }

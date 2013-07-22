@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 The Project Lombok Authors.
+ * Copyright (C) 2010-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -329,7 +329,7 @@ public class PatchFixes {
 		return newSimpleNames;
 	}
 	
-	public static byte[] runPostCompiler(byte[] bytes, String fileName) {
+	public static byte[] runPostCompiler(byte[] bytes,  String fileName) {
 		byte[] transformed = PostCompiler.applyTransformations(bytes, fileName, DiagnosticsReceiver.CONSOLE);
 		return transformed == null ? bytes : transformed;
 	}

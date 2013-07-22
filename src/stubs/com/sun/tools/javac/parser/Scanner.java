@@ -59,4 +59,11 @@ public class Scanner implements Lexer {
 	public char[] getRawCharacters(int beginIndex, int endIndex) {
 		return null;
 	}
+	
+	public void nextToken() {
+	}
+	
+	public char[] getRawCharacters() {
+		return new char[0];
+	}
 }

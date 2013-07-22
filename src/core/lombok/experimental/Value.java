@@ -39,9 +39,11 @@ import java.lang.annotation.Target;
  * @see lombok.ToString
  * @see lombok.EqualsAndHashCode
  * @see lombok.Data
+ * @deprecated {@link lombok.Value} has been promoted to the main package, so use that one instead.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
+@Deprecated
 public @interface Value {
 	/**
 	 * If you specify a static constructor name, then the generated constructor will be private, and

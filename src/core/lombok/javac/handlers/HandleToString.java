@@ -24,6 +24,8 @@ package lombok.javac.handlers;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 import static lombok.javac.Javac.*;
 
+import java.util.Collection;
+
 import lombok.ToString;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
@@ -165,7 +167,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		}
 	}
 	
-	private JCMethodDecl createToString(JavacNode typeNode, List<JavacNode> fields, boolean includeFieldNames, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
+	static JCMethodDecl createToString(JavacNode typeNode, Collection<JavacNode> fields, boolean includeFieldNames, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
 		TreeMaker maker = typeNode.getTreeMaker();
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(chainDots(typeNode, "java", "lang", "Override"), List.<JCExpression>nil());
@@ -199,18 +201,22 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		}
 		
 		for (JavacNode fieldNode : fields) {
-			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			JCExpression expr;
 			
 			JCExpression fieldAccessor = createFieldAccessor(maker, fieldNode, fieldAccess);
 			
-			if (getFieldType(fieldNode, fieldAccess) instanceof JCArrayTypeTree) {
-				boolean multiDim = ((JCArrayTypeTree)field.vartype).elemtype instanceof JCArrayTypeTree;
-				boolean primitiveArray = ((JCArrayTypeTree)field.vartype).elemtype instanceof JCPrimitiveTypeTree;
-				boolean useDeepTS = multiDim || !primitiveArray;
-				
-				JCExpression hcMethod = chainDots(typeNode, "java", "util", "Arrays", useDeepTS ? "deepToString" : "toString");
-				expr = maker.Apply(List.<JCExpression>nil(), hcMethod, List.<JCExpression>of(fieldAccessor));
+			JCExpression fieldType = getFieldType(fieldNode, fieldAccess);
+			
+			// The distinction between primitive and object will be useful if we ever add a 'hideNulls' option.
+			boolean fieldIsPrimitive = fieldType instanceof JCPrimitiveTypeTree;
+			boolean fieldIsPrimitiveArray = fieldType instanceof JCArrayTypeTree && ((JCArrayTypeTree) fieldType).elemtype instanceof JCPrimitiveTypeTree;
+			boolean fieldIsObjectArray = !fieldIsPrimitiveArray && fieldType instanceof JCArrayTypeTree;
+			@SuppressWarnings("unused")
+			boolean fieldIsObject = !fieldIsPrimitive && !fieldIsPrimitiveArray && !fieldIsObjectArray;
+			
+			if (fieldIsPrimitiveArray || fieldIsObjectArray) {
+				JCExpression tsMethod = chainDots(typeNode, "java", "util", "Arrays", fieldIsObjectArray ? "deepToString" : "toString");
+				expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of(fieldAccessor));
 			} else expr = fieldAccessor;
 			
 			if (first) {
@@ -238,7 +244,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source);
 	}
 	
-	private String getTypeName(JavacNode typeNode) {
+	private static String getTypeName(JavacNode typeNode) {
 		String typeName = ((JCClassDecl) typeNode.get()).name.toString();
 		JavacNode upType = typeNode.up();
 		while (upType.getKind() == Kind.TYPE) {

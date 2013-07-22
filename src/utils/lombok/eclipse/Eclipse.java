@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  */
 package lombok.eclipse;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -36,8 +37,11 @@ import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Literal;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
+import org.eclipse.jdt.internal.compiler.ast.TryStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 
 public class Eclipse {
@@ -58,7 +62,9 @@ public class Eclipse {
 	 * but we need to deal with it. This turns [[java][lang][String]] into "java.lang.String".
 	 */
 	public static String toQualifiedName(char[][] typeName) {
-		StringBuilder sb = new StringBuilder();
+		int len = typeName.length - 1;
+		for (char[] c : typeName) len += c.length;
+		StringBuilder sb = new StringBuilder(len);
 		boolean first = true;
 		for (char[] c : typeName) {
 			sb.append(first ? "" : ".").append(c);
@@ -174,5 +180,59 @@ public class Eclipse {
 		}
 		
 		return null;
+	}
+	
+	private static long latestEcjCompilerVersionConstantCached = 0;
+	
+	public static long getLatestEcjCompilerVersionConstant() {
+		if (latestEcjCompilerVersionConstantCached != 0) return latestEcjCompilerVersionConstantCached;
+		
+		int highestVersionSoFar = 0;
+		for (Field f : ClassFileConstants.class.getDeclaredFields()) {
+			try {
+				if (f.getName().startsWith("JDK1_")) {
+					int thisVersion = Integer.parseInt(f.getName().substring("JDK1_".length()));
+					if (thisVersion > highestVersionSoFar) {
+						highestVersionSoFar = thisVersion;
+						latestEcjCompilerVersionConstantCached = (Long) f.get(null);
+					}
+				}
+			} catch (Exception ignore) {}
+		}
+		
+		if (highestVersionSoFar > 6 && !ecjSupportsJava7Features()) {
+			latestEcjCompilerVersionConstantCached = ClassFileConstants.JDK1_6;
+		}
+		return latestEcjCompilerVersionConstantCached;
+	}
+	
+	private static int ecjCompilerVersionCached = -1;
+	public static int getEcjCompilerVersion() {
+		if (ecjCompilerVersionCached >= 0) return ecjCompilerVersionCached;
+		
+		for (Field f : CompilerOptions.class.getDeclaredFields()) {
+			try {
+				if (f.getName().startsWith("VERSION_1_")) {
+					ecjCompilerVersionCached = Math.max(ecjCompilerVersionCached, Integer.parseInt(f.getName().substring("VERSION_1_".length())));
+				}
+			} catch (Exception ignore) {}
+		}
+		
+		if (ecjCompilerVersionCached < 5) ecjCompilerVersionCached = 5;
+		if (!ecjSupportsJava7Features()) ecjCompilerVersionCached = Math.min(6, ecjCompilerVersionCached);
+		return ecjCompilerVersionCached;
+	}
+	
+	/**
+	 * Certain ECJ versions that only go up to -source 6 report that they support -source 7 and even fail to error when -source 7 is applied.
+	 * We detect this and correctly say that no more than -source 6 is supported. (when this is the case, this method returns false).
+	 */
+	private static boolean ecjSupportsJava7Features() {
+		try {
+			TryStatement.class.getDeclaredField("resources");
+			return true;
+		} catch (NoSuchFieldException e) {
+			return false;
+		}
 	}
 }

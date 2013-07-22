@@ -8,7 +8,9 @@ import java.lang.annotation.*;
   public @java.beans.ConstructorProperties({"i", "s"}) @java.lang.SuppressWarnings("all") NonNullPlain(final @lombok.NonNull int i, final @lombok.NonNull String s) {
     super();
     if ((s == null))
-        throw new java.lang.NullPointerException("s");
+        {
+          throw new java.lang.NullPointerException("s");
+        }
     this.i = i;
     this.s = s;
   }
@@ -26,7 +28,9 @@ import java.lang.annotation.*;
   }
   public @java.lang.SuppressWarnings("all") void setS(final @lombok.NonNull String s) {
     if ((s == null))
-        throw new java.lang.NullPointerException("s");
+        {
+          throw new java.lang.NullPointerException("s");
+        }
     this.s = s;
   }
   public @java.lang.SuppressWarnings("all") void setO(final Object o) {

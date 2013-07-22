@@ -40,6 +40,8 @@ import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.Block;
+import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.ExplicitConstructorCall;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
@@ -147,7 +149,21 @@ public class HandleSneakyThrows extends EclipseAnnotationHandler<SneakyThrows> {
 			return;
 		}
 		
-		if (method.statements == null) return;
+		if (method.statements == null || method.statements.length == 0) {
+			boolean hasConstructorCall = false;
+			if (method instanceof ConstructorDeclaration) {
+				ExplicitConstructorCall constructorCall = ((ConstructorDeclaration) method).constructorCall;
+				hasConstructorCall = constructorCall != null && !constructorCall.isImplicitSuper() && !constructorCall.isImplicitThis();
+			}
+			
+			if (hasConstructorCall) {
+				annotation.addWarning("Calls to sibling / super constructors are always excluded from @SneakyThrows; @SneakyThrows has been ignored because there is no other code in this constructor.");
+			} else {
+				annotation.addWarning("This method or constructor is empty; @SneakyThrows has been ignored.");
+			}
+			
+			return;
+		}
 		
 		Statement[] contents = method.statements;
 		
@@ -160,9 +176,9 @@ public class HandleSneakyThrows extends EclipseAnnotationHandler<SneakyThrows> {
 	}
 	
 	private Statement buildTryCatchBlock(Statement[] contents, DeclaredException exception, ASTNode source, AbstractMethodDeclaration method) {
-		int methodStart =  method.bodyStart;
-		int methodEnd =  method.bodyEnd;
-		long methodPosEnd = methodEnd << 32 | (methodEnd & 0xFFFFFFFFL);
+		int methodStart = method.bodyStart;
+		int methodEnd = method.bodyEnd;
+		long methodPosEnd = ((long) methodEnd) << 32 | (methodEnd & 0xFFFFFFFFL);
 		
 		TryStatement tryStatement = new TryStatement();
 		setGeneratedBy(tryStatement, source);

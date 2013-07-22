@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 The Project Lombok Authors.
+ * Copyright (C) 2011-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,19 +26,44 @@ import java.nio.CharBuffer;
 import com.sun.tools.javac.parser.Scanner;
 import com.sun.tools.javac.util.Context;
 
-public class CommentCollectingScannerFactory extends Scanner.Factory {
+public class CommentCollectingScannerFactory extends DocCommentScanner.Factory {
 	
+	@SuppressWarnings("all")
 	public static void preRegister(final Context context) {
 		if (context.get(scannerFactoryKey) == null) {
-			context.put(scannerFactoryKey, new Context.Factory<Scanner.Factory>() {
-				public CommentCollectingScanner.Factory make() {
+			// Careful! There is voodoo magic here!
+			//
+			// Context.Factory is parameterized. make() is for javac6 and below; make(Context) is for javac7 and up.
+			// this anonymous inner class definition is intentionally 'raw' - the return type of both 'make' methods is 'T',
+			// which means the compiler will only generate the correct "real" override method (with returntype Object, which is
+			// the lower bound for T, as a synthetic accessor for the make with returntype ScannerFactory) for that make method which
+			// is actually on the classpath (either make() for javac6-, or make(Context) for javac7+).
+			//
+			// We normally solve this issue via src/stubs, with BOTH make methods listed, but for some reason the presence of a stubbed out
+			// Context (or even a complete copy, it doesn't matter) results in a really strange eclipse bug, where any mention of any kind
+			// of com.sun.tools.javac.tree.TreeMaker in a source file disables ALL usage of 'go to declaration' and auto-complete in the entire
+			// source file.
+			//
+			// Thus, in short:
+			// * Do NOT parameterize the anonymous inner class literal.
+			// * Leave the return types as 'j.l.Object'.
+			// * Leave both make methods intact; deleting one has no effect on javac6- / javac7+, but breaks the other. Hard to test for.
+			// * Do not stub com.sun.tools.javac.util.Context or any of its inner types, like Factory.
+			@SuppressWarnings("all")
+			class MyFactory implements Context.Factory {
+				// This overrides the javac6- version of make.
+				public Object make() {
 					return new CommentCollectingScannerFactory(context);
 				}
 				
-				public CommentCollectingScanner.Factory make(Context c) {
+				// This overrides the javac7+ version of make.
+				public Object make(Context c) {
 					return new CommentCollectingScannerFactory(c);
 				}
-			});
+			}
+			
+			@SuppressWarnings("unchecked") Context.Factory<Scanner.Factory> factory = new MyFactory();
+			context.put(scannerFactoryKey, factory);
 		}
 	}
 	

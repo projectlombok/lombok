@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Project Lombok Authors.
+ * Copyright (C) 2010-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,6 +49,6 @@ public abstract class LombokOptions extends Options {
 	protected LombokOptions(Context context) {
 		super(context);
 	}
-
+	
 	public abstract void putJavacOption(String optionName, String value);
 }

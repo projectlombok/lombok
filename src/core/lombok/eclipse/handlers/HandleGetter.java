@@ -49,6 +49,8 @@ import org.eclipse.jdt.internal.compiler.ast.ArrayTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.BinaryExpression;
 import org.eclipse.jdt.internal.compiler.ast.Block;
+import org.eclipse.jdt.internal.compiler.ast.CastExpression;
+import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
@@ -67,6 +69,7 @@ import org.eclipse.jdt.internal.compiler.ast.SynchronizedStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.mangosdk.spi.ProviderFor;
 
 /**
@@ -184,7 +187,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		}
 		
 		TypeReference fieldType = copyType(field.type, source);
-		boolean isBoolean = nameEquals(fieldType.getTypeName(), "boolean") && fieldType.dimensions() == 0;
+		boolean isBoolean = isBoolean(fieldType);
 		String getterName = toGetterName(fieldNode, isBoolean);
 		
 		if (getterName == null) {
@@ -286,7 +289,6 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	}
 	
 	private static final char[][] AR = fromQualifiedName("java.util.concurrent.atomic.AtomicReference");
-	private static final TypeReference[][] AR_PARAMS = new TypeReference[5][];
 	
 	private static final java.util.Map<String, char[][]> TYPE_MAP;
 	static {
@@ -305,41 +307,54 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	private static char[] valueName = "value".toCharArray();
 	private static char[] actualValueName = "actualValue".toCharArray();
 	
+	private static final int PARENTHESIZED = (1 << ASTNode.ParenthesizedSHIFT) & ASTNode.ParenthesizedMASK;
+	
 	private Statement[] createLazyGetterBody(ASTNode source, EclipseNode fieldNode) {
 		/*
-		java.util.concurrent.atomic.AtomicReference<ValueType> value = this.fieldName.get();
+		java.lang.Object value = this.fieldName.get();
 		if (value == null) {
 			synchronized (this.fieldName) {
 				value = this.fieldName.get();
 				if (value == null) {
-					final ValueType actualValue = new ValueType();
-					value = new java.util.concurrent.atomic.AtomicReference<ValueType>(actualValue);
+					final RawValueType actualValue = INITIALIZER_EXPRESSION;
+					[IF PRIMITIVE]
+					value = actualValue;
+					[ELSE]
+					value = actualValue == null ? this.fieldName : actualValue;
+					[END IF]
 					this.fieldName.set(value);
 				}
 			}
 		}
-		return value.get();
+		[IF PRIMITIVE]
+		return (BoxedValueType) value;
+		[ELSE]
+		return (BoxedValueType) (value == this.fieldName ? null : value);
+		[END IF]
 		*/
 		
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
-		TypeReference componentType = copyType(field.type, source);
+		TypeReference rawComponentType = copyType(field.type, source);
+		TypeReference boxedComponentType = null;
+		boolean isPrimitive = false;
 		if (field.type instanceof SingleTypeReference && !(field.type instanceof ArrayTypeReference)) {
 			char[][] newType = TYPE_MAP.get(new String(((SingleTypeReference)field.type).token));
 			if (newType != null) {
-				componentType = new QualifiedTypeReference(newType, poss(source, 3));
+				boxedComponentType = new QualifiedTypeReference(newType, poss(source, 3));
+				isPrimitive = true;
 			}
 		}
+		if (boxedComponentType == null) boxedComponentType = copyType(field.type, source);
+		boxedComponentType.sourceStart = pS; boxedComponentType.sourceEnd = boxedComponentType.statementEnd = pE;
 		
 		Statement[] statements = new Statement[3];
 		
-		/* java.util.concurrent.atomic.AtomicReference<ValueType> value = this.fieldName.get(); */ {
+		/* java.lang.Object value = this.fieldName.get(); */ {
 			LocalDeclaration valueDecl = new LocalDeclaration(valueName, pS, pE);
-			TypeReference[][] typeParams = AR_PARAMS.clone();
-			typeParams[4] = new TypeReference[] {copyType(componentType, source)};
-			valueDecl.type = new ParameterizedQualifiedTypeReference(AR, typeParams, 0, poss(source, 5));
+			valueDecl.type = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(source, 3));
 			valueDecl.type.sourceStart = pS; valueDecl.type.sourceEnd = valueDecl.type.statementEnd = pE;
 			
 			MessageSend getter = new MessageSend();
@@ -356,8 +371,12 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 			synchronized (this.fieldName) {
 				value = this.fieldName.get();
 				if (value == null) { 
-					final ValueType actualValue = new ValueType();
-					value = new java.util.concurrent.atomic.AtomicReference<ValueType>(actualValue);
+					final ValueType actualValue = INITIALIZER_EXPRESSION;
+					[IF PRIMITIVE]
+					value = actualValue;
+					[ELSE]
+					value = actualValue == null ? this.fieldName : actualValue;
+					[END IF]
 					this.fieldName.set(value);
 				}
 			}
@@ -383,28 +402,37 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 				EqualExpression innerCond = new EqualExpression(
 						new SingleNameReference(valueName, p), new NullLiteral(pS, pE),
 						BinaryExpression.EQUAL_EQUAL);
+				innerCond.sourceStart = pS; innerCond.sourceEnd = innerCond.statementEnd = pE;
 				Block innerThen = new Block(0);
 				innerThen.statements = new Statement[3];
-				/* final ValueType actualValue = new ValueType(); */ {
+				/* final ValueType actualValue = INITIALIZER_EXPRESSION */ {
 					LocalDeclaration actualValueDecl = new LocalDeclaration(actualValueName, pS, pE);
-					actualValueDecl.type = copyType(field.type, source);
+					actualValueDecl.type = rawComponentType;
 					actualValueDecl.type.sourceStart = pS; actualValueDecl.type.sourceEnd = actualValueDecl.type.statementEnd = pE;
 					actualValueDecl.initialization = field.initialization;
 					actualValueDecl.modifiers = ClassFileConstants.AccFinal;
 					innerThen.statements[0] = actualValueDecl;
 				}
-				/* value = new java.util.concurrent.atomic.AtomicReference<ValueType>(actualValue); */ {
-					AllocationExpression create = new AllocationExpression();
-					create.sourceStart = pS; create.sourceEnd = create.statementEnd = pE;
-					TypeReference[][] typeParams = AR_PARAMS.clone();
-					typeParams[4] = new TypeReference[] {copyType(componentType, source)};
-					create.type = new ParameterizedQualifiedTypeReference(AR, typeParams, 0, poss(source, 5));
-					create.type.sourceStart = pS; create.type.sourceEnd = create.type.statementEnd = pE;
-					create.arguments = new Expression[] {new SingleNameReference(actualValueName, p)};
-					Assignment innerAssign = new Assignment(new SingleNameReference(valueName, p), create, pE);
-					innerAssign.sourceStart = pS; innerAssign.statementEnd = innerAssign.sourceEnd = pE;
-
-					innerThen.statements[1] = innerAssign;
+				/* [IF PRIMITIVE] value = actualValue; */ {
+					if (isPrimitive) {
+						Assignment innerAssign = new Assignment(new SingleNameReference(valueName, p), new SingleNameReference(actualValueName, p), pE);
+						innerAssign.sourceStart = pS; innerAssign.statementEnd = innerAssign.sourceEnd = pE;
+						innerThen.statements[1] = innerAssign;
+					}
+				}
+				/* [ELSE] value = actualValue == null ? this.fieldName : actualValue; */ {
+					if (!isPrimitive) {
+						EqualExpression avIsNull = new EqualExpression(
+								new SingleNameReference(actualValueName, p), new NullLiteral(pS, pE),
+								BinaryExpression.EQUAL_EQUAL);
+						avIsNull.sourceStart = pS; avIsNull.sourceEnd = avIsNull.statementEnd = pE;
+						Expression fieldRef = createFieldAccessor(fieldNode, FieldAccess.ALWAYS_FIELD, source);
+						ConditionalExpression ternary = new ConditionalExpression(avIsNull, fieldRef, new SingleNameReference(actualValueName, p));
+						ternary.sourceStart = pS; ternary.sourceEnd = ternary.statementEnd = pE;
+						Assignment innerAssign = new Assignment(new SingleNameReference(valueName, p), ternary, pE);
+						innerAssign.sourceStart = pS; innerAssign.statementEnd = innerAssign.sourceEnd = pE;
+						innerThen.statements[1] = innerAssign;
+					}
 				}
 				
 				/* this.fieldName.set(value); */ {
@@ -428,26 +456,34 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 			statements[1] = ifStatement;
 		}
 		
-		/* return value.get(); */ {
-			MessageSend getter = new MessageSend();
-			getter.sourceStart = pS; getter.sourceEnd = getter.statementEnd = pE;
-			getter.selector = new char[] {'g', 'e', 't'};
-			getter.receiver = new SingleNameReference(valueName, p);
-			
-			statements[2] = new ReturnStatement(getter, pS, pE);
+		/* [IF PRIMITIVE] return (BoxedValueType)value; */ {
+			if (isPrimitive) {
+				CastExpression cast = makeCastExpression(new SingleNameReference(valueName, p), boxedComponentType, source);
+				statements[2] = new ReturnStatement(cast, pS, pE);
+			}
 		}
-		
+		/* [ELSE] return (BoxedValueType)(value == this.fieldName ? null : value); */ {
+			if (!isPrimitive) {
+				EqualExpression vIsThisFieldName = new EqualExpression(
+						new SingleNameReference(valueName, p), createFieldAccessor(fieldNode, FieldAccess.ALWAYS_FIELD, source),
+						BinaryExpression.EQUAL_EQUAL);
+				vIsThisFieldName.sourceStart = pS; vIsThisFieldName.sourceEnd = vIsThisFieldName.statementEnd = pE;
+				ConditionalExpression ternary = new ConditionalExpression(vIsThisFieldName, new NullLiteral(pS, pE), new SingleNameReference(valueName, p));
+				ternary.sourceStart = pS; ternary.sourceEnd = ternary.statementEnd = pE;
+				ternary.bits |= PARENTHESIZED;
+				CastExpression cast = makeCastExpression(ternary, boxedComponentType, source);
+				statements[2] = new ReturnStatement(cast, pS, pE);
+			}
+		}
 		
 		// update the field type and init last
 			
-		/* 	private final java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<ValueType> fieldName = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<ValueType>>(); */ {
-			
-			LocalDeclaration first = (LocalDeclaration) statements[0];
-			TypeReference innerType = copyType(first.type, source);
-			
-			TypeReference[][] typeParams = AR_PARAMS.clone();
-			typeParams[4] = new TypeReference[] {copyType(innerType, source)};
+		/* 	private final java.util.concurrent.atomic.AtomicReference<java.lang.Object> fieldName = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>(); */ {
+			TypeReference innerType = new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(source, 3));
+			TypeReference[][] typeParams = new TypeReference[5][];
+			typeParams[4] = new TypeReference[] {innerType};
 			TypeReference type = new ParameterizedQualifiedTypeReference(AR, typeParams, 0, poss(source, 5));
+			
 			// Some magic here
 			type.sourceStart = -1; type.sourceEnd = -2;
 			

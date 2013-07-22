@@ -22,13 +22,17 @@
 package lombok.javac.handlers;
 
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+
+import java.lang.annotation.Annotation;
+
 import lombok.AccessLevel;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.experimental.NonFinal;
-import lombok.experimental.Value;
+import lombok.Value;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.handlers.HandleConstructor.SkipIfConstructorExists;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -44,7 +48,9 @@ import com.sun.tools.javac.tree.JCTree.JCModifiers;
 @HandlerPriority(-512) //-2^9; to ensure @EqualsAndHashCode and such pick up on this handler making the class final and messing with the fields' access levels, run earlier.
 public class HandleValue extends JavacAnnotationHandler<Value> {
 	@Override public void handle(AnnotationValues<Value> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		deleteAnnotationIfNeccessary(annotationNode, Value.class);
+		@SuppressWarnings("deprecation")
+		Class<? extends Annotation> oldExperimentalValue = lombok.experimental.Value.class;
+		deleteAnnotationIfNeccessary(annotationNode, Value.class, oldExperimentalValue);
 		JavacNode typeNode = annotationNode.up();
 		boolean notAClass = !isClass(typeNode);
 		
@@ -65,7 +71,7 @@ public class HandleValue extends JavacAnnotationHandler<Value> {
 		new HandleFieldDefaults().generateFieldDefaultsForType(typeNode, annotationNode, AccessLevel.PRIVATE, true, true);
 		
 		// TODO move this to the end OR move it to the top in eclipse.
-		new HandleConstructor().generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, true, annotationNode);
+		new HandleConstructor().generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, SkipIfConstructorExists.YES, annotationNode);
 		new HandleGetter().generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
 		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		new HandleToString().generateToStringForType(typeNode, annotationNode);

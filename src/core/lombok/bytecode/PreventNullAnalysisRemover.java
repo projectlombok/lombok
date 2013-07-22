@@ -44,12 +44,12 @@ public class PreventNullAnalysisRemover implements PostCompilerTransformation {
 		byte[] fixedByteCode = fixJSRInlining(original);
 		
 		ClassReader reader = new ClassReader(fixedByteCode);
-		ClassWriter writer = new FixedClassWriter(reader, ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+		ClassWriter writer = new FixedClassWriter(reader, 0);
 		
 		final AtomicBoolean changesMade = new AtomicBoolean();
 		
-		class PreventNullanalysisVisitor extends MethodVisitor {
-			PreventNullanalysisVisitor(MethodVisitor mv) {
+		class PreventNullAnalysisVisitor extends MethodVisitor {
+			PreventNullAnalysisVisitor(MethodVisitor mv) {
 				super(Opcodes.ASM4, mv);
 			}
 			
@@ -61,6 +61,7 @@ public class PreventNullAnalysisRemover implements PostCompilerTransformation {
 				if (hit && !"(Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) hit = false;
 				if (hit) {
 					changesMade.set(true);
+					if (System.getProperty("lombok.debugAsmOnly", null) != null) super.visitMethodInsn(opcode, owner, name, desc); // DEBUG for issue 470!
 				} else {
 					super.visitMethodInsn(opcode, owner, name, desc);
 				}
@@ -69,7 +70,7 @@ public class PreventNullAnalysisRemover implements PostCompilerTransformation {
 		
 		reader.accept(new ClassVisitor(Opcodes.ASM4, writer) {
 			@Override public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-				return new PreventNullanalysisVisitor(super.visitMethod(access, name, desc, signature, exceptions));
+				return new PreventNullAnalysisVisitor(super.visitMethod(access, name, desc, signature, exceptions));
 			}
 		}, 0);
 		return changesMade.get() ? writer.toByteArray() : null;

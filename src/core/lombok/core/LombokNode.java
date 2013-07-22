@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	protected final A ast;
 	protected final Kind kind;
 	protected final N node;
-	protected final List<L> children;
+	protected LombokImmutableList<L> children;
 	protected L parent;
 	
 	/** structurally significant are those nodes that can be annotated in java 1.6 or are method-like toplevels,
@@ -62,7 +62,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 		this.ast = ast;
 		this.kind = kind;
 		this.node = node;
-		this.children = children == null ? new ArrayList<L>() : children;
+		this.children = children != null ? LombokImmutableList.copyOf(children) : LombokImmutableList.<L>of();
 		for (L child : this.children) {
 			child.parent = (L) this;
 			if (!child.isStructurallySignificant)
@@ -91,12 +91,12 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	}
 	
 	/**
-	 * Convenient shortcut to the owning ast object's {@code getImportStatements} method.
+	 * Convenient shortcut to the owning ast object's {@code getImportList} method.
 	 * 
-	 * @see AST#getImportStatements()
+	 * @see AST#getImportList()
 	 */
-	public Collection<String> getImportStatements() {
-		return ast.getImportStatements();
+	public ImportList getImportList() {
+		return ast.getImportList();
 	}
 	
 	/**
@@ -118,35 +118,6 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 */
 	public N get() {
 		return node;
-	}
-	
-	/**
-	 * Replaces the AST node represented by this node object with the provided node. This node must
-	 * have a parent, obviously, for this to work.
-	 * 
-	 * Also affects the underlying (Eclipse/javac) AST.
-	 */
-	@SuppressWarnings({"rawtypes", "unchecked"})
-	public L replaceWith(N newN, Kind newNodeKind) {
-		ast.setChanged();
-		L newNode = ast.buildTree(newN, newNodeKind);
-		newNode.parent = parent;
-		for (int i = 0; i < parent.children.size(); i++) {
-			if (parent.children.get(i) == this) ((List)parent.children).set(i, newNode);
-		}
-		
-		parent.replaceChildNode(get(), newN);
-		return newNode;
-	}
-	
-	/**
-	 * Replaces the stated node with a new one. The old node must be a direct child of this node.
-	 * 
-	 * Also affects the underlying (Eclipse/javac) AST.
-	 */
-	public void replaceChildNode(N oldN, N newN) {
-		ast.setChanged();
-		ast.replaceStatementInNode(get(), oldN, newN);
 	}
 	
 	public Kind getKind() {
@@ -204,12 +175,27 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	
 	/**
 	 * Returns all children nodes.
-	 * 
-	 * A copy is created, so changing the list has no effect. Also, while iterating through this list,
-	 * you may add, remove, or replace children without causing {@code ConcurrentModificationException}s.
 	 */
-	public Collection<L> down() {
-		return new ArrayList<L>(children);
+	public LombokImmutableList<L> down() {
+		return children;
+	}
+	
+	/**
+	 * Convenient shortcut to the owning ast object's getLatestJavaSpecSupported method.
+	 * 
+	 * @see AST#getLatestJavaSpecSupported()
+	 */
+	public int getLatestJavaSpecSupported() {
+		return ast.getLatestJavaSpecSupported();
+	}
+	
+	/**
+	 * Convenient shortcut to the owning ast object's getSourceVersion method.
+	 * 
+	 * @see AST#getSourceVersion()
+	 */
+	public int getSourceVersion() {
+		return ast.getSourceVersion();
 	}
 	
 	/**
@@ -235,13 +221,13 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 * 
 	 * Does not change the underlying (javac/Eclipse) AST, only the wrapped view.
 	 */
-	@SuppressWarnings({"rawtypes", "unchecked"})
+	@SuppressWarnings({"unchecked"})
 	public L add(N newChild, Kind newChildKind) {
 		ast.setChanged();
 		L n = ast.buildTree(newChild, newChildKind);
 		if (n == null) return null;
 		n.parent = (L) this;
-		((List)children).add(n);
+		children = children.append(n);
 		return n;
 	}
 	
@@ -267,7 +253,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 		for (LombokNode child : children) child.gatherAndRemoveChildren(map);
 		ast.identityDetector.remove(get());
 		map.put(get(), (L) this);
-		children.clear();
+		children = LombokImmutableList.of();
 		ast.getNodeMap().remove(get());
 	}
 	
@@ -278,7 +264,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 */
 	public void removeChild(L child) {
 		ast.setChanged();
-		children.remove(child);
+		children = children.removeElement(child);
 	}
 	
 	/**

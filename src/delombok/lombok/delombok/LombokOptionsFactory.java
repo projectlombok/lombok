@@ -21,17 +21,16 @@
  */
 package lombok.delombok;
 
+import lombok.javac.Javac;
 import lombok.javac.Javac6BasedLombokOptions;
 import lombok.javac.Javac8BasedLombokOptions;
 import lombok.javac.LombokOptions;
 
-import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.util.Context;
 
 public class LombokOptionsFactory {
-	
 	enum LombokOptionCompilerVersion {
-		JDK6_7 {
+		JDK7_AND_LOWER {
 			@Override LombokOptions createAndRegisterOptions(Context context) {
 				return Javac6BasedLombokOptions.replaceWithDelombokOptions(context);
 			}
@@ -46,17 +45,13 @@ public class LombokOptionsFactory {
 		abstract LombokOptions createAndRegisterOptions(Context context); 
 	}
 	
-	
 	public static LombokOptions getDelombokOptions(Context context) {
 		LombokOptions options;
-		if (JavaCompiler.version().startsWith("1.6") || JavaCompiler.version().startsWith("1.7")) {
-			options = LombokOptionCompilerVersion.JDK6_7.createAndRegisterOptions(context);
-		} else if (JavaCompiler.version().startsWith("1.8")) {
-			options = LombokOptionCompilerVersion.JDK8.createAndRegisterOptions(context);
+		if (Javac.getJavaCompilerVersion() < 8) {
+			options = LombokOptionCompilerVersion.JDK7_AND_LOWER.createAndRegisterOptions(context);
 		} else {
-			throw new IllegalStateException("No support for compiler version " + JavaCompiler.version() + " for delombok");
+			options = LombokOptionCompilerVersion.JDK8.createAndRegisterOptions(context);
 		}
 		return options;
-		
 	}
 }

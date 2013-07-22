@@ -57,7 +57,7 @@ public class STSFinder extends EclipseFinder {
 	}
 	
 	@Override protected List<String> getSourceDirsOnWindows() {
-		return Arrays.asList("\\", "\\springsource", "\\Program Files", "\\Program Files\\springsource", System.getProperty("user.home", "."), System.getProperty("user.home", ".") + "\\springsource");
+		return Arrays.asList("\\", "\\springsource", "\\Program Files", "\\Program Files (x86)", "\\Program Files\\springsource", "\\Program Files (x86)\\springsource", System.getProperty("user.home", "."), System.getProperty("user.home", ".") + "\\springsource");
 	}
 	
 	@Override protected List<String> getSourceDirsOnMac() {

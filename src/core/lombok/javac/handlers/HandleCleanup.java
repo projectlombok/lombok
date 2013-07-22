@@ -32,7 +32,6 @@ import lombok.javac.JavacNode;
 
 import org.mangosdk.spi.ProviderFor;
 
-import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;

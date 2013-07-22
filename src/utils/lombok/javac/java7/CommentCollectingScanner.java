@@ -26,12 +26,12 @@ import java.nio.CharBuffer;
 import lombok.javac.CommentInfo;
 import lombok.javac.CommentInfo.EndConnection;
 import lombok.javac.CommentInfo.StartConnection;
+
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
+import com.sun.tools.javac.parser.DocCommentScanner;
 
-import com.sun.tools.javac.parser.Scanner;
-
-public class CommentCollectingScanner extends Scanner {
+public class CommentCollectingScanner extends DocCommentScanner {
 	private final ListBuffer<CommentInfo> comments = ListBuffer.lb();
 	private int endComment = 0;
 	
@@ -55,6 +55,7 @@ public class CommentCollectingScanner extends Scanner {
 
 		CommentInfo comment = new CommentInfo(prevEndPos, pos, endPos, content, start, end);
 		comments.append(comment);
+		super.processComment(style);
 	}
 	
 	private EndConnection determineEndConnection(int pos) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,12 +21,7 @@
  */
 package lombok.core;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,24 +35,23 @@ import java.util.Map;
  * <ul><li>foo.Spork</li><li>Spork</li><li>foo.*</li></ul>
  */
 public class TypeLibrary {
-	private final Map<String, List<String>> keyToFqnMap;
-	private final String singletonValue;
-	private final List<String> singletonKeys;
+	private final Map<String, String> unqualifiedToQualifiedMap;
+	private final String unqualified, qualified;
 	
 	public TypeLibrary() {
-		keyToFqnMap = new HashMap<String, List<String>>();
-		singletonKeys = null;
-		singletonValue = null;
+		unqualifiedToQualifiedMap = new HashMap<String, String>();
+		unqualified = null;
+		qualified = null;
 	}
 	
 	private TypeLibrary(String fqnSingleton) {
-		keyToFqnMap = null;
-		singletonValue = fqnSingleton;
+		unqualifiedToQualifiedMap = null;
+		qualified = fqnSingleton;
 		int idx = fqnSingleton.lastIndexOf('.');
 		if (idx == -1) {
-			singletonKeys = Collections.singletonList(fqnSingleton);
+			unqualified = fqnSingleton;
 		} else {
-			singletonKeys = Arrays.asList(fqnSingleton, fqnSingleton.substring(idx + 1), fqnSingleton.substring(0, idx) + ".*");
+			unqualified = fqnSingleton.substring(idx + 1);
 		}
 	}
 	
@@ -71,42 +65,34 @@ public class TypeLibrary {
 	 * @param fullyQualifiedTypeName the FQN type name, such as 'java.lang.String'.
 	 */
 	public void addType(String fullyQualifiedTypeName) {
-		if (keyToFqnMap == null) throw new IllegalStateException("SingleType library");
+		fullyQualifiedTypeName = fullyQualifiedTypeName.replace("$", ".");
 		int idx = fullyQualifiedTypeName.lastIndexOf('.');
 		if (idx == -1) throw new IllegalArgumentException(
 				"Only fully qualified types are allowed (and stuff in the default package is not palatable to us either!)");
+		String unqualified = fullyQualifiedTypeName.substring(idx + 1);
+		if (unqualifiedToQualifiedMap == null) throw new IllegalStateException("SingleType library");
 		
-		fullyQualifiedTypeName = fullyQualifiedTypeName.replace("$", ".");
-		final String simpleName = fullyQualifiedTypeName.substring(idx +1);
-		final String packageName = fullyQualifiedTypeName.substring(0, idx);
-		
-		if (keyToFqnMap.put(fullyQualifiedTypeName, Collections.singletonList(fullyQualifiedTypeName)) != null) return;
-		
-		addToMap(simpleName, fullyQualifiedTypeName);
-		addToMap(packageName + ".*", fullyQualifiedTypeName);
-	}
-	
-	private TypeLibrary addToMap(String keyName, String fullyQualifiedTypeName) {
-		List<String> list = keyToFqnMap.get(keyName);
-		if (list == null) {
-			list = new ArrayList<String>();
-			keyToFqnMap.put(keyName, list);
+		unqualifiedToQualifiedMap.put(unqualified, fullyQualifiedTypeName);
+		unqualifiedToQualifiedMap.put(fullyQualifiedTypeName, fullyQualifiedTypeName);
+		for (Map.Entry<String, String> e : LombokInternalAliasing.ALIASES.entrySet()) {
+			if (fullyQualifiedTypeName.equals(e.getValue())) unqualifiedToQualifiedMap.put(e.getKey(), fullyQualifiedTypeName);
 		}
-		
-		list.add(fullyQualifiedTypeName);
-		return this;
 	}
 	
 	/**
-	 * Returns all items in the type library that may be a match to the provided type.
+	 * Translates an unqualified name such as 'String' to 'java.lang.String', _if_ you added 'java.lang.String' to the library via the {@code addType} method.
+	 * Also returns the input if it is equal to a fully qualified name added to this type library.
 	 * 
-	 * @param typeReference something like 'String', 'java.lang.String', or 'java.lang.*'.
-	 * @return A list of Fully Qualified Names for all types in the library that fit the reference.
+	 * Returns null if it does not match any type in this type library.
 	 */
-	public Collection<String> findCompatible(String typeReference) {
-		if (singletonKeys != null) return singletonKeys.contains(typeReference) ? Collections.singletonList(singletonValue) : Collections.<String>emptyList();
-		
-		List<String> result = keyToFqnMap.get(typeReference);
-		return result == null ? Collections.<String>emptyList() : Collections.unmodifiableList(result);
+	public String toQualified(String typeReference) {
+		if (unqualifiedToQualifiedMap == null) {
+			if (typeReference.equals(unqualified) || typeReference.equals(qualified)) return qualified;
+			for (Map.Entry<String, String> e : LombokInternalAliasing.ALIASES.entrySet()) {
+				if (e.getKey().equals(typeReference)) return e.getValue();
+			}
+			return null;
+		}
+		return unqualifiedToQualifiedMap.get(typeReference);
 	}
 }

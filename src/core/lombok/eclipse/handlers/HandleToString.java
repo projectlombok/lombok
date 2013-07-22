@@ -170,7 +170,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		}
 	}
 	
-	private MethodDeclaration createToString(EclipseNode type, Collection<EclipseNode> fields,
+	static MethodDeclaration createToString(EclipseNode type, Collection<EclipseNode> fields,
 			boolean includeFieldNames, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {
 		String typeName = getTypeName(type);
 		char[] suffix = ")".toCharArray();
@@ -209,21 +209,25 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		}
 		
 		for (EclipseNode field : fields) {
-			TypeReference fType = getFieldType(field, fieldAccess);
+			TypeReference fieldType = getFieldType(field, fieldAccess);
 			Expression fieldAccessor = createFieldAccessor(field, fieldAccess, source);
 			
+			// The distinction between primitive and object will be useful if we ever add a 'hideNulls' option.
+			boolean fieldBaseTypeIsPrimitive = BUILT_IN_TYPES.contains(new String(fieldType.getLastToken()));
+			boolean fieldIsPrimitive = fieldType.dimensions() == 0 && fieldBaseTypeIsPrimitive;
+			boolean fieldIsPrimitiveArray = fieldType.dimensions() == 1 && fieldBaseTypeIsPrimitive;
+			boolean fieldIsObjectArray = fieldType.dimensions() > 0 && !fieldIsPrimitiveArray;
+			@SuppressWarnings("unused")
+			boolean fieldIsObject = !fieldIsPrimitive && !fieldIsPrimitiveArray && !fieldIsObjectArray;
+			
 			Expression ex;
-			if (fType.dimensions() > 0) {
+			if (fieldIsPrimitiveArray || fieldIsObjectArray) {
 				MessageSend arrayToString = new MessageSend();
 				arrayToString.sourceStart = pS; arrayToString.sourceEnd = pE;
 				arrayToString.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA, TypeConstants.UTIL, "Arrays".toCharArray());
 				arrayToString.arguments = new Expression[] { fieldAccessor };
 				setGeneratedBy(arrayToString.arguments[0], source);
-				if (fType.dimensions() > 1 || !BUILT_IN_TYPES.contains(new String(fType.getLastToken()))) {
-					arrayToString.selector = "deepToString".toCharArray();
-				} else {
-					arrayToString.selector = "toString".toCharArray();
-				}
+				arrayToString.selector = (fieldIsObjectArray ? "deepToString" : "toString").toCharArray();
 				ex = arrayToString;
 			} else {
 				ex = fieldAccessor;
@@ -278,7 +282,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		return method;
 	}
 	
-	private String getTypeName(EclipseNode type) {
+	private static String getTypeName(EclipseNode type) {
 		String typeName = getSingleTypeName(type);
 		EclipseNode upType = type.up();
 		while (upType.getKind() == Kind.TYPE) {
@@ -288,7 +292,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		return typeName;
 	}
 	
-	private String getSingleTypeName(EclipseNode type) {
+	private static String getSingleTypeName(EclipseNode type) {
 		TypeDeclaration typeDeclaration = (TypeDeclaration)type.get();
 		char[] rawTypeName = typeDeclaration.name;
 		return rawTypeName == null ? "" : new String(rawTypeName);
@@ -297,7 +301,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 	private static final Set<String> BUILT_IN_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
 			"byte", "short", "int", "long", "char", "boolean", "double", "float")));
 	
-	private NameReference generateQualifiedNameRef(ASTNode source, char[]... varNames) {
+	private static NameReference generateQualifiedNameRef(ASTNode source, char[]... varNames) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		NameReference ref;

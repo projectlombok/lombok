@@ -26,10 +26,6 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.Collection;
 
-import javax.lang.model.type.NoType;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeVisitor;
-
 import lombok.AccessLevel;
 import lombok.Setter;
 import lombok.core.AST.Kind;
@@ -43,7 +39,6 @@ import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
@@ -195,9 +190,13 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		injectMethod(fieldNode.up(), createdSetter);
 	}
 	
-	private JCMethodDecl createSetter(long access, JavacNode field, TreeMaker treeMaker, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	static JCMethodDecl createSetter(long access, JavacNode field, TreeMaker treeMaker, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		String setterName = toSetterName(field);
 		boolean returnThis = shouldReturnThis(field);
+		return createSetter(access, field, treeMaker, setterName, returnThis, source, onMethod, onParam);
+	}
+	
+	static JCMethodDecl createSetter(long access, JavacNode field, TreeMaker treeMaker, String setterName, boolean shouldReturnThis, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (setterName == null) return null;
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
@@ -223,17 +222,17 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		}
 		
 		JCExpression methodType = null;
-		if (returnThis) {
+		if (shouldReturnThis) {
 			methodType = cloneSelfType(field);
 		}
 		
 		if (methodType == null) {
 			//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.
-			methodType = treeMaker.Type(new JCNoType(CTC_VOID));
-			returnThis = false;
+			methodType = treeMaker.Type(Javac.createVoidType(treeMaker, CTC_VOID));
+			shouldReturnThis = false;
 		}
 		
-		if (returnThis) {
+		if (shouldReturnThis) {
 			JCReturn returnStatement = treeMaker.Return(treeMaker.Ident(field.toName("this")));
 			statements.append(returnStatement);
 		}
@@ -249,26 +248,9 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(chainDots(field, "java", "lang", "Deprecated"), List.<JCExpression>nil()));
 		}
 		
-		return recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
+		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
-	}
-	
-	private static class JCNoType extends Type implements NoType {
-		public JCNoType(Object tag) {
-			//FIX
-			super(1, null);
-		}
-		
-		@Override
-		public TypeKind getKind() {
-			if (Javac.compareCTC(tag, CTC_VOID)) return TypeKind.VOID;
-			if (Javac.compareCTC(tag, CTC_NONE)) return TypeKind.NONE;
-			throw new AssertionError("Unexpected tag: " + tag);
-		}
-		
-		@Override
-		public <R, P> R accept(TypeVisitor<R, P> v, P p) {
-			return v.visitNoType(this, p);
-		}
+		copyJavadoc(field, decl, CopyJavadoc.SETTER);
+		return decl;
 	}
 }

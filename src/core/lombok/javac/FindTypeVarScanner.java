@@ -88,7 +88,7 @@ public class FindTypeVarScanner extends AbstractTypeVisitor6<Void, Void> {
 	@Override public Void visitTypeVariable(TypeVariable t, Void p) {
 		Name name = null;
 		try {
-			name = ((Type)t).tsym.name;
+			name = ((Type) t).tsym.name;
 		} catch (NullPointerException e) {}
 		if (name != null) typeVariables.add(name.toString());
 		subVisit(t.getLowerBound());

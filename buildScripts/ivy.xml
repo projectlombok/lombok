@@ -12,11 +12,12 @@
 		<conf name="javac7" />
 	</configurations>
 	<dependencies>
-		<dependency org="org.projectlombok" name="lombok.patcher" rev="0.6" conf="build->default; runtime->default" />
+		<dependency org="org.projectlombok" name="lombok.patcher" rev="0.7" conf="build->default; runtime->default" />
 		<dependency org="zwitserloot.com" name="cmdreader" rev="1.2" conf="build->runtime; runtime" />
 		
 		<dependency org="junit" name="junit" rev="4.8.2" conf="test->default; contrib->sources" />
 		<dependency org="log4j" name="log4j" rev="1.2.16" conf="test->default; contrib->sources" />
+		<dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.0-beta4" conf="test->default; contrib->sources" />
 		<dependency org="commons-logging" name="commons-logging" rev="1.1.1" conf="test->default; contrib->sources"/>
 		<dependency org="org.slf4j" name="slf4j-api" rev="1.6.1" conf="test->default; contrib->sources"/>
 		<dependency org="org.slf4j" name="slf4j-ext" rev="1.6.1" conf="test->default; contrib->sources"/>

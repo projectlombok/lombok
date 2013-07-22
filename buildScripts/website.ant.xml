@@ -76,7 +76,7 @@ such as converting the changelog into HTML, and creating javadoc.
 	</target>
 	
 	<target name="-website-main" depends="-website-clean, version, javadoc, changelogToHtml">
-		<taskdef classpath="lib/build/java2html.jar" name="java2html" classname="de.java2html.anttasks.Java2HtmlTask" />
+		<taskdef classpath="lib/build/de.java2html-java2html.jar" name="java2html" classname="de.java2html.anttasks.Java2HtmlTask" />
 		<mkdir dir="build/website" />
 		<copy todir="build/website">
 			<fileset dir="website">
@@ -143,7 +143,16 @@ such as converting the changelog into HTML, and creating javadoc.
 			<param name="transformationName" value="val" />
 		</antcall>
 		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="Value" />
+		</antcall>
+		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="Delegate" />
+		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="NonNull" />
+		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="experimental/Builder" />
 		</antcall>
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="experimental/Accessors" />
@@ -156,9 +165,6 @@ such as converting the changelog into HTML, and creating javadoc.
 		</antcall>
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="experimental/Wither" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/Value" />
 		</antcall>
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="experimental/onX" />
@@ -327,7 +333,7 @@ such as converting the changelog into HTML, and creating javadoc.
 			<link href="http://commons.apache.org/logging/apidocs/" />
 			<link href="http://logging.apache.org/log4j/1.2/apidocs/" />
 			<header><![CDATA[<a href='http://projectlombok.org/' target='_blank'>Lombok</a> - ]]>v${lombok.version}</header>
-			<bottom><![CDATA[<i>Copyright &copy; 2009-2011 The Project Lombok Authors, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php'>MIT licence</a>.]]></bottom>
+			<bottom><![CDATA[<i>Copyright &copy; 2009-2013 The Project Lombok Authors, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php'>MIT licence</a>.]]></bottom>
 		</javadoc>
 		<!-- bugfix for boneheaded javadoc bug where ?is-external=true is inserted before an anchor ref, breaking the anchor ref.
 		is-external=true doesn't actually do anything, so, we'll just get rid of it. -->

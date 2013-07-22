@@ -29,6 +29,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import lombok.eclipse.Eclipse;
+import lombok.javac.Javac;
 
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
@@ -37,7 +42,23 @@ import org.junit.runner.notification.RunNotifier;
 
 public class DirectoryRunner extends Runner {
 	public enum Compiler {
-		DELOMBOK, JAVAC, ECJ;
+		DELOMBOK {
+			@Override public int getVersion() {
+				return Javac.getJavaCompilerVersion();
+			}
+		}, 
+		JAVAC {
+			@Override public int getVersion() {
+				return DELOMBOK.getVersion();
+			}
+		},
+		ECJ {
+			@Override public int getVersion() {
+				return Eclipse.getEcjCompilerVersion();
+			}
+		};
+		
+		public abstract int getVersion();
 	}
 	
 	public static abstract class TestParams {
@@ -46,9 +67,51 @@ public class DirectoryRunner extends Runner {
 		public abstract File getBeforeDirectory();
 		public abstract File getAfterDirectory();
 		public abstract File getMessagesDirectory();
+		/** Version of the JDK dialect that the compiler can understand; for example, if you return '7', you should know what try-with-resources is. */
+		public int getVersion() {
+			return getCompiler().getVersion();
+		}
 		
 		public boolean accept(File file) {
 			return true;
+		}
+		
+		private static final Pattern P1 = Pattern.compile("^(\\d+)$");
+		private static final Pattern P2 = Pattern.compile("^\\:(\\d+)$");
+		private static final Pattern P3 = Pattern.compile("^(\\d+):$");
+		private static final Pattern P4 = Pattern.compile("^(\\d+):(\\d+)$");
+		
+		public boolean shouldIgnoreBasedOnVersion(String firstLine) {
+			int thisVersion = getVersion();
+			if (!firstLine.startsWith("//version ")) return false;
+			
+			String spec = firstLine.substring("//version ".length());
+			
+			/* Single version: '5' */ {
+				Matcher m = P1.matcher(spec);
+				if (m.matches()) return Integer.parseInt(m.group(1)) != thisVersion;
+			}
+			
+			/* Upper bound: ':5' (inclusive) */ {
+				Matcher m = P2.matcher(spec);
+				if (m.matches()) return Integer.parseInt(m.group(1)) < thisVersion;
+			}
+			
+			/* Lower bound '5:' (inclusive) */ {
+				Matcher m = P3.matcher(spec);
+				if (m.matches()) return Integer.parseInt(m.group(1)) > thisVersion;
+			}
+			
+			/* Range '7:8' (inclusive) */ {
+				Matcher m = P4.matcher(spec);
+				if (m.matches()) {
+					if (Integer.parseInt(m.group(1)) < thisVersion) return true;
+					if (Integer.parseInt(m.group(2)) > thisVersion) return true;
+					return false;
+				}
+			}
+			
+			throw new IllegalArgumentException("Version validity spec not valid: " + spec);
 		}
 	}
 	
@@ -135,6 +198,6 @@ public class DirectoryRunner extends Runner {
 		BufferedReader reader = new BufferedReader(new FileReader(file));
 		String line = reader.readLine();
 		reader.close();
-		return line != null && line.startsWith("//ignore");
+		return line != null && (line.startsWith("//ignore") || params.shouldIgnoreBasedOnVersion(line));
 	}
 }

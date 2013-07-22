@@ -1,6 +1,6 @@
 @lombok.EqualsAndHashCode(of = "booleanValue") @lombok.ToString(of = "booleanValue") class GetterLazyBoolean {
-  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>> booleanValue = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>>();
-  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>> otherBooleanValue = new java.util.concurrent.atomic.AtomicReference<java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>>();
+  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.lang.Object> booleanValue = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
+  private final @lombok.Getter(lazy = true) java.util.concurrent.atomic.AtomicReference<java.lang.Object> otherBooleanValue = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
   GetterLazyBoolean() {
     super();
   }
@@ -8,7 +8,7 @@
     return true;
   }
   public @java.lang.SuppressWarnings("all") boolean isBooleanValue() {
-    java.util.concurrent.atomic.AtomicReference<java.lang.Boolean> value = this.booleanValue.get();
+    java.lang.Object value = this.booleanValue.get();
     if ((value == null))
         {
           synchronized (this.booleanValue)
@@ -17,15 +17,15 @@
               if ((value == null))
                   {
                     final boolean actualValue = calculateBoolean();
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>(actualValue);
+                    value = actualValue;
                     this.booleanValue.set(value);
                   }
             }
         }
-    return value.get();
+    return (java.lang.Boolean) value;
   }
   public @java.lang.SuppressWarnings("all") boolean isOtherBooleanValue() {
-    java.util.concurrent.atomic.AtomicReference<java.lang.Boolean> value = this.otherBooleanValue.get();
+    java.lang.Object value = this.otherBooleanValue.get();
     if ((value == null))
         {
           synchronized (this.otherBooleanValue)
@@ -34,12 +34,12 @@
               if ((value == null))
                   {
                     final boolean actualValue = (! calculateBoolean());
-                    value = new java.util.concurrent.atomic.AtomicReference<java.lang.Boolean>(actualValue);
+                    value = actualValue;
                     this.otherBooleanValue.set(value);
                   }
             }
         }
-    return value.get();
+    return (java.lang.Boolean) value;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))

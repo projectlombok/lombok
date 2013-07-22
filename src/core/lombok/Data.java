@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ import java.lang.annotation.Target;
  * @see RequiredArgsConstructor
  * @see ToString
  * @see EqualsAndHashCode
- * @see lombok.experimental.Value
+ * @see lombok.Value
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)

@@ -22,13 +22,25 @@
 package lombok.core;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.Value;
 import lombok.experimental.Accessors;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.Wither;
 
 /**
  * Container for static utility methods useful for some of the standard lombok transformations, regardless of
@@ -38,6 +50,13 @@ public class TransformationsUtil {
 	private TransformationsUtil() {
 		//Prevent instantiation
 	}
+	
+	@SuppressWarnings({"all", "unchecked", "deprecation"})
+	public static final List<Class<? extends java.lang.annotation.Annotation>> INVALID_ON_BUILDERS = Collections.unmodifiableList(
+			Arrays.<Class<? extends java.lang.annotation.Annotation>>asList(
+			Getter.class, Setter.class, Wither.class, ToString.class, EqualsAndHashCode.class, 
+			RequiredArgsConstructor.class, AllArgsConstructor.class, NoArgsConstructor.class, 
+			Data.class, Value.class, lombok.experimental.Value.class, FieldDefaults.class));
 	
 	/**
 	 * Given the name of a field, return the 'base name' of that field. For example, {@code fFoobar} becomes {@code foobar} if {@code f} is in the prefix list.
@@ -159,12 +178,12 @@ public class TransformationsUtil {
 		
 		if (fieldName.length() == 0) return null;
 		
-		Accessors ac = accessors.getInstance();
-		fieldName = removePrefix(fieldName, ac.prefix());
+		Accessors ac = accessors == null ? null : accessors.getInstance();
+		fieldName = removePrefix(fieldName, ac == null ? new String[0] : ac.prefix());
 		if (fieldName == null) return null;
 		
 		String fName = fieldName.toString();
-		if (adhereToFluent && ac.fluent()) return fName;
+		if (adhereToFluent && ac != null && ac.fluent()) return fName;
 		
 		if (isBoolean && fName.startsWith("is") && fieldName.length() > 2 && !Character.isLowerCase(fieldName.charAt(2))) {
 			// The field is for example named 'isRunning'.
