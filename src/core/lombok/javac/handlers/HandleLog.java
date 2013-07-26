@@ -28,12 +28,12 @@ import java.lang.annotation.Annotation;
 import lombok.core.AnnotationValues;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
 
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
@@ -74,13 +74,13 @@ public class HandleLog {
 	}
 	
 	private static JCFieldAccess selfType(JavacNode typeNode) {
-		TreeMaker maker = typeNode.getTreeMaker();
+		JavacTreeMaker maker = typeNode.getTreeMaker();
 		Name name = ((JCClassDecl) typeNode.get()).name;
 		return maker.Select(maker.Ident(name), typeNode.toName("class"));
 	}
 	
 	private static boolean createField(LoggingFramework framework, JavacNode typeNode, JCFieldAccess loggingType, JCTree source) {
-		TreeMaker maker = typeNode.getTreeMaker();
+		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		// private static final <loggerType> log = <factoryMethod>(<parameter>);
 		JCExpression loggerType = chainDotsString(typeNode, framework.getLoggerTypeName());
@@ -164,7 +164,7 @@ public class HandleLog {
 		// private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(TargetType.class.getName());
 		JUL(lombok.extern.java.Log.class, "java.util.logging.Logger", "java.util.logging.Logger.getLogger") {
 			@Override public JCExpression createFactoryParameter(JavacNode typeNode, JCFieldAccess loggingType) {
-				TreeMaker maker = typeNode.getTreeMaker();
+				JavacTreeMaker maker = typeNode.getTreeMaker();
 				JCExpression method = maker.Select(loggingType, typeNode.toName("getName"));
 				return maker.Apply(List.<JCExpression>nil(), method, List.<JCExpression>nil());
 			}

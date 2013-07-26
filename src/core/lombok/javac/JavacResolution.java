@@ -418,7 +418,7 @@ public class JavacResolution {
 		
 		TreeMaker maker = ast.getTreeMaker();
 		
-		if (Javac.compareCTC(type.tag,  CTC_BOT)) return createJavaLangObject(ast);
+		if (Javac.compareCTC(type.tag, CTC_BOT)) return createJavaLangObject(ast);
 		if (Javac.compareCTC(type.tag, CTC_VOID)) return allowVoid ? primitiveToJCTree(type.getKind(), maker) : createJavaLangObject(ast);
 		if (type.isPrimitive()) return primitiveToJCTree(type.getKind(), maker);
 		if (type.isErroneous()) throw new TypeNotConvertibleException("Type cannot be resolved");

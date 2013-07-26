@@ -44,8 +44,8 @@ import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TransformationsUtil;
 import lombok.core.TypeResolver;
 import lombok.experimental.Accessors;
-import lombok.javac.Javac;
 import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
@@ -73,7 +73,6 @@ import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
@@ -430,7 +429,7 @@ public class JavacHandlerUtil {
 	
 	public static JCExpression cloneSelfType(JavacNode field) {
 		JavacNode typeNode = field;
-		TreeMaker maker = field.getTreeMaker();
+		JavacTreeMaker maker = field.getTreeMaker();
 		while (typeNode != null && typeNode.getKind() != Kind.TYPE) typeNode = typeNode.up();
 		if (typeNode != null && typeNode.get() instanceof JCClassDecl) {
 			JCClassDecl type = (JCClassDecl) typeNode.get();
@@ -708,11 +707,11 @@ public class JavacHandlerUtil {
 	/**
 	 * Creates an expression that reads the field. Will either be {@code this.field} or {@code this.getField()} depending on whether or not there's a getter.
 	 */
-	static JCExpression createFieldAccessor(TreeMaker maker, JavacNode field, FieldAccess fieldAccess) {
+	static JCExpression createFieldAccessor(JavacTreeMaker maker, JavacNode field, FieldAccess fieldAccess) {
 		return createFieldAccessor(maker, field, fieldAccess, null);
 	}
 	
-	static JCExpression createFieldAccessor(TreeMaker maker, JavacNode field, FieldAccess fieldAccess, JCExpression receiver) {
+	static JCExpression createFieldAccessor(JavacTreeMaker maker, JavacNode field, FieldAccess fieldAccess, JCExpression receiver) {
 		boolean lookForGetter = lookForGetter(field, fieldAccess);
 		
 		GetterMethod getter = lookForGetter ? findGetter(field) : null;
@@ -840,7 +839,7 @@ public class JavacHandlerUtil {
 	}
 	
 	private static void addSuppressWarningsAll(JCModifiers mods, JavacNode node, int pos, JCTree source) {
-		TreeMaker maker = node.getTreeMaker();
+		JavacTreeMaker maker = node.getTreeMaker();
 		JCExpression suppressWarningsType = chainDots(node, "java", "lang", "SuppressWarnings");
 		JCLiteral allLiteral = maker.Literal("all");
 		suppressWarningsType.pos = pos;
@@ -891,7 +890,7 @@ public class JavacHandlerUtil {
 		assert elems != null;
 		assert elems.length > 0;
 		
-		TreeMaker maker = node.getTreeMaker();
+		JavacTreeMaker maker = node.getTreeMaker();
 		if (pos != -1) maker = maker.at(pos);
 		JCExpression e = maker.Ident(node.toName(elems[0]));
 		for (int i = 1 ; i < elems.length ; i++) {
@@ -941,15 +940,15 @@ public class JavacHandlerUtil {
 	 * Generates a new statement that checks if the given variable is null, and if so, throws a {@code NullPointerException} with the
 	 * variable name as message.
 	 */
-	public static JCStatement generateNullCheck(TreeMaker maker, JavacNode variable) {
+	public static JCStatement generateNullCheck(JavacTreeMaker maker, JavacNode variable) {
 		JCVariableDecl varDecl = (JCVariableDecl) variable.get();
 		if (isPrimitive(varDecl.vartype)) return null;
 		Name fieldName = varDecl.name;
 		JCExpression npe = chainDots(variable, "java", "lang", "NullPointerException");
 		JCExpression exception = maker.NewClass(null, List.<JCExpression>nil(), npe, List.<JCExpression>of(maker.Literal(fieldName.toString())), null);
-		JCStatement throwStatement = Javac.makeThrow(maker, exception);
+		JCStatement throwStatement = maker.Throw(exception);
 		JCBlock throwBlock = maker.Block(0, List.of(throwStatement));
-		return maker.If(Javac.makeBinary(maker, CTC_EQUAL, maker.Ident(fieldName), Javac.makeLiteral(maker, CTC_BOT, null)), throwBlock, null);
+		return maker.If(maker.Binary(CTC_EQUAL, maker.Ident(fieldName), maker.Literal(CTC_BOT, null)), throwBlock, null);
 	}
 	
 	/**
@@ -1050,14 +1049,14 @@ public class JavacHandlerUtil {
 		return result.toList();
 	}
 	
-	public static List<JCTypeParameter> copyTypeParams(TreeMaker maker, List<JCTypeParameter> params) {
+	public static List<JCTypeParameter> copyTypeParams(JavacTreeMaker maker, List<JCTypeParameter> params) {
 		if (params == null || params.isEmpty()) return params;
 		ListBuffer<JCTypeParameter> out = ListBuffer.lb();
 		for (JCTypeParameter tp : params) out.append(maker.TypeParameter(tp.name, tp.bounds));
 		return out.toList();
 	}
 	
-	public static JCExpression namePlusTypeParamsToTypeReference(TreeMaker maker, Name typeName, List<JCTypeParameter> params) {
+	public static JCExpression namePlusTypeParamsToTypeReference(JavacTreeMaker maker, Name typeName, List<JCTypeParameter> params) {
 		ListBuffer<JCExpression> typeArgs = ListBuffer.lb();
 		
 		if (!params.isEmpty()) {
@@ -1136,13 +1135,13 @@ public class JavacHandlerUtil {
 	 * the class's own parameter, but as its a static method, the static method's notion of {@code T} is different from the class notion of {@code T}. If you're duplicating
 	 * a type used in the class context, you need to use this method.
 	 */
-	public static JCExpression cloneType(TreeMaker maker, JCExpression in, JCTree source) {
+	public static JCExpression cloneType(JavacTreeMaker maker, JCExpression in, JCTree source) {
 		JCExpression out = cloneType0(maker, in);
 		if (out != null) recursiveSetGeneratedBy(out, source);
 		return out;
 	}
 	
-	private static JCExpression cloneType0(TreeMaker maker, JCTree in) {
+	private static JCExpression cloneType0(JavacTreeMaker maker, JCTree in) {
 		if (in == null) return null;
 		
 		if (in instanceof JCPrimitiveTypeTree) return (JCExpression) in;
@@ -1278,17 +1277,17 @@ public class JavacHandlerUtil {
 	 */
 	public static void copyJavadoc(JavacNode from, JCTree to, CopyJavadoc copyMode) {
 		if (copyMode == null) copyMode = CopyJavadoc.VERBATIM;
-		try {
-			JCCompilationUnit cu = ((JCCompilationUnit) from.top().get());
-			if (cu.docComments != null) {
-				String javadoc = cu.docComments.get(from.get());
-				
-				if (javadoc != null) {
-					String[] filtered = copyMode.split(javadoc);
-					cu.docComments.put(to, filtered[0]);
-					cu.docComments.put(from.get(), filtered[1]);
-				}
-			}
-		} catch (Exception ignore) {}
+//		try {
+//			JCCompilationUnit cu = ((JCCompilationUnit) from.top().get());
+//			if (cu.docComments != null) {
+//				String javadoc = cu.docComments.get(from.get());
+//				
+//				if (javadoc != null) {
+//					String[] filtered = copyMode.split(javadoc);
+//					cu.docComments.put(to, filtered[0]);
+//					cu.docComments.put(from.get(), filtered[1]);
+//				}
+//			}
+//		} catch (Exception ignore) {}
 	}
 }

@@ -26,9 +26,9 @@ import static lombok.javac.Javac.*;
 import lombok.Cleanup;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -49,7 +49,6 @@ import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
@@ -114,13 +113,13 @@ public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 		}
 		doAssignmentCheck(annotationNode, tryBlock.toList(), decl.name);
 		
-		TreeMaker maker = annotationNode.getTreeMaker();
+		JavacTreeMaker maker = annotationNode.getTreeMaker();
 		JCFieldAccess cleanupMethod = maker.Select(maker.Ident(decl.name), annotationNode.toName(cleanupName));
 		List<JCStatement> cleanupCall = List.<JCStatement>of(maker.Exec(
 				maker.Apply(List.<JCExpression>nil(), cleanupMethod, List.<JCExpression>nil())));
 		
 		JCMethodInvocation preventNullAnalysis = preventNullAnalysis(maker, annotationNode, maker.Ident(decl.name));
-		JCBinary isNull = Javac.makeBinary(maker, CTC_NOT_EQUAL, preventNullAnalysis, Javac.makeLiteral(maker, CTC_BOT, null));
+		JCBinary isNull = maker.Binary(CTC_NOT_EQUAL, preventNullAnalysis, maker.Literal(CTC_BOT, null));
 		
 		JCIf ifNotNullCleanup = maker.If(isNull, maker.Block(0, cleanupCall), null);
 		
@@ -139,9 +138,9 @@ public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 		ancestor.rebuild();
 	}
 	
-	private JCMethodInvocation preventNullAnalysis(TreeMaker maker, JavacNode node, JCExpression expression) {
+	private JCMethodInvocation preventNullAnalysis(JavacTreeMaker maker, JavacNode node, JCExpression expression) {
 		JCMethodInvocation singletonList = maker.Apply(List.<JCExpression>nil(), chainDotsString(node, "java.util.Collections.singletonList"), List.of(expression));
-		JCMethodInvocation cleanedExpr = maker.Apply(List.<JCExpression>nil(), maker.Select(singletonList, node.toName("get")) , List.<JCExpression>of(Javac.makeLiteral(maker, CTC_INT, 0)));
+		JCMethodInvocation cleanedExpr = maker.Apply(List.<JCExpression>nil(), maker.Select(singletonList, node.toName("get")) , List.<JCExpression>of(maker.Literal(CTC_INT, 0)));
 		return cleanedExpr;
 	}
 	

@@ -30,7 +30,6 @@ import lombok.core.AST.Kind;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -165,7 +164,7 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 	 * 
 	 * @see JavacAST#getTreeMaker()
 	 */
-	public TreeMaker getTreeMaker() {
+	public JavacTreeMaker getTreeMaker() {
 		return ast.getTreeMaker();
 	}
 	

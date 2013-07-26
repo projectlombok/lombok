@@ -38,6 +38,7 @@ import lombok.core.TransformationsUtil;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 
 import org.mangosdk.spi.ProviderFor;
@@ -58,7 +59,6 @@ import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCSynchronized;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
@@ -214,7 +214,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker(), source.get(), lazy, onMethod));
 	}
 	
-	private JCMethodDecl createGetter(long access, JavacNode field, TreeMaker treeMaker, JCTree source, boolean lazy, List<JCAnnotation> onMethod) {
+	private JCMethodDecl createGetter(long access, JavacNode field, JavacTreeMaker treeMaker, JCTree source, boolean lazy, List<JCAnnotation> onMethod) {
 		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
 		
 		// Remember the type; lazy will change it
@@ -281,7 +281,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		return delegates;
 	}
 	
-	private List<JCStatement> createSimpleGetterBody(TreeMaker treeMaker, JavacNode field) {
+	private List<JCStatement> createSimpleGetterBody(JavacTreeMaker treeMaker, JavacNode field) {
 		return List.<JCStatement>of(treeMaker.Return(createFieldAccessor(treeMaker, field, FieldAccess.ALWAYS_FIELD)));
 	}
 	
@@ -303,7 +303,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		TYPE_MAP = Collections.unmodifiableMap(m);
 	}
 	
-	private List<JCStatement> createLazyGetterBody(TreeMaker maker, JavacNode fieldNode, JCTree source) {
+	private List<JCStatement> createLazyGetterBody(JavacTreeMaker maker, JavacNode fieldNode, JCTree source) {
 		/*
 		java.lang.Object value = this.fieldName.get();
 		if (value == null) {
@@ -374,7 +374,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 					}
 					/* [ELSE] value = actualValue == null ? this.fieldName : actualValue; */ {
 						if (!isPrimitive) {
-							JCExpression actualValueIsNull = Javac.makeBinary(maker, CTC_EQUAL, maker.Ident(actualValueName), Javac.makeLiteral(maker, CTC_BOT, null));
+							JCExpression actualValueIsNull = maker.Binary(CTC_EQUAL, maker.Ident(actualValueName), maker.Literal(CTC_BOT, null));
 							JCExpression thisDotFieldName = createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD);
 							JCExpression ternary = maker.Conditional(actualValueIsNull, thisDotFieldName, maker.Ident(actualValueName));
 							JCStatement statement = maker.Exec(maker.Assign(maker.Ident(valueName), ternary));
@@ -386,7 +386,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 						innerIfStatements.append(statement);
 					}
 					
-					JCBinary isNull = Javac.makeBinary(maker, CTC_EQUAL, maker.Ident(valueName), Javac.makeLiteral(maker, CTC_BOT, null));
+					JCBinary isNull = maker.Binary(CTC_EQUAL, maker.Ident(valueName), maker.Literal(CTC_BOT, null));
 					JCIf ifStatement = maker.If(isNull, maker.Block(0, innerIfStatements.toList()), null);
 					synchronizedStatements.append(ifStatement);
 				}
@@ -394,7 +394,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 				synchronizedStatement = maker.Synchronized(createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD), maker.Block(0, synchronizedStatements.toList()));
 			}
 			
-			JCBinary isNull = Javac.makeBinary(maker, CTC_EQUAL, maker.Ident(valueName), Javac.makeLiteral(maker, CTC_BOT, null));
+			JCBinary isNull = maker.Binary(CTC_EQUAL, maker.Ident(valueName), maker.Literal(CTC_BOT, null));
 			JCIf ifStatement = maker.If(isNull, maker.Block(0, List.<JCStatement>of(synchronizedStatement)), null);
 			statements.append(ifStatement);
 		}
@@ -405,8 +405,8 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		}
 		/* [ELSE] return (BoxedValueType) (value == this.fieldName ? null : value); */ {
 			if (!isPrimitive) {
-				JCExpression valueEqualsSelf = Javac.makeBinary(maker, CTC_EQUAL, maker.Ident(valueName), createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD));
-				JCExpression ternary = maker.Conditional(valueEqualsSelf, Javac.makeLiteral(maker, CTC_BOT,  null), maker.Ident(valueName));
+				JCExpression valueEqualsSelf = maker.Binary(CTC_EQUAL, maker.Ident(valueName), createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD));
+				JCExpression ternary = maker.Conditional(valueEqualsSelf, maker.Literal(CTC_BOT,  null), maker.Ident(valueName));
 				JCExpression typeCast = maker.TypeCast(copyOfBoxedFieldType, maker.Parens(ternary));
 				statements.append(maker.Return(typeCast));
 			}
@@ -424,16 +424,16 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	}
 	
 	private JCMethodInvocation callGet(JavacNode source, JCExpression receiver) {
-		TreeMaker maker = source.getTreeMaker();
+		JavacTreeMaker maker = source.getTreeMaker();
 		return maker.Apply(NIL_EXPRESSION, maker.Select(receiver, source.toName("get")), NIL_EXPRESSION);
 	}
 	
 	private JCStatement callSet(JavacNode source, JCExpression receiver, JCExpression value) {
-		TreeMaker maker = source.getTreeMaker();
+		JavacTreeMaker maker = source.getTreeMaker();
 		return maker.Exec(maker.Apply(NIL_EXPRESSION, maker.Select(receiver, source.toName("set")), List.<JCExpression>of(value)));
 	}
 	
-	private JCExpression copyType(TreeMaker treeMaker, JCVariableDecl fieldNode) {
+	private JCExpression copyType(JavacTreeMaker treeMaker, JCVariableDecl fieldNode) {
 		return fieldNode.type != null ? treeMaker.Type(fieldNode.type) : fieldNode.vartype;
 	}
 }

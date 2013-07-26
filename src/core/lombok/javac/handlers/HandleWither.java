@@ -31,9 +31,9 @@ import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.experimental.Wither;
-import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.JavacHandlerUtil.CopyJavadoc;
 import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 
@@ -52,7 +52,6 @@ import com.sun.tools.javac.tree.JCTree.JCReturn;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
@@ -202,7 +201,7 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		injectMethod(fieldNode.up(), createdWither);
 	}
 	
-	private JCMethodDecl createWither(long access, JavacNode field, TreeMaker treeMaker, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	private JCMethodDecl createWither(long access, JavacNode field, JavacTreeMaker maker, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		String witherName = toWitherName(field);
 		if (witherName == null) return null;
 		
@@ -215,12 +214,10 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		Name methodName = field.toName(witherName);
 		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(nonNulls).appendList(nullables);
 		
-		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(Flags.FINAL, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
+		JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
 		
 		JCExpression selfType = cloneSelfType(field);
 		if (selfType == null) return null;
-		
-		TreeMaker maker = field.getTreeMaker();
 		
 		ListBuffer<JCExpression> args = ListBuffer.lb();
 		for (JavacNode child : field.up().down()) {
@@ -241,21 +238,21 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		}
 		
 		JCNewClass newClass = maker.NewClass(null, List.<JCExpression>nil(), selfType, args.toList(), null);
-		JCExpression identityCheck = Javac.makeBinary(maker, CTC_EQUAL, createFieldAccessor(maker, field, FieldAccess.ALWAYS_FIELD), maker.Ident(fieldDecl.name));
+		JCExpression identityCheck = maker.Binary(CTC_EQUAL, createFieldAccessor(maker, field, FieldAccess.ALWAYS_FIELD), maker.Ident(fieldDecl.name));
 		JCConditional conditional = maker.Conditional(identityCheck, maker.Ident(field.toName("this")), newClass);
 		JCReturn returnStatement = maker.Return(conditional);
 		
 		if (nonNulls.isEmpty()) {
 			statements.append(returnStatement);
 		} else {
-			JCStatement nullCheck = generateNullCheck(treeMaker, field);
+			JCStatement nullCheck = generateNullCheck(maker, field);
 			if (nullCheck != null) statements.append(nullCheck);
 			statements.append(returnStatement);
 		}
 		
 		JCExpression returnType = cloneSelfType(field);
 		
-		JCBlock methodBody = treeMaker.Block(0, statements.toList());
+		JCBlock methodBody = maker.Block(0, statements.toList());
 		List<JCTypeParameter> methodGenericParams = List.nil();
 		List<JCVariableDecl> parameters = List.of(param);
 		List<JCExpression> throwsClauses = List.nil();
@@ -264,9 +261,9 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod);
 		
 		if (isFieldDeprecated(field)) {
-			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(chainDots(field, "java", "lang", "Deprecated"), List.<JCExpression>nil()));
+			annsOnMethod = annsOnMethod.prepend(maker.Annotation(chainDots(field, "java", "lang", "Deprecated"), List.<JCExpression>nil()));
 		}
-		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, returnType,
+		JCMethodDecl decl = recursiveSetGeneratedBy(maker.MethodDef(maker.Modifiers(access, annsOnMethod), methodName, returnType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
 		copyJavadoc(field, decl, CopyJavadoc.WITHER);
 		return decl;

@@ -66,7 +66,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	private final Messager messager;
 	private final JavacElements elements;
-	private final TreeMaker treeMaker;
+	private final JavacTreeMaker treeMaker;
 	private final Symtab symtab;
 	private final JavacTypes javacTypes;
 	private final Log log;
@@ -86,7 +86,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		this.messager = messager;
 		this.log = Log.instance(context);
 		this.elements = JavacElements.instance(context);
-		this.treeMaker = TreeMaker.instance(context);
+		this.treeMaker = new JavacTreeMaker(TreeMaker.instance(context));
 		this.symtab = Symtab.instance(context);
 		this.javacTypes = JavacTypes.instance(context);
 		clearChanged();
@@ -135,7 +135,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	}
 	
 	/** @return A TreeMaker instance that you can use to create new AST nodes. */
-	public TreeMaker getTreeMaker() {
+	public JavacTreeMaker getTreeMaker() {
 		treeMaker.at(-1);
 		return treeMaker;
 	}

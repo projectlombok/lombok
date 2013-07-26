@@ -32,12 +32,12 @@ import lombok.core.AST.Kind;
 import lombok.experimental.Builder;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
 
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -206,7 +206,7 @@ public class HandleConstructor {
 	
 	private static void addConstructorProperties(JCModifiers mods, JavacNode node, List<JavacNode> fields) {
 		if (fields.isEmpty()) return;
-		TreeMaker maker = node.getTreeMaker();
+		JavacTreeMaker maker = node.getTreeMaker();
 		JCExpression constructorPropertiesType = chainDots(node, "java", "beans", "ConstructorProperties");
 		ListBuffer<JCExpression> fieldNames = ListBuffer.lb();
 		for (JavacNode field : fields) {
@@ -218,7 +218,7 @@ public class HandleConstructor {
 	}
 	
 	static JCMethodDecl createConstructor(AccessLevel level, List<JCAnnotation> onConstructor, JavacNode typeNode, List<JavacNode> fields, boolean suppressConstructorProperties, JCTree source) {
-		TreeMaker maker = typeNode.getTreeMaker();
+		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		boolean isEnum = (((JCClassDecl) typeNode.get()).mods.flags & Flags.ENUM) != 0;
 		if (isEnum) level = AccessLevel.PRIVATE;
@@ -261,7 +261,7 @@ public class HandleConstructor {
 	}
 	
 	private JCMethodDecl createStaticConstructor(String name, AccessLevel level, JavacNode typeNode, List<JavacNode> fields, JCTree source) {
-		TreeMaker maker = typeNode.getTreeMaker();
+		JavacTreeMaker maker = typeNode.getTreeMaker();
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
 		JCModifiers mods = maker.Modifiers(Flags.STATIC | toJavacModifier(level));

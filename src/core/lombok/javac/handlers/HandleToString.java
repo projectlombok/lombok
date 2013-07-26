@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,15 +29,14 @@ import java.util.Collection;
 import lombok.ToString;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
-import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
 
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -168,7 +167,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 	}
 	
 	static JCMethodDecl createToString(JavacNode typeNode, Collection<JavacNode> fields, boolean includeFieldNames, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
-		TreeMaker maker = typeNode.getTreeMaker();
+		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(chainDots(typeNode, "java", "lang", "Override"), List.<JCExpression>nil());
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
@@ -196,7 +195,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			JCMethodInvocation callToSuper = maker.Apply(List.<JCExpression>nil(),
 					maker.Select(maker.Ident(typeNode.toName("super")), typeNode.toName("toString")),
 					List.<JCExpression>nil());
-			current = Javac.makeBinary(maker, CTC_PLUS, current, callToSuper);
+			current = maker.Binary(CTC_PLUS, current, callToSuper);
 			first = false;
 		}
 		
@@ -220,21 +219,21 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			} else expr = fieldAccessor;
 			
 			if (first) {
-				current = Javac.makeBinary(maker, CTC_PLUS, current, expr);
+				current = maker.Binary(CTC_PLUS, current, expr);
 				first = false;
 				continue;
 			}
 			
 			if (includeFieldNames) {
-				current = Javac.makeBinary(maker, CTC_PLUS, current, maker.Literal(infix + fieldNode.getName() + "="));
+				current = maker.Binary(CTC_PLUS, current, maker.Literal(infix + fieldNode.getName() + "="));
 			} else {
-				current = Javac.makeBinary(maker, CTC_PLUS, current, maker.Literal(infix));
+				current = maker.Binary(CTC_PLUS, current, maker.Literal(infix));
 			}
 			
-			current = Javac.makeBinary(maker, CTC_PLUS, current, expr);
+			current = maker.Binary(CTC_PLUS, current, expr);
 		}
 		
-		if (!first) current = Javac.makeBinary(maker, CTC_PLUS, current, maker.Literal(suffix));
+		if (!first) current = maker.Binary(CTC_PLUS, current, maker.Literal(suffix));
 		
 		JCStatement returnStatement = maker.Return(current);
 		

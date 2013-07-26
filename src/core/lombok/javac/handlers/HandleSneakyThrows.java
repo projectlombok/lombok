@@ -29,15 +29,14 @@ import java.util.Collections;
 
 import lombok.SneakyThrows;
 import lombok.core.AnnotationValues;
-import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
 
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
@@ -114,7 +113,7 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 	}
 
 	private JCStatement buildTryCatchBlock(JavacNode node, List<JCStatement> contents, String exception, JCTree source) {
-		TreeMaker maker = node.getTreeMaker();
+		JavacTreeMaker maker = node.getTreeMaker();
 		
 		JCBlock tryBlock = setGeneratedBy(maker.Block(0, contents), source);
 		
@@ -122,7 +121,7 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 		
 		JCVariableDecl catchParam = maker.VarDef(maker.Modifiers(Flags.FINAL), node.toName("$ex"), varType, null);
 		JCExpression lombokLombokSneakyThrowNameRef = chainDots(node, "lombok", "Lombok", "sneakyThrow");
-		JCBlock catchBody = maker.Block(0, List.<JCStatement>of(Javac.makeThrow(maker, maker.Apply(
+		JCBlock catchBody = maker.Block(0, List.<JCStatement>of(maker.Throw(maker.Apply(
 				List.<JCExpression>nil(), lombokLombokSneakyThrowNameRef,
 				List.<JCExpression>of(maker.Ident(node.toName("$ex")))))));
 		

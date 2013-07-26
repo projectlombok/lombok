@@ -21,12 +21,12 @@
  */
 package lombok.javac;
 
+import static lombok.javac.JavacTreeMaker.TreeTag.treeTag;
+import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,25 +35,20 @@ import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVisitor;
 
+import lombok.javac.JavacTreeMaker.TreeTag;
+import lombok.javac.JavacTreeMaker.TypeTag;
+
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
-import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
-import com.sun.tools.javac.tree.JCTree.JCStatement;
-import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
-import com.sun.tools.javac.tree.JCTree.JCUnary;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
-import com.sun.tools.javac.util.List;
-import com.sun.tools.javac.util.Name;
 
 /**
  * Container for static utility methods relevant to lombok's operation on javac.
@@ -62,9 +57,6 @@ public class Javac {
 	private Javac() {
 		// prevent instantiation
 	}
-	
-	private static final ConcurrentMap<String, Object> TYPE_TAG_CACHE = new ConcurrentHashMap<String, Object>();
-	private static final ConcurrentMap<String, Object> TREE_TAG_CACHE = new ConcurrentHashMap<String, Object>();
 	
 	/** Matches any of the 8 primitive names, such as {@code boolean}. */
 	private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern.compile("^(boolean|byte|short|int|long|float|double|char)$");
@@ -127,69 +119,39 @@ public class Javac {
 			return null;
 	}
 	
-	public static final Object CTC_BOOLEAN = getTypeTag("BOOLEAN");
-	public static final Object CTC_INT = getTypeTag("INT");
-	public static final Object CTC_DOUBLE = getTypeTag("DOUBLE");
-	public static final Object CTC_FLOAT = getTypeTag("FLOAT");
-	public static final Object CTC_SHORT = getTypeTag("SHORT");
-	public static final Object CTC_BYTE = getTypeTag("BYTE");
-	public static final Object CTC_LONG = getTypeTag("LONG");
-	public static final Object CTC_CHAR = getTypeTag("CHAR");
-	public static final Object CTC_VOID = getTypeTag("VOID");
-	public static final Object CTC_NONE = getTypeTag("NONE");
-	public static final Object CTC_BOT = getTypeTag("BOT");
-	public static final Object CTC_CLASS = getTypeTag("CLASS");
+	public static final TypeTag CTC_BOOLEAN = typeTag("BOOLEAN");
+	public static final TypeTag CTC_INT = typeTag("INT");
+	public static final TypeTag CTC_DOUBLE = typeTag("DOUBLE");
+	public static final TypeTag CTC_FLOAT = typeTag("FLOAT");
+	public static final TypeTag CTC_SHORT = typeTag("SHORT");
+	public static final TypeTag CTC_BYTE = typeTag("BYTE");
+	public static final TypeTag CTC_LONG = typeTag("LONG");
+	public static final TypeTag CTC_CHAR = typeTag("CHAR");
+	public static final TypeTag CTC_VOID = typeTag("VOID");
+	public static final TypeTag CTC_NONE = typeTag("NONE");
+	public static final TypeTag CTC_BOT = typeTag("BOT");
+	public static final TypeTag CTC_CLASS = typeTag("CLASS");
 	
-	public static final Object CTC_NOT_EQUAL = getTreeTag("NE");
-	public static final Object CTC_NOT = getTreeTag("NOT");
-	public static final Object CTC_BITXOR = getTreeTag("BITXOR");
-	public static final Object CTC_UNSIGNED_SHIFT_RIGHT = getTreeTag("USR");
-	public static final Object CTC_MUL = getTreeTag("MUL");
-	public static final Object CTC_PLUS = getTreeTag("PLUS");
-	public static final Object CTC_EQUAL = getTreeTag("EQ");
+	public static final TreeTag CTC_NOT_EQUAL = treeTag("NE");
+	public static final TreeTag CTC_NOT = treeTag("NOT");
+	public static final TreeTag CTC_BITXOR = treeTag("BITXOR");
+	public static final TreeTag CTC_UNSIGNED_SHIFT_RIGHT = treeTag("USR");
+	public static final TreeTag CTC_MUL = treeTag("MUL");
+	public static final TreeTag CTC_PLUS = treeTag("PLUS");
+	public static final TreeTag CTC_EQUAL = treeTag("EQ");
 	
-	public static boolean compareCTC(Object ctc1, Object ctc2) {
-		return ctc1 == null ? ctc2 == null : ctc1.equals(ctc2);
+	public static boolean compareCTC(TreeTag ctc1, TreeTag ctc2) {
+		boolean ctc1IsNull = ctc1 == null || ctc1.value == null;
+		boolean ctc2IsNull = ctc2 == null || ctc2.value == null;
+		if (ctc1IsNull || ctc2IsNull) return ctc1IsNull && ctc2IsNull;
+		return ctc1.value.equals(ctc2.value);
 	}
 	
-	/**
-	 * Retrieves the provided TypeTag value, in a compiler version independent manner.
-	 * 
-	 * The actual type object differs depending on the Compiler version:
-	 * <ul>
-	 * <li>For JDK 8 this is an enum value of type <code>com.sun.tools.javac.code.TypeTag</code> 
-	 * <li>for JDK 7 and lower, this is the value of the constant within <code>com.sun.tools.javac.code.TypeTags</code>
-	 * </ul>
-	 * Solves the problem of compile time constant inlining, resulting in lombok
-	 * having the wrong value (javac compiler changes private api constants from
-	 * time to time).
-	 * 
-	 * @param identifier Identifier to turn into a TypeTag.
-	 * @return the value of the typetag constant (either enum instance or an Integer object).
-	 */
-	public static Object getTypeTag(String identifier) {
-		return getFieldCached(TYPE_TAG_CACHE, getJavaCompilerVersion() < 8 ? "com.sun.tools.javac.code.TypeTags" : "com.sun.tools.javac.code.TypeTag", identifier);
-	}
-	
-	public static Object getTreeTag(String identifier) {
-		return getFieldCached(TREE_TAG_CACHE, getJavaCompilerVersion() < 8 ? "com.sun.tools.javac.tree.JCTree" : "com.sun.tools.javac.tree.JCTree$Tag", identifier);
-	}
-	
-	private static Object getFieldCached(ConcurrentMap<String, Object> cache, String className, String fieldName) {
-		Object value = cache.get(fieldName);
-		if (value != null) return value;
-		try {
-			value = Class.forName(className).getField(fieldName).get(null);
-		} catch (NoSuchFieldException e) {
-			throw sneakyThrow(e);
-		} catch (IllegalAccessException e) {
-			throw sneakyThrow(e);
-		} catch (ClassNotFoundException e) {
-			throw sneakyThrow(e);
-		}
-		
-		cache.putIfAbsent(fieldName, value);
-		return value;
+	public static boolean compareCTC(TypeTag ctc1, TypeTag ctc2) {
+		boolean ctc1IsNull = ctc1 == null || ctc1.value == null;
+		boolean ctc2IsNull = ctc2 == null || ctc2.value == null;
+		if (ctc1IsNull || ctc2IsNull) return ctc1IsNull && ctc2IsNull;
+		return ctc1.value.equals(ctc2.value);
 	}
 	
 	public static Object getTreeTypeTag(JCPrimitiveTypeTree tree) {
@@ -200,44 +162,9 @@ public class Javac {
 		return tree.typetag;
 	}
 	
-	private static final Method createIdent, createLiteral, createUnary, createBinary, createThrow, getExtendsClause, getEndPosition;
+	private static final Method getExtendsClause, getEndPosition;
 	
 	static {
-		if (getJavaCompilerVersion() < 8) {
-			createIdent = getMethod(TreeMaker.class, "TypeIdent", int.class);
-		} else {
-			createIdent = getMethod(TreeMaker.class, "TypeIdent", "com.sun.tools.javac.code.TypeTag");
-		}
-		createIdent.setAccessible(true);
-		
-		if (getJavaCompilerVersion() < 8) {
-			createLiteral = getMethod(TreeMaker.class, "Literal", int.class, Object.class);
-		} else {
-			createLiteral = getMethod(TreeMaker.class, "Literal", "com.sun.tools.javac.code.TypeTag", "java.lang.Object");
-		}
-		createLiteral.setAccessible(true);
-		
-		if (getJavaCompilerVersion() < 8) {
-			createUnary = getMethod(TreeMaker.class, "Unary", int.class, JCExpression.class);
-		} else {
-			createUnary = getMethod(TreeMaker.class, "Unary", "com.sun.tools.javac.tree.JCTree$Tag", JCExpression.class.getName());
-		}
-		createUnary.setAccessible(true);
-		
-		if (getJavaCompilerVersion() < 8) {
-			createBinary = getMethod(TreeMaker.class, "Binary", Integer.TYPE, JCExpression.class, JCExpression.class);
-		} else {
-			createBinary = getMethod(TreeMaker.class, "Binary", "com.sun.tools.javac.tree.JCTree$Tag", JCExpression.class.getName(), JCExpression.class.getName());
-		}
-		createBinary.setAccessible(true);
-		
-		if (getJavaCompilerVersion() < 8) {
-			createThrow = getMethod(TreeMaker.class, "Throw", JCTree.class);
-		} else {
-			createThrow = getMethod(TreeMaker.class, "Throw", JCExpression.class);
-		}
-		createBinary.setAccessible(true);
-		
 		getExtendsClause = getMethod(JCClassDecl.class, "getExtendsClause", new Class<?>[0]);
 		getExtendsClause.setAccessible(true);
 		
@@ -266,56 +193,6 @@ public class Javac {
 			throw sneakyThrow(e);
 		} catch (ClassNotFoundException e) {
 			throw sneakyThrow(e);
-		}
-	}
-	
-	public static JCExpression makeTypeIdent(TreeMaker maker, Object ctc) {
-		try {
-			return (JCExpression) createIdent.invoke(maker, ctc);
-		} catch (IllegalAccessException e) {
-			throw sneakyThrow(e);
-		} catch (InvocationTargetException e) {
-			throw sneakyThrow(e.getCause());
-		}
-	}
-	
-	public static JCLiteral makeLiteral(TreeMaker maker, Object ctc, Object argument) {
-		try {
-			return (JCLiteral) createLiteral.invoke(maker, ctc, argument);
-		} catch (IllegalAccessException e) {
-			throw sneakyThrow(e);
-		} catch (InvocationTargetException e) {
-			throw sneakyThrow(e.getCause());
-		}
-	}
-	
-	public static JCUnary makeUnary(TreeMaker maker, Object ctc, JCExpression argument) {
-		try {
-			return (JCUnary) createUnary.invoke(maker, ctc, argument);
-		} catch (IllegalAccessException e) {
-			throw sneakyThrow(e);
-		} catch (InvocationTargetException e) {
-			throw sneakyThrow(e.getCause());
-		}
-	}
-	
-	public static JCBinary makeBinary(TreeMaker maker, Object ctc, JCExpression lhsArgument, JCExpression rhsArgument) {
-		try {
-			return (JCBinary) createBinary.invoke(maker, ctc, lhsArgument, rhsArgument);
-		} catch (IllegalAccessException e) {
-			throw sneakyThrow(e);
-		} catch (InvocationTargetException e) {
-			throw sneakyThrow(e.getCause());
-		}
-	}
-	
-	public static JCStatement makeThrow(TreeMaker maker, JCExpression expression) {
-		try {
-			return (JCStatement) createThrow.invoke(maker, expression);
-		} catch (IllegalAccessException e) {
-			throw sneakyThrow(e);
-		} catch (InvocationTargetException e) {
-			throw sneakyThrow(e.getCause());
 		}
 	}
 	
@@ -363,9 +240,9 @@ public class Javac {
 		JC_NO_TYPE = c;
 	}
 	
-	public static Type createVoidType(TreeMaker maker, Object tag) {
+	public static Type createVoidType(JavacTreeMaker maker, TypeTag tag) {
 		if (Javac.getJavaCompilerVersion() < 8) {
-			return new JCNoType(((Integer) tag).intValue());
+			return new JCNoType(((Integer) tag.value).intValue());
 		} else {
 			try {
 				if (compareCTC(tag, CTC_VOID)) {
@@ -388,8 +265,8 @@ public class Javac {
 		
 		@Override
 		public TypeKind getKind() {
-			if (Javac.compareCTC(tag, CTC_VOID)) return TypeKind.VOID;
-			if (Javac.compareCTC(tag, CTC_NONE)) return TypeKind.NONE;
+			if (tag == ((Integer) CTC_VOID.value).intValue()) return TypeKind.VOID;
+			if (tag == ((Integer) CTC_NONE.value).intValue()) return TypeKind.NONE;
 			throw new AssertionError("Unexpected tag: " + tag);
 		}
 		
@@ -465,30 +342,6 @@ public class Javac {
 			return JCPRIMITIVETYPETREE_TYPETAG.get(node);
 		} catch (Exception e) {
 			throw new IllegalStateException("Can't get JCPrimitiveTypeTree typetag");
-		}
-	}
-	
-	private static Method classDef;
-	
-	public static JCClassDecl ClassDef(TreeMaker maker, JCModifiers mods, Name name, List<JCTypeParameter> typarams, JCExpression extending, List<JCExpression> implementing, List<JCTree> defs) {
-		if (classDef == null) try {
-			classDef = TreeMaker.class.getDeclaredMethod("ClassDef", JCModifiers.class, Name.class, List.class, JCExpression.class, List.class, List.class);
-		} catch (NoSuchMethodException ignore) {}
-		if (classDef == null) try {
-			classDef = TreeMaker.class.getDeclaredMethod("ClassDef", JCModifiers.class, Name.class, List.class, JCTree.class, List.class, List.class);
-		} catch (NoSuchMethodException ignore) {}
-		
-		if (classDef == null) throw new IllegalStateException("Lombok bug #20130617-1310: ClassDef doesn't look like anything we thought it would look like.");
-		if (!Modifier.isPublic(classDef.getModifiers()) && !classDef.isAccessible()) {
-			classDef.setAccessible(true);
-		}
-		
-		try {
-			return (JCClassDecl) classDef.invoke(maker, mods, name, typarams, extending, implementing, defs);
-		} catch (InvocationTargetException e) {
-			throw sneakyThrow(e.getCause());
-		} catch (IllegalAccessException e) {
-			throw sneakyThrow(e.getCause());
 		}
 	}
 	

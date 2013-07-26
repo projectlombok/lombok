@@ -53,10 +53,11 @@ import lombok.core.HandlerPriority;
 import lombok.core.TransformationsUtil;
 import lombok.experimental.Builder;
 import lombok.experimental.NonFinal;
+import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.HandleConstructor.SkipIfConstructorExists;
-import static lombok.javac.Javac.*;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
@@ -218,7 +219,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	}
 	
 	private JCMethodDecl generateBuildMethod(String name, Name staticName, JCExpression returnType, java.util.List<Name> fieldNames, JavacNode type, List<JCExpression> thrownExceptions) {
-		TreeMaker maker = type.getTreeMaker();
+		JavacTreeMaker maker = type.getTreeMaker();
 		
 		JCExpression call;
 		JCStatement statement;
@@ -239,7 +240,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			
 			JCExpression fn = maker.Select(maker.Ident(((JCClassDecl) type.up().get()).name), staticName);
 			call = maker.Apply(typeParams.toList(), fn, args.toList());
-			if (returnType instanceof JCPrimitiveTypeTree && compareCTC(getTypeTag((JCPrimitiveTypeTree) returnType), CTC_VOID)) {
+			if (returnType instanceof JCPrimitiveTypeTree && compareCTC(Javac.getTypeTag((JCPrimitiveTypeTree) returnType), CTC_VOID)) {
 				statement = maker.Exec(call);
 			} else {
 				statement = maker.Return(call);
@@ -252,7 +253,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	}
 	
 	private JCMethodDecl generateBuilderMethod(String builderMethodName, String builderClassName, JavacNode type, List<JCTypeParameter> typeParams) {
-		TreeMaker maker = type.getTreeMaker();
+		JavacTreeMaker maker = type.getTreeMaker();
 		
 		ListBuffer<JCExpression> typeArgs = ListBuffer.lb();
 		for (JCTypeParameter typeParam : typeParams) {
@@ -285,7 +286,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					continue top;
 				}
 			}
-			TreeMaker maker = builderType.getTreeMaker();
+			JavacTreeMaker maker = builderType.getTreeMaker();
 			JCModifiers mods = maker.Modifiers(Flags.PRIVATE);
 			JCVariableDecl newField = maker.VarDef(mods, name, cloneType(maker, typesOfParameters.get(i), source), null);
 			out.add(injectField(builderType, newField));
@@ -308,7 +309,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		boolean isBoolean = isBoolean(fieldNode);
 		String setterName = fluent ? fieldNode.getName() : TransformationsUtil.toSetterName(null, fieldNode.getName(), isBoolean);
 		
-		TreeMaker maker = builderType.getTreeMaker();
+		JavacTreeMaker maker = builderType.getTreeMaker();
 		return HandleSetter.createSetter(Flags.PUBLIC, fieldNode, maker, setterName, chain, source, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
 	}
 	
@@ -322,9 +323,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	}
 	
 	private JavacNode makeBuilderClass(JavacNode tdParent, String builderClassName, List<JCTypeParameter> typeParams, JCAnnotation ast) {
-		TreeMaker maker = tdParent.getTreeMaker();
+		JavacTreeMaker maker = tdParent.getTreeMaker();
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC | Flags.STATIC);
-		JCClassDecl builder = ClassDef(maker, mods, tdParent.toName(builderClassName), copyTypeParams(maker, typeParams), null, List.<JCExpression>nil(), List.<JCTree>nil());
+		JCClassDecl builder = maker.ClassDef(mods, tdParent.toName(builderClassName), copyTypeParams(maker, typeParams), null, List.<JCExpression>nil(), List.<JCTree>nil());
 		return injectType(tdParent, builder);
 	}
 }
