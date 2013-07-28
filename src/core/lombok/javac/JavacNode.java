@@ -51,6 +51,15 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 		super(ast, node, children, kind);
 	}
 	
+	public int getEndPosition(DiagnosticPosition pos) {
+		JCCompilationUnit cu = (JCCompilationUnit) top().get();
+		return Javac.getEndPosition(pos, cu);
+	}
+	
+	public int getEndPosition() {
+		return getEndPosition(node);
+	}
+	
 	/**
 	 * Visits this node and all child nodes depth-first, calling the provided visitor's visit methods.
 	 */

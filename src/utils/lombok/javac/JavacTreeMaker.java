@@ -116,6 +116,18 @@ public class JavacTreeMaker {
 			this.paramTypes = types;
 			this.returnType = returnType;
 		}
+		
+		@Override public String toString() {
+			StringBuilder out = new StringBuilder();
+			out.append(returnType.getName()).append(" ").append(owner.getName()).append(".").append(name).append("(");
+			boolean f = true;
+			for (Class<?> p : paramTypes) {
+				if (f) f = false;
+				else out.append(", ");
+				out.append(p.getName());
+			}
+			return out.append(")").toString();
+		}
 	}
 	
 	private static class SchroedingerType {
@@ -154,13 +166,23 @@ public class JavacTreeMaker {
 			return value;
 		}
 		
-		static Object getFieldCached(ConcurrentMap<Class<?>, Field> cache, Object ref, String fieldName) {
+		private static Field NOSUCHFIELDEX_MARKER;
+		static {
+			try {
+				NOSUCHFIELDEX_MARKER = SchroedingerType.class.getDeclaredField("NOSUCHFIELDEX_MARKER");
+			} catch (NoSuchFieldException e) {
+				throw Javac.sneakyThrow(e);
+			}
+		}
+		
+		static Object getFieldCached(ConcurrentMap<Class<?>, Field> cache, Object ref, String fieldName) throws NoSuchFieldException {
 			Class<?> c = ref.getClass();
 			Field field = cache.get(c);
 			if (field == null) {
 				try {
 					field = c.getField(fieldName);
 				} catch (NoSuchFieldException e) {
+					cache.putIfAbsent(c, NOSUCHFIELDEX_MARKER);
 					throw Javac.sneakyThrow(e);
 				}
 				field.setAccessible(true);
@@ -168,6 +190,7 @@ public class JavacTreeMaker {
 				if (old != null) field = old;
 			}
 			
+			if (field == NOSUCHFIELDEX_MARKER) throw new NoSuchFieldException(fieldName);
 			try {
 				return field.get(ref);
 			} catch (IllegalAccessException e) {
@@ -179,17 +202,42 @@ public class JavacTreeMaker {
 	public static class TypeTag extends SchroedingerType {
 		private static final ConcurrentMap<String, Object> TYPE_TAG_CACHE = new ConcurrentHashMap<String, Object>();
 		private static final ConcurrentMap<Class<?>, Field> FIELD_CACHE = new ConcurrentHashMap<Class<?>, Field>();
+		private static final Method TYPE_TYPETAG_METHOD;
+		
+		static {
+			Method m = null;
+			try {
+				m = Type.class.getDeclaredMethod("getTag");
+				m.setAccessible(true);
+			} catch (NoSuchMethodException e) {}
+			TYPE_TYPETAG_METHOD = m;
+		}
 		
 		private TypeTag(Object value) {
 			super(value);
 		}
 		
 		public static TypeTag typeTag(JCTree o) {
-			return new TypeTag(getFieldCached(FIELD_CACHE, o, "typetag"));
+			try {
+				return new TypeTag(getFieldCached(FIELD_CACHE, o, "typetag"));
+			} catch (NoSuchFieldException e) {
+				throw Javac.sneakyThrow(e);
+			}
 		}
 		
 		public static TypeTag typeTag(Type t) {
-			return new TypeTag(getFieldCached(FIELD_CACHE, t, "tag"));
+			try {
+				return new TypeTag(getFieldCached(FIELD_CACHE, t, "tag"));
+			} catch (NoSuchFieldException e) {
+				if (TYPE_TYPETAG_METHOD == null) throw new IllegalStateException("Type " + t.getClass() + " has neither 'tag' nor getTag()");
+				try {
+					return new TypeTag(TYPE_TYPETAG_METHOD.invoke(t));
+				} catch (IllegalAccessException ex) {
+					throw Javac.sneakyThrow(ex);
+				} catch (InvocationTargetException ex) {
+					throw Javac.sneakyThrow(ex.getCause());
+				}
+			}
 		}
 		
 		public static TypeTag typeTag(String identifier) {
@@ -331,7 +379,7 @@ public class JavacTreeMaker {
 			if (found == null) found = method;
 			else throw new IllegalStateException("Lombok TreeMaker frontend issue: multiple matches when looking for method: " + m);
 		}
-		if (found == null) throw new IllegalStateException("Lombok TreeMaker frontedn issue: no match when looking for method: " + m);
+		if (found == null) throw new IllegalStateException("Lombok TreeMaker frontend issue: no match when looking for method: " + m);
 		found.setAccessible(true);
 		Object marker = METHOD_CACHE.putIfAbsent(m, found);
 		if (marker == null) return found;
@@ -496,7 +544,7 @@ public class JavacTreeMaker {
 	
 	//javac versions: 6-8
 	private static final MethodId<JCThrow> Throw = MethodId("Throw");
-	public JCThrow Throw(JCTree expr) {
+	public JCThrow Throw(JCExpression expr) {
 		return invoke(Throw, expr);
 	}
 	

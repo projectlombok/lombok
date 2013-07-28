@@ -44,6 +44,7 @@ import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TransformationsUtil;
 import lombok.core.TypeResolver;
 import lombok.experimental.Accessors;
+import lombok.javac.Javac;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
 
@@ -1275,17 +1276,20 @@ public class JavacHandlerUtil {
 	 * 
 	 * in 'SETTER' mode, stripping works similarly to 'GETTER' mode, except {@code param} are copied and stripped from the original and {@code @return} are skipped.
 	 */
+	@SuppressWarnings("unchecked")
 	public static void copyJavadoc(JavacNode from, JCTree to, CopyJavadoc copyMode) {
 		if (copyMode == null) copyMode = CopyJavadoc.VERBATIM;
 		try {
 			JCCompilationUnit cu = ((JCCompilationUnit) from.top().get());
-			if (cu.docComments != null) {
-				String javadoc = cu.docComments.get(from.get());
+			Object dc = Javac.getDocComments(cu);
+			if (dc instanceof Map) {
+				Map<JCTree, String> docComments = (Map<JCTree, String>) dc;
+				String javadoc = docComments.get(from.get());
 				
 				if (javadoc != null) {
 					String[] filtered = copyMode.split(javadoc);
-					cu.docComments.put(to, filtered[0]);
-					cu.docComments.put(from.get(), filtered[1]);
+					docComments.put(to, filtered[0]);
+					docComments.put(from.get(), filtered[1]);
 				}
 			}
 		} catch (Exception ignore) {}

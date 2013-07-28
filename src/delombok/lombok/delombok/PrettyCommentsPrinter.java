@@ -131,12 +131,12 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     private static final TreeTag IMPORT = treeTag("IMPORT");
     private static final TreeTag VARDEF = treeTag("VARDEF");
     private static final TreeTag SELECT = treeTag("SELECT");
-
+    
     private static final Map<TreeTag, String> OPERATORS;
     
     static {
-		Map<TreeTag, String> map = new HashMap<TreeTag, String>();
-		
+        Map<TreeTag, String> map = new HashMap<TreeTag, String>();
+        
         map.put(treeTag("POS"), "+");
         map.put(treeTag("NEG"), "-");
         map.put(treeTag("NOT"), "!");
@@ -165,132 +165,133 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         map.put(treeTag("MUL"), "*");
         map.put(treeTag("DIV"), "/");
         map.put(treeTag("MOD"), "%");
-		
-		OPERATORS = map;
+        
+        OPERATORS = map;
     }
     
-	private List<CommentInfo> comments;
-	private final JCCompilationUnit cu;
-	private boolean onNewLine = true;
-	private boolean aligned = false;
-	private boolean inParams = false;
-	
-	private boolean needsSpace = false;
-	private boolean needsNewLine = false;
-	private boolean needsAlign = false;
-	
+    private List<CommentInfo> comments;
+    private final JCCompilationUnit cu;
+    private boolean onNewLine = true;
+    private boolean aligned = false;
+    private boolean inParams = false;
+    
+    private boolean needsSpace = false;
+    private boolean needsNewLine = false;
+    private boolean needsAlign = false;
+    
     public PrettyCommentsPrinter(Writer out, JCCompilationUnit cu, List<CommentInfo> comments) {
         this.out = out;
-		this.comments = comments;
-		this.cu = cu;
+        this.comments = comments;
+        this.cu = cu;
     }
-
-	private int endPos(JCTree tree) {
-		return tree.getEndPosition(cu.endPositions);
-	}
     
-	private void consumeComments(int until) throws IOException {
-		consumeComments(until, null);
-	}
+    private int endPos(JCTree tree) {
+        return getEndPosition(tree, cu);
+    }
+    
+    private void consumeComments(int until) throws IOException {
+        consumeComments(until, null);
+    }
+    
     private void consumeComments(int until, JCTree tree) throws IOException {
-    	boolean prevNewLine = onNewLine;
-    	boolean found = false;
-    	CommentInfo head = comments.head;
-		while (comments.nonEmpty() && head.pos < until) {
-			if (tree != null && docComments != null && docComments.containsKey(tree) && head.isJavadoc() && noFurtherJavadocForthcoming(until)) {
-				// This is (presumably) the exact same javadoc that has already been associated with the node that we're just about to
-				// print. These javadoc can be modified by lombok handlers, and as such we should NOT print them from the consumed comments db,
-				// and instead print the actual javadoc associated with the upcoming node (which the visit method for that node will take care of).
-			} else {
-				printComment(head);
-			}
-			comments = comments.tail;
-			head = comments.head;
-		}
-		if (!onNewLine && prevNewLine) {
-			println();
-		}
-	}
+        boolean prevNewLine = onNewLine;
+        boolean found = false;
+        CommentInfo head = comments.head;
+        while (comments.nonEmpty() && head.pos < until) {
+            if (tree != null && docComments != null && docComments.containsKey(tree) && head.isJavadoc() && noFurtherJavadocForthcoming(until)) {
+                // This is (presumably) the exact same javadoc that has already been associated with the node that we're just about to
+                // print. These javadoc can be modified by lombok handlers, and as such we should NOT print them from the consumed comments db,
+                // and instead print the actual javadoc associated with the upcoming node (which the visit method for that node will take care of).
+            } else {
+                printComment(head);
+            }
+            comments = comments.tail;
+            head = comments.head;
+        }
+        if (!onNewLine && prevNewLine) {
+            println();
+        }
+    }
     
     private boolean noFurtherJavadocForthcoming(int until) {
-    	List<CommentInfo> c = comments;
-    	if (c.nonEmpty()) c = c.tail;
-    	while (c.nonEmpty()) {
-    		if (c.head.pos >= until) return true;
-    		if (c.head.isJavadoc()) return false;
-    		c = c.tail;
-    	}
-    	return true;
+        List<CommentInfo> c = comments;
+        if (c.nonEmpty()) c = c.tail;
+        while (c.nonEmpty()) {
+            if (c.head.pos >= until) return true;
+            if (c.head.isJavadoc()) return false;
+            c = c.tail;
+        }
+        return true;
     }
-
+    
     private void consumeTrailingComments(int from) throws IOException {
-    	boolean prevNewLine = onNewLine;
-		CommentInfo head = comments.head;
-		boolean stop = false;
-		while (comments.nonEmpty() && head.prevEndPos == from && !stop && !(head.start == StartConnection.ON_NEXT_LINE || head.start == StartConnection.START_OF_LINE)) {
-			from = head.endPos;
-			printComment(head);
-			stop = (head.end == EndConnection.ON_NEXT_LINE);
-			comments = comments.tail;
-			head = comments.head;
-		}
-		if (!onNewLine && prevNewLine) {
-			println();
-		}
-	}
-
-	private void printComment(CommentInfo comment) throws IOException {
-    	prepareComment(comment.start);
-    	print(comment.content);
-    	switch (comment.end) {
-		case ON_NEXT_LINE:
-			if (!aligned) {
-				needsNewLine = true;
-				needsAlign = true;
-			}
-			break;
-		case AFTER_COMMENT:
-			needsSpace = true;
-			break;
-		case DIRECT_AFTER_COMMENT:
-			// do nothing
-			break;
-		}
+        boolean prevNewLine = onNewLine;
+        CommentInfo head = comments.head;
+        boolean stop = false;
+        while (comments.nonEmpty() && head.prevEndPos == from && !stop && !(head.start == StartConnection.ON_NEXT_LINE || head.start == StartConnection.START_OF_LINE)) {
+            from = head.endPos;
+            printComment(head);
+            stop = (head.end == EndConnection.ON_NEXT_LINE);
+            comments = comments.tail;
+            head = comments.head;
+        }
+        if (!onNewLine && prevNewLine) {
+            println();
+        }
     }
-
-	private void prepareComment(StartConnection start) throws IOException {
-		switch (start) {
-			case DIRECT_AFTER_PREVIOUS:
-				needsSpace = false;
-				break;
-			case AFTER_PREVIOUS:
-				needsSpace = true;
-				break;
-			case START_OF_LINE:
-				needsNewLine = true;
-				needsAlign = false;
-				break;
-			case ON_NEXT_LINE:
-				if (!aligned) {
-					needsNewLine = true;
-					needsAlign = true;
-				}
-				break;
-		}
-	}
+    
+    private void printComment(CommentInfo comment) throws IOException {
+        prepareComment(comment.start);
+        print(comment.content);
+        switch (comment.end) {
+        case ON_NEXT_LINE:
+            if (!aligned) {
+                needsNewLine = true;
+                needsAlign = true;
+            }
+            break;
+        case AFTER_COMMENT:
+            needsSpace = true;
+            break;
+        case DIRECT_AFTER_COMMENT:
+            // do nothing
+            break;
+        }
+    }
+    
+    private void prepareComment(StartConnection start) throws IOException {
+        switch (start) {
+            case DIRECT_AFTER_PREVIOUS:
+                needsSpace = false;
+                break;
+            case AFTER_PREVIOUS:
+                needsSpace = true;
+                break;
+            case START_OF_LINE:
+                needsNewLine = true;
+                needsAlign = false;
+                break;
+            case ON_NEXT_LINE:
+                if (!aligned) {
+                    needsNewLine = true;
+                    needsAlign = true;
+                }
+                break;
+        }
+    }
     
     /** The output stream on which trees are printed.
      */
     Writer out;
-
+    
     /** The current left margin.
      */
     int lmargin = 0;
-
+    
     /** The enclosing class name.
      */
     Name enclClassName;
-
+    
     /** A hashtable mapping trees to their documentation comments
      *  (can be null)
      */
@@ -304,19 +305,19 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     	needsAlign = false;
         for (int i = 0; i < lmargin; i++) out.write("\t");
     }
-
+    
     /** Increase left margin by indentation width.
      */
     void indent() {
         lmargin++;
     }
-
+    
     /** Decrease left margin by indentation width.
      */
     void undent() {
         lmargin--;
     }
-
+    
     /** Enter a new precedence level. Emit a `(' if new precedence level
      *  is less than precedence level so far.
      *  @param contextPrec    The precedence level in force so far.
@@ -325,7 +326,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     void open(int contextPrec, int ownPrec) throws IOException {
         if (ownPrec < contextPrec) out.write("(");
     }
-
+    
     /** Leave precedence level. Emit a `(' if inner precedence level
      *  is less than precedence level we revert to.
      *  @param contextPrec    The precedence level we revert to.
@@ -334,7 +335,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     void close(int contextPrec, int ownPrec) throws IOException {
         if (ownPrec < contextPrec) out.write(")");
     }
-
+    
     /** Print string, replacing all non-ascii character with unicode escapes.
      */
     public void print(Object s) throws IOException {
