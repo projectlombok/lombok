@@ -22,6 +22,7 @@
 package lombok.javac.handlers;
 
 import static lombok.javac.Javac.*;
+import static lombok.javac.JavacTreeMaker.TypeTag.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.Collection;
@@ -35,10 +36,10 @@ import lombok.Getter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
-import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
+import lombok.javac.JavacTreeMaker.TypeTag;
 import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 
 import org.mangosdk.spi.ProviderFor;
@@ -289,9 +290,9 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	private static final String JLO = "java.lang.Object";
 	private static final List<JCExpression> NIL_EXPRESSION = List.nil();
 	
-	private static final java.util.Map<Object, String> TYPE_MAP;
+	private static final java.util.Map<TypeTag, String> TYPE_MAP;
 	static {
-		Map<Object, String> m = new HashMap<Object, String>();
+		Map<TypeTag, String> m = new HashMap<TypeTag, String>();
 		m.put(CTC_INT, "java.lang.Integer");
 		m.put(CTC_DOUBLE, "java.lang.Double");
 		m.put(CTC_FLOAT, "java.lang.Float");
@@ -335,7 +336,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		field.type = null;
 		boolean isPrimitive = false;
 		if (field.vartype instanceof JCPrimitiveTypeTree) {
-			String boxed = TYPE_MAP.get(((JCPrimitiveTypeTree)field.vartype).typetag);
+			String boxed = TYPE_MAP.get(typeTag(field.vartype));
 			if (boxed != null) {
 				isPrimitive = true;
 				field.vartype = chainDotsString(fieldNode, boxed);

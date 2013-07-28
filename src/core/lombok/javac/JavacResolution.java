@@ -35,6 +35,8 @@ import java.util.Queue;
 import javax.lang.model.type.TypeKind;
 import javax.tools.DiagnosticListener;
 
+import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
+
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
 import com.sun.tools.javac.code.Symtab;
@@ -56,7 +58,6 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
@@ -389,7 +390,7 @@ public class JavacResolution {
 	}
 	
 	public static JCExpression createJavaLangObject(JavacAST ast) {
-		TreeMaker maker = ast.getTreeMaker();
+		JavacTreeMaker maker = ast.getTreeMaker();
 		JCExpression out = maker.Ident(ast.toName("java"));
 		out = maker.Select(out, ast.toName("lang"));
 		out = maker.Select(out, ast.toName("Object"));
@@ -416,10 +417,10 @@ public class JavacResolution {
 		// NB: There's such a thing as maker.Type(type), but this doesn't work very well; it screws up anonymous classes, captures, and adds an extra prefix dot for some reason too.
 		//  -- so we write our own take on that here.
 		
-		TreeMaker maker = ast.getTreeMaker();
+		JavacTreeMaker maker = ast.getTreeMaker();
 		
-		if (Javac.compareCTC(type.tag, CTC_BOT)) return createJavaLangObject(ast);
-		if (Javac.compareCTC(type.tag, CTC_VOID)) return allowVoid ? primitiveToJCTree(type.getKind(), maker) : createJavaLangObject(ast);
+		if (CTC_BOT.equals(typeTag(type))) return createJavaLangObject(ast);
+		if (CTC_VOID.equals(typeTag(type))) return allowVoid ? primitiveToJCTree(type.getKind(), maker) : createJavaLangObject(ast);
 		if (type.isPrimitive()) return primitiveToJCTree(type.getKind(), maker);
 		if (type.isErroneous()) throw new TypeNotConvertibleException("Type cannot be resolved");
 		
@@ -453,7 +454,7 @@ public class JavacResolution {
 				upper = type.getUpperBound();
 			}
 			if (allowCompound) {
-				if (lower == null || Javac.compareCTC(lower.tag, CTC_BOT)) {
+				if (lower == null || CTC_BOT.equals(typeTag(lower))) {
 					if (upper == null || upper.toString().equals("java.lang.Object")) {
 						return maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
 					}
@@ -478,7 +479,7 @@ public class JavacResolution {
 		String qName;
 		if (symbol.isLocal()) {
 			qName = symbol.getSimpleName().toString();
-		} else if (symbol.type != null && symbol.type.getEnclosingType() != null && Javac.compareCTC(symbol.type.getEnclosingType().tag, Javac.getTypeTag("CLASS"))) {
+		} else if (symbol.type != null && symbol.type.getEnclosingType() != null && typeTag(symbol.type.getEnclosingType()).equals(typeTag("CLASS"))) {
 			replacement = typeToJCTree0(type.getEnclosingType(), ast, false, false);
 			qName = symbol.getSimpleName().toString();
 		} else {
@@ -511,26 +512,26 @@ public class JavacResolution {
 		return rawTypeNode;
 	}
 	
-	private static JCExpression primitiveToJCTree(TypeKind kind, TreeMaker maker) throws TypeNotConvertibleException {
+	private static JCExpression primitiveToJCTree(TypeKind kind, JavacTreeMaker maker) throws TypeNotConvertibleException {
 		switch (kind) {
 		case BYTE:
-			return Javac.makeTypeIdent(maker, CTC_BYTE);
+			return maker.TypeIdent(CTC_BYTE);
 		case CHAR:
-			return Javac.makeTypeIdent(maker, CTC_CHAR);
+			return maker.TypeIdent( CTC_CHAR);
 		case SHORT:
-			return Javac.makeTypeIdent(maker, CTC_SHORT);
+			return maker.TypeIdent(CTC_SHORT);
 		case INT:
-			return Javac.makeTypeIdent(maker, CTC_INT);
+			return maker.TypeIdent(CTC_INT);
 		case LONG:
-			return Javac.makeTypeIdent(maker, CTC_LONG);
+			return maker.TypeIdent(CTC_LONG);
 		case FLOAT:
-			return Javac.makeTypeIdent(maker, CTC_FLOAT);
+			return maker.TypeIdent(CTC_FLOAT);
 		case DOUBLE:
-			return Javac.makeTypeIdent(maker, CTC_DOUBLE);
+			return maker.TypeIdent(CTC_DOUBLE);
 		case BOOLEAN:
-			return Javac.makeTypeIdent(maker, CTC_BOOLEAN);
+			return maker.TypeIdent(CTC_BOOLEAN);
 		case VOID:
-			return Javac.makeTypeIdent(maker, CTC_VOID);
+			return maker.TypeIdent(CTC_VOID);
 		case NULL:
 		case NONE:
 		case OTHER:

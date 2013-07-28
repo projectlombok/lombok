@@ -21,6 +21,7 @@
  */
 package lombok.javac;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,6 +30,7 @@ import java.util.concurrent.ConcurrentMap;
 import com.sun.tools.javac.code.Attribute;
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
@@ -81,6 +83,7 @@ import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.JCTree.LetExpr;
 import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
+import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
@@ -92,49 +95,101 @@ public class JavacTreeMaker {
 		this.tm = tm;
 	}
 	
+	public TreeMaker getUnderlyingTreeMaker() {
+		return tm;
+	}
+	
 	public JavacTreeMaker at(int pos) {
 		tm.at(pos);
 		return this;
 	}
 	
 	private static class MethodId<J> {
+		private final Class<?> owner;
 		private final String name;
 		private final Class<J> returnType;
 		private final Class<?>[] paramTypes;
 		
-		MethodId(String name, Class<J> returnType, Class<?>... types) {
+		MethodId(Class<?> owner, String name, Class<J> returnType, Class<?>... types) {
+			this.owner = owner;
 			this.name = name;
 			this.paramTypes = types;
 			this.returnType = returnType;
 		}
-		
 	}
 	
-	private static Object getFieldCached(ConcurrentMap<String, Object> cache, String className, String fieldName) {
-		Object value = cache.get(fieldName);
-		if (value != null) return value;
-		try {
-			value = Class.forName(className).getField(fieldName).get(null);
-		} catch (NoSuchFieldException e) {
-			throw Javac.sneakyThrow(e);
-		} catch (IllegalAccessException e) {
-			throw Javac.sneakyThrow(e);
-		} catch (ClassNotFoundException e) {
-			throw Javac.sneakyThrow(e);
+	private static class SchroedingerType {
+		final Object value;
+		
+		private SchroedingerType(Object value) {
+			this.value = value;
 		}
 		
-		cache.putIfAbsent(fieldName, value);
-		return value;
+		@Override public int hashCode() {
+			return value == null ? -1 : value.hashCode();
+		}
+		
+		@Override public boolean equals(Object obj) {
+			if (obj instanceof SchroedingerType) {
+				Object other = ((SchroedingerType) obj).value;
+				return value == null ? other == null : value.equals(other);
+			}
+			return false;
+		}
+		
+		static Object getFieldCached(ConcurrentMap<String, Object> cache, String className, String fieldName) {
+			Object value = cache.get(fieldName);
+			if (value != null) return value;
+			try {
+				value = Class.forName(className).getField(fieldName).get(null);
+			} catch (NoSuchFieldException e) {
+				throw Javac.sneakyThrow(e);
+			} catch (IllegalAccessException e) {
+				throw Javac.sneakyThrow(e);
+			} catch (ClassNotFoundException e) {
+				throw Javac.sneakyThrow(e);
+			}
+			
+			cache.putIfAbsent(fieldName, value);
+			return value;
+		}
+		
+		static Object getFieldCached(ConcurrentMap<Class<?>, Field> cache, Object ref, String fieldName) {
+			Class<?> c = ref.getClass();
+			Field field = cache.get(c);
+			if (field == null) {
+				try {
+					field = c.getField(fieldName);
+				} catch (NoSuchFieldException e) {
+					throw Javac.sneakyThrow(e);
+				}
+				field.setAccessible(true);
+				Field old = cache.putIfAbsent(c, field);
+				if (old != null) field = old;
+			}
+			
+			try {
+				return field.get(ref);
+			} catch (IllegalAccessException e) {
+				throw Javac.sneakyThrow(e);
+			}
+		}
 	}
 	
-	private static interface SchroedingerType {}
-	
-	public static class TypeTag implements SchroedingerType {
+	public static class TypeTag extends SchroedingerType {
 		private static final ConcurrentMap<String, Object> TYPE_TAG_CACHE = new ConcurrentHashMap<String, Object>();
-		public final Object value;
+		private static final ConcurrentMap<Class<?>, Field> FIELD_CACHE = new ConcurrentHashMap<Class<?>, Field>();
 		
 		private TypeTag(Object value) {
-			this.value = value;
+			super(value);
+		}
+		
+		public static TypeTag typeTag(JCTree o) {
+			return new TypeTag(getFieldCached(FIELD_CACHE, o, "typetag"));
+		}
+		
+		public static TypeTag typeTag(Type t) {
+			return new TypeTag(getFieldCached(FIELD_CACHE, t, "tag"));
 		}
 		
 		public static TypeTag typeTag(String identifier) {
@@ -142,17 +197,63 @@ public class JavacTreeMaker {
 		}
 	}
 	
-	public static class TreeTag implements SchroedingerType {
+	public static class TreeTag extends SchroedingerType {
 		private static final ConcurrentMap<String, Object> TREE_TAG_CACHE = new ConcurrentHashMap<String, Object>();
-		public final Object value;
+		private static final Field TAG_FIELD;
+		private static final Method TAG_METHOD;
+		private static final MethodId<Integer> OP_PREC = MethodId(TreeInfo.class, "opPrec", int.class, TreeTag.class);
+		
+		static {
+			Method m = null;
+			try {
+				m = JCTree.class.getDeclaredMethod("getTag");
+				m.setAccessible(true);
+			} catch (NoSuchMethodException e) {}
+			
+			if (m != null) {
+				TAG_FIELD = null;
+				TAG_METHOD = m;
+			} else {
+				Field f = null;
+				try {
+					f = JCTree.class.getDeclaredField("tag");
+					f.setAccessible(true);
+				} catch (NoSuchFieldException e) {}
+				TAG_FIELD = f;
+				TAG_METHOD = null;
+			}
+		}
 		
 		private TreeTag(Object value) {
-			this.value = value;
+			super(value);
+		}
+		
+		public static TreeTag treeTag(JCTree o) {
+			try {
+				if (TAG_METHOD != null) return new TreeTag(TAG_METHOD.invoke(o));
+				else return new TreeTag(TAG_FIELD.get(o));
+			} catch (InvocationTargetException e) {
+				throw Javac.sneakyThrow(e.getCause());
+			} catch (IllegalAccessException e) {
+				throw Javac.sneakyThrow(e);
+			}
 		}
 		
 		public static TreeTag treeTag(String identifier) {
 			return new TreeTag(getFieldCached(TREE_TAG_CACHE, Javac.getJavaCompilerVersion() < 8 ? "com.sun.tools.javac.tree.JCTree" : "com.sun.tools.javac.tree.JCTree$Tag", identifier));
 		}
+		
+		public int getOperatorPrecedenceLevel() {
+			return invokeAny(null, OP_PREC, value);
+		}
+		
+		public boolean isPrefixUnaryOp() {
+			return Javac.CTC_NEG.equals(this) || Javac.CTC_POS.equals(this) || Javac.CTC_NOT.equals(this) || Javac.CTC_COMPL.equals(this) || Javac.CTC_PREDEC.equals(this) || Javac.CTC_PREINC.equals(this);
+		}
+	}
+	
+	static <J> MethodId<J> MethodId(Class<?> owner, String name, Class<J> returnType, Class<?>... types) {
+		return new MethodId<J>(owner, name, returnType, types);
 	}
 	
 	/**
@@ -163,8 +264,8 @@ public class JavacTreeMaker {
 	 * Either (A) the type listed here is the same as, or a subtype of, the type of the method in javac's TreeMaker, or
 	 *  (B) the type listed here is a subtype of SchroedingerType.
 	 */
-	static <J extends JCTree> MethodId<J> MethodId(String name, Class<J> returnType, Class<?>... types) {
-		return new MethodId<J>(name, returnType, types);
+	static <J> MethodId<J> MethodId(String name, Class<J> returnType, Class<?>... types) {
+		return new MethodId<J>(TreeMaker.class, name, returnType, types);
 	}
 	
 	/**
@@ -176,7 +277,7 @@ public class JavacTreeMaker {
 			if (m.getName().equals(name)) {
 				@SuppressWarnings("unchecked") Class<J> r = (Class<J>) m.getReturnType();
 				Class<?>[] p = m.getParameterTypes();
-				return new MethodId<J>(name, r, p);
+				return new MethodId<J>(TreeMaker.class, name, r, p);
 			}
 		}
 		
@@ -185,13 +286,26 @@ public class JavacTreeMaker {
 	
 	private static final ConcurrentHashMap<MethodId<?>, Method> METHOD_CACHE = new ConcurrentHashMap<MethodId<?>, Method>();
 	private <J> J invoke(MethodId<J> m, Object... args) {
+		return invokeAny(tm, m, args);
+	}
+	
+	@SuppressWarnings("unchecked") private static <J> J invokeAny(Object owner, MethodId<J> m, Object... args) {
 		Method method = METHOD_CACHE.get(m);
 		if (method == null) method = addToCache(m);
 		try {
-			return m.returnType.cast(method.invoke(tm, args));
+			if (m.returnType.isPrimitive()) {
+				Object res = method.invoke(owner, args);
+				String sn = res.getClass().getSimpleName().toLowerCase();
+				if (!sn.startsWith(m.returnType.getSimpleName())) throw new ClassCastException(res.getClass() + " to " + m.returnType);
+				return (J) res;
+			}
+			return m.returnType.cast(method.invoke(owner, args));
 		} catch (InvocationTargetException e) {
 			throw Javac.sneakyThrow(e.getCause());
 		} catch (IllegalAccessException e) {
+			throw Javac.sneakyThrow(e);
+		} catch (IllegalArgumentException e) {
+			System.err.println(method);
 			throw Javac.sneakyThrow(e);
 		}
 	}
@@ -200,7 +314,7 @@ public class JavacTreeMaker {
 		Method found = null;
 		
 		outer:
-		for (Method method : TreeMaker.class.getDeclaredMethods()) {
+		for (Method method : m.owner.getDeclaredMethods()) {
 			if (!m.name.equals(method.getName())) continue;
 			Class<?>[] t = method.getParameterTypes();
 			if (t.length != m.paramTypes.length) continue;
@@ -210,7 +324,7 @@ public class JavacTreeMaker {
 					if (t[i].isPrimitive()) {
 						if (t[i] != m.paramTypes[i]) continue outer;
 					} else {
-						if (t[i].isAssignableFrom(m.paramTypes[i])) continue outer;
+						if (!t[i].isAssignableFrom(m.paramTypes[i])) continue outer;
 					}
 				}
 			}
@@ -658,5 +772,11 @@ public class JavacTreeMaker {
 	private static final MethodId<JCStatement> Call = MethodId("Call");
 	public JCStatement Call(JCExpression apply) {
 		return invoke(Call, apply);
+	}
+	
+	//javac versions: 6-8
+	private static final MethodId<JCExpression> Type = MethodId("Type");
+	public JCExpression Type(Type type) {
+		return invoke(Type, type);
 	}
 }

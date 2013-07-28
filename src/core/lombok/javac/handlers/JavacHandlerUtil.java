@@ -1277,17 +1277,17 @@ public class JavacHandlerUtil {
 	 */
 	public static void copyJavadoc(JavacNode from, JCTree to, CopyJavadoc copyMode) {
 		if (copyMode == null) copyMode = CopyJavadoc.VERBATIM;
-//		try {
-//			JCCompilationUnit cu = ((JCCompilationUnit) from.top().get());
-//			if (cu.docComments != null) {
-//				String javadoc = cu.docComments.get(from.get());
-//				
-//				if (javadoc != null) {
-//					String[] filtered = copyMode.split(javadoc);
-//					cu.docComments.put(to, filtered[0]);
-//					cu.docComments.put(from.get(), filtered[1]);
-//				}
-//			}
-//		} catch (Exception ignore) {}
+		try {
+			JCCompilationUnit cu = ((JCCompilationUnit) from.top().get());
+			if (cu.docComments != null) {
+				String javadoc = cu.docComments.get(from.get());
+				
+				if (javadoc != null) {
+					String[] filtered = copyMode.split(javadoc);
+					cu.docComments.put(to, filtered[0]);
+					cu.docComments.put(from.get(), filtered[1]);
+				}
+			}
+		} catch (Exception ignore) {}
 	}
 }

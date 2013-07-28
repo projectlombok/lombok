@@ -45,9 +45,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import lombok.javac.CommentInfo;
-import lombok.javac.Javac;
 import lombok.javac.CommentInfo.EndConnection;
 import lombok.javac.CommentInfo.StartConnection;
+import lombok.javac.JavacTreeMaker.TreeTag;
+import lombok.javac.JavacTreeMaker.TypeTag;
+import static lombok.javac.Javac.*;
+import static lombok.javac.JavacTreeMaker.TreeTag.treeTag;
+import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
 
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.BoundKind;
@@ -123,88 +127,48 @@ import com.sun.tools.javac.util.Position;
  */
 @SuppressWarnings("all") // Mainly sun code that has other warning settings
 public class PrettyCommentsPrinter extends JCTree.Visitor {
+    private static final TreeTag PARENS = treeTag("PARENS");
+    private static final TreeTag IMPORT = treeTag("IMPORT");
+    private static final TreeTag VARDEF = treeTag("VARDEF");
+    private static final TreeTag SELECT = treeTag("SELECT");
 
-    private static final Method GET_TAG_METHOD;
-    private static final Field TAG_FIELD; 
-    
-    private static final Object PARENS = Javac.getTreeTag("PARENS");
-    private static final Object IMPORT = Javac.getTreeTag("IMPORT");
-    private static final Object VARDEF = Javac.getTreeTag("VARDEF");
-    private static final Object SELECT = Javac.getTreeTag("SELECT");
-
-    private static final Map<Object, String> OPERATORS;
+    private static final Map<TreeTag, String> OPERATORS;
     
     static {
-    	Method m = null;
-    	Field f = null;
-    	try {
-    		m = JCTree.class.getDeclaredMethod("getTag");
-		} 
-		catch (NoSuchMethodException e) {
-			try {
-				f = JCTree.class.getDeclaredField("tag");
-			} 
-			catch (NoSuchFieldException e1) {
-				e1.printStackTrace();
-			}
-		}
-		GET_TAG_METHOD = m;
-		TAG_FIELD = f;
+		Map<TreeTag, String> map = new HashMap<TreeTag, String>();
 		
-		Map<Object, String> map = new HashMap<Object, String>();
-		
-        map.put(Javac.getTreeTag("POS"), "+");
-        map.put(Javac.getTreeTag("NEG"), "-");
-        map.put(Javac.getTreeTag("NOT"), "!");
-        map.put(Javac.getTreeTag("COMPL"), "~");
-        map.put(Javac.getTreeTag("PREINC"), "++");
-        map.put(Javac.getTreeTag("PREDEC"), "--");
-        map.put(Javac.getTreeTag("POSTINC"), "++");
-        map.put(Javac.getTreeTag("POSTDEC"), "--");
-        map.put(Javac.getTreeTag("NULLCHK"), "<*nullchk*>");
-        map.put(Javac.getTreeTag("OR"), "||");
-        map.put(Javac.getTreeTag("AND"), "&&");
-        map.put(Javac.getTreeTag("EQ"), "==");
-        map.put(Javac.getTreeTag("NE"), "!=");
-        map.put(Javac.getTreeTag("LT"), "<");
-        map.put(Javac.getTreeTag("GT"), ">");
-        map.put(Javac.getTreeTag("LE"), "<=");
-        map.put(Javac.getTreeTag("GE"), ">=");
-        map.put(Javac.getTreeTag("BITOR"), "|");
-        map.put(Javac.getTreeTag("BITXOR"), "^");
-        map.put(Javac.getTreeTag("BITAND"), "&");
-        map.put(Javac.getTreeTag("SL"), "<<");
-        map.put(Javac.getTreeTag("SR"), ">>");
-        map.put(Javac.getTreeTag("USR"), ">>>");
-        map.put(Javac.getTreeTag("PLUS"), "+");
-        map.put(Javac.getTreeTag("MINUS"), "-");
-        map.put(Javac.getTreeTag("MUL"), "*");
-        map.put(Javac.getTreeTag("DIV"), "/");
-        map.put(Javac.getTreeTag("MOD"), "%");
+        map.put(treeTag("POS"), "+");
+        map.put(treeTag("NEG"), "-");
+        map.put(treeTag("NOT"), "!");
+        map.put(treeTag("COMPL"), "~");
+        map.put(treeTag("PREINC"), "++");
+        map.put(treeTag("PREDEC"), "--");
+        map.put(treeTag("POSTINC"), "++");
+        map.put(treeTag("POSTDEC"), "--");
+        map.put(treeTag("NULLCHK"), "<*nullchk*>");
+        map.put(treeTag("OR"), "||");
+        map.put(treeTag("AND"), "&&");
+        map.put(treeTag("EQ"), "==");
+        map.put(treeTag("NE"), "!=");
+        map.put(treeTag("LT"), "<");
+        map.put(treeTag("GT"), ">");
+        map.put(treeTag("LE"), "<=");
+        map.put(treeTag("GE"), ">=");
+        map.put(treeTag("BITOR"), "|");
+        map.put(treeTag("BITXOR"), "^");
+        map.put(treeTag("BITAND"), "&");
+        map.put(treeTag("SL"), "<<");
+        map.put(treeTag("SR"), ">>");
+        map.put(treeTag("USR"), ">>>");
+        map.put(treeTag("PLUS"), "+");
+        map.put(treeTag("MINUS"), "-");
+        map.put(treeTag("MUL"), "*");
+        map.put(treeTag("DIV"), "/");
+        map.put(treeTag("MOD"), "%");
 		
 		OPERATORS = map;
     }
     
-    static Object getTag(JCTree tree) {
-    	if (GET_TAG_METHOD != null) {
-    		try {
-				return GET_TAG_METHOD.invoke(tree);
-			} 
-    		catch (IllegalAccessException e) {
-    			throw new RuntimeException(e);
-			} 
-    		catch (InvocationTargetException e) {
-    			throw new RuntimeException(e.getCause());
-			} 
-    	}
-    	try {
-			return TAG_FIELD.get(tree);
-		} 
-    	catch (IllegalAccessException e) {
-    		throw new RuntimeException(e);
-		}
-    }
-	
 	private List<CommentInfo> comments;
 	private final JCCompilationUnit cu;
 	private boolean onNewLine = true;
@@ -634,7 +598,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 
     /** Is the given tree an enumerator definition? */
     boolean isEnumerator(JCTree t) {
-        return Javac.compareCTC(getTag(t), VARDEF) && (((JCVariableDecl) t).mods.flags & ENUM) != 0;
+        return VARDEF.equals(treeTag(t)) && (((JCVariableDecl) t).mods.flags & ENUM) != 0;
     }
 
     /** Print unit consisting of package clause and import statements in toplevel,
@@ -645,7 +609,8 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
      *                  toplevel tree.
      */
     public void printUnit(JCCompilationUnit tree, JCClassDecl cdef) throws IOException {
-        docComments = tree.docComments;
+        Object dc = getDocComments(tree);
+        if (dc instanceof Map) this.docComments = (Map) dc;
         printDocComment(tree);
         if (tree.pid != null) {
             consumeComments(tree.pos, tree);
@@ -656,9 +621,9 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         }
         boolean firstImport = true;
         for (List<JCTree> l = tree.defs;
-        l.nonEmpty() && (cdef == null || getTag(l.head) == IMPORT);
+        l.nonEmpty() && (cdef == null || IMPORT.equals(treeTag(l.head)));
         l = l.tail) {
-            if (Javac.compareCTC(getTag(l.head), IMPORT)) {
+        	if (IMPORT.equals(treeTag(l.head))) {
                 JCImport imp = (JCImport)l.head;
                 Name name = TreeInfo.name(imp.qualid);
                 if (name == name.table.fromChars(new char[] {'*'}, 0, 1) ||
@@ -742,9 +707,9 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
                 else
                     print("class " + tree.name);
                 printTypeParameters(tree.typarams);
-                if (Javac.getExtendsClause(tree) != null) {
+                if (getExtendsClause(tree) != null) {
                     print(" extends ");
-                    printExpr(Javac.getExtendsClause(tree));
+                    printExpr(getExtendsClause(tree));
                 }
                 if (tree.implementing.nonEmpty()) {
                     print(" implements ");
@@ -877,7 +842,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
             printStat(tree.body);
             align();
             print(" while ");
-            if (Javac.compareCTC(getTag(tree.cond), PARENS)) {
+            if (PARENS.equals(treeTag(tree.cond))) {
                 printExpr(tree.cond);
             } else {
                 print("(");
@@ -893,7 +858,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitWhileLoop(JCWhileLoop tree) {
         try {
             print("while ");
-            if (Javac.compareCTC(getTag(tree.cond), PARENS)) {
+            if (PARENS.equals(treeTag(tree.cond))) {
                 printExpr(tree.cond);
             } else {
                 print("(");
@@ -911,7 +876,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         try {
             print("for (");
             if (tree.init.nonEmpty()) {
-                if (Javac.compareCTC(getTag(tree.init.head), VARDEF)) {
+            	if (VARDEF.equals(treeTag(tree.init.head))) {
                     printExpr(tree.init.head);
                     for (List<JCStatement> l = tree.init.tail; l.nonEmpty(); l = l.tail) {
                         JCVariableDecl vdef = (JCVariableDecl)l.head;
@@ -958,7 +923,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitSwitch(JCSwitch tree) {
         try {
             print("switch ");
-            if (Javac.compareCTC(getTag(tree.selector), PARENS)) {
+            if (PARENS.equals(treeTag(tree.selector))) {
                 printExpr(tree.selector);
             } else {
                 print("(");
@@ -997,7 +962,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitSynchronized(JCSynchronized tree) {
         try {
             print("synchronized ");
-            if (Javac.compareCTC(getTag(tree.lock), PARENS)) {
+            if (PARENS.equals(treeTag(tree.lock))) {
                 printExpr(tree.lock);
             } else {
                 print("(");
@@ -1078,7 +1043,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitIf(JCIf tree) {
         try {
             print("if ");
-            if (Javac.compareCTC(getTag(tree.cond), PARENS)) {
+            if (PARENS.equals(treeTag(tree.cond))) {
                 printExpr(tree.cond);
             } else {
                 print("(");
@@ -1174,7 +1139,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitApply(JCMethodInvocation tree) {
         try {
             if (!tree.typeargs.isEmpty()) {
-                if (Javac.compareCTC(getTag(tree.meth), SELECT)) {
+                if (SELECT.equals(treeTag(tree.meth))) {
                     JCFieldAccess left = (JCFieldAccess)tree.meth;
                     printExpr(left.selected);
                     print(".<");
@@ -1278,7 +1243,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         }
     }
 
-    public String operatorName(Object tag) {
+    public String operatorName(TreeTag tag) {
         String result = OPERATORS.get(tag);
         if (result == null) throw new Error();
         return result;
@@ -1300,9 +1265,9 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void visitUnary(JCUnary tree) {
         try {
             int ownprec = isOwnPrec(tree);
-            String opname = operatorName(getTag(tree));
+            String opname = operatorName(treeTag(tree));
             open(prec, ownprec);
-            if (isPostUnary(tree)) {
+            if (isPrefixUnary(tree)) {
                 print(opname);
                 printExpr(tree.arg, ownprec);
             } else {
@@ -1315,63 +1280,18 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         }
     }
     
-    private String assignOpName(JCExpression tree) {
-		try {
-			Object tag = getTag(tree);
-			if (JavaCompiler.version().startsWith("1.8")) {
-				return operatorName(tag.getClass().getMethod("noAssignOp").invoke(tree));
-			} else {
-				return operatorName((Integer)((Integer)tag - (Integer)JCTree.class.getField("ASGOffset").get(null)));
-			}
-		} catch (NoSuchMethodException e) {
-			throw new RuntimeException(e);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
-		} catch (Exception e) {
-			if (e instanceof RuntimeException) throw (RuntimeException) e;
-			throw new RuntimeException(e);
-		}
-    }
-    
     private int isOwnPrec(JCExpression tree) {
-    	try {
-	    	if (JavaCompiler.version().startsWith("1.8")) {
-				return (Integer)TreeInfo.class.getMethod("opPrec", Class.forName("com.sun.tools.javac.code.TypeTag")).invoke(null, getTag(tree));
-			} else {
-				return (Integer)TreeInfo.class.getMethod("opPrec", Integer.TYPE).invoke(null, getTag(tree));
-			}
-		} catch (NoSuchMethodException e) {
-			throw new RuntimeException(e);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
-		} catch (Exception e) {
-			if (e instanceof RuntimeException) throw (RuntimeException) e;
-			throw new RuntimeException(e);
-		}
+        return treeTag(tree).getOperatorPrecedenceLevel();
     }
     
-	private boolean isPostUnary(JCUnary tree) {
-		try {
-			Object tag = getTag(tree);
-			if (JavaCompiler.version().startsWith("1.8")) {
-				return (Boolean) tag.getClass().getMethod("isPostUnaryOp").invoke(tree);
-			} else {
-				return ((Integer) tag) <= ((Integer) Javac.getTreeTag("PREDEC"));
-			}
-		} catch (NoSuchMethodException e) {
-			throw new RuntimeException(e);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
-		} catch (Exception e) {
-			if (e instanceof RuntimeException) throw (RuntimeException) e;
-			throw new RuntimeException(e);
-		}
-	}
-
+    private boolean isPrefixUnary(JCUnary tree) {
+        return treeTag(tree).isPrefixUnaryOp();
+    }
+    
     public void visitBinary(JCBinary tree) {
         try {
             int ownprec = isOwnPrec(tree);
-            String opname = operatorName(getTag(tree));
+            String opname = operatorName(treeTag(tree));
             open(prec, ownprec);
             printExpr(tree.lhs, ownprec);
             print(" " + opname + " ");
@@ -1436,19 +1356,17 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     }
 
     public void visitLiteral(JCLiteral tree) {
+        TypeTag typeTag = typeTag(tree);
         try {
-            if (Javac.compareCTC(Javac.getTreeTypeTag(tree), Javac.CTC_INT)) print(tree.value.toString());
-            else if (Javac.compareCTC(Javac.getTreeTypeTag(tree), Javac.CTC_LONG)) print(tree.value + "L");
-            else if (Javac.compareCTC(Javac.getTreeTypeTag(tree), Javac.CTC_FLOAT)) print(tree.value + "F");
-            else if (Javac.compareCTC(Javac.getTreeTypeTag(tree), Javac.CTC_DOUBLE)) print(tree.value.toString());
-            else if (Javac.compareCTC(Javac.getTreeTypeTag(tree), Javac.CTC_CHAR)) {
-            	print("\'" +
-            			Convert.quote(
-                        String.valueOf((char)((Number)tree.value).intValue()))+
-                        "\'");
+            if (CTC_INT.equals(typeTag)) print(tree.value.toString());
+            else if (CTC_LONG.equals(typeTag)) print(tree.value + "L");
+            else if (CTC_FLOAT.equals(typeTag)) print(tree.value + "F");
+            else if (CTC_DOUBLE.equals(typeTag)) print(tree.value.toString());
+            else if (CTC_CHAR.equals(typeTag)) {
+                print("\'" + Convert.quote(String.valueOf((char)((Number)tree.value).intValue())) + "\'");
             }
-            else if (Javac.compareCTC(Javac.getTreeTypeTag(tree), Javac.CTC_BOOLEAN)) print(((Number)tree.value).intValue() == 1 ? "true" : "false");
-            else if (Javac.compareCTC(Javac.getTreeTypeTag(tree), Javac.CTC_BOT)) print("null");
+            else if (CTC_BOOLEAN.equals(typeTag)) print(((Number)tree.value).intValue() == 1 ? "true" : "false");
+            else if (CTC_BOT.equals(typeTag)) print("null");
             else print("\"" + Convert.quote(tree.value.toString()) + "\"");
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -1456,17 +1374,17 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     }
 
 	public void visitTypeIdent(JCPrimitiveTypeTree tree) {
-		Object typetag = Javac.getTreeTypeTag(tree); 
+		TypeTag typetag = typeTag(tree);
 		try {
-			if (Javac.compareCTC(typetag, Javac.CTC_BYTE)) print("byte");
-			else if (Javac.compareCTC(typetag, Javac.CTC_CHAR)) print("char");
-			else if (Javac.compareCTC(typetag,  Javac.CTC_SHORT)) print("short");
-			else if (Javac.compareCTC(typetag, Javac.CTC_INT)) print("int");
-			else if (Javac.compareCTC(typetag, Javac.CTC_LONG)) print("long"); 
-			else if (Javac.compareCTC(typetag, Javac.CTC_FLOAT)) print("float");
-			else if (Javac.compareCTC(typetag, Javac.CTC_DOUBLE)) print("double");
-			else if (Javac.compareCTC(typetag, Javac.CTC_BOOLEAN)) print("boolean");
-			else if (Javac.compareCTC(typetag, Javac.CTC_VOID)) print("void");
+			if (CTC_BYTE.equals(typetag)) print ("byte");
+			else if (CTC_CHAR.equals(typetag)) print ("char");
+			else if (CTC_SHORT.equals(typetag)) print ("short");
+			else if (CTC_INT.equals(typetag)) print ("int");
+			else if (CTC_LONG.equals(typetag)) print ("long");
+			else if (CTC_FLOAT.equals(typetag)) print ("float");
+			else if (CTC_DOUBLE.equals(typetag)) print ("double");
+			else if (CTC_BOOLEAN.equals(typetag)) print ("boolean");
+			else if (CTC_VOID.equals(typetag)) print ("void");
 			else print("error");
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);

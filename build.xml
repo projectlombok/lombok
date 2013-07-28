@@ -332,7 +332,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</copy>
 	</target>
 
-	<target name="setupJava6TestEnvironment" description="Sets up the test so that 'ant test' will test against OpenJDK6.">
+	<target name="setupJavaOpenJDK6TestEnvironment" description="Sets up the test so that 'ant test' will test against OpenJDK6.">
 		<mkdir dir="lib/openJDK6Environment" />
 		<get src="http://projectlombok.org/ivyrepo/langtools/javac-1.6.0.18.jar" dest="lib/openJDK6Environment/javac6.jar" verbose="true" usetimestamp="true" />
 		<get src="http://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />
@@ -345,7 +345,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<antcall target="-createEclipseLaunchForTestEnvironmentIfEclipseProject" />
 	</target>
 
-	<target name="setupJava7TestEnvironment" description="Sets up the test so that 'ant test' will test against OpenJDK7.">
+	<target name="setupJavaOpenJDK7TestEnvironment" description="Sets up the test so that 'ant test' will test against OpenJDK7.">
 		<mkdir dir="lib/openJDK7Environment" />
 		<get src="http://projectlombok.org/ivyrepo/langtools/javac-1.7.0.jar" dest="lib/openJDK7Environment/javac7.jar" verbose="true" usetimestamp="true" />
 		<get src="http://projectlombok.org/ivyrepo/langtools/rt-openjdk7.jar" dest="lib/openJDK7Environment/rt-openjdk7.jar" verbose="true" usetimestamp="true" />
@@ -360,9 +360,11 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	
 	<target name="setupJavaOracle7TestEnvironment" description="Sets up the test so that 'ant test' will test against OpenJDK7.">
 		<mkdir dir="lib/oracleJDK7Environment" />		
+		<get src="http://projectlombok.org/ivyrepo/langtools/oracle-jdk7-tools.jar" dest="lib/oracleJDK7Environment/tools.jar" verbose="true" usetimestamp="true" />
+		<get src="http://projectlombok.org/ivyrepo/langtools/oracle-jdk7-rt.jar" dest="lib/oracleJDK7Environment/rt.jar" verbose="true" usetimestamp="true" />
 		<propertyfile file="testenvironment.properties">
-			<entry key="test.location.javac" value="lib/oracleJDK7Environment/tools-jdk7.jar" />
-			<entry key="test.location.bootclasspath" value="lib/oracleJDK7Environment/rt-oraclejdk7.jar" />
+			<entry key="test.location.javac" value="lib/oracleJDK7Environment/tools.jar" />
+			<entry key="test.location.bootclasspath" value="lib/oracleJDK7Environment/rt.jar" />
 			<entry key="test.location.name" value="OracleJDK7" />
 		</propertyfile>
 		<echo>Tests will now run against Oracle JDK7</echo>
@@ -371,11 +373,11 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	
 	<target name="setupJavaOracle8TestEnvironment" description="Sets up the test so that 'ant test' will test against OpenJDK8.">
 		<mkdir dir="lib/oracleJDK8Environment" />
-		<!--get src="http://projectlombok.org/ivyrepo/langtools/javac-1.7.0.jar" dest="lib/openJDK7Environment/javac7.jar" verbose="true" usetimestamp="true" /-->
-		<!--get src="http://projectlombok.org/ivyrepo/langtools/rt-openjdk7.jar" dest="lib/openJDK7Environment/rt-openjdk7.jar" verbose="true" usetimestamp="true" /-->
+		<get src="http://projectlombok.org/ivyrepo/langtools/oracle-jdk8-tools.jar" dest="lib/oracleJDK8Environment/tools.jar" verbose="true" usetimestamp="true" />
+		<get src="http://projectlombok.org/ivyrepo/langtools/oracle-jdk8-rt.jar" dest="lib/oracleJDK8Environment/rt.jar" verbose="true" usetimestamp="true" />
 		<propertyfile file="testenvironment.properties">
-			<entry key="test.location.javac" value="lib/oracleJDK8Environment/tools-jdk8.jar" />
-			<entry key="test.location.bootclasspath" value="lib/oracleJDK8Environment/rt-oraclejdk8.jar" />
+			<entry key="test.location.javac" value="lib/oracleJDK8Environment/tools.jar" />
+			<entry key="test.location.bootclasspath" value="lib/oracleJDK8Environment/rt.jar" />
 			<entry key="test.location.name" value="OracleJDK8" />
 		</propertyfile>
 		<echo>Tests will now run against Oracle JDK8</echo>
@@ -390,8 +392,10 @@ Eventually, this environment concept will be extended to also include an ecj and
 
 You can let this ant script set them up for you:
 
-* ant setupJava6TestEnvironment
-* ant setupJava7TestEnvironment
+* ant setupJavaOpenJDK6TestEnvironment
+* ant setupJavaOpenJDK7TestEnvironment
+* ant setupJavaOracle7TestEnvironment
+* ant setupJavaOracle8TestEnvironment
 
 These will set up test environments based on OpenJDK6 and OpenJDK7, and download all required files automatically. This will be a relatively large download. You can switch by running this command again; the downloads are cached so switching is fast.
 

@@ -46,6 +46,9 @@ import lombok.core.AST.Kind;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 
+import static lombok.javac.JavacTreeMaker.TypeTag.*;
+import static lombok.javac.JavacTreeMaker.TreeTag.*;
+
 @ProviderFor(JavacAnnotationHandler.class)
 public class NonNullHandler extends JavacAnnotationHandler<NonNull> {
 	@Override public void handle(AnnotationValues<NonNull> annotation, JCAnnotation ast, JavacNode annotationNode) {
@@ -138,10 +141,10 @@ public class NonNullHandler extends JavacAnnotationHandler<NonNull> {
 			while (cond instanceof JCParens) cond = ((JCParens) cond).expr;
 			if (!(cond instanceof JCBinary)) return null;
 			JCBinary bin = (JCBinary) cond;
-			if (compareCTC(getTag(bin), CTC_EQUAL)) return null;
+			if (!CTC_EQUAL.equals(treeTag(bin))) return null;
 			if (!(bin.lhs instanceof JCIdent)) return null;
 			if (!(bin.rhs instanceof JCLiteral)) return null;
-			if (compareCTC(getTypeTag((JCLiteral) bin.rhs), CTC_BOT)) return null;
+			if (!CTC_BOT.equals(typeTag(bin.rhs))) return null;
 			return ((JCIdent) bin.lhs).name.toString();
 		}
 	}

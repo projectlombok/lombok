@@ -47,7 +47,6 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
-import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
 /**
@@ -133,34 +132,17 @@ public class Javac {
 	public static final TypeTag CTC_CLASS = typeTag("CLASS");
 	
 	public static final TreeTag CTC_NOT_EQUAL = treeTag("NE");
+	public static final TreeTag CTC_POS = treeTag("POS");
+	public static final TreeTag CTC_NEG = treeTag("NEG");
 	public static final TreeTag CTC_NOT = treeTag("NOT");
+	public static final TreeTag CTC_COMPL = treeTag("COMPL");
 	public static final TreeTag CTC_BITXOR = treeTag("BITXOR");
 	public static final TreeTag CTC_UNSIGNED_SHIFT_RIGHT = treeTag("USR");
 	public static final TreeTag CTC_MUL = treeTag("MUL");
 	public static final TreeTag CTC_PLUS = treeTag("PLUS");
 	public static final TreeTag CTC_EQUAL = treeTag("EQ");
-	
-	public static boolean compareCTC(TreeTag ctc1, TreeTag ctc2) {
-		boolean ctc1IsNull = ctc1 == null || ctc1.value == null;
-		boolean ctc2IsNull = ctc2 == null || ctc2.value == null;
-		if (ctc1IsNull || ctc2IsNull) return ctc1IsNull && ctc2IsNull;
-		return ctc1.value.equals(ctc2.value);
-	}
-	
-	public static boolean compareCTC(TypeTag ctc1, TypeTag ctc2) {
-		boolean ctc1IsNull = ctc1 == null || ctc1.value == null;
-		boolean ctc2IsNull = ctc2 == null || ctc2.value == null;
-		if (ctc1IsNull || ctc2IsNull) return ctc1IsNull && ctc2IsNull;
-		return ctc1.value.equals(ctc2.value);
-	}
-	
-	public static Object getTreeTypeTag(JCPrimitiveTypeTree tree) {
-		return tree.typetag;
-	}
-	
-	public static Object getTreeTypeTag(JCLiteral tree) {
-		return tree.typetag;
-	}
+	public static final TreeTag CTC_PREINC = treeTag("PREINC");
+	public static final TreeTag CTC_PREDEC = treeTag("PREDEC");
 	
 	private static final Method getExtendsClause, getEndPosition;
 	
@@ -245,7 +227,7 @@ public class Javac {
 			return new JCNoType(((Integer) tag.value).intValue());
 		} else {
 			try {
-				if (compareCTC(tag, CTC_VOID)) {
+				if (CTC_VOID.equals(tag)) {
 					return (Type) JC_VOID_TYPE.newInstance();
 				} else {
 					return (Type) JC_NO_TYPE.newInstance();
@@ -276,28 +258,9 @@ public class Javac {
 		}
 	}
 	
-	private static final Field JCTREE_TAG, JCLITERAL_TYPETAG, JCPRIMITIVETYPETREE_TYPETAG, JCCOMPILATIONUNIT_ENDPOSITIONS, JCCOMPILATIONUNIT_DOCCOMMENTS;
-	private static final Method JCTREE_GETTAG;
+	private static final Field JCCOMPILATIONUNIT_ENDPOSITIONS, JCCOMPILATIONUNIT_DOCCOMMENTS;
 	static {
 		Field f = null;
-		try {
-			f = JCTree.class.getDeclaredField("tag");
-		} catch (NoSuchFieldException e) {}
-		JCTREE_TAG = f;
-		
-		f = null;
-		try {
-			f = JCLiteral.class.getDeclaredField("typetag");
-		} catch (NoSuchFieldException e) {}
-		JCLITERAL_TYPETAG = f;
-		
-		f = null;
-		try {
-			f = JCPrimitiveTypeTree.class.getDeclaredField("typetag");
-		} catch (NoSuchFieldException e) {}
-		JCPRIMITIVETYPETREE_TYPETAG = f;
-		
-		f = null;
 		try {
 			f = JCCompilationUnit.class.getDeclaredField("endPositions");
 		} catch (NoSuchFieldException e) {}
@@ -308,41 +271,6 @@ public class Javac {
 			f = JCCompilationUnit.class.getDeclaredField("docComments");
 		} catch (NoSuchFieldException e) {}
 		JCCOMPILATIONUNIT_DOCCOMMENTS = f;
-		
-		Method m = null;
-		try {
-			m = JCTree.class.getDeclaredMethod("getTag");
-		} catch (NoSuchMethodException e) {}
-		JCTREE_GETTAG = m;
-	}
-	
-	public static Object getTag(JCTree node) {
-		if (JCTREE_GETTAG != null) {
-			try {
-				return JCTREE_GETTAG.invoke(node);
-			} catch (Exception e) {}
-		}
-		try {
-			return JCTREE_TAG.get(node);
-		} catch (Exception e) {
-			throw new IllegalStateException("Can't get node tag");
-		}
-	}
-	
-	public static Object getTypeTag(JCLiteral node) {
-		try {
-			return JCLITERAL_TYPETAG.get(node);
-		} catch (Exception e) {
-			throw new IllegalStateException("Can't get JCLiteral typetag");
-		}
-	}
-	
-	public static Object getTypeTag(JCPrimitiveTypeTree node) {
-		try {
-			return JCPRIMITIVETYPETREE_TYPETAG.get(node);
-		} catch (Exception e) {
-			throw new IllegalStateException("Can't get JCPrimitiveTypeTree typetag");
-		}
 	}
 	
 	static RuntimeException sneakyThrow(Throwable t) {

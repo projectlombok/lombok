@@ -41,7 +41,6 @@ import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
@@ -53,13 +52,14 @@ import lombok.core.HandlerPriority;
 import lombok.core.TransformationsUtil;
 import lombok.experimental.Builder;
 import lombok.experimental.NonFinal;
-import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.HandleConstructor.SkipIfConstructorExists;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+import static lombok.javac.Javac.*;
+import static lombok.javac.JavacTreeMaker.TypeTag.*;
 
 @ProviderFor(JavacAnnotationHandler.class)
 @HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
@@ -240,7 +240,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			
 			JCExpression fn = maker.Select(maker.Ident(((JCClassDecl) type.up().get()).name), staticName);
 			call = maker.Apply(typeParams.toList(), fn, args.toList());
-			if (returnType instanceof JCPrimitiveTypeTree && compareCTC(Javac.getTypeTag((JCPrimitiveTypeTree) returnType), CTC_VOID)) {
+			if (returnType instanceof JCPrimitiveTypeTree && CTC_VOID.equals(typeTag(returnType))) {
 				statement = maker.Exec(call);
 			} else {
 				statement = maker.Return(call);
