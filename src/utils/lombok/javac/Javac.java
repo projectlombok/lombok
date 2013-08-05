@@ -213,12 +213,12 @@ public class Javac {
 		Class<?> c = null;
 		try {
 			c = Class.forName("com.sun.tools.javac.code.Type$JCVoidType");
-		} catch (Exception ignore) {}
+		} catch (Throwable ignore) {}
 		JC_VOID_TYPE = c;
 		c = null;
 		try {
 			c = Class.forName("com.sun.tools.javac.code.Type$JCNoType");
-		} catch (Exception ignore) {}
+		} catch (Throwable ignore) {}
 		JC_NO_TYPE = c;
 	}
 	
