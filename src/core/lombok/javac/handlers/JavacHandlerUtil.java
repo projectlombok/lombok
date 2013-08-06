@@ -97,6 +97,7 @@ public class JavacHandlerUtil {
 		}
 		
 		@Override public void scan(JCTree tree) {
+			if (tree == null) return;
 			setGeneratedBy(tree, source);
 			super.scan(tree);
 		}
@@ -134,10 +135,12 @@ public class JavacHandlerUtil {
 	}
 	
 	public static <T extends JCTree> T setGeneratedBy(T node, JCTree source) {
+		if (node == null) return null;
 		synchronized (generatedNodes) {
 			if (source == null) generatedNodes.remove(node);
 			else generatedNodes.put(node, new WeakReference<JCTree>(source));
 		}
+		if (source != null) node.pos = source.pos;
 		return node;
 	}
 	

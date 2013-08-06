@@ -371,7 +371,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		JCExpression returnType = maker.TypeIdent(CTC_BOOLEAN);
 		
 		ListBuffer<JCStatement> statements = ListBuffer.lb();
-		final List<JCVariableDecl> params = List.of(maker.VarDef(maker.Modifiers(Flags.FINAL), oName, objectType, null));
+		final List<JCVariableDecl> params = List.of(maker.VarDef(maker.Modifiers(Flags.FINAL | Flags.PARAMETER), oName, objectType, null));
 		
 		/* if (o == this) return true; */ {
 			statements.append(maker.If(maker.Binary(CTC_EQUAL, maker.Ident(oName),
@@ -501,7 +501,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		Name canEqualName = typeNode.toName("canEqual");
 		JCExpression objectType = chainDots(typeNode, "java", "lang", "Object");
 		Name otherName = typeNode.toName("other");
-		List<JCVariableDecl> params = List.of(maker.VarDef(maker.Modifiers(Flags.FINAL), otherName, objectType, null));
+		List<JCVariableDecl> params = List.of(maker.VarDef(maker.Modifiers(Flags.FINAL | Flags.PARAMETER), otherName, objectType, null));
 		
 		JCBlock body = maker.Block(0, List.<JCStatement>of(
 				maker.Return(maker.TypeTest(maker.Ident(otherName), createTypeReference(typeNode)))));
