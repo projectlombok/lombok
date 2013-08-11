@@ -29,7 +29,7 @@ public class Version {
 	// Note: In 'X.Y.Z', if Z is odd, its a snapshot build built from the repository, so many different 0.10.3 versions can exist, for example.
 	// Official builds always end in an even number. (Since 0.10.2).
 	private static final String VERSION = "0.12.1";
-	private static final String RELEASE_NAME = "Angry Butterfy";
+	private static final String RELEASE_NAME = "Angry Butterfly";
 	
 	private Version() {
 		//Prevent instantiation
