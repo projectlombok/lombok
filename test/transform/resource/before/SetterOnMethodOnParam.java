@@ -1,6 +1,6 @@
 class SetterOnMethodOnParam {
-	@lombok.Setter(onMethod=@_(@Deprecated)) int i;
-	@lombok.Setter(onMethod=@_({@java.lang.Deprecated, @Test}), onParam=@_(@Test)) int j, k;
+	@lombok.Setter(onMethod=@__(@Deprecated)) int i;
+	@lombok.Setter(onMethod=@__({@java.lang.Deprecated, @Test}), onParam=@__(@Test)) int j, k;
 
 	public @interface Test {
 	}

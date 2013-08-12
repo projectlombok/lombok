@@ -1009,9 +1009,9 @@ public class JavacHandlerUtil {
 			
 			if (valueOfParam instanceof JCAnnotation) {
 				String dummyAnnotationName = ((JCAnnotation) valueOfParam).annotationType.toString();
-				dummyAnnotationName = dummyAnnotationName.replace("_", "");
+				dummyAnnotationName = dummyAnnotationName.replace("_", "").replace("$", "").replace("x", "").replace("X", "");
 				if (dummyAnnotationName.length() > 0) {
-					errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+					errorNode.addError("The correct format is " + errorName + "@__({@SomeAnnotation, @SomeOtherAnnotation}))");
 					continue outer;
 				}
 				for (JCExpression expr : ((JCAnnotation) valueOfParam).args) {
@@ -1020,7 +1020,7 @@ public class JavacHandlerUtil {
 						if ("value".equals(id.name.toString())) {
 							expr = ((JCAssign) expr).rhs;
 						} else {
-							errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+							errorNode.addError("The correct format is " + errorName + "@__({@SomeAnnotation, @SomeOtherAnnotation}))");
 							continue outer;
 						}
 					}
@@ -1032,12 +1032,12 @@ public class JavacHandlerUtil {
 							if (expr2 instanceof JCAnnotation) {
 								result.append((JCAnnotation) expr2);
 							} else {
-								errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+								errorNode.addError("The correct format is " + errorName + "@__({@SomeAnnotation, @SomeOtherAnnotation}))");
 								continue outer;
 							}
 						}
 					} else {
-						errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+						errorNode.addError("The correct format is " + errorName + "@__({@SomeAnnotation, @SomeOtherAnnotation}))");
 						continue outer;
 					}
 				}
@@ -1045,7 +1045,7 @@ public class JavacHandlerUtil {
 				if (valueOfParam instanceof JCNewArray && ((JCNewArray) valueOfParam).elems.isEmpty()) {
 					// Then we just remove it and move on (it's onMethod={} for example).
 				} else {
-					errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+					errorNode.addError("The correct format is " + errorName + "@__({@SomeAnnotation, @SomeOtherAnnotation}))");
 				}
 			}
 		}

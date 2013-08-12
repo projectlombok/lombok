@@ -10,7 +10,7 @@
 	final int x;
 	String name;
 }
-@lombok.RequiredArgsConstructor(onConstructor=@_(@Deprecated)) class RequiredArgsConstructorWithAnnotations {
+@lombok.RequiredArgsConstructor(onConstructor=@__(@Deprecated)) class RequiredArgsConstructorWithAnnotations {
 	final int x;
 	String name;
 }

@@ -1562,9 +1562,9 @@ public class EclipseHandlerUtil {
 		intLiteralFactoryMethod = intLiteralFactoryMethod_;
 	}
 	
-	private static boolean isAllUnderscores(char[] in) {
+	private static boolean isAllValidOnXCharacters(char[] in) {
 		if (in == null || in.length == 0) return false;
-		for (char c : in) if (c != '_') return false;
+		for (char c : in) if (c != '_' && c != 'X' && c != 'x' && c != '$') return false;
 		return true;
 	}
 	
@@ -1597,31 +1597,31 @@ public class EclipseHandlerUtil {
 			if (i > 0) System.arraycopy(pairs, 0, newPairs, 0, i);
 			if (i < pairs.length - 1) System.arraycopy(pairs, i + 1, newPairs, i, pairs.length - i - 1);
 			normalAnnotation.memberValuePairs = newPairs;
-			// We have now removed the annotation parameter and stored '@_({... annotations ...})',
+			// We have now removed the annotation parameter and stored '@__({... annotations ...})',
 			// which we must now unbox.
 			if (!(value instanceof Annotation)) {
-				errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+				errorNode.addError("The correct format is " + errorName + "@__({@SomeAnnotation, @SomeOtherAnnotation}))");
 				return Collections.emptyList();
 			}
 			
-			Annotation atUnderscore = (Annotation) value;
-			if (!(atUnderscore.type instanceof SingleTypeReference) ||
-					!isAllUnderscores(((SingleTypeReference) atUnderscore.type).token)) {
-				errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+			Annotation atDummyIdentifier = (Annotation) value;
+			if (!(atDummyIdentifier.type instanceof SingleTypeReference) ||
+					!isAllValidOnXCharacters(((SingleTypeReference) atDummyIdentifier.type).token)) {
+				errorNode.addError("The correct format is " + errorName + "@__({@SomeAnnotation, @SomeOtherAnnotation}))");
 				return Collections.emptyList();
 			}
 			
-			if (atUnderscore instanceof MarkerAnnotation) {
-				// It's @getter(onMethod=@_). This is weird, but fine.
+			if (atDummyIdentifier instanceof MarkerAnnotation) {
+				// It's @Getter(onMethod=@__). This is weird, but fine.
 				return Collections.emptyList();
 			}
 			
 			Expression content = null;
 			
-			if (atUnderscore instanceof NormalAnnotation) {
-				MemberValuePair[] mvps = ((NormalAnnotation) atUnderscore).memberValuePairs;
+			if (atDummyIdentifier instanceof NormalAnnotation) {
+				MemberValuePair[] mvps = ((NormalAnnotation) atDummyIdentifier).memberValuePairs;
 				if (mvps == null || mvps.length == 0) {
-					// It's @getter(onMethod=@_()). This is weird, but fine.
+					// It's @Getter(onMethod=@__()). This is weird, but fine.
 					return Collections.emptyList();
 				}
 				if (mvps.length == 1 && Arrays.equals("value".toCharArray(), mvps[0].name)) {
@@ -1629,12 +1629,12 @@ public class EclipseHandlerUtil {
 				}
 			}
 			
-			if (atUnderscore instanceof SingleMemberAnnotation) {
-				content = ((SingleMemberAnnotation) atUnderscore).memberValue;
+			if (atDummyIdentifier instanceof SingleMemberAnnotation) {
+				content = ((SingleMemberAnnotation) atDummyIdentifier).memberValue;
 			}
 			
 			if (content == null) {
-				errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+				errorNode.addError("The correct format is " + errorName + "@__({@SomeAnnotation, @SomeOtherAnnotation}))");
 				return Collections.emptyList();
 			}
 			
@@ -1646,13 +1646,13 @@ public class EclipseHandlerUtil {
 				if (expressions != null) for (Expression ex : expressions) {
 					if (ex instanceof Annotation) result.add((Annotation) ex);
 					else {
-						errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+						errorNode.addError("The correct format is " + errorName + "@__({@SomeAnnotation, @SomeOtherAnnotation}))");
 						return Collections.emptyList();
 					}
 				}
 				return result;
 			} else {
-				errorNode.addError("The correct format is " + errorName + "@_({@SomeAnnotation, @SomeOtherAnnotation}))");
+				errorNode.addError("The correct format is " + errorName + "@__({@SomeAnnotation, @SomeOtherAnnotation}))");
 				return Collections.emptyList();
 			}
 		}
