@@ -19,14 +19,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.javac.java6;
+package lombok.javac.java8;
 
 import java.nio.CharBuffer;
 
 import com.sun.tools.javac.parser.Scanner;
+import com.sun.tools.javac.parser.ScannerFactory;
 import com.sun.tools.javac.util.Context;
 
-public class CommentCollectingScannerFactory extends Scanner.Factory {
+public class CommentCollectingScannerFactory extends ScannerFactory {
 	
 	@SuppressWarnings("all")
 	public static void preRegister(final Context context) {
@@ -56,13 +57,12 @@ public class CommentCollectingScannerFactory extends Scanner.Factory {
 					return new CommentCollectingScannerFactory(context);
 				}
 				
-				// This overrides the javac7+ version of make.
+				// This overrides the javac7+ version.
 				public Object make(Context c) {
 					return new CommentCollectingScannerFactory(c);
 				}
 			}
-			
-			@SuppressWarnings("unchecked") Context.Factory<Scanner.Factory> factory = new MyFactory();
+			@SuppressWarnings("unchecked") Context.Factory<ScannerFactory> factory = new MyFactory();
 			context.put(scannerFactoryKey, factory);
 		}
 	}
@@ -73,16 +73,17 @@ public class CommentCollectingScannerFactory extends Scanner.Factory {
 	}
 	
 	@Override
-	public Scanner newScanner(CharSequence input) {
+	public Scanner newScanner(CharSequence input, boolean keepDocComments) {
 		if (input instanceof CharBuffer) {
-			return new CommentCollectingScanner(this, (CharBuffer)input);
+			CharBuffer buf = (CharBuffer) input;
+			return new CommentCollectingScanner(this, new CommentCollectingTokenizer(this, buf));
 		}
 		char[] array = input.toString().toCharArray();
-		return newScanner(array, array.length);
+		return newScanner(array, array.length, keepDocComments);
 	}
 	
 	@Override
-	public Scanner newScanner(char[] input, int inputLength) {
-		return new CommentCollectingScanner(this, input, inputLength);
+	public Scanner newScanner(char[] input, int inputLength, boolean keepDocComments) {
+		return new CommentCollectingScanner(this, new CommentCollectingTokenizer(this, input, inputLength));
 	}
 }
