@@ -1,6 +1,6 @@
 class PlaceFillerToMakeSurePositionIsRelevant {
 }
-@lombok.Getter(onMethod=@_(@Deprecated))
+@lombok.Getter(onMethod=@__(@Deprecated))
 class GetterOnMethodErrors {
 	private int test;
 }
