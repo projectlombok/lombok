@@ -113,7 +113,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				// non-final fields final, but @Value's handler hasn't done this yet, so we have to do this math ourselves.
 				// Value will only skip making a field final if it has an explicit @NonFinal annotation, so we check for that.
 				if (fd.initialization != null && valuePresent && !hasAnnotation(NonFinal.class, fieldNode)) continue;
-				namesOfParameters.add(fd.name);
+				namesOfParameters.add(removePrefixFromField(fieldNode));
 				typesOfParameters.add(fd.type);
 				fields.add(fieldNode);
 			}

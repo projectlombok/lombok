@@ -52,6 +52,7 @@ import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
+import com.sun.tools.javac.util.Name;
 
 public class HandleConstructor {
 	@ProviderFor(JavacAnnotationHandler.class)
@@ -210,7 +211,8 @@ public class HandleConstructor {
 		JCExpression constructorPropertiesType = chainDots(node, "java", "beans", "ConstructorProperties");
 		ListBuffer<JCExpression> fieldNames = ListBuffer.lb();
 		for (JavacNode field : fields) {
-			fieldNames.append(maker.Literal(field.getName()));
+			Name fieldName = removePrefixFromField(field);
+			fieldNames.append(maker.Literal(fieldName.toString()));
 		}
 		JCExpression fieldNamesArray = maker.NewArray(null, List.<JCExpression>nil(), fieldNames.toList());
 		JCAnnotation annotation = maker.Annotation(constructorPropertiesType, List.of(fieldNamesArray));
@@ -229,12 +231,14 @@ public class HandleConstructor {
 		
 		for (JavacNode fieldNode : fields) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
+			Name fieldName = removePrefixFromField(fieldNode);
+			Name rawName = field.name;
 			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, TransformationsUtil.NON_NULL_PATTERN);
 			List<JCAnnotation> nullables = findAnnotations(fieldNode, TransformationsUtil.NULLABLE_PATTERN);
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL, nonNulls.appendList(nullables)), field.name, field.vartype, null);
+			JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL, nonNulls.appendList(nullables)), fieldName, field.vartype, null);
 			params.append(param);
-			JCFieldAccess thisX = maker.Select(maker.Ident(fieldNode.toName("this")), field.name);
-			JCAssign assign = maker.Assign(thisX, maker.Ident(field.name));
+			JCFieldAccess thisX = maker.Select(maker.Ident(fieldNode.toName("this")), rawName);
+			JCAssign assign = maker.Assign(thisX, maker.Ident(fieldName));
 			assigns.append(maker.Exec(assign));
 			
 			if (!nonNulls.isEmpty()) {
@@ -289,12 +293,13 @@ public class HandleConstructor {
 		
 		for (JavacNode fieldNode : fields) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
+			Name fieldName = removePrefixFromField(fieldNode);
 			JCExpression pType = cloneType(maker, field.vartype, source);
 			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, TransformationsUtil.NON_NULL_PATTERN);
 			List<JCAnnotation> nullables = findAnnotations(fieldNode, TransformationsUtil.NULLABLE_PATTERN);
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL, nonNulls.appendList(nullables)), field.name, pType, null);
+			JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL, nonNulls.appendList(nullables)), fieldName, pType, null);
 			params.append(param);
-			args.append(maker.Ident(field.name));
+			args.append(maker.Ident(fieldName));
 		}
 		JCReturn returnStatement = maker.Return(maker.NewClass(null, List.<JCExpression>nil(), constructorType, args.toList(), null));
 		JCBlock body = maker.Block(0, List.<JCStatement>of(returnStatement));
