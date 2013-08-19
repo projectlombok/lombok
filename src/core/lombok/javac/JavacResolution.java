@@ -22,6 +22,7 @@
 package lombok.javac;
 
 import static lombok.javac.Javac.*;
+import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -31,11 +32,11 @@ import java.util.ArrayDeque;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.lang.model.type.TypeKind;
 import javax.tools.DiagnosticListener;
-
-import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
@@ -79,7 +80,9 @@ public class JavacResolution {
 	private static final class LogDisabler {
 		private final Log log;
 		private static final Field errWriterField, warnWriterField, noticeWriterField, dumpOnErrorField, promptOnErrorField, diagnosticListenerField;
-		private static final Field deferDiagnosticsField, deferredDiagnosticsField;
+		private static final Field deferDiagnosticsField, deferredDiagnosticsField, diagnosticHandlerField;
+		private static final ConcurrentMap<Class<?>, Field> handlerDeferredFields = new ConcurrentHashMap<Class<?>, Field>();
+		private static final Field NULL_FIELD;
 		private PrintWriter errWriter, warnWriter, noticeWriter;
 		private Boolean dumpOnError, promptOnError;
 		private DiagnosticListener<?> contextDiagnosticListener, logDiagnosticListener;
@@ -91,43 +94,40 @@ public class JavacResolution {
 		private static final ThreadLocal<Queue<?>> queueCache = new ThreadLocal<Queue<?>>();
 		
 		static {
-			boolean z;
-			Field a = null, b = null, c = null, d = null, e = null, f = null, g = null, h = null;
-			try {
-				a = Log.class.getDeclaredField("errWriter");
-				b = Log.class.getDeclaredField("warnWriter");
-				c = Log.class.getDeclaredField("noticeWriter");
-				d = Log.class.getDeclaredField("dumpOnError");
-				e = Log.class.getDeclaredField("promptOnError");
-				f = Log.class.getDeclaredField("diagListener");
-				z = false;
-				a.setAccessible(true);
-				b.setAccessible(true);
-				c.setAccessible(true);
-				d.setAccessible(true);
-				e.setAccessible(true);
-				f.setAccessible(true);
-			} catch (Throwable x) {
-				z = true;
-			}
+			errWriterField = getDeclaredField(Log.class, "errWriter");
+			warnWriterField = getDeclaredField(Log.class, "warnWriter");
+			noticeWriterField = getDeclaredField(Log.class, "noticeWriter");
+			dumpOnErrorField = getDeclaredField(Log.class, "dumpOnError");
+			promptOnErrorField = getDeclaredField(Log.class, "promptOnError");
+			diagnosticListenerField = getDeclaredField(Log.class, "diagListener");
 			
-			try {
-				g = Log.class.getDeclaredField("deferDiagnostics");
-				h = Log.class.getDeclaredField("deferredDiagnostics");
-				g.setAccessible(true);
-				h.setAccessible(true);
-			} catch (Throwable x) {
-			}
+			dontBother = 
+						errWriterField == null || 
+						warnWriterField == null || 
+						noticeWriterField == null || 
+						dumpOnErrorField == null || 
+						promptOnErrorField == null || 
+						diagnosticListenerField == null;
 			
-			errWriterField = a;
-			warnWriterField = b;
-			noticeWriterField = c;
-			dumpOnErrorField = d;
-			promptOnErrorField = e;
-			diagnosticListenerField = f;
-			deferDiagnosticsField = g;
-			deferredDiagnosticsField = h;
-			dontBother = z;
+			
+			deferDiagnosticsField = getDeclaredField(Log.class, "deferDiagnostics");
+			deferredDiagnosticsField = getDeclaredField(Log.class, "deferredDiagnostics");
+			
+			// javac8
+			diagnosticHandlerField = getDeclaredField(Log.class, "diagnosticHandler");
+			
+			NULL_FIELD = getDeclaredField(JavacResolution.class, "NULL_FIELD");
+		}
+		
+		static Field getDeclaredField(Class<?> c, String fieldName) {
+			try {
+				Field field = c.getDeclaredField(fieldName);
+				field.setAccessible(true);
+				return field;
+			}
+			catch (Throwable t) {
+				return null;
+			}
 		}
 		
 		LogDisabler(Context context) {
@@ -152,6 +152,16 @@ public class JavacResolution {
 					queueCache.set((Queue<?>) deferredDiagnosticsField.get(log));
 					Queue<?> empty = new LinkedList<Object>();
 					deferredDiagnosticsField.set(log, empty);
+				}
+			} catch (Exception e) {}
+			
+			if (diagnosticHandlerField != null) try {
+				Object handler = diagnosticHandlerField.get(log);
+				Field field = getDeferredField(handler);
+				if (field != null) {
+					queueCache.set((Queue<?>) field.get(handler));
+					Queue<?> empty = new LinkedList<Object>();
+					field.set(handler, empty);
 				}
 			} catch (Exception e) {}
 			
@@ -201,6 +211,17 @@ public class JavacResolution {
 			return !dontBotherInstance;
 		}
 		
+		private static Field getDeferredField(Object handler) {
+			Class<? extends Object> key = handler.getClass();
+			Field field = handlerDeferredFields.get(key);
+			if (field != null) {
+				return field == NULL_FIELD ? null : field;
+			}
+			Field value = getDeclaredField(key, "deferred");
+			handlerDeferredFields.put(key, value == null ? NULL_FIELD : value);
+			return getDeferredField(handler);
+		}
+
 		void enableLoggers() {
 			if (contextDiagnosticListener != null) {
 				context.put(DiagnosticListener.class, contextDiagnosticListener);
@@ -235,6 +256,15 @@ public class JavacResolution {
 			if (logDiagnosticListener != null) try {
 				diagnosticListenerField.set(log, logDiagnosticListener);
 				logDiagnosticListener = null;
+			} catch (Exception e) {}
+			
+			if (diagnosticHandlerField != null && queueCache.get() != null) try {
+				Object handler = diagnosticHandlerField.get(log);
+				Field field = getDeferredField(handler);
+				if (field != null) {
+					field.set(handler, queueCache.get());
+					queueCache.set(null);
+				}
 			} catch (Exception e) {}
 			
 			if (deferDiagnosticsField != null && queueCache.get() != null) try {
