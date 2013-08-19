@@ -1,2 +1,2 @@
-4:1 Not generating equals: One of equals, hashCode, and canEqual exists. You should either write all of these are none of these (in the latter case, lombok generates them).
-15:1 Not generating equals and hashCode: One of equals, hashCode, and canEqual exists. You should either write all of these are none of these (in the latter case, lombok generates them).
+4 Not generating equals: One of equals, hashCode, and canEqual exists. You should either write all of these are none of these (in the latter case, lombok generates them).
+15 Not generating equals and hashCode: One of equals, hashCode, and canEqual exists. You should either write all of these are none of these (in the latter case, lombok generates them).

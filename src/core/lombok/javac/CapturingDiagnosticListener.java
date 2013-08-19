@@ -52,7 +52,7 @@ public class CapturingDiagnosticListener implements DiagnosticListener<JavaFileO
 				"^" + Pattern.quote(file.getAbsolutePath()) +
 				"\\s*:\\s*\\d+\\s*:\\s*(?:warning:\\s*)?(.*)$", Pattern.DOTALL).matcher(msg);
 		if (m.matches()) msg = m.group(1);
-		messages.add(new CompilerMessage(d.getLineNumber(), d.getColumnNumber(), d.getStartPosition(), d.getKind() == Kind.ERROR, msg));
+		messages.add(new CompilerMessage(d.getLineNumber(), d.getStartPosition(), d.getKind() == Kind.ERROR, msg));
 	}
 	
 	public void suppress(int start, int end) {
@@ -67,15 +67,12 @@ public class CapturingDiagnosticListener implements DiagnosticListener<JavaFileO
 		/** Line Number (starting at 1) */
 		private final long line;
 		
-		/** Preferably column, but if that is hard to calculate (e.g. in ecj), then position is acceptable. */
-		private final long columnOrPosition;
 		private final long position;
 		private final boolean isError;
 		private final String message;
 		
-		public CompilerMessage(long line, long columnOrPosition, long position, boolean isError, String message) {
+		public CompilerMessage(long line, long position, boolean isError, String message) {
 			this.line = line;
-			this.columnOrPosition = columnOrPosition;
 			this.position = position;
 			this.isError = isError;
 			this.message = message;
@@ -87,10 +84,6 @@ public class CapturingDiagnosticListener implements DiagnosticListener<JavaFileO
 		
 		public long getPosition() {
 			return position;
-		}
-		
-		public long getColumnOrPosition() {
-			return columnOrPosition;
 		}
 		
 		public boolean isError() {
@@ -107,7 +100,6 @@ public class CapturingDiagnosticListener implements DiagnosticListener<JavaFileO
 			result = prime * result + (isError ? 1231 : 1237);
 			result = prime * result + (int) (line ^ (line >>> 32));
 			result = prime * result + ((message == null) ? 0 : message.hashCode());
-			result = prime * result + (int) (columnOrPosition ^ (columnOrPosition >>> 32));
 			return result;
 		}
 		
@@ -121,12 +113,11 @@ public class CapturingDiagnosticListener implements DiagnosticListener<JavaFileO
 			if (message == null) {
 				if (other.message != null) return false;
 			} else if (!message.equals(other.message)) return false;
-			if (columnOrPosition != other.columnOrPosition) return false;
 			return true;
 		}
 		
 		@Override public String toString() {
-			return String.format("%d:%d %s %s", line, columnOrPosition, isError ? "ERROR" : "WARNING", message);
+			return String.format("%d %s %s", line, isError ? "ERROR" : "WARNING", message);
 		}
 	}
 }

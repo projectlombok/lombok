@@ -1,1 +1,1 @@
-1:0 Ignoring static constructor name: explicit @XxxArgsConstructor annotation present; its `staticName` parameter will be used.
+1 Ignoring static constructor name: explicit @XxxArgsConstructor annotation present; its `staticName` parameter will be used.
