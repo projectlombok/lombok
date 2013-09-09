@@ -405,6 +405,8 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			((CapturingDiagnosticListener) listener).suppress(startPos, endPos);
 		}
 		try {
+			// TODO: This changed a bit in java8; there is now also a Handler thingie; see JavacResolution for what changed.
+			// Possibly integrate these 2 code paths.
 			if (JAVAC7_DEFERRED_DIAGNOSTICS != null) {
 				ListBuffer<?> deferredDiagnostics = (ListBuffer<?>) JAVAC7_DEFERRED_DIAGNOSTICS.get(log);
 				ListBuffer<Object> newDeferredDiagnostics = ListBuffer.lb();
