@@ -383,6 +383,10 @@ public class Delombok {
 			return false;
 		}
 		
+		for (JCCompilationUnit unit : roots) {
+			catcher.setComments(unit, new DocCommentIntegrator().integrate(catcher.getComments(unit), unit));
+		}
+		
 		com.sun.tools.javac.util.List<JCCompilationUnit> trees = compiler.enterTrees(toJavacList(roots));
 		
 		JavaCompiler delegate = compiler.processAnnotations(trees);

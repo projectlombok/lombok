@@ -29,18 +29,14 @@
  */
 package lombok.delombok;
 
-import static com.sun.tools.javac.code.Flags.ANNOTATION;
-import static com.sun.tools.javac.code.Flags.ENUM;
-import static com.sun.tools.javac.code.Flags.INTERFACE;
-import static com.sun.tools.javac.code.Flags.SYNTHETIC;
-import static com.sun.tools.javac.code.Flags.StandardFlags;
-import static com.sun.tools.javac.code.Flags.VARARGS;
+import static com.sun.tools.javac.code.Flags.*;
+import static lombok.javac.Javac.*;
+import static lombok.javac.JavacTreeMaker.TreeTag.treeTag;
+import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,19 +45,11 @@ import lombok.javac.CommentInfo.EndConnection;
 import lombok.javac.CommentInfo.StartConnection;
 import lombok.javac.JavacTreeMaker.TreeTag;
 import lombok.javac.JavacTreeMaker.TypeTag;
-import static lombok.javac.Javac.*;
-import static lombok.javac.JavacTreeMaker.TreeTag.treeTag;
-import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
 
 import com.sun.source.tree.Tree;
-import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
-//import com.sun.tools.javac.code.TypeTags;
-import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.TreeInfo;
-import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
@@ -113,10 +101,13 @@ import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.JCTree.LetExpr;
 import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
+import com.sun.tools.javac.tree.TreeInfo;
+import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.Convert;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
+//import com.sun.tools.javac.code.TypeTags;
 
 /** Prints out a tree as an indented Java source program.
  *
@@ -198,30 +189,13 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         boolean found = false;
         CommentInfo head = comments.head;
         while (comments.nonEmpty() && head.pos < until) {
-            if (tree != null && docComments != null && docComments.containsKey(tree) && head.isJavadoc() && noFurtherJavadocForthcoming(until)) {
-                // This is (presumably) the exact same javadoc that has already been associated with the node that we're just about to
-                // print. These javadoc can be modified by lombok handlers, and as such we should NOT print them from the consumed comments db,
-                // and instead print the actual javadoc associated with the upcoming node (which the visit method for that node will take care of).
-            } else {
-                printComment(head);
-            }
+            printComment(head);
             comments = comments.tail;
             head = comments.head;
         }
         if (!onNewLine && prevNewLine) {
             println();
         }
-    }
-    
-    private boolean noFurtherJavadocForthcoming(int until) {
-        List<CommentInfo> c = comments;
-        if (c.nonEmpty()) c = c.tail;
-        while (c.nonEmpty()) {
-            if (c.head.pos >= until) return true;
-            if (c.head.isJavadoc()) return false;
-            c = c.tail;
-        }
-        return true;
     }
     
     private void consumeTrailingComments(int from) throws IOException {

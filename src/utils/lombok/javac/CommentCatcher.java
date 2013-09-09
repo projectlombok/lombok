@@ -22,13 +22,14 @@
 package lombok.javac;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.List;
 
 public class CommentCatcher {
 	private final JavaCompiler compiler;
@@ -56,9 +57,17 @@ public class CommentCatcher {
 		return compiler;
 	}
 	
+	public void setComments(JCCompilationUnit ast, List<CommentInfo> comments) {
+		if (comments != null) {
+			commentsMap.put(ast, comments);
+		} else {
+			commentsMap.remove(ast);
+		}
+	}
+	
 	public List<CommentInfo> getComments(JCCompilationUnit ast) {
 		List<CommentInfo> list = commentsMap.get(ast);
-		return list == null ? List.<CommentInfo>nil() : list;
+		return list == null ? Collections.<CommentInfo>emptyList() : list;
 	}
 	
 	private static void registerCommentsCollectingScannerFactory(Context context) {

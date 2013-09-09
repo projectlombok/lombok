@@ -27,6 +27,7 @@ import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -191,6 +192,16 @@ public class Javac {
 	public static Object getDocComments(JCCompilationUnit cu) {
 		try {
 			return JCCOMPILATIONUNIT_DOCCOMMENTS.get(cu);
+		} catch (IllegalAccessException e) {
+			throw sneakyThrow(e);
+		}
+	}
+	
+	public static void initDocComments(JCCompilationUnit cu) {
+		try {
+			JCCOMPILATIONUNIT_DOCCOMMENTS.set(cu, new HashMap<Object, String>());
+		} catch (IllegalArgumentException e) {
+			// That's fine - we're on JDK8, we'll fix that later.
 		} catch (IllegalAccessException e) {
 			throw sneakyThrow(e);
 		}
