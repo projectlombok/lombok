@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v0.12.1 "Edgy Guinea Pig"
+* PLATFORM: Initial (not quite totally finished) JDK8 support, without affecting existing support for JDK6 and 7. [Issue #451](https://code.google.com/p/projectlombok/issues/detail?id=451).
+
 ### v0.12.0 "Angry Butterfly" (July 16th, 2013)
 * FEATURE: javadoc on fields will now be copied to generated getters / setters / withers. There are ways to specify separate javadoc for the field, the setter, and the getter, and `@param` and `@return` are handled appropriately. Addresses feature request [Issue #59](https://code.google.com/p/projectlombok/issues/detail?id=59). [@Getter and @Setter documentation](http://projectlombok.org/features/GetterSetter.html). [@Wither documentation](http://projectlombok.org/features/experimental/Wither.html).
 * CHANGE: The desugaring of @Getter(lazy=true) is now less object creation intensive. Documentation has been updated to reflect what the new desugaring looks like. [@Getter(lazy=true) documentation](http://projectlombok.org/features/GetterLazy.html).
