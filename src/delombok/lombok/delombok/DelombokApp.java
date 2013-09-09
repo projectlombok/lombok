@@ -84,7 +84,7 @@ public class DelombokApp extends LombokApp {
 			return null;
 		}
 		
-		final JarFile toolsJarFile = new JarFile(toolsJar);
+		@SuppressWarnings("resource") final JarFile toolsJarFile = new JarFile(toolsJar);
 		
 		ClassLoader loader = new ClassLoader() {
 			private Class<?> loadStreamAsClass(String name, boolean resolve, InputStream in) throws ClassNotFoundException {

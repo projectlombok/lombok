@@ -30,7 +30,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Writer;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -50,7 +49,6 @@ import javax.tools.JavaFileObject;
 import lombok.Lombok;
 import lombok.javac.CommentCatcher;
 import lombok.javac.LombokOptions;
-import lombok.javac.apt.Processor;
 
 import com.sun.tools.javac.comp.Todo;
 import com.sun.tools.javac.main.JavaCompiler;
