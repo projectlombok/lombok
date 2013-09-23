@@ -210,6 +210,7 @@ public class Processor extends AbstractProcessor {
 			Field f = JavacProcessingEnvironment.class.getDeclaredField("processorClassLoader");
 			f.setAccessible(true);
 			ClassLoader unwrapped = (ClassLoader) f.get(processingEnv);
+			if (unwrapped == null) return;
 			ClassLoader wrapped = new WrappingClassLoader(unwrapped);
 			f.set(processingEnv, wrapped);
 		} catch (NoSuchFieldException e) {
