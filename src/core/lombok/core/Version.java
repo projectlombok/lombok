@@ -30,7 +30,6 @@ public class Version {
 	// Official builds always end in an even number. (Since 0.10.2).
 	private static final String VERSION = "0.12.1";
 	private static final String RELEASE_NAME = "Edgy Guinea Pig";
-//	private static final String RELEASE_NAME = "Angry Butterfly";
 	
 	private Version() {
 		//Prevent instantiation

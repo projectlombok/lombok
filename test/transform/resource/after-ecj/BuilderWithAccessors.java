@@ -1,0 +1,47 @@
+@lombok.experimental.Builder @lombok.experimental.Accessors(prefix = {"p", "_"}) class BuilderWithAccessors {
+  public static @java.lang.SuppressWarnings("all") class BuilderWithAccessorsBuilder {
+    private int plower;
+    private int upper;
+    private int foo;
+    private int _bar;
+    @java.lang.SuppressWarnings("all") BuilderWithAccessorsBuilder() {
+      super();
+    }
+    public @java.lang.SuppressWarnings("all") BuilderWithAccessorsBuilder plower(final int plower) {
+      this.plower = plower;
+      return this;
+    }
+    public @java.lang.SuppressWarnings("all") BuilderWithAccessorsBuilder upper(final int upper) {
+      this.upper = upper;
+      return this;
+    }
+    public @java.lang.SuppressWarnings("all") BuilderWithAccessorsBuilder foo(final int foo) {
+      this.foo = foo;
+      return this;
+    }
+    public @java.lang.SuppressWarnings("all") BuilderWithAccessorsBuilder _bar(final int _bar) {
+      this._bar = _bar;
+      return this;
+    }
+    public @java.lang.SuppressWarnings("all") BuilderWithAccessors build() {
+      return new BuilderWithAccessors(plower, upper, foo, _bar);
+    }
+    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+      return (((((((("BuilderWithAccessors.BuilderWithAccessorsBuilder(plower=" + this.plower) + ", upper=") + this.upper) + ", foo=") + this.foo) + ", _bar=") + this._bar) + ")");
+    }
+  }
+  private final int plower;
+  private final int pUpper;
+  private int _foo;
+  private int __bar;
+  @java.lang.SuppressWarnings("all") BuilderWithAccessors(final int plower, final int upper, final int foo, final int _bar) {
+    super();
+    this.plower = plower;
+    this.pUpper = upper;
+    this._foo = foo;
+    this.__bar = _bar;
+  }
+  public static @java.lang.SuppressWarnings("all") BuilderWithAccessorsBuilder builder() {
+    return new BuilderWithAccessorsBuilder();
+  }
+}

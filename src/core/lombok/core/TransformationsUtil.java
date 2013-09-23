@@ -70,8 +70,10 @@ public class TransformationsUtil {
 	 * @param prefixes A list of prefixes, usually provided by the {@code Accessors} settings annotation, listing field prefixes.
 	 * @return The base name of the field.
 	 */
-	private static CharSequence removePrefix(CharSequence fieldName, String[] prefixes) {
+	public static CharSequence removePrefix(CharSequence fieldName, String[] prefixes) {
 		if (prefixes == null || prefixes.length == 0) return fieldName;
+		
+		fieldName = fieldName.toString();
 		
 		outer:
 		for (String prefix : prefixes) {
@@ -176,6 +178,7 @@ public class TransformationsUtil {
 	private static String toAccessorName(AnnotationValues<Accessors> accessors, CharSequence fieldName, boolean isBoolean,
 			String booleanPrefix, String normalPrefix, boolean adhereToFluent) {
 		
+		fieldName = fieldName.toString();
 		if (fieldName.length() == 0) return null;
 		
 		Accessors ac = accessors == null ? null : accessors.getInstance();

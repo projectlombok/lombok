@@ -28,11 +28,13 @@ import org.mangosdk.spi.ProviderFor;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 
 import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
 import lombok.experimental.Accessors;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 
 @ProviderFor(JavacAnnotationHandler.class)
+@HandlerPriority(65536)
 public class HandleAccessors extends JavacAnnotationHandler<Accessors> {
 	@Override public void handle(AnnotationValues<Accessors> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		// Accessors itself is handled by HandleGetter/Setter; this is just to ensure that the annotation is removed

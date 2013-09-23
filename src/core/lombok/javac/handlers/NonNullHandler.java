@@ -79,6 +79,11 @@ public class NonNullHandler extends JavacAnnotationHandler<NonNull> {
 		
 		if (JavacHandlerUtil.isGenerated(declaration)) return;
 		
+		if (declaration.body == null) {
+			annotationNode.addWarning("@NonNull is meaningless on a parameter of an abstract method.");
+			return;
+		}
+		
 		// Possibly, if 'declaration instanceof ConstructorDeclaration', fetch declaration.constructorCall, search it for any references to our parameter,
 		// and if they exist, create a new method in the class: 'private static <T> T lombok$nullCheck(T expr, String msg) {if (expr == null) throw NPE; return expr;}' and
 		// wrap all references to it in the super/this to a call to this method.

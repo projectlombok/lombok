@@ -1125,6 +1125,37 @@ public class EclipseHandlerUtil {
 		return true;
 	}
 	
+	public static char[] removePrefixFromField(EclipseNode field) {
+		String[] prefixes = null;
+		for (EclipseNode node : field.down()) {
+			if (annotationTypeMatches(Accessors.class, node)) {
+				prefixes = createAnnotation(Accessors.class, node).getInstance().prefix();
+				break;
+			}
+		}
+		
+		if (prefixes == null) {
+			EclipseNode current = field.up();
+			outer:
+			while (current != null) {
+				for (EclipseNode node : current.down()) {
+					if (annotationTypeMatches(Accessors.class, node)) {
+						prefixes = createAnnotation(Accessors.class, node).getInstance().prefix();
+						break outer;
+					}
+				}
+				current = current.up();
+			}
+		}
+		
+		if (prefixes != null && prefixes.length > 0) {
+			CharSequence newName = TransformationsUtil.removePrefix(field.getName(), prefixes);
+			if (newName != null) return newName.toString().toCharArray();
+		}
+		
+		return ((FieldDeclaration) field.get()).name;
+	}
+	
 	public static AnnotationValues<Accessors> getAccessorsForField(EclipseNode field) {
 		for (EclipseNode node : field.down()) {
 			if (annotationTypeMatches(Accessors.class, node)) {

@@ -195,7 +195,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				// The user code couldn't possibly (barring really weird subclassing shenanigans) be in a shippable state anyway; the implementations of these 3 methods are
 				// all inter-related and should be written by the same entity.
 				String msg = String.format("Not generating %s: One of equals, hashCode, and canEqual exists. " +
-						"You should either write all of these are none of these (in the latter case, lombok generates them).",
+						"You should either write all of these or none of these (in the latter case, lombok generates them).",
 						equalsExists == MemberExistsResult.NOT_EXISTS && hashCodeExists == MemberExistsResult.NOT_EXISTS ? "equals and hashCode" :
 						equalsExists == MemberExistsResult.NOT_EXISTS ? "equals" : "hashCode");
 				source.addWarning(msg);
