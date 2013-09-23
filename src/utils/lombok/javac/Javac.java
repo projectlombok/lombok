@@ -39,6 +39,7 @@ import javax.lang.model.type.TypeVisitor;
 import lombok.javac.JavacTreeMaker.TreeTag;
 import lombok.javac.JavacTreeMaker.TypeTag;
 
+import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree;
@@ -62,6 +63,7 @@ public class Javac {
 	private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern.compile("^(boolean|byte|short|int|long|float|double|char)$");
 	
 	private static final Pattern VERSION_PARSER = Pattern.compile("^(\\d{1,6})\\.(\\d{1,6}).*$");
+	private static final Pattern SOURCE_PARSER = Pattern.compile("^JDK(\\d{1,6})_(\\d{1,6}).*$");
 	
 	private static final AtomicInteger compilerVersion = new AtomicInteger(-1);
 	
@@ -71,13 +73,29 @@ public class Javac {
 	public static int getJavaCompilerVersion() {
 		int cv = compilerVersion.get();
 		if (cv != -1) return cv;
-		Matcher m = VERSION_PARSER.matcher(JavaCompiler.version());
-		if (m.matches()) {
-			int major = Integer.parseInt(m.group(1));
-			int minor = Integer.parseInt(m.group(2));
-			if (major == 1) {
-				compilerVersion.set(minor);
-				return minor;
+		
+		/* Main algorithm: Use JavaCompiler's intended method to do this */ {
+			Matcher m = VERSION_PARSER.matcher(JavaCompiler.version());
+			if (m.matches()) {
+				int major = Integer.parseInt(m.group(1));
+				int minor = Integer.parseInt(m.group(2));
+				if (major == 1) {
+					compilerVersion.set(minor);
+					return minor;
+				}
+			}
+		}
+		
+		/* Fallback algorithm one: Check Source's values. Lets hope oracle never releases a javac that recognizes future versions for -source */ {
+			String name = Source.values()[Source.values().length - 1].name();
+			Matcher m = SOURCE_PARSER.matcher(name);
+			if (m.matches()) {
+				int major = Integer.parseInt(m.group(1));
+				int minor = Integer.parseInt(m.group(2));
+				if (major == 1) {
+					compilerVersion.set(minor);
+					return minor;
+				}
 			}
 		}
 		
