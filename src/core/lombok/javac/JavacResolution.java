@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2012 The Project Lombok Authors.
+ * Copyright (C) 2011-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,19 +24,10 @@ package lombok.javac;
 import static lombok.javac.Javac.*;
 import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.lang.reflect.Field;
 import java.util.ArrayDeque;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import javax.lang.model.type.TypeKind;
-import javax.tools.DiagnosticListener;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
@@ -62,216 +53,14 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
-import com.sun.tools.javac.util.Log;
 
 public class JavacResolution {
 	private final Attr attr;
-	private final LogDisabler logDisabler;
+	private final CompilerMessageSuppressor messageSuppressor;
 	
 	public JavacResolution(Context context) {
 		attr = Attr.instance(context);
-		logDisabler = new LogDisabler(context);
-	}
-	
-	/**
-	 * During resolution, the resolver will emit resolution errors, but without appropriate file names and line numbers. If these resolution errors stick around
-	 * then they will be generated AGAIN, this time with proper names and line numbers, at the end. Therefore, we want to suppress the logger.
-	 */
-	private static final class LogDisabler {
-		private final Log log;
-		private static final Field errWriterField, warnWriterField, noticeWriterField, dumpOnErrorField, promptOnErrorField, diagnosticListenerField;
-		private static final Field deferDiagnosticsField, deferredDiagnosticsField, diagnosticHandlerField;
-		private static final ConcurrentMap<Class<?>, Field> handlerDeferredFields = new ConcurrentHashMap<Class<?>, Field>();
-		private static final Field NULL_FIELD;
-		private PrintWriter errWriter, warnWriter, noticeWriter;
-		private Boolean dumpOnError, promptOnError;
-		private DiagnosticListener<?> contextDiagnosticListener, logDiagnosticListener;
-		private final Context context;
-		
-		// If this is true, the fields changed. Better to print weird error messages than to fail outright.
-		private static final boolean dontBother;
-		
-		private static final ThreadLocal<Queue<?>> queueCache = new ThreadLocal<Queue<?>>();
-		
-		static {
-			errWriterField = getDeclaredField(Log.class, "errWriter");
-			warnWriterField = getDeclaredField(Log.class, "warnWriter");
-			noticeWriterField = getDeclaredField(Log.class, "noticeWriter");
-			dumpOnErrorField = getDeclaredField(Log.class, "dumpOnError");
-			promptOnErrorField = getDeclaredField(Log.class, "promptOnError");
-			diagnosticListenerField = getDeclaredField(Log.class, "diagListener");
-			
-			dontBother = 
-						errWriterField == null || 
-						warnWriterField == null || 
-						noticeWriterField == null || 
-						dumpOnErrorField == null || 
-						promptOnErrorField == null || 
-						diagnosticListenerField == null;
-			
-			
-			deferDiagnosticsField = getDeclaredField(Log.class, "deferDiagnostics");
-			deferredDiagnosticsField = getDeclaredField(Log.class, "deferredDiagnostics");
-			
-			// javac8
-			diagnosticHandlerField = getDeclaredField(Log.class, "diagnosticHandler");
-			
-			NULL_FIELD = getDeclaredField(JavacResolution.class, "NULL_FIELD");
-		}
-		
-		static Field getDeclaredField(Class<?> c, String fieldName) {
-			try {
-				Field field = c.getDeclaredField(fieldName);
-				field.setAccessible(true);
-				return field;
-			}
-			catch (Throwable t) {
-				return null;
-			}
-		}
-		
-		LogDisabler(Context context) {
-			this.log = Log.instance(context);
-			this.context = context;
-		}
-		
-		boolean disableLoggers() {
-			contextDiagnosticListener = context.get(DiagnosticListener.class);
-			context.put(DiagnosticListener.class, (DiagnosticListener<?>) null);
-			if (dontBother) return false;
-			boolean dontBotherInstance = false;
-			
-			PrintWriter dummyWriter = new PrintWriter(new OutputStream() {
-				@Override public void write(int b) throws IOException {
-					// Do nothing on purpose
-				}
-			});
-			
-			if (deferDiagnosticsField != null) try {
-				if (Boolean.TRUE.equals(deferDiagnosticsField.get(log))) {
-					queueCache.set((Queue<?>) deferredDiagnosticsField.get(log));
-					Queue<?> empty = new LinkedList<Object>();
-					deferredDiagnosticsField.set(log, empty);
-				}
-			} catch (Exception e) {}
-			
-			if (diagnosticHandlerField != null) try {
-				Object handler = diagnosticHandlerField.get(log);
-				Field field = getDeferredField(handler);
-				if (field != null) {
-					queueCache.set((Queue<?>) field.get(handler));
-					Queue<?> empty = new LinkedList<Object>();
-					field.set(handler, empty);
-				}
-			} catch (Exception e) {}
-			
-			if (!dontBotherInstance) try {
-				errWriter = (PrintWriter) errWriterField.get(log);
-				errWriterField.set(log, dummyWriter);
-			} catch (Exception e) {
-				dontBotherInstance = true;
-			}
-			
-			if (!dontBotherInstance) try {
-				warnWriter = (PrintWriter) warnWriterField.get(log);
-				warnWriterField.set(log, dummyWriter);
-			} catch (Exception e) {
-				dontBotherInstance = true;
-			}
-			
-			if (!dontBotherInstance) try {
-				noticeWriter = (PrintWriter) noticeWriterField.get(log);
-				noticeWriterField.set(log, dummyWriter);
-			} catch (Exception e) {
-				dontBotherInstance = true;
-			}
-			
-			if (!dontBotherInstance) try {
-				dumpOnError = (Boolean) dumpOnErrorField.get(log);
-				dumpOnErrorField.set(log, false);
-			} catch (Exception e) {
-				dontBotherInstance = true;
-			}
-			
-			if (!dontBotherInstance) try {
-				promptOnError = (Boolean) promptOnErrorField.get(log);
-				promptOnErrorField.set(log, false);
-			} catch (Exception e) {
-				dontBotherInstance = true;
-			}
-			
-			if (!dontBotherInstance) try {
-				logDiagnosticListener = (DiagnosticListener<?>) diagnosticListenerField.get(log);
-				diagnosticListenerField.set(log, null);
-			} catch (Exception e) {
-				dontBotherInstance = true;
-			}
-			
-			if (dontBotherInstance) enableLoggers();
-			return !dontBotherInstance;
-		}
-		
-		private static Field getDeferredField(Object handler) {
-			Class<? extends Object> key = handler.getClass();
-			Field field = handlerDeferredFields.get(key);
-			if (field != null) {
-				return field == NULL_FIELD ? null : field;
-			}
-			Field value = getDeclaredField(key, "deferred");
-			handlerDeferredFields.put(key, value == null ? NULL_FIELD : value);
-			return getDeferredField(handler);
-		}
-
-		void enableLoggers() {
-			if (contextDiagnosticListener != null) {
-				context.put(DiagnosticListener.class, contextDiagnosticListener);
-				contextDiagnosticListener = null;
-			}
-			
-			if (errWriter != null) try {
-				errWriterField.set(log, errWriter);
-				errWriter = null;
-			} catch (Exception e) {}
-			
-			if (warnWriter != null) try {
-				warnWriterField.set(log, warnWriter);
-				warnWriter = null;
-			} catch (Exception e) {}
-			
-			if (noticeWriter != null) try {
-				noticeWriterField.set(log, noticeWriter);
-				noticeWriter = null;
-			} catch (Exception e) {}
-			
-			if (dumpOnError != null) try {
-				dumpOnErrorField.set(log, dumpOnError);
-				dumpOnError = null;
-			} catch (Exception e) {}
-			
-			if (promptOnError != null) try {
-				promptOnErrorField.set(log, promptOnError);
-				promptOnError = null;
-			} catch (Exception e) {}
-			
-			if (logDiagnosticListener != null) try {
-				diagnosticListenerField.set(log, logDiagnosticListener);
-				logDiagnosticListener = null;
-			} catch (Exception e) {}
-			
-			if (diagnosticHandlerField != null && queueCache.get() != null) try {
-				Object handler = diagnosticHandlerField.get(log);
-				Field field = getDeferredField(handler);
-				if (field != null) {
-					field.set(handler, queueCache.get());
-					queueCache.set(null);
-				}
-			} catch (Exception e) {}
-			
-			if (deferDiagnosticsField != null && queueCache.get() != null) try {
-				deferredDiagnosticsField.set(log, queueCache.get());
-				queueCache.set(null);
-			} catch (Exception e) {}
-		}
+		messageSuppressor = new CompilerMessageSuppressor(context);
 	}
 	
 	/*
@@ -351,7 +140,7 @@ public class JavacResolution {
 			}
 		}
 		
-		logDisabler.disableLoggers();
+		messageSuppressor.disableLoggers();
 		try {
 			EnvFinder finder = new EnvFinder(node.getContext());
 			while (!stack.isEmpty()) stack.pop().accept(finder);
@@ -362,7 +151,7 @@ public class JavacResolution {
 			attrib(copy, finder.get());
 			return mirrorMaker.getOriginalToCopyMap();
 		} finally {
-			logDisabler.enableLoggers();
+			messageSuppressor.enableLoggers();
 		}
 	}
 	
@@ -377,14 +166,14 @@ public class JavacResolution {
 			}
 		}
 		
-		logDisabler.disableLoggers();
+		messageSuppressor.disableLoggers();
 		try {
 			EnvFinder finder = new EnvFinder(node.getContext());
 			while (!stack.isEmpty()) stack.pop().accept(finder);
 			
 			attrib(node.get(), finder.get());
 		} finally {
-			logDisabler.enableLoggers();
+			messageSuppressor.enableLoggers();
 		}
 	}
 	
