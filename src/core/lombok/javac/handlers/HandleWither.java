@@ -207,7 +207,7 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
 		
-		ListBuffer<JCStatement> statements = ListBuffer.lb();
+		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		List<JCAnnotation> nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
 		List<JCAnnotation> nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
 		
@@ -219,7 +219,7 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		JCExpression selfType = cloneSelfType(field);
 		if (selfType == null) return null;
 		
-		ListBuffer<JCExpression> args = ListBuffer.lb();
+		ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
 		for (JavacNode child : field.up().down()) {
 			if (child.getKind() != Kind.FIELD) continue;
 			JCVariableDecl childDecl = (JCVariableDecl) child.get();

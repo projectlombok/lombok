@@ -154,7 +154,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			source.addWarning("Generating equals/hashCode implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@EqualsAndHashCode(callSuper=false)' to your type.");
 		}
 		
-		ListBuffer<JavacNode> nodesForEquality = ListBuffer.lb();
+		ListBuffer<JavacNode> nodesForEquality = new ListBuffer<JavacNode>();
 		if (includes != null) {
 			for (JavacNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
@@ -224,7 +224,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		JCAnnotation overrideAnnotation = maker.Annotation(chainDots(typeNode, "java", "lang", "Override"), List.<JCExpression>nil());
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
 		JCExpression returnType = maker.TypeIdent(CTC_INT);
-		ListBuffer<JCStatement> statements = ListBuffer.lb();
+		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		
 		Name primeName = typeNode.toName(PRIME_NAME);
 		Name resultName = typeNode.toName(RESULT_NAME);
@@ -370,7 +370,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		JCExpression objectType = chainDots(typeNode, "java", "lang", "Object");
 		JCExpression returnType = maker.TypeIdent(CTC_BOOLEAN);
 		
-		ListBuffer<JCStatement> statements = ListBuffer.lb();
+		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		final List<JCVariableDecl> params = List.of(maker.VarDef(maker.Modifiers(Flags.FINAL | Flags.PARAMETER), oName, objectType, null));
 		
 		/* if (o == this) return true; */ {
@@ -387,8 +387,8 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		/* MyType<?> other = (MyType<?>) o; */ {
 			if (!fields.isEmpty() || needsCanEqual) {
 				final JCExpression selfType1, selfType2;
-				ListBuffer<JCExpression> wildcards1 = ListBuffer.lb();
-				ListBuffer<JCExpression> wildcards2 = ListBuffer.lb();
+				ListBuffer<JCExpression> wildcards1 = new ListBuffer<JCExpression>();
+				ListBuffer<JCExpression> wildcards2 = new ListBuffer<JCExpression>();
 				for (int i = 0 ; i < type.typarams.length() ; i++) {
 					wildcards1.append(maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null));
 					wildcards2.append(maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null));

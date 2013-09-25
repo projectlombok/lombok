@@ -409,7 +409,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			// Possibly integrate these 2 code paths.
 			if (JAVAC7_DEFERRED_DIAGNOSTICS != null) {
 				ListBuffer<?> deferredDiagnostics = (ListBuffer<?>) JAVAC7_DEFERRED_DIAGNOSTICS.get(log);
-				ListBuffer<Object> newDeferredDiagnostics = ListBuffer.lb();
+				ListBuffer<Object> newDeferredDiagnostics = new ListBuffer<Object>();
 				for (Object diag : deferredDiagnostics) {
 					if (!(diag instanceof JCDiagnostic)) {
 						newDeferredDiagnostics.add(diag);

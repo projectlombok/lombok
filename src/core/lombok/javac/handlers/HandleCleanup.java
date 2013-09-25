@@ -96,8 +96,8 @@ public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 		}
 		
 		boolean seenDeclaration = false;
-		ListBuffer<JCStatement> newStatements = ListBuffer.lb();
-		ListBuffer<JCStatement> tryBlock = ListBuffer.lb();
+		ListBuffer<JCStatement> newStatements = new ListBuffer<JCStatement>();
+		ListBuffer<JCStatement> tryBlock = new ListBuffer<JCStatement>();
 		for (JCStatement statement : statements) {
 			if (!seenDeclaration) {
 				if (statement == decl) seenDeclaration = true;

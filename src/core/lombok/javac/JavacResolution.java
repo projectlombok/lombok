@@ -534,7 +534,7 @@ public class JavacResolution {
 	
 	private static JCExpression genericsToJCTreeNodes(List<Type> generics, JavacAST ast, JCExpression rawTypeNode) throws TypeNotConvertibleException {
 		if (generics != null && !generics.isEmpty()) {
-			ListBuffer<JCExpression> args = ListBuffer.lb();
+			ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
 			for (Type t : generics) args.append(typeToJCTree(t, ast, true, false));
 			return ast.getTreeMaker().TypeApply(rawTypeNode, args.toList());
 		}

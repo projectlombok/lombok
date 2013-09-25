@@ -129,7 +129,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			return;
 		}
 		
-		ListBuffer<JavacNode> nodesForToString = ListBuffer.lb();
+		ListBuffer<JavacNode> nodesForToString = new ListBuffer<JavacNode>();
 		if (includes != null) {
 			for (JavacNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;

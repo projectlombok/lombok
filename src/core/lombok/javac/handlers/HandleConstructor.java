@@ -91,7 +91,7 @@ public class HandleConstructor {
 	}
 	
 	private static List<JavacNode> findRequiredFields(JavacNode typeNode) {
-		ListBuffer<JavacNode> fields = ListBuffer.lb();
+		ListBuffer<JavacNode> fields = new ListBuffer<JavacNode>();
 		for (JavacNode child : typeNode.down()) {
 			if (child.getKind() != Kind.FIELD) continue;
 			JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
@@ -126,7 +126,7 @@ public class HandleConstructor {
 	}
 	
 	static List<JavacNode> findAllFields(JavacNode typeNode) {
-		ListBuffer<JavacNode> fields = ListBuffer.lb();
+		ListBuffer<JavacNode> fields = new ListBuffer<JavacNode>();
 		for (JavacNode child : typeNode.down()) {
 			if (child.getKind() != Kind.FIELD) continue;
 			JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
@@ -209,7 +209,7 @@ public class HandleConstructor {
 		if (fields.isEmpty()) return;
 		JavacTreeMaker maker = node.getTreeMaker();
 		JCExpression constructorPropertiesType = chainDots(node, "java", "beans", "ConstructorProperties");
-		ListBuffer<JCExpression> fieldNames = ListBuffer.lb();
+		ListBuffer<JCExpression> fieldNames = new ListBuffer<JCExpression>();
 		for (JavacNode field : fields) {
 			Name fieldName = removePrefixFromField(field);
 			fieldNames.append(maker.Literal(fieldName.toString()));
@@ -225,9 +225,9 @@ public class HandleConstructor {
 		boolean isEnum = (((JCClassDecl) typeNode.get()).mods.flags & Flags.ENUM) != 0;
 		if (isEnum) level = AccessLevel.PRIVATE;
 		
-		ListBuffer<JCStatement> nullChecks = ListBuffer.lb();
-		ListBuffer<JCStatement> assigns = ListBuffer.lb();
-		ListBuffer<JCVariableDecl> params = ListBuffer.lb();
+		ListBuffer<JCStatement> nullChecks = new ListBuffer<JCStatement>();
+		ListBuffer<JCStatement> assigns = new ListBuffer<JCStatement>();
+		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
 		
 		for (JavacNode fieldNode : fields) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
@@ -272,11 +272,11 @@ public class HandleConstructor {
 		
 		JCExpression returnType, constructorType;
 		
-		ListBuffer<JCTypeParameter> typeParams = ListBuffer.lb();
-		ListBuffer<JCVariableDecl> params = ListBuffer.lb();
-		ListBuffer<JCExpression> typeArgs1 = ListBuffer.lb();
-		ListBuffer<JCExpression> typeArgs2 = ListBuffer.lb();
-		ListBuffer<JCExpression> args = ListBuffer.lb();
+		ListBuffer<JCTypeParameter> typeParams = new ListBuffer<JCTypeParameter>();
+		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
+		ListBuffer<JCExpression> typeArgs1 = new ListBuffer<JCExpression>();
+		ListBuffer<JCExpression> typeArgs2 = new ListBuffer<JCExpression>();
+		ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
 		
 		if (!type.typarams.isEmpty()) {
 			for (JCTypeParameter param : type.typarams) {

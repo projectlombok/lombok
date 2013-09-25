@@ -98,7 +98,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		if (parent.get() instanceof JCClassDecl) {
 			tdParent = parent;
 			JCClassDecl td = (JCClassDecl) tdParent.get();
-			ListBuffer<JavacNode> allFields = ListBuffer.lb();
+			ListBuffer<JavacNode> allFields = new ListBuffer<JavacNode>();
 			@SuppressWarnings("deprecation")
 			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation(lombok.experimental.Value.class, parent));
 			for (JavacNode fieldNode : HandleConstructor.findAllFields(tdParent)) {
@@ -224,7 +224,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		JCExpression call;
 		JCStatement statement;
 		
-		ListBuffer<JCExpression> args = ListBuffer.lb();
+		ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
 		for (Name n : fieldNames) {
 			args.append(maker.Ident(n));
 		}
@@ -233,7 +233,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			call = maker.NewClass(null, List.<JCExpression>nil(), returnType, args.toList(), null);
 			statement = maker.Return(call);
 		} else {
-			ListBuffer<JCExpression> typeParams = ListBuffer.lb();
+			ListBuffer<JCExpression> typeParams = new ListBuffer<JCExpression>();
 			for (JCTypeParameter tp : ((JCClassDecl) type.get()).typarams) {
 				typeParams.append(maker.Ident(tp.name));
 			}
@@ -255,7 +255,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	private JCMethodDecl generateBuilderMethod(String builderMethodName, String builderClassName, JavacNode type, List<JCTypeParameter> typeParams) {
 		JavacTreeMaker maker = type.getTreeMaker();
 		
-		ListBuffer<JCExpression> typeArgs = ListBuffer.lb();
+		ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
 		for (JCTypeParameter typeParam : typeParams) {
 			typeArgs.append(maker.Ident(typeParam.name));
 		}

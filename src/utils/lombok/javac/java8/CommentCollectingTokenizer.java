@@ -12,12 +12,13 @@ import com.sun.tools.javac.parser.Tokens.Comment;
 import com.sun.tools.javac.parser.Tokens.Token;
 import com.sun.tools.javac.parser.Tokens.Comment.CommentStyle;
 import com.sun.tools.javac.parser.UnicodeReader;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 
 class CommentCollectingTokenizer extends JavaTokenizer {
 	private int prevEndPosition = 0;
-	private final ListBuffer<CommentInfo> comments = ListBuffer.lb();
+	private final ListBuffer<CommentInfo> comments = new ListBuffer<CommentInfo>();
 	private int endComment = 0;
 
 	CommentCollectingTokenizer(ScannerFactory fac, char[] buf, int inputLength) {

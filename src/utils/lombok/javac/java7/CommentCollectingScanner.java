@@ -28,11 +28,12 @@ import lombok.javac.CommentInfo.EndConnection;
 import lombok.javac.CommentInfo.StartConnection;
 
 import com.sun.tools.javac.parser.Scanner;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 
 public class CommentCollectingScanner extends Scanner {
-	private final ListBuffer<CommentInfo> comments = ListBuffer.lb();
+	private final ListBuffer<CommentInfo> comments = new ListBuffer<CommentInfo>();
 	private int endComment = 0;
 	
 	public CommentCollectingScanner(CommentCollectingScannerFactory factory, CharBuffer charBuffer) {

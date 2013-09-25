@@ -270,7 +270,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		}
 		
 		if (!delegates.isEmpty()) {
-			ListBuffer<JCAnnotation> withoutDelegates = ListBuffer.lb();
+			ListBuffer<JCAnnotation> withoutDelegates = new ListBuffer<JCAnnotation>();
 			for (JCAnnotation annotation : fieldNode.mods.annotations) {
 				if (!delegates.contains(annotation)) {
 					withoutDelegates.append(annotation);
@@ -328,7 +328,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		[END IF]
 		*/
 		
-		ListBuffer<JCStatement> statements = ListBuffer.lb();
+		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		
 		JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 		JCExpression copyOfRawFieldType = copyType(maker, field);
@@ -356,14 +356,14 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		/* if (value == null) { */ {
 			JCSynchronized synchronizedStatement;
 			/* synchronized (this.fieldName) { */ {
-				ListBuffer<JCStatement> synchronizedStatements = ListBuffer.lb();
+				ListBuffer<JCStatement> synchronizedStatements = new ListBuffer<JCStatement>();
 				/* value = this.fieldName.get(); */ {
 					JCExpressionStatement newAssign = maker.Exec(maker.Assign(maker.Ident(valueName), callGet(fieldNode, createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD))));
 					synchronizedStatements.append(newAssign);
 				}
 				
 				/* if (value == null) { */ {
-					ListBuffer<JCStatement> innerIfStatements = ListBuffer.lb();
+					ListBuffer<JCStatement> innerIfStatements = new ListBuffer<JCStatement>();
 					/* final RawValueType actualValue = INITIALIZER_EXPRESSION; */ {
 						innerIfStatements.append(maker.VarDef(maker.Modifiers(Flags.FINAL), actualValueName, copyOfRawFieldType, field.init));
 					}

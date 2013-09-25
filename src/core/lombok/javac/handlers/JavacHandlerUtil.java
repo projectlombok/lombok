@@ -338,7 +338,7 @@ public class JavacHandlerUtil {
 	public static void deleteImportFromCompilationUnit(JavacNode node, String name) {
 		if (inNetbeansEditor(node)) return;
 		if (!node.shouldDeleteLombokAnnotations()) return;
-		ListBuffer<JCTree> newDefs = ListBuffer.lb();
+		ListBuffer<JCTree> newDefs = new ListBuffer<JCTree>();
 		
 		JCCompilationUnit unit = (JCCompilationUnit) node.top().get();
 		
@@ -354,7 +354,7 @@ public class JavacHandlerUtil {
 	}
 
 	private static List<JCAnnotation> filterList(List<JCAnnotation> annotations, JCTree jcTree) {
-		ListBuffer<JCAnnotation> newAnnotations = ListBuffer.lb();
+		ListBuffer<JCAnnotation> newAnnotations = new ListBuffer<JCAnnotation>();
 		for (JCAnnotation ann : annotations) {
 			if (jcTree != ann) newAnnotations.append(ann);
 		}
@@ -437,7 +437,7 @@ public class JavacHandlerUtil {
 		while (typeNode != null && typeNode.getKind() != Kind.TYPE) typeNode = typeNode.up();
 		if (typeNode != null && typeNode.get() instanceof JCClassDecl) {
 			JCClassDecl type = (JCClassDecl) typeNode.get();
-			ListBuffer<JCExpression> typeArgs = ListBuffer.lb();
+			ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
 			if (!type.typarams.isEmpty()) {
 				for (JCTypeParameter tp : type.typarams) {
 					typeArgs.append(maker.Ident(tp.name));
@@ -885,7 +885,7 @@ public class JavacHandlerUtil {
 	}
 	
 	private static List<JCTree> addAllButOne(List<JCTree> defs, int idx) {
-		ListBuffer<JCTree> out = ListBuffer.lb();
+		ListBuffer<JCTree> out = new ListBuffer<JCTree>();
 		int i = 0;
 		for (JCTree def : defs) {
 			if (i++ != idx) out.append(def);
@@ -956,7 +956,7 @@ public class JavacHandlerUtil {
 	 * Only the simple name is checked - the package and any containing class are ignored.
 	 */
 	public static List<JCAnnotation> findAnnotations(JavacNode fieldNode, Pattern namePattern) {
-		ListBuffer<JCAnnotation> result = ListBuffer.lb();
+		ListBuffer<JCAnnotation> result = new ListBuffer<JCAnnotation>();
 		for (JavacNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				JCAnnotation annotation = (JCAnnotation) child.get();
@@ -1006,7 +1006,7 @@ public class JavacHandlerUtil {
 			if (idx > -1) matched[idx] = true;
 		}
 		
-		ListBuffer<Integer> problematic = ListBuffer.lb();
+		ListBuffer<Integer> problematic = new ListBuffer<Integer>();
 		for (int i = 0 ; i < list.size() ; i++) {
 			if (!matched[i]) problematic.append(i);
 		}
@@ -1015,8 +1015,8 @@ public class JavacHandlerUtil {
 	}
 	
 	static List<JCAnnotation> unboxAndRemoveAnnotationParameter(JCAnnotation ast, String parameterName, String errorName, JavacNode errorNode) {
-		ListBuffer<JCExpression> params = ListBuffer.lb();
-		ListBuffer<JCAnnotation> result = ListBuffer.lb();
+		ListBuffer<JCExpression> params = new ListBuffer<JCExpression>();
+		ListBuffer<JCAnnotation> result = new ListBuffer<JCAnnotation>();
 		
 		errorNode.removeDeferredErrors();
 		
@@ -1086,13 +1086,13 @@ public class JavacHandlerUtil {
 	
 	public static List<JCTypeParameter> copyTypeParams(JavacTreeMaker maker, List<JCTypeParameter> params) {
 		if (params == null || params.isEmpty()) return params;
-		ListBuffer<JCTypeParameter> out = ListBuffer.lb();
+		ListBuffer<JCTypeParameter> out = new ListBuffer<JCTypeParameter>();
 		for (JCTypeParameter tp : params) out.append(maker.TypeParameter(tp.name, tp.bounds));
 		return out.toList();
 	}
 	
 	public static JCExpression namePlusTypeParamsToTypeReference(JavacTreeMaker maker, Name typeName, List<JCTypeParameter> params) {
-		ListBuffer<JCExpression> typeArgs = ListBuffer.lb();
+		ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
 		
 		if (!params.isEmpty()) {
 			for (JCTypeParameter param : params) {
@@ -1128,7 +1128,7 @@ public class JavacHandlerUtil {
 	}
 	
 	static List<JCAnnotation> copyAnnotations(List<? extends JCExpression> in) {
-		ListBuffer<JCAnnotation> out = ListBuffer.lb();
+		ListBuffer<JCAnnotation> out = new ListBuffer<JCAnnotation>();
 		for (JCExpression expr : in) {
 			if (!(expr instanceof JCAnnotation)) continue;
 			out.append((JCAnnotation) expr.clone());
@@ -1197,7 +1197,7 @@ public class JavacHandlerUtil {
 		
 		if (in instanceof JCTypeApply) {
 			JCTypeApply ta = (JCTypeApply) in;
-			ListBuffer<JCExpression> lb = ListBuffer.lb();
+			ListBuffer<JCExpression> lb = new ListBuffer<JCExpression>();
 			for (JCExpression typeArg : ta.arguments) {
 				lb.append(cloneType0(maker, typeArg));
 			}
