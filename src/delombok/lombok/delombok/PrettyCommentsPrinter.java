@@ -101,6 +101,7 @@ import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.JCTree.LetExpr;
 import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
+import com.sun.tools.javac.tree.DocCommentTable;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.Convert;
@@ -270,6 +271,13 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
      *  (can be null)
      */
     Map<JCTree, String> docComments = null;
+    DocCommentTable docTable = null;
+    
+    String getJavadocFor(JCTree node) {
+    	if (docComments != null) return docComments.get(node);
+    	if (docTable != null) return docTable.getCommentText(node);
+    	return null;
+    }
     
     /** Align code to be indented to left margin.
      */
@@ -464,31 +472,28 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
      *  @param tree    The tree for which a documentation comment should be printed.
      */
     public void printDocComment(JCTree tree) throws IOException {
-        if (docComments != null) {
-            String dc = docComments.get(tree);
-            if (dc != null) {
-                print("/**"); println();
-                int pos = 0;
-                int endpos = lineEndPos(dc, pos);
-                boolean atStart = true;
-                while (pos < dc.length()) {
-                    String line = dc.substring(pos, endpos);
-                    if (line.trim().isEmpty() && atStart) {
-                        atStart = false;
-                        continue;
-                    }
-                    atStart = false;
-                    align();
-                    print(" *");
-                    if (pos < dc.length() && dc.charAt(pos) > ' ') print(" ");
-                    print(dc.substring(pos, endpos)); println();
-                    pos = endpos + 1;
-                    endpos = lineEndPos(dc, pos);
-                }
-                align(); print(" */"); println();
-                align();
+        String dc = getJavadocFor(tree);
+        if (dc == null) return;
+        print("/**"); println();
+        int pos = 0;
+        int endpos = lineEndPos(dc, pos);
+        boolean atStart = true;
+        while (pos < dc.length()) {
+            String line = dc.substring(pos, endpos);
+            if (line.trim().isEmpty() && atStart) {
+                atStart = false;
+                continue;
             }
+            atStart = false;
+            align();
+            print(" *");
+            if (pos < dc.length() && dc.charAt(pos) > ' ') print(" ");
+            print(dc.substring(pos, endpos)); println();
+            pos = endpos + 1;
+            endpos = lineEndPos(dc, pos);
         }
+        align(); print(" */"); println();
+        align();
     }
 //where
     static int lineEndPos(String s, int start) {
@@ -586,6 +591,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void printUnit(JCCompilationUnit tree, JCClassDecl cdef) throws IOException {
         Object dc = getDocComments(tree);
         if (dc instanceof Map) this.docComments = (Map) dc;
+        else if (dc instanceof DocCommentTable) this.docTable = (DocCommentTable) dc;
         printDocComment(tree);
         if (tree.pid != null) {
             consumeComments(tree.pos, tree);
@@ -767,7 +773,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 
     public void visitVarDef(JCVariableDecl tree) {
         try {
-            if (docComments != null && docComments.get(tree) != null) {
+            if (getJavadocFor(tree) != null) {
                 println(); align();
             }
             printDocComment(tree);

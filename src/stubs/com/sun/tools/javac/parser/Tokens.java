@@ -6,6 +6,16 @@ public class Tokens {
 	}
 	
 	public interface Comment {
-		enum CommentStyle {}
+		enum CommentStyle {
+			LINE, BLOCK, JAVADOC,
+		}
+		
+		String getText();
+		
+		int getSourcePos(int index);
+		
+		CommentStyle getStyle();
+		
+		boolean isDeprecated();
 	}
 }

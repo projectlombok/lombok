@@ -8,7 +8,10 @@ import java.util.regex.Pattern;
 
 import lombok.javac.CommentInfo;
 import lombok.javac.Javac;
+import lombok.javac.handlers.JavacHandlerUtil;
 
+import com.sun.tools.javac.parser.Tokens.Comment;
+import com.sun.tools.javac.tree.DocCommentTable;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -50,7 +53,7 @@ public class DocCommentIntegrator {
 	}
 	
 	private static final Pattern CONTENT_STRIPPER = Pattern.compile("^(?:\\s*\\*)?[ \\t]*(.*?)$", Pattern.MULTILINE);
-	@SuppressWarnings("unchecked") private boolean attach(JCCompilationUnit top, JCTree node, CommentInfo cmt) {
+	@SuppressWarnings("unchecked") private boolean attach(JCCompilationUnit top, final JCTree node, CommentInfo cmt) {
 		String docCommentContent = cmt.content;
 		if (docCommentContent.startsWith("/**")) docCommentContent = docCommentContent.substring(3);
 		if (docCommentContent.endsWith("*/")) docCommentContent = docCommentContent.substring(0, docCommentContent.length() -2);
@@ -62,6 +65,26 @@ public class DocCommentIntegrator {
 		Object map_ = Javac.getDocComments(top);
 		if (map_ instanceof Map) {
 			((Map<JCTree, String>) map_).put(node, docCommentContent);
+			return true;
+		} else if (map_ instanceof DocCommentTable) {
+			final String docCommentContent_ = docCommentContent;
+			((DocCommentTable) map_).putComment(node, new Comment() {
+				@Override public String getText() {
+					return docCommentContent_;
+				}
+				
+				@Override public int getSourcePos(int index) {
+					return -1;
+				}
+				
+				@Override public CommentStyle getStyle() {
+					return CommentStyle.JAVADOC;
+				}
+				
+				@Override public boolean isDeprecated() {
+					return JavacHandlerUtil.nodeHasDeprecatedFlag(node);
+				}
+			});
 			return true;
 		}
 		

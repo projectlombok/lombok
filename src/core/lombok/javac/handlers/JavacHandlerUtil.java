@@ -50,6 +50,8 @@ import lombok.javac.JavacTreeMaker;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.parser.Tokens.Comment;
+import com.sun.tools.javac.tree.DocCommentTable;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
@@ -213,6 +215,17 @@ public class JavacHandlerUtil {
 				return true;
 			}
 		}
+		return false;
+	}
+	
+	/**
+	 * Returns if a node is marked deprecated (as picked up on by the parser).
+	 * @param node the node to check (type, method, or field decl).
+	 */
+	public static boolean nodeHasDeprecatedFlag(JCTree node) {
+		if (node instanceof JCVariableDecl) return (((JCVariableDecl) node).mods.flags & Flags.DEPRECATED) != 0;
+		if (node instanceof JCMethodDecl) return (((JCMethodDecl) node).mods.flags & Flags.DEPRECATED) != 0;
+		if (node instanceof JCClassDecl) return (((JCClassDecl) node).mods.flags & Flags.DEPRECATED) != 0;
 		return false;
 	}
 	
@@ -1325,7 +1338,36 @@ public class JavacHandlerUtil {
 					docComments.put(to, filtered[0]);
 					docComments.put(from.get(), filtered[1]);
 				}
+			} else if (dc instanceof DocCommentTable) {
+				DocCommentTable dct = (DocCommentTable) dc;
+				Comment javadoc = dct.getComment(from.get());
+				
+				if (javadoc != null) {
+					String[] filtered = copyMode.split(javadoc.getText());
+					dct.putComment(to, createJavadocComment(filtered[0], from));
+					dct.putComment(from.get(), createJavadocComment(filtered[1], from));
+				}
 			}
 		} catch (Exception ignore) {}
+	}
+	
+	private static Comment createJavadocComment(final String text, final JavacNode field) {
+		return new Comment() {
+			@Override public String getText() {
+				return text;
+			}
+			
+			@Override public int getSourcePos(int index) {
+				return -1;
+			}
+			
+			@Override public CommentStyle getStyle() {
+				return CommentStyle.JAVADOC;
+			}
+			
+			@Override public boolean isDeprecated() {
+				return text.contains("@deprecated") && field.getKind() == Kind.FIELD && isFieldDeprecated(field);
+			}
+		};
 	}
 }
