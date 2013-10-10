@@ -329,7 +329,7 @@ public class PatchFixes {
 		return newSimpleNames;
 	}
 	
-	public static byte[] runPostCompiler(byte[] bytes,  String fileName) {
+	public static byte[] runPostCompiler(byte[] bytes, String fileName) {
 		byte[] transformed = PostCompiler.applyTransformations(bytes, fileName, DiagnosticsReceiver.CONSOLE);
 		return transformed == null ? bytes : transformed;
 	}
