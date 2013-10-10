@@ -1,8 +1,13 @@
 Lombok Changelog
 ----------------
 
-### v0.12.1 "Edgy Guinea Pig"
-* PLATFORM: Initial (not quite totally finished) JDK8 support, without affecting existing support for JDK6 and 7. [Issue #451](https://code.google.com/p/projectlombok/issues/detail?id=451).
+### v1.12.2 (October 10th, 2013)
+* PLATFORM: Initial JDK8 support, without affecting existing support for JDK6 and 7. [Issue #451](https://code.google.com/p/projectlombok/issues/detail?id=451). While lombok will now work on JDK8 / javac8, and netbeans 7.4 and up, lombok does not (yet) support new language features introduced with java8, such as lambda expressions. Support for these features will be added in a future version.
+* PLATFORM: Running javac on IBM J9 VM would cause NullPointerExceptions when compiling with lombok. These issues should be fixed. [Issue #554](https://code.google.com/p/projectlombok/issues/detail?id=554).
+* CHANGE: [JDK8-related] The canonical way to write onMethod / onParameter / onConstructor annotation now uses a double underscore instead of a single underscore, so, now, the proper way to use this feature is `@RequiredArgsConstructor(onConstructor=@__(@Inject))`. The old way (single underscore) still works, but generates warnings on javac 8.
+* BUGFIX: Using `@NonNull` on an abstract method used to cause exceptions during compilation. [Issue #559](https://code.google.com/p/projectlombok/issues/detail?id=559).
+* BUGFIX: Using `@NonNull` on methods that also have `@SneakyThrows` or `@Synchronized` caused arbitrary behaviour. [Issue #588](https://code.google.com/p/projectlombok/issues/detail?id=588).
+* GERMANY: Major version bumped from 0 to 1, because allegedly this is important. Rest assured, this change is nevertheless backwards compatible.
 
 ### v0.12.0 "Angry Butterfly" (July 16th, 2013)
 * FEATURE: javadoc on fields will now be copied to generated getters / setters / withers. There are ways to specify separate javadoc for the field, the setter, and the getter, and `@param` and `@return` are handled appropriately. Addresses feature request [Issue #59](https://code.google.com/p/projectlombok/issues/detail?id=59). [@Getter and @Setter documentation](http://projectlombok.org/features/GetterSetter.html). [@Wither documentation](http://projectlombok.org/features/experimental/Wither.html).
