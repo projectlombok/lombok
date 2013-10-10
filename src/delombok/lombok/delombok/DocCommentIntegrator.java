@@ -66,7 +66,17 @@ public class DocCommentIntegrator {
 		if (map_ instanceof Map) {
 			((Map<JCTree, String>) map_).put(node, docCommentContent);
 			return true;
-		} else if (map_ instanceof DocCommentTable) {
+		} else if (Javac.instanceOfDocCommentTable(map_)) {
+			CommentAttacher_8.attach(node, docCommentContent, map_);
+			return true;
+		}
+		
+		return false;
+	}
+	
+	/* Container for code which will cause class loader exceptions on javac below 8. By being in a separate class, we avoid the problem. */
+	private static class CommentAttacher_8 {
+		static void attach(final JCTree node, String docCommentContent, Object map_) {
 			final String docCommentContent_ = docCommentContent;
 			((DocCommentTable) map_).putComment(node, new Comment() {
 				@Override public String getText() {
@@ -85,10 +95,7 @@ public class DocCommentIntegrator {
 					return JavacHandlerUtil.nodeHasDeprecatedFlag(node);
 				}
 			});
-			return true;
 		}
-		
-		return false;
 	}
 	
 	private JCTree findJavadocableNodeOnOrAfter(JCCompilationUnit unit, int endPos) {

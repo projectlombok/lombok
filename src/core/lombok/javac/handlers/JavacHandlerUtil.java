@@ -1323,51 +1323,61 @@ public class JavacHandlerUtil {
 	 * 
 	 * in 'SETTER' mode, stripping works similarly to 'GETTER' mode, except {@code param} are copied and stripped from the original and {@code @return} are skipped.
 	 */
-	@SuppressWarnings("unchecked")
 	public static void copyJavadoc(JavacNode from, JCTree to, CopyJavadoc copyMode) {
 		if (copyMode == null) copyMode = CopyJavadoc.VERBATIM;
 		try {
 			JCCompilationUnit cu = ((JCCompilationUnit) from.top().get());
 			Object dc = Javac.getDocComments(cu);
 			if (dc instanceof Map) {
-				Map<JCTree, String> docComments = (Map<JCTree, String>) dc;
-				String javadoc = docComments.get(from.get());
-				
-				if (javadoc != null) {
-					String[] filtered = copyMode.split(javadoc);
-					docComments.put(to, filtered[0]);
-					docComments.put(from.get(), filtered[1]);
-				}
-			} else if (dc instanceof DocCommentTable) {
-				DocCommentTable dct = (DocCommentTable) dc;
-				Comment javadoc = dct.getComment(from.get());
-				
-				if (javadoc != null) {
-					String[] filtered = copyMode.split(javadoc.getText());
-					dct.putComment(to, createJavadocComment(filtered[0], from));
-					dct.putComment(from.get(), createJavadocComment(filtered[1], from));
-				}
+				copyJavadoc_jdk6_7(from, to, copyMode, dc);
+			} else if (Javac.instanceOfDocCommentTable(dc)) {
+				CopyJavadoc_8.copyJavadoc(from, to, copyMode, dc);
 			}
 		} catch (Exception ignore) {}
 	}
 	
-	private static Comment createJavadocComment(final String text, final JavacNode field) {
-		return new Comment() {
-			@Override public String getText() {
-				return text;
-			}
+	private static class CopyJavadoc_8 {
+		static void copyJavadoc(JavacNode from, JCTree to, CopyJavadoc copyMode, Object dc) {
+			DocCommentTable dct = (DocCommentTable) dc;
+			Comment javadoc = dct.getComment(from.get());
 			
-			@Override public int getSourcePos(int index) {
-				return -1;
+			if (javadoc != null) {
+				String[] filtered = copyMode.split(javadoc.getText());
+				dct.putComment(to, createJavadocComment(filtered[0], from));
+				dct.putComment(from.get(), createJavadocComment(filtered[1], from));
 			}
-			
-			@Override public CommentStyle getStyle() {
-				return CommentStyle.JAVADOC;
-			}
-			
-			@Override public boolean isDeprecated() {
-				return text.contains("@deprecated") && field.getKind() == Kind.FIELD && isFieldDeprecated(field);
-			}
-		};
+		}
+		
+		private static Comment createJavadocComment(final String text, final JavacNode field) {
+			return new Comment() {
+				@Override public String getText() {
+					return text;
+				}
+				
+				@Override public int getSourcePos(int index) {
+					return -1;
+				}
+				
+				@Override public CommentStyle getStyle() {
+					return CommentStyle.JAVADOC;
+				}
+				
+				@Override public boolean isDeprecated() {
+					return text.contains("@deprecated") && field.getKind() == Kind.FIELD && isFieldDeprecated(field);
+				}
+			};
+		}
+	}
+
+	@SuppressWarnings({"unchecked", "all"})
+	private static void copyJavadoc_jdk6_7(JavacNode from, JCTree to, CopyJavadoc copyMode, Object dc) {
+		Map<JCTree, String> docComments = (Map<JCTree, String>) dc;
+		String javadoc = docComments.get(from.get());
+		
+		if (javadoc != null) {
+			String[] filtered = copyMode.split(javadoc);
+			docComments.put(to, filtered[0]);
+			docComments.put(from.get(), filtered[1]);
+		}
 	}
 }

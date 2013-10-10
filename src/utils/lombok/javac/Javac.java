@@ -103,6 +103,20 @@ public class Javac {
 		return 6;
 	}
 	
+	private static final Class<?> DOCCOMMENTTABLE_CLASS;
+	
+	static {
+		Class<?> c = null;
+		try {
+			c = Class.forName("com.sun.tools.javac.tree.DocCommentTable");
+		} catch (Throwable ignore) {}
+		DOCCOMMENTTABLE_CLASS = c;
+	}
+	
+	public static boolean instanceOfDocCommentTable(Object o) {
+		return DOCCOMMENTTABLE_CLASS != null && DOCCOMMENTTABLE_CLASS.isInstance(o);
+	}
+	
 	/**
 	 * Checks if the given expression (that really ought to refer to a type
 	 * expression) represents a primitive type.
