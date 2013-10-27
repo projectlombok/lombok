@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.12.3 "Edgy Guinea Pig"
+* BUG: v1.12.2's delombok turns all operator+assignments into just assignment. Fixed. [Issue #598](https://code.google.com/p/projectlombok/issues/detail?id=598)
+
 ### v1.12.2 (October 10th, 2013)
 * PLATFORM: Initial JDK8 support, without affecting existing support for JDK6 and 7. [Issue #451](https://code.google.com/p/projectlombok/issues/detail?id=451). While lombok will now work on JDK8 / javac8, and netbeans 7.4 and up, lombok does not (yet) support new language features introduced with java8, such as lambda expressions. Support for these features will be added in a future version.
 * PLATFORM: Running javac on IBM J9 VM would cause NullPointerExceptions when compiling with lombok. These issues should be fixed. [Issue #554](https://code.google.com/p/projectlombok/issues/detail?id=554).
