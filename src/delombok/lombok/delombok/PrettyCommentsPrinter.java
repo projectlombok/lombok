@@ -158,6 +158,18 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         map.put(treeTag("DIV"), "/");
         map.put(treeTag("MOD"), "%");
         
+        map.put(treeTag("BITOR_ASG"), "|=");
+        map.put(treeTag("BITXOR_ASG"), "^=");
+        map.put(treeTag("BITAND_ASG"), "&=");
+        map.put(treeTag("SL_ASG"), "<<=");
+        map.put(treeTag("SR_ASG"), ">>=");
+        map.put(treeTag("USR_ASG"), ">>>=");
+        map.put(treeTag("PLUS_ASG"), "+=");
+        map.put(treeTag("MINUS_ASG"), "-=");
+        map.put(treeTag("MUL_ASG"), "*=");
+        map.put(treeTag("DIV_ASG"), "/=");
+        map.put(treeTag("MOD_ASG"), "%=");
+        
         OPERATORS = map;
     }
     
@@ -1234,8 +1246,8 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         try {
             open(prec, TreeInfo.assignopPrec);
             printExpr(tree.lhs, TreeInfo.assignopPrec + 1);
-//            print(" " + operatorName(getTag(tree) - JCTree.ASGOffset) + "= ");
-            print(" = ");
+            String opname = operatorName(treeTag(tree));
+            print(" " + opname + " ");
             printExpr(tree.rhs, TreeInfo.assignopPrec);
             close(prec, TreeInfo.assignopPrec);
         } catch (IOException e) {
