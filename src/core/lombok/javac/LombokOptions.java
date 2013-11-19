@@ -22,6 +22,7 @@
 package lombok.javac;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -31,9 +32,18 @@ import com.sun.tools.javac.util.Options;
 public abstract class LombokOptions extends Options {
 	private boolean deleteLombokAnnotations = true;
 	private final Set<JCCompilationUnit> changed = new HashSet<JCCompilationUnit>();
+	private Map<String, String> formatPreferences = null;
 	
 	public boolean isChanged(JCCompilationUnit ast) {
 		return changed.contains(ast);
+	}
+	
+	public void setFormatPreferences(Map<String, String> formatPreferences) {
+		this.formatPreferences = formatPreferences;
+	}
+	
+	public Map<String, String> getFormatPreferences() {
+		return this.formatPreferences;
 	}
 	
 	public static void markChanged(Context context, JCCompilationUnit ast) {

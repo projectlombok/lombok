@@ -37,6 +37,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -78,6 +79,7 @@ public class Delombok {
 	private String classpath, sourcepath, bootclasspath;
 	private LinkedHashMap<File, File> fileToBase = new LinkedHashMap<File, File>();
 	private List<File> filesToParse = new ArrayList<File>();
+	private Map<String, String> formatPrefs = null;
 	
 	/** If null, output to standard out. */
 	private File output = null;
@@ -132,6 +134,36 @@ public class Delombok {
 		private boolean help;
 	}
 	
+	private static String indentAndWordbreak(String in, int indent, int maxLen) {
+		StringBuilder out = new StringBuilder();
+		StringBuilder line = new StringBuilder();
+		StringBuilder word = new StringBuilder();
+		int len = in.length();
+		for (int i = 0; i < (len + 1); i++) {
+			char c = i == len ? ' ' : in.charAt(i);
+			if (c == ' ') {
+				if (line.length() + word.length() < maxLen) {
+					line.append(word);
+				} else {
+					if (out.length() > 0) out.append("\n");
+					for (int j = 0; j < indent; j++) out.append(" ");
+					out.append(line);
+					line.setLength(0);
+					line.append(word.toString().trim());
+				}
+				word.setLength(0);
+			}
+			if (i < len) word.append(c);
+		}
+		if (line.length() > 0) {
+			if (out.length() > 0) out.append("\n");
+			for (int j = 0; j < indent; j++) out.append(" ");
+			out.append(line);
+		}
+		
+		return out.toString();
+	}
+	
 	public static void main(String[] rawArgs) {
 		CmdReader<CmdArgs> reader = CmdReader.of(CmdArgs.class);
 		CmdArgs args;
@@ -158,6 +190,41 @@ public class Delombok {
 				//dummy - do nothing.
 			}
 		}));
+		
+		Map<String, String> formatPrefs = new HashMap<String, String>();
+		
+		for (String format : args.format) {
+			if ("help".equalsIgnoreCase(format) || "list".equalsIgnoreCase(format)) {
+				System.out.println("Available format keys (to use, -f key:value -f key2:value2 -f ... ):");
+				for (Map.Entry<String, String> e : FormatPreferences.getKeysAndDescriptions().entrySet()) {
+					System.out.print("  ");
+					System.out.print(e.getKey());
+					System.out.println(":");
+					System.out.println(indentAndWordbreak(e.getValue(), 4, 70));
+				}
+				System.out.println("Example: -f indent:4 -f emptyLines:indent");
+				System.exit(0);
+				return;
+			}
+			
+			int idx = format.indexOf(':');
+			if (idx == -1) {
+				System.err.println("Format keys need to be 2 values separated with a colon. Try -f help.");
+				System.exit(1);
+				return;
+			}
+			String key = format.substring(0, idx);
+			String value = format.substring(idx + 1);
+			if (!FormatPreferences.getKeysAndDescriptions().containsKey(key)) {
+				System.err.println("Unknown format key: '" + key + "'. Try -f help.");
+				System.exit(1);
+				return;
+			}
+			
+			formatPrefs.put(key, value);
+		}
+		
+		delombok.setFormatPreferences(formatPrefs);
 		
 		if (args.encoding != null) {
 			try {
@@ -207,6 +274,10 @@ public class Delombok {
 				return;
 			}
 		}
+	}
+	
+	public void setFormatPreferences(Map<String, String> prefs) {
+		this.formatPrefs = prefs;
 	}
 	
 	public void setCharset(String charsetName) throws UnsupportedCharsetException {
@@ -367,6 +438,7 @@ public class Delombok {
 		if (classpath != null) options.putJavacOption("CLASSPATH", classpath);
 		if (sourcepath != null) options.putJavacOption("SOURCEPATH", sourcepath);
 		if (bootclasspath != null) options.putJavacOption("BOOTCLASSPATH", bootclasspath);
+		options.setFormatPreferences(formatPrefs);
 		options.put("compilePolicy", "check");
 		
 		CommentCatcher catcher = CommentCatcher.create(context);

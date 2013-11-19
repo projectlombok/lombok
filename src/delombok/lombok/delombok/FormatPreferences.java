@@ -62,7 +62,7 @@ public final class FormatPreferences {
 		this.indent = indent;
 		this.filledEmpties = filledEmpties;
 	}
-	public Map<String, String> getKeysAndDescriptions() {
+	public static Map<String, String> getKeysAndDescriptions() {
 		return KEYS;
 	}
 	
