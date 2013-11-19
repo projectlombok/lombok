@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.tools.JavaFileObject;
 
@@ -36,18 +37,20 @@ public class DelombokResult {
 	private final List<CommentInfo> comments;
 	private final JCCompilationUnit compilationUnit;
 	private final boolean changed;
+	private final Map<String, String> formatPreferences;
 	
-	public DelombokResult(List<CommentInfo> comments, JCCompilationUnit compilationUnit, boolean changed) {
+	public DelombokResult(List<CommentInfo> comments, JCCompilationUnit compilationUnit, boolean changed, Map<String, String> formatPreferences) {
 		this.comments = comments;
 		this.compilationUnit = compilationUnit;
 		this.changed = changed;
+		this.formatPreferences = formatPreferences;
 	}
 	
 	public void print(Writer out) throws IOException {
 		if (!changed) {
-			JavaFileObject sourceFile = compilationUnit.getSourceFile();
-			if (sourceFile != null) {
-				out.write(sourceFile.getCharContent(true).toString());
+			CharSequence content = getContent();
+			if (content != null) {
+				out.write(content.toString());
 				return;
 			}
 		}
@@ -60,7 +63,14 @@ public class DelombokResult {
 		if (comments instanceof com.sun.tools.javac.util.List) comments_ = (com.sun.tools.javac.util.List<CommentInfo>) comments;
 		else comments_ = com.sun.tools.javac.util.List.from(comments.toArray(new CommentInfo[0]));
 		
-		compilationUnit.accept(new PrettyCommentsPrinter(out, compilationUnit, comments_));
+		FormatPreferences preferences = new FormatPreferenceScanner().scan(formatPreferences, getContent());
+		compilationUnit.accept(new PrettyCommentsPrinter(out, compilationUnit, comments_, preferences));
+	}
+
+	private CharSequence getContent() throws IOException {
+		JavaFileObject sourceFile = compilationUnit.getSourceFile();
+		if (sourceFile == null) return null;
+		return sourceFile.getCharContent(true);
 	}
 	
 	public boolean isChanged() {

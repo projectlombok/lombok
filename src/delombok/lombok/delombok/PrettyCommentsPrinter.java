@@ -187,12 +187,13 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     // This flag is set just before printing the vardef and cleared when printing its modifiers.
     private boolean suppressFinalAndSemicolonsInTry = false;
     
-    private final String indentation = "\t";
+    private final FormatPreferences formatPreferences;
     
-    public PrettyCommentsPrinter(Writer out, JCCompilationUnit cu, List<CommentInfo> comments) {
+    public PrettyCommentsPrinter(Writer out, JCCompilationUnit cu, List<CommentInfo> comments, FormatPreferences preferences) {
         this.out = out;
         this.comments = comments;
         this.cu = cu;
+        this.formatPreferences = preferences;
     }
     
     private int endPos(JCTree tree) {
@@ -303,7 +304,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     	onNewLine = false;
     	aligned = true;
     	needsAlign = false;
-        for (int i = 0; i < lmargin; i++) out.write(indentation);
+        for (int i = 0; i < lmargin; i++) out.write(formatPreferences.indent());
     }
     
     /** Increase left margin by indentation width.
@@ -466,7 +467,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     }
     
     private boolean suppressAlignmentForEmptyLines(JCTree tree) {
-        return startsWithNewLine(tree);
+        return !formatPreferences.fillEmpties() && startsWithNewLine(tree);
     }
     
     private boolean startsWithNewLine(JCTree tree) {

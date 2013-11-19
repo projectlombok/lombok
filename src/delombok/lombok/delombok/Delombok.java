@@ -471,7 +471,7 @@ public class Delombok {
 		
 		callFlowMethodOnJavaCompiler(delegate, care);
 		for (JCCompilationUnit unit : roots) {
-			DelombokResult result = new DelombokResult(catcher.getComments(unit), unit, force || options.isChanged(unit));
+			DelombokResult result = new DelombokResult(catcher.getComments(unit), unit, force || options.isChanged(unit), formatPrefs);
 			if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged");
 			Writer rawWriter;
 			if (presetWriter != null) rawWriter = presetWriter;
