@@ -47,6 +47,34 @@ public class FormatPreferenceScanner {
 		return null;
 	}
 	
+	public FormatPreferences scan(Map<String, String> preferences, final CharSequence source) {
+		FormatPreferences fps = tryEasy(preferences);
+		if (fps != null) return fps;
+		
+		try {
+			return scan_(preferences, new Reader() {
+				int pos = 0;
+				int max = source.length();
+				
+				@Override public void close() throws IOException {
+				}
+				
+				@Override public int read(char[] b, int p, int len) throws IOException {
+					int read = 0;
+					if (pos >= max) return -1;
+					for (int i = p; i < p + len; i++) {
+						b[i] = source.charAt(pos++);
+						read++;
+						if (pos == max) return read;
+					}
+					return len;
+				}
+			});
+		} catch (IOException e) {
+			throw new RuntimeException(e); //Can't happen; CAR doesn't throw these.
+		}
+	}
+	
 	public FormatPreferences scan(Map<String, String> preferences, char[] source) {
 		FormatPreferences fps = tryEasy(preferences);
 		if (fps != null) return fps;
