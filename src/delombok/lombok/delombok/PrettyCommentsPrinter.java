@@ -183,6 +183,10 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     private boolean needsNewLine = false;
     private boolean needsAlign = false;
     
+    // Flag for try-with-resources to make them not final and not print the last semicolon.
+    // This flag is set just before printing the vardef and cleared when printing its modifiers.
+    private boolean suppressFinalAndSemicolonsInTry = false;
+    
     private final String indentation = "\t";
     
     public PrettyCommentsPrinter(Writer out, JCCompilationUnit cu, List<CommentInfo> comments) {
@@ -455,10 +459,18 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     public void printStats(List<? extends JCTree> trees) throws IOException {
         for (List<? extends JCTree> l = trees; l.nonEmpty(); l = l.tail) {
             if (isSuppressed(l.head)) continue;
-            align();
+            if (!suppressAlignmentForEmptyLines(l.head)) align();
             printStat(l.head);
             println();
         }
+    }
+    
+    private boolean suppressAlignmentForEmptyLines(JCTree tree) {
+        return startsWithNewLine(tree);
+    }
+    
+    private boolean startsWithNewLine(JCTree tree) {
+        return tree instanceof JCMethodDecl || tree instanceof JCClassDecl;
     }
     
     private boolean isSuppressed(JCTree tree) {
@@ -475,6 +487,10 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
      */
     public void printFlags(long flags) throws IOException {
         if ((flags & SYNTHETIC) != 0) print("/*synthetic*/ ");
+        if (suppressFinalAndSemicolonsInTry) {
+            flags = flags & ~FINAL;
+            suppressFinalAndSemicolonsInTry = false;
+        }
         print(TreeInfo.flagNames(flags));
         if ((flags & StandardFlags) != 0) print(" ");
         if ((flags & ANNOTATION) != 0) print("@");
@@ -798,6 +814,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 
     public void visitVarDef(JCVariableDecl tree) {
         try {
+            boolean suppressSemi = suppressFinalAndSemicolonsInTry;
             if (getJavadocFor(tree) != null) {
                 println(); align();
             }
@@ -817,7 +834,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
                     print(" = ");
                     printExpr(tree.init);
                 }
-                if (prec == TreeInfo.notExpression) print(";");
+                if (prec == TreeInfo.notExpression && !suppressSemi) print(";");
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -1004,8 +1021,10 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
             
             if (resources != null && resources.nonEmpty()) {
                 print("(");
-                if (resources.size() == 1) {
+                int remaining = resources.size();
+                if (remaining == 1) {
                     JCTree var = (JCTree) resources.get(0);
+                    suppressFinalAndSemicolonsInTry = true;
                     printStat(var);
                     print(") ");
                 } else {
@@ -1014,7 +1033,10 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
                         println();
                         align();
                         JCTree var = (JCTree) var0;
+                        suppressFinalAndSemicolonsInTry = true;
                         printStat(var);
+                        remaining--;
+                        if (remaining > 0) print(";");
                     }
                     print(") ");
                     undent(); undent();
