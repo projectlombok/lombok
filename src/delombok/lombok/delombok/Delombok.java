@@ -52,7 +52,6 @@ import lombok.javac.LombokOptions;
 
 import com.sun.tools.javac.comp.Todo;
 import com.sun.tools.javac.main.JavaCompiler;
-import com.sun.tools.javac.main.OptionName;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import com.zwitserloot.cmdreader.CmdReader;
@@ -359,12 +358,12 @@ public class Delombok {
 	}
 	
 	public boolean delombok() throws IOException {
-		LombokOptions options = LombokOptions.replaceWithDelombokOptions(context);
-		options.put(OptionName.ENCODING, charset.name());
-		if (classpath != null) options.put(OptionName.CLASSPATH, classpath);
-		if (sourcepath != null) options.put(OptionName.SOURCEPATH, sourcepath);
-		if (bootclasspath != null) options.put(OptionName.BOOTCLASSPATH, bootclasspath);
-		options.put("compilePolicy", "attr");
+		LombokOptions options = LombokOptionsFactory.getDelombokOptions(context);
+		options.putJavacOption("ENCODING", charset.name());
+		if (classpath != null) options.putJavacOption("CLASSPATH", classpath);
+		if (sourcepath != null) options.putJavacOption("SOURCEPATH", sourcepath);
+		if (bootclasspath != null) options.putJavacOption("BOOTCLASSPATH", bootclasspath);
+		options.put("compilePolicy", "check");
 		
 		CommentCatcher catcher = CommentCatcher.create(context);
 		JavaCompiler compiler = catcher.getCompiler();
@@ -375,10 +374,7 @@ public class Delombok {
 		compiler.initProcessAnnotations(Collections.singleton(new lombok.javac.apt.Processor()));
 		
 		for (File fileToParse : filesToParse) {
-			
-			@SuppressWarnings("deprecation")
-			JCCompilationUnit unit = compiler.parse(fileToParse.getAbsolutePath());
-			
+			@SuppressWarnings("deprecation") JCCompilationUnit unit = compiler.parse(fileToParse.getAbsolutePath());
 			baseMap.put(unit, fileToBase.get(fileToParse));
 			roots.add(unit);
 		}
@@ -387,8 +383,17 @@ public class Delombok {
 			return false;
 		}
 		
-		JavaCompiler delegate = compiler.processAnnotations(compiler.enterTrees(toJavacList(roots)));
-		callFlowMethodOnJavaCompiler(delegate, callAttributeMethodOnJavaCompiler(delegate, delegate.todo));
+		for (JCCompilationUnit unit : roots) {
+			catcher.setComments(unit, new DocCommentIntegrator().integrate(catcher.getComments(unit), unit));
+		}
+		
+		com.sun.tools.javac.util.List<JCCompilationUnit> trees = compiler.enterTrees(toJavacList(roots));
+		
+		JavaCompiler delegate = compiler.processAnnotations(trees);
+		
+		Object care = callAttributeMethodOnJavaCompiler(delegate, delegate.todo);
+		
+		callFlowMethodOnJavaCompiler(delegate, care);
 		for (JCCompilationUnit unit : roots) {
 			DelombokResult result = new DelombokResult(catcher.getComments(unit), unit, force || options.isChanged(unit));
 			if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged");

@@ -41,7 +41,6 @@ import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
@@ -55,10 +54,12 @@ import lombok.experimental.Builder;
 import lombok.experimental.NonFinal;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.HandleConstructor.SkipIfConstructorExists;
-import static lombok.javac.Javac.*;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+import static lombok.javac.Javac.*;
+import static lombok.javac.JavacTreeMaker.TypeTag.*;
 
 @ProviderFor(JavacAnnotationHandler.class)
 @HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
@@ -97,7 +98,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		if (parent.get() instanceof JCClassDecl) {
 			tdParent = parent;
 			JCClassDecl td = (JCClassDecl) tdParent.get();
-			ListBuffer<JavacNode> allFields = ListBuffer.lb();
+			ListBuffer<JavacNode> allFields = new ListBuffer<JavacNode>();
 			@SuppressWarnings("deprecation")
 			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation(lombok.experimental.Value.class, parent));
 			for (JavacNode fieldNode : HandleConstructor.findAllFields(tdParent)) {
@@ -106,7 +107,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				// non-final fields final, but @Value's handler hasn't done this yet, so we have to do this math ourselves.
 				// Value will only skip making a field final if it has an explicit @NonFinal annotation, so we check for that.
 				if (fd.init != null && valuePresent && !hasAnnotation(NonFinal.class, fieldNode)) continue;
-				namesOfParameters.add(fd.name);
+				namesOfParameters.add(removePrefixFromField(fieldNode));
 				typesOfParameters.add(fd.vartype);
 				allFields.append(fieldNode);
 			}
@@ -218,12 +219,12 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	}
 	
 	private JCMethodDecl generateBuildMethod(String name, Name staticName, JCExpression returnType, java.util.List<Name> fieldNames, JavacNode type, List<JCExpression> thrownExceptions) {
-		TreeMaker maker = type.getTreeMaker();
+		JavacTreeMaker maker = type.getTreeMaker();
 		
 		JCExpression call;
 		JCStatement statement;
 		
-		ListBuffer<JCExpression> args = ListBuffer.lb();
+		ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
 		for (Name n : fieldNames) {
 			args.append(maker.Ident(n));
 		}
@@ -232,14 +233,14 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			call = maker.NewClass(null, List.<JCExpression>nil(), returnType, args.toList(), null);
 			statement = maker.Return(call);
 		} else {
-			ListBuffer<JCExpression> typeParams = ListBuffer.lb();
+			ListBuffer<JCExpression> typeParams = new ListBuffer<JCExpression>();
 			for (JCTypeParameter tp : ((JCClassDecl) type.get()).typarams) {
 				typeParams.append(maker.Ident(tp.name));
 			}
 			
 			JCExpression fn = maker.Select(maker.Ident(((JCClassDecl) type.up().get()).name), staticName);
 			call = maker.Apply(typeParams.toList(), fn, args.toList());
-			if (returnType instanceof JCPrimitiveTypeTree && ((JCPrimitiveTypeTree) returnType).typetag == CTC_VOID) {
+			if (returnType instanceof JCPrimitiveTypeTree && CTC_VOID.equals(typeTag(returnType))) {
 				statement = maker.Exec(call);
 			} else {
 				statement = maker.Return(call);
@@ -252,9 +253,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	}
 	
 	private JCMethodDecl generateBuilderMethod(String builderMethodName, String builderClassName, JavacNode type, List<JCTypeParameter> typeParams) {
-		TreeMaker maker = type.getTreeMaker();
+		JavacTreeMaker maker = type.getTreeMaker();
 		
-		ListBuffer<JCExpression> typeArgs = ListBuffer.lb();
+		ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
 		for (JCTypeParameter typeParam : typeParams) {
 			typeArgs.append(maker.Ident(typeParam.name));
 		}
@@ -285,7 +286,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					continue top;
 				}
 			}
-			TreeMaker maker = builderType.getTreeMaker();
+			JavacTreeMaker maker = builderType.getTreeMaker();
 			JCModifiers mods = maker.Modifiers(Flags.PRIVATE);
 			JCVariableDecl newField = maker.VarDef(mods, name, cloneType(maker, typesOfParameters.get(i), source), null);
 			out.add(injectField(builderType, newField));
@@ -308,7 +309,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		boolean isBoolean = isBoolean(fieldNode);
 		String setterName = fluent ? fieldNode.getName() : TransformationsUtil.toSetterName(null, fieldNode.getName(), isBoolean);
 		
-		TreeMaker maker = builderType.getTreeMaker();
+		JavacTreeMaker maker = builderType.getTreeMaker();
 		return HandleSetter.createSetter(Flags.PUBLIC, fieldNode, maker, setterName, chain, source, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
 	}
 	
@@ -322,9 +323,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	}
 	
 	private JavacNode makeBuilderClass(JavacNode tdParent, String builderClassName, List<JCTypeParameter> typeParams, JCAnnotation ast) {
-		TreeMaker maker = tdParent.getTreeMaker();
+		JavacTreeMaker maker = tdParent.getTreeMaker();
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC | Flags.STATIC);
-		JCClassDecl builder = ClassDef(maker, mods, tdParent.toName(builderClassName), copyTypeParams(maker, typeParams), null, List.<JCExpression>nil(), List.<JCTree>nil());
+		JCClassDecl builder = maker.ClassDef(mods, tdParent.toName(builderClassName), copyTypeParams(maker, typeParams), null, List.<JCExpression>nil(), List.<JCTree>nil());
 		return injectType(tdParent, builder);
 	}
 }

@@ -26,7 +26,7 @@ import java.nio.CharBuffer;
 import com.sun.tools.javac.parser.Scanner;
 import com.sun.tools.javac.util.Context;
 
-public class CommentCollectingScannerFactory extends DocCommentScanner.Factory {
+public class CommentCollectingScannerFactory extends Scanner.Factory {
 	
 	@SuppressWarnings("all")
 	public static void preRegister(final Context context) {

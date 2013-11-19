@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Project Lombok Authors.
+ * Copyright (C) 2010-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,17 +28,9 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Options;
 
-public class LombokOptions extends Options {
+public abstract class LombokOptions extends Options {
 	private boolean deleteLombokAnnotations = true;
 	private final Set<JCCompilationUnit> changed = new HashSet<JCCompilationUnit>();
-	
-	public static LombokOptions replaceWithDelombokOptions(Context context) {
-		Options options = Options.instance(context);
-		context.put(optionsKey, (Options)null);
-		LombokOptions result = new LombokOptions(context);
-		result.putAll(options);
-		return result;
-	}
 	
 	public boolean isChanged(JCCompilationUnit ast) {
 		return changed.contains(ast);
@@ -54,7 +46,9 @@ public class LombokOptions extends Options {
 		return (options instanceof LombokOptions) && ((LombokOptions) options).deleteLombokAnnotations;
 	}
 	
-	private LombokOptions(Context context) {
+	protected LombokOptions(Context context) {
 		super(context);
 	}
+	
+	public abstract void putJavacOption(String optionName, String value);
 }

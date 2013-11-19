@@ -1,8 +1,8 @@
-8:9 Not generating isFoo(): A method with that name already exists
-14:9 Not generating isFoo(): A method with that name already exists (getFoo)
-32:9 Not generating getFoo(): A method with that name already exists
-50:9 Not generating getFoo(): A method with that name already exists
-62:9 Not generating isFoo(): A method with that name already exists
-68:9 Not generating isFoo(): A method with that name already exists (getFoo)
-86:9 Not generating getFoo(): A method with that name already exists
-104:9 Not generating getFoo(): A method with that name already exists
+8 Not generating isFoo(): A method with that name already exists
+14 Not generating isFoo(): A method with that name already exists (getFoo)
+32 Not generating getFoo(): A method with that name already exists
+50 Not generating getFoo(): A method with that name already exists
+62 Not generating isFoo(): A method with that name already exists
+68 Not generating isFoo(): A method with that name already exists (getFoo)
+86 Not generating getFoo(): A method with that name already exists
+104 Not generating getFoo(): A method with that name already exists

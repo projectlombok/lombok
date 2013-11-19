@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2012 The Project Lombok Authors.
+ * Copyright (C) 2011-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,18 +22,12 @@
 package lombok.javac;
 
 import static lombok.javac.Javac.*;
+import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.lang.reflect.Field;
 import java.util.ArrayDeque;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.Queue;
 
 import javax.lang.model.type.TypeKind;
-import javax.tools.DiagnosticListener;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
@@ -43,7 +37,6 @@ import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.CapturedType;
 import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type.WildcardType;
-import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.Attr;
 import com.sun.tools.javac.comp.AttrContext;
@@ -57,191 +50,17 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
-import com.sun.tools.javac.util.Log;
 
 public class JavacResolution {
 	private final Attr attr;
-	private final LogDisabler logDisabler;
+	private final CompilerMessageSuppressor messageSuppressor;
 	
 	public JavacResolution(Context context) {
 		attr = Attr.instance(context);
-		logDisabler = new LogDisabler(context);
-	}
-	
-	/**
-	 * During resolution, the resolver will emit resolution errors, but without appropriate file names and line numbers. If these resolution errors stick around
-	 * then they will be generated AGAIN, this time with proper names and line numbers, at the end. Therefore, we want to suppress the logger.
-	 */
-	private static final class LogDisabler {
-		private final Log log;
-		private static final Field errWriterField, warnWriterField, noticeWriterField, dumpOnErrorField, promptOnErrorField, diagnosticListenerField;
-		private static final Field deferDiagnosticsField, deferredDiagnosticsField;
-		private PrintWriter errWriter, warnWriter, noticeWriter;
-		private Boolean dumpOnError, promptOnError;
-		private DiagnosticListener<?> contextDiagnosticListener, logDiagnosticListener;
-		private final Context context;
-		
-		// If this is true, the fields changed. Better to print weird error messages than to fail outright.
-		private static final boolean dontBother;
-		
-		private static final ThreadLocal<Queue<?>> queueCache = new ThreadLocal<Queue<?>>();
-		
-		static {
-			boolean z;
-			Field a = null, b = null, c = null, d = null, e = null, f = null, g = null, h = null;
-			try {
-				a = Log.class.getDeclaredField("errWriter");
-				b = Log.class.getDeclaredField("warnWriter");
-				c = Log.class.getDeclaredField("noticeWriter");
-				d = Log.class.getDeclaredField("dumpOnError");
-				e = Log.class.getDeclaredField("promptOnError");
-				f = Log.class.getDeclaredField("diagListener");
-				z = false;
-				a.setAccessible(true);
-				b.setAccessible(true);
-				c.setAccessible(true);
-				d.setAccessible(true);
-				e.setAccessible(true);
-				f.setAccessible(true);
-			} catch (Throwable x) {
-				z = true;
-			}
-			
-			try {
-				g = Log.class.getDeclaredField("deferDiagnostics");
-				h = Log.class.getDeclaredField("deferredDiagnostics");
-				g.setAccessible(true);
-				h.setAccessible(true);
-			} catch (Throwable x) {
-			}
-			
-			errWriterField = a;
-			warnWriterField = b;
-			noticeWriterField = c;
-			dumpOnErrorField = d;
-			promptOnErrorField = e;
-			diagnosticListenerField = f;
-			deferDiagnosticsField = g;
-			deferredDiagnosticsField = h;
-			dontBother = z;
-		}
-		
-		LogDisabler(Context context) {
-			this.log = Log.instance(context);
-			this.context = context;
-		}
-		
-		boolean disableLoggers() {
-			contextDiagnosticListener = context.get(DiagnosticListener.class);
-			context.put(DiagnosticListener.class, (DiagnosticListener<?>) null);
-			if (dontBother) return false;
-			boolean dontBotherInstance = false;
-			
-			PrintWriter dummyWriter = new PrintWriter(new OutputStream() {
-				@Override public void write(int b) throws IOException {
-					// Do nothing on purpose
-				}
-			});
-			
-			if (deferDiagnosticsField != null) try {
-				if (Boolean.TRUE.equals(deferDiagnosticsField.get(log))) {
-					queueCache.set((Queue<?>) deferredDiagnosticsField.get(log));
-					Queue<?> empty = new LinkedList<Object>();
-					deferredDiagnosticsField.set(log, empty);
-				}
-			} catch (Exception e) {}
-			
-			if (!dontBotherInstance) try {
-				errWriter = (PrintWriter) errWriterField.get(log);
-				errWriterField.set(log, dummyWriter);
-			} catch (Exception e) {
-				dontBotherInstance = true;
-			}
-			
-			if (!dontBotherInstance) try {
-				warnWriter = (PrintWriter) warnWriterField.get(log);
-				warnWriterField.set(log, dummyWriter);
-			} catch (Exception e) {
-				dontBotherInstance = true;
-			}
-			
-			if (!dontBotherInstance) try {
-				noticeWriter = (PrintWriter) noticeWriterField.get(log);
-				noticeWriterField.set(log, dummyWriter);
-			} catch (Exception e) {
-				dontBotherInstance = true;
-			}
-			
-			if (!dontBotherInstance) try {
-				dumpOnError = (Boolean) dumpOnErrorField.get(log);
-				dumpOnErrorField.set(log, false);
-			} catch (Exception e) {
-				dontBotherInstance = true;
-			}
-			
-			if (!dontBotherInstance) try {
-				promptOnError = (Boolean) promptOnErrorField.get(log);
-				promptOnErrorField.set(log, false);
-			} catch (Exception e) {
-				dontBotherInstance = true;
-			}
-			
-			if (!dontBotherInstance) try {
-				logDiagnosticListener = (DiagnosticListener<?>) diagnosticListenerField.get(log);
-				diagnosticListenerField.set(log, null);
-			} catch (Exception e) {
-				dontBotherInstance = true;
-			}
-			
-			if (dontBotherInstance) enableLoggers();
-			return !dontBotherInstance;
-		}
-		
-		void enableLoggers() {
-			if (contextDiagnosticListener != null) {
-				context.put(DiagnosticListener.class, contextDiagnosticListener);
-				contextDiagnosticListener = null;
-			}
-			
-			if (errWriter != null) try {
-				errWriterField.set(log, errWriter);
-				errWriter = null;
-			} catch (Exception e) {}
-			
-			if (warnWriter != null) try {
-				warnWriterField.set(log, warnWriter);
-				warnWriter = null;
-			} catch (Exception e) {}
-			
-			if (noticeWriter != null) try {
-				noticeWriterField.set(log, noticeWriter);
-				noticeWriter = null;
-			} catch (Exception e) {}
-			
-			if (dumpOnError != null) try {
-				dumpOnErrorField.set(log, dumpOnError);
-				dumpOnError = null;
-			} catch (Exception e) {}
-			
-			if (promptOnError != null) try {
-				promptOnErrorField.set(log, promptOnError);
-				promptOnError = null;
-			} catch (Exception e) {}
-			
-			if (logDiagnosticListener != null) try {
-				diagnosticListenerField.set(log, logDiagnosticListener);
-				logDiagnosticListener = null;
-			} catch (Exception e) {}
-			
-			if (deferDiagnosticsField != null && queueCache.get() != null) try {
-				deferredDiagnosticsField.set(log, queueCache.get());
-				queueCache.set(null);
-			} catch (Exception e) {}
-		}
+		messageSuppressor = new CompilerMessageSuppressor(context);
 	}
 	
 	/*
@@ -321,7 +140,7 @@ public class JavacResolution {
 			}
 		}
 		
-		logDisabler.disableLoggers();
+		messageSuppressor.disableLoggers();
 		try {
 			EnvFinder finder = new EnvFinder(node.getContext());
 			while (!stack.isEmpty()) stack.pop().accept(finder);
@@ -332,7 +151,7 @@ public class JavacResolution {
 			attrib(copy, finder.get());
 			return mirrorMaker.getOriginalToCopyMap();
 		} finally {
-			logDisabler.enableLoggers();
+			messageSuppressor.enableLoggers();
 		}
 	}
 	
@@ -347,14 +166,14 @@ public class JavacResolution {
 			}
 		}
 		
-		logDisabler.disableLoggers();
+		messageSuppressor.disableLoggers();
 		try {
 			EnvFinder finder = new EnvFinder(node.getContext());
 			while (!stack.isEmpty()) stack.pop().accept(finder);
 			
 			attrib(node.get(), finder.get());
 		} finally {
-			logDisabler.enableLoggers();
+			messageSuppressor.enableLoggers();
 		}
 	}
 	
@@ -390,7 +209,7 @@ public class JavacResolution {
 	}
 	
 	public static JCExpression createJavaLangObject(JavacAST ast) {
-		TreeMaker maker = ast.getTreeMaker();
+		JavacTreeMaker maker = ast.getTreeMaker();
 		JCExpression out = maker.Ident(ast.toName("java"));
 		out = maker.Select(out, ast.toName("lang"));
 		out = maker.Select(out, ast.toName("Object"));
@@ -417,10 +236,10 @@ public class JavacResolution {
 		// NB: There's such a thing as maker.Type(type), but this doesn't work very well; it screws up anonymous classes, captures, and adds an extra prefix dot for some reason too.
 		//  -- so we write our own take on that here.
 		
-		TreeMaker maker = ast.getTreeMaker();
+		JavacTreeMaker maker = ast.getTreeMaker();
 		
-		if (type.tag == CTC_BOT) return createJavaLangObject(ast);
-		if (type.tag == CTC_VOID) return allowVoid ? primitiveToJCTree(type.getKind(), maker) : createJavaLangObject(ast);
+		if (CTC_BOT.equals(typeTag(type))) return createJavaLangObject(ast);
+		if (CTC_VOID.equals(typeTag(type))) return allowVoid ? primitiveToJCTree(type.getKind(), maker) : createJavaLangObject(ast);
 		if (type.isPrimitive()) return primitiveToJCTree(type.getKind(), maker);
 		if (type.isErroneous()) throw new TypeNotConvertibleException("Type cannot be resolved");
 		
@@ -434,8 +253,8 @@ public class JavacResolution {
 		if (symbol.name.length() == 0) {
 			// Anonymous inner class
 			if (type instanceof ClassType) {
-				List<Type> ifaces = ((ClassType)type).interfaces_field;
-				Type supertype = ((ClassType)type).supertype_field;
+				List<Type> ifaces = ((ClassType) type).interfaces_field;
+				Type supertype = ((ClassType) type).supertype_field;
 				if (ifaces != null && ifaces.length() == 1) {
 					return typeToJCTree(ifaces.get(0), ast, allowCompound, allowVoid);
 				}
@@ -454,7 +273,7 @@ public class JavacResolution {
 				upper = type.getUpperBound();
 			}
 			if (allowCompound) {
-				if (lower == null || lower.tag == CTC_BOT) {
+				if (lower == null || CTC_BOT.equals(typeTag(lower))) {
 					if (upper == null || upper.toString().equals("java.lang.Object")) {
 						return maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
 					}
@@ -479,7 +298,7 @@ public class JavacResolution {
 		String qName;
 		if (symbol.isLocal()) {
 			qName = symbol.getSimpleName().toString();
-		} else if (symbol.type != null && symbol.type.getEnclosingType() != null && symbol.type.getEnclosingType().tag == TypeTags.CLASS) {
+		} else if (symbol.type != null && symbol.type.getEnclosingType() != null && typeTag(symbol.type.getEnclosingType()).equals(typeTag("CLASS"))) {
 			replacement = typeToJCTree0(type.getEnclosingType(), ast, false, false);
 			qName = symbol.getSimpleName().toString();
 		} else {
@@ -504,7 +323,7 @@ public class JavacResolution {
 	
 	private static JCExpression genericsToJCTreeNodes(List<Type> generics, JavacAST ast, JCExpression rawTypeNode) throws TypeNotConvertibleException {
 		if (generics != null && !generics.isEmpty()) {
-			ListBuffer<JCExpression> args = ListBuffer.lb();
+			ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
 			for (Type t : generics) args.append(typeToJCTree(t, ast, true, false));
 			return ast.getTreeMaker().TypeApply(rawTypeNode, args.toList());
 		}
@@ -512,12 +331,12 @@ public class JavacResolution {
 		return rawTypeNode;
 	}
 	
-	private static JCExpression primitiveToJCTree(TypeKind kind, TreeMaker maker) throws TypeNotConvertibleException {
+	private static JCExpression primitiveToJCTree(TypeKind kind, JavacTreeMaker maker) throws TypeNotConvertibleException {
 		switch (kind) {
 		case BYTE:
 			return maker.TypeIdent(CTC_BYTE);
 		case CHAR:
-			return maker.TypeIdent(CTC_CHAR);
+			return maker.TypeIdent( CTC_CHAR);
 		case SHORT:
 			return maker.TypeIdent(CTC_SHORT);
 		case INT:

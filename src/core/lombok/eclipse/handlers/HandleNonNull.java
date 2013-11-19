@@ -21,7 +21,18 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.eclipse.Eclipse.isPrimitive;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
+
 import java.util.Arrays;
+
+import lombok.NonNull;
+import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
+import lombok.eclipse.DeferUntilPostDiet;
+import lombok.eclipse.EclipseAnnotationHandler;
+import lombok.eclipse.EclipseNode;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -36,22 +47,15 @@ import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
+import org.eclipse.jdt.internal.compiler.ast.SynchronizedStatement;
 import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
+import org.eclipse.jdt.internal.compiler.ast.TryStatement;
 import org.mangosdk.spi.ProviderFor;
-
-import lombok.NonNull;
-import lombok.core.AST.Kind;
-import lombok.core.AnnotationValues;
-import lombok.eclipse.DeferUntilPostDiet;
-import lombok.eclipse.EclipseAnnotationHandler;
-import lombok.eclipse.EclipseNode;
-
-import static lombok.eclipse.Eclipse.*;
-import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 @DeferUntilPostDiet
 @ProviderFor(EclipseAnnotationHandler.class)
-public class NonNullHandler extends EclipseAnnotationHandler<NonNull> {
+@HandlerPriority(value = 512) // 2^9; onParameter=@__(@NonNull) has to run first.
+public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 	@Override public void handle(AnnotationValues<NonNull> annotation, Annotation ast, EclipseNode annotationNode) {
 		if (annotationNode.up().getKind() == Kind.FIELD) {
 			// This is meaningless unless the field is used to generate a method (@Setter, @RequiredArgsConstructor, etc),
@@ -82,6 +86,11 @@ public class NonNullHandler extends EclipseAnnotationHandler<NonNull> {
 		
 		if (isGenerated(declaration)) return;
 		
+		if (declaration.isAbstract()) {
+			annotationNode.addWarning("@NonNull is meaningless on a parameter of an abstract method.");
+			return;
+		}
+		
 		// Possibly, if 'declaration instanceof ConstructorDeclaration', fetch declaration.constructorCall, search it for any references to our parameter,
 		// and if they exist, create a new method in the class: 'private static <T> T lombok$nullCheck(T expr, String msg) {if (expr == null) throw NPE; return expr;}' and
 		// wrap all references to it in the super/this to a call to this method.
@@ -98,16 +107,31 @@ public class NonNullHandler extends EclipseAnnotationHandler<NonNull> {
 			declaration.statements = new Statement[] {nullCheck};
 		} else {
 			char[] expectedName = arg.name;
-			for (Statement stat : declaration.statements) {
-				char[] varNameOfNullCheck = returnVarNameIfNullCheck(stat);
-				if (varNameOfNullCheck == null) break;
-				if (Arrays.equals(expectedName, varNameOfNullCheck)) return;
+			/* Abort if the null check is already there, delving into try and synchronized statements */ {
+				Statement[] stats = declaration.statements;
+				int idx = 0;
+				while (stats != null && stats.length > idx) {
+					Statement stat = stats[idx++];
+					if (stat instanceof TryStatement) {
+						stats = ((TryStatement) stat).tryBlock.statements;
+						idx = 0;
+						continue;
+					}
+					if (stat instanceof SynchronizedStatement) {
+						stats = ((SynchronizedStatement) stat).block.statements;
+						idx = 0;
+						continue;
+					}
+					char[] varNameOfNullCheck = returnVarNameIfNullCheck(stat);
+					if (varNameOfNullCheck == null) break;
+					if (Arrays.equals(varNameOfNullCheck, expectedName)) return;
+				}
 			}
 			
 			Statement[] newStatements = new Statement[declaration.statements.length + 1];
 			int skipOver = 0;
 			for (Statement stat : declaration.statements) {
-				if (isGenerated(stat)) skipOver++;
+				if (isGenerated(stat) && isNullCheck(stat)) skipOver++;
 				else break;
 			}
 			System.arraycopy(declaration.statements, 0, newStatements, 0, skipOver);
@@ -116,6 +140,10 @@ public class NonNullHandler extends EclipseAnnotationHandler<NonNull> {
 			declaration.statements = newStatements;
 		}
 		annotationNode.up().up().rebuild();
+	}
+	
+	private boolean isNullCheck(Statement stat) {
+		return returnVarNameIfNullCheck(stat) != null;
 	}
 	
 	private char[] returnVarNameIfNullCheck(Statement stat) {

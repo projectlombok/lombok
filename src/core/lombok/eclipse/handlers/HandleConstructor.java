@@ -230,7 +230,8 @@ public class HandleConstructor {
 		
 		int ctr = 0;
 		for (EclipseNode field : fields) {
-			fieldNames.expressions[ctr] = new StringLiteral(field.getName().toCharArray(), pS, pE, 0);
+			char[] fieldName = removePrefixFromField(field);
+			fieldNames.expressions[ctr] = new StringLiteral(fieldName, pS, pE, 0);
 			setGeneratedBy(fieldNames.expressions[ctr], source);
 			ctr++;
 		}
@@ -273,15 +274,17 @@ public class HandleConstructor {
 		
 		for (EclipseNode fieldNode : fields) {
 			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
-			FieldReference thisX = new FieldReference(field.name, p);
+			char[] rawName = field.name;
+			char[] fieldName = removePrefixFromField(fieldNode);
+			FieldReference thisX = new FieldReference(rawName, p);
 			thisX.receiver = new ThisReference((int)(p >> 32), (int)p);
 			
-			SingleNameReference assignmentNameRef = new SingleNameReference(field.name, p);
+			SingleNameReference assignmentNameRef = new SingleNameReference(fieldName, p);
 			Assignment assignment = new Assignment(thisX, assignmentNameRef, (int)p);
 			assignment.sourceStart = (int)(p >> 32); assignment.sourceEnd = assignment.statementEnd = (int)(p >> 32);
 			assigns.add(assignment);
 			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
-			Argument parameter = new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL);
+			Argument parameter = new Argument(fieldName, fieldPos, copyType(field.type, source), Modifier.FINAL);
 			Annotation[] nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
 			Annotation[] nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
 			if (nonNulls.length != 0) {

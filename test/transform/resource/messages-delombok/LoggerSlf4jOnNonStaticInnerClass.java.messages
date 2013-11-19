@@ -1,1 +1,1 @@
-2:9 @Log is not legal on non-static inner classes.
+2 @Log is not legal on non-static inner classes.

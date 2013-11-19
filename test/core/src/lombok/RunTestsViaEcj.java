@@ -112,7 +112,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		CategorizedProblem[] problems = compilationResult.getAllProblems();
 		
 		if (problems != null) for (CategorizedProblem p : problems) {
-			messages.add(new CompilerMessage(p.getSourceLineNumber(), p.getSourceStart(), p.getSourceStart(), p.isError(), p.getMessage()));
+			messages.add(new CompilerMessage(p.getSourceLineNumber(), p.getSourceStart(), p.isError(), p.getMessage()));
 		}
 		
 		CompilationUnitDeclaration cud = compilationUnit_.get();

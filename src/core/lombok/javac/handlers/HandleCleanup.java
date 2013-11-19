@@ -28,10 +28,10 @@ import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
 
 import org.mangosdk.spi.ProviderFor;
 
-import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
@@ -49,7 +49,6 @@ import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeCast;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
@@ -97,8 +96,8 @@ public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 		}
 		
 		boolean seenDeclaration = false;
-		ListBuffer<JCStatement> newStatements = ListBuffer.lb();
-		ListBuffer<JCStatement> tryBlock = ListBuffer.lb();
+		ListBuffer<JCStatement> newStatements = new ListBuffer<JCStatement>();
+		ListBuffer<JCStatement> tryBlock = new ListBuffer<JCStatement>();
 		for (JCStatement statement : statements) {
 			if (!seenDeclaration) {
 				if (statement == decl) seenDeclaration = true;
@@ -114,7 +113,7 @@ public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 		}
 		doAssignmentCheck(annotationNode, tryBlock.toList(), decl.name);
 		
-		TreeMaker maker = annotationNode.getTreeMaker();
+		JavacTreeMaker maker = annotationNode.getTreeMaker();
 		JCFieldAccess cleanupMethod = maker.Select(maker.Ident(decl.name), annotationNode.toName(cleanupName));
 		List<JCStatement> cleanupCall = List.<JCStatement>of(maker.Exec(
 				maker.Apply(List.<JCExpression>nil(), cleanupMethod, List.<JCExpression>nil())));
@@ -139,9 +138,9 @@ public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 		ancestor.rebuild();
 	}
 	
-	private JCMethodInvocation preventNullAnalysis(TreeMaker maker, JavacNode node, JCExpression expression) {
+	private JCMethodInvocation preventNullAnalysis(JavacTreeMaker maker, JavacNode node, JCExpression expression) {
 		JCMethodInvocation singletonList = maker.Apply(List.<JCExpression>nil(), chainDotsString(node, "java.util.Collections.singletonList"), List.of(expression));
-		JCMethodInvocation cleanedExpr = maker.Apply(List.<JCExpression>nil(), maker.Select(singletonList, node.toName("get")) , List.<JCExpression>of(maker.Literal(TypeTags.INT, 0)));
+		JCMethodInvocation cleanedExpr = maker.Apply(List.<JCExpression>nil(), maker.Select(singletonList, node.toName("get")) , List.<JCExpression>of(maker.Literal(CTC_INT, 0)));
 		return cleanedExpr;
 	}
 	

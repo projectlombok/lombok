@@ -36,18 +36,24 @@ import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCParens;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
+import com.sun.tools.javac.tree.JCTree.JCSynchronized;
 import com.sun.tools.javac.tree.JCTree.JCThrow;
+import com.sun.tools.javac.tree.JCTree.JCTry;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 
 import lombok.NonNull;
 import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
 import lombok.core.AST.Kind;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import static lombok.javac.JavacTreeMaker.TypeTag.*;
+import static lombok.javac.JavacTreeMaker.TreeTag.*;
 
 @ProviderFor(JavacAnnotationHandler.class)
-public class NonNullHandler extends JavacAnnotationHandler<NonNull> {
+@HandlerPriority(value = 512) // 2^9; onParameter=@__(@NonNull) has to run first.
+public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 	@Override public void handle(AnnotationValues<NonNull> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		if (annotationNode.up().getKind() == Kind.FIELD) {
 			// This is meaningless unless the field is used to generate a method (@Setter, @RequiredArgsConstructor, etc),
@@ -74,7 +80,12 @@ public class NonNullHandler extends JavacAnnotationHandler<NonNull> {
 			return;
 		}
 		
-		if (JavacHandlerUtil.isGenerated(declaration)) return;
+//		if (JavacHandlerUtil.isGenerated(declaration)) return;
+		
+		if (declaration.body == null) {
+			annotationNode.addWarning("@NonNull is meaningless on a parameter of an abstract method.");
+			return;
+		}
 		
 		// Possibly, if 'declaration instanceof ConstructorDeclaration', fetch declaration.constructorCall, search it for any references to our parameter,
 		// and if they exist, create a new method in the class: 'private static <T> T lombok$nullCheck(T expr, String msg) {if (expr == null) throw NPE; return expr;}' and
@@ -91,17 +102,33 @@ public class NonNullHandler extends JavacAnnotationHandler<NonNull> {
 		List<JCStatement> statements = declaration.body.stats;
 		
 		String expectedName = annotationNode.up().getName();
-		for (JCStatement stat : statements) {
-			if (JavacHandlerUtil.isConstructorCall(stat)) continue;
-			String varNameOfNullCheck = returnVarNameIfNullCheck(stat);
-			if (varNameOfNullCheck == null) break;
-			if (varNameOfNullCheck.equals(expectedName)) return;
+		
+		/* Abort if the null check is already there, delving into try and synchronized statements */ {
+			List<JCStatement> stats = statements;
+			int idx = 0;
+			while (stats.size() > idx) {
+				JCStatement stat = stats.get(idx++);
+				if (JavacHandlerUtil.isConstructorCall(stat)) continue;
+				if (stat instanceof JCTry) {
+					stats = ((JCTry) stat).body.stats;
+					idx = 0;
+					continue;
+				}
+				if (stat instanceof JCSynchronized) {
+					stats = ((JCSynchronized) stat).body.stats;
+					idx = 0;
+					continue;
+				}
+				String varNameOfNullCheck = returnVarNameIfNullCheck(stat);
+				if (varNameOfNullCheck == null) break;
+				if (varNameOfNullCheck.equals(expectedName)) return;
+			}
 		}
 		
 		List<JCStatement> tail = statements;
 		List<JCStatement> head = List.nil();
 		for (JCStatement stat : statements) {
-			if (JavacHandlerUtil.isConstructorCall(stat) || JavacHandlerUtil.isGenerated(stat)) {
+			if (JavacHandlerUtil.isConstructorCall(stat) || (JavacHandlerUtil.isGenerated(stat) && isNullCheck(stat))) {
 				tail = tail.tail;
 				head = head.prepend(stat);
 				continue;
@@ -112,6 +139,10 @@ public class NonNullHandler extends JavacAnnotationHandler<NonNull> {
 		List<JCStatement> newList = tail.prepend(nullCheck);
 		for (JCStatement stat : head) newList = newList.prepend(stat);
 		declaration.body.stats = newList;
+	}
+	
+	private boolean isNullCheck(JCStatement stat) {
+		return returnVarNameIfNullCheck(stat) != null;
 	}
 	
 	/**
@@ -138,10 +169,10 @@ public class NonNullHandler extends JavacAnnotationHandler<NonNull> {
 			while (cond instanceof JCParens) cond = ((JCParens) cond).expr;
 			if (!(cond instanceof JCBinary)) return null;
 			JCBinary bin = (JCBinary) cond;
-			if (getTag(bin) != CTC_EQUAL) return null;
+			if (!CTC_EQUAL.equals(treeTag(bin))) return null;
 			if (!(bin.lhs instanceof JCIdent)) return null;
 			if (!(bin.rhs instanceof JCLiteral)) return null;
-			if (((JCLiteral) bin.rhs).typetag != CTC_BOT) return null;
+			if (!CTC_BOT.equals(typeTag(bin.rhs))) return null;
 			return ((JCIdent) bin.lhs).name.toString();
 		}
 	}

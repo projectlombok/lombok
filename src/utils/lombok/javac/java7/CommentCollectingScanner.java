@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 The Project Lombok Authors.
+ * Copyright (C) 2011-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,12 @@ import lombok.javac.CommentInfo;
 import lombok.javac.CommentInfo.EndConnection;
 import lombok.javac.CommentInfo.StartConnection;
 
+import com.sun.tools.javac.parser.Scanner;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
-import com.sun.tools.javac.parser.DocCommentScanner;
 
-public class CommentCollectingScanner extends DocCommentScanner {
-	private final ListBuffer<CommentInfo> comments = ListBuffer.lb();
+public class CommentCollectingScanner extends Scanner {
+	private final ListBuffer<CommentInfo> comments = new ListBuffer<CommentInfo>();
 	private int endComment = 0;
 	
 	public CommentCollectingScanner(CommentCollectingScannerFactory factory, CharBuffer charBuffer) {

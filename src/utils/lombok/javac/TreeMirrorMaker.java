@@ -31,7 +31,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeCopier;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 
 /**
@@ -47,8 +46,8 @@ import com.sun.tools.javac.util.List;
 public class TreeMirrorMaker extends TreeCopier<Void> {
 	private final IdentityHashMap<JCTree, JCTree> originalToCopy = new IdentityHashMap<JCTree, JCTree>();
 	
-	public TreeMirrorMaker(TreeMaker maker) {
-		super(maker);
+	public TreeMirrorMaker(JavacTreeMaker maker) {
+		super(maker.getUnderlyingTreeMaker());
 	}
 	
 	@Override public <T extends JCTree> T copy(T original) {

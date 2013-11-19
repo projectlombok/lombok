@@ -20,6 +20,9 @@ public class Scanner implements Lexer {
 	protected Scanner(ScannerFactory fac, char[] input, int inputLength) {
 	}
 	
+	protected Scanner(ScannerFactory fac, JavaTokenizer tokenizer) {
+	}
+	
 	public static class Factory {
 		public static final Context.Key<Scanner.Factory> scannerFactoryKey = null;
 		

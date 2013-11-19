@@ -84,10 +84,9 @@ public class DelombokApp extends LombokApp {
 			return null;
 		}
 		
-		@SuppressWarnings("resource") 
 		// The jar file is used for the lifetime of the classLoader, therefore the lifetime of delombok.
 		// Since we only read from it, not closing it should not be a problem.
-		final JarFile toolsJarFile = new JarFile(toolsJar);
+		@SuppressWarnings({"resource", "all"}) final JarFile toolsJarFile = new JarFile(toolsJar);
 		
 		ClassLoader loader = new ClassLoader() {
 			private Class<?> loadStreamAsClass(String name, boolean resolve, InputStream in) throws ClassNotFoundException {

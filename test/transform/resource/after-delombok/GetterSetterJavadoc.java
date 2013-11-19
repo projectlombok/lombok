@@ -9,7 +9,7 @@ class GetterSetterJavadoc1 {
 	/**
 	 * Getter section
 	 *
-	 * @return Sky is blue
+	 * @return Sky is blue1
 	 */
 	@java.lang.SuppressWarnings("all")
 	public int getFieldName() {
@@ -18,7 +18,7 @@ class GetterSetterJavadoc1 {
 	/**
 	 * Some text
 	 *
-	 * @param fieldName Hello, World
+	 * @param fieldName Hello, World1
 	 */
 	@java.lang.SuppressWarnings("all")
 	public void setFieldName(final int fieldName) {
@@ -60,7 +60,7 @@ class GetterSetterJavadoc2 {
 	/**
 	 * Some text
 	 *
-	 * @return Sky is blue
+	 * @return Sky is blue2
 	 */
 	@java.lang.SuppressWarnings("all")
 	public int getFieldName() {
@@ -69,7 +69,7 @@ class GetterSetterJavadoc2 {
 	/**
 	 * Some text
 	 *
-	 * @param fieldName Hello, World
+	 * @param fieldName Hello, World2
 	 */
 	@java.lang.SuppressWarnings("all")
 	public void setFieldName(final int fieldName) {
@@ -83,7 +83,7 @@ class GetterSetterJavadoc3 {
 	private int fieldName;
 	/**
 	 * Getter section
-	 * @return Sky is blue
+	 * @return Sky is blue3
 	 */
 	@java.lang.SuppressWarnings("all")
 	public int getFieldName() {
@@ -91,7 +91,7 @@ class GetterSetterJavadoc3 {
 	}
 	/**
 	 * Setter section
-	 * @param fieldName Hello, World
+	 * @param fieldName Hello, World3
 	 */
 	@java.lang.SuppressWarnings("all")
 	public void setFieldName(final int fieldName) {

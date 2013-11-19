@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 The Project Lombok Authors.
+ * Copyright (C) 2011-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,13 +21,15 @@
  */
 package lombok.javac;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.List;
 
 public class CommentCatcher {
 	private final JavaCompiler compiler;
@@ -55,38 +57,54 @@ public class CommentCatcher {
 		return compiler;
 	}
 	
+	public void setComments(JCCompilationUnit ast, List<CommentInfo> comments) {
+		if (comments != null) {
+			commentsMap.put(ast, comments);
+		} else {
+			commentsMap.remove(ast);
+		}
+	}
+	
 	public List<CommentInfo> getComments(JCCompilationUnit ast) {
 		List<CommentInfo> list = commentsMap.get(ast);
-		return list == null ? List.<CommentInfo>nil() : list;
+		return list == null ? Collections.<CommentInfo>emptyList() : list;
 	}
 	
 	private static void registerCommentsCollectingScannerFactory(Context context) {
 		try {
-			if (Javac.getJavaCompilerVersion() <= 6) {
-				Class.forName("lombok.javac.java6.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
+			Class<?> scannerFactory;
+			int javaCompilerVersion = Javac.getJavaCompilerVersion();
+			if (javaCompilerVersion <= 6) {
+				scannerFactory = Class.forName("lombok.javac.java6.CommentCollectingScannerFactory");
+			} else if (javaCompilerVersion == 7) {
+				scannerFactory = Class.forName("lombok.javac.java7.CommentCollectingScannerFactory");
 			} else {
-				Class.forName("lombok.javac.java7.CommentCollectingScannerFactory").getMethod("preRegister", Context.class).invoke(null, context);
+				scannerFactory = Class.forName("lombok.javac.java8.CommentCollectingScannerFactory");
 			}
+			scannerFactory.getMethod("preRegister", Context.class).invoke(null, context);
+		} catch (InvocationTargetException e) {
+			throw Javac.sneakyThrow(e.getCause());
 		} catch (Exception e) {
-			if (e instanceof RuntimeException) throw (RuntimeException)e;
-			throw new RuntimeException(e);
+			throw Javac.sneakyThrow(e);
 		}
 	}
 	
 	private static void setInCompiler(JavaCompiler compiler, Context context, Map<JCCompilationUnit, List<CommentInfo>> commentsMap) {
-		
 		try {
-			if (Javac.getJavaCompilerVersion() <= 6) {
-				Class<?> parserFactory = Class.forName("lombok.javac.java6.CommentCollectingParserFactory");
-				parserFactory.getMethod("setInCompiler", JavaCompiler.class, Context.class, Map.class).invoke(null, compiler, context, commentsMap);
+			Class<?> parserFactory;
+			int javaCompilerVersion = Javac.getJavaCompilerVersion();
+			if (javaCompilerVersion <= 6) {
+				parserFactory = Class.forName("lombok.javac.java6.CommentCollectingParserFactory");
+			} else if (javaCompilerVersion == 7) {
+				parserFactory = Class.forName("lombok.javac.java7.CommentCollectingParserFactory");
 			} else {
-				Class<?> parserFactory = Class.forName("lombok.javac.java7.CommentCollectingParserFactory");
-				parserFactory.getMethod("setInCompiler", JavaCompiler.class, Context.class, Map.class).invoke(null, compiler, context, commentsMap);
+				parserFactory = Class.forName("lombok.javac.java8.CommentCollectingParserFactory");
 			}
+			parserFactory.getMethod("setInCompiler", JavaCompiler.class, Context.class, Map.class).invoke(null, compiler, context, commentsMap);
+		} catch (InvocationTargetException e) {
+			throw Javac.sneakyThrow(e.getCause());
 		} catch (Exception e) {
-			if (e instanceof RuntimeException) throw (RuntimeException)e;
-			throw new RuntimeException(e);
+			throw Javac.sneakyThrow(e);
 		}
 	}
-	
 }

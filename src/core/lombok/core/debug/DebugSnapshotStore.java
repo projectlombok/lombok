@@ -82,7 +82,7 @@ public class DebugSnapshotStore {
 		}
 		
 		try {
-			File logFile = new File(System.getProperty("user.home", "."), String.format("lombok164-%d.err", System.currentTimeMillis()));
+			File logFile = new File(System.getProperty("user.home", "."), String.format("lombokdss-%d.err", System.currentTimeMillis()));
 			OutputStream stream = new FileOutputStream(logFile);
 			try {
 				stream.write(out.toString().getBytes("UTF-8"));

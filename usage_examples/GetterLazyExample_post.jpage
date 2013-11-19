@@ -4,7 +4,7 @@ public class GetterLazyExample {
 	public double[] getCached() {
 		java.lang.Object value = this.cached.get();
 		if (value == null) {
-			synchronized(value) {
+			synchronized(this.cached) {
 				value = this.cached.get();
 				if (value == null) {
 					final double[] actualValue = expensive();

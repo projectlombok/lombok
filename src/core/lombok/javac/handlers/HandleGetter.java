@@ -22,6 +22,7 @@
 package lombok.javac.handlers;
 
 import static lombok.javac.Javac.*;
+import static lombok.javac.JavacTreeMaker.TypeTag.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.Collection;
@@ -37,6 +38,8 @@ import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
+import lombok.javac.JavacTreeMaker.TypeTag;
 import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 
 import org.mangosdk.spi.ProviderFor;
@@ -57,7 +60,6 @@ import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCSynchronized;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
@@ -213,7 +215,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker(), source.get(), lazy, onMethod));
 	}
 	
-	private JCMethodDecl createGetter(long access, JavacNode field, TreeMaker treeMaker, JCTree source, boolean lazy, List<JCAnnotation> onMethod) {
+	private JCMethodDecl createGetter(long access, JavacNode field, JavacTreeMaker treeMaker, JCTree source, boolean lazy, List<JCAnnotation> onMethod) {
 		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
 		
 		// Remember the type; lazy will change it
@@ -268,7 +270,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		}
 		
 		if (!delegates.isEmpty()) {
-			ListBuffer<JCAnnotation> withoutDelegates = ListBuffer.lb();
+			ListBuffer<JCAnnotation> withoutDelegates = new ListBuffer<JCAnnotation>();
 			for (JCAnnotation annotation : fieldNode.mods.annotations) {
 				if (!delegates.contains(annotation)) {
 					withoutDelegates.append(annotation);
@@ -280,7 +282,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		return delegates;
 	}
 	
-	private List<JCStatement> createSimpleGetterBody(TreeMaker treeMaker, JavacNode field) {
+	private List<JCStatement> createSimpleGetterBody(JavacTreeMaker treeMaker, JavacNode field) {
 		return List.<JCStatement>of(treeMaker.Return(createFieldAccessor(treeMaker, field, FieldAccess.ALWAYS_FIELD)));
 	}
 	
@@ -288,9 +290,9 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	private static final String JLO = "java.lang.Object";
 	private static final List<JCExpression> NIL_EXPRESSION = List.nil();
 	
-	private static final java.util.Map<Integer, String> TYPE_MAP;
+	private static final java.util.Map<TypeTag, String> TYPE_MAP;
 	static {
-		Map<Integer, String> m = new HashMap<Integer, String>();
+		Map<TypeTag, String> m = new HashMap<TypeTag, String>();
 		m.put(CTC_INT, "java.lang.Integer");
 		m.put(CTC_DOUBLE, "java.lang.Double");
 		m.put(CTC_FLOAT, "java.lang.Float");
@@ -302,7 +304,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		TYPE_MAP = Collections.unmodifiableMap(m);
 	}
 	
-	private List<JCStatement> createLazyGetterBody(TreeMaker maker, JavacNode fieldNode, JCTree source) {
+	private List<JCStatement> createLazyGetterBody(JavacTreeMaker maker, JavacNode fieldNode, JCTree source) {
 		/*
 		java.lang.Object value = this.fieldName.get();
 		if (value == null) {
@@ -326,7 +328,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		[END IF]
 		*/
 		
-		ListBuffer<JCStatement> statements = ListBuffer.lb();
+		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		
 		JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 		JCExpression copyOfRawFieldType = copyType(maker, field);
@@ -334,7 +336,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		field.type = null;
 		boolean isPrimitive = false;
 		if (field.vartype instanceof JCPrimitiveTypeTree) {
-			String boxed = TYPE_MAP.get(((JCPrimitiveTypeTree)field.vartype).typetag);
+			String boxed = TYPE_MAP.get(typeTag(field.vartype));
 			if (boxed != null) {
 				isPrimitive = true;
 				field.vartype = chainDotsString(fieldNode, boxed);
@@ -354,14 +356,14 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		/* if (value == null) { */ {
 			JCSynchronized synchronizedStatement;
 			/* synchronized (this.fieldName) { */ {
-				ListBuffer<JCStatement> synchronizedStatements = ListBuffer.lb();
+				ListBuffer<JCStatement> synchronizedStatements = new ListBuffer<JCStatement>();
 				/* value = this.fieldName.get(); */ {
 					JCExpressionStatement newAssign = maker.Exec(maker.Assign(maker.Ident(valueName), callGet(fieldNode, createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD))));
 					synchronizedStatements.append(newAssign);
 				}
 				
 				/* if (value == null) { */ {
-					ListBuffer<JCStatement> innerIfStatements = ListBuffer.lb();
+					ListBuffer<JCStatement> innerIfStatements = new ListBuffer<JCStatement>();
 					/* final RawValueType actualValue = INITIALIZER_EXPRESSION; */ {
 						innerIfStatements.append(maker.VarDef(maker.Modifiers(Flags.FINAL), actualValueName, copyOfRawFieldType, field.init));
 					}
@@ -423,16 +425,16 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	}
 	
 	private JCMethodInvocation callGet(JavacNode source, JCExpression receiver) {
-		TreeMaker maker = source.getTreeMaker();
+		JavacTreeMaker maker = source.getTreeMaker();
 		return maker.Apply(NIL_EXPRESSION, maker.Select(receiver, source.toName("get")), NIL_EXPRESSION);
 	}
 	
 	private JCStatement callSet(JavacNode source, JCExpression receiver, JCExpression value) {
-		TreeMaker maker = source.getTreeMaker();
+		JavacTreeMaker maker = source.getTreeMaker();
 		return maker.Exec(maker.Apply(NIL_EXPRESSION, maker.Select(receiver, source.toName("set")), List.<JCExpression>of(value)));
 	}
 	
-	private JCExpression copyType(TreeMaker treeMaker, JCVariableDecl fieldNode) {
+	private JCExpression copyType(JavacTreeMaker treeMaker, JCVariableDecl fieldNode) {
 		return fieldNode.type != null ? treeMaker.Type(fieldNode.type) : fieldNode.vartype;
 	}
 }

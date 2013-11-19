@@ -38,30 +38,26 @@ public class CompilerMessageMatcher {
 	/** Line Number (starting at 1) */
 	private final long line;
 	
-	/** Position is either column number, OR position in file starting from the first byte. */
-	private final long position;
 	private final Collection<String> messageParts;
 	
-	public CompilerMessageMatcher(long line, long position, String message) {
+	public CompilerMessageMatcher(long line, String message) {
 		this.line = line;
-		this.position = position;
 		this.messageParts = Arrays.asList(message.split("\\s+"));
 	}
 	
 	public static CompilerMessageMatcher asCompilerMessageMatcher(CompilerMessage message) {
-		return new CompilerMessageMatcher(message.getLine(), message.getColumnOrPosition(), message.getMessage());
+		return new CompilerMessageMatcher(message.getLine(), message.getMessage());
 	}
 	
 	@Override public String toString() {
 		StringBuilder parts = new StringBuilder();
 		for (String part : messageParts) parts.append(part).append(" ");
 		if (parts.length() > 0) parts.setLength(parts.length() - 1);
-		return String.format("%d:%d %s", line, position, parts);
+		return String.format("%d %s", line, parts);
 	}
 	
 	public boolean matches(CompilerMessage message) {
 		if (message.getLine() != this.line) return false;
-		if (message.getColumnOrPosition() != this.position) return false;
 		for (String token : messageParts) {
 			if (!message.getMessage().contains(token)) return false;
 		}
@@ -78,12 +74,12 @@ public class CompilerMessageMatcher {
 		return out;
 	}
 	
-	private static final Pattern PATTERN = Pattern.compile("^(\\d+):(\\d+) (.*)$");
+	private static final Pattern PATTERN = Pattern.compile("^(\\d+) (.*)$");
 	private static CompilerMessageMatcher read(String line) {
 		line = line.trim();
 		if (line.isEmpty()) return null;
 		Matcher m = PATTERN.matcher(line);
 		if (!m.matches()) throw new IllegalArgumentException("Typo in test file: " + line);
-		return new CompilerMessageMatcher(Integer.parseInt(m.group(1)), Integer.parseInt(m.group(2)), m.group(3));
+		return new CompilerMessageMatcher(Integer.parseInt(m.group(1)), m.group(2));
 	}
 }
