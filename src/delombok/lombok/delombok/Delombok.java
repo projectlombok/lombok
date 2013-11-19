@@ -88,6 +88,10 @@ public class Delombok {
 		@Excludes("quiet")
 		private boolean verbose;
 		
+		@Shorthand("f")
+		@Description("Sets formatting rules. Use 'help' or 'list' to list all available rules. Unset format rules are inferred by scanning the source for usages.")
+		private List<String> format = new ArrayList<String>();
+		
 		@Shorthand("q")
 		@Description("No warnings or errors will be emitted to standard error")
 		@Excludes("verbose")
