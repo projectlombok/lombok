@@ -183,6 +183,8 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     private boolean needsNewLine = false;
     private boolean needsAlign = false;
     
+    private final String indentation = "\t";
+    
     public PrettyCommentsPrinter(Writer out, JCCompilationUnit cu, List<CommentInfo> comments) {
         this.out = out;
         this.comments = comments;
@@ -297,7 +299,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
     	onNewLine = false;
     	aligned = true;
     	needsAlign = false;
-        for (int i = 0; i < lmargin; i++) out.write("\t");
+        for (int i = 0; i < lmargin; i++) out.write(indentation);
     }
     
     /** Increase left margin by indentation width.
@@ -452,10 +454,21 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
      */
     public void printStats(List<? extends JCTree> trees) throws IOException {
         for (List<? extends JCTree> l = trees; l.nonEmpty(); l = l.tail) {
+            if (isSuppressed(l.head)) continue;
             align();
             printStat(l.head);
             println();
         }
+    }
+    
+    private boolean isSuppressed(JCTree tree) {
+        if (isEmptyStat(tree)) {
+            return true;
+        }
+        if (tree instanceof JCExpressionStatement) {
+            return isNoArgsSuperCall(((JCExpressionStatement)tree).expr);
+        }
+        return false;
     }
 
     /** Print a set of modifiers.
@@ -906,8 +919,17 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 
     public void visitLabelled(JCLabeledStatement tree) {
         try {
-            print(tree.label + ": ");
-            printStat(tree.body);
+            print(tree.label + ":");
+            if (isEmptyStat(tree.body) || tree.body instanceof JCSkip) {
+                print(" ;");
+            } else if (tree.body instanceof JCBlock) {
+                print(" ");
+                printStat(tree.body);
+            } else {
+                println();
+                align();
+                printStat(tree.body);
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -981,18 +1003,22 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
             }
             
             if (resources != null && resources.nonEmpty()) {
-                boolean first = true;
                 print("(");
-                for (Object var0 : resources) {
-                    JCTree var = (JCTree) var0;
-                    if (!first) {
-                        println();
-                        indent();
-                    }
+                if (resources.size() == 1) {
+                    JCTree var = (JCTree) resources.get(0);
                     printStat(var);
-                    first = false;
+                    print(") ");
+                } else {
+                    indent(); indent();
+                    for (Object var0 : resources) {
+                        println();
+                        align();
+                        JCTree var = (JCTree) var0;
+                        printStat(var);
+                    }
+                    print(") ");
+                    undent(); undent();
                 }
-                print(") ");
             }
             
             printStat(tree.body);
