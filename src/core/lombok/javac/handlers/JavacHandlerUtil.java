@@ -142,7 +142,6 @@ public class JavacHandlerUtil {
 			if (source == null) generatedNodes.remove(node);
 			else generatedNodes.put(node, new WeakReference<JCTree>(source));
 		}
-		if (source != null) node.pos = source.pos;
 		return node;
 	}
 	
