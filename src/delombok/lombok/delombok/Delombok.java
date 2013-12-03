@@ -79,7 +79,7 @@ public class Delombok {
 	private String classpath, sourcepath, bootclasspath;
 	private LinkedHashMap<File, File> fileToBase = new LinkedHashMap<File, File>();
 	private List<File> filesToParse = new ArrayList<File>();
-	private Map<String, String> formatPrefs = null;
+	private Map<String, String> formatPrefs = new HashMap<String, String>();
 	
 	/** If null, output to standard out. */
 	private File output = null;
