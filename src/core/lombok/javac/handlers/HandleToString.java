@@ -240,7 +240,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		JCBlock body = maker.Block(0, List.of(returnStatement));
 		
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("toString"), returnType,
-				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source);
+				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source, typeNode.getContext());
 	}
 	
 	private static String getTypeName(JavacNode typeNode) {

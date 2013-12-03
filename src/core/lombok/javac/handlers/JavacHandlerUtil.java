@@ -77,6 +77,7 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
 import com.sun.tools.javac.tree.TreeScanner;
+import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
@@ -93,14 +94,16 @@ public class JavacHandlerUtil {
 	
 	private static class MarkingScanner extends TreeScanner {
 		private final JCTree source;
+		private final Context context;
 		
-		MarkingScanner(JCTree source) {
+		MarkingScanner(JCTree source, Context context) {
 			this.source = source;
+			this.context = context;
 		}
 		
 		@Override public void scan(JCTree tree) {
 			if (tree == null) return;
-			setGeneratedBy(tree, source);
+			setGeneratedBy(tree, source, context);
 			super.scan(tree);
 		}
 	}
@@ -113,7 +116,11 @@ public class JavacHandlerUtil {
 	 * actual runtime behaviour or file output of the netbeans IDE.
 	 */
 	public static boolean inNetbeansEditor(JavacNode node) {
-		Options options = Options.instance(node.getContext());
+		return inNetbeansEditor(node.getContext());
+	}
+	
+	private static boolean inNetbeansEditor(Context context) {
+		Options options = Options.instance(context);
 		return (options.keySet().contains("ide") && !options.keySet().contains("backgroundCompilation"));
 	}
 	
@@ -128,21 +135,20 @@ public class JavacHandlerUtil {
 		return getGeneratedBy(node) != null;
 	}
 	
-	public static <T extends JCTree> T recursiveSetGeneratedBy(T node, JCTree source) {
+	public static <T extends JCTree> T recursiveSetGeneratedBy(T node, JCTree source, Context context) {
 		if (node == null) return null;
-		setGeneratedBy(node, source);
-		node.accept(new MarkingScanner(source));
-		
+		setGeneratedBy(node, source, context);
+		node.accept(new MarkingScanner(source, context));
 		return node;
 	}
 	
-	public static <T extends JCTree> T setGeneratedBy(T node, JCTree source) {
+	public static <T extends JCTree> T setGeneratedBy(T node, JCTree source, Context context) {
 		if (node == null) return null;
 		synchronized (generatedNodes) {
 			if (source == null) generatedNodes.remove(node);
 			else generatedNodes.put(node, new WeakReference<JCTree>(source));
 		}
-		if (source != null) node.pos = source.pos;
+		if (source != null && !inNetbeansEditor(context)) node.pos = source.pos;
 		return node;
 	}
 	
@@ -808,7 +814,7 @@ public class JavacHandlerUtil {
 	private static JavacNode injectField(JavacNode typeNode, JCVariableDecl field, boolean addSuppressWarnings) {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
-		if (addSuppressWarnings) addSuppressWarningsAll(field.mods, typeNode, field.pos, getGeneratedBy(field));
+		if (addSuppressWarnings) addSuppressWarningsAll(field.mods, typeNode, field.pos, getGeneratedBy(field), typeNode.getContext());
 		
 		List<JCTree> insertAfter = null;
 		List<JCTree> insertBefore = type.defs;
@@ -866,7 +872,7 @@ public class JavacHandlerUtil {
 			}
 		}
 		
-		addSuppressWarningsAll(method.mods, typeNode, method.pos, getGeneratedBy(method));
+		addSuppressWarningsAll(method.mods, typeNode, method.pos, getGeneratedBy(method), typeNode.getContext());
 		type.defs = type.defs.append(method);
 		
 		typeNode.add(method, Kind.METHOD);
@@ -879,20 +885,20 @@ public class JavacHandlerUtil {
 	 * @param type New type (class, interface, etc) to inject.
 	 * @return 
 	 */
-	public static JavacNode injectType(final JavacNode typeNode, final JCClassDecl type) {
+	public static JavacNode injectType(JavacNode typeNode, final JCClassDecl type) {
 		JCClassDecl typeDecl = (JCClassDecl) typeNode.get();
-		addSuppressWarningsAll(type.mods, typeNode, type.pos, getGeneratedBy(type));
+		addSuppressWarningsAll(type.mods, typeNode, type.pos, getGeneratedBy(type), typeNode.getContext());
 		typeDecl.defs = typeDecl.defs.append(type);
 		return typeNode.add(type, Kind.TYPE);
 	}
 	
-	private static void addSuppressWarningsAll(JCModifiers mods, JavacNode node, int pos, JCTree source) {
+	private static void addSuppressWarningsAll(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context) {
 		JavacTreeMaker maker = node.getTreeMaker();
 		JCExpression suppressWarningsType = chainDots(node, "java", "lang", "SuppressWarnings");
 		JCLiteral allLiteral = maker.Literal("all");
 		suppressWarningsType.pos = pos;
 		allLiteral.pos = pos;
-		JCAnnotation annotation = recursiveSetGeneratedBy(maker.Annotation(suppressWarningsType, List.<JCExpression>of(allLiteral)), source);
+		JCAnnotation annotation = recursiveSetGeneratedBy(maker.Annotation(suppressWarningsType, List.<JCExpression>of(allLiteral)), source, context);
 		annotation.pos = pos;
 		mods.annotations = mods.annotations.append(annotation);
 	}
@@ -1183,9 +1189,9 @@ public class JavacHandlerUtil {
 	 * the class's own parameter, but as its a static method, the static method's notion of {@code T} is different from the class notion of {@code T}. If you're duplicating
 	 * a type used in the class context, you need to use this method.
 	 */
-	public static JCExpression cloneType(JavacTreeMaker maker, JCExpression in, JCTree source) {
+	public static JCExpression cloneType(JavacTreeMaker maker, JCExpression in, JCTree source, Context context) {
 		JCExpression out = cloneType0(maker, in);
-		if (out != null) recursiveSetGeneratedBy(out, source);
+		if (out != null) recursiveSetGeneratedBy(out, source, context);
 		return out;
 	}
 	

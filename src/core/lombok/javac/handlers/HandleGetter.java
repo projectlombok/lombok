@@ -250,9 +250,9 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		}
 		
 		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
-				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
+				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source, field.getContext());
 		
-		if (toClearOfMarkers != null) recursiveSetGeneratedBy(toClearOfMarkers, null);
+		if (toClearOfMarkers != null) recursiveSetGeneratedBy(toClearOfMarkers, null, null);
 		decl.mods.annotations = decl.mods.annotations.appendList(delegates);
 		
 		copyJavadoc(field, decl, CopyJavadoc.GETTER);
@@ -417,8 +417,8 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		/*	private final java.util.concurrent.atomic.AtomicReference<Object> fieldName = new java.util.concurrent.atomic.AtomicReference<Object>(); */ {
 			field.vartype = recursiveSetGeneratedBy(
-					maker.TypeApply(chainDotsString(fieldNode, AR), List.<JCExpression>of(chainDotsString(fieldNode, JLO))), source);
-			field.init = recursiveSetGeneratedBy(maker.NewClass(null, NIL_EXPRESSION, copyType(maker, field), NIL_EXPRESSION, null), source);
+					maker.TypeApply(chainDotsString(fieldNode, AR), List.<JCExpression>of(chainDotsString(fieldNode, JLO))), source, fieldNode.getContext());
+			field.init = recursiveSetGeneratedBy(maker.NewClass(null, NIL_EXPRESSION, copyType(maker, field), NIL_EXPRESSION, null), source, fieldNode.getContext());
 		}
 		
 		return statements.toList();

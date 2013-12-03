@@ -44,6 +44,7 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 
 /**
@@ -117,7 +118,8 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 	private JCStatement buildTryCatchBlock(JavacNode node, List<JCStatement> contents, String exception, JCTree source) {
 		JavacTreeMaker maker = node.getTreeMaker();
 		
-		JCBlock tryBlock = setGeneratedBy(maker.Block(0, contents), source);
+		Context context = node.getContext();
+		JCBlock tryBlock = setGeneratedBy(maker.Block(0, contents), source, context);
 		
 		JCExpression varType = chainDots(node, exception.split("\\."));
 		
@@ -127,6 +129,6 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 				List.<JCExpression>nil(), lombokLombokSneakyThrowNameRef,
 				List.<JCExpression>of(maker.Ident(node.toName("$ex")))))));
 		
-		return setGeneratedBy(maker.Try(tryBlock, List.of(recursiveSetGeneratedBy(maker.Catch(catchParam, catchBody), source)), null), source);
+		return setGeneratedBy(maker.Try(tryBlock, List.of(recursiveSetGeneratedBy(maker.Catch(catchParam, catchBody), source, context)), null), source, context);
 	}
 }

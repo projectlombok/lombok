@@ -254,7 +254,7 @@ public class HandleConstructor {
 		if (onConstructor != null) mods.annotations = mods.annotations.appendList(copyAnnotations(onConstructor));
 		
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
-				null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(), maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source);
+				null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(), maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source, typeNode.getContext());
 	}
 	
 	private static boolean isLocalType(JavacNode type) {
@@ -294,7 +294,7 @@ public class HandleConstructor {
 		for (JavacNode fieldNode : fields) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			Name fieldName = removePrefixFromField(fieldNode);
-			JCExpression pType = cloneType(maker, field.vartype, source);
+			JCExpression pType = cloneType(maker, field.vartype, source, typeNode.getContext());
 			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, TransformationsUtil.NON_NULL_PATTERN);
 			List<JCAnnotation> nullables = findAnnotations(fieldNode, TransformationsUtil.NULLABLE_PATTERN);
 			JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL | Flags.PARAMETER, nonNulls.appendList(nullables)), fieldName, pType, null);
@@ -304,6 +304,6 @@ public class HandleConstructor {
 		JCReturn returnStatement = maker.Return(maker.NewClass(null, List.<JCExpression>nil(), constructorType, args.toList(), null));
 		JCBlock body = maker.Block(0, List.<JCStatement>of(returnStatement));
 		
-		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName(name), returnType, typeParams.toList(), params.toList(), List.<JCExpression>nil(), body, null), source);
+		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName(name), returnType, typeParams.toList(), params.toList(), List.<JCExpression>nil(), body, null), source, typeNode.getContext());
 	}
 }

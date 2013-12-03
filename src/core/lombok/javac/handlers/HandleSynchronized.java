@@ -41,6 +41,7 @@ import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 
 /**
@@ -80,6 +81,7 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 		}
 		
 		JavacTreeMaker maker = methodNode.getTreeMaker().at(ast.pos);
+		Context context = methodNode.getContext();
 		
 		if (fieldExists(lockName, methodNode) == MemberExistsResult.NOT_EXISTS) {
 			if (!autoMake) {
@@ -92,7 +94,7 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 					List.<JCExpression>of(maker.Literal(CTC_INT, 0)), null);
 			JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
 					maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic ? Flags.STATIC : 0)),
-					methodNode.toName(lockName), objectType, newObjectArray), ast);
+					methodNode.toName(lockName), objectType, newObjectArray), ast, context);
 			injectFieldSuppressWarnings(methodNode.up(), fieldDecl);
 		}
 		
@@ -105,8 +107,8 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 			lockNode = maker.Select(maker.Ident(methodNode.toName("this")), methodNode.toName(lockName));
 		}
 		
-		recursiveSetGeneratedBy(lockNode, ast);
-		method.body = setGeneratedBy(maker.Block(0, List.<JCStatement>of(setGeneratedBy(maker.Synchronized(lockNode, method.body), ast))), ast);
+		recursiveSetGeneratedBy(lockNode, ast, context);
+		method.body = setGeneratedBy(maker.Block(0, List.<JCStatement>of(setGeneratedBy(maker.Synchronized(lockNode, method.body), ast, context))), ast, context);
 		
 		methodNode.rebuild();
 	}

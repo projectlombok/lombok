@@ -288,7 +288,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			}
 			JavacTreeMaker maker = builderType.getTreeMaker();
 			JCModifiers mods = maker.Modifiers(Flags.PRIVATE);
-			JCVariableDecl newField = maker.VarDef(mods, name, cloneType(maker, typesOfParameters.get(i), source), null);
+			JCVariableDecl newField = maker.VarDef(mods, name, cloneType(maker, typesOfParameters.get(i), source, builderType.getContext()), null);
 			out.add(injectField(builderType, newField));
 		}
 		

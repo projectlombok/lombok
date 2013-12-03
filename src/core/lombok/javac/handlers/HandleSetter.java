@@ -249,7 +249,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		}
 		
 		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
-				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
+				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source, field.getContext());
 		copyJavadoc(field, decl, CopyJavadoc.SETTER);
 		return decl;
 	}

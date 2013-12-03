@@ -317,7 +317,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		
 		JCBlock body = maker.Block(0, statements.toList());
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("hashCode"), returnType,
-				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source);
+				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source, typeNode.getContext());
 	}
 
 	private JCExpressionStatement createResultCalculation(JavacNode typeNode, JCExpression expr) {
@@ -486,7 +486,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		}
 		
 		JCBlock body = maker.Block(0, statements.toList());
-		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("equals"), returnType, List.<JCTypeParameter>nil(), params, List.<JCExpression>nil(), body, null), source);
+		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("equals"), returnType, List.<JCTypeParameter>nil(), params, List.<JCExpression>nil(), body, null), source, typeNode.getContext());
 	}
 
 	private JCMethodDecl createCanEqual(JavacNode typeNode, JCTree source) {
@@ -506,7 +506,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		JCBlock body = maker.Block(0, List.<JCStatement>of(
 				maker.Return(maker.TypeTest(maker.Ident(otherName), createTypeReference(typeNode)))));
 		
-		return recursiveSetGeneratedBy(maker.MethodDef(mods, canEqualName, returnType, List.<JCTypeParameter>nil(), params, List.<JCExpression>nil(), body, null), source);
+		return recursiveSetGeneratedBy(maker.MethodDef(mods, canEqualName, returnType, List.<JCTypeParameter>nil(), params, List.<JCExpression>nil(), body, null), source, typeNode.getContext());
 	}
 	
 	private JCStatement generateCompareFloatOrDouble(JCExpression thisDotField, JCExpression otherDotField,

@@ -84,7 +84,7 @@ public class HandleVal extends JavacASTAdapter {
 		local.mods.flags |= Flags.FINAL;
 		
 		if (!localNode.shouldDeleteLombokAnnotations()) {
-			JCAnnotation valAnnotation = recursiveSetGeneratedBy(localNode.getTreeMaker().Annotation(local.vartype, List.<JCExpression>nil()), source);
+			JCAnnotation valAnnotation = recursiveSetGeneratedBy(localNode.getTreeMaker().Annotation(local.vartype, List.<JCExpression>nil()), source, localNode.getContext());
 			local.mods.annotations = local.mods.annotations == null ? List.of(valAnnotation) : local.mods.annotations.append(valAnnotation);
 		}
 		
@@ -138,7 +138,7 @@ public class HandleVal extends JavacASTAdapter {
 			local.vartype = JavacResolution.createJavaLangObject(localNode.getAst());
 			throw e;
 		} finally {
-			recursiveSetGeneratedBy(local.vartype, source);
+			recursiveSetGeneratedBy(local.vartype, source, localNode.getContext());
 		}
 	}
 }

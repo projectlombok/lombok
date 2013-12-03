@@ -91,7 +91,7 @@ public class HandleLog {
 		
 		JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
 				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | Flags.STATIC),
-				typeNode.toName("log"), loggerType, factoryMethodCall), source);
+				typeNode.toName("log"), loggerType, factoryMethodCall), source, typeNode.getContext());
 		
 		injectField(typeNode, fieldDecl);
 		return true;

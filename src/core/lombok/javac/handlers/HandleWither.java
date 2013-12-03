@@ -264,7 +264,7 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 			annsOnMethod = annsOnMethod.prepend(maker.Annotation(chainDots(field, "java", "lang", "Deprecated"), List.<JCExpression>nil()));
 		}
 		JCMethodDecl decl = recursiveSetGeneratedBy(maker.MethodDef(maker.Modifiers(access, annsOnMethod), methodName, returnType,
-				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source);
+				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source, field.getContext());
 		copyJavadoc(field, decl, CopyJavadoc.WITHER);
 		return decl;
 	}
