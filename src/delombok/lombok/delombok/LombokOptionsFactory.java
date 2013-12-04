@@ -27,6 +27,7 @@ import lombok.javac.Javac8BasedLombokOptions;
 import lombok.javac.LombokOptions;
 
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Options;
 
 public class LombokOptionsFactory {
 	enum LombokOptionCompilerVersion {
@@ -46,6 +47,9 @@ public class LombokOptionsFactory {
 	}
 	
 	public static LombokOptions getDelombokOptions(Context context) {
+		Options rawOptions = Options.instance(context);
+		if (rawOptions instanceof LombokOptions) return (LombokOptions) rawOptions;
+		
 		LombokOptions options;
 		if (Javac.getJavaCompilerVersion() < 8) {
 			options = LombokOptionCompilerVersion.JDK7_AND_LOWER.createAndRegisterOptions(context);
