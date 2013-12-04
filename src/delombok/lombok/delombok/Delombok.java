@@ -58,6 +58,7 @@ import com.sun.tools.javac.util.Context;
 import com.zwitserloot.cmdreader.CmdReader;
 import com.zwitserloot.cmdreader.Description;
 import com.zwitserloot.cmdreader.Excludes;
+import com.zwitserloot.cmdreader.FullName;
 import com.zwitserloot.cmdreader.InvalidCommandLineException;
 import com.zwitserloot.cmdreader.Mandatory;
 import com.zwitserloot.cmdreader.Sequential;
@@ -91,8 +92,11 @@ public class Delombok {
 		private boolean verbose;
 		
 		@Shorthand("f")
-		@Description("Sets formatting rules. Use 'help' or 'list' to list all available rules. Unset format rules are inferred by scanning the source for usages.")
+		@Description("Sets formatting rules. Use --format-help to list all available rules. Unset format rules are inferred by scanning the source for usages.")
 		private List<String> format = new ArrayList<String>();
+		
+		@FullName("format-help")
+		private boolean formatHelp;
 		
 		@Shorthand("q")
 		@Description("No warnings or errors will be emitted to standard error")
@@ -109,7 +113,7 @@ public class Delombok {
 		
 		@Shorthand("d")
 		@Description("Directory to save delomboked files to")
-		@Mandatory(onlyIfNot={"print", "help"})
+		@Mandatory(onlyIfNot={"print", "help", "format-help"})
 		private String target;
 		
 		@Shorthand("c")
@@ -176,7 +180,7 @@ public class Delombok {
 			return;
 		}
 		
-		if (args.help || args.input.isEmpty()) {
+		if (args.help || (args.input.isEmpty() && !args.formatHelp)) {
 			if (!args.help) System.err.println("ERROR: no files or directories to delombok specified.");
 			System.err.println(reader.generateCommandLineHelp("delombok"));
 			System.exit(args.help ? 0 : 1);
@@ -193,20 +197,20 @@ public class Delombok {
 		
 		Map<String, String> formatPrefs = new HashMap<String, String>();
 		
-		for (String format : args.format) {
-			if ("help".equalsIgnoreCase(format) || "list".equalsIgnoreCase(format)) {
-				System.out.println("Available format keys (to use, -f key:value -f key2:value2 -f ... ):");
-				for (Map.Entry<String, String> e : FormatPreferences.getKeysAndDescriptions().entrySet()) {
-					System.out.print("  ");
-					System.out.print(e.getKey());
-					System.out.println(":");
-					System.out.println(indentAndWordbreak(e.getValue(), 4, 70));
-				}
-				System.out.println("Example: -f indent:4 -f emptyLines:indent");
-				System.exit(0);
-				return;
+		if (args.formatHelp) {
+			System.out.println("Available format keys (to use, -f key:value -f key2:value2 -f ... ):");
+			for (Map.Entry<String, String> e : FormatPreferences.getKeysAndDescriptions().entrySet()) {
+				System.out.print("  ");
+				System.out.print(e.getKey());
+				System.out.println(":");
+				System.out.println(indentAndWordbreak(e.getValue(), 4, 70));
 			}
-			
+			System.out.println("Example: -f indent:4 -f emptyLines:indent");
+			System.exit(0);
+			return;
+		}
+		
+		for (String format : args.format) {
 			int idx = format.indexOf(':');
 			if (idx == -1) {
 				System.err.println("Format keys need to be 2 values separated with a colon. Try -f help.");
@@ -438,7 +442,7 @@ public class Delombok {
 		if (classpath != null) options.putJavacOption("CLASSPATH", classpath);
 		if (sourcepath != null) options.putJavacOption("SOURCEPATH", sourcepath);
 		if (bootclasspath != null) options.putJavacOption("BOOTCLASSPATH", bootclasspath);
-		options.setFormatPreferences(formatPrefs);
+		options.setFormatPreferences(new FormatPreferences(formatPrefs));
 		options.put("compilePolicy", "check");
 		
 		CommentCatcher catcher = CommentCatcher.create(context);

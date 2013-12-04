@@ -214,7 +214,8 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		Name methodName = field.toName(witherName);
 		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(nonNulls).appendList(nullables);
 		
-		JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL | Flags.PARAMETER, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
+		long flags = JavacHandlerUtil.addFinalIfNeeded(0L, field.getContext());
+		JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
 		
 		JCExpression selfType = cloneSelfType(field);
 		if (selfType == null) return null;

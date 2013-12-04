@@ -228,10 +228,11 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		
 		Name primeName = typeNode.toName(PRIME_NAME);
 		Name resultName = typeNode.toName(RESULT_NAME);
+		long finalFlag = JavacHandlerUtil.addFinalIfNeeded(0L, typeNode.getContext());
+		
 		/* final int PRIME = 31; */ {
 			if (!fields.isEmpty() || callSuper) {
-				statements.append(maker.VarDef(maker.Modifiers(Flags.FINAL),
-						primeName, maker.TypeIdent(CTC_INT), maker.Literal(31)));
+				statements.append(maker.VarDef(maker.Modifiers(finalFlag), primeName, maker.TypeIdent(CTC_INT), maker.Literal(31)));
 			}
 		}
 		
@@ -258,7 +259,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 					break;
 				case LONG: {
 						Name dollarFieldName = dollar.append(((JCVariableDecl)fieldNode.get()).name);
-						statements.append(maker.VarDef(maker.Modifiers(Flags.FINAL), dollarFieldName, maker.TypeIdent(CTC_LONG), fieldAccessor));
+						statements.append(maker.VarDef(maker.Modifiers(finalFlag), dollarFieldName, maker.TypeIdent(CTC_LONG), fieldAccessor));
 						statements.append(createResultCalculation(typeNode, longToIntForHashCode(maker, maker.Ident(dollarFieldName), maker.Ident(dollarFieldName))));
 					}
 					break;
@@ -276,7 +277,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 								List.<JCExpression>nil(),
 								chainDots(typeNode, "java", "lang", "Double", "doubleToLongBits"),
 								List.of(fieldAccessor));
-						statements.append(maker.VarDef(maker.Modifiers(Flags.FINAL), dollarFieldName, maker.TypeIdent(CTC_LONG), init));
+						statements.append(maker.VarDef(maker.Modifiers(finalFlag), dollarFieldName, maker.TypeIdent(CTC_LONG), init));
 						statements.append(createResultCalculation(typeNode, longToIntForHashCode(maker, maker.Ident(dollarFieldName), maker.Ident(dollarFieldName))));
 					}
 					break;
@@ -302,7 +303,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				/* $fieldName == null ? 0 : $fieldName.hashCode() */
 				
 				Name dollarFieldName = dollar.append(((JCVariableDecl)fieldNode.get()).name);
-				statements.append(maker.VarDef(maker.Modifiers(Flags.FINAL), dollarFieldName, chainDots(typeNode, "java", "lang", "Object"), fieldAccessor));
+				statements.append(maker.VarDef(maker.Modifiers(finalFlag), dollarFieldName, chainDots(typeNode, "java", "lang", "Object"), fieldAccessor));
 				
 				JCExpression hcCall = maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(dollarFieldName), typeNode.toName("hashCode")),
 						List.<JCExpression>nil());
@@ -370,8 +371,10 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		JCExpression objectType = chainDots(typeNode, "java", "lang", "Object");
 		JCExpression returnType = maker.TypeIdent(CTC_BOOLEAN);
 		
+		long finalFlag = JavacHandlerUtil.addFinalIfNeeded(0L, typeNode.getContext());
+		
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		final List<JCVariableDecl> params = List.of(maker.VarDef(maker.Modifiers(Flags.FINAL | Flags.PARAMETER), oName, objectType, null));
+		final List<JCVariableDecl> params = List.of(maker.VarDef(maker.Modifiers(finalFlag | Flags.PARAMETER), oName, objectType, null));
 		
 		/* if (o == this) return true; */ {
 			statements.append(maker.If(maker.Binary(CTC_EQUAL, maker.Ident(oName),
@@ -403,7 +406,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				}
 				
 				statements.append(
-						maker.VarDef(maker.Modifiers(Flags.FINAL), otherName, selfType1, maker.TypeCast(selfType2, maker.Ident(oName))));
+						maker.VarDef(maker.Modifiers(finalFlag), otherName, selfType1, maker.TypeCast(selfType2, maker.Ident(oName))));
 			}
 		}
 		
@@ -468,8 +471,8 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				Name thisDollarFieldName = thisDollar.append(fieldName);
 				Name otherDollarFieldName = otherDollar.append(fieldName);
 				
-				statements.append(maker.VarDef(maker.Modifiers(Flags.FINAL), thisDollarFieldName, chainDots(typeNode, "java", "lang", "Object"), thisFieldAccessor));
-				statements.append(maker.VarDef(maker.Modifiers(Flags.FINAL), otherDollarFieldName, chainDots(typeNode, "java", "lang", "Object"), otherFieldAccessor));
+				statements.append(maker.VarDef(maker.Modifiers(finalFlag), thisDollarFieldName, chainDots(typeNode, "java", "lang", "Object"), thisFieldAccessor));
+				statements.append(maker.VarDef(maker.Modifiers(finalFlag), otherDollarFieldName, chainDots(typeNode, "java", "lang", "Object"), otherFieldAccessor));
 
 				JCExpression thisEqualsNull = maker.Binary(CTC_EQUAL, maker.Ident(thisDollarFieldName), maker.Literal(CTC_BOT, null));
 				JCExpression otherNotEqualsNull = maker.Binary(CTC_NOT_EQUAL, maker.Ident(otherDollarFieldName), maker.Literal(CTC_BOT, null));
@@ -501,7 +504,8 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		Name canEqualName = typeNode.toName("canEqual");
 		JCExpression objectType = chainDots(typeNode, "java", "lang", "Object");
 		Name otherName = typeNode.toName("other");
-		List<JCVariableDecl> params = List.of(maker.VarDef(maker.Modifiers(Flags.FINAL | Flags.PARAMETER), otherName, objectType, null));
+		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
+		List<JCVariableDecl> params = List.of(maker.VarDef(maker.Modifiers(flags), otherName, objectType, null));
 		
 		JCBlock body = maker.Block(0, List.<JCStatement>of(
 				maker.Return(maker.TypeTest(maker.Ident(otherName), createTypeReference(typeNode)))));

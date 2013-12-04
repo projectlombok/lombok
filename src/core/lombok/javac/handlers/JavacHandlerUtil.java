@@ -43,6 +43,7 @@ import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TransformationsUtil;
 import lombok.core.TypeResolver;
+import lombok.delombok.LombokOptionsFactory;
 import lombok.experimental.Accessors;
 import lombok.javac.Javac;
 import lombok.javac.JavacNode;
@@ -892,7 +893,15 @@ public class JavacHandlerUtil {
 		return typeNode.add(type, Kind.TYPE);
 	}
 	
+	public static long addFinalIfNeeded(long flags, Context context) {
+		boolean addFinal = LombokOptionsFactory.getDelombokOptions(context).getFormatPreferences().generateFinalParams();
+		
+		if (addFinal) flags |= Flags.FINAL;
+		return flags;
+	}
+	
 	private static void addSuppressWarningsAll(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context) {
+		if (!LombokOptionsFactory.getDelombokOptions(context).getFormatPreferences().generateSuppressWarnings()) return;
 		JavacTreeMaker maker = node.getTreeMaker();
 		JCExpression suppressWarningsType = chainDots(node, "java", "lang", "SuppressWarnings");
 		JCLiteral allLiteral = maker.Literal("all");

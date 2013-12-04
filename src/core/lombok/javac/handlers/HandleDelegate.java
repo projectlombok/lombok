@@ -305,7 +305,8 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		
 		int idx = 0;
 		for (TypeMirror param : sig.type.getParameterTypes()) {
-			JCModifiers paramMods = maker.Modifiers(Flags.FINAL | Flags.PARAMETER);
+			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, annotation.getContext());
+			JCModifiers paramMods = maker.Modifiers(flags);
 			String[] paramNames = sig.getParameterNames();
 			Name name = annotation.toName(paramNames[idx++]);
 			params.append(maker.VarDef(paramMods, name, JavacResolution.typeToJCTree((Type) param, annotation.getAst(), true), null));

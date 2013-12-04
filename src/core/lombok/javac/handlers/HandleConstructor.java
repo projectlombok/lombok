@@ -235,7 +235,8 @@ public class HandleConstructor {
 			Name rawName = field.name;
 			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, TransformationsUtil.NON_NULL_PATTERN);
 			List<JCAnnotation> nullables = findAnnotations(fieldNode, TransformationsUtil.NULLABLE_PATTERN);
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL | Flags.PARAMETER, nonNulls.appendList(nullables)), fieldName, field.vartype, null);
+			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
+			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, nonNulls.appendList(nullables)), fieldName, field.vartype, null);
 			params.append(param);
 			JCFieldAccess thisX = maker.Select(maker.Ident(fieldNode.toName("this")), rawName);
 			JCAssign assign = maker.Assign(thisX, maker.Ident(fieldName));
@@ -297,7 +298,8 @@ public class HandleConstructor {
 			JCExpression pType = cloneType(maker, field.vartype, source, typeNode.getContext());
 			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, TransformationsUtil.NON_NULL_PATTERN);
 			List<JCAnnotation> nullables = findAnnotations(fieldNode, TransformationsUtil.NULLABLE_PATTERN);
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.FINAL | Flags.PARAMETER, nonNulls.appendList(nullables)), fieldName, pType, null);
+			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
+			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, nonNulls.appendList(nullables)), fieldName, pType, null);
 			params.append(param);
 			args.append(maker.Ident(fieldName));
 		}
