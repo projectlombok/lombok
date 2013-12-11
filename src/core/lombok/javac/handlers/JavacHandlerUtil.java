@@ -900,10 +900,26 @@ public class JavacHandlerUtil {
 		return flags;
 	}
 	
+	public static JCExpression genJavaLangTypeRef(JavacNode node, String... simpleNames) {
+		if (LombokOptionsFactory.getDelombokOptions(node.getContext()).getFormatPreferences().javaLangAsFqn()) {
+			return chainDots(node, "java", "lang", simpleNames);
+		} else {
+			return chainDots(node, null, null, simpleNames);
+		}
+	}
+	
+	public static JCExpression genJavaLangTypeRef(JavacNode node, int pos, String... simpleNames) {
+		if (LombokOptionsFactory.getDelombokOptions(node.getContext()).getFormatPreferences().javaLangAsFqn()) {
+			return chainDots(node, pos, "java", "lang", simpleNames);
+		} else {
+			return chainDots(node, pos, null, null, simpleNames);
+		}
+	}
+	
 	private static void addSuppressWarningsAll(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context) {
 		if (!LombokOptionsFactory.getDelombokOptions(context).getFormatPreferences().generateSuppressWarnings()) return;
 		JavacTreeMaker maker = node.getTreeMaker();
-		JCExpression suppressWarningsType = chainDots(node, "java", "lang", "SuppressWarnings");
+		JCExpression suppressWarningsType = genJavaLangTypeRef(node, "SuppressWarnings");
 		JCLiteral allLiteral = maker.Literal("all");
 		suppressWarningsType.pos = pos;
 		allLiteral.pos = pos;
@@ -933,8 +949,12 @@ public class JavacHandlerUtil {
 	 * @see com.sun.tools.javac.tree.JCTree.JCIdent
 	 * @see com.sun.tools.javac.tree.JCTree.JCFieldAccess
 	 */
-	public static JCExpression chainDots(JavacNode node, String... elems) {
-		return chainDots(node, -1, elems);
+	public static JCExpression chainDots(JavacNode node, String elem1, String elem2, String... elems) {
+		return chainDots(node, -1, elem1, elem2, elems);
+	}
+	
+	public static JCExpression chainDots(JavacNode node, String[] elems) {
+		return chainDots(node, -1, null, null, elems);
 	}
 	
 	/**
@@ -949,16 +969,19 @@ public class JavacHandlerUtil {
 	 * @see com.sun.tools.javac.tree.JCTree.JCIdent
 	 * @see com.sun.tools.javac.tree.JCTree.JCFieldAccess
 	 */
-	public static JCExpression chainDots(JavacNode node, int pos, String... elems) {
+	public static JCExpression chainDots(JavacNode node, int pos, String elem1, String elem2, String... elems) {
 		assert elems != null;
-		assert elems.length > 0;
 		
 		JavacTreeMaker maker = node.getTreeMaker();
 		if (pos != -1) maker = maker.at(pos);
-		JCExpression e = maker.Ident(node.toName(elems[0]));
-		for (int i = 1 ; i < elems.length ; i++) {
-			e = maker.Select(e, node.toName(elems[i]));
+		JCExpression e = null;
+		if (elem1 != null) e = maker.Ident(node.toName(elem1));
+		if (elem2 != null) e = e == null ? maker.Ident(node.toName(elem2)) : maker.Select(e, node.toName(elem2));
+		for (int i = 0 ; i < elems.length ; i++) {
+			e = e == null ? maker.Ident(node.toName(elems[i])) : maker.Select(e, node.toName(elems[i]));
 		}
+		
+		assert e != null;
 		
 		return e;
 	}
@@ -975,7 +998,7 @@ public class JavacHandlerUtil {
 	 * @see com.sun.tools.javac.tree.JCTree.JCFieldAccess
 	 */
 	public static JCExpression chainDotsString(JavacNode node, String elems) {
-		return chainDots(node, elems.split("\\."));
+		return chainDots(node, null, null, elems.split("\\."));
 	}
 	
 	/**
@@ -1007,7 +1030,7 @@ public class JavacHandlerUtil {
 		JCVariableDecl varDecl = (JCVariableDecl) variable.get();
 		if (isPrimitive(varDecl.vartype)) return null;
 		Name fieldName = varDecl.name;
-		JCExpression npe = chainDots(variable, "java", "lang", "NullPointerException");
+		JCExpression npe = genJavaLangTypeRef(variable, "NullPointerException");
 		JCExpression exception = maker.NewClass(null, List.<JCExpression>nil(), npe, List.<JCExpression>of(maker.Literal(fieldName.toString())), null);
 		JCStatement throwStatement = maker.Throw(exception);
 		JCBlock throwBlock = maker.Block(0, List.of(throwStatement));

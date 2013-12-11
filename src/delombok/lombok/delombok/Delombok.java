@@ -206,26 +206,47 @@ public class Delombok {
 				System.out.println(indentAndWordbreak(e.getValue(), 4, 70));
 			}
 			System.out.println("Example: -f indent:4 -f emptyLines:indent");
+			System.out.println("The '-f pretty' option is shorthand for '-f suppressWarnings:skip -f danceAroundIdeChecks:skip -f generateDelombokComment:skip -f javaLangAsFQN:skip'");
 			System.exit(0);
 			return;
 		}
 		
+		boolean prettyEnabled = false;
 		for (String format : args.format) {
 			int idx = format.indexOf(':');
 			if (idx == -1) {
-				System.err.println("Format keys need to be 2 values separated with a colon. Try -f help.");
-				System.exit(1);
-				return;
+				if (format.equalsIgnoreCase("pretty")) {
+					prettyEnabled = true;
+					continue;
+				} else {
+					System.err.println("Format keys need to be 2 values separated with a colon. Try -f help.");
+					System.exit(1);
+					return;
+				}
 			}
 			String key = format.substring(0, idx);
 			String value = format.substring(idx + 1);
-			if (!FormatPreferences.getKeysAndDescriptions().containsKey(key)) {
+			boolean valid = false;
+			for (String k : FormatPreferences.getKeysAndDescriptions().keySet()) {
+				if (k.equalsIgnoreCase(key)) {
+					valid = true;
+					break;
+				}
+			}
+			if (!valid) {
 				System.err.println("Unknown format key: '" + key + "'. Try -f help.");
 				System.exit(1);
 				return;
 			}
 			
-			formatPrefs.put(key, value);
+			formatPrefs.put(key.toLowerCase(), value);
+		}
+		
+		if (prettyEnabled) {
+			if (!formatPrefs.containsKey("suppresswarnings")) formatPrefs.put("suppresswarnings", "skip");
+			if (!formatPrefs.containsKey("dancearoundidechecks")) formatPrefs.put("dancearoundidechecks", "skip");
+			if (!formatPrefs.containsKey("generatedelombokcomment")) formatPrefs.put("generatedelombokcomment", "skip");
+			if (!formatPrefs.containsKey("javalangasfqn")) formatPrefs.put("javalangasfqn", "skip");
 		}
 		
 		delombok.setFormatPreferences(formatPrefs);
@@ -474,8 +495,9 @@ public class Delombok {
 		Object care = callAttributeMethodOnJavaCompiler(delegate, delegate.todo);
 		
 		callFlowMethodOnJavaCompiler(delegate, care);
+		FormatPreferences fps = new FormatPreferences(formatPrefs);
 		for (JCCompilationUnit unit : roots) {
-			DelombokResult result = new DelombokResult(catcher.getComments(unit), unit, force || options.isChanged(unit), formatPrefs);
+			DelombokResult result = new DelombokResult(catcher.getComments(unit), unit, force || options.isChanged(unit), fps);
 			if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged");
 			Writer rawWriter;
 			if (presetWriter != null) rawWriter = presetWriter;

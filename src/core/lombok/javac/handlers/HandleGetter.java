@@ -246,7 +246,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod).appendList(nonNulls).appendList(nullables);
 		if (isFieldDeprecated(field)) {
-			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(chainDots(field, "java", "lang", "Deprecated"), List.<JCExpression>nil()));
+			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
 		}
 		
 		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
@@ -287,20 +287,19 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	}
 	
 	private static final String AR = "java.util.concurrent.atomic.AtomicReference";
-	private static final String JLO = "java.lang.Object";
 	private static final List<JCExpression> NIL_EXPRESSION = List.nil();
 	
 	private static final java.util.Map<TypeTag, String> TYPE_MAP;
 	static {
 		Map<TypeTag, String> m = new HashMap<TypeTag, String>();
-		m.put(CTC_INT, "java.lang.Integer");
-		m.put(CTC_DOUBLE, "java.lang.Double");
-		m.put(CTC_FLOAT, "java.lang.Float");
-		m.put(CTC_SHORT, "java.lang.Short");
-		m.put(CTC_BYTE, "java.lang.Byte");
-		m.put(CTC_LONG, "java.lang.Long");
-		m.put(CTC_BOOLEAN, "java.lang.Boolean");
-		m.put(CTC_CHAR, "java.lang.Character");
+		m.put(CTC_INT, "Integer");
+		m.put(CTC_DOUBLE, "Double");
+		m.put(CTC_FLOAT, "Float");
+		m.put(CTC_SHORT, "Short");
+		m.put(CTC_BYTE, "Byte");
+		m.put(CTC_LONG, "Long");
+		m.put(CTC_BOOLEAN, "Boolean");
+		m.put(CTC_CHAR, "Character");
 		TYPE_MAP = Collections.unmodifiableMap(m);
 	}
 	
@@ -339,8 +338,8 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 			String boxed = TYPE_MAP.get(typeTag(field.vartype));
 			if (boxed != null) {
 				isPrimitive = true;
-				field.vartype = chainDotsString(fieldNode, boxed);
-				copyOfBoxedFieldType = chainDotsString(fieldNode, boxed);
+				field.vartype = genJavaLangTypeRef(fieldNode, boxed);
+				copyOfBoxedFieldType = genJavaLangTypeRef(fieldNode, boxed);
 			}
 		}
 		if (copyOfBoxedFieldType == null) copyOfBoxedFieldType = copyType(maker, field);
@@ -349,7 +348,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		Name actualValueName = fieldNode.toName("actualValue");
 		
 		/* java.lang.Object value = this.fieldName.get();*/ {
-			JCExpression valueVarType = chainDotsString(fieldNode, JLO);
+			JCExpression valueVarType = genJavaLangTypeRef(fieldNode, "Object");
 			statements.append(maker.VarDef(maker.Modifiers(0), valueName, valueVarType, callGet(fieldNode, createFieldAccessor(maker, fieldNode, FieldAccess.ALWAYS_FIELD))));
 		}
 		
@@ -417,7 +416,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		/*	private final java.util.concurrent.atomic.AtomicReference<Object> fieldName = new java.util.concurrent.atomic.AtomicReference<Object>(); */ {
 			field.vartype = recursiveSetGeneratedBy(
-					maker.TypeApply(chainDotsString(fieldNode, AR), List.<JCExpression>of(chainDotsString(fieldNode, JLO))), source, fieldNode.getContext());
+					maker.TypeApply(chainDotsString(fieldNode, AR), List.<JCExpression>of(genJavaLangTypeRef(fieldNode, "Object"))), source, fieldNode.getContext());
 			field.init = recursiveSetGeneratedBy(maker.NewClass(null, NIL_EXPRESSION, copyType(maker, field), NIL_EXPRESSION, null), source, fieldNode.getContext());
 		}
 		

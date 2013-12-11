@@ -37,17 +37,16 @@ import java.util.Map;
  */
 public class FormatPreferenceScanner {
 	/** Checks validity of preferences, and returns with a non-null value if ALL format keys are available, thus negating the need for a scan. */
-	private FormatPreferences tryEasy(Map<String, String> preferences, boolean force) {
+	private FormatPreferences tryEasy(FormatPreferences preferences, boolean force) {
 		int count = 0;
-		for (Map.Entry<String, String> e : preferences.entrySet()) {
-			if (!FormatPreferences.KEYS.containsKey(e.getKey())) throw new IllegalArgumentException("Unknown format key: " + e.getKey());
+		for (Map.Entry<String, String> e : preferences.rawMap.entrySet()) {
 			if (!"scan".equalsIgnoreCase(e.getValue())) count++;
 		}
-		if (force || count >= FormatPreferences.KEYS.size()) return new FormatPreferences(preferences, "\t", false);
+		if (force || count >= FormatPreferences.KEYS.size()) return preferences;
 		return null;
 	}
 	
-	public FormatPreferences scan(Map<String, String> preferences, final CharSequence source) {
+	public FormatPreferences scan(FormatPreferences preferences, final CharSequence source) {
 		FormatPreferences fps = tryEasy(preferences, source == null);
 		if (fps != null) return fps;
 		
@@ -75,7 +74,7 @@ public class FormatPreferenceScanner {
 		}
 	}
 	
-	public FormatPreferences scan(Map<String, String> preferences, char[] source) {
+	public FormatPreferences scan(FormatPreferences preferences, char[] source) {
 		FormatPreferences fps = tryEasy(preferences, source == null);
 		if (fps != null) return fps;
 		
@@ -86,14 +85,14 @@ public class FormatPreferenceScanner {
 		}
 	}
 	
-	public FormatPreferences scan(Map<String, String> preferences, Reader in) throws IOException {
+	public FormatPreferences scan(FormatPreferences preferences, Reader in) throws IOException {
 		FormatPreferences fps = tryEasy(preferences, in == null);
 		if (fps != null) return fps;
 		
 		return scan_(preferences, in);
 	}
 	
-	private static FormatPreferences scan_(Map<String, String> preferences, Reader in) throws IOException {
+	private static FormatPreferences scan_(FormatPreferences preferences, Reader in) throws IOException {
 		int filledEmpties = 0;
 		List<String> indents = new ArrayList<String>();
 		
@@ -188,6 +187,6 @@ public class FormatPreferenceScanner {
 			indent = new String(id);
 		}
 		
-		return new FormatPreferences(preferences, indent, filledEmpties > 0);
+		return new FormatPreferences(preferences.rawMap, indent, filledEmpties > 0);
 	}
 }

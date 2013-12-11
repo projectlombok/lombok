@@ -26,6 +26,7 @@ import static lombok.javac.Javac.*;
 import lombok.Cleanup;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.delombok.LombokOptionsFactory;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -119,7 +120,7 @@ public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 		List<JCStatement> cleanupCall = List.<JCStatement>of(maker.Exec(
 				maker.Apply(List.<JCExpression>nil(), cleanupMethod, List.<JCExpression>nil())));
 		
-		JCMethodInvocation preventNullAnalysis = preventNullAnalysis(maker, annotationNode, maker.Ident(decl.name));
+		JCExpression preventNullAnalysis = preventNullAnalysis(maker, annotationNode, maker.Ident(decl.name));
 		JCBinary isNull = maker.Binary(CTC_NOT_EQUAL, preventNullAnalysis, maker.Literal(CTC_BOT, null));
 		
 		JCIf ifNotNullCleanup = maker.If(isNull, maker.Block(0, cleanupCall), null);
@@ -140,10 +141,14 @@ public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 		ancestor.rebuild();
 	}
 	
-	private JCMethodInvocation preventNullAnalysis(JavacTreeMaker maker, JavacNode node, JCExpression expression) {
-		JCMethodInvocation singletonList = maker.Apply(List.<JCExpression>nil(), chainDotsString(node, "java.util.Collections.singletonList"), List.of(expression));
-		JCMethodInvocation cleanedExpr = maker.Apply(List.<JCExpression>nil(), maker.Select(singletonList, node.toName("get")) , List.<JCExpression>of(maker.Literal(CTC_INT, 0)));
-		return cleanedExpr;
+	private JCExpression preventNullAnalysis(JavacTreeMaker maker, JavacNode node, JCExpression expression) {
+		if (LombokOptionsFactory.getDelombokOptions(node.getContext()).getFormatPreferences().danceAroundIdeChecks()) {
+			JCMethodInvocation singletonList = maker.Apply(List.<JCExpression>nil(), chainDotsString(node, "java.util.Collections.singletonList"), List.of(expression));
+			JCMethodInvocation cleanedExpr = maker.Apply(List.<JCExpression>nil(), maker.Select(singletonList, node.toName("get")) , List.<JCExpression>of(maker.Literal(CTC_INT, 0)));
+			return cleanedExpr;
+		} else {
+			return expression;
+		}
 	}
 	
 	private void doAssignmentCheck(JavacNode node, List<JCStatement> statements, Name name) {

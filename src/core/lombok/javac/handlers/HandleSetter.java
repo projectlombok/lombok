@@ -246,7 +246,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		
 		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod);
 		if (isFieldDeprecated(field)) {
-			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(chainDots(field, "java", "lang", "Deprecated"), List.<JCExpression>nil()));
+			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
 		}
 		
 		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,

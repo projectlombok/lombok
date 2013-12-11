@@ -169,9 +169,9 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 	static JCMethodDecl createToString(JavacNode typeNode, Collection<JavacNode> fields, boolean includeFieldNames, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
-		JCAnnotation overrideAnnotation = maker.Annotation(chainDots(typeNode, "java", "lang", "Override"), List.<JCExpression>nil());
+		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(typeNode, "Override"), List.<JCExpression>nil());
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
-		JCExpression returnType = chainDots(typeNode, "java", "lang", "String");
+		JCExpression returnType = genJavaLangTypeRef(typeNode, "String");
 		
 		boolean first = true;
 		

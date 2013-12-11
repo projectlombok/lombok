@@ -221,7 +221,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 	private JCMethodDecl createHashCode(JavacNode typeNode, List<JavacNode> fields, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
-		JCAnnotation overrideAnnotation = maker.Annotation(chainDots(typeNode, "java", "lang", "Override"), List.<JCExpression>nil());
+		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(typeNode, "Override"), List.<JCExpression>nil());
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
 		JCExpression returnType = maker.TypeIdent(CTC_INT);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
@@ -267,7 +267,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 					/* Float.floatToIntBits(this.fieldName) */
 					statements.append(createResultCalculation(typeNode, maker.Apply(
 							List.<JCExpression>nil(),
-							chainDots(typeNode, "java", "lang", "Float", "floatToIntBits"),
+							genJavaLangTypeRef(typeNode, "Float", "floatToIntBits"),
 							List.of(fieldAccessor))));
 					break;
 				case DOUBLE: {
@@ -275,7 +275,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 						Name dollarFieldName = dollar.append(((JCVariableDecl)fieldNode.get()).name);
 						JCExpression init = maker.Apply(
 								List.<JCExpression>nil(),
-								chainDots(typeNode, "java", "lang", "Double", "doubleToLongBits"),
+								genJavaLangTypeRef(typeNode, "Double", "doubleToLongBits"),
 								List.of(fieldAccessor));
 						statements.append(maker.VarDef(maker.Modifiers(finalFlag), dollarFieldName, maker.TypeIdent(CTC_LONG), init));
 						statements.append(createResultCalculation(typeNode, longToIntForHashCode(maker, maker.Ident(dollarFieldName), maker.Ident(dollarFieldName))));
@@ -303,7 +303,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				/* $fieldName == null ? 0 : $fieldName.hashCode() */
 				
 				Name dollarFieldName = dollar.append(((JCVariableDecl)fieldNode.get()).name);
-				statements.append(maker.VarDef(maker.Modifiers(finalFlag), dollarFieldName, chainDots(typeNode, "java", "lang", "Object"), fieldAccessor));
+				statements.append(maker.VarDef(maker.Modifiers(finalFlag), dollarFieldName, genJavaLangTypeRef(typeNode, "Object"), fieldAccessor));
 				
 				JCExpression hcCall = maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(dollarFieldName), typeNode.toName("hashCode")),
 						List.<JCExpression>nil());
@@ -366,9 +366,9 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		Name otherName = typeNode.toName("other");
 		Name thisName = typeNode.toName("this");
 		
-		JCAnnotation overrideAnnotation = maker.Annotation(chainDots(typeNode, "java", "lang", "Override"), List.<JCExpression>nil());
+		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(typeNode, "Override"), List.<JCExpression>nil());
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
-		JCExpression objectType = chainDots(typeNode, "java", "lang", "Object");
+		JCExpression objectType = genJavaLangTypeRef(typeNode, "Object");
 		JCExpression returnType = maker.TypeIdent(CTC_BOOLEAN);
 		
 		long finalFlag = JavacHandlerUtil.addFinalIfNeeded(0L, typeNode.getContext());
@@ -414,7 +414,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			if (needsCanEqual) {
 				List<JCExpression> exprNil = List.nil();
 				JCExpression thisRef = maker.Ident(thisName);
-				JCExpression castThisRef = maker.TypeCast(chainDots(typeNode, "java", "lang", "Object"), thisRef);
+				JCExpression castThisRef = maker.TypeCast(genJavaLangTypeRef(typeNode, "Object"), thisRef);
 				JCExpression equalityCheck = maker.Apply(exprNil, 
 						maker.Select(maker.Ident(otherName), typeNode.toName("canEqual")),
 						List.of(castThisRef));
@@ -471,8 +471,8 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				Name thisDollarFieldName = thisDollar.append(fieldName);
 				Name otherDollarFieldName = otherDollar.append(fieldName);
 				
-				statements.append(maker.VarDef(maker.Modifiers(finalFlag), thisDollarFieldName, chainDots(typeNode, "java", "lang", "Object"), thisFieldAccessor));
-				statements.append(maker.VarDef(maker.Modifiers(finalFlag), otherDollarFieldName, chainDots(typeNode, "java", "lang", "Object"), otherFieldAccessor));
+				statements.append(maker.VarDef(maker.Modifiers(finalFlag), thisDollarFieldName, genJavaLangTypeRef(typeNode, "Object"), thisFieldAccessor));
+				statements.append(maker.VarDef(maker.Modifiers(finalFlag), otherDollarFieldName, genJavaLangTypeRef(typeNode, "Object"), otherFieldAccessor));
 
 				JCExpression thisEqualsNull = maker.Binary(CTC_EQUAL, maker.Ident(thisDollarFieldName), maker.Literal(CTC_BOT, null));
 				JCExpression otherNotEqualsNull = maker.Binary(CTC_NOT_EQUAL, maker.Ident(otherDollarFieldName), maker.Literal(CTC_BOT, null));
@@ -502,7 +502,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, List.<JCAnnotation>nil());
 		JCExpression returnType = maker.TypeIdent(CTC_BOOLEAN);
 		Name canEqualName = typeNode.toName("canEqual");
-		JCExpression objectType = chainDots(typeNode, "java", "lang", "Object");
+		JCExpression objectType = genJavaLangTypeRef(typeNode, "Object");
 		Name otherName = typeNode.toName("other");
 		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
 		List<JCVariableDecl> params = List.of(maker.VarDef(maker.Modifiers(flags), otherName, objectType, null));
@@ -516,7 +516,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 	private JCStatement generateCompareFloatOrDouble(JCExpression thisDotField, JCExpression otherDotField,
 			JavacTreeMaker maker, JavacNode node, boolean isDouble) {
 		/* if (Float.compare(fieldName, other.fieldName) != 0) return false; */
-		JCExpression clazz = chainDots(node, "java", "lang", isDouble ? "Double" : "Float");
+		JCExpression clazz = genJavaLangTypeRef(node, isDouble ? "Double" : "Float");
 		List<JCExpression> args = List.of(thisDotField, otherDotField);
 		JCBinary compareCallEquals0 = maker.Binary(CTC_NOT_EQUAL, maker.Apply(
 				List.<JCExpression>nil(), maker.Select(clazz, node.toName("compare")), args), maker.Literal(0));

@@ -88,9 +88,9 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 				annotationNode.addError("The field " + lockName + " does not exist.");
 				return;
 			}
-			JCExpression objectType = chainDots(methodNode, ast.pos, "java", "lang", "Object");
+			JCExpression objectType = genJavaLangTypeRef(methodNode, ast.pos, "Object");
 			//We use 'new Object[0];' because unlike 'new Object();', empty arrays *ARE* serializable!
-			JCNewArray newObjectArray = maker.NewArray(chainDots(methodNode, ast.pos, "java", "lang", "Object"),
+			JCNewArray newObjectArray = maker.NewArray(genJavaLangTypeRef(methodNode, ast.pos, "Object"),
 					List.<JCExpression>of(maker.Literal(CTC_INT, 0)), null);
 			JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
 					maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic ? Flags.STATIC : 0)),

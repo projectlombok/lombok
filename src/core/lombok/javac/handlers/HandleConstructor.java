@@ -29,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.core.AnnotationValues;
 import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
+import lombok.delombok.LombokOptionsFactory;
 import lombok.experimental.Builder;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
@@ -249,7 +250,7 @@ public class HandleConstructor {
 		}
 		
 		JCModifiers mods = maker.Modifiers(toJavacModifier(level), List.<JCAnnotation>nil());
-		if (!suppressConstructorProperties && level != AccessLevel.PRIVATE && !isLocalType(typeNode)) {
+		if (!suppressConstructorProperties && level != AccessLevel.PRIVATE && !isLocalType(typeNode) && LombokOptionsFactory.getDelombokOptions(typeNode.getContext()).getFormatPreferences().generateConstructorProperties()) {
 			addConstructorProperties(mods, typeNode, fields);
 		}
 		if (onConstructor != null) mods.annotations = mods.annotations.appendList(copyAnnotations(onConstructor));

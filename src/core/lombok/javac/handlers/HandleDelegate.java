@@ -271,7 +271,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		com.sun.tools.javac.util.List<JCAnnotation> annotations;
 		if (sig.isDeprecated) {
 			annotations = com.sun.tools.javac.util.List.of(maker.Annotation(
-					chainDots(annotation, "java", "lang", "Deprecated"),
+					genJavaLangTypeRef(annotation, "Deprecated"),
 					com.sun.tools.javac.util.List.<JCExpression>nil()));
 		} else {
 			annotations = com.sun.tools.javac.util.List.nil();
