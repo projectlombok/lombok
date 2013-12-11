@@ -24,9 +24,12 @@ package lombok.delombok.ant;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import lombok.delombok.Delombok;
+import lombok.delombok.Delombok.InvalidFormatOptionException;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
@@ -42,6 +45,7 @@ public class DelombokTask extends Task {
 	private boolean verbose;
 	private String encoding;
 	private Path path;
+	private List<Format> formatOptions = new ArrayList<Format>();
 	
 	public void setClasspath(Path classpath) {
 		if (this.classpath == null) {
@@ -102,6 +106,10 @@ public class DelombokTask extends Task {
 		path.add(set);
 	}
 	
+	public void addFormat(Format format) {
+		formatOptions.add(format);
+	}
+	
 	@Override
 	public void execute() throws BuildException {
 		if (fromDir == null && path == null) throw new BuildException("Either 'from' attribute, or nested <fileset> tags are required.");
@@ -118,6 +126,18 @@ public class DelombokTask extends Task {
 		
 		if (classpath != null) delombok.setClasspath(classpath.toString());
 		if (sourcepath != null) delombok.setSourcepath(sourcepath.toString());
+		
+		try {
+			List<String> fo = new ArrayList<String>();
+			for (Format f : formatOptions) {
+				String v = f.getValue();
+				if (v == null) throw new BuildException("'value' property required for <format>");
+				fo.add(v);
+			}
+			delombok.setFormatPreferences(Delombok.formatOptionsToMap(fo));
+		} catch (InvalidFormatOptionException e) {
+			throw new BuildException(e.getMessage() + " Run java -jar lombok.jar --format-help for detailed format help.");
+		}
 		
 		delombok.setOutput(toDir);
 		try {

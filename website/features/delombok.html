@@ -23,6 +23,8 @@
 			</p><p>
 			Delombok's standard mode of operation is that it copies an entire directory into another directory, recursively, skipping class files, and applying
 			lombok transformations to any java source files it encounters.
+			</p><p>
+			Delombok's output format can be configured with command line options (use <code>--format-help</code> for a complete list). A few such options are automatically scanned from input if possible (such as indent). If delombok's formatting is not conforming to your preferred code style, have a look!
 			</p>
 			<h3>Running delombok on the command line</h3>
 			<p>
@@ -41,7 +43,9 @@
 			<div class="snippet"><pre>&lt;target name="javadoc"&gt;
 	&lt;taskdef classname="lombok.delombok.ant.DelombokTask" classpath="lib/lombok.jar" name="delombok" /&gt;
 	&lt;mkdir dir="build/src-delomboked" /&gt;
-	<strong>&lt;delombok verbose="true" encoding="UTF-8" to="build/src-delomboked" from="src" /&gt;</strong>
+	<strong>&lt;delombok verbose="true" encoding="UTF-8" to="build/src-delomboked" from="src"&gt;</strong>
+		<strong>&lt;format value="suppressWarnings:skip" /&gt;</strong>
+	<strong>&lt;/delombok&gt;</strong>
 	&lt;mkdir dir="build/api" /&gt;
 	&lt;javadoc sourcepath="build/src-delomboked" defaultexcludes="yes" destdir="build/api" /&gt;
 &lt;/target&gt;</pre></div>

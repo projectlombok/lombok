@@ -195,8 +195,6 @@ public class Delombok {
 			}
 		}));
 		
-		Map<String, String> formatPrefs = new HashMap<String, String>();
-		
 		if (args.formatHelp) {
 			System.out.println("Available format keys (to use, -f key:value -f key2:value2 -f ... ):");
 			for (Map.Entry<String, String> e : FormatPreferences.getKeysAndDescriptions().entrySet()) {
@@ -211,45 +209,13 @@ public class Delombok {
 			return;
 		}
 		
-		boolean prettyEnabled = false;
-		for (String format : args.format) {
-			int idx = format.indexOf(':');
-			if (idx == -1) {
-				if (format.equalsIgnoreCase("pretty")) {
-					prettyEnabled = true;
-					continue;
-				} else {
-					System.err.println("Format keys need to be 2 values separated with a colon. Try -f help.");
-					System.exit(1);
-					return;
-				}
-			}
-			String key = format.substring(0, idx);
-			String value = format.substring(idx + 1);
-			boolean valid = false;
-			for (String k : FormatPreferences.getKeysAndDescriptions().keySet()) {
-				if (k.equalsIgnoreCase(key)) {
-					valid = true;
-					break;
-				}
-			}
-			if (!valid) {
-				System.err.println("Unknown format key: '" + key + "'. Try -f help.");
-				System.exit(1);
-				return;
-			}
-			
-			formatPrefs.put(key.toLowerCase(), value);
+		try {
+			delombok.setFormatPreferences(formatOptionsToMap(args.format));
+		} catch (InvalidFormatOptionException e) {
+			System.out.println(e.getMessage() + " Try --format-help.");
+			System.exit(1);
+			return;
 		}
-		
-		if (prettyEnabled) {
-			if (!formatPrefs.containsKey("suppresswarnings")) formatPrefs.put("suppresswarnings", "skip");
-			if (!formatPrefs.containsKey("dancearoundidechecks")) formatPrefs.put("dancearoundidechecks", "skip");
-			if (!formatPrefs.containsKey("generatedelombokcomment")) formatPrefs.put("generatedelombokcomment", "skip");
-			if (!formatPrefs.containsKey("javalangasfqn")) formatPrefs.put("javalangasfqn", "skip");
-		}
-		
-		delombok.setFormatPreferences(formatPrefs);
 		
 		if (args.encoding != null) {
 			try {
@@ -299,6 +265,48 @@ public class Delombok {
 				return;
 			}
 		}
+	}
+	
+	public static class InvalidFormatOptionException extends Exception {
+		public InvalidFormatOptionException(String msg) {
+			super(msg);
+		}
+	}
+	
+	public static Map<String, String> formatOptionsToMap(List<String> formatOptions) throws InvalidFormatOptionException {
+		boolean prettyEnabled = false;
+		Map<String, String> formatPrefs = new HashMap<String, String>();
+		for (String format : formatOptions) {
+			int idx = format.indexOf(':');
+			if (idx == -1) {
+				if (format.equalsIgnoreCase("pretty")) {
+					prettyEnabled = true;
+					continue;
+				} else {
+					throw new InvalidFormatOptionException("Format keys need to be 2 values separated with a colon.");
+				}
+			}
+			String key = format.substring(0, idx);
+			String value = format.substring(idx + 1);
+			boolean valid = false;
+			for (String k : FormatPreferences.getKeysAndDescriptions().keySet()) {
+				if (k.equalsIgnoreCase(key)) {
+					valid = true;
+					break;
+				}
+			}
+			if (!valid) throw new InvalidFormatOptionException("Unknown format key: '" + key + "'.");
+			formatPrefs.put(key.toLowerCase(), value);
+		}
+		
+		if (prettyEnabled) {
+			if (!formatPrefs.containsKey("suppresswarnings")) formatPrefs.put("suppresswarnings", "skip");
+			if (!formatPrefs.containsKey("dancearoundidechecks")) formatPrefs.put("dancearoundidechecks", "skip");
+			if (!formatPrefs.containsKey("generatedelombokcomment")) formatPrefs.put("generatedelombokcomment", "skip");
+			if (!formatPrefs.containsKey("javalangasfqn")) formatPrefs.put("javalangasfqn", "skip");
+		}
+		
+		return formatPrefs;
 	}
 	
 	public void setFormatPreferences(Map<String, String> prefs) {
