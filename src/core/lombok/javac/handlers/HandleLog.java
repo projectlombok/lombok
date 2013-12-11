@@ -93,7 +93,7 @@ public class HandleLog {
 				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | Flags.STATIC),
 				typeNode.toName("log"), loggerType, factoryMethodCall), source, typeNode.getContext());
 		
-		injectField(typeNode, fieldDecl);
+		injectFieldSuppressWarnings(typeNode, fieldDecl);
 		return true;
 	}
 	

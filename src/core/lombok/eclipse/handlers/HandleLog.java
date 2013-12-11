@@ -73,6 +73,8 @@ public class HandleLog {
 			
 			FieldDeclaration fieldDeclaration = createField(framework, source, loggingType);
 			fieldDeclaration.traverse(new SetGeneratedByVisitor(source), typeDecl.staticInitializerScope);
+			// TODO temporary workaround for issue 217. http://code.google.com/p/projectlombok/issues/detail?id=217
+			// injectFieldSuppressWarnings(owner, fieldDeclaration);
 			injectField(owner, fieldDeclaration);
 			owner.rebuild();
 			break;

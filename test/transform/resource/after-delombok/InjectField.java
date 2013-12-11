@@ -4,6 +4,7 @@ enum InjectField1 {
 	A,
 	B;
 
+	@java.lang.SuppressWarnings("all")
 	private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(InjectField1.class.getName());
 	@java.lang.SuppressWarnings("all")
 	private final java.lang.Object $lock = new java.lang.Object[0];
@@ -34,6 +35,7 @@ enum InjectField1 {
 }
 
 class InjectField2 {
+	@java.lang.SuppressWarnings("all")
 	private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(InjectField2.class.getName());
 	@java.lang.SuppressWarnings("all")
 	private final java.lang.Object $lock = new java.lang.Object[0];
@@ -52,6 +54,7 @@ class InjectField2 {
 }
 
 class InjectField3 {
+	@java.lang.SuppressWarnings("all")
 	private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(InjectField3.class.getName());
 	static {
 		log.log(Level.FINE, "static initializer");
