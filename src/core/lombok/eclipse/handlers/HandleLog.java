@@ -21,15 +21,17 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.eclipse.Eclipse.*;
+import static lombok.eclipse.Eclipse.fromQualifiedName;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
 import lombok.core.AnnotationValues;
+import lombok.core.LombokConfiguration.ConfigurationKey;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
@@ -44,14 +46,25 @@ import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.mangosdk.spi.ProviderFor;
 
 public class HandleLog {
+	
+	private static final ConfigurationKey<String> LOG_VARIABLE_NAME = new ConfigurationKey<String>("lombok.log.varName"){};
+	private static final ConfigurationKey<Boolean> STATIC = new ConfigurationKey<Boolean>("lombok.log.static"){};
+	
 	private HandleLog() {
 		throw new UnsupportedOperationException();
 	}
 	
 	public static void processAnnotation(LoggingFramework framework, AnnotationValues<? extends java.lang.annotation.Annotation> annotation, Annotation source, EclipseNode annotationNode) {
 		EclipseNode owner = annotationNode.up();
+		
 		switch (owner.getKind()) {
 		case TYPE:
+			
+			String logFieldName = annotationNode.getAst().readConfiguration(LOG_VARIABLE_NAME);
+			if (logFieldName == null) {
+				logFieldName = "log";
+			}
+			
 			TypeDeclaration typeDecl = null;
 			if (owner.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) owner.get();
 			int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
@@ -64,14 +77,14 @@ public class HandleLog {
 				return;
 			}
 			
-			if (fieldExists("log", owner) != MemberExistsResult.NOT_EXISTS) {
-				annotationNode.addWarning("Field 'log' already exists.");
+			if (fieldExists(logFieldName, owner) != MemberExistsResult.NOT_EXISTS) {
+				annotationNode.addWarning("Field '" + logFieldName + "' already exists.");
 				return;
 			}
 			
 			ClassLiteralAccess loggingType = selfType(owner, source);
 			
-			FieldDeclaration fieldDeclaration = createField(framework, source, loggingType);
+			FieldDeclaration fieldDeclaration = createField(framework, source, loggingType, logFieldName);
 			fieldDeclaration.traverse(new SetGeneratedByVisitor(source), typeDecl.staticInitializerScope);
 			// TODO temporary workaround for issue 217. http://code.google.com/p/projectlombok/issues/detail?id=217
 			// injectFieldSuppressWarnings(owner, fieldDeclaration);
@@ -97,13 +110,12 @@ public class HandleLog {
 		return result;
 	}
 	
-	private static FieldDeclaration createField(LoggingFramework framework, Annotation source, ClassLiteralAccess loggingType) {
+	private static FieldDeclaration createField(LoggingFramework framework, Annotation source, ClassLiteralAccess loggingType, String logFieldName) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
 		// 	private static final <loggerType> log = <factoryMethod>(<parameter>);
-
-		FieldDeclaration fieldDecl = new FieldDeclaration("log".toCharArray(), 0, -1);
+		FieldDeclaration fieldDecl = new FieldDeclaration(logFieldName.toCharArray(), 0, -1);
 		setGeneratedBy(fieldDecl, source);
 		fieldDecl.declarationSourceEnd = -1;
 		fieldDecl.modifiers = Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL;

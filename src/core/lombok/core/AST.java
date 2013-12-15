@@ -36,6 +36,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+import lombok.core.LombokConfiguration.ConfigurationKey;
+
 /**
  * Lombok wraps the AST produced by a target platform into its own AST system, mostly because both Eclipse and javac
  * do not allow upward traversal (from a method to its owning type, for example).
@@ -414,5 +416,9 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 		} else for (Object v : (Collection<?>)collection) {
 			buildWithCollection(nodeType, v, list, dim-1);
 		}
+	}
+	
+	public final <T> T readConfiguration(ConfigurationKey<T> key) {
+		return LombokConfiguration.read(key, this);
 	}
 }
