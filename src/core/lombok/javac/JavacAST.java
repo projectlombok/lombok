@@ -22,6 +22,7 @@
 package lombok.javac;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -88,7 +89,16 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		this.javacTypes = JavacTypes.instance(context);
 		clearChanged();
 	}
-
+	
+	@Override public URI getAbsoluteFileLocation() {
+		try {
+			JCCompilationUnit cu = (JCCompilationUnit) top().get();
+			return cu.sourcefile.toUri();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
 	private static String sourceName(JCCompilationUnit cu) {
 		return cu.sourcefile == null ? null : cu.sourcefile.toString();
 	}

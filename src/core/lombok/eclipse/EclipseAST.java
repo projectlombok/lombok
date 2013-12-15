@@ -23,8 +23,8 @@ package lombok.eclipse;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.ArrayList;
-import org.eclipse.jdt.internal.compiler.CompilationResult;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +35,11 @@ import lombok.Lombok;
 import lombok.core.AST;
 import lombok.core.LombokImmutableList;
 
+import org.eclipse.core.internal.resources.Project;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -47,7 +52,6 @@ import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
-import org.eclipse.jdt.internal.core.BasicCompilationUnit;
 import org.eclipse.jdt.internal.core.JavaElement;
 import org.eclipse.jdt.internal.core.JavaProject;
 
@@ -67,6 +71,10 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		setTop(buildCompilationUnit(ast));
 		this.completeParse = isComplete(ast);
 		clearChanged();
+	}
+	
+	public URI getAbsoluteFileLocation() {
+		return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(getFileName())).getLocationURI();
 	}
 	
 	private static String packageDeclaration(CompilationUnitDeclaration cud) {
@@ -183,6 +191,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	}
 	
 	private static final Pattern PROJECT_NAME_FROM_FILEPATH = Pattern.compile("^/([^/]+)/(.*)$");
+	
 	/**
 	 * Returns the JavaProject object (eclipse's abstraction of the project) associated with the source file that is represented by this AST.
 	 */
@@ -199,11 +208,17 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		Matcher m = PROJECT_NAME_FROM_FILEPATH.matcher(new String(fn));
 		if (m.matches()) {
 			String projName = m.group(1);
-			String path = m.group(2);
-			return EclipseProjectSearcher.getProject(projName);
+			return getProject0(projName);
 		}
 		
 		return null;
+	}
+	
+	private static JavaProject getProject0(String projectName) {
+		Project depProjWrapper = (Project) ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
+		if (depProjWrapper == null) return null;
+		if (!JavaProject.hasJavaNature(depProjWrapper)) return null;
+		return (JavaProject) JavaCore.create(depProjWrapper);
 	}
 	
 	/**
