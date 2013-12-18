@@ -28,7 +28,7 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
 import lombok.core.AnnotationValues;
-import lombok.core.LombokConfiguration.ConfigurationKey;
+import lombok.core.configuration.ConfigurationKey;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;

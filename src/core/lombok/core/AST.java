@@ -36,7 +36,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import lombok.core.LombokConfiguration.ConfigurationKey;
+import lombok.core.configuration.ConfigurationKey;
 
 /**
  * Lombok wraps the AST produced by a target platform into its own AST system, mostly because both Eclipse and javac

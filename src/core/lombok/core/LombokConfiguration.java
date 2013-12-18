@@ -21,7 +21,11 @@
  */
 package lombok.core;
 
-import java.lang.reflect.Type;
+import java.util.List;
+
+import javax.lang.model.SourceVersion;
+
+import lombok.core.configuration.ConfigurationKey;
 
 public class LombokConfiguration {
 	
@@ -29,23 +33,50 @@ public class LombokConfiguration {
 		// prevent instantiation
 	}
 	
-	/*
-	 * Typical usage: use this as a supertypetoken.
-	 */
-	public abstract static class ConfigurationKey<T> {
-		private final String keyName;
-		
-		public ConfigurationKey(String keyName) {
-			this.keyName = keyName;
-			System.out.println("registering " + keyName);
-		}
+	
+	static <T> T read(ConfigurationKey<T> key, AST<?, ?, ?> ast) {
+//		if (key.keyName.equals("lombok.log.varName")) return (T)"loggertje";
+//		if (key.keyName.equals("lombok.log.static")) return (T)Boolean.FALSE;
+		return null;
 	}
 	
-	@SuppressWarnings("unchecked") 
-	static <T> T read(ConfigurationKey<T> key, AST<?, ?, ?> ast) {
-		Type it = key.getClass().getGenericSuperclass();
-		if (key.keyName.equals("lombok.log.varName")) return (T)"loggertje";
-		if (key.keyName.equals("lombok.log.static")) return (T)Boolean.FALSE;
-		return null;
+	@SuppressWarnings("rawtypes")
+	public static void main(String[] args) {
+		try { new ConfigurationKey<List<String>>("List<String>") {}; } catch (Exception e) { e.printStackTrace();}
+		try { new ConfigurationKey<Integer>("Integer") {}; } catch (Exception e) { e.printStackTrace();}
+		try { new ConfigurationKey<Class<?>>("Class<?>") {}; } catch (Exception e) { e.printStackTrace();}
+		try { new ConfigurationKey<SourceVersion>("SourceVersion") {}; } catch (Exception e) { e.printStackTrace();}
+		try { new ConfigurationKey<Class>("Class") {}; } catch (Exception e) { e.printStackTrace();}
+		try { new ConfigurationKey<Class<Number>>("Class<Number>") {}; } catch (Exception e) { e.printStackTrace();}
+		try { new ConfigurationKey<Class<? extends Number>>("Class<? extends Number>") {}; } catch (Exception e) { e.printStackTrace();}
+		try { new ConfigurationKey<Class<? super String>>("Class<? super String>") {}; } catch (Exception e) { e.printStackTrace();}
+		try { new ConfigurationKey<Number>("Number") {}; } catch (Exception e) { e.printStackTrace();}
+		try { class Between extends ConfigurationKey<String> {
+				public Between() {
+					super("between");
+				}
+			};
+			new Between(){};
+		} catch (Exception e) { e.printStackTrace();}
+		
+		try { new ConfigurationKey<String>("more than once") {}; } catch (Exception e) { e.printStackTrace();}
+		try { new ConfigurationKey<Integer>("more than once") {}; } catch (Exception e) { e.printStackTrace();}
+
+		System.out.println(System.identityHashCode(ConfigurationKey.registeredKeys()));
+		System.out.println(System.identityHashCode(ConfigurationKey.registeredKeys()));
+		
+		ConfigurationKey<?> first = null;
+		try { first = new ConfigurationKey<Integer>("anint") {}; } catch (Exception e) { e.printStackTrace();}
+		System.out.println(System.identityHashCode(ConfigurationKey.registeredKeys()));
+		System.out.println(System.identityHashCode(ConfigurationKey.registeredKeys()));
+		
+		ConfigurationKey<?> second = null;
+		try { second = new ConfigurationKey<Integer>("anint") {}; } catch (Exception e) { e.printStackTrace();}
+		System.out.println(System.identityHashCode(ConfigurationKey.registeredKeys()));
+		System.out.println(System.identityHashCode(ConfigurationKey.registeredKeys()));
+		
+		System.out.println(first == second);
+		System.out.println(first.getClass() == second.getClass());
+		System.out.println(first.equals(second));
 	}
 }
