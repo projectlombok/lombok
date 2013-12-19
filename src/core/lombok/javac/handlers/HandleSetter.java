@@ -211,7 +211,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		Name methodName = field.toName(setterName);
 		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(nonNulls).appendList(nullables);
 		
-		long flags = JavacHandlerUtil.addFinalIfNeeded(0L, field.getContext());
+		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, field.getContext());
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(flags, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
 		
 		if (nonNulls.isEmpty()) {
