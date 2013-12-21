@@ -632,8 +632,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
      */
     public void printUnit(JCCompilationUnit tree, JCClassDecl cdef) throws IOException {
         Object dc = getDocComments(tree);
-        if (dc instanceof Map) this.docComments = (Map) dc;
-        else if (dc instanceof DocCommentTable) this.docTable = (DocCommentTable) dc;
+        loadDocCommentsTable(dc);
         printDocComment(tree);
         if (tree.pid != null) {
             consumeComments(tree.pos, tree);
@@ -668,6 +667,12 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         }
     }
     // where
+    @SuppressWarnings("unchecked")
+    private void loadDocCommentsTable(Object dc) {
+        if (dc instanceof Map<?, ?>) this.docComments = (Map) dc;
+        else if (dc instanceof DocCommentTable) this.docTable = (DocCommentTable) dc;
+    }
+    
     boolean isUsed(final Symbol t, JCTree cdef) {
         class UsedVisitor extends TreeScanner {
             public void scan(JCTree tree) {
