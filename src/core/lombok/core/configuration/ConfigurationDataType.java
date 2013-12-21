@@ -23,15 +23,85 @@ package lombok.core.configuration;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.WildcardType;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public final class ConfigurationDataType {
-	private static final List<Class<?>> SIMPLE_TYPES = Arrays.<Class<?>>asList(String.class, Integer.class, Boolean.class, Long.class, Byte.class, Short.class, Character.class, Float.class, Double.class);
+	private static final Map<Class<?>, ConfigurationValueParser> SIMPLE_TYPES;
+	static {
+		Map<Class<?>, ConfigurationValueParser> map = new HashMap<Class<?>, ConfigurationValueParser>();
+		map.put(String.class, new ConfigurationValueParser() {
+			@Override public Object parse(String value) {
+				return value;
+			}
+			@Override public String description() {
+				return "String";
+			}
+		});
+		map.put(Integer.class, new ConfigurationValueParser() {
+			@Override public Object parse(String value) {
+				return Integer.parseInt(value);
+			}
+			@Override public String description() {
+				return "Integer";
+			}
+		});
+		map.put(Long.class, new ConfigurationValueParser() {
+			@Override public Object parse(String value) {
+				return Long.parseLong(value);
+			}
+			@Override public String description() {
+				return "Long";
+			}
+		});
+		map.put(Double.class, new ConfigurationValueParser() {
+			@Override public Object parse(String value) {
+				return Double.parseDouble(value);
+			}
+			@Override public String description() {
+				return "Double";
+			}
+		});
+		map.put(Boolean.class, new ConfigurationValueParser() {
+			@Override public Object parse(String value) {
+				return Boolean.parseBoolean(value);
+			}
+			@Override public String description() {
+				return "Boolean";
+			}
+		});
+		map.put(TypeName.class, new ConfigurationValueParser() {
+			@Override public Object parse(String value) {
+				return TypeName.valueOf(value);
+			}
+			@Override public String description() {
+				return "TypeName";
+			}
+		});
+		SIMPLE_TYPES = map;
+	}
+	
+
+	private static ConfigurationValueParser enumParser(Object enumType) {
+		@SuppressWarnings("rawtypes") final Class rawType = (Class)enumType;
+		return new ConfigurationValueParser(){
+			@SuppressWarnings("unchecked")
+			@Override public Object parse(String value) {
+				try {
+					return Enum.valueOf(rawType, value);
+				} catch (Exception e) {
+					return Enum.valueOf(rawType, value.toUpperCase());
+				}
+			}
+			@Override public String description() {
+				return rawType.getName();
+			}
+		};
+	}
 	
 	private final boolean isList;
-	private final Class<?> elementType;
+	private final ConfigurationValueParser parser;
 	
 	public static ConfigurationDataType toDataType(Class<? extends ConfigurationKey<?>> keyClass) {
 		if (keyClass.getSuperclass() != ConfigurationKey.class) {
@@ -55,61 +125,46 @@ public final class ConfigurationDataType {
 			}
 		}
 		
-		if (SIMPLE_TYPES.contains(argumentType) || isEnum(argumentType)) {
-			return new ConfigurationDataType(isList, (Class<?>)argumentType);
+		if (SIMPLE_TYPES.containsKey(argumentType)) {
+			return new ConfigurationDataType(isList, SIMPLE_TYPES.get(argumentType));
 		}
 		
-		if (argumentType instanceof ParameterizedType) {
-			ParameterizedType parameterizedArgument = (ParameterizedType) argumentType;
-			if (parameterizedArgument.getRawType() == Class.class) {
-				Type classType = parameterizedArgument.getActualTypeArguments()[0];
-				if (!(classType instanceof WildcardType)) {
-					throw new IllegalArgumentException("Illegal specific Class type parameter in " + type);
-				}
-				WildcardType wildcard = (WildcardType) classType;
-				if (wildcard.getLowerBounds().length != 0 || wildcard.getUpperBounds().length != 1 || wildcard.getUpperBounds()[0] != Object.class) {
-					throw new IllegalArgumentException("Illegal bound wildcard Class type parameter in " + type);
-				}
-				return new ConfigurationDataType(isList, Class.class);
-			}
-		}
-		
-		if (argumentType == Class.class) {
-			return new ConfigurationDataType(isList, Class.class);
+		if (isEnum(argumentType)) {
+			return new ConfigurationDataType(isList, enumParser(argumentType));
 		}
 		
 		throw new IllegalArgumentException("Unsupported type parameter in " + type);
 	}
 	
-	private ConfigurationDataType(boolean isList, Class<?> elementType) {
+	private ConfigurationDataType(boolean isList, ConfigurationValueParser parser) {
 		this.isList = isList;
-		this.elementType = elementType;
+		this.parser = parser;
 	}
 	
-	public boolean isList() {
+	boolean isList() {
 		return isList;
 	}
 	
-	public Class<?> getElementType() {
-		return elementType;
+	ConfigurationValueParser getParser() {
+		return parser;
 	}
 	
 	@Override
 	public int hashCode() {
-		return (isList ? 1231 : 1237) + elementType.hashCode();
+		return (isList ? 1231 : 1237) + parser.hashCode();
 	}
 	
 	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof ConfigurationDataType)) return false;
 		ConfigurationDataType other = (ConfigurationDataType) obj;
-		return isList == other.isList && elementType == other.elementType;
+		return isList == other.isList && parser.equals(other.parser);
 	}
 	
 	@Override
 	public String toString() {
-		if (isList) return "java.util.List<" + elementType.getName() + ">";
-		return elementType.getName();
+		if (isList) return "List<" + parser.description() + ">";
+		return parser.description();
 	}
 	
 	private static boolean isEnum(Type argumentType) {
