@@ -21,6 +21,7 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.lang.annotation.Annotation;
@@ -50,6 +51,9 @@ public class HandleValue extends JavacAnnotationHandler<Value> {
 	@Override public void handle(AnnotationValues<Value> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		@SuppressWarnings("deprecation")
 		Class<? extends Annotation> oldExperimentalValue = lombok.experimental.Value.class;
+		
+		handleFlagUsage(annotationNode, Value.FLAG_USAGE, "@Value");
+		
 		deleteAnnotationIfNeccessary(annotationNode, Value.class, oldExperimentalValue);
 		JavacNode typeNode = annotationNode.up();
 		boolean notAClass = !isClass(typeNode);

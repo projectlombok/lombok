@@ -21,6 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import lombok.AccessLevel;
 import lombok.core.AST.Kind;
@@ -102,6 +103,8 @@ public class HandleFieldDefaults extends EclipseAnnotationHandler<FieldDefaults>
 	}
 	
 	public void handle(AnnotationValues<FieldDefaults> annotation, Annotation ast, EclipseNode annotationNode) {
+		handleFlagUsage(annotationNode, FieldDefaults.FLAG_USAGE, "@FieldDefaults");
+		
 		EclipseNode node = annotationNode.up();
 		FieldDefaults instance = annotation.getInstance();
 		AccessLevel level = instance.level();

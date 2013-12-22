@@ -22,6 +22,7 @@
 package lombok.javac.handlers;
 
 import static lombok.javac.Javac.*;
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.Collection;
@@ -118,6 +119,8 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	}
 	
 	@Override public void handle(AnnotationValues<Setter> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		handleFlagUsage(annotationNode, Setter.FLAG_USAGE, "@Setter");
+		
 		Collection<JavacNode> fields = annotationNode.upFromAnnotationToFields();
 		deleteAnnotationIfNeccessary(annotationNode, Setter.class);
 		deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");

@@ -21,6 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.util.Collections;
@@ -46,6 +47,8 @@ import org.mangosdk.spi.ProviderFor;
 @HandlerPriority(-512) //-2^9; to ensure @EqualsAndHashCode and such pick up on this handler making the class final and messing with the fields' access levels, run earlier.
 public class HandleValue extends EclipseAnnotationHandler<Value> {
 	public void handle(AnnotationValues<Value> annotation, Annotation ast, EclipseNode annotationNode) {
+		handleFlagUsage(annotationNode, Value.FLAG_USAGE, "@Value");
+		
 		Value ann = annotation.getInstance();
 		EclipseNode typeNode = annotationNode.up();
 		

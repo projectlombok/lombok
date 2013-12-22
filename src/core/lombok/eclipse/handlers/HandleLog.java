@@ -21,12 +21,14 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.Eclipse.fromQualifiedName;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 
+import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
 import lombok.core.configuration.ConfigurationKey;
 import lombok.eclipse.EclipseAnnotationHandler;
@@ -46,7 +48,6 @@ import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.mangosdk.spi.ProviderFor;
 
 public class HandleLog {
-	
 	private static final ConfigurationKey<String> LOG_VARIABLE_NAME = new ConfigurationKey<String>("lombok.log.varName"){};
 	private static final ConfigurationKey<Boolean> STATIC = new ConfigurationKey<Boolean>("lombok.log.static"){};
 	
@@ -167,6 +168,8 @@ public class HandleLog {
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleCommonsLog extends EclipseAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, Annotation source, EclipseNode annotationNode) {
+			handleFlagUsage(annotationNode, lombok.extern.apachecommons.CommonsLog.FLAG_USAGE, "@apachecommons.CommonsLog", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			
 			processAnnotation(LoggingFramework.COMMONS, annotation, source, annotationNode);
 		}
 	}
@@ -177,6 +180,8 @@ public class HandleLog {
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleJulLog extends EclipseAnnotationHandler<lombok.extern.java.Log> {
 		@Override public void handle(AnnotationValues<lombok.extern.java.Log> annotation, Annotation source, EclipseNode annotationNode) {
+			handleFlagUsage(annotationNode, lombok.extern.java.Log.FLAG_USAGE, "@java.Log", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			
 			processAnnotation(LoggingFramework.JUL, annotation, source, annotationNode);
 		}
 	}
@@ -187,6 +192,8 @@ public class HandleLog {
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleLog4jLog extends EclipseAnnotationHandler<lombok.extern.log4j.Log4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, Annotation source, EclipseNode annotationNode) {
+			handleFlagUsage(annotationNode, lombok.extern.log4j.Log4j.FLAG_USAGE, "@Log4j", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			
 			processAnnotation(LoggingFramework.LOG4J, annotation, source, annotationNode);
 		}
 	}
@@ -197,6 +204,8 @@ public class HandleLog {
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleLog4j2Log extends EclipseAnnotationHandler<lombok.extern.log4j.Log4j2> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j2> annotation, Annotation source, EclipseNode annotationNode) {
+			handleFlagUsage(annotationNode, lombok.extern.log4j.Log4j2.FLAG_USAGE, "@Log4j2", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			
 			processAnnotation(LoggingFramework.LOG4J2, annotation, source, annotationNode);
 		}
 	}
@@ -207,6 +216,8 @@ public class HandleLog {
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleSlf4jLog extends EclipseAnnotationHandler<lombok.extern.slf4j.Slf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, Annotation source, EclipseNode annotationNode) {
+			handleFlagUsage(annotationNode, lombok.extern.slf4j.Slf4j.FLAG_USAGE, "@Slf4j", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			
 			processAnnotation(LoggingFramework.SLF4J, annotation, source, annotationNode);
 		}
 	}
@@ -217,6 +228,8 @@ public class HandleLog {
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleXSlf4jLog extends EclipseAnnotationHandler<lombok.extern.slf4j.XSlf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.XSlf4j> annotation, Annotation source, EclipseNode annotationNode) {
+			handleFlagUsage(annotationNode, lombok.extern.slf4j.XSlf4j.FLAG_USAGE, "@XSlf4j", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			
 			processAnnotation(LoggingFramework.XSLF4J, annotation, source, annotationNode);
 		}
 	}

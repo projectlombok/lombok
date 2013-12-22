@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Project Lombok Authors.
+ * Copyright (C) 2012-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 import lombok.AccessLevel;
 import lombok.core.AST.Kind;
@@ -96,6 +97,8 @@ public class HandleFieldDefaults extends JavacAnnotationHandler<FieldDefaults> {
 	}
 	
 	@Override public void handle(AnnotationValues<FieldDefaults> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		handleFlagUsage(annotationNode, FieldDefaults.FLAG_USAGE, "@FieldDefaults");
+		
 		deleteAnnotationIfNeccessary(annotationNode, FieldDefaults.class);
 		deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
 		JavacNode node = annotationNode.up();

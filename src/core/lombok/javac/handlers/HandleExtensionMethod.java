@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Project Lombok Authors.
+ * Copyright (C) 2012-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 package lombok.javac.handlers;
 
 import static com.sun.tools.javac.code.Flags.*;
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 import static lombok.javac.handlers.JavacResolver.*;
 
@@ -64,6 +65,8 @@ import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMethod> {
 	@Override
 	public void handle(final AnnotationValues<ExtensionMethod> annotation, final JCAnnotation source, final JavacNode annotationNode) {
+		handleFlagUsage(annotationNode, ExtensionMethod.FLAG_USAGE, "@ExtensionMethod");
+		
 		deleteAnnotationIfNeccessary(annotationNode, ExtensionMethod.class);
 		JavacNode typeNode = annotationNode.up();
 		boolean isClassOrEnum = isClassOrEnum(typeNode);

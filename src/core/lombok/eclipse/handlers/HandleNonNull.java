@@ -21,6 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.Eclipse.isPrimitive;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
@@ -57,6 +58,8 @@ import org.mangosdk.spi.ProviderFor;
 @HandlerPriority(value = 512) // 2^9; onParameter=@__(@NonNull) has to run first.
 public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 	@Override public void handle(AnnotationValues<NonNull> annotation, Annotation ast, EclipseNode annotationNode) {
+		handleFlagUsage(annotationNode, NonNull.FLAG_USAGE, "@NonNull");
+		
 		if (annotationNode.up().getKind() == Kind.FIELD) {
 			// This is meaningless unless the field is used to generate a method (@Setter, @RequiredArgsConstructor, etc),
 			// but in that case those handlers will take care of it. However, we DO check if the annotation is applied to

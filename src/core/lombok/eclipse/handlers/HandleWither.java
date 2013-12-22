@@ -21,6 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
@@ -120,6 +121,8 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 	}
 	
 	@Override public void handle(AnnotationValues<Wither> annotation, Annotation ast, EclipseNode annotationNode) {
+		handleFlagUsage(annotationNode, Wither.FLAG_USAGE, "@Wither");
+		
 		EclipseNode node = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
 		if (level == AccessLevel.NONE || node == null) return;

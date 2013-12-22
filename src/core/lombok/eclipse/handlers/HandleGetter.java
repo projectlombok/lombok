@@ -21,6 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
@@ -132,6 +133,8 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	}
 	
 	public void handle(AnnotationValues<Getter> annotation, Annotation ast, EclipseNode annotationNode) {
+		handleFlagUsage(annotationNode, Getter.FLAG_USAGE, "@Getter");
+		
 		EclipseNode node = annotationNode.up();
 		Getter annotationInstance = annotation.getInstance();
 		AccessLevel level = annotationInstance.value();

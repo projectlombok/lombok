@@ -21,10 +21,12 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.lang.annotation.Annotation;
 
+import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
@@ -103,6 +105,8 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleCommonsLog extends JavacAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, JCAnnotation ast, JavacNode annotationNode) {
+			handleFlagUsage(annotationNode, lombok.extern.apachecommons.CommonsLog.FLAG_USAGE, "@apachecommons.CommonsLog", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			
 			processAnnotation(LoggingFramework.COMMONS, annotation, annotationNode);
 		}
 	}
@@ -113,6 +117,8 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleJulLog extends JavacAnnotationHandler<lombok.extern.java.Log> {
 		@Override public void handle(AnnotationValues<lombok.extern.java.Log> annotation, JCAnnotation ast, JavacNode annotationNode) {
+			handleFlagUsage(annotationNode, lombok.extern.java.Log.FLAG_USAGE, "@java.Log", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			
 			processAnnotation(LoggingFramework.JUL, annotation, annotationNode);
 		}
 	}
@@ -123,6 +129,8 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleLog4jLog extends JavacAnnotationHandler<lombok.extern.log4j.Log4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
+			handleFlagUsage(annotationNode, lombok.extern.log4j.Log4j.FLAG_USAGE, "@Log4j", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			
 			processAnnotation(LoggingFramework.LOG4J, annotation, annotationNode);
 		}
 	}
@@ -133,6 +141,8 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleLog4j2Log extends JavacAnnotationHandler<lombok.extern.log4j.Log4j2> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j2> annotation, JCAnnotation ast, JavacNode annotationNode) {
+			handleFlagUsage(annotationNode, lombok.extern.log4j.Log4j2.FLAG_USAGE, "@Log4j2", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			
 			processAnnotation(LoggingFramework.LOG4J2, annotation, annotationNode);
 		}
 	}
@@ -143,6 +153,8 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleSlf4jLog extends JavacAnnotationHandler<lombok.extern.slf4j.Slf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
+			handleFlagUsage(annotationNode, lombok.extern.slf4j.Slf4j.FLAG_USAGE, "@Slf4j", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			
 			processAnnotation(LoggingFramework.SLF4J, annotation, annotationNode);
 		}
 	}
@@ -153,6 +165,8 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleXSlf4jLog extends JavacAnnotationHandler<lombok.extern.slf4j.XSlf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.XSlf4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
+			handleFlagUsage(annotationNode, lombok.extern.slf4j.XSlf4j.FLAG_USAGE, "@XSlf4j", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			
 			processAnnotation(LoggingFramework.XSLF4J, annotation, annotationNode);
 		}
 	}

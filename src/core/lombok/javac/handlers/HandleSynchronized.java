@@ -21,6 +21,7 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 import lombok.Synchronized;
@@ -54,6 +55,8 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 	private static final String STATIC_LOCK_NAME = "$LOCK";
 	
 	@Override public void handle(AnnotationValues<Synchronized> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		handleFlagUsage(annotationNode, Synchronized.FLAG_USAGE, "@Synchronized");
+		
 		if (inNetbeansEditor(annotationNode)) return;
 		
 		deleteAnnotationIfNeccessary(annotationNode, Synchronized.class);

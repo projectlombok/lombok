@@ -21,6 +21,8 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
+
 import java.util.Collections;
 
 import lombok.AccessLevel;
@@ -41,6 +43,8 @@ import org.mangosdk.spi.ProviderFor;
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleData extends EclipseAnnotationHandler<Data> {
 	public void handle(AnnotationValues<Data> annotation, Annotation ast, EclipseNode annotationNode) {
+		handleFlagUsage(annotationNode, Data.FLAG_USAGE, "@Data");
+		
 		Data ann = annotation.getInstance();
 		EclipseNode typeNode = annotationNode.up();
 		

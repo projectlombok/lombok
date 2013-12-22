@@ -21,6 +21,7 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
@@ -119,6 +120,8 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 	}
 	
 	@Override public void handle(AnnotationValues<Wither> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		handleFlagUsage(annotationNode, Wither.FLAG_USAGE, "@Wither");
+		
 		Collection<JavacNode> fields = annotationNode.upFromAnnotationToFields();
 		deleteAnnotationIfNeccessary(annotationNode, Wither.class);
 		deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");

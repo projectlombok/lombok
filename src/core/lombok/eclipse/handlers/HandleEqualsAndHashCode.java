@@ -21,6 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
@@ -118,6 +119,9 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	
 	@Override public void handle(AnnotationValues<EqualsAndHashCode> annotation,
 			Annotation ast, EclipseNode annotationNode) {
+		
+		handleFlagUsage(annotationNode, EqualsAndHashCode.FLAG_USAGE, "@EqualsAndHashCode");
+		
 		EqualsAndHashCode ann = annotation.getInstance();
 		List<String> excludes = Arrays.asList(ann.exclude());
 		List<String> includes = Arrays.asList(ann.of());
