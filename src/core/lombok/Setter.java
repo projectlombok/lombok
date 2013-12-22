@@ -26,6 +26,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import lombok.core.FlagUsageType;
+import lombok.core.configuration.ConfigurationKey;
+
 /**
  * Put on any field to make lombok build a standard setter.
  * <p>
@@ -53,6 +56,13 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.TYPE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface Setter {
+	/**
+	 * lombok configuration: {@code lombok.Setter.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @Setter} results in a warning / error.
+	 */
+	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.Setter.flagUsage") {};
+	
 	/**
 	 * If you want your setter to be non-public, you can specify an alternate access level here.
 	 */

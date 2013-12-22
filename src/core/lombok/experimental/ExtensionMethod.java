@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Project Lombok Authors.
+ * Copyright (C) 2012-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,9 @@ import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.*;
 
 import java.lang.annotation.*;
+
+import lombok.core.FlagUsageType;
+import lombok.core.configuration.ConfigurationKey;
 
 /**
  * Extension methods enable you to "add" methods to existing types without creating a new derived type, recompiling, or
@@ -60,6 +63,13 @@ import java.lang.annotation.*;
 @Target(TYPE)
 @Retention(SOURCE)
 public @interface ExtensionMethod {
+	/**
+	 * lombok configuration: {@code lombok.ExtensionMethod.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @ExtensionMethod} results in a warning / error.
+	 */
+	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.ExtensionMethod.flagUsage") {};
+	
 	/** All types whose static methods will be exposed as extension methods. */
 	Class<?>[] value();
 

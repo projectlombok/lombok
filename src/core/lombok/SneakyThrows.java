@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,9 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import lombok.core.FlagUsageType;
+import lombok.core.configuration.ConfigurationKey;
 
 /**
  * &#64;SneakyThrow will avoid javac's insistence that you either catch or throw onward any checked exceptions that
@@ -59,6 +62,13 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @Retention(RetentionPolicy.SOURCE)
 public @interface SneakyThrows {
+	/**
+	 * lombok configuration: {@code lombok.SneakyThrows.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @SneakyThrows} results in a warning / error.
+	 */
+	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.SneakyThrows.flagUsage") {};
+	
 	/** The exception type(s) you want to sneakily throw onward. */
 	Class<? extends Throwable>[] value() default java.lang.Throwable.class;
 	

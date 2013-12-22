@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 The Project Lombok Authors.
+ * Copyright (C) 2010-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,9 @@
  */
 package lombok;
 
+import lombok.core.FlagUsageType;
+import lombok.core.configuration.ConfigurationKey;
+
 /**
  * Use {@code val} as the type of any local variable declaration (even in a for-each statement), and the type will be inferred from the initializing expression.
  * For example: {@code val x = 10.0;} will infer {@code double}, and {@code val y = new ArrayList<String>();} will infer {@code ArrayList<String>}. The local variable
@@ -30,4 +33,11 @@ package lombok;
  * <p>
  * Complete documentation is found at <a href="http://projectlombok.org/features/val.html">the project lombok features page for &#64;val</a>.
  */
-public @interface val {}
+public @interface val {
+	/**
+	 * lombok configuration: {@code lombok.val.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code val} results in a warning / error.
+	 */
+	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.val.flagUsage") {};
+}

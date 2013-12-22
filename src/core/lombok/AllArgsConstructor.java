@@ -26,6 +26,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import lombok.core.FlagUsageType;
+import lombok.core.configuration.ConfigurationKey;
+
 /**
  * Generates an all-args constructor.
  * An all-args constructor requires one argument for every field in the class.
@@ -40,6 +43,13 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface AllArgsConstructor {
+	/**
+	 * lombok configuration: {@code lombok.AllArgsConstructor.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @AllArgsConstructor} results in a warning / error.
+	 */
+	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.AllArgsConstructor.flagUsage") {};
+	
 	/**
 	 * If set, the generated constructor will be private, and an additional static 'constructor'
 	 * is generated with the same argument list that wraps the real constructor.

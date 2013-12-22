@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import lombok.core.FlagUsageType;
+import lombok.core.configuration.ConfigurationKey;
+
 /**
  * Almost exactly like putting the 'synchronized' keyword on a method, except will synchronize on a private internal
  * Object, so that other code not under your control doesn't meddle with your thread management by locking on
@@ -40,6 +43,13 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.SOURCE)
 public @interface Synchronized {
+	/**
+	 * lombok configuration: {@code lombok.Synchronized.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @Synchronized} results in a warning / error.
+	 */
+	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.Synchronized.flagUsage") {};
+	
 	/**
 	 * Optional: specify the name of a different field to lock on. It is a compile time error if this field
 	 * doesn't already exist (the fields are automatically generated only if you don't specify a specific name.

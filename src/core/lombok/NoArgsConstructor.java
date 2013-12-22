@@ -26,6 +26,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import lombok.core.FlagUsageType;
+import lombok.core.configuration.ConfigurationKey;
+
 /**
  * Generates a no-args constructor.
  * Will generate an error message if such a constructor cannot be written due to the existence of final fields.
@@ -42,6 +45,13 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface NoArgsConstructor {
+	/**
+	 * lombok configuration: {@code lombok.NoArgsConstructor.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @NoArgsConstructor} results in a warning / error.
+	 */
+	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.NoArgsConstructor.flagUsage") {};
+	
 	/**
 	 * If set, the generated constructor will be private, and an additional static 'constructor'
 	 * is generated with the same argument list that wraps the real constructor.

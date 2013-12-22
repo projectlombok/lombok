@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,9 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
+import lombok.core.FlagUsageType;
+import lombok.core.configuration.ConfigurationKey;
 
 /**
  * Ensures the variable declaration that you annotate will be cleaned up by calling its close method, regardless
@@ -72,6 +75,13 @@ import java.lang.annotation.Target;
 @Target(ElementType.LOCAL_VARIABLE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface Cleanup {
+	/**
+	 * lombok configuration: {@code lombok.Cleanup.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @Cleanup} results in a warning / error.
+	 */
+	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.Cleanup.flagUsage") {};
+	
 	/** The name of the method that cleans up the resource. By default, 'close'. The method must not have any parameters. */
 	String value() default "close";
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import lombok.core.FlagUsageType;
+import lombok.core.configuration.ConfigurationKey;
+
 /**
  * Generates implementations for the {@code equals} and {@code hashCode} methods inherited by all objects, based on relevant fields.
  * <p>
@@ -34,6 +37,13 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface EqualsAndHashCode {
+	/**
+	 * lombok configuration: {@code lombok.EqualsAndHashCode.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @EqualsAndHashCode} results in a warning / error.
+	 */
+	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.EqualsAndHashCode.flagUsage") {};
+	
 	/**
 	 * Any fields listed here will not be taken into account in the generated
 	 * {@code equals} and {@code hashCode} implementations.

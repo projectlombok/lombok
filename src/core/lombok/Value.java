@@ -26,6 +26,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import lombok.core.FlagUsageType;
+import lombok.core.configuration.ConfigurationKey;
+
 /**
  * Generates a lot of code which fits with a class that is a representation of an immutable entity.
  * <p>
@@ -43,6 +46,13 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface Value {
+	/**
+	 * lombok configuration: {@code lombok.Value.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @Value} results in a warning / error.
+	 */
+	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.Value.flagUsage") {};
+	
 	/**
 	 * If you specify a static constructor name, then the generated constructor will be private, and
 	 * instead a static factory method is created that other classes can use to create instances.

@@ -21,8 +21,10 @@
  */
 package lombok.core.handlers;
 
+import lombok.core.FlagUsageType;
 import lombok.core.JavaIdentifiers;
 import lombok.core.LombokNode;
+import lombok.core.configuration.ConfigurationKey;
 
 public class HandlerUtil {
 	private HandlerUtil() {}
@@ -44,5 +46,42 @@ public class HandlerUtil {
 		}
 		
 		return true;
+	}
+	
+	public static void handleFlagUsage(LombokNode<?, ?, ?> node, ConfigurationKey<FlagUsageType> key, String featureName) {
+		FlagUsageType fut = node.getAst().readConfiguration(key);
+		
+		if (fut != null) {
+			String msg = "Use of " + featureName + " is flagged according to lombok configuration.";
+			if (fut == FlagUsageType.WARNING) node.addWarning(msg);
+			else node.addError(msg);
+		}
+	}
+	
+	public static void handleFlagUsage(LombokNode<?, ?, ?> node, ConfigurationKey<FlagUsageType> key1, String featureName1, ConfigurationKey<FlagUsageType> key2, String featureName2) {
+		FlagUsageType fut1 = node.getAst().readConfiguration(key1);
+		FlagUsageType fut2 = node.getAst().readConfiguration(key2);
+		
+		FlagUsageType fut = null;
+		String featureName = null;
+		if (fut1 == FlagUsageType.ERROR) {
+			fut = fut1;
+			featureName = featureName1;
+		} else if (fut2 == FlagUsageType.ERROR) {
+			fut = fut2;
+			featureName = featureName2;
+		} else if (fut1 == FlagUsageType.WARNING) {
+			fut = fut1;
+			featureName = featureName1;
+		} else {
+			fut = fut2;
+			featureName = featureName2;
+		}
+		
+		if (fut != null) {
+			String msg = "Use of " + featureName + " is flagged according to lombok configuration.";
+			if (fut == FlagUsageType.WARNING) node.addWarning(msg);
+			else node.addError(msg);
+		}
 	}
 }

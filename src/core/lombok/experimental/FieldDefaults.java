@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Project Lombok Authors.
+ * Copyright (C) 2012-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import lombok.AccessLevel;
+import lombok.core.FlagUsageType;
+import lombok.core.configuration.ConfigurationKey;
 
 /**
  * Adds modifiers to each field in the type with this annotation.
@@ -41,6 +43,13 @@ import lombok.AccessLevel;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface FieldDefaults {
+	/**
+	 * lombok configuration: {@code lombok.FieldDefaults.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @FieldDefaults} results in a warning / error.
+	 */
+	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.FieldDefaults.flagUsage") {};
+	
 	AccessLevel level() default AccessLevel.NONE;
 	boolean makeFinal() default false;
 }
