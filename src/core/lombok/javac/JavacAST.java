@@ -395,7 +395,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		}
 	}
 
-	private void removeFromDeferredDiagnostics(int startPos, int endPos) {
+	public void removeFromDeferredDiagnostics(int startPos, int endPos) {
 		JCCompilationUnit self = (JCCompilationUnit) top().get();
 		new CompilerMessageSuppressor(getContext()).removeAllBetween(self.sourcefile, startPos, endPos);
 	}
