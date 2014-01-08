@@ -149,7 +149,7 @@ public class JavacHandlerUtil {
 			if (source == null) generatedNodes.remove(node);
 			else generatedNodes.put(node, new WeakReference<JCTree>(source));
 		}
-		if (source != null && !inNetbeansEditor(context)) node.pos = source.pos;
+		if (source != null && (!inNetbeansEditor(context) || (node instanceof JCVariableDecl && (((JCVariableDecl) node).mods.flags & Flags.PARAMETER) != 0))) node.pos = source.pos;
 		return node;
 	}
 	
