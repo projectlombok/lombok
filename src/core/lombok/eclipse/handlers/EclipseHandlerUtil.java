@@ -1388,6 +1388,19 @@ public class EclipseHandlerUtil {
 	private static final char[] ALL = "all".toCharArray();
 	
 	public static Annotation[] createSuppressWarningsAll(ASTNode source, Annotation[] originalAnnotationArray) {
+		if (originalAnnotationArray != null) for (Annotation ann : originalAnnotationArray) {
+			char[] lastToken = null;
+			
+			if (ann.type instanceof QualifiedTypeReference) {
+				char[][] t = ((QualifiedTypeReference) ann.type).tokens;
+				lastToken = t[t.length - 1];
+			} else if (ann.type instanceof SingleTypeReference) {
+				lastToken = ((SingleTypeReference) ann.type).token;
+			}
+			
+			if (lastToken != null && new String(lastToken).equals("SuppressWarnings")) return originalAnnotationArray;
+		}
+		
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		long[] poss = new long[3];
