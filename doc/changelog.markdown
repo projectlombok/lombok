@@ -5,6 +5,7 @@ Lombok Changelog
 * BUGFIX: v1.12.2's delombok turns all operator+assignments into just assignment. Fixed. [Issue #598](https://code.google.com/p/projectlombok/issues/detail?id=598)
 * BUGFIX: {Netbeans} v1.12.2 doesn't well with netbeans. [Issue #591](https://code.google.com/p/projectlombok/issues/detail?id=591)
 * ENHANCEMENT: Delombok now supports varied options for how it formats the resulting source files. This includes scanning the source for things like the preferred indent. Use option `--format-help` for more information. [Issue #608](http://code.google.com/p/projectlombok/issues/detail?id=608)
+* DETAIL: The primes lombok generates for use in generated hashCode() methods used to be direct copies from Effective Java. It turns out these particular primes are used so much, they tend to be a bit more collision-prone, so we switched them. Now, '277' is used instead of '31'. The primes for booleans have also been changed. [Issue #625](https://code.google.com/p/projectlombok/issues/detail?id=625)
 
 ### v1.12.2 (October 10th, 2013)
 * PLATFORM: Initial JDK8 support, without affecting existing support for JDK6 and 7. [Issue #451](https://code.google.com/p/projectlombok/issues/detail?id=451). While lombok will now work on JDK8 / javac8, and netbeans 7.4 and up, lombok does not (yet) support new language features introduced with java8, such as lambda expressions. Support for these features will be added in a future version.
