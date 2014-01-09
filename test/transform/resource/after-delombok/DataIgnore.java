@@ -27,7 +27,7 @@ class DataIgnore {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
-		final int PRIME = 31;
+		final int PRIME = 277;
 		int result = 1;
 		result = result * PRIME + this.getX();
 		return result;

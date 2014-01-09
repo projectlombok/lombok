@@ -31,7 +31,7 @@ import lombok.Data;
     return (other instanceof Data1);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    final int PRIME = 31;
+    final int PRIME = 277;
     int result = 1;
     result = ((result * PRIME) + this.getX());
     final java.lang.Object $name = this.getName();
@@ -78,7 +78,7 @@ import lombok.Data;
     return (other instanceof Data2);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    final int PRIME = 31;
+    final int PRIME = 277;
     int result = 1;
     result = ((result * PRIME) + this.getX());
     final java.lang.Object $name = this.getName();
@@ -120,7 +120,7 @@ final @Data class Data3 {
     return true;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    final int PRIME = 31;
+    final int PRIME = 277;
     int result = 1;
     result = ((result * PRIME) + this.getX());
     final java.lang.Object $name = this.getName();
@@ -167,7 +167,7 @@ final @Data @lombok.EqualsAndHashCode(callSuper = true) class Data4 extends java
     return (other instanceof Data4);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    final int PRIME = 31;
+    final int PRIME = 277;
     int result = 1;
     result = ((result * PRIME) + super.hashCode());
     result = ((result * PRIME) + this.getX());

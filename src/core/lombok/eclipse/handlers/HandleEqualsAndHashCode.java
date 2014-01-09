@@ -35,6 +35,7 @@ import java.util.Set;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.core.AST.Kind;
+import lombok.core.handlers.HandlerUtil;
 import lombok.core.AnnotationValues;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
@@ -271,7 +272,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		
 		final boolean isEmpty = fields.isEmpty();
 		
-		/* final int PRIME = 31; */ {
+		/* final int PRIME = 277; */ {
 			/* Without fields, PRIME isn't used, and that would trigger a 'local variable not used' warning. */
 			if (!isEmpty || callSuper) {
 				LocalDeclaration primeDecl = new LocalDeclaration(PRIME, pS, pE);
@@ -280,7 +281,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 				primeDecl.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 				primeDecl.type.sourceStart = pS; primeDecl.type.sourceEnd = pE;
 				setGeneratedBy(primeDecl.type, source);
-				primeDecl.initialization = makeIntLiteral("31".toCharArray(), source);
+				primeDecl.initialization = makeIntLiteral(String.valueOf(HandlerUtil.PRIME_FOR_HASHCODE).toCharArray(), source);
 				statements.add(primeDecl);
 			}
 		}
@@ -312,12 +313,12 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			Expression fieldAccessor = createFieldAccessor(field, fieldAccess, source);
 			if (fType.dimensions() == 0 && token != null) {
 				if (Arrays.equals(TypeConstants.BOOLEAN, token)) {
-					/* booleanField ? 1231 : 1237 */
-					IntLiteral int1231 = makeIntLiteral("1231".toCharArray(), source);
-					IntLiteral int1237 = makeIntLiteral("1237".toCharArray(), source);
-					ConditionalExpression int1231or1237 = new ConditionalExpression(fieldAccessor, int1231, int1237);
-					setGeneratedBy(int1231or1237, source);
-					statements.add(createResultCalculation(source, int1231or1237));
+					/* booleanField ? 2591 : 2609 */
+					IntLiteral intFalse = makeIntLiteral(String.valueOf(HandlerUtil.PRIME_FOR_FALSE).toCharArray(), source);
+					IntLiteral intTrue = makeIntLiteral(String.valueOf(HandlerUtil.PRIME_FOR_TRUE).toCharArray(), source);
+					ConditionalExpression intForBool = new ConditionalExpression(fieldAccessor, intFalse, intTrue);
+					setGeneratedBy(intForBool, source);
+					statements.add(createResultCalculation(source, intForBool));
 				} else if (Arrays.equals(TypeConstants.LONG, token)) {
 					statements.add(createLocalDeclaration(source, dollarFieldName, TypeReference.baseTypeReference(TypeIds.T_long, 0), fieldAccessor));
 					SingleNameReference copy1 = new SingleNameReference(dollarFieldName, p);

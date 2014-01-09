@@ -57,7 +57,7 @@ import static lombok.AccessLevel.NONE;
     return (other instanceof EqualsAndHashCodeWithNoExistingMethods);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    final int PRIME = 31;
+    final int PRIME = 277;
     int result = 1;
     result = ((result * PRIME) + this.x);
     return result;

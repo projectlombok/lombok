@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2013-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,10 @@ import lombok.core.LombokNode;
 
 public class HandlerUtil {
 	private HandlerUtil() {}
+	
+	public static final int PRIME_FOR_HASHCODE = 277;
+	public static final int PRIME_FOR_TRUE = 2591;
+	public static final int PRIME_FOR_FALSE = 2609;
 	
 	/** Checks if the given name is a valid identifier.
 	 * 

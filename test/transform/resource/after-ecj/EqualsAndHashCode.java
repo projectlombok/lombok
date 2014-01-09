@@ -35,7 +35,7 @@
     return (other instanceof EqualsAndHashCode);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    final int PRIME = 31;
+    final int PRIME = 277;
     int result = 1;
     result = ((result * PRIME) + this.x);
     result = ((result * PRIME) + java.util.Arrays.hashCode(this.y));
@@ -72,7 +72,7 @@ final @lombok.EqualsAndHashCode class EqualsAndHashCode2 {
     return true;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    final int PRIME = 31;
+    final int PRIME = 277;
     int result = 1;
     result = ((result * PRIME) + this.x);
     final long $y = this.y;
@@ -125,7 +125,7 @@ final @lombok.EqualsAndHashCode(callSuper = false) class EqualsAndHashCode3 exte
     return (other instanceof EqualsAndHashCode4);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    final int PRIME = 31;
+    final int PRIME = 277;
     int result = 1;
     result = ((result * PRIME) + super.hashCode());
     return result;

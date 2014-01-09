@@ -57,9 +57,9 @@
     return (other instanceof GetterLazyBoolean);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    final int PRIME = 31;
+    final int PRIME = 277;
     int result = 1;
-    result = ((result * PRIME) + (this.isBooleanValue() ? 1231 : 1237));
+    result = ((result * PRIME) + (this.isBooleanValue() ? 2591 : 2609));
     return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {

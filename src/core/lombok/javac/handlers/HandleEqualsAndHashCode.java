@@ -31,6 +31,7 @@ import java.util.Collections;
 import lombok.EqualsAndHashCode;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.handlers.HandlerUtil;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
@@ -230,9 +231,9 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		Name resultName = typeNode.toName(RESULT_NAME);
 		long finalFlag = JavacHandlerUtil.addFinalIfNeeded(0L, typeNode.getContext());
 		
-		/* final int PRIME = 31; */ {
+		/* final int PRIME = 277; */ {
 			if (!fields.isEmpty() || callSuper) {
-				statements.append(maker.VarDef(maker.Modifiers(finalFlag), primeName, maker.TypeIdent(CTC_INT), maker.Literal(31)));
+				statements.append(maker.VarDef(maker.Modifiers(finalFlag), primeName, maker.TypeIdent(CTC_INT), maker.Literal(HandlerUtil.PRIME_FOR_HASHCODE)));
 			}
 		}
 		
@@ -254,8 +255,9 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			if (fType instanceof JCPrimitiveTypeTree) {
 				switch (((JCPrimitiveTypeTree)fType).getPrimitiveTypeKind()) {
 				case BOOLEAN:
-					/* this.fieldName ? 1231 : 1237 */
-					statements.append(createResultCalculation(typeNode, maker.Conditional(fieldAccessor, maker.Literal(1231), maker.Literal(1237))));
+					/* this.fieldName ? 2591 : 2609 */
+					statements.append(createResultCalculation(typeNode, maker.Conditional(fieldAccessor, 
+							maker.Literal(HandlerUtil.PRIME_FOR_FALSE), maker.Literal(HandlerUtil.PRIME_FOR_TRUE))));
 					break;
 				case LONG: {
 						Name dollarFieldName = dollar.append(((JCVariableDecl)fieldNode.get()).name);
