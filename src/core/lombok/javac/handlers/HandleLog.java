@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2013 The Project Lombok Authors.
+ * Copyright (C) 2010-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,18 +56,23 @@ public class HandleLog {
 		JavacNode typeNode = annotationNode.up();
 		switch (typeNode.getKind()) {
 		case TYPE:
-			if ((((JCClassDecl)typeNode.get()).mods.flags & Flags.INTERFACE)!= 0) {
+			String logFieldName = annotationNode.getAst().readConfiguration(ConfigurationKeys.ANY_LOG_FIELD_NAME);
+			if (logFieldName == null) logFieldName = "log";
+			
+			boolean useStatic = !Boolean.FALSE.equals(annotationNode.getAst().readConfiguration(ConfigurationKeys.ANY_LOG_FIELD_IS_STATIC));
+			
+			if ((((JCClassDecl)typeNode.get()).mods.flags & Flags.INTERFACE) != 0) {
 				annotationNode.addError("@Log is legal only on classes and enums.");
 				return;
 			}
 			
-			if (fieldExists("log", typeNode)!= MemberExistsResult.NOT_EXISTS) {
-				annotationNode.addWarning("Field 'log' already exists.");
+			if (fieldExists(logFieldName, typeNode)!= MemberExistsResult.NOT_EXISTS) {
+				annotationNode.addWarning("Field '" + logFieldName + "' already exists.");
 				return;
 			}
 			
 			JCFieldAccess loggingType = selfType(typeNode);
-			createField(framework, typeNode, loggingType, annotationNode.get());
+			createField(framework, typeNode, loggingType, annotationNode.get(), logFieldName, useStatic);
 			break;
 		default:
 			annotationNode.addError("@Log is legal only on types.");
@@ -81,7 +86,7 @@ public class HandleLog {
 		return maker.Select(maker.Ident(name), typeNode.toName("class"));
 	}
 	
-	private static boolean createField(LoggingFramework framework, JavacNode typeNode, JCFieldAccess loggingType, JCTree source) {
+	private static boolean createField(LoggingFramework framework, JavacNode typeNode, JCFieldAccess loggingType, JCTree source, String logFieldName, boolean useStatic) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		// private static final <loggerType> log = <factoryMethod>(<parameter>);
@@ -92,8 +97,8 @@ public class HandleLog {
 		JCMethodInvocation factoryMethodCall = maker.Apply(List.<JCExpression>nil(), factoryMethod, List.<JCExpression>of(loggerName));
 		
 		JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
-				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | Flags.STATIC),
-				typeNode.toName("log"), loggerType, factoryMethodCall), source, typeNode.getContext());
+				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (useStatic ? Flags.STATIC : 0)),
+				typeNode.toName(logFieldName), loggerType, factoryMethodCall), source, typeNode.getContext());
 		
 		injectFieldSuppressWarnings(typeNode, fieldDecl);
 		return true;

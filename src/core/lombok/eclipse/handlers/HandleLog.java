@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2013 The Project Lombok Authors.
+ * Copyright (C) 2010-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,6 @@ import java.util.Arrays;
 
 import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
-import lombok.core.configuration.ConfigurationKey;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
@@ -48,9 +47,6 @@ import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.mangosdk.spi.ProviderFor;
 
 public class HandleLog {
-	private static final ConfigurationKey<String> LOG_VARIABLE_NAME = new ConfigurationKey<String>("lombok.log.varName"){};
-	private static final ConfigurationKey<Boolean> STATIC = new ConfigurationKey<Boolean>("lombok.log.static"){};
-	
 	private HandleLog() {
 		throw new UnsupportedOperationException();
 	}
@@ -60,11 +56,10 @@ public class HandleLog {
 		
 		switch (owner.getKind()) {
 		case TYPE:
+			String logFieldName = annotationNode.getAst().readConfiguration(ConfigurationKeys.ANY_LOG_FIELD_NAME);
+			if (logFieldName == null) logFieldName = "log";
 			
-			String logFieldName = annotationNode.getAst().readConfiguration(LOG_VARIABLE_NAME);
-			if (logFieldName == null) {
-				logFieldName = "log";
-			}
+			boolean useStatic = !Boolean.FALSE.equals(annotationNode.getAst().readConfiguration(ConfigurationKeys.ANY_LOG_FIELD_IS_STATIC));
 			
 			TypeDeclaration typeDecl = null;
 			if (owner.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) owner.get();
@@ -85,7 +80,7 @@ public class HandleLog {
 			
 			ClassLiteralAccess loggingType = selfType(owner, source);
 			
-			FieldDeclaration fieldDeclaration = createField(framework, source, loggingType, logFieldName);
+			FieldDeclaration fieldDeclaration = createField(framework, source, loggingType, logFieldName, useStatic);
 			fieldDeclaration.traverse(new SetGeneratedByVisitor(source), typeDecl.staticInitializerScope);
 			// TODO temporary workaround for issue 217. http://code.google.com/p/projectlombok/issues/detail?id=217
 			// injectFieldSuppressWarnings(owner, fieldDeclaration);
@@ -111,7 +106,7 @@ public class HandleLog {
 		return result;
 	}
 	
-	private static FieldDeclaration createField(LoggingFramework framework, Annotation source, ClassLiteralAccess loggingType, String logFieldName) {
+	private static FieldDeclaration createField(LoggingFramework framework, Annotation source, ClassLiteralAccess loggingType, String logFieldName, boolean useStatic) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
@@ -119,7 +114,7 @@ public class HandleLog {
 		FieldDeclaration fieldDecl = new FieldDeclaration(logFieldName.toCharArray(), 0, -1);
 		setGeneratedBy(fieldDecl, source);
 		fieldDecl.declarationSourceEnd = -1;
-		fieldDecl.modifiers = Modifier.PRIVATE | Modifier.STATIC | Modifier.FINAL;
+		fieldDecl.modifiers = Modifier.PRIVATE | (useStatic ? Modifier.STATIC : 0) | Modifier.FINAL;
 		
 		fieldDecl.type = createTypeReference(framework.getLoggerTypeName(), source);
 		
