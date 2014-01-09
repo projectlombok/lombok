@@ -82,7 +82,6 @@ public final class ConfigurationDataType {
 		SIMPLE_TYPES = map;
 	}
 	
-
 	private static ConfigurationValueParser enumParser(Object enumType) {
 		@SuppressWarnings("rawtypes") final Class rawType = (Class)enumType;
 		return new ConfigurationValueParser(){

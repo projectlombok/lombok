@@ -22,8 +22,8 @@
 package lombok.core.configuration;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Describes a configuration key and its type.
@@ -34,7 +34,7 @@ import java.util.Map;
  * </pre>
  */
 public abstract class ConfigurationKey<T> {
-	private static final Map<String, ConfigurationDataType> registeredKeys = new HashMap<String, ConfigurationDataType>();
+	private static final TreeMap<String, ConfigurationDataType> registeredKeys = new TreeMap<String, ConfigurationDataType>(String.CASE_INSENSITIVE_ORDER);
 	private static Map<String, ConfigurationDataType> copy;
 	
 	private final String keyName;
@@ -57,7 +57,7 @@ public abstract class ConfigurationKey<T> {
 		return type;
 	}
 	
-	@Override 
+	@Override
 	public final int hashCode() {
 		final int prime = 31;
 		int result = 1;
@@ -69,7 +69,7 @@ public abstract class ConfigurationKey<T> {
 	/**
 	 * Two configuration are considered equal if and only if their {@code keyName} and {@code type} are equal.
 	 */
-	@Override 
+	@Override
 	public final boolean equals(Object obj) {
 		if (this == obj) return true;
 		if (!(obj instanceof ConfigurationKey)) return false;
@@ -86,9 +86,10 @@ public abstract class ConfigurationKey<T> {
 	/** 
 	 * Returns a copy of the currently registered keys.
 	 */
+	@SuppressWarnings("unchecked")
 	public static Map<String, ConfigurationDataType> registeredKeys() {
 		synchronized (registeredKeys) {
-			if (copy == null) copy = Collections.unmodifiableMap(new HashMap<String, ConfigurationDataType>(registeredKeys));
+			if (copy == null) copy = Collections.unmodifiableMap((Map<String, ConfigurationDataType>) registeredKeys.clone());
 			return copy;
 		}
 	}
