@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2013 The Project Lombok Authors.
+ * Copyright (C) 2010-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
+import lombok.core.LombokImmutableList;
 import lombok.eclipse.Eclipse;
 import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
 
@@ -87,7 +88,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 	}
 	
 	@Override
-	public void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file) throws Throwable {
+	public void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, LombokImmutableList<String> confLines) throws Throwable {
 		final AtomicReference<CompilationResult> compilationResult_ = new AtomicReference<CompilationResult>();
 		final AtomicReference<CompilationUnitDeclaration> compilationUnit_ = new AtomicReference<CompilationUnitDeclaration>();
 		ICompilerRequestor bitbucketRequestor = new ICompilerRequestor() {
@@ -105,6 +106,8 @@ public class RunTestsViaEcj extends AbstractRunTests {
 				super.addCompilationUnit(inUnit, parsedUnit);
 			}
 		};
+		
+		// TODO: Create a configuration based on confLines and set this up so that this compile run will use them.
 		
 		ecjCompiler.compile(new ICompilationUnit[] {sourceUnit});
 		

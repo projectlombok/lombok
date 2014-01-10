@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,16 +21,10 @@
  */
 package lombok;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import lombok.eclipse.Eclipse;
 import lombok.javac.Javac;
@@ -75,46 +69,8 @@ public class DirectoryRunner extends Runner {
 		public boolean accept(File file) {
 			return true;
 		}
-		
-		private static final Pattern P1 = Pattern.compile("^(\\d+)$");
-		private static final Pattern P2 = Pattern.compile("^\\:(\\d+)$");
-		private static final Pattern P3 = Pattern.compile("^(\\d+):$");
-		private static final Pattern P4 = Pattern.compile("^(\\d+):(\\d+)$");
-		
-		public boolean shouldIgnoreBasedOnVersion(String firstLine) {
-			int thisVersion = getVersion();
-			if (!firstLine.startsWith("//version ")) return false;
-			
-			String spec = firstLine.substring("//version ".length());
-			
-			/* Single version: '5' */ {
-				Matcher m = P1.matcher(spec);
-				if (m.matches()) return Integer.parseInt(m.group(1)) != thisVersion;
-			}
-			
-			/* Upper bound: ':5' (inclusive) */ {
-				Matcher m = P2.matcher(spec);
-				if (m.matches()) return Integer.parseInt(m.group(1)) < thisVersion;
-			}
-			
-			/* Lower bound '5:' (inclusive) */ {
-				Matcher m = P3.matcher(spec);
-				if (m.matches()) return Integer.parseInt(m.group(1)) > thisVersion;
-			}
-			
-			/* Range '7:8' (inclusive) */ {
-				Matcher m = P4.matcher(spec);
-				if (m.matches()) {
-					if (Integer.parseInt(m.group(1)) < thisVersion) return true;
-					if (Integer.parseInt(m.group(2)) > thisVersion) return true;
-					return false;
-				}
-			}
-			
-			throw new IllegalArgumentException("Version validity spec not valid: " + spec);
-		}
 	}
-	
+		
 	private static final FileFilter JAVA_FILE_FILTER = new FileFilter() {
 		@Override public boolean accept(File file) {
 			return file.isFile() && file.getName().endsWith(".java");
@@ -180,9 +136,7 @@ public class DirectoryRunner extends Runner {
 	
 	private boolean runTest(String fileName) throws Throwable {
 		File file = new File(params.getBeforeDirectory(), fileName);
-		if (mustIgnore(file)) {
-			return false;
-		}
+		
 		switch (params.getCompiler()) {
 		case DELOMBOK:
 			return new RunTestsViaDelombok().compareFile(params, file);
@@ -192,12 +146,5 @@ public class DirectoryRunner extends Runner {
 		case JAVAC:
 			throw new UnsupportedOperationException();
 		}
-	}
-	
-	private boolean mustIgnore(File file) throws FileNotFoundException, IOException {
-		BufferedReader reader = new BufferedReader(new FileReader(file));
-		String line = reader.readLine();
-		reader.close();
-		return line != null && (line.startsWith("//ignore") || params.shouldIgnoreBasedOnVersion(line));
 	}
 }
