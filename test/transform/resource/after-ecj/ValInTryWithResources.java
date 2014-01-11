@@ -1,0 +1,1 @@
+//ignore: This is a J7 feature that isn't turned on in the ecj variant we use to run the tests. We need to update that ecj at some point and enable this test. 

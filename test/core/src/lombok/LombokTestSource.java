@@ -24,6 +24,7 @@ package lombok;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -99,6 +100,7 @@ public class LombokTestSource {
 		return null;
 	}
 	
+	private static final Pattern IGNORE_PATTERN = Pattern.compile("^\\s*ignore\\s*(?:[:-].*)?$", Pattern.CASE_INSENSITIVE);
 	private LombokTestSource(File file, String content, List<CompilerMessageMatcher> messages, List<String> directives) {
 		this.file = file;
 		this.content = content;
@@ -112,7 +114,7 @@ public class LombokTestSource {
 		for (String directive : directives) {
 			directive = directive.trim();
 			String lc = directive.toLowerCase();
-			if (lc.equals("ignore")) {
+			if (IGNORE_PATTERN.matcher(directive).matches()) {
 				ignore = true;
 				continue;
 			}
@@ -191,16 +193,20 @@ public class LombokTestSource {
 			}
 			in.close();
 			rawIn.close();
-		} else {
-			content = new StringBuilder();
 		}
+		
+		if (content == null) content = new StringBuilder();
 		
 		List<CompilerMessageMatcher> messages = null;
 		if (messagesFolder != null) {
-			File messagesFile = new File(messagesFolder, fileName);
-			@Cleanup val rawIn = new FileInputStream(messagesFile);
-			messages = CompilerMessageMatcher.readAll(rawIn);
-			rawIn.close();
+			File messagesFile = new File(messagesFolder, fileName + ".messages");
+			try {
+				@Cleanup val rawIn = new FileInputStream(messagesFile);
+				messages = CompilerMessageMatcher.readAll(rawIn);
+				rawIn.close();
+			} catch (FileNotFoundException e) {
+				messages = null;
+			}
 		}
 		
 		return new LombokTestSource(sourceFile, content.toString(), messages, directives);
