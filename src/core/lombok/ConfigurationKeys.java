@@ -31,6 +31,15 @@ public class ConfigurationKeys {
 	private ConfigurationKeys() {}
 	
 	/**
+	 * lombok configuration: {@code lombok.NonNull.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * <em>Implementation note: This field is supposed to be lombok.NonNull itself, but jdk6 and 7 have bugs where fields in annotations don't work well.</em>
+	 * 
+	 * If set, <em>any</em> usage of {@code @NonNull} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> NON_NULL_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.NonNull.flagUsage") {};
+	
+	/**
 	 * lombok configuration: {@code lombok.AnyConstructor.flagUsage} = {@code WARNING} | {@code ERROR}.
 	 * 
 	 * If set, <em>any</em> usage of {@code @AllArgsConstructor}, {@code @RequiredArgsConstructor}, or {@code @NoArgsConstructor} results in a warning / error.

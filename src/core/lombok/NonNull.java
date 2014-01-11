@@ -27,9 +27,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import lombok.core.FlagUsageType;
-import lombok.core.configuration.ConfigurationKey;
-
 /**
  * If put on a parameter, lombok will insert a null-check at the start of the method / constructor's body, throwing a
  * {@code NullPointerException} with the parameter's name as message. If put on a field, any generated method assigning
@@ -48,17 +45,4 @@ import lombok.core.configuration.ConfigurationKey;
 @Retention(RetentionPolicy.CLASS)
 @Documented
 public @interface NonNull {
-	/**
-	 * lombok configuration: {@code lombok.NonNull.flagUsage} = {@code WARNING} | {@code ERROR}.
-	 * 
-	 * If set, <em>any</em> usage of {@code @NonNull} results in a warning / error.
-	 */
-	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.NonNull.flagUsage") {};
-	
-	/**
-	 * lombok configuration: {@code lombok.NonNull.noNullChecks} = {@code true} | {@code false}.
-	 * 
-	 * If set, the lombok feature of generating a null-checking if statement for all parameters annotated with {@code @NonNull} is disabled.
-	 */
-	ConfigurationKey<Boolean> NO_NULL_CHECKS = new ConfigurationKey<Boolean>("lombok.NonNull.noNullChecks") {};
 }

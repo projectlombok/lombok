@@ -43,6 +43,7 @@ import com.sun.tools.javac.tree.JCTree.JCTry;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 
+import lombok.ConfigurationKeys;
 import lombok.NonNull;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
@@ -56,7 +57,7 @@ import static lombok.javac.JavacTreeMaker.TreeTag.*;
 @HandlerPriority(value = 512) // 2^9; onParameter=@__(@NonNull) has to run first.
 public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 	@Override public void handle(AnnotationValues<NonNull> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		handleFlagUsage(annotationNode, NonNull.FLAG_USAGE, "@NonNull");
+		handleFlagUsage(annotationNode, ConfigurationKeys.NON_NULL_FLAG_USAGE, "@NonNull");
 		
 		if (annotationNode.up().getKind() == Kind.FIELD) {
 			// This is meaningless unless the field is used to generate a method (@Setter, @RequiredArgsConstructor, etc),
