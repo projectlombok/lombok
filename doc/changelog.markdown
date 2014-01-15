@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.12.5 "Edgy Guinea Pig"
+* Edge placeholder
+
 ### v1.12.4 (January 15th, 2014)
 * BUGFIX: v1.12.2's delombok turns all operator+assignments into just assignment. Fixed. [Issue #598](https://code.google.com/p/projectlombok/issues/detail?id=598)
 * BUGFIX: {Netbeans} v1.12.2 doesn't well with netbeans. [Issue #591](https://code.google.com/p/projectlombok/issues/detail?id=591)
