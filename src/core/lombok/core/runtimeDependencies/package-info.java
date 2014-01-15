@@ -21,9 +21,14 @@
  */
 
 /**
- * Contains the classes that implement the transformations for all of lombok's various features on the javac v1.6 platform.
+ * This package is the basis for lombok's (the jar, run as an application) ability to spin off
+ * a clone of itself that only contains files required as a runtime dependency.
  * 
- * <strong>NB: This package is not public API in the sense that contents of this package,
- *    even public classes / methods / etc, may change in point releases.</strong>
+ * This feature was used for a short while to support {@code @SneakyThrows}, but this is no longer
+ * necessary. Currently no lombok features have any such dependencies though at some point we may
+ * reintroduce the concept, for example to support properties.
+ * 
+ * It is possible we'll use a different mechanism at that point; use the infrastructure in this package
+ * with knowledge that it may be eliminated at any time.
  */
-package lombok.javac.handlers;
+package lombok.core.runtimeDependencies;

@@ -21,9 +21,10 @@
  */
 
 /**
- * Contains the classes that implement the transformations for all of lombok's various features on the javac v1.6 platform.
+ * This package contains utilities and handlers for the 'post-process class files' aspect of
+ * lombok. Lombok's class file post processing capabilities are based on Objectweb's ASM library.
  * 
  * <strong>NB: This package is not public API in the sense that contents of this package,
  *    even public classes / methods / etc, may change in point releases.</strong>
  */
-package lombok.javac.handlers;
+package lombok.bytecode;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,7 +67,7 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleToString extends EclipseAnnotationHandler<ToString> {
-	private void checkForBogusFieldNames(EclipseNode type, AnnotationValues<ToString> annotation) {
+	public void checkForBogusFieldNames(EclipseNode type, AnnotationValues<ToString> annotation) {
 		if (annotation.isExplicit("exclude")) {
 			for (int i : createListOfNonExistentFields(Arrays.asList(annotation.getInstance().exclude()), type, true, false)) {
 				annotation.setWarning("exclude", "This field does not exist, or would have been excluded anyway.", i);
@@ -170,7 +170,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		}
 	}
 	
-	static MethodDeclaration createToString(EclipseNode type, Collection<EclipseNode> fields,
+	public static MethodDeclaration createToString(EclipseNode type, Collection<EclipseNode> fields,
 			boolean includeFieldNames, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {
 		String typeName = getTypeName(type);
 		char[] suffix = ")".toCharArray();
@@ -282,7 +282,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		return method;
 	}
 	
-	private static String getTypeName(EclipseNode type) {
+	public static String getTypeName(EclipseNode type) {
 		String typeName = getSingleTypeName(type);
 		EclipseNode upType = type.up();
 		while (upType.getKind() == Kind.TYPE) {
@@ -292,7 +292,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		return typeName;
 	}
 	
-	private static String getSingleTypeName(EclipseNode type) {
+	public static String getSingleTypeName(EclipseNode type) {
 		TypeDeclaration typeDeclaration = (TypeDeclaration)type.get();
 		char[] rawTypeName = typeDeclaration.name;
 		return rawTypeName == null ? "" : new String(rawTypeName);
@@ -301,7 +301,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 	private static final Set<String> BUILT_IN_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
 			"byte", "short", "int", "long", "char", "boolean", "double", "float")));
 	
-	private static NameReference generateQualifiedNameRef(ASTNode source, char[]... varNames) {
+	public static NameReference generateQualifiedNameRef(ASTNode source, char[]... varNames) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		NameReference ref;

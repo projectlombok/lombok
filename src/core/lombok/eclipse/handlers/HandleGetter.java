@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -161,13 +161,13 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		}
 	}
 	
-	private void createGetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, boolean lazy, List<Annotation> onMethod) {
+	public void createGetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, boolean lazy, List<Annotation> onMethod) {
 		for (EclipseNode fieldNode : fieldNodes) {
 			createGetterForField(level, fieldNode, errorNode, source, whineIfExists, lazy, onMethod);
 		}
 	}
 	
-	private void createGetterForField(AccessLevel level,
+	public void createGetterForField(AccessLevel level,
 			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists, boolean lazy, List<Annotation> onMethod) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			errorNode.addError("@Getter is only supported on a class or a field.");
@@ -220,7 +220,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		injectMethod(fieldNode.up(), method);
 	}
 	
-	private static Annotation[] findDelegatesAndMarkAsHandled(EclipseNode fieldNode) {
+	public static Annotation[] findDelegatesAndMarkAsHandled(EclipseNode fieldNode) {
 		List<Annotation> delegates = new ArrayList<Annotation>();
 		for (EclipseNode child : fieldNode.down()) {
 			if (annotationTypeMatches(Delegate.class, child)) {
@@ -232,7 +232,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		return delegates.toArray(EMPTY_ANNOTATIONS_ARRAY);
 	}
 	
-	private MethodDeclaration createGetter(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, ASTNode source, boolean lazy, List<Annotation> onMethod) {
+	public MethodDeclaration createGetter(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, ASTNode source, boolean lazy, List<Annotation> onMethod) {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		
 		// Remember the type; lazy will change it;
@@ -281,7 +281,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		return method;
 	}
 
-	private Statement[] createSimpleGetterBody(ASTNode source, EclipseNode fieldNode) {
+	public Statement[] createSimpleGetterBody(ASTNode source, EclipseNode fieldNode) {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		Expression fieldRef = createFieldAccessor(fieldNode, FieldAccess.ALWAYS_FIELD, source);
 		Statement returnStatement = new ReturnStatement(fieldRef, field.sourceStart, field.sourceEnd);
@@ -290,7 +290,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	
 	private static final char[][] AR = fromQualifiedName("java.util.concurrent.atomic.AtomicReference");
 	
-	private static final java.util.Map<String, char[][]> TYPE_MAP;
+	public static final java.util.Map<String, char[][]> TYPE_MAP;
 	static {
 		Map<String, char[][]> m = new HashMap<String, char[][]>();
 		m.put("int", fromQualifiedName("java.lang.Integer"));
@@ -309,7 +309,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	
 	private static final int PARENTHESIZED = (1 << ASTNode.ParenthesizedSHIFT) & ASTNode.ParenthesizedMASK;
 	
-	private Statement[] createLazyGetterBody(ASTNode source, EclipseNode fieldNode) {
+	public Statement[] createLazyGetterBody(ASTNode source, EclipseNode fieldNode) {
 		/*
 		java.lang.Object value = this.fieldName.get();
 		if (value == null) {

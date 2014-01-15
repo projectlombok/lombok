@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -225,7 +225,7 @@ public class HandleCleanup extends EclipseAnnotationHandler<Cleanup> {
 		ancestor.rebuild();
 	}
 	
-	private MessageSend preventNullAnalysis(Annotation ast, Expression expr) {
+	public MessageSend preventNullAnalysis(Annotation ast, Expression expr) {
 		MessageSend singletonList = new MessageSend();
 		setGeneratedBy(singletonList, ast);
 		
@@ -254,7 +254,7 @@ public class HandleCleanup extends EclipseAnnotationHandler<Cleanup> {
 		return preventNullAnalysis;
 	}
 	
-	private void doAssignmentCheck(EclipseNode node, Statement[] tryBlock, char[] varName) {
+	public void doAssignmentCheck(EclipseNode node, Statement[] tryBlock, char[] varName) {
 		for (Statement statement : tryBlock) doAssignmentCheck0(node, statement, varName);
 	}
 	

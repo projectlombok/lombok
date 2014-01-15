@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2013 The Project Lombok Authors.
+ * Copyright (C) 2010-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,7 +83,7 @@ public class HandleLog {
 		}
 	}
 	
-	private static ClassLiteralAccess selfType(EclipseNode type, Annotation source) {
+	public static ClassLiteralAccess selfType(EclipseNode type, Annotation source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 
@@ -97,7 +97,7 @@ public class HandleLog {
 		return result;
 	}
 	
-	private static FieldDeclaration createField(LoggingFramework framework, Annotation source, ClassLiteralAccess loggingType) {
+	public static FieldDeclaration createField(LoggingFramework framework, Annotation source, ClassLiteralAccess loggingType) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
@@ -128,7 +128,7 @@ public class HandleLog {
 		return fieldDecl;
 	}
 	
-	private static TypeReference createTypeReference(String typeName, Annotation source) {
+	public static TypeReference createTypeReference(String typeName, Annotation source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		

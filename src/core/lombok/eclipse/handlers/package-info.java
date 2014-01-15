@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,5 +22,8 @@
 
 /**
  * Contains the classes that implement the transformations for all of lombok's various features on the eclipse platform.
+ * 
+ * <strong>NB: This package is not public API in the sense that contents of this package,
+ *    even public classes / methods / etc, may change in point releases.</strong>
  */
 package lombok.eclipse.handlers;

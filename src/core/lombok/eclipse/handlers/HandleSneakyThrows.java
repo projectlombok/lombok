@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -145,7 +145,7 @@ public class HandleSneakyThrows extends EclipseAnnotationHandler<SneakyThrows> {
 //		return true;
 //	}
 	
-	private void handleMethod(EclipseNode annotation, AbstractMethodDeclaration method, List<DeclaredException> exceptions) {
+	public void handleMethod(EclipseNode annotation, AbstractMethodDeclaration method, List<DeclaredException> exceptions) {
 		if (method.isAbstract()) {
 			annotation.addError("@SneakyThrows can only be used on concrete methods.");
 			return;
@@ -177,7 +177,7 @@ public class HandleSneakyThrows extends EclipseAnnotationHandler<SneakyThrows> {
 		annotation.up().rebuild();
 	}
 	
-	private Statement buildTryCatchBlock(Statement[] contents, DeclaredException exception, ASTNode source, AbstractMethodDeclaration method) {
+	public Statement buildTryCatchBlock(Statement[] contents, DeclaredException exception, ASTNode source, AbstractMethodDeclaration method) {
 		int methodStart = method.bodyStart;
 		int methodEnd = method.bodyEnd;
 		long methodPosEnd = ((long) methodEnd) << 32 | (methodEnd & 0xFFFFFFFFL);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1320,7 +1320,7 @@ public class EclipseHandlerUtil {
 		return type.add(field, Kind.FIELD);
 	}
 	
-	private static boolean isEnumConstant(final FieldDeclaration field) {
+	public static boolean isEnumConstant(final FieldDeclaration field) {
 		return ((field.initialization instanceof AllocationExpression) && (((AllocationExpression) field.initialization).enumConstant == field));
 	}
 	
@@ -1612,7 +1612,7 @@ public class EclipseHandlerUtil {
 		return true;
 	}
 	
-	static List<Annotation> unboxAndRemoveAnnotationParameter(Annotation annotation, String annotationName, String errorName, EclipseNode errorNode) {
+	public static List<Annotation> unboxAndRemoveAnnotationParameter(Annotation annotation, String annotationName, String errorName, EclipseNode errorNode) {
 		if ("value".equals(annotationName)) {
 			// We can't unbox this, because SingleMemberAnnotation REQUIRES a value, and this method
 			// is supposed to remove the value. That means we need to replace the SMA with either
@@ -1704,7 +1704,7 @@ public class EclipseHandlerUtil {
 		return Collections.emptyList();
 	}
 	
-	static NameReference createNameReference(String name, Annotation source) {
+	public static NameReference createNameReference(String name, Annotation source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		

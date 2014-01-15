@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -841,7 +841,7 @@ public class JavacHandlerUtil {
 		return typeNode.add(field, Kind.FIELD);
 	}
 	
-	private static boolean isEnumConstant(final JCVariableDecl field) {
+	public static boolean isEnumConstant(final JCVariableDecl field) {
 		return (field.mods.flags & Flags.ENUM) != 0;
 	}
 	
@@ -916,7 +916,7 @@ public class JavacHandlerUtil {
 		}
 	}
 	
-	private static void addSuppressWarningsAll(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context) {
+	public static void addSuppressWarningsAll(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context) {
 		if (!LombokOptionsFactory.getDelombokOptions(context).getFormatPreferences().generateSuppressWarnings()) return;
 		for (JCAnnotation ann : mods.annotations) {
 			JCTree annType = ann.getAnnotationType();
@@ -1203,7 +1203,7 @@ public class JavacHandlerUtil {
 		return isClassAndDoesNotHaveFlags(typeNode, Flags.INTERFACE | Flags.ANNOTATION);
 	}
 	
-	private static boolean isClassAndDoesNotHaveFlags(JavacNode typeNode, int flags) {
+	public static boolean isClassAndDoesNotHaveFlags(JavacNode typeNode, int flags) {
 		JCClassDecl typeDecl = null;
 		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl)typeNode.get();
 		else return false;
@@ -1288,13 +1288,13 @@ public class JavacHandlerUtil {
 	
 	private static final Pattern SECTION_FINDER = Pattern.compile("^\\s*\\**\\s*[-*][-*]+\\s*([GS]ETTER|WITHER)\\s*[-*][-*]+\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 	
-	private static String stripLinesWithTagFromJavadoc(String javadoc, String regexpFragment) {
+	public static String stripLinesWithTagFromJavadoc(String javadoc, String regexpFragment) {
 		Pattern p = Pattern.compile("^\\s*\\**\\s*" + regexpFragment + "\\s*\\**\\s*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
 		Matcher m = p.matcher(javadoc);
 		return m.replaceAll("");
 	}
 	
-	private static String[] splitJavadocOnSectionIfPresent(String javadoc, String sectionName) {
+	public static String[] splitJavadocOnSectionIfPresent(String javadoc, String sectionName) {
 		Matcher m = SECTION_FINDER.matcher(javadoc);
 		int getterSectionHeaderStart = -1;
 		int getterSectionStart = -1;

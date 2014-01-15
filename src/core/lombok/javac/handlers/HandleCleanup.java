@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -141,7 +141,7 @@ public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 		ancestor.rebuild();
 	}
 	
-	private JCExpression preventNullAnalysis(JavacTreeMaker maker, JavacNode node, JCExpression expression) {
+	public JCExpression preventNullAnalysis(JavacTreeMaker maker, JavacNode node, JCExpression expression) {
 		if (LombokOptionsFactory.getDelombokOptions(node.getContext()).getFormatPreferences().danceAroundIdeChecks()) {
 			JCMethodInvocation singletonList = maker.Apply(List.<JCExpression>nil(), chainDotsString(node, "java.util.Collections.singletonList"), List.of(expression));
 			JCMethodInvocation cleanedExpr = maker.Apply(List.<JCExpression>nil(), maker.Select(singletonList, node.toName("get")) , List.<JCExpression>of(maker.Literal(CTC_INT, 0)));
@@ -151,11 +151,11 @@ public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 		}
 	}
 	
-	private void doAssignmentCheck(JavacNode node, List<JCStatement> statements, Name name) {
+	public void doAssignmentCheck(JavacNode node, List<JCStatement> statements, Name name) {
 		for (JCStatement statement : statements) doAssignmentCheck0(node, statement, name);
 	}
 	
-	private void doAssignmentCheck0(JavacNode node, JCTree statement, Name name) {
+	public void doAssignmentCheck0(JavacNode node, JCTree statement, Name name) {
 		if (statement instanceof JCAssign) doAssignmentCheck0(node, ((JCAssign)statement).rhs, name);
 		if (statement instanceof JCExpressionStatement) doAssignmentCheck0(node,
 				((JCExpressionStatement)statement).expr, name);

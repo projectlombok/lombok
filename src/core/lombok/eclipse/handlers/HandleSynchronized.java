@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,7 +67,7 @@ public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 		createLockField(annotation, annotationNode, method.isStatic(), false);
 	}
 	
-	private char[] createLockField(AnnotationValues<Synchronized> annotation, EclipseNode annotationNode, boolean isStatic, boolean reportErrors) {
+	public char[] createLockField(AnnotationValues<Synchronized> annotation, EclipseNode annotationNode, boolean isStatic, boolean reportErrors) {
 		char[] lockName = annotation.getInstance().value().toCharArray();
 		Annotation source = (Annotation) annotationNode.get();
 		boolean autoMake = false;

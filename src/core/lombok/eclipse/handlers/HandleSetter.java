@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -141,13 +141,13 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		}
 	}
 	
-	private void createSetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam) {
+	public void createSetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam) {
 		for (EclipseNode fieldNode : fieldNodes) {
 			createSetterForField(level, fieldNode, errorNode, source, whineIfExists, onMethod, onParam);
 		}
 	}
 	
-	private void createSetterForField(
+	public void createSetterForField(
 			AccessLevel level, EclipseNode fieldNode, EclipseNode errorNode,
 			ASTNode source, boolean whineIfExists, List<Annotation> onMethod,
 			List<Annotation> onParam) {

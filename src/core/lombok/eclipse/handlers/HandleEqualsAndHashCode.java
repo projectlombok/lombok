@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,10 +92,10 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	private final char[] PRIME = "PRIME".toCharArray();
 	private final char[] RESULT = "result".toCharArray();
 	
-	private static final Set<String> BUILT_IN_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
+	public static final Set<String> BUILT_IN_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
 			"byte", "short", "int", "long", "char", "boolean", "double", "float")));
 	
-	private void checkForBogusFieldNames(EclipseNode type, AnnotationValues<EqualsAndHashCode> annotation) {
+	public void checkForBogusFieldNames(EclipseNode type, AnnotationValues<EqualsAndHashCode> annotation) {
 		if (annotation.isExplicit("exclude")) {
 			for (int i : createListOfNonExistentFields(Arrays.asList(annotation.getInstance().exclude()), type, true, true)) {
 				annotation.setWarning("exclude", "This field does not exist, or would have been excluded anyway.", i);
@@ -248,7 +248,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		injectMethod(typeNode, hashCodeMethod);
 	}
 	
-	private MethodDeclaration createHashCode(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {
+	public MethodDeclaration createHashCode(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
@@ -403,7 +403,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		return method;
 	}
 
-	private LocalDeclaration createLocalDeclaration(ASTNode source, char[] dollarFieldName, TypeReference type, Expression initializer) {
+	public LocalDeclaration createLocalDeclaration(ASTNode source, char[] dollarFieldName, TypeReference type, Expression initializer) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		LocalDeclaration tempVar = new LocalDeclaration(dollarFieldName, pS, pE);
 		setGeneratedBy(tempVar, source);
@@ -415,7 +415,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		return tempVar;
 	}
 
-	private Expression createResultCalculation(ASTNode source, Expression ex) {
+	public Expression createResultCalculation(ASTNode source, Expression ex) {
 		/* result = result * PRIME + (ex); */
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
@@ -437,7 +437,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		return assignment;
 	}
 	
-	private TypeReference createTypeReference(EclipseNode type, long p) {
+	public TypeReference createTypeReference(EclipseNode type, long p) {
 		List<String> list = new ArrayList<String>();
 		list.add(type.getName());
 		EclipseNode tNode = type.up();
@@ -458,7 +458,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		return new QualifiedTypeReference(tokens, ps);
 	}
 	
-	private MethodDeclaration createEquals(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess, boolean needsCanEqual) {
+	public MethodDeclaration createEquals(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess, boolean needsCanEqual) {
 		int pS = source.sourceStart; int pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		TypeDeclaration typeDecl = (TypeDeclaration)type.get();
@@ -718,7 +718,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	}
 	
 	
-	private MethodDeclaration createCanEqual(EclipseNode type, ASTNode source) {
+	public MethodDeclaration createCanEqual(EclipseNode type, ASTNode source) {
 		/* public boolean canEqual(final java.lang.Object other) {
 		 *     return other instanceof Outer.Inner.MyType;
 		 * }
@@ -765,7 +765,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	}
 
 	
-	private IfStatement generateCompareFloatOrDouble(Expression thisRef, Expression otherRef, char[] floatOrDouble, ASTNode source) {
+	public IfStatement generateCompareFloatOrDouble(Expression thisRef, Expression otherRef, char[] floatOrDouble, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		/* if (Float.compare(fieldName, other.fieldName) != 0) return false */
 		MessageSend floatCompare = new MessageSend();
@@ -788,7 +788,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	}
 	
 	/** Give 2 clones! */
-	private Expression longToIntForHashCode(Expression ref1, Expression ref2, ASTNode source) {
+	public Expression longToIntForHashCode(Expression ref1, Expression ref2, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		/* (int)(ref >>> 32 ^ ref) */
 		IntLiteral int32 = makeIntLiteral("32".toCharArray(), source);
@@ -804,7 +804,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		return expr;
 	}
 	
-	private NameReference generateQualifiedNameRef(ASTNode source, char[]... varNames) {
+	public NameReference generateQualifiedNameRef(ASTNode source, char[]... varNames) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
@@ -816,7 +816,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		return ref;
 	}
 	
-	private TypeReference generateQualifiedTypeRef(ASTNode source, char[]... varNames) {
+	public TypeReference generateQualifiedTypeRef(ASTNode source, char[]... varNames) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		

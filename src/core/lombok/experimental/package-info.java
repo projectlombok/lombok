@@ -21,9 +21,13 @@
  */
 
 /**
- * Contains the classes that implement the transformations for all of lombok's various features on the javac v1.6 platform.
+ * This package contains the annotations and support classes you need as a user of lombok, for
+ * all features which aren't (yet) supported as a first class feature. Features that involve the
+ * annotations and support classes in this package may change or may be removed entirely in future versions,
+ * and bugs may not be solved as expediently. For the status and likely future of any feature, refer
+ * to the official feature documentation.
  * 
- * <strong>NB: This package is not public API in the sense that contents of this package,
- *    even public classes / methods / etc, may change in point releases.</strong>
+ * @see lombok
+ * @see <a href="http://projectlombok.org/features/experimental/index.html">Lombok features (experimental)</a>
  */
-package lombok.javac.handlers;
+package lombok.experimental;

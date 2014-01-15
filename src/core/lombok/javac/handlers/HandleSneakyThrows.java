@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -77,7 +77,7 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 		}
 	}
 	
-	private void handleMethod(JavacNode annotation, JCMethodDecl method, Collection<String> exceptions) {
+	public void handleMethod(JavacNode annotation, JCMethodDecl method, Collection<String> exceptions) {
 		JavacNode methodNode = annotation.up();
 		
 		if ( (method.mods.flags & Flags.ABSTRACT) != 0) {
@@ -107,15 +107,15 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 		methodNode.rebuild();
 	}
 	
-	private void generateEmptyBlockWarning(JavacNode methodNode, JavacNode annotation, boolean hasConstructorCall) {
+	public void generateEmptyBlockWarning(JavacNode methodNode, JavacNode annotation, boolean hasConstructorCall) {
 		if (hasConstructorCall) {
 			annotation.addWarning("Calls to sibling / super constructors are always excluded from @SneakyThrows; @SneakyThrows has been ignored because there is no other code in this constructor.");
 		} else {
 			annotation.addWarning("This method or constructor is empty; @SneakyThrows has been ignored.");
 		}
 	}
-
-	private JCStatement buildTryCatchBlock(JavacNode node, List<JCStatement> contents, String exception, JCTree source) {
+	
+	public JCStatement buildTryCatchBlock(JavacNode node, List<JCStatement> contents, String exception, JCTree source) {
 		JavacTreeMaker maker = node.getTreeMaker();
 		
 		Context context = node.getContext();

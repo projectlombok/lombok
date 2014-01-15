@@ -21,9 +21,10 @@
  */
 
 /**
- * Contains the classes that implement the transformations for all of lombok's various features on the javac v1.6 platform.
+ * This package contains utility methods and classes shared between javac-specific feature implementations
+ * and eclipse-specific feature implementations.
  * 
  * <strong>NB: This package is not public API in the sense that contents of this package,
  *    even public classes / methods / etc, may change in point releases.</strong>
  */
-package lombok.javac.handlers;
+package lombok.core.handlers;
