@@ -24,6 +24,8 @@ package lombok.core.configuration;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.net.URI;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -43,8 +45,9 @@ public class FileSystemSourceCache {
 		this.reporterFactory = reporterFactory;
 	}
 	
-	public Iterable<ConfigurationSource> sourcesForJavaFile(File javaFile) {
-		final File directory = new File(javaFile.toURI().normalize()).getParentFile();
+	public Iterable<ConfigurationSource> sourcesForJavaFile(URI javaFile) {
+		if (javaFile == null) return Collections.emptyList();
+		final File directory = new File(javaFile.normalize()).getParentFile();
 		return new Iterable<ConfigurationSource>() {
 			@Override 
 			public Iterator<ConfigurationSource> iterator() {
@@ -91,12 +94,13 @@ public class FileSystemSourceCache {
 		
 		Content content = ensureContent(directory);
 		synchronized (content) {
-			if (content.lastChecked != MISSING && content.lastChecked - now < RECHECK_FILESYSTEM && getLastModified(configFile) == content.lastModified) {
+			if (content.lastChecked != MISSING && now - content.lastChecked < RECHECK_FILESYSTEM && getLastModified(configFile) == content.lastModified) {
 				return content.source;
 			}
 			content.lastChecked = now;
+			long previouslyModified = content.lastModified;
 			content.lastModified = getLastModified(configFile);
-			content.source = content.lastModified == MISSING ? null : parse(configFile);
+			if (content.lastModified != previouslyModified) content.source = content.lastModified == MISSING ? null : parse(configFile);
 			return content.source;
 		}
 	}
