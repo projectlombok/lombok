@@ -44,7 +44,7 @@ public class BubblingConfigurationResolver implements ConfigurationResolver {
 		boolean isList = key.getType().isList();
 		List<ListModification> listModifications = null;
 		for (ConfigurationSource source : sources) {
-			Result<T> result = source.resolve(key);
+			Result result = source.resolve(key);
 			if (result == null) continue;
 			if (isList) {
 				if (listModifications == null) {
@@ -57,9 +57,9 @@ public class BubblingConfigurationResolver implements ConfigurationResolver {
 				if (isList) {
 					break;
 				}
-				return result.getValue();
+				return (T) result.getValue();
 			}
-			Result<Boolean> stop = source.resolve(STOP_BUBBLING);
+			Result stop = source.resolve(STOP_BUBBLING);
 			if (stop != null && Boolean.TRUE.equals(stop.getValue())) break;
 		}
 		if (!isList) {

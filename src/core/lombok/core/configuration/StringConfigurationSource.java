@@ -34,12 +34,12 @@ public class StringConfigurationSource implements ConfigurationSource {
 	
 	private static final Pattern LINE = Pattern.compile("(?:clear\\s+([^=]+))|(?:(\\S*?)\\s*([-+]?=)\\s*(.*?))");
 	
-	private final Map<String, Result<?>> values;
+	private final Map<String, Result> values;
 	
 	public static ConfigurationSource forString(String content, ConfigurationErrorReporter reporter) {
 		if (reporter == null) throw new NullPointerException("reporter");
 		
-		Map<String, Result<?>> values = new TreeMap<String, Result<?>>(String.CASE_INSENSITIVE_ORDER);
+		Map<String, Result> values = new TreeMap<String, Result>(String.CASE_INSENSITIVE_ORDER);
 		
 		Map<String, ConfigurationDataType> registeredKeys = ConfigurationKey.registeredKeysAsMap();
 		int lineNumber = 0;
@@ -84,19 +84,19 @@ public class StringConfigurationSource implements ConfigurationSource {
 		return new StringConfigurationSource(values);
 	}
 	
-	private StringConfigurationSource(Map<String, Result<?>> values) {
-		this.values = new TreeMap<String, Result<?>>(String.CASE_INSENSITIVE_ORDER);
-		for (Entry<String, Result<?>> entry : values.entrySet()) {
-			Result<?> result = entry.getValue();
+	private StringConfigurationSource(Map<String, Result> values) {
+		this.values = new TreeMap<String, Result>(String.CASE_INSENSITIVE_ORDER);
+		for (Entry<String, Result> entry : values.entrySet()) {
+			Result result = entry.getValue();
 			if (result.getValue() instanceof List<?>) {
-				this.values.put(entry.getKey(), new Result<List<?>>(Collections.unmodifiableList((List<?>) result.getValue()), result.isAuthoritative()));
+				this.values.put(entry.getKey(), new Result(Collections.unmodifiableList((List<?>) result.getValue()), result.isAuthoritative()));
 			} else {
 				this.values.put(entry.getKey(), result);
 			}
 		}
 	}
 	
-	private static void processResult(Map<String, Result<?>> values, String keyName, String operator, String value, ConfigurationDataType type, ConfigurationErrorReporter reporter, int lineNumber, String line) {
+	private static void processResult(Map<String, Result> values, String keyName, String operator, String value, ConfigurationDataType type, ConfigurationErrorReporter reporter, int lineNumber, String line) {
 		Object element = null;
 		if (value != null) try {
 			element = type.getParser().parse(value);
@@ -109,19 +109,18 @@ public class StringConfigurationSource implements ConfigurationSource {
 			if (element == null && type.isList()) {
 				element = new ArrayList<ListModification>();
 			}
-			values.put(keyName, new Result<Object>(element, true));
+			values.put(keyName, new Result(element, true));
 		} else {
-			Result<?> result = values.get(keyName);
+			Result result = values.get(keyName);
 			@SuppressWarnings("unchecked")
 			List<ListModification> list = result == null ? new ArrayList<ListModification>() : (List<ListModification>) result.getValue();
-			if (result == null) values.put(keyName, new Result<Object>(list, false));
+			if (result == null) values.put(keyName, new Result(list, false));
 			list.add(new ListModification(element, operator.equals("+=")));
 		}
 	}
 	
-	@SuppressWarnings("unchecked") 
 	@Override 
-	public <T> Result<T> resolve(ConfigurationKey<T> key) {
-		return (Result<T>) values.get(key.getKeyName());
+	public Result resolve(ConfigurationKey<?> key) {
+		return values.get(key.getKeyName());
 	}
 }

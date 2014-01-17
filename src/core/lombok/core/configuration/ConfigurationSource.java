@@ -23,18 +23,18 @@ package lombok.core.configuration;
 
 public interface ConfigurationSource {
 	
-	<T> Result<T> resolve(ConfigurationKey<T> key);
+	Result resolve(ConfigurationKey<?> key);
 	
-	public static final class Result<T> {
-		private final T value;
+	public static final class Result {
+		private final Object value;
 		private final boolean authoritative;
 		
-		public Result(T value, boolean authoritative) {
+		public Result(Object value, boolean authoritative) {
 			this.value = value;
 			this.authoritative = authoritative;
 		}
 		
-		public T getValue() {
+		public Object getValue() {
 			return value;
 		}
 		
