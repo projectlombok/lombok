@@ -22,7 +22,9 @@
 package lombok.core.configuration;
 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 /**
@@ -48,7 +50,12 @@ public abstract class ConfigurationKey<T> {
 		
 		registerKey(keyName, type);
 	}
-
+	
+	private ConfigurationKey(String keyName, ConfigurationDataType type) {
+		this.keyName = keyName;
+		this.type = type;
+	}
+	
 	public final String getKeyName() {
 		return keyName;
 	}
@@ -87,11 +94,39 @@ public abstract class ConfigurationKey<T> {
 	 * Returns a copy of the currently registered keys.
 	 */
 	@SuppressWarnings("unchecked")
-	public static Map<String, ConfigurationDataType> registeredKeys() {
+	public static Map<String, ConfigurationDataType> registeredKeysAsMap() {
 		synchronized (registeredKeys) {
 			if (copy == null) copy = Collections.unmodifiableMap((Map<String, ConfigurationDataType>) registeredKeys.clone());
 			return copy;
 		}
+	}
+	
+	public static Iterable<ConfigurationKey<?>> registeredKeys() {
+		class LocalConfigurationKey extends ConfigurationKey<Object> {
+			public LocalConfigurationKey(Entry<String, ConfigurationDataType> entry) {
+				super(entry.getKey(), entry.getValue());
+			}
+		}
+		final Map<String, ConfigurationDataType> map = registeredKeysAsMap();
+		return new Iterable<ConfigurationKey<?>>() {
+			@Override public Iterator<ConfigurationKey<?>> iterator() {
+				final Iterator<Entry<String, ConfigurationDataType>> entries = map.entrySet().iterator();
+				return new Iterator<ConfigurationKey<?>>() {
+					@Override
+					public boolean hasNext() {
+						return entries.hasNext();
+					}
+					
+					@Override public ConfigurationKey<?> next() {
+						return new LocalConfigurationKey(entries.next());
+					}
+					
+					@Override public void remove() {
+						throw new UnsupportedOperationException();
+					}
+				};
+			}
+		};
 	}
 	
 	private static void registerKey(String keyName, ConfigurationDataType type) {

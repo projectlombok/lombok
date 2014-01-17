@@ -22,11 +22,5 @@
 package lombok.core.configuration;
 
 public interface ConfigurationErrorReporter {
-	ConfigurationErrorReporter CONSOLE = new ConfigurationErrorReporter() {
-		@Override public void report(String error) {
-			System.err.println(error);
-		}
-	};
-	
-	void report(String error);
+	void report(String error, int lineNumber, String line);
 }

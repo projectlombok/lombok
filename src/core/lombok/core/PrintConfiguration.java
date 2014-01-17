@@ -19,20 +19,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.core.configuration;
+package lombok.core;
 
-public interface ConfigurationErrorReporterFactory {
-	ConfigurationErrorReporterFactory CONSOLE = new ConfigurationErrorReporterFactory() {
-		@Override
-		public ConfigurationErrorReporter createFor(final String description) {
-			return new ConfigurationErrorReporter() {
-				@Override
-				public void report(String error, int lineNumber, String line) {
-					System.err.printf("%s (%s:%d)", error, description, lineNumber);
-				}
-			};
-		}
-	};
-	
-	ConfigurationErrorReporter createFor(String description);
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+/**
+ * Will print the combined interpreted configuration from 'lombok.config' files.
+ */
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.SOURCE)
+public @interface PrintConfiguration {
+	/**
+	 * Normally, the configuration is printed to standard out, but you can pick a filename instead. Useful for many IDEs
+	 * which don't have a console unless you start them from the command line.
+	 */
+	String outfile() default "";
 }

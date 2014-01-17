@@ -114,7 +114,7 @@ public class FileSystemSourceCache {
 		try {
 			return StringConfigurationSource.forString(fileToString(configFile), reporter);
 		} catch (Exception e) {
-			reporter.report("Exception while reading file: " + e.getMessage());
+			reporter.report("Exception while reading file: " + e.getMessage(), 0, null);
 			return null;
 		}
 	}

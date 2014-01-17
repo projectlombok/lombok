@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2013-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,12 @@
  */
 package lombok.core;
 
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.core.configuration.BubblingConfigurationResolver;
+import lombok.core.configuration.ConfigurationErrorReporter;
 import lombok.core.configuration.ConfigurationErrorReporterFactory;
 import lombok.core.configuration.ConfigurationKey;
 import lombok.core.configuration.FileSystemSourceCache;
@@ -35,6 +40,48 @@ public class LombokConfiguration {
 	}
 	
 	static <T> T read(ConfigurationKey<T> key, AST<?, ?, ?> ast) {
-		return new BubblingConfigurationResolver(cache.sourcesForJavaFile(ast.getAbsoluteFileLocation(), ConfigurationErrorReporterFactory.CONSOLE)).resolve(key);
+		return createResolver(ast, ConfigurationErrorReporterFactory.CONSOLE, cache).resolve(key);
+	}
+	
+	public static void writeConfiguration(AST<?, ?, ?> ast, PrintStream stream) {
+		final List<String> problems = new ArrayList<String>();
+		ConfigurationErrorReporterFactory reporterFactory = new ConfigurationErrorReporterFactory() {
+			@Override public ConfigurationErrorReporter createFor(final String description) {
+				return new ConfigurationErrorReporter() {
+					@Override
+					public void report(String error, int lineNumber, String line) {
+						problems.add(String.format("%s (%s:%d)", error, description, lineNumber));
+					}
+				};
+			}
+		};
+		
+		stream.printf("Combined lombok configuration for '%s'\n\n", ast.getAbsoluteFileLocation());
+		// create a new empty 'cache' to make sure all problems are reported
+		FileSystemSourceCache sourceCache = new FileSystemSourceCache();
+		BubblingConfigurationResolver resolver = createResolver(ast, reporterFactory, sourceCache);
+		for (ConfigurationKey<?> key : ConfigurationKey.registeredKeys()) {
+			Object value = resolver.resolve(key);
+			if (value == null || value instanceof List<?> && ((List<?>)value).isEmpty()) continue;
+			stream.printf("%s: %s\n", key.getKeyName(), value);
+		}
+		
+		if (!problems.isEmpty()) {
+			stream.println();
+			stream.printf("Problems encountered during parsing: %d\n", problems.size());
+			int i = 1;
+			for (String problem : problems) {
+				stream.printf("%4d - %s\n", i, problem);
+				i++;
+			}
+		}
+	}
+	
+	private static BubblingConfigurationResolver createResolver(AST<?, ?, ?> ast, ConfigurationErrorReporterFactory reporterFactory, FileSystemSourceCache sourceCache) {
+		return new BubblingConfigurationResolver(sourceCache.sourcesForJavaFile(ast.getAbsoluteFileLocation(), reporterFactory));
+	}
+	
+	public static void main(String[] args) {
+		System.out.println("  \n  \n ".trim().length());
 	}
 }
