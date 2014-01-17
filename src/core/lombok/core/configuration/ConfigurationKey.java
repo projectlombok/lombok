@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
 /**
  * Describes a configuration key and its type.
@@ -36,6 +37,8 @@ import java.util.TreeMap;
  * </pre>
  */
 public abstract class ConfigurationKey<T> {
+	private static final Pattern VALID_NAMES = Pattern.compile("[\\-_a-zA-Z][\\-\\.\\w]*(?<![\\.\\-])");
+	
 	private static final TreeMap<String, ConfigurationDataType> registeredKeys = new TreeMap<String, ConfigurationDataType>(String.CASE_INSENSITIVE_ORDER);
 	private static Map<String, ConfigurationDataType> copy;
 	
@@ -86,7 +89,7 @@ public abstract class ConfigurationKey<T> {
 	
 	private static String checkName(String keyName) {
 		if (keyName == null) throw new NullPointerException("keyName");
-		if (keyName.contains("=")) throw new IllegalArgumentException("Invalid character '=' in keyName: " + keyName);
+		if (!VALID_NAMES.matcher(keyName).matches()) throw new IllegalArgumentException("Invalid keyName: " + keyName);
 		return keyName;
 	}
 	
