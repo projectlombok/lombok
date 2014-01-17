@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,6 +52,16 @@ public class HandlePrintAST extends JavacAnnotationHandler<PrintAST> {
 			Lombok.sneakyThrow(e);
 		}
 		
-		annotationNode.up().traverse(new JavacASTVisitor.Printer(annotation.getInstance().printContent(), stream));
+		try {
+			annotationNode.up().traverse(new JavacASTVisitor.Printer(annotation.getInstance().printContent(), stream));
+		} finally {
+			if (stream != System.out) {
+				try {
+					stream.close();
+				} catch (Exception e) {
+					Lombok.sneakyThrow(e);
+				}
+			}
+		}
 	}
 }
