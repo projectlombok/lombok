@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2013-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,6 +56,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.mangosdk.spi.ProviderFor;
 
 import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
@@ -71,7 +72,7 @@ import lombok.experimental.NonFinal;
 @HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
 public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	@Override public void handle(AnnotationValues<Builder> annotation, Annotation ast, EclipseNode annotationNode) {
-		handleFlagUsage(annotationNode, Builder.FLAG_USAGE, "@Builder");
+		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.BUILDER_FLAG_USAGE, "@Builder");
 		
 		long p = (long) ast.sourceStart << 32 | ast.sourceEnd;
 		

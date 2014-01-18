@@ -26,9 +26,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import lombok.core.FlagUsageType;
-import lombok.core.configuration.ConfigurationKey;
-
 /**
  * &#64;SneakyThrow will avoid javac's insistence that you either catch or throw onward any checked exceptions that
  * statements in your method body declare they generate.
@@ -62,13 +59,6 @@ import lombok.core.configuration.ConfigurationKey;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @Retention(RetentionPolicy.SOURCE)
 public @interface SneakyThrows {
-	/**
-	 * lombok configuration: {@code lombok.SneakyThrows.flagUsage} = {@code WARNING} | {@code ERROR}.
-	 * 
-	 * If set, <em>any</em> usage of {@code @SneakyThrows} results in a warning / error.
-	 */
-	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.SneakyThrows.flagUsage") {};
-	
 	/** The exception type(s) you want to sneakily throw onward. */
 	Class<? extends Throwable>[] value() default java.lang.Throwable.class;
 	

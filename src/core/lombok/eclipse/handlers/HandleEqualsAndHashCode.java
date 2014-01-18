@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
 import lombok.EqualsAndHashCode;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
@@ -117,10 +118,8 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		generateMethods(typeNode, errorNode, null, null, null, false, FieldAccess.GETTER);
 	}
 	
-	@Override public void handle(AnnotationValues<EqualsAndHashCode> annotation,
-			Annotation ast, EclipseNode annotationNode) {
-		
-		handleFlagUsage(annotationNode, EqualsAndHashCode.FLAG_USAGE, "@EqualsAndHashCode");
+	@Override public void handle(AnnotationValues<EqualsAndHashCode> annotation, Annotation ast, EclipseNode annotationNode) {
+		handleFlagUsage(annotationNode, ConfigurationKeys.EQUALS_AND_HASH_CODE_FLAG_USAGE, "@EqualsAndHashCode");
 		
 		EqualsAndHashCode ann = annotation.getInstance();
 		List<String> excludes = Arrays.asList(ann.exclude());

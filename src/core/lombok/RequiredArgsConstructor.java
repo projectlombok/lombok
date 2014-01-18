@@ -26,9 +26,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import lombok.core.FlagUsageType;
-import lombok.core.configuration.ConfigurationKey;
-
 /**
  * Generates a constructor with required arguments.
  * Required arguments are final fields and fields with constraints such as {@code @NonNull}.
@@ -43,13 +40,6 @@ import lombok.core.configuration.ConfigurationKey;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface RequiredArgsConstructor {
-	/**
-	 * lombok configuration: {@code lombok.RequiredArgsConstructor.flagUsage} = {@code WARNING} | {@code ERROR}.
-	 * 
-	 * If set, <em>any</em> usage of {@code @RequiredArgsConstructor} results in a warning / error.
-	 */
-	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.RequiredArgsConstructor.flagUsage") {};
-	
 	/**
 	 * If set, the generated constructor will be private, and an additional static 'constructor'
 	 * is generated with the same argument list that wraps the real constructor.

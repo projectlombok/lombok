@@ -26,9 +26,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import lombok.core.FlagUsageType;
-import lombok.core.configuration.ConfigurationKey;
-
 /**
  * Generates implementations for the {@code equals} and {@code hashCode} methods inherited by all objects, based on relevant fields.
  * <p>
@@ -37,13 +34,6 @@ import lombok.core.configuration.ConfigurationKey;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface EqualsAndHashCode {
-	/**
-	 * lombok configuration: {@code lombok.EqualsAndHashCode.flagUsage} = {@code WARNING} | {@code ERROR}.
-	 * 
-	 * If set, <em>any</em> usage of {@code @EqualsAndHashCode} results in a warning / error.
-	 */
-	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.EqualsAndHashCode.flagUsage") {};
-	
 	/**
 	 * Any fields listed here will not be taken into account in the generated
 	 * {@code equals} and {@code hashCode} implementations.

@@ -26,9 +26,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import lombok.core.FlagUsageType;
-import lombok.core.configuration.ConfigurationKey;
-
 /**
  * Put on any field to make lombok generate delegate methods that forward the call to this field.
  * 
@@ -48,13 +45,6 @@ import lombok.core.configuration.ConfigurationKey;
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.SOURCE)
 public @interface Delegate {
-	/**
-	 * lombok configuration: {@code lombok.Delegate.flagUsage} = {@code WARNING} | {@code ERROR}.
-	 * 
-	 * If set, <em>any</em> usage of {@code @Delegate} results in a warning / error.
-	 */
-	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.Delegate.flagUsage") {};
-	
 	/**
 	 * Normally the type of the field is used as delegate type. However, to choose a different type to delegate, you can list one (or more) types here. Note that types with
 	 * type arguments can only be done as a field type. A solution for this is to create a private inner interface/class with the appropriate types extended, and possibly

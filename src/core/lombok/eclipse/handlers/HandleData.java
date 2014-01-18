@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@ import static lombok.core.handlers.HandlerUtil.*;
 import java.util.Collections;
 
 import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
 import lombok.Data;
 import lombok.core.AnnotationValues;
 import lombok.eclipse.EclipseAnnotationHandler;
@@ -42,8 +43,8 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleData extends EclipseAnnotationHandler<Data> {
-	public void handle(AnnotationValues<Data> annotation, Annotation ast, EclipseNode annotationNode) {
-		handleFlagUsage(annotationNode, Data.FLAG_USAGE, "@Data");
+	@Override public void handle(AnnotationValues<Data> annotation, Annotation ast, EclipseNode annotationNode) {
+		handleFlagUsage(annotationNode, ConfigurationKeys.DATA_FLAG_USAGE, "@Data");
 		
 		Data ann = annotation.getInstance();
 		EclipseNode typeNode = annotationNode.up();

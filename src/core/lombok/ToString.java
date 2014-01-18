@@ -26,9 +26,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import lombok.core.FlagUsageType;
-import lombok.core.configuration.ConfigurationKey;
-
 /**
  * Generates an implementation for the {@code toString} method inherited by all objects, consisting of printing the values of relevant fields.
  * <p>
@@ -37,13 +34,6 @@ import lombok.core.configuration.ConfigurationKey;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface ToString {
-	/**
-	 * lombok configuration: {@code lombok.ToString.flagUsage} = {@code WARNING} | {@code ERROR}.
-	 * 
-	 * If set, <em>any</em> usage of {@code @ToString} results in a warning / error.
-	 */
-	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.ToString.flagUsage") {};
-	
 	/**
 	 * Include the name of each field when printing it.
 	 * <strong>default: true</strong>

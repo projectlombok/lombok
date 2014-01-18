@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.List;
 
 import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
 import lombok.Setter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
@@ -119,7 +120,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 	}
 	
 	public void handle(AnnotationValues<Setter> annotation, Annotation ast, EclipseNode annotationNode) {
-		handleFlagUsage(annotationNode, Setter.FLAG_USAGE, "@Setter");
+		handleFlagUsage(annotationNode, ConfigurationKeys.SETTER_FLAG_USAGE, "@Setter");
 		
 		EclipseNode node = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2013 The Project Lombok Authors.
+ * Copyright (C) 2010-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,7 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
+import lombok.ConfigurationKeys;
 import lombok.Delegate;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
@@ -95,7 +96,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 			"finalize()"));
 	
 	@Override public void handle(AnnotationValues<Delegate> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		handleFlagUsage(annotationNode, Delegate.FLAG_USAGE, "@Delegate");
+		handleFlagUsage(annotationNode, ConfigurationKeys.DELEGATE_FLAG_USAGE, "@Delegate");
 		
 		deleteAnnotationIfNeccessary(annotationNode, Delegate.class);
 		

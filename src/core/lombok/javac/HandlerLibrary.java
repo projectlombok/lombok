@@ -35,6 +35,7 @@ import java.util.WeakHashMap;
 import javax.annotation.processing.Messager;
 import javax.tools.Diagnostic;
 
+import lombok.ConfigurationKeys;
 import lombok.core.HandlerPriority;
 import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
@@ -53,6 +54,10 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
  * building an AnnotationValues instance.
  */
 public class HandlerLibrary {
+	static {
+		ConfigurationKeys.class.getClass();
+	}
+	
 	private final TypeLibrary typeLibrary = new TypeLibrary();
 	private final Map<String, AnnotationHandlerContainer<?>> annotationHandlers = new HashMap<String, AnnotationHandlerContainer<?>>();
 	private final Collection<VisitorContainer> visitorHandlers = new ArrayList<VisitorContainer>();

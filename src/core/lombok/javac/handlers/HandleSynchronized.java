@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@ package lombok.javac.handlers;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+import lombok.ConfigurationKeys;
 import lombok.Synchronized;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
@@ -55,7 +56,7 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 	private static final String STATIC_LOCK_NAME = "$LOCK";
 	
 	@Override public void handle(AnnotationValues<Synchronized> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		handleFlagUsage(annotationNode, Synchronized.FLAG_USAGE, "@Synchronized");
+		handleFlagUsage(annotationNode, ConfigurationKeys.SYNCHRONIZED_FLAG_USAGE, "@Synchronized");
 		
 		if (inNetbeansEditor(annotationNode)) return;
 		

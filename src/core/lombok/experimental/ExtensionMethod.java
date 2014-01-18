@@ -26,9 +26,6 @@ import static java.lang.annotation.RetentionPolicy.*;
 
 import java.lang.annotation.*;
 
-import lombok.core.FlagUsageType;
-import lombok.core.configuration.ConfigurationKey;
-
 /**
  * Extension methods enable you to "add" methods to existing types without creating a new derived type, recompiling, or
  * otherwise modifying the original type. Extension methods are a special kind of static method, but they are called as
@@ -63,13 +60,6 @@ import lombok.core.configuration.ConfigurationKey;
 @Target(TYPE)
 @Retention(SOURCE)
 public @interface ExtensionMethod {
-	/**
-	 * lombok configuration: {@code lombok.ExtensionMethod.flagUsage} = {@code WARNING} | {@code ERROR}.
-	 * 
-	 * If set, <em>any</em> usage of {@code @ExtensionMethod} results in a warning / error.
-	 */
-	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.ExtensionMethod.flagUsage") {};
-	
 	/** All types whose static methods will be exposed as extension methods. */
 	Class<?>[] value();
 

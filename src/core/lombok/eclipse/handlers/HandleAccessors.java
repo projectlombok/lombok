@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 The Project Lombok Authors.
+ * Copyright (C) 2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,28 +19,25 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.experimental;
+package lombok.eclipse.handlers;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import static lombok.core.handlers.HandlerUtil.handleExperimentalFlagUsage;
+import lombok.ConfigurationKeys;
+import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
+import lombok.eclipse.EclipseAnnotationHandler;
+import lombok.eclipse.EclipseNode;
+import lombok.experimental.Accessors;
 
-import lombok.AccessLevel;
+import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.mangosdk.spi.ProviderFor;
 
-/**
- * Adds modifiers to each field in the type with this annotation.
- * <p>
- * Complete documentation is found at <a href="http://projectlombok.org/features/experimental/FieldDefaults.html">the project lombok features page for &#64;FieldDefaults</a>.
- * <p>
- * If {@code makeFinal} is {@code true}, then each field that is not annotated with {@code @NonFinal} will have the {@code final} modifier added.
- * <p>
- * If {@code level} is set, then each field that is package private (i.e. no access modifier) and does not have the {@code @PackagePrivate} annotation will
- * have the appropriate access level modifier added.
- */
-@Target(ElementType.TYPE)
-@Retention(RetentionPolicy.SOURCE)
-public @interface FieldDefaults {
-	AccessLevel level() default AccessLevel.NONE;
-	boolean makeFinal() default false;
+@ProviderFor(EclipseAnnotationHandler.class)
+@HandlerPriority(65536)
+public class HandleAccessors extends EclipseAnnotationHandler<Accessors> {
+	@Override public void handle(AnnotationValues<Accessors> annotation, Annotation ast, EclipseNode annotationNode) {
+		// Accessors itself is handled by HandleGetter/Setter; this is just to ensure that usages are flagged if requested.
+		
+		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.ACCESSORS_FLAG_USAGE, "@Accessors");
+	}
 }

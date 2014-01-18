@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import static lombok.javac.Javac.*;
 
 import java.util.Collection;
 
+import lombok.ConfigurationKeys;
 import lombok.ToString;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
@@ -72,7 +73,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 	}
 	
 	@Override public void handle(AnnotationValues<ToString> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		handleFlagUsage(annotationNode, ToString.FLAG_USAGE, "@ToString");
+		handleFlagUsage(annotationNode, ConfigurationKeys.TO_STRING_FLAG_USAGE, "@ToString");
 		
 		deleteAnnotationIfNeccessary(annotationNode, ToString.class);
 		

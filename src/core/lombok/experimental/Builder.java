@@ -27,9 +27,6 @@ import static java.lang.annotation.RetentionPolicy.*;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import lombok.core.FlagUsageType;
-import lombok.core.configuration.ConfigurationKey;
-
 /**
  * The builder annotation creates a so-called 'builder' aspect to the class that is annotated or the class
  * that contains a member which is annotated with {@code @Builder}.
@@ -110,13 +107,6 @@ import lombok.core.configuration.ConfigurationKey;
 @Target({TYPE, METHOD, CONSTRUCTOR})
 @Retention(SOURCE)
 public @interface Builder {
-	/**
-	 * lombok configuration: {@code lombok.Builder.flagUsage} = {@code WARNING} | {@code ERROR}.
-	 * 
-	 * If set, <em>any</em> usage of {@code @Builder} results in a warning / error.
-	 */
-	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.Builder.flagUsage") {};
-	
 	/** Name of the static method that creates a new builder instance. Default: {@code builder}. */
 	String builderMethodName() default "builder";
 	

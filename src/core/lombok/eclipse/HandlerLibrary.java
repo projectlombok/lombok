@@ -35,6 +35,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 
+import lombok.ConfigurationKeys;
 import lombok.Lombok;
 import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
@@ -54,6 +55,10 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
  * building an AnnotationValues instance.
  */
 public class HandlerLibrary {
+	static {
+		ConfigurationKeys.class.getClass();
+	}
+	
 	/**
 	 * Creates a new HandlerLibrary. Errors will be reported to the Eclipse Error log.
 	 * You probably want to use {@link #load()} instead.

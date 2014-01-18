@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import java.util.Arrays;
 
 import lombok.Cleanup;
+import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
 import lombok.eclipse.EclipseAnnotationHandler;
@@ -59,7 +60,7 @@ import org.mangosdk.spi.ProviderFor;
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleCleanup extends EclipseAnnotationHandler<Cleanup> {
 	public void handle(AnnotationValues<Cleanup> annotation, Annotation ast, EclipseNode annotationNode) {
-		handleFlagUsage(annotationNode, Cleanup.FLAG_USAGE, "@Cleanup");
+		handleFlagUsage(annotationNode, ConfigurationKeys.CLEANUP_FLAG_USAGE, "@Cleanup");
 		
 		String cleanupName = annotation.getInstance().value();
 		if (cleanupName.length() == 0) {

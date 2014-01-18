@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 The Project Lombok Authors.
+ * Copyright (C) 2012-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@ import java.util.List;
 
 import javax.lang.model.element.ElementKind;
 
+import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.experimental.ExtensionMethod;
@@ -65,7 +66,7 @@ import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMethod> {
 	@Override
 	public void handle(final AnnotationValues<ExtensionMethod> annotation, final JCAnnotation source, final JavacNode annotationNode) {
-		handleFlagUsage(annotationNode, ExtensionMethod.FLAG_USAGE, "@ExtensionMethod");
+		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.EXTENSION_METHOD_FLAG_USAGE, "@ExtensionMethod");
 		
 		deleteAnnotationIfNeccessary(annotationNode, ExtensionMethod.class);
 		JavacNode typeNode = annotationNode.up();

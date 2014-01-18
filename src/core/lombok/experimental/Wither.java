@@ -27,8 +27,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import lombok.AccessLevel;
-import lombok.core.FlagUsageType;
-import lombok.core.configuration.ConfigurationKey;
 
 /**
  * Put on any field to make lombok build a 'wither' - a withX method which produces a clone of this object (except for 1 field which gets a new value).
@@ -56,13 +54,6 @@ import lombok.core.configuration.ConfigurationKey;
 @Target({ElementType.FIELD, ElementType.TYPE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface Wither {
-	/**
-	 * lombok configuration: {@code lombok.Wither.flagUsage} = {@code WARNING} | {@code ERROR}.
-	 * 
-	 * If set, <em>any</em> usage of {@code @Value} results in a warning / error.
-	 */
-	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.Wither.flagUsage") {};
-	
 	/**
 	 * If you want your wither to be non-public, you can specify an alternate access level here.
 	 */

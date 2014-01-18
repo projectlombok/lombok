@@ -26,9 +26,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import lombok.core.FlagUsageType;
-import lombok.core.configuration.ConfigurationKey;
-
 /**
  * Ensures the variable declaration that you annotate will be cleaned up by calling its close method, regardless
  * of what happens. Implemented by wrapping all statements following the local variable declaration to the
@@ -75,13 +72,6 @@ import lombok.core.configuration.ConfigurationKey;
 @Target(ElementType.LOCAL_VARIABLE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface Cleanup {
-	/**
-	 * lombok configuration: {@code lombok.Cleanup.flagUsage} = {@code WARNING} | {@code ERROR}.
-	 * 
-	 * If set, <em>any</em> usage of {@code @Cleanup} results in a warning / error.
-	 */
-	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.Cleanup.flagUsage") {};
-	
 	/** The name of the method that cleans up the resource. By default, 'close'. The method must not have any parameters. */
 	String value() default "close";
 }

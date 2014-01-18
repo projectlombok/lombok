@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import lombok.ConfigurationKeys;
 import lombok.SneakyThrows;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
@@ -76,7 +77,7 @@ public class HandleSneakyThrows extends EclipseAnnotationHandler<SneakyThrows> {
 	}
 	
 	@Override public void handle(AnnotationValues<SneakyThrows> annotation, Annotation source, EclipseNode annotationNode) {
-		handleFlagUsage(annotationNode, SneakyThrows.FLAG_USAGE, "@SneakyThrows");
+		handleFlagUsage(annotationNode, ConfigurationKeys.SNEAKY_THROWS_FLAG_USAGE, "@SneakyThrows");
 		
 		List<String> exceptionNames = annotation.getRawExpressions("value");
 		List<DeclaredException> exceptions = new ArrayList<DeclaredException>();

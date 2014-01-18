@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 The Project Lombok Authors.
+ * Copyright (C) 2012-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import java.util.Collections;
 
 import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.eclipse.EclipseAnnotationHandler;
@@ -47,7 +48,7 @@ import org.mangosdk.spi.ProviderFor;
 @HandlerPriority(-512) //-2^9; to ensure @EqualsAndHashCode and such pick up on this handler making the class final and messing with the fields' access levels, run earlier.
 public class HandleValue extends EclipseAnnotationHandler<Value> {
 	public void handle(AnnotationValues<Value> annotation, Annotation ast, EclipseNode annotationNode) {
-		handleFlagUsage(annotationNode, Value.FLAG_USAGE, "@Value");
+		handleFlagUsage(annotationNode, ConfigurationKeys.VALUE_FLAG_USAGE, "@Value");
 		
 		Value ann = annotation.getInstance();
 		EclipseNode typeNode = annotationNode.up();

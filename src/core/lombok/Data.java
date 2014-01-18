@@ -26,9 +26,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import lombok.core.FlagUsageType;
-import lombok.core.configuration.ConfigurationKey;
-
 /**
  * Generates getters for all fields, a useful toString method, and hashCode and equals implementations that check
  * all non-transient fields. Will also generate setters for all non-final fields, as well as a constructor.
@@ -47,13 +44,6 @@ import lombok.core.configuration.ConfigurationKey;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface Data {
-	/**
-	 * lombok configuration: {@code lombok.Data.flagUsage} = {@code WARNING} | {@code ERROR}.
-	 * 
-	 * If set, <em>any</em> usage of {@code @Data} results in a warning / error.
-	 */
-	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.Data.flagUsage") {};
-	
 	/**
 	 * If you specify a static constructor name, then the generated constructor will be private, and
 	 * instead a static factory method is created that other classes can use to create instances.

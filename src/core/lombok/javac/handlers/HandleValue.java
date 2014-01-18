@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 The Project Lombok Authors.
+ * Copyright (C) 2012-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 import java.lang.annotation.Annotation;
 
 import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.experimental.NonFinal;
@@ -52,7 +53,7 @@ public class HandleValue extends JavacAnnotationHandler<Value> {
 		@SuppressWarnings("deprecation")
 		Class<? extends Annotation> oldExperimentalValue = lombok.experimental.Value.class;
 		
-		handleFlagUsage(annotationNode, Value.FLAG_USAGE, "@Value");
+		handleFlagUsage(annotationNode, ConfigurationKeys.VALUE_FLAG_USAGE, "@Value");
 		
 		deleteAnnotationIfNeccessary(annotationNode, Value.class, oldExperimentalValue);
 		JavacNode typeNode = annotationNode.up();

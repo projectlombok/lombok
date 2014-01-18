@@ -21,6 +21,7 @@
  */
 package lombok.core.handlers;
 
+import lombok.ConfigurationKeys;
 import lombok.core.FlagUsageType;
 import lombok.core.JavaIdentifiers;
 import lombok.core.LombokNode;
@@ -56,6 +57,10 @@ public class HandlerUtil {
 			if (fut == FlagUsageType.WARNING) node.addWarning(msg);
 			else node.addError(msg);
 		}
+	}
+	
+	public static void handleExperimentalFlagUsage(LombokNode<?, ?, ?> node, ConfigurationKey<FlagUsageType> key, String featureName) {
+		handleFlagUsage(node, key, featureName, ConfigurationKeys.EXPERIMENTAL_FLAG_USAGE, "any lombok.experimental feature");
 	}
 	
 	public static void handleFlagUsage(LombokNode<?, ?, ?> node, ConfigurationKey<FlagUsageType> key1, String featureName1, ConfigurationKey<FlagUsageType> key2, String featureName2) {

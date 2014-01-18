@@ -26,9 +26,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import lombok.core.FlagUsageType;
-import lombok.core.configuration.ConfigurationKey;
-
 /**
  * A container for settings for the generation of getters and setters.
  * <p>
@@ -40,13 +37,6 @@ import lombok.core.configuration.ConfigurationKey;
 @Target({ElementType.TYPE, ElementType.FIELD})
 @Retention(RetentionPolicy.SOURCE)
 public @interface Accessors {
-	/**
-	 * lombok configuration: {@code lombok.Accessors.flagUsage} = {@code WARNING} | {@code ERROR}.
-	 * 
-	 * If set, <em>any</em> usage of {@code @Accessors} results in a warning / error.
-	 */
-	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.Accessors.flagUsage") {};
-	
 	/**
 	 * If true, accessors will be named after the field and not include a <code>get</code> or <code>set</code>
 	 * prefix. If true and <code>chain</code> is omitted, <code>chain</code> defaults to <code>true</code>.

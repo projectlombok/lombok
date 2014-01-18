@@ -56,10 +56,10 @@ public class HandleLog {
 		JavacNode typeNode = annotationNode.up();
 		switch (typeNode.getKind()) {
 		case TYPE:
-			String logFieldName = annotationNode.getAst().readConfiguration(ConfigurationKeys.ANY_LOG_FIELD_NAME);
+			String logFieldName = annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_NAME);
 			if (logFieldName == null) logFieldName = "log";
 			
-			boolean useStatic = !Boolean.FALSE.equals(annotationNode.getAst().readConfiguration(ConfigurationKeys.ANY_LOG_FIELD_IS_STATIC));
+			boolean useStatic = !Boolean.FALSE.equals(annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_IS_STATIC));
 			
 			if ((((JCClassDecl)typeNode.get()).mods.flags & Flags.INTERFACE) != 0) {
 				annotationNode.addError("@Log is legal only on classes and enums.");
@@ -110,7 +110,7 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleCommonsLog extends JavacAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			handleFlagUsage(annotationNode, lombok.extern.apachecommons.CommonsLog.FLAG_USAGE, "@apachecommons.CommonsLog", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_COMMONS_FLAG_USAGE, "@apachecommons.CommonsLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
 			
 			processAnnotation(LoggingFramework.COMMONS, annotation, annotationNode);
 		}
@@ -122,7 +122,7 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleJulLog extends JavacAnnotationHandler<lombok.extern.java.Log> {
 		@Override public void handle(AnnotationValues<lombok.extern.java.Log> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			handleFlagUsage(annotationNode, lombok.extern.java.Log.FLAG_USAGE, "@java.Log", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_JUL_FLAG_USAGE, "@java.Log", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
 			
 			processAnnotation(LoggingFramework.JUL, annotation, annotationNode);
 		}
@@ -134,7 +134,7 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleLog4jLog extends JavacAnnotationHandler<lombok.extern.log4j.Log4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			handleFlagUsage(annotationNode, lombok.extern.log4j.Log4j.FLAG_USAGE, "@Log4j", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_LOG4J_FLAG_USAGE, "@Log4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
 			
 			processAnnotation(LoggingFramework.LOG4J, annotation, annotationNode);
 		}
@@ -146,7 +146,7 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleLog4j2Log extends JavacAnnotationHandler<lombok.extern.log4j.Log4j2> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j2> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			handleFlagUsage(annotationNode, lombok.extern.log4j.Log4j2.FLAG_USAGE, "@Log4j2", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_LOG4J2_FLAG_USAGE, "@Log4j2", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
 			
 			processAnnotation(LoggingFramework.LOG4J2, annotation, annotationNode);
 		}
@@ -158,7 +158,7 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleSlf4jLog extends JavacAnnotationHandler<lombok.extern.slf4j.Slf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			handleFlagUsage(annotationNode, lombok.extern.slf4j.Slf4j.FLAG_USAGE, "@Slf4j", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_SLF4J_FLAG_USAGE, "@Slf4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
 			
 			processAnnotation(LoggingFramework.SLF4J, annotation, annotationNode);
 		}
@@ -170,7 +170,7 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleXSlf4jLog extends JavacAnnotationHandler<lombok.extern.slf4j.XSlf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.XSlf4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			handleFlagUsage(annotationNode, lombok.extern.slf4j.XSlf4j.FLAG_USAGE, "@XSlf4j", ConfigurationKeys.ANY_LOG_FLAG_USAGE, "any @Log");
+			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_XSLF4J_FLAG_USAGE, "@XSlf4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
 			
 			processAnnotation(LoggingFramework.XSLF4J, annotation, annotationNode);
 		}

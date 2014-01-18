@@ -26,9 +26,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import lombok.core.FlagUsageType;
-import lombok.core.configuration.ConfigurationKey;
-
 /**
  * Put on any field to make lombok build a standard getter.
  * <p>
@@ -55,13 +52,6 @@ import lombok.core.configuration.ConfigurationKey;
 @Target({ElementType.FIELD, ElementType.TYPE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface Getter {
-	/**
-	 * lombok configuration: {@code lombok.Getter.flagUsage} = {@code WARNING} | {@code ERROR}.
-	 * 
-	 * If set, <em>any</em> usage of {@code @Getter} results in a warning / error.
-	 */
-	ConfigurationKey<FlagUsageType> FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.Getter.flagUsage") {};
-	
 	/**
 	 * If you want your getter to be non-public, you can specify an alternate access level here.
 	 */

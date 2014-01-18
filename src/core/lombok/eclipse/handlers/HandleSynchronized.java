@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@ import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
 
+import lombok.ConfigurationKeys;
 import lombok.Synchronized;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
@@ -106,7 +107,7 @@ public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 	}
 	
 	@Override public void handle(AnnotationValues<Synchronized> annotation, Annotation source, EclipseNode annotationNode) {
-		handleFlagUsage(annotationNode, Synchronized.FLAG_USAGE, "@Synchronized");
+		handleFlagUsage(annotationNode, ConfigurationKeys.SYNCHRONIZED_FLAG_USAGE, "@Synchronized");
 		
 		int p1 = source.sourceStart -1;
 		int p2 = source.sourceStart -2;
