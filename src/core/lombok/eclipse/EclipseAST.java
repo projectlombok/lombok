@@ -21,6 +21,7 @@
  */
 package lombok.eclipse;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -67,8 +68,25 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		clearChanged();
 	}
 	
+	private static volatile boolean skipEclipseWorkspaceBasedFileResolver = false;
 	public URI getAbsoluteFileLocation() {
-		return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(getFileName())).getLocationURI();
+		if (!skipEclipseWorkspaceBasedFileResolver) {
+			try {
+				return EclipseWorkspaceBasedFileResolver.resolve(getFileName());
+			} catch (NoClassDefFoundError e) {
+				skipEclipseWorkspaceBasedFileResolver = true;
+			}
+		}
+		
+		// Our fancy workspace based source file to absolute disk location algorithm only works in a fully fledged eclipse.
+		// This fallback works when using 'ecj', which has a much simpler project/path system. For example, no 'linked' resources.
+		return new File(getFileName()).getAbsoluteFile().toURI();
+	}
+	
+	private static class EclipseWorkspaceBasedFileResolver {
+		public static URI resolve(String path) {
+			return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(path)).getLocationURI();
+		}
 	}
 	
 	private static String packageDeclaration(CompilationUnitDeclaration cud) {
