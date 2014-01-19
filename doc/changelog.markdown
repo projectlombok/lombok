@@ -2,7 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.12.5 "Edgy Guinea Pig"
-* Edge placeholder
+* DETAIL: {Delombok} Inside enum bodies the delombok formatter didn't respect the emptyLines directive [Issue #529](https://code.google.com/p/projectlombok/issues/detail?id=629).
 
 ### v1.12.4 (January 15th, 2014)
 * BUGFIX: v1.12.2's delombok turns all operator+assignments into just assignment. Fixed. [Issue #598](https://code.google.com/p/projectlombok/issues/detail?id=598)
