@@ -35,12 +35,12 @@ import java.util.WeakHashMap;
 import javax.annotation.processing.Messager;
 import javax.tools.Diagnostic;
 
-import lombok.ConfigurationKeys;
 import lombok.core.HandlerPriority;
 import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
 import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
+import lombok.core.configuration.ConfigurationKeysLoader;
 import lombok.javac.handlers.JavacHandlerUtil;
 
 import com.sun.tools.javac.tree.JCTree;
@@ -54,10 +54,6 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
  * building an AnnotationValues instance.
  */
 public class HandlerLibrary {
-	static {
-		ConfigurationKeys.ensureKeysLoaded();
-	}
-	
 	private final TypeLibrary typeLibrary = new TypeLibrary();
 	private final Map<String, AnnotationHandlerContainer<?>> annotationHandlers = new HashMap<String, AnnotationHandlerContainer<?>>();
 	private final Collection<VisitorContainer> visitorHandlers = new ArrayList<VisitorContainer>();
@@ -68,6 +64,7 @@ public class HandlerLibrary {
 	 * You probably want to use {@link #load(Messager)} instead.
 	 */
 	public HandlerLibrary(Messager messager) {
+		ConfigurationKeysLoader.LoaderLoader.loadAllConfigurationKeys();
 		this.messager = messager;
 	}
 	

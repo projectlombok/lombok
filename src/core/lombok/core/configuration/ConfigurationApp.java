@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import lombok.ConfigurationKeys;
 import lombok.core.LombokApp;
 
 import org.mangosdk.spi.ProviderFor;
@@ -89,7 +88,7 @@ public class ConfigurationApp extends LombokApp {
 			return 1;
 		}
 		
-		ConfigurationKeys.ensureKeysLoaded();
+		ConfigurationKeysLoader.LoaderLoader.loadAllConfigurationKeys();
 		
 		if (args.generate) {
 			printConfiguration(System.out, args.verbose);
