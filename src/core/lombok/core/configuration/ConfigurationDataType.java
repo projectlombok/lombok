@@ -23,6 +23,7 @@ package lombok.core.configuration;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,9 @@ public final class ConfigurationDataType {
 			@Override public String description() {
 				return "String";
 			}
+			@Override public String exampleValue() {
+				return "<text>";
+			}
 		});
 		map.put(Integer.class, new ConfigurationValueParser() {
 			@Override public Object parse(String value) {
@@ -45,6 +49,9 @@ public final class ConfigurationDataType {
 			}
 			@Override public String description() {
 				return "Integer";
+			}
+			@Override public String exampleValue() {
+				return "<int>";
 			}
 		});
 		map.put(Long.class, new ConfigurationValueParser() {
@@ -54,6 +61,9 @@ public final class ConfigurationDataType {
 			@Override public String description() {
 				return "Long";
 			}
+			@Override public String exampleValue() {
+				return "<long>";
+			}
 		});
 		map.put(Double.class, new ConfigurationValueParser() {
 			@Override public Object parse(String value) {
@@ -61,6 +71,9 @@ public final class ConfigurationDataType {
 			}
 			@Override public String description() {
 				return "Double";
+			}
+			@Override public String exampleValue() {
+				return "<double>";
 			}
 		});
 		map.put(Boolean.class, new ConfigurationValueParser() {
@@ -70,6 +83,9 @@ public final class ConfigurationDataType {
 			@Override public String description() {
 				return "Boolean";
 			}
+			@Override public String exampleValue() {
+				return "[false | true]";
+			}
 		});
 		map.put(TypeName.class, new ConfigurationValueParser() {
 			@Override public Object parse(String value) {
@@ -77,6 +93,9 @@ public final class ConfigurationDataType {
 			}
 			@Override public String description() {
 				return "TypeName";
+			}
+			@Override public String exampleValue() {
+				return "<fully.qualified.Type>";
 			}
 		});
 		SIMPLE_TYPES = map;
@@ -95,6 +114,9 @@ public final class ConfigurationDataType {
 			}
 			@Override public String description() {
 				return rawType.getName();
+			}
+			@Override public String exampleValue() {
+				return Arrays.toString(rawType.getEnumConstants()).replace(",", " |");
 			}
 		};
 	}
