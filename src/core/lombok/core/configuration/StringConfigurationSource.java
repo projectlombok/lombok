@@ -41,44 +41,49 @@ public class StringConfigurationSource implements ConfigurationSource {
 		
 		Map<String, Result> values = new TreeMap<String, Result>(String.CASE_INSENSITIVE_ORDER);
 		
-		Map<String, ConfigurationDataType> registeredKeys = ConfigurationKey.registeredKeysAsMap();
+		Map<String, ConfigurationKey<?>> registeredKeys = ConfigurationKey.registeredKeysMap();
 		int lineNumber = 0;
 		for (String line : content.split("\\n")) {
 			line = line.trim();
 			lineNumber++;
 			if (line.isEmpty() || line.startsWith("#")) continue;
+
 			Matcher matcher = LINE.matcher(line);
+			if (!matcher.matches()) {
+				reporter.report("No valid line", lineNumber, line);
+				continue;
+			}
 			
 			String operator = null;
 			String keyName = null;
 			String value;
-			
-			if (matcher.matches()) {
-				if (matcher.group(1) == null) {
-					keyName = matcher.group(2);
-					operator = matcher.group(3);
-					value = matcher.group(4);
-				} else {
-					keyName = matcher.group(1);
-					operator = "clear";
-					value = null;
-				}
-				ConfigurationDataType type = registeredKeys.get(keyName);
-				if (type == null) {
-					reporter.report("Unknown key '" + keyName + "'", lineNumber, line);
-				} else {
-					boolean listOperator = operator.equals("+=") || operator.equals("-=");
-					if (listOperator && !type.isList()) {
-						reporter.report("'" + keyName + "' is not a list and doesn't support " + operator + " (only = and clear)", lineNumber, line);
-					} else if (operator.equals("=") && type.isList()) {
-						reporter.report("'" + keyName + "' is a list and cannot be assigned to (use +=, -= and clear instead)", lineNumber, line);
-					} else {
-						processResult(values, keyName, operator, value, type, reporter, lineNumber, line);
-					}
-				}
+			if (matcher.group(1) == null) {
+				keyName = matcher.group(2);
+				operator = matcher.group(3);
+				value = matcher.group(4);
 			} else {
-				reporter.report("No valid line", lineNumber, line);
+				keyName = matcher.group(1);
+				operator = "clear";
+				value = null;
 			}
+			ConfigurationKey<?> key = registeredKeys.get(keyName);
+			if (key == null) {
+				reporter.report("Unknown key '" + keyName + "'", lineNumber, line);
+				continue;
+			}
+			
+			ConfigurationDataType type = key.getType();
+			boolean listOperator = operator.equals("+=") || operator.equals("-=");
+			if (listOperator && !type.isList()) {
+				reporter.report("'" + keyName + "' is not a list and doesn't support " + operator + " (only = and clear)", lineNumber, line);
+				continue;
+			}
+			if (operator.equals("=") && type.isList()) {
+				reporter.report("'" + keyName + "' is a list and cannot be assigned to (use +=, -= and clear instead)", lineNumber, line);
+				continue;
+			}
+			
+			processResult(values, keyName, operator, value, type, reporter, lineNumber, line);
 		}
 		
 		return new StringConfigurationSource(values);
