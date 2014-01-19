@@ -32,8 +32,10 @@ public class ConfigurationKeys {
 	
 	/**
 	 * Makes sure all {@link ConfigurationKey}s in this class are loaded.
+	 * 
+	 * (Calling the method ensures this class is initialized by the class loader; this is enough to initialize all configuration keys).
 	 */
-	public static void ensureKeysLoaded() {};
+	public static void ensureKeysLoaded() {}
 	
 	// ##### main package features #####
 	
