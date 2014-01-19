@@ -36,21 +36,23 @@ public class StringConfigurationSource implements ConfigurationSource {
 	
 	private final Map<String, Result> values;
 	
-	public static ConfigurationSource forString(String content, ConfigurationErrorReporter reporter) {
+	private static final Pattern NEWLINE_FINDER = Pattern.compile("^\\s*(.*?)\\s*$", Pattern.MULTILINE);
+	public static ConfigurationSource forString(CharSequence content, ConfigurationProblemReporter reporter, String contentDescription) {
 		if (reporter == null) throw new NullPointerException("reporter");
 		
 		Map<String, Result> values = new TreeMap<String, Result>(String.CASE_INSENSITIVE_ORDER);
 		
 		Map<String, ConfigurationKey<?>> registeredKeys = ConfigurationKey.registeredKeysMap();
 		int lineNumber = 0;
-		for (String line : content.split("\\n")) {
-			line = line.trim();
+		Matcher lineMatcher = NEWLINE_FINDER.matcher(content);
+		while (lineMatcher.find()) {
+			CharSequence line = content.subSequence(lineMatcher.start(1), lineMatcher.end(1));
 			lineNumber++;
-			if (line.isEmpty() || line.startsWith("#")) continue;
+			if (line.length() == 0 || line.charAt(0) == '#') continue;
 
 			Matcher matcher = LINE.matcher(line);
 			if (!matcher.matches()) {
-				reporter.report("No valid line", lineNumber, line);
+				reporter.report(contentDescription, "No valid line", lineNumber, line);
 				continue;
 			}
 			
@@ -68,22 +70,22 @@ public class StringConfigurationSource implements ConfigurationSource {
 			}
 			ConfigurationKey<?> key = registeredKeys.get(keyName);
 			if (key == null) {
-				reporter.report("Unknown key '" + keyName + "'", lineNumber, line);
+				reporter.report(contentDescription, "Unknown key '" + keyName + "'", lineNumber, line);
 				continue;
 			}
 			
 			ConfigurationDataType type = key.getType();
 			boolean listOperator = operator.equals("+=") || operator.equals("-=");
 			if (listOperator && !type.isList()) {
-				reporter.report("'" + keyName + "' is not a list and doesn't support " + operator + " (only = and clear)", lineNumber, line);
+				reporter.report(contentDescription, "'" + keyName + "' is not a list and doesn't support " + operator + " (only = and clear)", lineNumber, line);
 				continue;
 			}
 			if (operator.equals("=") && type.isList()) {
-				reporter.report("'" + keyName + "' is a list and cannot be assigned to (use +=, -= and clear instead)", lineNumber, line);
+				reporter.report(contentDescription, "'" + keyName + "' is a list and cannot be assigned to (use +=, -= and clear instead)", lineNumber, line);
 				continue;
 			}
 			
-			processResult(values, keyName, operator, value, type, reporter, lineNumber, line);
+			processResult(values, keyName, operator, value, type, reporter, contentDescription, lineNumber, line);
 		}
 		
 		return new StringConfigurationSource(values);
@@ -101,12 +103,12 @@ public class StringConfigurationSource implements ConfigurationSource {
 		}
 	}
 	
-	private static void processResult(Map<String, Result> values, String keyName, String operator, String value, ConfigurationDataType type, ConfigurationErrorReporter reporter, int lineNumber, String line) {
+	private static void processResult(Map<String, Result> values, String keyName, String operator, String value, ConfigurationDataType type, ConfigurationProblemReporter reporter, String contentDescription, int lineNumber, CharSequence line) {
 		Object element = null;
 		if (value != null) try {
 			element = type.getParser().parse(value);
 		} catch (Exception e) {
-			reporter.report("Error while parsing the value for '" + keyName + "' value '" + value + "' (should be a " + type.getParser().description() + ")", lineNumber, line);
+			reporter.report(contentDescription, "Error while parsing the value for '" + keyName + "' value '" + value + "' (should be a " + type.getParser().description() + ")", lineNumber, line);
 			return;
 		}
 		

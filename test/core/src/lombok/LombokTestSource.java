@@ -28,6 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -35,6 +36,10 @@ import java.util.regex.Pattern;
 import org.junit.Assert;
 
 import lombok.core.LombokImmutableList;
+import lombok.core.configuration.BubblingConfigurationResolver;
+import lombok.core.configuration.ConfigurationProblemReporter;
+import lombok.core.configuration.ConfigurationResolver;
+import lombok.core.configuration.StringConfigurationSource;
 
 public class LombokTestSource {
 	private final File file;
@@ -42,7 +47,7 @@ public class LombokTestSource {
 	private final LombokImmutableList<CompilerMessageMatcher> messages;
 	private final boolean ignore;
 	private final int versionLowerLimit, versionUpperLimit;
-	private final LombokImmutableList<String> confLines;
+	private final ConfigurationResolver configuration;
 	
 	public boolean versionWithinLimit(int version) {
 		return version >= versionLowerLimit && version <= versionUpperLimit;
@@ -64,8 +69,8 @@ public class LombokTestSource {
 		return ignore;
 	}
 	
-	public LombokImmutableList<String> getConfLines() {
-		return confLines;
+	public ConfigurationResolver getConfiguration() {
+		return configuration;
 	}
 	
 	private static final Pattern VERSION_STYLE_1 = Pattern.compile("^(\\d+)$");
@@ -106,7 +111,7 @@ public class LombokTestSource {
 		this.content = content;
 		this.messages = messages == null ? LombokImmutableList.<CompilerMessageMatcher>of() : LombokImmutableList.copyOf(messages);
 		
-		List<String> conf = new ArrayList<String>();
+		StringBuilder conf = new StringBuilder();
 		int versionLower = 0;
 		int versionUpper = Integer.MAX_VALUE;
 		boolean ignore = false;
@@ -132,7 +137,7 @@ public class LombokTestSource {
 			
 			if (lc.startsWith("conf:")) {
 				String confLine = directive.substring(5).trim();
-				conf.add(confLine);
+				conf.append(confLine).append("\n");
 				continue;
 			}
 			
@@ -143,7 +148,13 @@ public class LombokTestSource {
 		this.versionLowerLimit = versionLower;
 		this.versionUpperLimit = versionUpper;
 		this.ignore = ignore;
-		this.confLines = LombokImmutableList.copyOf(conf);
+		ConfigurationProblemReporter reporter = new ConfigurationProblemReporter() {
+			@Override public void report(String sourceDescription, String problem, int lineNumber, CharSequence line) {
+				Assert.fail("Problem on directive line: " + problem + " at conf line #" + lineNumber + " (" + line + ")");
+			}
+		};
+		
+		this.configuration = new BubblingConfigurationResolver(Collections.singleton(StringConfigurationSource.forString(conf, reporter, file.getAbsolutePath())));
 	}
 	
 	public static LombokTestSource readDirectives(File file) throws IOException {

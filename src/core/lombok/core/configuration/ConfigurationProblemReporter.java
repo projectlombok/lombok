@@ -21,18 +21,12 @@
  */
 package lombok.core.configuration;
 
-public interface ConfigurationErrorReporterFactory {
-	ConfigurationErrorReporterFactory CONSOLE = new ConfigurationErrorReporterFactory() {
-		@Override
-		public ConfigurationErrorReporter createFor(final String description) {
-			return new ConfigurationErrorReporter() {
-				@Override
-				public void report(String error, int lineNumber, String line) {
-					System.err.printf("%s (%s:%d)", error, description, lineNumber);
-				}
-			};
+public interface ConfigurationProblemReporter {
+	void report(String sourceDescription, String problem, int lineNumber, CharSequence line);
+	
+	ConfigurationProblemReporter CONSOLE = new ConfigurationProblemReporter() {
+		@Override public void report(String sourceDescription, String problem, int lineNumber, CharSequence line) {
+			System.err.printf("%s (%s:%d)\n", problem, sourceDescription, lineNumber);
 		}
 	};
-	
-	ConfigurationErrorReporter createFor(String description);
 }

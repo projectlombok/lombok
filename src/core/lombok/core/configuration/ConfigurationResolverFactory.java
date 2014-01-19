@@ -21,6 +21,8 @@
  */
 package lombok.core.configuration;
 
-public interface ConfigurationErrorReporter {
-	void report(String error, int lineNumber, String line);
+import lombok.core.AST;
+
+public interface ConfigurationResolverFactory {
+	ConfigurationResolver createResolver(AST<?, ?, ?> ast);
 }

@@ -36,14 +36,13 @@ import lombok.ConfigurationKeys;
 import lombok.core.configuration.ConfigurationSource.Result;
 
 public class FileSystemSourceCache {
-	
 	private static String LOMBOK_CONFIG_FILENAME = "lombok.config";
 	private static final long RECHECK_FILESYSTEM = TimeUnit.SECONDS.toMillis(2);
 	private static final long MISSING = -1; 
 	
 	private final ConcurrentMap<File, Content> cache = new ConcurrentHashMap<File, Content>();
 	
-	public Iterable<ConfigurationSource> sourcesForJavaFile(URI javaFile, final ConfigurationErrorReporterFactory reporterFactory) {
+	public Iterable<ConfigurationSource> sourcesForJavaFile(URI javaFile, final ConfigurationProblemReporter reporter) {
 		if (javaFile == null) return Collections.emptyList();
 		final File directory = new File(javaFile.normalize()).getParentFile();
 		return new Iterable<ConfigurationSource>() {
@@ -72,7 +71,7 @@ public class FileSystemSourceCache {
 					
 					private ConfigurationSource findNext() {
 						while (currentDirectory != null && next == null) {
-							next = getSourceForDirectory(currentDirectory, reporterFactory);
+							next = getSourceForDirectory(currentDirectory, reporter);
 							currentDirectory = currentDirectory.getParentFile();
 						}
 						if (next != null) {
@@ -91,7 +90,7 @@ public class FileSystemSourceCache {
 		};
 	}
 	
-	ConfigurationSource getSourceForDirectory(File directory, ConfigurationErrorReporterFactory reporterFactory) {
+	ConfigurationSource getSourceForDirectory(File directory, ConfigurationProblemReporter reporter) {
 		if (!directory.exists() && !directory.isDirectory()) throw new IllegalArgumentException("Not a directory: " + directory);
 		long now = System.currentTimeMillis();
 		File configFile = new File(directory, LOMBOK_CONFIG_FILENAME);
@@ -104,7 +103,7 @@ public class FileSystemSourceCache {
 			content.lastChecked = now;
 			long previouslyModified = content.lastModified;
 			content.lastModified = getLastModified(configFile);
-			if (content.lastModified != previouslyModified) content.source = content.lastModified == MISSING ? null : parse(configFile, reporterFactory);
+			if (content.lastModified != previouslyModified) content.source = content.lastModified == MISSING ? null : parse(configFile, reporter);
 			return content.source;
 		}
 	}
@@ -118,12 +117,12 @@ public class FileSystemSourceCache {
 		return cache.get(directory);
 	}
 	
-	private ConfigurationSource parse(File configFile, ConfigurationErrorReporterFactory reporterFactory) {
-		ConfigurationErrorReporter reporter = reporterFactory.createFor(configFile.getAbsolutePath());
+	private ConfigurationSource parse(File configFile, ConfigurationProblemReporter reporter) {
+		String contentDescription = configFile.getAbsolutePath();
 		try {
-			return StringConfigurationSource.forString(fileToString(configFile), reporter);
+			return StringConfigurationSource.forString(fileToString(configFile), reporter, contentDescription);
 		} catch (Exception e) {
-			reporter.report("Exception while reading file: " + e.getMessage(), 0, null);
+			reporter.report(contentDescription, "Exception while reading file: " + e.getMessage(), 0, null);
 			return null;
 		}
 	}
@@ -169,5 +168,9 @@ public class FileSystemSourceCache {
 		static Content empty() {
 			return new Content(null, MISSING, MISSING);
 		}
+	}
+	
+	public void reset() {
+		cache.clear();
 	}
 }

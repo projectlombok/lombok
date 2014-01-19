@@ -26,7 +26,6 @@ import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Locale;
 
-import lombok.core.LombokImmutableList;
 import lombok.delombok.Delombok;
 import lombok.javac.CapturingDiagnosticListener;
 import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
@@ -35,14 +34,12 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 	private Delombok delombok = new Delombok();
 	
 	@Override
-	public void transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file, LombokImmutableList<String> confLines) throws Throwable {
+	public void transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file) throws Throwable {
 		delombok.setVerbose(false);
 		delombok.setForceProcess(true);
 		delombok.setCharset("UTF-8");
 		
 		delombok.setDiagnosticsListener(new CapturingDiagnosticListener(file, messages));
-		
-		// TODO: Create a configuration based on confLines and set this up so that this compile run will use them.
 		
 		delombok.addFile(file.getAbsoluteFile().getParentFile(), file.getName());
 		delombok.setSourcepath(file.getAbsoluteFile().getParent());

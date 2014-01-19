@@ -36,7 +36,11 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import lombok.core.AST;
+import lombok.core.LombokConfiguration;
 import lombok.core.LombokImmutableList;
+import lombok.core.configuration.ConfigurationResolver;
+import lombok.core.configuration.ConfigurationResolverFactory;
 import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
 
 public abstract class AbstractRunTests {
@@ -47,7 +51,7 @@ public abstract class AbstractRunTests {
 	}
 	
 	public boolean compareFile(DirectoryRunner.TestParams params, File file) throws Throwable {
-		LombokTestSource sourceDirectives = LombokTestSource.readDirectives(file);
+		final LombokTestSource sourceDirectives = LombokTestSource.readDirectives(file);
 		if (sourceDirectives.isIgnore()) return false;
 		
 		String fileName = file.getName();
@@ -57,13 +61,20 @@ public abstract class AbstractRunTests {
 		
 		LinkedHashSet<CompilerMessage> messages = new LinkedHashSet<CompilerMessage>();
 		StringWriter writer = new StringWriter();
-		transformCode(messages, writer, file, sourceDirectives.getConfLines());
+		
+		LombokConfiguration.overrideConfigurationResolverFactory(new ConfigurationResolverFactory() {
+			@Override public ConfigurationResolver createResolver(AST<?, ?, ?> ast) {
+				return sourceDirectives.getConfiguration();
+			}
+		});
+		
+		transformCode(messages, writer, file);
 		
 		compare(file.getName(), expected, writer.toString(), messages, params.printErrors());
 		return true;
 	}
 	
-	protected abstract void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, LombokImmutableList<String> confLines) throws Throwable;
+	protected abstract void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file) throws Throwable;
 	
 	protected String readFile(File file) throws IOException {
 		BufferedReader reader;

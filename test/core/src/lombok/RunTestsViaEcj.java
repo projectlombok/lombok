@@ -33,7 +33,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import lombok.core.LombokImmutableList;
 import lombok.eclipse.Eclipse;
 import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
 
@@ -88,7 +87,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 	}
 	
 	@Override
-	public void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, LombokImmutableList<String> confLines) throws Throwable {
+	public void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file) throws Throwable {
 		final AtomicReference<CompilationResult> compilationResult_ = new AtomicReference<CompilationResult>();
 		final AtomicReference<CompilationUnitDeclaration> compilationUnit_ = new AtomicReference<CompilationUnitDeclaration>();
 		ICompilerRequestor bitbucketRequestor = new ICompilerRequestor() {
