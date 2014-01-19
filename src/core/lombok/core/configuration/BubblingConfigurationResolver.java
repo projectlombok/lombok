@@ -30,8 +30,6 @@ import lombok.core.configuration.ConfigurationSource.Result;
 
 public class BubblingConfigurationResolver implements ConfigurationResolver {
 	
-	private static final ConfigurationKey<Boolean> STOP_BUBBLING = new ConfigurationKey<Boolean>("stop-bubbling") {};
-	
 	private final Iterable<ConfigurationSource> sources;
 	
 	public BubblingConfigurationResolver(Iterable<ConfigurationSource> sources) {
@@ -59,8 +57,6 @@ public class BubblingConfigurationResolver implements ConfigurationResolver {
 				}
 				return (T) result.getValue();
 			}
-			Result stop = source.resolve(STOP_BUBBLING);
-			if (stop != null && Boolean.TRUE.equals(stop.getValue())) break;
 		}
 		if (!isList) {
 			return null;

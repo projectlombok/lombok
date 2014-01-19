@@ -32,6 +32,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import lombok.ConfigurationKeys;
+import lombok.core.configuration.ConfigurationSource.Result;
+
 public class FileSystemSourceCache {
 	
 	private static String LOMBOK_CONFIG_FILENAME = "lombok.config";
@@ -49,10 +52,12 @@ public class FileSystemSourceCache {
 				return new Iterator<ConfigurationSource>() {
 					File currentDirectory = directory;
 					ConfigurationSource next;
+					boolean stopBubbling = false;
 					
 					@Override
 					public boolean hasNext() {
 						if (next != null) return true;
+						if (stopBubbling) return false;
 						next = findNext();
 						return next != null;
 					}
@@ -69,6 +74,10 @@ public class FileSystemSourceCache {
 						while (currentDirectory != null && next == null) {
 							next = getSourceForDirectory(currentDirectory, reporterFactory);
 							currentDirectory = currentDirectory.getParentFile();
+						}
+						if (next != null) {
+							Result stop = next.resolve(ConfigurationKeys.STOP_BUBBLING);
+							stopBubbling = (stop != null && Boolean.TRUE.equals(stop.getValue()));
 						}
 						return next;
 					}
