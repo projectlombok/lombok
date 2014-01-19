@@ -306,5 +306,5 @@ public class ConfigurationKeys {
 	 * 
 	 * If set to {@code true}, no futher {@code lombok.config} files will be checked.
 	 */
-	public static final ConfigurationKey<Boolean> STOP_BUBBLING = new ConfigurationKey<Boolean>("stop-bubbling") {};
+	public static final ConfigurationKey<Boolean> STOP_BUBBLING = new ConfigurationKey<Boolean>("stop-bubbling", "Tells the configuration system if it should stop looking for other configuration files.") {};
 }

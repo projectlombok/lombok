@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
  * <p>
  * The recommended usage is to create a type token:
  * <pre>
- *    private static ConfigurationKey&lt;String> KEY = new ConfigurationKey&lt;String>("keyName") {}; 
+ *    private static ConfigurationKey&lt;String> KEY = new ConfigurationKey&lt;String>("keyName", "description") {};
  * </pre>
  */
 public abstract class ConfigurationKey<T> {
@@ -42,14 +42,20 @@ public abstract class ConfigurationKey<T> {
 	private static Map<String, ConfigurationKey<?>> copy;
 	
 	private final String keyName;
+	private final String description;
 	private final ConfigurationDataType type;
 	
+	@Deprecated
 	public ConfigurationKey(String keyName) {
+		this(keyName, null);
+	}
+	
+	public ConfigurationKey(String keyName, String description) {
 		this.keyName = checkName(keyName);
 		@SuppressWarnings("unchecked")
 		ConfigurationDataType type = ConfigurationDataType.toDataType((Class<? extends ConfigurationKey<?>>)getClass());
 		this.type = type;
-		
+		this.description = description;
 		registerKey(keyName, this);
 	}
 	
@@ -57,12 +63,16 @@ public abstract class ConfigurationKey<T> {
 		return keyName;
 	}
 	
+	public String getDescription() {
+		return description;
+	}
+	
 	public final ConfigurationDataType getType() {
 		return type;
 	}
 	
 	@Override public String toString() {
-		return keyName + " : " + type;
+		return keyName + " (" + type + "): " + description;
 	}
 	
 	private static String checkName(String keyName) {

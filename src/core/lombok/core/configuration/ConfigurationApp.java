@@ -119,19 +119,32 @@ public class ConfigurationApp extends LombokApp {
 		for (ConfigurationKey<?> key : ConfigurationKey.registeredKeys()) {
 			String keyName = key.getKeyName();
 			ConfigurationDataType type = key.getType();
+			String description = key.getDescription();
+			boolean hasDescription = description != null && !description.isEmpty();
 			if (!verbose) {
-				out.printf("# %s (%s)\n", keyName, type);
+				if (hasDescription) {
+					out.printf("%s: %s\n", keyName, description);
+				} else {
+					out.printf("%s\n", keyName);
+				}
 				continue;
 			}
-			out.printf("### Key %s type %s\n", keyName, type);
-			out.printf("#clear %s\n", keyName);
-			if (type.isList()) {
-				out.printf("#%s += %s\n", keyName, exampleValue(type));
-				out.printf("#%s -= %s\n", keyName, exampleValue(type));
-			} else {
-				out.printf("#%s = %s\n", keyName, exampleValue(type));
+			out.printf("##\n## Key : %s\n## Type: %s\n", keyName, type);
+			if (hasDescription) {
+				out.printf("##\n## %s\n", description);
 			}
-			out.println();
+			out.println("##\n## Examples:\n#");
+			out.printf("# clear %s\n", keyName);
+			if (type.isList()) {
+				out.printf("# %s += %s\n", keyName, exampleValue(type));
+				out.printf("# %s -= %s\n", keyName, exampleValue(type));
+			} else {
+				out.printf("# %s = %s\n", keyName, exampleValue(type));
+			}
+			out.println("#\n");
+		}
+		if (!verbose) {
+			out.println("\nUse --verbose for more information.");
 		}
 	}
 
