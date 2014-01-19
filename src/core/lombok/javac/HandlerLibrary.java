@@ -55,7 +55,7 @@ import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
  */
 public class HandlerLibrary {
 	static {
-		ConfigurationKeys.class.getClass();
+		ConfigurationKeys.ensureKeysLoaded();
 	}
 	
 	private final TypeLibrary typeLibrary = new TypeLibrary();

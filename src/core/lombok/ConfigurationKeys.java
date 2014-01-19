@@ -30,6 +30,11 @@ import lombok.core.configuration.ConfigurationKey;
 public class ConfigurationKeys {
 	private ConfigurationKeys() {}
 	
+	/**
+	 * Makes sure all {@link ConfigurationKey}s in this class are loaded.
+	 */
+	public static void ensureKeysLoaded() {};
+	
 	// ##### main package features #####
 	
 	// ----- *ArgsConstructor -----
@@ -297,4 +302,14 @@ public class ConfigurationKeys {
 	 * If set, <em>any</em> usage of {@code @Value} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> WITHER_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.Wither.flagUsage") {};
+	
+	
+	/**
+	 * lombok configuration: {@code stop-bubbling} = {@code true} | {@code false}.
+	 * 
+	 * If not set, or set to {@code false}, the configuration system will look for {@code lombok.config} files in the parent directory.
+	 * 
+	 * If set to {@code true}, no futher {@code lombok.config} files will be checked.
+	 */
+	public static final ConfigurationKey<Boolean> STOP_BUBBLING = new ConfigurationKey<Boolean>("stop-bubbling") {};
 }

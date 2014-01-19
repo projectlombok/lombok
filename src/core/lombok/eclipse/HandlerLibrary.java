@@ -56,7 +56,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
  */
 public class HandlerLibrary {
 	static {
-		ConfigurationKeys.class.getClass();
+		ConfigurationKeys.ensureKeysLoaded();
 	}
 	
 	/**
