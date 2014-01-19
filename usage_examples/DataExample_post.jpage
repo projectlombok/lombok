@@ -55,7 +55,7 @@ public class DataExample {
 	}
 	
 	@Override public int hashCode() {
-		final int PRIME = 277;
+		final int PRIME = 59;
 		int result = 1;
 		final long temp1 = Double.doubleToLongBits(this.getScore());
 		result = (result*PRIME) + (this.getName() == null ? 0 : this.getName().hashCode());
@@ -101,7 +101,7 @@ public class DataExample {
 		}
 		
 		@Override public int hashCode() {
-			final int PRIME = 277;
+			final int PRIME = 59;
 			int result = 1;
 			result = (result*PRIME) + (this.getName() == null ? 0 : this.getName().hashCode());
 			result = (result*PRIME) + (this.getValue() == null ? 0 : this.getValue().hashCode());

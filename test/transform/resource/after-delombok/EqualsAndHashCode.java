@@ -29,7 +29,7 @@ class EqualsAndHashCode {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
-		final int PRIME = 277;
+		final int PRIME = 59;
 		int result = 1;
 		result = result * PRIME + this.x;
 		result = result * PRIME + java.util.Arrays.hashCode(this.y);
@@ -46,6 +46,7 @@ final class EqualsAndHashCode2 {
 	long y;
 	float f;
 	double d;
+	boolean b;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public boolean equals(final java.lang.Object o) {
@@ -56,12 +57,13 @@ final class EqualsAndHashCode2 {
 		if (this.y != other.y) return false;
 		if (java.lang.Float.compare(this.f, other.f) != 0) return false;
 		if (java.lang.Double.compare(this.d, other.d) != 0) return false;
+		if (this.b != other.b) return false;
 		return true;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
-		final int PRIME = 277;
+		final int PRIME = 59;
 		int result = 1;
 		result = result * PRIME + this.x;
 		final long $y = this.y;
@@ -69,6 +71,7 @@ final class EqualsAndHashCode2 {
 		result = result * PRIME + java.lang.Float.floatToIntBits(this.f);
 		final long $d = java.lang.Double.doubleToLongBits(this.d);
 		result = result * PRIME + (int)($d >>> 32 ^ $d);
+		result = result * PRIME + (this.b ? 79 : 97);
 		return result;
 	}
 }
@@ -111,7 +114,7 @@ class EqualsAndHashCode4 extends EqualsAndHashCode {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
-		final int PRIME = 277;
+		final int PRIME = 59;
 		int result = 1;
 		result = result * PRIME + super.hashCode();
 		return result;

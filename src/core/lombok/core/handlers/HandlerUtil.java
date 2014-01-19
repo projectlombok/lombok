@@ -27,9 +27,17 @@ import lombok.core.LombokNode;
 public class HandlerUtil {
 	private HandlerUtil() {}
 	
-	public static final int PRIME_FOR_HASHCODE = 277;
-	public static final int PRIME_FOR_TRUE = 2591;
-	public static final int PRIME_FOR_FALSE = 2609;
+	public static int primeForHashcode() {
+		return 59;
+	}
+	
+	public static int primeForTrue() {
+		return 79;
+	}
+	
+	public static int primeForFalse() {
+		return 97;
+	}
 	
 	/** Checks if the given name is a valid identifier.
 	 * 

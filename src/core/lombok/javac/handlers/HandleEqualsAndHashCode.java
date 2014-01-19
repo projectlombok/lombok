@@ -231,9 +231,9 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		Name resultName = typeNode.toName(RESULT_NAME);
 		long finalFlag = JavacHandlerUtil.addFinalIfNeeded(0L, typeNode.getContext());
 		
-		/* final int PRIME = 277; */ {
+		/* final int PRIME = X; */ {
 			if (!fields.isEmpty() || callSuper) {
-				statements.append(maker.VarDef(maker.Modifiers(finalFlag), primeName, maker.TypeIdent(CTC_INT), maker.Literal(HandlerUtil.PRIME_FOR_HASHCODE)));
+				statements.append(maker.VarDef(maker.Modifiers(finalFlag), primeName, maker.TypeIdent(CTC_INT), maker.Literal(HandlerUtil.primeForHashcode())));
 			}
 		}
 		
@@ -255,9 +255,9 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			if (fType instanceof JCPrimitiveTypeTree) {
 				switch (((JCPrimitiveTypeTree)fType).getPrimitiveTypeKind()) {
 				case BOOLEAN:
-					/* this.fieldName ? 2591 : 2609 */
+					/* this.fieldName ? X : Y */
 					statements.append(createResultCalculation(typeNode, maker.Conditional(fieldAccessor, 
-							maker.Literal(HandlerUtil.PRIME_FOR_FALSE), maker.Literal(HandlerUtil.PRIME_FOR_TRUE))));
+							maker.Literal(HandlerUtil.primeForTrue()), maker.Literal(HandlerUtil.primeForFalse()))));
 					break;
 				case LONG: {
 						Name dollarFieldName = dollar.append(((JCVariableDecl)fieldNode.get()).name);

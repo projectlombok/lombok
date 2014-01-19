@@ -90,7 +90,7 @@ class AccessorsChain {
     return (other instanceof AccessorsPrefix3);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    final int PRIME = 277;
+    final int PRIME = 59;
     int result = 1;
     final java.lang.Object $fName = this.getName();
     result = ((result * PRIME) + (($fName == null) ? 0 : $fName.hashCode()));

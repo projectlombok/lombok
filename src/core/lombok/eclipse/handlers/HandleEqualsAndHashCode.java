@@ -272,7 +272,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		
 		final boolean isEmpty = fields.isEmpty();
 		
-		/* final int PRIME = 277; */ {
+		/* final int PRIME = X; */ {
 			/* Without fields, PRIME isn't used, and that would trigger a 'local variable not used' warning. */
 			if (!isEmpty || callSuper) {
 				LocalDeclaration primeDecl = new LocalDeclaration(PRIME, pS, pE);
@@ -281,7 +281,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 				primeDecl.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 				primeDecl.type.sourceStart = pS; primeDecl.type.sourceEnd = pE;
 				setGeneratedBy(primeDecl.type, source);
-				primeDecl.initialization = makeIntLiteral(String.valueOf(HandlerUtil.PRIME_FOR_HASHCODE).toCharArray(), source);
+				primeDecl.initialization = makeIntLiteral(String.valueOf(HandlerUtil.primeForHashcode()).toCharArray(), source);
 				statements.add(primeDecl);
 			}
 		}
@@ -313,10 +313,10 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			Expression fieldAccessor = createFieldAccessor(field, fieldAccess, source);
 			if (fType.dimensions() == 0 && token != null) {
 				if (Arrays.equals(TypeConstants.BOOLEAN, token)) {
-					/* booleanField ? 2591 : 2609 */
-					IntLiteral intFalse = makeIntLiteral(String.valueOf(HandlerUtil.PRIME_FOR_FALSE).toCharArray(), source);
-					IntLiteral intTrue = makeIntLiteral(String.valueOf(HandlerUtil.PRIME_FOR_TRUE).toCharArray(), source);
-					ConditionalExpression intForBool = new ConditionalExpression(fieldAccessor, intFalse, intTrue);
+					/* booleanField ? X : Y */
+					IntLiteral intTrue = makeIntLiteral(String.valueOf(HandlerUtil.primeForTrue()).toCharArray(), source);
+					IntLiteral intFalse = makeIntLiteral(String.valueOf(HandlerUtil.primeForFalse()).toCharArray(), source);
+					ConditionalExpression intForBool = new ConditionalExpression(fieldAccessor, intTrue, intFalse);
 					setGeneratedBy(intForBool, source);
 					statements.add(createResultCalculation(source, intForBool));
 				} else if (Arrays.equals(TypeConstants.LONG, token)) {
