@@ -36,7 +36,6 @@ import lombok.ConfigurationKeys;
 import lombok.Setter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.core.TransformationsUtil;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseHandlerUtil.FieldAccess;
@@ -234,8 +233,8 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
 		
-		Annotation[] nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
-		Annotation[] nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
+		Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
+		Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
 		List<Statement> statements = new ArrayList<Statement>(5);
 		if (nonNulls.length == 0) {
 			statements.add(assignment);

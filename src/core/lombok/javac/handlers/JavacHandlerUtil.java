@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.core.TransformationsUtil.INVALID_ON_BUILDERS;
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
 
 import java.lang.annotation.Annotation;
@@ -29,6 +29,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -36,12 +37,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
 import lombok.Data;
 import lombok.Getter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValue;
-import lombok.core.TransformationsUtil;
+import lombok.core.handlers.HandlerUtil;
 import lombok.core.TypeResolver;
 import lombok.delombok.LombokOptionsFactory;
 import lombok.experimental.Accessors;
@@ -391,7 +393,7 @@ public class JavacHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toAllGetterNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static java.util.List<String> toAllGetterNames(JavacNode field) {
-		return TransformationsUtil.toAllGetterNames(getAccessorsForField(field), field.getName(), isBoolean(field));
+		return HandlerUtil.toAllGetterNames(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean(field));
 	}
 	
 	/**
@@ -400,7 +402,7 @@ public class JavacHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toGetterName(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static String toGetterName(JavacNode field) {
-		return TransformationsUtil.toGetterName(getAccessorsForField(field), field.getName(), isBoolean(field));
+		return HandlerUtil.toGetterName(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean(field));
 	}
 	
 	/**
@@ -408,7 +410,7 @@ public class JavacHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toAllSetterNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static java.util.List<String> toAllSetterNames(JavacNode field) {
-		return TransformationsUtil.toAllSetterNames(getAccessorsForField(field), field.getName(), isBoolean(field));
+		return HandlerUtil.toAllSetterNames(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean(field));
 	}
 	
 	/**
@@ -417,7 +419,7 @@ public class JavacHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toSetterName(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static String toSetterName(JavacNode field) {
-		return TransformationsUtil.toSetterName(getAccessorsForField(field), field.getName(), isBoolean(field));
+		return HandlerUtil.toSetterName(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean(field));
 	}
 	
 	/**
@@ -425,7 +427,7 @@ public class JavacHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toAllWitherNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static java.util.List<String> toAllWitherNames(JavacNode field) {
-		return TransformationsUtil.toAllWitherNames(getAccessorsForField(field), field.getName(), isBoolean(field));
+		return HandlerUtil.toAllWitherNames(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean(field));
 	}
 	
 	/**
@@ -434,7 +436,7 @@ public class JavacHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toWitherName(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static String toWitherName(JavacNode field) {
-		return TransformationsUtil.toWitherName(getAccessorsForField(field), field.getName(), isBoolean(field));
+		return HandlerUtil.toWitherName(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean(field));
 	}
 	
 	/**
@@ -446,9 +448,7 @@ public class JavacHandlerUtil {
 		
 		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
 		
-		boolean forced = (accessors.getActualExpression("chain") != null);
-		Accessors instance = accessors.getInstance();
-		return instance.chain() || (instance.fluent() && !forced);
+		return HandlerUtil.shouldReturnThis0(accessors, field.getAst());
 	}
 	
 	public static JCExpression cloneSelfType(JavacNode field) {
@@ -481,10 +481,11 @@ public class JavacHandlerUtil {
 	}
 	
 	public static Name removePrefixFromField(JavacNode field) {
-		String[] prefixes = null;
+		java.util.List<String> prefixes = null;
 		for (JavacNode node : field.down()) {
 			if (annotationTypeMatches(Accessors.class, node)) {
-				prefixes = createAnnotation(Accessors.class, node).getInstance().prefix();
+				AnnotationValues<Accessors> ann = createAnnotation(Accessors.class, node);
+				if (ann.isExplicit("prefix")) prefixes = Arrays.asList(ann.getInstance().prefix());
 				break;
 			}
 		}
@@ -495,7 +496,8 @@ public class JavacHandlerUtil {
 			while (current != null) {
 				for (JavacNode node : current.down()) {
 					if (annotationTypeMatches(Accessors.class, node)) {
-						prefixes = createAnnotation(Accessors.class, node).getInstance().prefix();
+						AnnotationValues<Accessors> ann = createAnnotation(Accessors.class, node);
+						if (ann.isExplicit("prefix")) prefixes = Arrays.asList(ann.getInstance().prefix());
 						break outer;
 					}
 				}
@@ -503,8 +505,10 @@ public class JavacHandlerUtil {
 			}
 		}
 		
-		if (prefixes != null && prefixes.length > 0) {
-			CharSequence newName = TransformationsUtil.removePrefix(field.getName(), prefixes);
+		if (prefixes == null) prefixes = field.getAst().readConfiguration(ConfigurationKeys.ACCESSORS_PREFIX);
+		
+		if (!prefixes.isEmpty()) {
+			CharSequence newName = removePrefix(field.getName(), prefixes);
 			if (newName != null) return field.toName(newName.toString());
 		}
 		

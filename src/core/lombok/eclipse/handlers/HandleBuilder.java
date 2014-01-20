@@ -60,7 +60,6 @@ import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
-import lombok.core.TransformationsUtil;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
@@ -350,7 +349,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		boolean isBoolean = isBoolean(fd.type);
-		String setterName = fluent ? fieldNode.getName() : TransformationsUtil.toSetterName(null, fieldNode.getName(), isBoolean);
+		String setterName = fluent ? fieldNode.getName() : toSetterName(builderType.getAst(), null, fieldNode.getName(), isBoolean);
 		
 		return HandleSetter.createSetter(td, fieldNode, setterName, chain, ClassFileConstants.AccPublic,
 				source, Collections.<Annotation>emptyList(), Collections.<Annotation>emptyList());

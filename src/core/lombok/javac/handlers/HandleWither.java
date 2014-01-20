@@ -31,7 +31,6 @@ import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.core.TransformationsUtil;
 import lombok.experimental.Wither;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
@@ -212,8 +211,8 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
 		
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		List<JCAnnotation> nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
-		List<JCAnnotation> nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
+		List<JCAnnotation> nonNulls = findAnnotations(field, NON_NULL_PATTERN);
+		List<JCAnnotation> nullables = findAnnotations(field, NULLABLE_PATTERN);
 		
 		Name methodName = field.toName(witherName);
 		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(nonNulls).appendList(nullables);

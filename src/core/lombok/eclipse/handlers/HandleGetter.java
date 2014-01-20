@@ -38,7 +38,6 @@ import lombok.Delegate;
 import lombok.Getter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.core.TransformationsUtil;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.agent.PatchDelegate;
@@ -273,8 +272,8 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 			
 			Annotation[] copiedAnnotations = copyAnnotations(source,
 					onMethod.toArray(new Annotation[0]),
-					findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN),
-					findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN),
+					findAnnotations(field, NON_NULL_PATTERN),
+					findAnnotations(field, NULLABLE_PATTERN),
 					findDelegatesAndMarkAsHandled(fieldNode),
 					deprecated);
 			

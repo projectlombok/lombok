@@ -38,7 +38,6 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.core.TransformationsUtil;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.Builder;
@@ -114,7 +113,7 @@ public class HandleConstructor {
 			FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
 			if (!filterField(fieldDecl)) continue;
 			boolean isFinal = (fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0;
-			boolean isNonNull = findAnnotations(fieldDecl, TransformationsUtil.NON_NULL_PATTERN).length != 0;
+			boolean isNonNull = findAnnotations(fieldDecl, NON_NULL_PATTERN).length != 0;
 			if ((isFinal || isNonNull) && fieldDecl.initialization == null) fields.add(child);
 		}
 		return fields;
@@ -293,8 +292,8 @@ public class HandleConstructor {
 			assigns.add(assignment);
 			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
 			Argument parameter = new Argument(fieldName, fieldPos, copyType(field.type, source), Modifier.FINAL);
-			Annotation[] nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
-			Annotation[] nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
+			Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
+			Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
 			if (nonNulls.length != 0) {
 				Statement nullCheck = generateNullCheck(field, source);
 				if (nullCheck != null) nullChecks.add(nullCheck);
@@ -363,7 +362,7 @@ public class HandleConstructor {
 			
 			Argument parameter = new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL);
 
-			Annotation[] copiedAnnotations = copyAnnotations(source, findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN), findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN));
+			Annotation[] copiedAnnotations = copyAnnotations(source, findAnnotations(field, NON_NULL_PATTERN), findAnnotations(field, NULLABLE_PATTERN));
 			if (copiedAnnotations.length != 0) parameter.annotations = copiedAnnotations;
 			params.add(parameter);
 		}

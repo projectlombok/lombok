@@ -22,7 +22,7 @@
 package lombok.eclipse.handlers;
 
 import static lombok.eclipse.Eclipse.*;
-import static lombok.core.TransformationsUtil.*;
+import static lombok.core.handlers.HandlerUtil.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -38,14 +38,15 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Lombok;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValue;
-import lombok.core.TransformationsUtil;
 import lombok.core.TypeResolver;
+import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.Accessors;
@@ -1043,7 +1044,7 @@ public class EclipseHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toAllGetterNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static List<String> toAllGetterNames(EclipseNode field, boolean isBoolean) {
-		return TransformationsUtil.toAllGetterNames(getAccessorsForField(field), field.getName(), isBoolean);
+		return HandlerUtil.toAllGetterNames(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean);
 	}
 	
 	/**
@@ -1052,7 +1053,7 @@ public class EclipseHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toGetterName(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static String toGetterName(EclipseNode field, boolean isBoolean) {
-		return TransformationsUtil.toGetterName(getAccessorsForField(field), field.getName(), isBoolean);
+		return HandlerUtil.toGetterName(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean);
 	}
 	
 	/**
@@ -1060,7 +1061,7 @@ public class EclipseHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toAllSetterNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static java.util.List<String> toAllSetterNames(EclipseNode field, boolean isBoolean) {
-		return TransformationsUtil.toAllSetterNames(getAccessorsForField(field), field.getName(), isBoolean);
+		return HandlerUtil.toAllSetterNames(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean);
 	}
 	
 	/**
@@ -1069,7 +1070,7 @@ public class EclipseHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toSetterName(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static String toSetterName(EclipseNode field, boolean isBoolean) {
-		return TransformationsUtil.toSetterName(getAccessorsForField(field), field.getName(), isBoolean);
+		return HandlerUtil.toSetterName(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean);
 	}
 	
 	/**
@@ -1077,7 +1078,7 @@ public class EclipseHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toAllWitherNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static java.util.List<String> toAllWitherNames(EclipseNode field, boolean isBoolean) {
-		return TransformationsUtil.toAllWitherNames(getAccessorsForField(field), field.getName(), isBoolean);
+		return HandlerUtil.toAllWitherNames(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean);
 	}
 	
 	/**
@@ -1086,19 +1087,17 @@ public class EclipseHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toWitherName(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static String toWitherName(EclipseNode field, boolean isBoolean) {
-		return TransformationsUtil.toWitherName(getAccessorsForField(field), field.getName(), isBoolean);
+		return HandlerUtil.toWitherName(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean);
 	}
 	
 	/**
 	 * When generating a setter, the setter either returns void (beanspec) or Self (fluent).
-	 * This method scans for the {@code Accessors} annotation to figure that out.
+	 * This method scans for the {@code Accessors} annotation and associated config properties to figure that out.
 	 */
 	public static boolean shouldReturnThis(EclipseNode field) {
 		if ((((FieldDeclaration) field.get()).modifiers & ClassFileConstants.AccStatic) != 0) return false;
 		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
-		boolean forced = (accessors.getActualExpression("chain") != null);
-		Accessors instance = accessors.getInstance();
-		return instance.chain() || (instance.fluent() && !forced);
+		return shouldReturnThis0(accessors, field.getAst());
 	}
 	
 	/**
@@ -1126,10 +1125,11 @@ public class EclipseHandlerUtil {
 	}
 	
 	public static char[] removePrefixFromField(EclipseNode field) {
-		String[] prefixes = null;
+		List<String> prefixes = null;
 		for (EclipseNode node : field.down()) {
 			if (annotationTypeMatches(Accessors.class, node)) {
-				prefixes = createAnnotation(Accessors.class, node).getInstance().prefix();
+				AnnotationValues<Accessors> ann = createAnnotation(Accessors.class, node);
+				if (ann.isExplicit("prefix")) prefixes = Arrays.asList(ann.getInstance().prefix());
 				break;
 			}
 		}
@@ -1140,7 +1140,8 @@ public class EclipseHandlerUtil {
 			while (current != null) {
 				for (EclipseNode node : current.down()) {
 					if (annotationTypeMatches(Accessors.class, node)) {
-						prefixes = createAnnotation(Accessors.class, node).getInstance().prefix();
+						AnnotationValues<Accessors> ann = createAnnotation(Accessors.class, node);
+						if (ann.isExplicit("prefix")) prefixes = Arrays.asList(ann.getInstance().prefix());
 						break outer;
 					}
 				}
@@ -1148,8 +1149,9 @@ public class EclipseHandlerUtil {
 			}
 		}
 		
-		if (prefixes != null && prefixes.length > 0) {
-			CharSequence newName = TransformationsUtil.removePrefix(field.getName(), prefixes);
+		if (prefixes == null) prefixes = field.getAst().readConfiguration(ConfigurationKeys.ACCESSORS_PREFIX);
+		if (!prefixes.isEmpty()) {
+			CharSequence newName = removePrefix(field.getName(), prefixes);
 			if (newName != null) return newName.toString().toCharArray();
 		}
 		

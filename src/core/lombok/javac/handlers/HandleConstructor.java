@@ -29,7 +29,6 @@ import lombok.ConfigurationKeys;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.core.AnnotationValues;
-import lombok.core.TransformationsUtil;
 import lombok.core.AST.Kind;
 import lombok.delombok.LombokOptionsFactory;
 import lombok.experimental.Builder;
@@ -108,7 +107,7 @@ public class HandleConstructor {
 			//Skip static fields.
 			if ((fieldFlags & Flags.STATIC) != 0) continue;
 			boolean isFinal = (fieldFlags & Flags.FINAL) != 0;
-			boolean isNonNull = !findAnnotations(child, TransformationsUtil.NON_NULL_PATTERN).isEmpty();
+			boolean isNonNull = !findAnnotations(child, NON_NULL_PATTERN).isEmpty();
 			if ((isFinal || isNonNull) && fieldDecl.init == null) fields.append(child);
 		}
 		return fields.toList();
@@ -242,8 +241,8 @@ public class HandleConstructor {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			Name fieldName = removePrefixFromField(fieldNode);
 			Name rawName = field.name;
-			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, TransformationsUtil.NON_NULL_PATTERN);
-			List<JCAnnotation> nullables = findAnnotations(fieldNode, TransformationsUtil.NULLABLE_PATTERN);
+			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, NON_NULL_PATTERN);
+			List<JCAnnotation> nullables = findAnnotations(fieldNode, NULLABLE_PATTERN);
 			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
 			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, nonNulls.appendList(nullables)), fieldName, field.vartype, null);
 			params.append(param);
@@ -305,8 +304,8 @@ public class HandleConstructor {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			Name fieldName = removePrefixFromField(fieldNode);
 			JCExpression pType = cloneType(maker, field.vartype, source, typeNode.getContext());
-			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, TransformationsUtil.NON_NULL_PATTERN);
-			List<JCAnnotation> nullables = findAnnotations(fieldNode, TransformationsUtil.NULLABLE_PATTERN);
+			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, NON_NULL_PATTERN);
+			List<JCAnnotation> nullables = findAnnotations(fieldNode, NULLABLE_PATTERN);
 			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
 			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, nonNulls.appendList(nullables)), fieldName, pType, null);
 			params.append(param);

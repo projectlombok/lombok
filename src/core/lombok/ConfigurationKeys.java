@@ -21,6 +21,8 @@
  */
 package lombok;
 
+import java.util.List;
+
 import lombok.core.FlagUsageType;
 import lombok.core.configuration.ConfigurationKey;
 
@@ -261,6 +263,27 @@ public class ConfigurationKeys {
 	 * If set, <em>any</em> usage of {@code @Accessors} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> ACCESSORS_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.Accessors.flagUsage") {};
+	
+	/**
+	 * lombok configuration: {@code lombok.Accessors.prefix} += &lt;String: prefix&gt;.
+	 * 
+	 * For any class without an {@code @Accessors} that explicitly defines the {@code prefix} option, this list of prefixes is used.
+	 */
+	public static final ConfigurationKey<List<String>> ACCESSORS_PREFIX = new ConfigurationKey<List<String>>("lombok.Accessors.prefix") {};
+	
+	/**
+	 * lombok configuration: {@code lombok.Accessors.chain} += {@code true} | {@code false}.
+	 * 
+	 * For any class without an {@code @Accessors} that explicitly defines the {@code chain} option, this value is used.
+	 */
+	public static final ConfigurationKey<Boolean> ACCESSORS_CHAIN = new ConfigurationKey<Boolean>("lombok.Accessors.chain") {};
+	
+	/**
+	 * lombok configuration: {@code lombok.Accessors.fluent} += {@code true} | {@code false}.
+	 * 
+	 * For any class without an {@code @Accessors} that explicitly defines the {@code fluent} option, this value is used.
+	 */
+	public static final ConfigurationKey<Boolean> ACCESSORS_FLUENT = new ConfigurationKey<Boolean>("lombok.Accessors.fluent") {};
 	
 	// ----- Builder -----
 	

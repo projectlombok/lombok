@@ -35,7 +35,6 @@ import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.core.TransformationsUtil;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseHandlerUtil.FieldAccess;
@@ -270,8 +269,8 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
 		
-		Annotation[] nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
-		Annotation[] nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
+		Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
+		Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
 		List<Statement> statements = new ArrayList<Statement>(5);
 		if (nonNulls.length > 0) {
 			Statement nullCheck = generateNullCheck(field, source);

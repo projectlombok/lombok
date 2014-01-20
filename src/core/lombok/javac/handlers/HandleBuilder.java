@@ -50,7 +50,6 @@ import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
-import lombok.core.TransformationsUtil;
 import lombok.experimental.Builder;
 import lombok.experimental.NonFinal;
 import lombok.javac.JavacAnnotationHandler;
@@ -310,7 +309,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		boolean isBoolean = isBoolean(fieldNode);
-		String setterName = fluent ? fieldNode.getName() : TransformationsUtil.toSetterName(null, fieldNode.getName(), isBoolean);
+		String setterName = fluent ? fieldNode.getName() : toSetterName(builderType.getAst(), null, fieldNode.getName(), isBoolean);
 		
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		return HandleSetter.createSetter(Flags.PUBLIC, fieldNode, maker, setterName, chain, source, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
