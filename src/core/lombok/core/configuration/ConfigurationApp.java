@@ -122,11 +122,12 @@ public class ConfigurationApp extends LombokApp {
 			String description = key.getDescription();
 			boolean hasDescription = description != null && !description.isEmpty();
 			if (!verbose) {
+				out.println(keyName);
 				if (hasDescription) {
-					out.printf("%s: %s\n", keyName, description);
-				} else {
-					out.printf("%s\n", keyName);
+					out.print("  ");
+					out.println(description);
 				}
+				out.println();
 				continue;
 			}
 			out.printf("##\n## Key : %s\n## Type: %s\n", keyName, type);
@@ -144,7 +145,7 @@ public class ConfigurationApp extends LombokApp {
 			out.println("#\n");
 		}
 		if (!verbose) {
-			out.println("\nUse --verbose for more information.");
+			out.println("Use --verbose for more information.");
 		}
 	}
 

@@ -37,7 +37,7 @@ public final class ConfigurationDataType {
 				return value;
 			}
 			@Override public String description() {
-				return "String";
+				return "string";
 			}
 			@Override public String exampleValue() {
 				return "<text>";
@@ -48,7 +48,7 @@ public final class ConfigurationDataType {
 				return Integer.parseInt(value);
 			}
 			@Override public String description() {
-				return "Integer";
+				return "int";
 			}
 			@Override public String exampleValue() {
 				return "<int>";
@@ -59,7 +59,7 @@ public final class ConfigurationDataType {
 				return Long.parseLong(value);
 			}
 			@Override public String description() {
-				return "Long";
+				return "long";
 			}
 			@Override public String exampleValue() {
 				return "<long>";
@@ -70,7 +70,7 @@ public final class ConfigurationDataType {
 				return Double.parseDouble(value);
 			}
 			@Override public String description() {
-				return "Double";
+				return "double";
 			}
 			@Override public String exampleValue() {
 				return "<double>";
@@ -81,7 +81,7 @@ public final class ConfigurationDataType {
 				return Boolean.parseBoolean(value);
 			}
 			@Override public String description() {
-				return "Boolean";
+				return "boolean";
 			}
 			@Override public String exampleValue() {
 				return "[false | true]";
@@ -92,7 +92,7 @@ public final class ConfigurationDataType {
 				return TypeName.valueOf(value);
 			}
 			@Override public String description() {
-				return "TypeName";
+				return "type-name";
 			}
 			@Override public String exampleValue() {
 				return "<fully.qualified.Type>";
@@ -113,7 +113,7 @@ public final class ConfigurationDataType {
 				}
 			}
 			@Override public String description() {
-				return rawType.getName();
+				return "enum (" + rawType.getName() + ")";
 			}
 			@Override public String exampleValue() {
 				return Arrays.toString(rawType.getEnumConstants()).replace(",", " |");
@@ -171,20 +171,8 @@ public final class ConfigurationDataType {
 	}
 	
 	@Override
-	public int hashCode() {
-		return (isList ? 1231 : 1237) + parser.hashCode();
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof ConfigurationDataType)) return false;
-		ConfigurationDataType other = (ConfigurationDataType) obj;
-		return isList == other.isList && parser.equals(other.parser);
-	}
-	
-	@Override
 	public String toString() {
-		if (isList) return "List<" + parser.description() + ">";
+		if (isList) return "list of " + parser.description();
 		return parser.description();
 	}
 	
