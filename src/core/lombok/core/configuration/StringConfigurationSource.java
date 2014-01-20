@@ -42,7 +42,7 @@ public class StringConfigurationSource implements ConfigurationSource {
 		
 		Map<String, Result> values = new TreeMap<String, Result>(String.CASE_INSENSITIVE_ORDER);
 		
-		Map<String, ConfigurationKey<?>> registeredKeys = ConfigurationKey.registeredKeysMap();
+		Map<String, ConfigurationKey<?>> registeredKeys = ConfigurationKey.registeredKeys();
 		int lineNumber = 0;
 		Matcher lineMatcher = NEWLINE_FINDER.matcher(content);
 		while (lineMatcher.find()) {

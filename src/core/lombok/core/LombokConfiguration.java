@@ -60,7 +60,7 @@ public class LombokConfiguration {
 		// create a new empty 'cache' to make sure all problems are reported
 		cache.reset();
 		ConfigurationResolver resolver = new BubblingConfigurationResolver(cache.sourcesForJavaFile(ast.getAbsoluteFileLocation(), reporter));
-		for (ConfigurationKey<?> key : ConfigurationKey.registeredKeys()) {
+		for (ConfigurationKey<?> key : ConfigurationKey.registeredKeys().values()) {
 			Object value = resolver.resolve(key);
 			if (value == null || value instanceof List<?> && ((List<?>)value).isEmpty()) continue;
 			stream.printf("%s: %s\n", key.getKeyName(), value);

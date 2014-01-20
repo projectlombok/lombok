@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2013-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,6 @@
 package lombok.core.configuration;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Pattern;
@@ -36,7 +35,7 @@ import java.util.regex.Pattern;
  * </pre>
  */
 public abstract class ConfigurationKey<T> {
-	private static final Pattern VALID_NAMES = Pattern.compile("[\\-_a-zA-Z][\\-\\.\\w]*(?<![\\.\\-])");
+	private static final Pattern VALID_NAMES = Pattern.compile("[-_a-zA-Z][-.\\w]*(?<![-.])");
 	
 	private static final TreeMap<String, ConfigurationKey<?>> registeredKeys = new TreeMap<String, ConfigurationKey<?>>(String.CASE_INSENSITIVE_ORDER);
 	private static Map<String, ConfigurationKey<?>> copy;
@@ -44,11 +43,6 @@ public abstract class ConfigurationKey<T> {
 	private final String keyName;
 	private final String description;
 	private final ConfigurationDataType type;
-	
-	@Deprecated
-	public ConfigurationKey(String keyName) {
-		this(keyName, null);
-	}
 	
 	public ConfigurationKey(String keyName, String description) {
 		this.keyName = checkName(keyName);
@@ -63,7 +57,7 @@ public abstract class ConfigurationKey<T> {
 		return keyName;
 	}
 	
-	public String getDescription() {
+	public final String getDescription() {
 		return description;
 	}
 	
@@ -85,24 +79,11 @@ public abstract class ConfigurationKey<T> {
 	 * Returns a copy of the currently registered keys.
 	 */
 	@SuppressWarnings("unchecked")
-	public static Map<String, ConfigurationKey<?>> registeredKeysMap() {
+	public static Map<String, ConfigurationKey<?>> registeredKeys() {
 		synchronized (registeredKeys) {
 			if (copy == null) copy = Collections.unmodifiableMap((Map<String, ConfigurationKey<?>>) registeredKeys.clone());
 			return copy;
 		}
-	}
-	
-	
-	/** 
-	 * Returns a copy of the currently registered keys.
-	 */
-	public static Iterable<ConfigurationKey<?>> registeredKeys() {
-		final Map<String, ConfigurationKey<?>> map = registeredKeysMap();
-		return new Iterable<ConfigurationKey<?>>() {
-			@Override public Iterator<ConfigurationKey<?>> iterator() {
-				return map.values().iterator();
-			}
-		};
 	}
 	
 	private static void registerKey(String keyName, ConfigurationKey<?> key) {

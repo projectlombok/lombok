@@ -116,7 +116,7 @@ public class ConfigurationApp extends LombokApp {
 	}
 	
 	private void printConfiguration(PrintStream out, boolean verbose) {
-		for (ConfigurationKey<?> key : ConfigurationKey.registeredKeys()) {
+		for (ConfigurationKey<?> key : ConfigurationKey.registeredKeys().values()) {
 			String keyName = key.getKeyName();
 			ConfigurationDataType type = key.getType();
 			String description = key.getDescription();
