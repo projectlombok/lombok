@@ -1,3 +1,4 @@
+//skip compare content
 @lombok.experimental.Builder
 class BuilderInvalidUse {
 	private int something;

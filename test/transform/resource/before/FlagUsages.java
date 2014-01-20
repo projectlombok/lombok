@@ -1,3 +1,4 @@
+//skip compare content
 //CONF: lombok.Getter.flagUsage = WARNING
 //CONF: lombok.experimental.flagUsage = ERROR
 public class FlagUsages {

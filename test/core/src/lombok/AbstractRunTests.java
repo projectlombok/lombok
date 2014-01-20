@@ -36,9 +36,12 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import org.junit.Assert;
+
 import lombok.core.AST;
 import lombok.core.LombokConfiguration;
 import lombok.core.LombokImmutableList;
+import lombok.core.configuration.ConfigurationKeysLoader;
 import lombok.core.configuration.ConfigurationResolver;
 import lombok.core.configuration.ConfigurationResolverFactory;
 import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
@@ -51,8 +54,9 @@ public abstract class AbstractRunTests {
 	}
 	
 	public boolean compareFile(DirectoryRunner.TestParams params, File file) throws Throwable {
+		ConfigurationKeysLoader.LoaderLoader.loadAllConfigurationKeys();
 		final LombokTestSource sourceDirectives = LombokTestSource.readDirectives(file);
-		if (sourceDirectives.isIgnore()) return false;
+		if (sourceDirectives.isIgnore() || !sourceDirectives.versionWithinLimit(params.getVersion())) return false;
 		
 		String fileName = file.getName();
 		LombokTestSource expected = LombokTestSource.read(params.getAfterDirectory(), params.getMessagesDirectory(), fileName);
@@ -70,7 +74,7 @@ public abstract class AbstractRunTests {
 		
 		transformCode(messages, writer, file);
 		
-		compare(file.getName(), expected, writer.toString(), messages, params.printErrors());
+		compare(file.getName(), expected, writer.toString(), messages, params.printErrors(), sourceDirectives.isSkipCompareContent() || expected.isSkipCompareContent());
 		return true;
 	}
 	
@@ -124,8 +128,8 @@ public abstract class AbstractRunTests {
 		}
 	}
 	
-	private void compare(String name, LombokTestSource expected, String actualFile, LinkedHashSet<CompilerMessage> actualMessages, boolean printErrors) throws Throwable {
-		if (expected.getContent() != null) try {
+	private void compare(String name, LombokTestSource expected, String actualFile, LinkedHashSet<CompilerMessage> actualMessages, boolean printErrors, boolean skipCompareContent) throws Throwable {
+		if (!skipCompareContent) try {
 			compareContent(name, expected.getContent(), actualFile);
 		} catch (Throwable e) {
 			if (printErrors) {
@@ -209,7 +213,9 @@ public abstract class AbstractRunTests {
 		actualLines = removeBlanks(actualLines);
 		
 		int size = Math.min(expectedLines.length, actualLines.length);
-		if (size == 0) return;
+		if (size == 0 && expectedLines.length + actualLines.length > 0) {
+			Assert.fail("Missing / empty expected file.");
+		}
 		
 		for (int i = 0; i < size; i++) {
 			String expected = expectedLines[i];
