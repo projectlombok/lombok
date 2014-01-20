@@ -40,16 +40,15 @@ public class BubblingConfigurationResolver implements ConfigurationResolver {
 	@Override
 	public <T> T resolve(ConfigurationKey<T> key) {
 		boolean isList = key.getType().isList();
-		List<ListModification> listModifications = null;
+		List<List<ListModification>> listModificationsList = null;
 		for (ConfigurationSource source : sources) {
 			Result result = source.resolve(key);
 			if (result == null) continue;
 			if (isList) {
-				if (listModifications == null) {
-					listModifications = new ArrayList<ListModification>((List<ListModification>)result.getValue());
-				} else {
-					listModifications.addAll(0, (List<ListModification>)result.getValue());
+				if (listModificationsList == null) {
+					listModificationsList = new ArrayList<List<ListModification>>();
 				}
+				listModificationsList.add((List<ListModification>)result.getValue());
 			}
 			if (result.isAuthoritative()) {
 				if (isList) {
@@ -61,14 +60,17 @@ public class BubblingConfigurationResolver implements ConfigurationResolver {
 		if (!isList) {
 			return null;
 		}
-		if (listModifications == null) {
+		if (listModificationsList == null) {
 			return (T) Collections.emptyList();
 		}
 		List<Object> listValues = new ArrayList<Object>();
-		for (ListModification modification : listModifications) {
-			listValues.remove(modification.getValue());
-			if (modification.isAdded()) {
-				listValues.add(modification.getValue());
+		Collections.reverse(listModificationsList);
+		for (List<ListModification> listModifications : listModificationsList) {
+			for (ListModification modification : listModifications) {
+				listValues.remove(modification.getValue());
+				if (modification.isAdded()) {
+					listValues.add(modification.getValue());
+				}
 			}
 		}
 		return (T) listValues;
