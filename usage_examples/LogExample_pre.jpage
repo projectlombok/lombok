@@ -7,11 +7,3 @@ public class LogExample {
 		log.error("Something's wrong here");
 	}
 }
-
-@Log(java.util.List.class)
-public class LogExampleOther {
-	
-	public static void main(String... args) {
-		log.warn("Something might be wrong here");
-	}
-}
