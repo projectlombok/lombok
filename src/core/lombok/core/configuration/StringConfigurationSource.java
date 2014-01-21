@@ -23,77 +23,57 @@ package lombok.core.configuration;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import lombok.core.configuration.ConfigurationParser.Collector;
 
 public class StringConfigurationSource implements ConfigurationSource {
+	private final Map<ConfigurationKey<?>, Result> values;
 	
-	private static final Pattern LINE = Pattern.compile("(?:clear\\s+([^=]+))|(?:(\\S*?)\\s*([-+]?=)\\s*(.*?))");
-	
-	private final Map<String, Result> values;
-	
-	private static final Pattern NEWLINE_FINDER = Pattern.compile("^\\s*(.*?)\\s*$", Pattern.MULTILINE);
 	public static ConfigurationSource forString(CharSequence content, ConfigurationProblemReporter reporter, String contentDescription) {
-		if (reporter == null) throw new NullPointerException("reporter");
 		
-		Map<String, Result> values = new TreeMap<String, Result>(String.CASE_INSENSITIVE_ORDER);
+		final Map<ConfigurationKey<?>, Result> values = new HashMap<ConfigurationKey<?>, Result>();
 		
-		Map<String, ConfigurationKey<?>> registeredKeys = ConfigurationKey.registeredKeys();
-		int lineNumber = 0;
-		Matcher lineMatcher = NEWLINE_FINDER.matcher(content);
-		while (lineMatcher.find()) {
-			CharSequence line = content.subSequence(lineMatcher.start(1), lineMatcher.end(1));
-			lineNumber++;
-			if (line.length() == 0 || line.charAt(0) == '#') continue;
-
-			Matcher matcher = LINE.matcher(line);
-			if (!matcher.matches()) {
-				reporter.report(contentDescription, "No valid line", lineNumber, line);
-				continue;
+		new ConfigurationParser(reporter).parse(content, contentDescription, new Collector() {
+			@Override public void clear(ConfigurationKey<?> key, String contentDescription, int lineNumber) {
+				values.put(key, new Result(null, true));
 			}
 			
-			String operator = null;
-			String keyName = null;
-			String value;
-			if (matcher.group(1) == null) {
-				keyName = matcher.group(2);
-				operator = matcher.group(3);
-				value = matcher.group(4);
-			} else {
-				keyName = matcher.group(1);
-				operator = "clear";
-				value = null;
-			}
-			ConfigurationKey<?> key = registeredKeys.get(keyName);
-			if (key == null) {
-				reporter.report(contentDescription, "Unknown key '" + keyName + "'", lineNumber, line);
-				continue;
+			@Override public void set(ConfigurationKey<?> key, Object value, String contentDescription, int lineNumber) {
+				values.put(key, new Result(value, true));
 			}
 			
-			ConfigurationDataType type = key.getType();
-			boolean listOperator = operator.equals("+=") || operator.equals("-=");
-			if (listOperator && !type.isList()) {
-				reporter.report(contentDescription, "'" + keyName + "' is not a list and doesn't support " + operator + " (only = and clear)", lineNumber, line);
-				continue;
-			}
-			if (operator.equals("=") && type.isList()) {
-				reporter.report(contentDescription, "'" + keyName + "' is a list and cannot be assigned to (use +=, -= and clear instead)", lineNumber, line);
-				continue;
+			@Override public void add(ConfigurationKey<?> key, Object value, String contentDescription, int lineNumber) {
+				modifyList(key, value, true);
 			}
 			
-			processResult(values, keyName, operator, value, type, reporter, contentDescription, lineNumber, line);
-		}
+			@Override public void remove(ConfigurationKey<?> key, Object value, String contentDescription, int lineNumber) {
+				modifyList(key, value, false);
+			}
+			
+			@SuppressWarnings("unchecked")
+			private void modifyList(ConfigurationKey<?> key, Object value, boolean add) {
+				Result result = values.get(key);
+				List<ListModification> list;
+				if (result == null || result.getValue() == null) {
+					list = new ArrayList<ConfigurationSource.ListModification>();
+					values.put(key, new Result(list, result != null));
+				} else {
+					list = (List<ListModification>) result.getValue();
+				}
+				list.add(new ListModification(value, add));
+			}
+		});
 		
 		return new StringConfigurationSource(values);
 	}
 	
-	private StringConfigurationSource(Map<String, Result> values) {
-		this.values = new TreeMap<String, Result>(String.CASE_INSENSITIVE_ORDER);
-		for (Entry<String, Result> entry : values.entrySet()) {
+	private StringConfigurationSource(Map<ConfigurationKey<?>, Result> values) {
+		this.values = new HashMap<ConfigurationKey<?>, Result>();
+		for (Entry<ConfigurationKey<?>, Result> entry : values.entrySet()) {
 			Result result = entry.getValue();
 			if (result.getValue() instanceof List<?>) {
 				this.values.put(entry.getKey(), new Result(Collections.unmodifiableList((List<?>) result.getValue()), result.isAuthoritative()));
@@ -103,31 +83,8 @@ public class StringConfigurationSource implements ConfigurationSource {
 		}
 	}
 	
-	private static void processResult(Map<String, Result> values, String keyName, String operator, String value, ConfigurationDataType type, ConfigurationProblemReporter reporter, String contentDescription, int lineNumber, CharSequence line) {
-		Object element = null;
-		if (value != null) try {
-			element = type.getParser().parse(value);
-		} catch (Exception e) {
-			reporter.report(contentDescription, "Error while parsing the value for '" + keyName + "' value '" + value + "' (should be a " + type.getParser().description() + ")", lineNumber, line);
-			return;
-		}
-		
-		if (operator.equals("clear") || operator.equals("=")) {
-			if (element == null && type.isList()) {
-				element = new ArrayList<ListModification>();
-			}
-			values.put(keyName, new Result(element, true));
-		} else {
-			Result result = values.get(keyName);
-			@SuppressWarnings("unchecked")
-			List<ListModification> list = result == null ? new ArrayList<ListModification>() : (List<ListModification>) result.getValue();
-			if (result == null) values.put(keyName, new Result(list, false));
-			list.add(new ListModification(element, operator.equals("+=")));
-		}
-	}
-	
 	@Override 
 	public Result resolve(ConfigurationKey<?> key) {
-		return values.get(key.getKeyName());
+		return values.get(key);
 	}
 }

@@ -21,12 +21,27 @@
  */
 package lombok.core.configuration;
 
+import static lombok.core.configuration.FileSystemSourceCache.fileToString;
+
+import java.io.File;
 import java.io.PrintStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
+import lombok.ConfigurationKeys;
 import lombok.core.LombokApp;
+import lombok.core.configuration.ConfigurationParser.Collector;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -40,6 +55,7 @@ import com.zwitserloot.cmdreader.Shorthand;
 
 @ProviderFor(LombokApp.class)
 public class ConfigurationApp extends LombokApp {
+	private static final URI NO_CONFIG = URI.create("");
 	
 	@Override public String getAppName() {
 		return "configuration";
@@ -68,6 +84,10 @@ public class ConfigurationApp extends LombokApp {
 		@Description("Displays more information.")
 		boolean verbose = false;
 		
+		@Shorthand("k")
+		@Description("Limit the result to these keys.")
+		private List<String> key = new ArrayList<String>();
+		
 		@Shorthand({"h", "?"})
 		@Description("Shows this help text.")
 		boolean help = false;
@@ -89,34 +109,21 @@ public class ConfigurationApp extends LombokApp {
 		}
 		
 		ConfigurationKeysLoader.LoaderLoader.loadAllConfigurationKeys();
+		Collection<ConfigurationKey<?>> keys = checkKeys(args.key);
+		if (keys == null) return 1;
 		
 		if (args.generate) {
-			printConfiguration(System.out, args.verbose);
-		} else {
-			System.out.println("Not generating anything...");
+			return generate(System.out, args.verbose, keys);
 		}
-			
 		
-//		List<File> filesToProcess = PostCompilerApp.cmdArgsToFiles(args.classFiles);
-		int filesVisited = 0;
-//		boolean moreThanOne = filesToProcess.size() > 1;
-//		for (File file : filesToProcess) {
-//			if (!file.exists() || !file.isFile()) {
-//				System.out.printf("Cannot find file '%s'\n", file.getAbsolutePath());
-//				continue;
-//			}
-//			filesVisited++;
-//			if (moreThanOne) System.out.printf("Processing '%s'\n", file.getAbsolutePath());
-//			System.out.println(new ClassFileMetaData(PostCompilerApp.readFile(file)).poolContent());
-//		}
-//		
-//		if (moreThanOne) System.out.printf("Total files visited: %d\n", filesVisited);
+		TreeMap<URI, Set<String>> sharedDirectories = findSharedDirectories(args.paths);
+		if (sharedDirectories == null) return 1;
 		
-		return filesVisited == 0 ? 1 : 0;
+		return display(System.out, args.verbose, sharedDirectories, keys, args.paths.size() == 1, !args.key.isEmpty());
 	}
 	
-	private void printConfiguration(PrintStream out, boolean verbose) {
-		for (ConfigurationKey<?> key : ConfigurationKey.registeredKeys().values()) {
+	private int generate(PrintStream out, boolean verbose, Collection<ConfigurationKey<?>> keys) {
+		for (ConfigurationKey<?> key : keys) {
 			String keyName = key.getKeyName();
 			ConfigurationDataType type = key.getType();
 			String description = key.getDescription();
@@ -136,20 +143,220 @@ public class ConfigurationApp extends LombokApp {
 			}
 			out.println("##\n## Examples:\n#");
 			out.printf("# clear %s\n", keyName);
+			String exampleValue = type.getParser().exampleValue();
 			if (type.isList()) {
-				out.printf("# %s += %s\n", keyName, exampleValue(type));
-				out.printf("# %s -= %s\n", keyName, exampleValue(type));
+				out.printf("# %s += %s\n", keyName, exampleValue);
+				out.printf("# %s -= %s\n", keyName, exampleValue);
 			} else {
-				out.printf("# %s = %s\n", keyName, exampleValue(type));
+				out.printf("# %s = %s\n", keyName, exampleValue);
 			}
 			out.println("#\n");
 		}
 		if (!verbose) {
 			out.println("Use --verbose for more information.");
 		}
+		return 0;
 	}
+	
+	private int display(PrintStream out, boolean verbose, TreeMap<URI, Set<String>> sharedDirectories, Collection<ConfigurationKey<?>> keys, boolean onlyOne, boolean explicitKeys) throws Exception {
+		Set<String> none = sharedDirectories.remove(NO_CONFIG);
+		if (none != null) {
+			if (none.size() == 1) {
+				out.printf("No 'lombok.config' found for '%s'.\n", none.iterator().next());
+			} else {
+				out.println("No 'lombok.config' found for: ");
+				for (String path : none) out.printf("- %s\n", path);
+			}
+		}
+		
+		final List<String> problems = new ArrayList<String>();
+		ConfigurationProblemReporter reporter = new ConfigurationProblemReporter() {
+			@Override public void report(String sourceDescription, String problem, int lineNumber, CharSequence line) {
+				problems.add(String.format("%s: %s (%s:%d)", problem, line, sourceDescription, lineNumber));
+			}
+		};
+		
+		FileSystemSourceCache cache = new FileSystemSourceCache();
+		boolean first = true;
+		for (Entry<URI, Set<String>> entry : sharedDirectories.entrySet()) {
+			if (!first) {
+				out.print("\n\n");
+			}
+			Set<String> paths = entry.getValue();
+			if (paths.size() == 1) {
+				if (!onlyOne) out.printf("Configuration for '%s'.\n\n", paths.iterator().next());
+			} else {
+				out.printf("Configuration for:\n", paths.iterator().next());
+				for (String path : paths) out.printf("- %s\n", path);
+				out.println();
+			}
+			URI directory = entry.getKey();
+			ConfigurationResolver resolver = new BubblingConfigurationResolver(cache.sourcesForDirectory(directory, reporter));
+			Map<ConfigurationKey<?>, ? extends Collection<String>> traces = trace(keys, directory, verbose);
+			boolean printed = false;
+			for (ConfigurationKey<?> key : keys) {
+				Object value = resolver.resolve(key);
+				if (value == null || (value instanceof List<?> && ((List<?>)value).isEmpty())) {
+					if (explicitKeys) {
+						if (printed && verbose) out.println();
+						printValue(out, key, value, verbose, traces.get(key));
+						printed = true;
+					}
+				} else {
+					if (printed && verbose) out.println();
+					printValue(out, key, value, verbose, traces.get(key));
+					printed = true;
+				}
+			}
+			if (!printed) out.println("<default>");
+			first = false;
+		}
+		
+		if (!problems.isEmpty()) {
+			out.printf("\nProblems in the configuration files: \n");
+			for (String problem : problems) out.printf("- %s\n", problem);
+		}
+		
+		return 0;
+	}
+	
+	private void printValue(PrintStream out, ConfigurationKey<?> key, Object value, boolean verbose, Collection<String> history) {
+		if (verbose) out.printf("# %s\n", key.getDescription());
+		if (value == null) {
+			out.printf("clear %s\n", key.getKeyName());
+		} else if (value instanceof List<?>) {
+			for (Object element : (List<?>)value) out.printf("%s += %s\n", key.getKeyName(), element);
+		} else {
+			out.printf("%s = %s\n", key.getKeyName(), value);
+		}
+		if (!verbose) return;
+		for (String modification : history) out.printf("# %s\n", modification);
+	}
+	
+	private static final ConfigurationProblemReporter VOID = new ConfigurationProblemReporter() {
+		@Override public void report(String sourceDescription, String problem, int lineNumber, CharSequence line) {}
+	};
+	
+	private Map<ConfigurationKey<?>, ? extends Collection<String>> trace(Collection<ConfigurationKey<?>> keys, URI directory, boolean verbose) throws Exception {
+		if (!verbose) return Collections.emptyMap();
+		
+		Map<ConfigurationKey<?>, List<String>> result = new HashMap<ConfigurationKey<?>, List<String>>();
+		for (ConfigurationKey<?> key : keys) result.put(key, new ArrayList<String>());
+		
+		boolean stopBubbling = false;
+		String previousFileName = null;
+		for (File currentDirectory = new File(directory); currentDirectory != null && !stopBubbling; currentDirectory = currentDirectory.getParentFile()) {
+			File configFile = new File(currentDirectory, "lombok.config");
+			if (!configFile.exists() || !configFile.isFile()) continue;
+			
+			Map<ConfigurationKey<?>, List<String>> traces = trace(fileToString(configFile), configFile.getAbsolutePath(), keys);
+			
+			stopBubbling = stopBubbling(traces.get(ConfigurationKeys.STOP_BUBBLING));
+			for (ConfigurationKey<?> key : keys) {
+				List<String> modifications = traces.get(key);
+				if (modifications == null) {
+					modifications = new ArrayList<String>();
+					modifications.add("     <'" + key.getKeyName() + "' not mentioned>");
+				}
+				if (previousFileName != null) {
+					modifications.add("");
+					modifications.add(previousFileName + ":");
+				}
+				result.get(key).addAll(0, modifications);
+			}
+			previousFileName = configFile.getAbsolutePath();
+		}
+		for (ConfigurationKey<?> key : keys) {
+			result.get(key).add(0, previousFileName + (stopBubbling ? " (stop bubbling):" : " (highest found):"));
+		}
+		return result;
+	}
+	
+	private Map<ConfigurationKey<?>, List<String>> trace(String content, String contentDescription, final Collection<ConfigurationKey<?>> keys) {
+		final Map<ConfigurationKey<?>, List<String>> result = new HashMap<ConfigurationKey<?>, List<String>>();
+		
+		Collector collector = new Collector() {
+			@Override public void clear(ConfigurationKey<?> key, String contentDescription, int lineNumber) {
+				trace(key, "clear " + key.getKeyName(), lineNumber);
+			}
 
-	private String exampleValue(ConfigurationDataType type) {
-		return type.getParser().exampleValue();
+			@Override public void set(ConfigurationKey<?> key, Object value, String contentDescription, int lineNumber) {
+				trace(key, key.getKeyName() + " = " + value, lineNumber);
+			}
+			
+			@Override public void add(ConfigurationKey<?> key, Object value, String contentDescription, int lineNumber) {
+				trace(key, key.getKeyName() + " += " + value, lineNumber);
+			}
+			
+			@Override public void remove(ConfigurationKey<?> key, Object value, String contentDescription, int lineNumber) {
+				trace(key, key.getKeyName() + " -= " + value, lineNumber);
+			}
+			
+			private void trace(ConfigurationKey<?> key, String message, int lineNumber) {
+				if (!keys.contains(key)) return;
+				List<String> traces = result.get(key);
+				if (traces == null) {
+					traces = new ArrayList<String>();
+					result.put(key, traces);
+				}
+				traces.add(String.format("%4d: %s", lineNumber, message));
+			}
+		};
+		new ConfigurationParser(VOID).parse(content, contentDescription, collector);
+		return result;
+	}
+	
+	private boolean stopBubbling(List<String> stops) {
+		return stops != null && !stops.isEmpty() && stops.get(stops.size() -1).endsWith("true");
+	}
+	
+	private Collection<ConfigurationKey<?>> checkKeys(List<String> keyList) {
+		Map<String, ConfigurationKey<?>> registeredKeys = ConfigurationKey.registeredKeys();
+		if (keyList.isEmpty()) return registeredKeys.values();
+		
+		Collection<ConfigurationKey<?>> keys = new ArrayList<ConfigurationKey<?>>();
+		for (String keyName : keyList) {
+			ConfigurationKey<?> key = registeredKeys.get(keyName);
+			if (key == null) {
+				System.err.printf("Unknown key '%s'\n", keyName);
+				return null;
+			}
+			keys.remove(key);
+			keys.add(key);
+		}
+		return keys;
+	}
+	
+	private TreeMap<URI, Set<String>> findSharedDirectories(List<String> paths) {
+		TreeMap<URI,Set<String>> sharedDirectories = new TreeMap<URI, Set<String>>(new Comparator<URI>() {
+			@Override public int compare(URI o1, URI o2) {
+				return o1.toString().compareTo(o2.toString());
+			}
+		});
+		for (String path : paths) {
+			File file = new File(path);
+			if (!file.exists()) {
+				System.err.printf("File not found: '%s'\n", path);
+				return null;
+			}
+			URI first = findFirstLombokDirectory(file);
+			Set<String> sharedBy = sharedDirectories.get(first);
+			if (sharedBy == null) {
+				sharedBy = new TreeSet<String>();
+				sharedDirectories.put(first, sharedBy);
+			}
+			sharedBy.add(path);
+		}
+		return sharedDirectories;
+	}
+	
+	private URI findFirstLombokDirectory(File file) {
+		File current = new File(file.toURI().normalize());
+		if (file.isFile()) current = current.getParentFile();
+		while (current != null) {
+			if (new File(current, "lombok.config").exists()) return current.toURI();
+			current = current.getParentFile();
+		}
+		return NO_CONFIG;
 	}
 }

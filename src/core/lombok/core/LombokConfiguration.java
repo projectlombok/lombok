@@ -21,13 +21,9 @@
  */
 package lombok.core;
 
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-
 import lombok.core.configuration.BubblingConfigurationResolver;
-import lombok.core.configuration.ConfigurationProblemReporter;
 import lombok.core.configuration.ConfigurationKey;
+import lombok.core.configuration.ConfigurationProblemReporter;
 import lombok.core.configuration.ConfigurationResolver;
 import lombok.core.configuration.ConfigurationResolverFactory;
 import lombok.core.configuration.FileSystemSourceCache;
@@ -46,35 +42,6 @@ public class LombokConfiguration {
 	
 	static <T> T read(ConfigurationKey<T> key, AST<?, ?, ?> ast) {
 		return configurationResolverFactory.createResolver(ast).resolve(key);
-	}
-	
-	public static void writeConfiguration(AST<?, ?, ?> ast, PrintStream stream) {
-		final List<String> problems = new ArrayList<String>();
-		ConfigurationProblemReporter reporter = new ConfigurationProblemReporter() {
-			@Override public void report(String sourceDescription, String problem, int lineNumber, CharSequence line) {
-				problems.add(String.format("%s (%s:%d)", problem, sourceDescription, lineNumber));
-			}
-		};
-		
-		stream.printf("Combined lombok configuration for '%s'\n\n", ast.getAbsoluteFileLocation());
-		// create a new empty 'cache' to make sure all problems are reported
-		cache.reset();
-		ConfigurationResolver resolver = new BubblingConfigurationResolver(cache.sourcesForJavaFile(ast.getAbsoluteFileLocation(), reporter));
-		for (ConfigurationKey<?> key : ConfigurationKey.registeredKeys().values()) {
-			Object value = resolver.resolve(key);
-			if (value == null || value instanceof List<?> && ((List<?>)value).isEmpty()) continue;
-			stream.printf("%s: %s\n", key.getKeyName(), value);
-		}
-		
-		if (!problems.isEmpty()) {
-			stream.println();
-			stream.printf("Problems encountered during parsing: %d\n", problems.size());
-			int i = 1;
-			for (String problem : problems) {
-				stream.printf("%4d - %s\n", i, problem);
-				i++;
-			}
-		}
 	}
 	
 	private static ConfigurationResolverFactory createFileSystemBubblingResolverFactory() {

@@ -42,9 +42,17 @@ public class FileSystemSourceCache {
 	
 	private final ConcurrentMap<File, Content> cache = new ConcurrentHashMap<File, Content>();
 	
-	public Iterable<ConfigurationSource> sourcesForJavaFile(URI javaFile, final ConfigurationProblemReporter reporter) {
+	public Iterable<ConfigurationSource> sourcesForJavaFile(URI javaFile, ConfigurationProblemReporter reporter) {
 		if (javaFile == null) return Collections.emptyList();
-		final File directory = new File(javaFile.normalize()).getParentFile();
+		return sourcesForDirectory(new File(javaFile.normalize()).getParentFile(), reporter);
+	}
+	
+	public Iterable<ConfigurationSource> sourcesForDirectory(URI directory, ConfigurationProblemReporter reporter) {
+		if (directory == null) return Collections.emptyList();
+		return sourcesForDirectory(new File(directory.normalize()), reporter);
+	}
+	
+	private Iterable<ConfigurationSource> sourcesForDirectory(final File directory, final ConfigurationProblemReporter reporter) {
 		return new Iterable<ConfigurationSource>() {
 			@Override 
 			public Iterator<ConfigurationSource> iterator() {
@@ -133,7 +141,7 @@ public class FileSystemSourceCache {
 		}
 	};
 	
-	private String fileToString(File configFile) throws Exception {
+	static String fileToString(File configFile) throws Exception {
 		byte[] b = buffers.get();
 		FileInputStream fis = new FileInputStream(configFile);
 		try {

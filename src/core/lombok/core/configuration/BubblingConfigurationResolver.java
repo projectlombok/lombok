@@ -66,7 +66,7 @@ public class BubblingConfigurationResolver implements ConfigurationResolver {
 		List<Object> listValues = new ArrayList<Object>();
 		Collections.reverse(listModificationsList);
 		for (List<ListModification> listModifications : listModificationsList) {
-			for (ListModification modification : listModifications) {
+			if (listModifications != null) for (ListModification modification : listModifications) {
 				listValues.remove(modification.getValue());
 				if (modification.isAdded()) {
 					listValues.add(modification.getValue());
