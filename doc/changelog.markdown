@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.12.5 "Edgy Guinea Pig"
+* BUGFIX: Copying javadoc to getters / setters / withers would copy non-relevant sections too. [Issue #585](https://code.google.com/p/projectlombok/issues/detail?id=585).
 * DETAIL: {Delombok} Inside enum bodies the delombok formatter didn't respect the emptyLines directive [Issue #629](https://code.google.com/p/projectlombok/issues/detail?id=629).
 * DETAIL: Use smaller primes (<127) for generating hashcodes [Issue #625](https://code.google.com/p/projectlombok/issues/detail?id=625)
 

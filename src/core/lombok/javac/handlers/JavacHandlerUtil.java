@@ -1294,6 +1294,13 @@ public class JavacHandlerUtil {
 		return m.replaceAll("");
 	}
 	
+	public static String stripSectionsFromJavadoc(String javadoc) {
+		Matcher m = SECTION_FINDER.matcher(javadoc);
+		if (!m.find()) return javadoc;
+		
+		return javadoc.substring(0, m.start());
+	}
+	
 	public static String[] splitJavadocOnSectionIfPresent(String javadoc, String sectionName) {
 		Matcher m = SECTION_FINDER.matcher(javadoc);
 		int getterSectionHeaderStart = -1;
@@ -1320,15 +1327,17 @@ public class JavacHandlerUtil {
 	}
 	
 	public static enum CopyJavadoc {
-		VERBATIM, GETTER {
+		VERBATIM,
+		GETTER {
 			@Override public String[] split(String javadoc) {
 				// step 1: Check if there is a 'GETTER' section. If yes, that becomes the new method's javadoc and we strip that from the original.
 				String[] out = splitJavadocOnSectionIfPresent(javadoc, "GETTER");
 				if (out != null) return out;
-				// failing that, create a copy, but strip @return from the original and @param from the copy.
+				// failing that, create a copy, but strip @return from the original and @param from the copy, as well as other sections.
 				String copy = javadoc;
 				javadoc = stripLinesWithTagFromJavadoc(javadoc, "@returns?\\s+.*");
 				copy = stripLinesWithTagFromJavadoc(copy, "@param(?:eter)?\\s+.*");
+				copy = stripSectionsFromJavadoc(copy);
 				return new String[] {copy, javadoc};
 			}
 		},
@@ -1351,6 +1360,7 @@ public class JavacHandlerUtil {
 			String copy = javadoc;
 			javadoc = stripLinesWithTagFromJavadoc(javadoc, "@param(?:eter)?\\s+.*");
 			copy = stripLinesWithTagFromJavadoc(copy, "@returns?\\s+.*");
+			copy = stripSectionsFromJavadoc(copy);
 			return new String[] {copy, javadoc};
 		}
 		
@@ -1364,8 +1374,8 @@ public class JavacHandlerUtil {
 	 * Copies javadoc on one node to the other.
 	 * 
 	 * in 'GETTER' copyMode, first a 'GETTER' segment is searched for. If it exists, that will become the javadoc for the 'to' node, and this section is
-	 * stripped out of the 'from' node. If no 'GETTER' segment is found, then the entire javadoc is taken minus any {@code @param} lines. any {@code @return} lines
-	 * are stripped from 'from'.
+	 * stripped out of the 'from' node. If no 'GETTER' segment is found, then the entire javadoc is taken minus any {@code @param} lines and other sections.
+	 * any {@code @return} lines are stripped from 'from'.
 	 * 
 	 * in 'SETTER' mode, stripping works similarly to 'GETTER' mode, except {@code param} are copied and stripped from the original and {@code @return} are skipped.
 	 */
