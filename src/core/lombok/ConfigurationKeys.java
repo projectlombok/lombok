@@ -269,21 +269,21 @@ public class ConfigurationKeys {
 	 * 
 	 * For any class without an {@code @Accessors} that explicitly defines the {@code prefix} option, this list of prefixes is used.
 	 */
-	public static final ConfigurationKey<List<String>> ACCESSORS_PREFIX = new ConfigurationKey<List<String>>("lombok.Accessors.prefix", "Specify field prefixes, like 'f' or 'm_', to be stipped when generating getters and setters.") {};
+	public static final ConfigurationKey<List<String>> ACCESSORS_PREFIX = new ConfigurationKey<List<String>>("lombok.Accessors.prefix", "Strip this field prefix, like 'f' or 'm_', from the names of generated getters and setters.") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.Accessors.chain} = {@code true} | {@code false}.
 	 * 
 	 * For any class without an {@code @Accessors} that explicitly defines the {@code chain} option, this value is used.
 	 */
-	public static final ConfigurationKey<Boolean> ACCESSORS_CHAIN = new ConfigurationKey<Boolean>("lombok.Accessors.chain", "Generated setters should return 'this' instead if 'void'.") {};
+	public static final ConfigurationKey<Boolean> ACCESSORS_CHAIN = new ConfigurationKey<Boolean>("lombok.Accessors.chain", "Generate setters that return 'this' instead of 'void'.") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.Accessors.fluent} = {@code true} | {@code false}.
 	 * 
 	 * For any class without an {@code @Accessors} that explicitly defines the {@code fluent} option, this value is used.
 	 */
-	public static final ConfigurationKey<Boolean> ACCESSORS_FLUENT = new ConfigurationKey<Boolean>("lombok.Accessors.fluent", "The name for generated getters and setters will only be the field name (no get/set prefix).") {};
+	public static final ConfigurationKey<Boolean> ACCESSORS_FLUENT = new ConfigurationKey<Boolean>("lombok.Accessors.fluent", "Generate getters and setters using only the field name (no get/set prefix).") {};
 	
 	// ----- Builder -----
 	
@@ -321,6 +321,8 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<FlagUsageType> WITHER_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.Wither.flagUsage", "Emit a warning or error if @Wither is used.") {};
 	
+	
+	// ----- Configuration System -----
 	
 	/**
 	 * lombok configuration: {@code stop-bubbling} = {@code true} | {@code false}.

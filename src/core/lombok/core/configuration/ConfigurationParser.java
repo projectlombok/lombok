@@ -84,7 +84,7 @@ public class ConfigurationParser {
 			if (stringValue != null) try {
 				value = type.getParser().parse(stringValue);
 			} catch (Exception e) {
-				reporter.report(contentDescription, "Error while parsing the value for '" + keyName + "' value '" + stringValue + "' (should be a " + type.getParser().description() + ")", lineNumber, line);
+				reporter.report(contentDescription, "Error while parsing the value for '" + keyName + "' value '" + stringValue + "' (should be " + type.getParser().exampleValue() + ")", lineNumber, line);
 				continue;
 			}
 			

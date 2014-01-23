@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -58,7 +59,7 @@ public class ConfigurationApp extends LombokApp {
 	private static final URI NO_CONFIG = URI.create("");
 	
 	@Override public String getAppName() {
-		return "configuration";
+		return "config";
 	}
 	
 	@Override public String getAppDescription() {
@@ -66,7 +67,7 @@ public class ConfigurationApp extends LombokApp {
 	}
 	
 	@Override public List<String> getAppAliases() {
-		return Arrays.asList("configuration", "config");
+		return Arrays.asList("configuration", "config", "conf", "settings");
 	}
 	
 	public static class CmdArgs {
@@ -192,19 +193,14 @@ public class ConfigurationApp extends LombokApp {
 			}
 			URI directory = entry.getKey();
 			ConfigurationResolver resolver = new BubblingConfigurationResolver(cache.sourcesForDirectory(directory, reporter));
-			Map<ConfigurationKey<?>, ? extends Collection<String>> traces = trace(keys, directory, verbose);
+			Map<ConfigurationKey<?>, ? extends Collection<String>> traces = trace(keys, directory);
 			boolean printed = false;
 			for (ConfigurationKey<?> key : keys) {
 				Object value = resolver.resolve(key);
-				if (value == null || (value instanceof List<?> && ((List<?>)value).isEmpty())) {
-					if (explicitKeys) {
-						if (printed && verbose) out.println();
-						printValue(out, key, value, verbose, traces.get(key));
-						printed = true;
-					}
-				} else {
+				Collection<String> modifications = traces.get(key);
+				if (!modifications.isEmpty() || explicitKeys) {
 					if (printed && verbose) out.println();
-					printValue(out, key, value, verbose, traces.get(key));
+					printValue(out, key, value, verbose, modifications);
 					printed = true;
 				}
 			}
@@ -237,11 +233,10 @@ public class ConfigurationApp extends LombokApp {
 		@Override public void report(String sourceDescription, String problem, int lineNumber, CharSequence line) {}
 	};
 	
-	private Map<ConfigurationKey<?>, ? extends Collection<String>> trace(Collection<ConfigurationKey<?>> keys, URI directory, boolean verbose) throws Exception {
-		if (!verbose) return Collections.emptyMap();
-		
+	private Map<ConfigurationKey<?>, ? extends Collection<String>> trace(Collection<ConfigurationKey<?>> keys, URI directory) throws Exception {
 		Map<ConfigurationKey<?>, List<String>> result = new HashMap<ConfigurationKey<?>, List<String>>();
 		for (ConfigurationKey<?> key : keys) result.put(key, new ArrayList<String>());
+		Set<ConfigurationKey<?>> used = new HashSet<ConfigurationKey<?>>();
 		
 		boolean stopBubbling = false;
 		String previousFileName = null;
@@ -257,6 +252,8 @@ public class ConfigurationApp extends LombokApp {
 				if (modifications == null) {
 					modifications = new ArrayList<String>();
 					modifications.add("     <'" + key.getKeyName() + "' not mentioned>");
+				} else {
+					used.add(key);
 				}
 				if (previousFileName != null) {
 					modifications.add("");
@@ -267,7 +264,11 @@ public class ConfigurationApp extends LombokApp {
 			previousFileName = configFile.getAbsolutePath();
 		}
 		for (ConfigurationKey<?> key : keys) {
-			result.get(key).add(0, previousFileName + (stopBubbling ? " (stop bubbling):" : " (highest found):"));
+			if (used.contains(key)) {
+				result.get(key).add(0, previousFileName + (stopBubbling ? " (stopped bubbling):" : ":"));
+			} else {
+				result.put(key, Collections.<String>emptyList());
+			}
 		}
 		return result;
 	}
