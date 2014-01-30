@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2014 The Project Lombok Authors.
+ * Copyright (C) 2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,13 +19,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok;
+package lombok.core.configuration;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({lombok.transform.RunTransformTests.class, lombok.bytecode.RunBytecodeTests.class, lombok.core.configuration.RunConfigurationTests.class})
-public class RunAllTests {
+@SuiteClasses({TestConfiguration.class})
+public class RunConfigurationTests {
 }

@@ -247,6 +247,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 				<srcdir dir="test/transform/src" test="true" />
 				<srcdir dir="test/core/src" test="true" />
 				<srcdir dir="test/bytecode/src" test="true" />
+				<srcdir dir="test/configuration/src" test="true" />
 			</module>
 			<settings>
 				<url url="http://projectlombok.org/downloads/lombok.intellij.settings" />
@@ -267,6 +268,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<srcdir dir="test/transform/src" />
 			<srcdir dir="test/core/src" />
 			<srcdir dir="test/bytecode/src" />
+			<srcdir dir="test/configuration/src" />
 			<conf name="build" sources="contrib" />
 			<conf name="test" sources="contrib" />
 			<settings>
@@ -292,10 +294,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<src path="test/core/src" />
 			<src path="test/transform/src" />
 			<src path="test/bytecode/src" />
+			<src path="test/configuration/src" />
 		</ivy:compile>
 		<copy todir="build/tests">
 			<fileset dir="test/pretty/resource" />
 			<fileset dir="test/transform/resource" />
+			<fileset dir="test/configuration/resource" />
 		</copy>
 	</target>
 	
@@ -424,6 +428,9 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 					<include name="**/Test*.java" />
 				</fileset>
 				<fileset dir="test/bytecode/src">
+					<include name="**/Test*.java" />
+				</fileset>
+				<fileset dir="test/configuration/src">
 					<include name="**/Test*.java" />
 				</fileset>
 			</batchtest>

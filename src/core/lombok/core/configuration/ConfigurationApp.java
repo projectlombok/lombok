@@ -58,6 +58,9 @@ import com.zwitserloot.cmdreader.Shorthand;
 public class ConfigurationApp extends LombokApp {
 	private static final URI NO_CONFIG = URI.create("");
 	
+	private PrintStream out = System.out;
+	private PrintStream err = System.err;
+	
 	@Override public String getAppName() {
 		return "config";
 	}
@@ -100,12 +103,12 @@ public class ConfigurationApp extends LombokApp {
 		try {
 			args = reader.make(raw.toArray(new String[0]));
 			if (args.help) {
-				System.out.println(reader.generateCommandLineHelp("java -jar lombok.jar configuration"));
+				out.println(reader.generateCommandLineHelp("java -jar lombok.jar configuration"));
 				return 0;
 			}
 		} catch (InvalidCommandLineException e) {
-			System.err.println(e.getMessage());
-			System.err.println(reader.generateCommandLineHelp("java -jar lombok.jar configuration"));
+			err.println(e.getMessage());
+			err.println(reader.generateCommandLineHelp("java -jar lombok.jar configuration"));
 			return 1;
 		}
 		
@@ -113,17 +116,21 @@ public class ConfigurationApp extends LombokApp {
 		Collection<ConfigurationKey<?>> keys = checkKeys(args.key);
 		if (keys == null) return 1;
 		
+		boolean verbose = args.verbose;
 		if (args.generate) {
-			return generate(System.out, args.verbose, keys);
+			return generate(keys, verbose);
 		}
 		
-		TreeMap<URI, Set<String>> sharedDirectories = findSharedDirectories(args.paths);
-		if (sharedDirectories == null) return 1;
-		
-		return display(System.out, args.verbose, sharedDirectories, keys, args.paths.size() == 1, !args.key.isEmpty());
+		return display(keys, verbose, args.paths, !args.key.isEmpty());
 	}
 	
-	private int generate(PrintStream out, boolean verbose, Collection<ConfigurationKey<?>> keys) {
+	public ConfigurationApp redirectOutput(PrintStream out, PrintStream err) {
+		if (out != null) this.out = out;
+		if (err != null) this.err = err;
+		return this;
+	}
+	
+	public int generate(Collection<ConfigurationKey<?>> keys, boolean verbose) {
 		for (ConfigurationKey<?> key : keys) {
 			String keyName = key.getKeyName();
 			ConfigurationDataType type = key.getType();
@@ -159,7 +166,11 @@ public class ConfigurationApp extends LombokApp {
 		return 0;
 	}
 	
-	private int display(PrintStream out, boolean verbose, TreeMap<URI, Set<String>> sharedDirectories, Collection<ConfigurationKey<?>> keys, boolean onlyOne, boolean explicitKeys) throws Exception {
+	public int display(Collection<ConfigurationKey<?>> keys, boolean verbose, Collection<String> argsPaths, boolean explicitKeys) throws Exception {
+		TreeMap<URI, Set<String>> sharedDirectories = findSharedDirectories(argsPaths);
+		
+		if (sharedDirectories == null) return 1;
+		
 		Set<String> none = sharedDirectories.remove(NO_CONFIG);
 		if (none != null) {
 			if (none.size() == 1) {
@@ -185,7 +196,7 @@ public class ConfigurationApp extends LombokApp {
 			}
 			Set<String> paths = entry.getValue();
 			if (paths.size() == 1) {
-				if (!onlyOne) out.printf("Configuration for '%s'.\n\n", paths.iterator().next());
+				if (!(argsPaths.size() == 1)) out.printf("Configuration for '%s'.\n\n", paths.iterator().next());
 			} else {
 				out.printf("Configuration for:\n", paths.iterator().next());
 				for (String path : paths) out.printf("- %s\n", path);
@@ -200,7 +211,7 @@ public class ConfigurationApp extends LombokApp {
 				Collection<String> modifications = traces.get(key);
 				if (!modifications.isEmpty() || explicitKeys) {
 					if (printed && verbose) out.println();
-					printValue(out, key, value, verbose, modifications);
+					printValue(key, value, verbose, modifications);
 					printed = true;
 				}
 			}
@@ -216,7 +227,7 @@ public class ConfigurationApp extends LombokApp {
 		return 0;
 	}
 	
-	private void printValue(PrintStream out, ConfigurationKey<?> key, Object value, boolean verbose, Collection<String> history) {
+	private void printValue(ConfigurationKey<?> key, Object value, boolean verbose, Collection<String> history) {
 		if (verbose) out.printf("# %s\n", key.getDescription());
 		if (value == null) {
 			out.printf("clear %s\n", key.getKeyName());
@@ -319,7 +330,7 @@ public class ConfigurationApp extends LombokApp {
 		for (String keyName : keyList) {
 			ConfigurationKey<?> key = registeredKeys.get(keyName);
 			if (key == null) {
-				System.err.printf("Unknown key '%s'\n", keyName);
+				err.printf("Unknown key '%s'\n", keyName);
 				return null;
 			}
 			keys.remove(key);
@@ -328,7 +339,7 @@ public class ConfigurationApp extends LombokApp {
 		return keys;
 	}
 	
-	private TreeMap<URI, Set<String>> findSharedDirectories(List<String> paths) {
+	private TreeMap<URI, Set<String>> findSharedDirectories(Collection<String> paths) {
 		TreeMap<URI,Set<String>> sharedDirectories = new TreeMap<URI, Set<String>>(new Comparator<URI>() {
 			@Override public int compare(URI o1, URI o2) {
 				return o1.toString().compareTo(o2.toString());
@@ -337,7 +348,7 @@ public class ConfigurationApp extends LombokApp {
 		for (String path : paths) {
 			File file = new File(path);
 			if (!file.exists()) {
-				System.err.printf("File not found: '%s'\n", path);
+				err.printf("File not found: '%s'\n", path);
 				return null;
 			}
 			URI first = findFirstLombokDirectory(file);
