@@ -435,21 +435,21 @@ public class EclipseHandlerUtil {
 					}
 				}
 			}
-			TypeReference typeRef = new ParameterizedQualifiedTypeReference(iRef.tokens, args, iRef.dimensions(), iRef.sourcePositions);
+			TypeReference typeRef = new ParameterizedQualifiedTypeReference(iRef.tokens, args, iRef.dimensions(), copy(iRef.sourcePositions));
 			setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
 		
 		if (ref instanceof ArrayQualifiedTypeReference) {
 			ArrayQualifiedTypeReference iRef = (ArrayQualifiedTypeReference) ref;
-			TypeReference typeRef = new ArrayQualifiedTypeReference(iRef.tokens, iRef.dimensions(), iRef.sourcePositions);
+			TypeReference typeRef = new ArrayQualifiedTypeReference(iRef.tokens, iRef.dimensions(), copy(iRef.sourcePositions));
 			setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
 		
 		if (ref instanceof QualifiedTypeReference) {
 			QualifiedTypeReference iRef = (QualifiedTypeReference) ref;
-			TypeReference typeRef = new QualifiedTypeReference(iRef.tokens, iRef.sourcePositions);
+			TypeReference typeRef = new QualifiedTypeReference(iRef.tokens, copy(iRef.sourcePositions));
 			setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
@@ -1519,7 +1519,7 @@ public class EclipseHandlerUtil {
 				} else if (castTo.getClass() == QualifiedTypeReference.class) {
 					QualifiedTypeReference qtr = (QualifiedTypeReference) castTo;
 					//Same here, but for the more complex types, they stay types.
-					castToConverted = new QualifiedNameReference(qtr.tokens, qtr.sourcePositions, qtr.sourceStart, qtr.sourceEnd);
+					castToConverted = new QualifiedNameReference(qtr.tokens, copy(qtr.sourcePositions), qtr.sourceStart, qtr.sourceEnd);
 					castToConverted.bits = (castToConverted.bits & ~Binding.VARIABLE) | Binding.TYPE;
 					setGeneratedBy(castToConverted, source);
 				}
@@ -1717,5 +1717,9 @@ public class EclipseHandlerUtil {
 		
 		setGeneratedBy(nameReference, source);
 		return nameReference;
+	}
+	
+	private static long[] copy(long[] array) {
+		return array == null ? null : array.clone();
 	}
 }
