@@ -59,4 +59,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface Log4j2 {
+	String value() default "log";
 }

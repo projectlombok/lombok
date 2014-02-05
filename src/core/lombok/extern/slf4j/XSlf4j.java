@@ -57,4 +57,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface XSlf4j {
+	String value() default "log";
 }

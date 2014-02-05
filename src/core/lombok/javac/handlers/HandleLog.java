@@ -48,7 +48,7 @@ public class HandleLog {
 		throw new UnsupportedOperationException();
 	}
 	
-	public static void processAnnotation(LoggingFramework framework, AnnotationValues<?> annotation, JavacNode annotationNode) {
+	public static void processAnnotation(LoggingFramework framework, AnnotationValues<?> annotation, JavacNode annotationNode, String fieldName) {
 		deleteAnnotationIfNeccessary(annotationNode, framework.getAnnotationClass());
 		
 		JavacNode typeNode = annotationNode.up();
@@ -59,13 +59,13 @@ public class HandleLog {
 				return;
 			}
 			
-			if (fieldExists("log", typeNode)!= MemberExistsResult.NOT_EXISTS) {
-				annotationNode.addWarning("Field 'log' already exists.");
+			if (fieldExists(fieldName, typeNode)!= MemberExistsResult.NOT_EXISTS) {
+				annotationNode.addWarning(String.format("Field '%s' already exists.", fieldName));
 				return;
 			}
 			
 			JCFieldAccess loggingType = selfType(typeNode);
-			createField(framework, typeNode, loggingType, annotationNode.get());
+			createField(framework, typeNode, loggingType, annotationNode.get(), fieldName);
 			break;
 		default:
 			annotationNode.addError("@Log is legal only on types.");
@@ -79,7 +79,7 @@ public class HandleLog {
 		return maker.Select(maker.Ident(name), typeNode.toName("class"));
 	}
 	
-	public static boolean createField(LoggingFramework framework, JavacNode typeNode, JCFieldAccess loggingType, JCTree source) {
+	public static boolean createField(LoggingFramework framework, JavacNode typeNode, JCFieldAccess loggingType, JCTree source, String fieldName) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		// private static final <loggerType> log = <factoryMethod>(<parameter>);
@@ -91,7 +91,7 @@ public class HandleLog {
 		
 		JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
 				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | Flags.STATIC),
-				typeNode.toName("log"), loggerType, factoryMethodCall), source, typeNode.getContext());
+				typeNode.toName(fieldName), loggerType, factoryMethodCall), source, typeNode.getContext());
 		
 		injectFieldSuppressWarnings(typeNode, fieldDecl);
 		return true;
@@ -103,7 +103,7 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleCommonsLog extends JavacAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			processAnnotation(LoggingFramework.COMMONS, annotation, annotationNode);
+			processAnnotation(LoggingFramework.COMMONS, annotation, annotationNode, annotation.getInstance().value());
 		}
 	}
 	
@@ -113,7 +113,7 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleJulLog extends JavacAnnotationHandler<lombok.extern.java.Log> {
 		@Override public void handle(AnnotationValues<lombok.extern.java.Log> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			processAnnotation(LoggingFramework.JUL, annotation, annotationNode);
+			processAnnotation(LoggingFramework.JUL, annotation, annotationNode, annotation.getInstance().value());
 		}
 	}
 	
@@ -123,7 +123,7 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleLog4jLog extends JavacAnnotationHandler<lombok.extern.log4j.Log4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			processAnnotation(LoggingFramework.LOG4J, annotation, annotationNode);
+			processAnnotation(LoggingFramework.LOG4J, annotation, annotationNode, annotation.getInstance().value());
 		}
 	}
 	
@@ -133,7 +133,7 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleLog4j2Log extends JavacAnnotationHandler<lombok.extern.log4j.Log4j2> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j2> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			processAnnotation(LoggingFramework.LOG4J2, annotation, annotationNode);
+			processAnnotation(LoggingFramework.LOG4J2, annotation, annotationNode, annotation.getInstance().value());
 		}
 	}
 	
@@ -143,7 +143,7 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleSlf4jLog extends JavacAnnotationHandler<lombok.extern.slf4j.Slf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			processAnnotation(LoggingFramework.SLF4J, annotation, annotationNode);
+			processAnnotation(LoggingFramework.SLF4J, annotation, annotationNode, annotation.getInstance().value());
 		}
 	}
 	
@@ -153,7 +153,7 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleXSlf4jLog extends JavacAnnotationHandler<lombok.extern.slf4j.XSlf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.XSlf4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			processAnnotation(LoggingFramework.XSLF4J, annotation, annotationNode);
+			processAnnotation(LoggingFramework.XSLF4J, annotation, annotationNode, annotation.getInstance().value());
 		}
 	}
 	
