@@ -112,12 +112,27 @@ public class ConfigurationKeys {
 	public static final ConfigurationKey<FlagUsageType> EQUALS_AND_HASH_CODE_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.EqualsAndHashCode.flagUsage", "Emit a warning or error if @EqualsAndHashCode is used.") {};
 	
 	// ----- ToString -----
+	
+	/**
+	 * lombok configuration: {@code lombok.ToString.doNotUseGetters} = {@code true} | {@code false}.
+	 * 
+	 * For any class without an {@code @ToString} that explicitly defines the {@code doNotUseGetters} option, this value is used.
+	 */
+	public static final ConfigurationKey<Boolean> TO_STRING_DO_NOT_USE_GETTERS = new ConfigurationKey<Boolean>("lombok.ToString.doNotUseGetters", "Don't call the getters but use the fields directly in the generated toString method.") {};
+	
 	/**
 	 * lombok configuration: {@code lombok.ToString.flagUsage} = {@code WARNING} | {@code ERROR}.
 	 * 
 	 * If set, <em>any</em> usage of {@code @ToString} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> TO_STRING_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.ToString.flagUsage", "Emit a warning or error if @ToString is used.") {};
+	
+	/**
+	 * lombok configuration: {@code lombok.ToString.includeFieldNames} = {@code true} | {@code false}.
+	 * 
+	 * For any class without an {@code @ToString} that explicitly defines the {@code includeFieldNames} option, this value is used.
+	 */
+	public static final ConfigurationKey<Boolean> TO_STRING_INCLUDE_FIELD_NAMES = new ConfigurationKey<Boolean>("lombok.ToString.includeFieldNames", "Include the field names in the generated toString method.") {};
 	
 	// ##### Standalones #####
 	

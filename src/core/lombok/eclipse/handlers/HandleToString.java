@@ -35,11 +35,12 @@ import java.util.Set;
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.ToString;
-import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.eclipse.handlers.EclipseHandlerUtil.FieldAccess;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -90,7 +91,8 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		
 		boolean includeFieldNames = true;
 		try {
-			includeFieldNames = ((Boolean)ToString.class.getMethod("includeFieldNames").getDefaultValue()).booleanValue();
+			Boolean configuration = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_INCLUDE_FIELD_NAMES);
+			includeFieldNames = configuration != null ? configuration : ((Boolean)ToString.class.getMethod("includeFieldNames").getDefaultValue()).booleanValue();
 		} catch (Exception ignore) {}
 		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, FieldAccess.GETTER);
 	}
@@ -115,9 +117,14 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		
 		checkForBogusFieldNames(typeNode, annotation);
 		
-		FieldAccess fieldAccess = ann.doNotUseGetters() ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
+		Boolean doNotUseGettersConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_DO_NOT_USE_GETTERS);
+		boolean doNotUseGetters = annotation.isExplicit("doNotUseGetters") || doNotUseGettersConfiguration == null ? ann.doNotUseGetters() : doNotUseGettersConfiguration;
+		FieldAccess fieldAccess = doNotUseGetters ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
 		
-		generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true, fieldAccess);
+		Boolean fieldNamesConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_INCLUDE_FIELD_NAMES);
+		boolean includeFieldNames = annotation.isExplicit("includeFieldNames") || fieldNamesConfiguration == null ? ann.includeFieldNames() : fieldNamesConfiguration;
+
+		generateToString(typeNode, annotationNode, excludes, includes, includeFieldNames, callSuper, true, fieldAccess);
 	}
 	
 	public void generateToString(EclipseNode typeNode, EclipseNode errorNode, List<String> excludes, List<String> includes,

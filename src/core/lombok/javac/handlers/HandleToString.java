@@ -95,9 +95,14 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			annotation.setWarning("exclude", "exclude and of are mutually exclusive; the 'exclude' parameter will be ignored.");
 		}
 		
-		FieldAccess fieldAccess = ann.doNotUseGetters() ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
+		Boolean doNotUseGettersConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_DO_NOT_USE_GETTERS);
+		boolean doNotUseGetters = annotation.isExplicit("doNotUseGetters") || doNotUseGettersConfiguration == null ? ann.doNotUseGetters() : doNotUseGettersConfiguration;
+		FieldAccess fieldAccess = doNotUseGetters ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
 		
-		generateToString(typeNode, annotationNode, excludes, includes, ann.includeFieldNames(), callSuper, true, fieldAccess);
+		Boolean fieldNamesConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_INCLUDE_FIELD_NAMES);
+		boolean includeFieldNames = annotation.isExplicit("includeFieldNames") || fieldNamesConfiguration == null ? ann.includeFieldNames() : fieldNamesConfiguration;
+		
+		generateToString(typeNode, annotationNode, excludes, includes, includeFieldNames, callSuper, true, fieldAccess);
 	}
 	
 	public void generateToStringForType(JavacNode typeNode, JavacNode errorNode) {
@@ -109,7 +114,8 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		
 		boolean includeFieldNames = true;
 		try {
-			includeFieldNames = ((Boolean)ToString.class.getMethod("includeFieldNames").getDefaultValue()).booleanValue();
+			Boolean configuration = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_INCLUDE_FIELD_NAMES);
+			includeFieldNames = configuration != null ? configuration : ((Boolean)ToString.class.getMethod("includeFieldNames").getDefaultValue()).booleanValue();
 		} catch (Exception ignore) {}
 		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, FieldAccess.GETTER);
 	}
