@@ -177,7 +177,7 @@ public class Javac {
 	public static final TreeTag CTC_PREINC = treeTag("PREINC");
 	public static final TreeTag CTC_PREDEC = treeTag("PREDEC");
 	
-	private static final Method getExtendsClause, getEndPosition;
+	private static final Method getExtendsClause, getEndPosition, storeEnd;
 	
 	static {
 		getExtendsClause = getMethod(JCClassDecl.class, "getExtendsClause", new Class<?>[0]);
@@ -185,10 +185,32 @@ public class Javac {
 		
 		if (getJavaCompilerVersion() < 8) {
 			getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", java.util.Map.class);
+			storeEnd = getMethod(java.util.Map.class, "put", Object.class, Object.class);
 		} else {
 			getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", "com.sun.tools.javac.tree.EndPosTable");
+			Method storeEndMethodTemp;
+			Class<?> endPosTable;
+			try {
+				endPosTable = Class.forName("com.sun.tools.javac.tree.EndPosTable");
+			} catch (ClassNotFoundException ex) {
+				throw sneakyThrow(ex);
+			}
+			try {
+				storeEndMethodTemp = endPosTable.getMethod("storeEnd", JCTree.class, int.class);
+			} catch (NoSuchMethodException e) {
+				try {
+					endPosTable = Class.forName("com.sun.tools.javac.parser.JavacParser$AbstractEndPosTable");
+					storeEndMethodTemp = endPosTable.getDeclaredMethod("storeEnd", JCTree.class, int.class);
+				} catch (NoSuchMethodException ex) {
+					throw sneakyThrow(ex);
+				} catch (ClassNotFoundException ex) {
+					throw sneakyThrow(ex);
+				}
+			}
+			storeEnd = storeEndMethodTemp;
 		}
 		getEndPosition.setAccessible(true);
+		storeEnd.setAccessible(true);
 	}
 	
 	private static Method getMethod(Class<?> clazz, String name, Class<?>... paramTypes) {
@@ -250,6 +272,17 @@ public class Javac {
 		}
 	}
 	
+	public static void storeEnd(JCTree tree, int pos, JCCompilationUnit top) {
+		try {
+			Object endPositions = JCCOMPILATIONUNIT_ENDPOSITIONS.get(top);
+			storeEnd.invoke(endPositions, tree, pos);
+		} catch (IllegalAccessException e) {
+			throw sneakyThrow(e);
+		} catch (InvocationTargetException e) {
+			throw sneakyThrow(e.getCause());
+		}
+	}
+
 	private static final Class<?> JC_VOID_TYPE, JC_NO_TYPE;
 	
 	static {
