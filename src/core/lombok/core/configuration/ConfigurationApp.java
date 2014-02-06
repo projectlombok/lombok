@@ -145,20 +145,20 @@ public class ConfigurationApp extends LombokApp {
 				out.println();
 				continue;
 			}
-			out.printf("##\n## Key : %s\n## Type: %s\n", keyName, type);
+			out.printf("##%n## Key : %s%n## Type: %s%n", keyName, type);
 			if (hasDescription) {
-				out.printf("##\n## %s\n", description);
+				out.printf("##%n## %s%n", description);
 			}
-			out.println("##\n## Examples:\n#");
-			out.printf("# clear %s\n", keyName);
+			out.printf("##%n## Examples:%n#%n");
+			out.printf("# clear %s%n", keyName);
 			String exampleValue = type.getParser().exampleValue();
 			if (type.isList()) {
-				out.printf("# %s += %s\n", keyName, exampleValue);
-				out.printf("# %s -= %s\n", keyName, exampleValue);
+				out.printf("# %s += %s%n", keyName, exampleValue);
+				out.printf("# %s -= %s%n", keyName, exampleValue);
 			} else {
-				out.printf("# %s = %s\n", keyName, exampleValue);
+				out.printf("# %s = %s%n", keyName, exampleValue);
 			}
-			out.println("#\n");
+			out.printf("#%n%n");
 		}
 		if (!verbose) {
 			out.println("Use --verbose for more information.");
@@ -174,10 +174,10 @@ public class ConfigurationApp extends LombokApp {
 		Set<String> none = sharedDirectories.remove(NO_CONFIG);
 		if (none != null) {
 			if (none.size() == 1) {
-				out.printf("No 'lombok.config' found for '%s'.\n", none.iterator().next());
+				out.printf("No 'lombok.config' found for '%s'.%n", none.iterator().next());
 			} else {
 				out.println("No 'lombok.config' found for: ");
-				for (String path : none) out.printf("- %s\n", path);
+				for (String path : none) out.printf("- %s%n", path);
 			}
 		}
 		
@@ -192,14 +192,14 @@ public class ConfigurationApp extends LombokApp {
 		boolean first = true;
 		for (Entry<URI, Set<String>> entry : sharedDirectories.entrySet()) {
 			if (!first) {
-				out.print("\n\n");
+				out.printf("%n%n");
 			}
 			Set<String> paths = entry.getValue();
 			if (paths.size() == 1) {
-				if (!(argsPaths.size() == 1)) out.printf("Configuration for '%s'.\n\n", paths.iterator().next());
+				if (!(argsPaths.size() == 1)) out.printf("Configuration for '%s'.%n%n", paths.iterator().next());
 			} else {
-				out.printf("Configuration for:\n", paths.iterator().next());
-				for (String path : paths) out.printf("- %s\n", path);
+				out.printf("Configuration for:%n", paths.iterator().next());
+				for (String path : paths) out.printf("- %s%n", path);
 				out.println();
 			}
 			URI directory = entry.getKey();
@@ -220,24 +220,26 @@ public class ConfigurationApp extends LombokApp {
 		}
 		
 		if (!problems.isEmpty()) {
-			out.printf("\nProblems in the configuration files: \n");
-			for (String problem : problems) out.printf("- %s\n", problem);
+			out.printf("%nProblems in the configuration files: %n");
+			for (String problem : problems) out.printf("- %s%n", problem);
 		}
 		
 		return 0;
 	}
 	
 	private void printValue(ConfigurationKey<?> key, Object value, boolean verbose, Collection<String> history) {
-		if (verbose) out.printf("# %s\n", key.getDescription());
+		if (verbose) out.printf("# %s%n", key.getDescription());
 		if (value == null) {
-			out.printf("clear %s\n", key.getKeyName());
+			out.printf("clear %s%n", key.getKeyName());
 		} else if (value instanceof List<?>) {
-			for (Object element : (List<?>)value) out.printf("%s += %s\n", key.getKeyName(), element);
+			List<?> list = (List<?>)value;
+			if (list.isEmpty()) out.printf("clear %s%n", key.getKeyName());
+			for (Object element : list) out.printf("%s += %s%n", key.getKeyName(), element);
 		} else {
-			out.printf("%s = %s\n", key.getKeyName(), value);
+			out.printf("%s = %s%n", key.getKeyName(), value);
 		}
 		if (!verbose) return;
-		for (String modification : history) out.printf("# %s\n", modification);
+		for (String modification : history) out.printf("# %s%n", modification);
 	}
 	
 	private static final ConfigurationProblemReporter VOID = new ConfigurationProblemReporter() {
@@ -330,7 +332,7 @@ public class ConfigurationApp extends LombokApp {
 		for (String keyName : keyList) {
 			ConfigurationKey<?> key = registeredKeys.get(keyName);
 			if (key == null) {
-				err.printf("Unknown key '%s'\n", keyName);
+				err.printf("Unknown key '%s'%n", keyName);
 				return null;
 			}
 			keys.remove(key);
@@ -348,7 +350,7 @@ public class ConfigurationApp extends LombokApp {
 		for (String path : paths) {
 			File file = new File(path);
 			if (!file.exists()) {
-				err.printf("File not found: '%s'\n", path);
+				err.printf("File not found: '%s'%n", path);
 				return null;
 			}
 			URI first = findFirstLombokDirectory(file);

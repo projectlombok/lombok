@@ -37,7 +37,7 @@ import org.junit.Test;
 public class TestConfiguration {
 	
 	@Test
-	public void testIt() throws Exception {
+	public void testDisplayVerbose() throws Exception {
 		
 		@SuppressWarnings("unchecked") 
 		Collection<ConfigurationKey<?>> keys = Arrays.asList(ACCESSORS_FLAG_USAGE, ACCESSORS_CHAIN, ACCESSORS_PREFIX, LOG_ANY_FIELD_NAME);
