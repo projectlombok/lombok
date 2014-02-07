@@ -255,7 +255,15 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ivy:intellijgen>
 	</target>
 	
-	<target name="eclipse" depends="deps, contrib" description="Creates eclipse project files and downloads all dependencies. Open this directory as project in eclipse after running this target.">
+	<target name="-skipEclipseDeps">
+		<property name="eclipse.build.configname" value="buildWithoutEclipse" />
+	</target>
+
+	<target name="-addEclipseDeps">
+		<property name="eclipse.build.configname" value="build" />
+	</target>
+
+	<target name="eclipse" depends="-addEclipseDeps, deps, contrib" description="Creates eclipse project files and downloads all dependencies. Open this directory as project in eclipse after running this target. This will NOT let you start a debug session for eclipse; use target 'eclipseForDebugging' instead to do that.">
 		<ivy:eclipsegen source="1.6">
 			<srcdir dir="src/core" />
 			<srcdir dir="src/utils" />
@@ -267,20 +275,104 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<srcdir dir="test/transform/src" />
 			<srcdir dir="test/core/src" />
 			<srcdir dir="test/bytecode/src" />
-			<conf name="build" sources="contrib" />
+			<conf name="${eclipse.build.configname}" sources="contrib" />
 			<conf name="test" sources="contrib" />
 			<settings>
 				<url url="http://projectlombok.org/downloads/lombok.eclipse.settings" />
 			</settings>
 			<apt location="lib/build/projectlombok.org-spi.jar" />
 		</ivy:eclipsegen>
-		
+	</target>
+	
+	<target name="ensureEcjDebugDeps" depends="config-ivy">
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="buildWithoutEclipse" />
+		<ivy:retrieve />
+	</target>
+	
+	<target name="loadEclipseLocation">
+		<loadfile property="eclipse.location" srcFile="eclipse.location" encoding="UTF-8" quiet="true" />
+	</target>
+
+	<target name="setupEclipseLocation" depends="loadEclipseLocation" unless="eclipse.location">
+		<echo>To add your eclipse installation's own plugins as dependencies, the build script needs to know where your eclipse is installed. Please enter this now (it's saved for future executions of this task). For example:
+
+	/Applications/eclipse
+	C:\Program Files\eclipse
+</echo>
+		<input message="Path to eclipse: " addproperty="eclipse.location" />
+		<available property="eclipse.found" file="${eclipse.location}/plugins" />
+		<fail unless="eclipse.found">Eclipse can't be found in this location; I expect that directory to contain a subdirectory called 'plugins'.</fail>
+		<echo file="eclipse.location" message="${eclipse.location}" />
+	</target>
+
+	<target name="eclipseForDebugging" depends="-skipEclipseDeps, ensureEcjDebugDeps, eclipse, setupEclipseLocation" description="Creates eclipse project files and downloads all dependencies, but borrows all eclipse dependencies (and more) from your existing eclipse installation. This is very useful if you wish to start a debugging eclipse from inside eclipse, and then breakpoint eclipse code itself. Because the deps are inherited, line numbers will line up and such.">
 		<copy
 				file="buildScripts/eclipse-debug-target.template"
 				tofile="LombokizedEclipse.launch"
 				preservelastmodified="true"
 				overwrite="true">
 		</copy>
+
+		<!-- These are dependencies -->
+		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.core.runtime" /></antcall>
+		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.equinox.common" /></antcall>
+		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.osgi" /></antcall>
+		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.jdt.core" /></antcall>
+		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.jdt.ui" /></antcall>
+
+		<!-- These are merely useful -->
+		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.text" /></antcall>
+		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.ltk.core.refactoring" /></antcall>
+	</target>
+
+	<target name="-augmentClasspath">
+		<pathconvert property="augment.bin" setonempty="false" pathsep="  ::  ">
+			<fileset dir="${eclipse.location}/plugins" includes="${pluginName}_*" />
+		</pathconvert>
+
+		<pathconvert property="augment.src" setonempty="false" pathsep="  ::  ">
+			<fileset dir="${eclipse.location}/plugins" includes="${pluginName}.source_*" />
+		</pathconvert>
+
+		<condition property="noSourceAvailable">
+			<and>
+				<isset property="augment.bin" />
+				<not><isset property="augment.src" /></not>
+			</and>
+		</condition>
+
+		<condition property="multiples">
+			<or>
+				<contains string="${augment.bin}" substring="  ::  " />
+				<contains string="${augment.src}" substring="  ::  " />
+			</or>
+		</condition>
+
+		<fail if="noSourceAvailable">
+			You do not have sources for ${augment.bin}. I expect the sources to be in the same directory, but starting with '${prefix}.source_'.
+		</fail>
+
+		<fail unless="augment.bin">
+			You do not have the eclipse plugin '${pluginName}'. I expected it to be in your eclipse plugins directory (followed by an underscore and a version number).
+		</fail>
+
+		<fail if="multiples">
+			You have multiple versions of the same plugin. You should probably delete everything except the one your eclipse actually uses.
+
+			Binaries: ${augment.bin}
+
+			Sources: ${augment.src}
+		</fail>
+
+		<condition property="intentionallyBreakTheRegexp" value="" else="thisWontBeInClasspathFile">
+			<isset property="augment.bin" />
+		</condition>
+
+		<replaceregexp file=".classpath" flags="is" encoding="UTF-8">
+			<regexp pattern="^(.*?)(.)${intentionallyBreakTheRegexp}(&lt;classpathentry kind=.lib. path=)(.*)$" />
+			<substitution expression="\1\2&lt;classpathentry kind=&quot;lib&quot; path=&quot;${augment.bin}&quot; sourcepath=&quot;${augment.src}&quot;/&gt;\${line.separator}\2\3\4" />
+		</replaceregexp>
+		<echo>Added to project classpath from your eclipse installation: ${pluginName}.</echo>
 	</target>
 	
 	<target name="-test-compile" depends="ensureTestDeps, compile" unless="skipTests">

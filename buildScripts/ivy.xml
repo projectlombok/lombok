@@ -3,7 +3,9 @@
 	<configurations>
 		<conf name="eclipseBuild" />
 		<conf name="netbeansBuild" />
-		<conf name="build" extends="eclipseBuild, netbeansBuild, javac6" />
+		<conf name="buildBase" extends="netbeansBuild, javac6" />
+		<conf name="build" extends="buildBase, eclipseBuild" />
+		<conf name="buildWithoutEclipse" extends="buildBase" />
 		<conf name="runtime" />
 		<conf name="test" extends="runtime" />
 		<conf name="contrib" />
@@ -12,8 +14,8 @@
 		<conf name="javac7" />
 	</configurations>
 	<dependencies>
-		<dependency org="org.projectlombok" name="lombok.patcher" rev="0.7" conf="build->default; runtime->default" />
-		<dependency org="zwitserloot.com" name="cmdreader" rev="1.2" conf="build->runtime; runtime" />
+		<dependency org="org.projectlombok" name="lombok.patcher" rev="0.7" conf="buildBase->default; runtime->default" />
+		<dependency org="zwitserloot.com" name="cmdreader" rev="1.2" conf="buildBase->runtime; runtime" />
 		
 		<dependency org="junit" name="junit" rev="4.8.2" conf="test->default; contrib->sources" />
 		<dependency org="log4j" name="log4j" rev="1.2.16" conf="test->default; contrib->sources" />
@@ -21,15 +23,15 @@
 		<dependency org="commons-logging" name="commons-logging" rev="1.1.1" conf="test->default; contrib->sources"/>
 		<dependency org="org.slf4j" name="slf4j-api" rev="1.6.1" conf="test->default; contrib->sources"/>
 		<dependency org="org.slf4j" name="slf4j-ext" rev="1.6.1" conf="test->default; contrib->sources"/>
-		<dependency org="com.googlecode.jarjar" name="jarjar" rev="1.1" conf="build->default" />
+		<dependency org="com.googlecode.jarjar" name="jarjar" rev="1.1" conf="buildBase->default" />
 		
-		<dependency org="org.apache.ant" name="ant" rev="1.8.1" conf="build->default; contrib->sources" />
-		<dependency org="projectlombok.org" name="spi" rev="0.2.7" conf="build" />
-		<dependency org="projectlombok.org" name="ant-googlecode" rev="0.0.2" conf="build" />
-		<dependency org="com.jcraft" name="jsch" rev="0.1.42" conf="build->default" />
-		<dependency org="projectlombok.org" name="jsch-ant-fixed" rev="0.1.42" conf="build" />
-		<dependency org="projectlombok.org" name="markdownj" rev="1.02b4" conf="build" />
-		<dependency org="de.java2html" name="java2html" rev="5.0" conf="build->default" />
+		<dependency org="org.apache.ant" name="ant" rev="1.8.1" conf="buildBase->default; contrib->sources" />
+		<dependency org="projectlombok.org" name="spi" rev="0.2.7" conf="buildBase->build" />
+		<dependency org="projectlombok.org" name="ant-googlecode" rev="0.0.2" conf="buildBase->build" />
+		<dependency org="com.jcraft" name="jsch" rev="0.1.42" conf="buildBase->default" />
+		<dependency org="projectlombok.org" name="jsch-ant-fixed" rev="0.1.42" conf="buildBase->build" />
+		<dependency org="projectlombok.org" name="markdownj" rev="1.02b4" conf="buildBase->build" />
+		<dependency org="de.java2html" name="java2html" rev="5.0" conf="buildBase->default" />
 		
 		<dependency org="net.java.openjdk.custom" name="javac6" rev="1.6.0.18" conf="javac6->runtime; contrib->sources" />
 		<dependency org="net.java.openjdk.custom" name="javac7" rev="1.7.0" conf="javac7->runtime; contrib->sources" />
