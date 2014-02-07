@@ -12,3 +12,8 @@ class LoggerSlf4jOuter {
 		private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(Inner.class);
 	}
 }
+
+class LoggerSlf4jWithDifferentLoggerName {
+	@java.lang.SuppressWarnings("all")
+	private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger("DifferentLogger");
+}
