@@ -161,7 +161,7 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleXSlf4jLog extends JavacAnnotationHandler<lombok.extern.slf4j.XSlf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.XSlf4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			processAnnotation(LoggingFramework.XSLF4J, annotation, annotationNode, "");
+			processAnnotation(LoggingFramework.XSLF4J, annotation, annotationNode, annotation.getInstance().value());
 		}
 	}
 	
