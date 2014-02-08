@@ -111,7 +111,7 @@ public class HandleLog {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleCommonsLog extends JavacAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, JCAnnotation ast, JavacNode annotationNode) {
-			processAnnotation(LoggingFramework.COMMONS, annotation, annotationNode, "");
+			processAnnotation(LoggingFramework.COMMONS, annotation, annotationNode, annotation.getInstance().value());
 		}
 	}
 	

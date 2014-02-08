@@ -161,7 +161,7 @@ public class HandleLog {
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleCommonsLog extends EclipseAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, Annotation source, EclipseNode annotationNode) {
-			processAnnotation(LoggingFramework.COMMONS, annotation, source, annotationNode, "");
+			processAnnotation(LoggingFramework.COMMONS, annotation, source, annotationNode, annotation.getInstance().value());
 		}
 	}
 	
