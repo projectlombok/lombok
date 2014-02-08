@@ -7,3 +7,7 @@ class LoggerJul {
 @Log
 class LoggerJulWithImport {
 }
+
+@Log("DifferentName")
+class LoggerJulWithDifferentName {
+}

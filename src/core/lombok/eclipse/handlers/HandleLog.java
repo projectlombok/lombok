@@ -171,7 +171,7 @@ public class HandleLog {
 	@ProviderFor(EclipseAnnotationHandler.class)
 	public static class HandleJulLog extends EclipseAnnotationHandler<lombok.extern.java.Log> {
 		@Override public void handle(AnnotationValues<lombok.extern.java.Log> annotation, Annotation source, EclipseNode annotationNode) {
-			processAnnotation(LoggingFramework.JUL, annotation, source, annotationNode, "");
+			processAnnotation(LoggingFramework.JUL, annotation, source, annotationNode, annotation.getInstance().value());
 		}
 	}
 	
