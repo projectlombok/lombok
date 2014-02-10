@@ -15,3 +15,11 @@ import lombok.extern.log4j.Log4j2;
     super();
   }
 }
+@Log4j2("DifferentName") class LoggerLog4j2WithDifferentName {
+  private static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.LogManager.getLogger("DifferentName");
+  <clinit>() {
+  }
+  LoggerLog4j2WithDifferentName() {
+    super();
+  }
+}

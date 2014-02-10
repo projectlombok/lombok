@@ -7,3 +7,7 @@ class LoggerCommons {
 @CommonsLog
 class LoggerCommonsWithImport {
 }
+
+@CommonsLog("DifferentName")
+class LoggerCommonsWithDifferentName {
+}
