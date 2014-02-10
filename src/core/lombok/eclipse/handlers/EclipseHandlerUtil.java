@@ -197,7 +197,7 @@ public class EclipseHandlerUtil {
 		private void msg(int msgType, String message, String bundleName, Throwable error) {
 			Bundle bundle = Platform.getBundle(bundleName);
 			if (bundle == null) {
-				System.err.printf("Can't find bundle %s while trying to report error:\n%s\n", bundleName, message);
+				System.err.printf("Can't find bundle %s while trying to report error:\n%s\n%s\n", bundleName, message, error);
 				return;
 			}
 			
