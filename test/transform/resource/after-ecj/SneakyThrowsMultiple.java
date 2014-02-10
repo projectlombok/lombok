@@ -13,11 +13,13 @@ class SneakyThrowsMultiple {
             System.out.println("test1");
             throw new IOException();
           }
-        catch (final IOException $ex)           {
+        catch (final IOException $ex)
+          {
             throw lombok.Lombok.sneakyThrow($ex);
           }
       }
-    catch (final Throwable $ex)       {
+    catch (final Throwable $ex)
+      {
         throw lombok.Lombok.sneakyThrow($ex);
       }
   }
@@ -36,11 +38,13 @@ class SneakyThrowsMultiple {
                   throw new AWTException("WHAT");
                 }
           }
-        catch (final AWTException $ex)           {
+        catch (final AWTException $ex)
+          {
             throw lombok.Lombok.sneakyThrow($ex);
           }
       }
-    catch (final IOException $ex)       {
+    catch (final IOException $ex)
+      {
         throw lombok.Lombok.sneakyThrow($ex);
       }
   }
@@ -52,11 +56,13 @@ class SneakyThrowsMultiple {
             System.out.println("test3");
             throw new IOException();
           }
-        catch (final IOException $ex)           {
+        catch (final IOException $ex)
+          {
             throw lombok.Lombok.sneakyThrow($ex);
           }
       }
-    catch (final Throwable $ex)       {
+    catch (final Throwable $ex)
+      {
         throw lombok.Lombok.sneakyThrow($ex);
       }
   }

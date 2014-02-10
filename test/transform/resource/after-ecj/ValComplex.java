@@ -16,7 +16,7 @@ public class ValComplex {
         final @val int field = 20;
         final @val int inner = 10;
         switch (field) {
-        case 5 : ;
+        case 5 :
             final @val char[] shouldBeCharArray2 = shouldBeCharArray;
             final @val int innerInner = inner;
         }

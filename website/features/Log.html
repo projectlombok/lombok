@@ -34,7 +34,7 @@
 				<dd>Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="http://www.slf4j.org/api/org/slf4j/ext/XLogger.html">org.slf4j.ext.XLogger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="http://www.slf4j.org/apidocs/org/slf4j/ext/XLoggerFactory.html#getXLogger(java.lang.Class)">org.slf4j.ext.XLoggerFactory.getXLogger</a>(LogExample.<span class="keyword">class</span>);</code></dd>
 			</dl>
 			</p><p>
-            By default, the category (or name) of the logger will be the type where the annotation was placed. This can be customised by specifying a value for the category.
+            By default, the topic (or name) of the logger will be the class name of the class annotated with the <code>@Log</code> annotation. This can be customised by specifying the <code>topic</code> parameter. For example: <code>@XSlf4j(topic="reporting")</code>.
 			</p>
 		</div>
 		<div class="snippets">
@@ -54,10 +54,7 @@
 				<p>
 				If a field called <code>log</code> already exists, a warning will be emitted and no code will be generated.
 				</p><p>
-				A future feature of lombok's diverse log annotations is to find calls to the logger field and, if the chosen logging framework supports
-				it and the log level can be compile-time determined from the log call, guard it with an <code>if</code> statement. This way if
-				the log statement ends up being ignored, the potentially expensive calculation of the log string is avoided entirely. This does mean
-				that you should <em>NOT</em> put any side-effects in the expression that you log.
+				A future feature of lombok's diverse log annotations is to find calls to the logger field and, if the chosen logging framework supports it and the log level can be compile-time determined from the log call, guard it with an <code>if</code> statement. This way if the log statement ends up being ignored, the potentially expensive calculation of the log string is avoided entirely. This does mean that you should <em>NOT</em> put any side-effects in the expression that you log.
 				</p>
 			</div>
 		</div>

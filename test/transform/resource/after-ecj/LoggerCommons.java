@@ -15,7 +15,7 @@ import lombok.extern.apachecommons.CommonsLog;
     super();
   }
 }
-@CommonsLog("DifferentName") class LoggerCommonsWithDifferentName {
+@CommonsLog(topic = "DifferentName") class LoggerCommonsWithDifferentName {
   private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog("DifferentName");
   <clinit>() {
   }

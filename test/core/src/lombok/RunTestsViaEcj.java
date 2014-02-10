@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2013 The Project Lombok Authors.
+ * Copyright (C) 2010-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,6 +70,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		warnings.put(CompilerOptions.OPTION_ReportUnusedLabel, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedImport, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedPrivateMember, "ignore");
+		warnings.put(CompilerOptions.OPTION_Source, CompilerOptions.VERSION_1_7);
 		options.set(warnings);
 		return options;
 	}

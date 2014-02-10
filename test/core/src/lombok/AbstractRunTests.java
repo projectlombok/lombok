@@ -225,8 +225,8 @@ public abstract class AbstractRunTests {
 		actualLines = removeBlanks(actualLines);
 		int size = Math.min(expectedLines.length, actualLines.length);
 		for (int i = 0; i < size; i++) {
-			String expected = expectedLines[i];
-			String actual = actualLines[i];
+			String expected = trimRight(expectedLines[i]);
+			String actual = trimRight(actualLines[i]);
 			assertEquals(String.format("Difference in %s on line %d", name, i + 1), expected, actual);
 		}
 		if (expectedLines.length > actualLines.length) {
@@ -235,6 +235,15 @@ public abstract class AbstractRunTests {
 		if (expectedLines.length < actualLines.length) {
 			fail(String.format("Extra line %d in generated %s: %s", size + 1, name, actualLines[size]));
 		}
+	}
+	
+	private static String trimRight(String in) {
+		int endIdx = in.length() - 1;
+		while (endIdx > -1 && Character.isWhitespace(in.charAt(endIdx))) {
+			endIdx--;
+		}
+		
+		return in.substring(0, endIdx);
 	}
 	
 	private static String[] removeBlanks(String[] in) {

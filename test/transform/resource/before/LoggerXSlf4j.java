@@ -8,6 +8,6 @@ class LoggerXSlf4j {
 class LoggerXSlf4jWithImport {
 }
 
-@XSlf4j("DifferentName")
+@XSlf4j(topic="DifferentName")
 class LoggerXSlf4jWithDifferentName {
 }

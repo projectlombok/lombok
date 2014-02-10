@@ -35,17 +35,17 @@
 		
 		<dependency org="net.java.openjdk.custom" name="javac6" rev="1.6.0.18" conf="javac6->runtime; contrib->sources" />
 		<dependency org="net.java.openjdk.custom" name="javac7" rev="1.7.0" conf="javac7->runtime; contrib->sources" />
-		<dependency org="org.eclipse.custom" name="ecj" rev="3.6.2" conf="ecj->default; contrib->sources" />
+		<dependency org="org.eclipse.custom" name="ecj" rev="4.3.1" conf="ecj->default; contrib->sources" />
 		
 		<dependency org="netbeans.org" name="boot" rev="6.8beta" conf="netbeansBuild->build" />
 		<dependency org="netbeans.org" name="openide.modules" rev="6.8beta" conf="netbeansBuild->build" />
 		<dependency org="netbeans.org" name="openide.util" rev="6.8beta" conf="netbeansBuild->build" />
 		<dependency org="netbeans.org" name="modules.java.source" rev="6.8beta" conf="netbeansBuild->build" />
 		
-		<dependency org="org.eclipse.custom" name="core.runtime" rev="3.6.0" conf="eclipseBuild->default; contrib->sources" />
-		<dependency org="org.eclipse.custom" name="jdt.core" rev="3.6.0" conf="eclipseBuild->default; contrib->sources" />
-		<dependency org="org.eclipse.custom" name="jdt.ui" rev="3.6.0" conf="eclipseBuild->default; contrib->sources" />
-		<dependency org="org.eclipse.custom" name="equinox.common" rev="3.6.0" conf="eclipseBuild->default; contrib->sources" />
-		<dependency org="org.eclipse.custom" name="osgi" rev="3.6.0" conf="eclipseBuild->default; contrib->sources" />
+		<dependency org="org.eclipse.custom" name="core.runtime" rev="3.9.0" conf="eclipseBuild->default; contrib->sources" />
+		<dependency org="org.eclipse.custom" name="jdt.core" rev="3.9.1" conf="eclipseBuild->default; contrib->sources" />
+		<dependency org="org.eclipse.custom" name="jdt.ui" rev="3.9.1" conf="eclipseBuild->default; contrib->sources" />
+		<dependency org="org.eclipse.custom" name="equinox.common" rev="3.6.200" conf="eclipseBuild->default; contrib->sources" />
+		<dependency org="org.eclipse.custom" name="osgi" rev="3.9.0" conf="eclipseBuild->default; contrib->sources" />
 	</dependencies>
 </ivy-module>

@@ -8,6 +8,6 @@ class LoggerCommons {
 class LoggerCommonsWithImport {
 }
 
-@CommonsLog("DifferentName")
+@CommonsLog(topic="DifferentName")
 class LoggerCommonsWithDifferentName {
 }

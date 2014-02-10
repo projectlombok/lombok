@@ -17,7 +17,7 @@ public class LogExampleOther {
 	}
 }
 
-@CommonsLog("CounterLog")
+@CommonsLog(topic="CounterLog")
 public class LogExampleCategory {
 
 	public static void main(String... args) {

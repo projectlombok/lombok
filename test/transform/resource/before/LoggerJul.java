@@ -8,6 +8,6 @@ class LoggerJul {
 class LoggerJulWithImport {
 }
 
-@Log("DifferentName")
+@Log(topic="DifferentName")
 class LoggerJulWithDifferentName {
 }
