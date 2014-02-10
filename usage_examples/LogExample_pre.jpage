@@ -16,3 +16,11 @@ public class LogExampleOther {
 		log.error("Something else is wrong here");
 	}
 }
+
+@CommonsLog("CounterLog")
+public class LogExampleCategory {
+
+	public static void main(String... args) {
+		log.error("Calling the 'CounterLog' with a message");
+	}
+}

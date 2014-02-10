@@ -14,3 +14,7 @@ class LoggerSlf4jOuter {
 		
 	}
 }
+
+@Slf4j("DifferentLogger")
+class LoggerSlf4jWithDifferentLoggerName {
+}
