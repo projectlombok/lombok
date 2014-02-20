@@ -62,6 +62,7 @@ import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.model.JavacTypes;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -93,6 +94,8 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 			"clone()",
 			"finalize()"));
 	
+	private static final String LEGALITY_OF_DELEGATE = "@Delegate is legal only on instance fields or no-argument instance methods.";
+	
 	@Override public void handle(AnnotationValues<Delegate> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		deleteAnnotationIfNeccessary(annotationNode, Delegate.class);
 		
@@ -100,19 +103,24 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		Name delegateName = annotationNode.toName(annotationNode.up().getName());
 		DelegateReceiver delegateReceiver;
 		JavacResolution reso = new JavacResolution(annotationNode.getContext());
+		JCTree member = annotationNode.up().get();
 		if (annotationNode.up().getKind() == Kind.FIELD) {
-			delegateReceiver = DelegateReceiver.FIELD;
-			delegateType = annotationNode.up().get().type;
-			if (delegateType == null) reso.resolveClassMember(annotationNode.up());
-			delegateType = annotationNode.up().get().type;
-		} else if (annotationNode.up().getKind() == Kind.METHOD) {
-			if (!(annotationNode.up().get() instanceof JCMethodDecl)) {
-				annotationNode.addError("@Delegate is legal only on no-argument methods.");
+			if ((((JCVariableDecl) member).mods.flags & Flags.STATIC) != 0) {
+				annotationNode.addError(LEGALITY_OF_DELEGATE);
 				return;
 			}
-			JCMethodDecl methodDecl = (JCMethodDecl) annotationNode.up().get();
-			if (!methodDecl.params.isEmpty()) {
-				annotationNode.addError("@Delegate is legal only on no-argument methods.");
+			delegateReceiver = DelegateReceiver.FIELD;
+			delegateType = member.type;
+			if (delegateType == null) reso.resolveClassMember(annotationNode.up());
+			delegateType = member.type;
+		} else if (annotationNode.up().getKind() == Kind.METHOD) {
+			if (!(member instanceof JCMethodDecl)) {
+				annotationNode.addError(LEGALITY_OF_DELEGATE);
+				return;
+			}
+			JCMethodDecl methodDecl = (JCMethodDecl) member;
+			if (!methodDecl.params.isEmpty() || (methodDecl.mods.flags & Flags.STATIC) != 0) {
+				annotationNode.addError(LEGALITY_OF_DELEGATE);
 				return;
 			}
 			delegateReceiver = DelegateReceiver.METHOD;
