@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.12.5 "Edgy Guinea Pig"
+* BUGFIX: Eclipse refactoring _Extract Local Variable_ didn't work inside `@SneakyThrows` annotated methods [Issue #633](https://code.google.com/p/projectlombok/issues/detail?id=633).
 * FEATURE: The various `@Log` annotations now support the `topic` parameter, which sets the logger's name. The default remains the fully qualified type name of the class itself. [Issue #632](https://code.google.com/p/projectlombok/issues/detail?id=632).
 * BUGFIX: {Netbeans} @SneakyThrows would lead to unused import and break refactorings [Issue #471](https://code.google.com/p/projectlombok/issues/detail?id=471).
 * BUGFIX: Eclipse Organize Imports would generate error: AST must not be null [Issue #631](https://code.google.com/p/projectlombok/issues/detail?id=631).

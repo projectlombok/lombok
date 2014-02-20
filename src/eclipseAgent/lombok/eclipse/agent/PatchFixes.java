@@ -256,10 +256,7 @@ public class PatchFixes {
 			org.eclipse.jdt.internal.compiler.ast.ASTNode internalNode) throws Exception {
 		if (internalNode == null || domNode == null) return;
 		boolean isGenerated = internalNode.getClass().getField("$generatedBy").get(internalNode) != null;
-		if (isGenerated) {
-			domNode.getClass().getField("$isGenerated").set(domNode, true);
-			domNode.setFlags(domNode.getFlags() & ~org.eclipse.jdt.core.dom.ASTNode.ORIGINAL);
-		}
+		if (isGenerated) domNode.getClass().getField("$isGenerated").set(domNode, true);
 	}
 	
 	public static void setIsGeneratedFlagForName(org.eclipse.jdt.core.dom.Name name, Object internalNode) throws Exception {
