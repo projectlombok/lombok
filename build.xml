@@ -370,7 +370,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 
 		<replaceregexp file=".classpath" flags="is" encoding="UTF-8">
 			<regexp pattern="^(.*?)(.)${intentionallyBreakTheRegexp}(&lt;classpathentry kind=.lib. path=)(.*)$" />
-			<substitution expression="\1\2&lt;classpathentry kind=&quot;lib&quot; path=&quot;____AUGMENT_BIN____&quot; sourcepath=&quot;____AUGMENT_BIN____&quot;/&gt;\${line.separator}\2\3\4" />
+			<substitution expression="\1\2&lt;classpathentry kind=&quot;lib&quot; path=&quot;____AUGMENT_BIN____&quot; sourcepath=&quot;____AUGMENT_SRC____&quot;/&gt;\${line.separator}\2\3\4" />
 		</replaceregexp>
 		<replace file=".classpath" token="____AUGMENT_BIN____" value="${augment.bin}" />
 		<replace file=".classpath" token="____AUGMENT_SRC____" value="${augment.src}" />
