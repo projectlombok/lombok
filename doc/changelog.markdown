@@ -2,7 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.12.5 "Edgy Guinea Pig"
-* GOOSECHASE: We're trying to fix a deadlock/race condition in the EquinoxClassLoader when Eclipse works with SVN or Gradle.
+* GOOSECHASE: We're trying to fix a deadlock/race condition in the EquinoxClassLoader when Eclipse works with SVN or Gradle. (v2)
 * BUGFIX: Eclipse quickfix _Surround with try/catch block_ didn't work inside `@SneakyThrows` annotated methods [Issue #438](https://code.google.com/p/projectlombok/issues/detail?id=438).
 * BUGFIX: Eclipse refactoring _Extract Local Variable_ didn't work inside `@SneakyThrows` annotated methods [Issue #633](https://code.google.com/p/projectlombok/issues/detail?id=633).
 * FEATURE: The various `@Log` annotations now support the `topic` parameter, which sets the logger's name. The default remains the fully qualified type name of the class itself. [Issue #632](https://code.google.com/p/projectlombok/issues/detail?id=632).
