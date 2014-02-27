@@ -22,7 +22,7 @@
 			fulfilled until those fields are properly initialized later. Certain java constructs, such as hibernate and the Service Provider Interface require a no-args constructor.
 			This annotation is useful primarily in combination with either <code>@Data</code> or one of the other constructor generating annotations.
 			</p><p>
-			<code>@RequiredArgsConstructor</code> generates a constructor with 1 parameter for each field that requires special handling. All <code>final</code> fields get a parameter,
+			<code>@RequiredArgsConstructor</code> generates a constructor with 1 parameter for each field that requires special handling. All non-initialized <code>final</code> fields get a parameter,
 			as well as any fields that are marked as <code>@NonNull</code> that aren't initialized where they are declared. For those fields marked with <code>@NonNull</code>, an explicit
 			null check is also generated. The constructor will throw a <code>NullPointerException</code> if any of the parameters intended for the fields marked with <code>@NonNull</code>
 			contain <code>null</code>. The order of the parameters match the order in which the fields appear in your class.
