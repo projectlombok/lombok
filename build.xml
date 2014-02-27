@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2010-2011 The Project Lombok Authors.
+ Copyright (C) 2010-2014 The Project Lombok Authors.
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -275,6 +275,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<srcdir dir="test/transform/src" />
 			<srcdir dir="test/core/src" />
 			<srcdir dir="test/bytecode/src" />
+			<local org="org.projectlombok" name="lombok.patcher" dir="../lombok.patcher" />
 			<conf name="${eclipse.build.configname}" sources="contrib" />
 			<conf name="test" sources="contrib" />
 			<settings>
