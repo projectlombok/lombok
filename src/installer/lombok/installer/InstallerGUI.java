@@ -793,7 +793,7 @@ public class InstallerGUI {
 		"<html><font size=\"+1\"><b><i>IDEs</i></b></font></html>";
 	
 	private static final String IDE_EXPLANATION =
-		"<html>Lombok can update your Eclipse and Netbeans to fully support all Lombok features.<br>" +
+		"<html>Lombok can update your Eclipse or eclipse-based IDE to fully support all Lombok features.<br>" +
 		"Select IDE installations below and hit 'Install/Update'.</html>";
 	
 	private static final String IDE_LOADING_EXPLANATION =
@@ -824,13 +824,7 @@ public class InstallerGUI {
 		"<pre>-Xbootclasspath/a:lombok.jar<br>" +
 		"-javaagent:lombok.jar</pre></li></ol>" +
 		"On Mac OS X, eclipse.ini is hidden in<br>" +
-		"<code>Eclipse.app/Contents/MacOS</code> so that's where I place the jar files.<p>" +
-		"<h2>Netbeans</h2><ol>" +
-		"<li>First, I copy myself (lombok.jar) to your Netbeans install directory.</li>" +
-		"<lI>Then, I edit <i>etc%1$snetbeans.conf</i> to add the following argument to<br><b>netbeans_default_options</b>:<br>" +
-		"<pre>-J-javaagent:lombok.jar</pre></li></ol>" +
-		"On Mac OS X, your netbeans directory is hidden in<br>" +
-		"<code>NetBeans.app/Contents/Resources/NetBeans</code></html>";
+		"<code>Eclipse.app/Contents/MacOS</code> so that's where I place the jar files.</html>";
 	
 	private static class JHyperLink extends JButton {
 		private static final long serialVersionUID = 1L;
