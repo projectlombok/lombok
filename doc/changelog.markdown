@@ -6,11 +6,13 @@ Lombok Changelog
 * PLATFORM: Added support for Eclipse Luna. [Issue #609](https://code.google.com/p/projectlombok/issues/detail?id=609)
 * PLATFORM: Initial JDK8 support for eclipse's alpha support in kepler. [Issue #597](https://code.google.com/p/projectlombok/issues/detail?id=597)
 * FEATURE: The various `@Log` annotations now support the `topic` parameter, which sets the logger's name. The default remains the fully qualified type name of the class itself. [Issue #632](https://code.google.com/p/projectlombok/issues/detail?id=632).
+* BUGFIX: Using lombok with IntelliJ and the IBM JDK would result in NPEs during initialization. [Issue #648](https://code.google.com/p/projectlombok/issues/detail?id=648), [IntelliJ plugin issue #74](https://code.google.com/p/lombok-intellij-plugin/issues/detail?id=74).
 * BUGFIX: Eclipse quickfix _Surround with try/catch block_ didn't work inside `@SneakyThrows` annotated methods [Issue #438](https://code.google.com/p/projectlombok/issues/detail?id=438).
 * BUGFIX: Eclipse refactoring _Extract Local Variable_ didn't work inside `@SneakyThrows` annotated methods [Issue #633](https://code.google.com/p/projectlombok/issues/detail?id=633).
 * BUGFIX: {Netbeans} @SneakyThrows would lead to unused import and break refactorings [Issue #471](https://code.google.com/p/projectlombok/issues/detail?id=471).
 * BUGFIX: Eclipse Organize Imports would generate error: AST must not be null [Issue #631](https://code.google.com/p/projectlombok/issues/detail?id=631).
 * BUGFIX: Copying javadoc to getters / setters / withers would copy non-relevant sections too. [Issue #585](https://code.google.com/p/projectlombok/issues/detail?id=585).
+* ENHANCEMENT: Lombok used to ship with [JNA](http://en.wikipedia.org/wiki/Java_Native_Access). It added over 800k to the size of lombok.jar and could mess with usage of JNA in your local environment, especially in eclipse. [Issue #647](https://code.google.com/p/projectlombok/issues/detail?id=647)
 * DETAIL: {Delombok} Inside enum bodies the delombok formatter didn't respect the emptyLines directive [Issue #629](https://code.google.com/p/projectlombok/issues/detail?id=629).
 * DETAIL: Use smaller primes (<127) for generating hashcodes [Issue #625](https://code.google.com/p/projectlombok/issues/detail?id=625)
 
