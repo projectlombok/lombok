@@ -34,7 +34,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 
-import lombok.patcher.HomeFinder;
+import lombok.patcher.ClassRootFinder;
 import lombok.patcher.Hook;
 import lombok.patcher.MethodTarget;
 import lombok.patcher.ScriptManager;
@@ -57,7 +57,7 @@ public class DisableCheckedExceptionsAgent extends AbstractProcessor {
 			procEnv.getMessager().printMessage(Kind.WARNING, "You aren't using a compiler based around javac v1.6, so disableCheckedExceptions will not work.\n" +
 					"Your processor class is: " + className);
 		} else {
-			new LiveInjector().inject(HomeFinder.findHomeOfClass(DisableCheckedExceptionsAgent.class));
+			new LiveInjector().inject(ClassRootFinder.findClassRootOfClass(DisableCheckedExceptionsAgent.class));
 		}
 	}
 	

@@ -35,7 +35,7 @@ import java.util.jar.JarOutputStream;
 import java.util.zip.ZipEntry;
 
 import lombok.Lombok;
-import lombok.patcher.HomeFinder;
+import lombok.patcher.ClassRootFinder;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -79,7 +79,7 @@ public class PublicApiCreatorApp extends LombokApp {
 	 * a jar that wasn't accessed via the file-system, or if its started via e.g. unpacking the jar.
 	 */
 	private static File findOurJar() {
-		return new File(HomeFinder.findHomeOfClass(PublicApiCreatorApp.class));
+		return new File(ClassRootFinder.findClassRootOfClass(PublicApiCreatorApp.class));
 	}
 	
 	private int writeApiJar(File outFile) throws Exception {
