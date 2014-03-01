@@ -39,7 +39,7 @@ import lombok.core.LombokApp;
 import lombok.core.SpiLoadUtil;
 import lombok.core.Version;
 import lombok.installer.IdeFinder.OS;
-import lombok.patcher.inject.LiveInjector;
+import lombok.patcher.HomeFinder;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -101,7 +101,7 @@ public class Installer {
 	}
 	
 	public static boolean isSelf(String jar) {
-		String self = LiveInjector.findPathJar(Installer.class);
+		String self = HomeFinder.findHomeOfClass(Installer.class);
 		if (self == null) return false;
 		File a = new File(jar).getAbsoluteFile();
 		File b = new File(self).getAbsoluteFile();
