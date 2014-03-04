@@ -91,9 +91,9 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 		
 		annotationNode.rebuild();
 	}
-
-
-	private List<Extension> getExtensions(final JavacNode typeNode, final List<Object> extensionProviders) {
+	
+	
+	public List<Extension> getExtensions(final JavacNode typeNode, final List<Object> extensionProviders) {
 		List<Extension> extensions = new ArrayList<Extension>();
 		for (Object extensionProvider : extensionProviders) {
 			if (!(extensionProvider instanceof JCFieldAccess)) continue;
@@ -108,7 +108,7 @@ public class HandleExtensionMethod extends JavacAnnotationHandler<ExtensionMetho
 		return extensions;
 	}
 	
-	private Extension getExtension(final JavacNode typeNode, final ClassType extensionMethodProviderType) {
+	public Extension getExtension(final JavacNode typeNode, final ClassType extensionMethodProviderType) {
 		List<MethodSymbol> extensionMethods = new ArrayList<MethodSymbol>();
 		TypeSymbol tsym = extensionMethodProviderType.asElement();
 		if (tsym != null) for (Symbol member : tsym.getEnclosedElements()) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import lombok.installer.eclipse.EclipseFinder;
-import lombok.patcher.inject.LiveInjector;
+import lombok.patcher.ClassRootFinder;
 
 /**
  * Represents a location that contains an IDE.
@@ -46,7 +46,7 @@ public abstract class IdeLocation {
 	 * a jar that wasn't accessed via the file-system, or if its started via e.g. unpacking the jar.
 	 */
 	public static File findOurJar() {
-		return new File(LiveInjector.findPathJar(IdeFinder.class));
+		return new File(ClassRootFinder.findClassRootOfClass(IdeFinder.class));
 	}
 	
 	@Override public String toString() {

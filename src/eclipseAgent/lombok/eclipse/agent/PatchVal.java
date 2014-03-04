@@ -53,12 +53,20 @@ public class PatchVal {
 	
 	public static TypeBinding skipResolveInitializerIfAlreadyCalled(Expression expr, BlockScope scope) {
 		if (expr.resolvedType != null) return expr.resolvedType;
-		return expr.resolveType(scope);
+		try {
+			return expr.resolveType(scope);
+		} catch (NullPointerException e) {
+			return null;
+		}
 	}
 	
 	public static TypeBinding skipResolveInitializerIfAlreadyCalled2(Expression expr, BlockScope scope, LocalDeclaration decl) {
 		if (decl != null && LocalDeclaration.class.equals(decl.getClass()) && expr.resolvedType != null) return expr.resolvedType;
-		return expr.resolveType(scope);
+		try {
+			return expr.resolveType(scope);
+		} catch (NullPointerException e) {
+			return null;
+		}
 	}
 	
 	public static boolean matches(String key, char[] array) {
@@ -143,7 +151,20 @@ public class PatchVal {
 		TypeReference replacement = null;
 		
 		if (init != null) {
-			TypeBinding resolved = decomponent ? getForEachComponentType(init, scope) : init.resolveType(scope);
+			if (init.getClass().getName().equals("org.eclipse.jdt.internal.compiler.ast.LambdaExpression")) {
+				return false;
+			}
+			
+			TypeBinding resolved = null;
+			try {
+				resolved = decomponent ? getForEachComponentType(init, scope) : init.resolveType(scope);
+			} catch (NullPointerException e) {
+				// This definitely occurs if as part of resolving the initializer expression, a
+				// lambda expression in it must also be resolved (such as when lambdas are part of
+				// a ternary expression). This can't result in a viable 'val' matching, so, we
+				// just go with 'Object' and let the IDE print the appropriate errors.
+				resolved = null;
+			}
 			if (resolved != null) {
 				replacement = makeType(resolved, local.type, false);
 			}

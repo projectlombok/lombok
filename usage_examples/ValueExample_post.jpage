@@ -46,7 +46,7 @@ public final class ValueExample {
 	
 	@java.lang.Override
 	public int hashCode() {
-		final int PRIME = 31;
+		final int PRIME = 59;
 		int result = 1;
 		final Object $name = this.getName();
 		result = result * PRIME + ($name == null ? 0 : $name.hashCode());
@@ -103,7 +103,7 @@ public final class ValueExample {
 		
 		@java.lang.Override
 		public int hashCode() {
-			final int PRIME = 31;
+			final int PRIME = 59;
 			int result = 1;
 			final Object $name = this.getName();
 			result = result * PRIME + ($name == null ? 0 : $name.hashCode());

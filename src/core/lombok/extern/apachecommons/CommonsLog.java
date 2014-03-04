@@ -59,4 +59,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface CommonsLog {
+	/**
+	 * Sets the category of the constructed Logger. By default, it will use the type where the annotation is placed.
+	 */
+	String topic() default "";
 }

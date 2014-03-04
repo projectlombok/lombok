@@ -38,7 +38,7 @@
 			</p><p>
 			If the class already contains a method with the same name as any method that would normally be generated, that method is not generated, and no warning or
 			error is emitted. For example, if you already have a method with signature <code>void hashCode(int a, int b, int c)</code>, no <code>int hashCode()</code>
-			method will be generated, even though technically <code>int hashCode()</code> is an entirely different method. The same rule applies to the constructor,
+			method will be generated, even though technically <code>int hashCode()</code> is an entirely different method. The same rule applies to the constructor (any explicit constructor will prevent <code>@Data</code> from generating one),
 			<code>toString</code>, <code>equals</code>, and all getters and setters.
 			</p><p>
 			<code>@Data</code> can handle generics parameters for fields just fine. In order to reduce the boilerplate when constructing objects for classes with

@@ -24,7 +24,7 @@ public class EqualsAndHashCodeExample {
 	}
 	
 	@Override public int hashCode() {
-		final int PRIME = 31;
+		final int PRIME = 59;
 		int result = 1;
 		final long temp1 = Double.doubleToLongBits(this.score);
 		result = (result*PRIME) + (this.name == null ? 0 : this.name.hashCode());
@@ -57,7 +57,7 @@ public class EqualsAndHashCodeExample {
 		}
 		
 		@Override public int hashCode() {
-			final int PRIME = 31;
+			final int PRIME = 59;
 			int result = 1;
 			result = (result*PRIME) + super.hashCode();
 			result = (result*PRIME) + this.width;

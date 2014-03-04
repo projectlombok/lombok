@@ -591,7 +591,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
         for (List<JCTree> l = stats; l.nonEmpty(); l = l.tail) {
         	x++;
             if (!isEnumerator(l.head)) {
-                align();
+                if (!suppressAlignmentForEmptyLines(l.head)) align();
                 printStat(l.head);
                 println();
             }

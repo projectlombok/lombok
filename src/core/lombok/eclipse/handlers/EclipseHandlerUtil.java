@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -198,7 +198,7 @@ public class EclipseHandlerUtil {
 		private void msg(int msgType, String message, String bundleName, Throwable error) {
 			Bundle bundle = Platform.getBundle(bundleName);
 			if (bundle == null) {
-				System.err.printf("Can't find bundle %s while trying to report error:\n%s\n", bundleName, message);
+				System.err.printf("Can't find bundle %s while trying to report error:\n%s\n%s\n", bundleName, message, error);
 				return;
 			}
 			
@@ -436,21 +436,21 @@ public class EclipseHandlerUtil {
 					}
 				}
 			}
-			TypeReference typeRef = new ParameterizedQualifiedTypeReference(iRef.tokens, args, iRef.dimensions(), iRef.sourcePositions);
+			TypeReference typeRef = new ParameterizedQualifiedTypeReference(iRef.tokens, args, iRef.dimensions(), copy(iRef.sourcePositions));
 			setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
 		
 		if (ref instanceof ArrayQualifiedTypeReference) {
 			ArrayQualifiedTypeReference iRef = (ArrayQualifiedTypeReference) ref;
-			TypeReference typeRef = new ArrayQualifiedTypeReference(iRef.tokens, iRef.dimensions(), iRef.sourcePositions);
+			TypeReference typeRef = new ArrayQualifiedTypeReference(iRef.tokens, iRef.dimensions(), copy(iRef.sourcePositions));
 			setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
 		
 		if (ref instanceof QualifiedTypeReference) {
 			QualifiedTypeReference iRef = (QualifiedTypeReference) ref;
-			TypeReference typeRef = new QualifiedTypeReference(iRef.tokens, iRef.sourcePositions);
+			TypeReference typeRef = new QualifiedTypeReference(iRef.tokens, copy(iRef.sourcePositions));
 			setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
@@ -1322,7 +1322,7 @@ public class EclipseHandlerUtil {
 		return type.add(field, Kind.FIELD);
 	}
 	
-	private static boolean isEnumConstant(final FieldDeclaration field) {
+	public static boolean isEnumConstant(final FieldDeclaration field) {
 		return ((field.initialization instanceof AllocationExpression) && (((AllocationExpression) field.initialization).enumConstant == field));
 	}
 	
@@ -1390,6 +1390,19 @@ public class EclipseHandlerUtil {
 	private static final char[] ALL = "all".toCharArray();
 	
 	public static Annotation[] createSuppressWarningsAll(ASTNode source, Annotation[] originalAnnotationArray) {
+		if (originalAnnotationArray != null) for (Annotation ann : originalAnnotationArray) {
+			char[] lastToken = null;
+			
+			if (ann.type instanceof QualifiedTypeReference) {
+				char[][] t = ((QualifiedTypeReference) ann.type).tokens;
+				lastToken = t[t.length - 1];
+			} else if (ann.type instanceof SingleTypeReference) {
+				lastToken = ((SingleTypeReference) ann.type).token;
+			}
+			
+			if (lastToken != null && new String(lastToken).equals("SuppressWarnings")) return originalAnnotationArray;
+		}
+		
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		long[] poss = new long[3];
@@ -1508,7 +1521,7 @@ public class EclipseHandlerUtil {
 				} else if (castTo.getClass() == QualifiedTypeReference.class) {
 					QualifiedTypeReference qtr = (QualifiedTypeReference) castTo;
 					//Same here, but for the more complex types, they stay types.
-					castToConverted = new QualifiedNameReference(qtr.tokens, qtr.sourcePositions, qtr.sourceStart, qtr.sourceEnd);
+					castToConverted = new QualifiedNameReference(qtr.tokens, copy(qtr.sourcePositions), qtr.sourceStart, qtr.sourceEnd);
 					castToConverted.bits = (castToConverted.bits & ~Binding.VARIABLE) | Binding.TYPE;
 					setGeneratedBy(castToConverted, source);
 				}
@@ -1601,7 +1614,7 @@ public class EclipseHandlerUtil {
 		return true;
 	}
 	
-	static List<Annotation> unboxAndRemoveAnnotationParameter(Annotation annotation, String annotationName, String errorName, EclipseNode errorNode) {
+	public static List<Annotation> unboxAndRemoveAnnotationParameter(Annotation annotation, String annotationName, String errorName, EclipseNode errorNode) {
 		if ("value".equals(annotationName)) {
 			// We can't unbox this, because SingleMemberAnnotation REQUIRES a value, and this method
 			// is supposed to remove the value. That means we need to replace the SMA with either
@@ -1693,7 +1706,7 @@ public class EclipseHandlerUtil {
 		return Collections.emptyList();
 	}
 	
-	static NameReference createNameReference(String name, Annotation source) {
+	public static NameReference createNameReference(String name, Annotation source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
@@ -1706,5 +1719,9 @@ public class EclipseHandlerUtil {
 		
 		setGeneratedBy(nameReference, source);
 		return nameReference;
+	}
+	
+	private static long[] copy(long[] array) {
+		return array == null ? null : array.clone();
 	}
 }

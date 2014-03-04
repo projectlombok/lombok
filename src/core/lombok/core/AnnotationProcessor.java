@@ -43,7 +43,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 
-import lombok.patcher.inject.LiveInjector;
+import lombok.patcher.ClassRootFinder;
 
 @SupportedAnnotationTypes("*")
 public class AnnotationProcessor extends AbstractProcessor {
@@ -102,7 +102,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 			if (environmentClassLoader != null && environmentClassLoader.getClass().getCanonicalName().equals("org.codehaus.plexus.compiler.javac.IsolatedClassLoader")) {
 				if (lombokAlreadyAddedTo.put(environmentClassLoader, true) == null) {
 					Method m = environmentClassLoader.getClass().getDeclaredMethod("addURL", URL.class);
-					URL selfUrl = new File(LiveInjector.findPathJar(AnnotationProcessor.class)).toURI().toURL();
+					URL selfUrl = new File(ClassRootFinder.findClassRootOfClass(AnnotationProcessor.class)).toURI().toURL();
 					m.invoke(environmentClassLoader, selfUrl);
 				}
 				return environmentClassLoader;

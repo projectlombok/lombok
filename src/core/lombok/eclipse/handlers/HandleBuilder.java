@@ -230,7 +230,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 	}
 	
-	private MethodDeclaration generateBuilderMethod(String builderMethodName, String builderClassName, EclipseNode type, TypeParameter[] typeParams, ASTNode source) {
+	public MethodDeclaration generateBuilderMethod(String builderMethodName, String builderClassName, EclipseNode type, TypeParameter[] typeParams, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
 		
@@ -249,7 +249,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return out;
 	}
 	
-	private MethodDeclaration generateBuildMethod(String name, char[] staticName, TypeReference returnType, List<char[]> fieldNames, EclipseNode type, ASTNode source, TypeReference[] thrownExceptions) {
+	public MethodDeclaration generateBuildMethod(String name, char[] staticName, TypeReference returnType, List<char[]> fieldNames, EclipseNode type, ASTNode source, TypeReference[] thrownExceptions) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
 		
@@ -302,7 +302,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return out;
 	}
 	
-	private List<EclipseNode> addFieldsToBuilder(EclipseNode builderType, List<char[]> namesOfParameters, List<TypeReference> typesOfParameters, ASTNode source) {
+	public List<EclipseNode> addFieldsToBuilder(EclipseNode builderType, List<char[]> namesOfParameters, List<TypeReference> typesOfParameters, ASTNode source) {
 		int len = namesOfParameters.size();
 		TypeDeclaration td = (TypeDeclaration) builderType.get();
 		FieldDeclaration[] existing = td.fields;
@@ -334,7 +334,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	
 	private static final AbstractMethodDeclaration[] EMPTY = {};
 	
-	private MethodDeclaration makeSetterMethodForBuilder(EclipseNode builderType, EclipseNode fieldNode, ASTNode source, boolean fluent, boolean chain) {
+	public MethodDeclaration makeSetterMethodForBuilder(EclipseNode builderType, EclipseNode fieldNode, ASTNode source, boolean fluent, boolean chain) {
 		TypeDeclaration td = (TypeDeclaration) builderType.get();
 		AbstractMethodDeclaration[] existing = td.methods;
 		if (existing == null) existing = EMPTY;
@@ -355,7 +355,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				source, Collections.<Annotation>emptyList(), Collections.<Annotation>emptyList());
 	}
 	
-	private EclipseNode findInnerClass(EclipseNode parent, String name) {
+	public EclipseNode findInnerClass(EclipseNode parent, String name) {
 		char[] c = name.toCharArray();
 		for (EclipseNode child : parent.down()) {
 			if (child.getKind() != Kind.TYPE) continue;
@@ -365,7 +365,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return null;
 	}
 	
-	private EclipseNode makeBuilderClass(EclipseNode tdParent, String builderClassName, TypeParameter[] typeParams, ASTNode source) {
+	public EclipseNode makeBuilderClass(EclipseNode tdParent, String builderClassName, TypeParameter[] typeParams, ASTNode source) {
 		TypeDeclaration parent = (TypeDeclaration) tdParent.get();
 		TypeDeclaration builder = new TypeDeclaration(parent.compilationResult);
 		builder.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;

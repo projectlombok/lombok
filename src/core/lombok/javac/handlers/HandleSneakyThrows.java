@@ -42,12 +42,15 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
+import com.sun.tools.javac.tree.JCTree.JCTry;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
+import lombok.javac.Javac;
 
 /**
  * Handles the {@code lombok.SneakyThrows} annotation for javac.
@@ -81,7 +84,7 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 		}
 	}
 	
-	private void handleMethod(JavacNode annotation, JCMethodDecl method, Collection<String> exceptions) {
+	public void handleMethod(JavacNode annotation, JCMethodDecl method, Collection<String> exceptions) {
 		JavacNode methodNode = annotation.up();
 		
 		if ( (method.mods.flags & Flags.ABSTRACT) != 0) {
@@ -111,28 +114,38 @@ public class HandleSneakyThrows extends JavacAnnotationHandler<SneakyThrows> {
 		methodNode.rebuild();
 	}
 	
-	private void generateEmptyBlockWarning(JavacNode methodNode, JavacNode annotation, boolean hasConstructorCall) {
+	public void generateEmptyBlockWarning(JavacNode methodNode, JavacNode annotation, boolean hasConstructorCall) {
 		if (hasConstructorCall) {
 			annotation.addWarning("Calls to sibling / super constructors are always excluded from @SneakyThrows; @SneakyThrows has been ignored because there is no other code in this constructor.");
 		} else {
 			annotation.addWarning("This method or constructor is empty; @SneakyThrows has been ignored.");
 		}
 	}
-
-	private JCStatement buildTryCatchBlock(JavacNode node, List<JCStatement> contents, String exception, JCTree source) {
+	
+	public JCStatement buildTryCatchBlock(JavacNode node, List<JCStatement> contents, String exception, JCTree source) {
 		JavacTreeMaker maker = node.getTreeMaker();
 		
 		Context context = node.getContext();
 		JCBlock tryBlock = setGeneratedBy(maker.Block(0, contents), source, context);
-		
 		JCExpression varType = chainDots(node, exception.split("\\."));
 		
-		JCVariableDecl catchParam = maker.VarDef(maker.Modifiers(Flags.FINAL), node.toName("$ex"), varType, null);
+		JCVariableDecl catchParam = maker.VarDef(maker.Modifiers(Flags.FINAL | Flags.PARAMETER), node.toName("$ex"), varType, null);
 		JCExpression lombokLombokSneakyThrowNameRef = chainDots(node, "lombok", "Lombok", "sneakyThrow");
 		JCBlock catchBody = maker.Block(0, List.<JCStatement>of(maker.Throw(maker.Apply(
 				List.<JCExpression>nil(), lombokLombokSneakyThrowNameRef,
 				List.<JCExpression>of(maker.Ident(node.toName("$ex")))))));
-		
-		return setGeneratedBy(maker.Try(tryBlock, List.of(recursiveSetGeneratedBy(maker.Catch(catchParam, catchBody), source, context)), null), source, context);
+		JCTry tryStatement = maker.Try(tryBlock, List.of(recursiveSetGeneratedBy(maker.Catch(catchParam, catchBody), source, context)), null);
+		if (JavacHandlerUtil.inNetbeansEditor(node)) {
+			//set span (start and end position) of the try statement and the main block
+			//this allows NetBeans to dive into the statement correctly:
+			JCCompilationUnit top = (JCCompilationUnit) node.top().get();
+			int startPos = contents.head.pos;
+			int endPos = Javac.getEndPosition(contents.last().pos(), top);
+			tryBlock.pos = startPos;
+			tryStatement.pos = startPos;
+			Javac.storeEnd(tryBlock, endPos, top);
+			Javac.storeEnd(tryStatement, endPos, top);
+		}
+		return setGeneratedBy(tryStatement, source, context);
 	}
 }

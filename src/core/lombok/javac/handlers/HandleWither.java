@@ -145,13 +145,13 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		}
 	}
 	
-	private void createWitherForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	public void createWitherForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		for (JavacNode fieldNode : fieldNodes) {
 			createWitherForField(level, fieldNode, errorNode, whineIfExists, onMethod, onParam);
 		}
 	}
 	
-	private void createWitherForField(AccessLevel level, JavacNode fieldNode, JavacNode source, boolean whineIfExists, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	public void createWitherForField(AccessLevel level, JavacNode fieldNode, JavacNode source, boolean whineIfExists, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			fieldNode.addError("@Wither is only supported on a class or a field.");
 			return;
@@ -204,7 +204,7 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		injectMethod(fieldNode.up(), createdWither);
 	}
 	
-	private JCMethodDecl createWither(long access, JavacNode field, JavacTreeMaker maker, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	public JCMethodDecl createWither(long access, JavacNode field, JavacTreeMaker maker, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		String witherName = toWitherName(field);
 		if (witherName == null) return null;
 		
@@ -217,7 +217,7 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		Name methodName = field.toName(witherName);
 		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(nonNulls).appendList(nullables);
 		
-		long flags = JavacHandlerUtil.addFinalIfNeeded(0L, field.getContext());
+		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, field.getContext());
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
 		
 		JCExpression selfType = cloneSelfType(field);

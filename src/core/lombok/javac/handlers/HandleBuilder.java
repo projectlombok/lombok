@@ -220,7 +220,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 	}
 	
-	private JCMethodDecl generateBuildMethod(String name, Name staticName, JCExpression returnType, java.util.List<Name> fieldNames, JavacNode type, List<JCExpression> thrownExceptions) {
+	public JCMethodDecl generateBuildMethod(String name, Name staticName, JCExpression returnType, java.util.List<Name> fieldNames, JavacNode type, List<JCExpression> thrownExceptions) {
 		JavacTreeMaker maker = type.getTreeMaker();
 		
 		JCExpression call;
@@ -254,7 +254,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		return maker.MethodDef(maker.Modifiers(Flags.PUBLIC), type.toName(name), returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), thrownExceptions, body, null);
 	}
 	
-	private JCMethodDecl generateBuilderMethod(String builderMethodName, String builderClassName, JavacNode type, List<JCTypeParameter> typeParams) {
+	public JCMethodDecl generateBuilderMethod(String builderMethodName, String builderClassName, JavacNode type, List<JCTypeParameter> typeParams) {
 		JavacTreeMaker maker = type.getTreeMaker();
 		
 		ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
@@ -269,7 +269,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		return maker.MethodDef(maker.Modifiers(Flags.STATIC | Flags.PUBLIC), type.toName(builderMethodName), namePlusTypeParamsToTypeReference(maker, type.toName(builderClassName), typeParams), copyTypeParams(maker, typeParams), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 	}
 	
-	private java.util.List<JavacNode> addFieldsToBuilder(JavacNode builderType, java.util.List<Name> namesOfParameters, java.util.List<JCExpression> typesOfParameters, JCTree source) {
+	public java.util.List<JavacNode> addFieldsToBuilder(JavacNode builderType, java.util.List<Name> namesOfParameters, java.util.List<JCExpression> typesOfParameters, JCTree source) {
 		int len = namesOfParameters.size();
 		java.util.List<JavacNode> existing = new ArrayList<JavacNode>();
 		for (JavacNode child : builderType.down()) {
@@ -299,7 +299,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	}
 	
 	
-	private JCMethodDecl makeSetterMethodForBuilder(JavacNode builderType, JavacNode fieldNode, JCTree source, boolean fluent, boolean chain) {
+	public JCMethodDecl makeSetterMethodForBuilder(JavacNode builderType, JavacNode fieldNode, JCTree source, boolean fluent, boolean chain) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
 		
 		for (JavacNode child : builderType.down()) {
@@ -315,7 +315,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		return HandleSetter.createSetter(Flags.PUBLIC, fieldNode, maker, setterName, chain, source, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
 	}
 	
-	private JavacNode findInnerClass(JavacNode parent, String name) {
+	public JavacNode findInnerClass(JavacNode parent, String name) {
 		for (JavacNode child : parent.down()) {
 			if (child.getKind() != Kind.TYPE) continue;
 			JCClassDecl td = (JCClassDecl) child.get();
@@ -324,7 +324,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		return null;
 	}
 	
-	private JavacNode makeBuilderClass(JavacNode tdParent, String builderClassName, List<JCTypeParameter> typeParams, JCAnnotation ast) {
+	public JavacNode makeBuilderClass(JavacNode tdParent, String builderClassName, List<JCTypeParameter> typeParams, JCAnnotation ast) {
 		JavacTreeMaker maker = tdParent.getTreeMaker();
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC | Flags.STATIC);
 		JCClassDecl builder = maker.ClassDef(mods, tdParent.toName(builderClassName), copyTypeParams(maker, typeParams), null, List.<JCExpression>nil(), List.<JCTree>nil());

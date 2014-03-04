@@ -144,13 +144,13 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		}
 	}
 	
-	private void createSetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam) {
+	public void createSetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam) {
 		for (EclipseNode fieldNode : fieldNodes) {
 			createSetterForField(level, fieldNode, errorNode, source, whineIfExists, onMethod, onParam);
 		}
 	}
 	
-	private void createSetterForField(
+	public void createSetterForField(
 			AccessLevel level, EclipseNode fieldNode, EclipseNode errorNode,
 			ASTNode source, boolean whineIfExists, List<Annotation> onMethod,
 			List<Annotation> onParam) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2013-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -146,11 +146,11 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 		annotationNode.up().up().rebuild();
 	}
 	
-	private boolean isNullCheck(Statement stat) {
+	public boolean isNullCheck(Statement stat) {
 		return returnVarNameIfNullCheck(stat) != null;
 	}
 	
-	private char[] returnVarNameIfNullCheck(Statement stat) {
+	public char[] returnVarNameIfNullCheck(Statement stat) {
 		if (!(stat instanceof IfStatement)) return null;
 		
 		/* Check that the if's statement is a throw statement, possibly in a block. */ {

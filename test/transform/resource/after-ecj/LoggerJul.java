@@ -15,3 +15,11 @@ import lombok.extern.java.Log;
     super();
   }
 }
+@Log(topic = "DifferentName") class LoggerJulWithDifferentName {
+  private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger("DifferentName");
+  <clinit>() {
+  }
+  LoggerJulWithDifferentName() {
+    super();
+  }
+}

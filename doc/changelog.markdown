@@ -1,10 +1,24 @@
 Lombok Changelog
 ----------------
 
-### v1.12.3 "Edgy Guinea Pig"
+### v1.12.5 "Edgy Guinea Pig"
+* GOOSECHASE: We're trying to fix a deadlock/race condition in the EquinoxClassLoader when Eclipse works with SVN or Gradle. (v2)
+* PLATFORM: Added support for Eclipse Luna. [Issue #609](https://code.google.com/p/projectlombok/issues/detail?id=609)
+* PLATFORM: Initial JDK8 support for eclipse's alpha support in kepler. [Issue #597](https://code.google.com/p/projectlombok/issues/detail?id=597)
+* FEATURE: The various `@Log` annotations now support the `topic` parameter, which sets the logger's name. The default remains the fully qualified type name of the class itself. [Issue #632](https://code.google.com/p/projectlombok/issues/detail?id=632).
+* BUGFIX: Eclipse quickfix _Surround with try/catch block_ didn't work inside `@SneakyThrows` annotated methods [Issue #438](https://code.google.com/p/projectlombok/issues/detail?id=438).
+* BUGFIX: Eclipse refactoring _Extract Local Variable_ didn't work inside `@SneakyThrows` annotated methods [Issue #633](https://code.google.com/p/projectlombok/issues/detail?id=633).
+* BUGFIX: {Netbeans} @SneakyThrows would lead to unused import and break refactorings [Issue #471](https://code.google.com/p/projectlombok/issues/detail?id=471).
+* BUGFIX: Eclipse Organize Imports would generate error: AST must not be null [Issue #631](https://code.google.com/p/projectlombok/issues/detail?id=631).
+* BUGFIX: Copying javadoc to getters / setters / withers would copy non-relevant sections too. [Issue #585](https://code.google.com/p/projectlombok/issues/detail?id=585).
+* DETAIL: {Delombok} Inside enum bodies the delombok formatter didn't respect the emptyLines directive [Issue #629](https://code.google.com/p/projectlombok/issues/detail?id=629).
+* DETAIL: Use smaller primes (<127) for generating hashcodes [Issue #625](https://code.google.com/p/projectlombok/issues/detail?id=625)
+
+### v1.12.4 (January 15th, 2014)
 * BUGFIX: v1.12.2's delombok turns all operator+assignments into just assignment. Fixed. [Issue #598](https://code.google.com/p/projectlombok/issues/detail?id=598)
 * BUGFIX: {Netbeans} v1.12.2 doesn't well with netbeans. [Issue #591](https://code.google.com/p/projectlombok/issues/detail?id=591)
 * ENHANCEMENT: Delombok now supports varied options for how it formats the resulting source files. This includes scanning the source for things like the preferred indent. Use option `--format-help` for more information. [Issue #608](http://code.google.com/p/projectlombok/issues/detail?id=608)
+* DETAIL: The primes lombok generates for use in generated hashCode() methods used to be direct copies from Effective Java. It turns out these particular primes are used so much, they tend to be a bit more collision-prone, so we switched them. Now, '277' is used instead of '31'. The primes for booleans have also been changed. [Issue #625](https://code.google.com/p/projectlombok/issues/detail?id=625)
 
 ### v1.12.2 (October 10th, 2013)
 * PLATFORM: Initial JDK8 support, without affecting existing support for JDK6 and 7. [Issue #451](https://code.google.com/p/projectlombok/issues/detail?id=451). While lombok will now work on JDK8 / javac8, and netbeans 7.4 and up, lombok does not (yet) support new language features introduced with java8, such as lambda expressions. Support for these features will be added in a future version.

@@ -218,7 +218,7 @@ public class HandleConstructor {
 	}
 	
 	private static final char[][] JAVA_BEANS_CONSTRUCTORPROPERTIES = new char[][] { "java".toCharArray(), "beans".toCharArray(), "ConstructorProperties".toCharArray() };
-	private static Annotation[] createConstructorProperties(ASTNode source, Collection<EclipseNode> fields) {
+	public static Annotation[] createConstructorProperties(ASTNode source, Collection<EclipseNode> fields) {
 		if (fields.isEmpty()) return null;
 		
 		int pS = source.sourceStart, pE = source.sourceEnd;
@@ -249,7 +249,7 @@ public class HandleConstructor {
 		return new Annotation[] { ann };
 	}
 	
-	static ConstructorDeclaration createConstructor(
+	public static ConstructorDeclaration createConstructor(
 			AccessLevel level, EclipseNode type, Collection<EclipseNode> fields,
 			boolean suppressConstructorProperties, ASTNode source, List<Annotation> onConstructor) {
 		
@@ -323,14 +323,14 @@ public class HandleConstructor {
 		return constructor;
 	}
 	
-	private static boolean isLocalType(EclipseNode type) {
+	public static boolean isLocalType(EclipseNode type) {
 		Kind kind = type.up().getKind();
 		if (kind == Kind.COMPILATION_UNIT) return false;
 		if (kind == Kind.TYPE) return isLocalType(type.up());
 		return true;
 	}
 	
-	private MethodDeclaration createStaticConstructor(AccessLevel level, String name, EclipseNode type, Collection<EclipseNode> fields, ASTNode source) {
+	public MethodDeclaration createStaticConstructor(AccessLevel level, String name, EclipseNode type, Collection<EclipseNode> fields, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		

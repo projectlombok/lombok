@@ -15,3 +15,11 @@ import lombok.extern.slf4j.XSlf4j;
     super();
   }
 }
+@XSlf4j(topic = "DifferentName") class LoggerXSlf4jWithDifferentName {
+  private static final org.slf4j.ext.XLogger log = org.slf4j.ext.XLoggerFactory.getXLogger("DifferentName");
+  <clinit>() {
+  }
+  LoggerXSlf4jWithDifferentName() {
+    super();
+  }
+}

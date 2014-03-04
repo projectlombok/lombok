@@ -229,7 +229,7 @@ public class HandleCleanup extends EclipseAnnotationHandler<Cleanup> {
 		ancestor.rebuild();
 	}
 	
-	private MessageSend preventNullAnalysis(Annotation ast, Expression expr) {
+	public MessageSend preventNullAnalysis(Annotation ast, Expression expr) {
 		MessageSend singletonList = new MessageSend();
 		setGeneratedBy(singletonList, ast);
 		
@@ -258,7 +258,7 @@ public class HandleCleanup extends EclipseAnnotationHandler<Cleanup> {
 		return preventNullAnalysis;
 	}
 	
-	private void doAssignmentCheck(EclipseNode node, Statement[] tryBlock, char[] varName) {
+	public void doAssignmentCheck(EclipseNode node, Statement[] tryBlock, char[] varName) {
 		for (Statement statement : tryBlock) doAssignmentCheck0(node, statement, varName);
 	}
 	

@@ -37,6 +37,7 @@ import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.EqualsAndHashCode;
 import lombok.core.AST.Kind;
+import lombok.core.handlers.HandlerUtil;
 import lombok.core.AnnotationValues;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
@@ -93,10 +94,10 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	private final char[] PRIME = "PRIME".toCharArray();
 	private final char[] RESULT = "result".toCharArray();
 	
-	private static final Set<String> BUILT_IN_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
+	public static final Set<String> BUILT_IN_TYPES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(
 			"byte", "short", "int", "long", "char", "boolean", "double", "float")));
 	
-	private void checkForBogusFieldNames(EclipseNode type, AnnotationValues<EqualsAndHashCode> annotation) {
+	public void checkForBogusFieldNames(EclipseNode type, AnnotationValues<EqualsAndHashCode> annotation) {
 		if (annotation.isExplicit("exclude")) {
 			for (int i : createListOfNonExistentFields(Arrays.asList(annotation.getInstance().exclude()), type, true, true)) {
 				annotation.setWarning("exclude", "This field does not exist, or would have been excluded anyway.", i);
@@ -250,7 +251,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		injectMethod(typeNode, hashCodeMethod);
 	}
 	
-	private MethodDeclaration createHashCode(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {
+	public MethodDeclaration createHashCode(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
@@ -274,7 +275,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		
 		final boolean isEmpty = fields.isEmpty();
 		
-		/* final int PRIME = 31; */ {
+		/* final int PRIME = X; */ {
 			/* Without fields, PRIME isn't used, and that would trigger a 'local variable not used' warning. */
 			if (!isEmpty || callSuper) {
 				LocalDeclaration primeDecl = new LocalDeclaration(PRIME, pS, pE);
@@ -283,7 +284,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 				primeDecl.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 				primeDecl.type.sourceStart = pS; primeDecl.type.sourceEnd = pE;
 				setGeneratedBy(primeDecl.type, source);
-				primeDecl.initialization = makeIntLiteral("31".toCharArray(), source);
+				primeDecl.initialization = makeIntLiteral(String.valueOf(HandlerUtil.primeForHashcode()).toCharArray(), source);
 				statements.add(primeDecl);
 			}
 		}
@@ -315,12 +316,12 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			Expression fieldAccessor = createFieldAccessor(field, fieldAccess, source);
 			if (fType.dimensions() == 0 && token != null) {
 				if (Arrays.equals(TypeConstants.BOOLEAN, token)) {
-					/* booleanField ? 1231 : 1237 */
-					IntLiteral int1231 = makeIntLiteral("1231".toCharArray(), source);
-					IntLiteral int1237 = makeIntLiteral("1237".toCharArray(), source);
-					ConditionalExpression int1231or1237 = new ConditionalExpression(fieldAccessor, int1231, int1237);
-					setGeneratedBy(int1231or1237, source);
-					statements.add(createResultCalculation(source, int1231or1237));
+					/* booleanField ? X : Y */
+					IntLiteral intTrue = makeIntLiteral(String.valueOf(HandlerUtil.primeForTrue()).toCharArray(), source);
+					IntLiteral intFalse = makeIntLiteral(String.valueOf(HandlerUtil.primeForFalse()).toCharArray(), source);
+					ConditionalExpression intForBool = new ConditionalExpression(fieldAccessor, intTrue, intFalse);
+					setGeneratedBy(intForBool, source);
+					statements.add(createResultCalculation(source, intForBool));
 				} else if (Arrays.equals(TypeConstants.LONG, token)) {
 					statements.add(createLocalDeclaration(source, dollarFieldName, TypeReference.baseTypeReference(TypeIds.T_long, 0), fieldAccessor));
 					SingleNameReference copy1 = new SingleNameReference(dollarFieldName, p);
@@ -405,7 +406,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		return method;
 	}
 
-	private LocalDeclaration createLocalDeclaration(ASTNode source, char[] dollarFieldName, TypeReference type, Expression initializer) {
+	public LocalDeclaration createLocalDeclaration(ASTNode source, char[] dollarFieldName, TypeReference type, Expression initializer) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		LocalDeclaration tempVar = new LocalDeclaration(dollarFieldName, pS, pE);
 		setGeneratedBy(tempVar, source);
@@ -417,7 +418,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		return tempVar;
 	}
 
-	private Expression createResultCalculation(ASTNode source, Expression ex) {
+	public Expression createResultCalculation(ASTNode source, Expression ex) {
 		/* result = result * PRIME + (ex); */
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
@@ -439,7 +440,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		return assignment;
 	}
 	
-	private TypeReference createTypeReference(EclipseNode type, long p) {
+	public TypeReference createTypeReference(EclipseNode type, long p) {
 		List<String> list = new ArrayList<String>();
 		list.add(type.getName());
 		EclipseNode tNode = type.up();
@@ -460,7 +461,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		return new QualifiedTypeReference(tokens, ps);
 	}
 	
-	private MethodDeclaration createEquals(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess, boolean needsCanEqual) {
+	public MethodDeclaration createEquals(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess, boolean needsCanEqual) {
 		int pS = source.sourceStart; int pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		TypeDeclaration typeDecl = (TypeDeclaration)type.get();
@@ -720,7 +721,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	}
 	
 	
-	private MethodDeclaration createCanEqual(EclipseNode type, ASTNode source) {
+	public MethodDeclaration createCanEqual(EclipseNode type, ASTNode source) {
 		/* public boolean canEqual(final java.lang.Object other) {
 		 *     return other instanceof Outer.Inner.MyType;
 		 * }
@@ -767,7 +768,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	}
 
 	
-	private IfStatement generateCompareFloatOrDouble(Expression thisRef, Expression otherRef, char[] floatOrDouble, ASTNode source) {
+	public IfStatement generateCompareFloatOrDouble(Expression thisRef, Expression otherRef, char[] floatOrDouble, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		/* if (Float.compare(fieldName, other.fieldName) != 0) return false */
 		MessageSend floatCompare = new MessageSend();
@@ -790,7 +791,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	}
 	
 	/** Give 2 clones! */
-	private Expression longToIntForHashCode(Expression ref1, Expression ref2, ASTNode source) {
+	public Expression longToIntForHashCode(Expression ref1, Expression ref2, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		/* (int)(ref >>> 32 ^ ref) */
 		IntLiteral int32 = makeIntLiteral("32".toCharArray(), source);
@@ -806,7 +807,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		return expr;
 	}
 	
-	private NameReference generateQualifiedNameRef(ASTNode source, char[]... varNames) {
+	public NameReference generateQualifiedNameRef(ASTNode source, char[]... varNames) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
@@ -818,7 +819,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		return ref;
 	}
 	
-	private TypeReference generateQualifiedTypeRef(ASTNode source, char[]... varNames) {
+	public TypeReference generateQualifiedTypeRef(ASTNode source, char[]... varNames) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		

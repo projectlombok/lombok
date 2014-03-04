@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,13 @@
 
 /**
  * This package contains all the annotations and support classes you need as a user of lombok.
- * All other packages are only relevant to those who are extending lombok for their own uses.
+ * All other packages are only relevant to those who are extending lombok for their own uses, except:
+ * 
+ * <ul>
+ * <li>{@code lombok.extern.*} – These packages contains lombok annotations that solve boilerplate issues for libraries not part of the JRE itself.
+ * <li>{@code lombok.experimental} – This package contains lombok features that are new or likely to change before committing to long-term support.
+ * </ul>
+ * 
+ * @see <a href="http://projectlombok.org/features/index.html">Lombok features</a>
  */
 package lombok;

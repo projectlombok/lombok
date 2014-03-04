@@ -22,5 +22,8 @@
 
 /**
  * Contains the mechanism that instruments javac as an annotation processor.
+ * 
+ * <strong>NB: This package is not public API in the sense that contents of this package,
+ *    even public classes / methods / etc, may change in point releases.</strong>
  */
 package lombok.javac.apt;

@@ -46,7 +46,7 @@
     return (other instanceof GetterLazyEahcToString);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    final int PRIME = 31;
+    final int PRIME = 59;
     int result = 1;
     final java.lang.Object $value = this.getValue();
     result = ((result * PRIME) + (($value == null) ? 0 : $value.hashCode()));

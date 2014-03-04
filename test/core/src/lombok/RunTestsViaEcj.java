@@ -70,6 +70,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		warnings.put(CompilerOptions.OPTION_ReportUnusedLabel, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedImport, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedPrivateMember, "ignore");
+		warnings.put(CompilerOptions.OPTION_Source, CompilerOptions.VERSION_1_7);
 		options.set(warnings);
 		return options;
 	}

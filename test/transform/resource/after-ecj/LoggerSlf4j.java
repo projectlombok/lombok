@@ -28,3 +28,12 @@ class LoggerSlf4jOuter {
     super();
   }
 }
+
+@Slf4j(topic = "DifferentLogger") class LoggerSlf4jWithDifferentLoggerName {
+  private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger("DifferentLogger");
+  <clinit>() {
+  }
+  LoggerSlf4jWithDifferentLoggerName() {
+    super();
+  }
+}

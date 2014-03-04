@@ -11,7 +11,8 @@ class NonNullWithSneakyThrows {
             }
         System.out.println(in);
       }
-    catch (final java.lang.Throwable $ex)       {
+    catch (final java.lang.Throwable $ex)
+      {
         throw lombok.Lombok.sneakyThrow($ex);
       }
   }

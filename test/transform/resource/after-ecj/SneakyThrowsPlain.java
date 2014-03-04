@@ -6,7 +6,8 @@ class SneakyThrowsPlain {
       {
         System.out.println("constructor");
       }
-    catch (final java.lang.Throwable $ex)       {
+    catch (final java.lang.Throwable $ex)
+      {
         throw lombok.Lombok.sneakyThrow($ex);
       }
   }
@@ -16,7 +17,8 @@ class SneakyThrowsPlain {
       {
         System.out.println("constructor2");
       }
-    catch (final java.lang.Throwable $ex)       {
+    catch (final java.lang.Throwable $ex)
+      {
         throw lombok.Lombok.sneakyThrow($ex);
       }
   }
@@ -25,7 +27,8 @@ class SneakyThrowsPlain {
       {
         System.out.println("test1");
       }
-    catch (final java.lang.Throwable $ex)       {
+    catch (final java.lang.Throwable $ex)
+      {
         throw lombok.Lombok.sneakyThrow($ex);
       }
   }
@@ -34,7 +37,8 @@ class SneakyThrowsPlain {
       {
         System.out.println("test2");
       }
-    catch (final java.lang.Throwable $ex)       {
+    catch (final java.lang.Throwable $ex)
+      {
         throw lombok.Lombok.sneakyThrow($ex);
       }
   }

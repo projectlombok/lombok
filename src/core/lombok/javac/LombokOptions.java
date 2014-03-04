@@ -25,13 +25,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 import lombok.delombok.FormatPreferences;
+import lombok.delombok.LombokOptionsFactory;
 
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Options;
 
 public abstract class LombokOptions extends Options {
-	private boolean deleteLombokAnnotations = true;
+	private boolean deleteLombokAnnotations = false;
 	private final Set<JCCompilationUnit> changed = new HashSet<JCCompilationUnit>();
 	private FormatPreferences formatPreferences = new FormatPreferences(null);
 	
@@ -48,13 +49,13 @@ public abstract class LombokOptions extends Options {
 	}
 	
 	public static void markChanged(Context context, JCCompilationUnit ast) {
-		Options options = context.get(Options.optionsKey);
-		if (options instanceof LombokOptions) ((LombokOptions) options).changed.add(ast);
+		LombokOptions options = LombokOptionsFactory.getDelombokOptions(context);
+		options.changed.add(ast);
 	}
 	
 	public static boolean shouldDeleteLombokAnnotations(Context context) {
-		Options options = context.get(Options.optionsKey);
-		return (options instanceof LombokOptions) && ((LombokOptions) options).deleteLombokAnnotations;
+		LombokOptions options = LombokOptionsFactory.getDelombokOptions(context);
+		return options.deleteLombokAnnotations;
 	}
 	
 	protected LombokOptions(Context context) {
@@ -62,4 +63,8 @@ public abstract class LombokOptions extends Options {
 	}
 	
 	public abstract void putJavacOption(String optionName, String value);
+	
+	public void deleteLombokAnnotations() {
+		this.deleteLombokAnnotations = true;
+	}
 }

@@ -41,6 +41,7 @@ import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
@@ -51,7 +52,7 @@ public class HandleLog {
 		throw new UnsupportedOperationException();
 	}
 	
-	public static void processAnnotation(LoggingFramework framework, AnnotationValues<? extends java.lang.annotation.Annotation> annotation, Annotation source, EclipseNode annotationNode) {
+	public static void processAnnotation(LoggingFramework framework, AnnotationValues<? extends java.lang.annotation.Annotation> annotation, Annotation source, EclipseNode annotationNode, String loggerTopic) {
 		EclipseNode owner = annotationNode.up();
 		
 		switch (owner.getKind()) {
@@ -80,7 +81,7 @@ public class HandleLog {
 			
 			ClassLiteralAccess loggingType = selfType(owner, source);
 			
-			FieldDeclaration fieldDeclaration = createField(framework, source, loggingType, logFieldName, useStatic);
+			FieldDeclaration fieldDeclaration = createField(framework, source, loggingType, logFieldName, useStatic, loggerTopic);
 			fieldDeclaration.traverse(new SetGeneratedByVisitor(source), typeDecl.staticInitializerScope);
 			// TODO temporary workaround for issue 217. http://code.google.com/p/projectlombok/issues/detail?id=217
 			// injectFieldSuppressWarnings(owner, fieldDeclaration);
@@ -92,7 +93,7 @@ public class HandleLog {
 		}
 	}
 	
-	private static ClassLiteralAccess selfType(EclipseNode type, Annotation source) {
+	public static ClassLiteralAccess selfType(EclipseNode type, Annotation source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 
@@ -106,7 +107,7 @@ public class HandleLog {
 		return result;
 	}
 	
-	private static FieldDeclaration createField(LoggingFramework framework, Annotation source, ClassLiteralAccess loggingType, String logFieldName, boolean useStatic) {
+	private static FieldDeclaration createField(LoggingFramework framework, Annotation source, ClassLiteralAccess loggingType, String logFieldName, boolean useStatic, String loggerTopic) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
@@ -124,7 +125,12 @@ public class HandleLog {
 		factoryMethodCall.receiver = createNameReference(framework.getLoggerFactoryTypeName(), source);
 		factoryMethodCall.selector = framework.getLoggerFactoryMethodName().toCharArray();
 		
-		Expression parameter = framework.createFactoryParameter(loggingType, source);
+		Expression parameter;
+		if (loggerTopic == null || loggerTopic.trim().length() == 0) {
+			parameter = framework.createFactoryParameter(loggingType, source);
+		} else {
+			parameter = new StringLiteral(loggerTopic.toCharArray(), pS, pE, 0);
+		}
 		
 		factoryMethodCall.arguments = new Expression[] { parameter };
 		factoryMethodCall.nameSourcePosition = p;
@@ -136,7 +142,7 @@ public class HandleLog {
 		return fieldDecl;
 	}
 	
-	private static TypeReference createTypeReference(String typeName, Annotation source) {
+	public static TypeReference createTypeReference(String typeName, Annotation source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
@@ -164,8 +170,7 @@ public class HandleLog {
 	public static class HandleCommonsLog extends EclipseAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_COMMONS_FLAG_USAGE, "@apachecommons.CommonsLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			
-			processAnnotation(LoggingFramework.COMMONS, annotation, source, annotationNode);
+			processAnnotation(LoggingFramework.COMMONS, annotation, source, annotationNode, annotation.getInstance().topic());
 		}
 	}
 	
@@ -176,8 +181,7 @@ public class HandleLog {
 	public static class HandleJulLog extends EclipseAnnotationHandler<lombok.extern.java.Log> {
 		@Override public void handle(AnnotationValues<lombok.extern.java.Log> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_JUL_FLAG_USAGE, "@java.Log", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			
-			processAnnotation(LoggingFramework.JUL, annotation, source, annotationNode);
+			processAnnotation(LoggingFramework.JUL, annotation, source, annotationNode, annotation.getInstance().topic());
 		}
 	}
 	
@@ -188,8 +192,7 @@ public class HandleLog {
 	public static class HandleLog4jLog extends EclipseAnnotationHandler<lombok.extern.log4j.Log4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_LOG4J_FLAG_USAGE, "@Log4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			
-			processAnnotation(LoggingFramework.LOG4J, annotation, source, annotationNode);
+			processAnnotation(LoggingFramework.LOG4J, annotation, source, annotationNode, annotation.getInstance().topic());
 		}
 	}
 	
@@ -200,8 +203,7 @@ public class HandleLog {
 	public static class HandleLog4j2Log extends EclipseAnnotationHandler<lombok.extern.log4j.Log4j2> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j2> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_LOG4J2_FLAG_USAGE, "@Log4j2", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			
-			processAnnotation(LoggingFramework.LOG4J2, annotation, source, annotationNode);
+			processAnnotation(LoggingFramework.LOG4J2, annotation, source, annotationNode, annotation.getInstance().topic());
 		}
 	}
 	
@@ -212,8 +214,7 @@ public class HandleLog {
 	public static class HandleSlf4jLog extends EclipseAnnotationHandler<lombok.extern.slf4j.Slf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_SLF4J_FLAG_USAGE, "@Slf4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			
-			processAnnotation(LoggingFramework.SLF4J, annotation, source, annotationNode);
+			processAnnotation(LoggingFramework.SLF4J, annotation, source, annotationNode, annotation.getInstance().topic());
 		}
 	}
 	
@@ -224,8 +225,7 @@ public class HandleLog {
 	public static class HandleXSlf4jLog extends EclipseAnnotationHandler<lombok.extern.slf4j.XSlf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.XSlf4j> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_XSLF4J_FLAG_USAGE, "@XSlf4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			
-			processAnnotation(LoggingFramework.XSLF4J, annotation, source, annotationNode);
+			processAnnotation(LoggingFramework.XSLF4J, annotation, source, annotationNode, annotation.getInstance().topic());
 		}
 	}
 	

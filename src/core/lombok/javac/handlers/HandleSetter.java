@@ -144,13 +144,13 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		}
 	}
 	
-	private void createSetterForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	public void createSetterForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		for (JavacNode fieldNode : fieldNodes) {
 			createSetterForField(level, fieldNode, errorNode, whineIfExists, onMethod, onParam);
 		}
 	}
 	
-	private void createSetterForField(AccessLevel level, JavacNode fieldNode, JavacNode source, boolean whineIfExists, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	public void createSetterForField(AccessLevel level, JavacNode fieldNode, JavacNode source, boolean whineIfExists, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			fieldNode.addError("@Setter is only supported on a class or a field.");
 			return;
@@ -193,13 +193,13 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		injectMethod(fieldNode.up(), createdSetter);
 	}
 	
-	static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		String setterName = toSetterName(field);
 		boolean returnThis = shouldReturnThis(field);
 		return createSetter(access, field, treeMaker, setterName, returnThis, source, onMethod, onParam);
 	}
 	
-	static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, String setterName, boolean shouldReturnThis, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, String setterName, boolean shouldReturnThis, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (setterName == null) return null;
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
@@ -214,7 +214,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		Name methodName = field.toName(setterName);
 		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(nonNulls).appendList(nullables);
 		
-		long flags = JavacHandlerUtil.addFinalIfNeeded(0L, field.getContext());
+		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, field.getContext());
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(flags, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
 		
 		if (nonNulls.isEmpty()) {

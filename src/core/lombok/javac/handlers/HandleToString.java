@@ -59,7 +59,7 @@ import com.sun.tools.javac.util.ListBuffer;
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleToString extends JavacAnnotationHandler<ToString> {
-	private void checkForBogusFieldNames(JavacNode type, AnnotationValues<ToString> annotation) {
+	public void checkForBogusFieldNames(JavacNode type, AnnotationValues<ToString> annotation) {
 		if (annotation.isExplicit("exclude")) {
 			for (int i : createListOfNonExistentFields(List.from(annotation.getInstance().exclude()), type, true, false)) {
 				annotation.setWarning("exclude", "This field does not exist, or would have been excluded anyway.", i);
@@ -253,7 +253,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source, typeNode.getContext());
 	}
 	
-	private static String getTypeName(JavacNode typeNode) {
+	public static String getTypeName(JavacNode typeNode) {
 		String typeName = ((JCClassDecl) typeNode.get()).name.toString();
 		JavacNode upType = typeNode.up();
 		while (upType.getKind() == Kind.TYPE) {

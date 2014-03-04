@@ -1,1 +1,14 @@
-//ignore: This is a J7 feature that isn't turned on in the ecj variant we use to run the tests. We need to update that ecj at some point and enable this test. 
+import lombok.val;
+import java.io.IOException;
+public class ValInTryWithResources {
+  public ValInTryWithResources() {
+    super();
+  }
+  public void whyTryInsteadOfCleanup() throws IOException {
+    try (final @val java.io.InputStream in = getClass().getResourceAsStream("ValInTryWithResources.class"))
+      {
+        final @val java.io.InputStream i = in;
+        final @val int j = in.read();
+      }
+  }
+}

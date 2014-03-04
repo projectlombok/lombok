@@ -56,6 +56,18 @@ import lombok.experimental.Wither;
 public class HandlerUtil {
 	private HandlerUtil() {}
 	
+	public static int primeForHashcode() {
+		return 59;
+	}
+	
+	public static int primeForTrue() {
+		return 79;
+	}
+	
+	public static int primeForFalse() {
+		return 97;
+	}
+	
 	/** Checks if the given name is a valid identifier.
 	 * 
 	 * If it is, this returns {@code true} and does nothing else.

@@ -32,7 +32,8 @@ public class ValLessSimple {
       {
         final @val int x = (1 / 0);
       }
-    catch (ArithmeticException e)       {
+    catch (ArithmeticException e)
+      {
         final @val int y = 0;
       }
   }

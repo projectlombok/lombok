@@ -35,7 +35,7 @@
     return (other instanceof EqualsAndHashCode);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    final int PRIME = 31;
+    final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.x);
     result = ((result * PRIME) + java.util.Arrays.hashCode(this.y));
@@ -52,6 +52,7 @@ final @lombok.EqualsAndHashCode class EqualsAndHashCode2 {
   long y;
   float f;
   double d;
+  boolean b;
   EqualsAndHashCode2() {
     super();
   }
@@ -69,10 +70,12 @@ final @lombok.EqualsAndHashCode class EqualsAndHashCode2 {
         return false;
     if ((java.lang.Double.compare(this.d, other.d) != 0))
         return false;
+    if ((this.b != other.b))
+        return false;
     return true;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    final int PRIME = 31;
+    final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.x);
     final long $y = this.y;
@@ -80,6 +83,7 @@ final @lombok.EqualsAndHashCode class EqualsAndHashCode2 {
     result = ((result * PRIME) + java.lang.Float.floatToIntBits(this.f));
     final long $d = java.lang.Double.doubleToLongBits(this.d);
     result = ((result * PRIME) + (int) ($d ^ ($d >>> 32)));
+    result = ((result * PRIME) + (this.b ? 79 : 97));
     return result;
   }
 }
@@ -125,7 +129,7 @@ final @lombok.EqualsAndHashCode(callSuper = false) class EqualsAndHashCode3 exte
     return (other instanceof EqualsAndHashCode4);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    final int PRIME = 31;
+    final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + super.hashCode());
     return result;

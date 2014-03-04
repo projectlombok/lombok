@@ -26,5 +26,8 @@
  * an implementation of SPI service loader (to avoid being dependent on a v1.6 JVM),
  * lombok's version, and annotations and support classes for your normal java code
  * that's primarily useful for developing and debugging lombok.
+ * 
+ * <strong>NB: This package is not public API in the sense that contents of this package,
+ *    even public classes / methods / etc, may change in point releases.</strong>
  */
 package lombok.core;

@@ -467,6 +467,7 @@ public class Delombok {
 	
 	public boolean delombok() throws IOException {
 		LombokOptions options = LombokOptionsFactory.getDelombokOptions(context);
+		options.deleteLombokAnnotations();
 		options.putJavacOption("ENCODING", charset.name());
 		if (classpath != null) options.putJavacOption("CLASSPATH", classpath);
 		if (sourcepath != null) options.putJavacOption("SOURCEPATH", sourcepath);

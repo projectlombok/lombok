@@ -162,13 +162,13 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		}
 	}
 	
-	private void createGetterForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists, boolean lazy, List<JCAnnotation> onMethod) {
+	public void createGetterForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists, boolean lazy, List<JCAnnotation> onMethod) {
 		for (JavacNode fieldNode : fieldNodes) {
 			createGetterForField(level, fieldNode, errorNode, whineIfExists, lazy, onMethod);
 		}
 	}
 	
-	private void createGetterForField(AccessLevel level,
+	public void createGetterForField(AccessLevel level,
 			JavacNode fieldNode, JavacNode source, boolean whineIfExists, boolean lazy, List<JCAnnotation> onMethod) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			source.addError("@Getter is only supported on a class or a field.");
@@ -218,7 +218,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker(), source.get(), lazy, onMethod));
 	}
 	
-	private JCMethodDecl createGetter(long access, JavacNode field, JavacTreeMaker treeMaker, JCTree source, boolean lazy, List<JCAnnotation> onMethod) {
+	public JCMethodDecl createGetter(long access, JavacNode field, JavacTreeMaker treeMaker, JCTree source, boolean lazy, List<JCAnnotation> onMethod) {
 		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
 		
 		// Remember the type; lazy will change it
@@ -228,7 +228,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		List<JCStatement> statements;
 		JCTree toClearOfMarkers = null;
-		if (lazy) {
+		if (lazy && !inNetbeansEditor(field)) {
 			toClearOfMarkers = fieldNode.init;
 			statements = createLazyGetterBody(treeMaker, field, source);
 		} else {
@@ -262,7 +262,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		return decl;
 	}
 	
-	private static List<JCAnnotation> findDelegatesAndRemoveFromField(JavacNode field) {
+	public static List<JCAnnotation> findDelegatesAndRemoveFromField(JavacNode field) {
 		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
 		
 		List<JCAnnotation> delegates = List.nil();
@@ -285,14 +285,14 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		return delegates;
 	}
 	
-	private List<JCStatement> createSimpleGetterBody(JavacTreeMaker treeMaker, JavacNode field) {
+	public List<JCStatement> createSimpleGetterBody(JavacTreeMaker treeMaker, JavacNode field) {
 		return List.<JCStatement>of(treeMaker.Return(createFieldAccessor(treeMaker, field, FieldAccess.ALWAYS_FIELD)));
 	}
 	
 	private static final String AR = "java.util.concurrent.atomic.AtomicReference";
 	private static final List<JCExpression> NIL_EXPRESSION = List.nil();
 	
-	private static final java.util.Map<TypeTag, String> TYPE_MAP;
+	public static final java.util.Map<TypeTag, String> TYPE_MAP;
 	static {
 		Map<TypeTag, String> m = new HashMap<TypeTag, String>();
 		m.put(CTC_INT, "Integer");
@@ -306,7 +306,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		TYPE_MAP = Collections.unmodifiableMap(m);
 	}
 	
-	private List<JCStatement> createLazyGetterBody(JavacTreeMaker maker, JavacNode fieldNode, JCTree source) {
+	public List<JCStatement> createLazyGetterBody(JavacTreeMaker maker, JavacNode fieldNode, JCTree source) {
 		/*
 		java.lang.Object value = this.fieldName.get();
 		if (value == null) {
@@ -426,17 +426,17 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		return statements.toList();
 	}
 	
-	private JCMethodInvocation callGet(JavacNode source, JCExpression receiver) {
+	public JCMethodInvocation callGet(JavacNode source, JCExpression receiver) {
 		JavacTreeMaker maker = source.getTreeMaker();
 		return maker.Apply(NIL_EXPRESSION, maker.Select(receiver, source.toName("get")), NIL_EXPRESSION);
 	}
 	
-	private JCStatement callSet(JavacNode source, JCExpression receiver, JCExpression value) {
+	public JCStatement callSet(JavacNode source, JCExpression receiver, JCExpression value) {
 		JavacTreeMaker maker = source.getTreeMaker();
 		return maker.Exec(maker.Apply(NIL_EXPRESSION, maker.Select(receiver, source.toName("set")), List.<JCExpression>of(value)));
 	}
 	
-	private JCExpression copyType(JavacTreeMaker treeMaker, JCVariableDecl fieldNode) {
+	public JCExpression copyType(JavacTreeMaker treeMaker, JCVariableDecl fieldNode) {
 		return fieldNode.type != null ? treeMaker.Type(fieldNode.type) : fieldNode.vartype;
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2013-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -145,7 +145,7 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 		declaration.body.stats = newList;
 	}
 	
-	private boolean isNullCheck(JCStatement stat) {
+	public boolean isNullCheck(JCStatement stat) {
 		return returnVarNameIfNullCheck(stat) != null;
 	}
 	
@@ -154,7 +154,7 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 	 * where the block braces are optional. If it is of this form, returns "x".
 	 * If it is not of this form, returns null.
 	 */
-	private String returnVarNameIfNullCheck(JCStatement stat) {
+	public String returnVarNameIfNullCheck(JCStatement stat) {
 		if (!(stat instanceof JCIf)) return null;
 		
 		/* Check that the if's statement is a throw statement, possibly in a block. */ {

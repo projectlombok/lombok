@@ -8,7 +8,8 @@ class SneakyThrowsSingle {
       {
         System.out.println("test1");
       }
-    catch (final Throwable $ex)       {
+    catch (final Throwable $ex)
+      {
         throw lombok.Lombok.sneakyThrow($ex);
       }
   }
@@ -18,7 +19,8 @@ class SneakyThrowsSingle {
         System.out.println("test2");
         throw new IOException();
       }
-    catch (final IOException $ex)       {
+    catch (final IOException $ex)
+      {
         throw lombok.Lombok.sneakyThrow($ex);
       }
   }
@@ -28,7 +30,8 @@ class SneakyThrowsSingle {
         System.out.println("test3");
         throw new IOException();
       }
-    catch (final IOException $ex)       {
+    catch (final IOException $ex)
+      {
         throw lombok.Lombok.sneakyThrow($ex);
       }
   }
