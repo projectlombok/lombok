@@ -393,11 +393,11 @@ ${sourceWarning}</echo>
 			<src path="test/bytecode/src" />
 			<src path="test/configuration/src" />
 		</ivy:compile>
-		<copy todir="build/tests">
+<!--		<copy todir="build/tests">
 			<fileset dir="test/pretty/resource" />
 			<fileset dir="test/transform/resource" />
 			<fileset dir="test/configuration/resource" />
-		</copy>
+		</copy>-->
 	</target>
 	
 	<target name="test-ecj" depends="dist, contrib" unless="tests.skip">
