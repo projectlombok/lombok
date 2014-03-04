@@ -388,10 +388,6 @@ ${sourceWarning}</echo>
 			<src path="test/transform/src" />
 			<src path="test/bytecode/src" />
 		</ivy:compile>
-		<copy todir="build/tests">
-			<fileset dir="test/pretty/resource" />
-			<fileset dir="test/transform/resource" />
-		</copy>
 	</target>
 	
 	<target name="test-ecj" depends="dist, contrib" unless="tests.skip">
