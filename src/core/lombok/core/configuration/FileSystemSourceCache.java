@@ -177,8 +177,4 @@ public class FileSystemSourceCache {
 			return new Content(null, MISSING, MISSING);
 		}
 	}
-	
-	public void reset() {
-		cache.clear();
-	}
 }
