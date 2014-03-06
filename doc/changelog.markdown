@@ -1,6 +1,8 @@
 Lombok Changelog
 ----------------
 
+### v1.12.7 "Edgy Guinea Pig"
+
 ### v1.12.6 (March 6th, 2014)
 * GOOSECHASE: We're trying to fix a deadlock/race condition in the EquinoxClassLoader when Eclipse works with SVN or Gradle. (v2)
 * PLATFORM: Added support for Eclipse Luna. [Issue #609](https://code.google.com/p/projectlombok/issues/detail?id=609)
