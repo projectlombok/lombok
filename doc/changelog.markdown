@@ -4,7 +4,7 @@ Lombok Changelog
 ### v1.12.7 "Edgy Guinea Pig"
 
 ### v1.12.6 (March 6th, 2014)
-* GOOSECHASE: We're trying to fix a deadlock/race condition in the EquinoxClassLoader when Eclipse works with SVN or Gradle. (v2)
+* BUGFIX: deadlocks would occasionally occur in eclipse during project builds, especially if using the gradle plugin. [Issue #645](https://code.google.com/p/projectlombok/issues/detail?id=645)
 * PLATFORM: Added support for Eclipse Luna. [Issue #609](https://code.google.com/p/projectlombok/issues/detail?id=609)
 * PLATFORM: Initial JDK8 support for eclipse's alpha support in kepler. [Issue #597](https://code.google.com/p/projectlombok/issues/detail?id=597)
 * FEATURE: The various `@Log` annotations now support the `topic` parameter, which sets the logger's name. The default remains the fully qualified type name of the class itself. [Issue #632](https://code.google.com/p/projectlombok/issues/detail?id=632).
