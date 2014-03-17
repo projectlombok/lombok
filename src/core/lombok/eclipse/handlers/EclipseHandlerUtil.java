@@ -25,7 +25,6 @@ import static lombok.eclipse.Eclipse.*;
 import static lombok.core.TransformationsUtil.*;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -35,7 +34,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -44,6 +42,8 @@ import lombok.Lombok;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValue;
+import lombok.core.BooleanFieldAugment;
+import lombok.core.ReferenceFieldAugment;
 import lombok.core.TransformationsUtil;
 import lombok.core.TypeResolver;
 import lombok.eclipse.EclipseAST;
@@ -207,27 +207,10 @@ public class EclipseHandlerUtil {
 		}
 	}
 	
-	private static Field generatedByField;
-	
-	static {
-		try {
-			generatedByField = ASTNode.class.getDeclaredField("$generatedBy");
-		} catch (Throwable t) {
-			//ignore - no $generatedBy exists when running in ecj.
-		}
-	}
-	
-	private static Map<ASTNode, ASTNode> generatedNodes = new WeakHashMap<ASTNode, ASTNode>();
+	private static ReferenceFieldAugment<ASTNode, ASTNode> generatedNodes = ReferenceFieldAugment.augment(ASTNode.class, ASTNode.class, "$generatedBy");
 	
 	public static ASTNode getGeneratedBy(ASTNode node) {
-		if (generatedByField != null) {
-			try {
-				return (ASTNode) generatedByField.get(node);
-			} catch (Exception e) {}
-		}
-		synchronized (generatedNodes) {
-			return generatedNodes.get(node);
-		}
+		return generatedNodes.get(node);
 	}
 	
 	public static boolean isGenerated(ASTNode node) {
@@ -235,15 +218,7 @@ public class EclipseHandlerUtil {
 	}
 	
 	public static ASTNode setGeneratedBy(ASTNode node, ASTNode source) {
-		if (generatedByField != null) {
-			try {
-				generatedByField.set(node, source);
-				return node;
-			} catch (Exception e) {}
-		}
-		synchronized (generatedNodes) {
-			generatedNodes.put(node, source);
-		}
+		generatedNodes.set(node, source);
 		return node;
 	}
 	
@@ -865,12 +840,11 @@ public class EclipseHandlerUtil {
 		}
 	}
 	
-	private static final Map<FieldDeclaration, Object> generatedLazyGettersWithPrimitiveBoolean = new WeakHashMap<FieldDeclaration, Object>();
-	private static final Object MARKER = new Object();
+	private static final BooleanFieldAugment<FieldDeclaration> generatedLazyGettersWithPrimitiveBoolean = BooleanFieldAugment.augment(FieldDeclaration.class, "lombok$booleanLazyGetter");
 	
 	static void registerCreatedLazyGetter(FieldDeclaration field, char[] methodName, TypeReference returnType) {
 		if (isBoolean(returnType)) {
-			generatedLazyGettersWithPrimitiveBoolean.put(field, MARKER);
+			generatedLazyGettersWithPrimitiveBoolean.set(field);
 		}
 	}
 	
@@ -880,7 +854,7 @@ public class EclipseHandlerUtil {
 	
 	private static GetterMethod findGetter(EclipseNode field) {
 		FieldDeclaration fieldDeclaration = (FieldDeclaration) field.get();
-		boolean forceBool = generatedLazyGettersWithPrimitiveBoolean.containsKey(fieldDeclaration);
+		boolean forceBool = generatedLazyGettersWithPrimitiveBoolean.get(fieldDeclaration);
 		TypeReference fieldType = fieldDeclaration.type;
 		boolean isBoolean = forceBool || isBoolean(fieldType);
 		
