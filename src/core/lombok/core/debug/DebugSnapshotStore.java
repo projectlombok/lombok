@@ -35,8 +35,9 @@ import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 
 public class DebugSnapshotStore {
 	public static final DebugSnapshotStore INSTANCE = new DebugSnapshotStore();
-	public static boolean GLOBAL_DSS_DISABLE_SWITCH = true;
+	public static final boolean GLOBAL_DSS_DISABLE_SWITCH = true;
 	
+	// All access should synchronize on the map
 	private final Map<CompilationUnitDeclaration, List<DebugSnapshot>> map =
 			new WeakHashMap<CompilationUnitDeclaration, List<DebugSnapshot>>();
 	

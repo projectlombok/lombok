@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The Project Lombok Authors.
+ * Copyright (C) 2010-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 import lombok.core.AST.Kind;
+import lombok.core.BooleanFieldAugment;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.TransformEclipseAST;
@@ -182,11 +181,10 @@ public class PatchDelegate {
 		return null;
 	}
 	
-	private static Map<ASTNode, Object> alreadyApplied = new WeakHashMap<ASTNode, Object>();
-	private static final Object MARKER = new Object();
+	private static BooleanFieldAugment<Annotation> applied = BooleanFieldAugment.augment(Annotation.class, "lombok$applied");
 	
 	public static void markHandled(Annotation annotation) {
-		alreadyApplied.put(annotation, MARKER);
+		applied.set(annotation);
 	}
 	
 	private static void fillMethodBindingsForFields(CompilationUnitDeclaration cud, ClassScope scope, List<BindingTuple> methodsToDelegate) {
@@ -197,7 +195,7 @@ public class PatchDelegate {
 			if (field.annotations == null) continue;
 			for (Annotation ann : field.annotations) {
 				if (!isDelegate(ann, decl)) continue;
-				if (alreadyApplied.put(ann, MARKER) == MARKER) continue;
+				if (applied.set(ann)) continue;
 				
 				if ((field.modifiers & ClassFileConstants.AccStatic) != 0) {
 					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
@@ -250,7 +248,7 @@ public class PatchDelegate {
 			if (methodDecl.annotations == null) continue;
 			for (Annotation ann : methodDecl.annotations) {
 				if (!isDelegate(ann, decl)) continue;
-				if (alreadyApplied.put(ann, MARKER) == MARKER) continue;
+				if (applied.set(ann)) continue;
 				if (!(methodDecl instanceof MethodDeclaration)) {
 					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
 					eclipseAst.get(ann).addError(LEGALITY_OF_DELEGATE);

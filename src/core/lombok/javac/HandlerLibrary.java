@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,16 +30,16 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.WeakHashMap;
 
 import javax.annotation.processing.Messager;
 import javax.tools.Diagnostic;
 
+import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
+import lombok.core.BooleanFieldAugment;
 import lombok.core.HandlerPriority;
 import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
 import lombok.core.TypeResolver;
-import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
 import lombok.core.configuration.ConfigurationKeysLoader;
 import lombok.javac.handlers.JavacHandlerUtil;
 
@@ -206,13 +206,10 @@ public class HandlerLibrary {
 		if (t != null) t.printStackTrace();
 	}
 	
-	private static final Map<JCTree, Object> handledMap = new WeakHashMap<JCTree, Object>();
-	private static final Object MARKER = new Object();
+	private static final BooleanFieldAugment<JCTree> handled = BooleanFieldAugment.augment(JCTree.class, "lombok$handled");
 	
 	private boolean checkAndSetHandled(JCTree node) {
-		synchronized (handledMap) {
-			return handledMap.put(node, MARKER) != MARKER;
-		}
+		return !handled.set(node);
 	}
 	
 	/**

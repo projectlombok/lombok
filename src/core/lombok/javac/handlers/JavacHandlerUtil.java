@@ -25,14 +25,12 @@ import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
 
 import java.lang.annotation.Annotation;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,8 +41,9 @@ import lombok.Getter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValue;
-import lombok.core.handlers.HandlerUtil;
+import lombok.core.ReferenceFieldAugment;
 import lombok.core.TypeResolver;
+import lombok.core.handlers.HandlerUtil;
 import lombok.delombok.LombokOptionsFactory;
 import lombok.experimental.Accessors;
 import lombok.javac.Javac;
@@ -111,7 +110,7 @@ public class JavacHandlerUtil {
 		}
 	}
 	
-	private static Map<JCTree, WeakReference<JCTree>> generatedNodes = new WeakHashMap<JCTree, WeakReference<JCTree>>();
+	private static ReferenceFieldAugment<JCTree, JCTree> generatedNodes = ReferenceFieldAugment.augmentWeakField(JCTree.class, JCTree.class, "lombok$generatedNodes");
 	
 	/**
 	 * Contributed by Jan Lahoda; many lombok transformations should not be run (or a lite version should be run) when the netbeans editor
@@ -128,10 +127,7 @@ public class JavacHandlerUtil {
 	}
 	
 	public static JCTree getGeneratedBy(JCTree node) {
-		synchronized (generatedNodes) {
-			WeakReference<JCTree> ref = generatedNodes.get(node);
-			return ref == null ? null : ref.get();
-		}
+		return generatedNodes.get(node);
 	}
 	
 	public static boolean isGenerated(JCTree node) {
@@ -147,10 +143,8 @@ public class JavacHandlerUtil {
 	
 	public static <T extends JCTree> T setGeneratedBy(T node, JCTree source, Context context) {
 		if (node == null) return null;
-		synchronized (generatedNodes) {
-			if (source == null) generatedNodes.remove(node);
-			else generatedNodes.put(node, new WeakReference<JCTree>(source));
-		}
+		if (source == null) generatedNodes.clear(node);
+		else generatedNodes.set(node, source);
 		if (source != null && (!inNetbeansEditor(context) || (node instanceof JCVariableDecl && (((JCVariableDecl) node).mods.flags & Flags.PARAMETER) != 0))) node.pos = source.pos;
 		return node;
 	}
