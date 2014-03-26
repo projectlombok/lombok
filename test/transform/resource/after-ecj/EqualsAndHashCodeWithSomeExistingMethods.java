@@ -14,8 +14,26 @@ import static lombok.AccessLevel.NONE;
 }
 @Data @Getter(NONE) @Setter(NONE) class EqualsAndHashCodeWithSomeExistingMethods2 {
   int x;
-  public boolean canEqual(Object other) {
+  protected boolean canEqual(Object other) {
     return false;
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+    if ((o == this))
+        return true;
+    if ((! (o instanceof EqualsAndHashCodeWithSomeExistingMethods2)))
+        return false;
+    final @java.lang.SuppressWarnings("all") EqualsAndHashCodeWithSomeExistingMethods2 other = (EqualsAndHashCodeWithSomeExistingMethods2) o;
+    if ((! other.canEqual((java.lang.Object) this)))
+        return false;
+    if ((this.x != other.x))
+        return false;
+    return true;
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+    final int PRIME = 59;
+    int result = 1;
+    result = ((result * PRIME) + this.x);
+    return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
     return (("EqualsAndHashCodeWithSomeExistingMethods2(x=" + this.x) + ")");
@@ -53,7 +71,7 @@ import static lombok.AccessLevel.NONE;
         return false;
     return true;
   }
-  public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
     return (other instanceof EqualsAndHashCodeWithNoExistingMethods);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {

@@ -42,6 +42,10 @@ public class DataExample {
 		return "DataExample(" + this.getName() + ", " + this.getAge() + ", " + this.getScore() + ", " + Arrays.deepToString(this.getTags()) + ")";
 	}
 	
+	protected boolean canEqual(Object other) {
+		return other instanceof DataExample;
+	}
+	
 	@Override public boolean equals(Object o) {
 		if (o == this) return true;
 		if (!(o instanceof DataExample)) return false;
@@ -88,6 +92,10 @@ public class DataExample {
 		
 		@Override public String toString() {
 			return "Exercise(name=" + this.getName() + ", value=" + this.getValue() + ")";
+		}
+		
+		protected boolean canEqual(Object other) {
+			return other instanceof Exercise;
 		}
 		
 		@Override public boolean equals(Object o) {

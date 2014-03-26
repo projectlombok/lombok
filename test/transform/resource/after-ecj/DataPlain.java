@@ -27,7 +27,7 @@ import lombok.Data;
         return false;
     return true;
   }
-  public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
     return (other instanceof Data1);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
@@ -74,7 +74,7 @@ import lombok.Data;
         return false;
     return true;
   }
-  public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
     return (other instanceof Data2);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
@@ -163,7 +163,7 @@ final @Data @lombok.EqualsAndHashCode(callSuper = true) class Data4 extends java
         return false;
     return true;
   }
-  public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
     return (other instanceof Data4);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
@@ -185,7 +185,7 @@ final @Data @lombok.EqualsAndHashCode(callSuper = true) class Data4 extends java
         return false;
     return true;
   }
-  public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
     return (other instanceof Data5);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {

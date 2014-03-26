@@ -31,7 +31,7 @@
         return false;
     return true;
   }
-  public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
     return (other instanceof EqualsAndHashCode);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
@@ -101,7 +101,7 @@ final @lombok.EqualsAndHashCode(callSuper = false) class EqualsAndHashCode3 exte
         return false;
     return true;
   }
-  public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
     return (other instanceof EqualsAndHashCode3);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
@@ -125,7 +125,7 @@ final @lombok.EqualsAndHashCode(callSuper = false) class EqualsAndHashCode3 exte
         return false;
     return true;
   }
-  public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
     return (other instanceof EqualsAndHashCode4);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {

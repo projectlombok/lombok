@@ -212,21 +212,20 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		MemberExistsResult equalsExists = methodExists("equals", typeNode, 1);
 		MemberExistsResult hashCodeExists = methodExists("hashCode", typeNode, 0);
 		MemberExistsResult canEqualExists = methodExists("canEqual", typeNode, 1);
-		switch (Collections.max(Arrays.asList(equalsExists, hashCodeExists, canEqualExists))) {
+		switch (Collections.max(Arrays.asList(equalsExists, hashCodeExists))) {
 		case EXISTS_BY_LOMBOK:
 			return;
 		case EXISTS_BY_USER:
 			if (whineIfExists) {
-				String msg = String.format("Not generating equals%s: A method with one of those names already exists. (Either all or none of these methods will be generated).", needsCanEqual ? ", hashCode and canEquals" : " and hashCode");
+				String msg = "Not generating equals and hashCode: A method with one of those names already exists. (Either both or none of these methods will be generated).";
 				errorNode.addWarning(msg);
 			} else if (equalsExists == MemberExistsResult.NOT_EXISTS || hashCodeExists == MemberExistsResult.NOT_EXISTS) {
-				// This means equals OR hashCode exists and not both (or neither, but canEqual is there).
+				// This means equals OR hashCode exists and not both.
 				// Even though we should suppress the message about not generating these, this is such a weird and surprising situation we should ALWAYS generate a warning.
-				// The user code couldn't possibly (barring really weird subclassing shenanigans) be in a shippable state anyway; the implementations of these 3 methods are
+				// The user code couldn't possibly (barring really weird subclassing shenanigans) be in a shippable state anyway; the implementations of these 2 methods are
 				// all inter-related and should be written by the same entity.
-				String msg = String.format("Not generating %s: One of equals, hashCode, and canEqual exists. " +
-						"You should either write all of these or none of these (in the latter case, lombok generates them).",
-						equalsExists == MemberExistsResult.NOT_EXISTS && hashCodeExists == MemberExistsResult.NOT_EXISTS ? "equals and hashCode" :
+				String msg = String.format("Not generating %s: One of equals or hashCode exists. " +
+						"You should either write both of these or none of these (in the latter case, lombok generates them).",
 						equalsExists == MemberExistsResult.NOT_EXISTS ? "equals" : "hashCode");
 				errorNode.addWarning(msg);
 			}
@@ -240,7 +239,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		equalsMethod.traverse(new SetGeneratedByVisitor(errorNode.get()), ((TypeDeclaration)typeNode.get()).scope);
 		injectMethod(typeNode, equalsMethod);
 		
-		if (needsCanEqual) {
+		if (needsCanEqual && canEqualExists == MemberExistsResult.NOT_EXISTS) {
 			MethodDeclaration canEqualMethod = createCanEqual(typeNode, errorNode.get());
 			canEqualMethod.traverse(new SetGeneratedByVisitor(errorNode.get()), ((TypeDeclaration)typeNode.get()).scope);
 			injectMethod(typeNode, canEqualMethod);
@@ -734,7 +733,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		MethodDeclaration method = new MethodDeclaration(
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		setGeneratedBy(method, source);
-		method.modifiers = toEclipseModifier(AccessLevel.PUBLIC);
+		method.modifiers = toEclipseModifier(AccessLevel.PROTECTED);
 		method.returnType = TypeReference.baseTypeReference(TypeIds.T_boolean, 0);
 		method.returnType.sourceStart = pS; method.returnType.sourceEnd = pE;
 		setGeneratedBy(method.returnType, source);

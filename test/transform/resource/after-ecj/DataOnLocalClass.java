@@ -32,7 +32,7 @@ class DataOnLocalClass1 {
             return false;
         return true;
       }
-      public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+      protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
         return (other instanceof Local);
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
@@ -82,7 +82,7 @@ class DataOnLocalClass2 {
               return false;
           return true;
         }
-        public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+        protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
           return (other instanceof Local.InnerLocal);
         }
         public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
@@ -120,7 +120,7 @@ class DataOnLocalClass2 {
             return false;
         return true;
       }
-      public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+      protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
         return (other instanceof Local);
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {

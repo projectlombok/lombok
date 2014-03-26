@@ -64,7 +64,7 @@ final @lombok.Value class Value1 {
         return false;
     return true;
   }
-  public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
     return (other instanceof Value2);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
