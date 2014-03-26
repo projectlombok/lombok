@@ -120,7 +120,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				fields.add(fieldNode);
 			}
 			
-			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, fields, null, SkipIfConstructorExists.I_AM_BUILDER, true, Collections.<Annotation>emptyList(), ast);
+			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, fields, null, SkipIfConstructorExists.I_AM_BUILDER, null, Collections.<Annotation>emptyList(), ast);
 			
 			returnType = namePlusTypeParamsToTypeReference(td.name, td.typeParameters, p);
 			typeParams = td.typeParameters;
@@ -209,7 +209,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		if (constructorExists(builderType) == MemberExistsResult.NOT_EXISTS) {
-			ConstructorDeclaration cd = HandleConstructor.createConstructor(AccessLevel.PACKAGE, builderType, Collections.<EclipseNode>emptyList(), true, ast, Collections.<Annotation>emptyList());
+			ConstructorDeclaration cd = HandleConstructor.createConstructor(AccessLevel.PACKAGE, builderType, Collections.<EclipseNode>emptyList(), null, ast, Collections.<Annotation>emptyList());
 			if (cd != null) injectMethod(builderType, cd);
 		}
 		

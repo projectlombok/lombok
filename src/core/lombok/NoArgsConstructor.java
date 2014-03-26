@@ -51,7 +51,7 @@ public @interface NoArgsConstructor {
 	String staticName() default "";
 	
 	/**
-	 * Any annotations listed here are put on the generated constructor. The syntax for this feature is: {@code @NoArgsConstructor(onConstructor=@_({@AnnotationsGoHere}))}
+	 * Any annotations listed here are put on the generated constructor. The syntax for this feature is: {@code @NoArgsConstructor(onConstructor=@__({@AnnotationsGoHere}))}
 	 */
 	AnyAnnotation[] onConstructor() default {};
 	

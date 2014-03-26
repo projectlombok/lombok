@@ -44,6 +44,16 @@ public class ConfigurationKeys {
 	public static final ConfigurationKey<FlagUsageType> ANY_CONSTRUCTOR_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.anyConstructor.flagUsage", "Emit a warning or error if any of the XxxArgsConstructor annotations are used.") {};
 	
 	/**
+	 * lombok configuration: {@code lombok.anyConstructor.suppressConstructorProperties} = {@code true} | {@code false}.
+	 * 
+	 * If {@code false} or this configuration is omitted, all generated constructors with at least 1 argument get a {@code @ConstructorProperties}.
+	 * To suppress the generation of it, set this configuration to {@code true}.
+	 * 
+	 * NB: GWT projects, and probably android projects, should explicitly set this key to {@code true} for the entire project.
+	 */
+	public static final ConfigurationKey<Boolean> ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES = new ConfigurationKey<Boolean>("lombok.anyConstructor.suppressConstructorProperties", "Suppress the generation of @ConstructorProperties for generated constructors (default: false).") {};
+	
+	/**
 	 * lombok configuration: {@code lombok.allArgsConstructor.flagUsage} = {@code WARNING} | {@code ERROR}.
 	 * 
 	 * If set, <em>any</em> usage of {@code @AllArgsConstructor} results in a warning / error.

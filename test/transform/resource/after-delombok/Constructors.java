@@ -58,12 +58,10 @@ class NoArgsConstructor1 {
 class RequiredArgsConstructorStaticNameGenerics<T extends Number> {
 	final T x;
 	String name;
-	
 	@java.lang.SuppressWarnings("all")
 	private RequiredArgsConstructorStaticNameGenerics(final T x) {
 		this.x = x;
 	}
-	
 	@java.lang.SuppressWarnings("all")
 	public static <T extends Number> RequiredArgsConstructorStaticNameGenerics<T> of(final T x) {
 		return new RequiredArgsConstructorStaticNameGenerics<T>(x);
@@ -72,14 +70,19 @@ class RequiredArgsConstructorStaticNameGenerics<T extends Number> {
 class RequiredArgsConstructorStaticNameGenerics2<T extends Number> {
 	final Class<T> x;
 	String name;
-	
 	@java.lang.SuppressWarnings("all")
 	private RequiredArgsConstructorStaticNameGenerics2(final Class<T> x) {
 		this.x = x;
 	}
-	
 	@java.lang.SuppressWarnings("all")
 	public static <T extends Number> RequiredArgsConstructorStaticNameGenerics2<T> of(final Class<T> x) {
 		return new RequiredArgsConstructorStaticNameGenerics2<T>(x);
+	}
+}
+class AllArgsConstructorPackageAccess {
+	final String x;
+	@java.lang.SuppressWarnings("all")
+	AllArgsConstructorPackageAccess(final String x) {
+		this.x = x;
 	}
 }

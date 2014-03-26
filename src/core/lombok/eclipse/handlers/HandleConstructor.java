@@ -82,7 +82,7 @@ public class HandleConstructor {
 			
 			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@NoArgsConstructor(onConstructor=", annotationNode);
 			
-			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, SkipIfConstructorExists.NO, false, onConstructor, ast);
+			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, SkipIfConstructorExists.NO, null, onConstructor, ast);
 		}
 	}
 	
@@ -95,10 +95,14 @@ public class HandleConstructor {
 			if (!checkLegality(typeNode, annotationNode, RequiredArgsConstructor.class.getSimpleName())) return;
 			RequiredArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
-			String staticName = ann.staticName();
-			@SuppressWarnings("deprecation")
-			boolean suppressConstructorProperties = ann.suppressConstructorProperties();
 			if (level == AccessLevel.NONE) return;
+			String staticName = ann.staticName();
+			Boolean suppressConstructorProperties = null;
+			if (annotation.isExplicit("suppressConstructorProperties")) {
+				@SuppressWarnings("deprecation")
+				boolean suppress = ann.suppressConstructorProperties();
+				suppressConstructorProperties = suppress;
+			}
 			
 			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@RequiredArgsConstructor(onConstructor=", annotationNode);
 			
@@ -143,10 +147,14 @@ public class HandleConstructor {
 			if (!checkLegality(typeNode, annotationNode, AllArgsConstructor.class.getSimpleName())) return;
 			AllArgsConstructor ann = annotation.getInstance();
 			AccessLevel level = ann.access();
-			String staticName = ann.staticName();
-			@SuppressWarnings("deprecation")
-			boolean suppressConstructorProperties = ann.suppressConstructorProperties();
 			if (level == AccessLevel.NONE) return;
+			String staticName = ann.staticName();
+			Boolean suppressConstructorProperties = null;
+			if (annotation.isExplicit("suppressConstructorProperties")) {
+				@SuppressWarnings("deprecation")
+				boolean suppress = ann.suppressConstructorProperties();
+				suppressConstructorProperties = suppress;
+			}
 			
 			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@AllArgsConstructor(onConstructor=", annotationNode);
 			
@@ -169,18 +177,18 @@ public class HandleConstructor {
 	}
 	
 	public void generateRequiredArgsConstructor(EclipseNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, List<Annotation> onConstructor, ASTNode source) {
-		generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, skipIfConstructorExists, false, onConstructor, source);
+		generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, skipIfConstructorExists, null, onConstructor, source);
 	}
 	
 	public void generateAllArgsConstructor(EclipseNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, List<Annotation> onConstructor, ASTNode source) {
-		generateConstructor(typeNode, level, findAllFields(typeNode), staticName, skipIfConstructorExists, false, onConstructor, source);
+		generateConstructor(typeNode, level, findAllFields(typeNode), staticName, skipIfConstructorExists, null, onConstructor, source);
 	}
 	
 	public enum SkipIfConstructorExists {
 		YES, NO, I_AM_BUILDER;
 	}
 	
-	public void generateConstructor(EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, String staticName, SkipIfConstructorExists skipIfConstructorExists, boolean suppressConstructorProperties, List<Annotation> onConstructor, ASTNode source) {
+	public void generateConstructor(EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, String staticName, SkipIfConstructorExists skipIfConstructorExists, Boolean suppressConstructorProperties, List<Annotation> onConstructor, ASTNode source) {
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
 		
 		if (skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) return;
@@ -251,7 +259,7 @@ public class HandleConstructor {
 	
 	public static ConstructorDeclaration createConstructor(
 			AccessLevel level, EclipseNode type, Collection<EclipseNode> fields,
-			boolean suppressConstructorProperties, ASTNode source, List<Annotation> onConstructor) {
+			Boolean suppressConstructorProperties, ASTNode source, List<Annotation> onConstructor) {
 		
 		TypeDeclaration typeDeclaration = ((TypeDeclaration)type.get());
 		long p = (long)source.sourceStart << 32 | source.sourceEnd;
@@ -259,6 +267,14 @@ public class HandleConstructor {
 		boolean isEnum = (((TypeDeclaration)type.get()).modifiers & ClassFileConstants.AccEnum) != 0;
 		
 		if (isEnum) level = AccessLevel.PRIVATE;
+		
+		if (suppressConstructorProperties == null) {
+			if (fields.isEmpty()) {
+				suppressConstructorProperties = false;
+			} else {
+				suppressConstructorProperties = Boolean.TRUE.equals(type.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES));
+			}
+		}
 		
 		ConstructorDeclaration constructor = new ConstructorDeclaration(
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
@@ -309,7 +325,7 @@ public class HandleConstructor {
 		
 		/* Generate annotations that must  be put on the generated method, and attach them. */ {
 			Annotation[] constructorProperties = null;
-			if (!suppressConstructorProperties && level != AccessLevel.PRIVATE && !isLocalType(type)) {
+			if (!suppressConstructorProperties && level != AccessLevel.PRIVATE && level != AccessLevel.PACKAGE && !isLocalType(type)) {
 				constructorProperties = createConstructorProperties(source, fields);
 			}
 			
