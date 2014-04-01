@@ -33,10 +33,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticListener;
 import javax.tools.JavaCompiler;
+import javax.tools.JavaCompiler.CompilationTask;
+import javax.tools.JavaFileObject;
 import javax.tools.SimpleJavaFileObject;
 import javax.tools.ToolProvider;
-import javax.tools.JavaCompiler.CompilationTask;
 
 import lombok.Lombok;
 
@@ -179,15 +182,24 @@ public class TestClassFileMetaData {
 		return new ClassFileMetaData(compile(file));
 	}
 	
-	private static byte[] compile(File file) {
+	static byte[] compile(File file) {
 		try {
 			JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 			File tempDir = getTempDir();
 			tempDir.mkdirs();
 			List<String> options = Arrays.asList("-proc:none", "-d", tempDir.getAbsolutePath());
+			
 			StringWriter captureWarnings = new StringWriter();
-			CompilationTask task = compiler.getTask(captureWarnings, null, null, options, null, Collections.singleton(new ContentBasedJavaFileObject(file.getPath(), readFileAsString(file))));
-			assertTrue(task.call());
+			final StringBuilder compilerErrors = new StringBuilder();
+			DiagnosticListener<JavaFileObject> diagnostics = new DiagnosticListener<JavaFileObject>() {
+				@Override public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
+					compilerErrors.append(diagnostic.toString()).append("\n");
+				}
+			};
+			
+			CompilationTask task = compiler.getTask(captureWarnings, null, diagnostics, options, null, Collections.singleton(new ContentBasedJavaFileObject(file.getPath(), readFileAsString(file))));
+			Boolean taskResult = task.call();
+			assertTrue("Compilation task didn't succeed: \n<Warnings and Errors>\n" + compilerErrors.toString() + "\n</Warnings and Errors>", taskResult);
 			return PostCompilerApp.readFile(new File(tempDir, file.getName().replaceAll("\\.java$", ".class")));
 		} catch (Exception e) {
 			throw Lombok.sneakyThrow(e);
