@@ -14,7 +14,7 @@
 		<conf name="javac7" />
 	</configurations>
 	<dependencies>
-		<dependency org="org.projectlombok" name="lombok.patcher" rev="0.12" conf="buildBase->default; runtime->default" />
+		<dependency org="org.projectlombok" name="lombok.patcher" rev="0.13" conf="buildBase->default; runtime->default" />
 		<dependency org="zwitserloot.com" name="cmdreader" rev="1.2" conf="buildBase->runtime; runtime" />
 		
 		<dependency org="junit" name="junit" rev="4.8.2" conf="test->default; contrib->sources" />

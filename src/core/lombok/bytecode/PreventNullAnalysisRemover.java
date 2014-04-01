@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 The Project Lombok Authors.
+ * Copyright (C) 2010-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,10 +50,10 @@ public class PreventNullAnalysisRemover implements PostCompilerTransformation {
 		
 		class PreventNullAnalysisVisitor extends MethodVisitor {
 			PreventNullAnalysisVisitor(MethodVisitor mv) {
-				super(Opcodes.ASM4, mv);
+				super(Opcodes.ASM5, mv);
 			}
 			
-			@Override public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+			@Override public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
 				boolean hit = true;
 				if (hit && opcode != Opcodes.INVOKESTATIC) hit = false;
 				if (hit && !"preventNullAnalysis".equals(name)) hit = false;
@@ -61,14 +61,14 @@ public class PreventNullAnalysisRemover implements PostCompilerTransformation {
 				if (hit && !"(Ljava/lang/Object;)Ljava/lang/Object;".equals(desc)) hit = false;
 				if (hit) {
 					changesMade.set(true);
-					if (System.getProperty("lombok.debugAsmOnly", null) != null) super.visitMethodInsn(opcode, owner, name, desc); // DEBUG for issue 470!
+					if (System.getProperty("lombok.debugAsmOnly", null) != null) super.visitMethodInsn(opcode, owner, name, desc, itf); // DEBUG for issue 470!
 				} else {
-					super.visitMethodInsn(opcode, owner, name, desc);
+					super.visitMethodInsn(opcode, owner, name, desc, itf);
 				}
 			}
 		}
 		
-		reader.accept(new ClassVisitor(Opcodes.ASM4, writer) {
+		reader.accept(new ClassVisitor(Opcodes.ASM5, writer) {
 			@Override public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 				return new PreventNullAnalysisVisitor(super.visitMethod(access, name, desc, signature, exceptions));
 			}
