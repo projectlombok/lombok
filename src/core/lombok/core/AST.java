@@ -387,7 +387,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 				buildWithCollection(nodeType, o, list, fa.dim);
 			}
 		} catch (IllegalAccessException e) {
-			sneakyThrow(e);
+			throw sneakyThrow(e);
 		}
 	}
 	

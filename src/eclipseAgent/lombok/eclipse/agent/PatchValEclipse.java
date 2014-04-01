@@ -159,9 +159,9 @@ public class PatchValEclipse {
 				Reflection.astConverterRecordNodes.invoke(converter, newAnnotation, valAnnotation);
 				Reflection.astConverterRecordNodes.invoke(converter, newAnnotation.getTypeName(), valAnnotation.type);
 			} catch (IllegalAccessException e) {
-				Lombok.sneakyThrow(e);
+				throw Lombok.sneakyThrow(e);
 			} catch (InvocationTargetException e) {
-				Lombok.sneakyThrow(e.getCause());
+				throw Lombok.sneakyThrow(e.getCause());
 			}
 			modifiers.add(newAnnotation);
 		}
@@ -172,11 +172,11 @@ public class PatchValEclipse {
 		try {
 			modifier = Reflection.modifierConstructor.newInstance(ast);
 		} catch (InstantiationException e) {
-			Lombok.sneakyThrow(e);
+			throw Lombok.sneakyThrow(e);
 		} catch (IllegalAccessException e) {
-			Lombok.sneakyThrow(e);
+			throw Lombok.sneakyThrow(e);
 		} catch (InvocationTargetException e) {
-			Lombok.sneakyThrow(e);
+			throw Lombok.sneakyThrow(e);
 		}
 		
 		if (modifier != null) {
@@ -191,11 +191,11 @@ public class PatchValEclipse {
 		try {
 			out = Reflection.markerAnnotationConstructor.newInstance(ast);
 		} catch (InstantiationException e) {
-			Lombok.sneakyThrow(e);
+			throw Lombok.sneakyThrow(e);
 		} catch (IllegalAccessException e) {
-			Lombok.sneakyThrow(e);
+			throw Lombok.sneakyThrow(e);
 		} catch (InvocationTargetException e) {
-			Lombok.sneakyThrow(e);
+			throw Lombok.sneakyThrow(e);
 		}
 		
 		if (out != null) {

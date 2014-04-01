@@ -49,7 +49,7 @@ public class HandlePrintAST extends JavacAnnotationHandler<PrintAST> {
 		if (fileName.length() > 0) try {
 			stream = new PrintStream(new File(fileName));
 		} catch (FileNotFoundException e) {
-			Lombok.sneakyThrow(e);
+			throw Lombok.sneakyThrow(e);
 		}
 		
 		try {

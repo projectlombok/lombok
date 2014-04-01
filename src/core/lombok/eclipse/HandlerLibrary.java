@@ -173,7 +173,7 @@ public class HandlerLibrary {
 				}
 			}
 		} catch (IOException e) {
-			Lombok.sneakyThrow(e);
+			throw Lombok.sneakyThrow(e);
 		}
 	}
 	

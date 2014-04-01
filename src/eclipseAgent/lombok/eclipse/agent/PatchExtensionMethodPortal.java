@@ -64,7 +64,7 @@ public class PatchExtensionMethodPortal {
 			//ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
 			//do anything useful here.
 		} catch (IllegalAccessException e) {
-			Lombok.sneakyThrow(e);
+			throw Lombok.sneakyThrow(e);
 		} catch (InvocationTargetException e) {
 			throw Lombok.sneakyThrow(e.getCause());
 		} catch (NullPointerException e) {

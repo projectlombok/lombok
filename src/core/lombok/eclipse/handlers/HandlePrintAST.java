@@ -50,7 +50,7 @@ public class HandlePrintAST extends EclipseAnnotationHandler<PrintAST> {
 		if (fileName.length() > 0) try {
 			stream = new PrintStream(new File(fileName));
 		} catch (FileNotFoundException e) {
-			Lombok.sneakyThrow(e);
+			throw Lombok.sneakyThrow(e);
 		}
 		try {
 			annotationNode.up().traverse(new EclipseASTVisitor.Printer(annotation.getInstance().printContent(), stream, annotation.getInstance().printPositions()));
