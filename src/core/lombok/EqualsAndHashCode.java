@@ -66,7 +66,7 @@ public @interface EqualsAndHashCode {
 	 * Any annotations listed here are put on the generated parameter of {@code equals} and {@code canEqual}. The syntax for this feature is: {@code @EqualsAndHashCode(onParam=@__({@AnnotationsGoHere}))}
 	 * This is useful to add for example a {@code Nullable} annotation.
 	 */
-	AnyAnnotation[] onParam() default @AnyAnnotation;
+	AnyAnnotation[] onParam() default {};
 	
 	/**
 	  * Placeholder annotation to enable the placement of annotations on the generated code.

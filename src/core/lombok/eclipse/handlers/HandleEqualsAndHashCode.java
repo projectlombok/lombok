@@ -116,7 +116,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			return;
 		}
 		
-		generateMethods(typeNode, errorNode, null, null, null, false, FieldAccess.GETTER);
+		generateMethods(typeNode, errorNode, null, null, null, false, FieldAccess.GETTER, null);
 	}
 	
 	@Override public void handle(AnnotationValues<EqualsAndHashCode> annotation, Annotation ast, EclipseNode annotationNode) {
@@ -127,6 +127,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		List<String> includes = Arrays.asList(ann.of());
 		EclipseNode typeNode = annotationNode.up();
 		
+		List<Annotation> onParam = unboxAndRemoveAnnotationParameter(ast, "onParam", "@EqualsAndHashCode(onParam=", annotationNode);
 		checkForBogusFieldNames(typeNode, annotation);
 		
 		Boolean callSuper = ann.callSuper();
@@ -141,11 +142,11 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		
 		FieldAccess fieldAccess = ann.doNotUseGetters() ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
 		
-		generateMethods(typeNode, annotationNode, excludes, includes, callSuper, true, fieldAccess);
+		generateMethods(typeNode, annotationNode, excludes, includes, callSuper, true, fieldAccess, onParam);
 	}
 	
 	public void generateMethods(EclipseNode typeNode, EclipseNode errorNode, List<String> excludes, List<String> includes,
-			Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
+			Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess, List<Annotation> onParam) {
 		assert excludes == null || includes == null;
 		
 		TypeDeclaration typeDecl = null;
@@ -235,12 +236,12 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			//fallthrough
 		}
 		
-		MethodDeclaration equalsMethod = createEquals(typeNode, nodesForEquality, callSuper, errorNode.get(), fieldAccess, needsCanEqual);
+		MethodDeclaration equalsMethod = createEquals(typeNode, nodesForEquality, callSuper, errorNode.get(), fieldAccess, needsCanEqual, onParam);
 		equalsMethod.traverse(new SetGeneratedByVisitor(errorNode.get()), ((TypeDeclaration)typeNode.get()).scope);
 		injectMethod(typeNode, equalsMethod);
 		
 		if (needsCanEqual && canEqualExists == MemberExistsResult.NOT_EXISTS) {
-			MethodDeclaration canEqualMethod = createCanEqual(typeNode, errorNode.get());
+			MethodDeclaration canEqualMethod = createCanEqual(typeNode, errorNode.get(), onParam);
 			canEqualMethod.traverse(new SetGeneratedByVisitor(errorNode.get()), ((TypeDeclaration)typeNode.get()).scope);
 			injectMethod(typeNode, canEqualMethod);
 		}
@@ -460,7 +461,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		return new QualifiedTypeReference(tokens, ps);
 	}
 	
-	public MethodDeclaration createEquals(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess, boolean needsCanEqual) {
+	public MethodDeclaration createEquals(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess, boolean needsCanEqual, List<Annotation> onParam) {
 		int pS = source.sourceStart; int pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		TypeDeclaration typeDecl = (TypeDeclaration)type.get();
@@ -483,6 +484,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		setGeneratedBy(objectRef, source);
 		method.arguments = new Argument[] {new Argument(new char[] { 'o' }, 0, objectRef, Modifier.FINAL)};
 		method.arguments[0].sourceStart = pS; method.arguments[0].sourceEnd = pE;
+		method.arguments[0].annotations = onParam.toArray(new Annotation[] {});
 		setGeneratedBy(method.arguments[0], source);
 		
 		List<Statement> statements = new ArrayList<Statement>();
@@ -720,7 +722,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	}
 	
 	
-	public MethodDeclaration createCanEqual(EclipseNode type, ASTNode source) {
+	public MethodDeclaration createCanEqual(EclipseNode type, ASTNode source, List<Annotation> onParam) {
 		/* public boolean canEqual(final java.lang.Object other) {
 		 *     return other instanceof Outer.Inner.MyType;
 		 * }
@@ -747,6 +749,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		setGeneratedBy(objectRef, source);
 		method.arguments = new Argument[] {new Argument(otherName, 0, objectRef, Modifier.FINAL)};
 		method.arguments[0].sourceStart = pS; method.arguments[0].sourceEnd = pE;
+		method.arguments[0].annotations = onParam.toArray(new Annotation[] {});
 		setGeneratedBy(method.arguments[0], source);
 		
 		SingleNameReference otherRef = new SingleNameReference(otherName, p);
