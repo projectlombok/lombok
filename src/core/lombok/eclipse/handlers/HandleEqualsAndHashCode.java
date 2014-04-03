@@ -116,7 +116,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			return;
 		}
 		
-		generateMethods(typeNode, errorNode, null, null, null, false, FieldAccess.GETTER, null);
+		generateMethods(typeNode, errorNode, null, null, null, false, FieldAccess.GETTER, new ArrayList<Annotation>());
 	}
 	
 	@Override public void handle(AnnotationValues<EqualsAndHashCode> annotation, Annotation ast, EclipseNode annotationNode) {

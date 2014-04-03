@@ -118,7 +118,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			return;
 		}
 		
-		generateMethods(typeNode, source, null, null, null, false, FieldAccess.GETTER, null);
+		generateMethods(typeNode, source, null, null, null, false, FieldAccess.GETTER, List.<JCAnnotation>nil());
 	}
 	
 	public void generateMethods(JavacNode typeNode, JavacNode source, List<String> excludes, List<String> includes,
