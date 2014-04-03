@@ -1,7 +1,7 @@
 @interface Nullable {
 }
 
-class EqualsAndHashCode {
+class EqualsAndHashCodeWithOnParam {
 	int x;
 	boolean[] y;
 	Object[] z;
@@ -11,8 +11,8 @@ class EqualsAndHashCode {
 	@java.lang.SuppressWarnings("all")
 	public boolean equals(@Nullable final java.lang.Object o) {
 		if (o == this) return true;
-		if (!(o instanceof EqualsAndHashCode)) return false;
-		final EqualsAndHashCode other = (EqualsAndHashCode)o;
+		if (!(o instanceof EqualsAndHashCodeWithOnParam)) return false;
+		final EqualsAndHashCodeWithOnParam other = (EqualsAndHashCodeWithOnParam)o;
 		if (!other.canEqual((java.lang.Object)this)) return false;
 		if (this.x != other.x) return false;
 		if (!java.util.Arrays.equals(this.y, other.y)) return false;
@@ -27,7 +27,7 @@ class EqualsAndHashCode {
 	}
 	@java.lang.SuppressWarnings("all")
 	protected boolean canEqual(@Nullable final java.lang.Object other) {
-		return other instanceof EqualsAndHashCode;
+		return other instanceof EqualsAndHashCodeWithOnParam;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")

@@ -1,7 +1,7 @@
 @interface Nullable {
 }
 
-@lombok.EqualsAndHashCode(onParam=@_{@Nullable})
+@lombok.EqualsAndHashCode(onParam=@__({@Nullable}))
 class EqualsAndHashCodeWithOnParam {
 	int x;
 	boolean[] y;
