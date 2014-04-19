@@ -25,6 +25,7 @@ import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 import static com.sun.tools.javac.code.Flags.*;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -144,12 +145,36 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		if (delegateTypes.isEmpty()) {
 			if (delegateType != null) toDelegate.add(delegateType); 
 		} else {
+			Types types = Types.instance(annotationNode.getContext());
+
 			for (Object dt : delegateTypes) {
 				if (dt instanceof JCFieldAccess && ((JCFieldAccess)dt).name.toString().equals("class")) {
 					Type type = ((JCFieldAccess)dt).selected.type;
 					if (type == null) reso.resolveClassMember(annotationNode);
 					type = ((JCFieldAccess)dt).selected.type;
-					if (type != null) toDelegate.add(type);
+
+					if (type != null) {
+						// find the superclass or implemented interface of
+						// delegateType with the erasure of type.
+						ArrayDeque<Type> deque = new ArrayDeque<Type>();
+						deque.add(delegateType);
+						while (deque.size() > 0) {
+							ClassType tmpType = (ClassType) deque.removeFirst();
+							
+							if (types.isSameType(types.erasure(tmpType), type)) {
+								type = tmpType;
+								break;
+							}
+
+							Type superType = types.supertype(tmpType);
+							if (superType != Type.noType) deque.addLast(superType);
+
+							List<Type> interfaces = types.interfaces(tmpType);
+							deque.addAll(interfaces);
+						}
+						
+						toDelegate.add(type);
+					}
 				}
 			}
 		}
