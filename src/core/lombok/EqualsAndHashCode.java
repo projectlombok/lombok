@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,9 +69,9 @@ public @interface EqualsAndHashCode {
 	AnyAnnotation[] onParam() default {};
 	
 	/**
-	  * Placeholder annotation to enable the placement of annotations on the generated code.
-	  * @deprecated Don't use this annotation, ever - Read the documentation.
-	  */
+	 * Placeholder annotation to enable the placement of annotations on the generated code.
+	 * @deprecated Don't use this annotation, ever - Read the documentation.
+	 */
 	@Deprecated
 	@Retention(RetentionPolicy.SOURCE)
 	@Target({})
