@@ -29,7 +29,6 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.commons.JSRInlinerAdapter;
 
 class AsmUtil {
-	
 	private AsmUtil() {
 		throw new UnsupportedOperationException();
 	}

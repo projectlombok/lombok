@@ -84,6 +84,10 @@ public class RunTestsViaEcj extends AbstractRunTests {
 			@Override public boolean proceedOnErrors() {
 				return false;
 			}
+			
+			@Override public boolean ignoreAllErrors() {
+				return false;
+			}
 		};
 	}
 	
