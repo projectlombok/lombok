@@ -49,6 +49,7 @@ import lombok.javac.JavacTreeMaker.TypeTag;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.tree.DocCommentTable;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCArrayAccess;
@@ -101,7 +102,6 @@ import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.JCTree.LetExpr;
 import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
-import com.sun.tools.javac.tree.DocCommentTable;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.Convert;
@@ -396,8 +396,8 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 			if (tree == null) print("/*missing*/");
 			else {
 				consumeComments(tree.pos, tree);
-			   	tree.accept(this);
-			   	int endPos = endPos(tree);
+				tree.accept(this);
+				int endPos = endPos(tree);
 				consumeTrailingComments(endPos);
 			}
 		} catch (UncheckedIOException ex) {
@@ -1567,17 +1567,78 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 		try {
 			String simpleName = tree.getClass().getSimpleName();
 			if ("JCTypeUnion".equals(simpleName)) {
-				print(tree.toString());
+				printExprs(readExpressionList(tree, "alternatives"), " | ");
 				return;
 			} else if ("JCTypeIntersection".equals(simpleName)) {
-				print(tree.toString());
+				printExprs(readExpressionList(tree, "bounds"), " & ");
+				return;
+			} else if ("JCLambda".equals(simpleName)) {
+				visitLambda0(tree);
 				return;
 			} else {
-				print("(UNKNOWN: " + tree + ")");
+				print("(UNKNOWN[" + tree.getClass().getSimpleName() + "]: " + tree + ")");
 				println();
 			}
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
+		}
+	}
+	
+	private void visitLambda0(JCTree tree) {
+		try {
+			print("(");
+			List<JCVariableDecl> params = (List<JCVariableDecl>) readTreeList(tree, "params");
+			boolean explicit = true;
+			try {
+				explicit = readObject(tree, "paramKind").toString().equals("EXPLICIT");
+			} catch (Exception e) {}
+			if (explicit) {
+				printExprs(params);
+			} else {
+				String sep = "";
+				for (JCVariableDecl param : params) {
+					print(sep);
+					print(param.name);
+					sep = ", ";
+				}
+			}
+			print(") -> ");
+			printExpr(readTree(tree, "body"));
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+	
+	private JCTree readTree(JCTree tree, String fieldName) {
+		try {
+			return (JCTree) readObject(tree, fieldName);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	private List<? extends JCTree> readTreeList(JCTree tree, String fieldName) throws IOException {
+		try {
+			return (List<? extends JCTree>) readObject(tree, fieldName);
+		} catch (Exception e) {
+			return List.nil();
+		}
+	}	
+	
+	private List<JCExpression> readExpressionList(JCTree tree, String fieldName) throws IOException {
+		try {
+			return (List<JCExpression>) readObject(tree, fieldName);
+		} catch (Exception e) {
+			return List.nil();
+		}
+	}
+	
+	private Object readObject(JCTree tree, String fieldName) throws Exception {
+		try {
+			return tree.getClass().getDeclaredField(fieldName).get(tree);
+		} catch (Exception e) {
+			print("ERROR_READING_FIELD");
+			throw e;
 		}
 	}
 }
