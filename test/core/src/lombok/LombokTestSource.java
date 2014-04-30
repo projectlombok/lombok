@@ -99,7 +99,7 @@ public class LombokTestSource {
 		
 		/* Lower bound '5:' (inclusive) */ {
 			Matcher m = VERSION_STYLE_3.matcher(spec);
-			if (m.matches()) return new int[] {Integer.parseInt(m.group(1)), 0};
+			if (m.matches()) return new int[] {Integer.parseInt(m.group(1)), Integer.MAX_VALUE};
 		}
 		
 		/* Range '7:8' (inclusive) */ {
