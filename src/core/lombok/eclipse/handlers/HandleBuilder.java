@@ -52,7 +52,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
-import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.mangosdk.spi.ProviderFor;
 
 import lombok.AccessLevel;
@@ -289,7 +289,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				invoke.typeArguments = trs;
 			}
 			invoke.arguments = assigns.isEmpty() ? null : assigns.toArray(new Expression[assigns.size()]);
-			if (returnType instanceof SingleTypeReference && Arrays.equals(TypeBinding.VOID.simpleName, ((SingleTypeReference) returnType).token)) {
+			if (returnType instanceof SingleTypeReference && Arrays.equals(TypeConstants.VOID, ((SingleTypeReference) returnType).token)) {
 				statement = invoke;
 			} else {
 				statement = new ReturnStatement(invoke, (int)(p >> 32), (int)p);
