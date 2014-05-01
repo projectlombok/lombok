@@ -126,6 +126,9 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 	
 	private static final Map<TreeTag, String> OPERATORS;
 	
+	// StandardFlags | DEFAULT
+	private static final long EXTENDED_STANDARD_FLAGS = 0x0fffL | 1L<<43;
+	
 	static {
 		Map<TreeTag, String> map = new HashMap<TreeTag, String>();
 		
@@ -493,7 +496,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 			suppressFinalAndSemicolonsInTry = false;
 		}
 		print(TreeInfo.flagNames(flags));
-		if ((flags & StandardFlags) != 0) print(" ");
+		if ((flags & EXTENDED_STANDARD_FLAGS) != 0) print(" ");
 		if ((flags & ANNOTATION) != 0) print("@");
 	}
 	
