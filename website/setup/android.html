@@ -76,6 +76,32 @@ java -jar lombok.jar publicApi</pre>
 				(which you can modify in that project's properties page) with <code>lombok-api.jar</code>, as produced in the procedure explained for <em>Eclipse</em>,
 				above.
 			</div>
+			<h3>Gradle &amp; Android Studio</h3>
+			<div>
+				While there might be other ways, this is how I got lombok working for Gradle and Android Studio.
+				
+				<h4>Gradle Setup</h4>
+				<ul>
+					<li>First of all make sure that the version of your android plugin is <code>&gt;= 0.4.3</code></li>
+					<li>Then you need <a href="https://bitbucket.org/hvisser/android-apt">android-apt</a>, follow the instructions on thier site</li>
+					<li>Add Lombok to your Apps <code>dependencies</code>-Block
+<pre>
+	provided "org.projectlombok:lombok:1.12.6"
+	apt "org.projectlombok:lombok:1.12.6"
+</pre>
+					</li>
+					<li>Now you should be able to compile your App using Lombok Annotations</li>
+				</ul>
+				<h4>Android Studio</h4>
+				While the Gradle build already works, Android Studio is not able to see the generated methods. To fix this, you have to install the <a href="http://plugins.jetbrains.com/plugin/6317">Lombok Plugin</a> for IntelliJ IDEA/Android Studio.
+				<ul>
+					<li>Go to <code>File &gt; Settings &gt; Plugins</code></li>
+					<li>Click on <code>Browse repositories...</code></li>
+					<li>Search for <code>Lombok Plugin</code></li>
+					<li>Click on <code>Install plugin</code></li>
+					<li>Restart Android Studio &amp; Profit!</li>
+				</ul>
+			</div>
 		<div class="endBar">
 		</div>
 		<div class="footer">
