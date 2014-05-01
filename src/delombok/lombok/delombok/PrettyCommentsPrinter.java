@@ -1575,6 +1575,9 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 			} else if ("JCLambda".equals(simpleName)) {
 				visitLambda0(tree);
 				return;
+			} else if ("JCMemberReference".equals(simpleName)) {
+				visitReference0(tree);
+				return;
 			} else {
 				print("(UNKNOWN[" + tree.getClass().getSimpleName() + "]: " + tree + ")");
 				println();
@@ -1610,9 +1613,27 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 		}
 	}
 	
+
+	public void visitReference0(JCTree tree) {
+		try {
+			printExpr(readTree(tree, "expr"));
+			print("::");
+			List<JCExpression> typeArgs = readExpressionList(tree, "typeargs");
+			if (typeArgs != null) {
+				print("<");
+				printExprs(typeArgs);
+				print(">");
+			}
+			;
+			print(readObject(tree, "mode").toString().equals("INVOKE") ? readObject(tree, "name") : "new");
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+	
 	private JCTree readTree(JCTree tree, String fieldName) {
 		try {
-			return (JCTree) readObject(tree, fieldName);
+			return (JCTree) readObject0(tree, fieldName);
 		} catch (Exception e) {
 			return null;
 		}
@@ -1621,7 +1642,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 	@SuppressWarnings("unchecked")
 	private List<? extends JCTree> readTreeList(JCTree tree, String fieldName) throws IOException {
 		try {
-			return (List<? extends JCTree>) readObject(tree, fieldName);
+			return (List<? extends JCTree>) readObject0(tree, fieldName);
 		} catch (Exception e) {
 			return List.nil();
 		}
@@ -1630,14 +1651,22 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 	@SuppressWarnings("unchecked")
 	private List<JCExpression> readExpressionList(JCTree tree, String fieldName) throws IOException {
 		try {
-			return (List<JCExpression>) readObject(tree, fieldName);
+			return (List<JCExpression>) readObject0(tree, fieldName);
 		} catch (Exception e) {
 			return List.nil();
 		}
 	}
 	
+	private Object readObject(JCTree tree, String fieldName) {
+		try {
+			return readObject0(tree, fieldName);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
 	@SuppressWarnings("unchecked")
-	private Object readObject(JCTree tree, String fieldName) throws Exception {
+	private Object readObject0(JCTree tree, String fieldName) throws Exception {
 		try {
 			return tree.getClass().getDeclaredField(fieldName).get(tree);
 		} catch (Exception e) {
