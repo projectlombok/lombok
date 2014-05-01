@@ -1587,6 +1587,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 	private void visitLambda0(JCTree tree) {
 		try {
 			print("(");
+			@SuppressWarnings("unchecked")
 			List<JCVariableDecl> params = (List<JCVariableDecl>) readTreeList(tree, "params");
 			boolean explicit = true;
 			try {
@@ -1617,6 +1618,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	private List<? extends JCTree> readTreeList(JCTree tree, String fieldName) throws IOException {
 		try {
 			return (List<? extends JCTree>) readObject(tree, fieldName);
@@ -1625,6 +1627,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 		}
 	}	
 	
+	@SuppressWarnings("unchecked")
 	private List<JCExpression> readExpressionList(JCTree tree, String fieldName) throws IOException {
 		try {
 			return (List<JCExpression>) readObject(tree, fieldName);
@@ -1633,6 +1636,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	private Object readObject(JCTree tree, String fieldName) throws Exception {
 		try {
 			return tree.getClass().getDeclaredField(fieldName).get(tree);
