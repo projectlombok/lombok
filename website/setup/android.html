@@ -83,8 +83,12 @@ java -jar lombok.jar publicApi</pre>
 				<h4>Gradle Setup</h4>
 				<ul>
 					<li>First of all make sure that the version of your android plugin is <code>&gt;= 0.4.3</code></li>
-					<li>Then you need <a href="https://bitbucket.org/hvisser/android-apt">android-apt</a>, follow the instructions on thier site</li>
 					<li>Add Lombok to your Apps <code>dependencies</code>-Block
+<pre>
+	provided "org.projectlombok:lombok:1.12.6"
+</pre>
+					</li>
+					<li>When using <a href="https://bitbucket.org/hvisser/android-apt">android-apt</a>, you have to specify Lombok also with <code>apt</code> in the <code>dependencies</code>-Block
 <pre>
 	provided "org.projectlombok:lombok:1.12.6"
 	apt "org.projectlombok:lombok:1.12.6"
