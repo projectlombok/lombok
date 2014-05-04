@@ -431,9 +431,12 @@ ${sourceWarning}</echo>
 				overwrite="true">
 			<filterset>
 				<filter token="JAVAC_LOCATION" value="${test.location.javac}" />
+				<filter token="ECJ_LOCATION" value="${test.location.ecj}" />
 				<filter token="RT_LOCATION" value="${test.location.bootclasspath}" />
+				<filter token="JAVA_VERSION" value="${test.javaversion}" />
 			</filterset>
 		</copy>
+		<echo>WARNING: If you wish to test JDK8 features in eclipse, there must be a JDK8 installation configured in your eclipse, and it must be called 'JavaSE-1.8'.</echo>
 	</target>
 
 	<target name="setupJavaOpenJDK6TestEnvironment" description="Sets up the test so that 'ant test' will test against OpenJDK6.">
@@ -445,6 +448,7 @@ ${sourceWarning}</echo>
 			<entry key="test.location.ecj" value="lib/ecj7/org.eclipse.custom-ecj.jar" />
 			<entry key="test.location.bootclasspath" value="lib/openJDK6Environment/rt-openjdk6.jar" />
 			<entry key="test.location.name" value="OpenJDK6" />
+			<entry key="test.javaversion" value="6" />
 		</propertyfile>
 		<echo>Tests will now run against OpenJDK6</echo>
 		<antcall target="-createEclipseLaunchForTestEnvironmentIfEclipseProject" />
@@ -459,6 +463,7 @@ ${sourceWarning}</echo>
 			<entry key="test.location.ecj" value="lib/ecj7/org.eclipse.custom-ecj.jar" />
 			<entry key="test.location.bootclasspath" value="lib/openJDK7Environment/rt-openjdk7.jar" />
 			<entry key="test.location.name" value="OpenJDK7" />
+			<entry key="test.javaversion" value="7" />
 		</propertyfile>
 		<echo>Tests will now run against OpenJDK7</echo>
 		<antcall target="-createEclipseLaunchForTestEnvironmentIfEclipseProject" />
@@ -473,6 +478,7 @@ ${sourceWarning}</echo>
 			<entry key="test.location.ecj" value="lib/ecj7/org.eclipse.custom-ecj.jar" />
 			<entry key="test.location.bootclasspath" value="lib/oracleJDK7Environment/rt.jar" />
 			<entry key="test.location.name" value="OracleJDK7" />
+			<entry key="test.javaversion" value="7" />
 		</propertyfile>
 		<echo>Tests will now run against Oracle JDK7</echo>
 		<antcall target="-createEclipseLaunchForTestEnvironmentIfEclipseProject" />
@@ -487,12 +493,13 @@ ${sourceWarning}</echo>
 			<entry key="test.location.ecj" value="lib/ecj8/org.eclipse.custom-ecj.jar" />
 			<entry key="test.location.bootclasspath" value="lib/oracleJDK8Environment/rt.jar" />
 			<entry key="test.location.name" value="OracleJDK8" />
+			<entry key="test.javaversion" value="8" />
 		</propertyfile>
 		<echo>Tests will now run against Oracle JDK8</echo>
 		<antcall target="-createEclipseLaunchForTestEnvironmentIfEclipseProject" />
 	</target>
 
-	<target name="-failIfNoTestEnvironmentProperties" unless="test.location.ecj">
+	<target name="-failIfNoTestEnvironmentProperties" unless="test.javaversion">
 		<fail>ERROR: No test environment set up.
 
 You need to set up a test environment, which consists of a version of javac, and a JRE runtime classpath ('rt.jar').
@@ -513,6 +520,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 * test.location.ecj = /path/to/ecj6.jar
 * test.location.bootclasspath = /path/to/rt.jar
 * test.location.name = RandomUsefulNameToIdentifyThisSetup
+* test.javaversion = 6
 </fail>
 	</target>
 

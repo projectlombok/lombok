@@ -1,4 +1,3 @@
-//version 7
 import java.io.IOException;
 public class ValInTryWithResources {
 	public void whyTryInsteadOfCleanup() throws IOException {
