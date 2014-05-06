@@ -486,10 +486,11 @@ ${sourceWarning}</echo>
 	
 	<target name="setupJavaOracle8TestEnvironment" description="Sets up the test so that 'ant test' will test against OpenJDK8.">
 		<mkdir dir="lib/oracleJDK8Environment" />
-		<get src="http://projectlombok.org/ivyrepo/langtools/oracle-jdk8-tools.jar" dest="lib/oracleJDK8Environment/tools.jar" verbose="true" usetimestamp="true" />
+		<get src="http://projectlombok.org/ivyrepo/langtools/jdk8-javac.jar" dest="lib/oracleJDK8Environment/javac8.jar" verbose="true" usetimestamp="true" />
 		<get src="http://projectlombok.org/ivyrepo/langtools/oracle-jdk8-rt.jar" dest="lib/oracleJDK8Environment/rt.jar" verbose="true" usetimestamp="true" />
+		<get src="http://projectlombok.org/ivyrepo/langtools/jdk8-javac-sources.zip" dest="lib/oracleJDK8Environment/javac8-sources.zip" verbose="true" usetimestamp="true" />
 		<propertyfile file="testenvironment.properties">
-			<entry key="test.location.javac" value="lib/oracleJDK8Environment/tools.jar" />
+			<entry key="test.location.javac" value="lib/oracleJDK8Environment/javac8.jar" />
 			<entry key="test.location.ecj" value="lib/ecj8/org.eclipse.custom-ecj.jar" />
 			<entry key="test.location.bootclasspath" value="lib/oracleJDK8Environment/rt.jar" />
 			<entry key="test.location.name" value="OracleJDK8" />
