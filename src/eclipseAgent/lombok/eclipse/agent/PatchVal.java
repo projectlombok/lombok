@@ -166,7 +166,11 @@ public class PatchVal {
 				resolved = null;
 			}
 			if (resolved != null) {
-				replacement = makeType(resolved, local.type, false);
+				try {
+					replacement = makeType(resolved, local.type, false);
+				} catch (Exception e) {
+					// Some type thing failed. It might be an IntersectionType
+				}
 			}
 		}
 		
