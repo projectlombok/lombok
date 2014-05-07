@@ -91,7 +91,11 @@ public class HandleVal extends JavacASTAdapter {
 			local.mods.annotations = local.mods.annotations == null ? List.of(valAnnotation) : local.mods.annotations.append(valAnnotation);
 		}
 		
-		local.vartype = localNode.getAst().getTreeMaker().Ident(localNode.getAst().toName("___Lombok_VAL_Attrib__"));
+		if (JavacResolution.platformHasTargetTyping()) {
+			local.vartype = localNode.getAst().getTreeMaker().Ident(localNode.getAst().toName("___Lombok_VAL_Attrib__"));
+		} else {
+			local.vartype = JavacResolution.createJavaLangObject(localNode.getAst());
+		}
 		
 		Type type;
 		try {

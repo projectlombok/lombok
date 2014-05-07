@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2013 The Project Lombok Authors.
+ * Copyright (C) 2011-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -94,17 +94,6 @@ public class JavacResolution {
 		
 		@Override public void visitClassDef(JCClassDecl tree) {
 			if (copyAt != null) return;
-			// The commented out stuff requires reflection tricks to avoid leaving lint unset which causes NPEs during attrib. So, we use the other one, much less code.
-//			env = enter.classEnv((JCClassDecl) tree, env);
-//			try {
-//				Field f = env.info.getClass().getDeclaredField("lint");
-//				f.setAccessible(true);
-//				Constructor<?> c = Lint.class.getDeclaredConstructor(Lint.class);
-//				c.setAccessible(true);
-//				f.set(env.info, c.newInstance(lint));
-//			} catch (Exception e) {
-//				throw Lombok.sneakyThrow(e);
-//			}
 			env = enter.getClassEnv(tree.sym);
 		}
 		
@@ -357,5 +346,9 @@ public class JavacResolution {
 		default:
 			throw new TypeNotConvertibleException("Nulltype");
 		}
+	}
+	
+	public static boolean platformHasTargetTyping() {
+		return Javac.getJavaCompilerVersion() >= 8;
 	}
 }
