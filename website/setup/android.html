@@ -46,13 +46,21 @@
 			to the native libraries present in lombok.jar itself. Unfortunately, android does not (yet) understand the concept of a
 			compile-time-only dependency, so you need to mess with your build files to make it work.
 			</p><p>
+			Android also does not have a complete JRE library stack; in particular, it does not have the <code>@java.beans.ConstructorProperties</code> annotation, therefore you have to stop lombok from generating these:
+				<ul>
+					<li>The <code>suppressConstructorProperties</code> property can be set to <code>false</code> when using <a href="/features/Constructor.html">@XArgsConstructor Annotations</a>.</li>
+					<li>Starting with Lombok <code>&gt;= 1.14.0</code> you can instead a <code>lombok.config</code> file to the root of your project to disable <code>ConstructorProperties</code> project wide. Add the following line to <code>lombok.config</code>:<br />
+					<pre>lombok.anyConstructor.suppressConstructorProperties = true</pre><br />
+					See the <a href="/features/experimental/configuration.html">configuration</a> documentation for more information on how to set up your project with a lombok config file.
+				</ul>
+			</p><p>
 			The instructions listed below are excerpts from <a href="https://github.com/excilys/androidannotations/wiki/Cookbook">The
 			AndroidAnnotations project cookbook</a>. You may wish to refer to that documentation for complete instructions; lombok is just
 			the equivalent to <code>androidannotations-VERSION.jar</code>; there is no <code>-api</code> aspect.
 			</p>
 			<h3>Eclipse</h3>
 			<div>
-				In eclipse, create a 'lightweight' lombok jar that contains only the annotations by running:
+				In eclipse, create a 'lightweight' lombok jar that contains only the annotations by running:<br /><br />
 				<pre>
 java -jar lombok.jar publicApi</pre>
 				Then, add the <code>lombok-api.jar</code> file created by running this command
@@ -76,48 +84,38 @@ java -jar lombok.jar publicApi</pre>
 				(which you can modify in that project's properties page) with <code>lombok-api.jar</code>, as produced in the procedure explained for <em>Eclipse</em>,
 				above.
 			</div>
-			<h3>Gradle &amp; Android Studio</h3>
+			<h3>Gradle</h3>
 			<div>
-				While there might be other ways, this is how I got lombok working for Gradle and Android Studio.
-				
-				<h4>Gradle Setup</h4>
 				<ul>
-					<li>First of all make sure that the version of your android plugin is <code>&gt;= 0.4.3</code></li>
-					<li>Add Lombok to your Apps <code>dependencies</code>-Block
+					<li>Make sure that the version of your android plugin is <code>&gt;= 0.4.3</code></li>
+					<li>Add Lombok to your application's <code>dependencies</code> block:<br /><br />
 <pre>
 	provided "org.projectlombok:lombok:1.12.6"
 </pre>
 					</li>
-					<li>When using <a href="https://bitbucket.org/hvisser/android-apt">android-apt</a>, you have to specify Lombok also with <code>apt</code> in the <code>dependencies</code>-Block
+					<li>When using <a href="https://bitbucket.org/hvisser/android-apt">android-apt</a>, you also have to specify Lombok as an annotation processor (with the <code>apt</code> directive) in the <code>dependencies</code> block:<br  /><br />
 <pre>
 	provided "org.projectlombok:lombok:1.12.6"
 	apt "org.projectlombok:lombok:1.12.6"
 </pre>
 					</li>
-					<li>Now you should be able to compile your App using Lombok Annotations</li>
 				</ul>
-				<div>
-					<b>NOTE</b>: Android does not have the <code>@java.beans.ConstructorProperties</code> therefor you have to use the
-						<code>suppressConstructorProperties</code> property when using <a href="http://projectlombok.org/features/Constructor.html">@XArgsConstructor Annotations</a>.
-						With Lombok <code>&gt;= 1.12.7</code> you can use the <code>lombok.config</code> file to enable this property projectwide by adding:
-						<br/><br/>
-						<pre>lombok.anyConstructor.suppressConstructorProperties = true</pre>
-					<br/>
-				</div>
-				<h4>Android Studio</h4>
-				While the Gradle build already works, Android Studio is not able to see the generated methods. To fix this, you have to install the <a href="http://plugins.jetbrains.com/plugin/6317">Lombok Plugin</a> for IntelliJ IDEA/Android Studio.
+			</div>
+			<h3>Android Studio</h3>
+			<div>
+				Follow the previous instructions (<em>Gradle</em>). In addition to setting up your gradle project correctly, you need to add the <a href="http://plugins.jetbrains.com/plugin/6317">Lombok IntelliJ plugin</a> to add lombok support to Android Studio:
 				<ul>
 					<li>Go to <code>File &gt; Settings &gt; Plugins</code></li>
 					<li>Click on <code>Browse repositories...</code></li>
 					<li>Search for <code>Lombok Plugin</code></li>
 					<li>Click on <code>Install plugin</code></li>
-					<li>Restart Android Studio &amp; Profit!</li>
+					<li>Restart Android Studio</li>
 				</ul>
 			</div>
 		<div class="endBar">
 		</div>
 		<div class="footer">
-			<a href="../credits.html" class="creditsLink">credits</a> | Copyright &copy; 2009-2013 The Project Lombok Authors, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.
+			<a href="../credits.html" class="creditsLink">credits</a> | Copyright &copy; 2009-2014 The Project Lombok Authors, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.
 		</div>
 	</div>
 	<script type="text/javascript">
