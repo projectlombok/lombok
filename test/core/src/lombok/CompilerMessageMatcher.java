@@ -37,8 +37,13 @@ public class CompilerMessageMatcher {
 	/** Line Number (starting at 1) */
 	private final List<Integer> lineNumbers = new ArrayList<Integer>();
 	private final List<List<String>> messages = new ArrayList<List<String>>();
+	private boolean optional;
 	
 	private CompilerMessageMatcher() {}
+	
+	public boolean isOptional() {
+		return optional;
+	}
 	
 	public static CompilerMessageMatcher asCompilerMessageMatcher(CompilerMessage message) {
 		CompilerMessageMatcher cmm = new CompilerMessageMatcher();
@@ -50,7 +55,7 @@ public class CompilerMessageMatcher {
 	@Override public String toString() {
 		StringBuilder out = new StringBuilder();
 		for (int i = 0; i < lineNumbers.size(); i++) {
-			out.append(lineNumbers.get(i));
+			out.append(lineNumbers.get(i)).append(" ");
 			for (String part : messages.get(i)) out.append(part).append(" ");
 			if (out.length() > 0) out.setLength(out.length() - 1);
 			out.append(" |||| ");
@@ -87,10 +92,17 @@ public class CompilerMessageMatcher {
 	private static CompilerMessageMatcher read(String line) {
 		line = line.trim();
 		if (line.isEmpty()) return null;
+		boolean optional = false;
+		
+		if (line.startsWith("OPTIONAL ")) {
+			line = line.substring(9);
+			optional = true;
+		}
 		
 		String[] parts = line.split("\\s*\\|\\|\\|\\|\\s*");
 		
 		CompilerMessageMatcher cmm = new CompilerMessageMatcher();
+		cmm.optional = optional;
 		for (String part : parts) {
 			Matcher m = PATTERN.matcher(part);
 			if (!m.matches()) throw new IllegalArgumentException("Typo in test file: " + line);

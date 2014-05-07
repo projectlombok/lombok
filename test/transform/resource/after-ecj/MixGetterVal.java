@@ -10,6 +10,8 @@ class MixGetterVal {
   public void test() {
     final @val int y = x;
     m(y);
+    final @val int a = getX();
+    m(a);
   }
   public @java.lang.SuppressWarnings("all") int getX() {
     return this.x;

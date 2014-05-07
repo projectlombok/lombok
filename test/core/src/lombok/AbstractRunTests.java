@@ -56,12 +56,15 @@ public abstract class AbstractRunTests {
 	public boolean compareFile(DirectoryRunner.TestParams params, File file) throws Throwable {
 		ConfigurationKeysLoader.LoaderLoader.loadAllConfigurationKeys();
 		final LombokTestSource sourceDirectives = LombokTestSource.readDirectives(file);
-		if (sourceDirectives.isIgnore() || !sourceDirectives.versionWithinLimit(params.getVersion())) return false;
+		if (sourceDirectives.isIgnore()) return false;
+		if (!sourceDirectives.versionWithinLimit(params.getVersion())) return false;
+		if (!sourceDirectives.versionWithinLimit(getClasspathVersion())) return false;
 		
 		String fileName = file.getName();
 		LombokTestSource expected = LombokTestSource.read(params.getAfterDirectory(), params.getMessagesDirectory(), fileName);
 		
-		if (expected.isIgnore() || !expected.versionWithinLimit(params.getVersion())) return false;
+		if (expected.isIgnore()) return false;
+		if (!expected.versionWithinLimit(params.getVersion())) return false;
 		
 		LinkedHashSet<CompilerMessage> messages = new LinkedHashSet<CompilerMessage>();
 		StringWriter writer = new StringWriter();
@@ -76,6 +79,22 @@ public abstract class AbstractRunTests {
 		
 		compare(file.getName(), expected, writer.toString(), messages, params.printErrors(), sourceDirectives.isSkipCompareContent() || expected.isSkipCompareContent());
 		return true;
+	}
+	
+	private static int getClasspathVersion() {
+		try {
+			Class.forName("java.lang.AutoCloseable");
+		} catch (ClassNotFoundException e) {
+			return 6;
+		}
+		
+		try {
+			Class.forName("java.util.stream.Stream");
+		} catch (ClassNotFoundException e) {
+			return 7;
+		}
+		
+		return 8;
 	}
 	
 	protected abstract void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file) throws Throwable;
@@ -176,24 +195,31 @@ public abstract class AbstractRunTests {
 		}
 	}
 	
+	@SuppressWarnings("null") /* eclipse bug; it falsely thinks stuffAc will always be null or some such hogwash. */
 	private static void compareMessages(String name, LombokImmutableList<CompilerMessageMatcher> expected, LinkedHashSet<CompilerMessage> actual) {
 		Iterator<CompilerMessageMatcher> expectedIterator = expected.iterator();
 		Iterator<CompilerMessage> actualIterator = actual.iterator();
 		
+		CompilerMessage stuffAc = null;
 		while (true) {
 			boolean exHasNext = expectedIterator.hasNext();
-			boolean acHasNext = actualIterator.hasNext();
+			boolean acHasNext = stuffAc != null || actualIterator.hasNext();
 			if (!exHasNext && !acHasNext) break;
 			if (exHasNext && acHasNext) {
 				CompilerMessageMatcher cmm = expectedIterator.next();
-				CompilerMessage cm = actualIterator.next();
+				CompilerMessage cm = stuffAc == null ? actualIterator.next() : stuffAc;
 				if (cmm.matches(cm)) continue;
+				if (cmm.isOptional()) stuffAc = cm;
 				fail(String.format("[%s] Expected message '%s' but got message '%s'", name, cmm, cm));
 				throw new AssertionError("fail should have aborted already.");
 			}
-			if (exHasNext) fail(String.format("[%s] Expected message '%s' but ran out of actual messages", name, expectedIterator.next()));
+			
+			while (expectedIterator.hasNext()) {
+				if (expectedIterator.next().isOptional()) continue;
+				fail(String.format("[%s] Expected message '%s' but ran out of actual messages", name, expectedIterator.next()));
+			}
 			if (acHasNext) fail(String.format("[%s] Unexpected message: %s", name, actualIterator.next()));
-			throw new AssertionError("fail should have aborted already.");
+			break;
 		}
 	}
 	

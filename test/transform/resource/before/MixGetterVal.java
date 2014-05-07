@@ -8,5 +8,7 @@ class MixGetterVal {
 	public void test() {
 		val y = x;
 		m(y);
+		val a = getX();
+		m(a);
 	}
 }
