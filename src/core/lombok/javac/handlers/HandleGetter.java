@@ -33,7 +33,7 @@ import java.util.Map;
 
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
-import lombok.Delegate;
+import lombok.experimental.Delegate;
 import lombok.Getter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;

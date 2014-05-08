@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2013-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,12 +21,14 @@
  */
 package lombok.core;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public class LombokInternalAliasing {
-	public static final Map<String, String> IMPLIED_EXTRA_STAR_IMPORTS;
+	/** Maps a package name to a space separated list of packages. If the key package is star-imported, assume all packages in the 'value' part of the MapEntry are too. */
+	public static final Map<String, Collection<String>> IMPLIED_EXTRA_STAR_IMPORTS;
 	public static final Map<String, String> ALIASES;
 	
 	/**
@@ -41,12 +43,14 @@ public class LombokInternalAliasing {
 	}
 	
 	static {
-		Map<String, String> m = new HashMap<String, String>();
-		m.put("lombok.experimental", "lombok");
-		IMPLIED_EXTRA_STAR_IMPORTS = Collections.unmodifiableMap(m);
+		Map<String, Collection<String>> m1 = new HashMap<String, Collection<String>>();
+		m1.put("lombok.experimental", Collections.singleton("lombok"));
+		m1.put("lombok", Collections.singleton("lombok.experimental"));
+		IMPLIED_EXTRA_STAR_IMPORTS = Collections.unmodifiableMap(m1);
 		
-		m = new HashMap<String, String>();
-		m.put("lombok.experimental.Value", "lombok.Value");
-		ALIASES = Collections.unmodifiableMap(m);
+		Map<String, String> m2 = new HashMap<String, String>();
+		m2.put("lombok.experimental.Value", "lombok.Value");
+		m2.put("lombok.Delegate", "lombok.experimental.Delegate");
+		ALIASES = Collections.unmodifiableMap(m2);
 	}
 }

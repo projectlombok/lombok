@@ -25,6 +25,7 @@ import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 import static com.sun.tools.javac.code.Flags.*;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,7 +43,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import lombok.ConfigurationKeys;
-import lombok.Delegate;
+import lombok.experimental.Delegate;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
@@ -101,7 +102,8 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 	@Override public void handle(AnnotationValues<Delegate> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.DELEGATE_FLAG_USAGE, "@Delegate");
 		
-		deleteAnnotationIfNeccessary(annotationNode, Delegate.class);
+		@SuppressWarnings("deprecation") Class<? extends Annotation> oldDelegate = lombok.Delegate.class;
+		deleteAnnotationIfNeccessary(annotationNode, Delegate.class, oldDelegate);
 		
 		Type delegateType;
 		Name delegateName = annotationNode.toName(annotationNode.up().getName());

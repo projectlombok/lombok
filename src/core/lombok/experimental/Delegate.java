@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok;
+package lombok.experimental;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -27,11 +27,23 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * @deprecated Use {@link lombok.experimental.Delegate} instead.
+ * Put on any field to make lombok generate delegate methods that forward the call to this field.
+ * 
+ * Example:
+ * <pre>
+ *     private &#64;Delegate List&lt;String&gt; foo;
+ * </pre>
+ * 
+ * will generate for example an {@code boolean add(String)} method, which contains: {@code return foo.add(arg);}, as well as all other methods in {@code List}.
+ * 
+ * All public instance methods of the field's type, as well as all public instance methods of all the field's type's superfields are delegated, except for all methods
+ * that exist in {@link Object}, the {@code canEqual(Object)} method, and any methods that appear in types
+ * that are listed in the {@code excludes} property.
+ * <p>
+ * Complete documentation is found at <a href="http://projectlombok.org/features/experimental/Delegate.html">the project lombok features page for &#64;Delegate</a>.
  */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.SOURCE)
-@Deprecated
 public @interface Delegate {
 	/**
 	 * Normally the type of the field is used as delegate type. However, to choose a different type to delegate, you can list one (or more) types here. Note that types with
