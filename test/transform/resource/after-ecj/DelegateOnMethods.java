@@ -1,4 +1,4 @@
-import lombok.Delegate;
+import lombok.experimental.Delegate;
 abstract class DelegateOnMethods {
   public static interface Bar {
     void bar(java.util.ArrayList<java.lang.String> list);

@@ -1,4 +1,4 @@
-import lombok.Delegate;
+import lombok.experimental.Delegate;
 
 class DelegateWithDeprecated {
 	@Delegate private Bar bar;

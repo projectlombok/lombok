@@ -215,8 +215,9 @@ public abstract class AbstractRunTests {
 			}
 			
 			while (expectedIterator.hasNext()) {
-				if (expectedIterator.next().isOptional()) continue;
-				fail(String.format("[%s] Expected message '%s' but ran out of actual messages", name, expectedIterator.next()));
+				CompilerMessageMatcher next = expectedIterator.next();
+				if (next.isOptional()) continue;
+				fail(String.format("[%s] Expected message '%s' but ran out of actual messages", name, next));
 			}
 			if (acHasNext) fail(String.format("[%s] Unexpected message: %s", name, actualIterator.next()));
 			break;

@@ -62,10 +62,12 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
+import org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
@@ -207,21 +209,27 @@ public class PatchDelegate {
 				List<ClassLiteralAccess> excludedRawTypes = rawTypes(ann, "excludes");
 				
 				List<BindingTuple> methodsToExclude = new ArrayList<BindingTuple>();
-				for (ClassLiteralAccess cla : excludedRawTypes) {
-					addAllMethodBindings(methodsToExclude, cla.type.resolveType(decl.initializerScope), new HashSet<String>(), field.name, ann);
-				}
-				
-				Set<String> banList = new HashSet<String>();
-				for (BindingTuple excluded : methodsToExclude) banList.add(printSig(excluded.parameterized));
-				
 				List<BindingTuple> methodsToDelegateForThisAnn = new ArrayList<BindingTuple>();
 				
-				if (rawTypes.isEmpty()) {
-					addAllMethodBindings(methodsToDelegateForThisAnn, field.type.resolveType(decl.initializerScope), banList, field.name, ann);
-				} else {
-					for (ClassLiteralAccess cla : rawTypes) {
-						addAllMethodBindings(methodsToDelegateForThisAnn, cla.type.resolveType(decl.initializerScope), banList, field.name, ann);
+				try {
+					for (ClassLiteralAccess cla : excludedRawTypes) {
+						addAllMethodBindings(methodsToExclude, cla.type.resolveType(decl.initializerScope), new HashSet<String>(), field.name, ann);
 					}
+					
+					Set<String> banList = new HashSet<String>();
+					for (BindingTuple excluded : methodsToExclude) banList.add(printSig(excluded.parameterized));
+					
+					if (rawTypes.isEmpty()) {
+						addAllMethodBindings(methodsToDelegateForThisAnn, field.type.resolveType(decl.initializerScope), banList, field.name, ann);
+					} else {
+						for (ClassLiteralAccess cla : rawTypes) {
+							addAllMethodBindings(methodsToDelegateForThisAnn, cla.type.resolveType(decl.initializerScope), banList, field.name, ann);
+						}
+					}
+				} catch (DelegateRecursion e) {
+					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
+					eclipseAst.get(ann).addError(String.format(RECURSION_NOT_ALLOWED, new String(e.member), new String(e.type)));
+					break;
 				}
 				
 				// Not doing this right now because of problems - see commented-out-method for info.
@@ -239,6 +247,7 @@ public class PatchDelegate {
 	}
 	
 	private static final String LEGALITY_OF_DELEGATE = "@Delegate is legal only on instance fields or no-argument instance methods.";
+	private static final String RECURSION_NOT_ALLOWED = "@Delegate does not support recursion (delegating to a type that itself has @Delegate members). Member \"%s\" is @Delegate in type \"%s\"";
 	
 	private static void fillMethodBindingsForMethods(CompilationUnitDeclaration cud, ClassScope scope, List<BindingTuple> methodsToDelegate) {
 		TypeDeclaration decl = scope.referenceContext;
@@ -270,22 +279,28 @@ public class PatchDelegate {
 				List<ClassLiteralAccess> excludedRawTypes = rawTypes(ann, "excludes");
 				
 				List<BindingTuple> methodsToExclude = new ArrayList<BindingTuple>();
-				for (ClassLiteralAccess cla : excludedRawTypes) {
-					addAllMethodBindings(methodsToExclude, cla.type.resolveType(decl.initializerScope), new HashSet<String>(), method.selector, ann);
-				}
-				
-				Set<String> banList = new HashSet<String>();
-				for (BindingTuple excluded : methodsToExclude) banList.add(printSig(excluded.parameterized));
-				
 				List<BindingTuple> methodsToDelegateForThisAnn = new ArrayList<BindingTuple>();
 				
-				if (rawTypes.isEmpty()) {
-					if (method.returnType == null) continue;
-					addAllMethodBindings(methodsToDelegateForThisAnn, method.returnType.resolveType(decl.initializerScope), banList, method.selector, ann);
-				} else {
-					for (ClassLiteralAccess cla : rawTypes) {
-						addAllMethodBindings(methodsToDelegateForThisAnn, cla.type.resolveType(decl.initializerScope), banList, method.selector, ann);
+				try {
+					for (ClassLiteralAccess cla : excludedRawTypes) {
+						addAllMethodBindings(methodsToExclude, cla.type.resolveType(decl.initializerScope), new HashSet<String>(), method.selector, ann);
 					}
+					
+					Set<String> banList = new HashSet<String>();
+					for (BindingTuple excluded : methodsToExclude) banList.add(printSig(excluded.parameterized));
+					
+					if (rawTypes.isEmpty()) {
+						if (method.returnType == null) continue;
+						addAllMethodBindings(methodsToDelegateForThisAnn, method.returnType.resolveType(decl.initializerScope), banList, method.selector, ann);
+					} else {
+						for (ClassLiteralAccess cla : rawTypes) {
+							addAllMethodBindings(methodsToDelegateForThisAnn, cla.type.resolveType(decl.initializerScope), banList, method.selector, ann);
+						}
+					}
+				} catch (DelegateRecursion e) {
+					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
+					eclipseAst.get(ann).addError(String.format(RECURSION_NOT_ALLOWED, new String(e.member), new String(e.type)));
+					break;
 				}
 				
 				// Not doing this right now because of problems - see commented-out-method for info.
@@ -306,7 +321,7 @@ public class PatchDelegate {
 		if (ann.type == null) return false;
 		TypeBinding tb = ann.type.resolveType(decl.initializerScope);
 		if (tb == null) return false;
-		if (!charArrayEquals("lombok", tb.qualifiedPackageName())) return false;
+		if (!charArrayEquals("lombok", tb.qualifiedPackageName()) && !charArrayEquals("lombok.experimental", tb.qualifiedPackageName())) return false;
 		if (!charArrayEquals("Delegate", tb.qualifiedSourceName())) return false;
 		return true;
 	}
@@ -671,12 +686,22 @@ public class PatchDelegate {
 		}
 	}
 	
-	private static void addAllMethodBindings(List<BindingTuple> list, TypeBinding binding, Set<String> banList, char[] fieldName, ASTNode responsible) {
+	private static void addAllMethodBindings(List<BindingTuple> list, TypeBinding binding, Set<String> banList, char[] fieldName, ASTNode responsible) throws DelegateRecursion {
 		banList.addAll(METHODS_IN_OBJECT);
 		addAllMethodBindings0(list, binding, banList, fieldName, responsible);
 	}
 	
-	private static void addAllMethodBindings0(List<BindingTuple> list, TypeBinding binding, Set<String> banList, char[] fieldName, ASTNode responsible) {
+	private static class DelegateRecursion extends Throwable {
+		final char[] type, member;
+		
+		public DelegateRecursion(char[] type, char[] member) {
+			this.type = type;
+			this.member = member;
+		}
+	}
+	
+	private static void addAllMethodBindings0(List<BindingTuple> list, TypeBinding binding, Set<String> banList, char[] fieldName, ASTNode responsible) throws DelegateRecursion {
+		if (binding instanceof SourceTypeBinding) ((SourceTypeBinding) binding).scope.environment().globalOptions.storeAnnotations = true;
 		if (binding == null) return;
 		
 		TypeBinding inner;
@@ -700,7 +725,12 @@ public class PatchDelegate {
 		
 		if (binding instanceof ReferenceBinding) {
 			ReferenceBinding rb = (ReferenceBinding) binding;
-			MethodBinding[] parameterizedSigs = rb.availableMethods();
+			MethodBinding[] availableMethods = rb.availableMethods();
+			FieldBinding[] availableFields = rb.availableFields();
+			failIfContainsAnnotation(binding, availableMethods); 
+			failIfContainsAnnotation(binding, availableFields); 
+			
+			MethodBinding[] parameterizedSigs = availableMethods;
 			MethodBinding[] baseSigs = parameterizedSigs;
 			if (binding instanceof ParameterizedTypeBinding) {
 				baseSigs = ((ParameterizedTypeBinding)binding).genericType().availableMethods();
@@ -727,6 +757,34 @@ public class PatchDelegate {
 			ReferenceBinding[] interfaces = rb.superInterfaces();
 			if (interfaces != null) {
 				for (ReferenceBinding iface : interfaces) addAllMethodBindings0(list, iface, banList, fieldName, responsible);
+			}
+		}
+	}
+	
+	private static final char[] STRING_LOMBOK = new char[] {'l', 'o', 'm', 'b', 'o', 'k'};
+	private static final char[] STRING_EXPERIMENTAL = new char[] {'e', 'x', 'p', 'e', 'r', 'i', 'm', 'e', 'n', 't', 'a', 'l'};
+	private static final char[] STRING_DELEGATE = new char[] {'D', 'e', 'l', 'e', 'g', 'a', 't', 'e'};
+	private static void failIfContainsAnnotation(TypeBinding parent, Binding[] bindings) throws DelegateRecursion {
+		if (bindings == null) return;
+		
+		for (Binding b : bindings) {
+			AnnotationBinding[] anns = null;
+			if (b instanceof MethodBinding) anns = ((MethodBinding) b).getAnnotations();
+			if (b instanceof FieldBinding) anns = ((FieldBinding) b).getAnnotations();
+			// anns = b.getAnnotations() would make a heck of a lot more sense, but that is a late addition to ecj, so would cause NoSuchMethodErrors! Don't use that!
+			if (anns == null) continue;
+			for (AnnotationBinding ann : anns) {
+				char[][] name = null;
+				try {
+					name = ann.getAnnotationType().compoundName;
+				} catch (Exception ignore) {}
+				
+				if (name == null || name.length < 2 || name.length > 3) continue;
+				if (!Arrays.equals(STRING_LOMBOK, name[0])) continue;
+				if (!Arrays.equals(STRING_DELEGATE, name[name.length - 1])) continue;
+				if (name.length == 3 && !Arrays.equals(STRING_EXPERIMENTAL, name[1])) continue;
+				
+				throw new DelegateRecursion(parent.readableName(), b.readableName());
 			}
 		}
 	}
