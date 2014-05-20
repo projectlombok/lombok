@@ -103,7 +103,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 
 	
 	@Override public void handle(AnnotationValues<Delegate> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		handleFlagUsage(annotationNode, ConfigurationKeys.DELEGATE_FLAG_USAGE, "@Delegate");
+		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.DELEGATE_FLAG_USAGE, "@Delegate");
 		
 		@SuppressWarnings("deprecation") Class<? extends Annotation> oldDelegate = lombok.Delegate.class;
 		deleteAnnotationIfNeccessary(annotationNode, Delegate.class, oldDelegate);
