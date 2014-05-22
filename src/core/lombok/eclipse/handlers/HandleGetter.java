@@ -139,10 +139,10 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		Getter annotationInstance = annotation.getInstance();
 		AccessLevel level = annotationInstance.value();
 		boolean lazy = annotationInstance.lazy();
+		if (lazy) handleFlagUsage(annotationNode, ConfigurationKeys.GETTER_LAZY_FLAG_USAGE, "@Getter(lazy=true)");
+		
 		if (level == AccessLevel.NONE) {
-			if (lazy) {
-				annotationNode.addWarning("'lazy' does not work with AccessLevel.NONE.");
-			}
+			if (lazy) annotationNode.addWarning("'lazy' does not work with AccessLevel.NONE.");
 			return;
 		}
 		
