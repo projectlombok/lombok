@@ -111,6 +111,14 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<FlagUsageType> GETTER_LAZY_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.getter.lazy.flagUsage", "Emit a warning or error if @Getter(lazy=true) is used.") {};
 	
+	/**
+	 * lombok configuration: {@code lombok.getter.consequentBoolean} = {@code true} | {@code false}.
+	 *
+	 * If true, the special Javabeans rules for {@code boolean} accessors get ignored and booleans get processed just like any other type.
+	 *
+	 */
+	public static final ConfigurationKey<Boolean> GETTER_CONSEQUENT_BOOLEAN = new ConfigurationKey<Boolean>("lombok.getter.consequentBoolean", "Emit a warning or error if @Getter is used.") {};
+	
 	// ----- Setter -----
 	
 	/**
