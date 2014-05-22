@@ -46,6 +46,21 @@
 			</div>
 		</div>
 		<div style="clear: left;"></div>
+		<div class="overview confKeys">
+			<h3>Supported configuration keys:</h3>
+			<dl>
+			<dt><code>lombok.accessors.chain</code> = [<code>true</code> | <code>false</code>] (default: false)</dt>
+			<dd>If set to <code>true</code>, generated setters will return <code>this</code> (instead of <code>void</code>). An explicitly configured <code>chain</code> parameter of an <a href="experimental/Accessors.html"><code>@Accessors</code></a> annotation takes precedence over this setting.</dd>
+			<dt><code>lombok.accessors.fluent</code> = [<code>true</code> | <code>false</code>] (default: false)</dt>
+			<dd>If set to <code>true</code>, generated getters and setters will not be prefixed with the bean-standard '<code>get</code>, <code>is</code> or <code>set</code>; instead, the methods will use the same name as the field (minus prefixes). An explicitly configured <code>chain</code> parameter of an <a href="experimental/Accessors.html"><code>@Accessors</code></a> annotation takes precedence over this setting.</dd>
+			<dt><code>lombok.accessors.prefix</code> += <em>a field prefix</em> (default: empty list)</dt>
+			<dd>This is a list property; entries can be added with the <code>+=</code> operator. Inherited prefixes from parent config files can be removed with the <code>-=</code> operator. Lombok will strip any matching field prefix from the name of a field in order to determine the name of the getter/setter to generate. For example, if <code>m</code> is one of the prefixes listed in this setting, then a field named <code>mFoobar</code> will result in a getter named <code>getFoobar()</code>, not <code>getMFoobar()</code>. An explicitly configured <code>prefix</code> parameter of an <a href="experimental/Accessors.html"><code>@Accessors</code></a> annotation takes precedence over this setting.</dd>
+			<dt><code>lombok.setter.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)</dt>
+			<dd>Lombok will flag any usage of <code>@Setter</code> as a warning or error if configured.</dd>
+			<dt><code>lombok.getter.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)</dt>
+			<dd>Lombok will flag any usage of <code>@Getter</code> as a warning or error if configured.</dd>
+			</dl>
+		</div>
 		<div class="overview">
 			<h3>Small print</h3><div class="smallprint">
 				<p>

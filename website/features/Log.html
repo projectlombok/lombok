@@ -49,6 +49,29 @@
 			</div>
 		</div>
 		<div style="clear: left;"></div>
+		<div class="overview confKeys">
+			<h3>Supported configuration keys:</h3>
+			<dl>
+			<dt><code>lombok.log.fieldName</code> = <em>an identifier</em> (default: <code>log</code>)</dt>
+			<dd>The generated logger fieldname is by default '<code>log</code>', but you can change it to a different name with this setting.</dd>
+			<dt><code>lombok.log.fieldIsStatic</code> = [<code>true</code> | <code>false</code>] (default: true)</dt>
+			<dd>Normally the generated logger is a <code>static</code> field. By setting this key to <code>false</code>, the generated field will be an instance field instead.</dd>
+			<dt><code>lombok.log.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)</dt>
+			<dd>Lombok will flag any usage of any of the various log annotations as a warning or error if configured.</dd>
+			<dt><code>lombok.log.apacheCommons.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)</dt>
+			<dd>Lombok will flag any usage of <code>@lombok.extern.apachecommons.CommonsLog</code> as a warning or error if configured.</dd>
+			<dt><code>lombok.log.javaUtilLogging.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)</dt>
+			<dd>Lombok will flag any usage of <code>@lombok.extern.java.Log</code> as a warning or error if configured.</dd>
+			<dt><code>lombok.log.log4j.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)</dt>
+			<dd>Lombok will flag any usage of <code>@lombok.extern.log4j.Log4j</code> as a warning or error if configured.</dd>
+			<dt><code>lombok.log.log4j2.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)</dt>
+			<dd>Lombok will flag any usage of <code>@lombok.extern.log4j.Log4j2</code> as a warning or error if configured.</dd>
+			<dt><code>lombok.log.slf4j.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)</dt>
+			<dd>Lombok will flag any usage of <code>@lombok.extern.slf4j.Slf4j</code> as a warning or error if configured.</dd>
+			<dt><code>lombok.log.xslf4j.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)</dt>
+			<dd>Lombok will flag any usage of <code>@lombok.extern.slf4j.XSlf4j</code> as a warning or error if configured.</dd>
+			</dl>
+		</div>
 		<div class="overview">
 			<h3>Small print</h3><div class="smallprint">
 				<p>
@@ -59,7 +82,7 @@
 			</div>
 		</div>
 		<div class="footer">
-			<a href="index.html">Back to features</a> | <a href="GetterLazy.html">Previous feature (@Getter(lazy=true))</a> | <span class="disabled">Next feature</span><br />
+			<a href="index.html">Back to features</a> | <a href="GetterLazy.html">Previous feature (@Getter(lazy=true))</a> | <a href="configuration.html">Next feature (configuration)</a><br />
 			<a href="../credits.html" class="creditsLink">credits</a> | <span class="copyright">Copyright &copy; 2009-2014 The Project Lombok Authors, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.</span>
 		</div>
 		<div style="clear: both;"></div>
