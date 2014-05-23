@@ -68,6 +68,30 @@ public class HandlerUtil {
 		return 97;
 	}
 	
+	/** Checks if the input is a valid class reference (not a primitive and does not have generics). */
+	public static boolean isLegalBasicClassReference(String in) {
+		boolean atStartOfIdentifier = true;
+		
+		for (int i = 0; i < in.length(); i++) {
+			char c = in.charAt(i);
+			
+			if (atStartOfIdentifier) {
+				if (!Character.isJavaIdentifierStart(c)) return false;
+				atStartOfIdentifier = false;
+				continue;
+			}
+			
+			if (c == '.') {
+				atStartOfIdentifier = true;
+				continue;
+			}
+			
+			if (!Character.isJavaIdentifierPart(c)) return false;
+		}
+		
+		return !atStartOfIdentifier;
+	}
+	
 	/** Checks if the given name is a valid identifier.
 	 * 
 	 * If it is, this returns {@code true} and does nothing else.
@@ -203,6 +227,8 @@ public class HandlerUtil {
 	
 	/** Matches the simple part of any annotation that lombok considers as indicative of Nullable status. */
 	public static final Pattern NULLABLE_PATTERN = Pattern.compile("^(?:nullable|checkfornull)$", Pattern.CASE_INSENSITIVE);
+	
+	public static final String DEFAULT_EXCEPTION_FOR_NON_NULL = "java.lang.NullPointerException";
 	
 	/**
 	 * Generates a getter name from a given field name.

@@ -82,7 +82,7 @@ public class HandleConstructor {
 			
 			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@NoArgsConstructor(onConstructor=", annotationNode);
 			
-			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, SkipIfConstructorExists.NO, null, onConstructor, ast);
+			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, SkipIfConstructorExists.NO, null, onConstructor, annotationNode);
 		}
 	}
 	
@@ -106,7 +106,9 @@ public class HandleConstructor {
 			
 			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@RequiredArgsConstructor(onConstructor=", annotationNode);
 			
-			new HandleConstructor().generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, SkipIfConstructorExists.NO, suppressConstructorProperties, onConstructor, ast);
+			new HandleConstructor().generateConstructor(
+					typeNode, level, findRequiredFields(typeNode), staticName, SkipIfConstructorExists.NO,
+					suppressConstructorProperties, onConstructor, annotationNode);
 		}
 	}
 	
@@ -158,7 +160,9 @@ public class HandleConstructor {
 			
 			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@AllArgsConstructor(onConstructor=", annotationNode);
 			
-			new HandleConstructor().generateConstructor(typeNode, level, findAllFields(typeNode), staticName, SkipIfConstructorExists.NO, suppressConstructorProperties, onConstructor, ast);
+			new HandleConstructor().generateConstructor(
+					typeNode, level, findAllFields(typeNode), staticName, SkipIfConstructorExists.NO,
+					suppressConstructorProperties, onConstructor, annotationNode);
 		}
 	}
 	
@@ -176,19 +180,29 @@ public class HandleConstructor {
 		return true;
 	}
 	
-	public void generateRequiredArgsConstructor(EclipseNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, List<Annotation> onConstructor, ASTNode source) {
-		generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, skipIfConstructorExists, null, onConstructor, source);
+	public void generateRequiredArgsConstructor(
+			EclipseNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists,
+			List<Annotation> onConstructor, EclipseNode sourceNode) {
+		
+		generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, skipIfConstructorExists, null, onConstructor, sourceNode);
 	}
 	
-	public void generateAllArgsConstructor(EclipseNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, List<Annotation> onConstructor, ASTNode source) {
-		generateConstructor(typeNode, level, findAllFields(typeNode), staticName, skipIfConstructorExists, null, onConstructor, source);
+	public void generateAllArgsConstructor(
+			EclipseNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists,
+			List<Annotation> onConstructor, EclipseNode sourceNode) {
+		
+		generateConstructor(typeNode, level, findAllFields(typeNode), staticName, skipIfConstructorExists, null, onConstructor, sourceNode);
 	}
 	
 	public enum SkipIfConstructorExists {
 		YES, NO, I_AM_BUILDER;
 	}
 	
-	public void generateConstructor(EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, String staticName, SkipIfConstructorExists skipIfConstructorExists, Boolean suppressConstructorProperties, List<Annotation> onConstructor, ASTNode source) {
+	public void generateConstructor(
+			EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, String staticName, SkipIfConstructorExists skipIfConstructorExists,
+			Boolean suppressConstructorProperties, List<Annotation> onConstructor, EclipseNode sourceNode) {
+		
+		ASTNode source = sourceNode.get();
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
 		
 		if (skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) return;
@@ -209,7 +223,9 @@ public class HandleConstructor {
 							// will take care of it. However, @Data also wants a specific static name; this will be ignored; the appropriate way to do this is to use
 							// the 'staticName' parameter of the @XArgsConstructor you've stuck on your type.
 							// We should warn that we're ignoring @Data's 'staticConstructor' param.
-							typeNode.addWarning("Ignoring static constructor name: explicit @XxxArgsConstructor annotation present; its `staticName` parameter will be used.", source.sourceStart, source.sourceEnd);
+							typeNode.addWarning(
+									"Ignoring static constructor name: explicit @XxxArgsConstructor annotation present; its `staticName` parameter will be used.",
+									source.sourceStart, source.sourceEnd);
 						}
 						return;
 					}
@@ -217,7 +233,9 @@ public class HandleConstructor {
 			}
 		}
 		
-		ConstructorDeclaration constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields, suppressConstructorProperties, source, onConstructor);
+		ConstructorDeclaration constr = createConstructor(
+				staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields,
+				suppressConstructorProperties, sourceNode, onConstructor);
 		injectMethod(typeNode, constr);
 		if (staticConstrRequired) {
 			MethodDeclaration staticConstr = createStaticConstructor(level, staticName, typeNode, fields, source);
@@ -259,8 +277,9 @@ public class HandleConstructor {
 	
 	public static ConstructorDeclaration createConstructor(
 			AccessLevel level, EclipseNode type, Collection<EclipseNode> fields,
-			Boolean suppressConstructorProperties, ASTNode source, List<Annotation> onConstructor) {
+			Boolean suppressConstructorProperties, EclipseNode sourceNode, List<Annotation> onConstructor) {
 		
+		ASTNode source = sourceNode.get();
 		TypeDeclaration typeDeclaration = ((TypeDeclaration)type.get());
 		long p = (long)source.sourceStart << 32 | source.sourceEnd;
 		
@@ -311,7 +330,7 @@ public class HandleConstructor {
 			Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
 			Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
 			if (nonNulls.length != 0) {
-				Statement nullCheck = generateNullCheck(field, source);
+				Statement nullCheck = generateNullCheck(field, sourceNode);
 				if (nullCheck != null) nullChecks.add(nullCheck);
 			}
 			Annotation[] copiedAnnotations = copyAnnotations(source, nonNulls, nullables);

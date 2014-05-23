@@ -99,7 +99,7 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 		// and if they exist, create a new method in the class: 'private static <T> T lombok$nullCheck(T expr, String msg) {if (expr == null) throw NPE; return expr;}' and
 		// wrap all references to it in the super/this to a call to this method.
 		
-		Statement nullCheck = generateNullCheck(arg, ast);
+		Statement nullCheck = generateNullCheck(arg, annotationNode);
 		
 		if (nullCheck == null) {
 			// @NonNull applied to a primitive. Kinda pointless. Let's generate a warning.

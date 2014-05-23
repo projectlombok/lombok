@@ -194,12 +194,12 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		java.util.List<JavacNode> fieldNodes = addFieldsToBuilder(builderType, namesOfParameters, typesOfParameters, ast);
 		java.util.List<JCMethodDecl> newMethods = new ArrayList<JCMethodDecl>();
 		for (JavacNode fieldNode : fieldNodes) {
-			JCMethodDecl newMethod = makeSetterMethodForBuilder(builderType, fieldNode, ast, builderInstance.fluent(), builderInstance.chain());
+			JCMethodDecl newMethod = makeSetterMethodForBuilder(builderType, fieldNode, annotationNode, builderInstance.fluent(), builderInstance.chain());
 			if (newMethod != null) newMethods.add(newMethod);
 		}
 		
 		if (constructorExists(builderType) == MemberExistsResult.NOT_EXISTS) {
-			JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PACKAGE, List.<JCAnnotation>nil(), builderType, List.<JavacNode>nil(), null, ast);
+			JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PACKAGE, List.<JCAnnotation>nil(), builderType, List.<JavacNode>nil(), null, annotationNode);
 			if (cd != null) injectMethod(builderType, cd);
 		}
 		
@@ -300,7 +300,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	}
 	
 	
-	public JCMethodDecl makeSetterMethodForBuilder(JavacNode builderType, JavacNode fieldNode, JCTree source, boolean fluent, boolean chain) {
+	public JCMethodDecl makeSetterMethodForBuilder(JavacNode builderType, JavacNode fieldNode, JavacNode source, boolean fluent, boolean chain) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
 		
 		for (JavacNode child : builderType.down()) {

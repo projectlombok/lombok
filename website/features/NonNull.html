@@ -42,6 +42,8 @@
 		<div class="overview confKeys">
 			<h3>Supported configuration keys:</h3>
 			<dl>
+			<dt><code>lombok.nonNull.exceptionType</code> = [<code>fully qualified name of an exception</code>] (default: <code>java.lang.NullPointerException</code>).
+			<dd>When lombok generates a null-check <code>if</code> statement, an exception is thrown, with the parameter / field name as message. By default, this will be a <code>java.lang.NullPointerException</code>, but you can for example put <code>java.lang.IllegalArgumentException</code> in this configuration key to have lombok throw a different exception.</dd>
 			<dt><code>lombok.nonNull.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)</dt>
 			<dd>Lombok will flag any usage of <code>@NonNull</code> as a warning or error if configured.</dd>
 			</dl>

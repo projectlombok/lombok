@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.12.7 "Edgy Guinea Pig"
+* FEATURE: You can now configure aspects of lombok project wide (or even workspace wide, or just for a single package) via the [configuration system](http://projectlombok.org/features/configuration.html). You can configure many things; run `java -jar lombok.jar config -gv` for the complete list.
 * DEPRECATION: `@Delegate` has been moved to `lombok.experimental.Delegate`, and corner cases such as recursive delegation (delegating a type that itself has fields or methods annotated with `@Delegate`) are now error conditions. See the [feature documentation](http://projectlombok.org/features/experimental/Delegate.html) for more information.
 * FEATURE: It is now possible to put annotations, such as `@Nullable`, on the one parameter of generated `equals()` methods by specifying the `onParam=` option on `@EqualsAndHashCode`, similar to how that feature already exists for `@Setter`. [Issue #674](https://code.google.com/p/projectlombok/issues/detail?id=674)
 * CHANGE: suppressConstructorProperties should now be configured via lombok configuration. [Issue #659](https://code.google.com/p/projectlombok/issues/detail?id=659)

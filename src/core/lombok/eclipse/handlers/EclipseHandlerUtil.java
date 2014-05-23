@@ -1396,17 +1396,35 @@ public class EclipseHandlerUtil {
 	}
 	
 	/**
-	 * Generates a new statement that checks if the given variable is null, and if so, throws a {@code NullPointerException} with the
+	 * Generates a new statement that checks if the given variable is null, and if so, throws a specified exception with the
 	 * variable name as message.
+	 * 
+	 * @param exName The name of the exception to throw; normally {@code java.lang.NullPointerException}.
 	 */
-	public static Statement generateNullCheck(AbstractVariableDeclaration variable, ASTNode source) {
+	public static Statement generateNullCheck(AbstractVariableDeclaration variable, EclipseNode sourceNode) {
+		String exceptionType = sourceNode.getAst().readConfiguration(ConfigurationKeys.NON_NULL_EXCEPTION_TYPE);
+		if (exceptionType == null) {
+			exceptionType = HandlerUtil.DEFAULT_EXCEPTION_FOR_NON_NULL;
+		} else {
+			if (!HandlerUtil.isLegalBasicClassReference(exceptionType)) {
+				sourceNode.addWarning("Configuration key contains invalid java type reference '" + exceptionType + "'; use something like 'java.lang.NullPointerException' as value for this key.");
+				exceptionType = HandlerUtil.DEFAULT_EXCEPTION_FOR_NON_NULL;
+			}
+		}
+		
+		ASTNode source = sourceNode.get();
+		
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
 		if (isPrimitive(variable.type)) return null;
 		AllocationExpression exception = new AllocationExpression();
 		setGeneratedBy(exception, source);
-		exception.type = new QualifiedTypeReference(fromQualifiedName("java.lang.NullPointerException"), new long[]{p, p, p});
+		int partCount = 0;
+		for (int i = 0; i < exceptionType.length(); i++) if (exceptionType.charAt(i) == '.') partCount++;
+		long[] ps = new long[partCount];
+		Arrays.fill(ps, 0L);
+		exception.type = new QualifiedTypeReference(fromQualifiedName(exceptionType), ps);
 		setGeneratedBy(exception.type, source);
 		exception.arguments = new Expression[] { new StringLiteral(variable.name, pS, pE, 0)};
 		setGeneratedBy(exception.arguments[0], source);

@@ -214,7 +214,7 @@ public class HandleConstructor {
 			}
 		}
 		
-		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, suppressConstructorProperties, source.get());
+		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, suppressConstructorProperties, source);
 		injectMethod(typeNode, constr);
 		if (staticConstrRequired) {
 			JCMethodDecl staticConstr = createStaticConstructor(staticName, level, typeNode, fields, source.get());
@@ -236,7 +236,7 @@ public class HandleConstructor {
 		mods.annotations = mods.annotations.append(annotation);
 	}
 	
-	public static JCMethodDecl createConstructor(AccessLevel level, List<JCAnnotation> onConstructor, JavacNode typeNode, List<JavacNode> fields, Boolean suppressConstructorProperties, JCTree source) {
+	public static JCMethodDecl createConstructor(AccessLevel level, List<JCAnnotation> onConstructor, JavacNode typeNode, List<JavacNode> fields, Boolean suppressConstructorProperties, JavacNode source) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		boolean isEnum = (((JCClassDecl) typeNode.get()).mods.flags & Flags.ENUM) != 0;
@@ -268,7 +268,7 @@ public class HandleConstructor {
 			assigns.append(maker.Exec(assign));
 			
 			if (!nonNulls.isEmpty()) {
-				JCStatement nullCheck = generateNullCheck(maker, fieldNode);
+				JCStatement nullCheck = generateNullCheck(maker, fieldNode, source);
 				if (nullCheck != null) nullChecks.append(nullCheck);
 			}
 		}
@@ -280,7 +280,8 @@ public class HandleConstructor {
 		if (onConstructor != null) mods.annotations = mods.annotations.appendList(copyAnnotations(onConstructor));
 		
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
-				null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(), maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source, typeNode.getContext());
+				null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(),
+				maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source.get(), typeNode.getContext());
 	}
 	
 	public static boolean isLocalType(JavacNode type) {

@@ -181,6 +181,13 @@ public class ConfigurationKeys {
 	// ----- NonNull -----
 	
 	/**
+	 * lombok configuration: {@code lombok.nonNull.exceptionType} = &lt;String: <em>a java exception type, such as {@code java.lang.IllegalArgumentException}</em>&gt; (default: {@code java.lang.NullPointerException}).
+	 * 
+	 * Sets the exception to throw if {@code @NonNull} is applied to a method parameter, and a caller passes in {@code null}.
+	 */
+	public static final ConfigurationKey<String> NON_NULL_EXCEPTION_TYPE = new ConfigurationKey<String>("lombok.nonNull.exceptionType", "The type of the exception to throw if a passed-in argument is null.") {};
+	
+	/**
 	 * lombok configuration: {@code lombok.nonNull.flagUsage} = {@code WARNING} | {@code ERROR}.
 	 * 
 	 * <em>Implementation note: This field is supposed to be lombok.NonNull itself, but jdk6 and 7 have bugs where fields in annotations don't work well.</em>
@@ -269,7 +276,7 @@ public class ConfigurationKeys {
 	public static final ConfigurationKey<FlagUsageType> LOG_XSLF4J_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.log.xslf4j.flagUsage", "Emit a warning or error if @XSlf4j is used.") {};
 	
 	/**
-	 * lombok configuration: {@code lombok.log.fieldName} = "aJavaIdentifier".
+	 * lombok configuration: {@code lombok.log.fieldName} = &lt;String: aJavaIdentifier&gt; (Default: {@code log}).
 	 * 
 	 * If set the various log annotations (which make a log field) will use the stated identifier instead of {@code log} as a name.
 	 */

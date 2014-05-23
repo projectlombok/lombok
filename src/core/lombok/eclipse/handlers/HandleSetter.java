@@ -90,7 +90,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			//Skip final fields.
 			if ((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) continue;
 			
-			generateSetterForField(field, pos.get(), level);
+			generateSetterForField(field, pos, level);
 		}
 		return true;
 	}
@@ -107,7 +107,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 	 * If not, the setter is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
 	 */
-	public void generateSetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level) {
+	public void generateSetterForField(EclipseNode fieldNode, EclipseNode sourceNode, AccessLevel level) {
 		if (hasAnnotation(Setter.class, fieldNode)) {
 			//The annotation will make it happen, so we can skip it.
 			return;
@@ -115,7 +115,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		
 		List<Annotation> empty = Collections.emptyList();
 		
-		createSetterForField(level, fieldNode, fieldNode, pos, false, empty, empty);
+		createSetterForField(level, fieldNode, sourceNode, false, empty, empty);
 	}
 	
 	public void handle(AnnotationValues<Setter> annotation, Annotation ast, EclipseNode annotationNode) {
@@ -130,7 +130,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		
 		switch (node.getKind()) {
 		case FIELD:
-			createSetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true, onMethod, onParam);
+			createSetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, true, onMethod, onParam);
 			break;
 		case TYPE:
 			if (!onMethod.isEmpty()) {
@@ -144,19 +144,20 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		}
 	}
 	
-	public void createSetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam) {
+	public void createSetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode sourceNode, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam) {
 		for (EclipseNode fieldNode : fieldNodes) {
-			createSetterForField(level, fieldNode, errorNode, source, whineIfExists, onMethod, onParam);
+			createSetterForField(level, fieldNode, sourceNode, whineIfExists, onMethod, onParam);
 		}
 	}
 	
 	public void createSetterForField(
-			AccessLevel level, EclipseNode fieldNode, EclipseNode errorNode,
-			ASTNode source, boolean whineIfExists, List<Annotation> onMethod,
+			AccessLevel level, EclipseNode fieldNode, EclipseNode sourceNode,
+			boolean whineIfExists, List<Annotation> onMethod,
 			List<Annotation> onParam) {
 		
+		ASTNode source = sourceNode.get();
 		if (fieldNode.getKind() != Kind.FIELD) {
-			errorNode.addError("@Setter is only supported on a class or a field.");
+			sourceNode.addError("@Setter is only supported on a class or a field.");
 			return;
 		}
 		
@@ -167,7 +168,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		boolean shouldReturnThis = shouldReturnThis(fieldNode);
 		
 		if (setterName == null) {
-			errorNode.addWarning("Not generating setter for this field: It does not fit your @Accessors prefix list.");
+			fieldNode.addWarning("Not generating setter for this field: It does not fit your @Accessors prefix list.");
 			return;
 		}
 		
@@ -181,7 +182,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 				if (whineIfExists) {
 					String altNameExpl = "";
 					if (!altName.equals(setterName)) altNameExpl = String.format(" (%s)", altName);
-					errorNode.addWarning(
+					fieldNode.addWarning(
 						String.format("Not generating %s(): A method with that name already exists%s", setterName, altNameExpl));
 				}
 				return;
@@ -191,12 +192,13 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			}
 		}
 		
-		MethodDeclaration method = createSetter((TypeDeclaration) fieldNode.up().get(), fieldNode, setterName, shouldReturnThis, modifier, source, onMethod, onParam);
+		MethodDeclaration method = createSetter((TypeDeclaration) fieldNode.up().get(), fieldNode, setterName, shouldReturnThis, modifier, sourceNode, onMethod, onParam);
 		injectMethod(fieldNode.up(), method);
 	}
 	
-	static MethodDeclaration createSetter(TypeDeclaration parent, EclipseNode fieldNode, String name, boolean shouldReturnThis, int modifier, ASTNode source, List<Annotation> onMethod, List<Annotation> onParam) {
+	static MethodDeclaration createSetter(TypeDeclaration parent, EclipseNode fieldNode, String name, boolean shouldReturnThis, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
+		ASTNode source = sourceNode.get();
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
@@ -239,7 +241,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		if (nonNulls.length == 0) {
 			statements.add(assignment);
 		} else {
-			Statement nullCheck = generateNullCheck(field, source);
+			Statement nullCheck = generateNullCheck(field, sourceNode);
 			if (nullCheck != null) statements.add(nullCheck);
 			statements.add(assignment);
 		}
