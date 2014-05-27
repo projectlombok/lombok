@@ -1,6 +1,8 @@
 Lombok Changelog
 ----------------
 
+### v1.14.1 "Edgy Guinea Pig"
+
 ### v1.14.0 "Branching Cobra" (May 27th, 2014)
 * FEATURE: You can now configure aspects of lombok project wide (or even workspace wide, or just for a single package) via the [configuration system](http://projectlombok.org/features/configuration.html). You can configure many things; run `java -jar lombok.jar config -gv` for the complete list.
 * DEPRECATION: `@Delegate` has been moved to `lombok.experimental.Delegate`, and corner cases such as recursive delegation (delegating a type that itself has fields or methods annotated with `@Delegate`) are now error conditions. See the [feature documentation](http://projectlombok.org/features/experimental/Delegate.html) for more information.
