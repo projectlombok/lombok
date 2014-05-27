@@ -23,8 +23,9 @@ package lombok;
 
 import java.util.List;
 
-import lombok.core.FlagUsageType;
 import lombok.core.configuration.ConfigurationKey;
+import lombok.core.configuration.FlagUsageType;
+import lombok.core.configuration.NullCheckExceptionType;
 
 /**
  * A container class containing all lombok configuration keys that do not belong to a specific annotation.
@@ -181,11 +182,11 @@ public class ConfigurationKeys {
 	// ----- NonNull -----
 	
 	/**
-	 * lombok configuration: {@code lombok.nonNull.exceptionType} = &lt;String: <em>a java exception type, such as {@code java.lang.IllegalArgumentException}</em>&gt; (default: {@code java.lang.NullPointerException}).
+	 * lombok configuration: {@code lombok.nonNull.exceptionType} = &lt;String: <em>a java exception type; either [{@code IllegalArgumentException} or: {@code NullPointerException}].
 	 * 
 	 * Sets the exception to throw if {@code @NonNull} is applied to a method parameter, and a caller passes in {@code null}.
 	 */
-	public static final ConfigurationKey<String> NON_NULL_EXCEPTION_TYPE = new ConfigurationKey<String>("lombok.nonNull.exceptionType", "The type of the exception to throw if a passed-in argument is null.") {};
+	public static final ConfigurationKey<NullCheckExceptionType> NON_NULL_EXCEPTION_TYPE = new ConfigurationKey<NullCheckExceptionType>("lombok.nonNull.exceptionType", "The type of the exception to throw if a passed-in argument is null. Default: NullPointerException.") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.nonNull.flagUsage} = {@code WARNING} | {@code ERROR}.

@@ -41,10 +41,10 @@ import lombok.ToString;
 import lombok.Value;
 import lombok.core.AST;
 import lombok.core.AnnotationValues;
-import lombok.core.FlagUsageType;
 import lombok.core.JavaIdentifiers;
 import lombok.core.LombokNode;
 import lombok.core.configuration.ConfigurationKey;
+import lombok.core.configuration.FlagUsageType;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.Wither;
@@ -66,30 +66,6 @@ public class HandlerUtil {
 	
 	public static int primeForFalse() {
 		return 97;
-	}
-	
-	/** Checks if the input is a valid class reference (not a primitive and does not have generics). */
-	public static boolean isLegalBasicClassReference(String in) {
-		boolean atStartOfIdentifier = true;
-		
-		for (int i = 0; i < in.length(); i++) {
-			char c = in.charAt(i);
-			
-			if (atStartOfIdentifier) {
-				if (!Character.isJavaIdentifierStart(c)) return false;
-				atStartOfIdentifier = false;
-				continue;
-			}
-			
-			if (c == '.') {
-				atStartOfIdentifier = true;
-				continue;
-			}
-			
-			if (!Character.isJavaIdentifierPart(c)) return false;
-		}
-		
-		return !atStartOfIdentifier;
 	}
 	
 	/** Checks if the given name is a valid identifier.

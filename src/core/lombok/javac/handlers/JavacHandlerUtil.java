@@ -43,6 +43,7 @@ import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.ReferenceFieldAugment;
 import lombok.core.TypeResolver;
+import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.handlers.HandlerUtil;
 import lombok.delombok.LombokOptionsFactory;
 import lombok.experimental.Accessors;
@@ -1046,21 +1047,14 @@ public class JavacHandlerUtil {
 	 * @param exName The name of the exception to throw; normally {@code java.lang.NullPointerException}.
 	 */
 	public static JCStatement generateNullCheck(JavacTreeMaker maker, JavacNode variable, JavacNode source) {
-		String exceptionType = source.getAst().readConfiguration(ConfigurationKeys.NON_NULL_EXCEPTION_TYPE);
-		if (exceptionType == null) {
-			exceptionType = HandlerUtil.DEFAULT_EXCEPTION_FOR_NON_NULL;
-		} else {
-			if (!HandlerUtil.isLegalBasicClassReference(exceptionType)) {
-				source.addWarning("Configuration key contains invalid java type reference '" + exceptionType + "'; use something like 'java.lang.NullPointerException' as value for this key.");
-				exceptionType = HandlerUtil.DEFAULT_EXCEPTION_FOR_NON_NULL;
-			}
-		}
+		NullCheckExceptionType exceptionType = source.getAst().readConfiguration(ConfigurationKeys.NON_NULL_EXCEPTION_TYPE);
+		if (exceptionType == null) exceptionType = NullCheckExceptionType.NULL_POINTER_EXCEPTION;
 		
 		JCVariableDecl varDecl = (JCVariableDecl) variable.get();
 		if (isPrimitive(varDecl.vartype)) return null;
 		Name fieldName = varDecl.name;
-		JCExpression exType = genTypeRef(variable, exceptionType);
-		JCExpression exception = maker.NewClass(null, List.<JCExpression>nil(), exType, List.<JCExpression>of(maker.Literal(fieldName.toString())), null);
+		JCExpression exType = genTypeRef(variable, exceptionType.getExceptionType());
+		JCExpression exception = maker.NewClass(null, List.<JCExpression>nil(), exType, List.<JCExpression>of(maker.Literal(exceptionType.toExceptionMessage(fieldName.toString()))), null);
 		JCStatement throwStatement = maker.Throw(exception);
 		JCBlock throwBlock = maker.Block(0, List.of(throwStatement));
 		return maker.If(maker.Binary(CTC_EQUAL, maker.Ident(fieldName), maker.Literal(CTC_BOT, null)), throwBlock, null);

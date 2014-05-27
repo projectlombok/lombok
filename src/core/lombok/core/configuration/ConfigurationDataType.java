@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2013-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,9 +36,11 @@ public final class ConfigurationDataType {
 			@Override public Object parse(String value) {
 				return value;
 			}
+			
 			@Override public String description() {
 				return "string";
 			}
+			
 			@Override public String exampleValue() {
 				return "<text>";
 			}
@@ -47,9 +49,11 @@ public final class ConfigurationDataType {
 			@Override public Object parse(String value) {
 				return Integer.parseInt(value);
 			}
+			
 			@Override public String description() {
 				return "int";
 			}
+			
 			@Override public String exampleValue() {
 				return "<int>";
 			}
@@ -58,9 +62,11 @@ public final class ConfigurationDataType {
 			@Override public Object parse(String value) {
 				return Long.parseLong(value);
 			}
+			
 			@Override public String description() {
 				return "long";
 			}
+			
 			@Override public String exampleValue() {
 				return "<long>";
 			}
@@ -69,9 +75,11 @@ public final class ConfigurationDataType {
 			@Override public Object parse(String value) {
 				return Double.parseDouble(value);
 			}
+			
 			@Override public String description() {
 				return "double";
 			}
+			
 			@Override public String exampleValue() {
 				return "<double>";
 			}
@@ -80,9 +88,11 @@ public final class ConfigurationDataType {
 			@Override public Object parse(String value) {
 				return Boolean.parseBoolean(value);
 			}
+			
 			@Override public String description() {
 				return "boolean";
 			}
+			
 			@Override public String exampleValue() {
 				return "[false | true]";
 			}
@@ -91,9 +101,11 @@ public final class ConfigurationDataType {
 			@Override public Object parse(String value) {
 				return TypeName.valueOf(value);
 			}
+			
 			@Override public String description() {
 				return "type-name";
 			}
+			
 			@Override public String exampleValue() {
 				return "<fully.qualified.Type>";
 			}
@@ -102,21 +114,33 @@ public final class ConfigurationDataType {
 	}
 	
 	private static ConfigurationValueParser enumParser(Object enumType) {
-		@SuppressWarnings("rawtypes") final Class rawType = (Class)enumType;
-		return new ConfigurationValueParser(){
+		final Class<?> type = (Class<?>) enumType;
+		@SuppressWarnings("rawtypes") final Class rawType = type;
+		
+		return new ConfigurationValueParser() {
 			@SuppressWarnings("unchecked")
 			@Override public Object parse(String value) {
 				try {
 					return Enum.valueOf(rawType, value);
 				} catch (Exception e) {
-					return Enum.valueOf(rawType, value.toUpperCase());
+					StringBuilder sb = new StringBuilder();
+					for (int i = 0; i < value.length(); i++) {
+						char c = value.charAt(i);
+						if (Character.isUpperCase(c) && i > 0) sb.append("_");
+						sb.append(Character.toUpperCase(c));
+					}
+					return Enum.valueOf(rawType, sb.toString());
 				}
 			}
+			
 			@Override public String description() {
-				return "enum (" + rawType.getName() + ")";
+				return "enum (" + type.getName() + ")";
 			}
+			
 			@Override public String exampleValue() {
-				return Arrays.toString(rawType.getEnumConstants()).replace(",", " |");
+				ExampleValueString evs = type.getAnnotation(ExampleValueString.class);
+				if (evs != null) return evs.value();
+				return Arrays.toString(type.getEnumConstants()).replace(",", " |");
 			}
 		};
 	}

@@ -46,6 +46,7 @@ import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.BooleanFieldAugment;
 import lombok.core.ReferenceFieldAugment;
 import lombok.core.TypeResolver;
+import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
@@ -1402,15 +1403,8 @@ public class EclipseHandlerUtil {
 	 * @param exName The name of the exception to throw; normally {@code java.lang.NullPointerException}.
 	 */
 	public static Statement generateNullCheck(AbstractVariableDeclaration variable, EclipseNode sourceNode) {
-		String exceptionType = sourceNode.getAst().readConfiguration(ConfigurationKeys.NON_NULL_EXCEPTION_TYPE);
-		if (exceptionType == null) {
-			exceptionType = HandlerUtil.DEFAULT_EXCEPTION_FOR_NON_NULL;
-		} else {
-			if (!HandlerUtil.isLegalBasicClassReference(exceptionType)) {
-				sourceNode.addWarning("Configuration key contains invalid java type reference '" + exceptionType + "'; use something like 'java.lang.NullPointerException' as value for this key.");
-				exceptionType = HandlerUtil.DEFAULT_EXCEPTION_FOR_NON_NULL;
-			}
-		}
+		NullCheckExceptionType exceptionType = sourceNode.getAst().readConfiguration(ConfigurationKeys.NON_NULL_EXCEPTION_TYPE);
+		if (exceptionType == null) exceptionType = NullCheckExceptionType.NULL_POINTER_EXCEPTION;
 		
 		ASTNode source = sourceNode.get();
 		
@@ -1421,12 +1415,15 @@ public class EclipseHandlerUtil {
 		AllocationExpression exception = new AllocationExpression();
 		setGeneratedBy(exception, source);
 		int partCount = 0;
-		for (int i = 0; i < exceptionType.length(); i++) if (exceptionType.charAt(i) == '.') partCount++;
+		String exceptionTypeStr = exceptionType.getExceptionType();
+		for (int i = 0; i < exceptionTypeStr.length(); i++) if (exceptionTypeStr.charAt(i) == '.') partCount++;
 		long[] ps = new long[partCount];
 		Arrays.fill(ps, 0L);
-		exception.type = new QualifiedTypeReference(fromQualifiedName(exceptionType), ps);
+		exception.type = new QualifiedTypeReference(fromQualifiedName(exceptionTypeStr), ps);
 		setGeneratedBy(exception.type, source);
-		exception.arguments = new Expression[] { new StringLiteral(variable.name, pS, pE, 0)};
+		exception.arguments = new Expression[] {
+				new StringLiteral(exceptionType.toExceptionMessage(new String(variable.name)).toCharArray(), pS, pE, 0)
+		};
 		setGeneratedBy(exception.arguments[0], source);
 		ThrowStatement throwStatement = new ThrowStatement(exception, pS, pE);
 		setGeneratedBy(throwStatement, source);

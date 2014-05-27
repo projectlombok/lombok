@@ -1,4 +1,4 @@
-//CONF: lombok.nonNull.exceptionType = java.lang.IllegalArgumentException
+//CONF: lombok.nonNull.exceptionType = IllegalArgumentException
 
 public class NonNullWithAlternateException {
 	@lombok.NonNull @lombok.Setter private String test;
