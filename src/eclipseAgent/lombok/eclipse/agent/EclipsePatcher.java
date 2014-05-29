@@ -677,6 +677,7 @@ public class EclipsePatcher extends Agent {
 			.request(StackRequest.PARAM1)
 			.wrapMethod(new Hook(PATCH_EXTENSIONMETHOD, "resolveType", TYPE_BINDING_SIG, TYPE_BINDING_SIG, MESSAGE_SEND_SIG, BLOCK_SCOPE_SIG))
 			.build());
+		
 		sm.addScript(replaceMethodCall()
 			.target(new MethodTarget(MESSAGE_SEND_SIG, "resolveType", TYPE_BINDING_SIG, BLOCK_SCOPE_SIG))
 			.methodToReplace(new Hook(PROBLEM_REPORTER_SIG, "errorNoMethodFor", "void", MESSAGE_SEND_SIG, TYPE_BINDING_SIG, TYPE_BINDINGS_SIG))

@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.14.1 "Edgy Guinea Pig"
+* BUGFIX: mvn builds fail with a 'URI not absolute' exception. [Issue #683](https://code.google.com/p/projectlombok/issues/detail?id=683)
 
 ### v1.14.0 "Branching Cobra" (May 27th, 2014)
 * FEATURE: You can now configure aspects of lombok project wide (or even workspace wide, or just for a single package) via the [configuration system](http://projectlombok.org/features/configuration.html). You can configure many things; run `java -jar lombok.jar config -gv` for the complete list.

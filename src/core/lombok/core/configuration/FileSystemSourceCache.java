@@ -44,7 +44,12 @@ public class FileSystemSourceCache {
 	
 	public Iterable<ConfigurationSource> sourcesForJavaFile(URI javaFile, ConfigurationProblemReporter reporter) {
 		if (javaFile == null) return Collections.emptyList();
-		return sourcesForDirectory(new File(javaFile.normalize()).getParentFile(), reporter);
+		URI uri = javaFile.normalize();
+		if (!uri.isAbsolute()) {
+			uri = new File(".").toURI().resolve(uri);
+		}
+		
+		return sourcesForDirectory(new File(uri).getParentFile(), reporter);
 	}
 	
 	public Iterable<ConfigurationSource> sourcesForDirectory(URI directory, ConfigurationProblemReporter reporter) {
