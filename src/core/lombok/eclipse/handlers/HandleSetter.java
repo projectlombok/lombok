@@ -216,10 +216,8 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		if (isFieldDeprecated(fieldNode)) {
 			deprecated = new Annotation[] { generateDeprecatedAnnotation(source) };
 		}
-		Annotation[] copiedAnnotations = copyAnnotations(source, onMethod.toArray(new Annotation[0]), deprecated);
-		if (copiedAnnotations.length != 0) {
-			method.annotations = copiedAnnotations;
-		}
+		method.annotations = copyAnnotations(source, onMethod.toArray(new Annotation[0]), deprecated);
+		
 		Argument param = new Argument(field.name, p, copyType(field.type, source), Modifier.FINAL);
 		param.sourceStart = pS; param.sourceEnd = pE;
 		method.arguments = new Argument[] { param };
@@ -253,8 +251,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		}
 		method.statements = statements.toArray(new Statement[0]);
 		
-		Annotation[] copiedAnnotationsParam = copyAnnotations(source, nonNulls, nullables, onParam.toArray(new Annotation[0]));
-		if (copiedAnnotationsParam.length != 0) param.annotations = copiedAnnotationsParam;
+		param.annotations = copyAnnotations(source, nonNulls, nullables, onParam.toArray(new Annotation[0]));
 		
 		method.traverse(new SetGeneratedByVisitor(source), parent.scope);
 		return method;
