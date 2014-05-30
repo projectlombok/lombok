@@ -70,9 +70,20 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	
 	private static volatile boolean skipEclipseWorkspaceBasedFileResolver = false;
 	public URI getAbsoluteFileLocation() {
+		String fileName = getFileName();
+		
 		if (!skipEclipseWorkspaceBasedFileResolver) {
 			try {
-				return EclipseWorkspaceBasedFileResolver.resolve(getFileName());
+				/*if (fileName.startsWith("/") && fileName.indexOf('/', 1) > -1) */
+				try {
+					return EclipseWorkspaceBasedFileResolver.resolve(fileName);
+				} catch (IllegalArgumentException e) {
+					String msg = e.getMessage();
+					if (msg != null && msg.startsWith("Path must include project and resource name")) {
+						// go with the fallthrough, but log that this happened.
+						addProblem(new ParseProblem(true, "Path resolution for lombok.config failed. Path: " + fileName + " -- falling back to: " + new File(fileName).getAbsoluteFile(), 0, 1));
+					} else throw e;
+				}
 			} catch (NoClassDefFoundError e) {
 				skipEclipseWorkspaceBasedFileResolver = true;
 			}
@@ -80,7 +91,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		
 		// Our fancy workspace based source file to absolute disk location algorithm only works in a fully fledged eclipse.
 		// This fallback works when using 'ecj', which has a much simpler project/path system. For example, no 'linked' resources.
-		return new File(getFileName()).getAbsoluteFile().toURI();
+		return new File(fileName).getAbsoluteFile().toURI();
 	}
 	
 	private static class EclipseWorkspaceBasedFileResolver {

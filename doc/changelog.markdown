@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.14.1 "Edgy Guinea Pig"
+* BUGFIX-IN-PROGRESS: As yet unknown conditions in eclipse result in lots of `IllegalArgumentException` in the log with message "Path must include project and resource name". This edge release will no longer error out, but we need to know when or how this occurs, thus, warnings will appear instead in your log with information pertinent to solving this issue. Please report these warnings back to us. [Issue #682](https://code.google.com/p/projectlombok/issues/detail?id=682)
 * BUGFIX: mvn builds fail with a 'URI not absolute' exception. [Issue #683](https://code.google.com/p/projectlombok/issues/detail?id=683)
 
 ### v1.14.0 "Branching Cobra" (May 27th, 2014)
