@@ -51,6 +51,7 @@ import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.Accessors;
+import lombok.experimental.Tolerate;
 
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
@@ -107,6 +108,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 import org.osgi.framework.Bundle;
+
 
 /**
  * Container for static utility methods useful to handlers written for eclipse.
@@ -1222,6 +1224,15 @@ public class EclipseHandlerUtil {
 							
 							if (params < minArgs || params > maxArgs) continue;
 						}
+						
+						boolean tolerate = false;
+						if (def.annotations != null) {
+							for (Annotation anno : def.annotations) {
+								tolerate |= typeMatches(Tolerate.class, node, anno.type);
+							}
+						}
+						if (tolerate) continue;
+						
 						return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
 				}

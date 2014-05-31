@@ -47,6 +47,7 @@ import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.handlers.HandlerUtil;
 import lombok.delombok.LombokOptionsFactory;
 import lombok.experimental.Accessors;
+import lombok.experimental.Tolerate;
 import lombok.javac.Javac;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -591,6 +592,16 @@ public class JavacHandlerUtil {
 							
 							if (params < minArgs || params > maxArgs) continue;
 						}
+
+						boolean tolerate = false;
+						List<JCAnnotation> annotations = md.getModifiers().getAnnotations();
+						if (annotations != null) {
+							for (JCAnnotation anno : annotations) {
+								tolerate |= typeMatches(Tolerate.class, node, anno.getAnnotationType());
+							}
+						}
+						if (tolerate) continue;
+						
 						return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
 				}
