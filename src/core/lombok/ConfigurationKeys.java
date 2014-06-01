@@ -112,12 +112,12 @@ public class ConfigurationKeys {
 	public static final ConfigurationKey<FlagUsageType> GETTER_LAZY_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.getter.lazy.flagUsage", "Emit a warning or error if @Getter(lazy=true) is used.") {};
 	
 	/**
-	 * lombok configuration: {@code lombok.getter.consequentBoolean} = {@code true} | {@code false}.
-	 *
-	 * If true, the special Javabeans rules for {@code boolean} accessors get ignored and booleans get processed just like any other type.
+	 * lombok configuration: {@code lombok.getter.noIsPrefix} = {@code true} | {@code false}.
+	 * 
+	 * If {@code true}, booleans getters are both referred to, and generated as {@code getFieldName()}. If {@code false} (the default), the javabean-standard {@code isFieldName()} is generated / used instead.
 	 *
 	 */
-	public static final ConfigurationKey<Boolean> GETTER_CONSEQUENT_BOOLEAN = new ConfigurationKey<Boolean>("lombok.getter.consequentBoolean", "Emit a warning or error if @Getter is used.") {};
+	public static final ConfigurationKey<Boolean> GETTER_CONSEQUENT_BOOLEAN = new ConfigurationKey<Boolean>("lombok.getter.noIsPrefix", "If true, generate and use getFieldName() for boolean getters instead of isFieldName().") {};
 	
 	// ----- Setter -----
 	

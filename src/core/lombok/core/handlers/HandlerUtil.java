@@ -285,7 +285,6 @@ public class HandlerUtil {
 		
 		if (Boolean.TRUE.equals(ast.readConfiguration(ConfigurationKeys.GETTER_CONSEQUENT_BOOLEAN))) isBoolean = false;
 		boolean explicitPrefix = accessors != null && accessors.isExplicit("prefix");
-//		System.out.printf("accessors: %s actual expr: %s val: %s\n", accessors, accessors != null ? accessors.getActualExpression("prefix") : "(null)", accessors == null ? "(null)" : Arrays.toString(accessors.getInstance().prefix()));
 		boolean explicitFluent = accessors != null && accessors.isExplicit("fluent");
 		
 		Accessors ac = (explicitPrefix || explicitFluent) ? accessors.getInstance() : null;
