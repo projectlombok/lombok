@@ -1425,7 +1425,7 @@ public class EclipseHandlerUtil {
 		if (isPrimitive(variable.type)) return null;
 		AllocationExpression exception = new AllocationExpression();
 		setGeneratedBy(exception, source);
-		int partCount = 0;
+		int partCount = 1;
 		String exceptionTypeStr = exceptionType.getExceptionType();
 		for (int i = 0; i < exceptionTypeStr.length(); i++) if (exceptionTypeStr.charAt(i) == '.') partCount++;
 		long[] ps = new long[partCount];
