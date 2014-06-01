@@ -333,9 +333,8 @@ public class HandleConstructor {
 				Statement nullCheck = generateNullCheck(field, sourceNode);
 				if (nullCheck != null) nullChecks.add(nullCheck);
 			}
-
-			parameter.annotations = copyAnnotations(source, nonNulls, nullables);
-
+			Annotation[] copiedAnnotations = copyAnnotations(source, nonNulls, nullables);
+			if (copiedAnnotations.length != 0) parameter.annotations = copiedAnnotations;
 			params.add(parameter);
 		}
 		
@@ -349,9 +348,10 @@ public class HandleConstructor {
 				constructorProperties = createConstructorProperties(source, fields);
 			}
 			
-			constructor.annotations = copyAnnotations(source,
+			Annotation[] copiedAnnotations = copyAnnotations(source,
 					onConstructor.toArray(new Annotation[0]),
 					constructorProperties);
+			if (copiedAnnotations.length != 0) constructor.annotations = copiedAnnotations;
 		}
 		
 		constructor.traverse(new SetGeneratedByVisitor(source), typeDeclaration.scope);
@@ -397,7 +397,8 @@ public class HandleConstructor {
 			
 			Argument parameter = new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL);
 
-			parameter.annotations = copyAnnotations(source, findAnnotations(field, NON_NULL_PATTERN), findAnnotations(field, NULLABLE_PATTERN));
+			Annotation[] copiedAnnotations = copyAnnotations(source, findAnnotations(field, NON_NULL_PATTERN), findAnnotations(field, NULLABLE_PATTERN));
+			if (copiedAnnotations.length != 0) parameter.annotations = copiedAnnotations;
 			params.add(parameter);
 		}
 		
