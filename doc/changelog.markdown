@@ -2,6 +2,9 @@ Lombok Changelog
 ----------------
 
 ### v1.14.1 "Edgy Guinea Pig"
+* FEATURE: Added `@Tolerate`; put this annotation on any method or constructor and lombok will skip it when considering whether or not to generate a method or constructor. This is useful if the types of the parameters of your method do not clash with what lombok would generate.
+* FEATURE: Added config key `lombok.getter.noIsPrefix`, which lets you disable use and generation of `isFoo()`, instead going with `getFoo()`, for {@code boolean} fields.
+* BUGFIX: Errors in the eclipse log with `IndexOutOfBound: 2` in `ASTConverter.convertType`. [Issue #686](https://code.google.com/p/projectlombok/issues/detail?id=686)
 * BUGFIX-IN-PROGRESS: As yet unknown conditions in eclipse result in lots of `IllegalArgumentException` in the log with message "Path must include project and resource name". This edge release will no longer error out, but we need to know when or how this occurs, thus, warnings will appear instead in your log with information pertinent to solving this issue. Please report these warnings back to us. [Issue #682](https://code.google.com/p/projectlombok/issues/detail?id=682)
 * BUGFIX: mvn builds fail with a 'URI not absolute' exception. [Issue #683](https://code.google.com/p/projectlombok/issues/detail?id=683)
 

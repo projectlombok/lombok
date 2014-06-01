@@ -570,7 +570,7 @@ public class JavacHandlerUtil {
 		node = upToTypeNode(node);
 		
 		if (node != null && node.get() instanceof JCClassDecl) {
-			for (JCTree def : ((JCClassDecl)node.get()).defs) {
+			top: for (JCTree def : ((JCClassDecl)node.get()).defs) {
 				if (def instanceof JCMethodDecl) {
 					JCMethodDecl md = (JCMethodDecl) def;
 					String name = md.name.toString();
@@ -592,15 +592,11 @@ public class JavacHandlerUtil {
 							
 							if (params < minArgs || params > maxArgs) continue;
 						}
-
-						boolean tolerate = false;
+						
 						List<JCAnnotation> annotations = md.getModifiers().getAnnotations();
-						if (annotations != null) {
-							for (JCAnnotation anno : annotations) {
-								tolerate |= typeMatches(Tolerate.class, node, anno.getAnnotationType());
-							}
+						if (annotations != null) for (JCAnnotation anno : annotations) {
+							if (typeMatches(Tolerate.class, node, anno.getAnnotationType())) continue top;
 						}
-						if (tolerate) continue;
 						
 						return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
@@ -621,10 +617,15 @@ public class JavacHandlerUtil {
 		node = upToTypeNode(node);
 		
 		if (node != null && node.get() instanceof JCClassDecl) {
-			for (JCTree def : ((JCClassDecl)node.get()).defs) {
+			top: for (JCTree def : ((JCClassDecl)node.get()).defs) {
 				if (def instanceof JCMethodDecl) {
-					if (((JCMethodDecl)def).name.contentEquals("<init>")) {
-						if ((((JCMethodDecl)def).mods.flags & Flags.GENERATEDCONSTR) != 0) continue;
+					JCMethodDecl md = (JCMethodDecl) def;
+					if (md.name.contentEquals("<init>")) {
+						if ((md.mods.flags & Flags.GENERATEDCONSTR) != 0) continue;
+						List<JCAnnotation> annotations = md.getModifiers().getAnnotations();
+						if (annotations != null) for (JCAnnotation anno : annotations) {
+							if (typeMatches(Tolerate.class, node, anno.getAnnotationType())) continue top;
+						}
 						return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
 				}

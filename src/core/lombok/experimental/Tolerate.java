@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Put on any method to make lombok pretend it doesn't exist, i.e., to generate a method which would otherwise be skipped due to possible conflicts.
+ * Put on any method or constructor to make lombok pretend it doesn't exist,
+ * i.e., to generate a method which would otherwise be skipped due to possible conflicts.
  */
-@Target({ElementType.METHOD})
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @Retention(RetentionPolicy.SOURCE)
 public @interface Tolerate {
 }

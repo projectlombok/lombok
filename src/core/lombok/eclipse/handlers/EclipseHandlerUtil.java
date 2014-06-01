@@ -1203,7 +1203,7 @@ public class EclipseHandlerUtil {
 		
 		if (node != null && node.get() instanceof TypeDeclaration) {
 			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
-			if (typeDecl.methods != null) for (AbstractMethodDeclaration def : typeDecl.methods) {
+			if (typeDecl.methods != null) top: for (AbstractMethodDeclaration def : typeDecl.methods) {
 				if (def instanceof MethodDeclaration) {
 					char[] mName = def.selector;
 					if (mName == null) continue;
@@ -1225,13 +1225,9 @@ public class EclipseHandlerUtil {
 							if (params < minArgs || params > maxArgs) continue;
 						}
 						
-						boolean tolerate = false;
-						if (def.annotations != null) {
-							for (Annotation anno : def.annotations) {
-								tolerate |= typeMatches(Tolerate.class, node, anno.type);
-							}
+						if (def.annotations != null) for (Annotation anno : def.annotations) {
+							if (typeMatches(Tolerate.class, node, anno.type)) continue top;
 						}
-						if (tolerate) continue;
 						
 						return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
@@ -1255,9 +1251,14 @@ public class EclipseHandlerUtil {
 		
 		if (node != null && node.get() instanceof TypeDeclaration) {
 			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
-			if (typeDecl.methods != null) for (AbstractMethodDeclaration def : typeDecl.methods) {
+			if (typeDecl.methods != null) top: for (AbstractMethodDeclaration def : typeDecl.methods) {
 				if (def instanceof ConstructorDeclaration) {
 					if ((def.bits & ASTNode.IsDefaultConstructor) != 0) continue;
+					
+					if (def.annotations != null) for (Annotation anno : def.annotations) {
+						if (typeMatches(Tolerate.class, node, anno.type)) continue top;
+					}
+					
 					return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 				}
 			}
