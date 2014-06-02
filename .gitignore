@@ -18,3 +18,4 @@
 *.markdown.html
 /junit*.properties
 /eclipse.location
+/.apt_generated
