@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Project Lombok Authors.
+ * Copyright (C) 2012-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,11 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
+import lombok.core.ReferenceFieldAugment;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.TransformEclipseAST;
@@ -179,14 +178,14 @@ public class PatchExtensionMethod {
 		return extensionMethods;
 	}
 	
-	private static final Map<MessageSend, PostponedError> ERRORS = new WeakHashMap<MessageSend, PostponedError>();
+	private static final ReferenceFieldAugment<MessageSend, PostponedError> postponedErrors = ReferenceFieldAugment.augment(MessageSend.class, PostponedError.class, "lombok$postponedErrors");
 	
 	public static void errorNoMethodFor(ProblemReporter problemReporter, MessageSend messageSend, TypeBinding recType, TypeBinding[] params) {
-		ERRORS.put(messageSend, new PostponedNoMethodError(problemReporter, messageSend, recType, params));
+		postponedErrors.set(messageSend, new PostponedNoMethodError(problemReporter, messageSend, recType, params));
 	}
 	
 	public static void invalidMethod(ProblemReporter problemReporter, MessageSend messageSend, MethodBinding method) {
-		ERRORS.put(messageSend, new PostponedInvalidMethodError(problemReporter, messageSend, method));
+		postponedErrors.set(messageSend, new PostponedInvalidMethodError(problemReporter, messageSend, method));
 	}
 	
 	public static TypeBinding resolveType(TypeBinding resolvedType, MessageSend methodCall, BlockScope scope) {
@@ -216,7 +215,7 @@ public class PatchExtensionMethod {
 			if (!extension.suppressBaseMethods && !(methodCall.binding instanceof ProblemMethodBinding)) continue;
 			for (MethodBinding extensionMethod : extension.extensionMethods) {
 				if (!Arrays.equals(methodCall.selector, extensionMethod.selector)) continue;
-				ERRORS.remove(methodCall);
+				postponedErrors.clear(methodCall);
 				if (methodCall.receiver instanceof ThisReference) {
 					methodCall.receiver.bits &= ~ASTNode.IsImplicitThis;
 				}
@@ -258,10 +257,10 @@ public class PatchExtensionMethod {
 			}
 		}
 		
-		PostponedError error = ERRORS.get(methodCall);
+		PostponedError error = postponedErrors.get(methodCall);
 		if (error != null) error.fire();
 		
-		ERRORS.remove(methodCall);
+		postponedErrors.clear(methodCall);
 		return resolvedType;
 	}
 	

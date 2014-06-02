@@ -52,14 +52,14 @@ import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
-import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.mangosdk.spi.ProviderFor;
 
 import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
-import lombok.core.TransformationsUtil;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
@@ -71,6 +71,8 @@ import lombok.experimental.NonFinal;
 @HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
 public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	@Override public void handle(AnnotationValues<Builder> annotation, Annotation ast, EclipseNode annotationNode) {
+		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.BUILDER_FLAG_USAGE, "@Builder");
+		
 		long p = (long) ast.sourceStart << 32 | ast.sourceEnd;
 
 		Builder builderInstance = annotation.getInstance();
@@ -117,9 +119,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				typesOfParameters.add(fd.type);
 				fields.add(fieldNode);
 			}
-
-			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, fields, null, SkipIfConstructorExists.I_AM_BUILDER, true, Collections.<Annotation>emptyList(), ast);
-
+			
+			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, fields, null, SkipIfConstructorExists.I_AM_BUILDER, null,
+					Collections.<Annotation>emptyList(), annotationNode);
+			
 			returnType = namePlusTypeParamsToTypeReference(td.name, td.typeParameters, p);
 			typeParams = td.typeParameters;
 			thrownExceptions = null;
@@ -202,12 +205,14 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		List<EclipseNode> fieldNodes = addFieldsToBuilder(builderType, namesOfParameters, typesOfParameters, ast);
 		List<AbstractMethodDeclaration> newMethods = new ArrayList<AbstractMethodDeclaration>();
 		for (EclipseNode fieldNode : fieldNodes) {
-			MethodDeclaration newMethod = makeSetterMethodForBuilder(builderType, fieldNode, ast, builderInstance.fluent(), builderInstance.chain());
+			MethodDeclaration newMethod = makeSetterMethodForBuilder(builderType, fieldNode, annotationNode, builderInstance.fluent(), builderInstance.chain());
 			if (newMethod != null) newMethods.add(newMethod);
 		}
 
 		if (constructorExists(builderType) == MemberExistsResult.NOT_EXISTS) {
-			ConstructorDeclaration cd = HandleConstructor.createConstructor(AccessLevel.PACKAGE, builderType, Collections.<EclipseNode>emptyList(), true, ast, Collections.<Annotation>emptyList());
+			ConstructorDeclaration cd = HandleConstructor.createConstructor(
+					AccessLevel.PACKAGE, builderType, Collections.<EclipseNode>emptyList(), null,
+					annotationNode, Collections.<Annotation>emptyList());
 			if (cd != null) injectMethod(builderType, cd);
 		}
 
@@ -287,7 +292,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				invoke.typeArguments = trs;
 			}
 			invoke.arguments = assigns.isEmpty() ? null : assigns.toArray(new Expression[assigns.size()]);
-			if (returnType instanceof SingleTypeReference && Arrays.equals(TypeBinding.VOID.simpleName, ((SingleTypeReference) returnType).token)) {
+			if (returnType instanceof SingleTypeReference && Arrays.equals(TypeConstants.VOID, ((SingleTypeReference) returnType).token)) {
 				statement = invoke;
 			} else {
 				statement = new ReturnStatement(invoke, (int)(p >> 32), (int)p);
@@ -332,7 +337,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 
 	private static final AbstractMethodDeclaration[] EMPTY = {};
 
-	public MethodDeclaration makeSetterMethodForBuilder(EclipseNode builderType, EclipseNode fieldNode, ASTNode source, boolean fluent, boolean chain) {
+	public MethodDeclaration makeSetterMethodForBuilder(EclipseNode builderType, EclipseNode fieldNode, EclipseNode sourceNode, boolean fluent, boolean chain) {
 		TypeDeclaration td = (TypeDeclaration) builderType.get();
 		AbstractMethodDeclaration[] existing = td.methods;
 		if (existing == null) existing = EMPTY;
@@ -347,10 +352,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 
 		boolean isBoolean = isBoolean(fd.type);
-		String setterName = fluent ? fieldNode.getName() : TransformationsUtil.toSetterName(null, fieldNode.getName(), isBoolean);
-
+		String setterName = fluent ? fieldNode.getName() : toSetterName(builderType.getAst(), null, fieldNode.getName(), isBoolean);
+		
 		return HandleSetter.createSetter(td, fieldNode, setterName, chain, ClassFileConstants.AccPublic,
-				source, Collections.<Annotation>emptyList(), Collections.<Annotation>emptyList(),false,false,null);
+				sourceNode, Collections.<Annotation>emptyList(), Collections.<Annotation>emptyList(),false,false,null);
 	}
 
 	public EclipseNode findInnerClass(EclipseNode parent, String name) {

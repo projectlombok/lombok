@@ -5,6 +5,8 @@ class MixGetterVal {
 	public void test() {
 		final int y = x;
 		m(y);
+		final int a = getX();
+		m(a);
 	}
 	@java.lang.SuppressWarnings("all")
 	public int getX() {

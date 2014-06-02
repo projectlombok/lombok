@@ -1,4 +1,4 @@
-import lombok.Delegate;
+import lombok.experimental.Delegate;
 class DelegatePlain {
 	@Delegate(types = Bar.class)
 	private final BarImpl bar = new BarImpl();

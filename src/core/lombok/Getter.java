@@ -58,7 +58,7 @@ public @interface Getter {
 	lombok.AccessLevel value() default lombok.AccessLevel.PUBLIC;
 	
 	/**
-	 * Any annotations listed here are put on the generated method. The syntax for this feature is: {@code @Getter(onMethod=@_({@AnnotationsGoHere}))}
+	 * Any annotations listed here are put on the generated method. The syntax for this feature is: {@code @Getter(onMethod=@__({@AnnotationsGoHere}))}
 	 */
 	AnyAnnotation[] onMethod() default @AnyAnnotation;
 	

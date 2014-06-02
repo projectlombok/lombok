@@ -62,15 +62,23 @@ public class EclipseImportList implements ImportList {
 	}
 	
 	@Override public boolean hasStarImport(String packageName) {
-		for (Map.Entry<String, String> e : LombokInternalAliasing.IMPLIED_EXTRA_STAR_IMPORTS.entrySet()) {
-			if (e.getValue().equals(packageName) && hasStarImport(e.getKey())) return true;
-		}
 		if (isEqual(packageName, pkg)) return true;
 		if ("java.lang".equals(packageName)) return true;
+		
+		if (pkg != null && pkg.tokens != null && pkg.tokens.length == 0) {
+			for (Map.Entry<String, Collection<String>> e : LombokInternalAliasing.IMPLIED_EXTRA_STAR_IMPORTS.entrySet()) {
+				if (isEqual(e.getKey(), pkg) && e.getValue().contains(packageName)) return true;
+			}
+		}
+		
 		if (imports != null) for (ImportReference imp : imports) {
 			if ((imp.bits & ASTNode.OnDemand) == 0) continue;
 			if (imp.isStatic()) continue;
 			if (isEqual(packageName, imp)) return true;
+			for (Map.Entry<String, Collection<String>> e : LombokInternalAliasing.IMPLIED_EXTRA_STAR_IMPORTS.entrySet()) {
+				if (isEqual(e.getKey(), imp) && e.getValue().contains(packageName)) return true;
+			}
+			
 		}
 		return false;
 	}

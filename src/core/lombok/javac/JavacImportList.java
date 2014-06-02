@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2013-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,6 @@ package lombok.javac;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Map;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -59,11 +58,14 @@ public class JavacImportList implements ImportList {
 	}
 	
 	@Override public boolean hasStarImport(String packageName) {
-		for (Map.Entry<String, String> e : LombokInternalAliasing.IMPLIED_EXTRA_STAR_IMPORTS.entrySet()) {
-			if (e.getValue().equals(packageName) && hasStarImport(e.getKey())) return true;
-		}
-		if (pkg != null && pkg.toString().equals(packageName)) return true;
+		String pkgStr = pkg == null ? null : pkg.toString();
+		if (pkgStr != null && pkgStr.equals(packageName)) return true;
 		if ("java.lang".equals(packageName)) return true;
+		
+		if (pkgStr != null) {
+			Collection<String> extra = LombokInternalAliasing.IMPLIED_EXTRA_STAR_IMPORTS.get(pkgStr);
+			if (extra != null && extra.contains(packageName)) return true;
+		}
 		
 		for (JCTree def : defs) {
 			if (!(def instanceof JCImport)) continue;
@@ -72,7 +74,10 @@ public class JavacImportList implements ImportList {
 			if (!(qual instanceof JCFieldAccess)) continue;
 			String simpleName = ((JCFieldAccess) qual).name.toString();
 			if (!"*".equals(simpleName)) continue;
-			if (packageName.equals(((JCFieldAccess) qual).selected.toString())) return true;
+			String starImport = ((JCFieldAccess) qual).selected.toString();
+			if (packageName.equals(starImport)) return true;
+			Collection<String> extra = LombokInternalAliasing.IMPLIED_EXTRA_STAR_IMPORTS.get(starImport);
+			if (extra != null && extra.contains(packageName)) return true;
 		}
 		
 		return false;

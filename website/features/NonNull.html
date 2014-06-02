@@ -39,6 +39,16 @@
 			</div>
 		</div>
 		<div style="clear: left;"></div>
+		<div class="overview confKeys">
+			<h3>Supported configuration keys:</h3>
+			<dl>
+			<dt><code>lombok.nonNull.exceptionType</code> = [<code>NullPointerException</code> | <code>IllegalArgumentException</code>] (default: <code>NullPointerException</code>).
+			<dd>When lombok generates a null-check <code>if</code> statement, by default, a <code>java.lang.NullPointerException</code> will be thrown with the field name as the exception message.
+			However, you can use <code>IllegalArgumentException</code> in this configuration key to have lombok throw that exception, with '<em>fieldName</em> is null' as exception message.</dd>
+			<dt><code>lombok.nonNull.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)</dt>
+			<dd>Lombok will flag any usage of <code>@NonNull</code> as a warning or error if configured.</dd>
+			</dl>
+		</div>
 		<div class="overview">
 			<h3>Small print</h3><div class="smallprint">
 				<p>

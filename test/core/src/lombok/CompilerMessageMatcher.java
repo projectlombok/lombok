@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,32 +35,46 @@ import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
 
 public class CompilerMessageMatcher {
 	/** Line Number (starting at 1) */
-	private final long line;
+	private final List<Integer> lineNumbers = new ArrayList<Integer>();
+	private final List<List<String>> messages = new ArrayList<List<String>>();
+	private boolean optional;
 	
-	private final Collection<String> messageParts;
+	private CompilerMessageMatcher() {}
 	
-	public CompilerMessageMatcher(long line, String message) {
-		this.line = line;
-		this.messageParts = Arrays.asList(message.split("\\s+"));
+	public boolean isOptional() {
+		return optional;
 	}
 	
 	public static CompilerMessageMatcher asCompilerMessageMatcher(CompilerMessage message) {
-		return new CompilerMessageMatcher(message.getLine(), message.getMessage());
+		CompilerMessageMatcher cmm = new CompilerMessageMatcher();
+		cmm.lineNumbers.add((int) message.getLine());
+		cmm.messages.add(Arrays.asList(message.getMessage().split("\\s+")));
+		return cmm;
 	}
 	
 	@Override public String toString() {
-		StringBuilder parts = new StringBuilder();
-		for (String part : messageParts) parts.append(part).append(" ");
-		if (parts.length() > 0) parts.setLength(parts.length() - 1);
-		return String.format("%d %s", line, parts);
+		StringBuilder out = new StringBuilder();
+		for (int i = 0; i < lineNumbers.size(); i++) {
+			out.append(lineNumbers.get(i)).append(" ");
+			for (String part : messages.get(i)) out.append(part).append(" ");
+			if (out.length() > 0) out.setLength(out.length() - 1);
+			out.append(" |||| ");
+		}
+		if (out.length() > 0) out.setLength(out.length() - 6);
+		return out.toString();
 	}
 	
 	public boolean matches(CompilerMessage message) {
-		if (message.getLine() != this.line) return false;
-		for (String token : messageParts) {
-			if (!message.getMessage().contains(token)) return false;
+		outer:
+		for (int i = 0; i < lineNumbers.size(); i++) {
+			if (message.getLine() != lineNumbers.get(i)) continue;
+			for (String token : messages.get(i)) {
+				if (!message.getMessage().contains(token)) continue outer;
+			}
+			return true;
 		}
-		return true;
+		
+		return false;
 	}
 	
 	public static List<CompilerMessageMatcher> readAll(InputStream rawIn) throws IOException {
@@ -75,11 +88,28 @@ public class CompilerMessageMatcher {
 	}
 	
 	private static final Pattern PATTERN = Pattern.compile("^(\\d+) (.*)$");
+	
 	private static CompilerMessageMatcher read(String line) {
 		line = line.trim();
 		if (line.isEmpty()) return null;
-		Matcher m = PATTERN.matcher(line);
-		if (!m.matches()) throw new IllegalArgumentException("Typo in test file: " + line);
-		return new CompilerMessageMatcher(Integer.parseInt(m.group(1)), m.group(2));
+		boolean optional = false;
+		
+		if (line.startsWith("OPTIONAL ")) {
+			line = line.substring(9);
+			optional = true;
+		}
+		
+		String[] parts = line.split("\\s*\\|\\|\\|\\|\\s*");
+		
+		CompilerMessageMatcher cmm = new CompilerMessageMatcher();
+		cmm.optional = optional;
+		for (String part : parts) {
+			Matcher m = PATTERN.matcher(part);
+			if (!m.matches()) throw new IllegalArgumentException("Typo in test file: " + line);
+			cmm.lineNumbers.add(Integer.parseInt(m.group(1)));
+			cmm.messages.add(Arrays.asList(m.group(2).split("\\s+")));
+		}
+		
+		return cmm;
 	}
 }

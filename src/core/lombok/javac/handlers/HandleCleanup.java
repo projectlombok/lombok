@@ -21,9 +21,11 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 import static lombok.javac.Javac.*;
 import lombok.Cleanup;
+import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.delombok.LombokOptionsFactory;
@@ -61,6 +63,8 @@ import com.sun.tools.javac.util.Name;
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 	@Override public void handle(AnnotationValues<Cleanup> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		handleFlagUsage(annotationNode, ConfigurationKeys.CLEANUP_FLAG_USAGE, "@Cleanup");
+		
 		if (inNetbeansEditor(annotationNode)) return;
 		
 		deleteAnnotationIfNeccessary(annotationNode, Cleanup.class);

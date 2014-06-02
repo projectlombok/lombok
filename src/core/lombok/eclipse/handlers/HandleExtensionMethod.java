@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Project Lombok Authors.
+ * Copyright (C) 2012-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,8 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
+
 import java.util.List;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -28,6 +30,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.mangosdk.spi.ProviderFor;
 
+import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.eclipse.EclipseAnnotationHandler;
@@ -39,6 +42,8 @@ import lombok.experimental.ExtensionMethod;
 @HandlerPriority(66560) // 2^16 + 2^10; we must run AFTER HandleVal which is at 2^16
 public class HandleExtensionMethod extends EclipseAnnotationHandler<ExtensionMethod> {
 	@Override public void handle(AnnotationValues<ExtensionMethod> annotation, Annotation ast, EclipseNode annotationNode) {
+		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.EXTENSION_METHOD_FLAG_USAGE, "@ExtensionMethod");
+		
 		TypeDeclaration typeDecl = null;
 		EclipseNode owner = annotationNode.up();
 		if (owner.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) owner.get();

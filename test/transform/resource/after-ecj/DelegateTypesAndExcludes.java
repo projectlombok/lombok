@@ -1,4 +1,4 @@
-import lombok.Delegate;
+import lombok.experimental.Delegate;
 class DelegatePlain {
   private static class FooImpl implements Foo {
     private FooImpl() {

@@ -99,11 +99,13 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<target name="deps" depends="ensureBuildDeps, ensureRuntimeDeps, ensureTestDeps, contrib" description="Downloads all dependencies." />
 	
 	<target name="contrib" depends="config-ivy" description="Downloads various non-crucial documentation, sources, etc that are useful when developing lombok.ast.">
-		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="contrib, ecj" />
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="contrib, ecj7, ecj8" />
 		<ivy:retrieve />
 	</target>
 	
 	<target name="ensureBuildDeps" depends="config-ivy">
+		<mkdir dir="lib/openJDK6Environment" />
+		<get src="http://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />
 		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build, javac7" />
 		<ivy:retrieve />
 	</target>
@@ -143,15 +145,18 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		We re-create the file at the end of this target. -->
 		<delete file="build/lombok/META-INF/services/javax.annotation.processing.Processor" quiet="true" />
 		<ivy:compile destdir="build/stubsstubs" source="1.5" target="1.5" includeantruntime="false">
+			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
 			<src path="src/stubsstubs" />
 		</ivy:compile>
 		<ivy:compile destdir="build/stubs" source="1.5" target="1.5" includeantruntime="false">
+			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
 			<src path="src/stubs" />
 			<src path="src/javac-only-stubs" />
 			<classpath location="build/stubsstubs" />
 		</ivy:compile>
 		
 		<ivy:compile destdir="build/lombok-utils" source="1.5" target="1.5" includeantruntime="false">
+			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
 			<compilerarg value="-Xbootclasspath/p:build/stubs" />
 			<src path="src/utils" />
 			<exclude name="lombok/javac/**" />
@@ -159,6 +164,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ivy:compile>
 		
 		<ivy:compile destdir="build/lombok-utils" source="1.6" target="1.6" includeantruntime="false">
+			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
 			<compilerarg value="-Xbootclasspath/p:build/stubs" />
 			<src path="src/utils" />
 			<include name="lombok/javac/**" />
@@ -171,6 +177,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</copy>
 		
 		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" includeantruntime="false">
+			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
 			<compilerarg value="-Xbootclasspath/p:build/stubs" />
 			<src path="src/core" />
 			<src path="src/installer" />
@@ -181,6 +188,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ivy:compile>
 		
 		<ivy:compile destdir="build/lombok" source="1.6" target="1.6" includeantruntime="false">
+			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
 			<compilerarg value="-Xbootclasspath/p:build/stubs" />
 			<src path="src/core" />
 			<src path="src/delombok" />
@@ -247,6 +255,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 				<srcdir dir="test/transform/src" test="true" />
 				<srcdir dir="test/core/src" test="true" />
 				<srcdir dir="test/bytecode/src" test="true" />
+				<srcdir dir="test/configuration/src" test="true" />
 			</module>
 			<settings>
 				<url url="http://projectlombok.org/downloads/lombok.intellij.settings" />
@@ -275,9 +284,10 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<srcdir dir="test/transform/src" />
 			<srcdir dir="test/core/src" />
 			<srcdir dir="test/bytecode/src" />
-			<local org="org.projectlombok" name="lombok.patcher" dir="../lombok.patcher" />
+			<srcdir dir="test/configuration/src" />
 			<conf name="${eclipse.build.configname}" sources="contrib" />
 			<conf name="test" sources="contrib" />
+			<local org="org.projectlombok" name="lombok.patcher" dir="../lombok.patcher" />
 			<settings>
 				<url url="http://projectlombok.org/downloads/lombok.eclipse.settings" />
 			</settings>
@@ -320,6 +330,8 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.osgi" /></antcall>
 		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.jdt.core" /></antcall>
 		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.jdt.ui" /></antcall>
+		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.core.resources" /></antcall>
+		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.core.jobs" /></antcall>
 
 		<!-- These are merely useful -->
 		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.text" /></antcall>
@@ -387,11 +399,12 @@ ${sourceWarning}</echo>
 			<src path="test/core/src" />
 			<src path="test/transform/src" />
 			<src path="test/bytecode/src" />
+			<src path="test/configuration/src" />
 		</ivy:compile>
 	</target>
 	
 	<target name="test-ecj" depends="dist, contrib" unless="tests.skip">
-		<java jar="lib/ecj/org.eclipse.custom-ecj.jar" fork="true" failonerror="true">
+		<java jar="lib/ecj7/org.eclipse.custom-ecj.jar" fork="true" failonerror="true">
 			<jvmarg value="-javaagent:dist/lombok.jar=ecj" />
 			<arg value="-source" />
 			<arg value="1.6" />
@@ -418,64 +431,76 @@ ${sourceWarning}</echo>
 				overwrite="true">
 			<filterset>
 				<filter token="JAVAC_LOCATION" value="${test.location.javac}" />
+				<filter token="ECJ_LOCATION" value="${test.location.ecj}" />
 				<filter token="RT_LOCATION" value="${test.location.bootclasspath}" />
+				<filter token="JAVA_VERSION" value="${test.javaversion}" />
 			</filterset>
 		</copy>
+		<echo>WARNING: If you wish to test JDK8 features in eclipse, there must be a JDK8 installation configured in your eclipse, and it must be called 'JavaSE-1.8'.</echo>
 	</target>
 
-	<target name="setupJavaOpenJDK6TestEnvironment" description="Sets up the test so that 'ant test' will test against OpenJDK6.">
+	<target name="setupJavaOpenJDK6TestEnvironment" depends="contrib" description="Sets up the test so that 'ant test' will test against OpenJDK6.">
 		<mkdir dir="lib/openJDK6Environment" />
 		<get src="http://projectlombok.org/ivyrepo/langtools/javac-1.6.0.18.jar" dest="lib/openJDK6Environment/javac6.jar" verbose="true" usetimestamp="true" />
 		<get src="http://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />
 		<propertyfile file="testenvironment.properties">
 			<entry key="test.location.javac" value="lib/openJDK6Environment/javac6.jar" />
+			<entry key="test.location.ecj" value="lib/ecj7/org.eclipse.custom-ecj.jar" />
 			<entry key="test.location.bootclasspath" value="lib/openJDK6Environment/rt-openjdk6.jar" />
 			<entry key="test.location.name" value="OpenJDK6" />
+			<entry key="test.javaversion" value="6" />
 		</propertyfile>
 		<echo>Tests will now run against OpenJDK6</echo>
 		<antcall target="-createEclipseLaunchForTestEnvironmentIfEclipseProject" />
 	</target>
 
-	<target name="setupJavaOpenJDK7TestEnvironment" description="Sets up the test so that 'ant test' will test against OpenJDK7.">
+	<target name="setupJavaOpenJDK7TestEnvironment" depends="contrib" description="Sets up the test so that 'ant test' will test against OpenJDK7.">
 		<mkdir dir="lib/openJDK7Environment" />
 		<get src="http://projectlombok.org/ivyrepo/langtools/javac-1.7.0.jar" dest="lib/openJDK7Environment/javac7.jar" verbose="true" usetimestamp="true" />
 		<get src="http://projectlombok.org/ivyrepo/langtools/rt-openjdk7.jar" dest="lib/openJDK7Environment/rt-openjdk7.jar" verbose="true" usetimestamp="true" />
 		<propertyfile file="testenvironment.properties">
 			<entry key="test.location.javac" value="lib/openJDK7Environment/javac7.jar" />
+			<entry key="test.location.ecj" value="lib/ecj7/org.eclipse.custom-ecj.jar" />
 			<entry key="test.location.bootclasspath" value="lib/openJDK7Environment/rt-openjdk7.jar" />
 			<entry key="test.location.name" value="OpenJDK7" />
+			<entry key="test.javaversion" value="7" />
 		</propertyfile>
 		<echo>Tests will now run against OpenJDK7</echo>
 		<antcall target="-createEclipseLaunchForTestEnvironmentIfEclipseProject" />
 	</target>
 	
-	<target name="setupJavaOracle7TestEnvironment" description="Sets up the test so that 'ant test' will test against OpenJDK7.">
+	<target name="setupJavaOracle7TestEnvironment" depends="contrib" description="Sets up the test so that 'ant test' will test against OpenJDK7.">
 		<mkdir dir="lib/oracleJDK7Environment" />		
 		<get src="http://projectlombok.org/ivyrepo/langtools/oracle-jdk7-tools.jar" dest="lib/oracleJDK7Environment/tools.jar" verbose="true" usetimestamp="true" />
 		<get src="http://projectlombok.org/ivyrepo/langtools/oracle-jdk7-rt.jar" dest="lib/oracleJDK7Environment/rt.jar" verbose="true" usetimestamp="true" />
 		<propertyfile file="testenvironment.properties">
 			<entry key="test.location.javac" value="lib/oracleJDK7Environment/tools.jar" />
+			<entry key="test.location.ecj" value="lib/ecj7/org.eclipse.custom-ecj.jar" />
 			<entry key="test.location.bootclasspath" value="lib/oracleJDK7Environment/rt.jar" />
 			<entry key="test.location.name" value="OracleJDK7" />
+			<entry key="test.javaversion" value="7" />
 		</propertyfile>
 		<echo>Tests will now run against Oracle JDK7</echo>
 		<antcall target="-createEclipseLaunchForTestEnvironmentIfEclipseProject" />
 	</target>
 	
-	<target name="setupJavaOracle8TestEnvironment" description="Sets up the test so that 'ant test' will test against OpenJDK8.">
+	<target name="setupJavaOracle8TestEnvironment" depends="contrib" description="Sets up the test so that 'ant test' will test against OpenJDK8.">
 		<mkdir dir="lib/oracleJDK8Environment" />
-		<get src="http://projectlombok.org/ivyrepo/langtools/oracle-jdk8-tools.jar" dest="lib/oracleJDK8Environment/tools.jar" verbose="true" usetimestamp="true" />
+		<get src="http://projectlombok.org/ivyrepo/langtools/jdk8-javac.jar" dest="lib/oracleJDK8Environment/javac8.jar" verbose="true" usetimestamp="true" />
 		<get src="http://projectlombok.org/ivyrepo/langtools/oracle-jdk8-rt.jar" dest="lib/oracleJDK8Environment/rt.jar" verbose="true" usetimestamp="true" />
+		<get src="http://projectlombok.org/ivyrepo/langtools/jdk8-javac-sources.zip" dest="lib/oracleJDK8Environment/javac8-sources.zip" verbose="true" usetimestamp="true" />
 		<propertyfile file="testenvironment.properties">
-			<entry key="test.location.javac" value="lib/oracleJDK8Environment/tools.jar" />
+			<entry key="test.location.javac" value="lib/oracleJDK8Environment/javac8.jar" />
+			<entry key="test.location.ecj" value="lib/ecj8/org.eclipse.custom-ecj.jar" />
 			<entry key="test.location.bootclasspath" value="lib/oracleJDK8Environment/rt.jar" />
 			<entry key="test.location.name" value="OracleJDK8" />
+			<entry key="test.javaversion" value="8" />
 		</propertyfile>
 		<echo>Tests will now run against Oracle JDK8</echo>
 		<antcall target="-createEclipseLaunchForTestEnvironmentIfEclipseProject" />
 	</target>
 
-	<target name="-failIfNoTestEnvironmentProperties" unless="test.location.javac">
+	<target name="-failIfNoTestEnvironmentProperties" unless="test.javaversion">
 		<fail>ERROR: No test environment set up.
 
 You need to set up a test environment, which consists of a version of javac, and a JRE runtime classpath ('rt.jar').
@@ -493,17 +518,20 @@ These will set up test environments based on OpenJDK6 and OpenJDK7, and download
 You can also create your own by writing a 'testenvironment.properties' file. The relevant properties are:
 
 * test.location.javac = /path/to/javac6.jar
+* test.location.ecj = /path/to/ecj6.jar
 * test.location.bootclasspath = /path/to/rt.jar
+* test.location.name = RandomUsefulNameToIdentifyThisSetup
+* test.javaversion = 6
 </fail>
 	</target>
 
 	<target name="test" depends="-loadTestEnvironmentProperties, -failIfNoTestEnvironmentProperties, -test-compile, dist, test-ecj" unless="tests.skip" description="Runs the tests.">
-		<junit haltonfailure="yes" fork="true">
+		<junit haltonfailure="no" fork="true">
 			<jvmarg value="-javaagent:dist/lombok.jar" />
 			<jvmarg value="-Ddelombok.bootclasspath=${test.location.bootclasspath}" />
 			<formatter type="plain" usefile="false" unless="tests.quiet" />
 			<classpath refid="test.path" />
-			<classpath refid="eclipseBuild.path" />
+			<classpath path="${test.location.ecj}" />
 			<classpath path="${test.location.javac}" />
 			<classpath path="build/lombok" />
 			<classpath path="build/tests" />
@@ -515,6 +543,9 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 					<include name="**/Test*.java" />
 				</fileset>
 				<fileset dir="test/bytecode/src">
+					<include name="**/Test*.java" />
+				</fileset>
+				<fileset dir="test/configuration/src">
 					<include name="**/Test*.java" />
 				</fileset>
 			</batchtest>

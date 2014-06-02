@@ -21,10 +21,12 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
 
+import lombok.ConfigurationKeys;
 import lombok.Synchronized;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
@@ -105,6 +107,8 @@ public class HandleSynchronized extends EclipseAnnotationHandler<Synchronized> {
 	}
 	
 	@Override public void handle(AnnotationValues<Synchronized> annotation, Annotation source, EclipseNode annotationNode) {
+		handleFlagUsage(annotationNode, ConfigurationKeys.SYNCHRONIZED_FLAG_USAGE, "@Synchronized");
+		
 		int p1 = source.sourceStart -1;
 		int p2 = source.sourceStart -2;
 		long pos = (((long)p1) << 32) | p2;

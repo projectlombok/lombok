@@ -60,12 +60,12 @@ public @interface Wither {
 	AccessLevel value() default AccessLevel.PUBLIC;
 	
 	/**
-	 * Any annotations listed here are put on the generated method. The syntax for this feature is: {@code @Setter(onMethod=@_({@AnnotationsGoHere}))}
+	 * Any annotations listed here are put on the generated method. The syntax for this feature is: {@code @Setter(onMethod=@__({@AnnotationsGoHere}))}
 	 */
 	AnyAnnotation[] onMethod() default {};
 	
 	/**
-	 * Any annotations listed here are put on the generated method's parameter. The syntax for this feature is: {@code @Setter(onParam=@_({@AnnotationsGoHere}))}
+	 * Any annotations listed here are put on the generated method's parameter. The syntax for this feature is: {@code @Setter(onParam=@__({@AnnotationsGoHere}))}
 	 */
 	AnyAnnotation[] onParam() default {};
 	

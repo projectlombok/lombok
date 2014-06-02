@@ -21,6 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import lombok.ConfigurationKeys;
 import lombok.SneakyThrows;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
@@ -75,6 +77,8 @@ public class HandleSneakyThrows extends EclipseAnnotationHandler<SneakyThrows> {
 	}
 	
 	@Override public void handle(AnnotationValues<SneakyThrows> annotation, Annotation source, EclipseNode annotationNode) {
+		handleFlagUsage(annotationNode, ConfigurationKeys.SNEAKY_THROWS_FLAG_USAGE, "@SneakyThrows");
+		
 		List<String> exceptionNames = annotation.getRawExpressions("value");
 		List<DeclaredException> exceptions = new ArrayList<DeclaredException>();
 		

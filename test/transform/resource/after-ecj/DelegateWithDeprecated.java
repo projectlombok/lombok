@@ -1,4 +1,4 @@
-import lombok.Delegate;
+import lombok.experimental.Delegate;
 class DelegateWithDeprecated {
   private interface Bar {
     @Deprecated void deprecatedAnnotation();

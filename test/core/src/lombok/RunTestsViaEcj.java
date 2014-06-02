@@ -70,18 +70,23 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		warnings.put(CompilerOptions.OPTION_ReportUnusedLabel, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedImport, "ignore");
 		warnings.put(CompilerOptions.OPTION_ReportUnusedPrivateMember, "ignore");
-		warnings.put(CompilerOptions.OPTION_Source, CompilerOptions.VERSION_1_7);
+		warnings.put(CompilerOptions.OPTION_Source, "1." + Eclipse.getEcjCompilerVersion());
 		options.set(warnings);
 		return options;
 	}
 	
 	protected IErrorHandlingPolicy ecjErrorHandlingPolicy() {
 		return new IErrorHandlingPolicy() {
-			@Override public boolean stopOnFirstError() {
+			public boolean stopOnFirstError() {
 				return true;
 			}
 			
-			@Override public boolean proceedOnErrors() {
+			public boolean proceedOnErrors() {
+				return false;
+			}
+			
+			@SuppressWarnings("all") // Added to the interface in later ecj version.
+			public boolean ignoreAllErrors() {
 				return false;
 			}
 		};
@@ -107,6 +112,8 @@ public class RunTestsViaEcj extends AbstractRunTests {
 			}
 		};
 		
+		// TODO: Create a configuration based on confLines and set this up so that this compile run will use them.
+		
 		ecjCompiler.compile(new ICompilationUnit[] {sourceUnit});
 		
 		CompilationResult compilationResult = compilationResult_.get();
@@ -118,7 +125,8 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		
 		CompilationUnitDeclaration cud = compilationUnit_.get();
 		
-		result.append(cud.toString());
+		if (cud == null) result.append("---- NO CompilationUnit provided by ecj ----");
+		else result.append(cud.toString());
 	}
 	
 	private FileSystem createFileSystem(File file) {

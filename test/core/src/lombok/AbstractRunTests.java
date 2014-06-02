@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,21 +25,25 @@ import static org.junit.Assert.*;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import org.junit.Assert;
+
+import lombok.core.AST;
+import lombok.core.LombokConfiguration;
+import lombok.core.LombokImmutableList;
+import lombok.core.configuration.ConfigurationKeysLoader;
+import lombok.core.configuration.ConfigurationResolver;
+import lombok.core.configuration.ConfigurationResolverFactory;
 import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
 
 public abstract class AbstractRunTests {
@@ -50,40 +54,47 @@ public abstract class AbstractRunTests {
 	}
 	
 	public boolean compareFile(DirectoryRunner.TestParams params, File file) throws Throwable {
+		ConfigurationKeysLoader.LoaderLoader.loadAllConfigurationKeys();
+		final LombokTestSource sourceDirectives = LombokTestSource.readDirectives(file);
+		if (sourceDirectives.isIgnore()) return false;
+		if (!sourceDirectives.versionWithinLimit(params.getVersion())) return false;
+		if (!sourceDirectives.versionWithinLimit(getClasspathVersion())) return false;
+		
+		String fileName = file.getName();
+		LombokTestSource expected = LombokTestSource.read(params.getAfterDirectory(), params.getMessagesDirectory(), fileName);
+		
+		if (expected.isIgnore()) return false;
+		if (!expected.versionWithinLimit(params.getVersion())) return false;
+		
 		LinkedHashSet<CompilerMessage> messages = new LinkedHashSet<CompilerMessage>();
 		StringWriter writer = new StringWriter();
-		transformCode(messages, writer, file);
-		String expectedFile = readFile(params.getAfterDirectory(), file, false);
-		List<CompilerMessageMatcher> expectedMessages = Collections.emptyList();
-		if (params.getMessagesDirectory() != null) {
-			try {
-				InputStream in = new FileInputStream(new File(params.getMessagesDirectory(), file.getName() + ".messages"));
-				try {
-					expectedMessages = CompilerMessageMatcher.readAll(in);
-				} finally {
-					in.close();
-				}
-			} catch (FileNotFoundException ex) {
-				// That's okay - then we expect no messages, and expectedMessages already gets initialized to the empty list.
+		
+		LombokConfiguration.overrideConfigurationResolverFactory(new ConfigurationResolverFactory() {
+			@Override public ConfigurationResolver createResolver(AST<?, ?, ?> ast) {
+				return sourceDirectives.getConfiguration();
 			}
-		}
+		});
 		
-		if (expectedFile != null) {
-			StringReader r = new StringReader(expectedFile);
-			BufferedReader br = new BufferedReader(r);
-			String firstLine = br.readLine();
-			if (firstLine != null && (firstLine.startsWith("//ignore") || params.shouldIgnoreBasedOnVersion(firstLine))) return false;
-		}
+		transformCode(messages, writer, file);
 		
-		compare(
-				file.getName(),
-				expectedFile,
-				writer.toString(),
-				expectedMessages,
-				messages,
-				params.printErrors());
-		
+		compare(file.getName(), expected, writer.toString(), messages, params.printErrors(), sourceDirectives.isSkipCompareContent() || expected.isSkipCompareContent());
 		return true;
+	}
+	
+	private static int getClasspathVersion() {
+		try {
+			Class.forName("java.lang.AutoCloseable");
+		} catch (ClassNotFoundException e) {
+			return 6;
+		}
+		
+		try {
+			Class.forName("java.util.stream.Stream");
+		} catch (ClassNotFoundException e) {
+			return 7;
+		}
+		
+		return 8;
 	}
 	
 	protected abstract void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file) throws Throwable;
@@ -103,11 +114,6 @@ public abstract class AbstractRunTests {
 		}
 		reader.close();
 		return result.toString();
-	}
-	
-	private String readFile(File dir, File file, boolean messages) throws IOException {
-		if (dir == null) return null;
-		return readFile(new File(dir, file.getName() + (messages ? ".messages" : "")));
 	}
 	
 	private static File findPlaceToDumpActualFiles() {
@@ -141,17 +147,15 @@ public abstract class AbstractRunTests {
 		}
 	}
 	
-	private void compare(String name, String expectedFile, String actualFile, List<CompilerMessageMatcher> expectedMessages, LinkedHashSet<CompilerMessage> actualMessages, boolean printErrors) throws Throwable {
-		if (expectedFile == null && expectedMessages.isEmpty()) expectedFile = "";
-		
-		if (expectedFile != null) try {
-			compareContent(name, expectedFile, actualFile);
+	private void compare(String name, LombokTestSource expected, String actualFile, LinkedHashSet<CompilerMessage> actualMessages, boolean printErrors, boolean skipCompareContent) throws Throwable {
+		if (!skipCompareContent) try {
+			compareContent(name, expected.getContent(), actualFile);
 		} catch (Throwable e) {
 			if (printErrors) {
 				System.out.println("***** " + name + " *****");
 				System.out.println(e.getMessage());
 				System.out.println("**** Expected ******");
-				System.out.println(expectedFile);
+				System.out.println(expected.getContent());
 				System.out.println("****  Actual  ******");
 				System.out.println(actualFile);
 				if (actualMessages != null && !actualMessages.isEmpty()) {
@@ -169,13 +173,13 @@ public abstract class AbstractRunTests {
 		}
 		
 		try {
-			compareMessages(name, expectedMessages, actualMessages);
+			compareMessages(name, expected.getMessages(), actualMessages);
 		} catch (Throwable e) {
 			if (printErrors) {
 				System.out.println("***** " + name + " *****");
 				System.out.println(e.getMessage());
 				System.out.println("**** Expected ******");
-				for (CompilerMessageMatcher expectedMessage : expectedMessages) {
+				for (CompilerMessageMatcher expectedMessage : expected.getMessages()) {
 					System.out.println(expectedMessage);
 				}
 				System.out.println("****  Actual  ******");
@@ -191,39 +195,55 @@ public abstract class AbstractRunTests {
 		}
 	}
 	
-	private static void compareMessages(String name, List<CompilerMessageMatcher> expected, LinkedHashSet<CompilerMessage> actual) {
+	@SuppressWarnings("null") /* eclipse bug; it falsely thinks stuffAc will always be null or some such hogwash. */
+	private static void compareMessages(String name, LombokImmutableList<CompilerMessageMatcher> expected, LinkedHashSet<CompilerMessage> actual) {
 		Iterator<CompilerMessageMatcher> expectedIterator = expected.iterator();
 		Iterator<CompilerMessage> actualIterator = actual.iterator();
 		
+		CompilerMessage stuffAc = null;
 		while (true) {
 			boolean exHasNext = expectedIterator.hasNext();
-			boolean acHasNext = actualIterator.hasNext();
+			boolean acHasNext = stuffAc != null || actualIterator.hasNext();
 			if (!exHasNext && !acHasNext) break;
 			if (exHasNext && acHasNext) {
 				CompilerMessageMatcher cmm = expectedIterator.next();
-				CompilerMessage cm = actualIterator.next();
+				CompilerMessage cm = stuffAc == null ? actualIterator.next() : stuffAc;
 				if (cmm.matches(cm)) continue;
+				if (cmm.isOptional()) stuffAc = cm;
 				fail(String.format("[%s] Expected message '%s' but got message '%s'", name, cmm, cm));
 				throw new AssertionError("fail should have aborted already.");
 			}
-			if (exHasNext) fail(String.format("[%s] Expected message '%s' but ran out of actual messages", name, expectedIterator.next()));
+			
+			while (expectedIterator.hasNext()) {
+				CompilerMessageMatcher next = expectedIterator.next();
+				if (next.isOptional()) continue;
+				fail(String.format("[%s] Expected message '%s' but ran out of actual messages", name, next));
+			}
 			if (acHasNext) fail(String.format("[%s] Unexpected message: %s", name, actualIterator.next()));
-			throw new AssertionError("fail should have aborted already.");
+			break;
 		}
 	}
 	
 	private static void compareContent(String name, String expectedFile, String actualFile) {
 		String[] expectedLines = expectedFile.split("(\\r?\\n)");
 		String[] actualLines = actualFile.split("(\\r?\\n)");
-		if (expectedLines[0].startsWith("// Generated by delombok at ")) {
-			expectedLines[0] = "";
+		
+		for (int i = 0; i < expectedLines.length; i++) {
+			if (expectedLines[i].isEmpty() || expectedLines[i].startsWith("//")) expectedLines[i] = "";
+			else break;
 		}
-		if (actualLines[0].startsWith("// Generated by delombok at ")) {
-			actualLines[0] = "";
+		for (int i = 0; i < actualLines.length; i++) {
+			if (actualLines[i].isEmpty() || actualLines[i].startsWith("//")) actualLines[i] = "";
+			else break;
 		}
 		expectedLines = removeBlanks(expectedLines);
 		actualLines = removeBlanks(actualLines);
+		
 		int size = Math.min(expectedLines.length, actualLines.length);
+		if (size == 0 && expectedLines.length + actualLines.length > 0) {
+			Assert.fail("Missing / empty expected file.");
+		}
+		
 		for (int i = 0; i < size; i++) {
 			String expected = trimRight(expectedLines[i]);
 			String actual = trimRight(actualLines[i]);

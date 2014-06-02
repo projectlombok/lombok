@@ -1,3 +1,7 @@
+.confType {
+	font-weight: bold;
+}
+
 body {
 	font-family: Verdana;
 	background-image: url(gradient.png);
@@ -125,6 +129,10 @@ dd {
 
 .snippet code {
 	font-size: 14px;
+}
+
+.snippet.example {
+	margin: 8px 16px 8px 16px;
 }
 
 .footer {

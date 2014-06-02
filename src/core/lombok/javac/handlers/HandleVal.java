@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2012 The Project Lombok Authors.
+ * Copyright (C) 2010-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,9 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
-
+import lombok.ConfigurationKeys;
 import lombok.val;
 import lombok.core.HandlerPriority;
 import lombok.javac.JavacASTAdapter;
@@ -54,6 +55,8 @@ public class HandleVal extends JavacASTAdapter {
 		JCTree source = local.vartype;
 		
 		if (!typeMatches(val.class, localNode, local.vartype)) return;
+		
+		handleFlagUsage(localNode, ConfigurationKeys.VAL_FLAG_USAGE, "val");
 		
 		JCTree parentRaw = localNode.directUp().get();
 		if (parentRaw instanceof JCForLoop) {
@@ -88,7 +91,11 @@ public class HandleVal extends JavacASTAdapter {
 			local.mods.annotations = local.mods.annotations == null ? List.of(valAnnotation) : local.mods.annotations.append(valAnnotation);
 		}
 		
-		local.vartype = JavacResolution.createJavaLangObject(localNode.getAst());
+		if (JavacResolution.platformHasTargetTyping()) {
+			local.vartype = localNode.getAst().getTreeMaker().Ident(localNode.getAst().toName("___Lombok_VAL_Attrib__"));
+		} else {
+			local.vartype = JavacResolution.createJavaLangObject(localNode.getAst());
+		}
 		
 		Type type;
 		try {

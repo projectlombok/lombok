@@ -33,7 +33,7 @@ public class EqualsAndHashCodeExample {
 		return result;
 	}
 	
-	public boolean canEqual(Object other) {
+	protected boolean canEqual(Object other) {
 		return other instanceof EqualsAndHashCodeExample;
 	}
 	
@@ -65,7 +65,7 @@ public class EqualsAndHashCodeExample {
 			return result;
 		}
 		
-		public boolean canEqual(Object other) {
+		protected boolean canEqual(Object other) {
 			return other instanceof Square;
 		}
 	}

@@ -38,7 +38,9 @@
 			why such a method is necessary are explained in this paper: <a href="http://www.artima.com/lejava/articles/equality.html">How to Write an Equality Method in Java</a>.
 			If all classes in a hierarchy are a mix of scala case classes and classes with lombok-generated equals methods, all equality will 'just work'.
 			If you need to write your own equals methods, you should always override <code>canEqual</code> if you change <code>equals</code> and <code>hashCode</code>.
-			</p>
+			</p><p>
+			<em>NEW in Lombok 1.14.0: </em>To put annotations on the <code>other</code> parameter of the <code>equals</code> (and, if relevant, <code>canEqual</code>) method, you can use <code>onParam=@__({@AnnotationsHere})</code>. Be careful though! This is an experimental feature. For more details see the documentation on the <a href="experimental/onX.html">onX</a> feature.
+
 		</div>
 		<div class="snippets">
 			<div class="pre">
@@ -52,6 +54,15 @@
 			</div>
 		</div>
 		<div style="clear: left;"></div>
+		<div class="overview confKeys">
+			<h3>Supported configuration keys:</h3>
+			<dl>
+			<dt><code>lombok.equalsAndHashCode.doNotUseGetters</code> = [<code>true</code> | <code>false</code>] (default: false)</dt>
+			<dd>If set to <code>true</code>, lombok will access fields directly instead of using getters (if available) when generating <code>equals</code> and <code>hashCode</code> methods. The annotation parameter '<code>doNotUseGetters</code>', if explicitly specified, takes precedence over this setting.</dd>
+			<dt><code>lombok.equalsAndHashCode.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)</dt>
+			<dd>Lombok will flag any usage of <code>@EqualsAndHashCode</code> as a warning or error if configured.</dd>
+			</dl>
+		</div>
 		<div class="overview">
 			<h3>Small print</h3><div class="smallprint">
 				<p>
@@ -65,9 +76,8 @@
 				return false. This is analogous to <code>java.lang.Double</code>'s equals method, and is in fact required to ensure that comparing an object
 				to an exact copy of itself returns <code>true</code> for equality.
 				</p><p>
-				If there is <em>any</em> method named either <code>hashCode</code>, <code>equals</code> or <code>canEqual</code>, regardless of
-				parameters or return type, no methods will be generated, and a warning is emitted instead. These 3 methods need to be in sync with
-				each other, which lombok cannot guarantee unless it generates all the methods, hence you always get a warning if one <em>or</em> more
+				If there is <em>any</em> method named either <code>hashCode</code> or <code>equals</code>, regardless of return type, no methods will be generated, and a warning is emitted instead. These 2 methods need to be in sync with
+				each other, which lombok cannot guarantee unless it generates all the methods, hence you always get a warning if one <em>or</em> both
 				of the methods already exist.
 				</p><p>
 				Attempting to exclude fields that don't exist or would have been excluded anyway (because they are static or transient) results in warnings on the named fields.
@@ -84,7 +94,7 @@
 		</div>
 		<div class="footer">
 			<a href="index.html">Back to features</a> | <a href="ToString.html">Previous feature (@ToString)</a> | <a href="Constructor.html">Next feature (@<em>X</em>Constructor)</a><br />
-			<a href="../credits.html" class="creditsLink">credits</a> | <span class="copyright">Copyright &copy; 2009-2013 The Project Lombok Authors, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.</span>
+			<a href="../credits.html" class="creditsLink">credits</a> | <span class="copyright">Copyright &copy; 2009-2014 The Project Lombok Authors, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.</span>
 		</div>
 		<div style="clear: both;"></div>
 	</div>

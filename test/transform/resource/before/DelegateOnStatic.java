@@ -1,4 +1,5 @@
-import lombok.Delegate;
+//skip compare content
+import lombok.experimental.Delegate;
 import lombok.Getter;
 
 class DelegateOnStatic {

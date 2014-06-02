@@ -21,11 +21,28 @@
  */
 package lombok.javac;
 
-import com.sun.tools.javac.main.OptionName;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import lombok.Lombok;
+
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Options;
 
 public class Javac6BasedLombokOptions extends LombokOptions {
+	private static final Method optionName_valueOf;
+	private static final Method options_put;
+	
+	static {
+		try {
+			Class<?> optionNameClass = Class.forName("com.sun.tools.javac.main.OptionName");
+			optionName_valueOf = optionNameClass.getMethod("valueOf", String.class);
+			options_put = Class.forName("com.sun.tools.javac.util.Options").getMethod("put", optionNameClass, String.class);
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Can't initialize Javac6-based lombok options due to reflection issue.", e);
+		}
+	}
+	
 	public static Javac6BasedLombokOptions replaceWithDelombokOptions(Context context) {
 		Options options = Options.instance(context);
 		context.put(optionsKey, (Options)null);
@@ -39,6 +56,12 @@ public class Javac6BasedLombokOptions extends LombokOptions {
 	}
 	
 	@Override public void putJavacOption(String optionName, String value) {
-		put(OptionName.valueOf(optionName), value);
+		try {
+			options_put.invoke(this, optionName_valueOf.invoke(null, optionName), value);
+		} catch (IllegalAccessException e) {
+			throw new IllegalArgumentException("Can't initialize Javac6-based lombok options due to reflection issue.", e);
+		} catch (InvocationTargetException e) {
+			throw Lombok.sneakyThrow(e.getCause());
+		}
 	}
 }

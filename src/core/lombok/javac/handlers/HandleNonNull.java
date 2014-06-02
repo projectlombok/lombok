@@ -21,6 +21,7 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
@@ -42,6 +43,7 @@ import com.sun.tools.javac.tree.JCTree.JCTry;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 
+import lombok.ConfigurationKeys;
 import lombok.NonNull;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
@@ -55,6 +57,8 @@ import static lombok.javac.JavacTreeMaker.TreeTag.*;
 @HandlerPriority(value = 512) // 2^9; onParameter=@__(@NonNull) has to run first.
 public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 	@Override public void handle(AnnotationValues<NonNull> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		handleFlagUsage(annotationNode, ConfigurationKeys.NON_NULL_FLAG_USAGE, "@NonNull");
+		
 		if (annotationNode.up().getKind() == Kind.FIELD) {
 			// This is meaningless unless the field is used to generate a method (@Setter, @RequiredArgsConstructor, etc),
 			// but in that case those handlers will take care of it. However, we DO check if the annotation is applied to
@@ -80,8 +84,6 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 			return;
 		}
 		
-//		if (JavacHandlerUtil.isGenerated(declaration)) return;
-		
 		if (declaration.body == null) {
 			annotationNode.addWarning("@NonNull is meaningless on a parameter of an abstract method.");
 			return;
@@ -91,7 +93,7 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 		// and if they exist, create a new method in the class: 'private static <T> T lombok$nullCheck(T expr, String msg) {if (expr == null) throw NPE; return expr;}' and
 		// wrap all references to it in the super/this to a call to this method.
 		
-		JCStatement nullCheck = recursiveSetGeneratedBy(generateNullCheck(annotationNode.getTreeMaker(), annotationNode.up()), ast, annotationNode.getContext());
+		JCStatement nullCheck = recursiveSetGeneratedBy(generateNullCheck(annotationNode.getTreeMaker(), annotationNode.up(), annotationNode), ast, annotationNode.getContext());
 		
 		if (nullCheck == null) {
 			// @NonNull applied to a primitive. Kinda pointless. Let's generate a warning.

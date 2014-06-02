@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2013 The Project Lombok Authors.
+ * Copyright (C) 2010-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,12 +52,12 @@ public class SneakyThrowsRemover implements PostCompilerTransformation {
 		
 		class SneakyThrowsRemoverVisitor extends MethodVisitor {
 			SneakyThrowsRemoverVisitor(MethodVisitor mv) {
-				super(Opcodes.ASM4, mv);
+				super(Opcodes.ASM5, mv);
 			}
 			
 			private boolean methodInsnQueued = false;
 			
-			@Override public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+			@Override public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
 				if (
 						opcode == Opcodes.INVOKESTATIC &&
 						"sneakyThrow".equals(name) &&
@@ -65,18 +65,18 @@ public class SneakyThrowsRemover implements PostCompilerTransformation {
 						"(Ljava/lang/Throwable;)Ljava/lang/RuntimeException;".equals(desc)) {
 					
 					if (System.getProperty("lombok.debugAsmOnly", null) != null) {
-						super.visitMethodInsn(opcode, owner, name, desc); // DEBUG for issue 470!
+						super.visitMethodInsn(opcode, owner, name, desc, itf); // DEBUG for issue 470!
 					} else {
 						methodInsnQueued = true;
 					}
 				} else {
-					super.visitMethodInsn(opcode, owner, name, desc);
+					super.visitMethodInsn(opcode, owner, name, desc, itf);
 				}
 			}
 			
 			private void handleQueue() {
 				if (!methodInsnQueued) return;
-				super.visitMethodInsn(Opcodes.INVOKESTATIC, "lombok/Lombok", "sneakyThrow", "(Ljava/lang/Throwable;)Ljava/lang/RuntimeException;");
+				super.visitMethodInsn(Opcodes.INVOKESTATIC, "lombok/Lombok", "sneakyThrow", "(Ljava/lang/Throwable;)Ljava/lang/RuntimeException;", false);
 				methodInsnQueued = false;
 				diagnostics.addWarning("Proper usage is: throw lombok.Lombok.sneakyThrow(someException);. You did not 'throw' it. Because of this, the call to sneakyThrow " +
 						"remains in your classfile and you will need lombok.jar on the classpath at runtime.");
@@ -177,7 +177,7 @@ public class SneakyThrowsRemover implements PostCompilerTransformation {
 			}
 		}
 		
-		reader.accept(new ClassVisitor(Opcodes.ASM4, writer) {
+		reader.accept(new ClassVisitor(Opcodes.ASM5, writer) {
 			@Override public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 				return new SneakyThrowsRemoverVisitor(super.visitMethod(access, name, desc, signature, exceptions));
 			}

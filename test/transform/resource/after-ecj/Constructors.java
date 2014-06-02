@@ -71,3 +71,10 @@
     return new RequiredArgsConstructorStaticNameGenerics2<T>(x);
   }
 }
+@lombok.AllArgsConstructor(access = lombok.AccessLevel.PACKAGE) class AllArgsConstructorPackageAccess {
+  final String x;
+  @java.lang.SuppressWarnings("all") AllArgsConstructorPackageAccess(final String x) {
+    super();
+    this.x = x;
+  }
+}

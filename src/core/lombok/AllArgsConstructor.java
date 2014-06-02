@@ -49,7 +49,7 @@ public @interface AllArgsConstructor {
 	String staticName() default "";
 	
 	/**
-	 * Any annotations listed here are put on the generated constructor. The syntax for this feature is: {@code @AllArgsConstructor(onConstructor=@_({@AnnotationsGoHere}))}
+	 * Any annotations listed here are put on the generated constructor. The syntax for this feature is: {@code @AllArgsConstructor(onConstructor=@__({@AnnotationsGoHere}))}
 	 */
 	AnyAnnotation[] onConstructor() default {};
 	
@@ -63,8 +63,7 @@ public @interface AllArgsConstructor {
 	 * However, this annotation is new in 1.6 which means those compiling for 1.5 will need
 	 * to set this value to true.
 	 * 
-	 * @deprecated Java 1.5 has already been end-of-lifed. As java 1.5 loses ground this
-	 *     method will eventually be removed.
+	 * @deprecated THIS FEATURE WILL BE REMOVED after March 31st 2015. Use configuration key {@link ConfigurationKeys#ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES} instead.
 	 */
 	@Deprecated
 	boolean suppressConstructorProperties() default false;

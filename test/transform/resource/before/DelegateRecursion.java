@@ -1,4 +1,5 @@
-import lombok.Delegate;
+//skip compare content: This test is to see if the 'delegate recursion is not supported' error pops up.
+import lombok.experimental.Delegate;
 class DelegateRecursionOuterMost {
 	@Delegate
 	private final DelegateRecursionCenter center = new DelegateRecursionCenter();

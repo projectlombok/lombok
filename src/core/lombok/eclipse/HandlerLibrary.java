@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,11 +33,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.WeakHashMap;
 
 import lombok.Lombok;
 import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
+import lombok.core.configuration.ConfigurationKeysLoader;
+import lombok.core.BooleanFieldAugment;
 import lombok.core.HandlerPriority;
 import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
@@ -58,7 +59,9 @@ public class HandlerLibrary {
 	 * Creates a new HandlerLibrary. Errors will be reported to the Eclipse Error log.
 	 * You probably want to use {@link #load()} instead.
 	 */
-	public HandlerLibrary() {}
+	public HandlerLibrary() {
+		ConfigurationKeysLoader.LoaderLoader.loadAllConfigurationKeys();
+	}
 	
 	private TypeLibrary typeLibrary = new TypeLibrary();
 	
@@ -170,7 +173,7 @@ public class HandlerLibrary {
 				}
 			}
 		} catch (IOException e) {
-			Lombok.sneakyThrow(e);
+			throw Lombok.sneakyThrow(e);
 		}
 	}
 	
@@ -185,19 +188,14 @@ public class HandlerLibrary {
 		}
 	}
 	
-	private static final Map<ASTNode, Object> handledMap = new WeakHashMap<ASTNode, Object>();
-	private static final Object MARKER = new Object();
+	private static final BooleanFieldAugment<ASTNode> handled = BooleanFieldAugment.augment(ASTNode.class, "lombok$handled");
 	
 	private boolean checkAndSetHandled(ASTNode node) {
-		synchronized (handledMap) {
-			return handledMap.put(node, MARKER) != MARKER;
-		}
+		return !handled.set(node);
 	}
 	
 	private boolean needsHandling(ASTNode node) {
-		synchronized (handledMap) {
-			return handledMap.get(node) != MARKER;
-		}
+		return !handled.get(node);
 	}
 	
 	/**

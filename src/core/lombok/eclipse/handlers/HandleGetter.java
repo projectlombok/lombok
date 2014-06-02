@@ -21,6 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
@@ -32,11 +33,11 @@ import java.util.List;
 import java.util.Map;
 
 import lombok.AccessLevel;
-import lombok.Delegate;
+import lombok.ConfigurationKeys;
+import lombok.experimental.Delegate;
 import lombok.Getter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.core.TransformationsUtil;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.agent.PatchDelegate;
@@ -132,14 +133,16 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	}
 	
 	public void handle(AnnotationValues<Getter> annotation, Annotation ast, EclipseNode annotationNode) {
+		handleFlagUsage(annotationNode, ConfigurationKeys.GETTER_FLAG_USAGE, "@Getter");
+		
 		EclipseNode node = annotationNode.up();
 		Getter annotationInstance = annotation.getInstance();
 		AccessLevel level = annotationInstance.value();
 		boolean lazy = annotationInstance.lazy();
+		if (lazy) handleFlagUsage(annotationNode, ConfigurationKeys.GETTER_LAZY_FLAG_USAGE, "@Getter(lazy=true)");
+		
 		if (level == AccessLevel.NONE) {
-			if (lazy) {
-				annotationNode.addWarning("'lazy' does not work with AccessLevel.NONE.");
-			}
+			if (lazy) annotationNode.addWarning("'lazy' does not work with AccessLevel.NONE.");
 			return;
 		}
 		
@@ -269,8 +272,8 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 			
 			Annotation[] copiedAnnotations = copyAnnotations(source,
 					onMethod.toArray(new Annotation[0]),
-					findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN),
-					findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN),
+					findAnnotations(field, NON_NULL_PATTERN),
+					findAnnotations(field, NULLABLE_PATTERN),
 					findDelegatesAndMarkAsHandled(fieldNode),
 					deprecated);
 			

@@ -46,10 +46,10 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
 import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
-import lombok.core.TransformationsUtil;
 import lombok.experimental.Builder;
 import lombok.experimental.NonFinal;
 import lombok.javac.JavacAnnotationHandler;
@@ -65,6 +65,8 @@ import static lombok.javac.JavacTreeMaker.TypeTag.*;
 @HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
 public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	@Override public void handle(AnnotationValues<Builder> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.BUILDER_FLAG_USAGE, "@Builder");
+		
 		Builder builderInstance = annotation.getInstance();
 		String builderMethodName = builderInstance.builderMethodName();
 		String buildMethodName = builderInstance.buildMethodName();
@@ -111,8 +113,8 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				typesOfParameters.add(fd.vartype);
 				allFields.append(fieldNode);
 			}
-
-			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, List.<JCAnnotation>nil(), allFields.toList(), null, SkipIfConstructorExists.I_AM_BUILDER, true, annotationNode);
+			
+			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, List.<JCAnnotation>nil(), allFields.toList(), null, SkipIfConstructorExists.I_AM_BUILDER, null, annotationNode);
 
 			returnType = namePlusTypeParamsToTypeReference(tdParent.getTreeMaker(), td.name, td.typarams);
 			typeParams = td.typarams;
@@ -191,12 +193,12 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		java.util.List<JavacNode> fieldNodes = addFieldsToBuilder(builderType, namesOfParameters, typesOfParameters, ast);
 		java.util.List<JCMethodDecl> newMethods = new ArrayList<JCMethodDecl>();
 		for (JavacNode fieldNode : fieldNodes) {
-			JCMethodDecl newMethod = makeSetterMethodForBuilder(builderType, fieldNode, ast, builderInstance.fluent(), builderInstance.chain());
+			JCMethodDecl newMethod = makeSetterMethodForBuilder(builderType, fieldNode, annotationNode, builderInstance.fluent(), builderInstance.chain());
 			if (newMethod != null) newMethods.add(newMethod);
 		}
 
 		if (constructorExists(builderType) == MemberExistsResult.NOT_EXISTS) {
-			JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PACKAGE, List.<JCAnnotation>nil(), builderType, List.<JavacNode>nil(), true, ast);
+			JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PACKAGE, List.<JCAnnotation>nil(), builderType, List.<JavacNode>nil(), null, annotationNode);
 			if (cd != null) injectMethod(builderType, cd);
 		}
 
@@ -295,9 +297,8 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		Collections.reverse(out);
 		return out;
 	}
-
-
-	public JCMethodDecl makeSetterMethodForBuilder(JavacNode builderType, JavacNode fieldNode, JCTree source, boolean fluent, boolean chain) {
+	
+	public JCMethodDecl makeSetterMethodForBuilder(JavacNode builderType, JavacNode fieldNode, JavacNode source, boolean fluent, boolean chain) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
 
 		for (JavacNode child : builderType.down()) {
@@ -307,8 +308,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 
 		boolean isBoolean = isBoolean(fieldNode);
-		String setterName = fluent ? fieldNode.getName() : TransformationsUtil.toSetterName(null, fieldNode.getName(), isBoolean);
-
+		String setterName = fluent ? fieldNode.getName() : toSetterName(builderType.getAst(), null, fieldNode.getName(), isBoolean);
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		return HandleSetter.createSetter(Flags.PUBLIC, fieldNode, maker, setterName, chain, source, List.<JCAnnotation>nil(), List.<JCAnnotation>nil(),false,false,null);
 	}

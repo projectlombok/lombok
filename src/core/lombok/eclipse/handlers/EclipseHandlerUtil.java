@@ -22,10 +22,9 @@
 package lombok.eclipse.handlers;
 
 import static lombok.eclipse.Eclipse.*;
-import static lombok.core.TransformationsUtil.*;
+import static lombok.core.handlers.HandlerUtil.*;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -35,17 +34,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Lombok;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValue;
-import lombok.core.TransformationsUtil;
+import lombok.core.BooleanFieldAugment;
+import lombok.core.ReferenceFieldAugment;
 import lombok.core.TypeResolver;
+import lombok.core.configuration.NullCheckExceptionType;
+import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.Accessors;
@@ -211,28 +213,11 @@ public class EclipseHandlerUtil {
 			log.log(new Status(msgType, bundleName, message, error));
 		}
 	}
-
-	private static Field generatedByField;
-
-	static {
-		try {
-			generatedByField = ASTNode.class.getDeclaredField("$generatedBy");
-		} catch (Throwable t) {
-			//ignore - no $generatedBy exists when running in ecj.
-		}
-	}
-
-	private static Map<ASTNode, ASTNode> generatedNodes = new WeakHashMap<ASTNode, ASTNode>();
-
+	
+	private static ReferenceFieldAugment<ASTNode, ASTNode> generatedNodes = ReferenceFieldAugment.augment(ASTNode.class, ASTNode.class, "$generatedBy");
+	
 	public static ASTNode getGeneratedBy(ASTNode node) {
-		if (generatedByField != null) {
-			try {
-				return (ASTNode) generatedByField.get(node);
-			} catch (Exception e) {}
-		}
-		synchronized (generatedNodes) {
-			return generatedNodes.get(node);
-		}
+		return generatedNodes.get(node);
 	}
 
 	public static boolean isGenerated(ASTNode node) {
@@ -240,15 +225,7 @@ public class EclipseHandlerUtil {
 	}
 
 	public static ASTNode setGeneratedBy(ASTNode node, ASTNode source) {
-		if (generatedByField != null) {
-			try {
-				generatedByField.set(node, source);
-				return node;
-			} catch (Exception e) {}
-		}
-		synchronized (generatedNodes) {
-			generatedNodes.put(node, source);
-		}
+		generatedNodes.set(node, source);
 		return node;
 	}
 
@@ -869,13 +846,12 @@ public class EclipseHandlerUtil {
 			this.type = type;
 		}
 	}
-
-	private static final Map<FieldDeclaration, Object> generatedLazyGettersWithPrimitiveBoolean = new WeakHashMap<FieldDeclaration, Object>();
-	private static final Object MARKER = new Object();
-
+	
+	private static final BooleanFieldAugment<FieldDeclaration> generatedLazyGettersWithPrimitiveBoolean = BooleanFieldAugment.augment(FieldDeclaration.class, "lombok$booleanLazyGetter");
+	
 	static void registerCreatedLazyGetter(FieldDeclaration field, char[] methodName, TypeReference returnType) {
 		if (isBoolean(returnType)) {
-			generatedLazyGettersWithPrimitiveBoolean.put(field, MARKER);
+			generatedLazyGettersWithPrimitiveBoolean.set(field);
 		}
 	}
 
@@ -885,7 +861,7 @@ public class EclipseHandlerUtil {
 
 	private static GetterMethod findGetter(EclipseNode field) {
 		FieldDeclaration fieldDeclaration = (FieldDeclaration) field.get();
-		boolean forceBool = generatedLazyGettersWithPrimitiveBoolean.containsKey(fieldDeclaration);
+		boolean forceBool = generatedLazyGettersWithPrimitiveBoolean.get(fieldDeclaration);
 		TypeReference fieldType = fieldDeclaration.type;
 		boolean isBoolean = forceBool || isBoolean(fieldType);
 
@@ -1048,7 +1024,7 @@ public class EclipseHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toAllGetterNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static List<String> toAllGetterNames(EclipseNode field, boolean isBoolean) {
-		return TransformationsUtil.toAllGetterNames(getAccessorsForField(field), field.getName(), isBoolean);
+		return HandlerUtil.toAllGetterNames(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean);
 	}
 
 	/**
@@ -1057,7 +1033,7 @@ public class EclipseHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toGetterName(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static String toGetterName(EclipseNode field, boolean isBoolean) {
-		return TransformationsUtil.toGetterName(getAccessorsForField(field), field.getName(), isBoolean);
+		return HandlerUtil.toGetterName(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean);
 	}
 
 	/**
@@ -1065,7 +1041,7 @@ public class EclipseHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toAllSetterNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static java.util.List<String> toAllSetterNames(EclipseNode field, boolean isBoolean) {
-		return TransformationsUtil.toAllSetterNames(getAccessorsForField(field), field.getName(), isBoolean);
+		return HandlerUtil.toAllSetterNames(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean);
 	}
 
 	/**
@@ -1074,7 +1050,7 @@ public class EclipseHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toSetterName(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static String toSetterName(EclipseNode field, boolean isBoolean) {
-		return TransformationsUtil.toSetterName(getAccessorsForField(field), field.getName(), isBoolean);
+		return HandlerUtil.toSetterName(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean);
 	}
 
 	/**
@@ -1082,7 +1058,7 @@ public class EclipseHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toAllWitherNames(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static java.util.List<String> toAllWitherNames(EclipseNode field, boolean isBoolean) {
-		return TransformationsUtil.toAllWitherNames(getAccessorsForField(field), field.getName(), isBoolean);
+		return HandlerUtil.toAllWitherNames(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean);
 	}
 
 	/**
@@ -1091,19 +1067,17 @@ public class EclipseHandlerUtil {
 	 * Convenient wrapper around {@link TransformationsUtil#toWitherName(lombok.core.AnnotationValues, CharSequence, boolean)}.
 	 */
 	public static String toWitherName(EclipseNode field, boolean isBoolean) {
-		return TransformationsUtil.toWitherName(getAccessorsForField(field), field.getName(), isBoolean);
+		return HandlerUtil.toWitherName(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean);
 	}
 
 	/**
 	 * When generating a setter, the setter either returns void (beanspec) or Self (fluent).
-	 * This method scans for the {@code Accessors} annotation to figure that out.
+	 * This method scans for the {@code Accessors} annotation and associated config properties to figure that out.
 	 */
 	public static boolean shouldReturnThis(EclipseNode field) {
 		if ((((FieldDeclaration) field.get()).modifiers & ClassFileConstants.AccStatic) != 0) return false;
 		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
-		boolean forced = (accessors.getActualExpression("chain") != null);
-		Accessors instance = accessors.getInstance();
-		return instance.chain() || (instance.fluent() && !forced);
+		return shouldReturnThis0(accessors, field.getAst());
 	}
 
 
@@ -1154,10 +1128,11 @@ public class EclipseHandlerUtil {
 	}
 
 	public static char[] removePrefixFromField(EclipseNode field) {
-		String[] prefixes = null;
+		List<String> prefixes = null;
 		for (EclipseNode node : field.down()) {
 			if (annotationTypeMatches(Accessors.class, node)) {
-				prefixes = createAnnotation(Accessors.class, node).getInstance().prefix();
+				AnnotationValues<Accessors> ann = createAnnotation(Accessors.class, node);
+				if (ann.isExplicit("prefix")) prefixes = Arrays.asList(ann.getInstance().prefix());
 				break;
 			}
 		}
@@ -1168,16 +1143,18 @@ public class EclipseHandlerUtil {
 			while (current != null) {
 				for (EclipseNode node : current.down()) {
 					if (annotationTypeMatches(Accessors.class, node)) {
-						prefixes = createAnnotation(Accessors.class, node).getInstance().prefix();
+						AnnotationValues<Accessors> ann = createAnnotation(Accessors.class, node);
+						if (ann.isExplicit("prefix")) prefixes = Arrays.asList(ann.getInstance().prefix());
 						break outer;
 					}
 				}
 				current = current.up();
 			}
 		}
-
-		if (prefixes != null && prefixes.length > 0) {
-			CharSequence newName = TransformationsUtil.removePrefix(field.getName(), prefixes);
+		
+		if (prefixes == null) prefixes = field.getAst().readConfiguration(ConfigurationKeys.ACCESSORS_PREFIX);
+		if (!prefixes.isEmpty()) {
+			CharSequence newName = removePrefix(field.getName(), prefixes);
 			if (newName != null) return newName.toString().toCharArray();
 		}
 
@@ -1448,19 +1425,33 @@ public class EclipseHandlerUtil {
 	}
 
 	/**
-	 * Generates a new statement that checks if the given variable is null, and if so, throws a {@code NullPointerException} with the
+	 * Generates a new statement that checks if the given variable is null, and if so, throws a specified exception with the
 	 * variable name as message.
+	 * 
+	 * @param exName The name of the exception to throw; normally {@code java.lang.NullPointerException}.
 	 */
-	public static Statement generateNullCheck(AbstractVariableDeclaration variable, ASTNode source) {
+	public static Statement generateNullCheck(AbstractVariableDeclaration variable, EclipseNode sourceNode) {
+		NullCheckExceptionType exceptionType = sourceNode.getAst().readConfiguration(ConfigurationKeys.NON_NULL_EXCEPTION_TYPE);
+		if (exceptionType == null) exceptionType = NullCheckExceptionType.NULL_POINTER_EXCEPTION;
+		
+		ASTNode source = sourceNode.get();
+		
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 
 		if (isPrimitive(variable.type)) return null;
 		AllocationExpression exception = new AllocationExpression();
 		setGeneratedBy(exception, source);
-		exception.type = new QualifiedTypeReference(fromQualifiedName("java.lang.NullPointerException"), new long[]{p, p, p});
+		int partCount = 0;
+		String exceptionTypeStr = exceptionType.getExceptionType();
+		for (int i = 0; i < exceptionTypeStr.length(); i++) if (exceptionTypeStr.charAt(i) == '.') partCount++;
+		long[] ps = new long[partCount];
+		Arrays.fill(ps, 0L);
+		exception.type = new QualifiedTypeReference(fromQualifiedName(exceptionTypeStr), ps);
 		setGeneratedBy(exception.type, source);
-		exception.arguments = new Expression[] { new StringLiteral(variable.name, pS, pE, 0)};
+		exception.arguments = new Expression[] {
+				new StringLiteral(exceptionType.toExceptionMessage(new String(variable.name)).toCharArray(), pS, pE, 0)
+		};
 		setGeneratedBy(exception.arguments[0], source);
 		ThrowStatement throwStatement = new ThrowStatement(exception, pS, pE);
 		setGeneratedBy(throwStatement, source);

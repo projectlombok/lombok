@@ -30,3 +30,6 @@
 	final Class<T> x;
 	String name;
 }
+@lombok.AllArgsConstructor(access=lombok.AccessLevel.PACKAGE) class AllArgsConstructorPackageAccess {
+	final String x;
+}

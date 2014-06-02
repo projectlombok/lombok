@@ -28,12 +28,15 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+
+import lombok.core.configuration.ConfigurationKey;
 
 /**
  * Lombok wraps the AST produced by a target platform into its own AST system, mostly because both Eclipse and javac
@@ -63,6 +66,13 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 		this.packageDeclaration = packageDeclaration;
 		this.imports = imports;
 	}
+	
+	/**
+	 * Attempts to find the absolute path (in URI form) to the source file represented by this AST.
+	 * 
+	 * May return {@code null} if this cannot be done. We don't yet know under which conditions this will happen.
+	 */
+	public abstract URI getAbsoluteFileLocation();
 	
 	public void setChanged() {
 		this.changed = true;
@@ -377,7 +387,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 				buildWithCollection(nodeType, o, list, fa.dim);
 			}
 		} catch (IllegalAccessException e) {
-			sneakyThrow(e);
+			throw sneakyThrow(e);
 		}
 	}
 	
@@ -406,5 +416,9 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 		} else for (Object v : (Collection<?>)collection) {
 			buildWithCollection(nodeType, v, list, dim-1);
 		}
+	}
+	
+	public final <T> T readConfiguration(ConfigurationKey<T> key) {
+		return LombokConfiguration.read(key, this);
 	}
 }

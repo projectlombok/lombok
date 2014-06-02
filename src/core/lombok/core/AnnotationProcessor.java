@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -63,8 +61,8 @@ public class AnnotationProcessor extends AbstractProcessor {
 	private final List<ProcessorDescriptor> active = new ArrayList<ProcessorDescriptor>();
 	private final List<String> delayedWarnings = new ArrayList<String>();
 	
-	private static final Map<ClassLoader, Boolean> lombokAlreadyAddedTo = new WeakHashMap<ClassLoader, Boolean>();
-	
+	private static final BooleanFieldAugment<ClassLoader> lombokAlreadyAddedTo = BooleanFieldAugment.augment(ClassLoader.class, "lombok$alreadyAddedTo");
+			
 	static class JavacDescriptor extends ProcessorDescriptor {
 		private Processor processor;
 		
@@ -100,7 +98,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		private ClassLoader findAndPatchClassLoader(ProcessingEnvironment procEnv) throws Exception {
 			ClassLoader environmentClassLoader = procEnv.getClass().getClassLoader();
 			if (environmentClassLoader != null && environmentClassLoader.getClass().getCanonicalName().equals("org.codehaus.plexus.compiler.javac.IsolatedClassLoader")) {
-				if (lombokAlreadyAddedTo.put(environmentClassLoader, true) == null) {
+				if (!lombokAlreadyAddedTo.set(environmentClassLoader)) {
 					Method m = environmentClassLoader.getClass().getDeclaredMethod("addURL", URL.class);
 					URL selfUrl = new File(ClassRootFinder.findClassRootOfClass(AnnotationProcessor.class)).toURI().toURL();
 					m.invoke(environmentClassLoader, selfUrl);

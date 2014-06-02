@@ -21,6 +21,7 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
 import static lombok.javac.JavacTreeMaker.TypeTag.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
@@ -31,11 +32,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import lombok.AccessLevel;
-import lombok.Delegate;
+import lombok.ConfigurationKeys;
+import lombok.experimental.Delegate;
 import lombok.Getter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.core.TransformationsUtil;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -127,6 +128,8 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	}
 	
 	@Override public void handle(AnnotationValues<Getter> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		handleFlagUsage(annotationNode, ConfigurationKeys.GETTER_FLAG_USAGE, "@Getter");
+		
 		Collection<JavacNode> fields = annotationNode.upFromAnnotationToFields();
 		deleteAnnotationIfNeccessary(annotationNode, Getter.class);
 		deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
@@ -134,10 +137,10 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		Getter annotationInstance = annotation.getInstance();
 		AccessLevel level = annotationInstance.value();
 		boolean lazy = annotationInstance.lazy();
+		if (lazy) handleFlagUsage(annotationNode, ConfigurationKeys.GETTER_LAZY_FLAG_USAGE, "@Getter(lazy=true)");
+		
 		if (level == AccessLevel.NONE) {
-			if (lazy) {
-				annotationNode.addWarning("'lazy' does not work with AccessLevel.NONE.");
-			}
+			if (lazy) annotationNode.addWarning("'lazy' does not work with AccessLevel.NONE.");
 			return;
 		}
 		
@@ -239,8 +242,8 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		List<JCExpression> throwsClauses = List.nil();
 		JCExpression annotationMethodDefaultValue = null;
 		
-		List<JCAnnotation> nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
-		List<JCAnnotation> nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
+		List<JCAnnotation> nonNulls = findAnnotations(field, NON_NULL_PATTERN);
+		List<JCAnnotation> nullables = findAnnotations(field, NULLABLE_PATTERN);
 		
 		List<JCAnnotation> delegates = findDelegatesAndRemoveFromField(field);
 		

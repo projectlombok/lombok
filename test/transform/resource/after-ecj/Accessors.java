@@ -86,7 +86,7 @@ class AccessorsChain {
         return false;
     return true;
   }
-  public @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
     return (other instanceof AccessorsPrefix3);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {

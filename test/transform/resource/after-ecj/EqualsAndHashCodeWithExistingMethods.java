@@ -21,7 +21,28 @@ final @lombok.EqualsAndHashCode(callSuper = true) class EqualsAndHashCodeWithExi
   EqualsAndHashCodeWithExistingMethods3() {
     super();
   }
-  public boolean canEqual(Object other) {
+  private boolean canEqual(Object other) {
     return true;
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+    if ((o == this))
+        return true;
+    if ((! (o instanceof EqualsAndHashCodeWithExistingMethods3)))
+        return false;
+    final @java.lang.SuppressWarnings("all") EqualsAndHashCodeWithExistingMethods3 other = (EqualsAndHashCodeWithExistingMethods3) o;
+    if ((! other.canEqual((java.lang.Object) this)))
+        return false;
+    if ((! super.equals(o)))
+        return false;
+    if ((this.x != other.x))
+        return false;
+    return true;
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+    final int PRIME = 59;
+    int result = 1;
+    result = ((result * PRIME) + super.hashCode());
+    result = ((result * PRIME) + this.x);
+    return result;
   }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2013 The Project Lombok Authors.
+ * Copyright (C) 2011-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,8 @@ package lombok.javac;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
+
+import lombok.core.ReferenceFieldAugment;
 
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -33,24 +33,24 @@ import com.sun.tools.javac.util.Context;
 
 public class CommentCatcher {
 	private final JavaCompiler compiler;
-	private final Map<JCCompilationUnit, List<CommentInfo>> commentsMap;
+	private final ReferenceFieldAugment<JCCompilationUnit, List<CommentInfo>> commentsField;
 	
 	public static CommentCatcher create(Context context) {
 		registerCommentsCollectingScannerFactory(context);
 		JavaCompiler compiler = new JavaCompiler(context);
 		
-		Map<JCCompilationUnit, List<CommentInfo>> commentsMap = new WeakHashMap<JCCompilationUnit, List<CommentInfo>>();
-		setInCompiler(compiler, context, commentsMap);
+		ReferenceFieldAugment<JCCompilationUnit, List<CommentInfo>> comments = ReferenceFieldAugment.augment(JCCompilationUnit.class, List.class, "lombok$comments");
+		setInCompiler(compiler, context, comments);
 		
 		compiler.keepComments = true;
 		compiler.genEndPos = true;
 		
-		return new CommentCatcher(compiler, commentsMap);
+		return new CommentCatcher(compiler, comments);
 	}
 	
-	private CommentCatcher(JavaCompiler compiler, Map<JCCompilationUnit, List<CommentInfo>> commentsMap) {
+	private CommentCatcher(JavaCompiler compiler, ReferenceFieldAugment<JCCompilationUnit, List<CommentInfo>> commentsField) {
 		this.compiler = compiler;
-		this.commentsMap = commentsMap;
+		this.commentsField = commentsField;
 	}
 	
 	public JavaCompiler getCompiler() {
@@ -59,14 +59,14 @@ public class CommentCatcher {
 	
 	public void setComments(JCCompilationUnit ast, List<CommentInfo> comments) {
 		if (comments != null) {
-			commentsMap.put(ast, comments);
+			commentsField.set(ast, comments);
 		} else {
-			commentsMap.remove(ast);
+			commentsField.clear(ast);
 		}
 	}
 	
 	public List<CommentInfo> getComments(JCCompilationUnit ast) {
-		List<CommentInfo> list = commentsMap.get(ast);
+		List<CommentInfo> list = commentsField.get(ast);
 		return list == null ? Collections.<CommentInfo>emptyList() : list;
 	}
 	
@@ -89,7 +89,7 @@ public class CommentCatcher {
 		}
 	}
 	
-	private static void setInCompiler(JavaCompiler compiler, Context context, Map<JCCompilationUnit, List<CommentInfo>> commentsMap) {
+	private static void setInCompiler(JavaCompiler compiler, Context context, ReferenceFieldAugment<JCCompilationUnit, List<CommentInfo>> commentsField) {
 		try {
 			Class<?> parserFactory;
 			int javaCompilerVersion = Javac.getJavaCompilerVersion();
@@ -100,7 +100,7 @@ public class CommentCatcher {
 			} else {
 				parserFactory = Class.forName("lombok.javac.java8.CommentCollectingParserFactory");
 			}
-			parserFactory.getMethod("setInCompiler", JavaCompiler.class, Context.class, Map.class).invoke(null, compiler, context, commentsMap);
+			parserFactory.getMethod("setInCompiler", JavaCompiler.class, Context.class, ReferenceFieldAugment.class).invoke(null, compiler, context, commentsField);
 		} catch (InvocationTargetException e) {
 			throw Javac.sneakyThrow(e.getCause());
 		} catch (Exception e) {

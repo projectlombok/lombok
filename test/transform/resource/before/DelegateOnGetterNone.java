@@ -1,5 +1,5 @@
 import lombok.AccessLevel;
-import lombok.Delegate;
+import lombok.experimental.Delegate;
 import lombok.Getter;
 
 @Getter

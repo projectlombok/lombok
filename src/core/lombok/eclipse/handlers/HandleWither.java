@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 The Project Lombok Authors.
+ * Copyright (C) 2012-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
@@ -31,9 +32,9 @@ import java.util.Collections;
 import java.util.List;
 
 import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.core.TransformationsUtil;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseHandlerUtil.FieldAccess;
@@ -87,7 +88,7 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 			//Skip final fields.
 			if ((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0 && fieldDecl.initialization != null) continue;
 			
-			generateWitherForField(field, pos.get(), level);
+			generateWitherForField(field, pos, level);
 		}
 		return true;
 	}
@@ -105,7 +106,7 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 	 * If not, the wither is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
 	 */
-	public void generateWitherForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level) {
+	public void generateWitherForField(EclipseNode fieldNode, EclipseNode sourceNode, AccessLevel level) {
 		for (EclipseNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				if (annotationTypeMatches(Wither.class, child)) {
@@ -116,10 +117,12 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		}
 		
 		List<Annotation> empty = Collections.emptyList();
-		createWitherForField(level, fieldNode, fieldNode, pos, false, empty, empty);
+		createWitherForField(level, fieldNode, sourceNode, false, empty, empty);
 	}
 	
 	@Override public void handle(AnnotationValues<Wither> annotation, Annotation ast, EclipseNode annotationNode) {
+		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.WITHER_FLAG_USAGE, "@Wither");
+		
 		EclipseNode node = annotationNode.up();
 		AccessLevel level = annotation.getInstance().value();
 		if (level == AccessLevel.NONE || node == null) return;
@@ -129,7 +132,7 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		
 		switch (node.getKind()) {
 		case FIELD:
-			createWitherForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true, onMethod, onParam);
+			createWitherForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, true, onMethod, onParam);
 			break;
 		case TYPE:
 			if (!onMethod.isEmpty()) {
@@ -143,18 +146,20 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		}
 	}
 	
-	public void createWitherForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam) {
+	public void createWitherForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode sourceNode, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam) {
 		for (EclipseNode fieldNode : fieldNodes) {
-			createWitherForField(level, fieldNode, errorNode, source, whineIfExists, onMethod, onParam);
+			createWitherForField(level, fieldNode, sourceNode, whineIfExists, onMethod, onParam);
 		}
 	}
 	
 	public void createWitherForField(
-			AccessLevel level, EclipseNode fieldNode, EclipseNode errorNode,
-			ASTNode source, boolean whineIfExists, List<Annotation> onMethod,
+			AccessLevel level, EclipseNode fieldNode, EclipseNode sourceNode,
+			boolean whineIfExists, List<Annotation> onMethod,
 			List<Annotation> onParam) {
+		
+		ASTNode source = sourceNode.get();
 		if (fieldNode.getKind() != Kind.FIELD) {
-			errorNode.addError("@Wither is only supported on a class or a field.");
+			sourceNode.addError("@Wither is only supported on a class or a field.");
 			return;
 		}
 		
@@ -164,22 +169,22 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		String witherName = toWitherName(fieldNode, isBoolean);
 		
 		if (witherName == null) {
-			errorNode.addWarning("Not generating wither for this field: It does not fit your @Accessors prefix list.");
+			fieldNode.addWarning("Not generating wither for this field: It does not fit your @Accessors prefix list.");
 			return;
 		}
 		
 		if ((field.modifiers & ClassFileConstants.AccStatic) != 0) {
-			errorNode.addWarning("Not generating wither for this field: Withers cannot be generated for static fields.");
+			fieldNode.addWarning("Not generating wither for this field: Withers cannot be generated for static fields.");
 			return;
 		}
 		
 		if ((field.modifiers & ClassFileConstants.AccFinal) != 0 && field.initialization != null) {
-			errorNode.addWarning("Not generating wither for this field: Withers cannot be generated for final, initialized fields.");
+			fieldNode.addWarning("Not generating wither for this field: Withers cannot be generated for final, initialized fields.");
 			return;
 		}
 		
 		if (field.name != null && field.name.length > 0 && field.name[0] == '$') {
-			errorNode.addWarning("Not generating wither for this field: Withers cannot be generated for fields starting with $.");
+			fieldNode.addWarning("Not generating wither for this field: Withers cannot be generated for fields starting with $.");
 			return;
 		}
 		
@@ -191,7 +196,7 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 				if (whineIfExists) {
 					String altNameExpl = "";
 					if (!altName.equals(witherName)) altNameExpl = String.format(" (%s)", altName);
-					errorNode.addWarning(
+					fieldNode.addWarning(
 						String.format("Not generating %s(): A method with that name already exists%s", witherName, altNameExpl));
 				}
 				return;
@@ -203,11 +208,12 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		
 		int modifier = toEclipseModifier(level);
 		
-		MethodDeclaration method = createWither((TypeDeclaration) fieldNode.up().get(), fieldNode, witherName, modifier, source, onMethod, onParam);
+		MethodDeclaration method = createWither((TypeDeclaration) fieldNode.up().get(), fieldNode, witherName, modifier, sourceNode, onMethod, onParam);
 		injectMethod(fieldNode.up(), method);
 	}
 	
-	public MethodDeclaration createWither(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, ASTNode source, List<Annotation> onMethod, List<Annotation> onParam) {
+	public MethodDeclaration createWither(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {
+		ASTNode source = sourceNode.get();
 		if (name == null) return null;
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		int pS = source.sourceStart, pE = source.sourceEnd;
@@ -266,11 +272,11 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
 		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
 		
-		Annotation[] nonNulls = findAnnotations(field, TransformationsUtil.NON_NULL_PATTERN);
-		Annotation[] nullables = findAnnotations(field, TransformationsUtil.NULLABLE_PATTERN);
+		Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
+		Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
 		List<Statement> statements = new ArrayList<Statement>(5);
 		if (nonNulls.length > 0) {
-			Statement nullCheck = generateNullCheck(field, source);
+			Statement nullCheck = generateNullCheck(field, sourceNode);
 			if (nullCheck != null) statements.add(nullCheck);
 		}
 		statements.add(returnStatement);

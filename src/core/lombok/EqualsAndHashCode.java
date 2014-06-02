@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,4 +61,19 @@ public @interface EqualsAndHashCode {
 	 * <strong>default: false</strong>
 	 */
 	boolean doNotUseGetters() default false;
+	
+	/**
+	 * Any annotations listed here are put on the generated parameter of {@code equals} and {@code canEqual}. The syntax for this feature is: {@code @EqualsAndHashCode(onParam=@__({@AnnotationsGoHere}))}
+	 * This is useful to add for example a {@code Nullable} annotation.
+	 */
+	AnyAnnotation[] onParam() default {};
+	
+	/**
+	 * Placeholder annotation to enable the placement of annotations on the generated code.
+	 * @deprecated Don't use this annotation, ever - Read the documentation.
+	 */
+	@Deprecated
+	@Retention(RetentionPolicy.SOURCE)
+	@Target({})
+	@interface AnyAnnotation {}
 }

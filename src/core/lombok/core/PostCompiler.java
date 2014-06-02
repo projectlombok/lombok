@@ -43,7 +43,7 @@ public final class PostCompiler {
 					previous = next;
 				}
 			} catch (Exception e) {
-				diagnostics.addWarning(String.format("Error during the transformation of '%s'; post-compiler '%s' caused an exception: %s", fileName, transformation.getClass().getName(), e.getMessage()));
+				diagnostics.addWarning(String.format("Error during the transformation of '%s'; post-compiler '%s' caused an exception: %s", fileName, transformation.getClass().getName(), e));
 			}
 		}
 		return previous;
