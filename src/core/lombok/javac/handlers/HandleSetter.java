@@ -21,8 +21,8 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.Javac.*;
 import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.javac.Javac.CTC_VOID;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.Collection;
@@ -36,7 +36,7 @@ import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
-import lombok.javac.handlers.HandleLog.LoggingFramework;
+import lombok.javac.handlers.JavacHandlerUtil.CopyJavadoc;
 import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 
 import org.mangosdk.spi.ProviderFor;
@@ -47,7 +47,6 @@ import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCReturn;

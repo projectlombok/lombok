@@ -21,8 +21,8 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.eclipse.Eclipse.*;
 import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.eclipse.Eclipse.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -51,8 +51,6 @@ import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.Accessors;
-import lombok.javac.JavacNode;
-import lombok.javac.handlers.JavacHandlerUtil;
 
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.IStatus;
@@ -109,9 +107,6 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 import org.osgi.framework.Bundle;
-
-import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
 /**
  * Container for static utility methods useful to handlers written for eclipse.
@@ -213,9 +208,9 @@ public class EclipseHandlerUtil {
 			log.log(new Status(msgType, bundleName, message, error));
 		}
 	}
-	
+
 	private static ReferenceFieldAugment<ASTNode, ASTNode> generatedNodes = ReferenceFieldAugment.augment(ASTNode.class, ASTNode.class, "$generatedBy");
-	
+
 	public static ASTNode getGeneratedBy(ASTNode node) {
 		return generatedNodes.get(node);
 	}
@@ -846,9 +841,9 @@ public class EclipseHandlerUtil {
 			this.type = type;
 		}
 	}
-	
+
 	private static final BooleanFieldAugment<FieldDeclaration> generatedLazyGettersWithPrimitiveBoolean = BooleanFieldAugment.augment(FieldDeclaration.class, "lombok$booleanLazyGetter");
-	
+
 	static void registerCreatedLazyGetter(FieldDeclaration field, char[] methodName, TypeReference returnType) {
 		if (isBoolean(returnType)) {
 			generatedLazyGettersWithPrimitiveBoolean.set(field);
@@ -1151,7 +1146,7 @@ public class EclipseHandlerUtil {
 				current = current.up();
 			}
 		}
-		
+
 		if (prefixes == null) prefixes = field.getAst().readConfiguration(ConfigurationKeys.ACCESSORS_PREFIX);
 		if (!prefixes.isEmpty()) {
 			CharSequence newName = removePrefix(field.getName(), prefixes);
@@ -1427,15 +1422,15 @@ public class EclipseHandlerUtil {
 	/**
 	 * Generates a new statement that checks if the given variable is null, and if so, throws a specified exception with the
 	 * variable name as message.
-	 * 
+	 *
 	 * @param exName The name of the exception to throw; normally {@code java.lang.NullPointerException}.
 	 */
 	public static Statement generateNullCheck(AbstractVariableDeclaration variable, EclipseNode sourceNode) {
 		NullCheckExceptionType exceptionType = sourceNode.getAst().readConfiguration(ConfigurationKeys.NON_NULL_EXCEPTION_TYPE);
 		if (exceptionType == null) exceptionType = NullCheckExceptionType.NULL_POINTER_EXCEPTION;
-		
+
 		ASTNode source = sourceNode.get();
-		
+
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 
