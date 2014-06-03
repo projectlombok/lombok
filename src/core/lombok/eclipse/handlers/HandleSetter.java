@@ -47,6 +47,9 @@ import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.FieldReference;
+import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
@@ -211,14 +214,15 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 
+		FieldDeclaration propConstantFieldDecl=null;
 		if( propConstant ) {
-			FieldDeclaration fieldDecl = new FieldDeclaration(("PROP_"+fieldNode.getName().toUpperCase()).toCharArray(), 0, -1 );
-			setGeneratedBy(fieldDecl, source);
-			fieldDecl.declarationSourceEnd = -1;
-			fieldDecl.modifiers = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
-			fieldDecl.type = createTypeReference("java.lang.String", source);
-			fieldDecl.initialization = new StringLiteral(fieldNode.getName().toCharArray(), pS, pE, 0);
-			injectField(fieldNode.up(), fieldDecl);
+			propConstantFieldDecl = new FieldDeclaration(("PROP_"+fieldNode.getName().toUpperCase()).toCharArray(), 0, -1 );
+			setGeneratedBy(propConstantFieldDecl, source);
+			propConstantFieldDecl.declarationSourceEnd = -1;
+			propConstantFieldDecl.modifiers = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
+			propConstantFieldDecl.type = createTypeReference("java.lang.String", source);
+			propConstantFieldDecl.initialization = new StringLiteral(fieldNode.getName().toCharArray(), pS, pE, 0);
+			injectField(fieldNode.up(), propConstantFieldDecl);
 		}
 
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
@@ -259,12 +263,44 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
 
 		List<Statement> statements = new ArrayList<Statement>(5);
+
+		LocalDeclaration oldValueVarDecl=null;
+		if( bound ) {
+			oldValueVarDecl = new LocalDeclaration("old".toCharArray(), 0, -1 );
+			oldValueVarDecl.modifiers = Modifier.FINAL;
+			oldValueVarDecl.type = copyType(field.type, source);
+			oldValueVarDecl.initialization = fieldRef;
+
+			statements.add( oldValueVarDecl );
+		}
+
 		if (nonNulls.length == 0) {
 			statements.add(assignment);
 		} else {
 			Statement nullCheck = generateNullCheck(field, sourceNode);
 			if (nullCheck != null) statements.add(nullCheck);
 			statements.add(assignment);
+		}
+
+		if( bound ) {
+			MessageSend firePropChangeMethodCall = new MessageSend();
+			setGeneratedBy(firePropChangeMethodCall, source);
+
+			FieldReference propChangeFieldRef=new FieldReference(propertyChangeSupportFieldName.toCharArray(),p);
+			propChangeFieldRef.receiver = new ThisReference((int)(p >> 32), (int)p);
+			firePropChangeMethodCall.receiver = propChangeFieldRef;
+			firePropChangeMethodCall.selector = "firePropertyChange".toCharArray();
+
+			Expression propNameParam=new SingleNameReference(propConstantFieldDecl.name,p);
+			Expression oldValueParam=new SingleNameReference(oldValueVarDecl.name,p);
+			Expression newValueParam=fieldRef;
+
+			firePropChangeMethodCall.arguments = new Expression[] { propNameParam, oldValueParam, newValueParam };
+			firePropChangeMethodCall.nameSourcePosition = p;
+			firePropChangeMethodCall.sourceStart = pS;
+			firePropChangeMethodCall.sourceEnd = firePropChangeMethodCall.statementEnd = pE;
+
+			statements.add(firePropChangeMethodCall);
 		}
 
 		if (shouldReturnThis) {
