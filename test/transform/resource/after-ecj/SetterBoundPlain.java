@@ -1,10 +1,10 @@
+import java.beans.PropertyChangeSupport;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 class SetterBoundPlain {
-
   public static final java.lang.String PROP_FOO = "foo";
-
-  @Setter @Accessors(propertyNameConstant = true) int foo;
+  private final PropertyChangeSupport propertySupport = new PropertyChangeSupport(this);
+  @Setter @Accessors(bound = true) int foo;
   <clinit>() {
   }
   SetterBoundPlain() {

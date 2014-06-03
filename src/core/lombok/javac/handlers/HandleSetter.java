@@ -213,6 +213,8 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		JCExpression fieldRef = createFieldAccessor(treeMaker, field, FieldAccess.ALWAYS_FIELD);
 		JCAssign assign = treeMaker.Assign(fieldRef, treeMaker.Ident(fieldDecl.name));
 
+
+
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 
 		List<JCAnnotation> nonNulls = findAnnotations(field, NON_NULL_PATTERN);
@@ -221,8 +223,22 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		Name methodName = field.toName(setterName);
 		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(nonNulls).appendList(nullables);
 
+		JCVariableDecl propConstantDecl=null;
+
+		if( propConstant ) {
+			propConstantDecl=createPropConstant( field.up(), source, field.getName() );
+			injectFieldSuppressWarnings(field.up(), propConstantDecl);
+		}
+
 		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, field.getContext());
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(flags, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
+
+
+		JCVariableDecl oldVar=null;
+		if( bound ) {
+			oldVar = treeMaker.VarDef(treeMaker.Modifiers(Flags.FINAL), field.toName("old"), fieldDecl.vartype, fieldRef);
+			statements.append( oldVar );
+		}
 
 		if (nonNulls.isEmpty()) {
 			statements.append(treeMaker.Exec(assign));
@@ -243,12 +259,18 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			shouldReturnThis = false;
 		}
 
-		if( propConstant ) {
-			createPropConstant( field.up(), source, field.getName() );
-		}
-
 		if( bound ) {
+			JCExpression callFirePropChanged = chainDotsString(field, "this."+propertyChangeSupportFieldName+".firePropertyChange");
+			JCExpression propNameParam = treeMaker.Ident(propConstantDecl.name);
+			JCExpression oldValueParam = treeMaker.Ident(oldVar.name);
+			JCExpression currentValueParam = fieldRef; //treeMaker.Ident(fieldDecl.name);
 
+			JCMethodInvocation callFire = treeMaker.Apply(List.<JCExpression>nil(),
+					callFirePropChanged,  List.<JCExpression>of(propNameParam,oldValueParam,currentValueParam) );
+
+
+			//JCExpression callFire=treeMaker.App(callFirePropChanged, List.<JCExpression>of(propNameParam,oldValueParam,currentValueParam) );
+			statements.append(treeMaker.Exec(callFire));
 		}
 
 		if (shouldReturnThis) {
@@ -273,7 +295,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		return decl;
 	}
 
-	private static boolean createPropConstant(JavacNode typeNode, JavacNode source, String propertyName) {
+	private static JCVariableDecl createPropConstant(JavacNode typeNode, JavacNode source, String propertyName) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 
 		JCExpression propConstantType = chainDotsString(typeNode, "java.lang.String" );
@@ -283,7 +305,6 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 				maker.Modifiers(Flags.PUBLIC | Flags.FINAL | Flags.STATIC),
 				typeNode.toName("PROP_"+ propertyName.toUpperCase() ), propConstantType, initValue), source.get(), typeNode.getContext());
 
-		injectFieldSuppressWarnings(typeNode, fieldDecl);
-		return true;
+		return fieldDecl;
 	}
 }

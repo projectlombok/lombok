@@ -1,16 +1,16 @@
 <!--
  Copyright (C) 2010-2014 The Project Lombok Authors.
-  
+
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
   copies of the Software, and to permit persons to whom the Software is
   furnished to do so, subject to the following conditions:
-  
+
   The above copyright notice and this permission notice shall be included in
   all copies or substantial portions of the Software.
-  
+
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -24,45 +24,45 @@
 This buildfile is part of projectlombok.org. It is the main entry point that contains
 the common tasks and can be called on to run the main aspects of all the sub-scripts.
 	</description>
-	
+
 	<property name="credentialsFile" value="google.properties" />
 	<property name="build.compiler" value="javac1.6" />
 	<property name="ivy.retrieve.pattern" value="lib/[conf]/[organisation]-[artifact].[ext]" />
 	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
-	
+
 	<path id="build.path">
 		<fileset dir="lib/build">
 			<include name="*.jar" />
 		</fileset>
 	</path>
-	
+
 	<path id="runtime.path">
 		<fileset dir="lib/runtime">
 			<include name="*.jar" />
 		</fileset>
 	</path>
-	
+
 	<path id="test.path">
 		<fileset dir="lib/test">
 			<include name="*.jar" />
 		</fileset>
 	</path>
-	
+
 	<path id="eclipseBuild.path">
 		<fileset dir="lib/eclipseBuild">
 			<include name="*.jar" />
 		</fileset>
 	</path>
-	
+
 	<target name="-defSSH" depends="ensureBuildDeps">
 		<taskdef name="scp" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.Scp" classpathref="build.path" />
 		<taskdef name="sshexec" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="build.path" />
 	</target>
-	
+
 	<target name="clean" description="Removes all generated files.">
 		<delete dir="build" quiet="true" />
 	</target>
-	
+
 	<target name="distclean" depends="clean" description="Deletes everything that this build script has ever generated.">
 		<delete dir="lib" quiet="true" />
 		<delete dir="dist" quiet="true" />
@@ -73,53 +73,53 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<delete file="lombok.iml" quiet="true" />
 		<delete dir="ivyCache" quiet="true" />
 	</target>
-	
+
 	<target name="download-ipp" unless="ivyplusplus.available">
 		<mkdir dir="lib" />
 		<get src="http://projectlombok.org/downloads/ivyplusplus.jar" dest="lib/ivyplusplus.jar" usetimestamp="true" />
 	</target>
-	
+
 	<target name="load-ipp" depends="download-ipp">
 		<taskdef classpath="lib/ivyplusplus.jar" resource="com/zwitserloot/ivyplusplus/antlib.xml" uri="antlib:com.zwitserloot.ivyplusplus" />
 		<ivy:ensureippversion version="1.12" property="ivyplusplus.minimumAvailable" />
 	</target>
-	
+
 	<target name="redownload-ipp" unless="ivyplusplus.minimumAvailable">
 		<get src="http://projectlombok.org/downloads/ivyplusplus.jar" dest="lib/ivyplusplus.jar" />
 		<fail>A new version of ivyplusplus was required and has been downloaded. Rerun the script to continue.</fail>
 	</target>
-	
+
 	<target name="ensure-ipp" depends="load-ipp, redownload-ipp" />
-	
+
 	<target name="config-ivy" depends="ensure-ipp" unless="ivy.config">
 		<ivy:configure file="buildScripts/ivysettings.xml" />
 		<property name="ivy.config" value="true" />
 	</target>
-	
+
 	<target name="deps" depends="ensureBuildDeps, ensureRuntimeDeps, ensureTestDeps, contrib" description="Downloads all dependencies." />
-	
+
 	<target name="contrib" depends="config-ivy" description="Downloads various non-crucial documentation, sources, etc that are useful when developing lombok.ast.">
 		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="contrib, ecj7, ecj8" />
 		<ivy:retrieve />
 	</target>
-	
+
 	<target name="ensureBuildDeps" depends="config-ivy">
 		<mkdir dir="lib/openJDK6Environment" />
 		<get src="http://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />
 		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build, javac7" />
 		<ivy:retrieve />
 	</target>
-	
+
 	<target name="ensureRuntimeDeps" depends="config-ivy">
 		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="runtime" />
 		<ivy:retrieve />
 	</target>
-	
+
 	<target name="ensureTestDeps" depends="config-ivy">
 		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="test, javac6, eclipseBuild" />
 		<ivy:retrieve />
 	</target>
-	
+
 	<target name="version" depends="ensure-ipp" description="Shows the version number." unless="lombok.version">
 		<mkdir dir="build/lombok" />
 		<javac includeDestClasses="false" srcdir="src/core" debug="on" destdir="build/lombok" source="1.5" target="1.5" includes="lombok/core/Version.java" includeantruntime="false" />
@@ -131,13 +131,13 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<ivy:loadversion property="lombok.version" file="build/version.txt" />
 		<echo level="info">Lombok version: ${lombok.version}</echo>
 	</target>
-	
+
 	<target name="-unpackLibs" depends="ensureRuntimeDeps">
 		<ivy:cachedunjar dest="build/lombok" marker="build/unpackDeps.marker">
 			<path refid="runtime.path" />
 		</ivy:cachedunjar>
 	</target>
-	
+
 	<target name="compile" depends="version, ensureBuildDeps, -unpackLibs" description="Compiles the code.">
 		<!-- ant includes the destination dir on the classpath (and there are good reason to do this), but that also means
 		 the bleeding edge lombok from the previous build is run, which means if there are bugs in it, you can't compile
@@ -154,7 +154,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<src path="src/javac-only-stubs" />
 			<classpath location="build/stubsstubs" />
 		</ivy:compile>
-		
+
 		<ivy:compile destdir="build/lombok-utils" source="1.5" target="1.5" includeantruntime="false">
 			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
 			<compilerarg value="-Xbootclasspath/p:build/stubs" />
@@ -162,7 +162,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<exclude name="lombok/javac/**" />
 			<classpath refid="build.path" />
 		</ivy:compile>
-		
+
 		<ivy:compile destdir="build/lombok-utils" source="1.6" target="1.6" includeantruntime="false">
 			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
 			<compilerarg value="-Xbootclasspath/p:build/stubs" />
@@ -171,22 +171,11 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<classpath location="build/lombok-utils" />
 			<classpath refid="build.path" />
 		</ivy:compile>
-		
+
 		<copy todir="build/lombok">
 			<fileset dir="build/lombok-utils" />
 		</copy>
-		
-		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" includeantruntime="false">
-			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
-			<compilerarg value="-Xbootclasspath/p:build/stubs" />
-			<src path="src/core" />
-			<src path="src/installer" />
-			<src path="src/eclipseAgent" />
-			<exclude name="lombok/javac/**" />
-			<classpath location="build/lombok" />
-			<classpath refid="build.path" />
-		</ivy:compile>
-		
+
 		<ivy:compile destdir="build/lombok" source="1.6" target="1.6" includeantruntime="false">
 			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
 			<compilerarg value="-Xbootclasspath/p:build/stubs" />
@@ -197,11 +186,24 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<classpath location="build/lombok" />
 			<classpath refid="build.path" />
 		</ivy:compile>
+
+		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" includeantruntime="false">
+			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
+			<compilerarg value="-Xbootclasspath/p:build/stubs" />
+			<src path="src/core" />
+			<src path="src/installer" />
+			<src path="src/eclipseAgent" />
+			<exclude name="lombok/javac/**" />
+			<classpath location="build/lombok" />
+			<classpath refid="build.path" />
+		</ivy:compile>
+
+
 		<mkdir dir="build/lombok/META-INF" />
 		<mkdir dir="build/lombok/META-INF/services" />
 		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.core.AnnotationProcessor</echo>
 	</target>
-	
+
 	<target name="dist" description="Builds THE lombok.jar file which contains everything." depends="version, compile">
 		<mkdir dir="dist" />
 		<copy file="doc/changelog.markdown" tofile="build/changelog.txt" />
@@ -226,7 +228,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<copy file="dist/lombok-${lombok.version}.jar" tofile="dist/lombok.jar" />
 		<property name="lombok.dist.built" value="true" />
 	</target>
-	
+
 	<target name="dist-utils" description="Builds lombok-utils.jar, which is a library used by i.e. lombok.ast project." depends="version, compile">
 		<mkdir dir="dist" />
 		<jar destfile="dist/lombok-utils-${lombok.version}.jar">
@@ -239,7 +241,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</jar>
 		<copy file="dist/lombok-utils-${lombok.version}.jar" tofile="dist/lombok-utils.jar" />
 	</target>
-	
+
 	<target name="intellij" depends="deps, contrib" description="Creates intellij project files and downloads all dependencies. Open this directory as a project in IntelliJ after running this target.">
 		<ivy:intellijgen>
 			<conf name="build" sources="contrib" />
@@ -263,7 +265,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<apt enabled="true" />
 		</ivy:intellijgen>
 	</target>
-	
+
 	<target name="-skipEclipseDeps">
 		<property name="eclipse.build.configname" value="buildWithoutEclipse" />
 	</target>
@@ -294,12 +296,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<apt location="lib/build/projectlombok.org-spi.jar" />
 		</ivy:eclipsegen>
 	</target>
-	
+
 	<target name="ensureEcjDebugDeps" depends="config-ivy">
 		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="buildWithoutEclipse" />
 		<ivy:retrieve />
 	</target>
-	
+
 	<target name="loadEclipseLocation">
 		<loadfile property="eclipse.location" srcFile="eclipse.location" encoding="UTF-8" quiet="true" />
 	</target>
@@ -389,7 +391,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<echo>Added to project classpath from your eclipse installation: ${pluginName}.
 ${sourceWarning}</echo>
 	</target>
-	
+
 	<target name="-test-compile" depends="ensureTestDeps, compile" unless="skipTests">
 		<mkdir dir="build/tests" />
 		<ivy:compile destdir="build/tests" source="1.5" target="1.5" includeantruntime="false">
@@ -402,7 +404,7 @@ ${sourceWarning}</echo>
 			<src path="test/configuration/src" />
 		</ivy:compile>
 	</target>
-	
+
 	<target name="test-ecj" depends="dist, contrib" unless="tests.skip">
 		<java jar="lib/ecj7/org.eclipse.custom-ecj.jar" fork="true" failonerror="true">
 			<jvmarg value="-javaagent:dist/lombok.jar=ecj" />
@@ -413,7 +415,7 @@ ${sourceWarning}</echo>
 			<arg value="test/ecj/SimpleTest.java" />
 		</java>
 	</target>
-	
+
 	<target name="-loadTestEnvironmentProperties">
 		<property file="testenvironment.properties" />
 		<available file=".project" property="isEclipseProject" />
@@ -468,9 +470,9 @@ ${sourceWarning}</echo>
 		<echo>Tests will now run against OpenJDK7</echo>
 		<antcall target="-createEclipseLaunchForTestEnvironmentIfEclipseProject" />
 	</target>
-	
+
 	<target name="setupJavaOracle7TestEnvironment" depends="contrib" description="Sets up the test so that 'ant test' will test against OpenJDK7.">
-		<mkdir dir="lib/oracleJDK7Environment" />		
+		<mkdir dir="lib/oracleJDK7Environment" />
 		<get src="http://projectlombok.org/ivyrepo/langtools/oracle-jdk7-tools.jar" dest="lib/oracleJDK7Environment/tools.jar" verbose="true" usetimestamp="true" />
 		<get src="http://projectlombok.org/ivyrepo/langtools/oracle-jdk7-rt.jar" dest="lib/oracleJDK7Environment/rt.jar" verbose="true" usetimestamp="true" />
 		<propertyfile file="testenvironment.properties">
@@ -483,7 +485,7 @@ ${sourceWarning}</echo>
 		<echo>Tests will now run against Oracle JDK7</echo>
 		<antcall target="-createEclipseLaunchForTestEnvironmentIfEclipseProject" />
 	</target>
-	
+
 	<target name="setupJavaOracle8TestEnvironment" depends="contrib" description="Sets up the test so that 'ant test' will test against OpenJDK8.">
 		<mkdir dir="lib/oracleJDK8Environment" />
 		<get src="http://projectlombok.org/ivyrepo/langtools/jdk8-javac.jar" dest="lib/oracleJDK8Environment/javac8.jar" verbose="true" usetimestamp="true" />
@@ -552,7 +554,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</junit>
 		<echo level="info">All tests successful.</echo>
 	</target>
-	
+
 	<target name="utils-javadoc" depends="compile">
 		<mkdir dir="build/utils-api" />
 		<javadoc sourcepath="src/utils" defaultexcludes="yes" destdir="build/utils-api" windowtitle="Lombok Utils">
@@ -567,7 +569,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			<fileset dir="build/utils-api" includes="**/*.html" />
 		</replaceregexp>
 	</target>
-	
+
 	<target name="utils-maven" depends="version, dist-utils, test, utils-javadoc" description="Build a maven artifact bundle for lombok-utils.">
 		<jar destfile="dist/lombok-utils-${lombok.version}-javadoc.jar">
 			<fileset dir="build/utils-api" />
@@ -592,13 +594,13 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			<tarfileset dir="build/utils-mavenPublish" includes="pom.xml" />
 		</tar>
 	</target>
-	
+
 	<target name="javadoc" depends="compile, version" description="Builds javadoc into doc/api.">
 		<ant antfile="buildScripts/website.ant.xml" target="javadoc" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
 		</ant>
 	</target>
-	
+
 	<target name="maven" depends="version, dist, test, javadoc" description="Build a maven artifact bundle.">
 		<jar destfile="dist/lombok-${lombok.version}-javadoc.jar">
 			<fileset dir="doc/api" />
@@ -629,7 +631,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			<tarfileset dir="build/mavenPublish" includes="pom.xml" />
 		</tar>
 	</target>
-	
+
 	<target name="maven-publish" depends="maven, utils-maven, -defSSH" description="Build a maven artifact bundle then upload it to projectlombok.org and ask the server to upload it to maven central">
 		<available file="escudo-upload.key" property="escudo.key.available" />
 		<fail unless="escudo.key.available">You don't have the escudo-upload.key; you'll need it to get write access to the server.</fail>
@@ -655,11 +657,11 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			keyfile="escudo-upload.key" passphrase=""
 			trust="true" command="./showMavenCentralPassword" />
 	</target>
-	
+
 	<target name="-credentials">
 		<available property="hasCredentialsFile" file="${credentialsFile}"/>
 	</target>
-	
+
 	<target name="-checkCredentialsFile" depends="-credentials" unless="hasCredentialsFile">
 		<echo file="${credentialsFile}">
 #username=[your google account name without @gmail.com]
@@ -667,13 +669,13 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</echo>
 		<fail message="fill in ${credentialsFile} to provide your credentials" />
 	</target>
-	
+
 	<target name="publish" description="Publishes the latest build to googlecode." depends="version, -checkCredentialsFile, dist, dist-utils, test, -defSSH">
 		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpathref="build.path" name="gcupload" />
 		<available file="escudo-upload.key" property="escudo.key.available" />
 		<fail unless="escudo.key.available">You don't have the escudo-upload.key; you'll need it to get write access to the server.</fail>
 		<property file="${credentialsFile}" prefix="google" />
-		<gcupload 
+		<gcupload
 				username="${google.username}"
 				password="${google.password}"
 				projectname="projectlombok"
@@ -682,14 +684,14 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 				summary="Version ${lombok.version}"
 				labels=""
 				verbose="true" />
-		<gcupload 
+		<gcupload
 				username="${google.username}"
-				password="${google.password}" 
-				projectname="projectlombok" 
-				filename="dist/lombok.jar" 
+				password="${google.password}"
+				projectname="projectlombok"
+				filename="dist/lombok.jar"
 				targetfilename="lombok.jar"
 				summary="Version ${lombok.version} - The everything jar - doubleclick it to install, or just include it in your projects."
-				labels="Featured" 
+				labels="Featured"
 				verbose="true" />
 		<scp
 			localFile="dist/lombok-utils-${lombok.version}.jar"
@@ -702,23 +704,23 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			keyfile="escudo-upload.key" passphrase=""
 			trust="true" command="./deployLombokUtils '${lombok.version}'" />
 	</target>
-	
+
 	<target name="publish-all" depends="clean, version, website-publish, maven-publish, publish"
 		description="Publishes lombok itself, updates the maven repository and the website." />
-	
+
 	<target name="edge-release" depends="clean, version, dist"
 		description="Publishes an edge release for those who need to test a cutting edge build.">
 		<ant antfile="buildScripts/website.ant.xml" target="edgeRelease" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
 		</ant>
 	</target>
-	
+
 	<target name="website" depends="version" description="Prepares the website for distribution.">
 		<ant antfile="buildScripts/website.ant.xml" target="website" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
 		</ant>
 	</target>
-	
+
 	<target name="website-publish" depends="clean, version"
 			description="Prepares the website for distribution and then publishes it to projectlombok.org.">
 		<ant antfile="buildScripts/website.ant.xml" target="website-publish" inheritAll="false">

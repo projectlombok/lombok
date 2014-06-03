@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2012-2013 The Project Lombok Authors.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -58,23 +58,19 @@ public @interface Accessors {
 	 */
 	String[] prefix() default {};
 
-
 	/**
 	 * If true, a propertyName constant is generated (e. g. 'public final String PROP_FOO = "foo";' for the property foo).
-	 *
 	 */
 	boolean propertyNameConstant() default false;
 
 	/**
 	 * If true, property change support is added to the setter implementation.
-	 * This will also cause the generation of propertyName constant(s).
-	 *
+	 * This will also cause the generation of propertyNameConstant(s).
 	 */
 	boolean bound() default false;
 
 	/**
 	 * field name to use for bound setters to call firePropertyChange on - instance type must be java.beans.PropertyChangeSupport.
-	 *
 	 */
 	String propertyChangeSupportFieldName() default "propertySupport";
 }
