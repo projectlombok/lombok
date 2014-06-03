@@ -222,6 +222,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			propConstantFieldDecl.modifiers = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
 			propConstantFieldDecl.type = createTypeReference("java.lang.String", source);
 			propConstantFieldDecl.initialization = new StringLiteral(fieldNode.getName().toCharArray(), pS, pE, 0);
+			propConstantFieldDecl.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 			injectField(fieldNode.up(), propConstantFieldDecl);
 		}
 
@@ -270,7 +271,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			oldValueVarDecl.modifiers = Modifier.FINAL;
 			oldValueVarDecl.type = copyType(field.type, source);
 			oldValueVarDecl.initialization = fieldRef;
-
+			oldValueVarDecl.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 			statements.add( oldValueVarDecl );
 		}
 
@@ -284,7 +285,6 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 
 		if( bound ) {
 			MessageSend firePropChangeMethodCall = new MessageSend();
-			setGeneratedBy(firePropChangeMethodCall, source);
 
 			FieldReference propChangeFieldRef=new FieldReference(propertyChangeSupportFieldName.toCharArray(),p);
 			propChangeFieldRef.receiver = new ThisReference((int)(p >> 32), (int)p);
@@ -293,12 +293,13 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 
 			Expression propNameParam=new SingleNameReference(propConstantFieldDecl.name,p);
 			Expression oldValueParam=new SingleNameReference(oldValueVarDecl.name,p);
-			Expression newValueParam=fieldRef;
+			Expression newValueParam=createFieldAccessor(fieldNode, FieldAccess.ALWAYS_FIELD, source);;
 
 			firePropChangeMethodCall.arguments = new Expression[] { propNameParam, oldValueParam, newValueParam };
 			firePropChangeMethodCall.nameSourcePosition = p;
 			firePropChangeMethodCall.sourceStart = pS;
 			firePropChangeMethodCall.sourceEnd = firePropChangeMethodCall.statementEnd = pE;
+			firePropChangeMethodCall.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 
 			statements.add(firePropChangeMethodCall);
 		}
