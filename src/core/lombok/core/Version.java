@@ -71,7 +71,7 @@ public class Version {
 		String version = String.format("v%s \"%s\"", VERSION, RELEASE_NAME);
 		if (!isEdgeRelease()) return version;
 		
-		InputStream in = Version.class.getResourceAsStream("release-timestamp.txt");
+		InputStream in = Version.class.getResourceAsStream("/release-timestamp.txt");
 		if (in == null) return version;
 		try {
 			byte[] data = new byte[65536];
@@ -97,7 +97,7 @@ public class Version {
 		int lastIdx = VERSION.lastIndexOf('.');
 		if (lastIdx == -1) return false;
 		try {
-			return Integer.parseInt(VERSION.substring(lastIdx + 1)) % 1 == 1;
+			return Integer.parseInt(VERSION.substring(lastIdx + 1)) % 2 == 1;
 		} catch (Exception e) {
 			return false;
 		}

@@ -208,7 +208,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<tstamp>
 			<format property="releaseTimestamp" pattern="yyyy-MM-dd" />
 		</tstamp>
-		<echo file="release-timestamp.txt">$releaseTimestamp</echo>
+		<echo file="release-timestamp.txt">${releaseTimestamp}</echo>
 		<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="lib/build/com.googlecode.jarjar-jarjar.jar" />
 		<jarjar destfile="dist/lombok-${lombok.version}.jar">
 			<fileset dir="build/lombok">
