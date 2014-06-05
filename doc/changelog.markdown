@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.14.1 "Edgy Guinea Pig"
+* BUGFIX: syntax highlighting in eclipse will become weird and auto-complete may stop working amongst other eclipse features in v1.14.0 (regression from v1.12.6). [Issue #688](https://code.google.com/p/projectlombok/issues/detail?id=688)
 * FEATURE: Added `@Tolerate`; put this annotation on any method or constructor and lombok will skip it when considering whether or not to generate a method or constructor. This is useful if the types of the parameters of your method do not clash with what lombok would generate.
 * FEATURE: Added config key `lombok.getter.noIsPrefix`, which lets you disable use and generation of `isFoo()`, instead going with `getFoo()`, for {@code boolean} fields.
 * BUGFIX: Errors in the eclipse log with `IndexOutOfBound: 2` in `ASTConverter.convertType`. [Issue #686](https://code.google.com/p/projectlombok/issues/detail?id=686)

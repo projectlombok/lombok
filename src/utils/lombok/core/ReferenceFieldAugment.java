@@ -22,6 +22,8 @@
 package lombok.core;
 
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -41,7 +43,8 @@ public abstract class ReferenceFieldAugment<T, F> {
 	 * @throws NullPointerException if {@code type}, {@code fieldType} or {@code name} is {@code null}
 	 */
 	public static <T, F> ReferenceFieldAugment<T, F> augment(Class<T> type, Class<? super F> fieldType, String name) {
-		return new MapFieldAugment<T, F>();
+		ReferenceFieldAugment<T, F> ret = tryCreateReflectionAugment(type, fieldType, name);
+		return ret != null ? ret : new MapFieldAugment<T, F>();
 	}
 	
 	/**
@@ -58,7 +61,56 @@ public abstract class ReferenceFieldAugment<T, F> {
 	 * @throws NullPointerException if {@code type}, {@code fieldType} or {@code name} is {@code null}
 	 */
 	public static <T, F> ReferenceFieldAugment<T, F> augmentWeakField(Class<T> type, Class<? super F> fieldType, String name) {
-		return new MapWeakFieldAugment<T, F>();
+		ReferenceFieldAugment<T, F> ret = tryCreateReflectionAugment(type, fieldType, name);
+		return ret != null ? ret : new MapWeakFieldAugment<T, F>();
+	}
+	
+	/**
+	 * Creates a reflection-based augment which will directly access the listed field name. If this field does not exist or the field
+	 * is not capable of storing the requested type, {@code null} is returned instead.
+	 */
+	private static <T, F> ReferenceFieldAugment<T, F> tryCreateReflectionAugment(Class<T> type, Class<? super F> fieldType, String name) {
+		Field f = findField(type, name);
+		if (f != null && typeIsAssignmentCompatible(f.getType(), fieldType)) return new ReflectionFieldAugment<T, F>(f, fieldType);
+		return null;
+	}
+	
+	/**
+	 * Finds the named <em>instance</em> field in the type, or in any of its supertypes, regardless of its access modifier. It's set as accessible and returned if found.
+	 */
+	private static Field findField(Class<?> type, String name) {
+		while (type != null) {
+			try {
+				Field f = type.getDeclaredField(name);
+				if (!Modifier.isStatic(f.getModifiers())) {
+					f.setAccessible(true);
+					return f;
+				}
+			} catch (NoSuchFieldException fallthrough) {}
+			type = type.getSuperclass();
+		}
+		
+		return null;
+	}
+	
+	private static boolean typeIsAssignmentCompatible(Class<?> fieldType, Class<?> wantedType) {
+		if (Modifier.isFinal(fieldType.getModifiers())) return false;
+		if (Modifier.isStatic(fieldType.getModifiers())) return false;
+		
+		if (fieldType == java.lang.Object.class) return true;
+		if (fieldType == wantedType) return true;
+		
+		if (fieldType.isPrimitive()) return fieldType == wantedType;
+		if (wantedType == int.class && (fieldType == Number.class || fieldType == Integer.class)) return true;
+		if (wantedType == long.class && (fieldType == Number.class || fieldType == Long.class)) return true;
+		if (wantedType == short.class && (fieldType == Number.class || fieldType == Short.class)) return true;
+		if (wantedType == byte.class && (fieldType == Number.class || fieldType == Byte.class)) return true;
+		if (wantedType == char.class && (fieldType == Number.class || fieldType == Character.class)) return true;
+		if (wantedType == float.class && (fieldType == Number.class || fieldType == Float.class)) return true;
+		if (wantedType == double.class && (fieldType == Number.class || fieldType == Double.class)) return true;
+		if (wantedType == boolean.class && fieldType == Boolean.class) return true;
+		
+		return fieldType.isAssignableFrom(wantedType);
 	}
 	
 	private ReferenceFieldAugment() {
@@ -71,7 +123,7 @@ public abstract class ReferenceFieldAugment<T, F> {
 	public abstract F get(T object);
 	
 	/**
-	 * @throws NullPointerException if {@code object} or {@code expected} is {@code null}
+	 * @throws NullPointerException if {@code object} or {@code value} is {@code null}
 	 */
 	public final void set(T object, F value) {
 		getAndSet(object, value);
@@ -79,7 +131,7 @@ public abstract class ReferenceFieldAugment<T, F> {
 	
 	/**
 	 * @return the value of the field <strong>before</strong> the operation.
-	 * @throws NullPointerException if {@code object} or {@code expected} is {@code null}
+	 * @throws NullPointerException if {@code object} or {@code value} is {@code null}.
 	 */
 	public abstract F getAndSet(T object, F value);
 	
@@ -106,6 +158,90 @@ public abstract class ReferenceFieldAugment<T, F> {
 	 * @throws NullPointerException if {@code object}, {@code expected} or {@code value} is {@code null}
 	 */
 	public abstract F compareAndSet(T object, F expected, F value);
+	
+	private static class ReflectionFieldAugment<T, F> extends ReferenceFieldAugment<T, F> {
+		private final Field field;
+		private final Class<F> targetType;
+		
+		@SuppressWarnings("unchecked")
+		ReflectionFieldAugment(Field field, Class<? super F> targetType) {
+			this.field = field;
+			this.targetType = (Class<F>) targetType;
+		}
+		
+		@Override public F get(T object) {
+			checkNotNull(object, "object");
+			try {
+				return targetType.cast(field.get(object));
+			} catch (IllegalAccessException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+		
+		@Override public F getAndSet(T object, F value) {
+			checkNotNull(object, "object");
+			checkNotNull(value, "value");
+			try {
+				F oldValue = targetType.cast(field.get(object));
+				field.set(object, value);
+				return oldValue;
+			} catch (IllegalAccessException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+		
+		@Override public F clear(T object) {
+			checkNotNull(object, "object");
+			try {
+				F oldValue = targetType.cast(field.get(object));
+				field.set(object, null);
+				return oldValue;
+			} catch (IllegalAccessException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+		
+		@Override public F compareAndClear(T object, F expected) {
+			checkNotNull(object, "object");
+			checkNotNull(expected, "expected");
+			try {
+				F result = targetType.cast(field.get(object));
+				if (result == null) return null;
+				if (!expected.equals(result)) return result;
+				field.set(object, null);
+				return null;
+			} catch (IllegalAccessException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+		
+		@Override public F setIfAbsent(T object, F value) {
+			checkNotNull(object, "object");
+			checkNotNull(value, "value");
+			try {
+				F result = targetType.cast(field.get(object));
+				if (result != null) return result;
+				field.set(object, value);
+				return value;
+			} catch (IllegalAccessException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+		
+		@Override public F compareAndSet(T object, F expected, F value) {
+			checkNotNull(object, "object");
+			checkNotNull(expected, "expected");
+			checkNotNull(value, "value");
+			try {
+				F result = targetType.cast(field.get(object));
+				if (!expected.equals(result)) return result;
+				field.set(object, value);
+				return value;
+			} catch (IllegalAccessException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+	}
 	
 	private static class MapFieldAugment<T, F> extends ReferenceFieldAugment<T, F> {
 		final Map<T, Object> values = new WeakHashMap<T, Object>();
