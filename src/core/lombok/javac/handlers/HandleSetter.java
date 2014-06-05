@@ -32,6 +32,7 @@ import lombok.ConfigurationKeys;
 import lombok.Setter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.util.Names;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
@@ -299,7 +300,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 
 		JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
 				maker.Modifiers(Flags.PUBLIC | Flags.FINAL | Flags.STATIC),
-				typeNode.toName("PROP_"+ propertyName.toUpperCase() ), propConstantType, initValue), source.get(), typeNode.getContext());
+				typeNode.toName("PROP_"+ Names.camelCaseToConstant(propertyName) ), propConstantType, initValue), source.get(), typeNode.getContext());
 
 		return fieldDecl;
 	}

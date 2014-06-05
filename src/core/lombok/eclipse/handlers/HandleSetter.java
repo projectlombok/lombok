@@ -36,6 +36,7 @@ import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.Setter;
 import lombok.core.AST.Kind;
+import lombok.core.util.Names;
 import lombok.core.AnnotationValues;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
@@ -216,7 +217,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 
 		FieldDeclaration propConstantFieldDecl=null;
 		if( propConstant ) {
-			propConstantFieldDecl = new FieldDeclaration(("PROP_"+fieldNode.getName().toUpperCase()).toCharArray(), 0, -1 );
+			propConstantFieldDecl = new FieldDeclaration(("PROP_"+Names.camelCaseToConstant(fieldNode.getName())).toCharArray(), 0, -1 );
 			setGeneratedBy(propConstantFieldDecl, source);
 			propConstantFieldDecl.declarationSourceEnd = -1;
 			propConstantFieldDecl.modifiers = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
