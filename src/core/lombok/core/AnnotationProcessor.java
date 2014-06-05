@@ -21,6 +21,8 @@
  */
 package lombok.core;
 
+import static lombok.core.Augments.ClassLoader_lombokAlreadyAddedTo;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -61,8 +63,6 @@ public class AnnotationProcessor extends AbstractProcessor {
 	private final List<ProcessorDescriptor> active = new ArrayList<ProcessorDescriptor>();
 	private final List<String> delayedWarnings = new ArrayList<String>();
 	
-	private static final BooleanFieldAugment<ClassLoader> lombokAlreadyAddedTo = BooleanFieldAugment.augment(ClassLoader.class, "lombok$alreadyAddedTo");
-			
 	static class JavacDescriptor extends ProcessorDescriptor {
 		private Processor processor;
 		
@@ -98,7 +98,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		private ClassLoader findAndPatchClassLoader(ProcessingEnvironment procEnv) throws Exception {
 			ClassLoader environmentClassLoader = procEnv.getClass().getClassLoader();
 			if (environmentClassLoader != null && environmentClassLoader.getClass().getCanonicalName().equals("org.codehaus.plexus.compiler.javac.IsolatedClassLoader")) {
-				if (!lombokAlreadyAddedTo.set(environmentClassLoader)) {
+				if (!ClassLoader_lombokAlreadyAddedTo.getAndSet(environmentClassLoader, true)) {
 					Method m = environmentClassLoader.getClass().getDeclaredMethod("addURL", URL.class);
 					URL selfUrl = new File(ClassRootFinder.findClassRootOfClass(AnnotationProcessor.class)).toURI().toURL();
 					m.invoke(environmentClassLoader, selfUrl);

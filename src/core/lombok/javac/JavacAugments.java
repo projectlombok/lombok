@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 The Project Lombok Authors.
+ * Copyright (C) 2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,34 +19,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.javac.java8;
+package lombok.javac;
 
-import static lombok.javac.CommentCatcher.JCCompilationUnit_comments;
+import lombok.core.FieldAugment;
 
-import java.util.List;
+import com.sun.tools.javac.tree.JCTree;
 
-import lombok.javac.CommentInfo;
-
-import com.sun.tools.javac.parser.JavacParser;
-import com.sun.tools.javac.parser.Lexer;
-import com.sun.tools.javac.parser.ParserFactory;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-
-class CommentCollectingParser extends JavacParser {
-	private final Lexer lexer;
-	
-	protected CommentCollectingParser(ParserFactory fac, Lexer S,
-			boolean keepDocComments, boolean keepLineMap, boolean keepEndPositions) {
-		super(fac, S, keepDocComments, keepLineMap, keepEndPositions);
-		lexer = S;
+public final class JavacAugments {
+	private JavacAugments() {
+		// Prevent instantiation
 	}
 	
-	public JCCompilationUnit parseCompilationUnit() {
-		JCCompilationUnit result = super.parseCompilationUnit();
-		if (lexer instanceof CommentCollectingScanner) {
-			List<CommentInfo> comments = ((CommentCollectingScanner)lexer).getComments();
-			JCCompilationUnit_comments.set(result, comments);
-		}
-		return result;
-	}
+	public static final FieldAugment<JCTree, Boolean> JCTree_handled = FieldAugment.augment(JCTree.class, boolean.class, "lombok$handled");
+	public static final FieldAugment<JCTree, JCTree> JCTree_generatedNode = FieldAugment.circularSafeAugment(JCTree.class, JCTree.class, "lombok$generatedNode");
 }

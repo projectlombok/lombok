@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 The Project Lombok Authors.
+ * Copyright (C) 2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,34 +19,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.javac.java8;
+package lombok.eclipse;
 
-import static lombok.javac.CommentCatcher.JCCompilationUnit_comments;
+import org.eclipse.jdt.internal.compiler.ast.ASTNode;
+import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 
-import java.util.List;
+import lombok.core.FieldAugment;
 
-import lombok.javac.CommentInfo;
-
-import com.sun.tools.javac.parser.JavacParser;
-import com.sun.tools.javac.parser.Lexer;
-import com.sun.tools.javac.parser.ParserFactory;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-
-class CommentCollectingParser extends JavacParser {
-	private final Lexer lexer;
-	
-	protected CommentCollectingParser(ParserFactory fac, Lexer S,
-			boolean keepDocComments, boolean keepLineMap, boolean keepEndPositions) {
-		super(fac, S, keepDocComments, keepLineMap, keepEndPositions);
-		lexer = S;
+public final class EclipseAugments {
+	private EclipseAugments() {
+		// Prevent instantiation
 	}
 	
-	public JCCompilationUnit parseCompilationUnit() {
-		JCCompilationUnit result = super.parseCompilationUnit();
-		if (lexer instanceof CommentCollectingScanner) {
-			List<CommentInfo> comments = ((CommentCollectingScanner)lexer).getComments();
-			JCCompilationUnit_comments.set(result, comments);
-		}
-		return result;
-	}
+	public static final FieldAugment<FieldDeclaration, Boolean> FieldDeclaration_booleanLazyGetter = FieldAugment.augment(FieldDeclaration.class, boolean.class, "lombok$booleanLazyGetter");
+	public static final FieldAugment<ASTNode, Boolean> ASTNode_handled = FieldAugment.augment(ASTNode.class, boolean.class, "lombok$handled");
+	public static final FieldAugment<ASTNode, ASTNode> ASTNode_generatedBy = FieldAugment.augment(ASTNode.class, ASTNode.class, "$generatedBy");
+	public static final FieldAugment<Annotation, Boolean> Annotation_applied = FieldAugment.augment(Annotation.class, boolean.class, "lombok$applied");
 }

@@ -21,8 +21,9 @@
  */
 package lombok.eclipse.handlers;
 
-import static lombok.eclipse.Eclipse.*;
 import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.eclipse.Eclipse.*;
+import static lombok.eclipse.EclipseAugments.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -43,8 +44,6 @@ import lombok.Lombok;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValue;
-import lombok.core.BooleanFieldAugment;
-import lombok.core.ReferenceFieldAugment;
 import lombok.core.TypeResolver;
 import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.handlers.HandlerUtil;
@@ -108,7 +107,6 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
 import org.osgi.framework.Bundle;
-
 
 /**
  * Container for static utility methods useful to handlers written for eclipse.
@@ -211,10 +209,8 @@ public class EclipseHandlerUtil {
 		}
 	}
 	
-	private static ReferenceFieldAugment<ASTNode, ASTNode> generatedNodes = ReferenceFieldAugment.augment(ASTNode.class, ASTNode.class, "$generatedBy");
-	
 	public static ASTNode getGeneratedBy(ASTNode node) {
-		return generatedNodes.get(node);
+		return ASTNode_generatedBy.get(node);
 	}
 	
 	public static boolean isGenerated(ASTNode node) {
@@ -222,7 +218,7 @@ public class EclipseHandlerUtil {
 	}
 	
 	public static ASTNode setGeneratedBy(ASTNode node, ASTNode source) {
-		generatedNodes.set(node, source);
+		ASTNode_generatedBy.set(node, source);
 		return node;
 	}
 	
@@ -844,11 +840,9 @@ public class EclipseHandlerUtil {
 		}
 	}
 	
-	private static final BooleanFieldAugment<FieldDeclaration> generatedLazyGettersWithPrimitiveBoolean = BooleanFieldAugment.augment(FieldDeclaration.class, "lombok$booleanLazyGetter");
-	
 	static void registerCreatedLazyGetter(FieldDeclaration field, char[] methodName, TypeReference returnType) {
 		if (isBoolean(returnType)) {
-			generatedLazyGettersWithPrimitiveBoolean.set(field);
+			FieldDeclaration_booleanLazyGetter.set(field, true);
 		}
 	}
 	
@@ -858,7 +852,7 @@ public class EclipseHandlerUtil {
 	
 	private static GetterMethod findGetter(EclipseNode field) {
 		FieldDeclaration fieldDeclaration = (FieldDeclaration) field.get();
-		boolean forceBool = generatedLazyGettersWithPrimitiveBoolean.get(fieldDeclaration);
+		boolean forceBool = FieldDeclaration_booleanLazyGetter.get(fieldDeclaration);
 		TypeReference fieldType = fieldDeclaration.type;
 		boolean isBoolean = forceBool || isBoolean(fieldType);
 		

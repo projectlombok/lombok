@@ -23,6 +23,7 @@ package lombok.javac.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
+import static lombok.javac.JavacAugments.JCTree_generatedNode;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -41,7 +42,6 @@ import lombok.Getter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValue;
-import lombok.core.ReferenceFieldAugment;
 import lombok.core.TypeResolver;
 import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.handlers.HandlerUtil;
@@ -112,8 +112,6 @@ public class JavacHandlerUtil {
 		}
 	}
 	
-	private static ReferenceFieldAugment<JCTree, JCTree> generatedNodes = ReferenceFieldAugment.augmentWeakField(JCTree.class, JCTree.class, "lombok$generatedNodes");
-	
 	/**
 	 * Contributed by Jan Lahoda; many lombok transformations should not be run (or a lite version should be run) when the netbeans editor
 	 * is running javac on the open source file to find inline errors and such. As class files are compiled separately this does not affect
@@ -129,7 +127,7 @@ public class JavacHandlerUtil {
 	}
 	
 	public static JCTree getGeneratedBy(JCTree node) {
-		return generatedNodes.get(node);
+		return JCTree_generatedNode.get(node);
 	}
 	
 	public static boolean isGenerated(JCTree node) {
@@ -145,8 +143,8 @@ public class JavacHandlerUtil {
 	
 	public static <T extends JCTree> T setGeneratedBy(T node, JCTree source, Context context) {
 		if (node == null) return null;
-		if (source == null) generatedNodes.clear(node);
-		else generatedNodes.set(node, source);
+		if (source == null) JCTree_generatedNode.clear(node);
+		else JCTree_generatedNode.set(node, source);
 		if (source != null && (!inNetbeansEditor(context) || (node instanceof JCVariableDecl && (((JCVariableDecl) node).mods.flags & Flags.PARAMETER) != 0))) node.pos = source.pos;
 		return node;
 	}
