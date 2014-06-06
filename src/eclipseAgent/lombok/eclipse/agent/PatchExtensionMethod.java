@@ -31,7 +31,7 @@ import java.util.List;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
-import lombok.core.ReferenceFieldAugment;
+import lombok.core.FieldAugment;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.TransformEclipseAST;
@@ -178,14 +178,14 @@ public class PatchExtensionMethod {
 		return extensionMethods;
 	}
 	
-	private static final ReferenceFieldAugment<MessageSend, PostponedError> postponedErrors = ReferenceFieldAugment.augment(MessageSend.class, PostponedError.class, "lombok$postponedErrors");
+	private static final FieldAugment<MessageSend, PostponedError> MessageSend_postponedErrors = FieldAugment.augment(MessageSend.class, PostponedError.class, "lombok$postponedErrors");
 	
 	public static void errorNoMethodFor(ProblemReporter problemReporter, MessageSend messageSend, TypeBinding recType, TypeBinding[] params) {
-		postponedErrors.set(messageSend, new PostponedNoMethodError(problemReporter, messageSend, recType, params));
+		MessageSend_postponedErrors.set(messageSend, new PostponedNoMethodError(problemReporter, messageSend, recType, params));
 	}
 	
 	public static void invalidMethod(ProblemReporter problemReporter, MessageSend messageSend, MethodBinding method) {
-		postponedErrors.set(messageSend, new PostponedInvalidMethodError(problemReporter, messageSend, method));
+		MessageSend_postponedErrors.set(messageSend, new PostponedInvalidMethodError(problemReporter, messageSend, method));
 	}
 	
 	public static TypeBinding resolveType(TypeBinding resolvedType, MessageSend methodCall, BlockScope scope) {
@@ -215,7 +215,7 @@ public class PatchExtensionMethod {
 			if (!extension.suppressBaseMethods && !(methodCall.binding instanceof ProblemMethodBinding)) continue;
 			for (MethodBinding extensionMethod : extension.extensionMethods) {
 				if (!Arrays.equals(methodCall.selector, extensionMethod.selector)) continue;
-				postponedErrors.clear(methodCall);
+				MessageSend_postponedErrors.clear(methodCall);
 				if (methodCall.receiver instanceof ThisReference) {
 					methodCall.receiver.bits &= ~ASTNode.IsImplicitThis;
 				}
@@ -257,10 +257,10 @@ public class PatchExtensionMethod {
 			}
 		}
 		
-		PostponedError error = postponedErrors.get(methodCall);
+		PostponedError error = MessageSend_postponedErrors.get(methodCall);
 		if (error != null) error.fire();
 		
-		postponedErrors.clear(methodCall);
+		MessageSend_postponedErrors.clear(methodCall);
 		return resolvedType;
 	}
 	

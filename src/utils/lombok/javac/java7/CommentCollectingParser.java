@@ -21,9 +21,10 @@
  */
 package lombok.javac.java7;
 
+import static lombok.javac.CommentCatcher.JCCompilationUnit_comments;
+
 import java.util.List;
 
-import lombok.core.ReferenceFieldAugment;
 import lombok.javac.CommentInfo;
 
 import com.sun.tools.javac.parser.EndPosParser;
@@ -32,21 +33,19 @@ import com.sun.tools.javac.parser.ParserFactory;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
 class CommentCollectingParser extends EndPosParser {
-	private final ReferenceFieldAugment<JCCompilationUnit, List<CommentInfo>> commentsField;
 	private final Lexer lexer;
 	
 	protected CommentCollectingParser(ParserFactory fac, Lexer S,
-			boolean keepDocComments, boolean keepLineMap, ReferenceFieldAugment<JCCompilationUnit, List<CommentInfo>> commentsField) {
+			boolean keepDocComments, boolean keepLineMap) {
 		super(fac, S, keepDocComments, keepLineMap);
 		lexer = S;
-		this.commentsField = commentsField;
 	}
 	
 	public JCCompilationUnit parseCompilationUnit() {
 		JCCompilationUnit result = super.parseCompilationUnit();
 		if (lexer instanceof CommentCollectingScanner) {
 			List<CommentInfo> comments = ((CommentCollectingScanner)lexer).getComments();
-			commentsField.set(result, comments);
+			JCCompilationUnit_comments.set(result, comments);
 		}
 		return result;
 	}

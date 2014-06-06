@@ -22,50 +22,43 @@
 package lombok.javac.java8;
 
 import java.lang.reflect.Field;
-import java.util.List;
-
-import lombok.core.ReferenceFieldAugment;
-import lombok.javac.CommentInfo;
 
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.parser.JavacParser;
 import com.sun.tools.javac.parser.Lexer;
 import com.sun.tools.javac.parser.ParserFactory;
 import com.sun.tools.javac.parser.ScannerFactory;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
 
 public class CommentCollectingParserFactory extends ParserFactory {
-	private final ReferenceFieldAugment<JCCompilationUnit, List<CommentInfo>> commentsField;
 	private final Context context;
 	
 	static Context.Key<ParserFactory> key() {
 		return parserFactoryKey;
 	}
 	
-	protected CommentCollectingParserFactory(Context context, ReferenceFieldAugment<JCCompilationUnit, List<CommentInfo>> commentsField) {
+	protected CommentCollectingParserFactory(Context context) {
 		super(context);
 		this.context = context;
-		this.commentsField = commentsField;
 	}
 	
 	public JavacParser newParser(CharSequence input, boolean keepDocComments, boolean keepEndPos, boolean keepLineMap) {
 		ScannerFactory scannerFactory = ScannerFactory.instance(context);
 		Lexer lexer = scannerFactory.newScanner(input, true);
-		Object x = new CommentCollectingParser(this, lexer, true, keepLineMap, keepEndPos, commentsField);
+		Object x = new CommentCollectingParser(this, lexer, true, keepLineMap, keepEndPos);
 		return (JavacParser) x;
 		// CCP is based on a stub which extends nothing, but at runtime the stub is replaced with either
 		//javac6's EndPosParser which extends Parser, or javac8's JavacParser which implements Parser.
 		//Either way this will work out.
 	}
 	
-	public static void setInCompiler(JavaCompiler compiler, Context context, ReferenceFieldAugment<JCCompilationUnit, List<CommentInfo>> commentsField) {
-		context.put(CommentCollectingParserFactory.key(), (ParserFactory)null);
+	public static void setInCompiler(JavaCompiler compiler, Context context) {
+		context.put(CommentCollectingParserFactory.key(), (ParserFactory) null);
 		Field field;
 		try {
 			field = JavaCompiler.class.getDeclaredField("parserFactory");
 			field.setAccessible(true);
-			field.set(compiler, new CommentCollectingParserFactory(context, commentsField));
+			field.set(compiler, new CommentCollectingParserFactory(context));
 		} catch (Exception e) {
 			throw new IllegalStateException("Could not set comment sensitive parser in the compiler", e);
 		}

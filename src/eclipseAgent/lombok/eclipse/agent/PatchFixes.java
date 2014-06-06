@@ -32,6 +32,7 @@ import java.util.Stack;
 import lombok.core.DiagnosticsReceiver;
 import lombok.core.PostCompiler;
 import lombok.core.Version;
+import lombok.eclipse.EclipseAugments;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotatable;
@@ -255,13 +256,13 @@ public class PatchFixes {
 	public static void setIsGeneratedFlag(org.eclipse.jdt.core.dom.ASTNode domNode,
 			org.eclipse.jdt.internal.compiler.ast.ASTNode internalNode) throws Exception {
 		if (internalNode == null || domNode == null) return;
-		boolean isGenerated = internalNode.getClass().getField("$generatedBy").get(internalNode) != null;
+		boolean isGenerated = EclipseAugments.ASTNode_generatedBy.get(internalNode) != null;
 		if (isGenerated) domNode.getClass().getField("$isGenerated").set(domNode, true);
 	}
 	
 	public static void setIsGeneratedFlagForName(org.eclipse.jdt.core.dom.Name name, Object internalNode) throws Exception {
 		if (internalNode instanceof org.eclipse.jdt.internal.compiler.ast.ASTNode) {
-			if (internalNode.getClass().getField("$generatedBy").get(internalNode) != null) {
+			if (EclipseAugments.ASTNode_generatedBy.get((org.eclipse.jdt.internal.compiler.ast.ASTNode) internalNode) != null) {
 				name.getClass().getField("$isGenerated").set(name, true);
 			}
 		}

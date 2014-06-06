@@ -21,6 +21,8 @@
  */
 package lombok.javac;
 
+import static lombok.javac.JavacAugments.JCTree_handled;
+
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -35,7 +37,6 @@ import javax.annotation.processing.Messager;
 import javax.tools.Diagnostic;
 
 import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
-import lombok.core.BooleanFieldAugment;
 import lombok.core.HandlerPriority;
 import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
@@ -206,10 +207,8 @@ public class HandlerLibrary {
 		if (t != null) t.printStackTrace();
 	}
 	
-	private static final BooleanFieldAugment<JCTree> handled = BooleanFieldAugment.augment(JCTree.class, "lombok$handled");
-	
 	private boolean checkAndSetHandled(JCTree node) {
-		return !handled.set(node);
+		return !JCTree_handled.getAndSet(node, true);
 	}
 	
 	/**
