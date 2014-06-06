@@ -24,6 +24,7 @@ package lombok.core.configuration;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Iterator;
@@ -34,6 +35,10 @@ import java.util.concurrent.TimeUnit;
 
 import lombok.ConfigurationKeys;
 import lombok.core.configuration.ConfigurationSource.Result;
+import lombok.eclipse.handlers.EclipseHandlerUtil;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
 
 public class FileSystemSourceCache {
 	private static String LOMBOK_CONFIG_FILENAME = "lombok.config";
@@ -47,9 +52,47 @@ public class FileSystemSourceCache {
 		URI uri = javaFile.normalize();
 		if (!uri.isAbsolute()) {
 			uri = new File(".").toURI().resolve(uri);
+			reporter.report(javaFile.toString(), "Somehow ended up with a relative path. This is a bug that the lombok authors cannot reproduce, so please help us out! Is this path: \"" + uri.toString() + "\" the correct absolute path for resource \"" + javaFile + "\"? If yes, or no, please report back to: https://code.google.com/p/projectlombok/issues/detail?id=683 and let us know. Thanks!", 0, "");
 		}
-		
-		return sourcesForDirectory(new File(uri).getParentFile(), reporter);
+		try {
+			return sourcesForDirectory(new File(uri).getParentFile(), reporter);
+		} catch (Exception e) {
+			// possibly eclipse knows how to open this thing. Let's try!
+			int filesOpenedWithEclipse = 0;
+			String specialEclipseMessage = null;
+			try {
+				IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(uri);
+				if (files == null) specialEclipseMessage = ".findFilesForLocationURI returned 'null'";
+				for (IFile file : files) {
+					InputStream in = file.getContents(true);
+					if (in != null) {
+						filesOpenedWithEclipse++;
+						in.close();
+					}
+				}
+				if (filesOpenedWithEclipse == 0) specialEclipseMessage = ".findFilesForLocationURI did work and returned " + files.length + " entries, but none of those resulted in readable contents.";
+			} catch (Throwable t) {
+				// That's unfortunate.
+			}
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append("Lombok is trying to find the directory on disk where source file \"").append(javaFile.toString());
+			sb.append("\" is located. We're trying to turn this URL into a file: \"").append(uri.toString());
+			sb.append("\" but that isn't working. Please help us out by going to ");
+			sb.append("https://code.google.com/p/projectlombok/issues/detail?id=683 and reporting this error. Thanks!\n\n");
+			sb.append("Exception thrown: ").append(e.getClass().getName()).append("\nException msg: ").append(e.getMessage());
+			if (specialEclipseMessage == null && filesOpenedWithEclipse > 0) {
+				sb.append("\n\n Alternate strategy to read this resource via eclipse DID WORK however!! files read: " + filesOpenedWithEclipse);
+			} else if (specialEclipseMessage != null) {
+				sb.append("\n\n Alternate strategy to read this resource via eclipse produced a noteworthy result: ").append(specialEclipseMessage).append(" files read: ").append(filesOpenedWithEclipse);
+			}
+			
+			reporter.report(javaFile.toString(), sb.toString(), 0, "");
+			try {
+				EclipseHandlerUtil.warning(sb.toString(), null);
+			} catch (Throwable ignore) {}
+			return Collections.emptyList();
+		}
 	}
 	
 	public Iterable<ConfigurationSource> sourcesForDirectory(URI directory, ConfigurationProblemReporter reporter) {

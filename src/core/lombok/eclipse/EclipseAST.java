@@ -34,6 +34,7 @@ import java.util.List;
 import lombok.Lombok;
 import lombok.core.AST;
 import lombok.core.LombokImmutableList;
+import lombok.eclipse.handlers.EclipseHandlerUtil;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
@@ -88,18 +89,19 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		// * Either way there are sufficiently many WTF situations, that in case of error, as painful as this is, we should just carry on and not apply lombok.config, though at least if we don't recognize the scenario we should write a log file imploring the user to send us a bunch of feedback on the situation.
 		// Relevant issues: Comment 2 on #683, all of #682
 		if (!skipEclipseWorkspaceBasedFileResolver) {
-			if (Boolean.TRUE) throw new IllegalArgumentException("Here's the alt strat result: " + getAlternativeAbsolutePath());
+//			if (Boolean.FALSE) throw new IllegalArgumentException("Here's the alt strat result: " + getAlternativeAbsolutePathDEBUG());
 			try {
 				/*if (fileName.startsWith("/") && fileName.indexOf('/', 1) > -1) */
 				try {
 					return EclipseWorkspaceBasedFileResolver.resolve(fileName);
 				} catch (IllegalArgumentException e) {
-					String msg = e.getMessage();
-					if (msg != null && msg.startsWith("Path must include project and resource name")) {
-						// We shouldn't throw an exception at all, but we can't reproduce this so we need help from our users to figure this out.
-						// Let's bother them with an error that slows their eclipse down to a crawl and makes it unusable.
-						throw new IllegalArgumentException("Path resolution for lombok.config failed. Path: " + fileName + " -- package of this class: " + this.getPackageDeclaration());
-					} else throw e;
+					EclipseHandlerUtil.warning("Finding 'lombok.config' file failed for '" + fileName + "'", e);
+//					String msg = e.getMessage();
+//					if (msg != null && msg.startsWith("Path must include project and resource name")) {
+//						// We shouldn't throw an exception at all, but we can't reproduce this so we need help from our users to figure this out.
+//						// Let's bother them with an error that slows their eclipse down to a crawl and makes it unusable.
+//						throw new IllegalArgumentException("Path resolution for lombok.config failed. Path: " + fileName + " -- package of this class: " + this.getPackageDeclaration());
+//					} else throw e;
 				}
 			} catch (NoClassDefFoundError e) {
 				skipEclipseWorkspaceBasedFileResolver = true;
@@ -108,10 +110,17 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		
 		// Our fancy workspace based source file to absolute disk location algorithm only works in a fully fledged eclipse.
 		// This fallback works when using 'ecj', which has a much simpler project/path system. For example, no 'linked' resources.
-		return new File(fileName).getAbsoluteFile().toURI();
+		
+		try {
+			return new File(fileName).getAbsoluteFile().toURI();
+		} catch (Exception e) {
+			// This is a temporary workaround while we try and gather all the various exotic shenanigans where lombok.config resolution is not going to work!
+			return null;
+		}
 	}
 	
-	private String getAlternativeAbsolutePath() {
+	/** This is ongoing research for issues with lombok.config resolution. */
+	@SuppressWarnings("unused") private String getAlternativeAbsolutePathDEBUG() {
 		try {
 			ICompilationUnit cu = this.compilationUnitDeclaration.compilationResult.compilationUnit;
 			
