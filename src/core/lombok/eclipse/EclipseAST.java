@@ -22,7 +22,6 @@
 package lombok.eclipse;
 
 import java.io.File;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -51,9 +50,6 @@ import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
-import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
-import org.eclipse.jdt.internal.core.Openable;
-import org.eclipse.jdt.internal.core.builder.SourceFile;
 
 /**
  * Wraps around Eclipse's internal AST view to add useful features as well as the ability to visit parents from children,
@@ -119,39 +115,39 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		}
 	}
 	
-	/** This is ongoing research for issues with lombok.config resolution. */
-	@SuppressWarnings("unused") private String getAlternativeAbsolutePathDEBUG() {
-		try {
-			ICompilationUnit cu = this.compilationUnitDeclaration.compilationResult.compilationUnit;
-			
-			if (cu instanceof Openable) {
-				String x = ((Openable) cu).getResource().getFullPath().makeAbsolute().toString();
-				int lastLoc = x.lastIndexOf('/');
-				x = x.substring(0, lastLoc + 1) + "lombok.config";
-				URI lombokConfigLoc = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(x)).getLocationURI();
-				InputStream in = ResourcesPlugin.getWorkspace().getRoot().getFile(ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(x)).getFullPath()).getContents(true);
-				byte[] b = new byte[100000];
-				int p = 0;
-				while (true) {
-					int r = in.read(b, p, b.length - p);
-					if (r == -1) break;
-					p += r;
-				}
-				in.close();
-				return "(Contents of lombok.config: " + new String(b, 0, p, "UTF-8");
-
-//				return "(alt strategy result C: '" + ((Openable) cu).getResource().getFullPath().makeAbsolute().toString() + "'): resolved: " + EclipseWorkspaceBasedFileResolver.resolve(((Openable) cu).getResource().getFullPath().makeAbsolute().toString());
-			}
-			if (cu instanceof SourceFile) {
-				String cuFileName = new String(((SourceFile) cu).getFileName());
-				String cuIFilePath = ((SourceFile) cu).resource.getFullPath().toString();
-				return "(alt strategy result A: \"" + cuFileName + "\" B: \"" + cuIFilePath + "\")";
-			}
-			return "(alt strategy failed: cu isn't a SourceFile or Openable but a " + cu.getClass() + ")";
-		} catch (Exception e) {
-			return "(alt strategy failed: " + e + ")";
-		}
-	}
+//	/** This is ongoing research for issues with lombok.config resolution. */
+//	@SuppressWarnings("unused") private String getAlternativeAbsolutePathDEBUG() {
+//		try {
+//			ICompilationUnit cu = this.compilationUnitDeclaration.compilationResult.compilationUnit;
+//			
+//			if (cu instanceof Openable) {
+//				String x = ((Openable) cu).getResource().getFullPath().makeAbsolute().toString();
+//				int lastLoc = x.lastIndexOf('/');
+//				x = x.substring(0, lastLoc + 1) + "lombok.config";
+//				URI lombokConfigLoc = ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(x)).getLocationURI();
+//				InputStream in = ResourcesPlugin.getWorkspace().getRoot().getFile(ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(x)).getFullPath()).getContents(true);
+//				byte[] b = new byte[100000];
+//				int p = 0;
+//				while (true) {
+//					int r = in.read(b, p, b.length - p);
+//					if (r == -1) break;
+//					p += r;
+//				}
+//				in.close();
+//				return "(Contents of lombok.config: " + new String(b, 0, p, "UTF-8");
+//
+////				return "(alt strategy result C: '" + ((Openable) cu).getResource().getFullPath().makeAbsolute().toString() + "'): resolved: " + EclipseWorkspaceBasedFileResolver.resolve(((Openable) cu).getResource().getFullPath().makeAbsolute().toString());
+//			}
+//			if (cu instanceof SourceFile) {
+//				String cuFileName = new String(((SourceFile) cu).getFileName());
+//				String cuIFilePath = ((SourceFile) cu).resource.getFullPath().toString();
+//				return "(alt strategy result A: \"" + cuFileName + "\" B: \"" + cuIFilePath + "\")";
+//			}
+//			return "(alt strategy failed: cu isn't a SourceFile or Openable but a " + cu.getClass() + ")";
+//		} catch (Exception e) {
+//			return "(alt strategy failed: " + e + ")";
+//		}
+//	}
 	
 	private static class EclipseWorkspaceBasedFileResolver {
 		public static URI resolve(String path) {
