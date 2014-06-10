@@ -1,6 +1,8 @@
 Lombok Changelog
 ----------------
 
+### v1.14.3 "Edgy Guinea Pig"
+
 ### v1.14.2  (June 10th, 2014)
 * BUGFIX: syntax highlighting in eclipse will become weird and auto-complete may stop working amongst other eclipse features in v1.14.0 (regression from v1.12.6). [Issue #688](https://code.google.com/p/projectlombok/issues/detail?id=688)
 * FEATURE: Added `@Tolerate`; put this annotation on any method or constructor and lombok will skip it when considering whether or not to generate a method or constructor. This is useful if the types of the parameters of your method do not clash with what lombok would generate.
