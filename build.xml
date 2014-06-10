@@ -25,7 +25,6 @@ This buildfile is part of projectlombok.org. It is the main entry point that con
 the common tasks and can be called on to run the main aspects of all the sub-scripts.
 	</description>
 	
-	<property name="credentialsFile" value="google.properties" />
 	<property name="build.compiler" value="javac1.6" />
 	<property name="ivy.retrieve.pattern" value="lib/[conf]/[organisation]-[artifact].[ext]" />
 	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
@@ -662,41 +661,9 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			trust="true" command="./showMavenCentralPassword" />
 	</target>
 	
-	<target name="-credentials">
-		<available property="hasCredentialsFile" file="${credentialsFile}"/>
-	</target>
-	
-	<target name="-checkCredentialsFile" depends="-credentials" unless="hasCredentialsFile">
-		<echo file="${credentialsFile}">
-#username=[your google account name without @gmail.com]
-#password=[your googlecode password, is NOT your gmail password]
-		</echo>
-		<fail message="fill in ${credentialsFile} to provide your credentials" />
-	</target>
-	
-	<target name="publish" description="Publishes the latest build to googlecode." depends="version, -checkCredentialsFile, dist, dist-utils, test, -defSSH">
-		<taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpathref="build.path" name="gcupload" />
+	<target name="publish" description="Publishes the latest build to googlecode." depends="version, dist, dist-utils, test, -defSSH">
 		<available file="escudo-upload.key" property="escudo.key.available" />
 		<fail unless="escudo.key.available">You don't have the escudo-upload.key; you'll need it to get write access to the server.</fail>
-		<property file="${credentialsFile}" prefix="google" />
-		<gcupload 
-				username="${google.username}"
-				password="${google.password}"
-				projectname="projectlombok"
-				filename="dist/lombok.jar"
-				targetfilename="lombok-${lombok.version}.jar"
-				summary="Version ${lombok.version}"
-				labels=""
-				verbose="true" />
-		<gcupload 
-				username="${google.username}"
-				password="${google.password}" 
-				projectname="projectlombok" 
-				filename="dist/lombok.jar" 
-				targetfilename="lombok.jar"
-				summary="Version ${lombok.version} - The everything jar - doubleclick it to install, or just include it in your projects."
-				labels="Featured" 
-				verbose="true" />
 		<scp
 			localFile="dist/lombok-utils-${lombok.version}.jar"
 			todir="lombokup@projectlombok.org:/staging"
@@ -707,6 +674,16 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			username="lombokup"
 			keyfile="escudo-upload.key" passphrase=""
 			trust="true" command="./deployLombokUtils '${lombok.version}'" />
+		<scp
+			localFile="dist/lombok-${lombok.version}.jar"
+			todir="lombokup@projectlombok.org:/staging"
+			keyfile="escudo-upload.key" passphrase=""
+			sftp="false" verbose="true" trust="true" />
+		<sshexec
+			host="projectlombok.org"
+			username="lombokup"
+			keyfile="escudo-upload.key" passphrase=""
+			trust="true" command="./deployLombok '${lombok.version}'" />
 	</target>
 	
 	<target name="publish-all" depends="clean, version, website-publish, maven-publish, publish"

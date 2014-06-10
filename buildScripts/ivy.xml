@@ -28,7 +28,6 @@
 		
 		<dependency org="org.apache.ant" name="ant" rev="1.8.1" conf="buildBase->default; contrib->sources" />
 		<dependency org="projectlombok.org" name="spi" rev="0.2.7" conf="buildBase->build" />
-		<dependency org="projectlombok.org" name="ant-googlecode" rev="0.0.2" conf="buildBase->build" />
 		<dependency org="com.jcraft" name="jsch" rev="0.1.42" conf="buildBase->default" />
 		<dependency org="projectlombok.org" name="jsch-ant-fixed" rev="0.1.42" conf="buildBase->build" />
 		<dependency org="projectlombok.org" name="markdownj" rev="1.02b4" conf="buildBase->build" />
