@@ -23,6 +23,7 @@ package lombok.javac.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
+import static lombok.javac.JavacAugments.JCTree_generatedNode;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -41,12 +42,12 @@ import lombok.Getter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValue;
-import lombok.core.ReferenceFieldAugment;
 import lombok.core.TypeResolver;
 import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.handlers.HandlerUtil;
 import lombok.delombok.LombokOptionsFactory;
 import lombok.experimental.Accessors;
+import lombok.experimental.Tolerate;
 import lombok.javac.Javac;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -111,8 +112,6 @@ public class JavacHandlerUtil {
 		}
 	}
 	
-	private static ReferenceFieldAugment<JCTree, JCTree> generatedNodes = ReferenceFieldAugment.augmentWeakField(JCTree.class, JCTree.class, "lombok$generatedNodes");
-	
 	/**
 	 * Contributed by Jan Lahoda; many lombok transformations should not be run (or a lite version should be run) when the netbeans editor
 	 * is running javac on the open source file to find inline errors and such. As class files are compiled separately this does not affect
@@ -128,7 +127,7 @@ public class JavacHandlerUtil {
 	}
 
 	public static JCTree getGeneratedBy(JCTree node) {
-		return generatedNodes.get(node);
+		return JCTree_generatedNode.get(node);
 	}
 
 	public static boolean isGenerated(JCTree node) {
@@ -144,8 +143,8 @@ public class JavacHandlerUtil {
 
 	public static <T extends JCTree> T setGeneratedBy(T node, JCTree source, Context context) {
 		if (node == null) return null;
-		if (source == null) generatedNodes.clear(node);
-		else generatedNodes.set(node, source);
+		if (source == null) JCTree_generatedNode.clear(node);
+		else JCTree_generatedNode.set(node, source);
 		if (source != null && (!inNetbeansEditor(context) || (node instanceof JCVariableDecl && (((JCVariableDecl) node).mods.flags & Flags.PARAMETER) != 0))) node.pos = source.pos;
 		return node;
 	}
@@ -593,7 +592,7 @@ public class JavacHandlerUtil {
 		node = upToTypeNode(node);
 
 		if (node != null && node.get() instanceof JCClassDecl) {
-			for (JCTree def : ((JCClassDecl)node.get()).defs) {
+			top: for (JCTree def : ((JCClassDecl)node.get()).defs) {
 				if (def instanceof JCMethodDecl) {
 					JCMethodDecl md = (JCMethodDecl) def;
 					String name = md.name.toString();
@@ -615,6 +614,12 @@ public class JavacHandlerUtil {
 
 							if (params < minArgs || params > maxArgs) continue;
 						}
+						
+						List<JCAnnotation> annotations = md.getModifiers().getAnnotations();
+						if (annotations != null) for (JCAnnotation anno : annotations) {
+							if (typeMatches(Tolerate.class, node, anno.getAnnotationType())) continue top;
+						}
+						
 						return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
 				}
@@ -634,10 +639,15 @@ public class JavacHandlerUtil {
 		node = upToTypeNode(node);
 
 		if (node != null && node.get() instanceof JCClassDecl) {
-			for (JCTree def : ((JCClassDecl)node.get()).defs) {
+			top: for (JCTree def : ((JCClassDecl)node.get()).defs) {
 				if (def instanceof JCMethodDecl) {
-					if (((JCMethodDecl)def).name.contentEquals("<init>")) {
-						if ((((JCMethodDecl)def).mods.flags & Flags.GENERATEDCONSTR) != 0) continue;
+					JCMethodDecl md = (JCMethodDecl) def;
+					if (md.name.contentEquals("<init>")) {
+						if ((md.mods.flags & Flags.GENERATEDCONSTR) != 0) continue;
+						List<JCAnnotation> annotations = md.getModifiers().getAnnotations();
+						if (annotations != null) for (JCAnnotation anno : annotations) {
+							if (typeMatches(Tolerate.class, node, anno.getAnnotationType())) continue top;
+						}
 						return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
 				}

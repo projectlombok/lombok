@@ -23,6 +23,7 @@ package lombok.eclipse;
 
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
+import static lombok.eclipse.EclipseAugments.ASTNode_handled;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -38,7 +39,6 @@ import lombok.Lombok;
 import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValueDecodeFail;
 import lombok.core.configuration.ConfigurationKeysLoader;
-import lombok.core.BooleanFieldAugment;
 import lombok.core.HandlerPriority;
 import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
@@ -188,14 +188,12 @@ public class HandlerLibrary {
 		}
 	}
 	
-	private static final BooleanFieldAugment<ASTNode> handled = BooleanFieldAugment.augment(ASTNode.class, "lombok$handled");
-	
 	private boolean checkAndSetHandled(ASTNode node) {
-		return !handled.set(node);
+		return !ASTNode_handled.getAndSet(node, true);
 	}
 	
 	private boolean needsHandling(ASTNode node) {
-		return !handled.get(node);
+		return !ASTNode_handled.get(node);
 	}
 	
 	/**

@@ -15,18 +15,13 @@
 		<div class="overview">
 			<h3>Overview</h3>
 			<p>
-			Any class definition may be annotated with <code>@ToString</code> to let lombok generate an implementation of the
-			<code>toString()</code> method. By default, it'll print your class name, along with each field, in order, separated by commas.
+			Any class definition may be annotated with <code>@ToString</code> to let lombok generate an implementation of the <code>toString()</code> method. By default, it'll print your class name, along with each field, in order, separated by commas.
 			</p><p>
-			By setting the <code>includeFieldNames</code> parameter to <em>true</em> you can add some clarity (but also quite some length) to
-			the output of the <code>toString()</code> method.
+			By setting the <code>includeFieldNames</code> parameter to <em>true</em> you can add some clarity (but also quite some length) to the output of the <code>toString()</code> method.
 			</p><p>
-			By default, all non-static fields will be printed. If you want to skip some fields, you can name them in the <code>exclude</code> parameter; each named
-			field will not be printed at all. Alternatively, you can specify exactly which fields you wish to be used by naming them in the <code>of</code> parameter.
+			By default, all non-static fields will be printed. If you want to skip some fields, you can name them in the <code>exclude</code> parameter; each named field will not be printed at all. Alternatively, you can specify exactly which fields you wish to be used by naming them in the <code>of</code> parameter.
 			</p><p>
-			By setting <code>callSuper</code> to <em>true</em>, you can include the output of the superclass implementation of <code>toString</code> to the
-			output. Be aware that the default implementation of <code>toString()</code> in <code>java.lang.Object</code> is pretty much meaningless, so you
-			probably don't want to do this unless you are extending another class.
+			By setting <code>callSuper</code> to <em>true</em>, you can include the output of the superclass implementation of <code>toString</code> to the output. Be aware that the default implementation of <code>toString()</code> in <code>java.lang.Object</code> is pretty much meaningless, so you probably don't want to do this unless you are extending another class.
 			</p>
 		</div>
 		<div class="snippets">
@@ -55,8 +50,7 @@
 		<div class="overview">
 			<h3>Small print</h3><div class="smallprint">
 				<p>
-				If there is <em>any</em> method named <code>toString</code> regardless of parameters or return type, no method will be generated, and instead
-				a warning is emitted explaining that your <code>@ToString</code> annotation is doing nothing.
+				If there is <em>any</em> method named <code>toString</code> with no arguments, regardless of return type, no method will be generated, and instead a warning is emitted explaining that your <code>@ToString</code> annotation is doing nothing. You can mark any method with <code>@lombok.experimental.Tolerate</code> to hide them from lombok.
 				</p><p>
 				Arrays are printed via <code>Arrays.deepToString</code>, which means that arrays that contain themselves will result in <code>StackOverflowError</code>s. However,
 				this behaviour is no different from e.g. <code>ArrayList</code>.

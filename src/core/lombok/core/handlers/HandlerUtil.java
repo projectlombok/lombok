@@ -283,8 +283,8 @@ public class HandlerUtil {
 		fieldName = fieldName.toString();
 		if (fieldName.length() == 0) return null;
 		
+		if (Boolean.TRUE.equals(ast.readConfiguration(ConfigurationKeys.GETTER_CONSEQUENT_BOOLEAN))) isBoolean = false;
 		boolean explicitPrefix = accessors != null && accessors.isExplicit("prefix");
-//		System.out.printf("accessors: %s actual expr: %s val: %s\n", accessors, accessors != null ? accessors.getActualExpression("prefix") : "(null)", accessors == null ? "(null)" : Arrays.toString(accessors.getInstance().prefix()));
 		boolean explicitFluent = accessors != null && accessors.isExplicit("fluent");
 		
 		Accessors ac = (explicitPrefix || explicitFluent) ? accessors.getInstance() : null;
@@ -351,6 +351,7 @@ public class HandlerUtil {
 	private static List<String> toAllAccessorNames(AST<?, ?, ?> ast, AnnotationValues<Accessors> accessors, CharSequence fieldName, boolean isBoolean,
 			String booleanPrefix, String normalPrefix, boolean adhereToFluent) {
 		
+		if (Boolean.TRUE.equals(ast.readConfiguration(ConfigurationKeys.GETTER_CONSEQUENT_BOOLEAN))) isBoolean = false;
 		if (!isBoolean) {
 			String accessorName = toAccessorName(ast, accessors, fieldName, false, booleanPrefix, normalPrefix, adhereToFluent);
 			return (accessorName == null) ? Collections.<String>emptyList() : Collections.singletonList(accessorName);

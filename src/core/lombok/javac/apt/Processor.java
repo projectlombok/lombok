@@ -256,11 +256,15 @@ public class Processor extends AbstractProcessor {
 			for (int i = priorityLevels.length - 1; i >= 0; i--) {
 				Long curLevel = priorityLevels[i];
 				Long nextLevel = (i == priorityLevels.length - 1) ? null : priorityLevels[i + 1];
+				List<JCCompilationUnit> cusToAdvance = new ArrayList<JCCompilationUnit>();
 				for (Map.Entry<JCCompilationUnit, Long> entry : roots.entrySet()) {
 					if (curLevel.equals(entry.getValue())) {
-						entry.setValue(nextLevel);
+						cusToAdvance.add(entry.getKey());
 						newLevels.add(nextLevel);
 					}
+				}
+				for (JCCompilationUnit unit : cusToAdvance) {
+					roots.put(unit, nextLevel);
 				}
 			}
 			newLevels.remove(null);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 The Project Lombok Authors.
+ * Copyright (C) 2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,34 +19,18 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.javac.java8;
+package lombok.experimental;
 
-import static lombok.javac.CommentCatcher.JCCompilationUnit_comments;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import java.util.List;
-
-import lombok.javac.CommentInfo;
-
-import com.sun.tools.javac.parser.JavacParser;
-import com.sun.tools.javac.parser.Lexer;
-import com.sun.tools.javac.parser.ParserFactory;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-
-class CommentCollectingParser extends JavacParser {
-	private final Lexer lexer;
-	
-	protected CommentCollectingParser(ParserFactory fac, Lexer S,
-			boolean keepDocComments, boolean keepLineMap, boolean keepEndPositions) {
-		super(fac, S, keepDocComments, keepLineMap, keepEndPositions);
-		lexer = S;
-	}
-	
-	public JCCompilationUnit parseCompilationUnit() {
-		JCCompilationUnit result = super.parseCompilationUnit();
-		if (lexer instanceof CommentCollectingScanner) {
-			List<CommentInfo> comments = ((CommentCollectingScanner)lexer).getComments();
-			JCCompilationUnit_comments.set(result, comments);
-		}
-		return result;
-	}
+/**
+ * Put on any method or constructor to make lombok pretend it doesn't exist,
+ * i.e., to generate a method which would otherwise be skipped due to possible conflicts.
+ */
+@Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
+@Retention(RetentionPolicy.SOURCE)
+public @interface Tolerate {
 }

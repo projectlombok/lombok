@@ -23,6 +23,7 @@ package lombok.eclipse.agent;
 
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
+import static lombok.eclipse.EclipseAugments.Annotation_applied;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -33,7 +34,6 @@ import java.util.List;
 import java.util.Set;
 
 import lombok.core.AST.Kind;
-import lombok.core.BooleanFieldAugment;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.TransformEclipseAST;
@@ -183,10 +183,8 @@ public class PatchDelegate {
 		return null;
 	}
 	
-	private static BooleanFieldAugment<Annotation> applied = BooleanFieldAugment.augment(Annotation.class, "lombok$applied");
-	
 	public static void markHandled(Annotation annotation) {
-		applied.set(annotation);
+		Annotation_applied.set(annotation, true);
 	}
 	
 	private static void fillMethodBindingsForFields(CompilationUnitDeclaration cud, ClassScope scope, List<BindingTuple> methodsToDelegate) {
@@ -197,7 +195,7 @@ public class PatchDelegate {
 			if (field.annotations == null) continue;
 			for (Annotation ann : field.annotations) {
 				if (!isDelegate(ann, decl)) continue;
-				if (applied.set(ann)) continue;
+				if (Annotation_applied.getAndSet(ann, true)) continue;
 				
 				if ((field.modifiers & ClassFileConstants.AccStatic) != 0) {
 					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
@@ -257,7 +255,7 @@ public class PatchDelegate {
 			if (methodDecl.annotations == null) continue;
 			for (Annotation ann : methodDecl.annotations) {
 				if (!isDelegate(ann, decl)) continue;
-				if (applied.set(ann)) continue;
+				if (Annotation_applied.getAndSet(ann, true)) continue;
 				if (!(methodDecl instanceof MethodDeclaration)) {
 					EclipseAST eclipseAst = TransformEclipseAST.getAST(cud, true);
 					eclipseAst.get(ann).addError(LEGALITY_OF_DELEGATE);

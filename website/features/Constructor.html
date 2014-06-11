@@ -43,9 +43,7 @@
 			the <code>@ConstructorProperties</code> annotation, add a parameter to your annotation: <code>@AllArgsConstructor(suppressConstructorProperties=true)</code>. However,
 			as java 1.5, which has already been end-of-lifed, fades into obscurity, this parameter will eventually be removed. It has also been marked deprecated for this reason.
 			</p><p>
-			Unlike most other lombok annotations, the existence of an explicit constructor does not stop these annotations from generating their own constructor. This means you can write
-			your own specialized constructor, and let lombok generate the boilerplate ones as well. If a conflict arises (one of your constructors ends up with the same
-			signature as one that lombok generates), a compiler error will occur.
+			Unlike most other lombok annotations, the existence of an explicit constructor does not stop these annotations from generating their own constructor. This means you can write your own specialized constructor, and let lombok generate the boilerplate ones as well. If a conflict arises (one of your constructors ends up with the same signature as one that lombok generates), a compiler error will occur.
 			</p>
 		</div>
 		<div class="snippets">

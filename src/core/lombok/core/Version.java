@@ -21,6 +21,8 @@
  */
 package lombok.core;
 
+import java.io.InputStream;
+
 /**
  * This class just holds lombok's current version.
  */
@@ -28,11 +30,9 @@ public class Version {
 	// ** CAREFUL ** - this class must always compile with 0 dependencies (it must not refer to any other sources or libraries).
 	// Note: In 'X.Y.Z', if Z is odd, its a snapshot build built from the repository, so many different 0.10.3 versions can exist, for example.
 	// Official builds always end in an even number. (Since 0.10.2).
-
-	private static final String VERSION = "1.14.1";
+	private static final String VERSION = "1.14.2";
 //	private static final String RELEASE_NAME = "Edgy Guinea Pig";
-	private static final String RELEASE_NAME = "Branching Bound Cobra";
-
+	private static final String RELEASE_NAME = "Branching Cobra";
 	
 	private Version() {
 		//Prevent instantiation
@@ -68,6 +68,38 @@ public class Version {
 	}
 	
 	public static String getFullVersion() {
-		return String.format("v%s \"%s\"", VERSION, RELEASE_NAME);
+		String version = String.format("v%s \"%s\"", VERSION, RELEASE_NAME);
+		if (!isEdgeRelease()) return version;
+		
+		InputStream in = Version.class.getResourceAsStream("/release-timestamp.txt");
+		if (in == null) return version;
+		try {
+			byte[] data = new byte[65536];
+			int p = 0;
+			while (p < data.length) {
+				int r = in.read(data, p, data.length - p);
+				if (r == -1) break;
+				p += r;
+			}
+			
+			String timestamp = new String(data, "UTF-8").trim();
+			return version + " - " + timestamp;
+		} catch (Exception e) {
+			try {
+				in.close();
+			} catch (Exception ignore) {}
+		}
+		
+		return version;
+	}
+	
+	public static boolean isEdgeRelease() {
+		int lastIdx = VERSION.lastIndexOf('.');
+		if (lastIdx == -1) return false;
+		try {
+			return Integer.parseInt(VERSION.substring(lastIdx + 1)) % 2 == 1;
+		} catch (Exception e) {
+			return false;
+		}
 	}
 }
