@@ -1070,7 +1070,29 @@ public class EclipseHandlerUtil {
 		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
 		return shouldReturnThis0(accessors, field.getAst());
 	}
-	
+
+    public static boolean shouldAddPropertyNameConstant(EclipseNode field) {
+		if ((((FieldDeclaration) field.get()).modifiers & ClassFileConstants.AccStatic) != 0) return false;
+		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
+		Accessors instance = accessors.getInstance();
+		return instance.propertyNameConstant() || instance.bound();
+	}
+    
+	public static boolean shouldAddBoundProperty(EclipseNode field) {
+		if ((((FieldDeclaration) field.get()).modifiers & ClassFileConstants.AccStatic) != 0) return false;
+        
+		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
+        
+		Accessors instance = accessors.getInstance();
+		return instance.bound();
+	}
+    
+	public static String propertyChangeSupportFieldName(EclipseNode field) {
+		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
+		Accessors instance = accessors.getInstance();
+		return instance.propertyChangeSupportFieldName();
+	}
+    
 	/**
 	 * Checks if the field should be included in operations that work on 'all' fields:
 	 *    If the field is static, or starts with a '$', or is actually an enum constant, 'false' is returned, indicating you should skip it.
