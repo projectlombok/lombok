@@ -355,7 +355,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		String setterName = fluent ? fieldNode.getName() : toSetterName(builderType.getAst(), null, fieldNode.getName(), isBoolean);
 		
 		return HandleSetter.createSetter(td, fieldNode, setterName, chain, ClassFileConstants.AccPublic,
-				sourceNode, Collections.<Annotation>emptyList(), Collections.<Annotation>emptyList(),false,false,null);
+				sourceNode, Collections.<Annotation>emptyList(), Collections.<Annotation>emptyList());
 	}
 
 	public EclipseNode findInnerClass(EclipseNode parent, String name) {

@@ -167,6 +167,8 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			fieldNode.addWarning("Not generating setter for this field: Setters cannot be generated for final fields.");
 			return;
 		}
+		
+		createPropertyNameConstantForField(fieldNode, sourceNode);
 
 		for (String altName : toAllSetterNames(fieldNode)) {
 			switch (methodExists(altName, fieldNode, false, 1)) {
@@ -195,25 +197,30 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		String setterName = toSetterName(field);
 		boolean returnThis = shouldReturnThis(field);
-		boolean propConstant = shouldAddPropertyNameConstant(field);
 		boolean bound = shouldAddBoundProperty(field);
 		String propertyChangeSupportFieldName = null;
 		if( bound ) {
 			propertyChangeSupportFieldName = propertyChangeSupportFieldName(field);
 		}
-		return createSetter(access, field, treeMaker, setterName, returnThis, source, onMethod, onParam, propConstant, bound, propertyChangeSupportFieldName );
+		return createSetter(access, field, treeMaker, setterName, returnThis, source, onMethod, onParam, bound, propertyChangeSupportFieldName );
 	}
 
-
-	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, String setterName, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam, boolean propConstant, boolean bound, String propertyChangeSupportFieldName) {
+	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, String setterName, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+		return createSetter(access, field, treeMaker, setterName, shouldReturnThis, source, onMethod, onParam, false, null);
+	}
+	
+	/**
+	 * @param bound - generate property change support code: precondition if true: createPropertyNameConstantForField(...) call must be called before to generate propertyNameConstant (e.g. PROP_FOO) 
+	 * @param propertyChangeSupportFieldName - member field to call method firePropertyChange if bound=true
+	 * @return
+	 */
+	private static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, String setterName, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam, boolean bound, String propertyChangeSupportFieldName) {
 		if (setterName == null) return null;
 
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
 
 		JCExpression fieldRef = createFieldAccessor(treeMaker, field, FieldAccess.ALWAYS_FIELD);
 		JCAssign assign = treeMaker.Assign(fieldRef, treeMaker.Ident(fieldDecl.name));
-
-
 
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 
@@ -222,12 +229,6 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 
 		Name methodName = field.toName(setterName);
 		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(nonNulls).appendList(nullables);
-
-		JCVariableDecl propConstantDecl=null;
-		if( propConstant ) {
-			propConstantDecl=createPropConstant( field.up(), source, field.getName() );
-			injectFieldSuppressWarnings(field.up(), propConstantDecl);
-		}
 
 		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, field.getContext());
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(flags, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
@@ -260,7 +261,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 
 		if( bound ) {
 			JCExpression callFirePropChanged = chainDotsString(field, "this."+propertyChangeSupportFieldName+".firePropertyChange");
-			JCExpression propNameParam = treeMaker.Ident(propConstantDecl.name);
+			JCExpression propNameParam = chainDotsString(field, createPropConstantName(field.getName()));
 			JCExpression oldValueParam = treeMaker.Ident(oldVar.name);
 			JCExpression currentValueParam = fieldRef;
 
@@ -292,16 +293,34 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		return decl;
 	}
 
+	private void createPropertyNameConstantForField(JavacNode fieldNode, JavacNode sourceNode) {
+		boolean propConstant = shouldAddPropertyNameConstant(fieldNode);
+		String propConstantName = createPropConstantName(fieldNode.getName());
+		if( propConstant && MemberExistsResult.NOT_EXISTS.equals( fieldExists(propConstantName, fieldNode ) ) ) {
+			JCVariableDecl propConstantDecl=createPropConstant( fieldNode.up(), sourceNode, fieldNode.getName() );
+			injectFieldSuppressWarnings(fieldNode.up(), propConstantDecl);
+		}
+	}
+	
 	private static JCVariableDecl createPropConstant(JavacNode typeNode, JavacNode source, String propertyName) {
+		String constantName = createPropConstantName(propertyName);
+		return createStringConstant(typeNode, source, constantName, propertyName);
+	}
+
+	private static JCVariableDecl createStringConstant(JavacNode typeNode, JavacNode source, String constantName, String constantValue) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 
 		JCExpression propConstantType = chainDotsString(typeNode, "java.lang.String" );
-		JCExpression initValue = maker.Literal(propertyName);
+		JCExpression initValue = maker.Literal(constantValue);
+
 
 		JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
 				maker.Modifiers(Flags.PUBLIC | Flags.FINAL | Flags.STATIC),
-				typeNode.toName("PROP_"+ Names.camelCaseToConstant(propertyName) ), propConstantType, initValue), source.get(), typeNode.getContext());
-
+				typeNode.toName(constantName ), propConstantType, initValue), source.get(), typeNode.getContext());
 		return fieldDecl;
+	}
+
+	private static String createPropConstantName(String propertyName) {
+		return "PROP_"+ Names.camelCaseToConstant(propertyName);
 	}
 }

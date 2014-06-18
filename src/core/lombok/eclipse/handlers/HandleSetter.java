@@ -173,7 +173,6 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		boolean isBoolean = isBoolean(fieldType);
 		String setterName = toSetterName(fieldNode, isBoolean);
 		boolean shouldReturnThis = shouldReturnThis(fieldNode);
-		boolean propConstant = shouldAddPropertyNameConstant(fieldNode);
 		boolean bound = shouldAddBoundProperty(fieldNode);
 		String propertyChangeSupportFieldName = null;
 		if( bound ) {
@@ -184,6 +183,8 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			fieldNode.addWarning("Not generating setter for this field: It does not fit your @Accessors prefix list.");
 			return;
 		}
+
+		createPropertyNameConstantForField(fieldNode, source);
 
 		int modifier = toEclipseModifier(level) | (field.modifiers & ClassFileConstants.AccStatic);
 
@@ -205,27 +206,19 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			}
 		}
 
-		MethodDeclaration method = createSetter((TypeDeclaration) fieldNode.up().get(), fieldNode, setterName, shouldReturnThis, modifier, sourceNode, onMethod, onParam, propConstant, bound, propertyChangeSupportFieldName);
+		MethodDeclaration method = createSetter((TypeDeclaration) fieldNode.up().get(), fieldNode, setterName, shouldReturnThis, modifier, sourceNode, onMethod, onParam, bound, propertyChangeSupportFieldName);
 		injectMethod(fieldNode.up(), method);
 	}
 
-	static MethodDeclaration createSetter(TypeDeclaration parent, EclipseNode fieldNode, String name, boolean shouldReturnThis, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam, boolean propConstant, boolean bound, String propertyChangeSupportFieldName) {
+	public static MethodDeclaration createSetter(TypeDeclaration parent, EclipseNode fieldNode, String name, boolean shouldReturnThis, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam ) {
+		return createSetter(parent, fieldNode, name, shouldReturnThis, modifier, sourceNode, onMethod, onParam, false, null);
+	}
+	
+	private static MethodDeclaration createSetter(TypeDeclaration parent, EclipseNode fieldNode, String name, boolean shouldReturnThis, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam, boolean bound, String propertyChangeSupportFieldName) {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		ASTNode source = sourceNode.get();
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
-
-		FieldDeclaration propConstantFieldDecl=null;
-		if( propConstant ) {
-			propConstantFieldDecl = new FieldDeclaration(("PROP_"+Names.camelCaseToConstant(fieldNode.getName())).toCharArray(), 0, -1 );
-			setGeneratedBy(propConstantFieldDecl, source);
-			propConstantFieldDecl.declarationSourceEnd = -1;
-			propConstantFieldDecl.modifiers = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
-			propConstantFieldDecl.type = createTypeReference("java.lang.String", source);
-			propConstantFieldDecl.initialization = new StringLiteral(fieldNode.getName().toCharArray(), pS, pE, 0);
-			propConstantFieldDecl.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-			injectField(fieldNode.up(), propConstantFieldDecl);
-		}
 
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
 		method.modifiers = modifier;
@@ -292,7 +285,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			firePropChangeMethodCall.receiver = propChangeFieldRef;
 			firePropChangeMethodCall.selector = "firePropertyChange".toCharArray();
 
-			Expression propNameParam=new SingleNameReference(propConstantFieldDecl.name,p);
+			Expression propNameParam=new SingleNameReference(createPropConstantName(fieldNode.getName()).toCharArray(),p);
 			Expression oldValueParam=new SingleNameReference(oldValueVarDecl.name,p);
 			Expression newValueParam=createFieldAccessor(fieldNode, FieldAccess.ALWAYS_FIELD, source);;
 
@@ -317,6 +310,37 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 
 		method.traverse(new SetGeneratedByVisitor(source), parent.scope);
 		return method;
+	}
+
+	private static void createPropertyNameConstantForField(EclipseNode fieldNode, ASTNode source) {
+		boolean propConstant = shouldAddPropertyNameConstant(fieldNode);
+		if( propConstant && MemberExistsResult.NOT_EXISTS.equals(fieldExists(createPropConstantName(fieldNode.getName()), fieldNode))) {
+			FieldDeclaration propConstantFieldDecl = createPropertyNameConstant(fieldNode, source);
+			injectField(fieldNode.up(), propConstantFieldDecl);
+		}
+	}
+
+	private static FieldDeclaration createPropertyNameConstant(EclipseNode fieldNode, ASTNode source) {
+		String constantValue = fieldNode.getName();
+		String constantName = createPropConstantName(constantValue);
+		FieldDeclaration propConstantFieldDecl = createStringConstant(source, constantName, constantValue);
+		return propConstantFieldDecl;
+	}
+
+	private static FieldDeclaration createStringConstant(ASTNode source, String constantName, String constantValue) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		FieldDeclaration propConstantFieldDecl = new FieldDeclaration(constantName.toCharArray(), 0, -1 );
+		setGeneratedBy(propConstantFieldDecl, source);
+		propConstantFieldDecl.declarationSourceEnd = -1;
+		propConstantFieldDecl.modifiers = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
+		propConstantFieldDecl.type = createTypeReference("java.lang.String", source);
+		propConstantFieldDecl.initialization = new StringLiteral(constantValue.toCharArray(), pS, pE, 0);
+		propConstantFieldDecl.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
+		return propConstantFieldDecl;
+	}
+
+	private static String createPropConstantName(String fieldNodeName) {
+		return "PROP_"+Names.camelCaseToConstant(fieldNodeName);
 	}
 
 	public static TypeReference createTypeReference(String typeName, ASTNode source) {
