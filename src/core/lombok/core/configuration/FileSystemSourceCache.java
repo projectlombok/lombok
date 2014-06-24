@@ -24,7 +24,6 @@ package lombok.core.configuration;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.net.URI;
 import java.util.Collections;
 import java.util.Iterator;
@@ -35,64 +34,40 @@ import java.util.concurrent.TimeUnit;
 
 import lombok.ConfigurationKeys;
 import lombok.core.configuration.ConfigurationSource.Result;
-import lombok.eclipse.handlers.EclipseHandlerUtil;
-
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
+import lombok.core.debug.ProblemReporter;
 
 public class FileSystemSourceCache {
 	private static String LOMBOK_CONFIG_FILENAME = "lombok.config";
 	private static final long RECHECK_FILESYSTEM = TimeUnit.SECONDS.toMillis(2);
-	private static final long MISSING = -1; 
+	private static final long NEVER_CHECKED = -1;
+	private static final long MISSING = -88; // Magic value; any lombok.config with this exact epochmillis last modified will never be read, so, let's ensure nobody accidentally has one with that exact last modified stamp.
 	
 	private final ConcurrentMap<File, Content> cache = new ConcurrentHashMap<File, Content>();
 	
 	public Iterable<ConfigurationSource> sourcesForJavaFile(URI javaFile, ConfigurationProblemReporter reporter) {
 		if (javaFile == null) return Collections.emptyList();
 		URI uri = javaFile.normalize();
-		if (!uri.isAbsolute()) {
-			uri = new File(".").toURI().resolve(uri);
-			reporter.report(javaFile.toString(), "Somehow ended up with a relative path. This is a bug that the lombok authors cannot reproduce, so please help us out! Is this path: \"" + uri.toString() + "\" the correct absolute path for resource \"" + javaFile + "\"? If yes, or no, please report back to: https://code.google.com/p/projectlombok/issues/detail?id=683 and let us know. Thanks!", 0, "");
-		}
+		if (!uri.isAbsolute()) uri = URI.create("file:" + uri.toString());
+		
+		File file;
 		try {
-			return sourcesForDirectory(new File(uri).getParentFile(), reporter);
+			file = new File(uri);
+			if (!file.exists()) throw new IllegalArgumentException("File does not exist: " + uri);
+			return sourcesForDirectory(file.getParentFile(), reporter);
+		} catch (IllegalArgumentException e) {
+			// This means that the file as passed is not actually a file at all, and some exotic path system is involved.
+			// examples: sourcecontrol://jazz stuff, or an actual relative path (uri.isAbsolute() is completely different, that checks presence of schema!),
+			// or it's eclipse trying to parse a snippet, which has "/Foo.java" as uri.
+			// At some point it might be worth investigating abstracting away the notion of "I can read lombok.config if present in
+			// current context, and I can give you may parent context", using ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(javaFile) as basis.
+			
+			// For now, we just carry on as if there is no lombok.config. (intentional fallthrough)
 		} catch (Exception e) {
-			// possibly eclipse knows how to open this thing. Let's try!
-			int filesOpenedWithEclipse = 0;
-			String specialEclipseMessage = null;
-			try {
-				IFile[] files = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(uri);
-				if (files == null) specialEclipseMessage = ".findFilesForLocationURI returned 'null'";
-				for (IFile file : files) {
-					InputStream in = file.getContents(true);
-					if (in != null) {
-						filesOpenedWithEclipse++;
-						in.close();
-					}
-				}
-				if (filesOpenedWithEclipse == 0) specialEclipseMessage = ".findFilesForLocationURI did work and returned " + files.length + " entries, but none of those resulted in readable contents.";
-			} catch (Throwable t) {
-				// That's unfortunate.
-			}
-			
-			StringBuilder sb = new StringBuilder();
-			sb.append("Lombok is trying to find the directory on disk where source file \"").append(javaFile.toString());
-			sb.append("\" is located. We're trying to turn this URL into a file: \"").append(uri.toString());
-			sb.append("\" but that isn't working. Please help us out by going to ");
-			sb.append("https://code.google.com/p/projectlombok/issues/detail?id=683 and reporting this error. Thanks!\n\n");
-			sb.append("Exception thrown: ").append(e.getClass().getName()).append("\nException msg: ").append(e.getMessage());
-			if (specialEclipseMessage == null && filesOpenedWithEclipse > 0) {
-				sb.append("\n\n Alternate strategy to read this resource via eclipse DID WORK however!! files read: " + filesOpenedWithEclipse);
-			} else if (specialEclipseMessage != null) {
-				sb.append("\n\n Alternate strategy to read this resource via eclipse produced a noteworthy result: ").append(specialEclipseMessage).append(" files read: ").append(filesOpenedWithEclipse);
-			}
-			
-			reporter.report(javaFile.toString(), sb.toString(), 0, "");
-			try {
-				EclipseHandlerUtil.warning(sb.toString(), null);
-			} catch (Throwable ignore) {}
-			return Collections.emptyList();
+			// Especially for eclipse's sake, exceptions here make eclipse borderline unusable, so let's play nice.
+			ProblemReporter.error("Can't find absolute path of file being compiled: " + javaFile, e);
 		}
+		
+		return Collections.emptyList();
 	}
 	
 	public Iterable<ConfigurationSource> sourcesForDirectory(URI directory, ConfigurationProblemReporter reporter) {
@@ -147,18 +122,18 @@ public class FileSystemSourceCache {
 	}
 	
 	ConfigurationSource getSourceForDirectory(File directory, ConfigurationProblemReporter reporter) {
-		if (!directory.exists() && !directory.isDirectory()) throw new IllegalArgumentException("Not a directory: " + directory);
+		if (!directory.exists() || !directory.isDirectory()) throw new IllegalArgumentException("Not a directory: " + directory);
 		long now = System.currentTimeMillis();
 		File configFile = new File(directory, LOMBOK_CONFIG_FILENAME);
 		
 		Content content = ensureContent(directory);
 		synchronized (content) {
-			if (content.lastChecked != MISSING && now - content.lastChecked < RECHECK_FILESYSTEM && getLastModified(configFile) == content.lastModified) {
+			if (content.lastChecked != NEVER_CHECKED && now - content.lastChecked < RECHECK_FILESYSTEM && getLastModifiedOrMissing(configFile) == content.lastModified) {
 				return content.source;
 			}
 			content.lastChecked = now;
 			long previouslyModified = content.lastModified;
-			content.lastModified = getLastModified(configFile);
+			content.lastModified = getLastModifiedOrMissing(configFile);
 			if (content.lastModified != previouslyModified) content.source = content.lastModified == MISSING ? null : parse(configFile, reporter);
 			return content.source;
 		}
@@ -205,7 +180,7 @@ public class FileSystemSourceCache {
 		}
 	}
 	
-	private static final long getLastModified(File file) {
+	private static final long getLastModifiedOrMissing(File file) {
 		if (!file.exists() || !file.isFile()) return MISSING;
 		return file.lastModified();
 	}
@@ -222,7 +197,7 @@ public class FileSystemSourceCache {
 		}
 		
 		static Content empty() {
-			return new Content(null, MISSING, MISSING);
+			return new Content(null, MISSING, NEVER_CHECKED);
 		}
 	}
 }

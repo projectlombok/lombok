@@ -46,16 +46,13 @@ import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TypeResolver;
 import lombok.core.configuration.NullCheckExceptionType;
+import lombok.core.debug.ProblemReporter;
 import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.Accessors;
 import lombok.experimental.Tolerate;
 
-import org.eclipse.core.runtime.ILog;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
@@ -106,7 +103,6 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
-import org.osgi.framework.Bundle;
 
 /**
  * Container for static utility methods useful to handlers written for eclipse.
@@ -116,36 +112,16 @@ public class EclipseHandlerUtil {
 		//Prevent instantiation
 	}
 	
-	private static final String DEFAULT_BUNDLE = "org.eclipse.jdt.core";
-	
 	/**
 	 * Generates an error in the Eclipse error log. Note that most people never look at it!
 	 * 
 	 * @param cud The {@code CompilationUnitDeclaration} where the error occurred.
 	 *     An error will be generated on line 0 linking to the error log entry. Can be {@code null}.
 	 * @param message Human readable description of the problem.
-	 * @param error The associated exception. Can be {@code null}.
+	 * @param ex The associated exception. Can be {@code null}.
 	 */
-	public static void error(CompilationUnitDeclaration cud, String message, Throwable error) {
-		error(cud, message, null, error);
-	}
-	
-	/**
-	 * Generates an error in the Eclipse error log. Note that most people never look at it!
-	 * 
-	 * @param cud The {@code CompilationUnitDeclaration} where the error occurred.
-	 *     An error will be generated on line 0 linking to the error log entry. Can be {@code null}.
-	 * @param message Human readable description of the problem.
-	 * @param bundleName Can be {@code null} to default to {@code org.eclipse.jdt.core} which is usually right.
-	 * @param error The associated exception. Can be {@code null}.
-	 */
-	public static void error(CompilationUnitDeclaration cud, String message, String bundleName, Throwable error) {
-		if (bundleName == null) bundleName = DEFAULT_BUNDLE;
-		try {
-			new EclipseWorkspaceLogger().error(message, bundleName, error);
-		} catch (NoClassDefFoundError e) {  //standalone ecj does not java Platform, ILog, IStatus, and friends.
-			new TerminalLogger().error(message, bundleName, error);
-		}
+	public static void error(CompilationUnitDeclaration cud, String message, Throwable ex) {
+		ProblemReporter.error(message, ex);
 		if (cud != null) EclipseAST.addProblemToCompilationResult(cud.getFileName(), cud.compilationResult, false, message + " - See error log.", 0, 0);
 	}
 	
@@ -153,60 +129,10 @@ public class EclipseHandlerUtil {
 	 * Generates a warning in the Eclipse error log. Note that most people never look at it!
 	 * 
 	 * @param message Human readable description of the problem.
-	 * @param error The associated exception. Can be {@code null}.
+	 * @param ex The associated exception. Can be {@code null}.
 	 */
-	public static void warning(String message, Throwable error) {
-		warning(message, null, error);
-	}
-	
-	/**
-	 * Generates a warning in the Eclipse error log. Note that most people never look at it!
-	 * 
-	 * @param message Human readable description of the problem.
-	 * @param bundleName Can be {@code null} to default to {@code org.eclipse.jdt.core} which is usually right.
-	 * @param error The associated exception. Can be {@code null}.
-	 */
-	public static void warning(String message, String bundleName, Throwable error) {
-		if (bundleName == null) bundleName = DEFAULT_BUNDLE;
-		try {
-			new EclipseWorkspaceLogger().warning(message, bundleName, error);
-		} catch (NoClassDefFoundError e) {  //standalone ecj does not jave Platform, ILog, IStatus, and friends.
-			new TerminalLogger().warning(message, bundleName, error);
-		}
-	}
-	
-	private static class TerminalLogger {
-		void error(String message, String bundleName, Throwable error) {
-			System.err.println(message);
-			if (error != null) error.printStackTrace();
-		}
-		
-		void warning(String message, String bundleName, Throwable error) {
-			System.err.println(message);
-			if (error != null) error.printStackTrace();
-		}
-	}
-	
-	private static class EclipseWorkspaceLogger {
-		void error(String message, String bundleName, Throwable error) {
-			msg(IStatus.ERROR, message, bundleName, error);
-		}
-		
-		void warning(String message, String bundleName, Throwable error) {
-			msg(IStatus.WARNING, message, bundleName, error);
-		}
-		
-		private void msg(int msgType, String message, String bundleName, Throwable error) {
-			Bundle bundle = Platform.getBundle(bundleName);
-			if (bundle == null) {
-				System.err.printf("Can't find bundle %s while trying to report error:\n%s\n%s\n", bundleName, message, error);
-				return;
-			}
-			
-			ILog log = Platform.getLog(bundle);
-			
-			log.log(new Status(msgType, bundleName, message, error));
-		}
+	public static void warning(String message, Throwable ex) {
+		ProblemReporter.warning(message, ex);
 	}
 	
 	public static ASTNode getGeneratedBy(ASTNode node) {
