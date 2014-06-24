@@ -62,4 +62,9 @@ public @interface Log {
 	 * Sets the category of the constructed Logger. By default, it will use the type where the annotation is placed.
 	 */
 	String topic() default "";
+
+	/**
+	 * Whether to create non-static field with getClass() topic instead of default static. Useful for abstract classes.
+	 */
+	boolean dynamic() default false;
 }
