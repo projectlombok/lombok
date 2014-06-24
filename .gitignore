@@ -6,7 +6,7 @@
 /google.properties
 /debug
 /*.launch
-/escudo-upload.key
+/ssh.configuration
 /findbugsReport.html
 /lib
 /.settings
