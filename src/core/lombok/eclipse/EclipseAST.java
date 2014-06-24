@@ -72,7 +72,12 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	private static volatile boolean skipEclipseWorkspaceBasedFileResolver = false;
 	public URI getAbsoluteFileLocation() {
 		String fileName = getFileName();
-		
+		if (fileName != null && (fileName.startsWith("file:") || fileName.startsWith("sourcecontrol:"))) {
+			// Some exotic build systems get real fancy with filenames. Known culprits:
+			// The 'jazz' source control system _probably_ (not confirmed yet) uses sourcecontrol://jazz: urls.
+			// GWT puts file:/D:/etc/etc/etc/Foo.java in here.
+			return URI.create(fileName);
+		}
 		
 		// state of the research in this:
 		// * We need an abstraction of a 'directory level'. This abstraction needs 'read()' which returns a string (content of lombok.config) and 'getParent()'.
