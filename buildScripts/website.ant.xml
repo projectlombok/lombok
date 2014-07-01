@@ -181,17 +181,17 @@ such as converting the changelog into HTML, and creating javadoc.
 	
 	<taskdef name="scp" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.Scp" classpathref="build.path" />
 	<taskdef name="sshexec" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="build.path" />
-	<target name="website-publish" depends="website">
+	<target name="website-publish" depends="website, -requires-ssh">
 		<scp
 			localFile="dist/website.tar.bz2"
-			todir="lombokup@projectlombok.org:/staging"
-			keyfile="escudo-upload.key" passphrase=""
+			todir="${ssh.username}@projectlombok.org:/data/lombok/staging"
+			keyfile="${ssh.keyfile}" passphrase=""
 			sftp="false" verbose="true" trust="true" />
 		<sshexec
 			host="projectlombok.org"
-			username="lombokup"
-			keyfile="escudo-upload.key" passphrase=""
-			trust="true" command="./deployWebsite" />
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}" passphrase=""
+			trust="true" command="/data/lombok/stagingCmd/deployWebsite" />
 	</target>
 	
 	<target name="-integrateSnippet">
@@ -270,16 +270,11 @@ such as converting the changelog into HTML, and creating javadoc.
 		</tar>
 	</target>
 	
-	<property file="ssh.configuration" />
-	
-	<target name="config-ssh" unless="ssh.username">
-		<input message="What is your SSH username on the projectlombok.org server? (Enter to abort)." addproperty="ssh.username" />
-		<condition property="ssh.usernameBlank"><equals arg1="${ssh.username}"  arg2="" trim="true" /></condition>
-		<fail if="ssh.usernameBlank">Aborted.</fail>
-		<input message="Where is your ssh keyfile located?" addproperty="ssh.keyfile" defaultvalue="${user.home}/.ssh/id_rsa" />
+	<target name="-requires-ssh" unless="ssh.username">
+		<fail>ssh.username and ssh.keyfile should be set.</fail>
 	</target>
-	
-	<target name="edgeRelease" depends="edgeRelease-build, config-ssh">
+
+	<target name="edgeRelease" depends="-requires-ssh, edgeRelease-build">
 		<scp
 			localFile="dist/website-edge.tar.bz2"
 			todir="${ssh.username}@projectlombok.org:/data/lombok/staging"
@@ -288,10 +283,6 @@ such as converting the changelog into HTML, and creating javadoc.
 		<sshexec
 			host="projectlombok.org" username="${ssh.username}" keyfile="${ssh.keyfile}" passphrase=""
 			trust="true" command="/data/lombok/stagingCmd/deployEdge" />
-		<propertyfile file="ssh.configuration">
-			<entry key="ssh.username" value="${ssh.username}" />
-			<entry key="ssh.keyfile" value="${ssh.keyfile}" />
-		</propertyfile>
 	</target>
 	
 	<target name="changelogToHtml" depends="-compile-webclasses">

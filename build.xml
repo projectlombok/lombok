@@ -635,65 +635,77 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</tar>
 	</target>
 	
-	<target name="maven-publish" depends="maven, utils-maven, -defSSH" description="Build a maven artifact bundle then upload it to projectlombok.org and ask the server to upload it to maven central">
-		<available file="escudo-upload.key" property="escudo.key.available" />
-		<fail unless="escudo.key.available">You don't have the escudo-upload.key; you'll need it to get write access to the server.</fail>
+	<target name="maven-publish" depends="config-ssh, -defSSH, maven, utils-maven" description="Build a maven artifact bundle then upload it to projectlombok.org and ask the server to upload it to maven central">
 		<scp
 			localFile="build/mavenPublish/mavenPublish.tar.bz2"
-			todir="lombokup@projectlombok.org:/staging"
-			keyfile="escudo-upload.key" passphrase=""
+			todir="${ssh.username}@projectlombok.org:/data/lombok/staging"
+			keyfile="${ssh.keyfile}" passphrase=""
 			sftp="false" verbose="true" trust="true" />
 		<scp
 			localFile="build/utils-mavenPublish/utils-mavenPublish.tar.bz2"
-			todir="lombokup@projectlombok.org:/staging"
-			keyfile="escudo-upload.key" passphrase=""
+			todir="${ssh.username}@projectlombok.org:/staging"
+			keyfile="${ssh.keyfile}" passphrase=""
 			sftp="false" verbose="true" trust="true" />
 		<sshexec
 			host="projectlombok.org"
-			username="lombokup"
-			keyfile="escudo-upload.key" passphrase=""
-			trust="true" command="./publishToMavenCentral" />
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}" passphrase=""
+			trust="true" command="/data/lombok/stagingCmd/publishToMavenCentral" />
 		<echo>The artifact has been published to staging. Now go to http://oss.sonatype.org/ and log in as Reinier, then doublecheck if all is well and 'release' it.</echo>
 		<sshexec
 			host="projectlombok.org"
-			username="lombokup"
-			keyfile="escudo-upload.key" passphrase=""
-			trust="true" command="./showMavenCentralPassword" />
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}" passphrase=""
+			trust="true" command="/data/lombok/stagingCmd/showMavenCentralPassword" />
 	</target>
 	
-	<target name="publish" description="Publishes the latest build to googlecode." depends="version, dist, dist-utils, test, -defSSH">
-		<available file="escudo-upload.key" property="escudo.key.available" />
-		<fail unless="escudo.key.available">You don't have the escudo-upload.key; you'll need it to get write access to the server.</fail>
+	<target name="publish" description="Publishes the latest build to googlecode." depends="config-ssh, -defSSH, version, dist, dist-utils, test">
 		<scp
 			localFile="dist/lombok-utils-${lombok.version}.jar"
-			todir="lombokup@projectlombok.org:/staging"
-			keyfile="escudo-upload.key" passphrase=""
+			todir="${ssh.username}@projectlombok.org:/data/lombok/staging"
+			keyfile="${ssh.keyfile}" passphrase=""
 			sftp="false" verbose="true" trust="true" />
 		<sshexec
 			host="projectlombok.org"
-			username="lombokup"
-			keyfile="escudo-upload.key" passphrase=""
-			trust="true" command="./deployLombokUtils '${lombok.version}'" />
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}" passphrase=""
+			trust="true" command="/data/lombok/stagingCmd/deployLombokUtils '${lombok.version}'" />
 		<scp
 			localFile="dist/lombok-${lombok.version}.jar"
-			todir="lombokup@projectlombok.org:/staging"
-			keyfile="escudo-upload.key" passphrase=""
+			todir="${ssh.username}@projectlombok.org:/data/lombok/staging"
+			keyfile="${ssh.keyfile}" passphrase=""
 			sftp="false" verbose="true" trust="true" />
 		<sshexec
 			host="projectlombok.org"
-			username="lombokup"
-			keyfile="escudo-upload.key" passphrase=""
-			trust="true" command="./deployLombok '${lombok.version}'" />
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}" passphrase=""
+			trust="true" command="/data/lombok/stagingCmd/deployLombok '${lombok.version}'" />
 	</target>
 	
 	<target name="publish-all" depends="clean, version, website-publish, maven-publish, publish"
 		description="Publishes lombok itself, updates the maven repository and the website." />
 	
-	<target name="edge-release" depends="clean, version, dist"
+	<target name="edge-release" depends="config-ssh, clean, version, dist"
 		description="Publishes an edge release for those who need to test a cutting edge build.">
 		<ant antfile="buildScripts/website.ant.xml" target="edgeRelease" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
+			<property name="ssh.username" value="${ssh.username}" />
+			<property name="ssh.keyfile" value="${ssh.keyfile}" />
 		</ant>
+	</target>
+	
+	<property file="ssh.configuration" />
+
+	<target name="config-ssh" unless="ssh.username">
+		<input message="What is your SSH username on the projectlombok.org server? (Enter to abort)." addproperty="ssh.username" />
+		<condition property="ssh.usernameBlank"><equals arg1="${ssh.username}" arg2="" trim="true" /></condition>
+		<fail if="ssh.usernameBlank">Aborted.</fail>
+		<input message="Where is your ssh keyfile located?" addproperty="ssh.keyfile" defaultvalue="${user.home}/.ssh/id_rsa" />
+		<input message="SSH configuration saved as 'ssh.configuration'. Delete this file to reconfigure. Press enter to continue." />
+		<propertyfile file="ssh.configuration">
+			<entry key="ssh.username" value="${ssh.username}" />
+			<entry key="ssh.keyfile" value="${ssh.keyfile}" />
+		</propertyfile>
 	</target>
 	
 	<target name="website" depends="version" description="Prepares the website for distribution.">
@@ -702,10 +714,12 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</ant>
 	</target>
 	
-	<target name="website-publish" depends="clean, version"
+	<target name="website-publish" depends="config-ssh, clean, version"
 			description="Prepares the website for distribution and then publishes it to projectlombok.org.">
 		<ant antfile="buildScripts/website.ant.xml" target="website-publish" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
+			<property name="ssh.username" value="${ssh.username}" />
+			<property name="ssh.keyfile" value="${ssh.keyfile}" />
 		</ant>
 	</target>
 </project>
