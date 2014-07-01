@@ -1,6 +1,10 @@
 Lombok Changelog
 ----------------
 
+### v1.14.5 "Edgy Guinea Pig"
+
+* No changes.
+
 ### v1.14.4 (July 1st, 2014)
 * BUGFIX: GWT produces errors in handlers on line 1 in any source files that use lombok; this has been fixed. [Issue #699](https://code.google.com/p/projectlombok/issues/detail?id=699)
 * BUGFIX-IN-PROGRESS: Many pathfinder issues in eclipse (see the bugfix in progress in v1.14.2) have now been fixed. [Issue #682](https://code.google.com/p/projectlombok/issues/detail?id=682)
