@@ -162,6 +162,9 @@ public class Javac {
 	public static final TypeTag CTC_VOID = typeTag("VOID");
 	public static final TypeTag CTC_NONE = typeTag("NONE");
 	public static final TypeTag CTC_BOT = typeTag("BOT");
+	public static final TypeTag CTC_ERROR = typeTag("ERROR");
+	public static final TypeTag CTC_UNKNOWN = typeTag("UNKNOWN");
+	public static final TypeTag CTC_UNDETVAR = typeTag("UNDETVAR");
 	public static final TypeTag CTC_CLASS = typeTag("CLASS");
 	
 	public static final TreeTag CTC_NOT_EQUAL = treeTag("NE");

@@ -26,9 +26,16 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import static lombok.javac.Javac.*;
+import lombok.javac.JavacTreeMaker.TypeTag;
+
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCClassDecl;
+import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeCopier;
 import com.sun.tools.javac.util.List;
@@ -91,6 +98,20 @@ public class TreeMirrorMaker extends TreeCopier<Void> {
 	@Override public JCTree visitVariable(VariableTree node, Void p) {
 		JCVariableDecl copy = (JCVariableDecl) super.visitVariable(node, p);
 		copy.sym = ((JCVariableDecl) node).sym;
+		if (copy.sym != null) copy.type = ((JCVariableDecl) node).type;
+		if (copy.type != null) {
+			boolean wipeSymAndType = copy.type.isErroneous();
+			if (!wipeSymAndType) {
+				TypeTag typeTag = TypeTag.typeTag(copy.type);
+				wipeSymAndType = (CTC_NONE.equals(typeTag) || CTC_ERROR.equals(typeTag) || CTC_UNKNOWN.equals(typeTag) || CTC_UNDETVAR.equals(typeTag));
+			}
+			
+			if (wipeSymAndType) {
+				copy.sym = null;
+				copy.type = null;
+			}
+		}
+		
 		return copy;
 	}
 	
@@ -98,5 +119,15 @@ public class TreeMirrorMaker extends TreeCopier<Void> {
 	// This and visitVariable is rather hacky but we're working around evident bugs or at least inconsistencies in javac.
 	@Override public JCTree visitLabeledStatement(LabeledStatementTree node, Void p) {
 		return node.getStatement().accept(this, p);
+	}
+	
+	@Override public JCTree visitNewClass(NewClassTree node, Void p) {
+		JCNewClass copy = (JCNewClass) super.visitNewClass(node, p);
+		return copy;
+	}
+	
+	@Override public JCTree visitClass(ClassTree node, Void p) {
+		JCClassDecl copy = (JCClassDecl) super.visitClass(node, p);
+		return copy;
 	}
 }

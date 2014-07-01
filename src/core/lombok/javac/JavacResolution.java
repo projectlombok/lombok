@@ -241,7 +241,7 @@ public class JavacResolution {
 		Type type0 = type;
 		while (type0 instanceof ArrayType) {
 			dims++;
-			type0 = ((ArrayType)type0).elemtype;
+			type0 = ((ArrayType) type0).elemtype;
 		}
 		
 		JCExpression result = typeToJCTree0(type0, ast, allowCompound, allowVoid);
