@@ -643,7 +643,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			sftp="false" verbose="true" trust="true" />
 		<scp
 			localFile="build/utils-mavenPublish/utils-mavenPublish.tar.bz2"
-			todir="${ssh.username}@projectlombok.org:/staging"
+			todir="${ssh.username}@projectlombok.org:/data/lombok/staging"
 			keyfile="${ssh.keyfile}" passphrase=""
 			sftp="false" verbose="true" trust="true" />
 		<sshexec
