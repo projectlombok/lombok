@@ -182,8 +182,6 @@ such as converting the changelog into HTML, and creating javadoc.
 	<taskdef name="scp" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.Scp" classpathref="build.path" />
 	<taskdef name="sshexec" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="build.path" />
 	<target name="website-publish" depends="website">
-		<available file="escudo-upload.key" property="escudo.key.available" />
-		<fail unless="escudo.key.available">You don't have the escudo-upload.key; you'll need it to get write access to the server.</fail>
 		<scp
 			localFile="dist/website.tar.bz2"
 			todir="lombokup@projectlombok.org:/staging"
