@@ -6,7 +6,7 @@
 /google.properties
 /debug
 /*.launch
-/escudo-upload.key
+/ssh.configuration
 /findbugsReport.html
 /lib
 /.settings
@@ -18,4 +18,4 @@
 *.markdown.html
 /junit*.properties
 /eclipse.location
-/.apt_generated
+/.apt_generated/
