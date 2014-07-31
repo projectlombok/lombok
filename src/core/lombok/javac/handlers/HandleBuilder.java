@@ -1,16 +1,16 @@
 /*
  * Copyright (C) 2013-2014 The Project Lombok Authors.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -69,22 +69,22 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		String builderMethodName = builderInstance.builderMethodName();
 		String buildMethodName = builderInstance.buildMethodName();
 		String builderClassName = builderInstance.builderClassName();
-		
+
 		if (builderMethodName == null) builderMethodName = "builder";
 		if (buildMethodName == null) buildMethodName = "build";
 		if (builderClassName == null) builderClassName = "";
-		
+
 		if (!checkName("builderMethodName", builderMethodName, annotationNode)) return;
 		if (!checkName("buildMethodName", buildMethodName, annotationNode)) return;
 		if (!builderClassName.isEmpty()) {
 			if (!checkName("builderClassName", builderClassName, annotationNode)) return;
 		}
-		
+
 		deleteAnnotationIfNeccessary(annotationNode, Builder.class);
 		deleteImportFromCompilationUnit(annotationNode, "lombok.experimental.Builder");
-		
+
 		JavacNode parent = annotationNode.up();
-		
+
 		java.util.List<JCExpression> typesOfParameters = new ArrayList<JCExpression>();
 		java.util.List<Name> namesOfParameters = new ArrayList<Name>();
 		JCExpression returnType;
@@ -92,9 +92,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		List<JCExpression> thrownExceptions = List.nil();
 		Name nameOfStaticBuilderMethod;
 		JavacNode tdParent;
-		
+
 		JCMethodDecl fillParametersFrom = parent.get() instanceof JCMethodDecl ? ((JCMethodDecl) parent.get()) : null;
-		
+
 		if (parent.get() instanceof JCClassDecl) {
 			tdParent = parent;
 			JCClassDecl td = (JCClassDecl) tdParent.get();
@@ -111,9 +111,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				typesOfParameters.add(fd.vartype);
 				allFields.append(fieldNode);
 			}
-			
+
 			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, List.<JCAnnotation>nil(), allFields.toList(), null, SkipIfConstructorExists.I_AM_BUILDER, true, annotationNode);
-			
+
 			returnType = namePlusTypeParamsToTypeReference(tdParent.getTreeMaker(), td.name, td.typarams);
 			typeParams = td.typarams;
 			thrownExceptions = List.nil();
@@ -150,7 +150,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					builderClassName = ((JCFieldAccess) returnType).name.toString() + "Builder";
 				} else if (returnType instanceof JCIdent) {
 					Name n = ((JCIdent) returnType).name;
-					
+
 					for (JCTypeParameter tp : typeParams) {
 						if (tp.name.equals(n)) {
 							annotationNode.addError("@Builder requires specifying 'builderClassName' if used on methods with a type parameter as return type.");
@@ -163,7 +163,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					if (Character.isLowerCase(builderClassName.charAt(0))) {
 						builderClassName = Character.toTitleCase(builderClassName.charAt(0)) + builderClassName.substring(1);
 					}
-					
+
 				} else {
 					// This shouldn't happen.
 					System.err.println("Lombok bug ID#20140614-1651: javac HandleBuilder: return type to name conversion failed: " + returnType.getClass());
@@ -174,14 +174,14 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			annotationNode.addError("@Builder is only supported on types, constructors, and static methods.");
 			return;
 		}
-		
+
 		if (fillParametersFrom != null) {
 			for (JCVariableDecl param : fillParametersFrom.params) {
 				namesOfParameters.add(param.name);
 				typesOfParameters.add(param.vartype);
 			}
 		}
-		
+
 		JavacNode builderType = findInnerClass(tdParent, builderClassName);
 		if (builderType == null) {
 			builderType = makeBuilderClass(tdParent, builderClassName, typeParams, ast);
@@ -194,41 +194,41 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			JCMethodDecl newMethod = makeSetterMethodForBuilder(builderType, fieldNode, ast, builderInstance.fluent(), builderInstance.chain());
 			if (newMethod != null) newMethods.add(newMethod);
 		}
-		
+
 		if (constructorExists(builderType) == MemberExistsResult.NOT_EXISTS) {
 			JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PACKAGE, List.<JCAnnotation>nil(), builderType, List.<JavacNode>nil(), true, ast);
 			if (cd != null) injectMethod(builderType, cd);
 		}
-		
+
 		for (JCMethodDecl newMethod : newMethods) injectMethod(builderType, newMethod);
-		
+
 		if (methodExists(buildMethodName, builderType, -1) == MemberExistsResult.NOT_EXISTS) {
 			JCMethodDecl md = generateBuildMethod(buildMethodName, nameOfStaticBuilderMethod, returnType, namesOfParameters, builderType, thrownExceptions);
 			if (md != null) injectMethod(builderType, md);
 		}
-		
+
 		if (methodExists("toString", builderType, 0) == MemberExistsResult.NOT_EXISTS) {
 			JCMethodDecl md = HandleToString.createToString(builderType, fieldNodes, true, false, FieldAccess.ALWAYS_FIELD, ast);
 			if (md != null) injectMethod(builderType, md);
 		}
-		
+
 		if (methodExists(builderMethodName, tdParent, -1) == MemberExistsResult.NOT_EXISTS) {
 			JCMethodDecl md = generateBuilderMethod(builderMethodName, builderClassName, tdParent, typeParams);
 			if (md != null) injectMethod(tdParent, md);
 		}
 	}
-	
+
 	public JCMethodDecl generateBuildMethod(String name, Name staticName, JCExpression returnType, java.util.List<Name> fieldNames, JavacNode type, List<JCExpression> thrownExceptions) {
 		JavacTreeMaker maker = type.getTreeMaker();
-		
+
 		JCExpression call;
 		JCStatement statement;
-		
+
 		ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
 		for (Name n : fieldNames) {
 			args.append(maker.Ident(n));
 		}
-		
+
 		if (staticName == null) {
 			call = maker.NewClass(null, List.<JCExpression>nil(), returnType, args.toList(), null);
 			statement = maker.Return(call);
@@ -237,7 +237,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			for (JCTypeParameter tp : ((JCClassDecl) type.get()).typarams) {
 				typeParams.append(maker.Ident(tp.name));
 			}
-			
+
 			JCExpression fn = maker.Select(maker.Ident(((JCClassDecl) type.up().get()).name), staticName);
 			call = maker.Apply(typeParams.toList(), fn, args.toList());
 			if (returnType instanceof JCPrimitiveTypeTree && CTC_VOID.equals(typeTag(returnType))) {
@@ -246,36 +246,36 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				statement = maker.Return(call);
 			}
 		}
-		
+
 		JCBlock body = maker.Block(0, List.<JCStatement>of(statement));
-		
+
 		return maker.MethodDef(maker.Modifiers(Flags.PUBLIC), type.toName(name), returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), thrownExceptions, body, null);
 	}
-	
+
 	public JCMethodDecl generateBuilderMethod(String builderMethodName, String builderClassName, JavacNode type, List<JCTypeParameter> typeParams) {
 		JavacTreeMaker maker = type.getTreeMaker();
-		
+
 		ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
 		for (JCTypeParameter typeParam : typeParams) {
 			typeArgs.append(maker.Ident(typeParam.name));
 		}
-		
+
 		JCExpression call = maker.NewClass(null, List.<JCExpression>nil(), namePlusTypeParamsToTypeReference(maker, type.toName(builderClassName), typeParams), List.<JCExpression>nil(), null);
 		JCStatement statement = maker.Return(call);
-		
+
 		JCBlock body = maker.Block(0, List.<JCStatement>of(statement));
 		return maker.MethodDef(maker.Modifiers(Flags.STATIC | Flags.PUBLIC), type.toName(builderMethodName), namePlusTypeParamsToTypeReference(maker, type.toName(builderClassName), typeParams), copyTypeParams(maker, typeParams), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 	}
-	
+
 	public java.util.List<JavacNode> addFieldsToBuilder(JavacNode builderType, java.util.List<Name> namesOfParameters, java.util.List<JCExpression> typesOfParameters, JCTree source) {
 		int len = namesOfParameters.size();
 		java.util.List<JavacNode> existing = new ArrayList<JavacNode>();
 		for (JavacNode child : builderType.down()) {
 			if (child.getKind() == Kind.FIELD) existing.add(child);
 		}
-		
+
 		java.util.List<JavacNode>out = new ArrayList<JavacNode>();
-		
+
 		top:
 		for (int i = len - 1; i >= 0; i--) {
 			Name name = namesOfParameters.get(i);
@@ -291,28 +291,28 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			JCVariableDecl newField = maker.VarDef(mods, name, cloneType(maker, typesOfParameters.get(i), source, builderType.getContext()), null);
 			out.add(injectField(builderType, newField));
 		}
-		
+
 		Collections.reverse(out);
 		return out;
 	}
-	
-	
+
+
 	public JCMethodDecl makeSetterMethodForBuilder(JavacNode builderType, JavacNode fieldNode, JCTree source, boolean fluent, boolean chain) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
-		
+
 		for (JavacNode child : builderType.down()) {
 			if (child.getKind() != Kind.METHOD) continue;
 			Name existingName = ((JCMethodDecl) child.get()).name;
 			if (existingName.equals(fieldName)) return null;
 		}
-		
+
 		boolean isBoolean = isBoolean(fieldNode);
 		String setterName = fluent ? fieldNode.getName() : TransformationsUtil.toSetterName(null, fieldNode.getName(), isBoolean);
-		
+
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		return HandleSetter.createSetter(Flags.PUBLIC, fieldNode, maker, setterName, chain, source, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
 	}
-	
+
 	public JavacNode findInnerClass(JavacNode parent, String name) {
 		for (JavacNode child : parent.down()) {
 			if (child.getKind() != Kind.TYPE) continue;
@@ -321,7 +321,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		return null;
 	}
-	
+
 	public JavacNode makeBuilderClass(JavacNode tdParent, String builderClassName, List<JCTypeParameter> typeParams, JCAnnotation ast) {
 		JavacTreeMaker maker = tdParent.getTreeMaker();
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC | Flags.STATIC);
