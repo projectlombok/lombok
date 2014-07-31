@@ -195,15 +195,15 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
 
-		JCMethodDecl createdSetter = createSetter(access, fieldNode, fieldNode.getTreeMaker(), source, onMethod, onParam);
+		JCMethodDecl createdSetter = createSetter(access, fieldNode, fieldNode.getTreeMaker(), source.get(), onMethod, onParam);
 		injectMethod(fieldNode.up(), createdSetter);
 	}
 
 	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, String setterName, boolean shouldReturnThis, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
-		return null;
+		return createSetter(access, field, treeMaker, setterName, shouldReturnThis, source, onMethod, onParam, false, null);
 	}
 
-	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		String setterName = toSetterName(field);
 		boolean returnThis = shouldReturnThis(field);
 		boolean bound = shouldAddBoundProperty(field);
@@ -214,7 +214,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		return createSetter(access, field, treeMaker, setterName, returnThis, source, onMethod, onParam, bound, propertyChangeSupportFieldName );
 	}
 
-	private static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, String setterName, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam, boolean bound, String propertyChangeSupportFieldName) {
+	private static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, String setterName, boolean shouldReturnThis, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam, boolean bound, String propertyChangeSupportFieldName) {
 		if (setterName == null) return null;
 
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
@@ -286,7 +286,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		}
 
 		JCMethodDecl decl = recursiveSetGeneratedBy(treeMaker.MethodDef(treeMaker.Modifiers(access, annsOnMethod), methodName, methodType,
-				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source.get(), field.getContext());
+				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source, field.getContext());
 		copyJavadoc(field, decl, CopyJavadoc.SETTER);
 		return decl;
 	}
