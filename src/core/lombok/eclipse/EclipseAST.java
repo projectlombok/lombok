@@ -156,7 +156,25 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	
 	private static class EclipseWorkspaceBasedFileResolver {
 		public static URI resolve(String path) {
-			return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(path)).getLocationURI();
+			/* eclipse issue: When creating snippets, for example to calculate 'find callers', refactor scripts, save actions, etc,
+			 * eclipse creates a psuedo-file whose path is simply "/SimpleName.java", which cannot be turned back into a real location.
+			 * What we really need to do is find out which file is the source of this script job and use its directory instead. For now,
+			 * we just go with all defaults; these operations are often not sensitive to proper lomboking or aren't even lomboked at all.
+			 * 
+			 * Reliable way to reproduce this (Kepler, possibly with JDK8 beta support):
+			 * * Have a method, called once by some code in another class.
+			 * * Refactor it with the 'change method signature' refactor script, and add a parameter and hit 'ok'.
+			 */
+			if (path == null || path.indexOf('/', 1) == -1) {
+				return null;
+			}
+			try {
+				return ResourcesPlugin.getWorkspace().getRoot().getFile(new Path(path)).getLocationURI();
+			} catch (Exception e) {
+				// One of the exceptions that can occur is IllegalStateException (during getWorkspace())
+				// if you try to run this while eclipse is shutting down.
+				return null;
+			}
 		}
 	}
 	

@@ -3,7 +3,7 @@ Lombok Changelog
 
 ### v1.14.5 "Edgy Guinea Pig"
 
-* No changes.
+* WORK-IN-PROGRESS: A bunch of errors in the error log about 'Path must include project and resource name' seem to be related to slowdowns. This fix removes the errors, but does it remove the slowdowns? [Issue #682](https://code.google.com/p/projectlombok/issues/detail?id=682).
 
 ### v1.14.4 (July 1st, 2014)
 * BUGFIX: GWT produces errors in handlers on line 1 in any source files that use lombok; this has been fixed. [Issue #699](https://code.google.com/p/projectlombok/issues/detail?id=699)
