@@ -31,6 +31,16 @@ import org.eclipse.core.runtime.Status;
 import org.osgi.framework.Bundle;
 
 public class ProblemReporter {
+	public static void info(String msg, Throwable ex) {
+		init();
+		try {
+			logger.info(msg, ex);
+		} catch (Throwable t) {
+			logger = new TerminalLogger();
+			logger.info(msg, ex);
+		}
+	}
+	
 	public static void warning(String msg, Throwable ex) {
 		init();
 		try {
@@ -63,19 +73,26 @@ public class ProblemReporter {
 	private static ErrorLogger logger;
 	
 	private interface ErrorLogger {
-		void error(String message, Throwable ex);
+		void info(String message, Throwable ex);
 		void warning(String message, Throwable ex);
+		void error(String message, Throwable ex);
 	}
 	
 	private static class TerminalLogger implements ErrorLogger {
 		@Override
-		public void error(String message, Throwable ex) {
+		public void info(String message, Throwable ex) {
 			System.err.println(message);
 			if (ex != null) ex.printStackTrace();
 		}
 		
 		@Override
 		public void warning(String message, Throwable ex) {
+			System.err.println(message);
+			if (ex != null) ex.printStackTrace();
+		}
+		
+		@Override
+		public void error(String message, Throwable ex) {
 			System.err.println(message);
 			if (ex != null) ex.printStackTrace();
 		}
@@ -96,13 +113,18 @@ public class ProblemReporter {
 		}
 		
 		@Override
-		public void error(String message, Throwable error) {
-			msg(IStatus.ERROR, message, error);
+		public void info(String message, Throwable error) {
+			msg(IStatus.INFO, message, error);
 		}
 		
 		@Override
 		public void warning(String message, Throwable error) {
 			msg(IStatus.WARNING, message, error);
+		}
+		
+		@Override
+		public void error(String message, Throwable error) {
+			msg(IStatus.ERROR, message, error);
 		}
 		
 		private void msg(int msgType, String message, Throwable error) {

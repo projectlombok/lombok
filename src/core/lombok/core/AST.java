@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 import lombok.core.configuration.ConfigurationKey;
+import lombok.core.debug.HistogramTracker;
 
 /**
  * Lombok wraps the AST produced by a target platform into its own AST system, mostly because both Eclipse and javac
@@ -60,6 +61,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	Map<N, N> identityDetector = new IdentityHashMap<N, N>();
 	private Map<N, L> nodeMap = new IdentityHashMap<N, L>();
 	private boolean changed = false;
+	private static final HistogramTracker histogramTracker = System.getProperty("lombok.timeConfig") == null ? null : new HistogramTracker("lombok.config");
 	
 	protected AST(String fileName, String packageDeclaration, ImportList imports) {
 		this.fileName = fileName == null ? "(unknown).java" : fileName;
@@ -419,6 +421,11 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	}
 	
 	public final <T> T readConfiguration(ConfigurationKey<T> key) {
-		return LombokConfiguration.read(key, this);
+		long start = System.currentTimeMillis();
+		try {
+			return LombokConfiguration.read(key, this);
+		} finally {
+			if (histogramTracker != null) histogramTracker.report(start);
+		}
 	}
 }
