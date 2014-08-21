@@ -2,7 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.14.5 "Edgy Guinea Pig"
-
+* BUGFIX: Usage of `val` would break starting with JDK8 release `1.8.0_20`. [Issue #731](https://code.google.com/p/projectlombok/issues/detail?id=731)
 * WORK-IN-PROGRESS: A bunch of errors in the error log about 'Path must include project and resource name' seem to be related to slowdowns. This fix removes the errors, but does it remove the slowdowns? [Issue #682](https://code.google.com/p/projectlombok/issues/detail?id=682).
     This edge release contains some special flags:
 
@@ -12,7 +12,7 @@ Lombok Changelog
     2. `-Dlombok.disableConfig`: Disables the config system (notably including all attempts to look up the location of, and read, `lombok.config` files) entirely.
 
     Both flags can be used simultaneously. Add either or both of these switches in your `eclipse.ini`, directly under `-javaagent:lombok.jar`.
-
+    
 ### v1.14.4 (July 1st, 2014)
 * BUGFIX: GWT produces errors in handlers on line 1 in any source files that use lombok; this has been fixed. [Issue #699](https://code.google.com/p/projectlombok/issues/detail?id=699)
 * BUGFIX-IN-PROGRESS: Many pathfinder issues in eclipse (see the bugfix in progress in v1.14.2) have now been fixed. [Issue #682](https://code.google.com/p/projectlombok/issues/detail?id=682)

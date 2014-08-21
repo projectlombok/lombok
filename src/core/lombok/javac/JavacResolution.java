@@ -24,10 +24,14 @@ package lombok.javac;
 import static lombok.javac.Javac.*;
 import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.Map;
 
 import javax.lang.model.type.TypeKind;
+
+import lombok.Lombok;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
@@ -179,10 +183,37 @@ public class JavacResolution {
 		}
 	}
 	
+	private static class ReflectiveAccess {
+		private static Method UPPER_BOUND;
+		
+		static {
+			Method upperBound = null;
+			try {
+				upperBound = Types.class.getMethod("upperBound", Type.class);
+			} catch (Throwable ignore) {}
+			if (upperBound == null) try {
+				upperBound = Types.class.getMethod("wildUpperBound", Type.class);
+			} catch (Throwable ignore) {}
+			
+			UPPER_BOUND = upperBound;
+		}
+		
+		public static Type Types_upperBound(Types types, Type type) {
+			try {
+				return (Type) UPPER_BOUND.invoke(types, type);
+			} catch (InvocationTargetException e) {
+				throw Lombok.sneakyThrow(e.getCause());
+			} catch (Exception e) {
+				throw Lombok.sneakyThrow(e);
+			}
+		}
+	}
+	
 	public static Type ifTypeIsIterableToComponent(Type type, JavacAST ast) {
 		Types types = Types.instance(ast.getContext());
 		Symtab syms = Symtab.instance(ast.getContext());
-		Type boundType = types.upperBound(type);
+		Type boundType = ReflectiveAccess.Types_upperBound(types, type);
+//		Type boundType = types.upperBound(type);
 		Type elemTypeIfArray = types.elemtype(boundType);
 		if (elemTypeIfArray != null) return elemTypeIfArray;
 		
@@ -190,7 +221,7 @@ public class JavacResolution {
 		if (base == null) return syms.objectType;
 		
 		List<Type> iterableParams = base.allparams();
-		return iterableParams.isEmpty() ? syms.objectType : types.upperBound(iterableParams.head);
+		return iterableParams.isEmpty() ? syms.objectType : ReflectiveAccess.Types_upperBound(types, iterableParams.head);
 	}
 	
 	public static JCExpression typeToJCTree(Type type, JavacAST ast, boolean allowVoid) throws TypeNotConvertibleException {
