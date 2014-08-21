@@ -550,9 +550,17 @@ public class JavacHandlerUtil {
 		
 		return MemberExistsResult.NOT_EXISTS;
 	}
-	
+
+	public static MemberExistsResult methodReallyExists(String methodName, JavacNode node, int params) {
+		return methodExists(methodName, node, true, params, false);
+	}
+
 	public static MemberExistsResult methodExists(String methodName, JavacNode node, int params) {
 		return methodExists(methodName, node, true, params);
+	}
+	
+	public static MemberExistsResult methodExists(String methodName, JavacNode node, boolean caseSensitive, int params) {
+		return methodExists(methodName, node, caseSensitive, params, true);
 	}
 	
 	/**
@@ -563,8 +571,9 @@ public class JavacHandlerUtil {
 	 * @param node Any node that represents the Type (JCClassDecl) to look in, or any child node thereof.
 	 * @param caseSensitive If the search should be case sensitive.
 	 * @param params The number of parameters the method should have; varargs count as 0-*. Set to -1 to find any method with the appropriate name regardless of parameter count.
+	 * @param honorTolerate If true, then methods annotated with {@code Tolerate} will be ignored.
 	 */
-	public static MemberExistsResult methodExists(String methodName, JavacNode node, boolean caseSensitive, int params) {
+	private static MemberExistsResult methodExists(String methodName, JavacNode node, boolean caseSensitive, int params, boolean honorTolerate) {
 		node = upToTypeNode(node);
 		
 		if (node != null && node.get() instanceof JCClassDecl) {
@@ -593,7 +602,7 @@ public class JavacHandlerUtil {
 						
 						List<JCAnnotation> annotations = md.getModifiers().getAnnotations();
 						if (annotations != null) for (JCAnnotation anno : annotations) {
-							if (typeMatches(Tolerate.class, node, anno.getAnnotationType())) continue top;
+							if (honorTolerate && typeMatches(Tolerate.class, node, anno.getAnnotationType())) continue top;
 						}
 						
 						return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;

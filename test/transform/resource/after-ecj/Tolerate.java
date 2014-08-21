@@ -33,3 +33,28 @@ import java.util.regex.Pattern;
     this.pattern = pattern;
   }
 }
+final @lombok.Getter @lombok.AllArgsConstructor @lombok.EqualsAndHashCode class Tolerate3 {
+  private final java.math.RoundingMode mode;
+  public @lombok.experimental.Tolerate int hashCode() {
+    return (123456789 * mode.ordinal());
+  }
+  public @java.lang.SuppressWarnings("all") java.math.RoundingMode getMode() {
+    return this.mode;
+  }
+  public @java.beans.ConstructorProperties({"mode"}) @java.lang.SuppressWarnings("all") Tolerate3(final java.math.RoundingMode mode) {
+    super();
+    this.mode = mode;
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+    if ((o == this))
+        return true;
+    if ((! (o instanceof Tolerate3)))
+        return false;
+    final @java.lang.SuppressWarnings("all") Tolerate3 other = (Tolerate3) o;
+    final java.lang.Object this$mode = this.getMode();
+    final java.lang.Object other$mode = other.getMode();
+    if (((this$mode == null) ? (other$mode != null) : (! this$mode.equals(other$mode))))
+        return false;
+    return true;
+  }
+}

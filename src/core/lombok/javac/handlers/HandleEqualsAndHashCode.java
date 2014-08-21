@@ -212,16 +212,20 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			//fallthrough
 		}
 		
-		JCMethodDecl equalsMethod = createEquals(typeNode, nodesForEquality.toList(), callSuper, fieldAccess, needsCanEqual, source.get(), onParam);
-		injectMethod(typeNode, equalsMethod);
+		if (methodReallyExists("equals", typeNode, 1) == MemberExistsResult.NOT_EXISTS) {
+			JCMethodDecl equalsMethod = createEquals(typeNode, nodesForEquality.toList(), callSuper, fieldAccess, needsCanEqual, source.get(), onParam);
+			injectMethod(typeNode, equalsMethod);
+		}
 		
 		if (needsCanEqual && canEqualExists == MemberExistsResult.NOT_EXISTS) {
 			JCMethodDecl canEqualMethod = createCanEqual(typeNode, source.get(), onParam);
 			injectMethod(typeNode, canEqualMethod);
 		}
 		
-		JCMethodDecl hashCodeMethod = createHashCode(typeNode, nodesForEquality.toList(), callSuper, fieldAccess, source.get());
-		injectMethod(typeNode, hashCodeMethod);
+		if (methodReallyExists("hashCode", typeNode, 0) == MemberExistsResult.NOT_EXISTS) {
+			JCMethodDecl hashCodeMethod = createHashCode(typeNode, nodesForEquality.toList(), callSuper, fieldAccess, source.get());
+			injectMethod(typeNode, hashCodeMethod);
+		}
 	}
 	
 	public JCMethodDecl createHashCode(JavacNode typeNode, List<JavacNode> fields, boolean callSuper, FieldAccess fieldAccess, JCTree source) {

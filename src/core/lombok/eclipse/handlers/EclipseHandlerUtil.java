@@ -1099,14 +1099,28 @@ public class EclipseHandlerUtil {
 		
 		return MemberExistsResult.NOT_EXISTS;
 	}
-	
+
+	/**
+	 * Wrapper for {@link #methodExists(String, EclipseNode, boolean, int, boolean)} with {@code caseSensitive} = {@code true} and {@code honorTolerate} = {@code false}.
+	 */
+	public static MemberExistsResult methodReallyExists(String methodName, EclipseNode node, int params) {
+		return methodExists(methodName, node, true, params, false);
+	}
+
 	/**
 	 * Wrapper for {@link #methodExists(String, EclipseNode, boolean, int)} with {@code caseSensitive} = {@code true}.
 	 */
 	public static MemberExistsResult methodExists(String methodName, EclipseNode node, int params) {
 		return methodExists(methodName, node, true, params);
 	}
-	
+
+	/**
+	 * Wrapper for {@link #methodExists(String, EclipseNode, boolean, int, boolean)} with {@code honorTolerate} = {@code true}.
+	 */
+	public static MemberExistsResult methodExists(String methodName, EclipseNode node, boolean caseSensitive, int params) {
+		return methodExists(methodName, node, caseSensitive, params, true);
+	}
+
 	/**
 	 * Checks if there is a method with the provided name. In case of multiple methods (overloading), only
 	 * the first method decides if EXISTS_BY_USER or EXISTS_BY_LOMBOK is returned.
@@ -1115,8 +1129,9 @@ public class EclipseHandlerUtil {
 	 * @param node Any node that represents the Type (TypeDeclaration) to look in, or any child node thereof.
 	 * @param caseSensitive If the search should be case sensitive.
 	 * @param params The number of parameters the method should have; varargs count as 0-*. Set to -1 to find any method with the appropriate name regardless of parameter count.
+	 * @param honorTolerate If true, then methods annotated with {@code Tolerate} will be ignored.
 	 */
-	public static MemberExistsResult methodExists(String methodName, EclipseNode node, boolean caseSensitive, int params) {
+	private static MemberExistsResult methodExists(String methodName, EclipseNode node, boolean caseSensitive, int params, boolean honorTolerate) {
 		while (node != null && !(node.get() instanceof TypeDeclaration)) {
 			node = node.up();
 		}
@@ -1146,7 +1161,7 @@ public class EclipseHandlerUtil {
 						}
 						
 						if (def.annotations != null) for (Annotation anno : def.annotations) {
-							if (typeMatches(Tolerate.class, node, anno.type)) continue top;
+							if (honorTolerate && typeMatches(Tolerate.class, node, anno.type)) continue top;
 						}
 						
 						return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;

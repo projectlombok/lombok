@@ -47,3 +47,34 @@ class Tolerate2 {
 		this.pattern = pattern;
 	}
 }
+final class Tolerate3 {
+	private final java.math.RoundingMode mode;
+	
+	@lombok.experimental.Tolerate
+	public int hashCode() {
+		return 123456789 * mode.ordinal();
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public java.math.RoundingMode getMode() {
+		return this.mode;
+	}
+	
+	@java.beans.ConstructorProperties({"mode"})
+	@java.lang.SuppressWarnings("all")
+	public Tolerate3(final java.math.RoundingMode mode) {
+		this.mode = mode;
+	}
+	
+	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
+	public boolean equals(final java.lang.Object o) {
+		if (o == this) return true;
+		if (!(o instanceof Tolerate3)) return false;
+		final Tolerate3 other = (Tolerate3)o;
+		final java.lang.Object this$mode = this.getMode();
+		final java.lang.Object other$mode = other.getMode();
+		if (this$mode == null ? other$mode != null : !this$mode.equals(other$mode)) return false;
+		return true;
+	}
+}
