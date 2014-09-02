@@ -1,18 +1,12 @@
 Lombok Changelog
 ----------------
 
-### v1.14.5 "Edgy Guinea Pig"
+### v1.14.6 (September 2nd, 2014)
+* _**SPECIAL NOTE**: If you still notice significant slowdowns in eclipse, try adding: `-Dlombok.timeConfig` to your `eclipse.ini` (after the `-vmargs` line) and send us the timing report that will show up in your eclipse error log at [Issue #682](https://code.google.com/p/projectlombok/issues/detail?id=682). Then, to continue working with eclipse without the slowdowns, replace `-Dlombok.timeConfig` with `-Dlombok.disableConfig`. We believe this issue has already been fixed, but if not, please let us know!_
 * BUGFIX: Usage of `val` would break starting with JDK8 release `1.8.0_20`. [Issue #731](https://code.google.com/p/projectlombok/issues/detail?id=731)
-* WORK-IN-PROGRESS: A bunch of errors in the error log about 'Path must include project and resource name' seem to be related to slowdowns. This fix removes the errors, but does it remove the slowdowns? [Issue #682](https://code.google.com/p/projectlombok/issues/detail?id=682).
-    This edge release contains some special flags:
+* BUGFIX: Depending on your eclipse project setup, releases v1.14.0 through v1.14.4 could noticably slow down your eclipse. [Issue #682](https://code.google.com/p/projectlombok/issues/detail?id=682).
 
-    1. `-Dlombok.timeConfig`: Adding this switch adds profiling to config lookups. Every minute a histogram is printed to the error log (eclipse) or syserr (javac and others).
-        The 10 numbers printed list calls in exponential increasing millisecond durations (first number is 0 millis, second is 1, third is 2 to 4, etc). If the numbers seem
-        excessive to you, help us out and report your findings on our [newsgroup](https://groups.google.com/forum/#!topic/project-lombok/UNCvLSEGWik).
-    2. `-Dlombok.disableConfig`: Disables the config system (notably including all attempts to look up the location of, and read, `lombok.config` files) entirely.
 
-    Both flags can be used simultaneously. Add either or both of these switches in your `eclipse.ini`, directly under `-javaagent:lombok.jar`.
-    
 ### v1.14.4 (July 1st, 2014)
 * BUGFIX: GWT produces errors in handlers on line 1 in any source files that use lombok; this has been fixed. [Issue #699](https://code.google.com/p/projectlombok/issues/detail?id=699)
 * BUGFIX-IN-PROGRESS: Many pathfinder issues in eclipse (see the bugfix in progress in v1.14.2) have now been fixed. [Issue #682](https://code.google.com/p/projectlombok/issues/detail?id=682)
