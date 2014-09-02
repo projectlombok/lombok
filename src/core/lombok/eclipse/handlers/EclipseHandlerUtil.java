@@ -1047,7 +1047,7 @@ public class EclipseHandlerUtil {
 		}
 		
 		if (prefixes == null) prefixes = field.getAst().readConfiguration(ConfigurationKeys.ACCESSORS_PREFIX);
-		if (prefixes != null && prefixes.length > 0) {
+		if (prefixes != null && prefixes.size() > 0) {
 			CharSequence newName = removePrefix(field.getName(), prefixes);
 			if (newName != null) return newName.toString().toCharArray();
 		}
