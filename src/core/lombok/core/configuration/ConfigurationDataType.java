@@ -186,7 +186,7 @@ public final class ConfigurationDataType {
 		this.parser = parser;
 	}
 	
-	boolean isList() {
+	public boolean isList() {
 		return isList;
 	}
 	

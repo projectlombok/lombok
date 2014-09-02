@@ -21,6 +21,8 @@
  */
 package lombok.core;
 
+import java.util.Collections;
+
 import lombok.core.configuration.BubblingConfigurationResolver;
 import lombok.core.configuration.ConfigurationKey;
 import lombok.core.configuration.ConfigurationProblemReporter;
@@ -30,7 +32,8 @@ import lombok.core.configuration.FileSystemSourceCache;
 
 public class LombokConfiguration {
 	private static final ConfigurationResolver NULL_RESOLVER = new ConfigurationResolver() {
-		@Override public <T> T resolve(ConfigurationKey<T> key) {
+		@SuppressWarnings("unchecked") @Override public <T> T resolve(ConfigurationKey<T> key) {
+			if (key.getType().isList()) return (T) Collections.emptyList();
 			return null;
 		}
 	};
