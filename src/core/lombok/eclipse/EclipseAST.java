@@ -70,7 +70,18 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	}
 	
 	private static volatile boolean skipEclipseWorkspaceBasedFileResolver = false;
+	private static final URI NOT_CALCULATED_MARKER = URI.create("http://projectlombok.org/not/calculated");
+	private URI memoizedAbsoluteFileLocation = NOT_CALCULATED_MARKER;
+	
 	public URI getAbsoluteFileLocation() {
+		if (memoizedAbsoluteFileLocation != NOT_CALCULATED_MARKER) return memoizedAbsoluteFileLocation;
+		
+		memoizedAbsoluteFileLocation = getAbsoluteFileLocation0();
+		return memoizedAbsoluteFileLocation;
+	}
+	
+	/** This is the call, but we wrapped it to memoize this. */
+	private URI getAbsoluteFileLocation0() {
 		String fileName = getFileName();
 		if (fileName != null && (fileName.startsWith("file:") || fileName.startsWith("sourcecontrol:"))) {
 			// Some exotic build systems get real fancy with filenames. Known culprits:
