@@ -127,7 +127,7 @@ public class FileSystemSourceCache {
 		
 		Content content = ensureContent(directory);
 		synchronized (content) {
-			if (content.lastChecked != NEVER_CHECKED && now - content.lastChecked < RECHECK_FILESYSTEM && getLastModifiedOrMissing(configFile) == content.lastModified) {
+			if (content.lastChecked != NEVER_CHECKED && now - content.lastChecked < RECHECK_FILESYSTEM) {
 				return content.source;
 			}
 			content.lastChecked = now;
