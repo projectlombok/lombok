@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.14.7 "Edgy Guinea Pig"
+* PERFORMANCE: The configuration system typically hit the filesystem twice per read configuration key instead of hardly ever.
 
 ### v1.14.6 (September 2nd, 2014)
 * _**SPECIAL NOTE**: If you still notice significant slowdowns in eclipse, try adding: `-Dlombok.timeConfig` to your `eclipse.ini` (after the `-vmargs` line) and send us the timing report that will show up in your eclipse error log at [Issue #682](https://code.google.com/p/projectlombok/issues/detail?id=682). Then, to continue working with eclipse without the slowdowns, replace `-Dlombok.timeConfig` with `-Dlombok.disableConfig`. We believe this issue has already been fixed, but if not, please let us know!_
