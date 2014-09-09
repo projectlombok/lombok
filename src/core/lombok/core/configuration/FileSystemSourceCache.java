@@ -122,7 +122,6 @@ public class FileSystemSourceCache {
 	}
 	
 	ConfigurationSource getSourceForDirectory(File directory, ConfigurationProblemReporter reporter) {
-		if (!directory.exists() || !directory.isDirectory()) throw new IllegalArgumentException("Not a directory: " + directory);
 		long now = System.currentTimeMillis();
 		File configFile = new File(directory, LOMBOK_CONFIG_FILENAME);
 		
