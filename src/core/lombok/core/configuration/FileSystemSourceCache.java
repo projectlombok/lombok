@@ -37,7 +37,7 @@ import lombok.core.configuration.ConfigurationSource.Result;
 import lombok.core.debug.ProblemReporter;
 
 public class FileSystemSourceCache {
-	private static String LOMBOK_CONFIG_FILENAME = "lombok.config";
+	private static final String LOMBOK_CONFIG_FILENAME = "lombok.config";
 	private static final long RECHECK_FILESYSTEM = TimeUnit.SECONDS.toMillis(2);
 	private static final long NEVER_CHECKED = -1;
 	private static final long MISSING = -88; // Magic value; any lombok.config with this exact epochmillis last modified will never be read, so, let's ensure nobody accidentally has one with that exact last modified stamp.
