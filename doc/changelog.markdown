@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.14.9 "Edge Guinea Pig"
+* edge
+
 ### v1.14.8 (September 15th, 2014)
 * PERFORMANCE: The configuration system typically hit the filesystem twice per read configuration key instead of hardly ever. This is a continuation of [Issue #682](https://code.google.com/p/projectlombok/issues/detail?id=682).
 
