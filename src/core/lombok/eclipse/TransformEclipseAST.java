@@ -26,6 +26,7 @@ import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import java.lang.reflect.Field;
 
 import lombok.core.debug.DebugSnapshotStore;
+import lombok.core.debug.HistogramTracker;
 import lombok.patcher.Symbols;
 
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -57,6 +58,14 @@ public class TransformEclipseAST {
 	private static final HandlerLibrary handlers;
 	
 	public static boolean disableLombok = false;
+	private static final HistogramTracker lombokTracker;
+	
+	static {
+		String v = System.getProperty("lombok.histogram");
+		if (v == null) lombokTracker = null;
+		else if (v.toLowerCase().equals("sysout")) lombokTracker = new HistogramTracker("lombok.histogram", System.out);
+		else lombokTracker = new HistogramTracker("lombok.histogram");
+	}
 	
 	static {
 		Field f = null;
@@ -136,8 +145,10 @@ public class TransformEclipseAST {
 		
 		try {
 			DebugSnapshotStore.INSTANCE.snapshot(ast, "transform entry");
+			long histoToken = lombokTracker == null ? 0L : lombokTracker.start();
 			EclipseAST existing = getAST(ast, false);
 			new TransformEclipseAST(existing).go();
+			if (lombokTracker != null) lombokTracker.end(histoToken);
 			DebugSnapshotStore.INSTANCE.snapshot(ast, "transform exit");
 		} catch (Throwable t) {
 			DebugSnapshotStore.INSTANCE.snapshot(ast, "transform error: %s", t.getClass().getSimpleName());

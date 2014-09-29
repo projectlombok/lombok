@@ -61,7 +61,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	Map<N, N> identityDetector = new IdentityHashMap<N, N>();
 	private Map<N, L> nodeMap = new IdentityHashMap<N, L>();
 	private boolean changed = false;
-	private static final HistogramTracker histogramTracker = System.getProperty("lombok.timeConfig") == null ? null : new HistogramTracker("lombok.config");
+	private static final HistogramTracker configTracker = System.getProperty("lombok.timeConfig") == null ? null : new HistogramTracker("lombok.config");
 	
 	protected AST(String fileName, String packageDeclaration, ImportList imports) {
 		this.fileName = fileName == null ? "(unknown).java" : fileName;
@@ -421,11 +421,11 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	}
 	
 	public final <T> T readConfiguration(ConfigurationKey<T> key) {
-		long start = System.currentTimeMillis();
+		long start = configTracker == null ? 0L : configTracker.start();
 		try {
 			return LombokConfiguration.read(key, this);
 		} finally {
-			if (histogramTracker != null) histogramTracker.report(start);
+			if (configTracker != null) configTracker.end(start);
 		}
 	}
 }
