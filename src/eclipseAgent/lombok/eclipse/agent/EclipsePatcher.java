@@ -28,7 +28,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import lombok.core.Agent;
 import lombok.patcher.Hook;
 import lombok.patcher.MethodTarget;
 import lombok.patcher.ScriptManager;
@@ -44,12 +43,11 @@ import lombok.patcher.scripts.ScriptBuilder;
  * classes in this package for more information about which classes are transformed and how they are
  * transformed.
  */
-public class EclipsePatcher extends Agent {
+public class EclipsePatcher {
 	// At some point I'd like the agent to be capable of auto-detecting if its on eclipse or on ecj. This class is a sure sign we're not in ecj but in eclipse. -ReinierZ
 	@SuppressWarnings("unused")
 	private static final String ECLIPSE_SIGNATURE_CLASS = "org/eclipse/core/runtime/adaptor/EclipseStarter";
 	
-	@Override
 	public void runAgent(String agentArgs, Instrumentation instrumentation, boolean injected) throws Exception {
 		String[] args = agentArgs == null ? new String[0] : agentArgs.split(":");
 		boolean forceEcj = false;

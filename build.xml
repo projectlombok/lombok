@@ -104,7 +104,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	
 	<target name="ensureBuildDeps" depends="config-ivy">
 		<mkdir dir="lib/openJDK6Environment" />
-		<get src="http://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />
+<!--		<get src="http://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />-->
 		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build, javac7" />
 		<ivy:retrieve />
 	</target>
@@ -178,6 +178,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" includeantruntime="false">
 			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
 			<compilerarg value="-Xbootclasspath/p:build/stubs" />
+			<src path="src/launch" />
 			<src path="src/core" />
 			<src path="src/installer" />
 			<src path="src/eclipseAgent" />
@@ -208,25 +209,31 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<format property="releaseTimestamp" pattern="yyyy-MM-dd" />
 		</tstamp>
 		<echo file="release-timestamp.txt">${releaseTimestamp}</echo>
-		<taskdef name="jarjar" classname="com.tonicsystems.jarjar.JarJarTask" classpath="lib/build/com.googlecode.jarjar-jarjar.jar" />
-		<jarjar destfile="dist/lombok-${lombok.version}.jar">
-			<fileset dir="build/lombok">
-				<exclude name="com/sun/tools/javac/**"/>
-			</fileset>
+		<zip destfile="dist/lombok-${lombok.version}.jar">
 			<fileset dir="build" includes="changelog.txt" />
 			<fileset dir="." includes="LICENSE" />
 			<fileset dir="." includes="AUTHORS" />
 			<fileset dir="." includes="release-timestamp.txt" />
-			<rule pattern="com.zwitserloot.cmdreader.**" result="lombok.libs.com.zwitserloot.cmdreader.@1" />
-			<rule pattern="org.objectweb.asm.**" result="lombok.libs.org.objectweb.asm.@1" />
+			<mappedresources>
+				<fileset dir="build/lombok">
+					<exclude name="com/sun/tools/javac/**"/>
+				</fileset>
+				<firstmatchmapper>
+					<globmapper from="lombok/launch/*" to="lombok/launch/*" />
+					<globmapper from="*.class" to="*.SCL.lombok" />
+					<identitymapper />
+				</firstmatchmapper>
+			</mappedresources>
+		</zip>
+		<jar destfile="dist/lombok-${lombok.version}.jar" update="true">
 			<manifest>
-				<attribute name="Premain-Class" value="lombok.core.Agent" />
-				<attribute name="Agent-Class" value="lombok.core.Agent" />
+				<attribute name="Premain-Class" value="lombok.launch.Agent" />
+				<attribute name="Agent-Class" value="lombok.launch.Agent" />
 				<attribute name="Can-Redefine-Classes" value="true" />
-				<attribute name="Main-Class" value="lombok.core.Main" />
+				<attribute name="Main-Class" value="lombok.launch.Main" />
 				<attribute name="Lombok-Version" value="${lombok.version}" />
 			</manifest>
-		</jarjar>
+		</jar>
 		<delete file="release-timestamp.txt" />
 		<copy file="dist/lombok-${lombok.version}.jar" tofile="dist/lombok.jar" />
 		<property name="lombok.dist.built" value="true" />
@@ -251,6 +258,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<conf name="test" sources="contrib" />
 			<module name="lombok" depends="build, test">
 				<srcdir dir="src/core" />
+				<srcdir dir="src/launch" />
 				<srcdir dir="src/utils" />
 				<srcdir dir="src/eclipseAgent" />
 				<srcdir dir="src/installer" />
@@ -280,6 +288,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<target name="eclipse" depends="-addEclipseDeps, deps, contrib" description="Creates eclipse project files and downloads all dependencies. Open this directory as project in eclipse after running this target. This will NOT let you start a debug session for eclipse; use target 'eclipseForDebugging' instead to do that.">
 		<ivy:eclipsegen source="1.6">
 			<srcdir dir="src/core" />
+			<srcdir dir="src/launch" />
 			<srcdir dir="src/utils" />
 			<srcdir dir="src/eclipseAgent" />
 			<srcdir dir="src/installer" />
@@ -610,6 +619,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</jar>
 		<jar destfile="dist/lombok-${lombok.version}-sources.jar">
 			<fileset dir="src/core" />
+			<fileset dir="src/launch" />
 			<fileset dir="src/utils" />
 			<fileset dir="src/eclipseAgent" />
 			<fileset dir="src/installer" />

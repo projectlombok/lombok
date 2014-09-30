@@ -38,6 +38,7 @@ public class Main {
 	));
 	
 	public static void main(String[] args) throws IOException {
+		Thread.currentThread().setContextClassLoader(Main.class.getClassLoader());
 		int err = new Main(SpiLoadUtil.readAllFromIterator(
 				SpiLoadUtil.findServices(LombokApp.class)), Arrays.asList(args)).go();
 		System.exit(err);

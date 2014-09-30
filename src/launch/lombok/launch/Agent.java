@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2009-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,11 +19,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.core;
+package lombok.launch;
 
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
+import java.lang.reflect.InvocationTargetException;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,9 +33,7 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
-public abstract class Agent {
-	protected abstract void runAgent(String agentArgs, Instrumentation instrumentation, boolean injected) throws Exception;
-	
+final class Agent {
 	public static void agentmain(String agentArgs, Instrumentation instrumentation) throws Throwable {
 		runAgents(agentArgs, instrumentation, true);
 	}
@@ -49,12 +48,15 @@ public abstract class Agent {
 	));
 	
 	private static void runAgents(String agentArgs, Instrumentation instrumentation, boolean injected) throws Throwable {
+		ClassLoader cl = Main.createShadowClassLoader();
+		
 		for (AgentInfo info : AGENTS) {
 			try {
-				Class<?> agentClass = Class.forName(info.className());
-				Agent agent = (Agent) agentClass.newInstance();
-				agent.runAgent(agentArgs, instrumentation, injected);
+				Class<?> agentClass = cl.loadClass(info.className());
+				Object agent = agentClass.newInstance();
+				agentClass.getMethod("runAgent", String.class, Instrumentation.class, boolean.class).invoke(agent, agentArgs, instrumentation, injected);
 			} catch (Throwable t) {
+				if (t instanceof InvocationTargetException) t = t.getCause();
 				info.problem(t, instrumentation);
 			}
 		}
