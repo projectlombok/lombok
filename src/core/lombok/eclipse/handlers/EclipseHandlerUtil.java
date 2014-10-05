@@ -1394,10 +1394,12 @@ public class EclipseHandlerUtil {
 	 * Given a list of field names and a node referring to a type, finds each name in the list that does not match a field within the type.
 	 */
 	public static List<Integer> createListOfNonExistentFields(List<String> list, LombokNode<?, ?, ?> type, boolean excludeStandard, boolean excludeTransient) {
+		if (list.isEmpty()) {
+			return Collections.emptyList();
+		}
 		boolean[] matched = new boolean[list.size()];
 		
 		for (LombokNode<?, ?, ?> child : type.down()) {
-			if (list.isEmpty()) break;
 			if (child.getKind() != Kind.FIELD) continue;
 			if (excludeStandard) {
 				if ((((FieldDeclaration)child.get()).modifiers & ClassFileConstants.AccStatic) != 0) continue;

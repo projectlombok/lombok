@@ -30,6 +30,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -1074,11 +1075,13 @@ public class JavacHandlerUtil {
 	/**
 	 * Given a list of field names and a node referring to a type, finds each name in the list that does not match a field within the type.
 	 */
-	public static List<Integer> createListOfNonExistentFields(List<String> list, LombokNode<?, ?, ?> type, boolean excludeStandard, boolean excludeTransient) {
+	public static java.util.List<Integer> createListOfNonExistentFields(List<String> list, LombokNode<?, ?, ?> type, boolean excludeStandard, boolean excludeTransient) {
+		if (list.isEmpty()) {
+			return Collections.emptyList();
+		}
 		boolean[] matched = new boolean[list.size()];
 		
 		for (LombokNode<?, ?, ?> child : type.down()) {
-			if (list.isEmpty()) break;
 			if (child.getKind() != Kind.FIELD) continue;
 			JCVariableDecl field = (JCVariableDecl)child.get();
 			if (excludeStandard) {
