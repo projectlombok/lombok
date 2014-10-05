@@ -1094,12 +1094,12 @@ public class JavacHandlerUtil {
 			if (idx > -1) matched[idx] = true;
 		}
 		
-		ListBuffer<Integer> problematic = new ListBuffer<Integer>();
+		java.util.List<Integer> problematic = new ArrayList<Integer>();
 		for (int i = 0 ; i < list.size() ; i++) {
-			if (!matched[i]) problematic.append(i);
+			if (!matched[i]) problematic.add(i);
 		}
 		
-		return problematic.toList();
+		return problematic;
 	}
 	
 	static List<JCAnnotation> unboxAndRemoveAnnotationParameter(JCAnnotation ast, String parameterName, String errorName, JavacNode annotationNode) {
