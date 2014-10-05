@@ -53,6 +53,7 @@ import lombok.experimental.Tolerate;
 import lombok.javac.Javac;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
+import lombok.util.LombokGeneratorHelper;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
@@ -94,6 +95,9 @@ import com.sun.tools.javac.util.Options;
  * Container for static utility methods useful to handlers written for javac.
  */
 public class JavacHandlerUtil {
+
+	private static LombokGeneratorHelper HELPER = new LombokGeneratorHelper(JavacImplementationDetails.INSTANCE);
+
 	private JavacHandlerUtil() {
 		//Prevent instantiation
 	}
@@ -1076,30 +1080,7 @@ public class JavacHandlerUtil {
 	 * Given a list of field names and a node referring to a type, finds each name in the list that does not match a field within the type.
 	 */
 	public static java.util.List<Integer> createListOfNonExistentFields(List<String> list, LombokNode<?, ?, ?> type, boolean excludeStandard, boolean excludeTransient) {
-		if (list.isEmpty()) {
-			return Collections.emptyList();
-		}
-		boolean[] matched = new boolean[list.size()];
-		
-		for (LombokNode<?, ?, ?> child : type.down()) {
-			if (child.getKind() != Kind.FIELD) continue;
-			JCVariableDecl field = (JCVariableDecl)child.get();
-			if (excludeStandard) {
-				if ((field.mods.flags & Flags.STATIC) != 0) continue;
-				if (field.name.toString().startsWith("$")) continue;
-			}
-			if (excludeTransient && (field.mods.flags & Flags.TRANSIENT) != 0) continue;
-			
-			int idx = list.indexOf(child.getName());
-			if (idx > -1) matched[idx] = true;
-		}
-		
-		java.util.List<Integer> problematic = new ArrayList<Integer>();
-		for (int i = 0 ; i < list.size() ; i++) {
-			if (!matched[i]) problematic.add(i);
-		}
-		
-		return problematic;
+		return HELPER.createListOfNonExistentFields(list, type, excludeStandard, excludeTransient);
 	}
 	
 	static List<JCAnnotation> unboxAndRemoveAnnotationParameter(JCAnnotation ast, String parameterName, String errorName, JavacNode annotationNode) {
