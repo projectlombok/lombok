@@ -60,14 +60,14 @@ public final class LombokGeneratorHelper {
 				continue;
 			}
 			if (excludeStandard) {
-				if (details.isStandard(child)) {
+				if (details.isFieldStandard(child)) {
 					continue;
 				}
 				if (child.getName().startsWith("$")) {
 					continue;
 				}
 			}
-			if (excludeTransient && details.isTransient(child)) {
+			if (excludeTransient && details.isFieldTransient(child)) {
 				continue;
 			}
 			final int idx = list.indexOf(child.getName());
@@ -103,13 +103,13 @@ public final class LombokGeneratorHelper {
 		/**
 		 * @param node
 		 */
-		boolean isTransient(LombokNode<?, ?, ?> node);
+		boolean isFieldTransient(LombokNode<?, ?, ?> node);
 
 		/**
 		 * @param child
 		 * @return
 		 */
-		boolean isStandard(LombokNode<?, ?, ?> child);
+		boolean isFieldStandard(LombokNode<?, ?, ?> child);
 
 	}
 

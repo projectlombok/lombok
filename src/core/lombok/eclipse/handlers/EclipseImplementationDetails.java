@@ -38,16 +38,16 @@ enum EclipseImplementationDetails implements ImplementationDetails {
 	INSTANCE;
 
 	/* (non-Javadoc)
-	 * @see lombok.util.LombokGeneratorHelper.ImplementationDetails#isStandard(lombok.core.LombokNode)
+	 * @see lombok.util.LombokGeneratorHelper.ImplementationDetails#isFieldStandard(lombok.core.LombokNode)
 	 */
-	@Override public boolean isStandard(final LombokNode<?, ?, ?> node) {
+	@Override public boolean isFieldStandard(final LombokNode<?, ?, ?> node) {
 		return isFlagSet(ClassFileConstants.AccStatic, node);
 	}
 
 	/* (non-Javadoc)
-	 * @see lombok.util.LombokGenerator.ImplementationDetails#isTransient(lombok.core.LombokNode)
+	 * @see lombok.util.LombokGeneratorHelper.ImplementationDetails#isFieldTransient(lombok.core.LombokNode)
 	 */
-	@Override public boolean isTransient(final LombokNode<?, ?, ?> node) {
+	@Override public boolean isFieldTransient(final LombokNode<?, ?, ?> node) {
 		return isFlagSet(ClassFileConstants.AccTransient, node);
 	}
 
