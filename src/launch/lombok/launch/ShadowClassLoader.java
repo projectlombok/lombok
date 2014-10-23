@@ -22,8 +22,6 @@
 package lombok.launch;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -32,15 +30,15 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Vector;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
  * The shadow classloader serves to completely hide almost all classes in a given jar file by using a different file ending.
  * 
- *  Classes loaded by the shadowloader use ".SCL.lombok" instead of ".class".
+ *  Classes loaded by the shadowloader use ".SCL.<em>sclSuffix</em>" instead of ".class".
  *  
  *  In addition, the shadowloader will pick up an alternate (priority) classpath, using normal class files, from the system property {@code shadow.classpath}.
  *  
@@ -51,175 +49,252 @@ import java.util.jar.JarFile;
  *  considerably help debugging, as you can now rely on the IDE's built-in auto-recompile features instead of having to run a full build everytime, and it should help
  *  with hot code replace and the like.
  *  </ul>
+ *  
+ *  Implementation note: {@code lombok.patcher} <em>relies</em> on this class having no dependencies on any other class except the JVM boot class, notably
+ *  including any other classes in this package, <strong>including</strong> inner classes of this very class. So, don't write closures, anonymous inner class literals,
+ *  enums, or anything else that could cause the compilation of this file to produce more than 1 class file.
  */
 class ShadowClassLoader extends ClassLoader {
-	private final ClassLoader source;
-	private final List<File> priority = new ArrayList<File>();
+	private static final String SELF_NAME = "lombok/launch/ShadowClassLoader.class";
+	private final String SELF_BASE;
+	private final int SELF_BASE_LENGTH;
 	
-	private static final int INITIAL_BUFFER_SIZE = 65536;
-	private static final int MAX_BUFFER_SIZE = 1048576;
+	private final List<File> override = new ArrayList<File>();
+	private final String sclSuffix;
+	private final List<String> parentExclusion = new ArrayList<String>();
 	
-	public ShadowClassLoader(ClassLoader source) {
-		super(source);
-		this.source = source == null ? ClassLoader.getSystemClassLoader() : source;
+	ShadowClassLoader(ClassLoader source, String sclSuffix) {
+		this(source, sclSuffix, null);
 	}
 	
-	private static final ThreadLocal<byte[]> BUFFERS = new ThreadLocal<byte[]>() {
-		@Override protected byte[] initialValue() {
-			return new byte[INITIAL_BUFFER_SIZE];
+	/**
+	 * @param source The 'parent' classloader.
+	 * @param sclSuffix The suffix of the shadowed class files in our own jar. For example, if this is {@code lombok}, then the class files in your jar should be {@code foo/Bar.SCL.lombok} and not {@code foo/Bar.class}.
+	 * @param selfBase The (preferably absolute) path to our own jar. This jar will be searched for class/SCL.sclSuffix files.
+	 * @param parentExclusion For example {@code "lombok."}; upon invocation of loadClass of this loader, the parent loader ({@code source}) will NOT be invoked if the class to be loaded begins with anything in the parent exclusion list. No exclusion is applied for getResource(s).
+	 */
+	ShadowClassLoader(ClassLoader source, String sclSuffix, String selfBase, String... parentExclusion) {
+		super(source);
+		this.sclSuffix = sclSuffix;
+		if (parentExclusion != null) for (String pe : parentExclusion) {
+			pe = pe.replace(".", "/");
+			if (!pe.endsWith("/")) pe = pe + "/";
+			this.parentExclusion.add(pe);
 		}
-	};
+		
+		if (selfBase != null) {
+			SELF_BASE = selfBase;
+			SELF_BASE_LENGTH = selfBase.length();
+		} else {
+			String sclClassUrl = ShadowClassLoader.class.getResource("ShadowClassLoader.class").toString();
+			if (!sclClassUrl.endsWith(SELF_NAME)) throw new InternalError("ShadowLoader can't find itself.");
+			SELF_BASE_LENGTH = sclClassUrl.length() - SELF_NAME.length();
+			SELF_BASE = sclClassUrl.substring(0, SELF_BASE_LENGTH);
+		}
+		
+		String scl = System.getProperty("shadow.override." + sclSuffix);
+		if (scl != null && !scl.isEmpty()) {
+			for (String part : scl.split("\\s*" + (File.pathSeparatorChar == ';' ? ";" : ":") + "\\s*")) {
+				if (part.endsWith("/*") || part.endsWith(File.separator + "*")) {
+					addOverrideJarDir(part.substring(0, part.length() - 2));
+				} else {
+					addOverrideClasspathEntry(part);
+				}
+			}
+		}
+	}
 	
-	public Enumeration<URL> getResources(String name) throws IOException {
-		List<URL> prioritized = null;
-		for (File ce : priority) {
-			if (ce.isDirectory()) {
-				File f = new File(ce, name);
-				if (f.isFile() && f.canRead()) {
-					if (prioritized == null) prioritized = new ArrayList<URL>();
-					prioritized.add(f.toURI().toURL());
-				}
-			} else if (ce.isFile() && ce.canRead()) {
-				JarFile jf;
-				JarEntry entry;
-				
-				try {
-					jf = new JarFile(ce);
-					entry = jf.getJarEntry(name);
-				} catch (IOException ignore) {
-					continue;
+	private URL getResourceFromLocation(String name, String altName, File location) {
+		if (location.isDirectory()) {
+			try {
+				if (altName != null) {
+					File f = new File(location, altName);
+					if (f.isFile() && f.canRead()) return f.toURI().toURL();
 				}
 				
-				if (entry != null) try {
-					// TODO: This needs work, this feels a bit hacky. Is there an API way to create these URLs?
-					URL url = new URI("jar:" + ce.toURI().toString() + "!/" + name).toURL();
-					if (prioritized == null) prioritized = new ArrayList<URL>();
-					prioritized.add(url);
-				} catch (URISyntaxException ignore) {}
+				File f = new File(location, name);
+				if (f.isFile() && f.canRead()) return f.toURI().toURL();
+				return null;
+			} catch (MalformedURLException e) {
+				return null;
 			}
 		}
 		
-		if (prioritized == null) return super.getResources(name);
-		final Iterator<URL> prim = prioritized.iterator();
-		final Enumeration<URL> sec = super.getResources(name);
-		return new Enumeration<URL>() {
-			@Override public boolean hasMoreElements() {
-				if (prim.hasNext()) return true;
-				return sec.hasMoreElements();
+		if (!location.isFile() || !location.canRead()) return null;
+		
+		JarFile jf = null;
+		JarEntry entry = null;
+		
+		try {
+			jf = new JarFile(location);
+			if (altName != null) entry = jf.getJarEntry(altName);
+			if (entry == null) entry = jf.getJarEntry(name);
+			if (entry == null) return null;
+			return new URI("jar:file:" + location.getAbsolutePath() + "!/" + entry.getName()).toURL();
+		} catch (IOException e) {
+			return null;
+		} catch (URISyntaxException e) {
+			return null;
+		} finally {
+			if (jf != null) try {
+				jf.close();
+			} catch (Exception ignore) {}
+		}
+	}
+	
+	private boolean inOwnBase(URL item, String name) {
+		if (item == null) return false;
+		String itemString = item.toString();
+		return (itemString.length() == SELF_BASE_LENGTH + name.length()) && SELF_BASE.regionMatches(0, itemString, 0, SELF_BASE_LENGTH);
+	}
+	
+	public Enumeration<URL> getResources(String name) throws IOException {
+		String altName = null;
+		if (name.endsWith(".class")) altName = name.substring(0, name.length() - 6) + ".SCL." + sclSuffix;
+		List<URL> overrides = null;
+		for (File ce : override) {
+			URL url = getResourceFromLocation(name, altName, ce);
+			if (url != null) {
+				if (overrides == null) overrides = new ArrayList<URL>();
+				overrides.add(url);
 			}
-			
-			@Override public URL nextElement() {
-				if (prim.hasNext()) return prim.next();
-				return sec.nextElement();
+		}
+		
+		// Vector????!!???WTFBBQ??? Yes, we need one:
+		// * We can NOT make inner classes here (this class is loaded with special voodoo magic in eclipse, as a one off, it's not a full loader.
+		// * We need to return an enumeration.
+		// * We can't make one on the fly.
+		// * ArrayList can't make these.
+		
+		Vector<URL> vector = new Vector<URL>();
+		if (overrides != null) vector.addAll(overrides);
+		Enumeration<URL> sec = super.getResources(name);
+		while (sec.hasMoreElements()) {
+			URL item = sec.nextElement();
+			if (override.isEmpty() || !inOwnBase(item, name)) vector.add(item);
+		}
+		
+		if (altName != null) {
+			Enumeration<URL> tern = super.getResources(altName);
+			while (tern.hasMoreElements()) {
+				URL item = tern.nextElement();
+				if (override.isEmpty() || !inOwnBase(item, altName)) vector.add(item);
 			}
-		};
+		}
+		
+		return vector.elements();
 	}
 	
 	@Override public URL getResource(String name) {
-		for (File ce : priority) {
-			if (ce.isDirectory()) {
-				File f = new File(ce, name);
-				if (f.isFile() && f.canRead()) try {
-					return f.toURI().toURL();
-				} catch (MalformedURLException ignore) {}
-			} else if (ce.isFile() && ce.canRead()) {
-				JarFile jf;
-				JarEntry entry;
-				
-				try {
-					jf = new JarFile(ce);
-					entry = jf.getJarEntry(name);
-				} catch (IOException ignore) {
-					continue;
-				}
-				
-				if (entry != null) try {
-					// TODO: This needs work, this feels a bit hacky. Is there an API way to create these URLs?
-					URL url = new URI("jar:" + ce.toURI().toString() + "!/" + name).toURL();
-					return url;
-				} catch (URISyntaxException ignore) {
-				} catch (MalformedURLException ignore) {
-				}
-			}
-		}
-		
-		return super.getResource(name);
+		return getResource_(name, false);
 	}
 	
-	@Override protected Class<?> findClass(String name) throws ClassNotFoundException {
-		String rawName, sclName; {
-			String binName = name.replace(".", "/");
-			rawName = binName.concat(".class");
-			sclName = binName.concat(".SCL.lombok");
+	private URL getResource_(String name, boolean noSuper) {
+		String altName = null;
+		if (name.endsWith(".class")) altName = name.substring(0, name.length() - 6) + ".SCL." + sclSuffix;
+		for (File ce : override) {
+			URL url = getResourceFromLocation(name, altName, ce);
+			if (url != null) return url;
 		}
 		
-		InputStream in = null;
+		if (!override.isEmpty()) {
+			if (noSuper) return null;
+			if (altName != null) {
+				try {
+					URL res = getResourceSkippingSelf(altName);
+					if (res != null) return res;
+				} catch (IOException ignore) {}
+			}
+			
+			try {
+				return getResourceSkippingSelf(name);
+			} catch (IOException e) {
+				return null;
+			}
+		}
+		
+		if (altName != null) {
+			URL res = super.getResource(altName);
+			if (res != null && (!noSuper || inOwnBase(res, altName))) return res;
+		}
+		
+		URL res = super.getResource(name);
+		if (res != null && (!noSuper || inOwnBase(res, name))) return res;
+		return null;
+	}
+	
+	private boolean exclusionListMatch(String name) {
+		for (String pe : parentExclusion) {
+			if (name.startsWith(pe)) return true;
+		}
+		return false;
+	}
+	
+	private URL getResourceSkippingSelf(String name) throws IOException {
+		URL candidate = super.getResource(name);
+		if (candidate == null) return null;
+		if (!inOwnBase(candidate, name)) return candidate;
+		
+		
+		Enumeration<URL> en = super.getResources(name);
+		while (en.hasMoreElements()) {
+			candidate = en.nextElement();
+			if (!inOwnBase(candidate, name)) return candidate;
+		}
+		
+		return null;
+	}
+	
+	@Override public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+		{
+			Class<?> alreadyLoaded = findLoadedClass(name);
+			if (alreadyLoaded != null) return alreadyLoaded;
+		}
+		
+		String fileNameOfClass = name.replace(".",  "/") + ".class";
+		URL res = getResource_(fileNameOfClass, true);
+		if (res == null) {
+			if (!exclusionListMatch(fileNameOfClass)) return super.loadClass(name, resolve);
+			throw new ClassNotFoundException(name);
+		}
+		
 		byte[] b;
 		int p = 0;
-		
-		try { try {
-			for (File ce : priority) {
-				if (ce.isDirectory()) {
-					File f = new File(ce, rawName);
-					if (f.isFile() && f.canRead()) {
-						in = new FileInputStream(f);
-						break;
-					}
-				} else if (ce.isFile() && ce.canRead()) {
-					JarFile jf;
-					JarEntry entry;
-					
-					try {
-						jf = new JarFile(ce);
-						entry = jf.getJarEntry(rawName);
-					} catch (IOException ignore) {
-						continue;
-					}
-					
-					if (entry != null) {
-						in = jf.getInputStream(entry);
-						break;
+		try {
+			InputStream in = res.openStream();
+			
+			try {
+				b = new byte[65536];
+				while (true) {
+					int r = in.read(b, p, b.length - p);
+					if (r == -1) break;
+					p += r;
+					if (p == b.length) {
+						byte[] nb = new byte[b.length * 2];
+						System.arraycopy(b, 0, nb, 0, p);
+						b = nb;
 					}
 				}
+			} finally {
+				in.close();
 			}
-			
-			if (in == null) in = source.getResourceAsStream(sclName);
-			if (in == null) in = source.getResourceAsStream(rawName);
-			if (in == null) throw new ClassNotFoundException(name);
-			
-			b = BUFFERS.get();
-			while (true) {
-				int r = in.read(b, p, b.length - p);
-				if (r == -1) break;
-				p += r;
-				if (p == b.length) {
-					byte[] nb = new byte[b.length * 2];
-					System.arraycopy(b, 0, nb, 0, p);
-					b = nb;
-					BUFFERS.set(nb);
-				}
-			}
-		} finally {
-			if (in != null) in.close();
-		}} catch (IOException e) {
+		} catch (IOException e) {
 			throw new ClassNotFoundException("I/O exception reading class " + name, e);
 		}
 		
 		Class<?> c = defineClass(name, b, 0, p);
-		if (b.length > MAX_BUFFER_SIZE) BUFFERS.set(new byte[INITIAL_BUFFER_SIZE]);
+		if (resolve) resolveClass(c);
 		return c;
 	}
 	
-	public void addPriorityJarDir(String dir) {
+	public void addOverrideJarDir(String dir) {
 		File f = new File(dir);
-		for (File j : f.listFiles(new FilenameFilter() {
-			@Override public boolean accept(File dir, String name) {
-				return name.toLowerCase().endsWith(".jar");
-			}
-		})) if (j.canRead() && j.isFile()) priority.add(j);
+		for (File j : f.listFiles()) {
+			if (j.getName().toLowerCase().endsWith(".jar") && j.canRead() && j.isFile()) override.add(j);
+		}
 	}
 	
-	public void addPriorityClasspathEntry(String entry) {
-		priority.add(new File(entry));
+	public void addOverrideClasspathEntry(String entry) {
+		override.add(new File(entry));
 	}
 }

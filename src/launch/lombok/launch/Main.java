@@ -21,23 +21,11 @@
  */
 package lombok.launch;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 
 class Main {
-	public static ClassLoader createShadowClassLoader() {
-		ShadowClassLoader cl = new ShadowClassLoader(Main.class.getClassLoader());
-		String scl = System.getProperty("shadow.classpath");
-		if (scl == null || scl.isEmpty()) return cl;
-		for (String part : scl.split("\\s*" + (File.pathSeparatorChar == ';' ? ";" : ":") + "\\s*")) {
-			if (part.endsWith("/*") || part.endsWith(File.separator + "*")) {
-				cl.addPriorityJarDir(part.substring(0, part.length() - 2));
-			} else {
-				cl.addPriorityClasspathEntry(part);
-			}
-		}
-		
-		return cl;
+	static ClassLoader createShadowClassLoader() {
+		return new ShadowClassLoader(Main.class.getClassLoader(), "lombok");
 	}
 	
 	public static void main(String[] args) throws Throwable {

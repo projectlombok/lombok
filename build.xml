@@ -104,7 +104,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	
 	<target name="ensureBuildDeps" depends="config-ivy">
 		<mkdir dir="lib/openJDK6Environment" />
-<!--		<get src="http://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />-->
+		<get src="http://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />
 		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build, javac7" />
 		<ivy:retrieve />
 	</target>
@@ -138,7 +138,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</target>
 	
 	<target name="compile" depends="version, ensureBuildDeps, -unpackLibs" description="Compiles the code.">
-		<!-- ant includes the destination dir on the classpath (and there are good reason to do this), but that also means
+		<!-- ant includes the destination dir on the classpath (and there are good reasons to do this), but that also means
 		 the bleeding edge lombok from the previous build is run, which means if there are bugs in it, you can't compile
 		anymore until you 'ant clean'. That's very much not desired, so we kill the processor, which stops lombok from running.
 		We re-create the file at the end of this target. -->
@@ -199,7 +199,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ivy:compile>
 		<mkdir dir="build/lombok/META-INF" />
 		<mkdir dir="build/lombok/META-INF/services" />
-		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.core.AnnotationProcessor</echo>
+		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.launch.AnnotationProcessorHider.AnnotationProcessor</echo>
 	</target>
 	
 	<target name="dist" description="Builds THE lombok.jar file which contains everything." depends="version, compile">
@@ -214,12 +214,21 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<fileset dir="." includes="LICENSE" />
 			<fileset dir="." includes="AUTHORS" />
 			<fileset dir="." includes="release-timestamp.txt" />
+			<fileset dir="build/lombok">
+				<include name="lombok/*.class" />
+				<include name="lombok/experimental/**" />
+				<include name="lombok/extern/**" />
+				<include name="lombok/launch/**" />
+			</fileset>
 			<mappedresources>
 				<fileset dir="build/lombok">
-					<exclude name="com/sun/tools/javac/**"/>
+					<exclude name="com/sun/tools/javac/**" />
+					<exclude name="lombok/*.class" />
+					<exclude name="lombok/experimental/**" />
+					<exclude name="lombok/extern/**" />
+					<exclude name="lombok/launch/**" />
 				</fileset>
 				<firstmatchmapper>
-					<globmapper from="lombok/launch/*" to="lombok/launch/*" />
 					<globmapper from="*.class" to="*.SCL.lombok" />
 					<identitymapper />
 				</firstmatchmapper>

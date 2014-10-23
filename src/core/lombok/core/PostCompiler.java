@@ -24,6 +24,8 @@ package lombok.core;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Collections;
 import java.util.List;
 
@@ -55,10 +57,12 @@ public final class PostCompiler {
 			transformations = SpiLoadUtil.readAllFromIterator(SpiLoadUtil.findServices(PostCompilerTransformation.class, PostCompilerTransformation.class.getClassLoader()));
 		} catch (IOException e) {
 			transformations = Collections.emptyList();
-			diagnostics.addWarning("Could not load post-compile transformers: " + e.getMessage());
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw, true));
+			diagnostics.addWarning("Could not load post-compile transformers: " + e.getMessage() + "\n" + sw.toString());
 		}
 	}
-
+	
 	public static OutputStream wrapOutputStream(final OutputStream originalStream, final String fileName, final DiagnosticsReceiver diagnostics) throws IOException {
 		if (System.getProperty("lombok.disablePostCompiler", null) != null) return originalStream;
 		return new ByteArrayOutputStream() {

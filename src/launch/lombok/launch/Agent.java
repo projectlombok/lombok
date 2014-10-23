@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,120 +21,27 @@
  */
 package lombok.launch;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.lang.reflect.InvocationTargetException;
-import java.security.ProtectionDomain;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
+import java.lang.reflect.Method;
 
 final class Agent {
 	public static void agentmain(String agentArgs, Instrumentation instrumentation) throws Throwable {
-		runAgents(agentArgs, instrumentation, true);
+		runLauncher(agentArgs, instrumentation, true);
 	}
 	
 	public static void premain(String agentArgs, Instrumentation instrumentation) throws Throwable {
-		runAgents(agentArgs, instrumentation, false);
+		runLauncher(agentArgs, instrumentation, false);
 	}
 	
-	private static final List<AgentInfo> AGENTS = Collections.unmodifiableList(Arrays.asList(
-			new NetbeansPatcherInfo(),
-			new EclipsePatcherInfo()
-	));
-	
-	private static void runAgents(String agentArgs, Instrumentation instrumentation, boolean injected) throws Throwable {
+	private static void runLauncher(String agentArgs, Instrumentation instrumentation, boolean injected) throws Throwable {
 		ClassLoader cl = Main.createShadowClassLoader();
-		
-		for (AgentInfo info : AGENTS) {
-			try {
-				Class<?> agentClass = cl.loadClass(info.className());
-				Object agent = agentClass.newInstance();
-				agentClass.getMethod("runAgent", String.class, Instrumentation.class, boolean.class).invoke(agent, agentArgs, instrumentation, injected);
-			} catch (Throwable t) {
-				if (t instanceof InvocationTargetException) t = t.getCause();
-				info.problem(t, instrumentation);
-			}
-		}
-	}
-	
-	private static abstract class AgentInfo {
-		abstract String className();
-		
-		/**
-		 * Called if an exception occurs while loading the agent represented by this AgentInfo object.
-		 * 
-		 * @param t The throwable.
-		 * @param instrumentation In case you want to take an alternative action.
-		 */
-		void problem(Throwable t, Instrumentation instrumentation) throws Throwable {
-			if (t instanceof ClassNotFoundException) {
-				//That's okay - this lombok evidently is a version with support for something stripped out.
-				return;
-			}
-			
-			if (t instanceof ClassCastException) {
-				throw new InternalError("Lombok bug. Class: " + className() + " is not an implementation of lombok.core.Agent");
-			}
-			
-			if (t instanceof IllegalAccessError) {
-				throw new InternalError("Lombok bug. Class: " + className() + " is not public");
-			}
-			
-			if (t instanceof InstantiationException) {
-				throw new InternalError("Lombok bug. Class: " + className() + " is not concrete or has no public no-args constructor");
-			}
-			
-			throw t;
-		}
-	}
-	
-	private static class NetbeansPatcherInfo extends AgentInfo {
-		@Override String className() {
-			return "lombok.netbeans.agent.NetbeansPatcher";
-		}
-		
-		@Override void problem(Throwable in, Instrumentation instrumentation) throws Throwable {
-			try {
-				super.problem(in, instrumentation);
-			} catch (InternalError ie) {
-				throw ie;
-			} catch (Throwable t) {
-				final String error;
-				
-				if (t instanceof UnsupportedClassVersionError) {
-					error = "Lombok only works on netbeans if you start netbeans using a 1.6 or higher JVM.\n" +
-							"Change your platform's default JVM, or edit etc/netbeans.conf\n" +
-							"and explicitly tell netbeans your 1.6 JVM's location.";
-				} else {
-					error = "Lombok disabled due to error: " + t;
-				}
-				
-				instrumentation.addTransformer(new ClassFileTransformer() {
-					@Override public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
-						if ("org/netbeans/modules/java/source/parsing/JavacParser".equals(className)) {
-							//If that class gets loaded, this is definitely a netbeans(-esque) environment, and thus we SHOULD tell the user that lombok is not in fact loaded.
-							SwingUtilities.invokeLater(new Runnable() {
-								@Override public void run() {
-									JOptionPane.showMessageDialog(null, error, "Lombok Disabled", JOptionPane.ERROR_MESSAGE);
-								}
-							});
-						}
-						
-						return null;
-					}
-				});
-			}
-		}
-	}
-	
-	private static class EclipsePatcherInfo extends AgentInfo {
-		@Override String className() {
-			return "lombok.eclipse.agent.EclipsePatcher";
+		try {
+			Class<?> c = cl.loadClass("lombok.core.AgentLauncher");
+			Method m = c.getDeclaredMethod("runAgents", String.class, Instrumentation.class, boolean.class, Class.class);
+			m.invoke(null, agentArgs, instrumentation, injected, Agent.class);
+		} catch (InvocationTargetException e) {
+			throw e.getCause();
 		}
 	}
 }
