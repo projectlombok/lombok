@@ -26,7 +26,6 @@ public class EclipseLoaderPatcher {
 			ClassLoader shadowLoader = (ClassLoader) shadowLoaderField.get(original);
 			if (shadowLoader == null) {
 				String jarLoc = (String) original.getClass().getDeclaredField("lombok$location").get(null);
-				System.out.println(jarLoc);
 				JarFile jf = new JarFile(jarLoc);
 				InputStream in = null;
 				try {
