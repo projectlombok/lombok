@@ -57,6 +57,7 @@ import java.util.jar.JarFile;
 class ShadowClassLoader extends ClassLoader {
 	private static final String SELF_NAME = "lombok/launch/ShadowClassLoader.class";
 	private final String SELF_BASE;
+	private final File SELF_BASE_FILE;
 	private final int SELF_BASE_LENGTH;
 	
 	private final List<File> override = new ArrayList<File>();
@@ -92,6 +93,9 @@ class ShadowClassLoader extends ClassLoader {
 			SELF_BASE = sclClassUrl.substring(0, SELF_BASE_LENGTH);
 		}
 		
+		if (SELF_BASE.startsWith("jar:file:") && SELF_BASE.endsWith("!/")) SELF_BASE_FILE = new File(SELF_BASE.substring(9, SELF_BASE.length() - 2));
+		else if (SELF_BASE.startsWith("file:")) SELF_BASE_FILE = new File(SELF_BASE.substring(5));
+		else SELF_BASE_FILE = new File(SELF_BASE);
 		String scl = System.getProperty("shadow.override." + sclSuffix);
 		if (scl != null && !scl.isEmpty()) {
 			for (String part : scl.split("\\s*" + (File.pathSeparatorChar == ';' ? ";" : ":") + "\\s*")) {
@@ -148,37 +152,38 @@ class ShadowClassLoader extends ClassLoader {
 		return (itemString.length() == SELF_BASE_LENGTH + name.length()) && SELF_BASE.regionMatches(0, itemString, 0, SELF_BASE_LENGTH);
 	}
 	
-	public Enumeration<URL> getResources(String name) throws IOException {
+	@Override public Enumeration<URL> getResources(String name) throws IOException {
 		String altName = null;
 		if (name.endsWith(".class")) altName = name.substring(0, name.length() - 6) + ".SCL." + sclSuffix;
-		List<URL> overrides = null;
-		for (File ce : override) {
-			URL url = getResourceFromLocation(name, altName, ce);
-			if (url != null) {
-				if (overrides == null) overrides = new ArrayList<URL>();
-				overrides.add(url);
-			}
-		}
 		
-		// Vector????!!???WTFBBQ??? Yes, we need one:
+		// Vector? Yes, we need one:
 		// * We can NOT make inner classes here (this class is loaded with special voodoo magic in eclipse, as a one off, it's not a full loader.
 		// * We need to return an enumeration.
 		// * We can't make one on the fly.
 		// * ArrayList can't make these.
-		
 		Vector<URL> vector = new Vector<URL>();
-		if (overrides != null) vector.addAll(overrides);
+		
+		for (File ce : override) {
+			URL url = getResourceFromLocation(name, altName, ce);
+			if (url != null) vector.add(url);
+		}
+		
+		if (override.isEmpty()) {
+			URL fromSelf = getResourceFromLocation(name, altName, SELF_BASE_FILE);
+			if (fromSelf != null) vector.add(fromSelf);
+		}
+		
 		Enumeration<URL> sec = super.getResources(name);
 		while (sec.hasMoreElements()) {
 			URL item = sec.nextElement();
-			if (override.isEmpty() || !inOwnBase(item, name)) vector.add(item);
+			if (!inOwnBase(item, name)) vector.add(item);
 		}
 		
 		if (altName != null) {
 			Enumeration<URL> tern = super.getResources(altName);
 			while (tern.hasMoreElements()) {
 				URL item = tern.nextElement();
-				if (override.isEmpty() || !inOwnBase(item, altName)) vector.add(item);
+				if (!inOwnBase(item, altName)) vector.add(item);
 			}
 		}
 		
@@ -213,6 +218,9 @@ class ShadowClassLoader extends ClassLoader {
 			}
 		}
 		
+		URL url = getResourceFromLocation(name, altName, SELF_BASE_FILE);
+		if (url != null) return url;
+		
 		if (altName != null) {
 			URL res = super.getResource(altName);
 			if (res != null && (!noSuper || inOwnBase(res, altName))) return res;
@@ -234,7 +242,6 @@ class ShadowClassLoader extends ClassLoader {
 		URL candidate = super.getResource(name);
 		if (candidate == null) return null;
 		if (!inOwnBase(candidate, name)) return candidate;
-		
 		
 		Enumeration<URL> en = super.getResources(name);
 		while (en.hasMoreElements()) {
