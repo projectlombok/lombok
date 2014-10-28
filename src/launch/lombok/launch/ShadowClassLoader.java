@@ -26,12 +26,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
+import java.util.WeakHashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -108,6 +111,64 @@ class ShadowClassLoader extends ClassLoader {
 		}
 	}
 	
+	private static final String EMPTY_MARKER = new String("--EMPTY JAR--");
+	private Map<String, Object> jarContentsCacheTrackers = new HashMap<String, Object>();
+	private static WeakHashMap<Object, String> trackerCache = new WeakHashMap<Object, String>();
+	private static WeakHashMap<Object, List<String>> jarContentsCache = new WeakHashMap<Object, List<String>>();
+	
+	/**
+	 * This cache ensures that any given jar file is only opened once in order to determine the full contents of it.
+	 * We use 'trackers' to make sure that the bulk of the memory taken up by this cache (the list of strings representing the content of a jar file)
+	 * gets garbage collected if all ShadowClassLoaders that ever tried to request a listing of this jar file, are garbage collected.
+	 */
+	private List<String> getOrMakeJarListing(String absolutePathToJar) {
+		List<String> list = retrieveFromCache(absolutePathToJar);
+		synchronized (list) {
+			if (list.isEmpty()) {
+				try {
+					JarFile jf = new JarFile(absolutePathToJar);
+					try {
+						Enumeration<JarEntry> entries = jf.entries();
+						while (entries.hasMoreElements()) {
+							JarEntry jarEntry = entries.nextElement();
+							if (!jarEntry.isDirectory()) list.add(jarEntry.getName());
+						}
+					} finally {
+						jf.close();
+					}
+				} catch (Exception ignore) {}
+				if (list.isEmpty()) list.add(EMPTY_MARKER);
+			}
+		}
+		
+		if (list.size() == 1 && list.get(0) == EMPTY_MARKER) return Collections.emptyList();
+		return list;
+	}
+	
+	private List<String> retrieveFromCache(String absolutePathToJar) {
+		synchronized (trackerCache) {
+			Object tracker = jarContentsCacheTrackers.get(absolutePathToJar);
+			if (tracker != null) return jarContentsCache.get(tracker);
+			
+			for (Map.Entry<Object, String> entry : trackerCache.entrySet()) {
+				if (entry.getValue().equals(absolutePathToJar)) {
+					tracker = entry.getKey();
+					break;
+				}
+			}
+			List<String> result = null;
+			if (tracker != null) result = jarContentsCache.get(tracker);
+			if (result != null) return result;
+			
+			tracker = new Object();
+			List<String> list = new ArrayList<String>();
+			jarContentsCache.put(tracker, list);
+			trackerCache.put(tracker, absolutePathToJar);
+			jarContentsCacheTrackers.put(absolutePathToJar, tracker);
+			return list;
+		}
+	}
+	
 	private URL getResourceFromLocation(String name, String altName, File location) {
 		if (location.isDirectory()) {
 			try {
@@ -126,24 +187,28 @@ class ShadowClassLoader extends ClassLoader {
 		
 		if (!location.isFile() || !location.canRead()) return null;
 		
-		JarFile jf = null;
-		JarEntry entry = null;
+		String absolutePath; {
+			try {
+				absolutePath = location.getCanonicalPath();
+			} catch (Exception e) {
+				absolutePath = location.getAbsolutePath();
+			}
+		}
+		List<String> jarContents = getOrMakeJarListing(absolutePath);
 		
 		try {
-			jf = new JarFile(location);
-			if (altName != null) entry = jf.getJarEntry(altName);
-			if (entry == null) entry = jf.getJarEntry(name);
-			if (entry == null) return null;
-			return new URI("jar:file:" + location.getAbsolutePath() + "!/" + entry.getName()).toURL();
-		} catch (IOException e) {
-			return null;
-		} catch (URISyntaxException e) {
-			return null;
-		} finally {
-			if (jf != null) try {
-				jf.close();
-			} catch (Exception ignore) {}
-		}
+			if (jarContents.contains(altName)) {
+				return new URI("jar:file:" + absolutePath + "!/" + altName).toURL();
+			}
+		} catch (Exception e) {}
+		
+		try {
+			if (jarContents.contains(name)) {
+				return new URI("jar:file:" + absolutePath + "!/" + name).toURL();
+			}
+		} catch(Exception e) {}
+		
+		return null;
 	}
 	
 	private boolean inOwnBase(URL item, String name) {
