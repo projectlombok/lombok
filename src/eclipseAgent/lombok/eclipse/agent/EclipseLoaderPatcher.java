@@ -22,10 +22,10 @@ public class EclipseLoaderPatcher {
 	
 	public static Class<?> overrideLoadResult(ClassLoader original, String name, boolean resolve) throws ClassNotFoundException {
 		try {
-			Field shadowLoaderField = original.getClass().getDeclaredField("lombok$shadowLoader");
+			Field shadowLoaderField = original.getClass().getField("lombok$shadowLoader");
 			ClassLoader shadowLoader = (ClassLoader) shadowLoaderField.get(original);
 			if (shadowLoader == null) {
-				String jarLoc = (String) original.getClass().getDeclaredField("lombok$location").get(null);
+				String jarLoc = (String) original.getClass().getField("lombok$location").get(null);
 				JarFile jf = new JarFile(jarLoc);
 				InputStream in = null;
 				try {
