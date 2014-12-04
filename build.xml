@@ -155,16 +155,14 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ivy:compile>
 		
 		<ivy:compile destdir="build/lombok-utils" source="1.5" target="1.5" includeantruntime="false">
-			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
-			<compilerarg value="-Xbootclasspath/p:build/stubs" />
+			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
 			<src path="src/utils" />
 			<exclude name="lombok/javac/**" />
 			<classpath refid="build.path" />
 		</ivy:compile>
 		
 		<ivy:compile destdir="build/lombok-utils" source="1.6" target="1.6" includeantruntime="false">
-			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
-			<compilerarg value="-Xbootclasspath/p:build/stubs" />
+			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
 			<src path="src/utils" />
 			<include name="lombok/javac/**" />
 			<classpath location="build/lombok-utils" />
@@ -176,8 +174,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</copy>
 		
 		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" includeantruntime="false">
-			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
-			<compilerarg value="-Xbootclasspath/p:build/stubs" />
+			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
 			<src path="src/launch" />
 			<src path="src/core" />
 			<src path="src/installer" />
@@ -188,8 +185,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ivy:compile>
 		
 		<ivy:compile destdir="build/lombok" source="1.6" target="1.6" includeantruntime="false">
-			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
-			<compilerarg value="-Xbootclasspath/p:build/stubs" />
+			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
 			<src path="src/core" />
 			<src path="src/delombok" />
 			<include name="lombok/javac/**" />
