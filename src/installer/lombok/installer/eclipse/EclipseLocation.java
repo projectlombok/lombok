@@ -337,8 +337,6 @@ public class EclipseLocation extends IdeLocation {
 			
 			newContents.append(String.format(
 					"-javaagent:%s", escapePath(fullPathToLombok + "lombok.jar"))).append(OS_NEWLINE);
-			newContents.append(String.format(
-					"-Xbootclasspath/a:%s", escapePath(fullPathToLombok + "lombok.jar"))).append(OS_NEWLINE);
 			
 			FileOutputStream fos = new FileOutputStream(eclipseIniPath);
 			try {
@@ -360,8 +358,7 @@ public class EclipseLocation extends IdeLocation {
 		}
 		
 		return "If you start " + getTypeName() + " with a custom -vm parameter, you'll need to add:<br>" +
-				"<code>-vmargs -Xbootclasspath/a:lombok.jar -javaagent:lombok.jar</code><br>" +
-				"as parameter as well.";
+				"<code>-vmargs -javaagent:lombok.jar</code><br>as parameter as well.";
 	}
 	
 	@Override public URL getIdeIcon() {

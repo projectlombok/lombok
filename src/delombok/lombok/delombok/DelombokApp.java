@@ -88,7 +88,7 @@ public class DelombokApp extends LombokApp {
 		// Since we only read from it, not closing it should not be a problem.
 		@SuppressWarnings({"resource", "all"}) final JarFile toolsJarFile = new JarFile(toolsJar);
 		
-		ClassLoader loader = new ClassLoader() {
+		ClassLoader loader = new ClassLoader(DelombokApp.class.getClassLoader()) {
 			private Class<?> loadStreamAsClass(String name, boolean resolve, InputStream in) throws ClassNotFoundException {
 				try {
 					try {
@@ -107,16 +107,24 @@ public class DelombokApp extends LombokApp {
 					} finally {
 						in.close();
 					}
-				} catch (IOException e2) {
+				} catch (Exception e2) {
 					throw new ClassNotFoundException(name, e2);
 				}
 			}
 			
 			@Override protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-				String rawName = name.replace(".", "/") + ".class";
+				String rawName, altName; {
+					String binName = name.replace(".", "/");
+					rawName = binName + ".class";
+					altName = binName + ".SCL.lombok";
+				}
 				JarEntry entry = toolsJarFile.getJarEntry(rawName);
 				if (entry == null) {
-					if (name.startsWith("lombok.")) return loadStreamAsClass(name, resolve, super.getResourceAsStream(rawName));
+					if (name.startsWith("lombok.")) {
+						InputStream res = getParent().getResourceAsStream(rawName);
+						if (res == null) res = getParent().getResourceAsStream(altName);
+						return loadStreamAsClass(name, resolve, res);
+					}
 					return super.loadClass(name, resolve);
 				}
 				

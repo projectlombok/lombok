@@ -224,7 +224,8 @@ public class PatchExtensionMethod {
 				if (methodCall.arguments != null) arguments.addAll(Arrays.asList(methodCall.arguments));
 				List<TypeBinding> argumentTypes = new ArrayList<TypeBinding>();
 				for (Expression argument : arguments) {
-					argumentTypes.add(argument.resolvedType);
+					if (argument.resolvedType != null) argumentTypes.add(argument.resolvedType);
+					// TODO: Instead of just skipping nulls entirely, there is probably a 'unresolved type' placeholder. THAT is what we ought to be adding here!
 				}
 				MethodBinding fixedBinding = scope.getMethod(extensionMethod.declaringClass, methodCall.selector, argumentTypes.toArray(new TypeBinding[0]), methodCall);
 				if (fixedBinding instanceof ProblemMethodBinding) {

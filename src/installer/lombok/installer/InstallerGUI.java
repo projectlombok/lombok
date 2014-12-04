@@ -820,9 +820,8 @@ public class InstallerGUI {
 	private static final String HOW_I_WORK_EXPLANATION =
 		"<html><h2>Eclipse</h2><ol>" +
 		"<li>First, I copy myself (lombok.jar) to your Eclipse install directory.</li>" +
-		"<li>Then, I edit the <i>eclipse.ini</i> file to add the following two entries:<br>" +
-		"<pre>-Xbootclasspath/a:lombok.jar<br>" +
-		"-javaagent:lombok.jar</pre></li></ol>" +
+		"<li>Then, I edit the <i>eclipse.ini</i> file to add the following entry:<br>" +
+		"<pre>-javaagent:lombok.jar</pre></li></ol>" +
 		"On Mac OS X, eclipse.ini is hidden in<br>" +
 		"<code>Eclipse.app/Contents/MacOS</code> so that's where I place the jar files.</html>";
 	

@@ -59,7 +59,7 @@ public class HandlePrintAST extends JavacAnnotationHandler<PrintAST> {
 				try {
 					stream.close();
 				} catch (Exception e) {
-					Lombok.sneakyThrow(e);
+					throw Lombok.sneakyThrow(e);
 				}
 			}
 		}

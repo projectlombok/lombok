@@ -28,13 +28,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import lombok.core.Agent;
+import lombok.core.AgentLauncher;
+
 import lombok.patcher.Hook;
 import lombok.patcher.MethodTarget;
 import lombok.patcher.ScriptManager;
 import lombok.patcher.StackRequest;
 import lombok.patcher.TargetMatcher;
-import lombok.patcher.equinox.EquinoxClassLoader;
 import lombok.patcher.scripts.ScriptBuilder;
 
 /**
@@ -44,13 +44,12 @@ import lombok.patcher.scripts.ScriptBuilder;
  * classes in this package for more information about which classes are transformed and how they are
  * transformed.
  */
-public class EclipsePatcher extends Agent {
+public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	// At some point I'd like the agent to be capable of auto-detecting if its on eclipse or on ecj. This class is a sure sign we're not in ecj but in eclipse. -ReinierZ
 	@SuppressWarnings("unused")
 	private static final String ECLIPSE_SIGNATURE_CLASS = "org/eclipse/core/runtime/adaptor/EclipseStarter";
 	
-	@Override
-	public void runAgent(String agentArgs, Instrumentation instrumentation, boolean injected) throws Exception {
+	@Override public void runAgent(String agentArgs, Instrumentation instrumentation, boolean injected, Class<?> launchingContext) throws Exception {
 		String[] args = agentArgs == null ? new String[0] : agentArgs.split(":");
 		boolean forceEcj = false;
 		boolean forceEclipse = false;
@@ -69,15 +68,14 @@ public class EclipsePatcher extends Agent {
 		else if (forceEclipse) ecj = false;
 		else ecj = injected;
 		
-		registerPatchScripts(instrumentation, injected, ecj);
+		registerPatchScripts(instrumentation, injected, ecj, launchingContext);
 	}
 	
-	private static void registerPatchScripts(Instrumentation instrumentation, boolean reloadExistingClasses, boolean ecjOnly) {
+	private static void registerPatchScripts(Instrumentation instrumentation, boolean reloadExistingClasses, boolean ecjOnly, Class<?> launchingContext) {
 		ScriptManager sm = new ScriptManager();
 		sm.registerTransformer(instrumentation);
 		if (!ecjOnly) {
-			EquinoxClassLoader.addPrefix("lombok.");
-			EquinoxClassLoader.registerScripts(sm);
+			EclipseLoaderPatcher.patchEquinoxLoaders(sm, launchingContext);
 		}
 		
 		if (!ecjOnly) {
