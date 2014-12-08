@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.experimental;
+package lombok;
 
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.*;
@@ -103,12 +103,9 @@ import java.lang.annotation.Target;
  * 	}
  * }
  * </pre>
- * 
- * @deprecated {@link lombok.Builder} has been promoted to the main package, so use that one instead.
  */
 @Target({TYPE, METHOD, CONSTRUCTOR})
 @Retention(SOURCE)
-@Deprecated
 public @interface Builder {
 	/** Name of the static method that creates a new builder instance. Default: {@code builder}. */
 	String builderMethodName() default "builder";
@@ -121,20 +118,4 @@ public @interface Builder {
 	 * Default for {@code @Builder} on static methods: {@code (ReturnTypeName)Builder}.
 	 */
 	String builderClassName() default "";
-	
-	/**
-	 * Normally the builder's 'set' methods are fluent, meaning, they have the same name as the field. Set this
-	 * to {@code false} to name the setter method for field {@code someField}: {@code setSomeField}.
-	 * <p>
-	 * <strong>Default: true</strong>
-	 */
-	boolean fluent() default true;
-	
-	/**
-	 * Normally the builder's 'set' methods are chaining, meaning, they return the builder so that you can chain
-	 * calls to set methods. Set this to {@code false} to have these 'set' methods return {@code void} instead.
-	 * <p>
-	 * <strong>Default: true</strong>
-	 */
-	boolean chain() default true;
 }

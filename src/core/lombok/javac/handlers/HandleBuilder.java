@@ -46,11 +46,11 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
-import lombok.experimental.Builder;
 import lombok.experimental.NonFinal;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
@@ -64,10 +64,20 @@ import static lombok.javac.JavacTreeMaker.TypeTag.*;
 @ProviderFor(JavacAnnotationHandler.class)
 @HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
 public class HandleBuilder extends JavacAnnotationHandler<Builder> {
+	private static final boolean toBoolean(Object expr, boolean defaultValue) {
+		if (expr == null) return defaultValue;
+		return ((Boolean) expr).booleanValue();
+	}
+	
 	@Override public void handle(AnnotationValues<Builder> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.BUILDER_FLAG_USAGE, "@Builder");
 		
 		Builder builderInstance = annotation.getInstance();
+		
+		// These exist just to support the 'old' lombok.experimental.Builder, which had these properties. lombok.Builder no longer has them.
+		boolean fluent = toBoolean(annotation.getActualExpression("fluent"), true);
+		boolean chain = toBoolean(annotation.getActualExpression("chain"), true);
+		
 		String builderMethodName = builderInstance.builderMethodName();
 		String buildMethodName = builderInstance.buildMethodName();
 		String builderClassName = builderInstance.builderClassName();
@@ -194,7 +204,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		java.util.List<JavacNode> fieldNodes = addFieldsToBuilder(builderType, namesOfParameters, typesOfParameters, ast);
 		java.util.List<JCMethodDecl> newMethods = new ArrayList<JCMethodDecl>();
 		for (JavacNode fieldNode : fieldNodes) {
-			JCMethodDecl newMethod = makeSetterMethodForBuilder(builderType, fieldNode, annotationNode, builderInstance.fluent(), builderInstance.chain());
+			JCMethodDecl newMethod = makeSetterMethodForBuilder(builderType, fieldNode, annotationNode, fluent, chain);
 			if (newMethod != null) newMethods.add(newMethod);
 		}
 		

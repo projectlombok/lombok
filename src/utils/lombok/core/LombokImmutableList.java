@@ -80,6 +80,12 @@ public final class LombokImmutableList<T> implements Iterable<T> {
 		return copyOf(list);
 	}
 	
+	public static <T> LombokImmutableList<T> copyOf(T[] array) {
+		Object[] content = new Object[array.length];
+		System.arraycopy(array, 0, content, 0, array.length);
+		return new LombokImmutableList<T>(content);
+	}
+	
 	private LombokImmutableList(Object[] content) {
 		this.content = content;
 	}

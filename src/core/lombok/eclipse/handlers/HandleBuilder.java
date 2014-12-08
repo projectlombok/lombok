@@ -56,6 +56,7 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.mangosdk.spi.ProviderFor;
 
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
@@ -64,18 +65,27 @@ import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.HandleConstructor.SkipIfConstructorExists;
-import lombok.experimental.Builder;
 import lombok.experimental.NonFinal;
 
 @ProviderFor(EclipseAnnotationHandler.class)
 @HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
 public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
+	private static final boolean toBoolean(Object expr, boolean defaultValue) {
+		if (expr == null) return defaultValue;
+		return ((Boolean) expr).booleanValue();
+	}
+	
 	@Override public void handle(AnnotationValues<Builder> annotation, Annotation ast, EclipseNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.BUILDER_FLAG_USAGE, "@Builder");
 		
 		long p = (long) ast.sourceStart << 32 | ast.sourceEnd;
 		
 		Builder builderInstance = annotation.getInstance();
+		
+		// These exist just to support the 'old' lombok.experimental.Builder, which had these properties. lombok.Builder no longer has them.
+		boolean fluent = toBoolean(annotation.getActualExpression("fluent"), true);
+		boolean chain = toBoolean(annotation.getActualExpression("chain"), true);
+		
 		String builderMethodName = builderInstance.builderMethodName();
 		String buildMethodName = builderInstance.buildMethodName();
 		String builderClassName = builderInstance.builderClassName();
@@ -205,7 +215,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		List<EclipseNode> fieldNodes = addFieldsToBuilder(builderType, namesOfParameters, typesOfParameters, ast);
 		List<AbstractMethodDeclaration> newMethods = new ArrayList<AbstractMethodDeclaration>();
 		for (EclipseNode fieldNode : fieldNodes) {
-			MethodDeclaration newMethod = makeSetterMethodForBuilder(builderType, fieldNode, annotationNode, builderInstance.fluent(), builderInstance.chain());
+			MethodDeclaration newMethod = makeSetterMethodForBuilder(builderType, fieldNode, annotationNode, fluent, chain);
 			if (newMethod != null) newMethods.add(newMethod);
 		}
 		
