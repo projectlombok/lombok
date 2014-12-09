@@ -104,7 +104,6 @@ import com.sun.tools.javac.tree.JCTree.LetExpr;
 import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
 import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.tree.TreeScanner;
-import com.sun.tools.javac.util.Convert;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
@@ -209,7 +208,6 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 	
 	private void consumeComments(int until, JCTree tree) throws IOException {
 		boolean prevNewLine = onNewLine;
-		boolean found = false;
 		CommentInfo head = comments.head;
 		while (comments.nonEmpty() && head.pos < until) {
 			printComment(head);
@@ -355,7 +353,7 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 		}
 		needsSpace = false;
 		
-		out.write(Convert.escapeUnicode(s.toString()));
+		out.write(s.toString());
 		
 		onNewLine = false;
 		aligned = false;
@@ -1413,13 +1411,48 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 			else if (CTC_FLOAT.equals(typeTag)) print(tree.value + "F");
 			else if (CTC_DOUBLE.equals(typeTag)) print(tree.value.toString());
 			else if (CTC_CHAR.equals(typeTag)) {
-				print("\'" + Convert.quote(String.valueOf((char)((Number)tree.value).intValue())) + "\'");
+				print("\'" + quoteChar((char)((Number)tree.value).intValue()) + "\'");
 			}
 			else if (CTC_BOOLEAN.equals(typeTag)) print(((Number)tree.value).intValue() == 1 ? "true" : "false");
 			else if (CTC_BOT.equals(typeTag)) print("null");
-			else print("\"" + Convert.quote(tree.value.toString()) + "\"");
+			else print("\"" + quoteChars(tree.value.toString()) + "\"");
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
+		}
+	}
+	
+	public static String quoteChars(String s) {
+		StringBuilder buf = new StringBuilder();
+		for (int i = 0; i < s.length(); i++) {
+			buf.append(quoteChar(s.charAt(i)));
+		}
+		return buf.toString();
+	}
+	
+	/**
+	 * Escapes a character if it has an escape sequence or is non-printable
+	 * ASCII. Leaves non-ASCII characters alone.
+	 */
+	public static String quoteChar(char ch) {
+		switch (ch) {
+		case '\b':
+			return "\\b";
+		case '\f':
+			return "\\f";
+		case '\n':
+			return "\\n";
+		case '\r':
+			return "\\r";
+		case '\t':
+			return "\\t";
+		case '\'':
+			return "\\'";
+		case '\"':
+			return "\\\"";
+		case '\\':
+			return "\\\\";
+		default:
+			return ch < 32 ? String.format("\\%03o", (int) ch) : String.valueOf(ch);
 		}
 	}
 	

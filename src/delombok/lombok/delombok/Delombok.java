@@ -509,7 +509,7 @@ public class Delombok {
 			DelombokResult result = new DelombokResult(catcher.getComments(unit), unit, force || options.isChanged(unit), fps);
 			if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged");
 			Writer rawWriter;
-			if (presetWriter != null) rawWriter = presetWriter;
+			if (presetWriter != null) rawWriter = createUnicodeEscapeWriter(presetWriter);
 			else if (output == null) rawWriter = createStandardOutWriter();
 			else rawWriter = createFileWriter(output, baseMap.get(unit), unit.sourcefile.toUri());
 			BufferedWriter writer = new BufferedWriter(rawWriter);
@@ -603,6 +603,10 @@ public class Delombok {
 	
 	private Writer createStandardOutWriter() {
 		return createUnicodeEscapeWriter(System.out);
+	}
+	
+	private Writer createUnicodeEscapeWriter(Writer writer) {
+		return new UnicodeEscapeWriter(writer, charset);
 	}
 	
 	private Writer createUnicodeEscapeWriter(OutputStream out) {

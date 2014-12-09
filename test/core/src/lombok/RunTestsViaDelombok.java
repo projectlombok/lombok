@@ -34,10 +34,10 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 	private Delombok delombok = new Delombok();
 	
 	@Override
-	public void transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file) throws Throwable {
+	public void transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file, String encoding) throws Throwable {
 		delombok.setVerbose(false);
 		delombok.setForceProcess(true);
-		delombok.setCharset("UTF-8");
+		delombok.setCharset(encoding == null ? "UTF-8" : encoding);
 		
 		delombok.setDiagnosticsListener(new CapturingDiagnosticListener(file, messages));
 		

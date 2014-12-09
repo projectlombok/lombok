@@ -49,7 +49,8 @@ public class LombokTestSource {
 	private final boolean skipCompareContent;
 	private final int versionLowerLimit, versionUpperLimit;
 	private final ConfigurationResolver configuration;
-	
+	private final String specifiedEncoding;
+
 	public boolean versionWithinLimit(int version) {
 		return version >= versionLowerLimit && version <= versionUpperLimit;
 	}
@@ -72,6 +73,10 @@ public class LombokTestSource {
 	
 	public boolean isSkipCompareContent() {
 		return skipCompareContent;
+	}
+	
+	public String getSpecifiedEncoding() {
+		return specifiedEncoding;
 	}
 	
 	public ConfigurationResolver getConfiguration() {
@@ -123,6 +128,7 @@ public class LombokTestSource {
 		int versionUpper = Integer.MAX_VALUE;
 		boolean ignore = false;
 		boolean skipCompareContent = false;
+		String encoding = null;
 		
 		for (String directive : directives) {
 			directive = directive.trim();
@@ -154,10 +160,15 @@ public class LombokTestSource {
 				continue;
 			}
 			
+			if (lc.startsWith("encoding:")) {
+				encoding = directive.substring(9).trim();
+				continue;
+			}
+			
 			Assert.fail("Directive line \"" + directive + "\" in '" + file.getAbsolutePath() + "' invalid: unrecognized directive.");
 			throw new RuntimeException();
 		}
-		
+		this.specifiedEncoding = encoding;
 		this.versionLowerLimit = versionLower;
 		this.versionUpperLimit = versionUpper;
 		this.ignore = ignore;
@@ -194,13 +205,17 @@ public class LombokTestSource {
 	}
 	
 	public static LombokTestSource read(File sourceFolder, File messagesFolder, String fileName) throws IOException {
+		return read0(sourceFolder, messagesFolder, fileName, "UTF-8");
+	}
+	
+	private static LombokTestSource read0(File sourceFolder, File messagesFolder, String fileName, String encoding) throws IOException {
 		StringBuilder content = null;
 		List<String> directives = new ArrayList<String>();
 		
 		File sourceFile = new File(sourceFolder, fileName);
 		if (sourceFile.exists()) {
 			@Cleanup val rawIn = new FileInputStream(sourceFile);
-			BufferedReader in = new BufferedReader(new InputStreamReader(rawIn, "UTF-8"));
+			BufferedReader in = new BufferedReader(new InputStreamReader(rawIn, encoding));
 			for (String i = in.readLine(); i != null; i = in.readLine()) {
 				if (content != null) {
 					content.append(i).append("\n");
@@ -234,6 +249,15 @@ public class LombokTestSource {
 			}
 		}
 		
-		return new LombokTestSource(sourceFile, content.toString(), messages, directives);
+		LombokTestSource source = new LombokTestSource(sourceFile, content.toString(), messages, directives);
+		String specifiedEncoding = source.getSpecifiedEncoding();
+		
+		// The source file has an 'encoding' header to test encoding issues. Of course, reading the encoding header
+		// requires knowing the encoding of the file first. In practice we get away with it, because UTF-8 and US-ASCII are compatible enough.
+		// The fix is therefore to read in as UTF-8 initially, and if the file requests that it should be read as another encoding, toss it all
+		// and reread that way.
+		
+		if (specifiedEncoding == null || specifiedEncoding.equalsIgnoreCase(encoding)) return source;
+		return read0(sourceFolder, messagesFolder, fileName, specifiedEncoding);
 	}
 }
