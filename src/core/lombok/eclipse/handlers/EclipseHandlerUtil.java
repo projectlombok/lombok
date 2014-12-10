@@ -43,6 +43,7 @@ import lombok.Getter;
 import lombok.Lombok;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.LombokNode;
 import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TypeResolver;
 import lombok.core.configuration.NullCheckExceptionType;
@@ -52,6 +53,7 @@ import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.Accessors;
 import lombok.experimental.Tolerate;
+import lombok.util.LombokGeneratorHelper;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -108,6 +110,9 @@ import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
  * Container for static utility methods useful to handlers written for eclipse.
  */
 public class EclipseHandlerUtil {
+
+	private static LombokGeneratorHelper HELPER = new LombokGeneratorHelper(EclipseImplementationDetails.INSTANCE);
+
 	private EclipseHandlerUtil() {
 		//Prevent instantiation
 	}
@@ -1392,27 +1397,8 @@ public class EclipseHandlerUtil {
 	/**
 	 * Given a list of field names and a node referring to a type, finds each name in the list that does not match a field within the type.
 	 */
-	public static List<Integer> createListOfNonExistentFields(List<String> list, EclipseNode type, boolean excludeStandard, boolean excludeTransient) {
-		boolean[] matched = new boolean[list.size()];
-		
-		for (EclipseNode child : type.down()) {
-			if (list.isEmpty()) break;
-			if (child.getKind() != Kind.FIELD) continue;
-			if (excludeStandard) {
-				if ((((FieldDeclaration)child.get()).modifiers & ClassFileConstants.AccStatic) != 0) continue;
-				if (child.getName().startsWith("$")) continue;
-			}
-			if (excludeTransient && (((FieldDeclaration)child.get()).modifiers & ClassFileConstants.AccTransient) != 0) continue;
-			int idx = list.indexOf(child.getName());
-			if (idx > -1) matched[idx] = true;
-		}
-		
-		List<Integer> problematic = new ArrayList<Integer>();
-		for (int i = 0 ; i < list.size() ; i++) {
-			if (!matched[i]) problematic.add(i);
-		}
-		
-		return problematic;
+	public static List<Integer> createListOfNonExistentFields(List<String> list, LombokNode<?, ?, ?> type, boolean excludeStandard, boolean excludeTransient) {
+		return HELPER.createListOfNonExistentFields(list, type, excludeStandard, excludeTransient);
 	}
 	
 	/**

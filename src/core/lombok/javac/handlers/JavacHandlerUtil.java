@@ -30,6 +30,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -41,6 +42,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.LombokNode;
 import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TypeResolver;
 import lombok.core.configuration.NullCheckExceptionType;
@@ -51,6 +53,7 @@ import lombok.experimental.Tolerate;
 import lombok.javac.Javac;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
+import lombok.util.LombokGeneratorHelper;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
@@ -92,6 +95,9 @@ import com.sun.tools.javac.util.Options;
  * Container for static utility methods useful to handlers written for javac.
  */
 public class JavacHandlerUtil {
+
+	private static LombokGeneratorHelper HELPER = new LombokGeneratorHelper(JavacImplementationDetails.INSTANCE);
+
 	private JavacHandlerUtil() {
 		//Prevent instantiation
 	}
@@ -1073,29 +1079,8 @@ public class JavacHandlerUtil {
 	/**
 	 * Given a list of field names and a node referring to a type, finds each name in the list that does not match a field within the type.
 	 */
-	public static List<Integer> createListOfNonExistentFields(List<String> list, JavacNode type, boolean excludeStandard, boolean excludeTransient) {
-		boolean[] matched = new boolean[list.size()];
-		
-		for (JavacNode child : type.down()) {
-			if (list.isEmpty()) break;
-			if (child.getKind() != Kind.FIELD) continue;
-			JCVariableDecl field = (JCVariableDecl)child.get();
-			if (excludeStandard) {
-				if ((field.mods.flags & Flags.STATIC) != 0) continue;
-				if (field.name.toString().startsWith("$")) continue;
-			}
-			if (excludeTransient && (field.mods.flags & Flags.TRANSIENT) != 0) continue;
-			
-			int idx = list.indexOf(child.getName());
-			if (idx > -1) matched[idx] = true;
-		}
-		
-		ListBuffer<Integer> problematic = new ListBuffer<Integer>();
-		for (int i = 0 ; i < list.size() ; i++) {
-			if (!matched[i]) problematic.append(i);
-		}
-		
-		return problematic.toList();
+	public static java.util.List<Integer> createListOfNonExistentFields(List<String> list, LombokNode<?, ?, ?> type, boolean excludeStandard, boolean excludeTransient) {
+		return HELPER.createListOfNonExistentFields(list, type, excludeStandard, excludeTransient);
 	}
 	
 	static List<JCAnnotation> unboxAndRemoveAnnotationParameter(JCAnnotation ast, String parameterName, String errorName, JavacNode annotationNode) {
