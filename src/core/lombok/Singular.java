@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2015 The Project Lombok Authors.
+ * Copyright (C) 2013-2014 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,11 +21,18 @@
  */
 package lombok;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.*;
 
-@RunWith(Suite.class)
-@SuiteClasses({lombok.transform.RunTransformTests.class, lombok.bytecode.RunBytecodeTests.class, lombok.core.configuration.RunConfigurationTests.class, lombok.core.RunCoreTests.class})
-public class RunAllTests {
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+/**
+ * The singular annotation is used together with {@code @Builder} to create single element 'add' methods in the builder for collections.
+ * <p>
+ */
+@Target({FIELD, PARAMETER})
+@Retention(SOURCE)
+public @interface Singular {
+	String value() default "";
 }

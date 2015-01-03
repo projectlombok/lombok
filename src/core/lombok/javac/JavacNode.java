@@ -66,40 +66,40 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 	public void traverse(JavacASTVisitor visitor) {
 		switch (this.getKind()) {
 		case COMPILATION_UNIT:
-			visitor.visitCompilationUnit(this, (JCCompilationUnit)get());
+			visitor.visitCompilationUnit(this, (JCCompilationUnit) get());
 			ast.traverseChildren(visitor, this);
-			visitor.endVisitCompilationUnit(this, (JCCompilationUnit)get());
+			visitor.endVisitCompilationUnit(this, (JCCompilationUnit) get());
 			break;
 		case TYPE:
-			visitor.visitType(this, (JCClassDecl)get());
+			visitor.visitType(this, (JCClassDecl) get());
 			ast.traverseChildren(visitor, this);
-			visitor.endVisitType(this, (JCClassDecl)get());
+			visitor.endVisitType(this, (JCClassDecl) get());
 			break;
 		case FIELD:
-			visitor.visitField(this, (JCVariableDecl)get());
+			visitor.visitField(this, (JCVariableDecl) get());
 			ast.traverseChildren(visitor, this);
-			visitor.endVisitField(this, (JCVariableDecl)get());
+			visitor.endVisitField(this, (JCVariableDecl) get());
 			break;
 		case METHOD:
-			visitor.visitMethod(this, (JCMethodDecl)get());
+			visitor.visitMethod(this, (JCMethodDecl) get());
 			ast.traverseChildren(visitor, this);
-			visitor.endVisitMethod(this, (JCMethodDecl)get());
+			visitor.endVisitMethod(this, (JCMethodDecl) get());
 			break;
 		case INITIALIZER:
-			visitor.visitInitializer(this, (JCBlock)get());
+			visitor.visitInitializer(this, (JCBlock) get());
 			ast.traverseChildren(visitor, this);
-			visitor.endVisitInitializer(this, (JCBlock)get());
+			visitor.endVisitInitializer(this, (JCBlock) get());
 			break;
 		case ARGUMENT:
 			JCMethodDecl parentMethod = (JCMethodDecl) up().get();
-			visitor.visitMethodArgument(this, (JCVariableDecl)get(), parentMethod);
+			visitor.visitMethodArgument(this, (JCVariableDecl) get(), parentMethod);
 			ast.traverseChildren(visitor, this);
-			visitor.endVisitMethodArgument(this, (JCVariableDecl)get(), parentMethod);
+			visitor.endVisitMethodArgument(this, (JCVariableDecl) get(), parentMethod);
 			break;
 		case LOCAL:
-			visitor.visitLocal(this, (JCVariableDecl)get());
+			visitor.visitLocal(this, (JCVariableDecl) get());
 			ast.traverseChildren(visitor, this);
-			visitor.endVisitLocal(this, (JCVariableDecl)get());
+			visitor.endVisitLocal(this, (JCVariableDecl) get());
 			break;
 		case STATEMENT:
 			visitor.visitStatement(this, get());
@@ -109,21 +109,21 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 		case ANNOTATION:
 			switch (up().getKind()) {
 			case TYPE:
-				visitor.visitAnnotationOnType((JCClassDecl)up().get(), this, (JCAnnotation)get());
+				visitor.visitAnnotationOnType((JCClassDecl) up().get(), this, (JCAnnotation) get());
 				break;
 			case FIELD:
-				visitor.visitAnnotationOnField((JCVariableDecl)up().get(), this, (JCAnnotation)get());
+				visitor.visitAnnotationOnField((JCVariableDecl) up().get(), this, (JCAnnotation) get());
 				break;
 			case METHOD:
-				visitor.visitAnnotationOnMethod((JCMethodDecl)up().get(), this, (JCAnnotation)get());
+				visitor.visitAnnotationOnMethod((JCMethodDecl) up().get(), this, (JCAnnotation) get());
 				break;
 			case ARGUMENT:
-				JCVariableDecl argument = (JCVariableDecl)up().get();
-				JCMethodDecl method = (JCMethodDecl)up().up().get();
-				visitor.visitAnnotationOnMethodArgument(argument, method, this, (JCAnnotation)get());
+				JCVariableDecl argument = (JCVariableDecl) up().get();
+				JCMethodDecl method = (JCMethodDecl) up().up().get();
+				visitor.visitAnnotationOnMethodArgument(argument, method, this, (JCAnnotation) get());
 				break;
 			case LOCAL:
-				visitor.visitAnnotationOnLocal((JCVariableDecl)up().get(), this, (JCAnnotation)get());
+				visitor.visitAnnotationOnLocal((JCVariableDecl) up().get(), this, (JCAnnotation) get());
 				break;
 			default:
 				throw new AssertionError("Annotion not expected as child of a " + up().getKind());
@@ -138,9 +138,9 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 	@Override public String getName() {
 		final Name n;
 		
-		if (node instanceof JCClassDecl) n = ((JCClassDecl)node).name;
-		else if (node instanceof JCMethodDecl) n = ((JCMethodDecl)node).name;
-		else if (node instanceof JCVariableDecl) n = ((JCVariableDecl)node).name;
+		if (node instanceof JCClassDecl) n = ((JCClassDecl) node).name;
+		else if (node instanceof JCMethodDecl) n = ((JCMethodDecl) node).name;
+		else if (node instanceof JCVariableDecl) n = ((JCVariableDecl) node).name;
 		else n = null;
 		
 		return n == null ? null : n.toString();

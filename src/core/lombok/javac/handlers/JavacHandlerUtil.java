@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.LombokImmutableList;
 import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TypeResolver;
 import lombok.core.configuration.NullCheckExceptionType;
@@ -445,9 +446,9 @@ public class JavacHandlerUtil {
 		return HandlerUtil.shouldReturnThis0(accessors, field.getAst());
 	}
 	
-	public static JCExpression cloneSelfType(JavacNode field) {
-		JavacNode typeNode = field;
-		JavacTreeMaker maker = field.getTreeMaker();
+	public static JCExpression cloneSelfType(JavacNode childOfType) {
+		JavacNode typeNode = childOfType;
+		JavacTreeMaker maker = childOfType.getTreeMaker();
 		while (typeNode != null && typeNode.getKind() != Kind.TYPE) typeNode = typeNode.up();
 		if (typeNode != null && typeNode.get() instanceof JCClassDecl) {
 			JCClassDecl type = (JCClassDecl) typeNode.get();
@@ -985,6 +986,17 @@ public class JavacHandlerUtil {
 		return chainDots(node, -1, null, null, elems);
 	}
 	
+	public static JCExpression chainDots(JavacNode node, LombokImmutableList<String> elems) {
+		assert elems != null;
+		
+		JavacTreeMaker maker = node.getTreeMaker();
+		JCExpression e = null;
+		for (String elem : elems) {
+			if (e == null) e = maker.Ident(node.toName(elem));
+			else e = maker.Select(e, node.toName(elem));
+		}
+		return e;
+	}
 	/**
 	 * In javac, dotted access of any kind, from {@code java.lang.String} to {@code var.methodName}
 	 * is represented by a fold-left of {@code Select} nodes with the leftmost string represented by
@@ -1013,7 +1025,6 @@ public class JavacHandlerUtil {
 		
 		return e;
 	}
-
 	
 	/**
 	 * In javac, dotted access of any kind, from {@code java.lang.String} to {@code var.methodName}

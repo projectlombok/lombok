@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,11 +37,16 @@ import java.util.Map;
 public class TypeLibrary {
 	private final Map<String, String> unqualifiedToQualifiedMap;
 	private final String unqualified, qualified;
+	private boolean locked;
 	
 	public TypeLibrary() {
 		unqualifiedToQualifiedMap = new HashMap<String, String>();
 		unqualified = null;
 		qualified = null;
+	}
+	
+	public void lock() {
+		this.locked = true;
 	}
 	
 	private TypeLibrary(String fqnSingleton) {
@@ -53,6 +58,7 @@ public class TypeLibrary {
 		} else {
 			unqualified = fqnSingleton.substring(idx + 1);
 		}
+		locked = true;
 	}
 	
 	public static TypeLibrary createLibraryForSingleType(String fqnSingleton) {
@@ -65,6 +71,7 @@ public class TypeLibrary {
 	 * @param fullyQualifiedTypeName the FQN type name, such as 'java.lang.String'.
 	 */
 	public void addType(String fullyQualifiedTypeName) {
+		if (locked) throw new IllegalStateException("locked");
 		fullyQualifiedTypeName = fullyQualifiedTypeName.replace("$", ".");
 		int idx = fullyQualifiedTypeName.lastIndexOf('.');
 		if (idx == -1) throw new IllegalArgumentException(

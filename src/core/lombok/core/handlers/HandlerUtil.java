@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 The Project Lombok Authors.
+ * Copyright (C) 2013-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -87,6 +87,9 @@ public class HandlerUtil {
 		return true;
 	}
 	
+	public static String autoSingularize(String plural) {
+		return Singulars.autoSingularize(plural);
+	}
 	public static void handleFlagUsage(LombokNode<?, ?, ?> node, ConfigurationKey<FlagUsageType> key, String featureName) {
 		FlagUsageType fut = node.getAst().readConfiguration(key);
 		
@@ -303,7 +306,7 @@ public class HandlerUtil {
 			return booleanPrefix + fName.substring(2);
 		}
 		
-		return buildName(isBoolean ? booleanPrefix : normalPrefix, fName);
+		return buildAccessorName(isBoolean ? booleanPrefix : normalPrefix, fName);
 	}
 	
 	/**
@@ -375,8 +378,8 @@ public class HandlerUtil {
 			if (adhereToFluent && fluent) {
 				names.add(baseName);
 			} else {
-				names.add(buildName(normalPrefix, baseName));
-				if (!normalPrefix.equals(booleanPrefix)) names.add(buildName(booleanPrefix, baseName));
+				names.add(buildAccessorName(normalPrefix, baseName));
+				if (!normalPrefix.equals(booleanPrefix)) names.add(buildAccessorName(booleanPrefix, baseName));
 			}
 		}
 		
@@ -407,7 +410,7 @@ public class HandlerUtil {
 	 * @param suffix Something like {@code running}.
 	 * @return prefix + smartly title-cased suffix. For example, {@code setRunning}.
 	 */
-	private static String buildName(String prefix, String suffix) {
+	public static String buildAccessorName(String prefix, String suffix) {
 		if (suffix.length() == 0) return prefix;
 		if (prefix.length() == 0) return suffix;
 		
