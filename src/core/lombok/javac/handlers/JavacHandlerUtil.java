@@ -243,56 +243,65 @@ public class JavacHandlerUtil {
 		Map<String, AnnotationValue> values = new HashMap<String, AnnotationValue>();
 		JCAnnotation anno = (JCAnnotation) node.get();
 		List<JCExpression> arguments = anno.getArguments();
-		for (Method m : type.getDeclaredMethods()) {
-			if (!Modifier.isPublic(m.getModifiers())) continue;
-			String name = m.getName();
+		
+		for (JCExpression arg : arguments) {
+			String mName;
+			JCExpression rhs;
 			java.util.List<String> raws = new ArrayList<String>();
 			java.util.List<Object> guesses = new ArrayList<Object>();
 			java.util.List<Object> expressions = new ArrayList<Object>();
 			final java.util.List<DiagnosticPosition> positions = new ArrayList<DiagnosticPosition>();
-			boolean isExplicit = false;
 			
-			for (JCExpression arg : arguments) {
-				String mName;
-				JCExpression rhs;
-				
-				if (arg instanceof JCAssign) {
-					JCAssign assign = (JCAssign) arg;
-					mName = assign.lhs.toString();
-					rhs = assign.rhs;
-				} else {
-					rhs = arg;
-					mName = "value";
-				}
-				
-				if (!mName.equals(name)) continue;
-				isExplicit = true;
-				if (rhs instanceof JCNewArray) {
-					List<JCExpression> elems = ((JCNewArray)rhs).elems;
-					for (JCExpression inner : elems) {
-						raws.add(inner.toString());
-						expressions.add(inner);
-						guesses.add(calculateGuess(inner));
-						positions.add(inner.pos());
-					}
-				} else {
-					raws.add(rhs.toString());
-					expressions.add(rhs);
-					guesses.add(calculateGuess(rhs));
-					positions.add(rhs.pos());
-				}
+			if (arg instanceof JCAssign) {
+				JCAssign assign = (JCAssign) arg;
+				mName = assign.lhs.toString();
+				rhs = assign.rhs;
+			} else {
+				rhs = arg;
+				mName = "value";
 			}
 			
-			values.put(name, new AnnotationValue(node, raws, expressions, guesses, isExplicit) {
+			if (rhs instanceof JCNewArray) {
+				List<JCExpression> elems = ((JCNewArray)rhs).elems;
+				for (JCExpression inner : elems) {
+					raws.add(inner.toString());
+					expressions.add(inner);
+					guesses.add(calculateGuess(inner));
+					positions.add(inner.pos());
+				}
+			} else {
+				raws.add(rhs.toString());
+				expressions.add(rhs);
+				guesses.add(calculateGuess(rhs));
+				positions.add(rhs.pos());
+			}
+			
+			values.put(mName, new AnnotationValue(node, raws, expressions, guesses, true) {
 				@Override public void setError(String message, int valueIdx) {
 					if (valueIdx < 0) node.addError(message);
 					else node.addError(message, positions.get(valueIdx));
 				}
+				
 				@Override public void setWarning(String message, int valueIdx) {
 					if (valueIdx < 0) node.addWarning(message);
 					else node.addWarning(message, positions.get(valueIdx));
 				}
 			});
+		}
+		
+		for (Method m : type.getDeclaredMethods()) {
+			if (!Modifier.isPublic(m.getModifiers())) continue;
+			String name = m.getName();
+			if (!values.containsKey(name)) {
+				values.put(name, new AnnotationValue(node, new ArrayList<String>(), new ArrayList<Object>(), new ArrayList<Object>(), false) {
+					@Override public void setError(String message, int valueIdx) {
+						node.addError(message);
+					}
+					@Override public void setWarning(String message, int valueIdx) {
+						node.addWarning(message);
+					}
+				});
+			}
 		}
 		
 		return new AnnotationValues<A>(type, values, node);

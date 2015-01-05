@@ -165,6 +165,10 @@ public class Javac {
 	public static final TypeTag CTC_CLASS = typeTag("CLASS");
 	
 	public static final TreeTag CTC_NOT_EQUAL = treeTag("NE");
+	public static final TreeTag CTC_LESS_THAN = treeTag("LT");
+	public static final TreeTag CTC_GREATER_THAN = treeTag("GT");
+	public static final TreeTag CTC_LESS_OR_EQUAL= treeTag("LE");
+	public static final TreeTag CTC_GREATER_OR_EQUAL = treeTag("GE");
 	public static final TreeTag CTC_POS = treeTag("POS");
 	public static final TreeTag CTC_NEG = treeTag("NEG");
 	public static final TreeTag CTC_NOT = treeTag("NOT");
@@ -172,6 +176,7 @@ public class Javac {
 	public static final TreeTag CTC_BITXOR = treeTag("BITXOR");
 	public static final TreeTag CTC_UNSIGNED_SHIFT_RIGHT = treeTag("USR");
 	public static final TreeTag CTC_MUL = treeTag("MUL");
+	public static final TreeTag CTC_DIV = treeTag("DIV");
 	public static final TreeTag CTC_PLUS = treeTag("PLUS");
 	public static final TreeTag CTC_EQUAL = treeTag("EQ");
 	public static final TreeTag CTC_PREINC = treeTag("PREINC");
