@@ -39,7 +39,6 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
@@ -130,28 +129,16 @@ public class JavacJavaUtilSetSingularizer extends JavacJavaUtilSingularizer {
 		injectMethod(builderType, method);
 	}
 	
-	private JCExpression getSize(JavacTreeMaker maker, JavacNode builderType, Name name) {
-		JCExpression fn = maker.Select(maker.Select(maker.Ident(builderType.toName("this")), name), builderType.toName("size"));
-		return maker.Apply(List.<JCExpression>nil(), fn, List.<JCExpression>nil());
-	}
-	
 	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		JCExpression localShadowerType = chainDotsString(builderType, data.getTargetFqn());
 		localShadowerType = addTypeArgs(1, false, builderType, localShadowerType, data.getTypeArgs(), source);
 		JCExpression constructTargetType; {
 			if (data.getTargetFqn().equals("java.util.Set")) {
+				JCExpression loadFactor = maker.Literal(CTC_FLOAT, 0.75f);
 				JCExpression internalType = chainDots(builderType, "java", "util", "LinkedHashSet");
 				internalType = addTypeArgs(1, false, builderType, internalType, data.getTypeArgs(), source);
-				JCExpression loadFactor = maker.Literal(CTC_FLOAT, 0.75f);
-				JCExpression lessThanCutoff = maker.Binary(CTC_LESS_THAN, getSize(maker, builderType, data.getPluralName()), maker.Literal(CTC_INT, 0x40000000));
-				JCExpression maxInt = chainDots(builderType, "java", "lang", "Integer", "MAX_VALUE");
-				JCExpression belowThree = maker.Binary(CTC_LESS_THAN, getSize(maker, builderType, data.getPluralName()), maker.Literal(CTC_INT, 3));
-				JCExpression sizePlusOne = maker.Binary(CTC_PLUS, getSize(maker, builderType, data.getPluralName()), maker.Literal(CTC_INT, 1));
-				JCExpression sizeDivThree = maker.Binary(CTC_DIV, getSize(maker, builderType, data.getPluralName()), maker.Literal(CTC_INT, 3));
-				JCExpression sizePlusSizeDivThree = maker.Binary(CTC_PLUS, getSize(maker, builderType, data.getPluralName()), sizeDivThree);
-				JCExpression rest = maker.Conditional(belowThree, sizePlusOne, sizePlusSizeDivThree);
-				JCExpression initialCapacity = maker.Conditional(lessThanCutoff, rest, maxInt);
+				JCExpression initialCapacity = createJavaUtilSetMapInitialCapacityExpression(maker, data, builderType);
 				constructTargetType = maker.NewClass(null, List.<JCExpression>nil(), internalType, List.<JCExpression>of(initialCapacity, loadFactor), null);
 			} else {
 				JCExpression internalType = chainDots(builderType, "java", "util", "TreeSet");
@@ -159,13 +146,9 @@ public class JavacJavaUtilSetSingularizer extends JavacJavaUtilSingularizer {
 				constructTargetType = maker.NewClass(null, List.<JCExpression>nil(), internalType, List.<JCExpression>nil(), null);
 			}
 		}
+		
 		JCVariableDecl varDef = maker.VarDef(maker.Modifiers(0), data.getPluralName(), localShadowerType, constructTargetType);
 		statements.append(varDef);
-		JCFieldAccess varDotAddAll = maker.Select(maker.Ident(data.getPluralName()), builderType.toName("addAll"));
-		JCExpression thisDotFieldName = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
-		statements.append(maker.Exec(maker.Apply(List.<JCExpression>nil(), varDotAddAll, List.of(thisDotFieldName))));
-		String singletonMaker = "unmodifiable" + data.getTargetFqn().substring(data.getTargetFqn().lastIndexOf(".") + 1);
-		JCExpression javaUtilCollectionsInvoke = maker.Apply(List.<JCExpression>nil(), chainDots(builderType, "java", "util", "Collections", singletonMaker), List.<JCExpression>of(maker.Ident(data.getPluralName())));
-		statements.append(maker.Exec(maker.Assign(maker.Ident(data.getPluralName()), javaUtilCollectionsInvoke)));
+		stuffJavaUtilCollectionAndWrapWithUnmodifiable(data, builderType, statements, maker, "addAll");
 	}
 }
