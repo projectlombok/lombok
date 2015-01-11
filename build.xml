@@ -556,16 +556,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			<classpath path="build/tests" />
 			<batchtest>
 				<fileset dir="test/core/src">
-					<include name="**/Test*.java" />
-				</fileset>
-				<fileset dir="test/transform/src">
-					<include name="**/Test*.java" />
-				</fileset>
-				<fileset dir="test/bytecode/src">
-					<include name="**/Test*.java" />
-				</fileset>
-				<fileset dir="test/configuration/src">
-					<include name="**/Test*.java" />
+					<include name="lombok/RunAllTests.java" />
 				</fileset>
 			</batchtest>
 		</junit>

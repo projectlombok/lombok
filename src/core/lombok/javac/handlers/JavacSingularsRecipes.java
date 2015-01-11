@@ -21,6 +21,7 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.io.IOException;
@@ -126,12 +127,17 @@ public class JavacSingularsRecipes {
 		public JavacSingularizer getSingularizer() {
 			return singularizer;
 		}
+		
+		public String getTargetSimpleType() {
+			int idx = targetFqn.lastIndexOf(".");
+			return idx == -1 ? targetFqn : targetFqn.substring(idx + 1);
+		}
 	}
 	
 	public static abstract class JavacSingularizer {
 		public abstract LombokImmutableList<String> getSupportedTypes();
 		
-		public abstract JavacNode generateFields(SingularData data, JavacNode builderType, JCTree source);
+		public abstract java.util.List<JavacNode> generateFields(SingularData data, JavacNode builderType, JCTree source);
 		public abstract void generateMethods(SingularData data, JavacNode builderType, JCTree source, boolean fluent, boolean chain);
 		public abstract void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName);
 		
@@ -204,11 +210,35 @@ public class JavacSingularsRecipes {
 			return maker.TypeApply(type, arguments.toList());
 		}
 		
-		/** Generates 'this.<em>name</em>.size()' as an expression. */
-		protected JCExpression getSize(JavacTreeMaker maker, JavacNode builderType, Name name) {
-			JCExpression fn = maker.Select(maker.Select(maker.Ident(builderType.toName("this")), name), builderType.toName("size"));
-			return maker.Apply(List.<JCExpression>nil(), fn, List.<JCExpression>nil());
+		/** Generates 'this.<em>name</em>.size()' as an expression; if nullGuard is true, it's this.name == null ? 0 : this.name.size(). */
+		protected JCExpression getSize(JavacTreeMaker maker, JavacNode builderType, Name name, boolean nullGuard) {
+			Name thisName = builderType.toName("this");
+			JCExpression fn = maker.Select(maker.Select(maker.Ident(thisName), name), builderType.toName("size"));
+			JCExpression sizeInvoke = maker.Apply(List.<JCExpression>nil(), fn, List.<JCExpression>nil());
+			if (nullGuard) {
+				JCExpression isNull = maker.Binary(CTC_EQUAL, maker.Select(maker.Ident(thisName), name), maker.Literal(CTC_BOT, 0));
+				return maker.Conditional(isNull, maker.Literal(CTC_INT, 0), sizeInvoke);
+			}
+			return sizeInvoke;
 		}
 		
+		protected JCExpression cloneParamType(int index, JavacTreeMaker maker, List<JCExpression> typeArgs, JavacNode builderType, JCTree source) {
+			if (typeArgs == null || typeArgs.size() <= index) {
+				return chainDots(builderType, "java", "lang", "Object");
+			} else {
+				JCExpression originalType = typeArgs.get(index);
+				if (originalType.getKind() == Kind.UNBOUNDED_WILDCARD || originalType.getKind() == Kind.SUPER_WILDCARD) {
+					return chainDots(builderType, "java", "lang", "Object");
+				} else if (originalType.getKind() == Kind.EXTENDS_WILDCARD) {
+					try {
+						return cloneType(maker, (JCExpression) ((JCWildcard) originalType).inner, source, builderType.getContext());
+					} catch (Exception e) {
+						return chainDots(builderType, "java", "lang", "Object");
+					}
+				} else {
+					return cloneType(maker, originalType, source, builderType.getContext());
+				}
+			}
+		}
 	}
 }

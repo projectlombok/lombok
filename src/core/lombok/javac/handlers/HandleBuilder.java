@@ -81,7 +81,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		Name name;
 		SingularData singularData;
 		
-		JavacNode mainCreatedField;
+		java.util.List<JavacNode> createdFields = new ArrayList<JavacNode>();
 	}
 	
 	@Override public void handle(AnnotationValues<Builder> annotation, JCAnnotation ast, JavacNode annotationNode) {
@@ -260,8 +260,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		if (methodExists("toString", builderType, 0) == MemberExistsResult.NOT_EXISTS) {
 			java.util.List<JavacNode> fieldNodes = new ArrayList<JavacNode>();
 			for (BuilderFieldData bfd : builderFields) {
-				JavacNode mcf = bfd.mainCreatedField;
-				if (mcf != null) fieldNodes.add(mcf);
+				fieldNodes.addAll(bfd.createdFields);
 			}
 			JCMethodDecl md = HandleToString.createToString(builderType, fieldNodes, true, false, FieldAccess.ALWAYS_FIELD, ast);
 			if (md != null) injectMethod(builderType, md);
@@ -382,26 +381,26 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		for (int i = len - 1; i >= 0; i--) {
 			BuilderFieldData bfd = builderFields.get(i);
 			if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
-				bfd.mainCreatedField = bfd.singularData.getSingularizer().generateFields(bfd.singularData, builderType, source);
+				bfd.createdFields.addAll(bfd.singularData.getSingularizer().generateFields(bfd.singularData, builderType, source));
 			} else {
 				for (JavacNode exists : existing) {
 					Name n = ((JCVariableDecl) exists.get()).name;
 					if (n.equals(bfd.name)) {
-						bfd.mainCreatedField = exists;
+						bfd.createdFields.add(exists);
 						continue top;
 					}
 				}
 				JavacTreeMaker maker = builderType.getTreeMaker();
 				JCModifiers mods = maker.Modifiers(Flags.PRIVATE);
 				JCVariableDecl newField = maker.VarDef(mods, bfd.name, cloneType(maker, bfd.type, source, builderType.getContext()), null);
-				bfd.mainCreatedField = injectField(builderType, newField);
+				bfd.createdFields.add(injectField(builderType, newField));
 			}
 		}
 	}
 	
 	public void makeSetterMethodForBuilder(JavacNode builderType, BuilderFieldData fieldNode, JavacNode source, boolean fluent, boolean chain) {
 		if (fieldNode.singularData == null || fieldNode.singularData.getSingularizer() == null) {
-			makeSimpleSetterMethodForBuilder(builderType, fieldNode.mainCreatedField, source, fluent, chain);
+			makeSimpleSetterMethodForBuilder(builderType, fieldNode.createdFields.get(0), source, fluent, chain);
 		} else {
 			fieldNode.singularData.getSingularizer().generateMethods(fieldNode.singularData, builderType, source.get(), fluent, chain);
 		}
