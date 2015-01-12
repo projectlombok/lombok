@@ -26,8 +26,6 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.Collections;
 
-import org.mangosdk.spi.ProviderFor;
-
 import lombok.core.LombokImmutableList;
 import lombok.core.handlers.HandlerUtil;
 import lombok.javac.JavacNode;
@@ -35,6 +33,8 @@ import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.JavacHandlerUtil;
 import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
 import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
+
+import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
@@ -50,22 +50,22 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
 @ProviderFor(JavacSingularizer.class)
-public class JavacGuavaSetListSingularizer extends JavacGuavaSingularizer {
-	// TODO com.google.common.collect.ImmutableTable
-	// TODO com.google.common.collect.ImmutableRangeSet
-	// TODO com.google.common.collect.ImmutableMultiset and com.google.common.collect.ImmutableSortedMultiset
+public class JavacGuavaMapSingularizer extends JavacGuavaSingularizer {
+	// TODO cgcc.ImmutableMultimap, cgcc.ImmutableListMultimap, cgcc.ImmutableSetMultimap
+	// TODO cgcc.ImmutableClassToInstanceMap
+	// TODO cgcc.ImmutableRangeMap
+	
 	@Override public LombokImmutableList<String> getSupportedTypes() {
 		return LombokImmutableList.of(
-				"com.google.common.collect.ImmutableCollection", 
-				"com.google.common.collect.ImmutableList", 
-				"com.google.common.collect.ImmutableSet", 
-				"com.google.common.collect.ImmutableSortedSet");
+				"com.google.common.collect.ImmutableMap", 
+				"com.google.common.collect.ImmutableBiMap", 
+				"com.google.common.collect.ImmutableSortedMap");
 	}
 	
 	@Override public java.util.List<JavacNode> generateFields(SingularData data, JavacNode builderType, JCTree source) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		JCExpression type = JavacHandlerUtil.chainDots(builderType, "com", "google", "common", "collect", getSimpleTargetTypeName(data), "Builder");
-		type = addTypeArgs(1, false, builderType, type, data.getTypeArgs(), source);
+		type = addTypeArgs(2, false, builderType, type, data.getTypeArgs(), source);
 		
 		JCVariableDecl buildField = maker.VarDef(maker.Modifiers(Flags.PRIVATE), data.getPluralName(), type, null);
 		return Collections.singletonList(injectField(builderType, buildField));
@@ -86,20 +86,25 @@ public class JavacGuavaSetListSingularizer extends JavacGuavaSingularizer {
 		List<JCTypeParameter> typeParams = List.nil();
 		List<JCExpression> thrown = List.nil();
 		
+		Name keyName = builderType.toName(data.getSingularName() + "$key");
+		Name valueName = builderType.toName(data.getSingularName() + "$value");
+		
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, false, source));
-		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), "add");
-		JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, List.<JCExpression>of(maker.Ident(data.getSingularName())));
-		statements.append(maker.Exec(invokeAdd));
+		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, true, source));
+		JCExpression thisDotFieldDotPut = chainDots(builderType, "this", data.getPluralName().toString(), "put");
+		JCExpression invokePut = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotPut, List.<JCExpression>of(maker.Ident(keyName), maker.Ident(valueName)));
+		statements.append(maker.Exec(invokePut));
 		if (returnStatement != null) statements.append(returnStatement);
 		JCBlock body = maker.Block(0, statements.toList());
 		Name name = data.getSingularName();
 		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
-		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName("add", name.toString()));
-		JCExpression paramType = cloneParamType(0, maker, data.getTypeArgs(), builderType, source);
-		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getSingularName(), paramType, null);
-		JCMethodDecl method = maker.MethodDef(mods, name, returnType, typeParams, List.of(param), thrown, body, null);
+		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName("put", name.toString()));
+		JCExpression keyType = cloneParamType(0, maker, data.getTypeArgs(), builderType, source);
+		JCExpression valueType = cloneParamType(1, maker, data.getTypeArgs(), builderType, source);
+		JCVariableDecl paramKey = maker.VarDef(maker.Modifiers(paramFlags), keyName, keyType, null);
+		JCVariableDecl paramValue = maker.VarDef(maker.Modifiers(paramFlags), valueName, valueType, null);
+		JCMethodDecl method = maker.MethodDef(mods, name, returnType, typeParams, List.of(paramKey, paramValue), thrown, body, null);
 		injectMethod(builderType, method);
 	}
 	
@@ -108,17 +113,17 @@ public class JavacGuavaSetListSingularizer extends JavacGuavaSingularizer {
 		List<JCExpression> thrown = List.nil();
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, false, source));
-		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), "addAll");
-		JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, List.<JCExpression>of(maker.Ident(data.getPluralName())));
-		statements.append(maker.Exec(invokeAdd));
+		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, true, source));
+		JCExpression thisDotFieldDotPutAll = chainDots(builderType, "this", data.getPluralName().toString(), "putAll");
+		JCExpression invokePutAll = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotPutAll, List.<JCExpression>of(maker.Ident(data.getPluralName())));
+		statements.append(maker.Exec(invokePutAll));
 		if (returnStatement != null) statements.append(returnStatement);
 		JCBlock body = maker.Block(0, statements.toList());
 		Name name = data.getPluralName();
 		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
-		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName("addAll", name.toString()));
-		JCExpression paramType = chainDots(builderType, "java", "lang", "Iterable");
-		paramType = addTypeArgs(1, true, builderType, paramType, data.getTypeArgs(), source);
+		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName("putAll", name.toString()));
+		JCExpression paramType = chainDots(builderType, "java", "util", "Map");
+		paramType = addTypeArgs(2, true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
 		JCMethodDecl method = maker.MethodDef(mods, name, returnType, typeParams, List.of(param), thrown, body, null);
 		injectMethod(builderType, method);
@@ -129,7 +134,7 @@ public class JavacGuavaSetListSingularizer extends JavacGuavaSingularizer {
 		List<JCExpression> jceBlank = List.nil();
 		
 		JCExpression varType = chainDotsString(builderType, data.getTargetFqn());
-		varType = addTypeArgs(1, false, builderType, varType, data.getTypeArgs(), source);
+		varType = addTypeArgs(2, false, builderType, varType, data.getTypeArgs(), source);
 		
 		JCExpression empty; {
 			//ImmutableX.of()

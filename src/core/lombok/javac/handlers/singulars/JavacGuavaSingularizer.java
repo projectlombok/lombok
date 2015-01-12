@@ -42,7 +42,8 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 	}
 	
 	protected String getBuilderMethodName(SingularData data) {
-		if (data.getTargetSimpleType().equals("ImmutableSortedSet")) return "naturalOrder";
+		String simpleTypeName = data.getTargetSimpleType();
+		if ("ImmutableSortedSet".equals(simpleTypeName) || "ImmutableSortedMap".equals(simpleTypeName)) return "naturalOrder";
 		return "builder";
 	}
 	
