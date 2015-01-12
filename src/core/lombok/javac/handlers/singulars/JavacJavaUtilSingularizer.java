@@ -37,7 +37,7 @@ import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
 import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
 
-public abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
+abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 	protected List<JCStatement> createJavaUtilSetMapInitialCapacitySwitchStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, boolean mapMode, String emptyCollectionMethod, String singletonCollectionMethod, String targetType, JCTree source) {
 		List<JCExpression> jceBlank = List.nil();
 		ListBuffer<JCCase> cases = new ListBuffer<JCCase>();
@@ -58,11 +58,11 @@ public abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 				// !mapMode: pluralName = java.util.Collections.singletonCollectionMethod(this.pluralName.get(0));
 				//  mapMode: pluralName = java.util.Collections.singletonCollectionMethod(this.pluralName$key.get(0), this.pluralName$value.get(0));
 				JCExpression zeroLiteral = maker.Literal(CTC_INT, 0);
-				JCExpression arg = maker.Apply(jceBlank, chainDots(builderType, "this", data.getPluralName() + (mapMode ? "$key" : "").toString(), "get"), List.of(zeroLiteral));
+				JCExpression arg = maker.Apply(jceBlank, chainDots(builderType, "this", data.getPluralName() + (mapMode ? "$key" : ""), "get"), List.of(zeroLiteral));
 				List<JCExpression> args;
 				if (mapMode) {
 					JCExpression zeroLiteralClone = maker.Literal(CTC_INT, 0);
-					JCExpression arg2 = maker.Apply(jceBlank, chainDots(builderType, "this", data.getPluralName() + (mapMode ? "$value" : "").toString(), "get"), List.of(zeroLiteralClone));
+					JCExpression arg2 = maker.Apply(jceBlank, chainDots(builderType, "this", data.getPluralName() + (mapMode ? "$value" : ""), "get"), List.of(zeroLiteralClone));
 					args = List.of(arg, arg2);
 				} else {
 					args = List.of(arg);
