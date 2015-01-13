@@ -98,7 +98,7 @@ public class PostCompilerApp extends LombokApp {
 			byte[] original = readFile(file);
 			byte[] clone = original.clone();
 			byte[] transformed = PostCompiler.applyTransformations(clone, file.toString(), DiagnosticsReceiver.CONSOLE);
-			if (clone != transformed && !Arrays.equals(clone, transformed)) {
+			if (clone != transformed && !Arrays.equals(original, transformed)) {
 				filesTouched++;
 				if (args.verbose) System.out.println("Rewriting " + file.getAbsolutePath());
 				writeFile(file, transformed);
@@ -138,18 +138,24 @@ public class PostCompilerApp extends LombokApp {
 		byte[] buffer = new byte[1024];
 		ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 		FileInputStream fileInputStream = new FileInputStream(file);
-		while (true) {
-			int read = fileInputStream.read(buffer);
-			if (read == -1) break;
-			bytes.write(buffer, 0, read);
+		try {
+			while (true) {
+				int read = fileInputStream.read(buffer);
+				if (read == -1) break;
+				bytes.write(buffer, 0, read);
+			}
+		} finally {
+			fileInputStream.close();
 		}
-		fileInputStream.close();
 		return bytes.toByteArray();
 	}
 	
 	static void writeFile(File file, byte[] transformed) throws IOException {
 		FileOutputStream out = new FileOutputStream(file);
-		out.write(transformed);
-		out.close();
+		try {
+			out.write(transformed);
+		} finally {
+			out.close();
+		}
 	}
 }
