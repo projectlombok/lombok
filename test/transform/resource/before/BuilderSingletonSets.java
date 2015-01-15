@@ -7,6 +7,6 @@ import lombok.Singular;
 class BuilderSingletonSets<T> {
 	@Singular private Set<T> dangerMice;
 	@Singular private SortedSet<? extends Number> octopodes;
-	@Singular("rawSet") private Set rawSet;
+	@SuppressWarnings("all") @Singular("rawSet") private Set rawSet;
 	@Singular("stringSet") private Set<String> stringSet;
 }

@@ -156,6 +156,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				annotationNode.addError("@Builder is not supported on constructors with constructor type parameters.");
 				return;
 			}
+			
 			tdParent = parent.up();
 			JCClassDecl td = (JCClassDecl) tdParent.get();
 			returnType = namePlusTypeParamsToTypeReference(tdParent.getTreeMaker(), td.name, td.typarams);
@@ -248,8 +249,8 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			if (cd != null) injectMethod(builderType, cd);
 		}
 		
-		for (BuilderFieldData builderFieldData : builderFields) {
-			makeSetterMethodForBuilder(builderType, builderFieldData, annotationNode, fluent, chain);
+		for (BuilderFieldData bfd : builderFields) {
+			makeSetterMethodsForBuilder(builderType, bfd, annotationNode, fluent, chain);
 		}
 		
 		if (methodExists(buildMethodName, builderType, -1) == MemberExistsResult.NOT_EXISTS) {
@@ -287,7 +288,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			}
 		}
 		
-		statements.append(maker.Exec(maker.Assign(maker.Ident(type.toName("$lombokUnclean")), maker.Literal(CTC_BOOLEAN, false))));
+		statements.append(maker.Exec(maker.Assign(maker.Select(maker.Ident(type.toName("this")), type.toName("$lombokUnclean")), maker.Literal(CTC_BOOLEAN, false))));
 		JCBlock body = maker.Block(0, statements.toList());
 		return maker.MethodDef(maker.Modifiers(Flags.PUBLIC), type.toName("$lombokClean"), maker.Type(Javac.createVoidType(maker, CTC_VOID)), List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 		/*
@@ -311,7 +312,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		
 		if (addCleaning) {
-			JCExpression notClean = maker.Unary(CTC_NOT, maker.Ident(type.toName("$lombokUnclean")));
+			JCExpression notClean = maker.Unary(CTC_NOT, maker.Select(maker.Ident(type.toName("this")), type.toName("$lombokUnclean")));
 			JCStatement invokeClean = maker.Exec(maker.Apply(List.<JCExpression>nil(), maker.Ident(type.toName("$lombokClean")), List.<JCExpression>nil()));
 			JCIf ifUnclean = maker.If(notClean, invokeClean, null);
 			statements.append(ifUnclean);
@@ -329,7 +330,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		if (addCleaning) {
-			statements.append(maker.Exec(maker.Assign(maker.Ident(type.toName("$lombokUnclean")), maker.Literal(CTC_BOOLEAN, true))));
+			statements.append(maker.Exec(maker.Assign(maker.Select(maker.Ident(type.toName("this")), type.toName("$lombokUnclean")), maker.Literal(CTC_BOOLEAN, true))));
 		}
 		
 		if (staticName == null) {
@@ -398,7 +399,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 	}
 	
-	public void makeSetterMethodForBuilder(JavacNode builderType, BuilderFieldData fieldNode, JavacNode source, boolean fluent, boolean chain) {
+	public void makeSetterMethodsForBuilder(JavacNode builderType, BuilderFieldData fieldNode, JavacNode source, boolean fluent, boolean chain) {
 		if (fieldNode.singularData == null || fieldNode.singularData.getSingularizer() == null) {
 			makeSimpleSetterMethodForBuilder(builderType, fieldNode.createdFields.get(0), source, fluent, chain);
 		} else {

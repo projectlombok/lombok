@@ -29,7 +29,7 @@ import org.junit.Test;
 public class TestSingulars {
 	@Test
 	public void testSingulars() {
-		assertEquals("axis", autoSingularize("axes"));
+		assertEquals(null, autoSingularize("axes"));
 		assertEquals("adjective", autoSingularize("adjectives"));
 		assertEquals("bus", autoSingularize("buses"));
 		assertEquals("octopus", autoSingularize("octopodes"));

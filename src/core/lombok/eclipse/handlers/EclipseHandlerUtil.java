@@ -143,7 +143,7 @@ public class EclipseHandlerUtil {
 		return getGeneratedBy(node) != null;
 	}
 	
-	public static ASTNode setGeneratedBy(ASTNode node, ASTNode source) {
+	public static <T extends ASTNode> T setGeneratedBy(T node, ASTNode source) {
 		ASTNode_generatedBy.set(node, source);
 		return node;
 	}
@@ -298,6 +298,10 @@ public class EclipseHandlerUtil {
 		return new SingleTypeReference(typeName, p);
 	}
 	
+	public static TypeReference[] copyTypes(TypeReference[] refs) {
+		return copyTypes(refs, null);
+	}
+	
 	/**
 	 * Convenience method that creates a new array and copies each TypeReference in the source array via
 	 * {@link #copyType(TypeReference, ASTNode)}.
@@ -310,6 +314,10 @@ public class EclipseHandlerUtil {
 			outs[idx++] = copyType(ref, source);
 		}
 		return outs;
+	}
+	
+	public static TypeReference copyType(TypeReference ref) {
+		return copyType(ref, null);
 	}
 	
 	/**
@@ -336,22 +344,23 @@ public class EclipseHandlerUtil {
 					}
 				}
 			}
+			
 			TypeReference typeRef = new ParameterizedQualifiedTypeReference(iRef.tokens, args, iRef.dimensions(), copy(iRef.sourcePositions));
-			setGeneratedBy(typeRef, source);
+			if (source != null) setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
 		
 		if (ref instanceof ArrayQualifiedTypeReference) {
 			ArrayQualifiedTypeReference iRef = (ArrayQualifiedTypeReference) ref;
 			TypeReference typeRef = new ArrayQualifiedTypeReference(iRef.tokens, iRef.dimensions(), copy(iRef.sourcePositions));
-			setGeneratedBy(typeRef, source);
+			if (source != null) setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
 		
 		if (ref instanceof QualifiedTypeReference) {
 			QualifiedTypeReference iRef = (QualifiedTypeReference) ref;
 			TypeReference typeRef = new QualifiedTypeReference(iRef.tokens, copy(iRef.sourcePositions));
-			setGeneratedBy(typeRef, source);
+			if (source != null) setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
 		
@@ -368,14 +377,14 @@ public class EclipseHandlerUtil {
 			}
 			
 			TypeReference typeRef = new ParameterizedSingleTypeReference(iRef.token, args, iRef.dimensions(), (long)iRef.sourceStart << 32 | iRef.sourceEnd);
-			setGeneratedBy(typeRef, source);
+			if (source != null) setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
 		
 		if (ref instanceof ArrayTypeReference) {
 			ArrayTypeReference iRef = (ArrayTypeReference) ref;
 			TypeReference typeRef = new ArrayTypeReference(iRef.token, iRef.dimensions(), (long)iRef.sourceStart << 32 | iRef.sourceEnd);
-			setGeneratedBy(typeRef, source);
+			if (source != null) setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
 		
@@ -386,14 +395,14 @@ public class EclipseHandlerUtil {
 			wildcard.sourceStart = original.sourceStart;
 			wildcard.sourceEnd = original.sourceEnd;
 			if (original.bound != null) wildcard.bound = copyType(original.bound, source);
-			setGeneratedBy(wildcard, source);
+			if (source != null) setGeneratedBy(wildcard, source);
 			return wildcard;
 		}
 		
 		if (ref instanceof SingleTypeReference) {
 			SingleTypeReference iRef = (SingleTypeReference) ref;
 			TypeReference typeRef = new SingleTypeReference(iRef.token, (long)iRef.sourceStart << 32 | iRef.sourceEnd);
-			setGeneratedBy(typeRef, source);
+			if (source != null) setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
 		
@@ -444,8 +453,12 @@ public class EclipseHandlerUtil {
 		return typeMatches(type, node, ((Annotation)node.get()).type);
 	}
 	
+	public static TypeReference cloneSelfType(EclipseNode context) {
+		return cloneSelfType(context, null);
+	}
+	
 	public static TypeReference cloneSelfType(EclipseNode context, ASTNode source) {
-		int pS = source.sourceStart, pE = source.sourceEnd;
+		int pS = source == null ? 0 : source.sourceStart, pE = source == null ? 0 : source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		EclipseNode type = context;
 		TypeReference result = null;
@@ -457,7 +470,7 @@ public class EclipseHandlerUtil {
 				int idx = 0;
 				for (TypeParameter param : typeDecl.typeParameters) {
 					TypeReference typeRef = new SingleTypeReference(param.name, (long)param.sourceStart << 32 | param.sourceEnd);
-					setGeneratedBy(typeRef, source);
+					if (source != null) setGeneratedBy(typeRef, source);
 					refs[idx++] = typeRef;
 				}
 				result = new ParameterizedSingleTypeReference(typeDecl.name, refs, 0, p);
@@ -465,7 +478,7 @@ public class EclipseHandlerUtil {
 				result = new SingleTypeReference(((TypeDeclaration)type.get()).name, p);
 			}
 		}
-		if (result != null) setGeneratedBy(result, source);
+		if (result != null && source != null) setGeneratedBy(result, source);
 		return result;
 	}
 	
@@ -865,7 +878,7 @@ public class EclipseHandlerUtil {
 	}
 	
 	static Expression createFieldAccessor(EclipseNode field, FieldAccess fieldAccess, ASTNode source) {
-		int pS = source.sourceStart, pE = source.sourceEnd;
+		int pS = source == null ? 0 : source.sourceStart, pE = source == null ? 0 : source.sourceEnd;
 		long p = (long)pS << 32 | pE;
 		
 		boolean lookForGetter = lookForGetter(field, fieldAccess);
@@ -881,14 +894,17 @@ public class EclipseHandlerUtil {
 					ref.receiver = new SingleNameReference(((TypeDeclaration)containerNode.get()).name, p);
 				} else {
 					Expression smallRef = new FieldReference(field.getName().toCharArray(), p);
-					setGeneratedBy(smallRef, source);
+					if (source != null) setGeneratedBy(smallRef, source);
 					return smallRef;
 				}
 			} else {
 				ref.receiver = new ThisReference(pS, pE);
 			}
-			setGeneratedBy(ref, source);
-			setGeneratedBy(ref.receiver, source);
+			
+			if (source != null) {
+				setGeneratedBy(ref, source);
+				setGeneratedBy(ref.receiver, source);
+			}
 			return ref;
 		}
 		
@@ -1489,7 +1505,7 @@ public class EclipseHandlerUtil {
 	 * with eclipse versions before 3.7.
 	 */
 	public static IntLiteral makeIntLiteral(char[] token, ASTNode source) {
-		int pS = source.sourceStart, pE = source.sourceEnd;
+		int pS = source == null ? 0 : source.sourceStart, pE = source == null ? 0 : source.sourceEnd;
 		IntLiteral result;
 		try {
 			if (intLiteralConstructor != null) {
@@ -1504,7 +1520,8 @@ public class EclipseHandlerUtil {
 		} catch (InstantiationException e) {
 			throw Lombok.sneakyThrow(e);
 		}
-		setGeneratedBy(result, source);
+		
+		if (source != null) setGeneratedBy(result, source);
 		return result;
 	}
 	

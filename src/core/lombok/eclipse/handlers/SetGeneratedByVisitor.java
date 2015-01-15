@@ -23,6 +23,8 @@ package lombok.eclipse.handlers;
 
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
+import java.util.Arrays;
+
 import org.eclipse.jdt.internal.compiler.ASTVisitor;
 import org.eclipse.jdt.internal.compiler.ast.AND_AND_Expression;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
@@ -128,881 +130,802 @@ public final class SetGeneratedByVisitor extends ASTVisitor {
 	private static final long INT_TO_LONG_MASK = 0x00000000FFFFFFFFL;
 	
 	private final ASTNode source;
-	private final int newSourceStart;
-	private final int newSourceEnd;
+	private final int sourceStart;
+	private final int sourceEnd;
+	private final long sourcePos;
 	
 	public SetGeneratedByVisitor(ASTNode source) {
 		this.source = source;
-		this.newSourceStart = this.source.sourceStart;
-		this.newSourceEnd = this.source.sourceEnd;
+		this.sourceStart = this.source.sourceStart;
+		this.sourceEnd = this.source.sourceEnd;
+		this.sourcePos = (long)sourceStart << 32 | (sourceEnd & INT_TO_LONG_MASK);
 	}
 	
-	private void applyOffset(JavadocAllocationExpression node) {
-		applyOffsetExpression(node);
-		node.memberStart = newSourceStart;
-		node.tagSourceEnd = newSourceEnd;
-		node.tagSourceStart = newSourceStart;
+	private void fixPositions(JavadocAllocationExpression node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.statementEnd = sourceEnd;
+		node.memberStart = sourceStart;
+		node.tagSourceEnd = sourceEnd;
+		node.tagSourceStart = sourceStart;
 	}
 	
-	private void applyOffset(JavadocMessageSend node) {
-		applyOffsetMessageSend(node);
-		node.tagSourceEnd = newSourceEnd;
-		node.tagSourceStart = newSourceStart;
+	private void fixPositions(JavadocMessageSend node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.statementEnd = sourceEnd;
+		node.nameSourcePosition = sourcePos;
+		node.tagSourceEnd = sourceEnd;
+		node.tagSourceStart = sourceStart;
 	}
 	
-	private void applyOffset(JavadocSingleNameReference node) {
-		applyOffsetExpression(node);
-		node.tagSourceEnd = newSourceEnd;
-		node.tagSourceStart = newSourceStart;
+	private void fixPositions(JavadocSingleNameReference node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.statementEnd = sourceEnd;
+		node.tagSourceEnd = sourceEnd;
+		node.tagSourceStart = sourceStart;
 	}
 	
-	private void applyOffset(JavadocSingleTypeReference node) {
-		applyOffsetExpression(node);
-		node.tagSourceEnd = newSourceEnd;
-		node.tagSourceStart = newSourceStart;
+	private void fixPositions(JavadocSingleTypeReference node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.statementEnd = sourceEnd;
+		node.tagSourceEnd = sourceEnd;
+		node.tagSourceStart = sourceStart;
 	}
 
-	private void applyOffset(JavadocFieldReference node) {
-		applyOffsetFieldReference(node);
-		node.tagSourceEnd = newSourceEnd;
-		node.tagSourceStart = newSourceStart;
+	private void fixPositions(JavadocFieldReference node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.statementEnd = sourceEnd;
+		node.nameSourcePosition = sourcePos;
+		node.tagSourceEnd = sourceEnd;
+		node.tagSourceStart = sourceStart;
 	}
 	
-	private void applyOffset(JavadocArrayQualifiedTypeReference node) {
-		applyOffsetQualifiedTypeReference(node);
-		node.tagSourceEnd = newSourceEnd;
-		node.tagSourceStart = newSourceStart;
+	private void fixPositions(JavadocArrayQualifiedTypeReference node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.statementEnd = sourceEnd;
+		if (node.sourcePositions == null || node.sourcePositions.length != node.tokens.length) node.sourcePositions = new long[node.tokens.length];
+		Arrays.fill(node.sourcePositions, sourcePos);
+		node.tagSourceEnd = sourceEnd;
+		node.tagSourceStart = sourceStart;
 	}
 	
-	private void applyOffset(JavadocQualifiedTypeReference node) {
-		applyOffsetQualifiedTypeReference(node);
-		node.tagSourceEnd = newSourceEnd;
-		node.tagSourceStart = newSourceStart;
+	private void fixPositions(JavadocQualifiedTypeReference node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.statementEnd = sourceEnd;
+		if (node.sourcePositions == null || node.sourcePositions.length != node.tokens.length) node.sourcePositions = new long[node.tokens.length];
+		Arrays.fill(node.sourcePositions, sourcePos);
+		node.tagSourceEnd = sourceEnd;
+		node.tagSourceStart = sourceStart;
 	}
 	
-	private void applyOffset(Annotation node) {
-		applyOffsetExpression(node);
-		node.declarationSourceEnd = newSourceEnd;
+	private void fixPositions(Annotation node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.statementEnd = sourceEnd;
+		node.declarationSourceEnd = sourceEnd;
 	}
 
-	private void applyOffset(ArrayTypeReference node) {
-		applyOffsetExpression(node);
-		node.originalSourceEnd = newSourceEnd;
+	private void fixPositions(ArrayTypeReference node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.statementEnd = sourceEnd;
+		node.originalSourceEnd = sourceEnd;
 	}
 	
-	private void applyOffset(AbstractMethodDeclaration node) {
-		applyOffsetASTNode(node);
-		node.bodyEnd = newSourceEnd;
-		node.bodyStart = newSourceStart;
-		node.declarationSourceEnd = newSourceEnd;
-		node.declarationSourceStart = newSourceStart;
-		node.modifiersSourceStart = newSourceStart;
+	private void fixPositions(AbstractMethodDeclaration node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.bodyEnd = sourceEnd;
+		node.bodyStart = sourceStart;
+		node.declarationSourceEnd = sourceEnd;
+		node.declarationSourceStart = sourceStart;
+		node.modifiersSourceStart = sourceStart;
 	}
 	
-	private void applyOffset(Javadoc node) {
-		applyOffsetASTNode(node);
-		node.valuePositions = newSourceStart;
-		for (int i = 0; i < node.inheritedPositions.length; i++) {
-			node.inheritedPositions[i] = recalcSourcePosition(node.inheritedPositions[i]);
-		}
+	private void fixPositions(Javadoc node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.valuePositions = sourceStart;
 	}
 
-	private void applyOffset(Initializer node) {
-		applyOffsetFieldDeclaration(node);
-		node.bodyStart = newSourceStart;
-		node.bodyEnd = newSourceEnd;
+	private void fixPositions(Initializer node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.declarationEnd = sourceEnd;
+		node.declarationSourceEnd = sourceEnd;
+		node.declarationSourceStart = sourceStart;
+		node.modifiersSourceStart = sourceStart;
+		node.endPart1Position = sourceEnd;
+		node.endPart2Position = sourceEnd;
+		node.bodyStart = sourceStart;
+		node.bodyEnd = sourceEnd;
 	}
 
-	private void applyOffset(TypeDeclaration node) {
-		applyOffsetASTNode(node);
-		node.bodyEnd = newSourceEnd;
-		node.bodyStart = newSourceStart;
-		node.declarationSourceEnd = newSourceEnd;
-		node.declarationSourceStart = newSourceStart;
-		node.modifiersSourceStart = newSourceStart;
+	private void fixPositions(TypeDeclaration node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.bodyEnd = sourceEnd;
+		node.bodyStart = sourceStart;
+		node.declarationSourceEnd = sourceEnd;
+		node.declarationSourceStart = sourceStart;
+		node.modifiersSourceStart = sourceStart;
 	}
 	
-	private void applyOffset(ImportReference node) {
-		applyOffsetASTNode(node);
-		node.declarationEnd = newSourceEnd;
-		node.declarationSourceEnd = newSourceEnd;
-		node.declarationSourceStart = newSourceStart;
-		for (int i = 0; i < node.sourcePositions.length; i++) {
-			node.sourcePositions[i] = recalcSourcePosition(node.sourcePositions[i]);
-		}		
+	private void fixPositions(ImportReference node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.declarationEnd = sourceEnd;
+		node.declarationSourceEnd = sourceEnd;
+		node.declarationSourceStart = sourceStart;
+		if (node.sourcePositions == null || node.sourcePositions.length != node.tokens.length) node.sourcePositions = new long[node.tokens.length];
+		Arrays.fill(node.sourcePositions, sourcePos);
 	}
-
-	private void applyOffsetASTNode(ASTNode node) {
-		node.sourceEnd = newSourceEnd;
-		node.sourceStart = newSourceStart;
+	
+	private void fixPositions(ASTNode node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
 	}
-
-	private void applyOffsetExpression(Expression node) {
-		applyOffsetASTNode(node);
-//		if (node.statementEnd != -1) {
-			node.statementEnd = newSourceEnd;
-//		}
+	
+	private void fixPositions(SwitchStatement node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.blockStart = sourceStart;
 	}
-
-	private void applyOffsetVariable(AbstractVariableDeclaration node) {
-		applyOffsetASTNode(node);
-		node.declarationEnd = newSourceEnd;
-		node.declarationSourceEnd = newSourceEnd;
-		node.declarationSourceStart = newSourceStart;
-		node.modifiersSourceStart = newSourceStart;
+	
+	private void fixPositions(Expression node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.statementEnd = sourceEnd;
+	}
+	
+	private void fixPositions(AbstractVariableDeclaration node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.declarationEnd = sourceEnd;
+		node.declarationSourceEnd = sourceEnd;
+		node.declarationSourceStart = sourceStart;
+		node.modifiersSourceStart = sourceStart;
 	}
 		
-	private void applyOffsetFieldDeclaration(FieldDeclaration node) {
-		applyOffsetVariable(node);
-		node.endPart1Position = newSourceEnd;
-		node.endPart2Position = newSourceEnd;
+	private void fixPositions(FieldDeclaration node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.declarationEnd = sourceEnd;
+		node.declarationSourceEnd = sourceEnd;
+		node.declarationSourceStart = sourceStart;
+		node.modifiersSourceStart = sourceStart;
+		node.endPart1Position = sourceEnd;
+		node.endPart2Position = sourceEnd;
 	}
 
-	private void applyOffsetFieldReference(FieldReference node) {
-		applyOffsetExpression(node);
-		node.nameSourcePosition = recalcSourcePosition(node.nameSourcePosition);
+	private void fixPositions(FieldReference node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.statementEnd = sourceEnd;
+		node.nameSourcePosition = sourcePos;
 	}
 	
-	private void applyOffsetMessageSend(MessageSend node) {
-		applyOffsetExpression(node);
-		node.nameSourcePosition = recalcSourcePosition(node.nameSourcePosition);
+	private void fixPositions(MessageSend node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.statementEnd = sourceEnd;
+		node.nameSourcePosition = sourcePos;
 	}
 	
-	private void applyOffsetQualifiedNameReference(QualifiedNameReference node) {
-		applyOffsetExpression(node);
-		for (int i = 0; i < node.sourcePositions.length; i++) {
-			node.sourcePositions[i] = recalcSourcePosition(node.sourcePositions[i]);
-		}
+	private void fixPositions(QualifiedNameReference node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.statementEnd = sourceEnd;
+		if (node.sourcePositions == null || node.sourcePositions.length != node.tokens.length) node.sourcePositions = new long[node.tokens.length];
+		Arrays.fill(node.sourcePositions, sourcePos);
 	}
 	
-	private void applyOffsetQualifiedTypeReference(QualifiedTypeReference node) {
-		applyOffsetExpression(node);
-		for (int i = 0; i < node.sourcePositions.length; i++) {
-			node.sourcePositions[i] = recalcSourcePosition(node.sourcePositions[i]);
-		}
-	}
-
-	/** See {@link FieldReference#nameSourcePosition} for explanation */
-	private long recalcSourcePosition(long sourcePosition) {
-//		long start = (sourcePosition >>> 32);
-//		long end = (sourcePosition & 0x00000000FFFFFFFFL);
-//		start = newSourceStart;
-//		end = newSourceStart;
-//		return ((start<<32)+end); 
-		return ((long)newSourceStart << 32) | (newSourceEnd & INT_TO_LONG_MASK);
+	private void fixPositions(QualifiedTypeReference node) {
+		node.sourceEnd = sourceEnd;
+		node.sourceStart = sourceStart;
+		node.statementEnd = sourceEnd;
+		if (node.sourcePositions == null || node.sourcePositions.length != node.tokens.length) node.sourcePositions = new long[node.tokens.length];
+		Arrays.fill(node.sourcePositions, sourcePos);
 	}
 	
 	@Override public boolean visit(AllocationExpression node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
-
+	
 	@Override public boolean visit(AND_AND_Expression node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(AnnotationMethodDeclaration node, ClassScope classScope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, classScope);
 	}
 
 	@Override public boolean visit(Argument node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetVariable(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 
 	@Override public boolean visit(Argument node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetVariable(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ArrayAllocationExpression node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ArrayInitializer node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ArrayQualifiedTypeReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetQualifiedTypeReference(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ArrayQualifiedTypeReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetQualifiedTypeReference(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ArrayReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ArrayTypeReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ArrayTypeReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(AssertStatement node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 
 	@Override public boolean visit(Assignment node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(BinaryExpression node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(Block node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(BreakStatement node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(CaseStatement node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(CastExpression node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(CharLiteral node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ClassLiteralAccess node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(Clinit node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(CompilationUnitDeclaration node, CompilationUnitScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 
 	@Override public boolean visit(CompoundAssignment node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ConditionalExpression node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ConstructorDeclaration node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ContinueStatement node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(DoStatement node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(DoubleLiteral node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(EmptyStatement node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(EqualExpression node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ExplicitConstructorCall node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ExtendedStringLiteral node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(FalseLiteral node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(FieldDeclaration node, MethodScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetFieldDeclaration(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(FieldReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetFieldReference(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(FieldReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetFieldReference(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(FloatLiteral node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ForeachStatement node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ForStatement node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(IfStatement node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ImportReference node, CompilationUnitScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(Initializer node, MethodScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(InstanceOfExpression node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(IntLiteral node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(Javadoc node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 
 	@Override public boolean visit(Javadoc node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocAllocationExpression node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocAllocationExpression node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocArgumentExpression node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocArgumentExpression node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocArrayQualifiedTypeReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocArrayQualifiedTypeReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocArraySingleTypeReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocArraySingleTypeReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocFieldReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocFieldReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocImplicitTypeReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocImplicitTypeReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocMessageSend node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocMessageSend node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocQualifiedTypeReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocQualifiedTypeReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocReturnStatement node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocReturnStatement node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocSingleNameReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocSingleNameReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocSingleTypeReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(JavadocSingleTypeReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(LabeledStatement node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(LocalDeclaration node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetVariable(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(LongLiteral node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(MarkerAnnotation node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(MemberValuePair node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(MessageSend node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetMessageSend(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(MethodDeclaration node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(StringLiteralConcatenation node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(NormalAnnotation node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(NullLiteral node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(OR_OR_Expression node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ParameterizedQualifiedTypeReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetQualifiedTypeReference(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ParameterizedQualifiedTypeReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetQualifiedTypeReference(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ParameterizedSingleTypeReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ParameterizedSingleTypeReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(PostfixExpression node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(PrefixExpression node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(QualifiedAllocationExpression node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(QualifiedNameReference node, BlockScope scope) {
-		setGeneratedBy(node, source);	
-		applyOffsetQualifiedNameReference(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(QualifiedNameReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(QualifiedSuperReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(QualifiedSuperReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(QualifiedThisReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(QualifiedThisReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(QualifiedTypeReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetQualifiedTypeReference(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(QualifiedTypeReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetQualifiedTypeReference(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ReturnStatement node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(SingleMemberAnnotation node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(SingleNameReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(SingleNameReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(SingleTypeReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(SingleTypeReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(StringLiteral node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(SuperReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(SwitchStatement node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
-		node.blockStart = newSourceStart;
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(SynchronizedStatement node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ThisReference node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ThisReference node, ClassScope scope) {
-		setGeneratedBy(node, source);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(ThrowStatement node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(TrueLiteral node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(TryStatement node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(TypeDeclaration node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(TypeDeclaration node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(TypeDeclaration node, CompilationUnitScope scope) {
-		setGeneratedBy(node, source);
-		applyOffset(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(TypeParameter node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetVariable(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(TypeParameter node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetVariable(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(UnaryExpression node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(WhileStatement node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetASTNode(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(Wildcard node, BlockScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 	
 	@Override public boolean visit(Wildcard node, ClassScope scope) {
-		setGeneratedBy(node, source);
-		applyOffsetExpression(node);
+		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
 }

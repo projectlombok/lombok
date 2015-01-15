@@ -57,4 +57,8 @@ public class TestWithEcj extends DirectoryRunner.TestParams {
 	public File getMessagesDirectory() {
 		return new File("test/transform/resource/messages-ecj");
 	}
+	
+	@Override public boolean accept(File file) {
+		return file.getName().startsWith("BuilderSingleton");
+	}
 }

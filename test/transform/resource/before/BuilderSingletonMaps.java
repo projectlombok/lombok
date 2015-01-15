@@ -7,6 +7,6 @@ import lombok.Singular;
 class BuilderSingletonMaps<K, V> {
 	@Singular private Map<K, V> women;
 	@Singular private SortedMap<K, ? extends Number> men;
-	@Singular("rawMap") private Map rawMap;
+	@SuppressWarnings("all") @Singular("rawMap") private Map rawMap;
 	@Singular("stringMap") private Map<String, V> stringMap;
 }

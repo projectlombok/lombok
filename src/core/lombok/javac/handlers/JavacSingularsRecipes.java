@@ -143,7 +143,7 @@ public class JavacSingularsRecipes {
 		
 		public boolean requiresCleaning() {
 			try {
-				return !getClass().getMethod("appendCleaningCode", ListBuffer.class).getDeclaringClass().equals(JavacSingularizer.class);
+				return !getClass().getMethod("appendCleaningCode", SingularData.class, JavacNode.class, JCTree.class, ListBuffer.class).getDeclaringClass().equals(JavacSingularizer.class);
 			} catch (NoSuchMethodException e) {
 				return false;
 			}
