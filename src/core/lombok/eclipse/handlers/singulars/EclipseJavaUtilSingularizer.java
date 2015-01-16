@@ -66,6 +66,10 @@ abstract class EclipseJavaUtilSingularizer extends EclipseSingularizer {
 		{'j', 'a', 'v', 'a'}, {'u', 't', 'i', 'l'}, {'A', 'r', 'r', 'a', 'y', 'L', 'i', 's', 't'}
 	};
 	
+	protected static final char[][] JAVA_UTIL_LIST = {
+		{'j', 'a', 'v', 'a'}, {'u', 't', 'i', 'l'}, {'L', 'i', 's', 't'}
+	};
+	
 	protected static final char[][] JAVA_UTIL_MAP = {
 		{'j', 'a', 'v', 'a'}, {'u', 't', 'i', 'l'}, {'M', 'a', 'p'}
 	};

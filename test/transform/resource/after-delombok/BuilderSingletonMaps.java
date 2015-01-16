@@ -3,6 +3,7 @@ import java.util.SortedMap;
 class BuilderSingletonMaps<K, V> {
 	private Map<K, V> women;
 	private SortedMap<K, ? extends Number> men;
+	@SuppressWarnings("all")
 	private Map rawMap;
 	private Map<String, V> stringMap;
 	@java.lang.SuppressWarnings("all")

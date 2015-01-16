@@ -7,5 +7,5 @@ import lombok.Singular;
 class BuilderSingletonLists<T> {
 	@Singular private List<T> children;
 	@Singular private Collection<? extends Number> scarves;
-	@Singular("rawList") private List rawList;
+	@SuppressWarnings("all") @Singular("rawList") private List rawList;
 }

@@ -3,6 +3,7 @@ import java.util.Collection;
 class BuilderSingletonLists<T> {
 	private List<T> children;
 	private Collection<? extends Number> scarves;
+	@SuppressWarnings("all")
 	private List rawList;
 	@java.lang.SuppressWarnings("all")
 	BuilderSingletonLists(final List<T> children, final Collection<? extends Number> scarves, final List rawList) {

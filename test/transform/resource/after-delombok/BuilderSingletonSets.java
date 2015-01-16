@@ -3,6 +3,7 @@ import java.util.SortedSet;
 class BuilderSingletonSets<T> {
 	private Set<T> dangerMice;
 	private SortedSet<? extends Number> octopodes;
+	@SuppressWarnings("all")
 	private Set rawSet;
 	private Set<String> stringSet;
 	@java.lang.SuppressWarnings("all")
