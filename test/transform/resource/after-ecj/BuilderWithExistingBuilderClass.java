@@ -1,4 +1,4 @@
-import lombok.experimental.Builder;
+import lombok.Builder;
 class BuilderWithExistingBuilderClass<T, K extends Number> {
   public static class BuilderWithExistingBuilderClassBuilder<Z extends Number> {
     private boolean arg2;

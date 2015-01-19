@@ -8,5 +8,5 @@ import lombok.Singular;
 class BuilderSingletonGuavaMaps<K, V> {
 	@Singular private ImmutableMap<K, V> battleaxes;
 	@Singular private ImmutableSortedMap<Integer, ? extends V> vertices;
-	@Singular("rawMap") private ImmutableBiMap rawMap;
+	@SuppressWarnings("all") @Singular("rawMap") private ImmutableBiMap rawMap;
 }

@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSortedMap;
 class BuilderSingletonGuavaMaps<K, V> {
 	private ImmutableMap<K, V> battleaxes;
 	private ImmutableSortedMap<Integer, ? extends V> vertices;
+	@SuppressWarnings("all")
 	private ImmutableBiMap rawMap;
 	@java.lang.SuppressWarnings("all")
 	BuilderSingletonGuavaMaps(final ImmutableMap<K, V> battleaxes, final ImmutableSortedMap<Integer, ? extends V> vertices, final ImmutableBiMap rawMap) {

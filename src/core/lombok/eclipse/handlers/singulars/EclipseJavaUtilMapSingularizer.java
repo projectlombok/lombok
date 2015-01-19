@@ -85,8 +85,10 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 			buildValueField.declarationSourceEnd = -1;
 			buildValueField.type = type;
 		}
-		EclipseNode valueFieldNode = injectField(builderType, buildValueField);
+		data.setGeneratedByRecursive(buildKeyField);
+		data.setGeneratedByRecursive(buildValueField);
 		EclipseNode keyFieldNode = injectField(builderType, buildKeyField);
+		EclipseNode valueFieldNode = injectField(builderType, buildValueField);
 		return Arrays.asList(keyFieldNode, valueFieldNode);
 	}
 	
@@ -145,6 +147,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		md.returnType = returnType;
 		md.selector = fluent ? data.getSingularName() : HandlerUtil.buildAccessorName("put", new String(data.getSingularName())).toCharArray();
 		
+		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
 	}
 	
@@ -207,6 +210,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		md.returnType = returnType;
 		md.selector = fluent ? data.getPluralName() : HandlerUtil.buildAccessorName("putAll", new String(data.getPluralName())).toCharArray();
 		
+		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
 	}
 	

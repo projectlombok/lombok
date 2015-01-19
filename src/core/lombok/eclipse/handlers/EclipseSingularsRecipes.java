@@ -8,9 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.jdt.internal.compiler.ast.ASTNode;
+import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
+import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IntLiteral;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
@@ -24,6 +27,8 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Wildcard;
+import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
+import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 
 import lombok.core.LombokImmutableList;
@@ -101,14 +106,28 @@ public class EclipseSingularsRecipes {
 		private final List<TypeReference> typeArgs;
 		private final String targetFqn;
 		private final EclipseSingularizer singularizer;
+		private final ASTNode source;
 		
-		public SingularData(EclipseNode annotation, char[] singularName, char[] pluralName, List<TypeReference> typeArgs, String targetFqn, EclipseSingularizer singularizer) {
+		public SingularData(EclipseNode annotation, char[] singularName, char[] pluralName, List<TypeReference> typeArgs, String targetFqn, EclipseSingularizer singularizer, ASTNode source) {
 			this.annotation = annotation;
 			this.singularName = singularName;
 			this.pluralName = pluralName;
 			this.typeArgs = typeArgs;
 			this.targetFqn = targetFqn;
 			this.singularizer = singularizer;
+			this.source = source;
+		}
+		
+		public void setGeneratedByRecursive(ASTNode target) {
+			SetGeneratedByVisitor visitor = new SetGeneratedByVisitor(source);
+			
+			if (target instanceof AbstractMethodDeclaration) {
+				((AbstractMethodDeclaration) target).traverse(visitor, (ClassScope) null);
+			} else if (target instanceof FieldDeclaration) {
+				((FieldDeclaration) target).traverse(visitor, (MethodScope) null);
+			} else {
+				target.traverse(visitor, null);
+			}
 		}
 		
 		public EclipseNode getAnnotation() {

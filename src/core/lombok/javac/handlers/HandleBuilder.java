@@ -54,6 +54,7 @@ import lombok.Singular;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
+import lombok.core.handlers.HandlerUtil;
 import lombok.experimental.NonFinal;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
@@ -416,8 +417,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			if (existingName.equals(fieldName)) return;
 		}
 		
-		boolean isBoolean = isBoolean(fieldNode);
-		String setterName = fluent ? fieldNode.getName() : toSetterName(fieldNode.getAst(), null, fieldNode.getName(), isBoolean);
+		String setterName = fluent ? fieldNode.getName() : HandlerUtil.buildAccessorName("set", fieldNode.getName());
 		
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, fieldNode, maker, setterName, chain, source, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());

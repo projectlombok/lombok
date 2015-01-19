@@ -9,6 +9,6 @@ import lombok.Singular;
 class BuilderSingletonGuavaListsSets<T> {
 	@Singular private ImmutableList<T> cards;
 	@Singular private ImmutableCollection<? extends Number> frogs;
-	@Singular("rawSet") private ImmutableSet rawSet;
+	@SuppressWarnings("all") @Singular("rawSet") private ImmutableSet rawSet;
 	@Singular private ImmutableSortedSet<String> passes;
 }

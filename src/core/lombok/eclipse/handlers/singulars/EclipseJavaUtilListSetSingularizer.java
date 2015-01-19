@@ -59,6 +59,7 @@ abstract class EclipseJavaUtilListSetSingularizer extends EclipseJavaUtilSingula
 		buildField.modifiers = ClassFileConstants.AccPrivate;
 		buildField.declarationSourceEnd = -1;
 		buildField.type = type;
+		data.setGeneratedByRecursive(buildField);
 		return Collections.singletonList(injectField(builderType, buildField));
 	}
 	
@@ -96,6 +97,7 @@ abstract class EclipseJavaUtilListSetSingularizer extends EclipseJavaUtilSingula
 		md.returnType = returnType;
 		md.selector = fluent ? data.getSingularName() : HandlerUtil.buildAccessorName("add", new String(data.getSingularName())).toCharArray();
 		
+		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
 	}
 	
@@ -125,6 +127,7 @@ abstract class EclipseJavaUtilListSetSingularizer extends EclipseJavaUtilSingula
 		md.returnType = returnType;
 		md.selector = fluent ? data.getPluralName() : HandlerUtil.buildAccessorName("addAll", new String(data.getPluralName())).toCharArray();
 		
+		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
 	}
 }

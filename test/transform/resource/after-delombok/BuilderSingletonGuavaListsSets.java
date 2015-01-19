@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSortedSet;
 class BuilderSingletonGuavaListsSets<T> {
 	private ImmutableList<T> cards;
 	private ImmutableCollection<? extends Number> frogs;
+	@SuppressWarnings("all")
 	private ImmutableSet rawSet;
 	private ImmutableSortedSet<String> passes;
 	@java.lang.SuppressWarnings("all")

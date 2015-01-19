@@ -19,15 +19,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.javac.handlers.singulars;
-
-import lombok.core.LombokImmutableList;
-import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
+package lombok.eclipse.handlers.singulars;
 
 import org.mangosdk.spi.ProviderFor;
 
-@ProviderFor(JavacSingularizer.class)
-public class JavacGuavaMapSingularizer extends JavacGuavaSingularizer {
+import lombok.core.LombokImmutableList;
+import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
+
+@ProviderFor(EclipseSingularizer.class)
+public class EclipseGuavaMapSingularizer extends EclipseGuavaSingularizer {
 	// TODO cgcc.ImmutableMultimap, cgcc.ImmutableListMultimap, cgcc.ImmutableSetMultimap
 	// TODO cgcc.ImmutableClassToInstanceMap
 	// TODO cgcc.ImmutableRangeMap

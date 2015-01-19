@@ -62,6 +62,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.ast.UnaryExpression;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
+import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.mangosdk.spi.ProviderFor;
@@ -71,6 +72,7 @@ import lombok.Builder;
 import lombok.ConfigurationKeys;
 import lombok.Singular;
 import lombok.core.AST.Kind;
+import lombok.core.handlers.HandlerUtil;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.eclipse.Eclipse;
@@ -89,6 +91,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	
 	private static final boolean toBoolean(Object expr, boolean defaultValue) {
 		if (expr == null) return defaultValue;
+		if (expr instanceof FalseLiteral) return false;
+		if (expr instanceof TrueLiteral) return true;
 		return ((Boolean) expr).booleanValue();
 	}
 	
@@ -153,7 +157,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				BuilderFieldData bfd = new BuilderFieldData();
 				bfd.name = removePrefixFromField(fieldNode);
 				bfd.type = fd.type;
-				bfd.singularData = getSingularData(fieldNode);
+				bfd.singularData = getSingularData(fieldNode, ast);
 				builderFields.add(bfd);
 				allFields.add(fieldNode);
 			}
@@ -232,7 +236,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				Argument arg = (Argument) param.get();
 				bfd.name = arg.name;
 				bfd.type = arg.type;
-				bfd.singularData = getSingularData(param);
+				bfd.singularData = getSingularData(param, ast);
 				builderFields.add(bfd);
 			}
 		}
@@ -253,12 +257,13 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			}
 		}
 		
-		generateBuilderFields(builderType, builderFields);
+		generateBuilderFields(builderType, builderFields, ast);
 		if (addCleaning) {
 			FieldDeclaration cleanDecl = new FieldDeclaration(CLEAN_FIELD_NAME, 0, -1);
 			cleanDecl.declarationSourceEnd = -1;
 			cleanDecl.modifiers = ClassFileConstants.AccPrivate;
 			cleanDecl.type = TypeReference.baseTypeReference(TypeIds.T_boolean, 0);
+			System.out.println("INJECTING: cleaning");
 			injectField(builderType, cleanDecl);
 		}
 		
@@ -274,7 +279,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		if (methodExists(buildMethodName, builderType, -1) == MemberExistsResult.NOT_EXISTS) {
-			MethodDeclaration md = generateBuildMethod(buildMethodName, nameOfStaticBuilderMethod, returnType, builderFields, builderType, thrownExceptions, addCleaning);
+			MethodDeclaration md = generateBuildMethod(buildMethodName, nameOfStaticBuilderMethod, returnType, builderFields, builderType, thrownExceptions, addCleaning, ast);
 			if (md != null) injectMethod(builderType, md);
 		}
 		
@@ -287,17 +292,18 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			if (md != null) injectMethod(builderType, md);
 		}
 		
-		if (addCleaning) injectMethod(builderType, generateCleanMethod(builderFields, builderType));
+		if (addCleaning) {
+			MethodDeclaration cleanMethod = generateCleanMethod(builderFields, builderType, ast);
+			if (cleanMethod != null) injectMethod(builderType, cleanMethod);
+		}
 		
 		if (methodExists(builderMethodName, tdParent, -1) == MemberExistsResult.NOT_EXISTS) {
 			MethodDeclaration md = generateBuilderMethod(builderMethodName, builderClassName, tdParent, typeParams, ast);
 			if (md != null) injectMethod(tdParent, md);
 		}
-		
-		builderType.get().traverse(new SetGeneratedByVisitor(ast), null);
 	}
 	
-	private MethodDeclaration generateCleanMethod(List<BuilderFieldData> builderFields, EclipseNode builderType) {
+	private MethodDeclaration generateCleanMethod(List<BuilderFieldData> builderFields, EclipseNode builderType, ASTNode source) {
 		List<Statement> statements = new ArrayList<Statement>();
 		
 		for (BuilderFieldData bfd : builderFields) {
@@ -309,16 +315,17 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		FieldReference thisUnclean = new FieldReference(CLEAN_FIELD_NAME, 0);
 		thisUnclean.receiver = new ThisReference(0, 0);
 		statements.add(new Assignment(thisUnclean, new FalseLiteral(0, 0), 0));
-		MethodDeclaration decl =new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
+		MethodDeclaration decl = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
 		decl.selector = CLEAN_METHOD_NAME;
 		decl.modifiers = ClassFileConstants.AccPrivate;
 		decl.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		decl.returnType = TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		decl.statements = statements.toArray(new Statement[0]);
+		decl.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return decl;
 	}
 	
-	public MethodDeclaration generateBuildMethod(String name, char[] staticName, TypeReference returnType, List<BuilderFieldData> builderFields, EclipseNode type, TypeReference[] thrownExceptions, boolean addCleaning) {
+	public MethodDeclaration generateBuildMethod(String name, char[] staticName, TypeReference returnType, List<BuilderFieldData> builderFields, EclipseNode type, TypeReference[] thrownExceptions, boolean addCleaning, ASTNode source) {
 		MethodDeclaration out = new MethodDeclaration(
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
@@ -381,6 +388,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			}
 		}
 		out.statements = statements.isEmpty() ? null : statements.toArray(new Statement[statements.size()]);
+		out.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return out;
 	}
 	
@@ -403,16 +411,14 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return out;
 	}
 	
-	public void generateBuilderFields(EclipseNode builderType, List<BuilderFieldData> builderFields) {
-		int len = builderFields.size();
+	public void generateBuilderFields(EclipseNode builderType, List<BuilderFieldData> builderFields, ASTNode source) {
 		List<EclipseNode> existing = new ArrayList<EclipseNode>();
 		for (EclipseNode child : builderType.down()) {
 			if (child.getKind() == Kind.FIELD) existing.add(child);
 		}
 		
 		top:
-		for (int i = len - 1; i >= 0; i--) {
-			BuilderFieldData bfd = builderFields.get(i);
+		for (BuilderFieldData bfd : builderFields) {
 			if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
 				bfd.createdFields.addAll(bfd.singularData.getSingularizer().generateFields(bfd.singularData, builderType));
 			} else {
@@ -428,6 +434,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				fd.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
 				fd.modifiers = ClassFileConstants.AccPrivate;
 				fd.type = copyType(bfd.type);
+				fd.traverse(new SetGeneratedByVisitor(source), (MethodScope) null);
 				bfd.createdFields.add(injectField(builderType, fd));
 			}
 		}
@@ -457,8 +464,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			if (Arrays.equals(name, existingName)) return;
 		}
 		
-		boolean isBoolean = isBoolean(fd.type);
-		String setterName = fluent ? fieldNode.getName() : toSetterName(builderType.getAst(), null, fieldNode.getName(), isBoolean);
+		String setterName = fluent ? fieldNode.getName() : HandlerUtil.buildAccessorName("set", fieldNode.getName());
 		
 		MethodDeclaration setter = HandleSetter.createSetter(td, fieldNode, setterName, chain, ClassFileConstants.AccPublic,
 				sourceNode, Collections.<Annotation>emptyList(), Collections.<Annotation>emptyList());
@@ -492,7 +498,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	 * 
 	 * @param node The node (field or method param) to inspect for its name and potential {@code @Singular} annotation.
 	 */
-	private SingularData getSingularData(EclipseNode node) {
+	private SingularData getSingularData(EclipseNode node, ASTNode source) {
 		for (EclipseNode child : node.down()) {
 			if (child.getKind() == Kind.ANNOTATION && annotationTypeMatches(Singular.class, child)) {
 				char[] pluralName = node.getKind() == Kind.FIELD ? removePrefixFromField(node) : ((AbstractVariableDeclaration) node.get()).name;
@@ -534,7 +540,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 					return null;
 				}
 				
-				return new SingularData(child, singularName, pluralName, typeArgs == null ? Collections.<TypeReference>emptyList() : Arrays.asList(typeArgs), targetFqn, singularizer);
+				return new SingularData(child, singularName, pluralName, typeArgs == null ? Collections.<TypeReference>emptyList() : Arrays.asList(typeArgs), targetFqn, singularizer, source);
 			}
 		}
 		

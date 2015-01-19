@@ -19,27 +19,27 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.javac.handlers.singulars;
-
-import lombok.core.LombokImmutableList;
-import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
+package lombok.eclipse.handlers.singulars;
 
 import org.mangosdk.spi.ProviderFor;
 
-@ProviderFor(JavacSingularizer.class)
-public class JavacGuavaMapSingularizer extends JavacGuavaSingularizer {
-	// TODO cgcc.ImmutableMultimap, cgcc.ImmutableListMultimap, cgcc.ImmutableSetMultimap
-	// TODO cgcc.ImmutableClassToInstanceMap
-	// TODO cgcc.ImmutableRangeMap
-	
+import lombok.core.LombokImmutableList;
+import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
+
+@ProviderFor(EclipseSingularizer.class)
+public class EclipseGuavaSetListSingularizer extends EclipseGuavaSingularizer {
+	// TODO com.google.common.collect.ImmutableTable
+	// TODO com.google.common.collect.ImmutableRangeSet
+	// TODO com.google.common.collect.ImmutableMultiset and com.google.common.collect.ImmutableSortedMultiset
 	@Override public LombokImmutableList<String> getSupportedTypes() {
 		return LombokImmutableList.of(
-				"com.google.common.collect.ImmutableMap", 
-				"com.google.common.collect.ImmutableBiMap", 
-				"com.google.common.collect.ImmutableSortedMap");
+				"com.google.common.collect.ImmutableCollection", 
+				"com.google.common.collect.ImmutableList", 
+				"com.google.common.collect.ImmutableSet", 
+				"com.google.common.collect.ImmutableSortedSet");
 	}
-	
+
 	@Override protected boolean isMap() {
-		return true;
+		return false;
 	}
 }
