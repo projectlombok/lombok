@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -201,6 +201,7 @@ public class EclipseHandlerUtil {
 	public static void sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(EclipseNode typeNode, EclipseNode errorNode) {
 		List<String> disallowed = null;
 		for (EclipseNode child : typeNode.down()) {
+			if (child.getKind() != Kind.ANNOTATION) continue;
 			for (Class<? extends java.lang.annotation.Annotation> annType : INVALID_ON_BUILDERS) {
 				if (annotationTypeMatches(annType, child)) {
 					if (disallowed == null) disallowed = new ArrayList<String>();
@@ -681,47 +682,39 @@ public class EclipseHandlerUtil {
 	 */
 	public static <A extends java.lang.annotation.Annotation> AnnotationValues<A>
 			createAnnotation(Class<A> type, final EclipseNode annotationNode) {
+		
 		final Annotation annotation = (Annotation) annotationNode.get();
 		Map<String, AnnotationValue> values = new HashMap<String, AnnotationValue>();
 		
-		final MemberValuePair[] pairs = annotation.memberValuePairs();
-		for (Method m : type.getDeclaredMethods()) {
-			if (!Modifier.isPublic(m.getModifiers())) continue;
-			String name = m.getName();
+		MemberValuePair[] memberValuePairs = annotation.memberValuePairs();
+		
+		if (memberValuePairs != null) for (final MemberValuePair pair : memberValuePairs) {
 			List<String> raws = new ArrayList<String>();
 			List<Object> expressionValues = new ArrayList<Object>();
 			List<Object> guesses = new ArrayList<Object>();
-			Expression fullExpression = null;
 			Expression[] expressions = null;
 			
-			if (pairs != null) for (MemberValuePair pair : pairs) {
-				char[] n = pair.name;
-				String mName = n == null ? "value" : new String(pair.name);
-				if (mName.equals(name)) fullExpression = pair.value;
+			char[] n = pair.name;
+			String mName = (n == null || n.length == 0) ? "value" : new String(pair.name);
+			final Expression rhs = pair.value;
+			if (rhs instanceof ArrayInitializer) {
+				expressions = ((ArrayInitializer)rhs).expressions;
+			} else if (rhs != null) {
+				expressions = new Expression[] { rhs };
+			}
+			if (expressions != null) for (Expression ex : expressions) {
+				StringBuffer sb = new StringBuffer();
+				ex.print(0, sb);
+				raws.add(sb.toString());
+				expressionValues.add(ex);
+				guesses.add(calculateValue(ex));
 			}
 			
-			boolean isExplicit = fullExpression != null;
-			
-			if (isExplicit) {
-				if (fullExpression instanceof ArrayInitializer) {
-					expressions = ((ArrayInitializer)fullExpression).expressions;
-				} else expressions = new Expression[] { fullExpression };
-				if (expressions != null) for (Expression ex : expressions) {
-					StringBuffer sb = new StringBuffer();
-					ex.print(0, sb);
-					raws.add(sb.toString());
-					expressionValues.add(ex);
-					guesses.add(calculateValue(ex));
-				}
-			}
-			
-			final Expression fullExpr = fullExpression;
 			final Expression[] exprs = expressions;
-			
-			values.put(name, new AnnotationValue(annotationNode, raws, expressionValues, guesses, isExplicit) {
+			values.put(mName, new AnnotationValue(annotationNode, raws, expressionValues, guesses, true) {
 				@Override public void setError(String message, int valueIdx) {
 					Expression ex;
-					if (valueIdx == -1) ex = fullExpr;
+					if (valueIdx == -1) ex = rhs;
 					else ex = exprs != null ? exprs[valueIdx] : null;
 					
 					if (ex == null) ex = annotation;
@@ -734,7 +727,7 @@ public class EclipseHandlerUtil {
 				
 				@Override public void setWarning(String message, int valueIdx) {
 					Expression ex;
-					if (valueIdx == -1) ex = fullExpr;
+					if (valueIdx == -1) ex = rhs;
 					else ex = exprs != null ? exprs[valueIdx] : null;
 					
 					if (ex == null) ex = annotation;
@@ -745,6 +738,21 @@ public class EclipseHandlerUtil {
 					annotationNode.addWarning(message, sourceStart, sourceEnd);
 				}
 			});
+		}
+		
+		for (Method m : type.getDeclaredMethods()) {
+			if (!Modifier.isPublic(m.getModifiers())) continue;
+			String name = m.getName();
+			if (!values.containsKey(name)) {
+				values.put(name, new AnnotationValue(annotationNode, new ArrayList<String>(), new ArrayList<Object>(), new ArrayList<Object>(), false) {
+					@Override public void setError(String message, int valueIdx) {
+						annotationNode.addError(message);
+					}
+					@Override public void setWarning(String message, int valueIdx) {
+						annotationNode.addWarning(message);
+					}
+				});
+			}
 		}
 		
 		return new AnnotationValues<A>(type, values, annotationNode);
