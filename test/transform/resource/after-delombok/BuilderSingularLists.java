@@ -1,62 +1,62 @@
 import java.util.List;
 import java.util.Collection;
-class BuilderSingletonLists<T> {
+class BuilderSingularLists<T> {
 	private List<T> children;
 	private Collection<? extends Number> scarves;
 	@SuppressWarnings("all")
 	private List rawList;
 	@java.lang.SuppressWarnings("all")
-	BuilderSingletonLists(final List<T> children, final Collection<? extends Number> scarves, final List rawList) {
+	BuilderSingularLists(final List<T> children, final Collection<? extends Number> scarves, final List rawList) {
 		this.children = children;
 		this.scarves = scarves;
 		this.rawList = rawList;
 	}
 	@java.lang.SuppressWarnings("all")
-	public static class BuilderSingletonListsBuilder<T> {
+	public static class BuilderSingularListsBuilder<T> {
 		private java.util.ArrayList<T> children;
 		private java.util.ArrayList<Number> scarves;
 		private java.util.ArrayList<java.lang.Object> rawList;
 		@java.lang.SuppressWarnings("all")
-		BuilderSingletonListsBuilder() {
+		BuilderSingularListsBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingletonListsBuilder<T> child(final T child) {
+		public BuilderSingularListsBuilder<T> child(final T child) {
 			if (this.children == null) this.children = new java.util.ArrayList<T>();
 			this.children.add(child);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingletonListsBuilder<T> children(final java.util.Collection<? extends T> children) {
+		public BuilderSingularListsBuilder<T> children(final java.util.Collection<? extends T> children) {
 			if (this.children == null) this.children = new java.util.ArrayList<T>();
 			this.children.addAll(children);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingletonListsBuilder<T> scarf(final Number scarf) {
+		public BuilderSingularListsBuilder<T> scarf(final Number scarf) {
 			if (this.scarves == null) this.scarves = new java.util.ArrayList<Number>();
 			this.scarves.add(scarf);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingletonListsBuilder<T> scarves(final java.util.Collection<? extends Number> scarves) {
+		public BuilderSingularListsBuilder<T> scarves(final java.util.Collection<? extends Number> scarves) {
 			if (this.scarves == null) this.scarves = new java.util.ArrayList<Number>();
 			this.scarves.addAll(scarves);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingletonListsBuilder<T> rawList(final java.lang.Object rawList) {
+		public BuilderSingularListsBuilder<T> rawList(final java.lang.Object rawList) {
 			if (this.rawList == null) this.rawList = new java.util.ArrayList<java.lang.Object>();
 			this.rawList.add(rawList);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingletonListsBuilder<T> rawList(final java.util.Collection<?> rawList) {
+		public BuilderSingularListsBuilder<T> rawList(final java.util.Collection<?> rawList) {
 			if (this.rawList == null) this.rawList = new java.util.ArrayList<java.lang.Object>();
 			this.rawList.addAll(rawList);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingletonLists<T> build() {
+		public BuilderSingularLists<T> build() {
 			java.util.List<T> children;
 			switch (this.children == null ? 0 : this.children.size()) {
 			case 0: 
@@ -96,16 +96,16 @@ class BuilderSingletonLists<T> {
 				rawList.addAll(this.rawList);
 				rawList = java.util.Collections.unmodifiableList(rawList);
 			}
-			return new BuilderSingletonLists<T>(children, scarves, rawList);
+			return new BuilderSingularLists<T>(children, scarves, rawList);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderSingletonLists.BuilderSingletonListsBuilder(children=" + this.children + ", scarves=" + this.scarves + ", rawList=" + this.rawList + ")";
+			return "BuilderSingularLists.BuilderSingularListsBuilder(children=" + this.children + ", scarves=" + this.scarves + ", rawList=" + this.rawList + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static <T> BuilderSingletonListsBuilder<T> builder() {
-		return new BuilderSingletonListsBuilder<T>();
+	public static <T> BuilderSingularListsBuilder<T> builder() {
+		return new BuilderSingularListsBuilder<T>();
 	}
 }

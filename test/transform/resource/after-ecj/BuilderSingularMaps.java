@@ -1,8 +1,8 @@
 import java.util.Map;
 import java.util.SortedMap;
 import lombok.Singular;
-@lombok.Builder class BuilderSingletonMaps<K, V> {
-  public static @java.lang.SuppressWarnings("all") class BuilderSingletonMapsBuilder<K, V> {
+@lombok.Builder class BuilderSingularMaps<K, V> {
+  public static @java.lang.SuppressWarnings("all") class BuilderSingularMapsBuilder<K, V> {
     private java.util.ArrayList<K> women$key;
     private java.util.ArrayList<V> women$value;
     private java.util.ArrayList<K> men$key;
@@ -11,10 +11,10 @@ import lombok.Singular;
     private java.util.ArrayList<java.lang.Object> rawMap$value;
     private java.util.ArrayList<String> stringMap$key;
     private java.util.ArrayList<V> stringMap$value;
-    @java.lang.SuppressWarnings("all") BuilderSingletonMapsBuilder() {
+    @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingletonMapsBuilder<K, V> woman(K womanKey, V womanValue) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> woman(K womanKey, V womanValue) {
       if ((this.women$key == null))
           {
             this.women$key = new java.util.ArrayList<K>();
@@ -24,7 +24,7 @@ import lombok.Singular;
       this.women$value.add(womanValue);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingletonMapsBuilder<K, V> women(java.util.Map<? extends K, ? extends V> women) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> women(java.util.Map<? extends K, ? extends V> women) {
       if ((this.women$key == null))
           {
             this.women$key = new java.util.ArrayList<K>();
@@ -37,7 +37,7 @@ import lombok.Singular;
         }
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingletonMapsBuilder<K, V> man(K manKey, Number manValue) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> man(K manKey, Number manValue) {
       if ((this.men$key == null))
           {
             this.men$key = new java.util.ArrayList<K>();
@@ -47,7 +47,7 @@ import lombok.Singular;
       this.men$value.add(manValue);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingletonMapsBuilder<K, V> men(java.util.Map<? extends K, ? extends Number> men) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> men(java.util.Map<? extends K, ? extends Number> men) {
       if ((this.men$key == null))
           {
             this.men$key = new java.util.ArrayList<K>();
@@ -60,7 +60,7 @@ import lombok.Singular;
         }
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingletonMapsBuilder<K, V> rawMap(java.lang.Object rawMapKey, java.lang.Object rawMapValue) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> rawMap(java.lang.Object rawMapKey, java.lang.Object rawMapValue) {
       if ((this.rawMap$key == null))
           {
             this.rawMap$key = new java.util.ArrayList<java.lang.Object>();
@@ -70,7 +70,7 @@ import lombok.Singular;
       this.rawMap$value.add(rawMapValue);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingletonMapsBuilder<K, V> rawMap(java.util.Map<?, ?> rawMap) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> rawMap(java.util.Map<?, ?> rawMap) {
       if ((this.rawMap$key == null))
           {
             this.rawMap$key = new java.util.ArrayList<java.lang.Object>();
@@ -83,7 +83,7 @@ import lombok.Singular;
         }
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingletonMapsBuilder<K, V> stringMap(String stringMapKey, V stringMapValue) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> stringMap(String stringMapKey, V stringMapValue) {
       if ((this.stringMap$key == null))
           {
             this.stringMap$key = new java.util.ArrayList<String>();
@@ -93,7 +93,7 @@ import lombok.Singular;
       this.stringMap$value.add(stringMapValue);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingletonMapsBuilder<K, V> stringMap(java.util.Map<? extends String, ? extends V> stringMap) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMapsBuilder<K, V> stringMap(java.util.Map<? extends String, ? extends V> stringMap) {
       if ((this.stringMap$key == null))
           {
             this.stringMap$key = new java.util.ArrayList<String>();
@@ -106,7 +106,7 @@ import lombok.Singular;
         }
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingletonMaps<K, V> build() {
+    public @java.lang.SuppressWarnings("all") BuilderSingularMaps<K, V> build() {
       java.util.Map<K, V> women;
       switch (((this.women$key == null) ? 0 : this.women$key.size())) {
       case 0 :
@@ -154,24 +154,24 @@ import lombok.Singular;
             stringMap.put(this.stringMap$key.get($i), this.stringMap$value.get($i));
           stringMap = java.util.Collections.unmodifiableMap(stringMap);
       }
-      return new BuilderSingletonMaps<K, V>(women, men, rawMap, stringMap);
+      return new BuilderSingularMaps<K, V>(women, men, rawMap, stringMap);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-      return (((((((((((((((("BuilderSingletonMaps.BuilderSingletonMapsBuilder(women$key=" + this.women$key) + ", women$value=") + this.women$value) + ", men$key=") + this.men$key) + ", men$value=") + this.men$value) + ", rawMap$key=") + this.rawMap$key) + ", rawMap$value=") + this.rawMap$value) + ", stringMap$key=") + this.stringMap$key) + ", stringMap$value=") + this.stringMap$value) + ")");
+      return (((((((((((((((("BuilderSingularMaps.BuilderSingularMapsBuilder(women$key=" + this.women$key) + ", women$value=") + this.women$value) + ", men$key=") + this.men$key) + ", men$value=") + this.men$value) + ", rawMap$key=") + this.rawMap$key) + ", rawMap$value=") + this.rawMap$value) + ", stringMap$key=") + this.stringMap$key) + ", stringMap$value=") + this.stringMap$value) + ")");
     }
   }
   private @Singular Map<K, V> women;
   private @Singular SortedMap<K, ? extends Number> men;
   private @SuppressWarnings("all") @Singular("rawMap") Map rawMap;
   private @Singular("stringMap") Map<String, V> stringMap;
-  @java.lang.SuppressWarnings("all") BuilderSingletonMaps(final Map<K, V> women, final SortedMap<K, ? extends Number> men, final Map rawMap, final Map<String, V> stringMap) {
+  @java.lang.SuppressWarnings("all") BuilderSingularMaps(final Map<K, V> women, final SortedMap<K, ? extends Number> men, final Map rawMap, final Map<String, V> stringMap) {
     super();
     this.women = women;
     this.men = men;
     this.rawMap = rawMap;
     this.stringMap = stringMap;
   }
-  public static @java.lang.SuppressWarnings("all") <K, V>BuilderSingletonMapsBuilder<K, V> builder() {
-    return new BuilderSingletonMapsBuilder<K, V>();
+  public static @java.lang.SuppressWarnings("all") <K, V>BuilderSingularMapsBuilder<K, V> builder() {
+    return new BuilderSingularMapsBuilder<K, V>();
   }
 }

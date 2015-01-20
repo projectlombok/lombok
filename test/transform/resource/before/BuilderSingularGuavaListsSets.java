@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import lombok.Singular;
 
 @lombok.Builder
-class BuilderSingletonGuavaListsSets<T> {
+class BuilderSingularGuavaListsSets<T> {
 	@Singular private ImmutableList<T> cards;
 	@Singular private ImmutableCollection<? extends Number> frogs;
 	@SuppressWarnings("all") @Singular("rawSet") private ImmutableSet rawSet;

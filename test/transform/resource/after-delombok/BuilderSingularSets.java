@@ -1,77 +1,77 @@
 import java.util.Set;
 import java.util.SortedSet;
-class BuilderSingletonSets<T> {
+class BuilderSingularSets<T> {
 	private Set<T> dangerMice;
 	private SortedSet<? extends Number> octopodes;
 	@SuppressWarnings("all")
 	private Set rawSet;
 	private Set<String> stringSet;
 	@java.lang.SuppressWarnings("all")
-	BuilderSingletonSets(final Set<T> dangerMice, final SortedSet<? extends Number> octopodes, final Set rawSet, final Set<String> stringSet) {
+	BuilderSingularSets(final Set<T> dangerMice, final SortedSet<? extends Number> octopodes, final Set rawSet, final Set<String> stringSet) {
 		this.dangerMice = dangerMice;
 		this.octopodes = octopodes;
 		this.rawSet = rawSet;
 		this.stringSet = stringSet;
 	}
 	@java.lang.SuppressWarnings("all")
-	public static class BuilderSingletonSetsBuilder<T> {
+	public static class BuilderSingularSetsBuilder<T> {
 		private java.util.ArrayList<T> dangerMice;
 		private java.util.ArrayList<Number> octopodes;
 		private java.util.ArrayList<java.lang.Object> rawSet;
 		private java.util.ArrayList<String> stringSet;
 		@java.lang.SuppressWarnings("all")
-		BuilderSingletonSetsBuilder() {
+		BuilderSingularSetsBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingletonSetsBuilder<T> dangerMouse(final T dangerMouse) {
+		public BuilderSingularSetsBuilder<T> dangerMouse(final T dangerMouse) {
 			if (this.dangerMice == null) this.dangerMice = new java.util.ArrayList<T>();
 			this.dangerMice.add(dangerMouse);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingletonSetsBuilder<T> dangerMice(final java.util.Collection<? extends T> dangerMice) {
+		public BuilderSingularSetsBuilder<T> dangerMice(final java.util.Collection<? extends T> dangerMice) {
 			if (this.dangerMice == null) this.dangerMice = new java.util.ArrayList<T>();
 			this.dangerMice.addAll(dangerMice);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingletonSetsBuilder<T> octopus(final Number octopus) {
+		public BuilderSingularSetsBuilder<T> octopus(final Number octopus) {
 			if (this.octopodes == null) this.octopodes = new java.util.ArrayList<Number>();
 			this.octopodes.add(octopus);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingletonSetsBuilder<T> octopodes(final java.util.Collection<? extends Number> octopodes) {
+		public BuilderSingularSetsBuilder<T> octopodes(final java.util.Collection<? extends Number> octopodes) {
 			if (this.octopodes == null) this.octopodes = new java.util.ArrayList<Number>();
 			this.octopodes.addAll(octopodes);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingletonSetsBuilder<T> rawSet(final java.lang.Object rawSet) {
+		public BuilderSingularSetsBuilder<T> rawSet(final java.lang.Object rawSet) {
 			if (this.rawSet == null) this.rawSet = new java.util.ArrayList<java.lang.Object>();
 			this.rawSet.add(rawSet);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingletonSetsBuilder<T> rawSet(final java.util.Collection<?> rawSet) {
+		public BuilderSingularSetsBuilder<T> rawSet(final java.util.Collection<?> rawSet) {
 			if (this.rawSet == null) this.rawSet = new java.util.ArrayList<java.lang.Object>();
 			this.rawSet.addAll(rawSet);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingletonSetsBuilder<T> stringSet(final String stringSet) {
+		public BuilderSingularSetsBuilder<T> stringSet(final String stringSet) {
 			if (this.stringSet == null) this.stringSet = new java.util.ArrayList<String>();
 			this.stringSet.add(stringSet);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingletonSetsBuilder<T> stringSet(final java.util.Collection<? extends String> stringSet) {
+		public BuilderSingularSetsBuilder<T> stringSet(final java.util.Collection<? extends String> stringSet) {
 			if (this.stringSet == null) this.stringSet = new java.util.ArrayList<String>();
 			this.stringSet.addAll(stringSet);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderSingletonSets<T> build() {
+		public BuilderSingularSets<T> build() {
 			java.util.Set<T> dangerMice;
 			switch (this.dangerMice == null ? 0 : this.dangerMice.size()) {
 			case 0: 
@@ -114,16 +114,16 @@ class BuilderSingletonSets<T> {
 				stringSet.addAll(this.stringSet);
 				stringSet = java.util.Collections.unmodifiableSet(stringSet);
 			}
-			return new BuilderSingletonSets<T>(dangerMice, octopodes, rawSet, stringSet);
+			return new BuilderSingularSets<T>(dangerMice, octopodes, rawSet, stringSet);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderSingletonSets.BuilderSingletonSetsBuilder(dangerMice=" + this.dangerMice + ", octopodes=" + this.octopodes + ", rawSet=" + this.rawSet + ", stringSet=" + this.stringSet + ")";
+			return "BuilderSingularSets.BuilderSingularSetsBuilder(dangerMice=" + this.dangerMice + ", octopodes=" + this.octopodes + ", rawSet=" + this.rawSet + ", stringSet=" + this.stringSet + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static <T> BuilderSingletonSetsBuilder<T> builder() {
-		return new BuilderSingletonSetsBuilder<T>();
+	public static <T> BuilderSingularSetsBuilder<T> builder() {
+		return new BuilderSingularSetsBuilder<T>();
 	}
 }
