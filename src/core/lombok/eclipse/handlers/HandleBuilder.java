@@ -516,10 +516,15 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				AnnotationValues<Singular> ann = createAnnotation(Singular.class, child);
 				String explicitSingular = ann.getInstance().value();
 				if (explicitSingular.isEmpty()) {
-					explicitSingular = autoSingularize(node.getName());
-					if (explicitSingular == null) {
-						node.addError("Can't singularize this name; please specify the singular explicitly (i.e. @Singular(\"sheep\"))");
-						explicitSingular = pluralName.toString();
+					if (Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.SINGULAR_AUTO))) {
+						node.addError("The singular must be specified explicitly (e.g. @Singular(\"task\")) because auto singularization is disabled.");
+						explicitSingular = new String(pluralName);
+					} else {
+						explicitSingular = autoSingularize(node.getName());
+						if (explicitSingular == null) {
+							node.addError("Can't singularize this name; please specify the singular explicitly (i.e. @Singular(\"sheep\"))");
+							explicitSingular = new String(pluralName);
+						}
 					}
 				}
 				char[] singularName = explicitSingular.toCharArray();

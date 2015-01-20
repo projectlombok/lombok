@@ -1,0 +1,2 @@
+8 The singular must be specified explicitly (e.g. @Singular("task")) because auto singularization is disabled.
+10 The singular must be specified explicitly (e.g. @Singular("task")) because auto singularization is disabled.

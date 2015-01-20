@@ -466,10 +466,15 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				deleteAnnotationIfNeccessary(child, Singular.class);
 				String explicitSingular = ann.getInstance().value();
 				if (explicitSingular.isEmpty()) {
-					explicitSingular = autoSingularize(node.getName());
-					if (explicitSingular == null) {
-						node.addError("Can't singularize this name; please specify the singular explicitly (i.e. @Singular(\"sheep\"))");
+					if (Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.SINGULAR_AUTO))) {
+						node.addError("The singular must be specified explicitly (e.g. @Singular(\"task\")) because auto singularization is disabled.");
 						explicitSingular = pluralName.toString();
+					} else {
+						explicitSingular = autoSingularize(node.getName());
+						if (explicitSingular == null) {
+							node.addError("Can't singularize this name; please specify the singular explicitly (i.e. @Singular(\"sheep\"))");
+							explicitSingular = pluralName.toString();
+						}
 					}
 				}
 				Name singularName = node.toName(explicitSingular);

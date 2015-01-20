@@ -8,8 +8,6 @@ Lombok Changelog
 
     * features web page
     * Check if the shadowed localvar names are properly typed; if compatible subtypes, we should cast these to avoid accidentally calling an overload.
-    * Add support for guava sortedset.
-    * Disable auto-singular in l.config
     * Review if there are nay potentially breaking changes in the pipeline for builder BEFORE moving it out of experimental.
     * Make sure you cover the fact that builder has moved on from experimental in this issue, and on the features page /doc!
 
