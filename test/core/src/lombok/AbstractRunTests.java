@@ -75,7 +75,7 @@ public abstract class AbstractRunTests {
 			}
 		});
 		
-		transformCode(messages, writer, file);
+		transformCode(messages, writer, file, sourceDirectives.getSpecifiedEncoding());
 		
 		compare(file.getName(), expected, writer.toString(), messages, params.printErrors(), sourceDirectives.isSkipCompareContent() || expected.isSkipCompareContent());
 		return true;
@@ -97,7 +97,7 @@ public abstract class AbstractRunTests {
 		return 8;
 	}
 	
-	protected abstract void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file) throws Throwable;
+	protected abstract void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, String encoding) throws Throwable;
 	
 	protected String readFile(File file) throws IOException {
 		BufferedReader reader;

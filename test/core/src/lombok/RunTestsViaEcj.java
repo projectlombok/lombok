@@ -93,7 +93,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 	}
 	
 	@Override
-	public void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file) throws Throwable {
+	public void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, String encoding) throws Throwable {
 		final AtomicReference<CompilationResult> compilationResult_ = new AtomicReference<CompilationResult>();
 		final AtomicReference<CompilationUnitDeclaration> compilationUnit_ = new AtomicReference<CompilationUnitDeclaration>();
 		ICompilerRequestor bitbucketRequestor = new ICompilerRequestor() {
@@ -103,7 +103,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		};
 		
 		String source = readFile(file);
-		final CompilationUnit sourceUnit = new CompilationUnit(source.toCharArray(), file.getName(), "UTF-8");
+		final CompilationUnit sourceUnit = new CompilationUnit(source.toCharArray(), file.getName(), encoding == null ? "UTF-8" : encoding);
 		
 		Compiler ecjCompiler = new Compiler(createFileSystem(file), ecjErrorHandlingPolicy(), ecjCompilerOptions(), bitbucketRequestor, new DefaultProblemFactory(Locale.ENGLISH)) {
 			@Override protected synchronized void addCompilationUnit(ICompilationUnit inUnit, CompilationUnitDeclaration parsedUnit) {

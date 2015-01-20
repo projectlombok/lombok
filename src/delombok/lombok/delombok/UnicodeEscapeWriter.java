@@ -63,6 +63,6 @@ public class UnicodeEscapeWriter extends Writer {
 	}
 	
 	protected void writeUnicodeEscape(char c) throws IOException {
-		writer.write("\\u" + Integer.toHexString(c));
+		writer.write(String.format("\\u%04x", (int) c));
 	}
 }

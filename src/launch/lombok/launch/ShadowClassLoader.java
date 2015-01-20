@@ -211,24 +211,26 @@ class ShadowClassLoader extends ClassLoader {
 		
 		if (!location.isFile() || !location.canRead()) return null;
 		
-		String absolutePath; {
+		File absoluteFile; {
 			try {
-				absolutePath = location.getCanonicalPath();
+				absoluteFile = location.getCanonicalFile();
 			} catch (Exception e) {
-				absolutePath = location.getAbsolutePath();
+				absoluteFile = location.getAbsoluteFile();
 			}
 		}
-		List<String> jarContents = getOrMakeJarListing(absolutePath);
+		List<String> jarContents = getOrMakeJarListing(absoluteFile.getAbsolutePath());
+		
+		String absoluteUri = absoluteFile.toURI().toString();
 		
 		try {
 			if (jarContents.contains(altName)) {
-				return new URI("jar:file:" + absolutePath + "!/" + altName).toURL();
+				return new URI("jar:" + absoluteUri + "!/" + altName).toURL();
 			}
 		} catch (Exception e) {}
 		
 		try {
 			if (jarContents.contains(name)) {
-				return new URI("jar:file:" + absolutePath + "!/" + name).toURL();
+				return new URI("jar:" + absoluteUri + "!/" + name).toURL();
 			}
 		} catch(Exception e) {}
 		

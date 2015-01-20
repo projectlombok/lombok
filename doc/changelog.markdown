@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v1.14.9.shadow "<del>Edgy</del> Shadowy Guinea Pig"
 * Added a launcher to the lombok boot process which removes the need for `-Xbootclasspath` to be in your `eclipse.ini` file, and removes all non-public API and third party dependencies (such as ASM) from the lombok jar, thus removing them from your IDE's auto complete offerings in any project that uses lombok. For those debugging lombok, the launcher enables hot code replace which makes debugging a lot easier, as previously one was required to shut down the IDE, rebuild the jar, and relaunch. Add `-Dshadow.override.lombok=/path/to/lombok/bin` to the launch target for hot code replace.
+* BUGFIX: delombok: Using exotic characters in your source files would overzealously backslash-u escape them. Now, all characters are printed unescaped, assuming your chosen encoding can support them. Otherwise, they are escaped. [Issue #759](https://code.google.com/p/projectlombok/issues/detail?id=759)
 
 * Builder __TODO TODO TODO TODO DO NOT SHIP YET__:
 
