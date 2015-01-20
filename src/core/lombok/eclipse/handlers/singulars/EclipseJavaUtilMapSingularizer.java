@@ -61,6 +61,26 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		return LombokImmutableList.of("java.util.Map", "java.util.SortedMap", "java.util.NavigableMap");
 	}
 	
+	@Override public List<char[]> listFieldsToBeGenerated(SingularData data) {
+		char[] p = data.getPluralName();
+		int len = p.length;
+		char[] k = new char[len + 4];
+		char[] v = new char[len + 6];
+		System.arraycopy(p, 0, k, 0, len);
+		System.arraycopy(p, 0, v, 0, len);
+		k[len] = '$';
+		k[len + 1] = 'k';
+		k[len + 2] = 'e';
+		k[len + 3] = 'y';
+		v[len] = '$';
+		v[len + 1] = 'v';
+		v[len + 2] = 'a';
+		v[len + 3] = 'l';
+		v[len + 4] = 'u';
+		v[len + 5] = 'e';
+		return Arrays.asList(k, v);
+	}
+	
 	@Override public java.util.List<EclipseNode> generateFields(SingularData data, EclipseNode builderType) {
 		char[] keyName = (new String(data.getPluralName()) + "$key").toCharArray();
 		char[] valueName = (new String(data.getPluralName()) + "$value").toCharArray();

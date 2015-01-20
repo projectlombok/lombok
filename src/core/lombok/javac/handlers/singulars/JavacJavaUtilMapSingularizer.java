@@ -55,6 +55,11 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		return LombokImmutableList.of("java.util.Map", "java.util.SortedMap", "java.util.NavigableMap");
 	}
 	
+	@Override public java.util.List<Name> listFieldsToBeGenerated(JavacNode builderType, SingularData data) {
+		String p = data.getPluralName().toString();
+		return Arrays.asList(builderType.toName(p + "$key"), builderType.toName(p + "$value"));
+	}
+	
 	@Override public java.util.List<JavacNode> generateFields(SingularData data, JavacNode builderType, JCTree source) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		

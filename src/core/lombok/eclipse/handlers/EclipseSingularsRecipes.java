@@ -1,9 +1,32 @@
+/*
+ * Copyright (C) 2015 The Project Lombok Authors.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package lombok.eclipse.handlers;
 
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,27 +59,6 @@ import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
 import lombok.eclipse.EclipseNode;
 
-/*
- * Copyright (C) 2015 The Project Lombok Authors.
- * 
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * 
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- */
 public class EclipseSingularsRecipes {
 	private static final EclipseSingularsRecipes INSTANCE = new EclipseSingularsRecipes();
 	private final Map<String, EclipseSingularizer> singularizers = new HashMap<String, EclipseSingularizer>();
@@ -164,7 +166,51 @@ public class EclipseSingularsRecipes {
 		protected static final long[] NULL_POSS = {0L};
 		public abstract LombokImmutableList<String> getSupportedTypes();
 		
-		public abstract java.util.List<EclipseNode> generateFields(SingularData data, EclipseNode builderType);
+		/** Checks if any of the to-be-generated nodes (fields, methods) already exist. If so, errors on these (singulars don't support manually writing some of it, and returns true). */
+		public boolean checkForAlreadyExistingNodesAndGenerateError(EclipseNode builderType, SingularData data) {
+			for (EclipseNode child : builderType.down()) {
+				switch (child.getKind()) {
+				case FIELD: {
+					FieldDeclaration fd = (FieldDeclaration) child.get();
+					char[] name = fd.name;
+					if (name == null) continue;
+					if (getGeneratedBy(fd) != null) continue;
+					for (char[] fieldToBeGenerated : listFieldsToBeGenerated(data)) {
+						if (!Arrays.equals(name, fieldToBeGenerated)) continue;
+						child.addError("Manually adding a field that @Singular @Builder would generate is not supported. If you want to manually manage the builder aspect for this field/parameter, don't use @Singular.");
+						return true;
+					}
+					break;
+				}
+				case METHOD: {
+					AbstractMethodDeclaration method = (AbstractMethodDeclaration) child.get();
+					char[] name = method.selector;
+					if (name == null) continue;
+					if (getGeneratedBy(method) != null) continue;
+					for (char[] methodToBeGenerated : listMethodsToBeGenerated(data)) {
+						if (!Arrays.equals(name, methodToBeGenerated)) continue;
+						child.addError("Manually adding a method that @Singular @Builder would generate is not supported. If you want to manually manage the builder aspect for this field/parameter, don't use @Singular.");
+						return true;
+					}
+					break;
+				}}
+			}
+			
+			return false;
+		}
+		
+		public List<char[]> listFieldsToBeGenerated(SingularData data) {
+			return Collections.singletonList(data.pluralName);
+		}
+		
+		public List<char[]> listMethodsToBeGenerated(SingularData data) {
+			char[] p = data.pluralName;
+			char[] s = data.singularName;
+			if (Arrays.equals(p, s)) return Collections.singletonList(p);
+			return Arrays.asList(p, s);
+		}
+		
+		public abstract List<EclipseNode> generateFields(SingularData data, EclipseNode builderType);
 		public abstract void generateMethods(SingularData data, EclipseNode builderType, boolean fluent, boolean chain);
 		public abstract void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName);
 		

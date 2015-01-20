@@ -227,6 +227,18 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			builderType = makeBuilderClass(tdParent, builderClassName, typeParams, ast);
 		} else {
 			sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(builderType, annotationNode);
+			/* generate errors for @Singular BFDs that have one already defined node. */ {
+				for (BuilderFieldData bfd : builderFields) {
+					SingularData sd = bfd.singularData;
+					if (sd == null) continue;
+					JavacSingularizer singularizer = sd.getSingularizer();
+					if (singularizer == null) continue;
+					if (singularizer.checkForAlreadyExistingNodesAndGenerateError(builderType, sd)) {
+						bfd.singularData = null;
+					}
+				}
+			}
+
 		}
 		
 		for (BuilderFieldData bfd : builderFields) {

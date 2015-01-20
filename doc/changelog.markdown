@@ -7,7 +7,6 @@ Lombok Changelog
 * Builder __TODO TODO TODO TODO DO NOT SHIP YET__:
 
     * features web page
-    * warnings / errors when you attempt to handroll some / all of the methods/fields that @Singular would have generated. We are most likely not going to support it.
     * The 'I use guava' switch in l.config
     * Disable auto-singular in l.config
     * Review if there are nay potentially breaking changes in the pipeline for builder BEFORE moving it out of experimental.

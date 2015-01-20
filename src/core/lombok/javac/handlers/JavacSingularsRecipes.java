@@ -25,6 +25,8 @@ import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,7 +40,9 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
@@ -136,6 +140,50 @@ public class JavacSingularsRecipes {
 	
 	public static abstract class JavacSingularizer {
 		public abstract LombokImmutableList<String> getSupportedTypes();
+		
+		/** Checks if any of the to-be-generated nodes (fields, methods) already exist. If so, errors on these (singulars don't support manually writing some of it, and returns true). */
+		public boolean checkForAlreadyExistingNodesAndGenerateError(JavacNode builderType, SingularData data) {
+			for (JavacNode child : builderType.down()) {
+				switch (child.getKind()) {
+				case FIELD: {
+					JCVariableDecl field = (JCVariableDecl) child.get();
+					Name name = field.name;
+					if (name == null) break;
+					if (getGeneratedBy(field) != null) continue;
+					for (Name fieldToBeGenerated : listFieldsToBeGenerated(builderType, data)) {
+						if (!fieldToBeGenerated.equals(name)) continue;
+						child.addError("Manually adding a field that @Singular @Builder would generate is not supported. If you want to manually manage the builder aspect for this field/parameter, don't use @Singular.");
+						return true;
+					}
+					break;
+				}
+				case METHOD: {
+					JCMethodDecl method = (JCMethodDecl) child.get();
+					Name name = method.name;
+					if (name == null) break;
+					if (getGeneratedBy(method) != null) continue;
+					for (Name methodToBeGenerated : listMethodsToBeGenerated(builderType, data)) {
+						if (!methodToBeGenerated.equals(name)) continue;
+						child.addError("Manually adding a method that @Singular @Builder would generate is not supported. If you want to manually manage the builder aspect for this field/parameter, don't use @Singular.");
+						return true;
+					}
+					break;
+				}}
+			}
+			
+			return false;
+		}
+		
+		public java.util.List<Name> listFieldsToBeGenerated(JavacNode builderType, SingularData data) {
+			return Collections.singletonList(data.pluralName);
+		}
+		
+		public java.util.List<Name> listMethodsToBeGenerated(JavacNode builderType, SingularData data) {
+			Name p = data.pluralName;
+			Name s = data.singularName;
+			if (p.equals(s)) return Collections.singletonList(p);
+			return Arrays.asList(p, s);
+		}
 		
 		public abstract java.util.List<JavacNode> generateFields(SingularData data, JavacNode builderType, JCTree source);
 		public abstract void generateMethods(SingularData data, JavacNode builderType, JCTree source, boolean fluent, boolean chain);
