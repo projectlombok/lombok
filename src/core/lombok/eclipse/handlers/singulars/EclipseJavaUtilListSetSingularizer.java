@@ -50,7 +50,27 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 
 abstract class EclipseJavaUtilListSetSingularizer extends EclipseJavaUtilSingularizer {
+	@Override public List<char[]> listFieldsToBeGenerated(SingularData data, EclipseNode builderType) {
+		if (useGuavaInstead(builderType)) {
+			return guavaListSetSingularizer.listFieldsToBeGenerated(data, builderType);
+		}
+		
+		return super.listFieldsToBeGenerated(data, builderType);
+	}
+	
+	@Override public List<char[]> listMethodsToBeGenerated(SingularData data, EclipseNode builderType) {
+		if (useGuavaInstead(builderType)) {
+			return guavaListSetSingularizer.listMethodsToBeGenerated(data, builderType);
+		}
+		
+		return super.listMethodsToBeGenerated(data, builderType);
+	}
+	
 	@Override public List<EclipseNode> generateFields(SingularData data, EclipseNode builderType) {
+		if (useGuavaInstead(builderType)) {
+			return guavaListSetSingularizer.generateFields(data, builderType);
+		}
+		
 		TypeReference type = new QualifiedTypeReference(JAVA_UTIL_ARRAYLIST, NULL_POSS);
 		type = addTypeArgs(1, false, builderType, type, data.getTypeArgs());
 		
@@ -64,6 +84,11 @@ abstract class EclipseJavaUtilListSetSingularizer extends EclipseJavaUtilSingula
 	}
 	
 	@Override public void generateMethods(SingularData data, EclipseNode builderType, boolean fluent, boolean chain) {
+		if (useGuavaInstead(builderType)) {
+			guavaListSetSingularizer.generateMethods(data, builderType, fluent, chain);
+			return;
+		}
+		
 		TypeReference returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		Statement returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
 		generateSingularMethod(returnType, returnStatement, data, builderType, fluent);

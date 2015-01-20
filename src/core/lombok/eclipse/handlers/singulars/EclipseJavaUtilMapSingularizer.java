@@ -61,7 +61,11 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		return LombokImmutableList.of("java.util.Map", "java.util.SortedMap", "java.util.NavigableMap");
 	}
 	
-	@Override public List<char[]> listFieldsToBeGenerated(SingularData data) {
+	@Override public List<char[]> listFieldsToBeGenerated(SingularData data, EclipseNode builderType) {
+		if (useGuavaInstead(builderType)) {
+			return guavaMapSingularizer.listFieldsToBeGenerated(data, builderType);
+		}
+		
 		char[] p = data.getPluralName();
 		int len = p.length;
 		char[] k = new char[len + 4];
@@ -81,7 +85,19 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		return Arrays.asList(k, v);
 	}
 	
-	@Override public java.util.List<EclipseNode> generateFields(SingularData data, EclipseNode builderType) {
+	@Override public List<char[]> listMethodsToBeGenerated(SingularData data, EclipseNode builderType) {
+		if (useGuavaInstead(builderType)) {
+			return guavaMapSingularizer.listFieldsToBeGenerated(data, builderType);
+		} else {
+			return super.listMethodsToBeGenerated(data, builderType);
+		}
+	}
+	
+	@Override public List<EclipseNode> generateFields(SingularData data, EclipseNode builderType) {
+		if (useGuavaInstead(builderType)) {
+			return guavaMapSingularizer.generateFields(data, builderType);
+		}
+		
 		char[] keyName = (new String(data.getPluralName()) + "$key").toCharArray();
 		char[] valueName = (new String(data.getPluralName()) + "$value").toCharArray();
 		FieldDeclaration buildKeyField; {
@@ -113,6 +129,11 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 	}
 	
 	@Override public void generateMethods(SingularData data, EclipseNode builderType, boolean fluent, boolean chain) {
+		if (useGuavaInstead(builderType)) {
+			guavaMapSingularizer.generateMethods(data, builderType, fluent, chain);
+			return;
+		}
+		
 		TypeReference returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		Statement returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
 		generateSingularMethod(returnType, returnStatement, data, builderType, fluent);
@@ -235,6 +256,11 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 	}
 	
 	@Override public void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName) {
+		if (useGuavaInstead(builderType)) {
+			guavaMapSingularizer.appendBuildCode(data, builderType, statements, targetVariableName);
+			return;
+		}
+		
 		if (data.getTargetFqn().equals("java.util.Map")) {
 			statements.addAll(createJavaUtilSetMapInitialCapacitySwitchStatements(data, builderType, true, "emptyMap", "singletonMap", "LinkedHashMap"));
 		} else {

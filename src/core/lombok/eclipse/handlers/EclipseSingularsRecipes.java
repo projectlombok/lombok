@@ -175,7 +175,7 @@ public class EclipseSingularsRecipes {
 					char[] name = fd.name;
 					if (name == null) continue;
 					if (getGeneratedBy(fd) != null) continue;
-					for (char[] fieldToBeGenerated : listFieldsToBeGenerated(data)) {
+					for (char[] fieldToBeGenerated : listFieldsToBeGenerated(data, builderType)) {
 						if (!Arrays.equals(name, fieldToBeGenerated)) continue;
 						child.addError("Manually adding a field that @Singular @Builder would generate is not supported. If you want to manually manage the builder aspect for this field/parameter, don't use @Singular.");
 						return true;
@@ -187,7 +187,7 @@ public class EclipseSingularsRecipes {
 					char[] name = method.selector;
 					if (name == null) continue;
 					if (getGeneratedBy(method) != null) continue;
-					for (char[] methodToBeGenerated : listMethodsToBeGenerated(data)) {
+					for (char[] methodToBeGenerated : listMethodsToBeGenerated(data, builderType)) {
 						if (!Arrays.equals(name, methodToBeGenerated)) continue;
 						child.addError("Manually adding a method that @Singular @Builder would generate is not supported. If you want to manually manage the builder aspect for this field/parameter, don't use @Singular.");
 						return true;
@@ -199,11 +199,11 @@ public class EclipseSingularsRecipes {
 			return false;
 		}
 		
-		public List<char[]> listFieldsToBeGenerated(SingularData data) {
+		public List<char[]> listFieldsToBeGenerated(SingularData data, EclipseNode builderType) {
 			return Collections.singletonList(data.pluralName);
 		}
 		
-		public List<char[]> listMethodsToBeGenerated(SingularData data) {
+		public List<char[]> listMethodsToBeGenerated(SingularData data, EclipseNode builderType) {
 			char[] p = data.pluralName;
 			char[] s = data.singularName;
 			if (Arrays.equals(p, s)) return Collections.singletonList(p);

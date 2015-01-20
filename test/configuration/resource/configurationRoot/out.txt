@@ -8,7 +8,7 @@ lombok.accessors.flagUsage = ERROR
 # BASE/d1/d11/lombok.config:
 #    3: lombok.accessors.flagUsage = ERROR
 
-# Generate setters that return 'this' instead of 'void'.
+# Generate setters that return 'this' instead of 'void' (default: false).
 lombok.accessors.chain = false
 # BASE/d1/lombok.config:
 #      <'lombok.accessors.chain' not mentioned>
@@ -24,7 +24,7 @@ lombok.accessors.prefix += f
 # BASE/d1/d11/lombok.config:
 #    4: lombok.accessors.prefix += f
 
-# Use this name for the generated logger fields (default: 'log')
+# Use this name for the generated logger fields (default: 'log').
 clear lombok.log.fieldName
 
 
@@ -43,7 +43,7 @@ lombok.accessors.flagUsage = ERROR
 # BASE/d1/d11/d111/lombok.config:
 #      <'lombok.accessors.flagUsage' not mentioned>
 
-# Generate setters that return 'this' instead of 'void'.
+# Generate setters that return 'this' instead of 'void' (default: false).
 clear lombok.accessors.chain
 # BASE/d1/lombok.config:
 #      <'lombok.accessors.chain' not mentioned>
@@ -66,7 +66,7 @@ lombok.accessors.prefix += m_
 # BASE/d1/d11/d111/lombok.config:
 #    2: lombok.accessors.prefix += m_
 
-# Use this name for the generated logger fields (default: 'log')
+# Use this name for the generated logger fields (default: 'log').
 clear lombok.log.fieldName
 
 
@@ -75,7 +75,7 @@ Configuration for 'BASE/d1/d12'.
 # Emit a warning or error if @Accessors is used.
 clear lombok.accessors.flagUsage
 
-# Generate setters that return 'this' instead of 'void'.
+# Generate setters that return 'this' instead of 'void' (default: false).
 lombok.accessors.chain = true
 # BASE/d1/lombok.config:
 #      <'lombok.accessors.chain' not mentioned>
@@ -86,5 +86,5 @@ lombok.accessors.chain = true
 # Strip this field prefix, like 'f' or 'm_', from the names of generated getters and setters.
 clear lombok.accessors.prefix
 
-# Use this name for the generated logger fields (default: 'log')
+# Use this name for the generated logger fields (default: 'log').
 clear lombok.log.fieldName

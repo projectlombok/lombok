@@ -46,7 +46,27 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
 abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularizer {
+	@Override public java.util.List<Name> listFieldsToBeGenerated(SingularData data, JavacNode builderType) {
+		if (useGuavaInstead(builderType)) {
+			return guavaListSetSingularizer.listFieldsToBeGenerated(data, builderType);
+		}
+		
+		return super.listFieldsToBeGenerated(data, builderType);
+	}
+	
+	@Override public java.util.List<Name> listMethodsToBeGenerated(SingularData data, JavacNode builderType) {
+		if (useGuavaInstead(builderType)) {
+			return guavaListSetSingularizer.listMethodsToBeGenerated(data, builderType);
+		}
+		
+		return super.listMethodsToBeGenerated(data, builderType);
+	}
+	
 	@Override public java.util.List<JavacNode> generateFields(SingularData data, JavacNode builderType, JCTree source) {
+		if (useGuavaInstead(builderType)) {
+			return guavaListSetSingularizer.generateFields(data, builderType, source);
+		}
+		
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		JCExpression type = JavacHandlerUtil.chainDots(builderType, "java", "util", "ArrayList");
 		type = addTypeArgs(1, false, builderType, type, data.getTypeArgs(), source);
@@ -56,6 +76,11 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 	}
 	
 	@Override public void generateMethods(SingularData data, JavacNode builderType, JCTree source, boolean fluent, boolean chain) {
+		if (useGuavaInstead(builderType)) {
+			guavaListSetSingularizer.generateMethods(data, builderType, source, fluent, chain);
+			return;
+		}
+		
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		Name thisName = builderType.toName("this");
 		

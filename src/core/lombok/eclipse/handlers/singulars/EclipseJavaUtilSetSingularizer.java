@@ -38,6 +38,11 @@ public class EclipseJavaUtilSetSingularizer extends EclipseJavaUtilListSetSingul
 	}
 	
 	@Override public void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName) {
+		if (useGuavaInstead(builderType)) {
+			guavaListSetSingularizer.appendBuildCode(data, builderType, statements, targetVariableName);
+			return;
+		}
+		
 		if (data.getTargetFqn().equals("java.util.Set")) {
 			statements.addAll(createJavaUtilSetMapInitialCapacitySwitchStatements(data, builderType, false, "emptySet", "singleton", "LinkedHashSet"));
 		} else {

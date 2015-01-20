@@ -32,12 +32,20 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
+import lombok.ConfigurationKeys;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
 import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
 
 abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
+	protected final JavacSingularizer guavaListSetSingularizer = new JavacGuavaSetListSingularizer();
+	protected final JavacSingularizer guavaMapSingularizer = new JavacGuavaMapSingularizer();
+	
+	protected boolean useGuavaInstead(JavacNode node) {
+		return Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.BUILDER_USE_GUAVA));
+	}
+	
 	protected List<JCStatement> createJavaUtilSetMapInitialCapacitySwitchStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, boolean mapMode, String emptyCollectionMethod, String singletonCollectionMethod, String targetType, JCTree source) {
 		List<JCExpression> jceBlank = List.nil();
 		ListBuffer<JCCase> cases = new ListBuffer<JCCase>();

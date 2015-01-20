@@ -150,7 +150,7 @@ public class JavacSingularsRecipes {
 					Name name = field.name;
 					if (name == null) break;
 					if (getGeneratedBy(field) != null) continue;
-					for (Name fieldToBeGenerated : listFieldsToBeGenerated(builderType, data)) {
+					for (Name fieldToBeGenerated : listFieldsToBeGenerated(data, builderType)) {
 						if (!fieldToBeGenerated.equals(name)) continue;
 						child.addError("Manually adding a field that @Singular @Builder would generate is not supported. If you want to manually manage the builder aspect for this field/parameter, don't use @Singular.");
 						return true;
@@ -162,7 +162,7 @@ public class JavacSingularsRecipes {
 					Name name = method.name;
 					if (name == null) break;
 					if (getGeneratedBy(method) != null) continue;
-					for (Name methodToBeGenerated : listMethodsToBeGenerated(builderType, data)) {
+					for (Name methodToBeGenerated : listMethodsToBeGenerated(data, builderType)) {
 						if (!methodToBeGenerated.equals(name)) continue;
 						child.addError("Manually adding a method that @Singular @Builder would generate is not supported. If you want to manually manage the builder aspect for this field/parameter, don't use @Singular.");
 						return true;
@@ -174,11 +174,11 @@ public class JavacSingularsRecipes {
 			return false;
 		}
 		
-		public java.util.List<Name> listFieldsToBeGenerated(JavacNode builderType, SingularData data) {
+		public java.util.List<Name> listFieldsToBeGenerated(SingularData data, JavacNode builderType) {
 			return Collections.singletonList(data.pluralName);
 		}
 		
-		public java.util.List<Name> listMethodsToBeGenerated(JavacNode builderType, SingularData data) {
+		public java.util.List<Name> listMethodsToBeGenerated(SingularData data, JavacNode builderType) {
 			Name p = data.pluralName;
 			Name s = data.singularName;
 			if (p.equals(s)) return Collections.singletonList(p);

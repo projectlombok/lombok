@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.core.GuavaTypeMap;
 import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
@@ -64,13 +65,11 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 	};
 	
 	protected String getSimpleTargetTypeName(SingularData data) {
-		String simpleTypeName = data.getTargetSimpleType();
-		if ("ImmutableCollection".equals(simpleTypeName)) return "ImmutableList";
-		return simpleTypeName;
+		return GuavaTypeMap.getGuavaTypeName(data.getTargetFqn());
 	}
 	
 	protected char[] getBuilderMethodName(SingularData data) {
-		String simpleTypeName = data.getTargetSimpleType();
+		String simpleTypeName = getSimpleTargetTypeName(data);
 		if ("ImmutableSortedSet".equals(simpleTypeName) || "ImmutableSortedMap".equals(simpleTypeName)) return "naturalOrder".toCharArray();
 		return "builder".toCharArray();
 	}

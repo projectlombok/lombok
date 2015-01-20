@@ -26,6 +26,7 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.Collections;
 
+import lombok.core.GuavaTypeMap;
 import lombok.core.handlers.HandlerUtil;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -48,13 +49,11 @@ import com.sun.tools.javac.util.Name;
 
 abstract class JavacGuavaSingularizer extends JavacSingularizer {
 	protected String getSimpleTargetTypeName(SingularData data) {
-		String simpleTypeName = data.getTargetSimpleType();
-		if ("ImmutableCollection".equals(simpleTypeName)) return "ImmutableList";
-		return simpleTypeName;
+		return GuavaTypeMap.getGuavaTypeName(data.getTargetFqn());
 	}
 	
 	protected String getBuilderMethodName(SingularData data) {
-		String simpleTypeName = data.getTargetSimpleType();
+		String simpleTypeName = getSimpleTargetTypeName(data);
 		if ("ImmutableSortedSet".equals(simpleTypeName) || "ImmutableSortedMap".equals(simpleTypeName)) return "naturalOrder";
 		return "builder";
 	}

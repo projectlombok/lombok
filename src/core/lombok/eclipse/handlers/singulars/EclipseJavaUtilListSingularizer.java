@@ -56,6 +56,11 @@ public class EclipseJavaUtilListSingularizer extends EclipseJavaUtilListSetSingu
 	}
 	
 	@Override public void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName) {
+		if (useGuavaInstead(builderType)) {
+			guavaListSetSingularizer.appendBuildCode(data, builderType, statements, targetVariableName);
+			return;
+		}
+		
 		List<Statement> switchContents = new ArrayList<Statement>();
 		
 		/* case 0: (empty) break; */ {

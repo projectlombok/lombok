@@ -41,6 +41,11 @@ public class JavacJavaUtilSetSingularizer extends JavacJavaUtilListSetSingulariz
 	}
 	
 	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName) {
+		if (useGuavaInstead(builderType)) {
+			guavaListSetSingularizer.appendBuildCode(data, builderType, source, statements, targetVariableName);
+			return;
+		}
+		
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		
 		if (data.getTargetFqn().equals("java.util.Set")) {

@@ -57,6 +57,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 
+import lombok.ConfigurationKeys;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.SingularData;
@@ -81,6 +82,13 @@ abstract class EclipseJavaUtilSingularizer extends EclipseSingularizer {
 	protected static final char[][] JAVA_UTIL_COLLECTIONS = {
 		{'j', 'a', 'v', 'a'}, {'u', 't', 'i', 'l'}, {'C', 'o', 'l', 'l', 'e', 'c', 't', 'i', 'o', 'n', 's'}
 	};
+	
+	protected final EclipseSingularizer guavaListSetSingularizer = new EclipseGuavaSetListSingularizer();
+	protected final EclipseSingularizer guavaMapSingularizer = new EclipseGuavaMapSingularizer();
+	
+	protected boolean useGuavaInstead(EclipseNode node) {
+		return Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.BUILDER_USE_GUAVA));
+	}
 	
 	protected List<Statement> createJavaUtilSetMapInitialCapacitySwitchStatements(SingularData data, EclipseNode builderType, boolean mapMode, String emptyCollectionMethod, String singletonCollectionMethod, String targetType) {
 		List<Statement> switchContents = new ArrayList<Statement>();
