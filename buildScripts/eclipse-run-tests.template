@@ -25,5 +25,5 @@
 	<stringAttribute key="org.eclipse.jdt.launching.JRE_CONTAINER" value="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.@JAVA_VERSION@"/>
 	<stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="lombok.RunAllTests"/>
 	<stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="lombok"/>
-	<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-javaagent:dist/lombok.jar -Dshadow.override.lombok=${project_loc:lombok}/bin:${project_loc:lombok}/lib/runtime/* -Ddelombok.bootclasspath=@RT_LOCATION@"/>
+	<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-javaagent:dist/lombok.jar -Ddelombok.bootclasspath=@RT_LOCATION@"/>
 </launchConfiguration>
