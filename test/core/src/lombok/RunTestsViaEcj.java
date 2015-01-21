@@ -112,8 +112,6 @@ public class RunTestsViaEcj extends AbstractRunTests {
 			}
 		};
 		
-		// TODO: Create a configuration based on confLines and set this up so that this compile run will use them.
-		
 		ecjCompiler.compile(new ICompilationUnit[] {sourceUnit});
 		
 		CompilationResult compilationResult = compilationResult_.get();
@@ -137,6 +135,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 				i.remove();
 			}
 		}
+		classpath.add("bin");
 		classpath.add("dist/lombok.jar");
 		classpath.add("lib/test/commons-logging-commons-logging.jar");
 		classpath.add("lib/test/org.slf4j-slf4j-api.jar");

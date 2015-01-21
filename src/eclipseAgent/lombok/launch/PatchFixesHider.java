@@ -74,9 +74,22 @@ final class PatchFixesHider {
 	
 	/** These utility methods are only used 'internally', but because of transplant methods, the class (and its methods) still have to be public! */
 	public static final class Util {
+		private static ClassLoader shadowLoader;
+		
 		public static Class<?> shadowLoadClass(String name) {
 			try {
-				return Class.forName(name, true, Main.createShadowClassLoader());
+				if (shadowLoader == null) {
+					try {
+						Class.forName("lombok.core.LombokNode");
+						// If we get here, then lombok is already available.
+						shadowLoader = Util.class.getClassLoader();
+					} catch (ClassNotFoundException e) {
+						// If we get here, it isn't, and we should use the shadowloader.
+						shadowLoader = Main.createShadowClassLoader();
+					}
+				}
+				
+				return Class.forName(name, true, shadowLoader);
 			} catch (ClassNotFoundException e) {
 				throw sneakyThrow(e);
 			}
