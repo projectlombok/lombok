@@ -215,10 +215,17 @@ public class JavacSingularsRecipes {
 		 */
 		protected JCExpression addTypeArgs(int count, boolean addExtends, JavacNode node, JCExpression type, List<JCExpression> typeArgs, JCTree source) {
 			JavacTreeMaker maker = node.getTreeMaker();
+			List<JCExpression> clonedAndFixedTypeArgs = createTypeArgs(count, addExtends, node, typeArgs, source);
+			
+			return maker.TypeApply(type, clonedAndFixedTypeArgs);
+		}
+		
+		protected List<JCExpression> createTypeArgs(int count, boolean addExtends, JavacNode node, List<JCExpression> typeArgs, JCTree source) {
+			JavacTreeMaker maker = node.getTreeMaker();
 			Context context = node.getContext();
 			
 			if (count < 0) throw new IllegalArgumentException("count is negative");
-			if (count == 0) return type;
+			if (count == 0) return List.nil();
 			ListBuffer<JCExpression> arguments = new ListBuffer<JCExpression>();
 			
 			if (typeArgs != null) for (JCExpression orig : typeArgs) {
@@ -255,7 +262,8 @@ public class JavacSingularsRecipes {
 					arguments.append(chainDots(node, "java", "lang", "Object"));
 				}
 			}
-			return maker.TypeApply(type, arguments.toList());
+			
+			return arguments.toList();
 		}
 		
 		/** Generates 'this.<em>name</em>.size()' as an expression; if nullGuard is true, it's this.name == null ? 0 : this.name.size(). */

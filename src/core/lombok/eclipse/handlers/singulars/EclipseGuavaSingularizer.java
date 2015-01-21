@@ -205,6 +205,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 			emptyInvoke = new MessageSend();
 			emptyInvoke.selector = new char[] {'o', 'f'};
 			emptyInvoke.receiver = new QualifiedNameReference(makeGuavaTypeName(getSimpleTargetTypeName(data), false), NULL_POSS, 0, 0);
+			emptyInvoke.typeArguments = createTypeArgs(mapMode ? 2 : 1, false, builderType, data.getTypeArgs());
 		}
 		
 		MessageSend invokeBuild; {

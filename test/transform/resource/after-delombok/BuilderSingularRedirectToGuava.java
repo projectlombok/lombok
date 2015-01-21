@@ -57,9 +57,9 @@ class BuilderSingularRedirectToGuava {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularRedirectToGuava build() {
-			java.util.Set<String> dangerMice = this.dangerMice == null ? com.google.common.collect.ImmutableSet.of() : this.dangerMice.build();
-			java.util.NavigableMap<Integer, Number> things = this.things == null ? com.google.common.collect.ImmutableSortedMap.of() : this.things.build();
-			java.util.Collection<Class<?>> doohickeys = this.doohickeys == null ? com.google.common.collect.ImmutableList.of() : this.doohickeys.build();
+			java.util.Set<String> dangerMice = this.dangerMice == null ? com.google.common.collect.ImmutableSet.<String>of() : this.dangerMice.build();
+			java.util.NavigableMap<Integer, Number> things = this.things == null ? com.google.common.collect.ImmutableSortedMap.<Integer, Number>of() : this.things.build();
+			java.util.Collection<Class<?>> doohickeys = this.doohickeys == null ? com.google.common.collect.ImmutableList.<Class<?>>of() : this.doohickeys.build();
 			return new BuilderSingularRedirectToGuava(dangerMice, things, doohickeys);
 		}
 		@java.lang.Override

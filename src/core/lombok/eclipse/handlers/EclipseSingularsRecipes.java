@@ -239,8 +239,24 @@ public class EclipseSingularsRecipes {
 		 * @param source The source annotation that is the root cause of this code generation.
 		 */
 		protected TypeReference addTypeArgs(int count, boolean addExtends, EclipseNode node, TypeReference type, List<TypeReference> typeArgs) {
+			TypeReference[] clonedAndFixedArgs = createTypeArgs(count, addExtends, node, typeArgs);
+			if (type instanceof SingleTypeReference) {
+				type = new ParameterizedSingleTypeReference(((SingleTypeReference) type).token, clonedAndFixedArgs, 0, 0L);
+			} else if (type instanceof QualifiedTypeReference) {
+				QualifiedTypeReference qtr = (QualifiedTypeReference) type;
+				TypeReference[][] trs = new TypeReference[qtr.tokens.length][];
+				trs[qtr.tokens.length - 1] = clonedAndFixedArgs;
+				type = new ParameterizedQualifiedTypeReference(((QualifiedTypeReference) type).tokens, trs, 0, NULL_POSS);
+			} else {
+				node.addError("Don't know how to clone-and-parameterize type: " + type);
+			}
+			
+			return type;
+		}
+		
+		protected TypeReference[] createTypeArgs(int count, boolean addExtends, EclipseNode node, List<TypeReference> typeArgs) {
 			if (count < 0) throw new IllegalArgumentException("count is negative");
-			if (count == 0) return type;
+			if (count == 0) return null;
 			List<TypeReference> arguments = new ArrayList<TypeReference>();
 			
 			if (typeArgs != null) for (TypeReference orig : typeArgs) {
@@ -280,18 +296,8 @@ public class EclipseSingularsRecipes {
 				}
 			}
 			
-			if (type instanceof SingleTypeReference) {
-				type = new ParameterizedSingleTypeReference(((SingleTypeReference) type).token, arguments.toArray(new TypeReference[arguments.size()]), 0, 0L);
-			} else if (type instanceof QualifiedTypeReference) {
-				QualifiedTypeReference qtr = (QualifiedTypeReference) type;
-				TypeReference[][] trs = new TypeReference[qtr.tokens.length][];
-				trs[qtr.tokens.length - 1] = arguments.toArray(new TypeReference[arguments.size()]);
-				type = new ParameterizedQualifiedTypeReference(((QualifiedTypeReference) type).tokens, trs, 0, NULL_POSS);
-			} else {
-				node.addError("Don't know how to clone-and-parameterize type: " + type);
-			}
-			
-			return type;
+			if (arguments.isEmpty()) return null;
+			return arguments.toArray(new TypeReference[arguments.size()]);
 		}
 		
 		private static final char[] SIZE_TEXT = new char[] {'s', 'i', 'z', 'e'};

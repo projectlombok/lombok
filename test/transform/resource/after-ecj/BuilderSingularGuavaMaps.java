@@ -47,9 +47,9 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularGuavaMaps<K, V> build() {
-      com.google.common.collect.ImmutableMap<K, V> battleaxes = ((this.battleaxes == null) ? com.google.common.collect.ImmutableMap.of() : this.battleaxes.build());
-      com.google.common.collect.ImmutableSortedMap<Integer, V> vertices = ((this.vertices == null) ? com.google.common.collect.ImmutableSortedMap.of() : this.vertices.build());
-      com.google.common.collect.ImmutableBiMap<java.lang.Object, java.lang.Object> rawMap = ((this.rawMap == null) ? com.google.common.collect.ImmutableBiMap.of() : this.rawMap.build());
+      com.google.common.collect.ImmutableMap<K, V> battleaxes = ((this.battleaxes == null) ? com.google.common.collect.ImmutableMap.<K, V>of() : this.battleaxes.build());
+      com.google.common.collect.ImmutableSortedMap<Integer, V> vertices = ((this.vertices == null) ? com.google.common.collect.ImmutableSortedMap.<Integer, V>of() : this.vertices.build());
+      com.google.common.collect.ImmutableBiMap<java.lang.Object, java.lang.Object> rawMap = ((this.rawMap == null) ? com.google.common.collect.ImmutableBiMap.<java.lang.Object, java.lang.Object>of() : this.rawMap.build());
       return new BuilderSingularGuavaMaps<K, V>(battleaxes, vertices, rawMap);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
