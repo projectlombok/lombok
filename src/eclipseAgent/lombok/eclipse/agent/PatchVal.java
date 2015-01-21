@@ -129,8 +129,13 @@ public class PatchVal {
 		if (!isVal(local.type, scope)) return false;
 		
 		StackTraceElement[] st = new Throwable().getStackTrace();
-		if (st.length > 2 && st[2].getClassName().contains("ForStatement")) return false;
-		if (st.length > 8 && st[8].getClassName().contains("ForStatement")) return false;
+		for (int i = 0; i < st.length - 2 && i < 10; i++) {
+			if (st[i].getClassName().equals("lombok.launch.PatchFixesHider$Val")) {
+				if (st[i + 1].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration") &&
+					st[i + 2].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.ForStatement")) return false;
+				break;
+			}
+		}
 		
 		Expression init = local.initialization;
 		if (init == null && Reflection.initCopyField != null) {
