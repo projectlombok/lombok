@@ -227,8 +227,11 @@ public class PatchExtensionMethod {
 					if (argument.resolvedType != null) argumentTypes.add(argument.resolvedType);
 					// TODO: Instead of just skipping nulls entirely, there is probably a 'unresolved type' placeholder. THAT is what we ought to be adding here!
 				}
+				Expression[] originalArgs = methodCall.arguments;
+				methodCall.arguments = arguments.toArray(new Expression[0]);
 				MethodBinding fixedBinding = scope.getMethod(extensionMethod.declaringClass, methodCall.selector, argumentTypes.toArray(new TypeBinding[0]), methodCall);
 				if (fixedBinding instanceof ProblemMethodBinding) {
+					methodCall.arguments = originalArgs;
 					if (fixedBinding.declaringClass != null) {
 						scope.problemReporter().invalidMethod(methodCall, fixedBinding);
 					}
@@ -247,7 +250,6 @@ public class PatchExtensionMethod {
 							arg.implicitConversion = TypeIds.UNBOXING | (id + (id << 4)); // magic see TypeIds
 						}
 					}
-					methodCall.arguments = arguments.toArray(new Expression[0]);
 					
 					methodCall.receiver = createNameRef(extensionMethod.declaringClass, methodCall);
 					methodCall.actualReceiverType = extensionMethod.declaringClass;
