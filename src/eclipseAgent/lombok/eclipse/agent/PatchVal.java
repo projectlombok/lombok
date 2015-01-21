@@ -128,7 +128,9 @@ public class PatchVal {
 		
 		if (!isVal(local.type, scope)) return false;
 		
-		if (new Throwable().getStackTrace()[2].getClassName().contains("ForStatement")) return false;
+		StackTraceElement[] st = new Throwable().getStackTrace();
+		if (st.length > 2 && st[2].getClassName().contains("ForStatement")) return false;
+		if (st.length > 8 && st[8].getClassName().contains("ForStatement")) return false;
 		
 		Expression init = local.initialization;
 		if (init == null && Reflection.initCopyField != null) {
