@@ -83,12 +83,11 @@
 				are very complicated in order to guarantee the following properties:
 				<ul>
 				<li>When invoking <code>build()</code>, the produced collection will be immutable.</li>
-				<li>Repeatedly invoking <code>build()</code> works fine and does not corrupt any of the collections already generated.</li>
-				<li>Calling one of the 'adder' methods after invoking <code>build()</code> does not modify any already generated objects, and, if <code>build()</code> is later called again, 
+				<li>Calling one of the 'adder' methods after invoking <code>build()</code> does not modify any already generated objects, and, if <code>build()</code> is later called again, another collection with all the elements added since the creation of the builder is generated.</li>
 				<li>The produced collection will be compacted to the smallest feasible format while remaining efficient.</li>
 				</ul>
 			</p><p>
-				<code>@Singular</code> can only be applied to collection types for which lombok has a recipe to produce the singular methods. Currently, the supported types are:
+				<code>@Singular</code> can only be applied to collection types known to lombok. Currently, the supported types are:
 				<ul>
 					<li><a href="http://docs.oracle.com/javase/8/docs/api/java/util/package-summary.html"><code>java.util</code></a>:<ul>
 						<li><code>Iterable</code>, <code>Collection</code>, and <code>List</code> (backed by a compacted unmodifiable <code>ArrayList</code> in the general case).</li>
@@ -98,17 +97,14 @@
 					<li><a href="https://github.com/google/guava">Guava</a>'s <code>com.google.common.collect</code>:<ul>
 						<li><code>ImmutableCollection</code> and <code>ImmutableList</code> (backed by the builder feature of <code>ImmutableList</code>).</li>
 						<li><code>ImmutableSet</code> and <code>ImmutableSortedSet</code> (backed by the builder feature of those types).</li>
-						<li><code>ImmutableMap</code>, <code>ImmutableBiMap</code>, and ImmutableSortedMap</code> (backed by the builder feature of those types).</li>
+						<li><code>ImmutableMap</code>, <code>ImmutableBiMap</code>, and <code>ImmutableSortedMap</code> (backed by the builder feature of those types).</li>
 					</ul></li>
 				</ul>
 			</p><p>
-				If your identifiers are written in common english, lombok assumes that any collection with <code>@Singular</code> on it is an english plural and will attempt to automatically
-				singularize it. If this is possible, the add-one method will use this name. For example, if your collection is called <code>statuses</code>, then the add-one method will automatically
-				be called <code>status</code>. If lombok cannot singularize your identifier, or it is ambiguous, lombok will generate an error and force you to explicitly specify the singular name.
-				To do this, just pass the singular name as string, like so: <code>@Singular("axis") List&lt;Line&gt; axes;</code>.
-			</p><p>
-				When using the <code>java.util</code> interfaces, lombok always uses <code>ArrayList</code> to store items added to the builder, because this is more efficient than adding them to a map or
-				set immediately, as lombok needs to compact and potentially duplicate the result.
+				If your identifiers are written in common english, lombok assumes that the name of any collection with <code>@Singular</code> on it is an english plural and will attempt to automatically
+				singularize that name. If this is possible, the add-one method will use this name. For example, if your collection is called <code>statuses</code>, then the add-one method will automatically
+				be called <code>status</code>. You can also specify the singular form of your identifier explictly by passing the singular form as argument to the annotation like so: <code>@Singular("axis") List&lt;Line&gt; axes;</code>.<br />
+				If lombok cannot singularize your identifier, or it is ambiguous, lombok will generate an error and force you to explicitly specify the singular name.
 			</p><p>
 				The snippet below does not show what lombok generates for a <code>@Singular</code> field/parameter because it is rather complicated.
 				You can view a snippet <a href="Singular-snippet.html">here</a>.
@@ -132,9 +128,9 @@
 			<dt><code>lombok.builder.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)</dt>
 			<dd>Lombok will flag any usage of <code>@Builder</code> as a warning or error if configured.</dd>
 			<dt><code>lombok.singular.useGuava</code> = [<code>true</code> | <code>false</code>] (default: false)</dt>
-			<dd>If <code>true</code>, lombok will use guava's <code>ImmutableX</code> builders and types to implement <code>java.util</code> collection interfaces, instead of creating
-			implementations based on <code>Collections.unmodifiableX</code>. You must ensure that guava is actually available on the classpath and buildpath if you use this setting.
-			Guava is used automatically if your field/parameter has one of the guava <code>ImmutableX</code> types.
+			<dd>If <code>true</code>, lombok will use guava's <code>ImmutableXxx</code> builders and types to implement <code>java.util</code> collection interfaces, instead of creating
+			implementations based on <code>Collections.unmodifiableXxx</code>. You must ensure that guava is actually available on the classpath and buildpath if you use this setting.
+			Guava is used automatically if your field/parameter has one of the guava <code>ImmutableXxx</code> types.
 			<dt><code>lombok.singular.auto</code> = [<code>true</code> | <code>false</code>] (default: true)</dt>
 			<dd>If <code>true</code> (which is the default), lombok automatically tries to singularize your identifier name by assuming that it is a common english plural.
 			If <code>false</code>, you must always explicitly specify the singular name, and lombok will generate an error if you don't (useful if you write your code in a language other than english).
@@ -146,9 +142,11 @@
 				@Singular support for <code>java.util.NavigableMap/Set</code> only works if you are compiling with JDK1.8 or higher.
 				</p><p>
 				You cannot manually provide some or all parts of a <code>@Singular</code> node; the code lombok generates is too complex for this. If you want to
-				manually control (part of) the builder nodes associated with some field or parameter, don't use @Singular and add everything you need manually.
+				manually control (part of) the builder code associated with some field or parameter, don't use <code>@Singular</code> and add everything you need manually.
 				</p><p>
 				The sorted collections (java.util: <code>SortedSet</code>, <code>NavigableSet</code>, <code>SortedMap</code>, <code>NavigableMap</code> and guava: <code>ImmutableSortedSet</code>, <code>ImmutableSortedMap</code>) require that the type argument of the collection has natural order (implements <code>java.util.Comparable</code>). There is no way to pass an explicit <code>Comparator</code> to use in the builder.
+				</p><p>
+				An <code>ArrayList</code> is used to store added elements as call methods of a <code>@Singular</code> marked field, if the target collection is from the <code>java.util</code> package, <em>even if the collection is a set or map</em>. Because lombok ensures that generated collections are compacted, a new backing instance of a set or map must be constructed anyway, and storing the data as an <code>ArrayList</code> during the build process is more efficient that storing it as a map or set. This behaviour is not externally visible, an an implementation detail of the current implementation of the <code>java.util</code> recipes for <code>@Singular @Builder</code>.
 				</p>
 			</div>
 		</div>

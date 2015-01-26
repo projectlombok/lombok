@@ -37,14 +37,18 @@ public class BuilderExample {
 			if (this.occupations == null) {
 				this.occupations = new java.util.ArrayList<String>();
 			}
+			
 			this.occupations.add(occupation);
+			return this;
 		}
 		
 		public BuilderExampleBuilder occupations(Collection<? extends String> occupations) {
 			if (this.occupations == null) {
 				this.occupations = new java.util.ArrayList<String>();
 			}
+
 			this.occupations.addAll(occupations);
+			return this;
 		}
 		
 		public BuilderExample build() {
