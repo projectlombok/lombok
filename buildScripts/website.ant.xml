@@ -149,10 +149,13 @@ such as converting the changelog into HTML, and creating javadoc.
 			<param name="transformationName" value="NonNull" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/Delegate" />
+			<param name="transformationName" value="Builder" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/Builder" />
+			<param name="transformationName" value="Singular-snippet" />
+		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="experimental/Delegate" />
 		</antcall>
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="experimental/Accessors" />

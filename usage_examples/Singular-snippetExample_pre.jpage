@@ -1,0 +1,14 @@
+import lombok.Builder;
+import lombok.Singular;
+import java.util.Collection;
+import java.util.Set;
+import java.util.SortedMap;
+import com.google.common.collect.ImmutableList;
+
+@Builder
+public class SingularExample<T extends Number> {
+	private @Singular Set<String> occupations;
+	private @Singular("axis") ImmutableList<String> axes;
+	private @Singular SortedMap<Integer, T> elves;
+	private @Singular Collection<?> minutiae;
+}

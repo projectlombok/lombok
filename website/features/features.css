@@ -92,7 +92,7 @@ dd {
 	white-space: nowrap;
 }
 
-.snippets {
+.snippets, .singleColumnSnippets {
 	margin-top: 0px;
 }
 

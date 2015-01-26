@@ -105,8 +105,6 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	}
 	
 	@Override public void handle(AnnotationValues<Builder> annotation, Annotation ast, EclipseNode annotationNode) {
-		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.BUILDER_FLAG_USAGE, "@Builder");
-		
 		long p = (long) ast.sourceStart << 32 | ast.sourceEnd;
 		
 		Builder builderInstance = annotation.getInstance();

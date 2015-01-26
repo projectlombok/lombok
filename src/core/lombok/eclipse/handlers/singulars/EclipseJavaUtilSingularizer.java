@@ -87,7 +87,7 @@ abstract class EclipseJavaUtilSingularizer extends EclipseSingularizer {
 	protected final EclipseSingularizer guavaMapSingularizer = new EclipseGuavaMapSingularizer();
 	
 	protected boolean useGuavaInstead(EclipseNode node) {
-		return Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.BUILDER_USE_GUAVA));
+		return Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.SINGULAR_USE_GUAVA));
 	}
 	
 	protected List<Statement> createJavaUtilSetMapInitialCapacitySwitchStatements(SingularData data, EclipseNode builderType, boolean mapMode, String emptyCollectionMethod, String singletonCollectionMethod, String targetType) {
