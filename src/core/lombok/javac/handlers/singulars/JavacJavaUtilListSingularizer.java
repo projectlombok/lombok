@@ -88,7 +88,7 @@ public class JavacJavaUtilListSingularizer extends JavacJavaUtilListSetSingulari
 		}
 		
 		JCStatement switchStat = maker.Switch(getSize(maker,  builderType, data.getPluralName(), true), cases.toList());
-		JCExpression localShadowerType = chainDots(builderType, "java", "util", "List");
+		JCExpression localShadowerType = chainDotsString(builderType, data.getTargetFqn());
 		localShadowerType = addTypeArgs(1, false, builderType, localShadowerType, data.getTypeArgs(), source);
 		JCStatement varDefStat = maker.VarDef(maker.Modifiers(0), data.getPluralName(), localShadowerType, null);
 		statements.append(varDefStat);
@@ -99,29 +99,22 @@ public class JavacJavaUtilListSingularizer extends JavacJavaUtilListSetSingulari
 		List<JCExpression> jceBlank = List.nil();
 		Name thisName = builderType.toName("this");
 		
-		JCStatement createStat; {
-			 // pluralName = new java.util.ArrayList<Generics>(this.pluralName.size());
+		JCExpression argToUnmodifiable; {
+			 // new java.util.ArrayList<Generics>(this.pluralName);
 			List<JCExpression> constructorArgs = List.nil();
-			constructorArgs = List.<JCExpression>of(getSize(maker, builderType, data.getPluralName(), false));
+			JCExpression thisDotPluralName = maker.Select(maker.Ident(thisName), data.getPluralName());
+			constructorArgs = List.<JCExpression>of(thisDotPluralName);
 			JCExpression targetTypeExpr = chainDots(builderType, "java", "util", "ArrayList");
 			targetTypeExpr = addTypeArgs(1, false, builderType, targetTypeExpr, data.getTypeArgs(), source);
-			JCExpression constructorCall = maker.NewClass(null, jceBlank, targetTypeExpr, constructorArgs, null);
-			createStat = maker.Exec(maker.Assign(maker.Ident(data.getPluralName()), constructorCall));
-		}
-		
-		JCStatement fillStat; {
-			// pluralname.addAll(this.pluralname);
-			JCExpression thisDotPluralName = maker.Select(maker.Ident(thisName), data.getPluralName());
-			fillStat = maker.Exec(maker.Apply(jceBlank, maker.Select(maker.Ident(data.getPluralName()), builderType.toName("addAll")), List.of(thisDotPluralName)));
+			argToUnmodifiable = maker.NewClass(null, jceBlank, targetTypeExpr, constructorArgs, null);
 		}
 		
 		JCStatement unmodifiableStat; {
-			// pluralname = Collections.unmodifiableInterfaceType(pluralname);
-			JCExpression arg = maker.Ident(data.getPluralName());
-			JCExpression invoke = maker.Apply(jceBlank, chainDots(builderType, "java", "util", "Collections", "unmodifiableList"), List.of(arg));
+			// pluralname = Collections.unmodifiableInterfaceType(-newlist-);
+			JCExpression invoke = maker.Apply(jceBlank, chainDots(builderType, "java", "util", "Collections", "unmodifiableList"), List.of(argToUnmodifiable));
 			unmodifiableStat = maker.Exec(maker.Assign(maker.Ident(data.getPluralName()), invoke));
 		}
 		
-		return List.of(createStat, fillStat, unmodifiableStat);
+		return List.of(unmodifiableStat);
 	}
 }

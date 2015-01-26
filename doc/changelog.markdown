@@ -10,9 +10,7 @@ Lombok Changelog
 
 * Builder __TODO TODO TODO TODO DO NOT SHIP YET__:
 
-    * features web page
-    * Check if the shadowed localvar names are properly typed; if compatible subtypes, we should cast these to avoid accidentally calling an overload.
-    * Review if there are nay potentially breaking changes in the pipeline for builder BEFORE moving it out of experimental.
+    * Review if there are any potentially breaking changes in the pipeline for builder BEFORE moving it out of experimental.
     * Make sure you cover the fact that builder has moved on from experimental in this issue, and on the features page /doc!
 
 * __TODO TODO TODO TODO DO NOT SHIP YET__: At least modify the deprecated warning of the constructorProperties thing that we're gonna kill it soon.

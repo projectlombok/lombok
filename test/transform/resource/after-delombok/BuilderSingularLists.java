@@ -66,11 +66,9 @@ class BuilderSingularLists<T> {
 				children = java.util.Collections.singletonList(this.children.get(0));
 				break;
 			default: 
-				children = new java.util.ArrayList<T>(this.children.size());
-				children.addAll(this.children);
-				children = java.util.Collections.unmodifiableList(children);
+				children = java.util.Collections.unmodifiableList(new java.util.ArrayList<T>(this.children));
 			}
-			java.util.List<Number> scarves;
+			java.util.Collection<Number> scarves;
 			switch (this.scarves == null ? 0 : this.scarves.size()) {
 			case 0: 
 				scarves = java.util.Collections.emptyList();
@@ -79,9 +77,7 @@ class BuilderSingularLists<T> {
 				scarves = java.util.Collections.singletonList(this.scarves.get(0));
 				break;
 			default: 
-				scarves = new java.util.ArrayList<Number>(this.scarves.size());
-				scarves.addAll(this.scarves);
-				scarves = java.util.Collections.unmodifiableList(scarves);
+				scarves = java.util.Collections.unmodifiableList(new java.util.ArrayList<Number>(this.scarves));
 			}
 			java.util.List<java.lang.Object> rawList;
 			switch (this.rawList == null ? 0 : this.rawList.size()) {
@@ -92,9 +88,7 @@ class BuilderSingularLists<T> {
 				rawList = java.util.Collections.singletonList(this.rawList.get(0));
 				break;
 			default: 
-				rawList = new java.util.ArrayList<java.lang.Object>(this.rawList.size());
-				rawList.addAll(this.rawList);
-				rawList = java.util.Collections.unmodifiableList(rawList);
+				rawList = java.util.Collections.unmodifiableList(new java.util.ArrayList<java.lang.Object>(this.rawList));
 			}
 			return new BuilderSingularLists<T>(children, scarves, rawList);
 		}

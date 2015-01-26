@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.core.LombokImmutableList;
+import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.SingularData;
@@ -90,34 +91,26 @@ public class EclipseJavaUtilListSingularizer extends EclipseJavaUtilListSetSingu
 			switchContents.add(new BreakStatement(null, 0, 0));
 		}
 		
-		/* default: Create with right size, then add all */ {
+		/* default: Create by passing builder field to constructor. */ {
 			switchContents.add(new CaseStatement(null, 0, 0));
 			
-			/* pluralName = new j.u.ArrayList<Generics>(this.pluralName.size()); */ {
-				Expression[] args = new Expression[] {getSize(builderType, data.getPluralName(), false)};
+			Expression argToUnmodifiable;
+			/* new j.u.ArrayList<Generics>(this.pluralName); */ {
+				FieldReference thisDotPluralName = new FieldReference(data.getPluralName(), 0L);
+				thisDotPluralName.receiver = new ThisReference(0, 0);
 				TypeReference targetTypeExpr = new QualifiedTypeReference(JAVA_UTIL_ARRAYLIST, NULL_POSS);
 				targetTypeExpr = addTypeArgs(1, false, builderType, targetTypeExpr, data.getTypeArgs());
 				AllocationExpression constructorCall = new AllocationExpression();
 				constructorCall.type = targetTypeExpr;
-				constructorCall.arguments = args;
-				switchContents.add(new Assignment(new SingleNameReference(data.getPluralName(), 0L), constructorCall, 0));
+				constructorCall.arguments = new Expression[] {thisDotPluralName};
+				argToUnmodifiable = constructorCall;
 			}
 			
-			/* pluralname.addAll(this.pluralname); */ {
-				FieldReference thisDotPluralName = new FieldReference(data.getPluralName(), 0L);
-				thisDotPluralName.receiver = new ThisReference(0, 0);
-				MessageSend addAllInvoke = new MessageSend();
-				addAllInvoke.receiver = new SingleNameReference(data.getPluralName(), 0L);
-				addAllInvoke.selector = new char[] { 'a', 'd', 'd', 'A', 'l', 'l' };
-				addAllInvoke.arguments = new Expression[] {thisDotPluralName};
-				switchContents.add(addAllInvoke);
-			}
-			
-			/* pluralname = Collections.unmodifiableList(pluralname); */ {
+			/* pluralname = Collections.unmodifiableList(-newlist-); */ {
 				MessageSend unmodInvoke = new MessageSend();
 				unmodInvoke.receiver = new QualifiedNameReference(JAVA_UTIL_COLLECTIONS, NULL_POSS, 0, 0);
 				unmodInvoke.selector = "unmodifiableList".toCharArray();
-				unmodInvoke.arguments = new Expression[] {new SingleNameReference(data.getPluralName(), 0L)};
+				unmodInvoke.arguments = new Expression[] {argToUnmodifiable};
 				switchContents.add(new Assignment(new SingleNameReference(data.getPluralName(), 0), unmodInvoke, 0));
 			}
 		}
@@ -126,7 +119,7 @@ public class EclipseJavaUtilListSingularizer extends EclipseJavaUtilListSetSingu
 		switchStat.statements = switchContents.toArray(new Statement[switchContents.size()]);
 		switchStat.expression = getSize(builderType, data.getPluralName(), true);
 		
-		TypeReference localShadowerType = new QualifiedTypeReference(JAVA_UTIL_LIST, NULL_POSS);
+		TypeReference localShadowerType = new QualifiedTypeReference(Eclipse.fromQualifiedName(data.getTargetFqn()), NULL_POSS);
 		localShadowerType = addTypeArgs(1, false, builderType, localShadowerType, data.getTypeArgs());
 		LocalDeclaration varDefStat = new LocalDeclaration(data.getPluralName(), 0, 0);
 		varDefStat.type = localShadowerType;

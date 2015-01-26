@@ -64,9 +64,7 @@ class BuilderSingularNoAutosingularize {
 				things = java.util.Collections.singletonList(this.things.get(0));
 				break;
 			default: 
-				things = new java.util.ArrayList<String>(this.things.size());
-				things.addAll(this.things);
-				things = java.util.Collections.unmodifiableList(things);
+				things = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(this.things));
 			}
 			java.util.List<String> widgets;
 			switch (this.widgets == null ? 0 : this.widgets.size()) {
@@ -77,9 +75,7 @@ class BuilderSingularNoAutosingularize {
 				widgets = java.util.Collections.singletonList(this.widgets.get(0));
 				break;
 			default: 
-				widgets = new java.util.ArrayList<String>(this.widgets.size());
-				widgets.addAll(this.widgets);
-				widgets = java.util.Collections.unmodifiableList(widgets);
+				widgets = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(this.widgets));
 			}
 			java.util.List<String> items;
 			switch (this.items == null ? 0 : this.items.size()) {
@@ -90,9 +86,7 @@ class BuilderSingularNoAutosingularize {
 				items = java.util.Collections.singletonList(this.items.get(0));
 				break;
 			default: 
-				items = new java.util.ArrayList<String>(this.items.size());
-				items.addAll(this.items);
-				items = java.util.Collections.unmodifiableList(items);
+				items = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(this.items));
 			}
 			return new BuilderSingularNoAutosingularize(things, widgets, items);
 		}

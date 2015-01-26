@@ -1,4 +1,4 @@
-//CONF: lombok.builder.useGuava = true
+//CONF: lombok.singular.useGuava = true
 import java.util.Set;
 import java.util.NavigableMap;
 import java.util.Collection;
