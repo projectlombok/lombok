@@ -1,6 +1,8 @@
 Lombok Changelog
 ----------------
 
+### v1.16.1 "Edge Guinea Pig"
+
 ### v1.16.0 "Candid Duck" (January 26th, 2015)
 * BUGFIX: `@ExtensionMethod` was broken in Eclipse using java 8. [Issue #742](https://code.google.com/p/projectlombok/issues/detail?id=742), [Issue #747](https://code.google.com/p/projectlombok/issues/detail?id=747)
 * BUGFIX: delombok: Using exotic characters in your source files would overzealously backslash-u escape them. Now, all characters are printed unescaped, assuming your chosen encoding can support them. Otherwise, they are escaped. [Issue #759](https://code.google.com/p/projectlombok/issues/detail?id=759)
