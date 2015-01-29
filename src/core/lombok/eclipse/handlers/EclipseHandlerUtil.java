@@ -411,19 +411,17 @@ public class EclipseHandlerUtil {
 	}
 	
 	public static Annotation[] copyAnnotations(ASTNode source, Annotation[]... allAnnotations) {
-		boolean allNull = true;
-		
-		List<Annotation> result = new ArrayList<Annotation>();
+		List<Annotation> result = null;
 		for (Annotation[] annotations : allAnnotations) {
 			if (annotations != null) {
-				allNull = false;
 				for (Annotation annotation : annotations) {
+					if (result == null) result = new ArrayList<Annotation>();
 					result.add(copyAnnotation(annotation, source));
 				}
 			}
 		}
-		if (allNull) return null;
-		return result.toArray(new Annotation[0]);
+		
+		return result == null ? null : result.toArray(new Annotation[0]);
 	}
 	
 	public static boolean hasAnnotation(Class<? extends java.lang.annotation.Annotation> type, EclipseNode node) {
