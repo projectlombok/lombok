@@ -101,6 +101,7 @@ public class InstallerGUI {
 	public InstallerGUI() {
 		appWindow = new JFrame(String.format("Project Lombok v%s - Installer", Version.getVersion()));
 		
+		appWindow.setLocationByPlatform(true);
 		appWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		appWindow.setResizable(false);
 		appWindow.setIconImage(Toolkit.getDefaultToolkit().getImage(Installer.class.getResource("lombokIcon.png")));
