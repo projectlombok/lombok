@@ -41,7 +41,7 @@
 			<code>lombok.jar</code> includes an ant task which can apply delombok for you. For example, to create javadoc for your project, your <code>build.xml</code> file
 			would look something like:
 			<div class="snippet"><pre>&lt;target name="javadoc"&gt;
-	&lt;taskdef classname="lombok.delombok.ant.DelombokTask" classpath="lib/lombok.jar" name="delombok" /&gt;
+	&lt;taskdef classname="lombok.delombok.ant.Tasks$Delombok" classpath="lib/lombok.jar" name="delombok" /&gt;
 	&lt;mkdir dir="build/src-delomboked" /&gt;
 	<strong>&lt;delombok verbose="true" encoding="UTF-8" to="build/src-delomboked" from="src"&gt;</strong>
 		<strong>&lt;format value="suppressWarnings:skip" /&gt;</strong>

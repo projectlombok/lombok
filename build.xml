@@ -215,6 +215,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 				<include name="lombok/experimental/**" />
 				<include name="lombok/extern/**" />
 				<include name="lombok/launch/**" />
+				<include name="lombok/delombok/ant/Tasks*" />
 			</fileset>
 			<mappedresources>
 				<fileset dir="build/lombok">
@@ -223,6 +224,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 					<exclude name="lombok/experimental/**" />
 					<exclude name="lombok/extern/**" />
 					<exclude name="lombok/launch/**" />
+					<exclude name="lombok/delombok/ant/Tasks*" />
 				</fileset>
 				<firstmatchmapper>
 					<globmapper from="*.class" to="*.SCL.lombok" />

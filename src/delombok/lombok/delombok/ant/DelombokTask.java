@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2009-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,142 +22,189 @@
 package lombok.delombok.ant;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.charset.UnsupportedCharsetException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
-import lombok.delombok.Delombok;
-import lombok.delombok.Delombok.InvalidFormatOptionException;
+import lombok.Lombok;
 
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Location;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
-import org.apache.tools.ant.types.resources.FileResource;
 
-public class DelombokTask extends Task {
-	private File fromDir, toDir;
-	private Path classpath;
-	private Path sourcepath;
-	private boolean verbose;
-	private String encoding;
-	private Path path;
-	private List<Format> formatOptions = new ArrayList<Format>();
-	
-	public void setClasspath(Path classpath) {
-		if (this.classpath == null) {
-			this.classpath = classpath;
-		} else {
-			this.classpath.append(classpath);
-		}
-	}
-	
-	public Path createClasspath() {
-		if (classpath == null) {
-			classpath = new Path(getProject());
-		}
-		return classpath.createPath();
-	}
-	
-	public void setClasspathRef(Reference r) {
-		createClasspath().setRefid(r);
-	}
-	
-	public void setSourcepath(Path sourcepath) {
-		if (this.sourcepath == null) {
-			this.sourcepath = sourcepath;
-		} else {
-			this.sourcepath.append(sourcepath);
-		}
-	}
-	
-	public Path createSourcepath() {
-		if (sourcepath == null) {
-			sourcepath = new Path(getProject());
-		}
-		return sourcepath.createPath();
-	}
-	
-	public void setSourcepathRef(Reference r) {
-		createSourcepath().setRefid(r);
-	}
-	
-	public void setFrom(File dir) {
-		this.fromDir = dir;
-	}
-	
-	public void setTo(File dir) {
-		this.toDir = dir;
-	}
-	
-	public void setVerbose(boolean verbose) {
-		this.verbose = verbose;
-	}
-	
-	public void setEncoding(String encoding) {
-		this.encoding = encoding;
-	}
-	
-	public void addFileset(FileSet set) {
-		if (path == null) path = new Path(getProject());
-		path.add(set);
-	}
-	
-	public void addFormat(Format format) {
-		formatOptions.add(format);
-	}
-	
-	@Override
-	public void execute() throws BuildException {
-		if (fromDir == null && path == null) throw new BuildException("Either 'from' attribute, or nested <fileset> tags are required.");
-		if (fromDir != null && path != null) throw new BuildException("You can't specify both 'from' attribute and nested filesets. You need one or the other.");
-		if (toDir == null) throw new BuildException("The to attribute is required.");
+@SuppressWarnings("unused") // we use reflection to transfer fields.
+class Tasks {
+	public static class Format {
+		private String value;
 		
-		Delombok delombok = new Delombok();
-		if (verbose) delombok.setVerbose(true);
-		try {
-			if (encoding != null) delombok.setCharset(encoding);
-		} catch (UnsupportedCharsetException e) {
-			throw new BuildException("Unknown charset: " + encoding, getLocation());
+		@Override public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((value == null) ? 0 : value.hashCode());
+			return result;
 		}
 		
-		if (classpath != null) delombok.setClasspath(classpath.toString());
-		if (sourcepath != null) delombok.setSourcepath(sourcepath.toString());
+		@Override public boolean equals(Object obj) {
+			if (this == obj) return true;
+			if (obj == null) return false;
+			if (getClass() != obj.getClass()) return false;
+			Format other = (Format) obj;
+			if (value == null) {
+				if (other.value != null) return false;
+			} else if (!value.equals(other.value)) return false;
+			return true;
+		}
 		
-		try {
-			List<String> fo = new ArrayList<String>();
-			for (Format f : formatOptions) {
-				String v = f.getValue();
-				if (v == null) throw new BuildException("'value' property required for <format>");
-				fo.add(v);
+		@Override public String toString() {
+			return "FormatOption [value=" + value + "]";
+		}
+		
+		public String getValue() {
+			return value;
+		}
+		
+		public void setValue(String value) {
+			this.value = value;
+		}
+	}
+	
+	public static class Delombok extends Task {
+		private File fromDir, toDir;
+		private Path classpath;
+		private Path sourcepath;
+		private boolean verbose;
+		private String encoding;
+		private Path path;
+		private List<Format> formatOptions = new ArrayList<Format>();
+		
+		public void setClasspath(Path classpath) {
+			if (this.classpath == null) {
+				this.classpath = classpath;
+			} else {
+				this.classpath.append(classpath);
 			}
-			delombok.setFormatPreferences(Delombok.formatOptionsToMap(fo));
-		} catch (InvalidFormatOptionException e) {
-			throw new BuildException(e.getMessage() + " Run java -jar lombok.jar --format-help for detailed format help.");
 		}
 		
-		delombok.setOutput(toDir);
-		try {
-			if (fromDir != null) delombok.addDirectory(fromDir);
-			else {
-				Iterator<?> it = path.iterator();
-				while (it.hasNext()) {
-					FileResource fileResource = (FileResource) it.next();
-					File baseDir = fileResource.getBaseDir();
-					if (baseDir == null) {
-						File file = fileResource.getFile();
-						delombok.addFile(file.getParentFile(), file.getName());
-					} else {
-						delombok.addFile(baseDir, fileResource.getName());
+		public Path createClasspath() {
+			if (classpath == null) {
+				classpath = new Path(getProject());
+			}
+			return classpath.createPath();
+		}
+		
+		public void setClasspathRef(Reference r) {
+			createClasspath().setRefid(r);
+		}
+		
+		public void setSourcepath(Path sourcepath) {
+			if (this.sourcepath == null) {
+				this.sourcepath = sourcepath;
+			} else {
+				this.sourcepath.append(sourcepath);
+			}
+		}
+		
+		public Path createSourcepath() {
+			if (sourcepath == null) {
+				sourcepath = new Path(getProject());
+			}
+			return sourcepath.createPath();
+		}
+		
+		public void setSourcepathRef(Reference r) {
+			createSourcepath().setRefid(r);
+		}
+		
+		public void setFrom(File dir) {
+			this.fromDir = dir;
+		}
+		
+		public void setTo(File dir) {
+			this.toDir = dir;
+		}
+		
+		public void setVerbose(boolean verbose) {
+			this.verbose = verbose;
+		}
+		
+		public void setEncoding(String encoding) {
+			this.encoding = encoding;
+		}
+		
+		public void addFileset(FileSet set) {
+			if (path == null) path = new Path(getProject());
+			path.add(set);
+		}
+		
+		public Format createFormat() {
+			return new Format();
+		}
+		
+		public void addFormat(Format format) {
+			formatOptions.add(format);
+		}
+		
+		private static ClassLoader shadowLoader;
+		
+		public static Class<?> shadowLoadClass(String name) {
+			try {
+				if (shadowLoader == null) {
+					try {
+						Class.forName("lombok.core.LombokNode");
+						// If we get here, then lombok is already available.
+						shadowLoader = Delombok.class.getClassLoader();
+					} catch (ClassNotFoundException e) {
+						// If we get here, it isn't, and we should use the shadowloader.
+						Class<?> launcherMain = Class.forName("lombok.launch.Main");
+						Method m = launcherMain.getDeclaredMethod("createShadowClassLoader");
+						m.setAccessible(true);
+						shadowLoader = (ClassLoader) m.invoke(null);
 					}
 				}
+				
+				return Class.forName(name, true, shadowLoader);
+			} catch (Exception e) {
+				throw Lombok.sneakyThrow(e);
 			}
-			delombok.delombok();
-		} catch (IOException e) {
-			throw new BuildException("I/O problem during delombok", e, getLocation());
+		}
+		
+		@Override
+		public void execute() throws BuildException {
+			Location loc = getLocation();
+			
+			try {
+				Object instance = shadowLoadClass("lombok.delombok.ant.DelombokTaskImpl").newInstance();
+				for(Field selfField : getClass().getDeclaredFields()) {
+					if (selfField.isSynthetic() || Modifier.isStatic(selfField.getModifiers())) continue;
+					Field otherField = instance.getClass().getDeclaredField(selfField.getName());
+					otherField.setAccessible(true);
+					selfField.setAccessible(true);
+					if (selfField.getName().equals("formatOptions")) {
+						List<String> rep = new ArrayList<String>();
+						for (Format f : formatOptions) {
+							if (f.getValue() == null) throw new BuildException("'value' property required for <format>");
+							rep.add(f.getValue());
+						}
+						otherField.set(instance, rep);
+					} else {
+						otherField.set(instance, selfField.get(this));
+					}
+				}
+				
+				Method m = instance.getClass().getMethod("execute", Location.class);
+				m.setAccessible(true);
+				m.invoke(instance, loc);
+			} catch (InvocationTargetException e) {
+				throw Lombok.sneakyThrow(e.getCause());
+			} catch (Exception e) {
+				throw Lombok.sneakyThrow(e);
+			}
 		}
 	}
 }
