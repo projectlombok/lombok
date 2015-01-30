@@ -137,7 +137,7 @@ abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 				// this.varName.size() < MAX_POWER_OF_2 ? 1 + this.varName.size() + (this.varName.size() - 3) / 3 : Integer.MAX_VALUE;
 				// lessThanCutOff = this.varName.size() < MAX_POWER_OF_2
 				JCExpression lessThanCutoff = maker.Binary(CTC_LESS_THAN, getSize(maker, builderType, varName, nullGuard), maker.Literal(CTC_INT, 0x40000000));
-				JCExpression integerMaxValue = chainDots(builderType, "java", "lang", "Integer", "MAX_VALUE");
+				JCExpression integerMaxValue = genJavaLangTypeRef(builderType, "Integer", "MAX_VALUE");
 				JCExpression sizeFormulaLeft = maker.Binary(CTC_PLUS, maker.Literal(CTC_INT, 1), getSize(maker, builderType, varName, nullGuard));
 				JCExpression sizeFormulaRightLeft = maker.Binary(CTC_MINUS, getSize(maker, builderType, varName, nullGuard), maker.Literal(CTC_INT, 3));
 				JCExpression sizeFormulaRight = maker.Binary(CTC_DIV, sizeFormulaRightLeft, maker.Literal(CTC_INT, 3));

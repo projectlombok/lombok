@@ -140,7 +140,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		if (mapMode) {
 			paramType = chainDots(builderType, "java", "util", "Map");
 		} else {
-			paramType = chainDots(builderType, "java", "lang", "Iterable");
+			paramType = genJavaLangTypeRef(builderType, "Iterable");
 		}
 		paramType = addTypeArgs(mapMode ? 2 : 1, true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);

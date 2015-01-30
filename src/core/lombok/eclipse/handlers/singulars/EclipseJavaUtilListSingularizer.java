@@ -53,7 +53,7 @@ import org.mangosdk.spi.ProviderFor;
 @ProviderFor(EclipseSingularizer.class)
 public class EclipseJavaUtilListSingularizer extends EclipseJavaUtilListSetSingularizer {
 	@Override public LombokImmutableList<String> getSupportedTypes() {
-		return LombokImmutableList.of("java.util.List", "java.util.Collection", "java.util.Iterable");
+		return LombokImmutableList.of("java.util.List", "java.util.Collection", "java.lang.Iterable");
 	}
 	
 	@Override public void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName) {

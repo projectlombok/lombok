@@ -43,7 +43,7 @@ import com.sun.tools.javac.util.Name;
 @ProviderFor(JavacSingularizer.class)
 public class JavacJavaUtilListSingularizer extends JavacJavaUtilListSetSingularizer {
 	@Override public LombokImmutableList<String> getSupportedTypes() {
-		return LombokImmutableList.of("java.util.List", "java.util.Collection", "java.util.Iterable");
+		return LombokImmutableList.of("java.util.List", "java.util.Collection", "java.lang.Iterable");
 	}
 	
 	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName) {
