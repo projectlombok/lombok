@@ -893,6 +893,7 @@ public class JavacHandlerUtil {
 		}
 		
 		addSuppressWarningsAll(method.mods, typeNode, method.pos, getGeneratedBy(method), typeNode.getContext());
+		addGenerated(method.mods, typeNode, method.pos, getGeneratedBy(method), typeNode.getContext());
 		type.defs = type.defs.append(method);
 		
 		typeNode.add(method, Kind.METHOD);
@@ -908,6 +909,7 @@ public class JavacHandlerUtil {
 	public static JavacNode injectType(JavacNode typeNode, final JCClassDecl type) {
 		JCClassDecl typeDecl = (JCClassDecl) typeNode.get();
 		addSuppressWarningsAll(type.mods, typeNode, type.pos, getGeneratedBy(type), typeNode.getContext());
+		addGenerated(type.mods, typeNode, type.pos, getGeneratedBy(type), typeNode.getContext());
 		typeDecl.defs = typeDecl.defs.append(type);
 		return typeNode.add(type, Kind.TYPE);
 	}
@@ -965,7 +967,27 @@ public class JavacHandlerUtil {
 		annotation.pos = pos;
 		mods.annotations = mods.annotations.append(annotation);
 	}
-	
+
+	public static void addGenerated(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context) {
+		if (!LombokOptionsFactory.getDelombokOptions(context).getFormatPreferences().generateGenerated()) return;
+		for (JCAnnotation ann : mods.annotations) {
+			JCTree annType = ann.getAnnotationType();
+			Name lastPart = null;
+			if (annType instanceof JCIdent) lastPart = ((JCIdent) annType).name;
+			else if (annType instanceof JCFieldAccess) lastPart = ((JCFieldAccess) annType).name;
+
+			if (lastPart != null && lastPart.contentEquals("Generated")) return;
+		}
+		JavacTreeMaker maker = node.getTreeMaker();
+		JCExpression generatedType = chainDots(node, "javax", "annotation", "Generated");
+		JCExpression lombokLiteral = maker.Literal("lombok");
+		generatedType.pos = pos;
+		lombokLiteral.pos = pos;
+		JCAnnotation annotation = recursiveSetGeneratedBy(maker.Annotation(generatedType, List.<JCExpression>of(lombokLiteral)), source, context);
+		annotation.pos = pos;
+		mods.annotations = mods.annotations.append(annotation);
+	}
+
 	private static List<JCTree> addAllButOne(List<JCTree> defs, int idx) {
 		ListBuffer<JCTree> out = new ListBuffer<JCTree>();
 		int i = 0;

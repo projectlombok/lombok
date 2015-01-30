@@ -33,6 +33,7 @@ public final class FormatPreferences {
 	private final boolean generateConstructorProperties;
 	private final boolean generateSuppressWarnings, danceAroundIdeChecks, generateDelombokComment, javaLangAsFqn;
 	final Map<String, String> rawMap;
+	private final boolean generateGenerated;
 	
 	static final Map<String, String> KEYS;
 	
@@ -46,6 +47,7 @@ public final class FormatPreferences {
 		keys.put("danceAroundIdeChecks", "Either 'generate' or 'skip'. generate means: Lombok will intentionally obfuscate some generated code to avoid IDE warnings. Default: 'generate'");
 		keys.put("generateDelombokComment", "Either 'generate' or 'skip'. generate means: Any file modified by delombok will have a comment stating this at the top. Default: 'generate'");
 		keys.put("javaLangAsFQN", "Either 'generate' or 'skip'. generate means: Any generated reference to java.lang classes are prefixed with `java.lang.`. Default: 'generate'");
+		keys.put("generated", "Either 'generate' or 'skip'. generate means: All lombok-generated methods get a @Generated(\"lombok\") annotation. Default: 'generate'");
 		KEYS = Collections.unmodifiableMap(keys);
 	}
 	
@@ -85,6 +87,7 @@ public final class FormatPreferences {
 		this.danceAroundIdeChecks = unrollBoolean(preferences, "danceAroundIdeChecks", "generate", "skip", true);
 		this.generateDelombokComment = unrollBoolean(preferences, "generateDelombokComment", "generate", "skip", true);
 		this.javaLangAsFqn = unrollBoolean(preferences, "javaLangAsFQN", "generate", "skip", true);
+		this.generateGenerated = unrollBoolean(preferences, "generated", "generate", "skip", true);
 	}
 	
 	private static boolean unrollBoolean(Map<String, String> preferences, String name, String trueStr, String falseStr, boolean defaultVal) {
@@ -130,5 +133,9 @@ public final class FormatPreferences {
 	
 	public boolean generateConstructorProperties() {
 		return generateConstructorProperties;
+	}
+
+	public boolean generateGenerated() {
+		return generateGenerated;
 	}
 }
