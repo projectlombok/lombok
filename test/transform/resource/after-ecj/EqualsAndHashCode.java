@@ -7,12 +7,12 @@
   EqualsAndHashCode() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof EqualsAndHashCode)))
         return false;
-    final @java.lang.SuppressWarnings("all") EqualsAndHashCode other = (EqualsAndHashCode) o;
+    final EqualsAndHashCode other = (EqualsAndHashCode) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((this.x != other.x))
@@ -31,10 +31,10 @@
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean canEqual(final java.lang.Object other) {
     return (other instanceof EqualsAndHashCode);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.x);
@@ -56,12 +56,12 @@ final @lombok.EqualsAndHashCode class EqualsAndHashCode2 {
   EqualsAndHashCode2() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof EqualsAndHashCode2)))
         return false;
-    final @java.lang.SuppressWarnings("all") EqualsAndHashCode2 other = (EqualsAndHashCode2) o;
+    final EqualsAndHashCode2 other = (EqualsAndHashCode2) o;
     if ((this.x != other.x))
         return false;
     if ((this.y != other.y))
@@ -74,7 +74,7 @@ final @lombok.EqualsAndHashCode class EqualsAndHashCode2 {
         return false;
     return true;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.x);
@@ -91,20 +91,20 @@ final @lombok.EqualsAndHashCode(callSuper = false) class EqualsAndHashCode3 exte
   EqualsAndHashCode3() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof EqualsAndHashCode3)))
         return false;
-    final @java.lang.SuppressWarnings("all") EqualsAndHashCode3 other = (EqualsAndHashCode3) o;
+    final EqualsAndHashCode3 other = (EqualsAndHashCode3) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean canEqual(final java.lang.Object other) {
     return (other instanceof EqualsAndHashCode3);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
     int result = 1;
     return result;
   }
@@ -113,22 +113,22 @@ final @lombok.EqualsAndHashCode(callSuper = false) class EqualsAndHashCode3 exte
   EqualsAndHashCode4() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof EqualsAndHashCode4)))
         return false;
-    final @java.lang.SuppressWarnings("all") EqualsAndHashCode4 other = (EqualsAndHashCode4) o;
+    final EqualsAndHashCode4 other = (EqualsAndHashCode4) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((! super.equals(o)))
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean canEqual(final java.lang.Object other) {
     return (other instanceof EqualsAndHashCode4);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + super.hashCode());

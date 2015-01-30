@@ -5,6 +5,7 @@ class ToStringOuter {
 		int y;
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public java.lang.String toString() {
 			return "ToStringOuter.ToStringInner(y=" + this.y + ")";
 		}
@@ -13,6 +14,7 @@ class ToStringOuter {
 		int y;
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public java.lang.String toString() {
 			return "ToStringOuter.ToStringStaticInner(y=" + this.y + ")";
 		}
@@ -22,6 +24,7 @@ class ToStringOuter {
 			String name;
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
+			@javax.annotation.Generated("lombok")
 			public java.lang.String toString() {
 				return "ToStringOuter.ToStringMiddle.ToStringMoreInner(name=" + this.name + ")";
 			}
@@ -30,6 +33,7 @@ class ToStringOuter {
 	
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
 	public java.lang.String toString() {
 		return "ToStringOuter(x=" + this.x + ", name=" + this.name + ")";
 	}

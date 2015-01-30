@@ -4,7 +4,7 @@
   WitherOnClass1(boolean isNone, boolean isPublic) {
     super();
   }
-  public @java.lang.SuppressWarnings("all") WitherOnClass1 withPublic(final boolean isPublic) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") WitherOnClass1 withPublic(final boolean isPublic) {
     return ((this.isPublic == isPublic) ? this : new WitherOnClass1(this.isNone, isPublic));
   }
 }
@@ -15,10 +15,10 @@
   WitherOnClass2(boolean isNone, boolean isProtected, boolean isPackage) {
     super();
   }
-  @java.lang.SuppressWarnings("all") WitherOnClass2 withPackage(final boolean isPackage) {
+  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") WitherOnClass2 withPackage(final boolean isPackage) {
     return ((this.isPackage == isPackage) ? this : new WitherOnClass2(this.isNone, this.isProtected, isPackage));
   }
-  protected @java.lang.SuppressWarnings("all") WitherOnClass2 withProtected(final boolean isProtected) {
+  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") WitherOnClass2 withProtected(final boolean isProtected) {
     return ((this.isProtected == isProtected) ? this : new WitherOnClass2(this.isNone, isProtected, this.isPackage));
   }
 }
@@ -28,10 +28,10 @@
   WitherOnClass3(String couldBeNull, String nonNull) {
     super();
   }
-  public @java.lang.SuppressWarnings("all") WitherOnClass3 withCouldBeNull(final String couldBeNull) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") WitherOnClass3 withCouldBeNull(final String couldBeNull) {
     return ((this.couldBeNull == couldBeNull) ? this : new WitherOnClass3(couldBeNull, this.nonNull));
   }
-  public @java.lang.SuppressWarnings("all") WitherOnClass3 withNonNull(final @lombok.NonNull String nonNull) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") WitherOnClass3 withNonNull(final @lombok.NonNull String nonNull) {
     if ((nonNull == null))
         {
           throw new java.lang.NullPointerException("nonNull");
@@ -46,7 +46,7 @@
     super();
     this.fY = y;
   }
-  public @java.lang.SuppressWarnings("all") WitherOnClass4 withY(final int fY) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") WitherOnClass4 withY(final int fY) {
     return ((this.fY == fY) ? this : new WitherOnClass4(fY));
   }
 }

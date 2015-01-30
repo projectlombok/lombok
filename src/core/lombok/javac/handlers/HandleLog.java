@@ -105,7 +105,7 @@ public class HandleLog {
 				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (useStatic ? Flags.STATIC : 0)),
 				typeNode.toName(logFieldName), loggerType, factoryMethodCall), source, typeNode.getContext());
 		
-		injectFieldSuppressWarnings(typeNode, fieldDecl);
+		injectFieldAndMarkGenerated(typeNode, fieldDecl);
 		return true;
 	}
 	

@@ -9,6 +9,7 @@ class EqualsAndHashCodeWithOnParam {
 	String b;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
 	public boolean equals(@Nullable final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeWithOnParam)) return false;
@@ -26,11 +27,13 @@ class EqualsAndHashCodeWithOnParam {
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
 	protected boolean canEqual(@Nullable final java.lang.Object other) {
 		return other instanceof EqualsAndHashCodeWithOnParam;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2013-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,11 +43,11 @@ public final class FormatPreferences {
 		keys.put("emptyLines", "Either 'indent' or 'blank'. indent means: Indent an empty line to the right level. Default: 'blank'");
 		keys.put("finalParams", "Either 'generate' or 'skip'. generate means: All lombok-generated methods set all parameters to final. Default: 'generate'");
 		keys.put("constructorProperties", "Either 'generate' or 'skip'. generate means: All lombok-generated constructors with 1 or more arguments get an @ConstructorProperties annotation. Default: 'generate'");
-		keys.put("suppressWarnings", "Either 'generate' or 'skip'. generate means: All lombok-generated methods get a @SuppressWarnings annotation. Default: 'generate'");
+		keys.put("suppressWarnings", "Either 'generate' or 'skip'. generate means: All lombok-generated methods, types, and fields get a @SuppressWarnings annotation. Default: 'generate'");
+		keys.put("generated", "Either 'generate' or 'skip'. generate means: All lombok-generated methods, types, and fields get a @Generated(\"lombok\") annotation. Default: 'generate'");
 		keys.put("danceAroundIdeChecks", "Either 'generate' or 'skip'. generate means: Lombok will intentionally obfuscate some generated code to avoid IDE warnings. Default: 'generate'");
 		keys.put("generateDelombokComment", "Either 'generate' or 'skip'. generate means: Any file modified by delombok will have a comment stating this at the top. Default: 'generate'");
 		keys.put("javaLangAsFQN", "Either 'generate' or 'skip'. generate means: Any generated reference to java.lang classes are prefixed with `java.lang.`. Default: 'generate'");
-		keys.put("generated", "Either 'generate' or 'skip'. generate means: All lombok-generated methods get a @Generated(\"lombok\") annotation. Default: 'generate'");
 		KEYS = Collections.unmodifiableMap(keys);
 	}
 	
@@ -84,10 +84,10 @@ public final class FormatPreferences {
 		this.generateFinalParams = unrollBoolean(preferences, "finalParams", "generate", "skip", true);
 		this.generateConstructorProperties = unrollBoolean(preferences, "constructorProperties", "generate", "skip", true);
 		this.generateSuppressWarnings = unrollBoolean(preferences, "suppressWarnings", "generate", "skip", true);
+		this.generateGenerated = unrollBoolean(preferences, "generated", "generate", "skip", true);
 		this.danceAroundIdeChecks = unrollBoolean(preferences, "danceAroundIdeChecks", "generate", "skip", true);
 		this.generateDelombokComment = unrollBoolean(preferences, "generateDelombokComment", "generate", "skip", true);
 		this.javaLangAsFqn = unrollBoolean(preferences, "javaLangAsFQN", "generate", "skip", true);
-		this.generateGenerated = unrollBoolean(preferences, "generated", "generate", "skip", true);
 	}
 	
 	private static boolean unrollBoolean(Map<String, String> preferences, String name, String trueStr, String falseStr, boolean defaultVal) {
@@ -115,6 +115,10 @@ public final class FormatPreferences {
 		return generateSuppressWarnings;
 	}
 	
+	public boolean generateGenerated() {
+		return generateGenerated;
+	}
+	
 	public boolean generateFinalParams() {
 		return generateFinalParams;
 	}
@@ -133,9 +137,5 @@ public final class FormatPreferences {
 	
 	public boolean generateConstructorProperties() {
 		return generateConstructorProperties;
-	}
-
-	public boolean generateGenerated() {
-		return generateGenerated;
 	}
 }

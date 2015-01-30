@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -561,7 +561,6 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 				}
 				NameReference oRef = new SingleNameReference(new char[] { 'o' }, p);
 				setGeneratedBy(oRef, source);
-				other.annotations = createSuppressWarningsAll(source, null);
 				other.initialization = makeCastExpression(oRef, targetType, source);
 				statements.add(other);
 			}

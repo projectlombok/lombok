@@ -6,56 +6,66 @@ class BuilderSingularLists<T> {
 	@SuppressWarnings("all")
 	private List rawList;
 	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
 	BuilderSingularLists(final List<T> children, final Collection<? extends Number> scarves, final List rawList) {
 		this.children = children;
 		this.scarves = scarves;
 		this.rawList = rawList;
 	}
 	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
 	public static class BuilderSingularListsBuilder<T> {
 		private java.util.ArrayList<T> children;
 		private java.util.ArrayList<Number> scarves;
 		private java.util.ArrayList<java.lang.Object> rawList;
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		BuilderSingularListsBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularListsBuilder<T> child(final T child) {
 			if (this.children == null) this.children = new java.util.ArrayList<T>();
 			this.children.add(child);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularListsBuilder<T> children(final java.util.Collection<? extends T> children) {
 			if (this.children == null) this.children = new java.util.ArrayList<T>();
 			this.children.addAll(children);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularListsBuilder<T> scarf(final Number scarf) {
 			if (this.scarves == null) this.scarves = new java.util.ArrayList<Number>();
 			this.scarves.add(scarf);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularListsBuilder<T> scarves(final java.util.Collection<? extends Number> scarves) {
 			if (this.scarves == null) this.scarves = new java.util.ArrayList<Number>();
 			this.scarves.addAll(scarves);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularListsBuilder<T> rawList(final java.lang.Object rawList) {
 			if (this.rawList == null) this.rawList = new java.util.ArrayList<java.lang.Object>();
 			this.rawList.add(rawList);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularListsBuilder<T> rawList(final java.util.Collection<?> rawList) {
 			if (this.rawList == null) this.rawList = new java.util.ArrayList<java.lang.Object>();
 			this.rawList.addAll(rawList);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularLists<T> build() {
 			java.util.List<T> children;
 			switch (this.children == null ? 0 : this.children.size()) {
@@ -94,11 +104,13 @@ class BuilderSingularLists<T> {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public java.lang.String toString() {
 			return "BuilderSingularLists.BuilderSingularListsBuilder(children=" + this.children + ", scarves=" + this.scarves + ", rawList=" + this.rawList + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
 	public static <T> BuilderSingularListsBuilder<T> builder() {
 		return new BuilderSingularListsBuilder<T>();
 	}

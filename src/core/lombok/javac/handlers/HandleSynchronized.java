@@ -99,7 +99,7 @@ public class HandleSynchronized extends JavacAnnotationHandler<Synchronized> {
 			JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
 					maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (isStatic ? Flags.STATIC : 0)),
 					methodNode.toName(lockName), objectType, newObjectArray), ast, context);
-			injectFieldSuppressWarnings(methodNode.up(), fieldDecl);
+			injectFieldAndMarkGenerated(methodNode.up(), fieldDecl);
 		}
 		
 		if (method.body == null) return;

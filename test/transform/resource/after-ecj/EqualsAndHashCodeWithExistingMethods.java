@@ -24,12 +24,12 @@ final @lombok.EqualsAndHashCode(callSuper = true) class EqualsAndHashCodeWithExi
   private boolean canEqual(Object other) {
     return true;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof EqualsAndHashCodeWithExistingMethods3)))
         return false;
-    final @java.lang.SuppressWarnings("all") EqualsAndHashCodeWithExistingMethods3 other = (EqualsAndHashCodeWithExistingMethods3) o;
+    final EqualsAndHashCodeWithExistingMethods3 other = (EqualsAndHashCodeWithExistingMethods3) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     if ((! super.equals(o)))
@@ -38,7 +38,7 @@ final @lombok.EqualsAndHashCode(callSuper = true) class EqualsAndHashCodeWithExi
         return false;
     return true;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + super.hashCode());

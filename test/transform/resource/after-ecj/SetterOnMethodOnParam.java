@@ -7,13 +7,13 @@ class SetterOnMethodOnParam {
   SetterOnMethodOnParam() {
     super();
   }
-  public @Deprecated @java.lang.SuppressWarnings("all") void setI(final int i) {
+  public @Deprecated @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setI(final int i) {
     this.i = i;
   }
-  public @java.lang.Deprecated @Test @java.lang.SuppressWarnings("all") void setJ(final @Test int j) {
+  public @java.lang.Deprecated @Test @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setJ(final @Test int j) {
     this.j = j;
   }
-  public @java.lang.Deprecated @Test @java.lang.SuppressWarnings("all") void setK(final @Test int k) {
+  public @java.lang.Deprecated @Test @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setK(final @Test int k) {
     this.k = k;
   }
 }

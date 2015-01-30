@@ -5,10 +5,14 @@ enum InjectField1 {
 	B;
 
 	@java.lang.SuppressWarnings("all")
+
+	@javax.annotation.Generated("lombok")
 	private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(InjectField1.class.getName());
 	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
 	private final java.lang.Object $lock = new java.lang.Object[0];
 	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
 	private static final java.lang.Object $LOCK = new java.lang.Object[0];
 
 	private static final String LOG_MESSAGE = "static initializer";
@@ -36,8 +40,10 @@ enum InjectField1 {
 
 class InjectField2 {
 	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
 	private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(InjectField2.class.getName());
 	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
 	private final java.lang.Object $lock = new java.lang.Object[0];
 
 	private static final String LOG_MESSAGE = "static initializer";
@@ -55,6 +61,7 @@ class InjectField2 {
 
 class InjectField3 {
 	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
 	private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(InjectField3.class.getName());
 	static {
 		log.log(Level.FINE, "static initializer");

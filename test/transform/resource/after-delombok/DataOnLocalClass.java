@@ -4,23 +4,28 @@ class DataOnLocalClass1 {
 			final int x;
 			String name;
 			@java.lang.SuppressWarnings("all")
+			@javax.annotation.Generated("lombok")
 			public Local(final int x) {
 				this.x = x;
 			}
 			@java.lang.SuppressWarnings("all")
+			@javax.annotation.Generated("lombok")
 			public int getX() {
 				return this.x;
 			}
 			@java.lang.SuppressWarnings("all")
+			@javax.annotation.Generated("lombok")
 			public String getName() {
 				return this.name;
 			}
 			@java.lang.SuppressWarnings("all")
+			@javax.annotation.Generated("lombok")
 			public void setName(final String name) {
 				this.name = name;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
+			@javax.annotation.Generated("lombok")
 			public boolean equals(final java.lang.Object o) {
 				if (o == this) return true;
 				if (!(o instanceof Local)) return false;
@@ -33,11 +38,13 @@ class DataOnLocalClass1 {
 				return true;
 			}
 			@java.lang.SuppressWarnings("all")
+			@javax.annotation.Generated("lombok")
 			protected boolean canEqual(final java.lang.Object other) {
 				return other instanceof Local;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
+			@javax.annotation.Generated("lombok")
 			public int hashCode() {
 				final int PRIME = 59;
 				int result = 1;
@@ -48,6 +55,7 @@ class DataOnLocalClass1 {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
+			@javax.annotation.Generated("lombok")
 			public java.lang.String toString() {
 				return "Local(x=" + this.getX() + ", name=" + this.getName() + ")";
 			}
@@ -62,6 +70,7 @@ class DataOnLocalClass2 {
 				@lombok.NonNull
 				String name;
 				@java.lang.SuppressWarnings("all")
+				@javax.annotation.Generated("lombok")
 				public InnerLocal(@lombok.NonNull final String name) {
 					if (name == null) {
 						throw new java.lang.NullPointerException("name");
@@ -70,10 +79,12 @@ class DataOnLocalClass2 {
 				}
 				@lombok.NonNull
 				@java.lang.SuppressWarnings("all")
+				@javax.annotation.Generated("lombok")
 				public String getName() {
 					return this.name;
 				}
 				@java.lang.SuppressWarnings("all")
+				@javax.annotation.Generated("lombok")
 				public void setName(@lombok.NonNull final String name) {
 					if (name == null) {
 						throw new java.lang.NullPointerException("name");
@@ -82,6 +93,7 @@ class DataOnLocalClass2 {
 				}
 				@java.lang.Override
 				@java.lang.SuppressWarnings("all")
+				@javax.annotation.Generated("lombok")
 				public boolean equals(final java.lang.Object o) {
 					if (o == this) return true;
 					if (!(o instanceof Local.InnerLocal)) return false;
@@ -93,11 +105,13 @@ class DataOnLocalClass2 {
 					return true;
 				}
 				@java.lang.SuppressWarnings("all")
+				@javax.annotation.Generated("lombok")
 				protected boolean canEqual(final java.lang.Object other) {
 					return other instanceof Local.InnerLocal;
 				}
 				@java.lang.Override
 				@java.lang.SuppressWarnings("all")
+				@javax.annotation.Generated("lombok")
 				public int hashCode() {
 					final int PRIME = 59;
 					int result = 1;
@@ -107,20 +121,24 @@ class DataOnLocalClass2 {
 				}
 				@java.lang.Override
 				@java.lang.SuppressWarnings("all")
+				@javax.annotation.Generated("lombok")
 				public java.lang.String toString() {
 					return "Local.InnerLocal(name=" + this.getName() + ")";
 				}
 			}
 			@java.lang.SuppressWarnings("all")
+			@javax.annotation.Generated("lombok")
 			public Local(final int x) {
 				this.x = x;
 			}
 			@java.lang.SuppressWarnings("all")
+			@javax.annotation.Generated("lombok")
 			public int getX() {
 				return this.x;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
+			@javax.annotation.Generated("lombok")
 			public boolean equals(final java.lang.Object o) {
 				if (o == this) return true;
 				if (!(o instanceof Local)) return false;
@@ -130,11 +148,13 @@ class DataOnLocalClass2 {
 				return true;
 			}
 			@java.lang.SuppressWarnings("all")
+			@javax.annotation.Generated("lombok")
 			protected boolean canEqual(final java.lang.Object other) {
 				return other instanceof Local;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
+			@javax.annotation.Generated("lombok")
 			public int hashCode() {
 				final int PRIME = 59;
 				int result = 1;
@@ -143,6 +163,7 @@ class DataOnLocalClass2 {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
+			@javax.annotation.Generated("lombok")
 			public java.lang.String toString() {
 				return "Local(x=" + this.getX() + ")";
 			}

@@ -7,6 +7,7 @@ class BuilderSingularMaps<K, V> {
 	private Map rawMap;
 	private Map<String, V> stringMap;
 	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
 	BuilderSingularMaps(final Map<K, V> women, final SortedMap<K, ? extends Number> men, final Map rawMap, final Map<String, V> stringMap) {
 		this.women = women;
 		this.men = men;
@@ -14,6 +15,7 @@ class BuilderSingularMaps<K, V> {
 		this.stringMap = stringMap;
 	}
 	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
 	public static class BuilderSingularMapsBuilder<K, V> {
 		private java.util.ArrayList<K> women$key;
 		private java.util.ArrayList<V> women$value;
@@ -24,9 +26,11 @@ class BuilderSingularMaps<K, V> {
 		private java.util.ArrayList<String> stringMap$key;
 		private java.util.ArrayList<V> stringMap$value;
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		BuilderSingularMapsBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularMapsBuilder<K, V> woman(final K womanKey, final V womanValue) {
 			if (this.women$key == null) {
 				this.women$key = new java.util.ArrayList<K>();
@@ -37,6 +41,7 @@ class BuilderSingularMaps<K, V> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularMapsBuilder<K, V> women(final java.util.Map<? extends K, ? extends V> women) {
 			if (this.women$key == null) {
 				this.women$key = new java.util.ArrayList<K>();
@@ -49,6 +54,7 @@ class BuilderSingularMaps<K, V> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularMapsBuilder<K, V> man(final K manKey, final Number manValue) {
 			if (this.men$key == null) {
 				this.men$key = new java.util.ArrayList<K>();
@@ -59,6 +65,7 @@ class BuilderSingularMaps<K, V> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularMapsBuilder<K, V> men(final java.util.Map<? extends K, ? extends Number> men) {
 			if (this.men$key == null) {
 				this.men$key = new java.util.ArrayList<K>();
@@ -71,6 +78,7 @@ class BuilderSingularMaps<K, V> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularMapsBuilder<K, V> rawMap(final java.lang.Object rawMapKey, final java.lang.Object rawMapValue) {
 			if (this.rawMap$key == null) {
 				this.rawMap$key = new java.util.ArrayList<java.lang.Object>();
@@ -81,6 +89,7 @@ class BuilderSingularMaps<K, V> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularMapsBuilder<K, V> rawMap(final java.util.Map<?, ?> rawMap) {
 			if (this.rawMap$key == null) {
 				this.rawMap$key = new java.util.ArrayList<java.lang.Object>();
@@ -93,6 +102,7 @@ class BuilderSingularMaps<K, V> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularMapsBuilder<K, V> stringMap(final String stringMapKey, final V stringMapValue) {
 			if (this.stringMap$key == null) {
 				this.stringMap$key = new java.util.ArrayList<String>();
@@ -103,6 +113,7 @@ class BuilderSingularMaps<K, V> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularMapsBuilder<K, V> stringMap(final java.util.Map<? extends String, ? extends V> stringMap) {
 			if (this.stringMap$key == null) {
 				this.stringMap$key = new java.util.ArrayList<String>();
@@ -115,6 +126,7 @@ class BuilderSingularMaps<K, V> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularMaps<K, V> build() {
 			java.util.Map<K, V> women;
 			switch (this.women$key == null ? 0 : this.women$key.size()) {
@@ -162,11 +174,13 @@ class BuilderSingularMaps<K, V> {
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public java.lang.String toString() {
 			return "BuilderSingularMaps.BuilderSingularMapsBuilder(women$key=" + this.women$key + ", women$value=" + this.women$value + ", men$key=" + this.men$key + ", men$value=" + this.men$value + ", rawMap$key=" + this.rawMap$key + ", rawMap$value=" + this.rawMap$value + ", stringMap$key=" + this.stringMap$key + ", stringMap$value=" + this.stringMap$value + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
 	public static <K, V> BuilderSingularMapsBuilder<K, V> builder() {
 		return new BuilderSingularMapsBuilder<K, V>();
 	}

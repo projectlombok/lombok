@@ -10,11 +10,15 @@ class Tolerate {
 	}
 	
 	@java.lang.SuppressWarnings("all")
+	
+	@javax.annotation.Generated("lombok")
 	public void setPattern(final Pattern pattern) {
 		this.pattern = pattern;
 	}
 	
 	@java.lang.SuppressWarnings("all")
+	
+	@javax.annotation.Generated("lombok")
 	public Pattern getPattern() {
 		return this.pattern;
 	}
@@ -32,17 +36,22 @@ class Tolerate2 {
 	}
 	
 	@java.lang.SuppressWarnings("all")
+	
+	@javax.annotation.Generated("lombok")
 	public Pattern getPattern() {
 		return this.pattern;
 	}
 	
 	@java.lang.SuppressWarnings("all")
+	
+	@javax.annotation.Generated("lombok")
 	public Tolerate2 withPattern(final Pattern pattern) {
 		return this.pattern == pattern ? this : new Tolerate2(pattern);
 	}
 	
 	@java.beans.ConstructorProperties({"pattern"})
 	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
 	public Tolerate2(final Pattern pattern) {
 		this.pattern = pattern;
 	}
