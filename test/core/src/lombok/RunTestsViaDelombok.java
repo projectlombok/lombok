@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.StringWriter;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.Map;
 
 import lombok.delombok.Delombok;
 import lombok.javac.CapturingDiagnosticListener;
@@ -34,10 +35,11 @@ public class RunTestsViaDelombok extends AbstractRunTests {
 	private Delombok delombok = new Delombok();
 	
 	@Override
-	public void transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file, String encoding) throws Throwable {
+	public void transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file, String encoding, Map<String, String> formatPreferences) throws Throwable {
 		delombok.setVerbose(false);
 		delombok.setForceProcess(true);
 		delombok.setCharset(encoding == null ? "UTF-8" : encoding);
+		delombok.setFormatPreferences(formatPreferences);
 		
 		delombok.setDiagnosticsListener(new CapturingDiagnosticListener(file, messages));
 		

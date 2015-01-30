@@ -29,7 +29,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,6 +47,7 @@ public class LombokTestSource {
 	private final File file;
 	private final String content;
 	private final LombokImmutableList<CompilerMessageMatcher> messages;
+	private final Map<String, String> formatPreferences;
 	private final boolean ignore;
 	private final boolean skipCompareContent;
 	private final int versionLowerLimit, versionUpperLimit;
@@ -81,6 +84,10 @@ public class LombokTestSource {
 	
 	public ConfigurationResolver getConfiguration() {
 		return configuration;
+	}
+	
+	public Map<String, String> getFormatPreferences() {
+		return formatPreferences;
 	}
 	
 	private static final Pattern VERSION_STYLE_1 = Pattern.compile("^(\\d+)$");
@@ -129,6 +136,7 @@ public class LombokTestSource {
 		boolean ignore = false;
 		boolean skipCompareContent = false;
 		String encoding = null;
+		Map<String, String> formats = new HashMap<String, String>();
 		
 		for (String directive : directives) {
 			directive = directive.trim();
@@ -165,6 +173,16 @@ public class LombokTestSource {
 				continue;
 			}
 			
+			if (lc.startsWith("format:")) {
+				String formatLine = directive.substring(7).trim();
+				int idx = formatLine.indexOf('=');
+				if (idx == -1) throw new IllegalArgumentException("To add a format directive, use: \"//FORMAT: javaLangAsFQN = skip\"");
+				String key = formatLine.substring(0, idx).trim();
+				String value = formatLine.substring(idx + 1).trim();
+				formats.put(key.toLowerCase(), value);
+				continue;
+			}
+			
 			Assert.fail("Directive line \"" + directive + "\" in '" + file.getAbsolutePath() + "' invalid: unrecognized directive.");
 			throw new RuntimeException();
 		}
@@ -180,6 +198,7 @@ public class LombokTestSource {
 		};
 		
 		this.configuration = new BubblingConfigurationResolver(Collections.singleton(StringConfigurationSource.forString(conf, reporter, file.getAbsolutePath())));
+		this.formatPreferences = Collections.unmodifiableMap(formats);
 	}
 	
 	public static LombokTestSource readDirectives(File file) throws IOException {

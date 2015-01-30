@@ -231,13 +231,13 @@ public class JavacSingularsRecipes {
 			if (typeArgs != null) for (JCExpression orig : typeArgs) {
 				if (!addExtends) {
 					if (orig.getKind() == Kind.UNBOUNDED_WILDCARD || orig.getKind() == Kind.SUPER_WILDCARD) {
-						arguments.append(chainDots(node, "java", "lang", "Object"));
+						arguments.append(genJavaLangTypeRef(node, "Object"));
 					} else if (orig.getKind() == Kind.EXTENDS_WILDCARD) {
 						JCExpression inner;
 						try {
 							inner = (JCExpression) ((JCWildcard) orig).inner;
 						} catch (Exception e) {
-							inner = chainDots(node, "java", "lang", "Object");
+							inner = genJavaLangTypeRef(node, "Object");
 						}
 						arguments.append(cloneType(maker, inner, source, context));
 					} else {
@@ -259,7 +259,7 @@ public class JavacSingularsRecipes {
 				if (addExtends) {
 					arguments.append(maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null));
 				} else {
-					arguments.append(chainDots(node, "java", "lang", "Object"));
+					arguments.append(genJavaLangTypeRef(node, "Object"));
 				}
 			}
 			
@@ -280,16 +280,16 @@ public class JavacSingularsRecipes {
 		
 		protected JCExpression cloneParamType(int index, JavacTreeMaker maker, List<JCExpression> typeArgs, JavacNode builderType, JCTree source) {
 			if (typeArgs == null || typeArgs.size() <= index) {
-				return chainDots(builderType, "java", "lang", "Object");
+				return genJavaLangTypeRef(builderType, "Object");
 			} else {
 				JCExpression originalType = typeArgs.get(index);
 				if (originalType.getKind() == Kind.UNBOUNDED_WILDCARD || originalType.getKind() == Kind.SUPER_WILDCARD) {
-					return chainDots(builderType, "java", "lang", "Object");
+					return genJavaLangTypeRef(builderType, "Object");
 				} else if (originalType.getKind() == Kind.EXTENDS_WILDCARD) {
 					try {
 						return cloneType(maker, (JCExpression) ((JCWildcard) originalType).inner, source, builderType.getContext());
 					} catch (Exception e) {
-						return chainDots(builderType, "java", "lang", "Object");
+						return genJavaLangTypeRef(builderType, "Object");
 					}
 				} else {
 					return cloneType(maker, originalType, source, builderType.getContext());

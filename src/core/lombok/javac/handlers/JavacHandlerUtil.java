@@ -956,6 +956,7 @@ public class JavacHandlerUtil {
 	}
 	
 	public static void addGenerated(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context) {
+		if (Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_GENERATED_ANNOTATIONS))) return;
 		if (!LombokOptionsFactory.getDelombokOptions(context).getFormatPreferences().generateGenerated()) return;
 		addAnnotation(mods, node, pos, source, context, "javax.annotation.Generated", node.getTreeMaker().Literal("lombok"));
 	}

@@ -1216,7 +1216,7 @@ public class EclipseHandlerUtil {
 	 */
 	public static EclipseNode injectFieldAndMarkGenerated(EclipseNode type, FieldDeclaration field) {
 		field.annotations = addSuppressWarningsAll(field, field.annotations);
-		field.annotations = addGenerated(field, field.annotations);
+		field.annotations = addGenerated(type, field, field.annotations);
 		return injectField(type, field);
 	}
 	
@@ -1262,7 +1262,7 @@ public class EclipseHandlerUtil {
 	 */
 	public static EclipseNode injectMethod(EclipseNode type, AbstractMethodDeclaration method) {
 		method.annotations = addSuppressWarningsAll(method, method.annotations);
-		method.annotations = addGenerated(method, method.annotations);
+		method.annotations = addGenerated(type, method, method.annotations);
 		TypeDeclaration parent = (TypeDeclaration) type.get();
 		
 		if (parent.methods == null) {
@@ -1305,7 +1305,7 @@ public class EclipseHandlerUtil {
 	 */
 	public static EclipseNode injectType(final EclipseNode typeNode, final TypeDeclaration type) {
 		type.annotations = addSuppressWarningsAll(type, type.annotations);
-		type.annotations = addGenerated(type, type.annotations);
+		type.annotations = addGenerated(typeNode, type, type.annotations);
 		TypeDeclaration parent = (TypeDeclaration) typeNode.get();
 		
 		if (parent.memberTypes == null) {
@@ -1328,7 +1328,8 @@ public class EclipseHandlerUtil {
 		return addAnnotation(source, originalAnnotationArray, TypeConstants.JAVA_LANG_SUPPRESSWARNINGS, new StringLiteral(ALL, 0, 0, 0));
 	}
 	
-	public static Annotation[] addGenerated(ASTNode source, Annotation[] originalAnnotationArray) {
+	public static Annotation[] addGenerated(EclipseNode node, ASTNode source, Annotation[] originalAnnotationArray) {
+		if (Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_GENERATED_ANNOTATIONS))) return originalAnnotationArray;
 		return addAnnotation(source, originalAnnotationArray, JAVAX_ANNOTATION_GENERATED, new StringLiteral(LOMBOK, 0, 0, 0));
 	}
 	

@@ -35,6 +35,15 @@ public class ConfigurationKeys {
 	
 	// ##### main package features #####
 	
+	// ----- global -----
+	
+	/**
+	 * lombok configuration: {@code lombok.addGeneratedAnnotation} = {@code true} | {@code false}.
+	 * 
+	 * If unset or {@code true}, lombok generates {@code @javax.annotation.Generated("lombok")} on all fields, methods, and types that are generated.
+	 */
+	public static final ConfigurationKey<Boolean> ADD_GENERATED_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addGeneratedAnnotation", "Generate @javax.annotation.Generated on all generated code (default: true).") {};
+	
 	// ----- *ArgsConstructor -----
 	
 	/**

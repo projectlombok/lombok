@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 
@@ -75,7 +76,7 @@ public abstract class AbstractRunTests {
 			}
 		});
 		
-		transformCode(messages, writer, file, sourceDirectives.getSpecifiedEncoding());
+		transformCode(messages, writer, file, sourceDirectives.getSpecifiedEncoding(), sourceDirectives.getFormatPreferences());
 		
 		compare(file.getName(), expected, writer.toString(), messages, params.printErrors(), sourceDirectives.isSkipCompareContent() || expected.isSkipCompareContent());
 		return true;
@@ -97,7 +98,7 @@ public abstract class AbstractRunTests {
 		return 8;
 	}
 	
-	protected abstract void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, String encoding) throws Throwable;
+	protected abstract void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, String encoding, Map<String, String> formatPreferences) throws Throwable;
 	
 	protected String readFile(File file) throws IOException {
 		BufferedReader reader;

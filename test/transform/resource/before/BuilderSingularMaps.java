@@ -1,3 +1,6 @@
+//FORMAT: javaLangAsFQN = skip
+//FORMAT: generated = skip
+//FORMAT: finalParams = skip
 import java.util.Map;
 import java.util.SortedMap;
 

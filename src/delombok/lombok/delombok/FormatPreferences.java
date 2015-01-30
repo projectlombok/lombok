@@ -138,4 +138,8 @@ public final class FormatPreferences {
 	public boolean generateConstructorProperties() {
 		return generateConstructorProperties;
 	}
+	
+	@Override public String toString() {
+		return rawMap.toString();
+	}
 }

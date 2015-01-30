@@ -6,13 +6,11 @@ class EqualsAndHashCodeWithSomeExistingMethods {
 		return 42;
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public EqualsAndHashCodeWithSomeExistingMethods() {
 		
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public java.lang.String toString() {
 		return "EqualsAndHashCodeWithSomeExistingMethods(x=" + this.x + ")";
 	}
@@ -23,12 +21,10 @@ class EqualsAndHashCodeWithSomeExistingMethods2 {
 		return false;
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public EqualsAndHashCodeWithSomeExistingMethods2() {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeWithSomeExistingMethods2)) return false;
@@ -39,7 +35,6 @@ class EqualsAndHashCodeWithSomeExistingMethods2 {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -48,7 +43,6 @@ class EqualsAndHashCodeWithSomeExistingMethods2 {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public java.lang.String toString() {
 		return "EqualsAndHashCodeWithSomeExistingMethods2(x=" + this.x + ")";
 	}
@@ -62,12 +56,10 @@ class EqualsAndHashCodeWithAllExistingMethods {
 		return false;
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public EqualsAndHashCodeWithAllExistingMethods() {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public java.lang.String toString() {
 		return "EqualsAndHashCodeWithAllExistingMethods(x=" + this.x + ")";
 	}
@@ -75,13 +67,11 @@ class EqualsAndHashCodeWithAllExistingMethods {
 class EqualsAndHashCodeWithNoExistingMethods {
 	int x;
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public EqualsAndHashCodeWithNoExistingMethods() {
 		
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeWithNoExistingMethods)) return false;
@@ -91,13 +81,11 @@ class EqualsAndHashCodeWithNoExistingMethods {
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof EqualsAndHashCodeWithNoExistingMethods;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -106,7 +94,6 @@ class EqualsAndHashCodeWithNoExistingMethods {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public java.lang.String toString() {
 		return "EqualsAndHashCodeWithNoExistingMethods(x=" + this.x + ")";
 	}
