@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,14 +28,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeMap;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Messager;
@@ -218,17 +217,7 @@ public class Processor extends AbstractProcessor {
 		}
 	}
 	
-	// DEBUG - We just blithely assume that there's always a sourcefile.getName() component, and that the performance impact of this is not relevant.
-	//       - ... but mostly the 'just blithely assume there's a sourcefile' part means we shouldn't just roll this out.
-	private final Map<JCCompilationUnit,Long> roots = new TreeMap<JCCompilationUnit, Long>(new Comparator<JCCompilationUnit>() {
-		@Override public int compare(JCCompilationUnit o1, JCCompilationUnit o2) {
-			if (o1 == o2) return 0;
-			
-			int c = o1.sourcefile.getName().compareTo(o2.sourcefile.getName());
-			if (c != 0) return c;
-			return System.identityHashCode(o1) < System.identityHashCode(o2) ? -1 : +1;
-		}
-	});
+	private final IdentityHashMap<JCCompilationUnit, Long> roots = new IdentityHashMap<JCCompilationUnit, Long>();
 	private long[] priorityLevels;
 	private Set<Long> priorityLevelsRequiringResolutionReset;
 	
