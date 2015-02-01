@@ -183,6 +183,8 @@ public class LombokTestSource {
 				continue;
 			}
 			
+			if (lc.startsWith("issue ")) continue;
+			
 			Assert.fail("Directive line \"" + directive + "\" in '" + file.getAbsolutePath() + "' invalid: unrecognized directive.");
 			throw new RuntimeException();
 		}

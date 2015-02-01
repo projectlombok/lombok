@@ -38,6 +38,7 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCNewClass;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.TreeCopier;
+import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 
 /**
@@ -53,7 +54,7 @@ import com.sun.tools.javac.util.List;
 public class TreeMirrorMaker extends TreeCopier<Void> {
 	private final IdentityHashMap<JCTree, JCTree> originalToCopy = new IdentityHashMap<JCTree, JCTree>();
 	
-	public TreeMirrorMaker(JavacTreeMaker maker) {
+	public TreeMirrorMaker(JavacTreeMaker maker, Context context) {
 		super(maker.getUnderlyingTreeMaker());
 	}
 	
@@ -93,12 +94,14 @@ public class TreeMirrorMaker extends TreeCopier<Void> {
 		return Collections.unmodifiableMap(originalToCopy);
 	}
 	
-	// Fix for NPE in HandleVal. See http://code.google.com/p/projectlombok/issues/detail?id=205
-	// Maybe this should be done elsewhere...
+	// Monitor issue 205 and issue 694 when making changes here.
 	@Override public JCTree visitVariable(VariableTree node, Void p) {
+		JCVariableDecl original = node instanceof JCVariableDecl ? (JCVariableDecl) node : null;
 		JCVariableDecl copy = (JCVariableDecl) super.visitVariable(node, p);
-		copy.sym = ((JCVariableDecl) node).sym;
-		if (copy.sym != null) copy.type = ((JCVariableDecl) node).type;
+		if (original == null) return copy;
+		
+		copy.sym = original.sym;
+		if (copy.sym != null) copy.type = original.type;
 		if (copy.type != null) {
 			boolean wipeSymAndType = copy.type.isErroneous();
 			if (!wipeSymAndType) {
