@@ -1215,7 +1215,7 @@ public class EclipseHandlerUtil {
 	 * The field carries the &#64;{@link SuppressWarnings}("all") annotation.
 	 */
 	public static EclipseNode injectFieldAndMarkGenerated(EclipseNode type, FieldDeclaration field) {
-		field.annotations = addSuppressWarningsAll(field, field.annotations);
+		field.annotations = addSuppressWarningsAll(type, field, field.annotations);
 		field.annotations = addGenerated(type, field, field.annotations);
 		return injectField(type, field);
 	}
@@ -1261,7 +1261,7 @@ public class EclipseHandlerUtil {
 	 * Inserts a method into an existing type. The type must represent a {@code TypeDeclaration}.
 	 */
 	public static EclipseNode injectMethod(EclipseNode type, AbstractMethodDeclaration method) {
-		method.annotations = addSuppressWarningsAll(method, method.annotations);
+		method.annotations = addSuppressWarningsAll(type, method, method.annotations);
 		method.annotations = addGenerated(type, method, method.annotations);
 		TypeDeclaration parent = (TypeDeclaration) type.get();
 		
@@ -1304,7 +1304,7 @@ public class EclipseHandlerUtil {
 	 * @param type New type (class, interface, etc) to inject.
 	 */
 	public static EclipseNode injectType(final EclipseNode typeNode, final TypeDeclaration type) {
-		type.annotations = addSuppressWarningsAll(type, type.annotations);
+		type.annotations = addSuppressWarningsAll(typeNode, type, type.annotations);
 		type.annotations = addGenerated(typeNode, type, type.annotations);
 		TypeDeclaration parent = (TypeDeclaration) typeNode.get();
 		
@@ -1321,11 +1321,21 @@ public class EclipseHandlerUtil {
 	}
 	
 	private static final char[] ALL = "all".toCharArray();
+	private static final char[] JUSTIFICATION = "justification".toCharArray();
+	private static final char[] GENERATED_CODE = "generated code".toCharArray();
 	private static final char[] LOMBOK = "lombok".toCharArray();
 	private static final char[][] JAVAX_ANNOTATION_GENERATED = Eclipse.fromQualifiedName("javax.annotation.Generated");
+	private static final char[][] EDU_UMD_CS_FINDBUGS_ANNOTATIONS_SUPPRESSFBWARNINGS = Eclipse.fromQualifiedName("edu.umd.cs.findbugs.annotations.SuppressFBWarnings");
 	
-	public static Annotation[] addSuppressWarningsAll(ASTNode source, Annotation[] originalAnnotationArray) {
-		return addAnnotation(source, originalAnnotationArray, TypeConstants.JAVA_LANG_SUPPRESSWARNINGS, new StringLiteral(ALL, 0, 0, 0));
+	public static Annotation[] addSuppressWarningsAll(EclipseNode node, ASTNode source, Annotation[] originalAnnotationArray) {
+		Annotation[] anns = addAnnotation(source, originalAnnotationArray, TypeConstants.JAVA_LANG_SUPPRESSWARNINGS, new StringLiteral(ALL, 0, 0, 0));
+		
+		if (Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_FINDBUGS_SUPPRESSWARNINGS_ANNOTATIONS))) {
+			MemberValuePair mvp = new MemberValuePair(JUSTIFICATION, 0, 0, new StringLiteral(GENERATED_CODE, 0, 0, 0));
+			anns = addAnnotation(source, anns, EDU_UMD_CS_FINDBUGS_ANNOTATIONS_SUPPRESSFBWARNINGS, mvp);
+		}
+		
+		return anns;
 	}
 	
 	public static Annotation[] addGenerated(EclipseNode node, ASTNode source, Annotation[] originalAnnotationArray) {
@@ -1333,7 +1343,7 @@ public class EclipseHandlerUtil {
 		return addAnnotation(source, originalAnnotationArray, JAVAX_ANNOTATION_GENERATED, new StringLiteral(LOMBOK, 0, 0, 0));
 	}
 	
-	private static Annotation[] addAnnotation(ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn, Expression arg) {
+	private static Annotation[] addAnnotation(ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn, ASTNode arg) {
 		char[] simpleName = annotationTypeFqn[annotationTypeFqn.length - 1];
 		
 		if (originalAnnotationArray != null) for (Annotation ann : originalAnnotationArray) {
@@ -1353,15 +1363,32 @@ public class EclipseHandlerUtil {
 		long p = (long)pS << 32 | pE;
 		long[] poss = new long[annotationTypeFqn.length];
 		Arrays.fill(poss, p);
-		QualifiedTypeReference suppressWarningsType = new QualifiedTypeReference(annotationTypeFqn, poss);
-		setGeneratedBy(suppressWarningsType, source);
-		SingleMemberAnnotation ann = new SingleMemberAnnotation(suppressWarningsType, pS);
-		ann.declarationSourceEnd = pE;
-		if (arg != null) {
+		QualifiedTypeReference qualifiedType = new QualifiedTypeReference(annotationTypeFqn, poss);
+		setGeneratedBy(qualifiedType, source);
+		Annotation ann;
+		if (arg instanceof Expression) {
+			SingleMemberAnnotation sma = new SingleMemberAnnotation(qualifiedType, pS);
+			sma.declarationSourceEnd = pE;
 			arg.sourceStart = pS;
 			arg.sourceEnd = pE;
-			ann.memberValue = arg;
-			setGeneratedBy(ann.memberValue, source);
+			sma.memberValue = (Expression) arg;
+			setGeneratedBy(sma.memberValue, source);
+			ann = sma;
+		} else if (arg instanceof MemberValuePair) {
+			NormalAnnotation na = new NormalAnnotation(qualifiedType, pS);
+			na.declarationSourceEnd = pE;
+			arg.sourceStart = pS;
+			arg.sourceEnd = pE;
+			na.memberValuePairs = new MemberValuePair[] {(MemberValuePair) arg};
+			setGeneratedBy(na.memberValuePairs[0], source);
+			setGeneratedBy(na.memberValuePairs[0].value, source);
+			na.memberValuePairs[0].value.sourceStart = pS;
+			na.memberValuePairs[0].value.sourceEnd = pE;
+			ann = na;
+		} else {
+			MarkerAnnotation ma = new MarkerAnnotation(qualifiedType, pS);
+			ma.declarationSourceEnd = pE;
+			ann = ma;
 		}
 		setGeneratedBy(ann, source);
 		if (originalAnnotationArray == null) return new Annotation[] { ann };

@@ -44,6 +44,15 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<Boolean> ADD_GENERATED_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addGeneratedAnnotation", "Generate @javax.annotation.Generated on all generated code (default: true).") {};
 	
+	/**
+	 * lombok configuration: {@code lombok.extern.findbugs.addSuppressFBWarnings} = {@code true} | {@code false}.
+	 * 
+	 * If {@code true}, lombok generates {@code edu.umd.cs.findbugs.annotations.SuppressFBWarnings} on all fields, methods, and types that are generated.
+	 * 
+	 * NB: If you enable this option, findbugs must be on the source or classpath, or you'll get errors that the type {@code SuppressFBWarnings} cannot be found.
+	 */
+	public static final ConfigurationKey<Boolean> ADD_FINDBUGS_SUPPRESSWARNINGS_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.extern.findbugs.addSuppressFBWarnings", "Generate @edu.umd.cs.findbugs.annotations.SuppressFBWArnings on all generated code (default: false).") {};
+	
 	// ----- *ArgsConstructor -----
 	
 	/**

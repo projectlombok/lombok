@@ -953,12 +953,20 @@ public class JavacHandlerUtil {
 	public static void addSuppressWarningsAll(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context) {
 		if (!LombokOptionsFactory.getDelombokOptions(context).getFormatPreferences().generateSuppressWarnings()) return;
 		addAnnotation(mods, node, pos, source, context, "java.lang.SuppressWarnings", node.getTreeMaker().Literal("all"));
+		
+		if (Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_FINDBUGS_SUPPRESSWARNINGS_ANNOTATIONS))) {
+			JavacTreeMaker maker = node.getTreeMaker();
+			JCExpression arg = maker.Assign(maker.Ident(node.toName("justification")), maker.Literal("generated code"));
+			addAnnotation(mods, node, pos, source, context, "edu.umd.cs.findbugs.annotations.SuppressFBWarnings", arg);
+		}
 	}
 	
 	public static void addGenerated(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context) {
-		if (Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_GENERATED_ANNOTATIONS))) return;
 		if (!LombokOptionsFactory.getDelombokOptions(context).getFormatPreferences().generateGenerated()) return;
-		addAnnotation(mods, node, pos, source, context, "javax.annotation.Generated", node.getTreeMaker().Literal("lombok"));
+		
+		if (!Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_GENERATED_ANNOTATIONS))) {
+			addAnnotation(mods, node, pos, source, context, "javax.annotation.Generated", node.getTreeMaker().Literal("lombok"));
+		}
 	}
 	
 	private static void addAnnotation(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context, String annotationTypeFqn, JCExpression arg) {
@@ -981,7 +989,13 @@ public class JavacHandlerUtil {
 		JavacTreeMaker maker = node.getTreeMaker();
 		JCExpression annType = isJavaLangBased ? genJavaLangTypeRef(node, simpleName) : chainDotsString(node, annotationTypeFqn);
 		annType.pos = pos;
-		if (arg != null) arg.pos = pos;
+		if (arg != null) {
+			arg.pos = pos;
+			if (arg instanceof JCAssign) {
+				((JCAssign) arg).lhs.pos = pos;
+				((JCAssign) arg).rhs.pos = pos;
+			}
+		}
 		List<JCExpression> argList = arg != null ? List.of(arg) : List.<JCExpression>nil();
 		JCAnnotation annotation = recursiveSetGeneratedBy(maker.Annotation(annType, argList), source, context);
 		annotation.pos = pos;

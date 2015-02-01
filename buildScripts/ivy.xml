@@ -25,7 +25,7 @@
 		<dependency org="org.slf4j" name="slf4j-api" rev="1.6.1" conf="test->default; contrib->sources"/>
 		<dependency org="org.slf4j" name="slf4j-ext" rev="1.6.1" conf="test->default; contrib->sources"/>
 		<dependency org="com.google.guava" name="guava" rev="18.0" conf="test->default; contrib->sources" />
-		<dependency org="com.googlecode.jarjar" name="jarjar" rev="1.1" conf="buildBase->default" />
+		<dependency org="com.google.code.findbugs" name="findbugs" rev="3.0.0" conf="test->master" />
 		
 		<dependency org="org.apache.ant" name="ant" rev="1.8.1" conf="buildBase->default; contrib->sources" />
 		<dependency org="projectlombok.org" name="spi" rev="0.2.7" conf="buildBase->build" />

@@ -143,6 +143,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		classpath.add("lib/test/log4j-log4j.jar");
 		classpath.add("lib/test/org.apache.logging.log4j-log4j-api.jar");
 		classpath.add("lib/test/com.google.guava-guava.jar");
+		classpath.add("lib/test/com.google.code.findbugs-findbugs.jar");
 		return new FileSystem(classpath.toArray(new String[0]), new String[] {file.getAbsolutePath()}, "UTF-8");
 	}
 }
