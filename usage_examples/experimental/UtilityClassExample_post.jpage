@@ -1,0 +1,11 @@
+public final class UtilityClassExample {
+	private static final int CONSTANT = 5;
+
+	private UtilityClassExample() {
+		throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
+	}
+
+	public static void addSomething(int in) {
+		return in + CONSTANT;
+	}
+}

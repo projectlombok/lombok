@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 The Project Lombok Authors.
+ * Copyright (C) 2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.core.handlers.HandlerUtil.handleExperimentalFlagUsage;
+import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
@@ -48,70 +48,81 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
 /**
- * Handles the {@code lombok.experimental.UtilityClass} annotation for javac.
+ * Handles the {@code @UtilityClass} annotation for javac.
  */
-@ProviderFor(JavacAnnotationHandler.class) public class HandleUtilityClass extends JavacAnnotationHandler<UtilityClass> {
-
+@ProviderFor(JavacAnnotationHandler.class)
+public class HandleUtilityClass extends JavacAnnotationHandler<UtilityClass> {
 	@Override public void handle(AnnotationValues<UtilityClass> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.UTLITY_CLASS_FLAG_USAGE, "@UtilityClass");
+		
 		deleteAnnotationIfNeccessary(annotationNode, UtilityClass.class);
-
-		parse(annotationNode.up(), annotationNode);
+		
+		JavacNode typeNode = annotationNode.up();
+		if (!checkLegality(typeNode, annotationNode)) return;
+		changeModifiersAndGenerateConstructor(annotationNode.up(), annotationNode);
 	}
-
-	private JCClassDecl getClassDecl(JavacNode typeNode) {
+	
+	private static boolean checkLegality(JavacNode typeNode, JavacNode errorNode) {
 		JCClassDecl typeDecl = null;
-		if (typeNode.get() instanceof JCClassDecl) {
-			typeDecl = (JCClassDecl) typeNode.get();
-		}
-
+		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) typeNode.get();
 		long modifiers = typeDecl == null ? 0 : typeDecl.mods.flags;
 		boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION | Flags.ENUM)) != 0;
-		return notAClass ? null : typeDecl;
+		
+		if (typeDecl == null || notAClass) {
+			errorNode.addError("@UtilityClass is only supported on a class (can't be an interface, enum, or annotation).");
+			return false;
+		}
+		
+		// It might be an inner class. This is okay, but only if it is / can be a static inner class. Thus, all of its parents have to be static inner classes until the top-level.
+		JavacNode typeWalk = typeNode;
+		while (true) {
+			typeWalk = typeWalk.up();
+			switch (typeWalk.getKind()) {
+			case TYPE:
+				if ((((JCClassDecl) typeWalk.get()).mods.flags & Flags.STATIC) != 0) continue;
+				if (typeWalk.up().getKind() == Kind.COMPILATION_UNIT) return true;
+			case COMPILATION_UNIT:
+				return true;
+			default:
+				errorNode.addError("@UtilityClass cannot be placed on a method local or anonymous inner class, or any class nested in such a class.");
+				return false;
+			}
+		}
 	}
-
-	public void parse(JavacNode typeNode, JavacNode errorNode) {
-		JCClassDecl classDecl = getClassDecl(typeNode);
-		if (classDecl == null) {
-			errorNode.addError("@UtilityClass is only supported on a class (can't be interface, enum or annotation).");
-			return;
-		}
-
-		if (!is(classDecl.getModifiers(), Flags.FINAL)) {
-			classDecl.mods.flags |= Flags.FINAL;
-		}
-
+	
+	private void changeModifiersAndGenerateConstructor(JavacNode typeNode, JavacNode errorNode) {
+		JCClassDecl classDecl = (JCClassDecl) typeNode.get();
+		
+		boolean makeConstructor = true;
+		
+		classDecl.mods.flags |= Flags.FINAL;
+		
+		if (typeNode.up().getKind() != Kind.COMPILATION_UNIT) classDecl.mods.flags |= Flags.STATIC;
+		
 		for (JavacNode element : typeNode.down()) {
 			if (element.getKind() == Kind.FIELD) {
 				JCVariableDecl fieldDecl = (JCVariableDecl) element.get();
-				if (!is(fieldDecl.mods, Flags.STATIC)) {
-					fieldDecl.mods.flags |= Flags.STATIC;
-				}
+				fieldDecl.mods.flags |= Flags.STATIC;
 			} else if (element.getKind() == Kind.METHOD) {
 				JCMethodDecl methodDecl = (JCMethodDecl) element.get();
 				if (methodDecl.name.contentEquals("<init>")) {
-					if (!is(methodDecl.mods, Flags.GENERATEDCONSTR)) {
-						errorNode.addError("@UtilityClasses cannot have declared constructors.");
+					if (getGeneratedBy(methodDecl) == null && (methodDecl.mods.flags & Flags.GENERATEDCONSTR) == 0) {
+						element.addError("@UtilityClasses cannot have declared constructors.");
+						makeConstructor = false;
 						continue;
 					}
-				} else if (!is(methodDecl.mods, Flags.STATIC)) {
-					methodDecl.mods.flags |= Flags.STATIC;
 				}
+				
+				methodDecl.mods.flags |= Flags.STATIC;
 			} else if (element.getKind() == Kind.TYPE) {
-				JCClassDecl innerClassDecl = (JCClassDecl) typeNode.get();
-				if (!is(innerClassDecl.mods, Flags.STATIC)) {
-					innerClassDecl.mods.flags |= Flags.STATIC;
-				}
+				JCClassDecl innerClassDecl = (JCClassDecl) element.get();
+				innerClassDecl.mods.flags |= Flags.STATIC;
 			}
 		}
-
-		createPrivateDefaultConstructor(typeNode);
+		
+		if (makeConstructor) createPrivateDefaultConstructor(typeNode);
 	}
-
-	private static boolean is(JCModifiers mods, long f) {
-		return (mods.flags & f) != 0;
-	}
-
+	
 	private void createPrivateDefaultConstructor(JavacNode typeNode) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		JCModifiers mods = maker.Modifiers(Flags.PRIVATE, List.<JCAnnotation>nil());
@@ -125,8 +136,10 @@ import com.sun.tools.javac.util.Name;
 	
 	private List<JCStatement> createThrowStatement(JavacNode typeNode, JavacTreeMaker maker) {
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		JCExpression exceptionType = genTypeRef(typeNode, "java.lang.RuntimeException");
-		JCExpression exceptionInstance = maker.NewClass(null, List.<JCExpression>nil(), exceptionType, List.<JCExpression>of(maker.Literal("Should not be instanciated!")), null);
+		JCExpression exceptionType = genTypeRef(typeNode, "java.lang.UnsupportedOperationException");
+		List<JCExpression> jceBlank = List.nil();
+		JCExpression message = maker.Literal("This is a utility class and cannot be instantiated");
+		JCExpression exceptionInstance = maker.NewClass(null, jceBlank, exceptionType, List.of(message), null);
 		JCStatement throwStatement = maker.Throw(exceptionInstance);
 		statements.add(throwStatement);
 		return statements.toList();

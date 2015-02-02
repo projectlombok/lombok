@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 The Project Lombok Authors.
+ * Copyright (C) 2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A helper to create utilities classes.
- * <p>
- * It makes the class final, makes all its methods static, creates a private default constructor that throws a RuntimeException when called and yields an error when other constructors are defined.
+ * An annotation to create utility classes.
+ * 
+ * If a class is annotated with {@code @UtilityClass}, the following things happen to it:<ul>
+ * <li>It is marked final.</li>
+ * <li>If any constructors are declared in it, an error is generated. Otherwise, a private no-args constructor is generated; it throws a {@code UnsupportedOperationException}.</li>
+ * <li>All methods, inner classes, and fields in the class are marked static.</li>
+ * </ul>
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.SOURCE)
