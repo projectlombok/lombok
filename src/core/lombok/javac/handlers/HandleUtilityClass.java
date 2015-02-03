@@ -44,7 +44,6 @@ import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
-import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
 /**
@@ -79,8 +78,11 @@ public class HandleUtilityClass extends JavacAnnotationHandler<UtilityClass> {
 			typeWalk = typeWalk.up();
 			switch (typeWalk.getKind()) {
 			case TYPE:
-				if ((((JCClassDecl) typeWalk.get()).mods.flags & Flags.STATIC) != 0) continue;
+				JCClassDecl typeDef = (JCClassDecl) typeWalk.get();
+				if ((typeDef.mods.flags & (Flags.STATIC | Flags.ANNOTATION | Flags.ENUM | Flags.INTERFACE)) != 0) continue;
 				if (typeWalk.up().getKind() == Kind.COMPILATION_UNIT) return true;
+				errorNode.addError("@UtilityClass automatically makes the class static, however, this class cannot be made static.");
+				return false;
 			case COMPILATION_UNIT:
 				return true;
 			default:
@@ -97,7 +99,15 @@ public class HandleUtilityClass extends JavacAnnotationHandler<UtilityClass> {
 		
 		classDecl.mods.flags |= Flags.FINAL;
 		
-		if (typeNode.up().getKind() != Kind.COMPILATION_UNIT) classDecl.mods.flags |= Flags.STATIC;
+		boolean markStatic = true;
+		
+		if (typeNode.up().getKind() == Kind.COMPILATION_UNIT) markStatic = false;
+		if (markStatic && typeNode.up().getKind() == Kind.TYPE) {
+			JCClassDecl typeDecl = (JCClassDecl) typeNode.up().get();
+			if ((typeDecl.mods.flags & Flags.INTERFACE) != 0) markStatic = false;
+		}
+		
+		if (markStatic) classDecl.mods.flags |= Flags.STATIC;
 		
 		for (JavacNode element : typeNode.down()) {
 			if (element.getKind() == Kind.FIELD) {
@@ -135,13 +145,11 @@ public class HandleUtilityClass extends JavacAnnotationHandler<UtilityClass> {
 	}
 	
 	private List<JCStatement> createThrowStatement(JavacNode typeNode, JavacTreeMaker maker) {
-		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		JCExpression exceptionType = genTypeRef(typeNode, "java.lang.UnsupportedOperationException");
+		JCExpression exceptionType = genJavaLangTypeRef(typeNode, "UnsupportedOperationException");
 		List<JCExpression> jceBlank = List.nil();
 		JCExpression message = maker.Literal("This is a utility class and cannot be instantiated");
 		JCExpression exceptionInstance = maker.NewClass(null, jceBlank, exceptionType, List.of(message), null);
 		JCStatement throwStatement = maker.Throw(exceptionInstance);
-		statements.add(throwStatement);
-		return statements.toList();
+		return List.of(throwStatement);
 	}
 }

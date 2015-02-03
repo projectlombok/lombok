@@ -18,3 +18,19 @@ final @lombok.experimental.UtilityClass class UtilityClassErrors1 {
     super();
   }
 }
+class UtilityClassErrors3 {
+  class NonStaticInner {
+    @lombok.experimental.UtilityClass class ThisShouldFail {
+      private String member;
+      ThisShouldFail() {
+        super();
+      }
+    }
+    NonStaticInner() {
+      super();
+    }
+  }
+  UtilityClassErrors3() {
+    super();
+  }
+}

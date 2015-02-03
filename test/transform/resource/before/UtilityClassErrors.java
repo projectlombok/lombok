@@ -12,3 +12,11 @@ class UtilityClassErrors1 {
 @lombok.experimental.UtilityClass
 enum UtilityClassErrors2 {
 }
+class UtilityClassErrors3 {
+	class NonStaticInner {
+		@lombok.experimental.UtilityClass
+		class ThisShouldFail {
+			private String member;
+		}
+	}
+}

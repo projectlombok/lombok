@@ -83,8 +83,10 @@ public class HandleUtilityClass extends EclipseAnnotationHandler<UtilityClass> {
 			typeWalk = typeWalk.up();
 			switch (typeWalk.getKind()) {
 			case TYPE:
-				if ((((TypeDeclaration) typeWalk.get()).modifiers & ClassFileConstants.AccStatic) != 0) continue;
+				if ((((TypeDeclaration) typeWalk.get()).modifiers & (ClassFileConstants.AccStatic | ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0) continue;
 				if (typeWalk.up().getKind() == Kind.COMPILATION_UNIT) return true;
+				errorNode.addError("@UtilityClass automatically makes the class static, however, this class cannot be made static.");
+				return false;
 			case COMPILATION_UNIT:
 				return true;
 			default:
@@ -101,7 +103,15 @@ public class HandleUtilityClass extends EclipseAnnotationHandler<UtilityClass> {
 		
 		classDecl.modifiers |= ClassFileConstants.AccFinal;
 		
-		if (typeNode.up().getKind() != Kind.COMPILATION_UNIT) classDecl.modifiers |= ClassFileConstants.AccStatic;
+		boolean markStatic = true;
+		
+		if (typeNode.up().getKind() == Kind.COMPILATION_UNIT) markStatic = false;
+		if (markStatic && typeNode.up().getKind() == Kind.TYPE) {
+			TypeDeclaration typeDecl = (TypeDeclaration) typeNode.up().get();
+			if ((typeDecl.modifiers & ClassFileConstants.AccInterface) != 0) markStatic = false;
+		}
+		
+		if (markStatic) classDecl.modifiers |= ClassFileConstants.AccStatic;
 		
 		for (EclipseNode element : typeNode.down()) {
 			if (element.getKind() == Kind.FIELD) {
@@ -155,7 +165,7 @@ public class HandleUtilityClass extends EclipseAnnotationHandler<UtilityClass> {
 		
 		AllocationExpression exception = new AllocationExpression();
 		setGeneratedBy(exception, source);
-		long[] ps = new long[3];
+		long[] ps = new long[JAVA_LANG_UNSUPPORTED_OPERATION_EXCEPTION.length];
 		Arrays.fill(ps, p);
 		exception.type = new QualifiedTypeReference(JAVA_LANG_UNSUPPORTED_OPERATION_EXCEPTION, ps);
 		setGeneratedBy(exception.type, source);

@@ -27,6 +27,31 @@ class UtilityInner {
       super();
     }
   }
+  enum UtilityInsideEnum {
+    static final @lombok.experimental.UtilityClass class InsideEnum {
+      static int member;
+      private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") InsideEnum() {
+        super();
+        throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
+      }
+    }
+    FOO(),
+    BAR(),
+    <clinit>() {
+    }
+    UtilityInsideEnum() {
+      super();
+    }
+  }
+  interface UtilityInsideInterface {
+    final @lombok.experimental.UtilityClass class InsideInterface {
+      static int member;
+      private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") InsideInterface() {
+        super();
+        throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
+      }
+    }
+  }
   UtilityInner() {
     super();
   }

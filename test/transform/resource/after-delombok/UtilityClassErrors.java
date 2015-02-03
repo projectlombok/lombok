@@ -10,3 +10,10 @@ final class UtilityClassErrors1 {
 enum UtilityClassErrors2 {
 ;
 }
+class UtilityClassErrors3 {
+	class NonStaticInner {
+		class ThisShouldFail {
+			private String member;
+		}
+	}
+}

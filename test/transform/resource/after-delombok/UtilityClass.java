@@ -23,4 +23,26 @@ class UtilityInner {
 			}
 		}
 	}
+	enum UtilityInsideEnum {
+		FOO,
+		BAR;
+		static final class InsideEnum {
+			static int member;
+			@java.lang.SuppressWarnings("all")
+			@javax.annotation.Generated("lombok")
+			private InsideEnum() {
+				throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
+			}
+		}
+	}
+	interface UtilityInsideInterface {
+		final class InsideInterface {
+			static int member;
+			@java.lang.SuppressWarnings("all")
+			@javax.annotation.Generated("lombok")
+			private InsideInterface() {
+				throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
+			}
+		}
+	}
 }
