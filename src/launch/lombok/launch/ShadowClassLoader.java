@@ -24,9 +24,11 @@ package lombok.launch;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -114,7 +116,13 @@ class ShadowClassLoader extends ClassLoader {
 			String sclClassUrl = ShadowClassLoader.class.getResource("ShadowClassLoader.class").toString();
 			if (!sclClassUrl.endsWith(SELF_NAME)) throw new InternalError("ShadowLoader can't find itself.");
 			SELF_BASE_LENGTH = sclClassUrl.length() - SELF_NAME.length();
-			SELF_BASE = sclClassUrl.substring(0, SELF_BASE_LENGTH);
+			String decoded;
+			try {
+				decoded = URLDecoder.decode(sclClassUrl.substring(0, SELF_BASE_LENGTH), "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				throw new InternalError("UTF-8 not available");
+			}
+			SELF_BASE = decoded;
 		}
 		
 		if (SELF_BASE.startsWith("jar:file:") && SELF_BASE.endsWith("!/")) SELF_BASE_FILE = new File(SELF_BASE.substring(9, SELF_BASE.length() - 2));
