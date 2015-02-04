@@ -33,6 +33,7 @@ import java.util.Map;
 import javax.lang.model.type.TypeKind;
 
 import lombok.Lombok;
+import lombok.core.debug.AssertionLogger;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
@@ -191,6 +192,7 @@ public class JavacResolution {
 			copy.accept(memberEnter);
 		} catch (Exception ignore) {
 			// intentionally ignored; usually even if this step fails, val will work (but not for val in method local inner classes and anonymous inner classes).
+			AssertionLogger.assertLog("member enter failed.", ignore);
 		} finally {
 			setEnvOfMemberEnter(memberEnter, oldEnv);
 		}
