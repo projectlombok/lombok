@@ -94,8 +94,8 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 			buildValueField = maker.VarDef(maker.Modifiers(Flags.PRIVATE), builderType.toName(data.getPluralName() + "$value"), type, null);
 		}
 		
-		JavacNode valueFieldNode = injectField(builderType, buildValueField);
-		JavacNode keyFieldNode = injectField(builderType, buildKeyField);
+		JavacNode valueFieldNode = injectFieldAndMarkGenerated(builderType, buildValueField);
+		JavacNode keyFieldNode = injectFieldAndMarkGenerated(builderType, buildKeyField);
 		
 		return Arrays.asList(keyFieldNode, valueFieldNode);
 	}

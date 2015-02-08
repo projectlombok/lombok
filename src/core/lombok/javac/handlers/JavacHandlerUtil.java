@@ -817,8 +817,8 @@ public class JavacHandlerUtil {
 	 * The field carries the &#64;{@link SuppressWarnings}("all") annotation.
 	 * Also takes care of updating the JavacAST.
 	 */
-	public static void injectFieldAndMarkGenerated(JavacNode typeNode, JCVariableDecl field) {
-		injectField(typeNode, field, true);
+	public static JavacNode injectFieldAndMarkGenerated(JavacNode typeNode, JCVariableDecl field) {
+		return injectField(typeNode, field, true);
 	}
 	
 	/**

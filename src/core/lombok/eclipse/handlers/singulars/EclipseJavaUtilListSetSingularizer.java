@@ -80,7 +80,7 @@ abstract class EclipseJavaUtilListSetSingularizer extends EclipseJavaUtilSingula
 		buildField.declarationSourceEnd = -1;
 		buildField.type = type;
 		data.setGeneratedByRecursive(buildField);
-		return Collections.singletonList(injectField(builderType, buildField));
+		return Collections.singletonList(injectFieldAndMarkGenerated(builderType, buildField));
 	}
 	
 	@Override public void generateMethods(SingularData data, EclipseNode builderType, boolean fluent, boolean chain) {

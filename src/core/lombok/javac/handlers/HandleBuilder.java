@@ -252,7 +252,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		if (addCleaning) {
 			JavacTreeMaker maker = builderType.getTreeMaker();
 			JCVariableDecl uncleanField = maker.VarDef(maker.Modifiers(Flags.PRIVATE), builderType.toName("$lombokUnclean"), maker.TypeIdent(CTC_BOOLEAN), null);
-			injectField(builderType, uncleanField);
+			injectFieldAndMarkGenerated(builderType, uncleanField);
 		}
 		
 		if (constructorExists(builderType) == MemberExistsResult.NOT_EXISTS) {
@@ -405,7 +405,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				JavacTreeMaker maker = builderType.getTreeMaker();
 				JCModifiers mods = maker.Modifiers(Flags.PRIVATE);
 				JCVariableDecl newField = maker.VarDef(mods, bfd.name, cloneType(maker, bfd.type, source, builderType.getContext()), null);
-				bfd.createdFields.add(injectField(builderType, newField));
+				bfd.createdFields.add(injectFieldAndMarkGenerated(builderType, newField));
 			}
 		}
 	}

@@ -273,7 +273,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			cleanDecl.modifiers = ClassFileConstants.AccPrivate;
 			cleanDecl.type = TypeReference.baseTypeReference(TypeIds.T_boolean, 0);
 			System.out.println("INJECTING: cleaning");
-			injectField(builderType, cleanDecl);
+			injectFieldAndMarkGenerated(builderType, cleanDecl);
 		}
 		
 		if (constructorExists(builderType) == MemberExistsResult.NOT_EXISTS) {
@@ -444,7 +444,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				fd.modifiers = ClassFileConstants.AccPrivate;
 				fd.type = copyType(bfd.type);
 				fd.traverse(new SetGeneratedByVisitor(source), (MethodScope) null);
-				bfd.createdFields.add(injectField(builderType, fd));
+				bfd.createdFields.add(injectFieldAndMarkGenerated(builderType, fd));
 			}
 		}
 	}

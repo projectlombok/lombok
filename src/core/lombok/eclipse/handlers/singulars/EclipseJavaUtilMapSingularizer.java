@@ -123,8 +123,8 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		}
 		data.setGeneratedByRecursive(buildKeyField);
 		data.setGeneratedByRecursive(buildValueField);
-		EclipseNode keyFieldNode = injectField(builderType, buildKeyField);
-		EclipseNode valueFieldNode = injectField(builderType, buildValueField);
+		EclipseNode keyFieldNode = injectFieldAndMarkGenerated(builderType, buildKeyField);
+		EclipseNode valueFieldNode = injectFieldAndMarkGenerated(builderType, buildValueField);
 		return Arrays.asList(keyFieldNode, valueFieldNode);
 	}
 	
