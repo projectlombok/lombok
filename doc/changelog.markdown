@@ -7,6 +7,7 @@ Lombok Changelog
 * BUGFIX: The ant `delombok` task was broken starting with v1.16.0. Note that the task def class has been changed; taskdef `lombok.delombok.ant.Tasks$Delombok` instead of the old `lombok.delombok.ant.DelombokTask`. [Issue #775](https://code.google.com/p/projectlombok/issues/detail?id=775).
 * BUGFIX: `val` in javac would occasionally fail if used inside inner classes. This is (probably) fixed. [Issue #694](https://code.google.com/p/projectlombok/issues/detail?id=694).
 * BUGFIX: Starting with v1.16.0, lombok would fail to execute as an executable jar if it was in a path was spaced in it. [Issue #777](https://code.google.com/p/projectlombok/issues/detail?id=777).
+* BUGFIX: v1.16.0 did not work in old eclipse versions (such as eclipse indigo).
 
 ### v1.16.0 "Candid Duck" (January 26th, 2015)
 * BUGFIX: `@ExtensionMethod` was broken in Eclipse using java 8. [Issue #742](https://code.google.com/p/projectlombok/issues/detail?id=742), [Issue #747](https://code.google.com/p/projectlombok/issues/detail?id=747)

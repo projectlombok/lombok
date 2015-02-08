@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.List;
 
 import lombok.core.AgentLauncher;
-
 import lombok.patcher.Hook;
 import lombok.patcher.MethodTarget;
 import lombok.patcher.ScriptManager;
