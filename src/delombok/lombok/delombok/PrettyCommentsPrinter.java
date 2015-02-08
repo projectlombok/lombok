@@ -1629,6 +1629,8 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 			@SuppressWarnings("unchecked")
 			List<JCVariableDecl> params = (List<JCVariableDecl>) readTreeList(tree, "params");
 			boolean explicit = true;
+			int paramLength = params.size();
+			if (paramLength != 1) print("(");
 			try {
 				explicit = readObject(tree, "paramKind").toString().equals("EXPLICIT");
 			} catch (Exception e) {}
@@ -1642,7 +1644,8 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 					sep = ", ";
 				}
 			}
-			print(") -> ");
+			if (paramLength != 1) print(")");
+			print(" -> ");
 			printExpr(readTree(tree, "body"));
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
