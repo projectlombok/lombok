@@ -1625,7 +1625,6 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 	
 	private void visitLambda0(JCTree tree) {
 		try {
-			print("(");
 			@SuppressWarnings("unchecked")
 			List<JCVariableDecl> params = (List<JCVariableDecl>) readTreeList(tree, "params");
 			boolean explicit = true;
