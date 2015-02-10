@@ -5,9 +5,17 @@ class BuilderComplex {
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	public static class VoidBuilder<T extends Number> {
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private T number;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private int arg2;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private String arg3;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private BuilderComplex selfRef;
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")

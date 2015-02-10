@@ -15,13 +15,21 @@ class BuilderSingularMaps<K, V> {
 	}
 	@SuppressWarnings("all")
 	public static class BuilderSingularMapsBuilder<K, V> {
+		@SuppressWarnings("all")
 		private java.util.ArrayList<K> women$key;
+		@SuppressWarnings("all")
 		private java.util.ArrayList<V> women$value;
+		@SuppressWarnings("all")
 		private java.util.ArrayList<K> men$key;
+		@SuppressWarnings("all")
 		private java.util.ArrayList<Number> men$value;
+		@SuppressWarnings("all")
 		private java.util.ArrayList<Object> rawMap$key;
+		@SuppressWarnings("all")
 		private java.util.ArrayList<Object> rawMap$value;
+		@SuppressWarnings("all")
 		private java.util.ArrayList<String> stringMap$key;
+		@SuppressWarnings("all")
 		private java.util.ArrayList<V> stringMap$value;
 		@SuppressWarnings("all")
 		BuilderSingularMapsBuilder() {

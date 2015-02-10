@@ -4,9 +4,9 @@ import com.google.common.collect.ImmutableSortedMap;
 import lombok.Singular;
 @lombok.Builder class BuilderSingularGuavaMaps<K, V> {
   public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") class BuilderSingularGuavaMapsBuilder<K, V> {
-    private com.google.common.collect.ImmutableMap.Builder<K, V> battleaxes;
-    private com.google.common.collect.ImmutableSortedMap.Builder<Integer, V> vertices;
-    private com.google.common.collect.ImmutableBiMap.Builder<java.lang.Object, java.lang.Object> rawMap;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") com.google.common.collect.ImmutableMap.Builder<K, V> battleaxes;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") com.google.common.collect.ImmutableSortedMap.Builder<Integer, V> vertices;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") com.google.common.collect.ImmutableBiMap.Builder<java.lang.Object, java.lang.Object> rawMap;
     @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaMapsBuilder() {
       super();
     }

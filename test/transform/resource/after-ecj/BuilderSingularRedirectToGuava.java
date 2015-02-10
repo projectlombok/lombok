@@ -4,9 +4,9 @@ import java.util.Collection;
 import lombok.Singular;
 @lombok.Builder class BuilderSingularRedirectToGuava {
   public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") class BuilderSingularRedirectToGuavaBuilder {
-    private com.google.common.collect.ImmutableSet.Builder<String> dangerMice;
-    private com.google.common.collect.ImmutableSortedMap.Builder<Integer, Number> things;
-    private com.google.common.collect.ImmutableList.Builder<Class<?>> doohickeys;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") com.google.common.collect.ImmutableSet.Builder<String> dangerMice;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") com.google.common.collect.ImmutableSortedMap.Builder<Integer, Number> things;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") com.google.common.collect.ImmutableList.Builder<Class<?>> doohickeys;
     @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularRedirectToGuavaBuilder() {
       super();
     }

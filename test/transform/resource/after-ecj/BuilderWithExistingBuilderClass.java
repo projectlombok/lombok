@@ -1,8 +1,8 @@
 import lombok.Builder;
 class BuilderWithExistingBuilderClass<T, K extends Number> {
   public static class BuilderWithExistingBuilderClassBuilder<Z extends Number> {
-    private boolean arg2;
-    private String arg3;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean arg2;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") String arg3;
     private Z arg1;
     public void arg2(boolean arg) {
     }

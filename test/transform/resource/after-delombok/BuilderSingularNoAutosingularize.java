@@ -13,8 +13,14 @@ class BuilderSingularNoAutosingularize {
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	public static class BuilderSingularNoAutosingularizeBuilder {
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private java.util.ArrayList<String> things;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private java.util.ArrayList<String> widgets;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private java.util.ArrayList<String> items;
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")

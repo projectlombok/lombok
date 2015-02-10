@@ -4,9 +4,9 @@ import java.util.Collection;
 import lombok.Singular;
 @lombok.Builder class BuilderSingularLists<T> {
   public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") class BuilderSingularListsBuilder<T> {
-    private java.util.ArrayList<T> children;
-    private java.util.ArrayList<Number> scarves;
-    private java.util.ArrayList<java.lang.Object> rawList;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<T> children;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<Number> scarves;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<java.lang.Object> rawList;
     @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularListsBuilder() {
       super();
     }

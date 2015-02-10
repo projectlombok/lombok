@@ -1,6 +1,6 @@
 @lombok.experimental.Builder(fluent = false,chain = false) class BuilderChainAndFluent {
   public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") class BuilderChainAndFluentBuilder {
-    private int yes;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int yes;
     @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderChainAndFluentBuilder() {
       super();
     }

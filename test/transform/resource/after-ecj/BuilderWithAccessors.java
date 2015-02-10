@@ -1,9 +1,9 @@
 @lombok.experimental.Builder @lombok.experimental.Accessors(prefix = {"p", "_"}) class BuilderWithAccessors {
   public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") class BuilderWithAccessorsBuilder {
-    private int plower;
-    private int upper;
-    private int foo;
-    private int _bar;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int plower;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int upper;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int foo;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int _bar;
     @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderWithAccessorsBuilder() {
       super();
     }

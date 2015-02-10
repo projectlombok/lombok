@@ -3,14 +3,14 @@ import java.util.SortedMap;
 import lombok.Singular;
 @lombok.Builder class BuilderSingularMaps<K, V> {
   public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") class BuilderSingularMapsBuilder<K, V> {
-    private java.util.ArrayList<K> women$key;
-    private java.util.ArrayList<V> women$value;
-    private java.util.ArrayList<K> men$key;
-    private java.util.ArrayList<Number> men$value;
-    private java.util.ArrayList<java.lang.Object> rawMap$key;
-    private java.util.ArrayList<java.lang.Object> rawMap$value;
-    private java.util.ArrayList<String> stringMap$key;
-    private java.util.ArrayList<V> stringMap$value;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<K> women$key;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<V> women$value;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<K> men$key;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<Number> men$value;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<java.lang.Object> rawMap$key;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<java.lang.Object> rawMap$value;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<String> stringMap$key;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<V> stringMap$value;
     @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularMapsBuilder() {
       super();
     }

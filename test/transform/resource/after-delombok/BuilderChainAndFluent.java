@@ -8,6 +8,8 @@ class BuilderChainAndFluent {
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	public static class BuilderChainAndFluentBuilder {
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private int yes;
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")

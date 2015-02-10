@@ -13,7 +13,11 @@ class BuilderSimple<T> {
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	public static class BuilderSimpleBuilder<T> {
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private int yes;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private List<T> also;
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")

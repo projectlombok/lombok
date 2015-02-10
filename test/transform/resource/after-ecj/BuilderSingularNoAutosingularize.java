@@ -2,9 +2,9 @@ import java.util.List;
 import lombok.Singular;
 @lombok.Builder class BuilderSingularNoAutosingularize {
   public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") class BuilderSingularNoAutosingularizeBuilder {
-    private java.util.ArrayList<String> things;
-    private java.util.ArrayList<String> widgets;
-    private java.util.ArrayList<String> items;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<String> things;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<String> widgets;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<String> items;
     @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutosingularizeBuilder() {
       super();
     }

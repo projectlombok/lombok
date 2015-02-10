@@ -3,10 +3,10 @@ import java.util.SortedSet;
 import lombok.Singular;
 @lombok.Builder class BuilderSingularSets<T> {
   public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") class BuilderSingularSetsBuilder<T> {
-    private java.util.ArrayList<T> dangerMice;
-    private java.util.ArrayList<Number> octopodes;
-    private java.util.ArrayList<java.lang.Object> rawSet;
-    private java.util.ArrayList<String> stringSet;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<T> dangerMice;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<Number> octopodes;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<java.lang.Object> rawSet;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<String> stringSet;
     @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder() {
       super();
     }

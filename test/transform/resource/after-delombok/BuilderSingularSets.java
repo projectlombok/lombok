@@ -17,9 +17,17 @@ class BuilderSingularSets<T> {
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	public static class BuilderSingularSetsBuilder<T> {
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private java.util.ArrayList<T> dangerMice;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private java.util.ArrayList<Number> octopodes;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private java.util.ArrayList<java.lang.Object> rawSet;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private java.util.ArrayList<String> stringSet;
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")

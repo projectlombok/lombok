@@ -15,8 +15,14 @@ class BuilderSingularLists<T> {
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	public static class BuilderSingularListsBuilder<T> {
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private java.util.ArrayList<T> children;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private java.util.ArrayList<Number> scarves;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private java.util.ArrayList<java.lang.Object> rawList;
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")

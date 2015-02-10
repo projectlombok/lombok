@@ -16,8 +16,14 @@ class BuilderSingularGuavaMaps<K, V> {
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	public static class BuilderSingularGuavaMapsBuilder<K, V> {
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private com.google.common.collect.ImmutableMap.Builder<K, V> battleaxes;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private com.google.common.collect.ImmutableSortedMap.Builder<Integer, V> vertices;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private com.google.common.collect.ImmutableBiMap.Builder<java.lang.Object, java.lang.Object> rawMap;
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")

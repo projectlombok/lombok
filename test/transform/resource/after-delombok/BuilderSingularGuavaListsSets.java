@@ -19,9 +19,17 @@ class BuilderSingularGuavaListsSets<T> {
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	public static class BuilderSingularGuavaListsSetsBuilder<T> {
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private com.google.common.collect.ImmutableList.Builder<T> cards;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private com.google.common.collect.ImmutableList.Builder<Number> frogs;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private com.google.common.collect.ImmutableSet.Builder<java.lang.Object> rawSet;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private com.google.common.collect.ImmutableSortedSet.Builder<String> passes;
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")

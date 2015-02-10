@@ -15,8 +15,14 @@ class BuilderSingularRedirectToGuava {
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	public static class BuilderSingularRedirectToGuavaBuilder {
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private com.google.common.collect.ImmutableSet.Builder<String> dangerMice;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private com.google.common.collect.ImmutableSortedMap.Builder<Integer, Number> things;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		private com.google.common.collect.ImmutableList.Builder<Class<?>> doohickeys;
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")

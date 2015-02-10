@@ -5,10 +5,10 @@ import com.google.common.collect.ImmutableSortedSet;
 import lombok.Singular;
 @lombok.Builder class BuilderSingularGuavaListsSets<T> {
   public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") class BuilderSingularGuavaListsSetsBuilder<T> {
-    private com.google.common.collect.ImmutableList.Builder<T> cards;
-    private com.google.common.collect.ImmutableList.Builder<Number> frogs;
-    private com.google.common.collect.ImmutableSet.Builder<java.lang.Object> rawSet;
-    private com.google.common.collect.ImmutableSortedSet.Builder<String> passes;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") com.google.common.collect.ImmutableList.Builder<T> cards;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") com.google.common.collect.ImmutableList.Builder<Number> frogs;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") com.google.common.collect.ImmutableSet.Builder<java.lang.Object> rawSet;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") com.google.common.collect.ImmutableSortedSet.Builder<String> passes;
     @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaListsSetsBuilder() {
       super();
     }

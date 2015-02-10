@@ -2,10 +2,10 @@ import java.util.List;
 import lombok.experimental.Builder;
 class BuilderComplex {
   public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") class VoidBuilder<T extends Number> {
-    private T number;
-    private int arg2;
-    private String arg3;
-    private BuilderComplex selfRef;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") T number;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int arg2;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") String arg3;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderComplex selfRef;
     @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") VoidBuilder() {
       super();
     }
