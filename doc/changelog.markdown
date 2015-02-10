@@ -1,6 +1,8 @@
 Lombok Changelog
 ----------------
 
+### v1.16.3 "Edgy Guinea Pig"
+
 ### v1.16.2 (February 10th, 2015)
 * FEATURE: The config key `lombok.extern.findbugs.addSuppressFBWarnings` can now be used to add findbugs suppress warnings annotations to all code lombok generates. This addresses feature request [Issue #702](https://code.google.com/p/projectlombok/issues/detail?id=702).
 * FEATURE: New lombok annotation: `@UtilityClass`, for making utility classes (not instantiable, contains only static 'function' methods). See the [feature documentation](http://projectlombok.org/features/experimental/UtilityClass.html) for more information.
