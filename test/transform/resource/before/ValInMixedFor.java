@@ -1,9 +1,9 @@
 import lombok.val;
 
-public class ValInBasicFor {
+public class ValInMixedFor {
 	public void basicFor() {
 		java.util.List<String> list = java.util.Arrays.asList("Hello, World!");
-		for (val shouldBeFloat = 1.0, here = 2, too = 3.0; ; ) {
+		for (val shouldBe = 1, marked = "", error = 1.0; ; ) {
 			System.out.println("");
 		}
 	}

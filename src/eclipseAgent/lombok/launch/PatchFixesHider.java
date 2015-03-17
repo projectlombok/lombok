@@ -45,6 +45,7 @@ import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
+import org.eclipse.jdt.internal.compiler.ast.ForStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
@@ -228,6 +229,7 @@ final class PatchFixesHider {
 		private static final Method SKIP_RESOLVE_INITIALIZER_IF_ALREADY_CALLED2;
 		private static final Method HANDLE_VAL_FOR_LOCAL_DECLARATION;
 		private static final Method HANDLE_VAL_FOR_FOR_EACH;
+		private static final Method HANDLE_VAL_FOR_FOR;
 		
 		static {
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchVal");
@@ -235,6 +237,7 @@ final class PatchFixesHider {
 			SKIP_RESOLVE_INITIALIZER_IF_ALREADY_CALLED2 = Util.findMethod(shadowed, "skipResolveInitializerIfAlreadyCalled2", Expression.class, BlockScope.class, LocalDeclaration.class);
 			HANDLE_VAL_FOR_LOCAL_DECLARATION = Util.findMethod(shadowed, "handleValForLocalDeclaration", LocalDeclaration.class, BlockScope.class);
 			HANDLE_VAL_FOR_FOR_EACH = Util.findMethod(shadowed, "handleValForForEach", ForeachStatement.class, BlockScope.class);
+			HANDLE_VAL_FOR_FOR = Util.findMethod(shadowed, "handleValForFor", ForStatement.class, BlockScope.class);
 		}
 		
 		public static TypeBinding skipResolveInitializerIfAlreadyCalled(Expression expr, BlockScope scope) {
@@ -251,6 +254,10 @@ final class PatchFixesHider {
 		
 		public static boolean handleValForForEach(ForeachStatement forEach, BlockScope scope) {
 			return (Boolean) Util.invokeMethod(HANDLE_VAL_FOR_FOR_EACH, forEach, scope);
+		}
+		
+		public static boolean handleValForFor(ForStatement forLoop, BlockScope scope) {
+			return (Boolean) Util.invokeMethod(HANDLE_VAL_FOR_FOR, forLoop, scope);
 		}
 	}
 	

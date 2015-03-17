@@ -596,6 +596,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	private static void addPatchesForVal(ScriptManager sm) {
 		final String LOCALDECLARATION_SIG = "org.eclipse.jdt.internal.compiler.ast.LocalDeclaration";
 		final String FOREACHSTATEMENT_SIG = "org.eclipse.jdt.internal.compiler.ast.ForeachStatement";
+		final String FORSTATEMENT_SIG = "org.eclipse.jdt.internal.compiler.ast.ForStatement";
 		final String EXPRESSION_SIG = "org.eclipse.jdt.internal.compiler.ast.Expression";
 		final String BLOCKSCOPE_SIG = "org.eclipse.jdt.internal.compiler.lookup.BlockScope";
 		final String TYPEBINDING_SIG = "org.eclipse.jdt.internal.compiler.lookup.TypeBinding";
@@ -623,6 +624,12 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.target(new MethodTarget(FOREACHSTATEMENT_SIG, "resolve", "void", BLOCKSCOPE_SIG))
 				.request(StackRequest.THIS, StackRequest.PARAM1)
 				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$Val", "handleValForForEach", "boolean", FOREACHSTATEMENT_SIG, BLOCKSCOPE_SIG))
+				.build());
+		
+		sm.addScript(ScriptBuilder.exitEarly()
+				.target(new MethodTarget(FORSTATEMENT_SIG, "resolve", "void", BLOCKSCOPE_SIG))
+				.request(StackRequest.THIS, StackRequest.PARAM1)
+				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$Val", "handleValForFor", "boolean", FORSTATEMENT_SIG, BLOCKSCOPE_SIG))
 				.build());
 	}
 	

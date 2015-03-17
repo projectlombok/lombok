@@ -64,11 +64,6 @@ public class HandleVal extends EclipseASTAdapter {
 			return;
 		}
 		
-		if (localNode.directUp().get() instanceof ForStatement) {
-			localNode.addError("'val' is not allowed in old-style for loops");
-			return;
-		}
-		
 		if (local.initialization != null && local.initialization.getClass().getName().equals("org.eclipse.jdt.internal.compiler.ast.LambdaExpression")) {
 			localNode.addError("'val' is not allowed with lambda expressions.");
 		}
