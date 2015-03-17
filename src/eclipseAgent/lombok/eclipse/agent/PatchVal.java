@@ -29,9 +29,11 @@ import java.lang.reflect.Field;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
+import org.eclipse.jdt.internal.compiler.ast.ForStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
@@ -42,6 +44,8 @@ import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
+
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
 public class PatchVal {
 	
@@ -122,19 +126,22 @@ public class PatchVal {
 			iterableCopyField = b;
 		}
 	}
+
 	public static boolean handleValForLocalDeclaration(LocalDeclaration local, BlockScope scope) {
+		return doHandleValForLocalDeclaration(local, scope, null);
+	}
+	
+	private static boolean doHandleValForLocalDeclaration(LocalDeclaration local, BlockScope scope, TypeReference forcedType) {
 		if (local == null || !LocalDeclaration.class.equals(local.getClass())) return false;
 		boolean decomponent = false;
 		
 		if (!isVal(local.type, scope)) return false;
 		
-		StackTraceElement[] st = new Throwable().getStackTrace();
-		for (int i = 0; i < st.length - 2 && i < 10; i++) {
-			if (st[i].getClassName().equals("lombok.launch.PatchFixesHider$Val")) {
-				if (st[i + 1].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration") &&
-					st[i + 2].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.ForStatement")) return false;
-				break;
-			}
+		if (forcedType != null) {
+			local.modifiers |= ClassFileConstants.AccFinal;
+			local.annotations = addValAnnotation(local.annotations, local.type, scope);
+			local.type = forcedType;
+			return false;
 		}
 		
 		Expression init = local.initialization;
@@ -202,6 +209,21 @@ public class PatchVal {
 		forEach.elementVariable.type = replacement != null ? replacement :
 				new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(forEach.elementVariable.type, 3));
 		
+		return false;
+	}
+	
+	public static boolean handleValForFor(ForStatement forLoop, BlockScope scope) {
+		if (forLoop.initializations == null || forLoop.initializations.length == 0) return false;
+		
+		if (forLoop.initializations[0] instanceof LocalDeclaration) {
+			LocalDeclaration first = (LocalDeclaration) forLoop.initializations[0];
+			doHandleValForLocalDeclaration(first, scope, null);
+			for (int i = 1; i < forLoop.initializations.length; i++) {
+				if (forLoop.initializations[i] instanceof LocalDeclaration) {
+					doHandleValForLocalDeclaration((LocalDeclaration) forLoop.initializations[i], scope, first.type);
+				}
+			}
+		}
 		return false;
 	}
 	

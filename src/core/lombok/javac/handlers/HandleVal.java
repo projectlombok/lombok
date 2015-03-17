@@ -21,7 +21,7 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 import lombok.ConfigurationKeys;
 import lombok.val;
@@ -61,8 +61,15 @@ public class HandleVal extends JavacASTAdapter {
 		
 		JCTree parentRaw = localNode.directUp().get();
 		if (parentRaw instanceof JCForLoop) {
-			localNode.addError("'val' is not allowed in old-style for loops");
-			return;
+			JCForLoop fl = (JCForLoop) parentRaw;
+			if (!fl.init.isEmpty() && fl.init.get(0) instanceof JCVariableDecl) {
+				JCVariableDecl first = (JCVariableDecl) fl.init.get(0);
+				if (first != local) {
+					local.vartype = first.vartype;
+					addAnnotation(localNode, local, source);
+					return;
+				}
+			}
 		}
 		
 		JCExpression rhsOfEnhancedForLoop = null;
@@ -87,10 +94,7 @@ public class HandleVal extends JavacASTAdapter {
 		
 		local.mods.flags |= Flags.FINAL;
 		
-		if (!localNode.shouldDeleteLombokAnnotations()) {
-			JCAnnotation valAnnotation = recursiveSetGeneratedBy(localNode.getTreeMaker().Annotation(local.vartype, List.<JCExpression>nil()), source, localNode.getContext());
-			local.mods.annotations = local.mods.annotations == null ? List.of(valAnnotation) : local.mods.annotations.append(valAnnotation);
-		}
+		addAnnotation(localNode, local, source);
 		
 		if (JavacResolution.platformHasTargetTyping()) {
 			local.vartype = localNode.getAst().getTreeMaker().Ident(localNode.getAst().toName("___Lombok_VAL_Attrib__"));
@@ -157,6 +161,13 @@ public class HandleVal extends JavacASTAdapter {
 			throw e;
 		} finally {
 			recursiveSetGeneratedBy(local.vartype, source, localNode.getContext());
+		}
+	}
+
+	private void addAnnotation(JavacNode localNode, JCVariableDecl local, JCTree source) {
+		if (!localNode.shouldDeleteLombokAnnotations()) {
+			JCAnnotation valAnnotation = recursiveSetGeneratedBy(localNode.getTreeMaker().Annotation(local.vartype, List.<JCExpression>nil()), source, localNode.getContext());
+			local.mods.annotations = local.mods.annotations == null ? List.of(valAnnotation) : local.mods.annotations.append(valAnnotation);
 		}
 	}
 }
