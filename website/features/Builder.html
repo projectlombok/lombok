@@ -28,16 +28,16 @@
 			<code>@Builder</code> lets you automatically produce the code required to have your class be instantiable with code such as:<br />
 			<code>Person.builder().name("Adam Savage").city("San Francisco").job("Mythbusters").job("Unchained Reaction").build();</code>
 			</p><p>
-			<code>@Builder</code> can be placed on a class, or on a constructor, or on a static method. While the "on a class" and "on a constructor"
-			mode are the most common use-case, <code>@Builder</code> is most easily explained with the "static method" use-case.
+			<code>@Builder</code> can be placed on a class, or on a constructor, or on a method. While the "on a class" and "on a constructor"
+			mode are the most common use-case, <code>@Builder</code> is most easily explained with the "method" use-case.
 			</p><p>
-			A static method annotated with <code>@Builder</code> (from now on called the <em>target</em>)  causes the following 7 things to be generated:<ul>
-			<li>An inner static class named <code><em>Foo</em>Builder</code>, with the same type arguments as the static method (called the <em>builder</em>).</li>
+			A method annotated with <code>@Builder</code> (from now on called the <em>target</em>)  causes the following 7 things to be generated:<ul>
+			<li>An inner class named <code><em>Foo</em>Builder</code>, with the same type arguments as the method (called the <em>builder</em>).</li>
 			<li>In the <em>builder</em>: One private non-static non-final field for each parameter of the <em>target</em>.</li>
 			<li>In the <em>builder</em>: A package private no-args empty constructor.</li>
 			<li>In the <em>builder</em>: A 'setter'-like method for each parameter of the <em>target</em>: It has the same type as that parameter and the same name.
 				It returns the builder itself, so that the setter calls can be chained, as in the above example.</li>
-			<li>In the <em>builder</em>: A <code>build()</code> method which calls the static method, passing in each field. It returns the same type that the
+			<li>In the <em>builder</em>: A <code>build()</code> method which calls the method, passing in each field. It returns the same type that the
 				<em>target</em> returns.</li>
 			<li>In the <em>builder</em>: A sensible <code>toString()</code> implementation.</li>
 			<li>In the class containing the <em>target</em>: A <code>builder()</code> method, which creates a new instance of the <em>builder</em>.</li>
@@ -51,7 +51,7 @@
 			element to the list. For example: <code>Person.builder().job("Mythbusters").job("Unchained Reaction").build();</code> would result in the <code>List&lt;String&gt; jobs</code>
 			field to have 2 strings in it. To get this behaviour, the field/parameter needs to be annotated with <code>@Singular</code>. The feature has <a href="#singular">its own documentation</a>.
 			</p><p>
-			Now that the "static method" mode is clear, putting a <code>@Builder</code> annotation on a constructor functions similarly; effectively,
+			Now that the "method" mode is clear, putting a <code>@Builder</code> annotation on a constructor functions similarly; effectively,
 			constructors are just static methods that have a special syntax to invoke them: Their 'return type' is the class they construct, and their
 			type parameters are the same as the type parameters of the class itself.
 			</p><p>
@@ -61,8 +61,8 @@
 			</p><p>
 			The name of the builder class is <code><em>Foobar</em>Builder</code>, where <em>Foobar</em> is the simplified, title-cased form of the return type of the 
 			<em>target</em> - that is, the name of your type for <code>@Builder</code> on constructors and types, and the name of the return type for <code>@Builder</code>
-			on static methods. For example, if <code>@Builder</code> is applied to a class named <code>com.yoyodyne.FancyList&lt;T&gt;</code>, then the builder name will be
-			<code>FancyListBuilder&lt;T&gt;</code>. If <code>@Builder</code> is applied to a static method that returns <code>void</code>, the builder will be named
+			on methods. For example, if <code>@Builder</code> is applied to a class named <code>com.yoyodyne.FancyList&lt;T&gt;</code>, then the builder name will be
+			<code>FancyListBuilder&lt;T&gt;</code>. If <code>@Builder</code> is applied to a method that returns <code>void</code>, the builder will be named
 			<code>VoidBuilder</code>.
 			</p><p>
 			The configurable aspects of builder are:<ul>
@@ -77,7 +77,7 @@
 		<div class="overview">
 			<h3><a name="singular">@Singular</a></h3>
 			<p>
-				By annotating one of the parameters (if annotating a static method or constructor with <code>@Builder</code>) or fields (if annotating a class with <code>@Builder</code>) with the
+				By annotating one of the parameters (if annotating a method or constructor with <code>@Builder</code>) or fields (if annotating a class with <code>@Builder</code>) with the
 				<code>@Singular</code> annotation, lombok will treat that builder node as a collection, and it generates 2 'adder' methods instead of a 'setter' method. One which adds a single element to the collection, and one
 				which adds all elements of another collection to the collection. No setter to just set the collection (replacing whatever was already added) will be generated. These 'singular' builders
 				are very complicated in order to guarantee the following properties:
