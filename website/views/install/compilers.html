@@ -1,0 +1,27 @@
+<div class="page-header top5">
+    <div class="row">
+
+        <h1>Javac</h1>
+
+        <p>
+            Just put <code>lombok.jar</code> on the classpath.
+        </p>
+    </div>
+
+
+    <div class="row">
+
+        <h1>ECJ</h1>
+
+        <p>
+            ecj (the eclipse standalone compiler) is compatible with lombok. Use the following command line to enable
+            lombok with ecj:
+			<pre>
+java <strong>-javaagent:lombok.jar=ECJ -Xbootclasspath/p:lombok.jar</strong> -jar ecj.jar -cp lombok.jar <em>(rest of
+                arguments)</em></pre>
+        If you're using a tool based on ecj, adding these VM arguments and adding lombok.jar to the classpath should
+        work.
+
+    </div>
+
+</div>

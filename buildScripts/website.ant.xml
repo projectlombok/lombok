@@ -110,70 +110,70 @@ such as converting the changelog into HTML, and creating javadoc.
 			</filterchain>
 		</copy>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="GetterSetter" />
+			<param name="transformationName" value="getter-setter" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="GetterLazy" />
+			<param name="transformationName" value="getter-lazy" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="ToString" />
+			<param name="transformationName" value="to-string" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="EqualsAndHashCode" />
+			<param name="transformationName" value="equals-and-hashcode" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Data" />
+			<param name="transformationName" value="data" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Cleanup" />
+			<param name="transformationName" value="cleanup" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Synchronized" />
+			<param name="transformationName" value="sync" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="SneakyThrows" />
+			<param name="transformationName" value="sneaky-throws" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Constructor" />
+			<param name="transformationName" value="constructor" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Log" />
+			<param name="transformationName" value="log" />
 		</antcall>
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="val" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Value" />
+			<param name="transformationName" value="value" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="NonNull" />
+			<param name="transformationName" value="non-null" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Builder" />
+			<param name="transformationName" value="builder" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Singular-snippet" />
+			<param name="transformationName" value="singular" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/Delegate" />
+			<param name="transformationName" value="delegate" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/Accessors" />
+			<param name="transformationName" value="accessors" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/ExtensionMethod" />
+			<param name="transformationName" value="extension-method" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/FieldDefaults" />
+			<param name="transformationName" value="field-defaults" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/Wither" />
+			<param name="transformationName" value="wither" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/onX" />
+			<param name="transformationName" value="on-x" />
 		</antcall>
 		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/UtilityClass" />
+			<param name="transformationName" value="utility" />
 		</antcall>
 	</target>
 	
@@ -204,7 +204,7 @@ such as converting the changelog into HTML, and creating javadoc.
 		<mkdir dir="build/website" />
 		<property name="prefile" location="usage_examples/${transformationName}Example_pre.jpage" />
 		<property name="postfile" location="usage_examples/${transformationName}Example_post.jpage" />
-		<property name="htmlfile" location="website/features/${transformationName}.html" />
+		<property name="htmlfile" location="website/views/features/details/${transformationName}.html" />
 		<mkdir dir="build/temp" />
 		<property name="preout" location="build/temp/${transformationName}Example_pre.jpage.html" />
 		<property name="postout" location="build/temp/${transformationName}Example_post.jpage.html" />
@@ -227,7 +227,8 @@ such as converting the changelog into HTML, and creating javadoc.
 			</filterchain>
 		</loadfile>
 		<delete dir="build/temp" quiet="true" />
-		<copy file="${htmlfile}" tofile="build/website/features/${transformationName}.html" overwrite="true">
+		<copy file="${htmlfile}" tofile="build/website/views/features/details/${transformationName}.html"
+			  overwrite="true">
 			<filterchain>
 				<replacetokens>
 					<token key="HTML_PRE" value="${pre}" />

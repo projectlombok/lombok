@@ -1,0 +1,89 @@
+<div class="page-header top5">
+
+    <div class="row">
+        <h1>Maven</h1>
+
+        <div>
+            You can use lombok with maven by adding the following to your <strong>pom.xml</strong>:
+            <div class="snippet">&lt;dependencies&gt;<br>
+                &ensp;&lt;dependency&gt;<br>
+                &ensp;&ensp;&lt;groupId&gt;org.projectlombok&lt;/groupId&gt;<br>
+                &ensp;&ensp;&lt;artifactId&gt;lombok&lt;/artifactId&gt;<br>
+                &ensp;&ensp;&lt;version&gt;@VERSION@&lt;/version&gt;<br>
+                &ensp;&ensp;&lt;scope&gt;provided&lt;/scope&gt;<br>
+                &ensp;&lt;/dependency&gt;<br>
+                &lt;/dependencies&gt;</div>
+        </div>
+    </div>
+    <div class="row">
+        <h1>Ivy</h1>
+
+        <div>
+            You can use lombok with ivy by adding the following to your <strong>ivy.xml</strong>:
+            <div class="snippet">&lt;dependency org="org.projectlombok" name="lombok" rev="1.16.2" conf="build"
+                /&gt;</div>
+        </div>
+    </div>
+    <div class="row">
+        <h1>SBT</h1>
+
+        <div>
+            You can use lombok with SBT by adding the following to your <strong>build.sbt</strong>:
+            <div class="snippet">libraryDependencies += "org.projectlombok" % "lombok" % "1.16.2"</div>
+        </div>
+    </div>
+    <div class="row">
+        <h1>Gradle</h1>
+
+        <div>
+            You can use lombok with gradle by adding the following to your <strong>build.gradle</strong> in the <strong>dependencies</strong>
+            block:
+            <div class="snippet">provided "org.projectlombok:lombok:1.16.2"</div>
+        </div>
+        <div>
+            <em>NOTE:</em> You'll still need to download lombok, or doubleclick on the lombok.jar file downloaded by
+            maven /
+            ivy / gradle, to install lombok into your eclipse installation.
+        </div>
+        <a id="downloadLink" href="http://projectlombok.googlecode.com/files/lombok.jar">Download lombok.jar</a>
+    </div>
+
+    <div class="row">
+
+        <h1>GWT</h1>
+
+        <p>
+            gwt (Google Web Toolkit) is compatible with lombok.
+        </p>
+
+        <p>
+            Edit your proj-debug and proj-compile batch scripts to add the following VM arguments:
+			<pre>
+java <strong>-javaagent:lombok.jar=ECJ</strong> <em>(rest of arguments)</em>
+			</pre>
+        Thanks to Stephen Haberman for figuring this out.
+        </p>
+    </div>
+
+
+    <div class="row">
+
+        <h1>Play! Framework</h1>
+
+        <p>
+            Use Aaron Freeman's
+            <a href="https://github.com/aaronfreeman/play-lombok#readme">lombok play plugin</a>
+    </div>
+
+    <div class="row">
+
+        <h1>Javadoc</h1>
+
+        <p>
+            First <a
+                ng-click="toFeature('delombok')">delombok</a> your code then run javadoc on the result.
+        </p>
+
+
+    </div>
+</div>
