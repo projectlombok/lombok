@@ -98,8 +98,8 @@ h1, h2, h3 {
 }
 
 .page-center {
-    padding-top: 21%;
-    padding-bottom: 20%;
+    padding-top: 10%;
+    padding-bottom: 19%;
 }
 
 .page-header {
@@ -114,6 +114,8 @@ h1, h2, h3 {
     overflow: auto;
     padding: 4px;
     border: 1px dotted #888;
+    text-align: left;
+    width: 635px;
 }
 
 .snippet font {
@@ -122,6 +124,7 @@ h1, h2, h3 {
 
 .snippet code {
     font-size: 14px;
+    background-color: transparent;
 }
 
 .snippet.example {
@@ -130,4 +133,9 @@ h1, h2, h3 {
 
 a {
     cursor: pointer;
+}
+
+.main-section {
+    padding-left: 100px;
+    padding-right: 100px;
 }
