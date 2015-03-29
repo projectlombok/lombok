@@ -1,0 +1,133 @@
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    margin-bottom: 60px;
+}
+
+.fork-me {
+    position: fixed;
+    width: 150px;
+    height: 150px;
+    top: 0;
+    right: 0;
+    z-index: 2000;
+}
+
+.video {
+    padding-top: 4%;
+}
+
+.name {
+    font-weight: bold;
+}
+
+.bs-callout {
+    padding: 10px;
+    margin: 20px 0;
+    border: 1px solid #eee;
+    border-left-width: 5px;
+    border-radius: 3px
+}
+
+.bs-callout h4 {
+    margin-top: 0;
+    margin-bottom: 5px
+}
+
+.bs-callout p:last-child {
+    margin-bottom: 0
+}
+
+.bs-callout code {
+    border-radius: 3px
+}
+
+.bs-callout + .bs-callout {
+    margin-top: -5px
+}
+
+.bs-callout-danger {
+    border-left-color: #ce4844
+}
+
+.bs-callout-danger h4 {
+    color: #ce4844
+}
+
+.bs-callout-warning {
+    border-left-color: #aa6708
+}
+
+.bs-callout-warning h4 {
+    color: #aa6708
+}
+
+.bs-callout-info {
+    border-left-color: #1b809e
+}
+
+.bs-callout-info h4 {
+    color: #1b809e
+}
+
+.color-swatches {
+    margin: 0 -5px;
+    overflow: hidden
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    height: 60px;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+@media (max-width: 768px) {
+    .fork-me {
+        display: none;
+    }
+}
+
+h1, h2, h3 {
+    padding: 40px;
+    text-align: center;
+}
+
+.page-center {
+    padding-top: 21%;
+    padding-bottom: 20%;
+}
+
+.page-header {
+    border-bottom: 0;
+}
+
+.header-group > h1, h2, h3 {
+    padding: 5px;
+}
+
+.snippet {
+    overflow: auto;
+    padding: 4px;
+    border: 1px dotted #888;
+}
+
+.snippet font {
+    white-space: pre;
+}
+
+.snippet code {
+    font-size: 14px;
+}
+
+.snippet.example {
+    margin: 8px 16px 8px 16px;
+}
+
+a {
+    cursor: pointer;
+}
