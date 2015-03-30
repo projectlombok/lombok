@@ -104,8 +104,13 @@ public class EclipseLocationProvider implements IdeLocationProvider {
 			if (ini.isFile()) return makeLocation(canonical(exePath), ini);
 		}
 		
-		/* Try looking for Eclipse/app/Contents/MacOS/eclipse.ini as sibling to executable; this works on Mac OS X. */ {
+		/* Try looking for Eclipse.app/Contents/MacOS/eclipse.ini as sibling to executable; this works on Mac OS X. */ {
 			File ini = new File(exePath.getParentFile(), getMacAppName() + "/Contents/MacOS/" + getIniName());
+			if (ini.isFile()) return makeLocation(canonical(exePath), ini);
+		}
+		
+		/* Starting with Eclipse Mars (with the oomph installer), the structure has changed, and it's now at Eclipse.app/Contents/Eclipse/eclipse.ini*/ {
+			File ini = new File(exePath.getParentFile(), getMacAppName() + "/Contents/Eclipse/" + getIniName());
 			if (ini.isFile()) return makeLocation(canonical(exePath), ini);
 		}
 		
