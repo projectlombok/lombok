@@ -55,44 +55,49 @@ public class EclipseLoaderPatcherTransplants {
 			Field shadowLoaderField = original.getClass().getField("lombok$shadowLoader");
 			ClassLoader shadowLoader = (ClassLoader) shadowLoaderField.get(original);
 			if (shadowLoader == null) {
-				String jarLoc = (String) original.getClass().getField("lombok$location").get(null);
-				JarFile jf = new JarFile(jarLoc);
-				InputStream in = null;
-				try {
-					ZipEntry entry = jf.getEntry("lombok/launch/ShadowClassLoader.class");
-					in = jf.getInputStream(entry);
-					byte[] bytes = new byte[65536];
-					int len = 0;
-					while (true) {
-						int r = in.read(bytes, len, bytes.length - len);
-						if (r == -1) break;
-						len += r;
-						if (len == bytes.length) throw new IllegalStateException("lombok.launch.ShadowClassLoader too large.");
+				synchronized ("lombok$shadowLoader$globalLock".intern()) {
+					shadowLoader = (ClassLoader) shadowLoaderField.get(original);
+					if (shadowLoader == null) {
+						String jarLoc = (String) original.getClass().getField("lombok$location").get(null);
+						JarFile jf = new JarFile(jarLoc);
+						InputStream in = null;
+						try {
+							ZipEntry entry = jf.getEntry("lombok/launch/ShadowClassLoader.class");
+							in = jf.getInputStream(entry);
+							byte[] bytes = new byte[65536];
+							int len = 0;
+							while (true) {
+								int r = in.read(bytes, len, bytes.length - len);
+								if (r == -1) break;
+								len += r;
+								if (len == bytes.length) throw new IllegalStateException("lombok.launch.ShadowClassLoader too large.");
+							}
+							in.close();
+							Class classLoaderClass = Class.forName("java.lang.ClassLoader");
+							Class shadowClassLoaderClass; {
+								Class[] paramTypes = new Class[4];
+								paramTypes[0] = "".getClass();
+								paramTypes[1] = new byte[0].getClass();
+								paramTypes[2] = Integer.TYPE;
+								paramTypes[3] = paramTypes[2];
+								Method defineClassMethod = classLoaderClass.getDeclaredMethod("defineClass", paramTypes);
+								defineClassMethod.setAccessible(true);
+								shadowClassLoaderClass = (Class) defineClassMethod.invoke(original, new Object[] {"lombok.launch.ShadowClassLoader", bytes, new Integer(0), new Integer(len)});
+							}
+							Class[] paramTypes = new Class[4];
+							paramTypes[0] = classLoaderClass;
+							paramTypes[1] = "".getClass();
+							paramTypes[2] = paramTypes[1];
+							paramTypes[3] = new String[0].getClass();
+							Constructor constructor = shadowClassLoaderClass.getDeclaredConstructor(paramTypes);
+							constructor.setAccessible(true);
+							shadowLoader = (ClassLoader) constructor.newInstance(new Object[] {original, "lombok", jarLoc, new String[] {"lombok."}});
+							shadowLoaderField.set(original, shadowLoader);
+						} finally {
+							if (in != null) in.close();
+							jf.close();
+						}
 					}
-					in.close();
-					Class classLoaderClass = Class.forName("java.lang.ClassLoader");
-					Class shadowClassLoaderClass; {
-						Class[] paramTypes = new Class[4];
-						paramTypes[0] = "".getClass();
-						paramTypes[1] = new byte[0].getClass();
-						paramTypes[2] = Integer.TYPE;
-						paramTypes[3] = paramTypes[2];
-						Method defineClassMethod = classLoaderClass.getDeclaredMethod("defineClass", paramTypes);
-						defineClassMethod.setAccessible(true);
-						shadowClassLoaderClass = (Class) defineClassMethod.invoke(original, new Object[] {"lombok.launch.ShadowClassLoader", bytes, new Integer(0), new Integer(len)});
-					}
-					Class[] paramTypes = new Class[4];
-					paramTypes[0] = classLoaderClass;
-					paramTypes[1] = "".getClass();
-					paramTypes[2] = paramTypes[1];
-					paramTypes[3] = new String[0].getClass();
-					Constructor constructor = shadowClassLoaderClass.getDeclaredConstructor(paramTypes);
-					constructor.setAccessible(true);
-					shadowLoader = (ClassLoader) constructor.newInstance(new Object[] {original, "lombok", jarLoc, new String[] {"lombok."}});
-					shadowLoaderField.set(original, shadowLoader);
-				} finally {
-					if (in != null) in.close();
-					jf.close();
 				}
 			}
 			

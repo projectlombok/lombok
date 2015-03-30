@@ -44,7 +44,7 @@ public class EclipseLoaderPatcher {
 				.transplant()
 				.request(StackRequest.THIS, StackRequest.PARAM1, StackRequest.PARAM2).build());
 		
-		sm.addScript(ScriptBuilder.addField().setPublic()
+		sm.addScript(ScriptBuilder.addField().setPublic().setVolatile()
 				.fieldType("Ljava/lang/ClassLoader;")
 				.fieldName("lombok$shadowLoader")
 				.targetClass("org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader")
