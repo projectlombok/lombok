@@ -1,50 +1,50 @@
 import java.util.List;
 import lombok.Singular;
-@lombok.Builder class BuilderSingularNoAutosingularize {
-  public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") class BuilderSingularNoAutosingularizeBuilder {
+@lombok.Builder class BuilderSingularNoAuto {
+  public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") class BuilderSingularNoAutoBuilder {
     private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<String> things;
     private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<String> widgets;
     private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<String> items;
-    @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutosingularizeBuilder() {
+    @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutoBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutosingularizeBuilder things(String things) {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutoBuilder things(String things) {
       if ((this.things == null))
           this.things = new java.util.ArrayList<String>();
       this.things.add(things);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutosingularizeBuilder things(java.util.Collection<? extends String> things) {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutoBuilder things(java.util.Collection<? extends String> things) {
       if ((this.things == null))
           this.things = new java.util.ArrayList<String>();
       this.things.addAll(things);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutosingularizeBuilder widget(String widget) {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutoBuilder widget(String widget) {
       if ((this.widgets == null))
           this.widgets = new java.util.ArrayList<String>();
       this.widgets.add(widget);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutosingularizeBuilder widgets(java.util.Collection<? extends String> widgets) {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutoBuilder widgets(java.util.Collection<? extends String> widgets) {
       if ((this.widgets == null))
           this.widgets = new java.util.ArrayList<String>();
       this.widgets.addAll(widgets);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutosingularizeBuilder items(String items) {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutoBuilder items(String items) {
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.add(items);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutosingularizeBuilder items(java.util.Collection<? extends String> items) {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutoBuilder items(java.util.Collection<? extends String> items) {
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.addAll(items);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutosingularize build() {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAuto build() {
       java.util.List<String> things;
       switch (((this.things == null) ? 0 : this.things.size())) {
       case 0 :
@@ -78,22 +78,22 @@ import lombok.Singular;
       default :
           items = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(this.items));
       }
-      return new BuilderSingularNoAutosingularize(things, widgets, items);
+      return new BuilderSingularNoAuto(things, widgets, items);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.lang.String toString() {
-      return (((((("BuilderSingularNoAutosingularize.BuilderSingularNoAutosingularizeBuilder(things=" + this.things) + ", widgets=") + this.widgets) + ", items=") + this.items) + ")");
+      return (((((("BuilderSingularNoAuto.BuilderSingularNoAutoBuilder(things=" + this.things) + ", widgets=") + this.widgets) + ", items=") + this.items) + ")");
     }
   }
   private @Singular List<String> things;
   private @Singular("widget") List<String> widgets;
   private @Singular List<String> items;
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutosingularize(final List<String> things, final List<String> widgets, final List<String> items) {
+  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAuto(final List<String> things, final List<String> widgets, final List<String> items) {
     super();
     this.things = things;
     this.widgets = widgets;
     this.items = items;
   }
-  public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutosingularizeBuilder builder() {
-    return new BuilderSingularNoAutosingularizeBuilder();
+  public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutoBuilder builder() {
+    return new BuilderSingularNoAutoBuilder();
   }
 }
