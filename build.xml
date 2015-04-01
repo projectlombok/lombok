@@ -190,6 +190,11 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<src path="build/transformedSources" />
 		</ivy:compile>
 
+		<ivy:compile destdir="build/lombok/Class50" source="1.4" target="1.6" includeantruntime="false">
+			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
+			<src path="build/transformedSources" />
+		</ivy:compile>
+
 		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" includeantruntime="false">
 			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
 			<src path="src/launch" />
@@ -198,6 +203,14 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<src path="src/eclipseAgent" />
 			<exclude name="lombok/javac/**" />
 			<exclude name="**/*Transplants.java" />
+			<classpath location="build/lombok" />
+			<classpath refid="build.path" />
+		</ivy:compile>
+		
+		<ivy:compile destdir="build/lombok/Class50" source="1.5" target="1.6" includeantruntime="false">
+			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
+			<src path="src/eclipseAgent" />
+			<include name="lombok/launch/PatchFixesHider.java" />
 			<classpath location="build/lombok" />
 			<classpath refid="build.path" />
 		</ivy:compile>

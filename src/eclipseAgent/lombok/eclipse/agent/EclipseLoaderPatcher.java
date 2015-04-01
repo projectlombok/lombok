@@ -52,6 +52,14 @@ public class EclipseLoaderPatcher {
 				.targetClass("org.eclipse.osgi.internal.loader.ModuleClassLoader")
 				.build());
 		
+		sm.addScript(ScriptBuilder.addField().setPublic().setVolatile().setStatic()
+				.fieldType("Ljava/lang/Class;")
+				.fieldName("lombok$shadowLoaderClass")
+				.targetClass("org.eclipse.osgi.internal.baseadaptor.DefaultClassLoader")
+				.targetClass("org.eclipse.osgi.framework.adapter.core.AbstractClassLoader")
+				.targetClass("org.eclipse.osgi.internal.loader.ModuleClassLoader")
+				.build());
+		
 		sm.addScript(ScriptBuilder.addField().setPublic().setStatic().setFinal()
 				.fieldType("Ljava/lang/String;")
 				.fieldName("lombok$location")

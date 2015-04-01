@@ -34,6 +34,7 @@ import lombok.patcher.MethodTarget;
 import lombok.patcher.ScriptManager;
 import lombok.patcher.StackRequest;
 import lombok.patcher.TargetMatcher;
+import lombok.patcher.TransplantMapper;
 import lombok.patcher.scripts.ScriptBuilder;
 
 /**
@@ -73,6 +74,12 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	private static void registerPatchScripts(Instrumentation instrumentation, boolean reloadExistingClasses, boolean ecjOnly, Class<?> launchingContext) {
 		ScriptManager sm = new ScriptManager();
 		sm.registerTransformer(instrumentation);
+		sm.setTransplantMapper(new TransplantMapper() {
+			public String getPrefixFor(int classFileFormatVersion) {
+				return classFileFormatVersion > 49 ? "Class50/" : "";
+			}
+		});
+		
 		if (!ecjOnly) {
 			EclipseLoaderPatcher.patchEquinoxLoaders(sm, launchingContext);
 			patchCatchReparse(sm);

@@ -79,6 +79,8 @@ import java.util.jar.JarFile;
  */
 class ShadowClassLoader extends ClassLoader {
 	private static final String SELF_NAME = "lombok/launch/ShadowClassLoader.class";
+	private volatile static Class<?> lombokPatcherSymbols;
+	
 	private final String SELF_BASE;
 	private final File SELF_BASE_FILE;
 	private final int SELF_BASE_LENGTH;
@@ -360,6 +362,7 @@ class ShadowClassLoader extends ClassLoader {
 			if (alreadyLoaded != null) return alreadyLoaded;
 		}
 		
+		if (lombokPatcherSymbols != null && name.equals("lombok.patcher.Symbols")) return lombokPatcherSymbols;
 		String fileNameOfClass = name.replace(".",  "/") + ".class";
 		URL res = getResource_(fileNameOfClass, true);
 		if (res == null) {
@@ -392,6 +395,7 @@ class ShadowClassLoader extends ClassLoader {
 		}
 		
 		Class<?> c = defineClass(name, b, 0, p);
+		if (name.equals("lombok.patcher.Symbols")) lombokPatcherSymbols = c;
 		if (resolve) resolveClass(c);
 		return c;
 	}
