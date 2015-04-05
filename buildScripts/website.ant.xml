@@ -357,4 +357,12 @@ such as converting the changelog into HTML, and creating javadoc.
 			<fileset dir="build/api" excludes="**/*.html" />
 		</copy>
 	</target>
+
+	<taskdef name="fmpp" classname="fmpp.tools.AntTask" classpathref="build.path"/>
+	<target name="generate-html">
+		<fmpp sourceRoot="website/" outputRoot="build/website"
+			  replaceExtension="ftl, html"
+			  modes="ignore(freemarker/*),execute(**/*.ftl), copy(**/*)"
+				/>
+	</target>
 </project>

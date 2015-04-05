@@ -5,6 +5,7 @@ html {
 
 body {
     margin-bottom: 60px;
+    font-size: 15px;
 }
 
 .fork-me {
@@ -26,7 +27,7 @@ body {
 
 .bs-callout {
     padding: 10px;
-    margin: 20px 0;
+    margin: 20px 15%;
     border: 1px solid #eee;
     border-left-width: 5px;
     border-radius: 3px
@@ -98,7 +99,7 @@ h1, h2, h3 {
 }
 
 .page-center {
-    padding-top: 10%;
+    padding-top: 9%;
     padding-bottom: 19%;
 }
 
@@ -115,7 +116,6 @@ h1, h2, h3 {
     padding: 4px;
     border: 1px dotted #888;
     text-align: left;
-    width: 635px;
 }
 
 .snippet font {
@@ -138,4 +138,17 @@ a {
 .main-section {
     padding-left: 100px;
     padding-right: 100px;
+}
+
+.tab-content > .tab-pane {
+    padding: 40px;
+    min-height: 250px;
+}
+
+.tab-content .snippet {
+    font-weight: bold;
+}
+
+.nav-tabs > li > a {
+    font-size: 20px;
 }
