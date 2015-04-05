@@ -312,6 +312,13 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.callToWrap(new Hook("org.eclipse.jdt.internal.corext.util.CodeFormatterUtil", "reformat", "org.eclipse.text.edits.TextEdit",
 						"int", "java.lang.String", "int", "int", "int", "java.lang.String", "java.util.Map"))
 				.symbol("lombok.disable").build());
+		
+		sm.addScript(ScriptBuilder.setSymbolDuringMethodCall()
+				.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeFormatFix", "createCleanUp", "org.eclipse.jdt.ui.cleanup.ICleanUpFix",
+						"org.eclipse.jdt.core.ICompilationUnit", "org.eclipse.jface.text.IRegion[]", "boolean", "boolean", "boolean", "boolean"))
+				.callToWrap(new Hook("org.eclipse.jdt.internal.corext.util.CodeFormatterUtil", "reformat", "org.eclipse.text.edits.TextEdit",
+						"int", "java.lang.String", "int", "java.lang.String", "java.util.Map"))
+				.symbol("lombok.disable").build());
 	}
 	
 	private static void patchRefactorScripts(ScriptManager sm) {
