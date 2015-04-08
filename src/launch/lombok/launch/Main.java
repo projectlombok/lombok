@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Project Lombok Authors.
+ * Copyright (C) 2014-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,11 @@
 package lombok.launch;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 
 class Main {
 	static ClassLoader createShadowClassLoader() {
-		return new ShadowClassLoader(Main.class.getClassLoader(), "lombok");
+		return new ShadowClassLoader(Main.class.getClassLoader(), "lombok", null, Arrays.<String>asList(), Arrays.asList("lombok.patcher.Symbols"));
 	}
 	
 	public static void main(String[] args) throws Throwable {

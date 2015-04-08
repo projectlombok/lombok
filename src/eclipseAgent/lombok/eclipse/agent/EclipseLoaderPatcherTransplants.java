@@ -26,6 +26,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
@@ -92,14 +93,15 @@ public class EclipseLoaderPatcherTransplants {
 								jf.close();
 							}
 						}
-						Class[] paramTypes = new Class[4];
+						Class[] paramTypes = new Class[5];
 						paramTypes[0] = classLoaderClass;
 						paramTypes[1] = "".getClass();
 						paramTypes[2] = paramTypes[1];
-						paramTypes[3] = new String[0].getClass();
+						paramTypes[3] = Class.forName("java.util.List");
+						paramTypes[4] = paramTypes[3];
 						Constructor constructor = shadowClassLoaderClass.getDeclaredConstructor(paramTypes);
 						constructor.setAccessible(true);
-						shadowLoader = (ClassLoader) constructor.newInstance(new Object[] {original, "lombok", jarLoc, new String[] {"lombok."}});
+						shadowLoader = (ClassLoader) constructor.newInstance(new Object[] {original, "lombok", jarLoc, Arrays.asList(new Object[] {"lombok."}), Arrays.asList(new Object[] {"lombok.patcher.Symbols"})});
 						shadowLoaderField.set(original, shadowLoader);
 					}
 				}

@@ -75,8 +75,9 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		ScriptManager sm = new ScriptManager();
 		sm.registerTransformer(instrumentation);
 		sm.setTransplantMapper(new TransplantMapper() {
-			public String getPrefixFor(int classFileFormatVersion) {
-				return classFileFormatVersion > 49 ? "Class50/" : "";
+			public String mapResourceName(int classFileFormatVersion, String resourceName) {
+				if (classFileFormatVersion < 50) return resourceName;
+				return "Class50/" + resourceName;
 			}
 		});
 		

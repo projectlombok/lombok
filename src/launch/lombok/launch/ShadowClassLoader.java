@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Project Lombok Authors.
+ * Copyright (C) 2014-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -79,7 +81,7 @@ import java.util.jar.JarFile;
  */
 class ShadowClassLoader extends ClassLoader {
 	private static final String SELF_NAME = "lombok/launch/ShadowClassLoader.class";
-	private volatile static Class<?> lombokPatcherSymbols;
+	private static final ConcurrentMap<String, Class<?>> highlanderMap = new ConcurrentHashMap<String, Class<?>>();
 	
 	private final String SELF_BASE;
 	private final File SELF_BASE_FILE;
@@ -88,27 +90,25 @@ class ShadowClassLoader extends ClassLoader {
 	private final List<File> override = new ArrayList<File>();
 	private final String sclSuffix;
 	private final List<String> parentExclusion = new ArrayList<String>();
-	
-	/**
-	 * Calls the {@link ShadowClassLoader(ClassLoader, String, String, String[]) constructor with no exclusions and the source of this class as base.
-	 */
-	ShadowClassLoader(ClassLoader source, String sclSuffix) {
-		this(source, sclSuffix, null);
-	}
+	private final List<String> highlanders = new ArrayList<String>();
 	
 	/**
 	 * @param source The 'parent' classloader.
 	 * @param sclSuffix The suffix of the shadowed class files in our own jar. For example, if this is {@code lombok}, then the class files in your jar should be {@code foo/Bar.SCL.lombok} and not {@code foo/Bar.class}.
 	 * @param selfBase The (preferably absolute) path to our own jar. This jar will be searched for class/SCL.sclSuffix files.
 	 * @param parentExclusion For example {@code "lombok."}; upon invocation of loadClass of this loader, the parent loader ({@code source}) will NOT be invoked if the class to be loaded begins with anything in the parent exclusion list. No exclusion is applied for getResource(s).
+	 * @param highlanders SCL will put in extra effort to ensure that these classes (in simple class spec, so {@code foo.bar.baz.ClassName}) are only loaded once as a class, even if many different classloaders try to load classes, such as equinox/OSGi.
 	 */
-	ShadowClassLoader(ClassLoader source, String sclSuffix, String selfBase, String... parentExclusion) {
+	ShadowClassLoader(ClassLoader source, String sclSuffix, String selfBase, List<String> parentExclusion, List<String> highlanders) {
 		super(source);
 		this.sclSuffix = sclSuffix;
 		if (parentExclusion != null) for (String pe : parentExclusion) {
 			pe = pe.replace(".", "/");
 			if (!pe.endsWith("/")) pe = pe + "/";
 			this.parentExclusion.add(pe);
+		}
+		if (highlanders != null) for (String hl : highlanders) {
+			this.highlanders.add(hl);
 		}
 		
 		if (selfBase != null) {
@@ -362,8 +362,12 @@ class ShadowClassLoader extends ClassLoader {
 			if (alreadyLoaded != null) return alreadyLoaded;
 		}
 		
-		if (lombokPatcherSymbols != null && name.equals("lombok.patcher.Symbols")) return lombokPatcherSymbols;
-		String fileNameOfClass = name.replace(".",  "/") + ".class";
+		if (highlanders.contains(name)) {
+			Class<?> c = highlanderMap.get(name);
+			if (c != null) return c;
+		}
+		
+		String fileNameOfClass = name.replace(".", "/") + ".class";
 		URL res = getResource_(fileNameOfClass, true);
 		if (res == null) {
 			if (!exclusionListMatch(fileNameOfClass)) return super.loadClass(name, resolve);
@@ -394,8 +398,22 @@ class ShadowClassLoader extends ClassLoader {
 			throw new ClassNotFoundException("I/O exception reading class " + name, e);
 		}
 		
-		Class<?> c = defineClass(name, b, 0, p);
-		if (name.equals("lombok.patcher.Symbols")) lombokPatcherSymbols = c;
+		Class<?> c;
+		try {
+			c = defineClass(name, b, 0, p);
+		} catch (LinkageError e) {
+			if (highlanders.contains(name)) {
+				Class<?> alreadyDefined = highlanderMap.get(name);
+				if (alreadyDefined != null) return alreadyDefined;
+			}
+			throw e;
+		}
+		
+		if (highlanders.contains(name)) {
+			Class<?> alreadyDefined = highlanderMap.putIfAbsent(name, c);
+			if (alreadyDefined != null) c = alreadyDefined;
+		}
+		
 		if (resolve) resolveClass(c);
 		return c;
 	}
