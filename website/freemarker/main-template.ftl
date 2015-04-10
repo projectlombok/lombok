@@ -105,13 +105,13 @@
     <#nested>
 </div>
 <footer class="container">
-    <footer class="footer text-center">
+    <div class="footer text-center">
         <div class="container">
             <a href="/credits.html">credits</a> | Copyright &copy; 2009-2015 The Project Lombok
             Authors, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT
             license</a>.
         </div>
-    </footer>
+    </div>
 </footer>
 </body>
 </html>
