@@ -761,4 +761,11 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			<property name="ssh.keyfile" value="${ssh.keyfile}" />
 		</ant>
 	</target>
+
+	<target name="website-generate-html"
+			description="generates html">
+		<ant antfile="buildScripts/website.ant.xml" target="generate-html" inheritAll="false">
+		</ant>
+	</target>
+
 </project>
