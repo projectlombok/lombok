@@ -1,5 +1,5 @@
 final class UtilityClass {
-	private static String someField;
+	private static long someField = System.currentTimeMillis();
 	static void someMethod() {
 		System.out.println();
 	}

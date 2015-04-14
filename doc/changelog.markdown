@@ -2,13 +2,16 @@ Lombok Changelog
 ----------------
 
 ### v1.16.3 "Edgy Guinea Pig"
+* BUGFIX: Lombok now works with Eclipse Mars.
+* BUGFIX: @UtilityClass could result in uninitialized static variables if compiled with ecj/eclipse. [Issue #804](https://code.google.com/p/projectlombok/issues/detail?id=804)
+* BUGFIX: This version of lombok has a refactored launcher (the one introduced in v1.16.0), which fixes various bugs related to errors in eclipse concerning loading classes, failure to find lombok classes, and errors on ClassLoaders. Probably impacts issues [#732](https://code.google.com/p/projectlombok/issues/detail?id=732) and [#791](https://code.google.com/p/projectlombok/issues/detail?id=791).
 
 ### v1.16.2 (February 10th, 2015)
 * FEATURE: The config key `lombok.extern.findbugs.addSuppressFBWarnings` can now be used to add findbugs suppress warnings annotations to all code lombok generates. This addresses feature request [Issue #702](https://code.google.com/p/projectlombok/issues/detail?id=702).
 * FEATURE: New lombok annotation: `@UtilityClass`, for making utility classes (not instantiable, contains only static 'function' methods). See the [feature documentation](http://projectlombok.org/features/experimental/UtilityClass.html) for more information.
 * BUGFIX: The ant `delombok` task was broken starting with v1.16.0. Note that the task def class has been changed; taskdef `lombok.delombok.ant.Tasks$Delombok` instead of the old `lombok.delombok.ant.DelombokTask`. [Issue #775](https://code.google.com/p/projectlombok/issues/detail?id=775).
 * BUGFIX: `val` in javac would occasionally fail if used inside inner classes. This is (probably) fixed. [Issue #694](https://code.google.com/p/projectlombok/issues/detail?id=694) and [Issue #581](https://code.google.com/p/projectlombok/issues/detail?id=581).
-* BUGFIX: Starting with v1.16.0, lombok would fail to execute as an executable jar if it was in a path was spaced in it. [Issue #777](https://code.google.com/p/projectlombok/issues/detail?id=777).
+* BUGFIX: Starting with v1.16.0, lombok would fail to execute as an executable jar if it was in a path with spaces in it. [Issue #777](https://code.google.com/p/projectlombok/issues/detail?id=777).
 * BUGFIX: v1.16.0 did not work in old eclipse versions (such as eclipse indigo). [Issue #783](https://code.google.com/p/projectlombok/issues/detail?id=783).
 
 ### v1.16.0 "Candid Duck" (January 26th, 2015)

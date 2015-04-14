@@ -31,6 +31,7 @@ import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.Clinit;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ExplicitConstructorCall;
@@ -104,6 +105,8 @@ public class HandleUtilityClass extends EclipseAnnotationHandler<UtilityClass> {
 		classDecl.modifiers |= ClassFileConstants.AccFinal;
 		
 		boolean markStatic = true;
+		boolean requiresClInit = false;
+		boolean alreadyHasClinit = false;
 		
 		if (typeNode.up().getKind() == Kind.COMPILATION_UNIT) markStatic = false;
 		if (markStatic && typeNode.up().getKind() == Kind.TYPE) {
@@ -116,7 +119,10 @@ public class HandleUtilityClass extends EclipseAnnotationHandler<UtilityClass> {
 		for (EclipseNode element : typeNode.down()) {
 			if (element.getKind() == Kind.FIELD) {
 				FieldDeclaration fieldDecl = (FieldDeclaration) element.get();
-				fieldDecl.modifiers |= ClassFileConstants.AccStatic;
+				if ((fieldDecl.modifiers & ClassFileConstants.AccStatic) == 0) {
+					requiresClInit = true;
+					fieldDecl.modifiers |= ClassFileConstants.AccStatic;
+				}
 			} else if (element.getKind() == Kind.METHOD) {
 				AbstractMethodDeclaration amd = (AbstractMethodDeclaration) element.get();
 				if (amd instanceof ConstructorDeclaration) {
@@ -128,6 +134,8 @@ public class HandleUtilityClass extends EclipseAnnotationHandler<UtilityClass> {
 					}
 				} else if (amd instanceof MethodDeclaration) {
 					amd.modifiers |= ClassFileConstants.AccStatic;
+				} else if (amd instanceof Clinit) {
+					alreadyHasClinit = true;
 				}
 			} else if (element.getKind() == Kind.TYPE) {
 				((TypeDeclaration) element.get()).modifiers |= ClassFileConstants.AccStatic;
@@ -135,6 +143,7 @@ public class HandleUtilityClass extends EclipseAnnotationHandler<UtilityClass> {
 		}
 		
 		if (makeConstructor) createPrivateDefaultConstructor(typeNode, annotationNode);
+		if (requiresClInit && !alreadyHasClinit) classDecl.addClinit();
 	}
 	
 	private static final char[][] JAVA_LANG_UNSUPPORTED_OPERATION_EXCEPTION = new char[][] {

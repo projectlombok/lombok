@@ -1,5 +1,7 @@
 final @lombok.experimental.UtilityClass class UtilityClassErrors1 {
   private static String someField;
+  <clinit>() {
+  }
   protected UtilityClassErrors1() {
     super();
   }

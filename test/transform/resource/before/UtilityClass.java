@@ -1,6 +1,6 @@
 @lombok.experimental.UtilityClass
 class UtilityClass {
-	private String someField;
+	private long someField = System.currentTimeMillis();
 	
 	void someMethod() {
 		System.out.println();
