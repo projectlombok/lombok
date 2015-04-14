@@ -1,6 +1,8 @@
 Lombok Changelog
 ----------------
 
+### v1.16.5 "Edgy Guinea Pig"
+
 ### v1.16.4 (April 14th, 2015)
 * BUGFIX: Lombok now works with Eclipse Mars.
 * BUGFIX: @UtilityClass could result in uninitialized static variables if compiled with ecj/eclipse. [Issue #804](https://code.google.com/p/projectlombok/issues/detail?id=804)
