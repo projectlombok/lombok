@@ -52,7 +52,7 @@ public class PatchExtensionMethodCompletionProposalPortal {
 			}
 			//ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
 			//do anything useful here.
-			return (IJavaCompletionProposal[])javaCompletionProposals;
+			return (IJavaCompletionProposal[]) javaCompletionProposals;
 		}
 	}
 	

@@ -60,8 +60,6 @@ import org.eclipse.jdt.ui.text.java.CompletionProposalCollector;
 import org.eclipse.jdt.ui.text.java.IJavaCompletionProposal;
 
 public class PatchExtensionMethodCompletionProposal {
-
-	
 	public static IJavaCompletionProposal[] getJavaCompletionProposals(IJavaCompletionProposal[] javaCompletionProposals,
 			CompletionProposalCollector completionProposalCollector) {
 		
@@ -178,7 +176,7 @@ public class PatchExtensionMethodCompletionProposal {
 		return !proposals.isEmpty() && Reflection.isComplete();
 	}
 	
-	private static int getReplacementOffset(IJavaCompletionProposal proposal) {
+	private static int getReplacementOffset(Object proposal) {
 		try {
 			return Reflection.replacementOffsetField.getInt(proposal);
 		} catch (Exception ignore) {
