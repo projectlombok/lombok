@@ -1,6 +1,6 @@
 <ivy-module version="2.0">
 	<info organisation="projectlombok.org" module="markdownj" revision="1.02b4" publication="20100419062500">
-		<description homepage="http://code.google.com/p/markdownj/" />
+		<description homepage="https://github.com/myabc/markdownj" />
 	</info>
 	<configurations>
 		<conf name="build" />
