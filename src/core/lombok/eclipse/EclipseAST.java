@@ -70,7 +70,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	}
 	
 	private static volatile boolean skipEclipseWorkspaceBasedFileResolver = false;
-	private static final URI NOT_CALCULATED_MARKER = URI.create("http://projectlombok.org/not/calculated");
+	private static final URI NOT_CALCULATED_MARKER = URI.create("https://projectlombok.org/not/calculated");
 	private URI memoizedAbsoluteFileLocation = NOT_CALCULATED_MARKER;
 	
 	public URI getAbsoluteFileLocation() {

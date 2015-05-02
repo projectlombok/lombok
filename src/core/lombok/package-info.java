@@ -29,6 +29,6 @@
  * <li>{@code lombok.experimental} – This package contains lombok features that are new or likely to change before committing to long-term support.
  * </ul>
  * 
- * @see <a href="http://projectlombok.org/features/index.html">Lombok features</a>
+ * @see <a href="https://projectlombok.org/features/index.html">Lombok features</a>
  */
 package lombok;

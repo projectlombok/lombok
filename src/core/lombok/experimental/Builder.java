@@ -48,7 +48,7 @@ import java.lang.annotation.Target;
  * as the relevant class, unless a static method has been annotated, in which case it'll be equal to the
  * return type of that method.
  * <p>
- * Complete documentation is found at <a href="http://projectlombok.org/features/experimental/Builder.html">the project lombok features page for &#64;Builder</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Builder.html">the project lombok features page for &#64;Builder</a>.
  * <p>
  * <p>
  * Before:

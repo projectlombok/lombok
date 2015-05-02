@@ -40,7 +40,7 @@ import java.lang.annotation.Target;
  * that exist in {@link Object}, the {@code canEqual(Object)} method, and any methods that appear in types
  * that are listed in the {@code excludes} property.
  * <p>
- * Complete documentation is found at <a href="http://projectlombok.org/features/experimental/Delegate.html">the project lombok features page for &#64;Delegate</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Delegate.html">the project lombok features page for &#64;Delegate</a>.
  */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.SOURCE)

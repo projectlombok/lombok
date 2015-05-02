@@ -31,7 +31,7 @@ import lombok.AccessLevel;
 /**
  * Adds modifiers to each field in the type with this annotation.
  * <p>
- * Complete documentation is found at <a href="http://projectlombok.org/features/experimental/FieldDefaults.html">the project lombok features page for &#64;FieldDefaults</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/FieldDefaults.html">the project lombok features page for &#64;FieldDefaults</a>.
  * <p>
  * If {@code makeFinal} is {@code true}, then each field that is not annotated with {@code @NonFinal} will have the {@code final} modifier added.
  * <p>

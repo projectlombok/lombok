@@ -35,7 +35,7 @@ import java.lang.annotation.Target;
  * {@code $LOCK} is used. These will be generated if needed and if they aren't already present. The contents
  * of the fields will be serializable.
  * <p>
- * Complete documentation is found at <a href="http://projectlombok.org/features/Synchronized.html">the project lombok features page for &#64;Synchronized</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/Synchronized.html">the project lombok features page for &#64;Synchronized</a>.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.SOURCE)

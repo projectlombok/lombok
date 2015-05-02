@@ -28,6 +28,6 @@
  * to the official feature documentation.
  * 
  * @see lombok
- * @see <a href="http://projectlombok.org/features/experimental/index.html">Lombok features (experimental)</a>
+ * @see <a href="https://projectlombok.org/features/experimental/index.html">Lombok features (experimental)</a>
  */
 package lombok.experimental;

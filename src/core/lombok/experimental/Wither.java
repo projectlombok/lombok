@@ -31,7 +31,7 @@ import lombok.AccessLevel;
 /**
  * Put on any field to make lombok build a 'wither' - a withX method which produces a clone of this object (except for 1 field which gets a new value).
  * <p>
- * Complete documentation is found at <a href="http://projectlombok.org/features/experimental/Wither.html">the project lombok features page for &#64;Wither</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Wither.html">the project lombok features page for &#64;Wither</a>.
  * <p>
  * Even though it is not listed, this annotation also has the {@code onParam} and {@code onMethod} parameter. See the full documentation for more details.
  * <p>

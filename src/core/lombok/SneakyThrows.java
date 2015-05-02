@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  * checked exception types. The JVM does not check for the consistency of the checked exception system; javac does,
  * and this annotation lets you opt out of its mechanism.
  * <p>
- * Complete documentation is found at <a href="http://projectlombok.org/features/SneakyThrows.html">the project lombok features page for &#64;SneakyThrows</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/SneakyThrows.html">the project lombok features page for &#64;SneakyThrows</a>.
  * <p>
  * Example:
  * <pre>

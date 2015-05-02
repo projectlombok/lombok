@@ -95,7 +95,7 @@ public class Main {
 					in.close();
 				}
 			} catch (Exception e) {
-				System.err.println("License file not found. Check http://projectlombok.org/LICENSE");
+				System.err.println("License file not found. Check https://projectlombok.org/LICENSE");
 				return 1;
 			}
 		}

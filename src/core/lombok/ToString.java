@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 /**
  * Generates an implementation for the {@code toString} method inherited by all objects, consisting of printing the values of relevant fields.
  * <p>
- * Complete documentation is found at <a href="http://projectlombok.org/features/ToString.html">the project lombok features page for &#64;ToString</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/ToString.html">the project lombok features page for &#64;ToString</a>.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)

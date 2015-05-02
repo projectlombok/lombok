@@ -32,7 +32,7 @@ import lombok.core.Version;
 public class PatchFixesShadowLoaded {
 	public static String addLombokNotesToEclipseAboutDialog(String origReturnValue, String key) {
 		if ("aboutText".equals(key)) {
-			return origReturnValue + "\n\nLombok " + Version.getFullVersion() + " is installed. http://projectlombok.org/";
+			return origReturnValue + "\n\nLombok " + Version.getFullVersion() + " is installed. https://projectlombok.org/";
 		}
 		return origReturnValue;
 	}

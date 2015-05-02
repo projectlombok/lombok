@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 /**
  * A container for settings for the generation of getters and setters.
  * <p>
- * Complete documentation is found at <a href="http://projectlombok.org/features/experimental/Accessors.html">the project lombok features page for &#64;Accessors</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Accessors.html">the project lombok features page for &#64;Accessors</a>.
  * <p>
  * Using this annotation does nothing by itself; an annotation that makes lombok generate getters and setters,
  * such as {@link lombok.Setter} or {@link lombok.Data} is also required.

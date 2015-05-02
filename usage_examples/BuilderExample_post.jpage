@@ -53,7 +53,7 @@ public class BuilderExample {
 		
 		public BuilderExample build() {
 			// complicated switch statement to produce a compact properly sized immutable set omitted.
-			// go to http://projectlombok.org/features/Singular-snippet.html to see it.
+			// go to https://projectlombok.org/features/Singular-snippet.html to see it.
 			Set<String> occupations = ...;
 			return new BuilderExample(name, age, occupations);
 		}

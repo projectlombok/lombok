@@ -75,7 +75,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	
 	<target name="download-ipp" unless="ivyplusplus.available">
 		<mkdir dir="lib" />
-		<get src="http://projectlombok.org/downloads/ivyplusplus.jar" dest="lib/ivyplusplus.jar" usetimestamp="true" />
+		<get src="https://projectlombok.org/downloads/ivyplusplus.jar" dest="lib/ivyplusplus.jar" usetimestamp="true" />
 	</target>
 	
 	<target name="load-ipp" depends="download-ipp">
@@ -84,7 +84,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</target>
 	
 	<target name="redownload-ipp" unless="ivyplusplus.minimumAvailable">
-		<get src="http://projectlombok.org/downloads/ivyplusplus.jar" dest="lib/ivyplusplus.jar" />
+		<get src="https://projectlombok.org/downloads/ivyplusplus.jar" dest="lib/ivyplusplus.jar" />
 		<fail>A new version of ivyplusplus was required and has been downloaded. Rerun the script to continue.</fail>
 	</target>
 	
@@ -104,7 +104,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	
 	<target name="ensureBuildDeps" depends="config-ivy">
 		<mkdir dir="lib/openJDK6Environment" />
-		<get src="http://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />
 		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build, javac7" />
 		<ivy:retrieve />
 	</target>
@@ -309,7 +309,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 				<srcdir dir="test/configuration/src" test="true" />
 			</module>
 			<settings>
-				<url url="http://projectlombok.org/downloads/lombok.intellij.settings" />
+				<url url="https://projectlombok.org/downloads/lombok.intellij.settings" />
 			</settings>
 			<apt enabled="true" />
 		</ivy:intellijgen>
@@ -341,7 +341,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<conf name="test" sources="contrib" />
 			<local org="org.projectlombok" name="lombok.patcher" dir="../lombok.patcher" />
 			<settings>
-				<url url="http://projectlombok.org/downloads/lombok.eclipse.settings" />
+				<url url="https://projectlombok.org/downloads/lombok.eclipse.settings" />
 			</settings>
 			<apt location="lib/build/projectlombok.org-spi.jar" />
 		</ivy:eclipsegen>
@@ -493,8 +493,8 @@ ${sourceWarning}</echo>
 
 	<target name="setupJavaOpenJDK6TestEnvironment" depends="ensureTestDeps, contrib" description="Sets up the test so that 'ant test' will test against OpenJDK6.">
 		<mkdir dir="lib/openJDK6Environment" />
-		<get src="http://projectlombok.org/ivyrepo/langtools/javac-1.6.0.18.jar" dest="lib/openJDK6Environment/javac6.jar" verbose="true" usetimestamp="true" />
-		<get src="http://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/javac-1.6.0.18.jar" dest="lib/openJDK6Environment/javac6.jar" verbose="true" usetimestamp="true" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />
 		<propertyfile file="testenvironment.properties">
 			<entry key="test.location.javac" value="lib/openJDK6Environment/javac6.jar" />
 			<entry key="test.location.ecj" value="lib/ecj7/org.eclipse.custom-ecj.jar" />
@@ -508,8 +508,8 @@ ${sourceWarning}</echo>
 
 	<target name="setupJavaOpenJDK7TestEnvironment" depends="ensureTestDeps, contrib" description="Sets up the test so that 'ant test' will test against OpenJDK7.">
 		<mkdir dir="lib/openJDK7Environment" />
-		<get src="http://projectlombok.org/ivyrepo/langtools/javac-1.7.0.jar" dest="lib/openJDK7Environment/javac7.jar" verbose="true" usetimestamp="true" />
-		<get src="http://projectlombok.org/ivyrepo/langtools/rt-openjdk7.jar" dest="lib/openJDK7Environment/rt-openjdk7.jar" verbose="true" usetimestamp="true" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/javac-1.7.0.jar" dest="lib/openJDK7Environment/javac7.jar" verbose="true" usetimestamp="true" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk7.jar" dest="lib/openJDK7Environment/rt-openjdk7.jar" verbose="true" usetimestamp="true" />
 		<propertyfile file="testenvironment.properties">
 			<entry key="test.location.javac" value="lib/openJDK7Environment/javac7.jar" />
 			<entry key="test.location.ecj" value="lib/ecj7/org.eclipse.custom-ecj.jar" />
@@ -523,8 +523,8 @@ ${sourceWarning}</echo>
 	
 	<target name="setupJavaOracle7TestEnvironment" depends="ensureTestDeps, contrib" description="Sets up the test so that 'ant test' will test against OpenJDK7.">
 		<mkdir dir="lib/oracleJDK7Environment" />		
-		<get src="http://projectlombok.org/ivyrepo/langtools/oracle-jdk7-tools.jar" dest="lib/oracleJDK7Environment/tools.jar" verbose="true" usetimestamp="true" />
-		<get src="http://projectlombok.org/ivyrepo/langtools/oracle-jdk7-rt.jar" dest="lib/oracleJDK7Environment/rt.jar" verbose="true" usetimestamp="true" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/oracle-jdk7-tools.jar" dest="lib/oracleJDK7Environment/tools.jar" verbose="true" usetimestamp="true" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/oracle-jdk7-rt.jar" dest="lib/oracleJDK7Environment/rt.jar" verbose="true" usetimestamp="true" />
 		<propertyfile file="testenvironment.properties">
 			<entry key="test.location.javac" value="lib/oracleJDK7Environment/tools.jar" />
 			<entry key="test.location.ecj" value="lib/ecj7/org.eclipse.custom-ecj.jar" />
@@ -538,9 +538,9 @@ ${sourceWarning}</echo>
 	
 	<target name="setupJavaOracle8TestEnvironment" depends="ensureTestDeps, contrib" description="Sets up the test so that 'ant test' will test against OpenJDK8.">
 		<mkdir dir="lib/oracleJDK8Environment" />
-		<get src="http://projectlombok.org/ivyrepo/langtools/jdk8-javac.jar" dest="lib/oracleJDK8Environment/javac8.jar" verbose="true" usetimestamp="true" />
-		<get src="http://projectlombok.org/ivyrepo/langtools/oracle-jdk8-rt.jar" dest="lib/oracleJDK8Environment/rt.jar" verbose="true" usetimestamp="true" />
-		<get src="http://projectlombok.org/ivyrepo/langtools/jdk8-javac-sources.zip" dest="lib/oracleJDK8Environment/javac8-sources.zip" verbose="true" usetimestamp="true" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/jdk8-javac.jar" dest="lib/oracleJDK8Environment/javac8.jar" verbose="true" usetimestamp="true" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/oracle-jdk8-rt.jar" dest="lib/oracleJDK8Environment/rt.jar" verbose="true" usetimestamp="true" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/jdk8-javac-sources.zip" dest="lib/oracleJDK8Environment/javac8-sources.zip" verbose="true" usetimestamp="true" />
 		<propertyfile file="testenvironment.properties">
 			<entry key="test.location.javac" value="lib/oracleJDK8Environment/javac8.jar" />
 			<entry key="test.location.ecj" value="lib/ecj8/org.eclipse.custom-ecj.jar" />
@@ -601,8 +601,8 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		<javadoc sourcepath="src/utils" defaultexcludes="yes" destdir="build/utils-api" windowtitle="Lombok Utils">
 			<classpath refid="build.path" />
 			<link href="http://download.oracle.com/javase/6/docs/api/" />
-			<header><![CDATA[<a href='http://projectlombok.org/' target='_blank'>Lombok</a> - ]]>v${lombok.version}</header>
-			<bottom><![CDATA[<i>Copyright &copy; 2011 The Project Lombok Authors, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php'>MIT licence</a>.]]></bottom>
+			<header><![CDATA[<a href='https://projectlombok.org/' target='_blank'>Lombok</a> - ]]>v${lombok.version}</header>
+			<bottom><![CDATA[<i>Copyright &copy; 2011-2015 The Project Lombok Authors, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php' target='_blank'>MIT licence</a>.]]></bottom>
 		</javadoc>
 		<!-- bugfix for boneheaded javadoc bug where ?is-external=true is inserted before an anchor ref, breaking the anchor ref.
 		is-external=true doesn't actually do anything, so, we'll just get rid of it. -->

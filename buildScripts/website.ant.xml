@@ -62,7 +62,7 @@ such as converting the changelog into HTML, and creating javadoc.
 	</target>
 	
 	<target name="check-videos-uptodate" depends="build-webuptodate">
-		<webuptodate property="videos.uptodate" urlbase="http://projectlombok.org/videos/">
+		<webuptodate property="videos.uptodate" urlbase="https://projectlombok.org/videos/">
 			<srcfiles dir="website/videos" includes="**/*" />
 		</webuptodate>
 	</target>
@@ -324,7 +324,7 @@ such as converting the changelog into HTML, and creating javadoc.
 		<property name="javadoc.overview.html" location="build/javadoc.overview.html" />
 		<echo file="${javadoc.overview.html}"><![CDATA[<html><body>
 			Welcome to the lombok javadoc.&nbsp;If you're just looking to learn more about using lombok
-			You probably want to look at <a href="http://projectlombok.org/features/index.html">the feature documentation</a>.&nbsp;Otherwise,
+			You probably want to look at <a href="https://projectlombok.org/features/index.html">the feature documentation</a>.&nbsp;Otherwise,
 			check the <a href="lombok/package-summary.html">lombok</a> package.&nbsp;If you're trying to extend lombok or
 			write your own plugins, the other packages are what you're looking for.</body></html>
 		]]></echo>
@@ -335,8 +335,8 @@ such as converting the changelog into HTML, and creating javadoc.
 			<link href="http://www.slf4j.org/api/" />
 			<link href="http://commons.apache.org/logging/apidocs/" />
 			<link href="http://logging.apache.org/log4j/1.2/apidocs/" />
-			<header><![CDATA[<a href='http://projectlombok.org/' target='_blank'>Lombok</a> - ]]>v${lombok.version}</header>
-			<bottom><![CDATA[<i>Copyright &copy; 2009-2015 The Project Lombok Authors, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php'>MIT licence</a>.]]></bottom>
+			<header><![CDATA[<a href='https://projectlombok.org/' target='_blank'>Lombok</a> - ]]>v${lombok.version}</header>
+			<bottom><![CDATA[<i>Copyright &copy; 2009-2015 The Project Lombok Authors, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php' target='_blank'>MIT licence</a>.]]></bottom>
 		</javadoc>
 		<!-- bugfix for boneheaded javadoc bug where ?is-external=true is inserted before an anchor ref, breaking the anchor ref.
 		is-external=true doesn't actually do anything, so, we'll just get rid of it. -->

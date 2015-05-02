@@ -8,7 +8,7 @@
 		<conf name="sources" />
 	</configurations>
 	<publications>
-		<artifact conf="runtime" url="http://projectlombok.org/ivyrepo/langtools/javac-1.6.0.18.jar" />
-		<artifact type="zip" conf="sources" url="http://projectlombok.org/ivyrepo/langtools/javac-1.6.0.18-sources.zip" />
+		<artifact conf="runtime" url="https://projectlombok.org/ivyrepo/langtools/javac-1.6.0.18.jar" />
+		<artifact type="zip" conf="sources" url="https://projectlombok.org/ivyrepo/langtools/javac-1.6.0.18-sources.zip" />
 	</publications>
 </ivy-module>

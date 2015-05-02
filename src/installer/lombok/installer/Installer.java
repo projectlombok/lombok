@@ -56,7 +56,7 @@ import com.zwitserloot.cmdreader.Shorthand;
  * and looks in some common places on Mac OS X, Linux and Windows.
  */
 public class Installer {
-	static final URI ABOUT_LOMBOK_URL = URI.create("http://projectlombok.org");
+	static final URI ABOUT_LOMBOK_URL = URI.create("https://projectlombok.org");
 	static final List<IdeLocationProvider> locationProviders;
 	
 	static {

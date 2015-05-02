@@ -6,13 +6,13 @@
 	<packaging>jar</packaging>
 	<version>@VERSION@</version>
 	<name>Project Lombok</name>
-	<url>http://projectlombok.org</url>
+	<url>https://projectlombok.org</url>
 	<description>Spice up your java: Automatic Resource Management, automatic generation of getters, setters, equals, hashCode and toString, and more!</description>
 	<dependencies></dependencies>
 	<licenses>
 		<license>
 			<name>The MIT License</name>
-			<url>http://projectlombok.org/LICENSE</url>
+			<url>https://projectlombok.org/LICENSE</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>

@@ -9,7 +9,7 @@
 		<conf name="sources" />
 	</configurations>
 	<publications>
-		<artifact conf="runtime" url="http://projectlombok.org/ivyrepo/tools/com.zwitserloot.cmdreader-1.2.jar" />
-		<artifact type="zip" conf="sources" url="http://projectlombok.org/ivyrepo/tools/com.zwitserloot.cmdreader-src-1.2.zip" />
+		<artifact conf="runtime" url="https://projectlombok.org/ivyrepo/tools/com.zwitserloot.cmdreader-1.2.jar" />
+		<artifact type="zip" conf="sources" url="https://projectlombok.org/ivyrepo/tools/com.zwitserloot.cmdreader-src-1.2.zip" />
 	</publications>
 </ivy-module>

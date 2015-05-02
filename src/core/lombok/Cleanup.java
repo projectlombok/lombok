@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
  * of what happens. Implemented by wrapping all statements following the local variable declaration to the
  * end of your scope into a try block that, as a finally action, closes the resource.
  * <p>
- * Complete documentation is found at <a href="http://projectlombok.org/features/Cleanup.html">the project lombok features page for &#64;Cleanup</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/Cleanup.html">the project lombok features page for &#64;Cleanup</a>.
  * <p>
  * Example:
  * <pre>

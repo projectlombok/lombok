@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * <p>
  * Equivalent to {@code @Getter @Setter @RequiredArgsConstructor @ToString @EqualsAndHashCode}.
  * <p>
- * Complete documentation is found at <a href="http://projectlombok.org/features/Data.html">the project lombok features page for &#64;Data</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/Data.html">the project lombok features page for &#64;Data</a>.
  * 
  * @see Getter
  * @see Setter

@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 /**
  * Generates implementations for the {@code equals} and {@code hashCode} methods inherited by all objects, based on relevant fields.
  * <p>
- * Complete documentation is found at <a href="http://projectlombok.org/features/EqualsAndHashCode.html">the project lombok features page for &#64;EqualsAndHashCode</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/EqualsAndHashCode.html">the project lombok features page for &#64;EqualsAndHashCode</a>.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)

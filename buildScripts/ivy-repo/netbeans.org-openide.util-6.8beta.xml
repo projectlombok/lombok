@@ -7,6 +7,6 @@
 		<conf name="build" />
 	</configurations>
 	<publications>
-		<artifact conf="build" url="http://projectlombok.org/ivyrepo/netbeans/org-openide-util_6.8beta.jar" />
+		<artifact conf="build" url="https://projectlombok.org/ivyrepo/netbeans/org-openide-util_6.8beta.jar" />
 	</publications>
 </ivy-module>
