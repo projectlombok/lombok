@@ -33,7 +33,6 @@ public class PatchExtensionMethodCompletionProposalPortal {
 	private static final String COMPLETION_PROPOSAL_COLLECTOR = "org.eclipse.jdt.ui.text.java.CompletionProposalCollector";
 	private static final String I_JAVA_COMPLETION_PROPOSAL_ARRAY = "[Lorg.eclipse.jdt.ui.text.java.IJavaCompletionProposal;";
 	
-
 	public static IJavaCompletionProposal[] getJavaCompletionProposals(Object[] javaCompletionProposals, Object completionProposalCollector) {
 		try {
 			return (IJavaCompletionProposal[]) ReflectionForUi.getJavaCompletionProposals.invoke(null, javaCompletionProposals, completionProposalCollector);
