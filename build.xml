@@ -690,7 +690,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			username="${ssh.username}"
 			keyfile="${ssh.keyfile}" passphrase=""
 			trust="true" command="/data/lombok/stagingCmd/publishToMavenCentral" />
-		<echo>The artifact has been published to staging. Now go to http://oss.sonatype.org/ and log in as Reinier, then doublecheck if all is well and 'release' it.</echo>
+		<echo>The artifact has been published to staging. Now go to https://oss.sonatype.org/ and log in as Reinier, then doublecheck if all is well and 'release' it.</echo>
 		<sshexec
 			host="projectlombok.org"
 			username="${ssh.username}"
