@@ -35,7 +35,6 @@ public final class HandleLazy extends JavacAnnotationHandler<Lazy> {
         public AnnotatedMethod(
                 JavacNode annotationNode
         ) {
-
             this.annotationNode = annotationNode;
             this.renamedBehaviorMethod = ((JCTree.JCMethodDecl) annotationNode.up().get());
             this.originalMethodName = renamedBehaviorMethod.name;
@@ -44,14 +43,14 @@ public final class HandleLazy extends JavacAnnotationHandler<Lazy> {
 
         public void addLaziness() {
             addField();
-            renameOriginalMethod();
-            addLazyMethodInPlaceOfOriginal();
+//            renameOriginalMethod();
+//            addLazyMethodInPlaceOfOriginal();
         }
 
         private void addLazyMethodInPlaceOfOriginal() {
             JavacHandlerUtil.injectMethod(
                     getClassNode(),
-                    new LazyMethod(
+                    LazyMethod.createLazyMethod(
                             this,
                             storageField
                     )
@@ -78,7 +77,11 @@ public final class HandleLazy extends JavacAnnotationHandler<Lazy> {
         }
 
         private Name movedBehaviorMethodName() {
-            return Name.fromString(originalMethodName.table, "$behavior$").append(originalMethodName);
+            Name $behavior$ = annotationNode.toName("$behavior$").append(originalMethodName);
+            if ($behavior$ == null) {
+                throw new NullPointerException();
+            }
+            return $behavior$;
         }
     }
 
@@ -108,7 +111,7 @@ public final class HandleLazy extends JavacAnnotationHandler<Lazy> {
         }
 
         private static JCExpression init(JavacNode annotationNode) {
-            return annotationNode.getTreeMaker().Literal(null);
+            return null;
         }
 
         private static Symbol.VarSymbol sym(JavacNode annotationNode) {
@@ -117,13 +120,13 @@ public final class HandleLazy extends JavacAnnotationHandler<Lazy> {
         }
     }
 
-    private static class LazyMethod extends JCTree.JCMethodDecl {
+    private static class LazyMethod {
 
-        LazyMethod(
+        static JCTree.JCMethodDecl createLazyMethod(
                 AnnotatedMethod originalMethod,
                 StorageField storageField
         ) {
-            super(
+            return originalMethod.treeMaker().MethodDef(
                     originalMethod.renamedBehaviorMethod.mods,
                     originalMethod.originalMethodName,
                     originalMethod.renamedBehaviorMethod.restype,
@@ -131,14 +134,13 @@ public final class HandleLazy extends JavacAnnotationHandler<Lazy> {
                     originalMethod.renamedBehaviorMethod.params,
                     originalMethod.renamedBehaviorMethod.thrown,
                     body(originalMethod, storageField),
-                    originalMethod.renamedBehaviorMethod.defaultValue,
-                    originalMethod.renamedBehaviorMethod.sym
-            );
+                    originalMethod.renamedBehaviorMethod.defaultValue
+                    );
         }
 
-        private static JCBlock body(AnnotatedMethod originalMethod, StorageField storageField) {
+        private static JCTree.JCBlock body(AnnotatedMethod originalMethod, StorageField storageField) {
             JavacTreeMaker maker = originalMethod.treeMaker();
-            JCIdent storageFieldIdent = maker.Ident(storageField.name);
+            JCTree.JCIdent storageFieldIdent = maker.Ident(storageField.name);
             return maker.Block(
                     0,
                     List.of(
@@ -151,7 +153,7 @@ public final class HandleLazy extends JavacAnnotationHandler<Lazy> {
                                                     null
                                             )
                                     ),
-                                    maker.Call(
+                                    maker.Exec(
                                             maker.Assign(
                                                     storageFieldIdent,
                                                     createMethodApplication(originalMethod)
@@ -164,15 +166,15 @@ public final class HandleLazy extends JavacAnnotationHandler<Lazy> {
             );
         }
 
-        private static JCExpression createMethodApplication(AnnotatedMethod originalMethod) {
+        private static JCTree.JCExpression createMethodApplication(AnnotatedMethod originalMethod) {
             JavacTreeMaker maker = originalMethod.treeMaker();
-            return maker.App(
-                    maker.Select(
-                            maker.Ident(
-                                    getLangThisName(originalMethod)
-                            ),
+            return maker.Apply(
+                    List.<JCTree.JCExpression>nil(),
+                    maker.Ident(
+//                                    getLangThisName(originalMethod)
                             originalMethod.renamedBehaviorMethod.name
-                    )
+                    ),
+                    List.<JCTree.JCExpression>nil()
             );
         }
 
