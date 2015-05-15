@@ -175,10 +175,10 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			typeParams = jmd.typarams;
 			thrownExceptions = jmd.thrown;
 			nameOfStaticBuilderMethod = jmd.name;
+			if (returnType instanceof JCTypeApply) {
+				returnType = ((JCTypeApply) returnType).clazz;
+			}
 			if (builderClassName.isEmpty()) {
-				if (returnType instanceof JCTypeApply) {
-					returnType = ((JCTypeApply) returnType).clazz;
-				}
 				if (returnType instanceof JCFieldAccess) {
 					builderClassName = ((JCFieldAccess) returnType).name.toString() + "Builder";
 				} else if (returnType instanceof JCIdent) {
@@ -196,7 +196,6 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					if (Character.isLowerCase(builderClassName.charAt(0))) {
 						builderClassName = Character.toTitleCase(builderClassName.charAt(0)) + builderClassName.substring(1);
 					}
-					
 				} else {
 					// This shouldn't happen.
 					System.err.println("Lombok bug ID#20140614-1651: javac HandleBuilder: return type to name conversion failed: " + returnType.getClass());
