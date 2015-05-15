@@ -1,30 +1,33 @@
+import java.lang.Deprecated;
+
 class LazyMultipleMethods {
+    @java.lang.SuppressWarnings("all")
+    @javax.annotation.Generated("lombok")
+    private LazyMultipleMethods $lazy$thisObject;
+    @java.lang.SuppressWarnings("all")
+    @javax.annotation.Generated("lombok")
     private String $lazy$myFavouriteDrummer;
 
-    private LazyMultipleMethods $lazy$thisObject;
-
-
-    @lombok.Lazy
     String myFavouriteDrummer() {
-        if (this.$lazy$myFavouriteDrummer == null) {
-            this.$lazy$myFavouriteDrummer = $behavior$myFavouriteDrummer();
-        }
-        return this.$lazy$myFavouriteDrummer;
+        if ($lazy$myFavouriteDrummer == null) $lazy$myFavouriteDrummer = $behavior$myFavouriteDrummer();
+        return $lazy$myFavouriteDrummer;
     }
 
-    String $behavior$myFavouriteDrummer() {
+    @Deprecated
+    public LazyMultipleMethods thisObject() {
+        if ($lazy$thisObject == null) $lazy$thisObject = $behavior$thisObject();
+        return $lazy$thisObject;
+    }
+
+    @java.lang.SuppressWarnings("all")
+    @javax.annotation.Generated("lombok")
+    private String $behavior$myFavouriteDrummer() {
         return "Christian Vander";
     }
 
-    @lombok.Lazy
-    LazyMultipleMethods thisObject() {
-        if (this.$lazy$thisObject == null) {
-            this.$lazy$thisObject = $behavior$thisObject();
-        }
-        return this.$lazy$thisObject;
-    }
-
-    LazyMultipleMethods $behavior$thisObject() {
+    @java.lang.SuppressWarnings("all")
+    @javax.annotation.Generated("lombok")
+    private LazyMultipleMethods $behavior$thisObject() {
         return new LazyMultipleMethods();
     }
 }

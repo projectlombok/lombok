@@ -1,6 +1,5 @@
 package lombok.javac.handlers;
 
-import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
@@ -13,6 +12,7 @@ import lombok.javac.JavacTreeMaker;
 import org.mangosdk.spi.ProviderFor;
 
 import java.lang.reflect.Modifier;
+import java.util.Iterator;
 
 @ProviderFor(JavacAnnotationHandler.class)
 @SuppressWarnings("restriction")
@@ -23,123 +23,59 @@ public final class HandleLazy extends JavacAnnotationHandler<Lazy> {
             JCTree.JCAnnotation ast,
             JavacNode annotationNode
     ) {
-        new AnnotatedMethod(annotationNode).addLaziness();
+        new AnnotatedMethod(annotationNode, ast).transformToLazy();
+        JavacHandlerUtil.deleteAnnotationIfNeccessary(annotationNode, Lazy.class);
     }
 
     private class AnnotatedMethod {
         private final JavacNode annotationNode;
+        private final JCTree.JCAnnotation ast;
         private final Name originalMethodName;
-        private final JCTree.JCMethodDecl renamedBehaviorMethod;
-        private StorageField storageField;
+        private final JCTree.JCMethodDecl originalMethod;
+        private final JavacNode methodNode;
+        private final long originalMethodFlags;
+        private JCTree.JCVariableDecl storageField;
 
         public AnnotatedMethod(
-                JavacNode annotationNode
+                JavacNode annotationNode,
+                JCTree.JCAnnotation ast
         ) {
             this.annotationNode = annotationNode;
-            this.renamedBehaviorMethod = ((JCTree.JCMethodDecl) annotationNode.up().get());
-            this.originalMethodName = renamedBehaviorMethod.name;
-            this.storageField = new StorageField(annotationNode);
+            this.methodNode = annotationNode.up();
+            this.ast = ast;
+            this.originalMethod = ((JCTree.JCMethodDecl) methodNode.get());
+            this.originalMethodName = originalMethod.name;
+            this.storageField = StorageField.createField(methodNode);
+            this.originalMethodFlags = originalMethod.mods.flags;
         }
 
-        public void addLaziness() {
+        public void transformToLazy() {
             addField();
-//            renameOriginalMethod();
-//            addLazyMethodInPlaceOfOriginal();
+            putOriginalMethodBodyInNewMethod();
+            replaceOriginalMethodBodyWithLazyInit();
         }
 
-        private void addLazyMethodInPlaceOfOriginal() {
+
+        private void putOriginalMethodBodyInNewMethod() {
             JavacHandlerUtil.injectMethod(
                     getClassNode(),
-                    LazyMethod.createLazyMethod(
-                            this,
-                            storageField
+                    treeMaker().MethodDef(
+                            treeMaker().Modifiers(
+                                    Modifier.PRIVATE
+                            ),
+                            movedBehaviorMethodName(),
+                            originalMethod.restype,
+                            originalMethod.typarams,
+                            originalMethod.params,
+                            originalMethod.thrown,
+                            originalMethod.body,
+                            originalMethod.defaultValue
                     )
             );
         }
 
-        private JavacTreeMaker treeMaker() {
-            return annotationNode.getTreeMaker();
-        }
-
-        private void renameOriginalMethod() {
-            renamedBehaviorMethod.name = movedBehaviorMethodName();
-        }
-
-        private void addField() {
-            JavacHandlerUtil.injectField(
-                    getClassNode(),
-                    storageField
-            );
-        }
-
-        private JavacNode getClassNode() {
-            return annotationNode.up().up();
-        }
-
-        private Name movedBehaviorMethodName() {
-            Name $behavior$ = annotationNode.toName("$behavior$").append(originalMethodName);
-            if ($behavior$ == null) {
-                throw new NullPointerException();
-            }
-            return $behavior$;
-        }
-    }
-
-    private static class StorageField extends JCTree.JCVariableDecl {
-        public StorageField(JavacNode annotationNode) {
-            super(
-                    mods(annotationNode),
-                    name(annotationNode),
-                    vartype(annotationNode),
-                    init(annotationNode),
-                    sym(annotationNode)
-            );
-        }
-
-        private static JCModifiers mods(JavacNode annotationNode) {
-            return annotationNode.getTreeMaker().Modifiers(Modifier.PRIVATE);
-        }
-
-        private static Name name(JavacNode annotationNode) {
-            return annotationNode.toName("$lazy$" + annotationNode.up().getName());
-        }
-
-        private static JCExpression vartype(JavacNode annotationNode) {
-            return annotationNode.getTreeMaker().Type(
-                    annotationNode.up().get().type
-            );
-        }
-
-        private static JCExpression init(JavacNode annotationNode) {
-            return null;
-        }
-
-        private static Symbol.VarSymbol sym(JavacNode annotationNode) {
-            // TODO: What should I create here?
-            return null;
-        }
-    }
-
-    private static class LazyMethod {
-
-        static JCTree.JCMethodDecl createLazyMethod(
-                AnnotatedMethod originalMethod,
-                StorageField storageField
-        ) {
-            return originalMethod.treeMaker().MethodDef(
-                    originalMethod.renamedBehaviorMethod.mods,
-                    originalMethod.originalMethodName,
-                    originalMethod.renamedBehaviorMethod.restype,
-                    originalMethod.renamedBehaviorMethod.typarams,
-                    originalMethod.renamedBehaviorMethod.params,
-                    originalMethod.renamedBehaviorMethod.thrown,
-                    body(originalMethod, storageField),
-                    originalMethod.renamedBehaviorMethod.defaultValue
-                    );
-        }
-
-        private static JCTree.JCBlock body(AnnotatedMethod originalMethod, StorageField storageField) {
-            JavacTreeMaker maker = originalMethod.treeMaker();
+        private JCTree.JCBlock lazyInitBody() {
+            JavacTreeMaker maker = treeMaker();
             JCTree.JCIdent storageFieldIdent = maker.Ident(storageField.name);
             return maker.Block(
                     0,
@@ -156,7 +92,7 @@ public final class HandleLazy extends JavacAnnotationHandler<Lazy> {
                                     maker.Exec(
                                             maker.Assign(
                                                     storageFieldIdent,
-                                                    createMethodApplication(originalMethod)
+                                                    createBehaviorMethodApplication()
                                             )
                                     ),
                                     null
@@ -166,21 +102,83 @@ public final class HandleLazy extends JavacAnnotationHandler<Lazy> {
             );
         }
 
-        private static JCTree.JCExpression createMethodApplication(AnnotatedMethod originalMethod) {
-            JavacTreeMaker maker = originalMethod.treeMaker();
+        private JCTree.JCExpression createBehaviorMethodApplication() {
+            JavacTreeMaker maker = treeMaker();
             return maker.Apply(
                     List.<JCTree.JCExpression>nil(),
-                    maker.Ident(
-//                                    getLangThisName(originalMethod)
-                            originalMethod.renamedBehaviorMethod.name
-                    ),
+                    maker.Ident(movedBehaviorMethodName()),
                     List.<JCTree.JCExpression>nil()
             );
         }
 
-        private static Name getLangThisName(AnnotatedMethod originalMethod) {
-            return originalMethod.renamedBehaviorMethod.getName().table._this;
+        private void removeGeneratedAnnotations(JCTree.JCMethodDecl lazyMethod) {
+            Iterator<JCTree.JCAnnotation> iterator = lazyMethod.mods.annotations.iterator();
+            List<JCTree.JCAnnotation> annotationList = List.nil();
+            while (iterator.hasNext()) {
+                JCTree.JCAnnotation next = iterator.next();
+                String annotationTypeName = next.getAnnotationType().toString();
+                if (
+                        !annotationTypeName.equals("javax.annotation.Generated")
+                                && !annotationTypeName.equals("java.lang.SuppressWarnings")
+                        ) {
+                    annotationList.add(next);
+                }
+            }
+            lazyMethod.mods.annotations = annotationList;
+        }
+
+
+        private JavacTreeMaker treeMaker() {
+            return annotationNode.getTreeMaker();
+        }
+
+        private void replaceOriginalMethodBodyWithLazyInit() {
+//            originalMethod.name = movedBehaviorMethodName();
+//            originalMethod.mods = treeMaker().Modifiers(Modifier.PRIVATE);
+            originalMethod.body = lazyInitBody();
+        }
+
+        private void addField() {
+            JavacHandlerUtil.injectFieldAndMarkGenerated(
+                    getClassNode(),
+                    storageField
+            );
+        }
+
+        private JavacNode getClassNode() {
+            return methodNode.up();
+        }
+
+        private Name movedBehaviorMethodName() {
+            return methodNode.toName("$behavior$").append(originalMethodName);
         }
     }
 
+    private static class StorageField {
+
+        private static JCTree.JCModifiers mods(JavacNode methodNode) {
+            return methodNode.getTreeMaker().Modifiers(Modifier.PRIVATE);
+        }
+
+        private static Name name(JavacNode methodNode) {
+            return methodNode.toName("$lazy$" + methodNode.getName());
+        }
+
+        private static JCTree.JCExpression vartype(JavacNode methodNode) {
+            return ((JCTree.JCMethodDecl) methodNode.get()).restype;
+        }
+
+        private static JCTree.JCExpression init(JavacNode methodNode) {
+            return null;
+        }
+
+        public static JCTree.JCVariableDecl createField(JavacNode methodNode) {
+            return methodNode.getTreeMaker().VarDef(
+                    mods(methodNode),
+                    name(methodNode),
+                    vartype(methodNode),
+                    init(methodNode)
+            );
+        }
+    }
 }

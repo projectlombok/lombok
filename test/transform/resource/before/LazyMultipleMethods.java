@@ -1,3 +1,5 @@
+import java.lang.Deprecated;
+
 class LazyMultipleMethods {
 
     @lombok.Lazy
@@ -6,7 +8,8 @@ class LazyMultipleMethods {
     }
 
     @lombok.Lazy
-    LazyMultipleMethods thisObject() {
+    @Deprecated
+    public LazyMultipleMethods thisObject() {
         return new LazyMultipleMethods();
     }
 }
