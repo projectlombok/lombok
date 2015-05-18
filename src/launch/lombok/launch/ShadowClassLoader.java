@@ -33,10 +33,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import java.util.WeakHashMap;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.jar.JarEntry;
@@ -141,65 +144,122 @@ class ShadowClassLoader extends ClassLoader {
 			}
 		}
 	}
-	
-	private static final String EMPTY_MARKER = new String("--EMPTY JAR--");
-	private Map<String, Object> jarContentsCacheTrackers = new HashMap<String, Object>();
-	private static WeakHashMap<Object, String> trackerCache = new WeakHashMap<Object, String>();
-	private static WeakHashMap<Object, List<String>> jarContentsCache = new WeakHashMap<Object, List<String>>();
-	
+
+	private        final Map<String,     Object > mapJarPathToTracker     = new HashMap    <String,     Object >();
+	private static final Map<Object,     String > mapTrackerToJarPath     = new WeakHashMap<Object,     String >();
+	private static final Map<Object, Set<String>> mapTrackerToJarContents = new WeakHashMap<Object, Set<String>>();
+
 	/**
 	 * This cache ensures that any given jar file is only opened once in order to determine the full contents of it.
 	 * We use 'trackers' to make sure that the bulk of the memory taken up by this cache (the list of strings representing the content of a jar file)
 	 * gets garbage collected if all ShadowClassLoaders that ever tried to request a listing of this jar file, are garbage collected.
 	 */
-	private List<String> getOrMakeJarListing(String absolutePathToJar) {
-		List<String> list = retrieveFromCache(absolutePathToJar);
-		synchronized (list) {
-			if (list.isEmpty()) {
-				try {
-					JarFile jf = new JarFile(absolutePathToJar);
-					try {
-						Enumeration<JarEntry> entries = jf.entries();
-						while (entries.hasMoreElements()) {
-							JarEntry jarEntry = entries.nextElement();
-							if (!jarEntry.isDirectory()) list.add(jarEntry.getName());
-						}
-					} finally {
-						jf.close();
-					}
-				} catch (Exception ignore) {}
-				if (list.isEmpty()) list.add(EMPTY_MARKER);
+	private Set<String> getOrMakeJarListing(final String absolutePathToJar) {
+		synchronized (mapTrackerToJarPath) {
+			/*
+			 * 1) Check our private instance JarPath-to-Tracker Mappings:
+			 */
+			final Object ourTracker = mapJarPathToTracker.get(absolutePathToJar);
+			if (ourTracker != null) {
+				/*
+				 * Yes, we are already tracking this Jar. Just return its contents...
+				 */
+				return mapTrackerToJarContents.get(ourTracker);
 			}
-		}
-		
-		if (list.size() == 1 && list.get(0) == EMPTY_MARKER) return Collections.emptyList();
-		return list;
-	}
-	
-	private List<String> retrieveFromCache(String absolutePathToJar) {
-		synchronized (trackerCache) {
-			Object tracker = jarContentsCacheTrackers.get(absolutePathToJar);
-			if (tracker != null) return jarContentsCache.get(tracker);
-			
-			for (Map.Entry<Object, String> entry : trackerCache.entrySet()) {
+
+			/*
+			 * 2) Not tracked by us as yet. Check statically whether others have tracked this JarPath:
+			 */
+			for (final Entry<Object, String> entry : mapTrackerToJarPath.entrySet()) {
 				if (entry.getValue().equals(absolutePathToJar)) {
-					tracker = entry.getKey();
-					break;
+					/*
+					 * Yes, 3rd party is tracking this Jar. We must track too, then return its contents...
+					 */
+					final  Object otherTracker = entry.getKey();
+					/**/   mapJarPathToTracker    .put(absolutePathToJar, otherTracker);
+					return mapTrackerToJarContents.get(                   otherTracker);
 				}
 			}
-			List<String> result = null;
-			if (tracker != null) result = jarContentsCache.get(tracker);
-			if (result != null) return result;
-			
-			tracker = new Object();
-			List<String> list = new ArrayList<String>();
-			jarContentsCache.put(tracker, list);
-			trackerCache.put(tracker, absolutePathToJar);
-			jarContentsCacheTrackers.put(absolutePathToJar, tracker);
-			return list;
+
+			/*
+			 * 3) Not tracked by anyone so far. Build, publish, track & return Jar contents...
+			 */
+			final Object      newTracker = new Object();
+			final Set<String> jarMembers = getJarMemberSet(absolutePathToJar);
+
+			mapTrackerToJarContents.put(newTracker, jarMembers);
+			mapTrackerToJarPath    .put(newTracker, absolutePathToJar);
+			mapJarPathToTracker    .put(absolutePathToJar, newTracker);
+
+			return            jarMembers;
 		}
 	}
-	
+
+	/**
+	 * Return a
+	 * {@link Set}
+	 * of members in the Jar identified by
+	 * {@code absolutePathToJar}.
+	 * 
+	 * @param  absolutePathToJar
+	 * @return a Set with the Jar member-names
+	 */
+	private   Set<String> getJarMemberSet(final String absolutePathToJar) {
+		/*
+		 * Note:
+		 * Our implementation returns a HashSet. A HashSet wraps an array of "Buckets".
+		 * Each key is mapped on to a Bucket using the keys hash.
+		 * Each Bucket, in turn, contains a linked list of entries for that hash value.
+		 * Buckets with no entries mapped to them (an undesirable situation) are null.
+		 * (HashSet rounds the desired capacity up to the nearest power of 2 !!)
+		 * 
+		 * 1) we do NOT want the capacity of the HashSet to exceed the number of Jar members!
+		 * 2) to save space, we want to keep the number of null Buckets to a minimum.
+		 * 3) to save CPU, we don't want the number of entries per Bucket to get too large.
+		 * 4) loadFactor should be just large enough so that the HashSet will never be re-hashed.
+		 * 
+		 * The values of initialCapacity & loadFactor used below satisfy the stated requirements.
+		 * At uniform distribution, the number of entries/Bucket would NEVER exceed 2**shiftBits
+		 * & (with the exception of tiny Jars) would ALWAYS be greater than 2**(shiftBits - 1).
+		 * 
+		 * e.g. a value of 3 for shiftBits generates between 5 & 8 entries/Bucket.
+		 * (the above discussion assumes uniform distribution. Using hash-keys this will vary slightly)
+		 * 
+		 * Benchmark:
+		 * The HashSet implementation is about 10% slower to build (only happens once) than the ArrayList.
+		 * The HashSet with shiftBits = 1 was about 33 times(!) faster than the ArrayList for retrievals.
+		 */
+		try {
+			final int     shiftBits = 1;  //  (fast, but big)  0 <= shiftBits <= 5, say  (slower & compact)
+			final JarFile jar       = new JarFile(absolutePathToJar);
+			/*
+			 * Find the first power of 2 >= JarSize (as calculated in HashSet constructor)
+			 */
+	        int      jarSizePower2 =   1;
+	        while   (jarSizePower2 <   jar.size()) {
+	        	/**/ jarSizePower2 <<= 1;
+	        }
+			final Set<String> jarMembers = new HashSet<String>(jarSizePower2 >> shiftBits,  1 << shiftBits);
+			try {
+				final Enumeration<JarEntry> entries = jar.entries();
+				while (entries.hasMoreElements()) {
+					final JarEntry jarEntry = entries.nextElement();
+					if (jarEntry.isDirectory()) {
+						continue;
+					}
+					jarMembers.add(jarEntry.getName());
+				}
+			} catch (final Exception ignore) {
+			} finally {
+				jar.close();
+			}
+			return jarMembers;
+		}
+		catch (final Exception newJarFileException) {
+			return Collections.emptySet();
+		}
+	}
+
 	/**
 	 * Looks up {@code altName} in {@code location}, and if that isn't found, looks up {@code name}; {@code altName} can be null in which case it is skipped.
 	 */
@@ -228,9 +288,9 @@ class ShadowClassLoader extends ClassLoader {
 				absoluteFile = location.getAbsoluteFile();
 			}
 		}
-		List<String> jarContents = getOrMakeJarListing(absoluteFile.getAbsolutePath());
-		
-		String absoluteUri = absoluteFile.toURI().toString();
+		final Set<String> jarContents = getOrMakeJarListing(absoluteFile.getAbsolutePath());
+
+		final String      absoluteUri = absoluteFile.toURI().toString();
 		
 		try {
 			if (jarContents.contains(altName)) {
