@@ -109,3 +109,57 @@ class GetterSetterJavadoc3 {
 		this.fieldName = fieldName;
 	}
 }
+class GetterSetterJavadoc4 {
+	/**
+	 * Some text
+	 */
+	private int fieldName;
+	/**
+	 * Some text
+	 * 
+	 * @return Sky is blue4
+	 */
+	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
+	public int fieldName() {
+		return this.fieldName;
+	}
+	/**
+	 * Some text
+	 * 
+	 * @param fieldName Hello, World5
+	 * @return this
+	 */
+	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
+	public GetterSetterJavadoc4 fieldName(final int fieldName) {
+		this.fieldName = fieldName;
+		return this;
+	}
+}
+class GetterSetterJavadoc5 {
+	/**
+	 * Some text
+	 */
+	private int fieldName;
+	/**
+	 * Getter section
+	 * @return Sky is blue5
+	 */
+	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
+	public int fieldName() {
+		return this.fieldName;
+	}
+	/**
+	 * Setter section
+	 * @param fieldName Hello, World5
+	 * @return Sky is blue5
+	 */
+	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
+	public GetterSetterJavadoc5 fieldName(final int fieldName) {
+		this.fieldName = fieldName;
+		return this;
+	}
+}

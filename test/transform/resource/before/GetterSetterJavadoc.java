@@ -35,3 +35,30 @@ class GetterSetterJavadoc3 {
 	 */
 	@lombok.Getter @lombok.Setter private int fieldName;
 }
+
+@lombok.experimental.Accessors(chain = true, fluent = true)
+class GetterSetterJavadoc4 {
+	/**
+	 * Some text
+	 *
+	 * @param fieldName Hello, World4
+	 * @return Sky is blue4
+	 */
+	@lombok.Getter @lombok.Setter private int fieldName;
+}
+
+@lombok.experimental.Accessors(chain = true, fluent = true)
+class GetterSetterJavadoc5 {
+	/**
+	 * Some text
+	 *
+	 * **SETTER**
+	 * Setter section
+	 * @param fieldName Hello, World5
+	 * @return Sky is blue5
+	 * **GETTER**
+	 * Getter section
+	 * @return Sky is blue5
+	 */
+	@lombok.Getter @lombok.Setter private int fieldName;
+}

@@ -58,3 +58,29 @@ class GetterSetterJavadoc3 {
     this.fieldName = fieldName;
   }
 }
+@lombok.experimental.Accessors(chain = true,fluent = true) class GetterSetterJavadoc4 {
+  private @lombok.Getter @lombok.Setter int fieldName;
+  GetterSetterJavadoc4() {
+    super();
+  }
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int fieldName() {
+    return this.fieldName;
+  }
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") GetterSetterJavadoc4 fieldName(final int fieldName) {
+    this.fieldName = fieldName;
+    return this;
+  }
+}
+@lombok.experimental.Accessors(chain = true,fluent = true) class GetterSetterJavadoc5 {
+  private @lombok.Getter @lombok.Setter int fieldName;
+  GetterSetterJavadoc5() {
+    super();
+  }
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int fieldName() {
+    return this.fieldName;
+  }
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") GetterSetterJavadoc5 fieldName(final int fieldName) {
+    this.fieldName = fieldName;
+    return this;
+  }
+}

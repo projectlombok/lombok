@@ -1485,6 +1485,18 @@ public class JavacHandlerUtil {
 		} catch (Exception ignore) {}
 	}
 	
+	private static final Pattern FIND_RETURN = Pattern.compile("^\\s*\\**\\s*@returns?\\s+.*$", Pattern.MULTILINE | Pattern.CASE_INSENSITIVE);
+	static String addReturnsThisIfNeeded(String in) {
+		if (FIND_RETURN.matcher(in).find()) return in;
+		
+		return addJavadocLine(in, "@return this");
+	}
+	
+	static String addJavadocLine(String in, String line) {
+		if (in.endsWith("\n")) return in + line + "\n";
+		return in + "\n" + line;
+	}
+	
 	private static class CopyJavadoc_8 {
 		static void copyJavadoc(JavacNode from, JCTree to, CopyJavadoc copyMode, Object dc) {
 			DocCommentTable dct = (DocCommentTable) dc;
@@ -1492,6 +1504,9 @@ public class JavacHandlerUtil {
 			
 			if (javadoc != null) {
 				String[] filtered = copyMode.split(javadoc.getText());
+				if (copyMode == CopyJavadoc.SETTER && shouldReturnThis(from)) {
+					filtered[0] = addReturnsThisIfNeeded(filtered[0]);
+				}
 				dct.putComment(to, createJavadocComment(filtered[0], from));
 				dct.putComment(from.get(), createJavadocComment(filtered[1], from));
 			}
@@ -1525,6 +1540,9 @@ public class JavacHandlerUtil {
 		
 		if (javadoc != null) {
 			String[] filtered = copyMode.split(javadoc);
+			if (copyMode == CopyJavadoc.SETTER && shouldReturnThis(from)) {
+				filtered[0] = addReturnsThisIfNeeded(filtered[0]);
+			}
 			docComments.put(to, filtered[0]);
 			docComments.put(from.get(), filtered[1]);
 		}
