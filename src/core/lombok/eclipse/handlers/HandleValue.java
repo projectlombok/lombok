@@ -73,7 +73,10 @@ public class HandleValue extends EclipseAnnotationHandler<Value> {
 		}
 		
 		new HandleFieldDefaults().generateFieldDefaultsForType(typeNode, annotationNode, AccessLevel.PRIVATE, true, true);
-		
+
+		Boolean callSuper = ann.callSuper();
+		if (!annotation.isExplicit("callSuper")) callSuper = null;
+
 		//Careful: Generate the public static constructor (if there is one) LAST, so that any attempt to
 		//'find callers' on the annotation node will find callers of the constructor, which is by far the
 		//most useful of the many methods built by @Value. This trick won't work for the non-static constructor,
@@ -81,8 +84,8 @@ public class HandleValue extends EclipseAnnotationHandler<Value> {
 		//and hitting 'find callers'.
 		
 		new HandleGetter().generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
-		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
-		new HandleToString().generateToStringForType(typeNode, annotationNode);
+		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode, callSuper);
+		new HandleToString().generateToStringForType(typeNode, annotationNode, callSuper);
 		new HandleConstructor().generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, ann.staticConstructor(), SkipIfConstructorExists.YES,
 				Collections.<Annotation>emptyList(), annotationNode);
 	}

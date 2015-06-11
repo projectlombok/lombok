@@ -25,3 +25,9 @@ class Data5 {
 @Data
 final class Data6 {
 }
+@Data(callSuper = true)
+final class Data7 extends Data1 {
+	public Data7(int x) {
+		super(x);
+	}
+}

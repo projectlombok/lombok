@@ -284,3 +284,39 @@ final class Data6 {
 		return "Data6()";
 	}
 }
+final class Data7 extends Data1 {
+	public Data7(int x) {
+		super(x);
+	}
+	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
+	public boolean equals(final java.lang.Object o) {
+		if (o == this) return true;
+		if (!(o instanceof Data7)) return false;
+		final Data7 other = (Data7)o;
+		if (!other.canEqual((java.lang.Object)this)) return false;
+		if (!super.equals(o)) return false;
+		return true;
+	}
+	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
+	protected boolean canEqual(final java.lang.Object other) {
+		return other instanceof Data7;
+	}
+	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
+	public int hashCode() {
+		final int PRIME = 59;
+		int result = 1;
+		result = result * PRIME + super.hashCode();
+		return result;
+	}
+	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
+	public java.lang.String toString() {
+		return "Data7(super=" + super.toString() + ")";
+	}
+}

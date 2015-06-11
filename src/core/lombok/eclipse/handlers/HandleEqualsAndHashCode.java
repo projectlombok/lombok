@@ -110,13 +110,13 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		}
 	}
 	
-	public void generateEqualsAndHashCodeForType(EclipseNode typeNode, EclipseNode errorNode) {
+	public void generateEqualsAndHashCodeForType(EclipseNode typeNode, EclipseNode errorNode, Boolean callSuper) {
 		if (hasAnnotation(EqualsAndHashCode.class, typeNode)) {
 			//The annotation will make it happen, so we can skip it.
 			return;
 		}
 		
-		generateMethods(typeNode, errorNode, null, null, null, false, FieldAccess.GETTER, new ArrayList<Annotation>());
+		generateMethods(typeNode, errorNode, null, null, callSuper, false, FieldAccess.GETTER, new ArrayList<Annotation>());
 	}
 	
 	@Override public void handle(AnnotationValues<EqualsAndHashCode> annotation, Annotation ast, EclipseNode annotationNode) {

@@ -55,4 +55,11 @@ public @interface Value {
 	 * Default: No static constructor, instead the normal constructor is public.
 	 */
 	String staticConstructor() default "";
+
+	/**
+	 * Call on the superclass's implementations of {@code toString}, {@code equals} and {@code hashCode}
+	 * before calculating for the fields in this class.
+	 * <strong>default: false</strong>
+	 */
+	boolean callSuper() default false;
 }

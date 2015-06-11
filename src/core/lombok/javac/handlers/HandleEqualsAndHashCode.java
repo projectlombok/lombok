@@ -114,13 +114,13 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		generateMethods(typeNode, annotationNode, excludes, includes, callSuper, true, fieldAccess, onParam);
 	}
 	
-	public void generateEqualsAndHashCodeForType(JavacNode typeNode, JavacNode source) {
+	public void generateEqualsAndHashCodeForType(JavacNode typeNode, JavacNode source, Boolean callSuper) {
 		if (hasAnnotation(EqualsAndHashCode.class, typeNode)) {
 			//The annotation will make it happen, so we can skip it.
 			return;
 		}
 		
-		generateMethods(typeNode, source, null, null, null, false, FieldAccess.GETTER, List.<JCAnnotation>nil());
+		generateMethods(typeNode, source, null, null, callSuper, false, FieldAccess.GETTER, List.<JCAnnotation>nil());
 	}
 	
 	public void generateMethods(JavacNode typeNode, JavacNode source, List<String> excludes, List<String> includes,
