@@ -35,7 +35,7 @@
     result = ((result * PRIME) + this.x);
     result = ((result * PRIME) + this.y);
     final java.lang.Object $z = this.z;
-    result = ((result * PRIME) + (($z == null) ? 0 : $z.hashCode()));
+    result = ((result * PRIME) + (($z == null) ? 43 : $z.hashCode()));
     return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.lang.String toString() {

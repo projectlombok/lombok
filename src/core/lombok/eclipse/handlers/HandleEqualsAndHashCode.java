@@ -358,7 +358,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 					statements.add(createResultCalculation(source, fieldAccessor));
 				} else /* objects */ {
 					/* final java.lang.Object $fieldName = this.fieldName; */
-					/* $fieldName == null ? 0 : $fieldName.hashCode() */
+					/* $fieldName == null ? NULL_PRIME : $fieldName.hashCode() */
 					statements.add(createLocalDeclaration(source, dollarFieldName, generateQualifiedTypeRef(source, TypeConstants.JAVA_LANG_OBJECT), fieldAccessor));
 					
 					SingleNameReference copy1 = new SingleNameReference(dollarFieldName, p);
@@ -375,8 +375,8 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 					setGeneratedBy(nullLiteral, source);
 					EqualExpression objIsNull = new EqualExpression(copy2, nullLiteral, OperatorIds.EQUAL_EQUAL);
 					setGeneratedBy(objIsNull, source);
-					IntLiteral int0 = makeIntLiteral("0".toCharArray(), source);
-					ConditionalExpression nullOrHashCode = new ConditionalExpression(objIsNull, int0, hashCodeCall);
+					IntLiteral intMagic = makeIntLiteral(String.valueOf(HandlerUtil.primeForNull()).toCharArray(), source);
+					ConditionalExpression nullOrHashCode = new ConditionalExpression(objIsNull, intMagic, hashCodeCall);
 					nullOrHashCode.sourceStart = pS; nullOrHashCode.sourceEnd = pE;
 					setGeneratedBy(nullOrHashCode, source);
 					statements.add(createResultCalculation(source, nullOrHashCode));

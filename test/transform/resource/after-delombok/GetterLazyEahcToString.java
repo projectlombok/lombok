@@ -34,9 +34,9 @@ class GetterLazyEahcToString {
 		final int PRIME = 59;
 		int result = 1;
 		final java.lang.Object $value = this.getValue();
-		result = result * PRIME + ($value == null ? 0 : $value.hashCode());
+		result = result * PRIME + ($value == null ? 43 : $value.hashCode());
 		final java.lang.Object $value2 = this.value2;
-		result = result * PRIME + ($value2 == null ? 0 : $value2.hashCode());
+		result = result * PRIME + ($value2 == null ? 43 : $value2.hashCode());
 		return result;
 	}
 	

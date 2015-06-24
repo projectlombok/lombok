@@ -68,6 +68,10 @@ public class HandlerUtil {
 		return 97;
 	}
 	
+	public static int primeForNull() {
+		return 43;
+	}
+	
 	/** Checks if the given name is a valid identifier.
 	 * 
 	 * If it is, this returns {@code true} and does nothing else.

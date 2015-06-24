@@ -49,7 +49,7 @@ class Data1 {
 		int result = 1;
 		result = result * PRIME + this.getX();
 		final java.lang.Object $name = this.getName();
-		result = result * PRIME + ($name == null ? 0 : $name.hashCode());
+		result = result * PRIME + ($name == null ? 43 : $name.hashCode());
 		return result;
 	}
 	@java.lang.Override
@@ -110,7 +110,7 @@ class Data2 {
 		int result = 1;
 		result = result * PRIME + this.getX();
 		final java.lang.Object $name = this.getName();
-		result = result * PRIME + ($name == null ? 0 : $name.hashCode());
+		result = result * PRIME + ($name == null ? 43 : $name.hashCode());
 		return result;
 	}
 	@java.lang.Override
@@ -165,7 +165,7 @@ final class Data3 {
 		int result = 1;
 		result = result * PRIME + this.getX();
 		final java.lang.Object $name = this.getName();
-		result = result * PRIME + ($name == null ? 0 : $name.hashCode());
+		result = result * PRIME + ($name == null ? 43 : $name.hashCode());
 		return result;
 	}
 	@java.lang.Override

@@ -44,9 +44,9 @@
     result = ((result * PRIME) + java.util.Arrays.hashCode(this.y));
     result = ((result * PRIME) + java.util.Arrays.deepHashCode(this.z));
     final java.lang.Object $a = this.a;
-    result = ((result * PRIME) + (($a == null) ? 0 : $a.hashCode()));
+    result = ((result * PRIME) + (($a == null) ? 43 : $a.hashCode()));
     final java.lang.Object $b = this.b;
-    result = ((result * PRIME) + (($b == null) ? 0 : $b.hashCode()));
+    result = ((result * PRIME) + (($b == null) ? 43 : $b.hashCode()));
     return result;
   }
 }

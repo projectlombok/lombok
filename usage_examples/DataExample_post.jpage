@@ -62,7 +62,7 @@ public class DataExample {
 		final int PRIME = 59;
 		int result = 1;
 		final long temp1 = Double.doubleToLongBits(this.getScore());
-		result = (result*PRIME) + (this.getName() == null ? 0 : this.getName().hashCode());
+		result = (result*PRIME) + (this.getName() == null ? 43 : this.getName().hashCode());
 		result = (result*PRIME) + this.getAge();
 		result = (result*PRIME) + (int)(temp1 ^ (temp1 >>> 32));
 		result = (result*PRIME) + Arrays.deepHashCode(this.getTags());
@@ -111,8 +111,8 @@ public class DataExample {
 		@Override public int hashCode() {
 			final int PRIME = 59;
 			int result = 1;
-			result = (result*PRIME) + (this.getName() == null ? 0 : this.getName().hashCode());
-			result = (result*PRIME) + (this.getValue() == null ? 0 : this.getValue().hashCode());
+			result = (result*PRIME) + (this.getName() == null ? 43 : this.getName().hashCode());
+			result = (result*PRIME) + (this.getValue() == null ? 43 : this.getValue().hashCode());
 			return result;
 		}
 	}

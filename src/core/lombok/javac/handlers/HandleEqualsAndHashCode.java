@@ -307,7 +307,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				statements.append(createResultCalculation(typeNode, maker.Apply(List.<JCExpression>nil(), hcMethod, List.of(fieldAccessor))));
 			} else /* objects */ {
 				/* final java.lang.Object $fieldName = this.fieldName; */
-				/* $fieldName == null ? 0 : $fieldName.hashCode() */
+				/* $fieldName == null ? NULL_PRIME : $fieldName.hashCode() */
 				
 				Name dollarFieldName = dollar.append(((JCVariableDecl)fieldNode.get()).name);
 				statements.append(maker.VarDef(maker.Modifiers(finalFlag), dollarFieldName, genJavaLangTypeRef(typeNode, "Object"), fieldAccessor));
@@ -315,7 +315,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				JCExpression hcCall = maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(dollarFieldName), typeNode.toName("hashCode")),
 						List.<JCExpression>nil());
 				JCExpression thisEqualsNull = maker.Binary(CTC_EQUAL, maker.Ident(dollarFieldName), maker.Literal(CTC_BOT, null));
-				statements.append(createResultCalculation(typeNode, maker.Conditional(thisEqualsNull, maker.Literal(0), hcCall)));
+				statements.append(createResultCalculation(typeNode, maker.Conditional(thisEqualsNull, maker.Literal(HandlerUtil.primeForNull()), hcCall)));
 			}
 		}
 		

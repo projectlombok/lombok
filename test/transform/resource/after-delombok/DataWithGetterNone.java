@@ -47,7 +47,7 @@ class DataWithGetterNone {
 		result = result * PRIME + this.x;
 		result = result * PRIME + this.y;
 		final java.lang.Object $z = this.z;
-		result = result * PRIME + ($z == null ? 0 : $z.hashCode());
+		result = result * PRIME + ($z == null ? 43 : $z.hashCode());
 		return result;
 	}
 	@java.lang.Override

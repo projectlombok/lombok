@@ -100,7 +100,7 @@ class AccessorsPrefix3 {
 		final int PRIME = 59;
 		int result = 1;
 		final java.lang.Object $fName = this.getName();
-		result = result * PRIME + ($fName == null ? 0 : $fName.hashCode());
+		result = result * PRIME + ($fName == null ? 43 : $fName.hashCode());
 		return result;
 	}
 }
