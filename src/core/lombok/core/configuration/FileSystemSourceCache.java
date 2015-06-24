@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Project Lombok Authors.
+ * Copyright (C) 2014-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,34 +37,62 @@ import lombok.core.configuration.ConfigurationSource.Result;
 import lombok.core.debug.ProblemReporter;
 
 public class FileSystemSourceCache {
+	private static final long FULL_CACHE_CLEAR_INTERVAL = 1000L * 60L * 30L; // 30 minutes.
 	private static final String LOMBOK_CONFIG_FILENAME = "lombok.config";
 	private static final long RECHECK_FILESYSTEM = TimeUnit.SECONDS.toMillis(2);
 	private static final long NEVER_CHECKED = -1;
 	private static final long MISSING = -88; // Magic value; any lombok.config with this exact epochmillis last modified will never be read, so, let's ensure nobody accidentally has one with that exact last modified stamp.
 	
-	private final ConcurrentMap<File, Content> cache = new ConcurrentHashMap<File, Content>();
+	private final ConcurrentMap<File, Content> dirCache = new ConcurrentHashMap<File, Content>(); // caches files (representing dirs) to the content object that tracks content.
+	private final ConcurrentMap<URI, File> uriCache = new ConcurrentHashMap<URI, File>(); // caches URIs of java source files to the dir that contains it.
+	private long lastCacheClear = System.currentTimeMillis();
+	
+	private void cacheClear() {
+		// We never clear the caches, generally because it'd be weird if a compile run would continually create an endless stream of new java files.
+		// Still, eventually that's going to cause a bit of a memory leak, so lets just completely clear them out every many minutes.
+		long now = System.currentTimeMillis();
+		long delta = now - lastCacheClear;
+		if (delta > FULL_CACHE_CLEAR_INTERVAL) {
+			lastCacheClear = now;
+			dirCache.clear();
+			uriCache.clear();
+		}
+	}
 	
 	public Iterable<ConfigurationSource> sourcesForJavaFile(URI javaFile, ConfigurationProblemReporter reporter) {
+		cacheClear();
 		if (javaFile == null) return Collections.emptyList();
-		URI uri = javaFile.normalize();
-		if (!uri.isAbsolute()) uri = URI.create("file:" + uri.toString());
-		
-		File file;
-		try {
-			file = new File(uri);
-			if (!file.exists()) throw new IllegalArgumentException("File does not exist: " + uri);
-			return sourcesForDirectory(file.getParentFile(), reporter);
-		} catch (IllegalArgumentException e) {
-			// This means that the file as passed is not actually a file at all, and some exotic path system is involved.
-			// examples: sourcecontrol://jazz stuff, or an actual relative path (uri.isAbsolute() is completely different, that checks presence of schema!),
-			// or it's eclipse trying to parse a snippet, which has "/Foo.java" as uri.
-			// At some point it might be worth investigating abstracting away the notion of "I can read lombok.config if present in
-			// current context, and I can give you may parent context", using ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(javaFile) as basis.
+		File dir = uriCache.get(javaFile);
+		if (dir == null) {
+			URI uri = javaFile.normalize();
+			if (!uri.isAbsolute()) uri = URI.create("file:" + uri.toString());
 			
-			// For now, we just carry on as if there is no lombok.config. (intentional fallthrough)
-		} catch (Exception e) {
-			// Especially for eclipse's sake, exceptions here make eclipse borderline unusable, so let's play nice.
-			ProblemReporter.error("Can't find absolute path of file being compiled: " + javaFile, e);
+			try {
+				File file = new File(uri);
+				if (!file.exists()) throw new IllegalArgumentException("File does not exist: " + uri);
+				dir = file.isDirectory() ? file : file.getParentFile();
+				if (dir != null) uriCache.put(javaFile,dir);
+			} catch (IllegalArgumentException e) {
+				// This means that the file as passed is not actually a file at all, and some exotic path system is involved.
+				// examples: sourcecontrol://jazz stuff, or an actual relative path (uri.isAbsolute() is completely different, that checks presence of schema!),
+				// or it's eclipse trying to parse a snippet, which has "/Foo.java" as uri.
+				// At some point it might be worth investigating abstracting away the notion of "I can read lombok.config if present in
+				// current context, and I can give you may parent context", using ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(javaFile) as basis.
+				
+				// For now, we just carry on as if there is no lombok.config. (intentional fallthrough)
+			} catch (Exception e) {
+				// Especially for eclipse's sake, exceptions here make eclipse borderline unusable, so let's play nice.
+				ProblemReporter.error("Can't find absolute path of file being compiled: " + javaFile, e);
+			}
+		}
+		
+		if (dir != null) {
+			try {
+				return sourcesForDirectory(dir, reporter);
+			} catch (Exception e) {
+				// Especially for eclipse's sake, exceptions here make eclipse borderline unusable, so let's play nice.
+				ProblemReporter.error("Can't resolve config stack for dir: " + dir.getAbsolutePath(), e);
+			}
 		}
 		
 		return Collections.emptyList();
@@ -72,7 +100,7 @@ public class FileSystemSourceCache {
 	
 	public Iterable<ConfigurationSource> sourcesForDirectory(URI directory, ConfigurationProblemReporter reporter) {
 		if (directory == null) return Collections.emptyList();
-		return sourcesForDirectory(new File(directory.normalize()), reporter);
+		return sourcesForJavaFile(directory, reporter);
 	}
 	
 	private Iterable<ConfigurationSource> sourcesForDirectory(final File directory, final ConfigurationProblemReporter reporter) {
@@ -139,12 +167,12 @@ public class FileSystemSourceCache {
 	}
 	
 	private Content ensureContent(File directory) {
-		Content content = cache.get(directory);
+		Content content = dirCache.get(directory);
 		if (content != null) {
 			return content;
 		}
-		cache.putIfAbsent(directory, Content.empty());
-		return cache.get(directory);
+		dirCache.putIfAbsent(directory, Content.empty());
+		return dirCache.get(directory);
 	}
 	
 	private ConfigurationSource parse(File configFile, ConfigurationProblemReporter reporter) {

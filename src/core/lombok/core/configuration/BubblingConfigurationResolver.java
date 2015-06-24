@@ -45,32 +45,23 @@ public class BubblingConfigurationResolver implements ConfigurationResolver {
 			Result result = source.resolve(key);
 			if (result == null) continue;
 			if (isList) {
-				if (listModificationsList == null) {
-					listModificationsList = new ArrayList<List<ListModification>>();
-				}
+				if (listModificationsList == null) listModificationsList = new ArrayList<List<ListModification>>();
 				listModificationsList.add((List<ListModification>)result.getValue());
 			}
 			if (result.isAuthoritative()) {
-				if (isList) {
-					break;
-				}
+				if (isList) break;
 				return (T) result.getValue();
 			}
 		}
-		if (!isList) {
-			return null;
-		}
-		if (listModificationsList == null) {
-			return (T) Collections.emptyList();
-		}
+		if (!isList) return null;
+		if (listModificationsList == null) return (T) Collections.emptyList();
+		
 		List<Object> listValues = new ArrayList<Object>();
 		Collections.reverse(listModificationsList);
 		for (List<ListModification> listModifications : listModificationsList) {
 			if (listModifications != null) for (ListModification modification : listModifications) {
 				listValues.remove(modification.getValue());
-				if (modification.isAdded()) {
-					listValues.add(modification.getValue());
-				}
+				if (modification.isAdded()) listValues.add(modification.getValue());
 			}
 		}
 		return (T) listValues;
