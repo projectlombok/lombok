@@ -37,15 +37,15 @@ import lombok.core.configuration.ConfigurationSource.Result;
 import lombok.core.debug.ProblemReporter;
 
 public class FileSystemSourceCache {
-	private static final long FULL_CACHE_CLEAR_INTERVAL = 1000L * 60L * 30L; // 30 minutes.
 	private static final String LOMBOK_CONFIG_FILENAME = "lombok.config";
+	private static final long FULL_CACHE_CLEAR_INTERVAL = TimeUnit.MINUTES.toMillis(30);
 	private static final long RECHECK_FILESYSTEM = TimeUnit.SECONDS.toMillis(2);
 	private static final long NEVER_CHECKED = -1;
 	private static final long MISSING = -88; // Magic value; any lombok.config with this exact epochmillis last modified will never be read, so, let's ensure nobody accidentally has one with that exact last modified stamp.
 	
 	private final ConcurrentMap<File, Content> dirCache = new ConcurrentHashMap<File, Content>(); // caches files (representing dirs) to the content object that tracks content.
 	private final ConcurrentMap<URI, File> uriCache = new ConcurrentHashMap<URI, File>(); // caches URIs of java source files to the dir that contains it.
-	private long lastCacheClear = System.currentTimeMillis();
+	private volatile long lastCacheClear = System.currentTimeMillis();
 	
 	private void cacheClear() {
 		// We never clear the caches, generally because it'd be weird if a compile run would continually create an endless stream of new java files.
@@ -60,8 +60,8 @@ public class FileSystemSourceCache {
 	}
 	
 	public Iterable<ConfigurationSource> sourcesForJavaFile(URI javaFile, ConfigurationProblemReporter reporter) {
-		cacheClear();
 		if (javaFile == null) return Collections.emptyList();
+		cacheClear();
 		File dir = uriCache.get(javaFile);
 		if (dir == null) {
 			URI uri = javaFile.normalize();
@@ -71,7 +71,7 @@ public class FileSystemSourceCache {
 				File file = new File(uri);
 				if (!file.exists()) throw new IllegalArgumentException("File does not exist: " + uri);
 				dir = file.isDirectory() ? file : file.getParentFile();
-				if (dir != null) uriCache.put(javaFile,dir);
+				if (dir != null) uriCache.put(javaFile, dir);
 			} catch (IllegalArgumentException e) {
 				// This means that the file as passed is not actually a file at all, and some exotic path system is involved.
 				// examples: sourcecontrol://jazz stuff, or an actual relative path (uri.isAbsolute() is completely different, that checks presence of schema!),
@@ -99,7 +99,6 @@ public class FileSystemSourceCache {
 	}
 	
 	public Iterable<ConfigurationSource> sourcesForDirectory(URI directory, ConfigurationProblemReporter reporter) {
-		if (directory == null) return Collections.emptyList();
 		return sourcesForJavaFile(directory, reporter);
 	}
 	
