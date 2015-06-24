@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v1.16.5 "Edgy Guinea Pig"
 * BUGFIX: Parameterized static methods with `@Builder` would produce compiler errors in javac. [Issue #793](https://code.google.com/p/projectlombok/issues/detail?id=793).
+* PERFORMANCE: the config system caused significant slowdowns in eclipse if the filesystem is very slow (network file system) or has a slow authentication system.
 
 ### v1.16.4 (April 14th, 2015)
 * BUGFIX: Lombok now works with Eclipse Mars.
