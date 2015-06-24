@@ -74,9 +74,10 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	private static void registerPatchScripts(Instrumentation instrumentation, boolean reloadExistingClasses, boolean ecjOnly, Class<?> launchingContext) {
 		ScriptManager sm = new ScriptManager();
 		sm.registerTransformer(instrumentation);
+		final boolean forceBaseResourceNames = !"".equals(System.getProperty("shadow.override.lombok", ""));
 		sm.setTransplantMapper(new TransplantMapper() {
 			public String mapResourceName(int classFileFormatVersion, String resourceName) {
-				if (classFileFormatVersion < 50) return resourceName;
+				if (classFileFormatVersion < 50 || forceBaseResourceNames) return resourceName;
 				return "Class50/" + resourceName;
 			}
 		});
