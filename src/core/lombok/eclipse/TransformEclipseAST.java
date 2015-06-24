@@ -106,7 +106,7 @@ public class TransformEclipseAST {
 		EclipseAST existing = null;
 		if (astCacheField != null) {
 			try {
-				existing = (EclipseAST)astCacheField.get(ast);
+				existing = (EclipseAST) astCacheField.get(ast);
 			} catch (Exception e) {
 				// existing remains null
 			}

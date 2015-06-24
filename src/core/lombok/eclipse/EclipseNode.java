@@ -54,70 +54,70 @@ public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode,
 		
 		switch (getKind()) {
 		case COMPILATION_UNIT:
-			visitor.visitCompilationUnit(this, (CompilationUnitDeclaration)get());
+			visitor.visitCompilationUnit(this, (CompilationUnitDeclaration) get());
 			ast.traverseChildren(visitor, this);
-			visitor.endVisitCompilationUnit(this, (CompilationUnitDeclaration)get());
+			visitor.endVisitCompilationUnit(this, (CompilationUnitDeclaration) get());
 			break;
 		case TYPE:
-			visitor.visitType(this, (TypeDeclaration)get());
+			visitor.visitType(this, (TypeDeclaration) get());
 			ast.traverseChildren(visitor, this);
-			visitor.endVisitType(this, (TypeDeclaration)get());
+			visitor.endVisitType(this, (TypeDeclaration) get());
 			break;
 		case FIELD:
-			visitor.visitField(this, (FieldDeclaration)get());
+			visitor.visitField(this, (FieldDeclaration) get());
 			ast.traverseChildren(visitor, this);
-			visitor.endVisitField(this, (FieldDeclaration)get());
+			visitor.endVisitField(this, (FieldDeclaration) get());
 			break;
 		case INITIALIZER:
-			visitor.visitInitializer(this, (Initializer)get());
+			visitor.visitInitializer(this, (Initializer) get());
 			ast.traverseChildren(visitor, this);
-			visitor.endVisitInitializer(this, (Initializer)get());
+			visitor.endVisitInitializer(this, (Initializer) get());
 			break;
 		case METHOD:
 			if (get() instanceof Clinit) return;
-			visitor.visitMethod(this, (AbstractMethodDeclaration)get());
+			visitor.visitMethod(this, (AbstractMethodDeclaration) get());
 			ast.traverseChildren(visitor, this);
-			visitor.endVisitMethod(this, (AbstractMethodDeclaration)get());
+			visitor.endVisitMethod(this, (AbstractMethodDeclaration) get());
 			break;
 		case ARGUMENT:
-			AbstractMethodDeclaration method = (AbstractMethodDeclaration)up().get();
-			visitor.visitMethodArgument(this, (Argument)get(), method);
+			AbstractMethodDeclaration method = (AbstractMethodDeclaration) up().get();
+			visitor.visitMethodArgument(this, (Argument) get(), method);
 			ast.traverseChildren(visitor, this);
-			visitor.endVisitMethodArgument(this, (Argument)get(), method);
+			visitor.endVisitMethodArgument(this, (Argument) get(), method);
 			break;
 		case LOCAL:
-			visitor.visitLocal(this, (LocalDeclaration)get());
+			visitor.visitLocal(this, (LocalDeclaration) get());
 			ast.traverseChildren(visitor, this);
-			visitor.endVisitLocal(this, (LocalDeclaration)get());
+			visitor.endVisitLocal(this, (LocalDeclaration) get());
 			break;
 		case ANNOTATION:
 			switch (up().getKind()) {
 			case TYPE:
-				visitor.visitAnnotationOnType((TypeDeclaration)up().get(), this, (Annotation)get());
+				visitor.visitAnnotationOnType((TypeDeclaration) up().get(), this, (Annotation) get());
 				break;
 			case FIELD:
-				visitor.visitAnnotationOnField((FieldDeclaration)up().get(), this, (Annotation)get());
+				visitor.visitAnnotationOnField((FieldDeclaration) up().get(), this, (Annotation) get());
 				break;
 			case METHOD:
-				visitor.visitAnnotationOnMethod((AbstractMethodDeclaration)up().get(), this, (Annotation)get());
+				visitor.visitAnnotationOnMethod((AbstractMethodDeclaration) up().get(), this, (Annotation) get());
 				break;
 			case ARGUMENT:
 				visitor.visitAnnotationOnMethodArgument(
-						(Argument)parent.get(),
-						(AbstractMethodDeclaration)parent.directUp().get(),
-						this, (Annotation)get());
+						(Argument) parent.get(),
+						(AbstractMethodDeclaration) parent.directUp().get(),
+						this, (Annotation) get());
 				break;
 			case LOCAL:
-				visitor.visitAnnotationOnLocal((LocalDeclaration)parent.get(), this, (Annotation)get());
+				visitor.visitAnnotationOnLocal((LocalDeclaration) parent.get(), this, (Annotation) get());
 				break;
 			default:
 				throw new AssertionError("Annotation not expected as child of a " + up().getKind());
 			}
 			break;
 		case STATEMENT:
-			visitor.visitStatement(this, (Statement)get());
+			visitor.visitStatement(this, (Statement) get());
 			ast.traverseChildren(visitor, this);
-			visitor.endVisitStatement(this, (Statement)get());
+			visitor.endVisitStatement(this, (Statement) get());
 			break;
 		default:
 			throw new AssertionError("Unexpected kind during node traversal: " + getKind());
