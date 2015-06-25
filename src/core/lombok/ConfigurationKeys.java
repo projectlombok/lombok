@@ -38,6 +38,14 @@ public class ConfigurationKeys {
 	// ----- global -----
 	
 	/**
+	 * lombok configuration: {@code lombok.accessors.useCamelCaseForUppercaseVars} = {@code true} | {@code false}.
+	 * 
+	 * Use camelCase for accessors of uppercase fields (default=false).
+	 */
+	public static final ConfigurationKey<Boolean> USE_CAMELCASE_FOR_UPPERCASE_VARS = new ConfigurationKey<Boolean>("lombok.accessors.useCamelCaseForUppercaseVars","Use camelCase for accessors of uppercase fields (default=false)") {};
+
+	
+	/**
 	 * lombok configuration: {@code lombok.addGeneratedAnnotation} = {@code true} | {@code false}.
 	 * 
 	 * If unset or {@code true}, lombok generates {@code @javax.annotation.Generated("lombok")} on all fields, methods, and types that are generated.
