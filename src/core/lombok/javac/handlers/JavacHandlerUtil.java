@@ -480,7 +480,7 @@ public class JavacHandlerUtil {
 	}
 	
 	public static boolean isBoolean(JCExpression varType) {
-		return varType != null && varType.toString().equals("boolean");
+		return varType != null && (varType.toString().equals("boolean")||varType.toString().equals("Boolean"));
 	}
 	
 	public static Name removePrefixFromField(JavacNode field) {
