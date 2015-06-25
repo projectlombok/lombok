@@ -90,7 +90,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		}
 		
 		for (JavacNode field : typeNode.down()) {
-			if (fieldQualifiesForGetterGeneration(field)) generateGetterForField(field, errorNode.get(), level, false);
+			if (fieldQualifiesForGetterGeneration(field)) generateGetterForField(field, errorNode.get(), level, false,null);
 		}
 	}
 	
@@ -119,12 +119,12 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 	 * @param fieldNode The node representing the field you want a getter for.
 	 * @param pos The node responsible for generating the getter (the {@code @Data} or {@code @Getter} annotation).
 	 */
-	public void generateGetterForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level, boolean lazy) {
+	public void generateGetterForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level, boolean lazy,String name) {
 		if (hasAnnotation(Getter.class, fieldNode)) {
 			//The annotation will make it happen, so we can skip it.
 			return;
 		}
-		createGetterForField(level, fieldNode, fieldNode, false, lazy, List.<JCAnnotation>nil());
+		createGetterForField(level, fieldNode, fieldNode, false, lazy, name,List.<JCAnnotation>nil());
 	}
 	
 	@Override public void handle(AnnotationValues<Getter> annotation, JCAnnotation ast, JavacNode annotationNode) {
@@ -144,13 +144,16 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 			return;
 		}
 		
+		String name= annotationInstance.name();
+		if(name.isEmpty())name=null;
+		
 		if (node == null) return;
 		
 		List<JCAnnotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Getter(onMethod=", annotationNode);
 		
 		switch (node.getKind()) {
 		case FIELD:
-			createGetterForFields(level, fields, annotationNode, true, lazy, onMethod);
+			createGetterForFields(level, fields, annotationNode, true, lazy, name,onMethod);
 			break;
 		case TYPE:
 			if (!onMethod.isEmpty()) {
@@ -162,14 +165,14 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		}
 	}
 	
-	public void createGetterForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists, boolean lazy, List<JCAnnotation> onMethod) {
+	public void createGetterForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists, boolean lazy,String name, List<JCAnnotation> onMethod) {
 		for (JavacNode fieldNode : fieldNodes) {
-			createGetterForField(level, fieldNode, errorNode, whineIfExists, lazy, onMethod);
+			createGetterForField(level, fieldNode, errorNode, whineIfExists, lazy, name,onMethod);
 		}
 	}
 	
 	public void createGetterForField(AccessLevel level,
-			JavacNode fieldNode, JavacNode source, boolean whineIfExists, boolean lazy, List<JCAnnotation> onMethod) {
+			JavacNode fieldNode, JavacNode source, boolean whineIfExists, boolean lazy,String name, List<JCAnnotation> onMethod) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			source.addError("@Getter is only supported on a class or a field.");
 			return;
@@ -188,7 +191,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 			}
 		}
 		
-		String methodName = toGetterName(fieldNode);
+		String methodName = name==null?toGetterName(fieldNode):name;
 		
 		if (methodName == null) {
 			source.addWarning("Not generating getter for this field: It does not fit your @Accessors prefix list.");
@@ -215,16 +218,16 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
 		
-		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker(), source.get(), lazy, onMethod));
+		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker(), source.get(), lazy, name,onMethod));
 	}
 	
-	public JCMethodDecl createGetter(long access, JavacNode field, JavacTreeMaker treeMaker, JCTree source, boolean lazy, List<JCAnnotation> onMethod) {
+	public JCMethodDecl createGetter(long access, JavacNode field, JavacTreeMaker treeMaker, JCTree source, boolean lazy,String name, List<JCAnnotation> onMethod) {
 		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
 		
 		// Remember the type; lazy will change it
 		JCExpression methodType = copyType(treeMaker, fieldNode);
 		// Generate the methodName; lazy will change the field type
-		Name methodName = field.toName(toGetterName(field));
+		Name methodName = field.toName(name==null?toGetterName(field):name);
 		
 		List<JCStatement> statements;
 		JCTree toClearOfMarkers = null;

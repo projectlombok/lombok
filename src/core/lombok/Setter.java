@@ -68,6 +68,9 @@ public @interface Setter {
 	 */
 	AnyAnnotation[] onParam() default {};
 	
+	String name() default "";
+
+	
 	/**
 	  * Placeholder annotation to enable the placement of annotations on the generated code.
 	  * @deprecated Don't use this annotation, ever - Read the documentation.
