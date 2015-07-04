@@ -122,30 +122,51 @@ public class DirectoryRunner extends Runner {
 		
 		for (Map.Entry<String, Description> entry : tests.entrySet()) {
 			Description testDescription = entry.getValue();
+			runTest(notifier, entry.getKey(), testDescription);
+		}
+	}
+
+	private void runTest(RunNotifier notifier, String fileName, Description testDescription) {
+		File file = new File(params.getBeforeDirectory(), fileName);
+		final AbstractRunTests runner;
+
+		try {
+			runner = createRunner(file);
+		} catch (Throwable t) {
 			notifier.fireTestStarted(testDescription);
-			try {
-				if (!runTest(entry.getKey())) {
-					notifier.fireTestIgnored(testDescription);
-					continue;
-				}
-			} catch (Throwable t) {
-				notifier.fireTestFailure(new Failure(testDescription, t));
-			}
+			notifier.fireTestFailure(new Failure(testDescription, t));
+			notifier.fireTestFinished(testDescription);
+			return;
+		}
+
+		if (runner.isIgnore()) {
+			notifier.fireTestIgnored(testDescription);
+			return;
+		}
+
+		try {
+			notifier.fireTestStarted(testDescription);
+			runner.compareFile();
+		} catch (Throwable t) {
+			notifier.fireTestFailure(new Failure(testDescription, t));
+		} finally {
 			notifier.fireTestFinished(testDescription);
 		}
 	}
-	
-	private boolean runTest(String fileName) throws Throwable {
-		File file = new File(params.getBeforeDirectory(), fileName);
-		
+
+	private AbstractRunTests createRunner(File file) throws Throwable {
+		AbstractRunTests runner;
 		switch (params.getCompiler()) {
-		case DELOMBOK:
-			return new RunTestsViaDelombok().compareFile(params, file);
-		case ECJ:
-			return new RunTestsViaEcj().compareFile(params, file);
-		default:
-		case JAVAC:
-			throw new UnsupportedOperationException();
+			case DELOMBOK:
+				runner = new RunTestsViaDelombok(params, file);
+				break;
+			case ECJ:
+				runner = new RunTestsViaEcj(params, file);
+				break;
+			default:
+			case JAVAC:
+				throw new UnsupportedOperationException();
 		}
+		return runner;
 	}
 }
