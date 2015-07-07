@@ -41,14 +41,17 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
+import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
 import org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
+import org.eclipse.jdt.internal.compiler.lookup.Scope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.parser.Parser;
 import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
@@ -258,13 +261,14 @@ final class PatchFixesHider {
 	public static final class ExtensionMethod {
 		private static final Method RESOLVE_TYPE;
 		private static final Method ERROR_NO_METHOD_FOR;
-		private static final Method INVALID_METHOD;
+		private static final Method INVALID_METHOD, INVALID_METHOD2;
 		
 		static {
 			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchExtensionMethod");
 			RESOLVE_TYPE = Util.findMethod(shadowed, "resolveType", TypeBinding.class, MessageSend.class, BlockScope.class);
 			ERROR_NO_METHOD_FOR = Util.findMethod(shadowed, "errorNoMethodFor", ProblemReporter.class, MessageSend.class, TypeBinding.class, TypeBinding[].class);
 			INVALID_METHOD = Util.findMethod(shadowed, "invalidMethod", ProblemReporter.class, MessageSend.class, MethodBinding.class);
+			INVALID_METHOD2 = Util.findMethod(shadowed, "invalidMethod", ProblemReporter.class, MessageSend.class, MethodBinding.class, Scope.class);
 		}
 		
 		public static TypeBinding resolveType(TypeBinding resolvedType, MessageSend methodCall, BlockScope scope) {
@@ -277,6 +281,10 @@ final class PatchFixesHider {
 		
 		public static void invalidMethod(ProblemReporter problemReporter, MessageSend messageSend, MethodBinding method) {
 			Util.invokeMethod(INVALID_METHOD, problemReporter, messageSend, method);
+		}
+		
+		public static void invalidMethod(ProblemReporter problemReporter, MessageSend messageSend, MethodBinding method, Scope scope) {
+			Util.invokeMethod(INVALID_METHOD2, problemReporter, messageSend, method, scope);
 		}
 	}
 	
@@ -469,7 +477,24 @@ final class PatchFixesHider {
 		}
 		
 		public static int fixRetrieveRightBraceOrSemiColonPosition(int original, int end) {
-			 return original == -1 ? end : original;  // Need to fix: see issue 325.
+//			if (original == -1) {
+//				Thread.dumpStack();
+//			}
+			 return original == -1 ? end : original;
+		}
+		
+		public static int fixRetrieveRightBraceOrSemiColonPosition(int retVal, AbstractMethodDeclaration amd) {
+			if (retVal != -1 || amd == null) return retVal;
+			boolean isGenerated = EclipseAugments.ASTNode_generatedBy.get(amd) != null;
+			if (isGenerated) return amd.declarationSourceEnd;
+			return -1;
+		}
+		
+		public static int fixRetrieveRightBraceOrSemiColonPosition(int retVal, FieldDeclaration fd) {
+			if (retVal != -1 || fd == null) return retVal;
+			boolean isGenerated = EclipseAugments.ASTNode_generatedBy.get(fd) != null;
+			if (isGenerated) return fd.declarationSourceEnd;
+			return -1;
 		}
 		
 		public static final int ALREADY_PROCESSED_FLAG = 0x800000;  //Bit 24

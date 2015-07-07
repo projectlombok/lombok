@@ -382,6 +382,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.osgi" /></antcall>
 		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.jdt.core" /></antcall>
 		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.jdt.ui" /></antcall>
+		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.jface.text" /></antcall>
 		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.core.resources" /></antcall>
 		<antcall target="-augmentClasspath"><param name="pluginName" value="org.eclipse.core.jobs" /></antcall>
 
