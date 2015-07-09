@@ -56,4 +56,5 @@ public @interface Data {
 	 * Default: No static constructor, instead the normal constructor is public.
 	 */
 	String staticConstructor() default "";
+	boolean excludeToString() default false;
 }
