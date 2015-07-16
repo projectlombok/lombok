@@ -113,9 +113,37 @@ public @interface Builder {
 	/** Name of the instance method in the builder class that creates an instance of your {@code @Builder}-annotated class. */
 	String buildMethodName() default "build";
 	
-	/** Name of the builder class.
+	/**
+	 * Name of the builder class.
+	 * 
 	 * Default for {@code @Builder} on types and constructors: {@code (TypeName)Builder}.
+	 * <p>
 	 * Default for {@code @Builder} on static methods: {@code (ReturnTypeName)Builder}.
 	 */
 	String builderClassName() default "";
+	
+	/**
+	 * If true, generate an instance method to obtain a builder that is initialized with the values of this instance.
+	 * Legal only if {@code @Builder} is used on a constructor, on the type itself, or on a static method that returns itself.
+	 */
+	boolean toBuilder() default false;
+	
+	/**
+	 * Put on a field (in case of {@code @Builder} on a type) or a parameter (for {@code @Builder} on a constructor or static method) to
+	 * indicate how lombok should obtain a value for this given an instance; this is only relevant if {@code toBuilder} is true.
+	 * 
+	 * Note that one of {@code field} or {@code method} should be set, or an error is generated.
+	 * <p>
+	 * The default behaviour is to obtain a value by referencing the name of the parameter as a field on 'this'.
+	 */
+	public @interface ObtainVia {
+		/** Tells lombok to obtain a value with the expression {@code this.value}. */
+		String field() default "";
+		
+		/** Tells lombok to obtain a value with the expression {@code this.method()}. */
+		String method() default "";
+		
+		/** Tells lombok to obtain a value with the expression {@code SelfType.method(this)}; requires {@code method} to be set. */
+		boolean isStatic() default false;
+	}
 }
