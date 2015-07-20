@@ -223,6 +223,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				char[][] pkg = null;
 				if (md.returnType.dimensions() > 0) {
 					annotationNode.addError(TO_BUILDER_NOT_SUPPORTED);
+					return;
 				}
 				
 				if (md.returnType instanceof SingleTypeReference) {
@@ -243,9 +244,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 					return;
 				}
 				
-				EclipseNode selfType = parent;
-				while (selfType != null && selfType.getKind() != Kind.TYPE) selfType = selfType.up();
-				if (selfType == null || !equals(selfType.getName(), token)) {
+				if (tdParent == null || !equals(tdParent.getName(), token)) {
 					annotationNode.addError(TO_BUILDER_NOT_SUPPORTED);
 					return;
 				}
@@ -274,12 +273,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 						if (!Arrays.equals(((SingleTypeReference) tpOnRet[i]).token, onMethod.name)) continue;
 						pos = i;
 					}
-					if (pos == -1) {
-						annotationNode.addError("@Builder(toBuilder=true) requires that each type parameter on the static method is part of the typeargs of the return value. Type parameter " + new String(onMethod.name) + " is not part of the return type.");
-						return;
-					}
-					
-					if (tpOnType == null || tpOnType.length <= pos) {
+					if (pos == -1 || tpOnType == null || tpOnType.length <= pos) {
 						annotationNode.addError("@Builder(toBuilder=true) requires that each type parameter on the static method is part of the typeargs of the return value. Type parameter " + new String(onMethod.name) + " is not part of the return type.");
 						return;
 					}
@@ -388,8 +382,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		
 		if (constructorExists(builderType) == MemberExistsResult.NOT_EXISTS) {
 			ConstructorDeclaration cd = HandleConstructor.createConstructor(
-					AccessLevel.PACKAGE, builderType, Collections.<EclipseNode>emptyList(), null,
-					annotationNode, Collections.<Annotation>emptyList());
+				AccessLevel.PACKAGE, builderType, Collections.<EclipseNode>emptyList(), null,
+				annotationNode, Collections.<Annotation>emptyList());
 			if (cd != null) injectMethod(builderType, cd);
 		}
 		

@@ -84,7 +84,7 @@ public class TypeLibrary {
 		int idx = fullyQualifiedTypeName.lastIndexOf('.');
 		if (idx == -1) throw new IllegalArgumentException(
 				"Only fully qualified types are allowed (and stuff in the default package is not palatable to us either!)");
-		String unqualified = dotBased.substring(idx + 1);
+		String unqualified = fullyQualifiedTypeName.substring(idx + 1);
 		if (unqualifiedToQualifiedMap == null) throw new IllegalStateException("SingleType library");
 		
 		unqualifiedToQualifiedMap.put(unqualified.replace("$", "."), dotBased);
