@@ -40,7 +40,7 @@
 			<li>In the <em>builder</em>: A <code>build()</code> method which calls the static method, passing in each field. It returns the same type that the
 				<em>target</em> returns.</li>
 			<li>In the <em>builder</em>: A sensible <code>toString()</code> implementation.</li>
-			<li>In the class containing the <em>target</em>: A <code>builder()</code> method, which creates a new instance of the <em>builder</em>.</li>
+			<li>In the class containing the <em>target</em>: A static <code>builder()</code> method, which creates a new instance of the <em>builder</em>.</li>
 			</ul>
 			Each listed generated element will be silently skipped if that element already exists (disregarding parameter counts and looking only at names). This
 			includes the <em>builder</em> itself: If that class already exists, lombok will simply start injecting fields and methods inside this already existing
@@ -59,6 +59,8 @@
 			<code>@Builder</code> annotation to this all-args-constructor. This only works if you haven't written any explicit constructors yourself. If you do have an
 			explicit constructor, put the <code>@Builder</code> annotation on the constructor instead of on the class.
 			</p><p>
+			If using <code>@Builder</code> to generate builders to produce instances of your own class (this is always the case unless adding <code>@Builder</code> to a static method that doesn't return your own type), you can use <code>@Builder(toBuilder = true)</code> to also generate an instance method in your class called <code>toBuilder()</code>; it creates a new builder that starts out with all the values of this instance. You can put the <code>@Builder.ObtainVia</code> annotation on the parameters (in case of a constructor or static method) or fields (in case of <code>@Builder</code> on a type) to indicate alternative means by which the value for that field/parameter is obtained from the instance. For example, you can specify a method to be invoked: <code>@Builder.ObtainVia(method = "calculateFoo")</code>.
+			</p><p>
 			The name of the builder class is <code><em>Foobar</em>Builder</code>, where <em>Foobar</em> is the simplified, title-cased form of the return type of the 
 			<em>target</em> - that is, the name of your type for <code>@Builder</code> on constructors and types, and the name of the return type for <code>@Builder</code>
 			on static methods. For example, if <code>@Builder</code> is applied to a class named <code>com.yoyodyne.FancyList&lt;T&gt;</code>, then the builder name will be
@@ -69,9 +71,10 @@
 			<li>The <em>builder's class name</em> (default: return type + 'Builder')</li>
 			<li>The <em>build()</em> method's name (default: <code>"build"</code>)</li>
 			<li>The <em>builder()</em> method's name (default: <code>"builder"</code>)</li>
+			<li>If you want <code>toBuilder()</code> (default: no)</li>
 			</ul>
 			Example usage where all options are changed from their defaults:<br />
-			<code>@Builder(builderClassName = "HelloWorldBuilder", buildMethodName = "execute", builderMethodName = "helloWorld")</code><br />
+			<code>@Builder(builderClassName = "HelloWorldBuilder", buildMethodName = "execute", builderMethodName = "helloWorld", toBuilder = true)</code><br />
 			</p>
 		</div>
 		<div class="overview">
@@ -147,6 +150,8 @@
 				The sorted collections (java.util: <code>SortedSet</code>, <code>NavigableSet</code>, <code>SortedMap</code>, <code>NavigableMap</code> and guava: <code>ImmutableSortedSet</code>, <code>ImmutableSortedMap</code>) require that the type argument of the collection has natural order (implements <code>java.util.Comparable</code>). There is no way to pass an explicit <code>Comparator</code> to use in the builder.
 				</p><p>
 				An <code>ArrayList</code> is used to store added elements as call methods of a <code>@Singular</code> marked field, if the target collection is from the <code>java.util</code> package, <em>even if the collection is a set or map</em>. Because lombok ensures that generated collections are compacted, a new backing instance of a set or map must be constructed anyway, and storing the data as an <code>ArrayList</code> during the build process is more efficient that storing it as a map or set. This behaviour is not externally visible, an an implementation detail of the current implementation of the <code>java.util</code> recipes for <code>@Singular @Builder</code>.
+				</p><p>
+				With <code>toBuilder = true</code> applied to static methods, any type parameter on the annotated static method must show up in the returntype.
 				</p>
 			</div>
 		</div>
