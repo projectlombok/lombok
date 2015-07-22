@@ -33,3 +33,12 @@
 @lombok.AllArgsConstructor(access=lombok.AccessLevel.PACKAGE) class AllArgsConstructorPackageAccess {
 	final String x;
 }
+@lombok.NoArgsConstructor(force = true) class NoArgsConstructor2 {
+	final int x;
+	final double y;
+	final char c;
+	final boolean b;
+	final float f;
+	final String s;
+	byte z;
+}
