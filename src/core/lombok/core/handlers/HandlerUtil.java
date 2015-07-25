@@ -295,8 +295,10 @@ public class HandlerUtil {
                 StringBuilder fieldNameSB = new StringBuilder();
                 String fs[] = fieldNameString.split("_");
                 for (String f : fs) {
-                    fieldNameSB.append(f.substring(0, 1));
-                    fieldNameSB.append(f.substring(1).toLowerCase());
+                    if(!f.isEmpty()){    
+                        fieldNameSB.append(f.substring(0, 1));
+                        fieldNameSB.append(f.substring(1).toLowerCase());
+                    }
                 }
                 fieldName = fieldNameSB.toString();
             }
