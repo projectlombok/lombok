@@ -298,6 +298,10 @@ public class AnnotationValues<A extends Annotation> {
 			}
 		}
 		
+		if (guess instanceof AnnotationValues) {
+			return ((AnnotationValues) guess).getInstance();
+		}
+		
 		throw new AnnotationValueDecodeFail(v,
 				"Can't translate a " + guess.getClass() + " to the expected " + expected, pos);
 	}

@@ -239,8 +239,19 @@ public class JavacHandlerUtil {
 	 * @param node A Lombok AST node representing an annotation in source code.
 	 */
 	public static <A extends Annotation> AnnotationValues<A> createAnnotation(Class<A> type, final JavacNode node) {
+		return createAnnotation(type, (JCAnnotation) node.get(), node);
+	}
+	
+	/**
+	 * Creates an instance of {@code AnnotationValues} for the provided AST Node
+	 * and Annotation expression.
+	 *
+	 * @param type An annotation class type, such as {@code lombok.Getter.class}.
+	 * @param anno the annotation expression
+	 * @param node A Lombok AST node representing an annotation in source code.
+	 */
+	public static <A extends Annotation> AnnotationValues<A> createAnnotation(Class<A> type, JCAnnotation anno, final JavacNode node) {
 		Map<String, AnnotationValue> values = new HashMap<String, AnnotationValue>();
-		JCAnnotation anno = (JCAnnotation) node.get();
 		List<JCExpression> arguments = anno.getArguments();
 		
 		for (JCExpression arg : arguments) {
@@ -265,7 +276,15 @@ public class JavacHandlerUtil {
 				for (JCExpression inner : elems) {
 					raws.add(inner.toString());
 					expressions.add(inner);
-					guesses.add(calculateGuess(inner));
+					if (inner instanceof JCAnnotation) {
+						try {
+							guesses.add(createAnnotation((Class<A>) Class.forName(inner.type.toString()), (JCAnnotation) inner, node));
+						} catch (ClassNotFoundException ex) {
+							throw new IllegalStateException(ex);
+						}
+					} else {
+						guesses.add(calculateGuess(inner));
+					}
 					positions.add(inner.pos());
 				}
 			} else {
