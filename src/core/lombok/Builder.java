@@ -124,14 +124,17 @@ public @interface Builder {
 	
 	/**
 	 * If true, generate an instance method to obtain a builder that is initialized with the values of this instance.
-	 * Legal only if {@code @Builder} is used on a constructor, on the type itself, or on a static method that returns itself.
+	 * Legal only if {@code @Builder} is used on a constructor, on the type itself, or on a static method that returns
+	 * an instance of the declaring type.
 	 */
 	boolean toBuilder() default false;
 	
 	/**
 	 * Put on a field (in case of {@code @Builder} on a type) or a parameter (for {@code @Builder} on a constructor or static method) to
-	 * indicate how lombok should obtain a value for this given an instance; this is only relevant if {@code toBuilder} is true.
+	 * indicate how lombok should obtain a value for this field or parameter given an instance; this is only relevant if {@code toBuilder} is {@code true}.
 	 * 
+	 * You do not need to supply an {@code @ObtainVia} annotation unless you wish to change the default behaviour: Use a field with the same name.
+	 * <p>
 	 * Note that one of {@code field} or {@code method} should be set, or an error is generated.
 	 * <p>
 	 * The default behaviour is to obtain a value by referencing the name of the parameter as a field on 'this'.
