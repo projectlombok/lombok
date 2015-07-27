@@ -65,7 +65,8 @@ public class DelombokResult {
 		else comments_ = com.sun.tools.javac.util.List.from(comments.toArray(new CommentInfo[0]));
 		
 		FormatPreferences preferences = new FormatPreferenceScanner().scan(formatPreferences, getContent());
-		compilationUnit.accept(new PrettyCommentsPrinter(out, compilationUnit, comments_, preferences));
+		//compilationUnit.accept(new PrettyCommentsPrinter(out, compilationUnit, comments_, preferences));
+		compilationUnit.accept(new PrettyPrinter(out, compilationUnit, comments_, preferences));
 	}
 
 	private CharSequence getContent() throws IOException {

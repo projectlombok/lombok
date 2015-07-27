@@ -16,6 +16,6 @@ class GetterLazy {
 				}
 			}
 		}
-		return (ValueType)(value == this.fieldName ? null : value);
+		return (ValueType) (value == this.fieldName ? null : value);
 	}
 }

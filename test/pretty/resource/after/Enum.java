@@ -1,13 +1,8 @@
 enum Ranks {
-	CLUBS,
-	HEARTS,
-	DIAMONDS,
-	SPADES;
+	CLUBS, HEARTS, DIAMONDS, SPADES;
 }
 enum Complex {
-	RED("ff0000"),
-	GREEN("00ff00"),
-	BLUE("0000f");
+	RED("ff0000"), GREEN("00ff00"), BLUE("0000f");
 	private final String webColour;
 	Complex(String webColour) {
 		this.webColour = webColour;

@@ -24,8 +24,8 @@ class DataWithGetter {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof DataWithGetter)) return false;
-		final DataWithGetter other = (DataWithGetter)o;
-		if (!other.canEqual((java.lang.Object)this)) return false;
+		final DataWithGetter other = (DataWithGetter) o;
+		if (!other.canEqual((java.lang.Object) this)) return false;
 		if (this.getX() != other.getX()) return false;
 		if (this.getY() != other.getY()) return false;
 		final java.lang.Object this$z = this.getZ();

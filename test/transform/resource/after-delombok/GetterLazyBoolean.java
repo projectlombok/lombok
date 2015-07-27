@@ -10,8 +10,8 @@ class GetterLazyBoolean {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof GetterLazyBoolean)) return false;
-		final GetterLazyBoolean other = (GetterLazyBoolean)o;
-		if (!other.canEqual((java.lang.Object)this)) return false;
+		final GetterLazyBoolean other = (GetterLazyBoolean) o;
+		if (!other.canEqual((java.lang.Object) this)) return false;
 		if (this.isBooleanValue() != other.isBooleanValue()) return false;
 		return true;
 	}
@@ -49,7 +49,7 @@ class GetterLazyBoolean {
 				}
 			}
 		}
-		return (java.lang.Boolean)value;
+		return (java.lang.Boolean) value;
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
@@ -65,6 +65,6 @@ class GetterLazyBoolean {
 				}
 			}
 		}
-		return (java.lang.Boolean)value;
+		return (java.lang.Boolean) value;
 	}
 }

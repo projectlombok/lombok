@@ -1,6 +1,6 @@
 import java.util.*;
 public class ValAnonymousSubclassWithGenerics {
-	Object object = new Object(){
+	Object object = new Object() {
 		void foo() {
 			final int j = 1;
 		}
@@ -9,7 +9,7 @@ public class ValAnonymousSubclassWithGenerics {
 		final int k = super.hashCode();
 		int x = k;
 	}
-	java.util.List<String> names = new java.util.ArrayList<String>(){
+	java.util.List<String> names = new java.util.ArrayList<String>() {
 		public String get(int i) {
 			final java.lang.String result = super.get(i);
 			return result;

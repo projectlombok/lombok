@@ -24,7 +24,7 @@ final class Value1 {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof Value1)) return false;
-		final Value1 other = (Value1)o;
+		final Value1 other = (Value1) o;
 		if (this.getX() != other.getX()) return false;
 		final java.lang.Object this$name = this.getName();
 		final java.lang.Object other$name = other.getName();
@@ -75,8 +75,8 @@ class Value2 {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof Value2)) return false;
-		final Value2 other = (Value2)o;
-		if (!other.canEqual((java.lang.Object)this)) return false;
+		final Value2 other = (Value2) o;
+		if (!other.canEqual((java.lang.Object) this)) return false;
 		if (this.getX() != other.getX()) return false;
 		final java.lang.Object this$name = this.getName();
 		final java.lang.Object other$name = other.getName();
@@ -132,7 +132,7 @@ final class Value3 {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof Value3)) return false;
-		final Value3 other = (Value3)o;
+		final Value3 other = (Value3) o;
 		if (this.getX() != other.getX()) return false;
 		if (this.getY() != other.getY()) return false;
 		return true;

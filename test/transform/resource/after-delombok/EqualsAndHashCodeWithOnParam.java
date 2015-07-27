@@ -13,8 +13,8 @@ class EqualsAndHashCodeWithOnParam {
 	public boolean equals(@Nullable final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeWithOnParam)) return false;
-		final EqualsAndHashCodeWithOnParam other = (EqualsAndHashCodeWithOnParam)o;
-		if (!other.canEqual((java.lang.Object)this)) return false;
+		final EqualsAndHashCodeWithOnParam other = (EqualsAndHashCodeWithOnParam) o;
+		if (!other.canEqual((java.lang.Object) this)) return false;
 		if (this.x != other.x) return false;
 		if (!java.util.Arrays.equals(this.y, other.y)) return false;
 		if (!java.util.Arrays.deepEquals(this.z, other.z)) return false;

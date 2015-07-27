@@ -22,7 +22,7 @@ class GetterLazyNative {
 				}
 			}
 		}
-		return (java.lang.Boolean)value;
+		return (java.lang.Boolean) value;
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
@@ -38,7 +38,7 @@ class GetterLazyNative {
 				}
 			}
 		}
-		return (java.lang.Byte)value;
+		return (java.lang.Byte) value;
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
@@ -54,7 +54,7 @@ class GetterLazyNative {
 				}
 			}
 		}
-		return (java.lang.Short)value;
+		return (java.lang.Short) value;
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
@@ -70,7 +70,7 @@ class GetterLazyNative {
 				}
 			}
 		}
-		return (java.lang.Integer)value;
+		return (java.lang.Integer) value;
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
@@ -86,7 +86,7 @@ class GetterLazyNative {
 				}
 			}
 		}
-		return (java.lang.Long)value;
+		return (java.lang.Long) value;
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
@@ -102,7 +102,7 @@ class GetterLazyNative {
 				}
 			}
 		}
-		return (java.lang.Float)value;
+		return (java.lang.Float) value;
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
@@ -118,7 +118,7 @@ class GetterLazyNative {
 				}
 			}
 		}
-		return (java.lang.Double)value;
+		return (java.lang.Double) value;
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
@@ -134,7 +134,7 @@ class GetterLazyNative {
 				}
 			}
 		}
-		return (java.lang.Character)value;
+		return (java.lang.Character) value;
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
@@ -144,12 +144,12 @@ class GetterLazyNative {
 			synchronized (this.intArrayField) {
 				value = this.intArrayField.get();
 				if (value == null) {
-					final int[] actualValue = new int[]{1};
+					final int[] actualValue = new int[] {1};
 					value = actualValue == null ? this.intArrayField : actualValue;
 					this.intArrayField.set(value);
 				}
 			}
 		}
-		return (int[])(value == this.intArrayField ? null : value);
+		return (int[]) (value == this.intArrayField ? null : value);
 	}
 }

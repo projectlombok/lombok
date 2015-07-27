@@ -28,8 +28,8 @@ class EqualsAndHashCodeWithSomeExistingMethods2 {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeWithSomeExistingMethods2)) return false;
-		final EqualsAndHashCodeWithSomeExistingMethods2 other = (EqualsAndHashCodeWithSomeExistingMethods2)o;
-		if (!other.canEqual((java.lang.Object)this)) return false;
+		final EqualsAndHashCodeWithSomeExistingMethods2 other = (EqualsAndHashCodeWithSomeExistingMethods2) o;
+		if (!other.canEqual((java.lang.Object) this)) return false;
 		if (this.x != other.x) return false;
 		return true;
 	}
@@ -75,8 +75,8 @@ class EqualsAndHashCodeWithNoExistingMethods {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeWithNoExistingMethods)) return false;
-		final EqualsAndHashCodeWithNoExistingMethods other = (EqualsAndHashCodeWithNoExistingMethods)o;
-		if (!other.canEqual((java.lang.Object)this)) return false;
+		final EqualsAndHashCodeWithNoExistingMethods other = (EqualsAndHashCodeWithNoExistingMethods) o;
+		if (!other.canEqual((java.lang.Object) this)) return false;
 		if (this.x != other.x) return false;
 		return true;
 	}

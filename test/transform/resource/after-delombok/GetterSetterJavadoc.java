@@ -33,8 +33,8 @@ class GetterSetterJavadoc1 {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof GetterSetterJavadoc1)) return false;
-		final GetterSetterJavadoc1 other = (GetterSetterJavadoc1)o;
-		if (!other.canEqual((java.lang.Object)this)) return false;
+		final GetterSetterJavadoc1 other = (GetterSetterJavadoc1) o;
+		if (!other.canEqual((java.lang.Object) this)) return false;
 		if (this.getFieldName() != other.getFieldName()) return false;
 		return true;
 	}

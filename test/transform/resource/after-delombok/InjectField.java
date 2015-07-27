@@ -1,8 +1,7 @@
 import java.util.logging.Level;
 
 enum InjectField1 {
-	A,
-	B;
+	A, B;
 
 	@java.lang.SuppressWarnings("all")
 

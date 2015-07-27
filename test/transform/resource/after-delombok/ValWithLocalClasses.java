@@ -1,6 +1,6 @@
 class ValWithLocalClasses1 {
 	{
-		final ValWithLocalClasses2 f2 = new ValWithLocalClasses2(){
+		final ValWithLocalClasses2 f2 = new ValWithLocalClasses2() {
 		};
 	}
 }

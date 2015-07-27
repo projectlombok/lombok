@@ -9,8 +9,8 @@ class GetterLazyEahcToString {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof GetterLazyEahcToString)) return false;
-		final GetterLazyEahcToString other = (GetterLazyEahcToString)o;
-		if (!other.canEqual((java.lang.Object)this)) return false;
+		final GetterLazyEahcToString other = (GetterLazyEahcToString) o;
+		if (!other.canEqual((java.lang.Object) this)) return false;
 		final java.lang.Object this$value = this.getValue();
 		final java.lang.Object other$value = other.getValue();
 		if (this$value == null ? other$value != null : !this$value.equals(other$value)) return false;
@@ -62,11 +62,10 @@ class GetterLazyEahcToString {
 				}
 			}
 		}
-		return (String)(value == this.value ? null : value);
+		return (String) (value == this.value ? null : value);
 	}
 	
 	@java.lang.SuppressWarnings("all")
-	
 	@javax.annotation.Generated("lombok")
 	public String getValue2() {
 		return this.value2;

@@ -18,8 +18,8 @@ class DataIgnore {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof DataIgnore)) return false;
-		final DataIgnore other = (DataIgnore)o;
-		if (!other.canEqual((java.lang.Object)this)) return false;
+		final DataIgnore other = (DataIgnore) o;
+		if (!other.canEqual((java.lang.Object) this)) return false;
 		if (this.getX() != other.getX()) return false;
 		return true;
 	}

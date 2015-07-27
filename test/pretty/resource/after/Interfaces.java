@@ -1,10 +1,7 @@
 @SuppressWarnings("all")
 interface Interfaces {
 	enum Ranks {
-		CLUBS,
-		HEARTS,
-		DIAMONDS,
-		SPADES;
+		CLUBS, HEARTS, DIAMONDS, SPADES;
 	}
 	int x = 10;
 	void y();

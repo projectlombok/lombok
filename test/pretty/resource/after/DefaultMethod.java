@@ -3,6 +3,6 @@ interface DefaultMethod {
 	default boolean isEmpty() {
 		return size() == 0;
 	}
-	default strictfp void run() {
+	strictfp default void run() {
 	}
 }

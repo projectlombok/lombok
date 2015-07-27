@@ -5,8 +5,8 @@ class ConflictingStaticConstructorNames {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof ConflictingStaticConstructorNames)) return false;
-		final ConflictingStaticConstructorNames other = (ConflictingStaticConstructorNames)o;
-		if (!other.canEqual((java.lang.Object)this)) return false;
+		final ConflictingStaticConstructorNames other = (ConflictingStaticConstructorNames) o;
+		if (!other.canEqual((java.lang.Object) this)) return false;
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")

@@ -24,8 +24,7 @@ class UtilityInner {
 		}
 	}
 	enum UtilityInsideEnum {
-		FOO,
-		BAR;
+		FOO, BAR;
 		static final class InsideEnum {
 			static int member;
 			@java.lang.SuppressWarnings("all")

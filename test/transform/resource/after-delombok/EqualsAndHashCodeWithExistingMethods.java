@@ -21,8 +21,8 @@ final class EqualsAndHashCodeWithExistingMethods3 extends EqualsAndHashCodeWithE
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeWithExistingMethods3)) return false;
-		final EqualsAndHashCodeWithExistingMethods3 other = (EqualsAndHashCodeWithExistingMethods3)o;
-		if (!other.canEqual((java.lang.Object)this)) return false;
+		final EqualsAndHashCodeWithExistingMethods3 other = (EqualsAndHashCodeWithExistingMethods3) o;
+		if (!other.canEqual((java.lang.Object) this)) return false;
 		if (!super.equals(o)) return false;
 		if (this.x != other.x) return false;
 		return true;

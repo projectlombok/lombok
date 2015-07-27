@@ -81,8 +81,8 @@ class AccessorsPrefix3 {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof AccessorsPrefix3)) return false;
-		final AccessorsPrefix3 other = (AccessorsPrefix3)o;
-		if (!other.canEqual((java.lang.Object)this)) return false;
+		final AccessorsPrefix3 other = (AccessorsPrefix3) o;
+		if (!other.canEqual((java.lang.Object) this)) return false;
 		final java.lang.Object this$fName = this.getName();
 		final java.lang.Object other$fName = other.getName();
 		if (this$fName == null ? other$fName != null : !this$fName.equals(other$fName)) return false;

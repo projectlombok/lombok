@@ -5,7 +5,7 @@ public class ValRawType {
 	public void test() {
 		Element propElement = new Element();
 		for (final java.lang.Object attribute : propElement.attributes()) {
-			final ValRawType.Attribute attr = (Attribute)attribute;
+			final ValRawType.Attribute attr = (Attribute) attribute;
 		}
 	}
 

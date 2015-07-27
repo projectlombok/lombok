@@ -10,8 +10,8 @@ class EqualsAndHashCode {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCode)) return false;
-		final EqualsAndHashCode other = (EqualsAndHashCode)o;
-		if (!other.canEqual((java.lang.Object)this)) return false;
+		final EqualsAndHashCode other = (EqualsAndHashCode) o;
+		if (!other.canEqual((java.lang.Object) this)) return false;
 		if (this.x != other.x) return false;
 		if (!java.util.Arrays.equals(this.y, other.y)) return false;
 		if (!java.util.Arrays.deepEquals(this.z, other.z)) return false;
@@ -56,7 +56,7 @@ final class EqualsAndHashCode2 {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCode2)) return false;
-		final EqualsAndHashCode2 other = (EqualsAndHashCode2)o;
+		final EqualsAndHashCode2 other = (EqualsAndHashCode2) o;
 		if (this.x != other.x) return false;
 		if (this.y != other.y) return false;
 		if (java.lang.Float.compare(this.f, other.f) != 0) return false;
@@ -72,10 +72,10 @@ final class EqualsAndHashCode2 {
 		int result = 1;
 		result = result * PRIME + this.x;
 		final long $y = this.y;
-		result = result * PRIME + (int)($y >>> 32 ^ $y);
+		result = result * PRIME + (int) ($y >>> 32 ^ $y);
 		result = result * PRIME + java.lang.Float.floatToIntBits(this.f);
 		final long $d = java.lang.Double.doubleToLongBits(this.d);
-		result = result * PRIME + (int)($d >>> 32 ^ $d);
+		result = result * PRIME + (int) ($d >>> 32 ^ $d);
 		result = result * PRIME + (this.b ? 79 : 97);
 		return result;
 	}
@@ -87,8 +87,8 @@ final class EqualsAndHashCode3 extends EqualsAndHashCode {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCode3)) return false;
-		final EqualsAndHashCode3 other = (EqualsAndHashCode3)o;
-		if (!other.canEqual((java.lang.Object)this)) return false;
+		final EqualsAndHashCode3 other = (EqualsAndHashCode3) o;
+		if (!other.canEqual((java.lang.Object) this)) return false;
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
@@ -111,8 +111,8 @@ class EqualsAndHashCode4 extends EqualsAndHashCode {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCode4)) return false;
-		final EqualsAndHashCode4 other = (EqualsAndHashCode4)o;
-		if (!other.canEqual((java.lang.Object)this)) return false;
+		final EqualsAndHashCode4 other = (EqualsAndHashCode4) o;
+		if (!other.canEqual((java.lang.Object) this)) return false;
 		if (!super.equals(o)) return false;
 		return true;
 	}

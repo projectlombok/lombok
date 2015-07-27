@@ -18,7 +18,7 @@ public class ValWeirdTypes<Z> {
 		final long y = 5 + 3L;
 	}
 	public void testAnonymousInnerClass() {
-		final java.lang.Runnable y = new Runnable(){
+		final java.lang.Runnable y = new Runnable() {
 			public void run() {
 			}
 		};
@@ -48,8 +48,8 @@ public class ValWeirdTypes<Z> {
 		final java.lang.Object nully = null;
 	}
 	public void testArrays() {
-		final int[] intArray = new int[]{1, 2, 3};
-		final java.lang.Object[][] multiDimArray = new Object[][]{{}};
+		final int[] intArray = new int[] {1, 2, 3};
+		final java.lang.Object[][] multiDimArray = new Object[][] {{}};
 		final int[] copy = intArray;
 		final java.lang.Object[] single = multiDimArray[0];
 		final int singleInt = copy[0];

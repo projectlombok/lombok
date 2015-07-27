@@ -12,7 +12,7 @@ class DelegateOnGetter {
 			synchronized (this.bar) {
 				value = this.bar.get();
 				if (value == null) {
-					final Bar actualValue = new Bar(){
+					final Bar actualValue = new Bar() {
 						public void setList(java.util.ArrayList<String> list) {
 						}
 						public int getInt() {
@@ -24,7 +24,7 @@ class DelegateOnGetter {
 				}
 			}
 		}
-		return (Bar)(value == this.bar ? null : value);
+		return (Bar) (value == this.bar ? null : value);
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
