@@ -487,6 +487,7 @@ ${sourceWarning}</echo>
 				<filter token="ECJ_LOCATION" value="${test.location.ecj}" />
 				<filter token="RT_LOCATION" value="${test.location.bootclasspath}" />
 				<filter token="JAVA_VERSION" value="${test.javaversion}" />
+				<filter token="PATH_SEP" value="${path.separator}" />
 			</filterset>
 		</copy>
 		<echo>WARNING: If you wish to test JDK8 features in eclipse, there must be a JDK8 installation configured in your eclipse, and it must be called 'JavaSE-1.8'.</echo>
