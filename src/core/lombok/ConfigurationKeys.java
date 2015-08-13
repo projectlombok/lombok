@@ -402,6 +402,15 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<FlagUsageType> FIELD_DEFAULTS_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.fieldDefaults.flagUsage", "Emit a warning or error if @FieldDefaults is used.") {};
 	
+	// ----- Helper -----
+	
+	/**
+	 * lombok configuration: {@code lombok.helper.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @Helper} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> HELPER_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.helper.flagUsage", "Emit a warning or error if @Helper is used.") {};
+	
 	// ----- UtilityClass -----
 	
 	/**
