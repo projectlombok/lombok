@@ -40,7 +40,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 
 /**
- * Implement so you can ask any JavacAST.Node to traverse depth-first through all children,
+ * Implement so you can ask any EclipseAST.Node to traverse depth-first through all children,
  * calling the appropriate visit and endVisit methods.
  */
 public interface EclipseASTVisitor {
