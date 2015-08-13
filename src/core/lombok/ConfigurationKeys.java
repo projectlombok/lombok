@@ -418,7 +418,7 @@ public class ConfigurationKeys {
 	 * 
 	 * If set, <em>any</em> usage of {@code @UtilityClass} results in a warning / error.
 	 */
-	public static final ConfigurationKey<FlagUsageType> UTLITY_CLASS_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.utilityClass.flagUsage", "Emit a warning or error if @UtilityClass is used.") {};
+	public static final ConfigurationKey<FlagUsageType> UTILITY_CLASS_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.utilityClass.flagUsage", "Emit a warning or error if @UtilityClass is used.") {};
 	
 	// ----- Configuration System -----
 	

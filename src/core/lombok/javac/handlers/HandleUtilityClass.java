@@ -52,7 +52,7 @@ import com.sun.tools.javac.util.Name;
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleUtilityClass extends JavacAnnotationHandler<UtilityClass> {
 	@Override public void handle(AnnotationValues<UtilityClass> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.UTLITY_CLASS_FLAG_USAGE, "@UtilityClass");
+		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.UTILITY_CLASS_FLAG_USAGE, "@UtilityClass");
 		
 		deleteAnnotationIfNeccessary(annotationNode, UtilityClass.class);
 		

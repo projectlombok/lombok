@@ -60,7 +60,7 @@ import lombok.experimental.UtilityClass;
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleUtilityClass extends EclipseAnnotationHandler<UtilityClass> {
 	@Override public void handle(AnnotationValues<UtilityClass> annotation, Annotation ast, EclipseNode annotationNode) {
-		handleFlagUsage(annotationNode, ConfigurationKeys.UTLITY_CLASS_FLAG_USAGE, "@UtilityClass");
+		handleFlagUsage(annotationNode, ConfigurationKeys.UTILITY_CLASS_FLAG_USAGE, "@UtilityClass");
 		
 		EclipseNode typeNode = annotationNode.up();
 		if (!checkLegality(typeNode, annotationNode)) return;
