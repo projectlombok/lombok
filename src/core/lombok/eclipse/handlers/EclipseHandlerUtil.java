@@ -450,7 +450,7 @@ public class EclipseHandlerUtil {
 	 */
 	public static boolean annotationTypeMatches(Class<? extends java.lang.annotation.Annotation> type, EclipseNode node) {
 		if (node.getKind() != Kind.ANNOTATION) return false;
-		return typeMatches(type, node, ((Annotation)node.get()).type);
+		return typeMatches(type, node, ((Annotation) node.get()).type);
 	}
 	
 	public static TypeReference cloneSelfType(EclipseNode context) {

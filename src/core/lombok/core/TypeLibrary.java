@@ -50,13 +50,20 @@ public class TypeLibrary {
 	}
 	
 	private TypeLibrary(String fqnSingleton) {
-		unqualifiedToQualifiedMap = null;
-		qualified = fqnSingleton;
-		int idx = fqnSingleton.lastIndexOf('.');
-		if (idx == -1) {
-			unqualified = fqnSingleton;
+		if (fqnSingleton.indexOf("$") != -1) {
+			unqualifiedToQualifiedMap = new HashMap<String, String>();
+			unqualified = null;
+			qualified = null;
+			addType(fqnSingleton);
 		} else {
-			unqualified = fqnSingleton.substring(idx + 1);
+			unqualifiedToQualifiedMap = null;
+			qualified = fqnSingleton;
+			int idx = fqnSingleton.lastIndexOf('.');
+			if (idx == -1) {
+				unqualified = fqnSingleton;
+			} else {
+				unqualified = fqnSingleton.substring(idx + 1);
+			}
 		}
 		locked = true;
 	}
@@ -71,18 +78,29 @@ public class TypeLibrary {
 	 * @param fullyQualifiedTypeName the FQN type name, such as 'java.lang.String'.
 	 */
 	public void addType(String fullyQualifiedTypeName) {
+		String dotBased = fullyQualifiedTypeName.replace("$", ".");
+		
 		if (locked) throw new IllegalStateException("locked");
-		fullyQualifiedTypeName = fullyQualifiedTypeName.replace("$", ".");
 		int idx = fullyQualifiedTypeName.lastIndexOf('.');
 		if (idx == -1) throw new IllegalArgumentException(
 				"Only fully qualified types are allowed (and stuff in the default package is not palatable to us either!)");
 		String unqualified = fullyQualifiedTypeName.substring(idx + 1);
 		if (unqualifiedToQualifiedMap == null) throw new IllegalStateException("SingleType library");
 		
-		unqualifiedToQualifiedMap.put(unqualified, fullyQualifiedTypeName);
-		unqualifiedToQualifiedMap.put(fullyQualifiedTypeName, fullyQualifiedTypeName);
+		unqualifiedToQualifiedMap.put(unqualified.replace("$", "."), dotBased);
+		unqualifiedToQualifiedMap.put(unqualified, dotBased);
+		unqualifiedToQualifiedMap.put(fullyQualifiedTypeName, dotBased);
+		unqualifiedToQualifiedMap.put(dotBased, dotBased);
 		for (Map.Entry<String, String> e : LombokInternalAliasing.ALIASES.entrySet()) {
-			if (fullyQualifiedTypeName.equals(e.getValue())) unqualifiedToQualifiedMap.put(e.getKey(), fullyQualifiedTypeName);
+			if (fullyQualifiedTypeName.equals(e.getValue())) unqualifiedToQualifiedMap.put(e.getKey(), dotBased);
+		}
+		
+		int idx2 = fullyQualifiedTypeName.indexOf('$', idx + 1);
+		while (idx2 != -1) {
+			String unq = fullyQualifiedTypeName.substring(idx2 + 1);
+			unqualifiedToQualifiedMap.put(unq.replace("$", "."), dotBased);
+			unqualifiedToQualifiedMap.put(unq, dotBased);
+			idx2 = fullyQualifiedTypeName.indexOf('$', idx2 + 1);
 		}
 	}
 	

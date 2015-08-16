@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,10 +53,13 @@ public class TypeResolver {
 		if (typeRef.equals(qualified)) return typeRef;
 		
 		// When asking if 'Getter' could possibly be referring to 'lombok.Getter' if 'import lombok.Getter;' is in the source file, the answer is yes.
-		String fromExplicitImport = imports.getFullyQualifiedNameForSimpleName(typeRef);
+		int firstDot = typeRef.indexOf('.');
+		if (firstDot == -1) firstDot = typeRef.length();
+		String firstTypeRef = typeRef.substring(0, firstDot);
+		String fromExplicitImport = imports.getFullyQualifiedNameForSimpleName(firstTypeRef);
 		if (fromExplicitImport != null) {
 			// ... and if 'import foobar.Getter;' is in the source file, the answer is no.
-			return fromExplicitImport.equals(qualified) ? qualified : null;
+			return (fromExplicitImport + typeRef.substring(firstDot)).equals(qualified) ? qualified : null;
 		}
 		
 		// When asking if 'Getter' could possibly be referring to 'lombok.Getter' and 'import lombok.*; / package lombok;' isn't in the source file. the answer is no.
@@ -68,7 +71,7 @@ public class TypeResolver {
 		
 		mainLoop:
 		while (n != null) {
-			if (n.getKind() == Kind.TYPE && typeRef.equals(n.getName())) {
+			if (n.getKind() == Kind.TYPE && firstTypeRef.equals(n.getName())) {
 				// Our own class or one of our outer classes is named 'typeRef' so that's what 'typeRef' is referring to, not one of our type library classes.
 				return null;
 			}
@@ -81,7 +84,7 @@ public class TypeResolver {
 					for (LombokNode<?, ?, ?> child : newN.down()) {
 						// We found a method local with the same name above our code. That's the one 'typeRef' is referring to, not
 						// anything in the type library we're trying to find, so, no matches.
-						if (child.getKind() == Kind.TYPE && typeRef.equals(child.getName())) return null;
+						if (child.getKind() == Kind.TYPE && firstTypeRef.equals(child.getName())) return null;
 						if (child == n) break;
 					}
 				}
@@ -92,13 +95,12 @@ public class TypeResolver {
 			if (n.getKind() == Kind.TYPE || n.getKind() == Kind.COMPILATION_UNIT) {
 				for (LombokNode<?, ?, ?> child : n.down()) {
 					// Inner class that's visible to us has 'typeRef' as name, so that's the one being referred to, not one of our type library classes.
-					if (child.getKind() == Kind.TYPE && typeRef.equals(child.getName())) return null;
+					if (child.getKind() == Kind.TYPE && firstTypeRef.equals(child.getName())) return null;
 				}
 			}
 			
 			n = n.directUp();
 		}
-		
 		
 		return qualified;
 	}
