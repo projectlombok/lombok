@@ -187,8 +187,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				allFields.add(fieldNode);
 			}
 			
-			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, allFields, null, SkipIfConstructorExists.I_AM_BUILDER, null,
-					Collections.<Annotation>emptyList(), annotationNode);
+			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER, null,
+				Collections.<Annotation>emptyList(), annotationNode);
 			
 			returnType = namePlusTypeParamsToTypeReference(td.name, td.typeParameters, p);
 			typeParams = td.typeParameters;
@@ -382,7 +382,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		
 		if (constructorExists(builderType) == MemberExistsResult.NOT_EXISTS) {
 			ConstructorDeclaration cd = HandleConstructor.createConstructor(
-				AccessLevel.PACKAGE, builderType, Collections.<EclipseNode>emptyList(), null,
+				AccessLevel.PACKAGE, builderType, Collections.<EclipseNode>emptyList(), false, null,
 				annotationNode, Collections.<Annotation>emptyList());
 			if (cd != null) injectMethod(builderType, cd);
 		}
@@ -502,8 +502,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	}
 	
 	public MethodDeclaration generateBuildMethod(String name, char[] staticName, TypeReference returnType, List<BuilderFieldData> builderFields, EclipseNode type, TypeReference[] thrownExceptions, boolean addCleaning, ASTNode source) {
-		MethodDeclaration out = new MethodDeclaration(
-				((CompilationUnitDeclaration) type.top().get()).compilationResult);
+		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		List<Statement> statements = new ArrayList<Statement>();
 		
@@ -572,8 +571,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
 		
-		MethodDeclaration out = new MethodDeclaration(
-				((CompilationUnitDeclaration) type.top().get()).compilationResult);
+		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		out.selector = builderMethodName.toCharArray();
 		out.modifiers = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic;
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
@@ -643,7 +641,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		String setterName = fluent ? fieldNode.getName() : HandlerUtil.buildAccessorName("set", fieldNode.getName());
 		
 		MethodDeclaration setter = HandleSetter.createSetter(td, fieldNode, setterName, chain, ClassFileConstants.AccPublic,
-				sourceNode, Collections.<Annotation>emptyList(), Collections.<Annotation>emptyList());
+			sourceNode, Collections.<Annotation>emptyList(), Collections.<Annotation>emptyList());
 		injectMethod(builderType, setter);
 	}
 	

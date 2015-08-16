@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 The Project Lombok Authors.
+ * Copyright (C) 2010-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import lombok.AccessLevel;
@@ -48,13 +49,20 @@ import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
+import org.eclipse.jdt.internal.compiler.ast.CharLiteral;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.DoubleLiteral;
 import org.eclipse.jdt.internal.compiler.ast.ExplicitConstructorCall;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
+import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
+import org.eclipse.jdt.internal.compiler.ast.FloatLiteral;
+import org.eclipse.jdt.internal.compiler.ast.IntLiteral;
+import org.eclipse.jdt.internal.compiler.ast.LongLiteral;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleMemberAnnotation;
@@ -63,7 +71,9 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.mangosdk.spi.ProviderFor;
 
 public class HandleConstructor {
@@ -78,11 +88,13 @@ public class HandleConstructor {
 			AccessLevel level = ann.access();
 			String staticName = ann.staticName();
 			if (level == AccessLevel.NONE) return;
-			List<EclipseNode> fields = new ArrayList<EclipseNode>();
 			
+			boolean force = ann.force();
+			
+			List<EclipseNode> fields = force ? findFinalFields(typeNode) : Collections.<EclipseNode>emptyList();
 			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@NoArgsConstructor(onConstructor=", annotationNode);
 			
-			new HandleConstructor().generateConstructor(typeNode, level, fields, staticName, SkipIfConstructorExists.NO, null, onConstructor, annotationNode);
+			new HandleConstructor().generateConstructor(typeNode, level, fields, force, staticName, SkipIfConstructorExists.NO, null, onConstructor, annotationNode);
 		}
 	}
 	
@@ -107,19 +119,27 @@ public class HandleConstructor {
 			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@RequiredArgsConstructor(onConstructor=", annotationNode);
 			
 			new HandleConstructor().generateConstructor(
-					typeNode, level, findRequiredFields(typeNode), staticName, SkipIfConstructorExists.NO,
-					suppressConstructorProperties, onConstructor, annotationNode);
+				typeNode, level, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO,
+				suppressConstructorProperties, onConstructor, annotationNode);
 		}
 	}
 	
 	private static List<EclipseNode> findRequiredFields(EclipseNode typeNode) {
+		return findFields(typeNode, true);
+	}
+	
+	private static List<EclipseNode> findFinalFields(EclipseNode typeNode) {
+		return findFields(typeNode, false);
+	}
+	
+	private static List<EclipseNode> findFields(EclipseNode typeNode, boolean nullMarked) {
 		List<EclipseNode> fields = new ArrayList<EclipseNode>();
 		for (EclipseNode child : typeNode.down()) {
 			if (child.getKind() != Kind.FIELD) continue;
 			FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
 			if (!filterField(fieldDecl)) continue;
 			boolean isFinal = (fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0;
-			boolean isNonNull = findAnnotations(fieldDecl, NON_NULL_PATTERN).length != 0;
+			boolean isNonNull = nullMarked && findAnnotations(fieldDecl, NON_NULL_PATTERN).length != 0;
 			if ((isFinal || isNonNull) && fieldDecl.initialization == null) fields.add(child);
 		}
 		return fields;
@@ -161,8 +181,8 @@ public class HandleConstructor {
 			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@AllArgsConstructor(onConstructor=", annotationNode);
 			
 			new HandleConstructor().generateConstructor(
-					typeNode, level, findAllFields(typeNode), staticName, SkipIfConstructorExists.NO,
-					suppressConstructorProperties, onConstructor, annotationNode);
+				typeNode, level, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO,
+				suppressConstructorProperties, onConstructor, annotationNode);
 		}
 	}
 	
@@ -184,14 +204,14 @@ public class HandleConstructor {
 			EclipseNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists,
 			List<Annotation> onConstructor, EclipseNode sourceNode) {
 		
-		generateConstructor(typeNode, level, findRequiredFields(typeNode), staticName, skipIfConstructorExists, null, onConstructor, sourceNode);
+		generateConstructor(typeNode, level, findRequiredFields(typeNode), false, staticName, skipIfConstructorExists, null, onConstructor, sourceNode);
 	}
 	
 	public void generateAllArgsConstructor(
 			EclipseNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists,
 			List<Annotation> onConstructor, EclipseNode sourceNode) {
 		
-		generateConstructor(typeNode, level, findAllFields(typeNode), staticName, skipIfConstructorExists, null, onConstructor, sourceNode);
+		generateConstructor(typeNode, level, findAllFields(typeNode), false, staticName, skipIfConstructorExists, null, onConstructor, sourceNode);
 	}
 	
 	public enum SkipIfConstructorExists {
@@ -199,8 +219,8 @@ public class HandleConstructor {
 	}
 	
 	public void generateConstructor(
-			EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, String staticName, SkipIfConstructorExists skipIfConstructorExists,
-			Boolean suppressConstructorProperties, List<Annotation> onConstructor, EclipseNode sourceNode) {
+		EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists,
+		Boolean suppressConstructorProperties, List<Annotation> onConstructor, EclipseNode sourceNode) {
 		
 		ASTNode source = sourceNode.get();
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
@@ -210,8 +230,8 @@ public class HandleConstructor {
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
 					boolean skipGeneration = (annotationTypeMatches(NoArgsConstructor.class, child) ||
-							annotationTypeMatches(AllArgsConstructor.class, child) ||
-							annotationTypeMatches(RequiredArgsConstructor.class, child));
+						annotationTypeMatches(AllArgsConstructor.class, child) ||
+						annotationTypeMatches(RequiredArgsConstructor.class, child));
 					
 					if (!skipGeneration && skipIfConstructorExists == SkipIfConstructorExists.YES) {
 						skipGeneration = annotationTypeMatches(Builder.class, child);
@@ -224,8 +244,8 @@ public class HandleConstructor {
 							// the 'staticName' parameter of the @XArgsConstructor you've stuck on your type.
 							// We should warn that we're ignoring @Data's 'staticConstructor' param.
 							typeNode.addWarning(
-									"Ignoring static constructor name: explicit @XxxArgsConstructor annotation present; its `staticName` parameter will be used.",
-									source.sourceStart, source.sourceEnd);
+								"Ignoring static constructor name: explicit @XxxArgsConstructor annotation present; its `staticName` parameter will be used.",
+								source.sourceStart, source.sourceEnd);
 						}
 						return;
 					}
@@ -234,11 +254,11 @@ public class HandleConstructor {
 		}
 		
 		ConstructorDeclaration constr = createConstructor(
-				staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields,
-				suppressConstructorProperties, sourceNode, onConstructor);
+			staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields, allToDefault,
+			suppressConstructorProperties, sourceNode, onConstructor);
 		injectMethod(typeNode, constr);
 		if (staticConstrRequired) {
-			MethodDeclaration staticConstr = createStaticConstructor(level, staticName, typeNode, fields, source);
+			MethodDeclaration staticConstr = createStaticConstructor(level, staticName, typeNode, allToDefault ? Collections.<EclipseNode>emptyList() : fields, source);
 			injectMethod(typeNode, staticConstr);
 		}
 	}
@@ -248,7 +268,7 @@ public class HandleConstructor {
 		if (fields.isEmpty()) return null;
 		
 		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
+		long p = (long) pS << 32 | pE;
 		long[] poss = new long[3];
 		Arrays.fill(poss, p);
 		QualifiedTypeReference constructorPropertiesType = new QualifiedTypeReference(JAVA_BEANS_CONSTRUCTORPROPERTIES, poss);
@@ -276,14 +296,14 @@ public class HandleConstructor {
 	}
 	
 	public static ConstructorDeclaration createConstructor(
-			AccessLevel level, EclipseNode type, Collection<EclipseNode> fields,
-			Boolean suppressConstructorProperties, EclipseNode sourceNode, List<Annotation> onConstructor) {
+		AccessLevel level, EclipseNode type, Collection<EclipseNode> fields, boolean allToDefault,
+		Boolean suppressConstructorProperties, EclipseNode sourceNode, List<Annotation> onConstructor) {
 		
 		ASTNode source = sourceNode.get();
-		TypeDeclaration typeDeclaration = ((TypeDeclaration)type.get());
-		long p = (long)source.sourceStart << 32 | source.sourceEnd;
+		TypeDeclaration typeDeclaration = ((TypeDeclaration) type.get());
+		long p = (long) source.sourceStart << 32 | source.sourceEnd;
 		
-		boolean isEnum = (((TypeDeclaration)type.get()).modifiers & ClassFileConstants.AccEnum) != 0;
+		boolean isEnum = (((TypeDeclaration) type.get()).modifiers & ClassFileConstants.AccEnum) != 0;
 		
 		if (isEnum) level = AccessLevel.PRIVATE;
 		
@@ -295,8 +315,7 @@ public class HandleConstructor {
 			}
 		}
 		
-		ConstructorDeclaration constructor = new ConstructorDeclaration(
-				((CompilationUnitDeclaration) type.top().get()).compilationResult);
+		ConstructorDeclaration constructor = new ConstructorDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		
 		constructor.modifiers = toEclipseModifier(level);
 		constructor.selector = typeDeclaration.name;
@@ -319,22 +338,27 @@ public class HandleConstructor {
 			char[] rawName = field.name;
 			char[] fieldName = removePrefixFromField(fieldNode);
 			FieldReference thisX = new FieldReference(rawName, p);
-			thisX.receiver = new ThisReference((int)(p >> 32), (int)p);
+			int s = (int) (p >> 32);
+			int e = (int) p;
+			thisX.receiver = new ThisReference(s, e);
 			
-			SingleNameReference assignmentNameRef = new SingleNameReference(fieldName, p);
-			Assignment assignment = new Assignment(thisX, assignmentNameRef, (int)p);
-			assignment.sourceStart = (int)(p >> 32); assignment.sourceEnd = assignment.statementEnd = (int)(p >> 32);
+			Expression assignmentExpr = allToDefault ? getDefaultExpr(field.type, s, e) : new SingleNameReference(fieldName, p);
+			
+			Assignment assignment = new Assignment(thisX, assignmentExpr, (int) p);
+			assignment.sourceStart = (int) (p >> 32); assignment.sourceEnd = assignment.statementEnd = (int) (p >> 32);
 			assigns.add(assignment);
-			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
-			Argument parameter = new Argument(fieldName, fieldPos, copyType(field.type, source), Modifier.FINAL);
-			Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
-			Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
-			if (nonNulls.length != 0) {
-				Statement nullCheck = generateNullCheck(field, sourceNode);
-				if (nullCheck != null) nullChecks.add(nullCheck);
+			if (!allToDefault) {
+				long fieldPos = (((long) field.sourceStart) << 32) | field.sourceEnd;
+				Argument parameter = new Argument(fieldName, fieldPos, copyType(field.type, source), Modifier.FINAL);
+				Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
+				Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
+				if (nonNulls.length != 0) {
+					Statement nullCheck = generateNullCheck(field, sourceNode);
+					if (nullCheck != null) nullChecks.add(nullCheck);
+				}
+				parameter.annotations = copyAnnotations(source, nonNulls, nullables);
+				params.add(parameter);
 			}
-			parameter.annotations = copyAnnotations(source, nonNulls, nullables);
-			params.add(parameter);
 		}
 		
 		nullChecks.addAll(assigns);
@@ -343,17 +367,30 @@ public class HandleConstructor {
 		
 		/* Generate annotations that must  be put on the generated method, and attach them. */ {
 			Annotation[] constructorProperties = null;
-			if (!suppressConstructorProperties && level != AccessLevel.PRIVATE && level != AccessLevel.PACKAGE && !isLocalType(type)) {
+			if (!allToDefault && !suppressConstructorProperties && level != AccessLevel.PRIVATE && level != AccessLevel.PACKAGE && !isLocalType(type)) {
 				constructorProperties = createConstructorProperties(source, fields);
 			}
 			
 			constructor.annotations = copyAnnotations(source,
-					onConstructor.toArray(new Annotation[0]),
-					constructorProperties);
+				onConstructor.toArray(new Annotation[0]),
+				constructorProperties);
 		}
 		
 		constructor.traverse(new SetGeneratedByVisitor(source), typeDeclaration.scope);
 		return constructor;
+	}
+	
+	private static Expression getDefaultExpr(TypeReference type, int s, int e) {
+		char[] lastToken = type.getLastToken();
+		if (Arrays.equals(TypeConstants.BOOLEAN, lastToken)) return new FalseLiteral(s, e);
+		if (Arrays.equals(TypeConstants.CHAR, lastToken)) return new CharLiteral(new char[] {'\'', '\\', '0', '\''}, s, e);
+		if (Arrays.equals(TypeConstants.BYTE, lastToken) || Arrays.equals(TypeConstants.SHORT, lastToken) ||
+			Arrays.equals(TypeConstants.INT, lastToken)) return IntLiteral.buildIntLiteral(new char[] {'0'}, s, e);
+		if (Arrays.equals(TypeConstants.LONG, lastToken)) return LongLiteral.buildLongLiteral(new char[] {'0',  'L'}, s, e);
+		if (Arrays.equals(TypeConstants.FLOAT, lastToken)) return new FloatLiteral(new char[] {'0', 'F'}, s, e);
+		if (Arrays.equals(TypeConstants.DOUBLE, lastToken)) return new DoubleLiteral(new char[] {'0', 'D'}, s, e);
+		
+		return new NullLiteral(s, e);
 	}
 	
 	public static boolean isLocalType(EclipseNode type) {
@@ -365,10 +402,9 @@ public class HandleConstructor {
 	
 	public MethodDeclaration createStaticConstructor(AccessLevel level, String name, EclipseNode type, Collection<EclipseNode> fields, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
+		long p = (long) pS << 32 | pE;
 		
-		MethodDeclaration constructor = new MethodDeclaration(
-				((CompilationUnitDeclaration) type.top().get()).compilationResult);
+		MethodDeclaration constructor = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		
 		constructor.modifiers = toEclipseModifier(level) | ClassFileConstants.AccStatic;
 		TypeDeclaration typeDecl = (TypeDeclaration) type.get();
@@ -376,7 +412,7 @@ public class HandleConstructor {
 		constructor.annotations = null;
 		constructor.selector = name.toCharArray();
 		constructor.thrownExceptions = null;
-		constructor.typeParameters = copyTypeParams(((TypeDeclaration)type.get()).typeParameters, source);
+		constructor.typeParameters = copyTypeParams(((TypeDeclaration) type.get()).typeParameters, source);
 		constructor.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = source.sourceStart;
 		constructor.bodyEnd = constructor.declarationSourceEnd = constructor.sourceEnd = source.sourceEnd;
@@ -389,7 +425,7 @@ public class HandleConstructor {
 		
 		for (EclipseNode fieldNode : fields) {
 			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
-			long fieldPos = (((long)field.sourceStart) << 32) | field.sourceEnd;
+			long fieldPos = (((long) field.sourceStart) << 32) | field.sourceEnd;
 			SingleNameReference nameRef = new SingleNameReference(field.name, fieldPos);
 			assigns.add(nameRef);
 			
@@ -400,7 +436,7 @@ public class HandleConstructor {
 		
 		statement.arguments = assigns.isEmpty() ? null : assigns.toArray(new Expression[assigns.size()]);
 		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[params.size()]);
-		constructor.statements = new Statement[] { new ReturnStatement(statement, (int)(p >> 32), (int)p) };
+		constructor.statements = new Statement[] { new ReturnStatement(statement, (int) (p >> 32), (int)p) };
 		
 		constructor.traverse(new SetGeneratedByVisitor(source), typeDecl.scope);
 		return constructor;

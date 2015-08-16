@@ -152,7 +152,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				allFields.append(fieldNode);
 			}
 			
-			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, List.<JCAnnotation>nil(), allFields.toList(), null, SkipIfConstructorExists.I_AM_BUILDER, null, annotationNode);
+			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, null, annotationNode);
 			
 			returnType = namePlusTypeParamsToTypeReference(tdParent.getTreeMaker(), td.name, td.typarams);
 			typeParams = td.typarams;
@@ -342,7 +342,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		if (constructorExists(builderType) == MemberExistsResult.NOT_EXISTS) {
-			JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PACKAGE, List.<JCAnnotation>nil(), builderType, List.<JavacNode>nil(), null, annotationNode);
+			JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PACKAGE, List.<JCAnnotation>nil(), builderType, List.<JavacNode>nil(), false, null, annotationNode);
 			if (cd != null) injectMethod(builderType, cd);
 		}
 		

@@ -78,3 +78,21 @@
     this.x = x;
   }
 }
+@lombok.NoArgsConstructor(force = true) class NoArgsConstructor2 {
+  final int x;
+  final double y;
+  final char c;
+  final boolean b;
+  final float f;
+  final String s;
+  byte z;
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") NoArgsConstructor2() {
+    super();
+    this.x = 0;
+    this.y = 0D;
+    this.c = '\0';
+    this.b = false;
+    this.f = 0F;
+    this.s = null;
+  }
+}

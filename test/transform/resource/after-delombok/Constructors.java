@@ -98,3 +98,22 @@ class AllArgsConstructorPackageAccess {
 		this.x = x;
 	}
 }
+class NoArgsConstructor2 {
+	final int x;
+	final double y;
+	final char c;
+	final boolean b;
+	final float f;
+	final String s;
+	byte z;
+	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
+	public NoArgsConstructor2() {
+		this.x = 0;
+		this.y = 0.0;
+		this.c = '\000';
+		this.b = false;
+		this.f = 0.0F;
+		this.s = null;
+	}
+}

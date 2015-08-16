@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2013 The Project Lombok Authors.
+ * Copyright (C) 2010-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,6 +59,12 @@ public @interface NoArgsConstructor {
 	 * Sets the access level of the constructor. By default, generated constructors are {@code public}.
 	 */
 	AccessLevel access() default lombok.AccessLevel.PUBLIC;
+	
+	/**
+	 * If {@code true}, initializes all final fields to 0 / null / false.
+	 * Otherwise, a compile time error occurs.
+	 */
+	boolean force() default false;
 	
 	/**
 	  * Placeholder annotation to enable the placement of annotations on the generated code.

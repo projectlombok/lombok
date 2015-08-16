@@ -23,6 +23,8 @@ package lombok.javac.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+import static lombok.javac.Javac.*;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -41,13 +43,13 @@ import org.mangosdk.spi.ProviderFor;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
-import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
+import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCReturn;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
@@ -71,8 +73,9 @@ public class HandleConstructor {
 			AccessLevel level = ann.access();
 			if (level == AccessLevel.NONE) return;
 			String staticName = ann.staticName();
-			List<JavacNode> fields = List.nil();
-			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, fields, staticName, SkipIfConstructorExists.NO, null, annotationNode);
+			boolean force = ann.force();
+			List<JavacNode> fields = force ? findFinalFields(typeNode) : List.<JavacNode>nil();
+			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, fields, force, staticName, SkipIfConstructorExists.NO, null, annotationNode);
 		}
 	}
 	
@@ -97,11 +100,19 @@ public class HandleConstructor {
 				suppressConstructorProperties = suppress;
 			}
 			
-			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, findRequiredFields(typeNode), staticName, SkipIfConstructorExists.NO, suppressConstructorProperties, annotationNode);
+			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO, suppressConstructorProperties, annotationNode);
 		}
 	}
 	
 	public static List<JavacNode> findRequiredFields(JavacNode typeNode) {
+		return findFields(typeNode, true);
+	}
+	
+	public static List<JavacNode> findFinalFields(JavacNode typeNode) {
+		return findFields(typeNode, false);
+	}
+	
+	public static List<JavacNode> findFields(JavacNode typeNode, boolean nullMarked) {
 		ListBuffer<JavacNode> fields = new ListBuffer<JavacNode>();
 		for (JavacNode child : typeNode.down()) {
 			if (child.getKind() != Kind.FIELD) continue;
@@ -112,7 +123,7 @@ public class HandleConstructor {
 			//Skip static fields.
 			if ((fieldFlags & Flags.STATIC) != 0) continue;
 			boolean isFinal = (fieldFlags & Flags.FINAL) != 0;
-			boolean isNonNull = !findAnnotations(child, NON_NULL_PATTERN).isEmpty();
+			boolean isNonNull = nullMarked && !findAnnotations(child, NON_NULL_PATTERN).isEmpty();
 			if ((isFinal || isNonNull) && fieldDecl.init == null) fields.append(child);
 		}
 		return fields.toList();
@@ -138,7 +149,7 @@ public class HandleConstructor {
 				boolean suppress = ann.suppressConstructorProperties();
 				suppressConstructorProperties = suppress;
 			}
-			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, findAllFields(typeNode), staticName, SkipIfConstructorExists.NO, suppressConstructorProperties, annotationNode);
+			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO, suppressConstructorProperties, annotationNode);
 		}
 	}
 	
@@ -174,7 +185,7 @@ public class HandleConstructor {
 	}
 	
 	public void generateRequiredArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
-		generateConstructor(typeNode, level, List.<JCAnnotation>nil(), findRequiredFields(typeNode), staticName, skipIfConstructorExists, null, source);
+		generateConstructor(typeNode, level, List.<JCAnnotation>nil(), findRequiredFields(typeNode), false, staticName, skipIfConstructorExists, null, source);
 	}
 	
 	public enum SkipIfConstructorExists {
@@ -182,10 +193,10 @@ public class HandleConstructor {
 	}
 	
 	public void generateAllArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
-		generateConstructor(typeNode, level, List.<JCAnnotation>nil(), findAllFields(typeNode), staticName, skipIfConstructorExists, null, source);
+		generateConstructor(typeNode, level, List.<JCAnnotation>nil(), findAllFields(typeNode), false, staticName, skipIfConstructorExists, null, source);
 	}
 	
-	public void generateConstructor(JavacNode typeNode, AccessLevel level, List<JCAnnotation> onConstructor, List<JavacNode> fields, String staticName, SkipIfConstructorExists skipIfConstructorExists, Boolean suppressConstructorProperties, JavacNode source) {
+	public void generateConstructor(JavacNode typeNode, AccessLevel level, List<JCAnnotation> onConstructor, List<JavacNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists, Boolean suppressConstructorProperties, JavacNode source) {
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
 		
 		if (skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) return;
@@ -193,8 +204,8 @@ public class HandleConstructor {
 			for (JavacNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
 					boolean skipGeneration = annotationTypeMatches(NoArgsConstructor.class, child) ||
-							annotationTypeMatches(AllArgsConstructor.class, child) ||
-							annotationTypeMatches(RequiredArgsConstructor.class, child);
+						annotationTypeMatches(AllArgsConstructor.class, child) ||
+						annotationTypeMatches(RequiredArgsConstructor.class, child);
 					
 					if (!skipGeneration && skipIfConstructorExists == SkipIfConstructorExists.YES) {
 						skipGeneration = annotationTypeMatches(Builder.class, child);
@@ -214,10 +225,10 @@ public class HandleConstructor {
 			}
 		}
 		
-		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, suppressConstructorProperties, source);
+		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, suppressConstructorProperties, source);
 		injectMethod(typeNode, constr);
 		if (staticConstrRequired) {
-			JCMethodDecl staticConstr = createStaticConstructor(staticName, level, typeNode, fields, source.get());
+			JCMethodDecl staticConstr = createStaticConstructor(staticName, level, typeNode, allToDefault ? List.<JavacNode>nil() : fields, source.get());
 			injectMethod(typeNode, staticConstr);
 		}
 	}
@@ -236,7 +247,7 @@ public class HandleConstructor {
 		mods.annotations = mods.annotations.append(annotation);
 	}
 	
-	public static JCMethodDecl createConstructor(AccessLevel level, List<JCAnnotation> onConstructor, JavacNode typeNode, List<JavacNode> fields, Boolean suppressConstructorProperties, JavacNode source) {
+	public static JCMethodDecl createConstructor(AccessLevel level, List<JCAnnotation> onConstructor, JavacNode typeNode, List<JavacNode> fields, boolean allToDefault, Boolean suppressConstructorProperties, JavacNode source) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		boolean isEnum = (((JCClassDecl) typeNode.get()).mods.flags & Flags.ENUM) != 0;
@@ -259,29 +270,55 @@ public class HandleConstructor {
 			Name fieldName = removePrefixFromField(fieldNode);
 			Name rawName = field.name;
 			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, NON_NULL_PATTERN);
-			List<JCAnnotation> nullables = findAnnotations(fieldNode, NULLABLE_PATTERN);
-			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, nonNulls.appendList(nullables)), fieldName, field.vartype, null);
-			params.append(param);
-			JCFieldAccess thisX = maker.Select(maker.Ident(fieldNode.toName("this")), rawName);
-			JCAssign assign = maker.Assign(thisX, maker.Ident(fieldName));
-			assigns.append(maker.Exec(assign));
-			
-			if (!nonNulls.isEmpty()) {
-				JCStatement nullCheck = generateNullCheck(maker, fieldNode, source);
-				if (nullCheck != null) nullChecks.append(nullCheck);
+			if (!allToDefault) {
+				List<JCAnnotation> nullables = findAnnotations(fieldNode, NULLABLE_PATTERN);
+				long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
+				JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, nonNulls.appendList(nullables)), fieldName, field.vartype, null);
+				params.append(param);
+				if (!nonNulls.isEmpty()) {
+					JCStatement nullCheck = generateNullCheck(maker, fieldNode, source);
+					if (nullCheck != null) nullChecks.append(nullCheck);
+				}
 			}
+			JCFieldAccess thisX = maker.Select(maker.Ident(fieldNode.toName("this")), rawName);
+			JCExpression assign = maker.Assign(thisX, allToDefault ? getDefaultExpr(maker, field.vartype) : maker.Ident(fieldName));
+			assigns.append(maker.Exec(assign));
 		}
 		
 		JCModifiers mods = maker.Modifiers(toJavacModifier(level), List.<JCAnnotation>nil());
-		if (!suppressConstructorProperties && level != AccessLevel.PRIVATE && level != AccessLevel.PACKAGE && !isLocalType(typeNode) && LombokOptionsFactory.getDelombokOptions(typeNode.getContext()).getFormatPreferences().generateConstructorProperties()) {
+		if (!allToDefault && !suppressConstructorProperties && level != AccessLevel.PRIVATE && level != AccessLevel.PACKAGE && !isLocalType(typeNode) && LombokOptionsFactory.getDelombokOptions(typeNode.getContext()).getFormatPreferences().generateConstructorProperties()) {
 			addConstructorProperties(mods, typeNode, fields);
 		}
 		if (onConstructor != null) mods.annotations = mods.annotations.appendList(copyAnnotations(onConstructor));
 		
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
-				null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(),
-				maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source.get(), typeNode.getContext());
+			null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(),
+			maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source.get(), typeNode.getContext());
+	}
+	
+	private static JCExpression getDefaultExpr(JavacTreeMaker maker, JCExpression type) {
+		if (type instanceof JCPrimitiveTypeTree) {
+			switch (((JCPrimitiveTypeTree) type).getPrimitiveTypeKind()) {
+			case BOOLEAN:
+				return maker.Literal(CTC_BOOLEAN, 0);
+			case CHAR:
+				return maker.Literal(CTC_CHAR, 0);
+			default:
+			case BYTE:
+			case SHORT:
+			case INT:
+				return maker.Literal(CTC_INT, 0);
+			case LONG:
+				return maker.Literal(CTC_LONG, 0L);
+			case FLOAT:
+				return maker.Literal(CTC_FLOAT, 0F);
+			case DOUBLE:
+				return maker.Literal(CTC_DOUBLE, 0D);
+			}
+		}
+		
+		return maker.Literal(CTC_BOT, null);
+		
 	}
 	
 	public static boolean isLocalType(JavacNode type) {
