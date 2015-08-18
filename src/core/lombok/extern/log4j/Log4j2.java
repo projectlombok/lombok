@@ -42,7 +42,7 @@ import java.lang.annotation.Target;
  * 
  * <pre>
  * public class LogExample {
- *     private static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.Logger.getLogger(LogExample.class);
+ *     private static final org.apache.logging.log4j.Logger log = org.apache.logging.log4j.LogManager.getLogger(LogExample.class);
  * }
  * </pre>
  * 
