@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.16.7 "Edgy Guinea Pig"
+* New edge
+
 ### v1.16.6 (August 18th, 2015)
 * FEATURE: `@Helper` can be placed on method-local inner classes to make all methods in the class accessible to the rest of the method. [Full documentation](https://projectlombok.org/features/experimental/Helper.html).
 * FEATURE: `@Builder(toBuilder = true)` is now available. It produces an instance method that creates a new builder, initialized with all the values of that instance. For more, read the [Feature page on Builder](https://projectlombok.org/features/Builder.html).
