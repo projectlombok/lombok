@@ -175,6 +175,9 @@ such as converting the changelog into HTML, and creating javadoc.
 		<antcall target="-integrateSnippet">
 			<param name="transformationName" value="experimental/UtilityClass" />
 		</antcall>
+		<antcall target="-integrateSnippet">
+			<param name="transformationName" value="experimental/Helper" />
+		</antcall>
 	</target>
 	
 	<target name="-website-dist">
