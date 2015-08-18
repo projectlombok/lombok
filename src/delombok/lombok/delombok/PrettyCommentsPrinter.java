@@ -1518,6 +1518,11 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 	
 	public void visitTypeParameter(JCTypeParameter tree) {
 		try {
+			List<JCExpression> annotations = readExpressionListOrNil(tree, "annotations");
+			if (!annotations.isEmpty()) {
+				printExprs(annotations);
+				print(" ");
+			}
 			print(tree.name);
 			if (tree.bounds.nonEmpty()) {
 				print(" extends ");
@@ -1614,6 +1619,8 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 			} else if ("JCMemberReference".equals(simpleName)) {
 				visitReference0(tree);
 				return;
+			} else if ("JCAnnotatedType".equals(simpleName)) {
+				visitAnnotatedType0(tree);
 			} else {
 				print("(UNKNOWN[" + tree.getClass().getSimpleName() + "]: " + tree + ")");
 				println();
@@ -1662,8 +1669,26 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 				printExprs(typeArgs);
 				print(">");
 			}
-			;
 			print(readObject(tree, "mode").toString().equals("INVOKE") ? readObject(tree, "name") : "new");
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
+	
+	public void visitAnnotatedType0(JCTree tree) {
+		try {
+			JCTree underlyingType = readTree(tree, "underlyingType");
+			if (underlyingType instanceof JCFieldAccess) {
+				printExpr(((JCFieldAccess) underlyingType).selected);
+				print(".");
+				printExprs(readExpressionList(tree, "annotations"));
+				print(" ");
+				print(((JCFieldAccess) underlyingType).name);
+			} else {
+				printExprs(readExpressionList(tree, "annotations"));
+				print(" ");
+				printExpr(underlyingType);
+			}
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}
@@ -1695,6 +1720,15 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
+	private List<JCExpression> readExpressionListOrNil(JCTree tree, String fieldName) throws IOException {
+		try {
+			return (List<JCExpression>) readObject0(tree, fieldName, List.nil());
+		} catch (Exception e) {
+			return List.nil();
+		}
+	}
+	
 	private Object readObject(JCTree tree, String fieldName) {
 		try {
 			return readObject0(tree, fieldName);
@@ -1710,6 +1744,15 @@ public class PrettyCommentsPrinter extends JCTree.Visitor {
 		} catch (Exception e) {
 			print("ERROR_READING_FIELD");
 			throw e;
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private Object readObject0(JCTree tree, String fieldName, Object defaultValue) throws Exception {
+		try {
+			return tree.getClass().getDeclaredField(fieldName).get(tree);
+		} catch (Exception e) {
+			return defaultValue;
 		}
 	}
 }
