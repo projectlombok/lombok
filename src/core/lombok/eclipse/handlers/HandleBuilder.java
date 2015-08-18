@@ -251,7 +251,13 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				
 				TypeParameter[] tpOnType = ((TypeDeclaration) tdParent.get()).typeParameters;
 				TypeParameter[] tpOnMethod = md.typeParameters;
-				TypeReference[][] tpOnRet_ = md.returnType.getTypeArguments();
+				TypeReference[][] tpOnRet_ = null;
+				if (md.returnType instanceof ParameterizedSingleTypeReference) {
+					tpOnRet_ = new TypeReference[1][];
+					tpOnRet_[0] = ((ParameterizedSingleTypeReference) md.returnType).typeArguments;
+				} else if (md.returnType instanceof ParameterizedQualifiedTypeReference) {
+					tpOnRet_ = ((ParameterizedQualifiedTypeReference) md.returnType).typeArguments;
+				}
 				
 				if (tpOnRet_ != null) for (int i = 0; i < tpOnRet_.length - 1; i++) {
 					if (tpOnRet_[i] != null && tpOnRet_[i].length > 0) {
