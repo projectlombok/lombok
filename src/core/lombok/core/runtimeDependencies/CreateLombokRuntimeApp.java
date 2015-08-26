@@ -91,7 +91,7 @@ public class CreateLombokRuntimeApp extends LombokApp {
 		CmdReader<CmdArgs> reader = CmdReader.of(CmdArgs.class);
 		CmdArgs args;
 		try {
-			args = reader.make(rawArgs.toArray(new String[0]));
+			args = reader.make(rawArgs.toArray(new String[rawArgs.size()]));
 		} catch (InvalidCommandLineException e) {
 			printHelp(reader, e.getMessage(), System.err);
 			return 1;

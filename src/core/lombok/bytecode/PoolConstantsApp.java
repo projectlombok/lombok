@@ -66,7 +66,7 @@ public class PoolConstantsApp extends LombokApp {
 		CmdReader<CmdArgs> reader = CmdReader.of(CmdArgs.class);
 		CmdArgs args;
 		try {
-			args = reader.make(raw.toArray(new String[0]));
+			args = reader.make(raw.toArray(new String[raw.size()]));
 			if (args.help) {
 				System.out.println(reader.generateCommandLineHelp("java -jar lombok.jar -printpool"));
 				return 0;

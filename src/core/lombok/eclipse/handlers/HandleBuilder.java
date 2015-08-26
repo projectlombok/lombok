@@ -502,7 +502,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		decl.modifiers = ClassFileConstants.AccPrivate;
 		decl.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		decl.returnType = TypeReference.baseTypeReference(TypeIds.T_void, 0);
-		decl.statements = statements.toArray(new Statement[0]);
+		decl.statements = statements.toArray(new Statement[statements.size()]);
 		decl.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return decl;
 	}
