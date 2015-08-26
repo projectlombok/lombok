@@ -422,7 +422,7 @@ public class EclipseHandlerUtil {
 			}
 		}
 		
-		return result == null ? null : result.toArray(new Annotation[0]);
+		return result == null ? null : result.toArray(new Annotation[result.size()]);
 	}
 	
 	public static boolean hasAnnotation(Class<? extends java.lang.annotation.Annotation> type, EclipseNode node) {

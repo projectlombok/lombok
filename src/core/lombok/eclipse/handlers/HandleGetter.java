@@ -78,7 +78,6 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleGetter extends EclipseAnnotationHandler<Getter> {
-	private static final Annotation[] EMPTY_ANNOTATIONS_ARRAY = new Annotation[0];
 
 	public boolean generateGetterForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelGetter) {
 		if (checkForTypeLevelGetter) {
@@ -232,7 +231,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 				delegates.add(delegate);
 			}
 		}
-		return delegates.toArray(EMPTY_ANNOTATIONS_ARRAY);
+		return delegates.toArray(new Annotation[delegates.size()]);
 	}
 	
 	public MethodDeclaration createGetter(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, ASTNode source, boolean lazy, List<Annotation> onMethod) {
@@ -271,7 +270,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 			}
 			
 			method.annotations = copyAnnotations(source,
-					onMethod.toArray(new Annotation[0]),
+					onMethod.toArray(new Annotation[onMethod.size()]),
 					findAnnotations(field, NON_NULL_PATTERN),
 					findAnnotations(field, NULLABLE_PATTERN),
 					findDelegatesAndMarkAsHandled(fieldNode),

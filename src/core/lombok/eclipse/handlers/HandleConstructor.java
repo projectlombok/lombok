@@ -372,7 +372,7 @@ public class HandleConstructor {
 			}
 			
 			constructor.annotations = copyAnnotations(source,
-				onConstructor.toArray(new Annotation[0]),
+				onConstructor.toArray(new Annotation[onConstructor.size()]),
 				constructorProperties);
 		}
 		

@@ -101,7 +101,7 @@ public class ConfigurationApp extends LombokApp {
 		CmdReader<CmdArgs> reader = CmdReader.of(CmdArgs.class);
 		CmdArgs args;
 		try {
-			args = reader.make(raw.toArray(new String[0]));
+			args = reader.make(raw.toArray(new String[raw.size()]));
 			if (args.help) {
 				out.println(reader.generateCommandLineHelp("java -jar lombok.jar configuration"));
 				return 0;

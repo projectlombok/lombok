@@ -486,7 +486,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		setGeneratedBy(objectRef, source);
 		method.arguments = new Argument[] {new Argument(new char[] { 'o' }, 0, objectRef, Modifier.FINAL)};
 		method.arguments[0].sourceStart = pS; method.arguments[0].sourceEnd = pE;
-		if (!onParam.isEmpty()) method.arguments[0].annotations = onParam.toArray(new Annotation[0]);
+		if (!onParam.isEmpty()) method.arguments[0].annotations = onParam.toArray(new Annotation[onParam.size()]);
 		setGeneratedBy(method.arguments[0], source);
 		
 		List<Statement> statements = new ArrayList<Statement>();
@@ -750,7 +750,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		setGeneratedBy(objectRef, source);
 		method.arguments = new Argument[] {new Argument(otherName, 0, objectRef, Modifier.FINAL)};
 		method.arguments[0].sourceStart = pS; method.arguments[0].sourceEnd = pE;
-		if (!onParam.isEmpty()) method.arguments[0].annotations = onParam.toArray(new Annotation[0]);
+		if (!onParam.isEmpty()) method.arguments[0].annotations = onParam.toArray(new Annotation[onParam.size()]);
 		setGeneratedBy(method.arguments[0], source);
 		
 		SingleNameReference otherRef = new SingleNameReference(otherName, p);
