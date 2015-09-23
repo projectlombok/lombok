@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 The Project Lombok Authors.
+ * Copyright (C) 2012-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -90,7 +90,9 @@ public class HandleFieldDefaults extends JavacAnnotationHandler<FieldDefaults> {
 		
 		if (makeFinal && (field.mods.flags & Flags.FINAL) == 0) {
 			if (!hasAnnotationAndDeleteIfNeccessary(NonFinal.class, fieldNode)) {
-				field.mods.flags |= Flags.FINAL;
+				if ((field.mods.flags & Flags.STATIC) == 0 || field.init != null) {
+					field.mods.flags |= Flags.FINAL;
+				}
 			}
 		}
 		

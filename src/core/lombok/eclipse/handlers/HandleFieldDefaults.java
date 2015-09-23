@@ -96,7 +96,9 @@ public class HandleFieldDefaults extends EclipseAnnotationHandler<FieldDefaults>
 		
 		if (makeFinal && (field.modifiers & ClassFileConstants.AccFinal) == 0) {
 			if (!hasAnnotation(NonFinal.class, fieldNode)) {
-				field.modifiers |= ClassFileConstants.AccFinal;
+				if ((field.modifiers & ClassFileConstants.AccStatic) == 0 || field.initialization != null) {
+					field.modifiers |= ClassFileConstants.AccFinal;
+				}
 			}
 		}
 		
