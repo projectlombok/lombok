@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Project Lombok Authors.
+ * Copyright (C) 2014-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -207,19 +208,27 @@ public class LombokTestSource {
 		List<String> directives = new ArrayList<String>();
 		
 		{
-			@Cleanup val rawIn = new FileInputStream(file);
-			BufferedReader in = new BufferedReader(new InputStreamReader(rawIn, "UTF-8"));
-			for (String i = in.readLine(); i != null; i = in.readLine()) {
-				if (i.isEmpty()) continue;
-				
-				if (i.startsWith("//")) {
-					directives.add(i.substring(2));
-				} else {
-					break;
+			InputStream rawIn = new FileInputStream(file);
+			try {
+				BufferedReader in = new BufferedReader(new InputStreamReader(rawIn, "UTF-8"));
+				try {
+					for (String i = in.readLine(); i != null; i = in.readLine()) {
+						if (i.isEmpty()) continue;
+						
+						if (i.startsWith("//")) {
+							directives.add(i.substring(2));
+						} else {
+							break;
+						}
+					}
+				}
+				finally {
+					in.close();
 				}
 			}
-			in.close();
-			rawIn.close();
+			finally {
+				rawIn.close();
+			}
 		}
 		
 		return new LombokTestSource(file, "", null, directives);
@@ -235,25 +244,33 @@ public class LombokTestSource {
 		
 		File sourceFile = new File(sourceFolder, fileName);
 		if (sourceFile.exists()) {
-			@Cleanup val rawIn = new FileInputStream(sourceFile);
-			BufferedReader in = new BufferedReader(new InputStreamReader(rawIn, encoding));
-			for (String i = in.readLine(); i != null; i = in.readLine()) {
-				if (content != null) {
-					content.append(i).append("\n");
-					continue;
+			InputStream rawIn = new FileInputStream(sourceFile);
+			try {
+				BufferedReader in = new BufferedReader(new InputStreamReader(rawIn, encoding));
+				try {
+					for (String i = in.readLine(); i != null; i = in.readLine()) {
+						if (content != null) {
+							content.append(i).append("\n");
+							continue;
+						}
+						
+						if (i.isEmpty()) continue;
+						
+						if (i.startsWith("//")) {
+							directives.add(i.substring(2));
+						} else {
+							content = new StringBuilder();
+							content.append(i).append("\n");
+						}
+					}
 				}
-				
-				if (i.isEmpty()) continue;
-				
-				if (i.startsWith("//")) {
-					directives.add(i.substring(2));
-				} else {
-					content = new StringBuilder();
-					content.append(i).append("\n");
+				finally {
+					in.close();
 				}
 			}
-			in.close();
-			rawIn.close();
+			finally {
+				rawIn.close();
+			}
 		}
 		
 		if (content == null) content = new StringBuilder();
@@ -262,9 +279,13 @@ public class LombokTestSource {
 		if (messagesFolder != null) {
 			File messagesFile = new File(messagesFolder, fileName + ".messages");
 			try {
-				@Cleanup val rawIn = new FileInputStream(messagesFile);
-				messages = CompilerMessageMatcher.readAll(rawIn);
-				rawIn.close();
+				InputStream rawIn = new FileInputStream(messagesFile);
+				try {
+					messages = CompilerMessageMatcher.readAll(rawIn);
+				}
+				finally {
+					rawIn.close();
+				}
 			} catch (FileNotFoundException e) {
 				messages = null;
 			}
