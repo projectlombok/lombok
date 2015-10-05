@@ -140,8 +140,8 @@ public class HandleFieldDefaults extends JavacASTAdapter {
 		
 		if (fd == null && (type.mods.flags & (Flags.INTERFACE | Flags.ANNOTATION)) != 0) return;
 		
-		boolean defaultToPrivate = Boolean.TRUE.equals(typeNode.getAst().readConfiguration(ConfigurationKeys.FIELD_DEFAULTS_PRIVATE_EVERYWHERE));
-		boolean defaultToFinal = Boolean.TRUE.equals(typeNode.getAst().readConfiguration(ConfigurationKeys.FIELD_DEFAULTS_FINAL_EVERYWHERE));
+		boolean defaultToPrivate = levelIsExplicit ? false : Boolean.TRUE.equals(typeNode.getAst().readConfiguration(ConfigurationKeys.FIELD_DEFAULTS_PRIVATE_EVERYWHERE));
+		boolean defaultToFinal = makeFinalIsExplicit ? false : Boolean.TRUE.equals(typeNode.getAst().readConfiguration(ConfigurationKeys.FIELD_DEFAULTS_FINAL_EVERYWHERE));
 		
 		if (!defaultToPrivate && !defaultToFinal && fieldDefaults == null) return;
 		AccessLevel fdAccessLevel = (fieldDefaults != null && levelIsExplicit) ? fd.level() : defaultToPrivate ? AccessLevel.PRIVATE : null;
