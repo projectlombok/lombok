@@ -85,7 +85,7 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 		}
 		
 		if (declaration.body == null) {
-			annotationNode.addWarning("@NonNull is meaningless on a parameter of an abstract method.");
+			// This used to be a warning, but as @NonNull also has a documentary purpose, better to not warn about this. Since 1.16.7
 			return;
 		}
 		

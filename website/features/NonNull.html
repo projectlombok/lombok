@@ -15,7 +15,7 @@
 		<div class="overview">
 			<h3>Overview</h3>
 			<p>
-			<em>NEW in Lombok 0.11.10: </em>You can use <code>@NonNull</code> on the parameter of a method or constructor to have lombok generate a null-check statement for you.
+			<em>NEW in Lombok 0.11.10: </em>You can use <code>@NonNull</code> on the parameter of a method or constructor to have lombok generate a null-check statement for you.<br />
 			</p><p>
 				Lombok has always treated any annotation named <code>@NonNull</code> on a field as a signal to generate a null-check if lombok generates an entire method or constructor for you, via
 				for example <a href="Data.html"><code>@Data</code></a>. Now, however, using lombok's own <code>@lombok.NonNull</code> on a parameter results in the insertion of just the null-check
@@ -60,6 +60,9 @@
 				this feature only triggers on lombok's own <code>@NonNull</code> annotation from the <code>lombok</code> package.
 				</p><p>
 				A <code>@NonNull</code> on a primitive parameter results in a warning. No null-check will be generated.
+				</p><p>
+				A <code>@NonNull</code> on a parameter of an abstract method used to generate a warning; starting with version 1.16.8, this is no longer the case, to acknowledge the notion that <code>@NonNull</code> also has a
+				documentary role. For the same reason, you can annotate a method as <code>@NonNull</code>; this is allowed, generates no warning, and does not generate any code.
 				</p>
 			</div>
 		</div>
