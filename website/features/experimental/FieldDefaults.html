@@ -61,6 +61,10 @@
 			<dl>
 			<dt><code>lombok.fieldDefaults.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)</dt>
 			<dd>Lombok will flag any usage of <code>@FieldDefaults</code> as a warning or error if configured.</dd>
+			<dt><code>lombok.fieldDefaults.defaultPrivate</code> = [<code>true</code> | <code>false</code>] (default: false)</dt>
+			<dd>(Since 1.16.8) If set to <code>true</code>, <em>every</em> field in <em>every</em> class or enum anywhere in the sources being compiled will be marked as <code>private</code> unless it has an explicit access modifier or the <code>@PackagePrivate</code> annotation, or an explicit <code>@FieldDefaults</code> annotation is present to override this config key.</dd>
+			<dt><code>lombok.fieldDefaults.defaultFinal</code> = [<code>true</code> | <code>false</code>] (default: false)</dt>
+			<dd>(Since 1.16.8) If set to <code>true</code>, <em>every</em> field in <em>every</em> class or enum anywhere in the sources being compiled will be marked as <code>final</code> unless it has the <code>@NonFinal</code> annotation, or an explicit <code>@FieldDefaults</code> annotation is present to override this config key.</dd>
 			</dl>
 		</div>
 		<div class="overview">

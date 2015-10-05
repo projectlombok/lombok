@@ -31,23 +31,24 @@ import lombok.core.HandlerPriority;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.experimental.PackagePrivate;
-import lombok.javac.JavacAnnotationHandler;
+import lombok.javac.JavacASTAdapter;
+import lombok.javac.JavacASTVisitor;
 import lombok.javac.JavacNode;
 
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
 /**
  * Handles the {@code lombok.FieldDefaults} annotation for eclipse.
  */
-@ProviderFor(JavacAnnotationHandler.class)
+@ProviderFor(JavacASTVisitor.class)
 @HandlerPriority(-2048) //-2^11; to ensure @Value picks up on messing with the fields' 'final' state, run earlier.
-public class HandleFieldDefaults extends JavacAnnotationHandler<FieldDefaults> {
+public class HandleFieldDefaults extends JavacASTAdapter {
 	public boolean generateFieldDefaultsForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean makeFinal, boolean checkForTypeLevelFieldDefaults) {
 		if (checkForTypeLevelFieldDefaults) {
 			if (hasAnnotation(FieldDefaults.class, typeNode)) {
@@ -72,13 +73,13 @@ public class HandleFieldDefaults extends JavacAnnotationHandler<FieldDefaults> {
 			//Skip fields that start with $
 			if (fieldDecl.name.toString().startsWith("$")) continue;
 			
-			setFieldDefaultsForField(field, errorNode.get(), level, makeFinal);
+			setFieldDefaultsForField(field, level, makeFinal);
 		}
 		
 		return true;
 	}
 	
-	public void setFieldDefaultsForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level, boolean makeFinal) {
+	public void setFieldDefaultsForField(JavacNode fieldNode, AccessLevel level, boolean makeFinal) {
 		JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 		if (level != null && level != AccessLevel.NONE) {
 			if ((field.mods.flags & (Flags.PUBLIC | Flags.PRIVATE | Flags.PROTECTED)) == 0) {
@@ -99,31 +100,53 @@ public class HandleFieldDefaults extends JavacAnnotationHandler<FieldDefaults> {
 		fieldNode.rebuild();
 	}
 	
-	@Override public void handle(AnnotationValues<FieldDefaults> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.FIELD_DEFAULTS_FLAG_USAGE, "@FieldDefaults");
+	@Override public void visitType(JavacNode typeNode, JCClassDecl type) {
+		AnnotationValues<FieldDefaults> fieldDefaults = null;
+		JavacNode source = typeNode;
 		
-		deleteAnnotationIfNeccessary(annotationNode, FieldDefaults.class);
-		deleteImportFromCompilationUnit(annotationNode, "lombok.AccessLevel");
-		JavacNode node = annotationNode.up();
-		FieldDefaults instance = annotation.getInstance();
-		AccessLevel level = instance.level();
-		boolean makeFinal = instance.makeFinal();
-		
-		if (level == AccessLevel.NONE && !makeFinal) {
-			annotationNode.addError("This does nothing; provide either level or makeFinal or both.");
-			return;
+		boolean levelIsExplicit = false;
+		boolean makeFinalIsExplicit = false;
+		FieldDefaults fd = null;
+		for (JavacNode jn : typeNode.down()) {
+			if (jn.getKind() != Kind.ANNOTATION) continue;
+			JCAnnotation ann = (JCAnnotation) jn.get();
+			JCTree typeTree = ann.annotationType;
+			if (typeTree == null) continue;
+			String typeTreeToString = typeTree.toString();
+			if (!typeTreeToString.equals("FieldDefaults") && !typeTreeToString.equals("lombok.experimental.FieldDefaults")) continue;
+			if (!typeMatches(FieldDefaults.class, jn, typeTree)) continue;
+			
+			source = jn;
+			fieldDefaults = createAnnotation(FieldDefaults.class, jn);
+			levelIsExplicit = fieldDefaults.isExplicit("level");
+			makeFinalIsExplicit = fieldDefaults.isExplicit("makeFinal");
+			
+			handleExperimentalFlagUsage(jn, ConfigurationKeys.FIELD_DEFAULTS_FLAG_USAGE, "@FieldDefaults");
+			
+			fd = fieldDefaults.getInstance();
+			if (!levelIsExplicit && !makeFinalIsExplicit) {
+				jn.addError("This does nothing; provide either level or makeFinal or both.");
+			}
+			
+			if (levelIsExplicit && fd.level() == AccessLevel.NONE) {
+				jn.addError("AccessLevel.NONE doesn't mean anything here. Pick another value.");
+				levelIsExplicit = false;
+			}
+			
+			deleteAnnotationIfNeccessary(jn, FieldDefaults.class);
+			deleteImportFromCompilationUnit(jn, "lombok.AccessLevel");
+			break;
 		}
 		
-		if (level == AccessLevel.PACKAGE) {
-			annotationNode.addError("Setting 'level' to PACKAGE does nothing. To force fields as package private, use the @PackagePrivate annotation on the field.");
-		}
+		if (fd == null && (type.mods.flags & (Flags.INTERFACE | Flags.ANNOTATION)) != 0) return;
 		
-		if (!makeFinal && annotation.isExplicit("makeFinal")) {
-			annotationNode.addError("Setting 'makeFinal' to false does nothing. To force fields to be non-final, use the @NonFinal annotation on the field.");
-		}
+		boolean defaultToPrivate = Boolean.TRUE.equals(typeNode.getAst().readConfiguration(ConfigurationKeys.FIELD_DEFAULTS_PRIVATE_EVERYWHERE));
+		boolean defaultToFinal = Boolean.TRUE.equals(typeNode.getAst().readConfiguration(ConfigurationKeys.FIELD_DEFAULTS_FINAL_EVERYWHERE));
 		
-		if (node == null) return;
+		if (!defaultToPrivate && !defaultToFinal && fieldDefaults == null) return;
+		AccessLevel fdAccessLevel = (fieldDefaults != null && levelIsExplicit) ? fd.level() : defaultToPrivate ? AccessLevel.PRIVATE : null;
+		boolean fdToFinal = (fieldDefaults != null && makeFinalIsExplicit) ? fd.makeFinal() : defaultToFinal;
 		
-		generateFieldDefaultsForType(node, annotationNode, level, makeFinal, false);
+		generateFieldDefaultsForType(typeNode, source, fdAccessLevel, fdToFinal, false);
 	}
 }

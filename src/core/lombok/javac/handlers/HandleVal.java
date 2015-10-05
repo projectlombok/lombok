@@ -51,11 +51,11 @@ import com.sun.tools.javac.util.List;
 @ResolutionResetNeeded
 public class HandleVal extends JavacASTAdapter {
 	@Override public void visitLocal(JavacNode localNode, JCVariableDecl local) {
-		if (local.vartype == null || (!local.vartype.toString().equals("val") && !local.vartype.toString().equals("lombok.val"))) return;
-		
-		JCTree source = local.vartype;
-		
-		if (!typeMatches(val.class, localNode, local.vartype)) return;
+		JCTree typeTree = local.vartype;
+		if (typeTree == null) return;
+		String typeTreeToString = typeTree.toString();
+		if (!typeTreeToString.equals("val") && !typeTreeToString.equals("lombok.val")) return;
+		if (!typeMatches(val.class, localNode, typeTree)) return;
 		
 		handleFlagUsage(localNode, ConfigurationKeys.VAL_FLAG_USAGE, "val");
 		
@@ -88,7 +88,7 @@ public class HandleVal extends JavacASTAdapter {
 		local.mods.flags |= Flags.FINAL;
 		
 		if (!localNode.shouldDeleteLombokAnnotations()) {
-			JCAnnotation valAnnotation = recursiveSetGeneratedBy(localNode.getTreeMaker().Annotation(local.vartype, List.<JCExpression>nil()), source, localNode.getContext());
+			JCAnnotation valAnnotation = recursiveSetGeneratedBy(localNode.getTreeMaker().Annotation(local.vartype, List.<JCExpression>nil()), typeTree, localNode.getContext());
 			local.mods.annotations = local.mods.annotations == null ? List.of(valAnnotation) : local.mods.annotations.append(valAnnotation);
 		}
 		
@@ -156,7 +156,7 @@ public class HandleVal extends JavacASTAdapter {
 			local.vartype = JavacResolution.createJavaLangObject(localNode.getAst());
 			throw e;
 		} finally {
-			recursiveSetGeneratedBy(local.vartype, source, localNode.getContext());
+			recursiveSetGeneratedBy(local.vartype, typeTree, localNode.getContext());
 		}
 	}
 }

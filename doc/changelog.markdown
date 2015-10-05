@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.16.7 "Edgy Guinea Pig"
+* FEATURE: A `lombok.config` key can now be used to make your fields `final` and/or `private`... __everywhere__. We'll be monitoring the performance impact of this for a while. We'll touch every source file if you turn these on, and even if you don't, we have to call into the lombok config system for every file.
 * BUGFIX: `@Value` and `@FieldDefaults` no longer make uninitialized static fields final. [Issue #928](https://github.com/rzwitserloot/lombok/issues/928).
 * ENHANCEMENT: Putting `@NonNull` on a parameter of an abstract method no longer generates a warning, to allow you to use this annotation to document intended behaviour [Issue #807](https://github.com/rzwitserloot/lombok/issues/807).
 

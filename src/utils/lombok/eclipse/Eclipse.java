@@ -98,15 +98,20 @@ public class Eclipse {
 	 * string containing the same fully qualified name with dots in the string.
 	 */
 	public static boolean nameEquals(char[][] typeName, String string) {
-		StringBuilder sb = new StringBuilder();
-		boolean first = true;
-		for (char[] elem : typeName) {
-			if (first) first = false;
-			else sb.append('.');
-			sb.append(elem);
+		int pos = 0, len = string.length();
+		for (int i = 0; i < typeName.length; i++) {
+			char[] t = typeName[i];
+			if (i > 0) {
+				if (pos == len) return false;
+				if (string.charAt(pos++) != '.') return false;
+			}
+			for (int j = 0; j < t.length; j++) {
+				if (pos == len) return false;
+				if (string.charAt(pos++) != t[j]) return false;
+			}
 		}
 		
-		return string.contentEquals(sb);
+		return true;
 	}
 	
 	public static boolean hasClinit(TypeDeclaration parent) {

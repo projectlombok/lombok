@@ -85,6 +85,15 @@
 				<code>lombok.extern.findbugs.addSuppressFBWarnings = true</code>
 			</div>
 		</div>
+		<div class="overview" style="clear: left;">
+			<h3>Config keys that can even affect source files with 0 lombok annotations</h3>
+			<p>
+			<div class="snippet example">
+				<code>lombok.fieldDefaults.defaultPrivate = true</code><br />
+				<code>lombok.fieldDefaults.defaultFinal = true</code>
+			</div>
+			Turning either of these options on means lombok will make <em>every</em> field in <em>every</em> source file final and/or private unless it has an explicit access modifier or annotation to suppress this. <a href="experimental/FieldDefaults.html">See the <code>@FieldDefaults</code> documentation for more</a>.
+		</div>
 		<div style="clear: left;"></div>
 		<div class="footer">
 			<a href="index.html">Back to features</a> | <a href="Log.html">Previous feature (@Log)</a> | <span class="disabled">Next feature</span><br />
