@@ -29,13 +29,13 @@ import java.lang.annotation.Target;
 /**
  * Generates a lot of code which fits with a class that is a representation of an immutable entity.
  * <p>
- * Equivalent to {@code @Getter @FieldDefaults(makeFinal=true, level=AccessLevel.PRIVATE) @RequiredArgsConstructor @ToString @EqualsAndHashCode}.
+ * Equivalent to {@code @Getter @FieldDefaults(makeFinal=true, level=AccessLevel.PRIVATE) @AllArgsConstructor @ToString @EqualsAndHashCode}.
  * <p>
  * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Value.html">the project lombok features page for &#64;Value</a>.
  * 
  * @see lombok.Getter
  * @see lombok.experimental.FieldDefaults
- * @see lombok.RequiredArgsConstructor
+ * @see lombok.AllArgsConstructor
  * @see lombok.ToString
  * @see lombok.EqualsAndHashCode
  * @see lombok.Data
