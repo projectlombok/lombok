@@ -28,6 +28,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.core.GuavaTypeMap;
+import lombok.core.handlers.HandlerUtil;
+import lombok.eclipse.EclipseNode;
+import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
+import lombok.eclipse.handlers.EclipseSingularsRecipes.SingularData;
+
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -52,12 +58,6 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
-
-import lombok.core.GuavaTypeMap;
-import lombok.core.handlers.HandlerUtil;
-import lombok.eclipse.EclipseNode;
-import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
-import lombok.eclipse.handlers.EclipseSingularsRecipes.SingularData;
 
 abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 	protected static final char[][] JAVA_UTIL_MAP = {
@@ -94,7 +94,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		String simpleTypeName = getSimpleTargetTypeName(data);
 		char[][] tokenizedName = makeGuavaTypeName(simpleTypeName, true);
 		TypeReference type = new QualifiedTypeReference(tokenizedName, NULL_POSS);
-		type = addTypeArgs(getTypeAgrumentsCount(isMap(), simpleTypeName), false, builderType, type, data.getTypeArgs());
+		type = addTypeArgs(getTypeArgumentsCount(isMap(), simpleTypeName), false, builderType, type, data.getTypeArgs());
 
 		FieldDeclaration buildField = new FieldDeclaration(data.getPluralName(), 0, -1);
 		buildField.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
@@ -220,7 +220,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		boolean mapMode = isMap();
 		TypeReference varType = new QualifiedTypeReference(fromQualifiedName(data.getTargetFqn()), NULL_POSS);
 		String simpleTypeName = getSimpleTargetTypeName(data);
-		int agrumentsCount = getTypeAgrumentsCount(mapMode, simpleTypeName);
+		int agrumentsCount = getTypeArgumentsCount(mapMode, simpleTypeName);
 		varType = addTypeArgs(agrumentsCount, false, builderType, varType, data.getTypeArgs());
 
 		MessageSend emptyInvoke; {
@@ -268,7 +268,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		return new IfStatement(cond, new Assignment(thisDotField2, createBuilderInvoke, 0), 0, 0);
 	}
 
-	private int getTypeAgrumentsCount(boolean isMap, String simpleTypeName) {
+	private int getTypeArgumentsCount(boolean isMap, String simpleTypeName) {
 		return isMap ? 2 : getListSetTypeArgumentsCount(simpleTypeName);
 	}
 

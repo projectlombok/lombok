@@ -26,6 +26,14 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.Collections;
 
+import lombok.core.GuavaTypeMap;
+import lombok.core.handlers.HandlerUtil;
+import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
+import lombok.javac.handlers.JavacHandlerUtil;
+import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
+import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
+
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -38,14 +46,6 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
-
-import lombok.core.GuavaTypeMap;
-import lombok.core.handlers.HandlerUtil;
-import lombok.javac.JavacNode;
-import lombok.javac.JavacTreeMaker;
-import lombok.javac.handlers.JavacHandlerUtil;
-import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
-import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
 
 abstract class JavacGuavaSingularizer extends JavacSingularizer {
 	protected String getSimpleTargetTypeName(SingularData data) {
@@ -64,7 +64,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		String simpleTypeName = getSimpleTargetTypeName(data);
 		JCExpression type = JavacHandlerUtil.chainDots(builderType, "com", "google", "common", "collect", simpleTypeName, "Builder");
-		type = addTypeArgs(getTypeAgrumentsCount(isMap(), simpleTypeName), false, builderType, type, data.getTypeArgs(), source);
+		type = addTypeArgs(getTypeArgumentsCount(isMap(), simpleTypeName), false, builderType, type, data.getTypeArgs(), source);
 
 		JCVariableDecl buildField = maker.VarDef(maker.Modifiers(Flags.PRIVATE), data.getPluralName(), type, null);
 		return Collections.singletonList(injectFieldAndMarkGenerated(builderType, buildField));
@@ -155,7 +155,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 			}
 		}
 		String simpleTypeName = getSimpleTargetTypeName(data);
-		paramType = addTypeArgs(getTypeAgrumentsCount(mapMode, simpleTypeName), true, builderType, paramType, data.getTypeArgs(), source);
+		paramType = addTypeArgs(getTypeArgumentsCount(mapMode, simpleTypeName), true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
 		JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, List.of(param), thrown, body, null);
 		injectMethod(builderType, method);
@@ -168,7 +168,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 
 		String simpleTypeName = getSimpleTargetTypeName(data);
 		JCExpression varType = chainDotsString(builderType, data.getTargetFqn());
-		int agrumentsCount = getTypeAgrumentsCount(mapMode, simpleTypeName);
+		int agrumentsCount = getTypeArgumentsCount(mapMode, simpleTypeName);
 		varType = addTypeArgs(agrumentsCount, false, builderType, varType, data.getTypeArgs(), source);
 
 		JCExpression empty; {
@@ -207,7 +207,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		return maker.If(cond, thenPart, null);
 	}
 
-	private int getTypeAgrumentsCount(boolean isMap, String simpleTypeName) {
+	private int getTypeArgumentsCount(boolean isMap, String simpleTypeName) {
 		return isMap ? 2 : getListSetTypeArgumentsCount(simpleTypeName);
 	}
 
