@@ -141,6 +141,7 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 		List<JCStatement> newList = tail.prepend(nullCheck);
 		for (JCStatement stat : head) newList = newList.prepend(stat);
 		declaration.body.stats = newList;
+		annotationNode.getAst().setChanged();
 	}
 	
 	public boolean isNullCheck(JCStatement stat) {
