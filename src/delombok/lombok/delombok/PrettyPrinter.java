@@ -372,6 +372,8 @@ public class PrettyPrinter extends JCTree.Visitor {
 			break;
 		}
 		
+		if (onNewLine && !aligned && comment.start != StartConnection.START_OF_LINE) needsAlign = true;
+		
 		print(comment.content);
 		
 		switch (comment.end) {

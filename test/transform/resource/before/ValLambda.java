@@ -14,7 +14,7 @@ class ValLambda {
 	}
 	
 //	public void castLubLambda() {
-//		Runnable foo = (Runnable)((System.currentTimeMillis() > 0) ? ()-> {} : System.out::println);
-//		lombok.val foo = (Runnable)((System.currentTimeMillis() > 0) ? ()-> {} : System.out::println);
+//		Runnable foo = (Runnable) ((System.currentTimeMillis() > 0) ? () -> {} : System.out::println);
+//		lombok.val foo = (Runnable) ((System.currentTimeMillis() > 0) ? () -> {} : System.out::println);
 //	}
 }
