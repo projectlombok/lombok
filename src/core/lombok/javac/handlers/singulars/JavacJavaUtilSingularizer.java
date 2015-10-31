@@ -89,7 +89,7 @@ abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 			cases.append(defaultCase);
 		}
 		
-		JCStatement switchStat = maker.Switch(getSize(maker,  builderType, mapMode ? builderType.toName(data.getPluralName() + "$key") : data.getPluralName(), true), cases.toList());
+		JCStatement switchStat = maker.Switch(getSize(maker,  builderType, mapMode ? builderType.toName(data.getPluralName() + "$key") : data.getPluralName(), true, false), cases.toList());
 		JCExpression localShadowerType = chainDotsString(builderType, data.getTargetFqn());
 		localShadowerType = addTypeArgs(mapMode ? 2 : 1, false, builderType, localShadowerType, data.getTypeArgs(), source);
 		JCStatement varDefStat = maker.VarDef(maker.Modifiers(0), data.getPluralName(), localShadowerType, null);
@@ -136,10 +136,10 @@ abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 				Name varName = mapMode ? builderType.toName(data.getPluralName() + "$key") : data.getPluralName();
 				// this.varName.size() < MAX_POWER_OF_2 ? 1 + this.varName.size() + (this.varName.size() - 3) / 3 : Integer.MAX_VALUE;
 				// lessThanCutOff = this.varName.size() < MAX_POWER_OF_2
-				JCExpression lessThanCutoff = maker.Binary(CTC_LESS_THAN, getSize(maker, builderType, varName, nullGuard), maker.Literal(CTC_INT, 0x40000000));
+				JCExpression lessThanCutoff = maker.Binary(CTC_LESS_THAN, getSize(maker, builderType, varName, nullGuard, true), maker.Literal(CTC_INT, 0x40000000));
 				JCExpression integerMaxValue = genJavaLangTypeRef(builderType, "Integer", "MAX_VALUE");
-				JCExpression sizeFormulaLeft = maker.Binary(CTC_PLUS, maker.Literal(CTC_INT, 1), getSize(maker, builderType, varName, nullGuard));
-				JCExpression sizeFormulaRightLeft = maker.Binary(CTC_MINUS, getSize(maker, builderType, varName, nullGuard), maker.Literal(CTC_INT, 3));
+				JCExpression sizeFormulaLeft = maker.Binary(CTC_PLUS, maker.Literal(CTC_INT, 1), getSize(maker, builderType, varName, nullGuard, true));
+				JCExpression sizeFormulaRightLeft = maker.Parens(maker.Binary(CTC_MINUS, getSize(maker, builderType, varName, nullGuard, true), maker.Literal(CTC_INT, 3)));
 				JCExpression sizeFormulaRight = maker.Binary(CTC_DIV, sizeFormulaRightLeft, maker.Literal(CTC_INT, 3));
 				JCExpression sizeFormula = maker.Binary(CTC_PLUS, sizeFormulaLeft, sizeFormulaRight);
 				constructorArgs = List.<JCExpression>of(maker.Conditional(lessThanCutoff, sizeFormula, integerMaxValue));
@@ -167,7 +167,7 @@ abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 				JCExpression arg2 = maker.Apply(jceBlank, chainDots(builderType, "this", data.getPluralName() + "$value", "get"), List.<JCExpression>of(maker.Ident(ivar)));
 				JCStatement putStatement = maker.Exec(maker.Apply(jceBlank, pluralnameDotPut, List.of(arg1, arg2)));
 				JCStatement forInit = maker.VarDef(maker.Modifiers(0), ivar, maker.TypeIdent(CTC_INT), maker.Literal(CTC_INT, 0));
-				JCExpression checkExpr = maker.Binary(CTC_LESS_THAN, maker.Ident(ivar), getSize(maker, builderType, keyVarName, nullGuard));
+				JCExpression checkExpr = maker.Binary(CTC_LESS_THAN, maker.Ident(ivar), getSize(maker, builderType, keyVarName, nullGuard, true));
 				JCExpression incrementExpr = maker.Unary(CTC_POSTINC, maker.Ident(ivar));
 				fillStat = maker.ForLoop(List.of(forInit), checkExpr, List.of(maker.Exec(incrementExpr)), putStatement);
 			} else {

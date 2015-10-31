@@ -262,8 +262,8 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				switch (((JCPrimitiveTypeTree) fType).getPrimitiveTypeKind()) {
 				case BOOLEAN:
 					/* this.fieldName ? X : Y */
-					statements.append(createResultCalculation(typeNode, maker.Conditional(fieldAccessor, 
-						maker.Literal(HandlerUtil.primeForTrue()), maker.Literal(HandlerUtil.primeForFalse()))));
+					statements.append(createResultCalculation(typeNode, maker.Parens(maker.Conditional(fieldAccessor, 
+						maker.Literal(HandlerUtil.primeForTrue()), maker.Literal(HandlerUtil.primeForFalse())))));
 					break;
 				case LONG: {
 						Name dollarFieldName = dollar.append(((JCVariableDecl) fieldNode.get()).name);
@@ -308,7 +308,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				statements.append(createResultCalculation(typeNode, maker.Apply(List.<JCExpression>nil(), hcMethod, List.of(fieldAccessor))));
 			} else /* objects */ {
 				/* final java.lang.Object $fieldName = this.fieldName; */
-				/* $fieldName == null ? NULL_PRIME : $fieldName.hashCode() */
+				/* ($fieldName == null ? NULL_PRIME : $fieldName.hashCode()) */
 				
 				Name dollarFieldName = dollar.append(((JCVariableDecl) fieldNode.get()).name);
 				statements.append(maker.VarDef(maker.Modifiers(finalFlag), dollarFieldName, genJavaLangTypeRef(typeNode, "Object"), fieldAccessor));
@@ -316,7 +316,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				JCExpression hcCall = maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(dollarFieldName), typeNode.toName("hashCode")),
 					List.<JCExpression>nil());
 				JCExpression thisEqualsNull = maker.Binary(CTC_EQUAL, maker.Ident(dollarFieldName), maker.Literal(CTC_BOT, null));
-				statements.append(createResultCalculation(typeNode, maker.Conditional(thisEqualsNull, maker.Literal(HandlerUtil.primeForNull()), hcCall)));
+				statements.append(createResultCalculation(typeNode, maker.Parens(maker.Conditional(thisEqualsNull, maker.Literal(HandlerUtil.primeForNull()), hcCall))));
 			}
 		}
 		
@@ -330,7 +330,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 	}
 
 	public JCExpressionStatement createResultCalculation(JavacNode typeNode, JCExpression expr) {
-		/* result = result * PRIME + (expr); */
+		/* result = result * PRIME + expr; */
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		Name resultName = typeNode.toName(RESULT_NAME);
 		JCExpression mult = maker.Binary(CTC_MUL, maker.Ident(resultName), maker.Ident(typeNode.toName(PRIME_NAME)));
@@ -343,7 +343,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		/* (int) (ref >>> 32 ^ ref) */
 		JCExpression shift = maker.Binary(CTC_UNSIGNED_SHIFT_RIGHT, ref1, maker.Literal(32));
 		JCExpression xorBits = maker.Binary(CTC_BITXOR, shift, ref2);
-		return maker.TypeCast(maker.TypeIdent(CTC_INT), xorBits);
+		return maker.TypeCast(maker.TypeIdent(CTC_INT), maker.Parens(xorBits));
 	}
 	
 	public JCExpression createTypeReference(JavacNode type) {
@@ -389,9 +389,9 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				maker.Ident(thisName)), returnBool(maker, true), null));
 		}
 		
-		/* if (!(o instanceof Outer.Inner.MyType) return false; */ {
+		/* if (!(o instanceof Outer.Inner.MyType)) return false; */ {
 			 
-			JCUnary notInstanceOf = maker.Unary(CTC_NOT, maker.TypeTest(maker.Ident(oName), createTypeReference(typeNode)));
+			JCUnary notInstanceOf = maker.Unary(CTC_NOT, maker.Parens(maker.TypeTest(maker.Ident(oName), createTypeReference(typeNode))));
 			statements.append(maker.If(notInstanceOf, returnBool(maker, false), null));
 		}
 		
@@ -474,7 +474,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			} else /* objects */ {
 				/* final java.lang.Object this$fieldName = this.fieldName; */
 				/* final java.lang.Object other$fieldName = other.fieldName; */
-				/* if (this$fieldName == null ? other$fieldName != null : !this$fieldName.equals(other$fieldName)) return false;; */
+				/* if (this$fieldName == null ? other$fieldName != null : !this$fieldName.equals(other$fieldName)) return false; */
 				Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
 				Name thisDollarFieldName = thisDollar.append(fieldName);
 				Name otherDollarFieldName = otherDollar.append(fieldName);

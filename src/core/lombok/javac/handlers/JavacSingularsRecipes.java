@@ -267,13 +267,15 @@ public class JavacSingularsRecipes {
 		}
 		
 		/** Generates 'this.<em>name</em>.size()' as an expression; if nullGuard is true, it's this.name == null ? 0 : this.name.size(). */
-		protected JCExpression getSize(JavacTreeMaker maker, JavacNode builderType, Name name, boolean nullGuard) {
+		protected JCExpression getSize(JavacTreeMaker maker, JavacNode builderType, Name name, boolean nullGuard, boolean parens) {
 			Name thisName = builderType.toName("this");
 			JCExpression fn = maker.Select(maker.Select(maker.Ident(thisName), name), builderType.toName("size"));
 			JCExpression sizeInvoke = maker.Apply(List.<JCExpression>nil(), fn, List.<JCExpression>nil());
 			if (nullGuard) {
 				JCExpression isNull = maker.Binary(CTC_EQUAL, maker.Select(maker.Ident(thisName), name), maker.Literal(CTC_BOT, 0));
-				return maker.Conditional(isNull, maker.Literal(CTC_INT, 0), sizeInvoke);
+				JCExpression out = maker.Conditional(isNull, maker.Literal(CTC_INT, 0), sizeInvoke);
+				if (parens) return maker.Parens(out);
+				return out;
 			}
 			return sizeInvoke;
 		}
