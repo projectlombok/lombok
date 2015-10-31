@@ -21,6 +21,7 @@
  */
 package lombok.javac.handlers;
 
+import static com.sun.tools.javac.code.Flags.GENERATEDCONSTR;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
 import static lombok.javac.JavacAugments.JCTree_generatedNode;
@@ -840,14 +841,18 @@ public class JavacHandlerUtil {
 		
 		List<JCTree> insertAfter = null;
 		List<JCTree> insertBefore = type.defs;
-		while (insertBefore.tail != null) {
+		while (true) {
+			boolean skip = false;
 			if (insertBefore.head instanceof JCVariableDecl) {
 				JCVariableDecl f = (JCVariableDecl) insertBefore.head;
-				if (isEnumConstant(f) || isGenerated(f)) {
-					insertAfter = insertBefore;
-					insertBefore = insertBefore.tail;
-					continue;
-				}
+				if (isEnumConstant(f) || isGenerated(f)) skip = true;
+			} else if (insertBefore.head instanceof JCMethodDecl) {
+				if ((((JCMethodDecl) insertBefore.head).mods.flags & GENERATEDCONSTR) != 0) skip = true;
+			}
+			if (skip) {
+				insertAfter = insertBefore;
+				insertBefore = insertBefore.tail;
+				continue;
 			}
 			break;
 		}
