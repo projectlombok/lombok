@@ -64,6 +64,7 @@ import com.sun.tools.javac.tree.JCTree.JCUnary;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWhileLoop;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
+import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
@@ -348,6 +349,14 @@ public class PrettyPrinter extends JCTree.Visitor {
 		if (docComments != null) return docComments.get(node);
 		if (docTable != null) return docTable.getCommentText(node);
 		return null;
+	}
+	
+	private int dims(JCExpression vartype) {
+		if (vartype instanceof JCArrayTypeTree) {
+			return 1 + dims(((JCArrayTypeTree) vartype).elemtype);
+		}
+		
+		return 0;
 	}
 	
 	private void printComment(CommentInfo comment) {
@@ -716,7 +725,10 @@ public class PrettyPrinter extends JCTree.Visitor {
 	}
 	
 	@Override public void visitSkip(JCSkip that) {
-		print(";");
+		if (onNewLine && !aligned) {
+			align();
+		}
+		println(";");
 	}
 	
 	@Override public void visitAnnotation(JCAnnotation tree) {
@@ -1044,13 +1056,17 @@ public class PrettyPrinter extends JCTree.Visitor {
 		if (tree.init.nonEmpty()) {
 			if (tree.init.head instanceof JCVariableDecl) {
 				boolean first = true;
+				int dims = 0;
 				for (JCStatement i : tree.init) {
 					JCVariableDecl vd = (JCVariableDecl) i;
 					if (first) {
 						printVarDefInline(vd);
+						dims = dims(vd.vartype);
 					} else {
 						print(", ");
 						print(vd.name);
+						int dimDiff = dims(vd.vartype) - dims;
+						for (int j = 0; j < dimDiff; j++) print("[]");
 						if (vd.init != null) {
 							print(" = ");
 							print(vd.init);
@@ -1121,7 +1137,14 @@ public class PrettyPrinter extends JCTree.Visitor {
 	
 	@Override public void visitDoLoop(JCDoWhileLoop tree) {
 		aPrint("do ");
-		print(tree.body);
+		if (tree.body instanceof JCBlock) {
+			println("{");
+			indent++;
+			print(((JCBlock) tree.body).stats, "");
+			indent--;
+			aPrint("}");
+			
+		} else print(tree.body);
 		print(" while ");
 		if (tree.cond instanceof JCParens) {
 			print(tree.cond);
@@ -1155,7 +1178,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 		}
 		println(": ");
 		indent++;
-		print(tree.stats, "\n");
+		print(tree.stats, "");
 		indent--;
 	}
 	
@@ -1208,6 +1231,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 					println(";", (JCTree) i);
 				}
 			}
+			indent--;
 		}
 		println("{");
 		indent++;
@@ -1369,6 +1393,10 @@ public class PrettyPrinter extends JCTree.Visitor {
 		} catch (Exception e) {
 			return defaultValue;
 		}
+	}
+	
+	@Override public void visitTypeBoundKind(TypeBoundKind tree) {
+		print(String.valueOf(tree.kind));
 	}
 	
 	@Override public void visitTree(JCTree tree) {
