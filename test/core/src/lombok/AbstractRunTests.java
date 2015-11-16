@@ -76,7 +76,10 @@ public abstract class AbstractRunTests {
 			}
 		});
 		
-		transformCode(messages, writer, file, sourceDirectives.getSpecifiedEncoding(), sourceDirectives.getFormatPreferences());
+		boolean changed = transformCode(messages, writer, file, sourceDirectives.getSpecifiedEncoding(), sourceDirectives.getFormatPreferences());
+		boolean forceUnchanged = sourceDirectives.forceUnchanged() || sourceDirectives.isSkipCompareContent();
+		if (params.expectChanges() && !forceUnchanged && !changed) messages.add(new CompilerMessage(-1, -1, true, "not flagged modified"));
+		if (!params.expectChanges() && changed) messages.add(new CompilerMessage(-1, -1, true, "unexpected modification"));
 		
 		compare(file.getName(), expected, writer.toString(), messages, params.printErrors(), sourceDirectives.isSkipCompareContent() || expected.isSkipCompareContent());
 		return true;
@@ -98,7 +101,7 @@ public abstract class AbstractRunTests {
 		return 8;
 	}
 	
-	protected abstract void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, String encoding, Map<String, String> formatPreferences) throws Throwable;
+	protected abstract boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, String encoding, Map<String, String> formatPreferences) throws Throwable;
 	
 	protected String readFile(File file) throws IOException {
 		BufferedReader reader;

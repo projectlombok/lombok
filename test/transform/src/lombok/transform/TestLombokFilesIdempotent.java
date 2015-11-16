@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 The Project Lombok Authors.
+ * Copyright (C) 2009-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,5 +52,10 @@ public class TestLombokFilesIdempotent extends DirectoryRunner.TestParams {
 	@Override
 	public boolean printErrors() {
 		return true;
+	}
+	
+	@Override
+	public boolean expectChanges() {
+		return false;
 	}
 }

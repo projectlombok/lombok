@@ -1,3 +1,4 @@
+// unchanged
 import lombok.*;
 class DoNothingDueToTopLevel {
 	void test() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,6 +69,8 @@ public class DirectoryRunner extends Runner {
 		public boolean accept(File file) {
 			return true;
 		}
+		
+		public abstract boolean expectChanges(); 
 	}
 		
 	private static final FileFilter JAVA_FILE_FILTER = new FileFilter() {
