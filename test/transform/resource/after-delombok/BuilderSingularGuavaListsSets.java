@@ -2,19 +2,22 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableTable;
 class BuilderSingularGuavaListsSets<T> {
 	private ImmutableList<T> cards;
 	private ImmutableCollection<? extends Number> frogs;
 	@SuppressWarnings("all")
 	private ImmutableSet rawSet;
 	private ImmutableSortedSet<String> passes;
+	private ImmutableTable<? extends Number, ? extends Number, String> users;
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	BuilderSingularGuavaListsSets(final ImmutableList<T> cards, final ImmutableCollection<? extends Number> frogs, final ImmutableSet rawSet, final ImmutableSortedSet<String> passes) {
+	BuilderSingularGuavaListsSets(final ImmutableList<T> cards, final ImmutableCollection<? extends Number> frogs, final ImmutableSet rawSet, final ImmutableSortedSet<String> passes, final ImmutableTable<? extends Number, ? extends Number, String> users) {
 		this.cards = cards;
 		this.frogs = frogs;
 		this.rawSet = rawSet;
 		this.passes = passes;
+		this.users = users;
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
@@ -31,6 +34,9 @@ class BuilderSingularGuavaListsSets<T> {
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
 		private com.google.common.collect.ImmutableSortedSet.Builder<String> passes;
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
+		private com.google.common.collect.ImmutableTable.Builder<Number, Number, String> users;
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
 		BuilderSingularGuavaListsSetsBuilder() {
@@ -113,6 +119,17 @@ class BuilderSingularGuavaListsSets<T> {
 		@javax.annotation.Generated("lombok")
 		public BuilderSingularGuavaListsSetsBuilder<T> clearPasses() {
 			this.passes = null;
+		}
+		public BuilderSingularGuavaListsSetsBuilder<T> user(final com.google.common.collect.Table.Cell<Number, Number, String> user) {
+			if (this.users == null) this.users = com.google.common.collect.ImmutableTable.builder();
+			this.users.put(user);
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
+		public BuilderSingularGuavaListsSetsBuilder<T> users(final com.google.common.collect.Table<? extends Number, ? extends Number, ? extends String> users) {
+			if (this.users == null) this.users = com.google.common.collect.ImmutableTable.builder();
+			this.users.putAll(users);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -122,13 +139,14 @@ class BuilderSingularGuavaListsSets<T> {
 			com.google.common.collect.ImmutableCollection<Number> frogs = this.frogs == null ? com.google.common.collect.ImmutableList.<Number>of() : this.frogs.build();
 			com.google.common.collect.ImmutableSet<java.lang.Object> rawSet = this.rawSet == null ? com.google.common.collect.ImmutableSet.<java.lang.Object>of() : this.rawSet.build();
 			com.google.common.collect.ImmutableSortedSet<String> passes = this.passes == null ? com.google.common.collect.ImmutableSortedSet.<String>of() : this.passes.build();
-			return new BuilderSingularGuavaListsSets<T>(cards, frogs, rawSet, passes);
+			com.google.common.collect.ImmutableTable<Number, Number, String> users = this.users == null ? com.google.common.collect.ImmutableTable.<Number, Number, String>of() : this.users.build();
+			return new BuilderSingularGuavaListsSets<T>(cards, frogs, rawSet, passes, users);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
 		public java.lang.String toString() {
-			return "BuilderSingularGuavaListsSets.BuilderSingularGuavaListsSetsBuilder(cards=" + this.cards + ", frogs=" + this.frogs + ", rawSet=" + this.rawSet + ", passes=" + this.passes + ")";
+			return "BuilderSingularGuavaListsSets.BuilderSingularGuavaListsSetsBuilder(cards=" + this.cards + ", frogs=" + this.frogs + ", rawSet=" + this.rawSet + ", passes=" + this.passes + ", users=" + this.users + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
