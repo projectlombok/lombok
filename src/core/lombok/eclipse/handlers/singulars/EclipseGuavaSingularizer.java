@@ -109,6 +109,24 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
 		generatePluralMethod(returnType, returnStatement, data, builderType, fluent);
+		
+		returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
+		returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
+		generateClearMethod(returnType, returnStatement, data,  builderType);
+	}
+	
+	void generateClearMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType) {
+		MethodDeclaration md = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
+		md.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
+		md.modifiers = ClassFileConstants.AccPublic;
+		
+		FieldReference thisDotField = new FieldReference(data.getPluralName(), 0L);
+		thisDotField.receiver = new ThisReference(0, 0);
+		Assignment a = new Assignment(thisDotField, new NullLiteral(0, 0), 0);
+		md.selector = HandlerUtil.buildAccessorName("clear", new String(data.getPluralName())).toCharArray();
+		md.statements = new Statement[] {a, returnStatement};
+		md.returnType = returnType;
+		injectMethod(builderType, md);
 	}
 	
 	void generateSingularMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {

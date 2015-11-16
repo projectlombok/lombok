@@ -37,6 +37,14 @@ import lombok.Singular;
         }
       return this;
     }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularMapsBuilder<K, V> clearWomen() {
+      if ((this.women$key != null))
+          {
+            this.women$key.clear();
+            this.women$value.clear();
+          }
+      return this;
+    }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularMapsBuilder<K, V> man(K manKey, Number manValue) {
       if ((this.men$key == null))
           {
@@ -58,6 +66,14 @@ import lombok.Singular;
           this.men$key.add($lombokEntry.getKey());
           this.men$value.add($lombokEntry.getValue());
         }
+      return this;
+    }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularMapsBuilder<K, V> clearMen() {
+      if ((this.men$key != null))
+          {
+            this.men$key.clear();
+            this.men$value.clear();
+          }
       return this;
     }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularMapsBuilder<K, V> rawMap(java.lang.Object rawMapKey, java.lang.Object rawMapValue) {
@@ -83,6 +99,14 @@ import lombok.Singular;
         }
       return this;
     }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularMapsBuilder<K, V> clearRawMap() {
+      if ((this.rawMap$key != null))
+          {
+            this.rawMap$key.clear();
+            this.rawMap$value.clear();
+          }
+      return this;
+    }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularMapsBuilder<K, V> stringMap(String stringMapKey, V stringMapValue) {
       if ((this.stringMap$key == null))
           {
@@ -104,6 +128,14 @@ import lombok.Singular;
           this.stringMap$key.add($lombokEntry.getKey());
           this.stringMap$value.add($lombokEntry.getValue());
         }
+      return this;
+    }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularMapsBuilder<K, V> clearStringMap() {
+      if ((this.stringMap$key != null))
+          {
+            this.stringMap$key.clear();
+            this.stringMap$value.clear();
+          }
       return this;
     }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularMaps<K, V> build() {

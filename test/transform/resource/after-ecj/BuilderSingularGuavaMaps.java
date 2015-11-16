@@ -22,6 +22,10 @@ import lombok.Singular;
       this.battleaxes.putAll(battleaxes);
       return this;
     }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaMapsBuilder<K, V> clearBattleaxes() {
+      this.battleaxes = null;
+      return this;
+    }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaMapsBuilder<K, V> vertex(Integer vertex$key, V vertex$value) {
       if ((this.vertices == null))
           this.vertices = com.google.common.collect.ImmutableSortedMap.naturalOrder();
@@ -34,6 +38,10 @@ import lombok.Singular;
       this.vertices.putAll(vertices);
       return this;
     }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaMapsBuilder<K, V> clearVertices() {
+      this.vertices = null;
+      return this;
+    }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaMapsBuilder<K, V> rawMap(java.lang.Object rawMap$key, java.lang.Object rawMap$value) {
       if ((this.rawMap == null))
           this.rawMap = com.google.common.collect.ImmutableBiMap.builder();
@@ -44,6 +52,10 @@ import lombok.Singular;
       if ((this.rawMap == null))
           this.rawMap = com.google.common.collect.ImmutableBiMap.builder();
       this.rawMap.putAll(rawMap);
+      return this;
+    }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaMapsBuilder<K, V> clearRawMap() {
+      this.rawMap = null;
       return this;
     }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaMaps<K, V> build() {

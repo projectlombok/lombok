@@ -24,6 +24,10 @@ import lombok.Singular;
       this.cards.addAll(cards);
       return this;
     }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaListsSetsBuilder<T> clearCards() {
+      this.cards = null;
+      return this;
+    }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaListsSetsBuilder<T> frog(Number frog) {
       if ((this.frogs == null))
           this.frogs = com.google.common.collect.ImmutableList.builder();
@@ -34,6 +38,10 @@ import lombok.Singular;
       if ((this.frogs == null))
           this.frogs = com.google.common.collect.ImmutableList.builder();
       this.frogs.addAll(frogs);
+      return this;
+    }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaListsSetsBuilder<T> clearFrogs() {
+      this.frogs = null;
       return this;
     }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaListsSetsBuilder<T> rawSet(java.lang.Object rawSet) {
@@ -48,6 +56,10 @@ import lombok.Singular;
       this.rawSet.addAll(rawSet);
       return this;
     }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaListsSetsBuilder<T> clearRawSet() {
+      this.rawSet = null;
+      return this;
+    }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaListsSetsBuilder<T> pass(String pass) {
       if ((this.passes == null))
           this.passes = com.google.common.collect.ImmutableSortedSet.naturalOrder();
@@ -58,6 +70,10 @@ import lombok.Singular;
       if ((this.passes == null))
           this.passes = com.google.common.collect.ImmutableSortedSet.naturalOrder();
       this.passes.addAll(passes);
+      return this;
+    }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaListsSetsBuilder<T> clearPasses() {
+      this.passes = null;
       return this;
     }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaListsSets<T> build() {
