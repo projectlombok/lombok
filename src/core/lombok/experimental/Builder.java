@@ -31,21 +31,21 @@ import java.lang.annotation.Target;
  * The builder annotation creates a so-called 'builder' aspect to the class that is annotated or the class
  * that contains a member which is annotated with {@code @Builder}.
  * <p>
- * If a member is annotated, it must be either a constructor or a static method. If a class is annotated,
+ * If a member is annotated, it must be either a constructor or a method. If a class is annotated,
  * then a private constructor is generated with all fields as arguments
  * (as if {@code @AllArgsConstructor(AccessLevel.PRIVATE)} is present
  * on the class), and it is as if this constructor has been annotated with {@code @Builder} instead.
  * <p>
  * The effect of {@code @Builder} is that an inner class is generated named <code><strong>T</strong>Builder</code>,
- * with a private constructor. Instances of <code><strong>T</strong>Builder</code> are made with the static
+ * with a private constructor. Instances of <code><strong>T</strong>Builder</code> are made with the
  * method named {@code builder()} which is also generated for you in the class itself (not in the builder class).
  * <p>
  * The <code><strong>T</strong>Builder</code> class contains 1 method for each parameter of the annotated
- * constructor / static method (each field, when annotating a class), which returns the builder itself.
+ * constructor / method (each field, when annotating a class), which returns the builder itself.
  * The builder also has a <code>build()</code> method which returns a completed instance of the original type,
  * created by passing all parameters as set via the various other methods in the builder to the constructor
- * or static method that was annotated with {@code @Builder}. The return type of this method will be the same
- * as the relevant class, unless a static method has been annotated, in which case it'll be equal to the
+ * or method that was annotated with {@code @Builder}. The return type of this method will be the same
+ * as the relevant class, unless a method has been annotated, in which case it'll be equal to the
  * return type of that method.
  * <p>
  * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Builder.html">the project lombok features page for &#64;Builder</a>.
@@ -110,15 +110,15 @@ import java.lang.annotation.Target;
 @Retention(SOURCE)
 @Deprecated
 public @interface Builder {
-	/** Name of the static method that creates a new builder instance. Default: {@code builder}. */
+	/** Name of the method that creates a new builder instance. Default: {@code builder}. */
 	String builderMethodName() default "builder";
 	
-	/** Name of the instance method in the builder class that creates an instance of your {@code @Builder}-annotated class. */
+	/** Name of the method in the builder class that creates an instance of your {@code @Builder}-annotated class. */
 	String buildMethodName() default "build";
 	
 	/** Name of the builder class.
 	 * Default for {@code @Builder} on types and constructors: {@code (TypeName)Builder}.
-	 * Default for {@code @Builder} on static methods: {@code (ReturnTypeName)Builder}.
+	 * Default for {@code @Builder} on methods: {@code (ReturnTypeName)Builder}.
 	 */
 	String builderClassName() default "";
 	
