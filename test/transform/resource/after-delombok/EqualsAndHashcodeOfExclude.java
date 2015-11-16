@@ -7,7 +7,7 @@ final class EqualsAndHashCodeOf {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeOf)) return false;
-		final EqualsAndHashCodeOf other = (EqualsAndHashCodeOf)o;
+		final EqualsAndHashCodeOf other = (EqualsAndHashCodeOf) o;
 		if (this.x != other.x) return false;
 		return true;
 	}
@@ -30,7 +30,7 @@ final class EqualsAndHashCodeExclude {
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeExclude)) return false;
-		final EqualsAndHashCodeExclude other = (EqualsAndHashCodeExclude)o;
+		final EqualsAndHashCodeExclude other = (EqualsAndHashCodeExclude) o;
 		if (this.x != other.x) return false;
 		return true;
 	}
