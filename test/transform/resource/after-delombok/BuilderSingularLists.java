@@ -44,6 +44,12 @@ class BuilderSingularLists<T> {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
+		public BuilderSingularListsBuilder<T> clearChildren() {
+			if (this.children != null) this.children.clear();
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularListsBuilder<T> scarf(final Number scarf) {
 			if (this.scarves == null) this.scarves = new java.util.ArrayList<Number>();
 			this.scarves.add(scarf);
@@ -58,6 +64,12 @@ class BuilderSingularLists<T> {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
+		public BuilderSingularListsBuilder<T> clearScarves() {
+			if (this.scarves != null) this.scarves.clear();
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularListsBuilder<T> rawList(final java.lang.Object rawList) {
 			if (this.rawList == null) this.rawList = new java.util.ArrayList<java.lang.Object>();
 			this.rawList.add(rawList);
@@ -68,6 +80,12 @@ class BuilderSingularLists<T> {
 		public BuilderSingularListsBuilder<T> rawList(final java.util.Collection<?> rawList) {
 			if (this.rawList == null) this.rawList = new java.util.ArrayList<java.lang.Object>();
 			this.rawList.addAll(rawList);
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
+		public BuilderSingularListsBuilder<T> clearRawList() {
+			if (this.rawList != null) this.rawList.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

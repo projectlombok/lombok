@@ -68,6 +68,12 @@ class BuilderWithToBuilder<T> {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
+		public BuilderWithToBuilderBuilder<T> clearBars() {
+			if (this.bars != null) this.bars.clear();
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderWithToBuilder<T> build() {
 			java.util.List<T> bars;
 			switch (this.bars == null ? 0 : this.bars.size()) {

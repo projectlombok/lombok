@@ -120,7 +120,7 @@ abstract class EclipseJavaUtilListSetSingularizer extends EclipseJavaUtilSingula
 		clearMsg.receiver = thisDotField2;
 		clearMsg.selector = "clear".toCharArray();
 		Statement clearStatement = new IfStatement(new EqualExpression(thisDotField, new NullLiteral(0, 0), OperatorIds.NOT_EQUAL), clearMsg, 0, 0);
-		md.statements = new Statement[] {clearStatement, returnStatement};
+		md.statements = returnStatement != null ? new Statement[] {clearStatement, returnStatement} : new Statement[] {clearStatement};
 		md.returnType = returnType;
 		injectMethod(builderType, md);
 	}

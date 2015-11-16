@@ -91,6 +91,30 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(maker, CTC_VOID));
 		returnStatement = chain ? maker.Return(maker.Ident(thisName)) : null;
 		generatePluralMethod(maker, returnType, returnStatement, data, builderType, source, fluent);
+		
+		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(maker, CTC_VOID));
+		returnStatement = chain ? maker.Return(maker.Ident(thisName)) : null;
+		generateClearMethod(maker, returnType, returnStatement, data, builderType, source);
+	}
+	
+	private void generateClearMethod(JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {
+		JCModifiers mods = maker.Modifiers(Flags.PUBLIC);
+		List<JCTypeParameter> typeParams = List.nil();
+		List<JCExpression> thrown = List.nil();
+		List<JCVariableDecl> params = List.nil();
+		List<JCExpression> jceBlank = List.nil();
+		
+		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
+		JCExpression thisDotFieldDotClear = maker.Select(maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName()), builderType.toName("clear"));
+		JCStatement clearCall = maker.Exec(maker.Apply(jceBlank, thisDotFieldDotClear, jceBlank));
+		JCExpression cond = maker.Binary(CTC_NOT_EQUAL, thisDotField, maker.Literal(CTC_BOT, null));
+		JCStatement ifSetCallClear = maker.If(cond, clearCall, null);
+		List<JCStatement> statements = returnStatement != null ? List.of(ifSetCallClear, returnStatement) : List.of(ifSetCallClear);
+		
+		JCBlock body = maker.Block(0, statements);
+		Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
+		JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, params, thrown, body, null);
+		injectMethod(builderType, method);
 	}
 	
 	void generateSingularMethod(JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {

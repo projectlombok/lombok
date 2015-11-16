@@ -176,7 +176,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		Block clearMsgs = new Block(2);
 		clearMsgs.statements = new Statement[] {clearMsg1, clearMsg2};
 		Statement clearStatement = new IfStatement(new EqualExpression(thisDotField, new NullLiteral(0, 0), OperatorIds.NOT_EQUAL), clearMsgs, 0, 0);
-		md.statements = new Statement[] {clearStatement, returnStatement};
+		md.statements = returnStatement != null ? new Statement[] {clearStatement, returnStatement} : new Statement[] {clearStatement};
 		md.returnType = returnType;
 		injectMethod(builderType, md);
 	}

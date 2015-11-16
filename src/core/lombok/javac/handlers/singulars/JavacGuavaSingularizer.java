@@ -78,6 +78,26 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(maker, CTC_VOID));
 		returnStatement = chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
 		generatePluralMethod(maker, returnType, returnStatement, data, builderType, source, fluent);
+		
+		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(maker, CTC_VOID));
+		returnStatement = chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
+		generateClearMethod(maker, returnType, returnStatement, data, builderType, source);
+	}
+	
+	private void generateClearMethod(JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {
+		JCModifiers mods = maker.Modifiers(Flags.PUBLIC);
+		List<JCTypeParameter> typeParams = List.nil();
+		List<JCExpression> thrown = List.nil();
+		List<JCVariableDecl> params = List.nil();
+		
+		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
+		JCStatement clearField = maker.Exec(maker.Assign(thisDotField, maker.Literal(CTC_BOT, null)));
+		List<JCStatement> statements = returnStatement != null ? List.of(clearField, returnStatement) : List.of(clearField);
+		
+		JCBlock body = maker.Block(0, statements);
+		Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
+		JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, params, thrown, body, null);
+		injectMethod(builderType, method);
 	}
 	
 	void generateSingularMethod(JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {

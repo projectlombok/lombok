@@ -51,6 +51,12 @@ class BuilderSingularGuavaListsSets<T> {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
+		public BuilderSingularGuavaListsSetsBuilder<T> clearCards() {
+			this.cards = null;
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularGuavaListsSetsBuilder<T> frog(final Number frog) {
 			if (this.frogs == null) this.frogs = com.google.common.collect.ImmutableList.builder();
 			this.frogs.add(frog);
@@ -61,6 +67,12 @@ class BuilderSingularGuavaListsSets<T> {
 		public BuilderSingularGuavaListsSetsBuilder<T> frogs(final java.lang.Iterable<? extends Number> frogs) {
 			if (this.frogs == null) this.frogs = com.google.common.collect.ImmutableList.builder();
 			this.frogs.addAll(frogs);
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
+		public BuilderSingularGuavaListsSetsBuilder<T> clearFrogs() {
+			this.frogs = null;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -79,6 +91,12 @@ class BuilderSingularGuavaListsSets<T> {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
+		public BuilderSingularGuavaListsSetsBuilder<T> clearRawSet() {
+			this.rawSet = null;
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularGuavaListsSetsBuilder<T> pass(final String pass) {
 			if (this.passes == null) this.passes = com.google.common.collect.ImmutableSortedSet.naturalOrder();
 			this.passes.add(pass);
@@ -89,6 +107,12 @@ class BuilderSingularGuavaListsSets<T> {
 		public BuilderSingularGuavaListsSetsBuilder<T> passes(final java.lang.Iterable<? extends String> passes) {
 			if (this.passes == null) this.passes = com.google.common.collect.ImmutableSortedSet.naturalOrder();
 			this.passes.addAll(passes);
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
+		public BuilderSingularGuavaListsSetsBuilder<T> clearPasses() {
+			this.passes = null;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

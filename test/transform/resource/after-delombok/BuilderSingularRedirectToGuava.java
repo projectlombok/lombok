@@ -44,6 +44,12 @@ class BuilderSingularRedirectToGuava {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
+		public BuilderSingularRedirectToGuavaBuilder clearDangerMice() {
+			this.dangerMice = null;
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularRedirectToGuavaBuilder thing(final Integer thing$key, final Number thing$value) {
 			if (this.things == null) this.things = com.google.common.collect.ImmutableSortedMap.naturalOrder();
 			this.things.put(thing$key, thing$value);
@@ -58,6 +64,12 @@ class BuilderSingularRedirectToGuava {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
+		public BuilderSingularRedirectToGuavaBuilder clearThings() {
+			this.things = null;
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularRedirectToGuavaBuilder doohickey(final Class<?> doohickey) {
 			if (this.doohickeys == null) this.doohickeys = com.google.common.collect.ImmutableList.builder();
 			this.doohickeys.add(doohickey);
@@ -68,6 +80,12 @@ class BuilderSingularRedirectToGuava {
 		public BuilderSingularRedirectToGuavaBuilder doohickeys(final java.lang.Iterable<? extends Class<?>> doohickeys) {
 			if (this.doohickeys == null) this.doohickeys = com.google.common.collect.ImmutableList.builder();
 			this.doohickeys.addAll(doohickeys);
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
+		public BuilderSingularRedirectToGuavaBuilder clearDoohickeys() {
+			this.doohickeys = null;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

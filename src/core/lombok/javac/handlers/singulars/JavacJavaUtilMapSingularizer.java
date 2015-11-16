@@ -115,6 +115,33 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(maker, CTC_VOID));
 		returnStatement = chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
 		generatePluralMethod(maker, returnType, returnStatement, data, builderType, source, fluent);
+		
+		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(maker, CTC_VOID));
+		returnStatement = chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
+		generateClearMethod(maker, returnType, returnStatement, data, builderType, source);
+	}
+	
+	private void generateClearMethod(JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {
+		JCModifiers mods = maker.Modifiers(Flags.PUBLIC);
+		List<JCTypeParameter> typeParams = List.nil();
+		List<JCExpression> thrown = List.nil();
+		List<JCVariableDecl> params = List.nil();
+		List<JCExpression> jceBlank = List.nil();
+		
+		JCExpression thisDotKeyField = chainDots(builderType, "this", data.getPluralName() + "$key");
+		JCExpression thisDotKeyFieldDotClear = chainDots(builderType, "this", data.getPluralName() + "$key", "clear");
+		JCExpression thisDotValueFieldDotClear = chainDots(builderType, "this", data.getPluralName() + "$value", "clear");
+		JCStatement clearKeyCall = maker.Exec(maker.Apply(jceBlank, thisDotKeyFieldDotClear, jceBlank));
+		JCStatement clearValueCall = maker.Exec(maker.Apply(jceBlank, thisDotValueFieldDotClear, jceBlank));
+		JCExpression cond = maker.Binary(CTC_NOT_EQUAL, thisDotKeyField, maker.Literal(CTC_BOT, null));
+		JCBlock clearCalls = maker.Block(0, List.of(clearKeyCall, clearValueCall));
+		JCStatement ifSetCallClear = maker.If(cond, clearCalls, null);
+		List<JCStatement> statements = returnStatement != null ? List.of(ifSetCallClear, returnStatement) : List.of(ifSetCallClear);
+		
+		JCBlock body = maker.Block(0, statements);
+		Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
+		JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, params, thrown, body, null);
+		injectMethod(builderType, method);
 	}
 	
 	private void generateSingularMethod(JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {

@@ -124,7 +124,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		thisDotField.receiver = new ThisReference(0, 0);
 		Assignment a = new Assignment(thisDotField, new NullLiteral(0, 0), 0);
 		md.selector = HandlerUtil.buildAccessorName("clear", new String(data.getPluralName())).toCharArray();
-		md.statements = new Statement[] {a, returnStatement};
+		md.statements = returnStatement != null ? new Statement[] {a, returnStatement} : new Statement[] {a};
 		md.returnType = returnType;
 		injectMethod(builderType, md);
 	}
