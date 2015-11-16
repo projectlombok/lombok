@@ -49,6 +49,7 @@ import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedThisReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
@@ -163,6 +164,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		
 		EclipseNode fillParametersFrom = parent.get() instanceof AbstractMethodDeclaration ? parent : null;
 		boolean addCleaning = false;
+		boolean isStatic = true;
 		
 		if (parent.get() instanceof TypeDeclaration) {
 			tdParent = parent;
@@ -212,11 +214,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		} else if (parent.get() instanceof MethodDeclaration) {
 			MethodDeclaration md = (MethodDeclaration) parent.get();
 			tdParent = parent.up();
-			if (!md.isStatic()) {
-				annotationNode.addError("@Builder is only supported on types, constructors, and static methods.");
-				return;
-			}
-			
+			isStatic = md.isStatic();
+
 			if (toBuilder) {
 				final String TO_BUILDER_NOT_SUPPORTED = "@Builder(toBuilder=true) is only supported if you return your own type.";
 				char[] token;
@@ -322,7 +321,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				builderClassName = new String(token) + "Builder";
 			}
 		} else {
-			annotationNode.addError("@Builder is only supported on types, constructors, and static methods.");
+			annotationNode.addError("@Builder is only supported on types, constructors, and methods.");
 			return;
 		}
 		
@@ -342,8 +341,16 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		
 		EclipseNode builderType = findInnerClass(tdParent, builderClassName);
 		if (builderType == null) {
-			builderType = makeBuilderClass(tdParent, builderClassName, typeParams, ast);
+			builderType = makeBuilderClass(isStatic, tdParent, builderClassName, typeParams, ast);
 		} else {
+			TypeDeclaration builderTypeDeclaration = (TypeDeclaration) builderType.get();
+			if (isStatic && (builderTypeDeclaration.modifiers & ClassFileConstants.AccStatic) == 0) {
+				annotationNode.addError("Existing Builder must be a static inner class.");
+				return;
+			} else if (!isStatic && (builderTypeDeclaration.modifiers & ClassFileConstants.AccStatic) != 0) {
+				annotationNode.addError("Existing Builder must be a non-static inner class.");
+				return;
+			}
 			sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(builderType, annotationNode);
 			/* generate errors for @Singular BFDs that have one already defined node. */ {
 				for (BuilderFieldData bfd : builderFields) {
@@ -398,7 +405,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		if (methodExists(buildMethodName, builderType, -1) == MemberExistsResult.NOT_EXISTS) {
-			MethodDeclaration md = generateBuildMethod(buildMethodName, nameOfStaticBuilderMethod, returnType, builderFields, builderType, thrownExceptions, addCleaning, ast);
+			MethodDeclaration md = generateBuildMethod(isStatic, buildMethodName, nameOfStaticBuilderMethod, returnType, builderFields, builderType, thrownExceptions, addCleaning, ast);
 			if (md != null) injectMethod(builderType, md);
 		}
 		
@@ -417,7 +424,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		if (methodExists(builderMethodName, tdParent, -1) == MemberExistsResult.NOT_EXISTS) {
-			MethodDeclaration md = generateBuilderMethod(builderMethodName, builderClassName, tdParent, typeParams, ast);
+			MethodDeclaration md = generateBuilderMethod(isStatic, builderMethodName, builderClassName, tdParent, typeParams, ast);
 			if (md != null) injectMethod(tdParent, md);
 		}
 		
@@ -507,7 +514,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return decl;
 	}
 	
-	public MethodDeclaration generateBuildMethod(String name, char[] staticName, TypeReference returnType, List<BuilderFieldData> builderFields, EclipseNode type, TypeReference[] thrownExceptions, boolean addCleaning, ASTNode source) {
+	public MethodDeclaration generateBuildMethod(boolean isStatic, String name, char[] staticName, TypeReference returnType, List<BuilderFieldData> builderFields, EclipseNode type, TypeReference[] thrownExceptions, boolean addCleaning, ASTNode source) {
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		List<Statement> statements = new ArrayList<Statement>();
@@ -552,7 +559,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		} else {
 			MessageSend invoke = new MessageSend();
 			invoke.selector = staticName;
-			invoke.receiver = new SingleNameReference(type.up().getName().toCharArray(), 0);
+			if (isStatic)
+				invoke.receiver = new SingleNameReference(type.up().getName().toCharArray(), 0);
+			else
+				invoke.receiver = new QualifiedThisReference(new SingleTypeReference(type.up().getName().toCharArray(), 0) , 0, 0);
 			TypeParameter[] tps = ((TypeDeclaration) type.get()).typeParameters;
 			if (tps != null) {
 				TypeReference[] trs = new TypeReference[tps.length];
@@ -573,13 +583,14 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return out;
 	}
 	
-	public MethodDeclaration generateBuilderMethod(String builderMethodName, String builderClassName, EclipseNode type, TypeParameter[] typeParams, ASTNode source) {
+	public MethodDeclaration generateBuilderMethod(boolean isStatic, String builderMethodName, String builderClassName, EclipseNode type, TypeParameter[] typeParams, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
 		
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		out.selector = builderMethodName.toCharArray();
-		out.modifiers = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic;
+		out.modifiers = ClassFileConstants.AccPublic;
+		if (isStatic) out.modifiers |= ClassFileConstants.AccStatic;
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		out.returnType = namePlusTypeParamsToTypeReference(builderClassName.toCharArray(), typeParams, p);
 		out.typeParameters = copyTypeParams(typeParams, source);
@@ -661,11 +672,12 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return null;
 	}
 	
-	public EclipseNode makeBuilderClass(EclipseNode tdParent, String builderClassName, TypeParameter[] typeParams, ASTNode source) {
+	public EclipseNode makeBuilderClass(boolean isStatic, EclipseNode tdParent, String builderClassName, TypeParameter[] typeParams, ASTNode source) {
 		TypeDeclaration parent = (TypeDeclaration) tdParent.get();
 		TypeDeclaration builder = new TypeDeclaration(parent.compilationResult);
 		builder.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
-		builder.modifiers |= ClassFileConstants.AccPublic | ClassFileConstants.AccStatic;
+		builder.modifiers |= ClassFileConstants.AccPublic;
+		if (isStatic) builder.modifiers |= ClassFileConstants.AccStatic;
 		builder.typeParameters = copyTypeParams(typeParams, source);
 		builder.name = builderClassName.toCharArray();
 		builder.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
