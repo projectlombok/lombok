@@ -49,6 +49,10 @@ import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
 
 public class RunTestsViaEcj extends AbstractRunTests {
+	public RunTestsViaEcj(DirectoryRunner.TestParams params, File file) throws Throwable {
+		super(params, file);
+	}
+
 	protected CompilerOptions ecjCompilerOptions() {
 		CompilerOptions options = new CompilerOptions();
 		options.complianceLevel = Eclipse.getLatestEcjCompilerVersionConstant();

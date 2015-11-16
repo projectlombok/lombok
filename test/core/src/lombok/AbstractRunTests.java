@@ -49,23 +49,49 @@ import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
 
 public abstract class AbstractRunTests {
 	private final File dumpActualFilesHere;
-	
-	public AbstractRunTests() {
+	private final boolean ignore;
+	private final LombokTestSource sourceDirectives;
+	private final LombokTestSource expected;
+	private final DirectoryRunner.TestParams params;
+	private final File file;
+
+	public AbstractRunTests(DirectoryRunner.TestParams params, File file) throws Throwable {
+		this.params = params;
+		this.file = file;
 		this.dumpActualFilesHere = findPlaceToDumpActualFiles();
-	}
-	
-	public boolean compareFile(DirectoryRunner.TestParams params, File file) throws Throwable {
 		ConfigurationKeysLoader.LoaderLoader.loadAllConfigurationKeys();
-		final LombokTestSource sourceDirectives = LombokTestSource.readDirectives(file);
-		if (sourceDirectives.isIgnore()) return false;
-		if (!sourceDirectives.versionWithinLimit(params.getVersion())) return false;
-		if (!sourceDirectives.versionWithinLimit(getClasspathVersion())) return false;
-		
-		String fileName = file.getName();
-		LombokTestSource expected = LombokTestSource.read(params.getAfterDirectory(), params.getMessagesDirectory(), fileName);
-		
-		if (expected.isIgnore()) return false;
-		if (!expected.versionWithinLimit(params.getVersion())) return false;
+		sourceDirectives = LombokTestSource.readDirectives(file);
+		boolean ignore = false;
+		if (sourceDirectives.isIgnore()) {
+			ignore = true;
+		} else if (!sourceDirectives.versionWithinLimit(params.getVersion())) {
+			ignore = true;
+		} else if (!sourceDirectives.versionWithinLimit(getClasspathVersion())) {
+			ignore = true;
+		}
+
+		if (!ignore) {
+			String fileName = file.getName();
+			expected = LombokTestSource.read(params.getAfterDirectory(), params.getMessagesDirectory(), fileName);
+
+			if (expected.isIgnore()) {
+				ignore = true;
+			} else if (!expected.versionWithinLimit(params.getVersion())) {
+				ignore = true;
+			}
+		} else {
+			expected = null;
+		}
+
+		this.ignore = ignore;
+	}
+
+	public boolean isIgnore() {
+		return ignore;
+	}
+
+	public void compareFile() throws Throwable {
+
 		
 		LinkedHashSet<CompilerMessage> messages = new LinkedHashSet<CompilerMessage>();
 		StringWriter writer = new StringWriter();
@@ -82,7 +108,6 @@ public abstract class AbstractRunTests {
 		if (!params.expectChanges() && changed) messages.add(new CompilerMessage(-1, -1, true, "unexpected modification"));
 		
 		compare(file.getName(), expected, writer.toString(), messages, params.printErrors(), sourceDirectives.isSkipCompareContent() || expected.isSkipCompareContent());
-		return true;
 	}
 	
 	private static int getClasspathVersion() {

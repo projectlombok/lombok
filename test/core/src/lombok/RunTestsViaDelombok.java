@@ -36,7 +36,11 @@ import lombok.javac.CapturingDiagnosticListener.CompilerMessage;
 
 public class RunTestsViaDelombok extends AbstractRunTests {
 	private Delombok delombok = new Delombok();
-	
+
+	public RunTestsViaDelombok(DirectoryRunner.TestParams params, File file) throws Throwable {
+		super(params, file);
+	}
+
 	@Override
 	public boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, final File file, String encoding, Map<String, String> formatPreferences) throws Throwable {
 		delombok.setVerbose(true);
