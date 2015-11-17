@@ -51,6 +51,7 @@ public class LombokTestSource {
 	private final Map<String, String> formatPreferences;
 	private final boolean ignore;
 	private final boolean skipCompareContent;
+	private final boolean unchanged;
 	private final int versionLowerLimit, versionUpperLimit;
 	private final ConfigurationResolver configuration;
 	private final String specifiedEncoding;
@@ -73,6 +74,10 @@ public class LombokTestSource {
 	
 	public boolean isIgnore() {
 		return ignore;
+	}
+	
+	public boolean forceUnchanged() {
+		return unchanged;
 	}
 	
 	public boolean isSkipCompareContent() {
@@ -124,6 +129,7 @@ public class LombokTestSource {
 	}
 	
 	private static final Pattern IGNORE_PATTERN = Pattern.compile("^\\s*ignore\\s*(?:[-:].*)?$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern UNCHANGED_PATTERN = Pattern.compile("^\\s*unchanged\\s*(?:[-:].*)?$", Pattern.CASE_INSENSITIVE);
 	private static final Pattern SKIP_COMPARE_CONTENT_PATTERN = Pattern.compile("^\\s*skip[- ]?compare[- ]?content\\s*(?:[-:].*)?$", Pattern.CASE_INSENSITIVE);
 	
 	private LombokTestSource(File file, String content, List<CompilerMessageMatcher> messages, List<String> directives) {
@@ -136,6 +142,7 @@ public class LombokTestSource {
 		int versionUpper = Integer.MAX_VALUE;
 		boolean ignore = false;
 		boolean skipCompareContent = false;
+		boolean unchanged = false;
 		String encoding = null;
 		Map<String, String> formats = new HashMap<String, String>();
 		
@@ -144,6 +151,11 @@ public class LombokTestSource {
 			String lc = directive.toLowerCase();
 			if (IGNORE_PATTERN.matcher(directive).matches()) {
 				ignore = true;
+				continue;
+			}
+			
+			if (UNCHANGED_PATTERN.matcher(directive).matches()) {
+				unchanged = true;
 				continue;
 			}
 			
@@ -194,6 +206,7 @@ public class LombokTestSource {
 		this.versionUpperLimit = versionUpper;
 		this.ignore = ignore;
 		this.skipCompareContent = skipCompareContent;
+		this.unchanged = unchanged;
 		ConfigurationProblemReporter reporter = new ConfigurationProblemReporter() {
 			@Override public void report(String sourceDescription, String problem, int lineNumber, CharSequence line) {
 				Assert.fail("Problem on directive line: " + problem + " at conf line #" + lineNumber + " (" + line + ")");

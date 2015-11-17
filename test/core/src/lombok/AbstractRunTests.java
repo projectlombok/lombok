@@ -39,6 +39,7 @@ import java.util.Map;
 
 import org.junit.Assert;
 
+import lombok.DirectoryRunner.FileTester;
 import lombok.core.AST;
 import lombok.core.LombokConfiguration;
 import lombok.core.LombokImmutableList;
@@ -54,32 +55,38 @@ public abstract class AbstractRunTests {
 		this.dumpActualFilesHere = findPlaceToDumpActualFiles();
 	}
 	
-	public boolean compareFile(DirectoryRunner.TestParams params, File file) throws Throwable {
+	public final FileTester createTester(final DirectoryRunner.TestParams params, final File file) throws IOException {
 		ConfigurationKeysLoader.LoaderLoader.loadAllConfigurationKeys();
 		final LombokTestSource sourceDirectives = LombokTestSource.readDirectives(file);
-		if (sourceDirectives.isIgnore()) return false;
-		if (!sourceDirectives.versionWithinLimit(params.getVersion())) return false;
-		if (!sourceDirectives.versionWithinLimit(getClasspathVersion())) return false;
+		if (sourceDirectives.isIgnore()) return null;
+		if (!sourceDirectives.versionWithinLimit(params.getVersion())) return null;
+		if (!sourceDirectives.versionWithinLimit(getClasspathVersion())) return null;
 		
 		String fileName = file.getName();
-		LombokTestSource expected = LombokTestSource.read(params.getAfterDirectory(), params.getMessagesDirectory(), fileName);
+		final LombokTestSource expected = LombokTestSource.read(params.getAfterDirectory(), params.getMessagesDirectory(), fileName);
 		
-		if (expected.isIgnore()) return false;
-		if (!expected.versionWithinLimit(params.getVersion())) return false;
+		if (expected.isIgnore()) return null;
+		if (!expected.versionWithinLimit(params.getVersion())) return null;
 		
-		LinkedHashSet<CompilerMessage> messages = new LinkedHashSet<CompilerMessage>();
-		StringWriter writer = new StringWriter();
-		
-		LombokConfiguration.overrideConfigurationResolverFactory(new ConfigurationResolverFactory() {
-			@Override public ConfigurationResolver createResolver(AST<?, ?, ?> ast) {
-				return sourceDirectives.getConfiguration();
+		return new FileTester() {
+			@Override public void runTest() throws Throwable {
+				LinkedHashSet<CompilerMessage> messages = new LinkedHashSet<CompilerMessage>();
+				StringWriter writer = new StringWriter();
+				
+				LombokConfiguration.overrideConfigurationResolverFactory(new ConfigurationResolverFactory() {
+					@Override public ConfigurationResolver createResolver(AST<?, ?, ?> ast) {
+						return sourceDirectives.getConfiguration();
+					}
+				});
+				
+				boolean changed = transformCode(messages, writer, file, sourceDirectives.getSpecifiedEncoding(), sourceDirectives.getFormatPreferences());
+				boolean forceUnchanged = sourceDirectives.forceUnchanged() || sourceDirectives.isSkipCompareContent();
+				if (params.expectChanges() && !forceUnchanged && !changed) messages.add(new CompilerMessage(-1, -1, true, "not flagged modified"));
+				if (!params.expectChanges() && changed) messages.add(new CompilerMessage(-1, -1, true, "unexpected modification"));
+				
+				compare(file.getName(), expected, writer.toString(), messages, params.printErrors(), sourceDirectives.isSkipCompareContent() || expected.isSkipCompareContent());
 			}
-		});
-		
-		transformCode(messages, writer, file, sourceDirectives.getSpecifiedEncoding(), sourceDirectives.getFormatPreferences());
-		
-		compare(file.getName(), expected, writer.toString(), messages, params.printErrors(), sourceDirectives.isSkipCompareContent() || expected.isSkipCompareContent());
-		return true;
+		};
 	}
 	
 	private static int getClasspathVersion() {
@@ -98,7 +105,7 @@ public abstract class AbstractRunTests {
 		return 8;
 	}
 	
-	protected abstract void transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, String encoding, Map<String, String> formatPreferences) throws Throwable;
+	protected abstract boolean transformCode(Collection<CompilerMessage> messages, StringWriter result, File file, String encoding, Map<String, String> formatPreferences) throws Throwable;
 	
 	protected String readFile(File file) throws IOException {
 		BufferedReader reader;
