@@ -76,17 +76,22 @@ import lombok.Singular;
     }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaListsSetsBuilder<T> clearPasses() {
       this.passes = null;
+      return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaListsSetsBuilder<T> user(com.google.common.collect.Table.Cell<Number, Number, String> user) {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaListsSetsBuilder<T> user(Number rowKey, Number columnKey, String value) {
       if ((this.users == null))
           this.users = com.google.common.collect.ImmutableTable.builder();
-      this.users.put(user);
+      this.users.put(rowKey, columnKey, value);
       return this;
     }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaListsSetsBuilder<T> users(com.google.common.collect.Table<? extends Number, ? extends Number, ? extends String> users) {
       if ((this.users == null))
           this.users = com.google.common.collect.ImmutableTable.builder();
       this.users.putAll(users);
+      return this;
+    }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaListsSetsBuilder<T> clearUsers() {
+      this.users = null;
       return this;
     }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaListsSets<T> build() {

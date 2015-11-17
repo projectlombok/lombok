@@ -27,16 +27,11 @@ import lombok.core.LombokImmutableList;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
 
 @ProviderFor(EclipseSingularizer.class)
-public class EclipseGuavaSetListSingularizer extends EclipseGuavaSingularizer {
-	// TODO com.google.common.collect.ImmutableRangeSet
-	// TODO com.google.common.collect.ImmutableMultiset and com.google.common.collect.ImmutableSortedMultiset
-	private static final LombokImmutableList<String> SUFFIXES = LombokImmutableList.of("");
-	private static final LombokImmutableList<String> SUPPORTED_TYPES = LombokImmutableList.of(
-		"com.google.common.collect.ImmutableCollection", 
-		"com.google.common.collect.ImmutableList", 
-		"com.google.common.collect.ImmutableSet", 
-		"com.google.common.collect.ImmutableSortedSet"
-	);
+public class EclipseGuavaTableSingularizer extends EclipseGuavaSingularizer {
+	private static final LombokImmutableList<String> SUFFIXES =
+		LombokImmutableList.of("rowKey", "columnKey", "value");
+	private static final LombokImmutableList<String> SUPPORTED_TYPES =
+		LombokImmutableList.of("com.google.common.collect.ImmutableTable");
 	
 	@Override public LombokImmutableList<String> getSupportedTypes() {
 		return SUPPORTED_TYPES;
@@ -47,10 +42,10 @@ public class EclipseGuavaSetListSingularizer extends EclipseGuavaSingularizer {
 	}
 	
 	@Override protected String getAddMethodName() {
-		return "add";
+		return "put";
 	}
 	
 	@Override protected String getAddAllTypeName() {
-		return "java.lang.Iterable";
+		return "com.google.common.collect.Table";
 	}
 }

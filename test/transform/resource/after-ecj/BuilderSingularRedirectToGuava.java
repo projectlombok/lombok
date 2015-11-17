@@ -26,10 +26,10 @@ import lombok.Singular;
       this.dangerMice = null;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularRedirectToGuavaBuilder thing(Integer thing$key, Number thing$value) {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularRedirectToGuavaBuilder thing(Integer key, Number value) {
       if ((this.things == null))
           this.things = com.google.common.collect.ImmutableSortedMap.naturalOrder();
-      this.things.put(thing$key, thing$value);
+      this.things.put(key, value);
       return this;
     }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularRedirectToGuavaBuilder things(java.util.Map<? extends Integer, ? extends Number> things) {

@@ -50,9 +50,9 @@ class BuilderSingularRedirectToGuava {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
-		public BuilderSingularRedirectToGuavaBuilder thing(final Integer thing$key, final Number thing$value) {
+		public BuilderSingularRedirectToGuavaBuilder thing(final Integer key, final Number value) {
 			if (this.things == null) this.things = com.google.common.collect.ImmutableSortedMap.naturalOrder();
-			this.things.put(thing$key, thing$value);
+			this.things.put(key, value);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

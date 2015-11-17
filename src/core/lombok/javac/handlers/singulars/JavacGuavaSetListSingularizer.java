@@ -30,16 +30,27 @@ import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
 public class JavacGuavaSetListSingularizer extends JavacGuavaSingularizer {
 	// TODO com.google.common.collect.ImmutableRangeSet
 	// TODO com.google.common.collect.ImmutableMultiset and com.google.common.collect.ImmutableSortedMultiset
+	private static final LombokImmutableList<String> SUFFIXES = LombokImmutableList.of("");
+	private static final LombokImmutableList<String> SUPPORTED_TYPES = LombokImmutableList.of(
+		"com.google.common.collect.ImmutableCollection", 
+		"com.google.common.collect.ImmutableList", 
+		"com.google.common.collect.ImmutableSet", 
+		"com.google.common.collect.ImmutableSortedSet"
+	);
+	
 	@Override public LombokImmutableList<String> getSupportedTypes() {
-		return LombokImmutableList.of(
-				"com.google.common.collect.ImmutableCollection",
-				"com.google.common.collect.ImmutableList",
-				"com.google.common.collect.ImmutableSet",
-				"com.google.common.collect.ImmutableSortedSet",
-				"com.google.common.collect.ImmutableTable");
+		return SUPPORTED_TYPES;
 	}
-
-	@Override protected boolean isMap() {
-		return false;
+	
+	@Override protected LombokImmutableList<String> getArgumentSuffixes() {
+		return SUFFIXES;
+	}
+	
+	@Override protected String getAddMethodName() {
+		return "add";
+	}
+	
+	@Override protected String getAddAllTypeName() {
+		return "java.lang.Iterable";
 	}
 }
