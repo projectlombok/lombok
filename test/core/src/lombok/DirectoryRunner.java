@@ -23,6 +23,7 @@ package lombok;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -116,19 +117,29 @@ public class DirectoryRunner extends Runner {
 	@Override
 	public void run(RunNotifier notifier) {
 		if (failure != null) {
-			notifier.fireTestStarted(description);
-			notifier.fireTestFailure(new Failure(description, failure));
-			notifier.fireTestFinished(description);
+			reportInitializationFailure(notifier, description, failure);
 			return;
 		}
 		
 		for (Map.Entry<String, Description> entry : tests.entrySet()) {
 			Description testDescription = entry.getValue();
+			
+			FileTester tester;
+			try {
+				tester = createTester(entry.getKey());
+			} catch (IOException e) {
+				reportInitializationFailure(notifier, testDescription, e);
+				continue;
+			}
+			
+			if (tester == null) {
+				notifier.fireTestIgnored(testDescription);
+				continue;
+			}
+			
 			notifier.fireTestStarted(testDescription);
 			try {
-				if (!runTest(entry.getKey())) {
-					notifier.fireTestIgnored(testDescription);
-				}
+				tester.runTest();
 			} catch (Throwable t) {
 				notifier.fireTestFailure(new Failure(testDescription, t));
 			}
@@ -136,17 +147,27 @@ public class DirectoryRunner extends Runner {
 		}
 	}
 	
-	private boolean runTest(String fileName) throws Throwable {
+	private void reportInitializationFailure(RunNotifier notifier, Description description, Throwable throwable) {
+		notifier.fireTestStarted(description);
+		notifier.fireTestFailure(new Failure(description, throwable));
+		notifier.fireTestFinished(description);
+	}
+	
+	private FileTester createTester(String fileName) throws IOException {
 		File file = new File(params.getBeforeDirectory(), fileName);
 		
 		switch (params.getCompiler()) {
 		case DELOMBOK:
-			return new RunTestsViaDelombok().compareFile(params, file);
+			return new RunTestsViaDelombok().createTester(params, file);
 		case ECJ:
-			return new RunTestsViaEcj().compareFile(params, file);
+			return new RunTestsViaEcj().createTester(params, file);
 		default:
 		case JAVAC:
 			throw new UnsupportedOperationException();
 		}
+	}
+	
+	public interface FileTester {
+		void runTest() throws Throwable;
 	}
 }
