@@ -4,6 +4,7 @@ Lombok Changelog
 ### v1.16.7 "Edgy Guinea Pig"
 * FEATURE: `@Builder` updates: It now generates `clearFieldName()` methods if `@Singular` is used. [Issue #967](https://github.com/rzwitserloot/lombok/issues/967).
 * FEATURE: `@Builder` updates: The annotation can now be put on instance methods. [Issue #63](https://github.com/rzwitserloot/lombok/issues/63).
+* FEATURE: `@Builder` updates: `@Singular` now supports guava's ImmutableTable [Issue #937](https://github.com/rzwitserloot/lombok/issues/937).
 * FEATURE: A `lombok.config` key can now be used to make your fields `final` and/or `private`... __everywhere__. We'll be monitoring the performance impact of this for a while. We'll touch every source file if you turn these on, and even if you don't, we have to call into the lombok config system for every file.
 * BUGFIX: `@Value` and `@FieldDefaults` no longer make uninitialized static fields final. [Issue #928](https://github.com/rzwitserloot/lombok/issues/928).
 * BUGFIX: When using delombok, a source file with only `@NonNull` annotations on parameters as lombok feature would not get properly delomboked.  [Issue #950](https://github.com/rzwitserloot/lombok/issues/950).
