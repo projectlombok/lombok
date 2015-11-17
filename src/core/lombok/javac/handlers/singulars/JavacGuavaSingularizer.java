@@ -1,16 +1,16 @@
 /*
  * Copyright (C) 2015 The Project Lombok Authors.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,6 +27,7 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 import java.util.Collections;
 
 import lombok.core.GuavaTypeMap;
+import lombok.core.LombokImmutableList;
 import lombok.core.handlers.HandlerUtil;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -58,12 +59,11 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		return "builder";
 	}
 	
-	protected abstract boolean isMap();
-	
 	@Override public java.util.List<JavacNode> generateFields(SingularData data, JavacNode builderType, JCTree source) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
-		JCExpression type = JavacHandlerUtil.chainDots(builderType, "com", "google", "common", "collect", getSimpleTargetTypeName(data), "Builder");
-		type = addTypeArgs(isMap() ? 2 : 1, false, builderType, type, data.getTypeArgs(), source);
+		String simpleTypeName = getSimpleTargetTypeName(data);
+		JCExpression type = JavacHandlerUtil.chainDots(builderType, "com", "google", "common", "collect", simpleTypeName, "Builder");
+		type = addTypeArgs(getTypeArgumentsCount(), false, builderType, type, data.getTypeArgs(), source);
 		
 		JCVariableDecl buildField = maker.VarDef(maker.Modifiers(Flags.PRIVATE), data.getPluralName(), type, null);
 		return Collections.singletonList(injectFieldAndMarkGenerated(builderType, buildField));
@@ -74,75 +74,94 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		JCExpression returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(maker, CTC_VOID));
 		JCStatement returnStatement = chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
 		generateSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent);
-		
+
 		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(maker, CTC_VOID));
 		returnStatement = chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
 		generatePluralMethod(maker, returnType, returnStatement, data, builderType, source, fluent);
+		
+		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(maker, CTC_VOID));
+		returnStatement = chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
+		generateClearMethod(maker, returnType, returnStatement, data, builderType, source);
+	}
+	
+	private void generateClearMethod(JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {
+		JCModifiers mods = maker.Modifiers(Flags.PUBLIC);
+		List<JCTypeParameter> typeParams = List.nil();
+		List<JCExpression> thrown = List.nil();
+		List<JCVariableDecl> params = List.nil();
+		
+		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
+		JCStatement clearField = maker.Exec(maker.Assign(thisDotField, maker.Literal(CTC_BOT, null)));
+		List<JCStatement> statements = returnStatement != null ? List.of(clearField, returnStatement) : List.of(clearField);
+		
+		JCBlock body = maker.Block(0, statements);
+		Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
+		JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, params, thrown, body, null);
+		injectMethod(builderType, method);
 	}
 	
 	void generateSingularMethod(JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 		List<JCTypeParameter> typeParams = List.nil();
 		List<JCExpression> thrown = List.nil();
-		boolean mapMode = isMap();
 		
-		Name keyName = !mapMode ? data.getSingularName() : builderType.toName(data.getSingularName() + "$key");
-		Name valueName = !mapMode ? null : builderType.toName(data.getSingularName() + "$value");
+		LombokImmutableList<String> suffixes = getArgumentSuffixes();
+		Name[] names = new Name[suffixes.size()];
+		for (int i = 0; i < suffixes.size(); i++) {
+			String s = suffixes.get(i);
+			Name n = data.getSingularName();
+			names[i] = s.isEmpty() ? n : builderType.toName(s);
+		}
 		
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, mapMode, source));
-		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), mapMode ? "put" : "add");
-		List<JCExpression> invokeAddExpr;
-		if (mapMode) {
-			invokeAddExpr = List.<JCExpression>of(maker.Ident(keyName), maker.Ident(valueName));
-		} else {
-			invokeAddExpr = List.<JCExpression>of(maker.Ident(keyName));
+		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
+		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName());
+		ListBuffer<JCExpression> invokeAddExprBuilder = new ListBuffer<JCExpression>();
+		for (int i = 0; i < suffixes.size(); i++) {
+			invokeAddExprBuilder.append(maker.Ident(names[i]));
 		}
+		List<JCExpression> invokeAddExpr = invokeAddExprBuilder.toList();
 		JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, invokeAddExpr);
 		statements.append(maker.Exec(invokeAdd));
 		if (returnStatement != null) statements.append(returnStatement);
 		JCBlock body = maker.Block(0, statements.toList());
 		Name methodName = data.getSingularName();
 		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
-		if (!fluent) methodName = builderType.toName(HandlerUtil.buildAccessorName(mapMode ? "put" : "add", methodName.toString()));
-		List<JCVariableDecl> params;
-		if (mapMode) {
-			JCExpression keyType = cloneParamType(0, maker, data.getTypeArgs(), builderType, source);
-			JCExpression valueType = cloneParamType(1, maker, data.getTypeArgs(), builderType, source);
-			JCVariableDecl paramKey = maker.VarDef(maker.Modifiers(paramFlags), keyName, keyType, null);
-			JCVariableDecl paramValue = maker.VarDef(maker.Modifiers(paramFlags), valueName, valueType, null);
-			params = List.of(paramKey, paramValue);
-		} else {
-			JCExpression paramType = cloneParamType(0, maker, data.getTypeArgs(), builderType, source);
-			params = List.of(maker.VarDef(maker.Modifiers(paramFlags), data.getSingularName(), paramType, null));
+		if (!fluent) methodName = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName(), methodName.toString()));
+		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
+		for (int i = 0; i < suffixes.size(); i++) {
+			JCExpression pt = cloneParamType(i, maker, data.getTypeArgs(), builderType, source);
+			JCVariableDecl p = maker.VarDef(maker.Modifiers(paramFlags), names[i], pt, null);
+			params.append(p);
 		}
-		JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, params, thrown, body, null);
+		
+		JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, params.toList(), thrown, body, null);
 		injectMethod(builderType, method);
 	}
 	
 	protected void generatePluralMethod(JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 		List<JCTypeParameter> typeParams = List.nil();
 		List<JCExpression> thrown = List.nil();
-		boolean mapMode = isMap();
 		
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, mapMode, source));
-		JCExpression thisDotFieldDotAddAll = chainDots(builderType, "this", data.getPluralName().toString(), mapMode ? "putAll" : "addAll");
+		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
+		JCExpression thisDotFieldDotAddAll = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName() + "All");
 		JCExpression invokeAddAll = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAddAll, List.<JCExpression>of(maker.Ident(data.getPluralName())));
 		statements.append(maker.Exec(invokeAddAll));
 		if (returnStatement != null) statements.append(returnStatement);
 		JCBlock body = maker.Block(0, statements.toList());
 		Name methodName = data.getPluralName();
 		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
-		if (!fluent) methodName = builderType.toName(HandlerUtil.buildAccessorName(mapMode ? "putAll" : "addAll", methodName.toString()));
+		if (!fluent) methodName = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName() + "All", methodName.toString()));
 		JCExpression paramType;
-		if (mapMode) {
-			paramType = chainDots(builderType, "java", "util", "Map");
+		String aaTypeName = getAddAllTypeName();
+		if (aaTypeName.startsWith("java.lang.") && aaTypeName.indexOf('.', 11) == -1) {
+			paramType = genJavaLangTypeRef(builderType, aaTypeName.substring(10));
 		} else {
-			paramType = genJavaLangTypeRef(builderType, "Iterable");
+			paramType = chainDotsString(builderType, aaTypeName);
 		}
-		paramType = addTypeArgs(mapMode ? 2 : 1, true, builderType, paramType, data.getTypeArgs(), source);
+		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
 		JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, List.of(param), thrown, body, null);
 		injectMethod(builderType, method);
@@ -151,15 +170,15 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		List<JCExpression> jceBlank = List.nil();
-		boolean mapMode = isMap();
 		
 		JCExpression varType = chainDotsString(builderType, data.getTargetFqn());
-		varType = addTypeArgs(mapMode ? 2 : 1, false, builderType, varType, data.getTypeArgs(), source);
+		int agrumentsCount = getTypeArgumentsCount();
+		varType = addTypeArgs(agrumentsCount, false, builderType, varType, data.getTypeArgs(), source);
 		
 		JCExpression empty; {
 			//ImmutableX.of()
 			JCExpression emptyMethod = chainDots(builderType, "com", "google", "common", "collect", getSimpleTargetTypeName(data), "of");
-			List<JCExpression> invokeTypeArgs = createTypeArgs(mapMode ? 2 : 1, false, builderType, data.getTypeArgs(), source);
+			List<JCExpression> invokeTypeArgs = createTypeArgs(agrumentsCount, false, builderType, data.getTypeArgs(), source);
 			empty = maker.Apply(invokeTypeArgs, emptyMethod, jceBlank);
 		}
 		
@@ -179,7 +198,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		statements.append(jcs);
 	}
 	
-	protected JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, boolean mapMode, JCTree source) {
+	protected JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
 		List<JCExpression> jceBlank = List.nil();
 		
 		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
@@ -190,5 +209,13 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		JCStatement thenPart = maker.Exec(maker.Assign(thisDotField2, create));
 		
 		return maker.If(cond, thenPart, null);
+	}
+	
+	protected abstract LombokImmutableList<String> getArgumentSuffixes();
+	protected abstract String getAddMethodName();
+	protected abstract String getAddAllTypeName();
+	
+	protected int getTypeArgumentsCount() {
+		return getArgumentSuffixes().size();
 	}
 }

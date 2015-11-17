@@ -44,9 +44,15 @@ class BuilderSingularRedirectToGuava {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
-		public BuilderSingularRedirectToGuavaBuilder thing(final Integer thing$key, final Number thing$value) {
+		public BuilderSingularRedirectToGuavaBuilder clearDangerMice() {
+			this.dangerMice = null;
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
+		public BuilderSingularRedirectToGuavaBuilder thing(final Integer key, final Number value) {
 			if (this.things == null) this.things = com.google.common.collect.ImmutableSortedMap.naturalOrder();
-			this.things.put(thing$key, thing$value);
+			this.things.put(key, value);
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -54,6 +60,12 @@ class BuilderSingularRedirectToGuava {
 		public BuilderSingularRedirectToGuavaBuilder things(final java.util.Map<? extends Integer, ? extends Number> things) {
 			if (this.things == null) this.things = com.google.common.collect.ImmutableSortedMap.naturalOrder();
 			this.things.putAll(things);
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
+		public BuilderSingularRedirectToGuavaBuilder clearThings() {
+			this.things = null;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -68,6 +80,12 @@ class BuilderSingularRedirectToGuava {
 		public BuilderSingularRedirectToGuavaBuilder doohickeys(final java.lang.Iterable<? extends Class<?>> doohickeys) {
 			if (this.doohickeys == null) this.doohickeys = com.google.common.collect.ImmutableList.builder();
 			this.doohickeys.addAll(doohickeys);
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
+		public BuilderSingularRedirectToGuavaBuilder clearDoohickeys() {
+			this.doohickeys = null;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")

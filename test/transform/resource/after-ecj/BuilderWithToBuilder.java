@@ -33,6 +33,11 @@ import lombok.Builder;
       this.bars.addAll(bars);
       return this;
     }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderWithToBuilderBuilder<T> clearBars() {
+      if ((this.bars != null))
+          this.bars.clear();
+      return this;
+    }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderWithToBuilder<T> build() {
       java.util.List<T> bars;
       switch (((this.bars == null) ? 0 : this.bars.size())) {

@@ -22,6 +22,11 @@ import lombok.Singular;
       this.dangerMice.addAll(dangerMice);
       return this;
     }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> clearDangerMice() {
+      if ((this.dangerMice != null))
+          this.dangerMice.clear();
+      return this;
+    }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> octopus(Number octopus) {
       if ((this.octopodes == null))
           this.octopodes = new java.util.ArrayList<Number>();
@@ -32,6 +37,11 @@ import lombok.Singular;
       if ((this.octopodes == null))
           this.octopodes = new java.util.ArrayList<Number>();
       this.octopodes.addAll(octopodes);
+      return this;
+    }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> clearOctopodes() {
+      if ((this.octopodes != null))
+          this.octopodes.clear();
       return this;
     }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> rawSet(java.lang.Object rawSet) {
@@ -46,6 +56,11 @@ import lombok.Singular;
       this.rawSet.addAll(rawSet);
       return this;
     }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> clearRawSet() {
+      if ((this.rawSet != null))
+          this.rawSet.clear();
+      return this;
+    }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> stringSet(String stringSet) {
       if ((this.stringSet == null))
           this.stringSet = new java.util.ArrayList<String>();
@@ -56,6 +71,11 @@ import lombok.Singular;
       if ((this.stringSet == null))
           this.stringSet = new java.util.ArrayList<String>();
       this.stringSet.addAll(stringSet);
+      return this;
+    }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> clearStringSet() {
+      if ((this.stringSet != null))
+          this.stringSet.clear();
       return this;
     }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSets<T> build() {

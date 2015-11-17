@@ -32,13 +32,17 @@ import java.util.List;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
+import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
+import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
@@ -141,6 +145,40 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
 		generatePluralMethod(returnType, returnStatement, data, builderType, fluent);
+		
+		returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
+		returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
+		generateClearMethod(returnType, returnStatement, data, builderType);
+	}
+	
+	private void generateClearMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType) {
+		MethodDeclaration md = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
+		md.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
+		md.modifiers = ClassFileConstants.AccPublic;
+		
+		String pN = new String(data.getPluralName());
+		char[] keyFieldName = (pN + "$key").toCharArray();
+		char[] valueFieldName = (pN + "$value").toCharArray();
+		
+		FieldReference thisDotField = new FieldReference(keyFieldName, 0L);
+		thisDotField.receiver = new ThisReference(0, 0);
+		FieldReference thisDotField2 = new FieldReference(keyFieldName, 0L);
+		thisDotField2.receiver = new ThisReference(0, 0);
+		FieldReference thisDotField3 = new FieldReference(valueFieldName, 0L);
+		thisDotField3.receiver = new ThisReference(0, 0);
+		md.selector = HandlerUtil.buildAccessorName("clear", new String(data.getPluralName())).toCharArray();
+		MessageSend clearMsg1 = new MessageSend();
+		clearMsg1.receiver = thisDotField2;
+		clearMsg1.selector = "clear".toCharArray();
+		MessageSend clearMsg2 = new MessageSend();
+		clearMsg2.receiver = thisDotField3;
+		clearMsg2.selector = "clear".toCharArray();
+		Block clearMsgs = new Block(2);
+		clearMsgs.statements = new Statement[] {clearMsg1, clearMsg2};
+		Statement clearStatement = new IfStatement(new EqualExpression(thisDotField, new NullLiteral(0, 0), OperatorIds.NOT_EQUAL), clearMsgs, 0, 0);
+		md.statements = returnStatement != null ? new Statement[] {clearStatement, returnStatement} : new Statement[] {clearStatement};
+		md.returnType = returnType;
+		injectMethod(builderType, md);
 	}
 	
 	private void generateSingularMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {

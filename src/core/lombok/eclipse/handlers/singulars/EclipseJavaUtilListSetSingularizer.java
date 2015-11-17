@@ -34,11 +34,15 @@ import lombok.eclipse.handlers.EclipseSingularsRecipes.SingularData;
 
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
+import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
+import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
@@ -96,6 +100,29 @@ abstract class EclipseJavaUtilListSetSingularizer extends EclipseJavaUtilSingula
 		returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
 		generatePluralMethod(returnType, returnStatement, data, builderType, fluent);
+		
+		returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
+		returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
+		generateClearMethod(returnType, returnStatement, data, builderType);
+	}
+	
+	private void generateClearMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType) {
+		MethodDeclaration md = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
+		md.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
+		md.modifiers = ClassFileConstants.AccPublic;
+		
+		FieldReference thisDotField = new FieldReference(data.getPluralName(), 0L);
+		thisDotField.receiver = new ThisReference(0, 0);
+		FieldReference thisDotField2 = new FieldReference(data.getPluralName(), 0L);
+		thisDotField2.receiver = new ThisReference(0, 0);
+		md.selector = HandlerUtil.buildAccessorName("clear", new String(data.getPluralName())).toCharArray();
+		MessageSend clearMsg = new MessageSend();
+		clearMsg.receiver = thisDotField2;
+		clearMsg.selector = "clear".toCharArray();
+		Statement clearStatement = new IfStatement(new EqualExpression(thisDotField, new NullLiteral(0, 0), OperatorIds.NOT_EQUAL), clearMsg, 0, 0);
+		md.statements = returnStatement != null ? new Statement[] {clearStatement, returnStatement} : new Statement[] {clearStatement};
+		md.returnType = returnType;
+		injectMethod(builderType, md);
 	}
 	
 	void generateSingularMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {

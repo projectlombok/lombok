@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 
 import lombok.core.GuavaTypeMap;
+import lombok.core.LombokImmutableList;
 import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
@@ -56,14 +57,9 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 
 abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
-	protected static final char[][] JAVA_UTIL_MAP = {
-		{'j', 'a', 'v', 'a'}, {'u', 't', 'i', 'l'}, {'M', 'a', 'p'}
-	};
-	
 	protected String getSimpleTargetTypeName(SingularData data) {
 		return GuavaTypeMap.getGuavaTypeName(data.getTargetFqn());
 	}
@@ -73,8 +69,6 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		if ("ImmutableSortedSet".equals(simpleTypeName) || "ImmutableSortedMap".equals(simpleTypeName)) return "naturalOrder".toCharArray();
 		return "builder".toCharArray();
 	}
-	
-	protected abstract boolean isMap();
 	
 	protected char[][] makeGuavaTypeName(String simpleName, boolean addBuilder) {
 		char[][] tokenizedName = new char[addBuilder ? 6 : 5][];
@@ -88,9 +82,10 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 	}
 	
 	@Override public List<EclipseNode> generateFields(SingularData data, EclipseNode builderType) {
-		char[][] tokenizedName = makeGuavaTypeName(getSimpleTargetTypeName(data), true);
+		String simpleTypeName = getSimpleTargetTypeName(data);
+		char[][] tokenizedName = makeGuavaTypeName(simpleTypeName, true);
 		TypeReference type = new QualifiedTypeReference(tokenizedName, NULL_POSS);
-		type = addTypeArgs(isMap() ? 2 : 1, false, builderType, type, data.getTypeArgs());
+		type = addTypeArgs(getTypeArgumentsCount(), false, builderType, type, data.getTypeArgs());
 		
 		FieldDeclaration buildField = new FieldDeclaration(data.getPluralName(), 0, -1);
 		buildField.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
@@ -109,12 +104,34 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
 		generatePluralMethod(returnType, returnStatement, data, builderType, fluent);
+		
+		returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
+		returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
+		generateClearMethod(returnType, returnStatement, data,  builderType);
+	}
+	
+	void generateClearMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType) {
+		MethodDeclaration md = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
+		md.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
+		md.modifiers = ClassFileConstants.AccPublic;
+		
+		FieldReference thisDotField = new FieldReference(data.getPluralName(), 0L);
+		thisDotField.receiver = new ThisReference(0, 0);
+		Assignment a = new Assignment(thisDotField, new NullLiteral(0, 0), 0);
+		md.selector = HandlerUtil.buildAccessorName("clear", new String(data.getPluralName())).toCharArray();
+		md.statements = returnStatement != null ? new Statement[] {a, returnStatement} : new Statement[] {a};
+		md.returnType = returnType;
+		injectMethod(builderType, md);
 	}
 	
 	void generateSingularMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {
-		boolean mapMode = isMap();
-		char[] keyName = !mapMode ? data.getSingularName() : (new String(data.getSingularName()) + "$key").toCharArray();
-		char[] valueName = !mapMode ? null : (new String(data.getSingularName()) + "$value").toCharArray();
+		LombokImmutableList<String> suffixes = getArgumentSuffixes();
+		char[][] names = new char[suffixes.size()][];
+		for (int i = 0; i < suffixes.size(); i++) {
+			String s = suffixes.get(i);
+			char[] n = data.getSingularName();
+			names[i] = s.isEmpty() ? n : s.toCharArray();
+		}
 		
 		MethodDeclaration md = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
 		md.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
@@ -126,40 +143,28 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		FieldReference thisDotField = new FieldReference(data.getPluralName(), 0L);
 		thisDotField.receiver = new ThisReference(0, 0);
 		MessageSend thisDotFieldDotAdd = new MessageSend();
-		if (mapMode) {
-			thisDotFieldDotAdd.arguments = new Expression[] {
-					new SingleNameReference(keyName, 0L),
-					new SingleNameReference(valueName, 0L)};
-		} else {
-			thisDotFieldDotAdd.arguments = new Expression[] {new SingleNameReference(keyName, 0L)};
+		thisDotFieldDotAdd.arguments = new Expression[suffixes.size()];
+		for (int i = 0; i < suffixes.size(); i++) {
+			thisDotFieldDotAdd.arguments[i] = new SingleNameReference(names[i], 0L);
 		}
 		thisDotFieldDotAdd.receiver = thisDotField;
-		thisDotFieldDotAdd.selector = (mapMode ? "put" : "add").toCharArray();
+		thisDotFieldDotAdd.selector = getAddMethodName().toCharArray();
 		statements.add(thisDotFieldDotAdd);
 		if (returnStatement != null) statements.add(returnStatement);
 		md.statements = statements.toArray(new Statement[statements.size()]);
-		
-		if (mapMode) {
-			TypeReference keyType = cloneParamType(0, data.getTypeArgs(), builderType);
-			Argument keyParam = new Argument(keyName, 0, keyType, 0);
-			TypeReference valueType = cloneParamType(1, data.getTypeArgs(), builderType);
-			Argument valueParam = new Argument(valueName, 0, valueType, 0);
-			md.arguments = new Argument[] {keyParam, valueParam};
-		} else {
-			TypeReference paramType = cloneParamType(0, data.getTypeArgs(), builderType);
-			Argument param = new Argument(keyName, 0, paramType, 0);
-			md.arguments = new Argument[] {param};
+		md.arguments = new Argument[suffixes.size()];
+		for (int i = 0; i < suffixes.size(); i++) {
+			TypeReference tr = cloneParamType(i, data.getTypeArgs(), builderType);
+			md.arguments[i] = new Argument(names[i], 0, tr, 0);
 		}
 		md.returnType = returnType;
-		md.selector = fluent ? data.getSingularName() : HandlerUtil.buildAccessorName(mapMode ? "put" : "add", new String(data.getSingularName())).toCharArray();
+		md.selector = fluent ? data.getSingularName() : HandlerUtil.buildAccessorName(getAddMethodName(), new String(data.getSingularName())).toCharArray();
 		
 		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
 	}
 	
 	void generatePluralMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {
-		boolean mapMode = isMap();
-		
 		MethodDeclaration md = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
 		md.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		md.modifiers = ClassFileConstants.AccPublic;
@@ -172,40 +177,36 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		MessageSend thisDotFieldDotAddAll = new MessageSend();
 		thisDotFieldDotAddAll.arguments = new Expression[] {new SingleNameReference(data.getPluralName(), 0L)};
 		thisDotFieldDotAddAll.receiver = thisDotField;
-		thisDotFieldDotAddAll.selector = (mapMode ? "putAll" : "addAll").toCharArray();
+		thisDotFieldDotAddAll.selector = (getAddMethodName() + "All").toCharArray();
 		statements.add(thisDotFieldDotAddAll);
 		if (returnStatement != null) statements.add(returnStatement);
 		
 		md.statements = statements.toArray(new Statement[statements.size()]);
 		
 		TypeReference paramType;
-		if (mapMode) {
-			paramType = new QualifiedTypeReference(JAVA_UTIL_MAP, NULL_POSS);
-			paramType = addTypeArgs(2, true, builderType, paramType, data.getTypeArgs());
-		} else {
-			paramType = new QualifiedTypeReference(TypeConstants.JAVA_LANG_ITERABLE, NULL_POSS);
-			paramType = addTypeArgs(1, true, builderType, paramType, data.getTypeArgs());
-		}
+		paramType = new QualifiedTypeReference(fromQualifiedName(getAddAllTypeName()), NULL_POSS);
+		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs());
 		Argument param = new Argument(data.getPluralName(), 0, paramType, 0);
 		md.arguments = new Argument[] {param};
 		md.returnType = returnType;
-		md.selector = fluent ? data.getPluralName() : HandlerUtil.buildAccessorName(mapMode ? "putAll" : "addAll", new String(data.getPluralName())).toCharArray();
+		md.selector = fluent ? data.getPluralName() : HandlerUtil.buildAccessorName(getAddMethodName() + "All", new String(data.getPluralName())).toCharArray();
 		
 		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
 	}
 	
 	@Override public void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName) {
-		boolean mapMode = isMap();
 		TypeReference varType = new QualifiedTypeReference(fromQualifiedName(data.getTargetFqn()), NULL_POSS);
-		varType = addTypeArgs(mapMode ? 2 : 1, false, builderType, varType, data.getTypeArgs());
+		String simpleTypeName = getSimpleTargetTypeName(data);
+		int agrumentsCount = getTypeArgumentsCount();
+		varType = addTypeArgs(agrumentsCount, false, builderType, varType, data.getTypeArgs());
 		
 		MessageSend emptyInvoke; {
 			//ImmutableX.of()
 			emptyInvoke = new MessageSend();
 			emptyInvoke.selector = new char[] {'o', 'f'};
-			emptyInvoke.receiver = new QualifiedNameReference(makeGuavaTypeName(getSimpleTargetTypeName(data), false), NULL_POSS, 0, 0);
-			emptyInvoke.typeArguments = createTypeArgs(mapMode ? 2 : 1, false, builderType, data.getTypeArgs());
+			emptyInvoke.receiver = new QualifiedNameReference(makeGuavaTypeName(simpleTypeName, false), NULL_POSS, 0, 0);
+			emptyInvoke.typeArguments = createTypeArgs(agrumentsCount, false, builderType, data.getTypeArgs());
 		}
 		
 		MessageSend invokeBuild; {
@@ -243,5 +244,13 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		createBuilderInvoke.receiver = new QualifiedNameReference(tokenizedName, NULL_POSS, 0, 0);
 		createBuilderInvoke.selector = getBuilderMethodName(data);
 		return new IfStatement(cond, new Assignment(thisDotField2, createBuilderInvoke, 0), 0, 0);
+	}
+	
+	protected abstract LombokImmutableList<String> getArgumentSuffixes();
+	protected abstract String getAddMethodName();
+	protected abstract String getAddAllTypeName();
+	
+	protected int getTypeArgumentsCount() {
+		return getArgumentSuffixes().size();
 	}
 }

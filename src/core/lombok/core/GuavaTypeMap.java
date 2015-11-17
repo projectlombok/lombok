@@ -45,6 +45,7 @@ public final class GuavaTypeMap {
 		m.put("com.google.common.collect.ImmutableSortedMap", "ImmutableSortedMap");
 		m.put("com.google.common.collect.ImmutableList", "ImmutableList");
 		m.put("com.google.common.collect.ImmutableCollection", "ImmutableList");
+		m.put("com.google.common.collect.ImmutableTable", "ImmutableTable");
 		
 		TYPE_TO_GUAVA_TYPE = Collections.unmodifiableMap(m);
 	}

@@ -57,6 +57,14 @@ class BuilderSingularMaps<K, V> {
 			return this;
 		}
 		@SuppressWarnings("all")
+		public BuilderSingularMapsBuilder<K, V> clearWomen() {
+			if (this.women$key != null) {
+				this.women$key.clear();
+				this.women$value.clear();
+			}
+			return this;
+		}
+		@SuppressWarnings("all")
 		public BuilderSingularMapsBuilder<K, V> man(K manKey, Number manValue) {
 			if (this.men$key == null) {
 				this.men$key = new java.util.ArrayList<K>();
@@ -75,6 +83,14 @@ class BuilderSingularMaps<K, V> {
 			for (java.util.Map.Entry<? extends K, ? extends Number> $lombokEntry : men.entrySet()) {
 				this.men$key.add($lombokEntry.getKey());
 				this.men$value.add($lombokEntry.getValue());
+			}
+			return this;
+		}
+		@SuppressWarnings("all")
+		public BuilderSingularMapsBuilder<K, V> clearMen() {
+			if (this.men$key != null) {
+				this.men$key.clear();
+				this.men$value.clear();
 			}
 			return this;
 		}
@@ -101,6 +117,14 @@ class BuilderSingularMaps<K, V> {
 			return this;
 		}
 		@SuppressWarnings("all")
+		public BuilderSingularMapsBuilder<K, V> clearRawMap() {
+			if (this.rawMap$key != null) {
+				this.rawMap$key.clear();
+				this.rawMap$value.clear();
+			}
+			return this;
+		}
+		@SuppressWarnings("all")
 		public BuilderSingularMapsBuilder<K, V> stringMap(String stringMapKey, V stringMapValue) {
 			if (this.stringMap$key == null) {
 				this.stringMap$key = new java.util.ArrayList<String>();
@@ -119,6 +143,14 @@ class BuilderSingularMaps<K, V> {
 			for (java.util.Map.Entry<? extends String, ? extends V> $lombokEntry : stringMap.entrySet()) {
 				this.stringMap$key.add($lombokEntry.getKey());
 				this.stringMap$value.add($lombokEntry.getValue());
+			}
+			return this;
+		}
+		@SuppressWarnings("all")
+		public BuilderSingularMapsBuilder<K, V> clearStringMap() {
+			if (this.stringMap$key != null) {
+				this.stringMap$key.clear();
+				this.stringMap$value.clear();
 			}
 			return this;
 		}

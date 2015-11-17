@@ -20,6 +20,11 @@ import lombok.Singular;
       this.things.addAll(things);
       return this;
     }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutoBuilder clearThings() {
+      if ((this.things != null))
+          this.things.clear();
+      return this;
+    }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutoBuilder widget(String widget) {
       if ((this.widgets == null))
           this.widgets = new java.util.ArrayList<String>();
@@ -32,6 +37,11 @@ import lombok.Singular;
       this.widgets.addAll(widgets);
       return this;
     }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutoBuilder clearWidgets() {
+      if ((this.widgets != null))
+          this.widgets.clear();
+      return this;
+    }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutoBuilder items(String items) {
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
@@ -42,6 +52,11 @@ import lombok.Singular;
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.addAll(items);
+      return this;
+    }
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAutoBuilder clearItems() {
+      if ((this.items != null))
+          this.items.clear();
       return this;
     }
     public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAuto build() {

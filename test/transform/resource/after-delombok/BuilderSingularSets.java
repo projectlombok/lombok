@@ -49,6 +49,12 @@ class BuilderSingularSets<T> {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
+		public BuilderSingularSetsBuilder<T> clearDangerMice() {
+			if (this.dangerMice != null) this.dangerMice.clear();
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularSetsBuilder<T> octopus(final Number octopus) {
 			if (this.octopodes == null) this.octopodes = new java.util.ArrayList<Number>();
 			this.octopodes.add(octopus);
@@ -59,6 +65,12 @@ class BuilderSingularSets<T> {
 		public BuilderSingularSetsBuilder<T> octopodes(final java.util.Collection<? extends Number> octopodes) {
 			if (this.octopodes == null) this.octopodes = new java.util.ArrayList<Number>();
 			this.octopodes.addAll(octopodes);
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
+		public BuilderSingularSetsBuilder<T> clearOctopodes() {
+			if (this.octopodes != null) this.octopodes.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -77,6 +89,12 @@ class BuilderSingularSets<T> {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
+		public BuilderSingularSetsBuilder<T> clearRawSet() {
+			if (this.rawSet != null) this.rawSet.clear();
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
 		public BuilderSingularSetsBuilder<T> stringSet(final String stringSet) {
 			if (this.stringSet == null) this.stringSet = new java.util.ArrayList<String>();
 			this.stringSet.add(stringSet);
@@ -87,6 +105,12 @@ class BuilderSingularSets<T> {
 		public BuilderSingularSetsBuilder<T> stringSet(final java.util.Collection<? extends String> stringSet) {
 			if (this.stringSet == null) this.stringSet = new java.util.ArrayList<String>();
 			this.stringSet.addAll(stringSet);
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
+		@javax.annotation.Generated("lombok")
+		public BuilderSingularSetsBuilder<T> clearStringSet() {
+			if (this.stringSet != null) this.stringSet.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
