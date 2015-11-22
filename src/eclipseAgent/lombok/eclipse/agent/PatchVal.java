@@ -57,6 +57,9 @@ public class PatchVal {
 			return expr.resolveType(scope);
 		} catch (NullPointerException e) {
 			return null;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			// This will occur internally due to for example 'val x = mth("X");', where mth takes 2 arguments.
+			return null;
 		}
 	}
 	
@@ -65,6 +68,9 @@ public class PatchVal {
 		try {
 			return expr.resolveType(scope);
 		} catch (NullPointerException e) {
+			return null;
+		} catch (ArrayIndexOutOfBoundsException e) {
+			// This will occur internally due to for example 'val x = mth("X");', where mth takes 2 arguments.
 			return null;
 		}
 	}
@@ -164,7 +170,7 @@ public class PatchVal {
 			
 			TypeBinding resolved = null;
 			try {
-				resolved = decomponent ? getForEachComponentType(init, scope) : init.resolveType(scope);
+				resolved = decomponent ? getForEachComponentType(init, scope) : resolveForExpression(init, scope);
 			} catch (NullPointerException e) {
 				// This definitely occurs if as part of resolving the initializer expression, a
 				// lambda expression in it must also be resolved (such as when lambdas are part of
@@ -222,7 +228,7 @@ public class PatchVal {
 	private static TypeBinding getForEachComponentType(Expression collection, BlockScope scope) {
 		if (collection != null) {
 			TypeBinding resolved = collection.resolvedType;
-			if (resolved == null) resolved = collection.resolveType(scope);
+			if (resolved == null) resolved = resolveForExpression(collection, scope);
 			if (resolved == null) return null;
 			if (resolved.isArrayType()) {
 				resolved = ((ArrayBinding) resolved).elementsType();
@@ -249,5 +255,14 @@ public class PatchVal {
 		}
 		
 		return null;
+	}
+	
+	private static TypeBinding resolveForExpression(Expression collection, BlockScope scope) {
+		try {
+			return collection.resolveType(scope);
+		} catch (ArrayIndexOutOfBoundsException e) {
+			// Known cause of issues; for example: val e = mth("X"), where mth takes 2 arguments.
+			return null;
+		}
 	}
 }

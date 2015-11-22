@@ -1395,7 +1395,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 		}
 	}
 	
-	@Override public void visitTypeBoundKind(TypeBoundKind tree) {
+	public void visitTypeBoundKind(TypeBoundKind tree) {
 		print(String.valueOf(tree.kind));
 	}
 	
