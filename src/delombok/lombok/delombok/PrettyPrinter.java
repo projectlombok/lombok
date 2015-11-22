@@ -1438,10 +1438,11 @@ public class PrettyPrinter extends JCTree.Visitor {
 		List<JCVariableDecl> params = readObject(tree, "params", List.<JCVariableDecl>nil());
 		boolean explicit = true;
 		int paramLength = params.size();
-		if (paramLength != 1) print("(");
 		try {
 			explicit = readObject(tree, "paramKind", new Object()).toString().equals("EXPLICIT");
 		} catch (Exception e) {}
+		boolean useParens = paramLength != 1 || explicit;
+		if (useParens) print("(");
 		if (explicit) {
 			boolean first = true;
 			for (JCVariableDecl vd : params) {
@@ -1457,7 +1458,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 				sep = ", ";
 			}
 		}
-		if (paramLength != 1) print(")");
+		if (useParens) print(")");
 		print(" -> ");
 		JCTree body = readObject(tree, "body", (JCTree) null);
 		if (body instanceof JCBlock) {
