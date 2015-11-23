@@ -21,7 +21,7 @@
 			this code will not be generated. By setting <code>callSuper</code> to <em>true</em>, you can include the <code>equals</code> and <code>hashCode</code> methods of your superclass in the generated methods. For <code>hashCode</code>, the result of <code>super.hashCode()</code> is included in the hash algorithm, and for <code>equals</code>, the generated method will return false if the super implementation thinks it is not equal to the passed in object. Be aware that not all <code>equals</code> implementations handle this situation properly. However, lombok-generated <code>equals</code> implementations <strong>do</strong> handle this situation properly, so you can safely call your superclass equals if it, too, has a lombok-generated <code>equals</code> method. If you have an explicit superclass you are forced to supply some value for <code>callSuper</code> to acknowledge that you've considered it; failure to do so results in a warning.<br />
 			</p><p>
 			Setting <code>callSuper</code> to <em>true</em> when you don't extend anything (you extend <code>java.lang.Object</code>) is a compile-time error, because it would turn the generated <code>equals()</code> and <code>hashCode()</code> implementations into having the same behaviour as simply inheriting these methods from <code>java.lang.Object</code>: only the same object will be equal to each other and will have the same hashCode. Not setting <code>callSuper</code> to <em>true</em> when you extend another class generates a warning, because unless the superclass has no (equality-important) fields, lombok cannot generate an implementation for you that takes into account the fields declared by your superclasses. You'll need to write your own implementations, or rely on the
-			<code>callSuper</code> chaining facility.
+			<code>callSuper</code> chaining facility. You can also use the <code>lombok.equalsAndHashCode.callSuper</code> config key.
 			</p><p>
 			<em>NEW in Lombok 0.10: </em>Unless your class is <code>final</code> and extends <code>java.lang.Object</code>, lombok generates a <code>canEqual</code> method
 			which means JPA proxies can still be equal to their base class, but subclasses that add new state don't break the equals contract. The complicated reasons for
@@ -49,6 +49,8 @@
 			<dl>
 			<dt><code>lombok.equalsAndHashCode.doNotUseGetters</code> = [<code>true</code> | <code>false</code>] (default: false)</dt>
 			<dd>If set to <code>true</code>, lombok will access fields directly instead of using getters (if available) when generating <code>equals</code> and <code>hashCode</code> methods. The annotation parameter '<code>doNotUseGetters</code>', if explicitly specified, takes precedence over this setting.</dd>
+			<dt><code>lombok.equalsAndHashCode.callSuper</code> = [<code>call</code> | <code>skip</code> | <code>warn</code>] (default: warn)</dt>
+			<dd>If set to <code>call</code>, lombok will generate calls to the superclass implementation of <code>hashCode</code> and <code>equals</code> if your class extends something. If set to <code>skip</code> no such calls are generated. The default behaviour is like <code>skip</code>, with an additional warning.</dd>
 			<dt><code>lombok.equalsAndHashCode.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)</dt>
 			<dd>Lombok will flag any usage of <code>@EqualsAndHashCode</code> as a warning or error if configured.</dd>
 			</dl>
