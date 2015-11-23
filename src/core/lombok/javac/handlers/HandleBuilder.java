@@ -666,7 +666,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					node.addError("The singular must be specified explicitly (e.g. @Singular(\"task\")) because auto singularization is disabled.");
 					explicitSingular = pluralName.toString();
 				} else {
-					explicitSingular = autoSingularize(node.getName());
+					explicitSingular = autoSingularize(pluralName.toString());
 					if (explicitSingular == null) {
 						node.addError("Can't singularize this name; please specify the singular explicitly (i.e. @Singular(\"sheep\"))");
 						explicitSingular = pluralName.toString();
