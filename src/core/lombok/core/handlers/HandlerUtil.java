@@ -37,6 +37,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.Singleton;
 import lombok.ToString;
 import lombok.Value;
 import lombok.core.AST;
@@ -163,7 +164,8 @@ public class HandlerUtil {
 			Arrays.<Class<? extends java.lang.annotation.Annotation>>asList(
 			Getter.class, Setter.class, Wither.class, ToString.class, EqualsAndHashCode.class, 
 			RequiredArgsConstructor.class, AllArgsConstructor.class, NoArgsConstructor.class, 
-			Data.class, Value.class, lombok.experimental.Value.class, FieldDefaults.class));
+			Data.class, Value.class, lombok.experimental.Value.class, FieldDefaults.class,
+			Singleton.class));
 	
 	/**
 	 * Given the name of a field, return the 'base name' of that field. For example, {@code fFoobar} becomes {@code foobar} if {@code f} is in the prefix list.
