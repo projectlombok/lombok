@@ -22,11 +22,9 @@
 package lombok.javac.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
-import static lombok.javac.handlers.JavacHandlerUtil.injectField;
-import static lombok.javac.handlers.JavacHandlerUtil.injectMethod;
-import static lombok.javac.handlers.JavacHandlerUtil.injectType;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,6 +44,7 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
+import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
@@ -53,8 +52,11 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
+import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
+import lombok.javac.handlers.HandleConstructor;
+import lombok.javac.handlers.HandleConstructor.SkipIfConstructorExists;
 import lombok.core.AnnotationValues;
 import lombok.experimental.Singleton;
 import lombok.experimental.Tolerate;
@@ -64,6 +66,8 @@ import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.HandleLog.LoggingFramework;
 import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
+
+import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleSingleton extends JavacAnnotationHandler<Singleton> {
@@ -82,13 +86,25 @@ public class HandleSingleton extends JavacAnnotationHandler<Singleton> {
 		
 		JCClassDecl type = null;
 		if (typeNode.get() instanceof JCClassDecl) type = (JCClassDecl) typeNode.get();
-		long modifiers = type == null ? 0 : type.mods.flags;
-		boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION | Flags.ENUM)) != 0;
-		
-		if (type == null || notAClass) {
-		  annotationNode.addError("@Singleton is only supported on a class.");
+		boolean isUsedOnClass = isAnnotationUsedOnClass(type, annotationNode);
+		if (! isUsedOnClass) {
 		  return;
 		}
+		
+		if (nullaryConstructorExists(typeNode, annotationNode) == MemberExistsResult.NOT_EXISTS) {
+      HandleConstructor constrHandler = new HandleConstructor();
+      java.util.List<JavacNode> uninitializedFinalFields = uninitializedFinalFields(typeNode);
+      if (uninitializedFinalFields.isEmpty()) {
+        constrHandler.generateConstructor(typeNode, AccessLevel.PRIVATE, List.<JCAnnotation>nil(), List.<JavacNode>nil(), true, null, SkipIfConstructorExists.NO, false, annotationNode);
+      } else {
+        java.util.List<String> fieldNames = new ArrayList<String>();
+        for (JavacNode field : uninitializedFinalFields) {
+          fieldNames.add(field.getName());
+        }
+        annotationNode.addError("Could not create a nullary constructor. The final fields: " + fieldNames + " are not initialized.");
+        return;
+      }
+    }
 		
 		String staticGetterName = annotationNode.getAst().readConfiguration(ConfigurationKeys.SINGLETON_STATIC_GETTER_NAME);
     if (staticGetterName == null) staticGetterName = "getInstance";
@@ -108,8 +124,48 @@ public class HandleSingleton extends JavacAnnotationHandler<Singleton> {
 		case LAZY:
 		  handleLazyInstantiation(ast, typeNode, annotationNode, type, staticGetterName);
 		  break;
+		default:
+		  annotationNode.addWarning("Invalid instantiation style: '" + staticGetterName + "'.");
+		  break;
 		}
 	}
+	
+	private java.util.List<JavacNode> uninitializedFinalFields(JavacNode typeNode) {
+	  java.util.List<JavacNode> fields = new ArrayList<JavacNode>();
+    for (JavacNode child : typeNode.down()) {
+      if (child.getKind() != Kind.FIELD) continue;
+      JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
+      if (((fieldDecl.mods.flags & ClassFileConstants.AccFinal) != 0) && fieldDecl.init == null) {
+        fields.add(child);
+      }
+    }
+    return fields;
+  }
+
+	/**
+   * Checks if the given type declaration corresponds to that of a class.
+   * 
+   * <p>
+   * Also adds an error message to the given annotation node if the type declaration
+   * is not that of a class.
+   * 
+   * @param type  the type declaration to check
+   * @param annotationNode  the annotation node to add an error message to if the
+   * given type declaration does not correspond to that of a class
+   * @return  {@code true} if the given type declaration is that of a class; {@code false}
+   * otherwise
+   */
+  boolean isAnnotationUsedOnClass(JCClassDecl type, JavacNode annotationNode) {
+    long modifiers = type == null ? 0 : type.mods.flags;
+		boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION | Flags.ENUM)) != 0;
+		
+		if (type == null || notAClass) {
+		  annotationNode.addError("@Singleton is only supported on a class.");
+		  return false;
+		} else {
+		  return true;
+		}
+  }
 	
 	/**
    * Handles a request to eagerly instantiate the Singleton class by creating
@@ -173,25 +229,23 @@ public class HandleSingleton extends JavacAnnotationHandler<Singleton> {
   
   private void handleLazyInstantiation(JCAnnotation source, JavacNode typeNode, JavacNode annotationNode,
       JCClassDecl type, String staticGetterName) {
-    /*String holderClassName = annotationNode.getAst().readConfiguration(ConfigurationKeys.SINGLETON_HOLDER_CLASS_NAME);
+    String holderClassName = annotationNode.getAst().readConfiguration(ConfigurationKeys.SINGLETON_HOLDER_CLASS_NAME);
     if (holderClassName == null) holderClassName = "SingletonHolder";
-    if (!holderClassName.isEmpty()) {
-      if (!checkName("holderClassName", holderClassName, annotationNode)) return;
+    if (! holderClassName.isEmpty()) {
+      if (! checkName("holderClassName", holderClassName, annotationNode)) return;
     }
-    
     JavacNode holderType = findInnerClass(typeNode, holderClassName);
     if (holderType == null) {
       holderType = makeHolderClass(source, typeNode, holderClassName);
-      FieldDeclaration holderInstanceField = createField(source, "INSTANCE", typeNode);
-      EclipseNode heldInstance = injectField(holderType, holderInstanceField);
-      
-      MethodDeclaration md = generateGetterMethod(staticGetterName, typeNode, type.typeParameters, source, holderClassName, heldInstance);
-      injectMethod(typeNode, md);
-      typeNode.rebuild();
+      JCTree tree = annotationNode.get();
+      JCVariableDecl holderInstanceField = createField(typeNode, tree, type, "INSTANCE");
+      JavacNode heldInstance = injectField(holderType, holderInstanceField);
+      JCMethodDecl getterMethodDeclaration = generateGetterMethod(type, staticGetterName, heldInstance.getTreeMaker(), tree, heldInstance);
+      injectMethod(typeNode, getterMethodDeclaration);
     } else {
       annotationNode.addWarning("The Singleton holder inner class '" + holderClassName + "' already exists.");
       return;
-    }*/
+    }
   }
   
   /**
@@ -205,12 +259,11 @@ public class HandleSingleton extends JavacAnnotationHandler<Singleton> {
    * reference
    */
   private JavacNode makeHolderClass(JCAnnotation ast, JavacNode parent, String holderClassName) {
-    /*JCClassDecl parentTypeDecl = (JCClassDecl) parent.get();
-    JCClassDecl holder = new JCClassDecl(parentTypeDecl.compilationResult);
-    
-    
-    return injectType(parent, holder);*/
-    return null;
+    JavacTreeMaker maker = parent.getTreeMaker();
+    int modifiers = Flags.PRIVATE | Flags.STATIC | Flags.FINAL;
+    JCModifiers mods = maker.Modifiers(modifiers);
+    JCClassDecl holder = maker.ClassDef(mods, parent.toName(holderClassName), copyTypeParams(maker, List.<JCTypeParameter>nil()), null, List.<JCExpression>nil(), List.<JCTree>nil());
+    return injectType(parent, holder);
   }
   
   /**
@@ -229,6 +282,53 @@ public class HandleSingleton extends JavacAnnotationHandler<Singleton> {
       if (Arrays.equals(td.name.toString().toCharArray(), c)) return child;
     }
     return null;
+  }
+  
+  /**
+   * Checks if there is a nullary constructor.
+   * 
+   * <p>
+   * Also adds a warning if the default constructor is not {@code private}.
+   * 
+   * @param typeNode  the type node the annotation is declared on
+   * @param annotationNode  the annotation node
+   */
+  private static MemberExistsResult nullaryConstructorExists(JavacNode typeNode, JavacNode annotationNode) {
+    typeNode = upToTypeNode(typeNode);
+    
+    boolean nonNullaryConstructorWarningAdded = false;
+    
+    if (typeNode != null && typeNode.get() instanceof JCClassDecl) for (JCTree def : ((JCClassDecl)typeNode.get()).defs) {
+      if (def instanceof JCMethodDecl) {
+        JCMethodDecl md = (JCMethodDecl) def;
+        if (md.name.contentEquals("<init>")) {
+          if (md.params.size() != 0) {
+            if (! nonNullaryConstructorWarningAdded) {
+              annotationNode.addWarning("At least one non-nullary constructor exists for this type. Check the need for it.");
+              nonNullaryConstructorWarningAdded = true;
+            }
+            continue;
+          }
+            
+          boolean isDefaultConstrPrivate = ((md.mods.flags & Modifier.PRIVATE) != 0) ? true : false;
+          if (! isDefaultConstrPrivate) {
+            boolean constrGenerated = true;
+            if (constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) {
+              constrGenerated = false;
+            }
+            new HandleConstructor().generateConstructor(
+                typeNode, AccessLevel.PRIVATE, List.<JCAnnotation>nil(), List.<JavacNode>nil(), true, null, SkipIfConstructorExists.YES, false, annotationNode);
+            if (! constrGenerated) {
+              annotationNode.addWarning("The nullary constructor is not private. Consider marking it private.");
+            }
+          }
+            
+          return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
+        }
+      }
+    }
+    
+    return MemberExistsResult.NOT_EXISTS;
   }
   
 }

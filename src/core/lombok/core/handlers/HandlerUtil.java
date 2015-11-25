@@ -37,7 +37,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.Singleton;
+import lombok.experimental.Singleton;
 import lombok.ToString;
 import lombok.Value;
 import lombok.core.AST;

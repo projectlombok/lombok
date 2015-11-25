@@ -26,8 +26,10 @@ import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
@@ -37,6 +39,7 @@ import lombok.core.AST.Kind;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
+import lombok.eclipse.handlers.HandleConstructor.SkipIfConstructorExists;
 import lombok.experimental.Singleton;
 import lombok.experimental.Tolerate;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -62,7 +65,7 @@ import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
 import org.mangosdk.spi.ProviderFor;
 
 /**
- * Handles the {@code lombok.Singleton} annotation for eclipse.
+ * Handles the {@code lombok.experimental.Singleton} annotation for eclipse.
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleSingleton extends EclipseAnnotationHandler<Singleton> {
@@ -74,16 +77,22 @@ public class HandleSingleton extends EclipseAnnotationHandler<Singleton> {
 		
 		TypeDeclaration type = null;
 		if (typeNode.get() instanceof TypeDeclaration) type = (TypeDeclaration) typeNode.get();
-		boolean isUsedOnClass = isUsedOnClass(type, annotationNode);
+		boolean isUsedOnClass = isAnnotationUsedOnClass(type, annotationNode);
 		if (! isUsedOnClass) return;
 		
-		if (nonDefaultConstructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) {
-      annotationNode.addWarning("A non-default constructor exists. Consider removing it for the default constructor." + nonDefaultConstructorExists(typeNode));
-    }
-		
-		if (defaultConstructorExists(typeNode, annotationNode) == MemberExistsResult.NOT_EXISTS) {
-      annotationNode.addError("A default constructor does not exist. Consider removing any non-default constructor for the default one.");
-      return;
+		if (nullaryConstructorExists(typeNode, annotationNode) == MemberExistsResult.NOT_EXISTS) {
+		  HandleConstructor constrHandler = new HandleConstructor();
+		  List<EclipseNode> uninitializedFinalFields = uninitializedFinalFields(typeNode);
+		  if (uninitializedFinalFields.isEmpty()) {
+		    constrHandler.generateConstructor(typeNode, AccessLevel.PRIVATE, new ArrayList<EclipseNode>(), true, null, SkipIfConstructorExists.NO, null, new ArrayList<Annotation>(), annotationNode);
+		  } else {
+		    List<String> fieldNames = new ArrayList<String>();
+		    for (EclipseNode field : uninitializedFinalFields) {
+		      fieldNames.add(field.getName());
+		    }
+		    annotationNode.addError("Could not create a nullary constructor. The final fields: " + fieldNames + " are not initialized.");
+		    return;
+		  }
     }
 		
 		String staticGetterName = annotationNode.getAst().readConfiguration(ConfigurationKeys.SINGLETON_STATIC_GETTER_NAME);
@@ -105,6 +114,18 @@ public class HandleSingleton extends EclipseAnnotationHandler<Singleton> {
       return;
     }
 	}
+  
+  private List<EclipseNode> uninitializedFinalFields(EclipseNode typeNode) {
+    List<EclipseNode> fields = new ArrayList<EclipseNode>();
+    for (EclipseNode child : typeNode.down()) {
+      if (child.getKind() != Kind.FIELD) continue;
+      FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
+      if (((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) && fieldDecl.initialization == null) {
+        fields.add(child);
+      }
+    }
+    return fields;
+  }
 
   /**
    * Checks if a getter method with the given name already exists.
@@ -141,7 +162,7 @@ public class HandleSingleton extends EclipseAnnotationHandler<Singleton> {
    * @return  {@code true} if the given type declaration is that of a class; {@code false}
    * otherwise
    */
-  private boolean isUsedOnClass(TypeDeclaration type, EclipseNode annotationNode) {
+  private boolean isAnnotationUsedOnClass(TypeDeclaration type, EclipseNode annotationNode) {
     int modifiers = type == null ? 0 : type.modifiers;
 		boolean notAClass = (modifiers &
 				(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation | ClassFileConstants.AccEnum)) != 0;
@@ -269,24 +290,6 @@ public class HandleSingleton extends EclipseAnnotationHandler<Singleton> {
   }
 	
 	/**
-   * Finds a field with the given name.
-   * 
-   * @param parent  the enclosing node
-   * @param name  the name of the field
-   * @return  the inner class with the given field; {@code null}
-   * if none was found
-   */
-	private EclipseNode findField(EclipseNode parent, String name) {
-    char[] c = name.toCharArray();
-    for (EclipseNode child : parent.down()) {
-      if (child.getKind() != Kind.FIELD) continue;
-      FieldDeclaration td = (FieldDeclaration) child.get();
-      if (Arrays.equals(td.name, c)) return child;
-    }
-    return null;
-  }
-	
-	/**
 	 * Creates a type reference given the type name.
 	 * 
 	 * @param typeName  the reference type name
@@ -342,7 +345,7 @@ public class HandleSingleton extends EclipseAnnotationHandler<Singleton> {
     TypeDeclaration parentTypeDecl = (TypeDeclaration) parent.get();
     TypeDeclaration holder = new TypeDeclaration(parentTypeDecl.compilationResult);
     holder.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-    holder.modifiers |= ClassFileConstants.AccPublic;
+    holder.modifiers |= ClassFileConstants.AccPrivate;
     holder.modifiers |= ClassFileConstants.AccStatic;
     holder.modifiers |= ClassFileConstants.AccFinal;
     holder.name = holderClassName.toCharArray();
@@ -352,7 +355,7 @@ public class HandleSingleton extends EclipseAnnotationHandler<Singleton> {
   }
 	
 	/**
-   * Checks if there is a default constructor.
+   * Checks if there is a nullary constructor.
    * 
    * <p>
    * Also adds a warning if the default constructor is not {@code private}.
@@ -360,52 +363,41 @@ public class HandleSingleton extends EclipseAnnotationHandler<Singleton> {
    * @param typeNode  the type node the annotation is declared on
    * @param annotationNode  the annotation node
    */
-  private static MemberExistsResult defaultConstructorExists(EclipseNode typeNode, EclipseNode annotationNode) {
+  private static MemberExistsResult nullaryConstructorExists(EclipseNode typeNode, EclipseNode annotationNode) {
     while (typeNode != null && !(typeNode.get() instanceof TypeDeclaration)) {
       typeNode = typeNode.up();
     }
+    
+    boolean nonNullaryConstructorWarningAdded = false;
     
     if (typeNode != null && typeNode.get() instanceof TypeDeclaration) {
       TypeDeclaration typeDecl = (TypeDeclaration)typeNode.get();
       if (typeDecl.methods != null) for (AbstractMethodDeclaration def : typeDecl.methods) {
         if (def instanceof ConstructorDeclaration) {
-          if ((def.bits & ASTNode.IsDefaultConstructor) == 0) continue;
+          if (def.arguments != null) {
+            if (! nonNullaryConstructorWarningAdded) {
+              annotationNode.addWarning("At least one non-nullary constructor exists for this type. Check the need for it.");
+              nonNullaryConstructorWarningAdded = true;
+            }
+            continue;
+          }
           
-          boolean isDefaultConstrPrivate = ((typeDecl.modifiers & Modifier.PRIVATE) != 0) ? true : false;
+          boolean isDefaultConstrPrivate = ((def.modifiers & Modifier.PRIVATE) != 0) ? true : false;
           if (! isDefaultConstrPrivate) {
-            annotationNode.addWarning("The default constructor is not private! Considering marking it private.");
+            boolean constrGenerated = true;
+            if (constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) {
+              constrGenerated = false;
+            }
+            new HandleConstructor().generateConstructor(
+                typeNode, AccessLevel.PRIVATE, new ArrayList<EclipseNode>(), true, null, SkipIfConstructorExists.YES, null, new ArrayList<Annotation>(), annotationNode);
+            if (! constrGenerated) {
+              annotationNode.addWarning("The nullary constructor is not private. Consider marking it private.");
+            }
           }
           return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
         }
       }
     }
-    
-    return MemberExistsResult.NOT_EXISTS;
-  }
-  
-  /**
-   * Checks if there is a non-default constructor.
-   * 
-   * @param typeNode  the type node the annotation is declared on
-   */
-  private static MemberExistsResult nonDefaultConstructorExists(EclipseNode typeNode) {
-    while (typeNode != null && !(typeNode.get() instanceof TypeDeclaration)) {
-      typeNode = typeNode.up();
-    }
-    
-    if (typeNode != null && typeNode.get() instanceof TypeDeclaration) {
-      TypeDeclaration typeDecl = (TypeDeclaration)typeNode.get();
-      if (typeDecl.methods != null) for (AbstractMethodDeclaration def : typeDecl.methods) {
-        if (def instanceof ConstructorDeclaration) {
-          System.out
-              .println("Checking: " + def);
-          if ((def.bits & ASTNode.IsDefaultConstructor) != 0) continue;
-          
-          return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
-        }
-      }
-    }
-    
     return MemberExistsResult.NOT_EXISTS;
   }
 }
