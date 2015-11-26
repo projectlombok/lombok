@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html><head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="../../logi/reset.css" />
+	<link rel="stylesheet" type="text/css" href="../features.css" />
+	<link rel="shortcut icon" href="../../favicon.ico" type="image/x-icon" />
+	<meta name="description" content="Spice up your java" />
+	<title>EXPERIMENTAL - @Singleton</title>
+</head><body><div id="pepper">
+	<div class="minimumHeight"></div>
+	<div class="meat">
+		<div class="header"><a href="../../index.html">Project Lombok</a></div>
+		<h1>@Singleton</h1>
+		<div class="byline">Singletons implemented right.</div>
+		<div class="since">
+			<h3>Since</h3>
+			<p>
+				@Singleton was introduced as experimental feature in lombok v1.16.7.
+			</p>
+		</div>
+		<div class="experimental">
+			<h3>Experimental</h3>
+			<p>
+			Experimental because:
+			<ul>
+				<li>New feature; unsure if this busts enough boilerplate</li>
+			</ul>
+			Current status: <em>positive</em> - Currently we feel this feature may move out of experimental status with no or minor changes soon.
+		</div>
+		<div class="overview">
+			<h3>Overview</h3>
+			<p>
+				The <code>@Singleton</code> annotation can be used to mark a class <code>Singleton</code> so that only instance of the type can ever
+				exist. A <code>public</code>, <code>static</code> getter method named <code>getInstance()</code> will be created for the clients to obtain the <code>Singleton</code> instance created.
+			</p>
+			</p><p>
+				The <code>@Singleton</code> comes in two flavors/styles - eager and lazy.
+				<ul>
+				    <li>
+						<b>Eager</b> (<code>style = Style.EAGER</code>) <br/>
+						Creates the <code>Singleton</code> instance eagerly during the class loading by declaring and initializing a static member variable (generated and
+						marked <code>private</code> by default) of the type. This is inherently thread-safe.<br/><br/>
+					</li>
+					<li>
+						<b>Lazy</b> (<code>style = Style.LAZY</code>) <br/>
+						Creates the <code>Singleton</code> instance lazily (on-demand) by declaring a <code>private</code> nested class containing the instance. It takes advantage of language guarantees about class initialization that the nested class is referenced no earlier (and therefore loaded no earlier by the class loader) than the moment that getInstance() is called (thus making it a thread-safe implementation).
+					</li>
+				</ul>
+			</p><p>
+				Any non-nullary constructor for such a class wouldn't make sense, so despite attempting to and possibly creating a nullary constructor (this is what the <code>
+				getInstance()</code> method calls to create the <code>Singleton</code> instance), it also warns the user of the presence of non-nullary constructor(s).
+			</p>
+		</div>
+		<div class="snippets">
+			<div class="pre">
+				<h3>With Lombok</h3>
+				<div class="snippet">@HTML_PRE@</div>
+			</div>
+			<div class="sep"></div>
+			<div class="post">
+				<h3>Vanilla Java</h3>
+				<div class="snippet">@HTML_POST@</div>
+			</div>
+		</div>
+		<div style="clear: left;"></div>
+		<div class="overview confKeys">
+			<h3>Supported configuration keys:</h3>
+			<dl>
+			<dt><code>lombok.singleton.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)</dt>
+			<dd>Lombok will flag any usage of <code>@Singleton</code> as a warning or error if configured.</dd>
+			<dt><code>lombok.singleton.staticGetterName</code> = <em>A name for the getter of the <code>Singleton</code> instance</em> (default: <code>getInstance</code>)</dt>
+			<dd>Depending on the value configured, the clients of the type will be able to obtain the <code>Singleton</code> instance like: 
+			<code>SingletonType.getInstance()</code></dd>
+			<dt><code>lombok.singleton.instanceFieldName</code> = <em>A name for the <code>Singleton</code> instance field</em> (default: <code>INSTANCE</code>)</dt>
+			<dd>This shouldn't matter unless the user wants to configure a different field with the default name. In any case, the field with the configured name
+			will be used by the getter to return the <code>Singleton</code> instance</dd>
+			<dt><code>lombok.singleton.holderClassName</code> = <em>A name for the <code>Singleton</code> holder class</em> (default: <code>SingletonHolder</code>)</dt>
+			<dd>This shouldn't matter unless the user wants to configure a different class with the default name. In any case, the nested class with the configured name
+			will be used to hold the <code>Singleton</code> instance in the <code>Lazy</code> style</dd>
+			</dl>
+		</div>
+		<div class="overview">
+			<h3>Small print</h3><div class="smallprint">
+				<p>
+					Any user typed nullary/non-nullary constructor will not be modified to make them private - instead a simple warning will be emitted. Also warns
+					when a holder class (when the lazy style is used, of course) with the same name as the one that <code>@Singleton</code> needs is already present leaving the class untouched. Any uninitialized
+					final fields must be initialized through a user typed nullary constructor. Otherwise the compilation will fail with an appropriate error. If a field with
+					the name of the instance field that <code>@Singleton</code> attempts to generate already exists, no action is taken (a compilation error will result if
+					it's of a different type).
+				</p>
+			</div>
+		</div>
+		<div class="footer">
+			<a href="index.html">Back to experimental features</a> | <a href="ExtensionMethod.html">Previous feature (@ExtensionMethod)</a> | <a href="Delegate.html">Next feature (@Delegate)</a><br />
+			<a href="../../credits.html" class="creditsLink">credits</a> | <span class="copyright">Copyright &copy; 2009-2015 The Project Lombok Authors, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT license</a>.</span>
+		</div>
+		<div style="clear: both;"></div>
+	</div>
+</div>
+<script type="text/javascript">
+	var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+	document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+	try {
+		var pageTracker = _gat._getTracker("UA-9884254-1");
+		pageTracker._trackPageview();
+	} catch(err) {}
+</script>
+</body></html>
