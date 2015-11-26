@@ -84,6 +84,9 @@ public class HandleSingleton extends JavacAnnotationHandler<Singleton> {
 		  return;
 		}
 		
+		boolean sanityCheckResult = sanityCheckForMethodGeneratingAnnotationsOnXClass(typeNode, annotationNode, "singleton", INVALID_ON_SINGLETONS);
+		if (! sanityCheckResult) return;
+		
 		JCClassDecl type = null;
 		if (typeNode.get() instanceof JCClassDecl) type = (JCClassDecl) typeNode.get();
 		boolean isUsedOnClass = isAnnotationUsedOnClass(type, annotationNode);

@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.ConfigurationKeys;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -166,6 +167,14 @@ public class HandlerUtil {
 			RequiredArgsConstructor.class, AllArgsConstructor.class, NoArgsConstructor.class, 
 			Data.class, Value.class, lombok.experimental.Value.class, FieldDefaults.class,
 			Singleton.class));
+	
+	@SuppressWarnings({"all", "unchecked", "deprecation"})
+  public static final List<Class<? extends java.lang.annotation.Annotation>> INVALID_ON_SINGLETONS = Collections.unmodifiableList(
+      Arrays.<Class<? extends java.lang.annotation.Annotation>>asList(
+      Wither.class, ToString.class, EqualsAndHashCode.class, 
+      RequiredArgsConstructor.class, AllArgsConstructor.class, NoArgsConstructor.class, 
+      Data.class, Value.class, lombok.experimental.Value.class, FieldDefaults.class,
+      Builder.class, lombok.experimental.Builder.class));
 	
 	/**
 	 * Given the name of a field, return the 'base name' of that field. For example, {@code fFoobar} becomes {@code foobar} if {@code f} is in the prefix list.

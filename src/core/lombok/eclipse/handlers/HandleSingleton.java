@@ -79,6 +79,7 @@ public class HandleSingleton extends EclipseAnnotationHandler<Singleton> {
 		if (typeNode.get() instanceof TypeDeclaration) type = (TypeDeclaration) typeNode.get();
 		boolean isUsedOnClass = isAnnotationUsedOnClass(type, annotationNode);
 		if (! isUsedOnClass) return;
+		sanityCheckForMethodGeneratingAnnotationsOnXClass(typeNode, annotationNode, "singleton", INVALID_ON_SINGLETONS);
 		
 		if (nullaryConstructorExists(typeNode, annotationNode) == MemberExistsResult.NOT_EXISTS) {
 		  HandleConstructor constrHandler = new HandleConstructor();

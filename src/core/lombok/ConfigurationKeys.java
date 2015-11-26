@@ -446,6 +446,13 @@ public class ConfigurationKeys {
 	// ----- Singleton -----
 	
 	/**
+	 * lombok configuration: {@code lombok.singleton.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @Singleton} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> SINGLETON_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.singleton.flagUsage", "Emit a warning or error if @Singleton is used.") {};
+	
+	/**
    * lombok configuration: {@code lombok.singleton.staticGetterName} = &lt;String: aJavaIdentifier&gt; (Default: {@code getInstance}).
    * 
    * If set the various singleton annotations (which make an instance field) will use the stated identifier instead of {@code getInstance} as the getter name.
@@ -465,13 +472,6 @@ public class ConfigurationKeys {
    * If set the various singleton annotations (which make an instance field) will use the stated identifier instead of {@code SingletonHolder} as the holder class name.
    */
   public static final ConfigurationKey<String> SINGLETON_HOLDER_CLASS_NAME = new ConfigurationKey<String>("lombok.singleton.holderClassName", "Use this name for the generated logger fields (default: 'log').") {};
-  
-  /**
-   * lombok configuration: {@code lombok.singleton.flagUsage} = {@code WARNING} | {@code ERROR}.
-   * 
-   * If set, <em>any</em> usage of {@code @Singleton} results in a warning / error.
-   */
-  public static final ConfigurationKey<FlagUsageType> SINGLETON_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.singleton.flagUsage", "Emit a warning or error if @Singleton is used.") {};
   
 	// ----- Configuration System -----
 	
