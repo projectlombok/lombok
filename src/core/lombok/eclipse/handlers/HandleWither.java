@@ -25,7 +25,6 @@ import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,6 +56,7 @@ import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
+import org.eclipse.jdt.internal.compiler.lookup.ExtraCompilerModifiers;
 import org.mangosdk.spi.ProviderFor;
 
 @ProviderFor(EclipseAnnotationHandler.class)
@@ -163,6 +163,9 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 			return;
 		}
 		
+		EclipseNode typeNode = fieldNode.up();
+		boolean makeAbstract = typeNode != null && typeNode.getKind() == Kind.TYPE && (((TypeDeclaration) typeNode.get()).modifiers & ClassFileConstants.AccAbstract) != 0;
+		
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		TypeReference fieldType = copyType(field.type, source);
 		boolean isBoolean = isBoolean(fieldType);
@@ -208,17 +211,18 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		
 		int modifier = toEclipseModifier(level);
 		
-		MethodDeclaration method = createWither((TypeDeclaration) fieldNode.up().get(), fieldNode, witherName, modifier, sourceNode, onMethod, onParam);
+		MethodDeclaration method = createWither((TypeDeclaration) fieldNode.up().get(), fieldNode, witherName, modifier, sourceNode, onMethod, onParam, makeAbstract);
 		injectMethod(fieldNode.up(), method);
 	}
 	
-	public MethodDeclaration createWither(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {
+	public MethodDeclaration createWither(TypeDeclaration parent, EclipseNode fieldNode, String name, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam, boolean makeAbstract ) {
 		ASTNode source = sourceNode.get();
 		if (name == null) return null;
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
+		long p = (long) pS << 32 | pE;
 		MethodDeclaration method = new MethodDeclaration(parent.compilationResult);
+		if (makeAbstract) modifier = modifier | ClassFileConstants.AccAbstract | ExtraCompilerModifiers.AccSemicolonBody;
 		method.modifiers = modifier;
 		method.returnType = cloneSelfType(fieldNode, source);
 		if (method.returnType == null) return null;
@@ -228,7 +232,7 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 			deprecated = new Annotation[] { generateDeprecatedAnnotation(source) };
 		}
 		method.annotations = copyAnnotations(source, onMethod.toArray(new Annotation[0]), deprecated);
-		Argument param = new Argument(field.name, p, copyType(field.type, source), Modifier.FINAL);
+		Argument param = new Argument(field.name, p, copyType(field.type, source), ClassFileConstants.AccFinal);
 		param.sourceStart = pS; param.sourceEnd = pE;
 		method.arguments = new Argument[] { param };
 		method.selector = name.toCharArray();
@@ -237,49 +241,51 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		method.typeParameters = null;
 		method.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		
-		List<Expression> args = new ArrayList<Expression>();
-		for (EclipseNode child : fieldNode.up().down()) {
-			if (child.getKind() != Kind.FIELD) continue;
-			FieldDeclaration childDecl = (FieldDeclaration) child.get();
-			// Skip fields that start with $
-			if (childDecl.name != null && childDecl.name.length > 0 && childDecl.name[0] == '$') continue;
-			long fieldFlags = childDecl.modifiers;
-			// Skip static fields.
-			if ((fieldFlags & ClassFileConstants.AccStatic) != 0) continue;
-			// Skip initialized final fields.
-			if (((fieldFlags & ClassFileConstants.AccFinal) != 0) && childDecl.initialization != null) continue;
-			if (child.get() == fieldNode.get()) {
-				args.add(new SingleNameReference(field.name, p));
-			} else {
-				args.add(createFieldAccessor(child, FieldAccess.ALWAYS_FIELD, source));
-			}
-		}
-		
-		AllocationExpression constructorCall = new AllocationExpression();
-		constructorCall.arguments = args.toArray(new Expression[0]);
-		constructorCall.type = cloneSelfType(fieldNode, source);
-		
-		Expression identityCheck = new EqualExpression(
-				createFieldAccessor(fieldNode, FieldAccess.ALWAYS_FIELD, source),
-				new SingleNameReference(field.name, p),
-				OperatorIds.EQUAL_EQUAL);
-		ThisReference thisRef = new ThisReference(pS, pE);
-		Expression conditional = new ConditionalExpression(identityCheck, thisRef, constructorCall);
-		Statement returnStatement = new ReturnStatement(conditional, pS, pE);
-		method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
-		method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
-		
 		Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
 		Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
-		List<Statement> statements = new ArrayList<Statement>(5);
-		if (nonNulls.length > 0) {
-			Statement nullCheck = generateNullCheck(field, sourceNode);
-			if (nullCheck != null) statements.add(nullCheck);
+		
+		if (!makeAbstract) {
+			List<Expression> args = new ArrayList<Expression>();
+			for (EclipseNode child : fieldNode.up().down()) {
+				if (child.getKind() != Kind.FIELD) continue;
+				FieldDeclaration childDecl = (FieldDeclaration) child.get();
+				// Skip fields that start with $
+				if (childDecl.name != null && childDecl.name.length > 0 && childDecl.name[0] == '$') continue;
+				long fieldFlags = childDecl.modifiers;
+				// Skip static fields.
+				if ((fieldFlags & ClassFileConstants.AccStatic) != 0) continue;
+				// Skip initialized final fields.
+				if (((fieldFlags & ClassFileConstants.AccFinal) != 0) && childDecl.initialization != null) continue;
+				if (child.get() == fieldNode.get()) {
+					args.add(new SingleNameReference(field.name, p));
+				} else {
+					args.add(createFieldAccessor(child, FieldAccess.ALWAYS_FIELD, source));
+				}
+			}
+			
+			AllocationExpression constructorCall = new AllocationExpression();
+			constructorCall.arguments = args.toArray(new Expression[0]);
+			constructorCall.type = cloneSelfType(fieldNode, source);
+			
+			Expression identityCheck = new EqualExpression(
+					createFieldAccessor(fieldNode, FieldAccess.ALWAYS_FIELD, source),
+					new SingleNameReference(field.name, p),
+					OperatorIds.EQUAL_EQUAL);
+			ThisReference thisRef = new ThisReference(pS, pE);
+			Expression conditional = new ConditionalExpression(identityCheck, thisRef, constructorCall);
+			Statement returnStatement = new ReturnStatement(conditional, pS, pE);
+			method.bodyStart = method.declarationSourceStart = method.sourceStart = source.sourceStart;
+			method.bodyEnd = method.declarationSourceEnd = method.sourceEnd = source.sourceEnd;
+			
+			List<Statement> statements = new ArrayList<Statement>(5);
+			if (nonNulls.length > 0) {
+				Statement nullCheck = generateNullCheck(field, sourceNode);
+				if (nullCheck != null) statements.add(nullCheck);
+			}
+			statements.add(returnStatement);
+			
+			method.statements = statements.toArray(new Statement[0]);
 		}
-		statements.add(returnStatement);
-		
-		method.statements = statements.toArray(new Statement[0]);
-		
 		param.annotations = copyAnnotations(source, nonNulls, nullables, onParam.toArray(new Annotation[0]));
 		
 		method.traverse(new SetGeneratedByVisitor(source), parent.scope);

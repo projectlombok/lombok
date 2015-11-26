@@ -74,6 +74,8 @@
 				<p>
 					Withers cannot be generated for static fields because that makes no sense.
 				</p><p>
+					Withers can be generated for abstract classes, but this generates an abstract method with the appropriate signature.
+				</p><p>
 					When applying <code>@Wither</code> to a type, static fields and fields whose name start with a $ are skipped.
 				</p><p>
 					For generating the method names, the first character of the field, if it is a lowercase character, is title-cased, otherwise, it is left unmodified.

@@ -150,7 +150,10 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		}
 	}
 	
-	public void createWitherForField(AccessLevel level, JavacNode fieldNode, JavacNode source, boolean whineIfExists, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	public void createWitherForField(AccessLevel level, JavacNode fieldNode, JavacNode source, boolean strictMode, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+		JavacNode typeNode = fieldNode.up();
+		boolean makeAbstract = typeNode != null && typeNode.getKind() == Kind.TYPE && (((JCClassDecl) typeNode.get()).mods.flags & Flags.ABSTRACT) != 0;
+		
 		if (fieldNode.getKind() != Kind.FIELD) {
 			fieldNode.addError("@Wither is only supported on a class or a field.");
 			return;
@@ -165,17 +168,23 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		}
 		
 		if ((fieldDecl.mods.flags & Flags.STATIC) != 0) {
-			fieldNode.addWarning("Not generating wither for this field: Withers cannot be generated for static fields.");
+			if (strictMode) {
+				fieldNode.addWarning("Not generating wither for this field: Withers cannot be generated for static fields.");
+			}
 			return;
 		}
 		
 		if ((fieldDecl.mods.flags & Flags.FINAL) != 0 && fieldDecl.init != null) {
-			fieldNode.addWarning("Not generating wither for this field: Withers cannot be generated for final, initialized fields.");
+			if (strictMode) {
+				fieldNode.addWarning("Not generating wither for this field: Withers cannot be generated for final, initialized fields.");
+			}
 			return;
 		}
 		
 		if (fieldDecl.name.toString().startsWith("$")) {
-			fieldNode.addWarning("Not generating wither for this field: Withers cannot be generated for fields starting with $.");
+			if (strictMode) {
+				fieldNode.addWarning("Not generating wither for this field: Withers cannot be generated for fields starting with $.");
+			}
 			return;
 		}
 		
@@ -184,7 +193,7 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 			case EXISTS_BY_LOMBOK:
 				return;
 			case EXISTS_BY_USER:
-				if (whineIfExists) {
+				if (strictMode) {
 					String altNameExpl = "";
 					if (!altName.equals(methodName)) altNameExpl = String.format(" (%s)", altName);
 					fieldNode.addWarning(
@@ -199,63 +208,68 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		
 		long access = toJavacModifier(level);
 		
-		JCMethodDecl createdWither = createWither(access, fieldNode, fieldNode.getTreeMaker(), source, onMethod, onParam);
-		injectMethod(fieldNode.up(), createdWither);
+		JCMethodDecl createdWither = createWither(access, fieldNode, fieldNode.getTreeMaker(), source, onMethod, onParam, makeAbstract);
+		injectMethod(typeNode, createdWither);
 	}
 	
-	public JCMethodDecl createWither(long access, JavacNode field, JavacTreeMaker maker, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	public JCMethodDecl createWither(long access, JavacNode field, JavacTreeMaker maker, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam, boolean makeAbstract) {
 		String witherName = toWitherName(field);
 		if (witherName == null) return null;
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
 		
-		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		List<JCAnnotation> nonNulls = findAnnotations(field, NON_NULL_PATTERN);
 		List<JCAnnotation> nullables = findAnnotations(field, NULLABLE_PATTERN);
 		
 		Name methodName = field.toName(witherName);
-		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(nonNulls).appendList(nullables);
-		
-		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, field.getContext());
-		JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
-		
-		JCExpression selfType = cloneSelfType(field);
-		if (selfType == null) return null;
-		
-		ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
-		for (JavacNode child : field.up().down()) {
-			if (child.getKind() != Kind.FIELD) continue;
-			JCVariableDecl childDecl = (JCVariableDecl) child.get();
-			// Skip fields that start with $
-			if (childDecl.name.toString().startsWith("$")) continue;
-			long fieldFlags = childDecl.mods.flags;
-			// Skip static fields.
-			if ((fieldFlags & Flags.STATIC) != 0) continue;
-			// Skip initialized final fields.
-			if (((fieldFlags & Flags.FINAL) != 0) && childDecl.init != null) continue;
-			if (child.get() == field.get()) {
-				args.append(maker.Ident(fieldDecl.name));
-			} else {
-				args.append(createFieldAccessor(maker, child, FieldAccess.ALWAYS_FIELD));
-			}
-		}
-		
-		JCNewClass newClass = maker.NewClass(null, List.<JCExpression>nil(), selfType, args.toList(), null);
-		JCExpression identityCheck = maker.Binary(CTC_EQUAL, createFieldAccessor(maker, field, FieldAccess.ALWAYS_FIELD), maker.Ident(fieldDecl.name));
-		JCConditional conditional = maker.Conditional(identityCheck, maker.Ident(field.toName("this")), newClass);
-		JCReturn returnStatement = maker.Return(conditional);
-		
-		if (nonNulls.isEmpty()) {
-			statements.append(returnStatement);
-		} else {
-			JCStatement nullCheck = generateNullCheck(maker, field, source);
-			if (nullCheck != null) statements.append(nullCheck);
-			statements.append(returnStatement);
-		}
 		
 		JCExpression returnType = cloneSelfType(field);
 		
-		JCBlock methodBody = maker.Block(0, statements.toList());
+		JCBlock methodBody = null;
+		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, field.getContext());
+		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(nonNulls).appendList(nullables);
+		
+		JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
+		
+		if (!makeAbstract) {
+			ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
+			
+			JCExpression selfType = cloneSelfType(field);
+			if (selfType == null) return null;
+			
+			ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
+			for (JavacNode child : field.up().down()) {
+				if (child.getKind() != Kind.FIELD) continue;
+				JCVariableDecl childDecl = (JCVariableDecl) child.get();
+				// Skip fields that start with $
+				if (childDecl.name.toString().startsWith("$")) continue;
+				long fieldFlags = childDecl.mods.flags;
+				// Skip static fields.
+				if ((fieldFlags & Flags.STATIC) != 0) continue;
+				// Skip initialized final fields.
+				if (((fieldFlags & Flags.FINAL) != 0) && childDecl.init != null) continue;
+				if (child.get() == field.get()) {
+					args.append(maker.Ident(fieldDecl.name));
+				} else {
+					args.append(createFieldAccessor(maker, child, FieldAccess.ALWAYS_FIELD));
+				}
+			}
+			
+			JCNewClass newClass = maker.NewClass(null, List.<JCExpression>nil(), selfType, args.toList(), null);
+			JCExpression identityCheck = maker.Binary(CTC_EQUAL, createFieldAccessor(maker, field, FieldAccess.ALWAYS_FIELD), maker.Ident(fieldDecl.name));
+			JCConditional conditional = maker.Conditional(identityCheck, maker.Ident(field.toName("this")), newClass);
+			JCReturn returnStatement = maker.Return(conditional);
+			
+			if (nonNulls.isEmpty()) {
+				statements.append(returnStatement);
+			} else {
+				JCStatement nullCheck = generateNullCheck(maker, field, source);
+				if (nullCheck != null) statements.append(nullCheck);
+				statements.append(returnStatement);
+			}
+			
+			methodBody = maker.Block(0, statements.toList());
+		}
 		List<JCTypeParameter> methodGenericParams = List.nil();
 		List<JCVariableDecl> parameters = List.of(param);
 		List<JCExpression> throwsClauses = List.nil();
@@ -266,6 +280,7 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		if (isFieldDeprecated(field)) {
 			annsOnMethod = annsOnMethod.prepend(maker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
 		}
+		if (makeAbstract) access = access | Flags.ABSTRACT;
 		JCMethodDecl decl = recursiveSetGeneratedBy(maker.MethodDef(maker.Modifiers(access, annsOnMethod), methodName, returnType,
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source.get(), field.getContext());
 		copyJavadoc(field, decl, CopyJavadoc.WITHER);

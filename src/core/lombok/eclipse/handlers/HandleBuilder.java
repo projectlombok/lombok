@@ -711,7 +711,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 					node.addError("The singular must be specified explicitly (e.g. @Singular(\"task\")) because auto singularization is disabled.");
 					explicitSingular = new String(pluralName);
 				} else {
-					explicitSingular = autoSingularize(node.getName());
+					explicitSingular = autoSingularize(new String(pluralName));
 					if (explicitSingular == null) {
 						node.addError("Can't singularize this name; please specify the singular explicitly (i.e. @Singular(\"sheep\"))");
 						explicitSingular = new String(pluralName);

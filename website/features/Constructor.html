@@ -37,7 +37,7 @@
 			To put annotations on the generated constructor, you can use <code>onConstructor=@__({@AnnotationsHere})</code>, but be careful; this is an experimental feature. For more details see the documentation on the <a href="experimental/onX.html">onX</a> feature.
 			</p><p>
 			Static fields are skipped by these annotations. Also, a <code>@java.beans.ConstructorProperties</code> annotation is added for all constructors with at least 1 argument,
-			which allows bean editor tools to call the generated constructors. <code>@ConstructorProperties</code> is now in Java 1.6, which means that if your code is intended for
+			which allows bean editor tools to call the generated constructors. <code>@ConstructorProperties</code> is new in Java 1.6, which means that if your code is intended for
 			compilation on Java 1.5, a compiler error will occur. <em>Running</em> on a JVM 1.5 should be no problem (the annotation will be ignored). To suppress the generation of
 			the <code>@ConstructorProperties</code> annotation, add a parameter to your annotation: <code>@AllArgsConstructor(suppressConstructorProperties=true)</code>. However,
 			as java 1.5, which has already been end-of-lifed, fades into obscurity, this parameter will eventually be removed. It has also been marked deprecated for this reason.

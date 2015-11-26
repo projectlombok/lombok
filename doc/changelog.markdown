@@ -6,6 +6,9 @@ Lombok Changelog
 * FEATURE: `@Builder` updates: The annotation can now be put on instance methods. [Issue #63](https://github.com/rzwitserloot/lombok/issues/63).
 * FEATURE: `@Builder` updates: `@Singular` now supports guava's ImmutableTable [Issue #937](https://github.com/rzwitserloot/lombok/issues/937).
 * FEATURE: A `lombok.config` key can now be used to make your fields `final` and/or `private`... __everywhere__. We'll be monitoring the performance impact of this for a while. We'll touch every source file if you turn these on, and even if you don't, we have to call into the lombok config system for every file.
+* FEATURE: A `lombok.config` key can now be used to set the default behaviour of `@EqualsAndHashCode` when generating methods for a class that extends something in regards to calling the superclass implementations of `equals` and `hashCode` or not. [Issue #965](https://github.com/rzwitserloot/lombok/issues/965).
+* FEATURE: Putting `@Wither` on abstract classes now generates something slightly more useful: An abstract wither method. [Issue #945](https://github.com/rzwitserloot/lombok/issues/945).
+* BUGFIX: lambdas with 1 argument that has an explicit type did not pretty print correctly. [Issue #972](https://github.com/rzwitserloot/lombok/issues/972).
 * BUGFIX: `@Value` and `@FieldDefaults` no longer make uninitialized static fields final. [Issue #928](https://github.com/rzwitserloot/lombok/issues/928).
 * BUGFIX: When using delombok, a source file with only `@NonNull` annotations on parameters as lombok feature would not get properly delomboked.  [Issue #950](https://github.com/rzwitserloot/lombok/issues/950).
 * ENHANCEMENT: Putting `@NonNull` on a parameter of an abstract method no longer generates a warning, to allow you to use this annotation to document intended behaviour [Issue #807](https://github.com/rzwitserloot/lombok/issues/807).
