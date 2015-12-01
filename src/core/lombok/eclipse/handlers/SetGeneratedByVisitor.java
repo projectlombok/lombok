@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2013 The Project Lombok Authors.
+ * Copyright (C) 2011-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -365,6 +365,11 @@ public final class SetGeneratedByVisitor extends ASTVisitor {
 	}
 	
 	@Override public boolean visit(ArrayInitializer node, BlockScope scope) {
+		fixPositions(setGeneratedBy(node, source));
+		return super.visit(node, scope);
+	}
+	
+	@Override public boolean visit(ArrayInitializer node, ClassScope scope) {
 		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
@@ -928,4 +933,18 @@ public final class SetGeneratedByVisitor extends ASTVisitor {
 		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);
 	}
+
+// missing methods
+//	public boolean visit(MarkerAnnotation node, ClassScope scope){ return true;}
+//	public boolean visit(MemberValuePair node, ClassScope scope){ return true;}
+//	public boolean visit(NormalAnnotation node, ClassScope scope){ return true;}
+//	public boolean visit(SingleMemberAnnotation node, ClassScope scope){ return true;}
+	
+// missing methods from later versions
+//	public boolean visit(UnionTypeReference node, BlockScope scope){ return true;}
+//	public boolean visit(UnionTypeReference node, ClassScope scope){ return true;}
+//	public boolean visit(LambdaExpression node, BlockScope scope){ return true;}
+//	public boolean visit(ReferenceExpression node, BlockScope scope){ return true;}
+//	public boolean visit(IntersectionCastTypeReference node, ClassScope scope){ return true;}
+//	public boolean visit(IntersectionCastTypeReference node, BlockScope scope){ return true;}
 }
