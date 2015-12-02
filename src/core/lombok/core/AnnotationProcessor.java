@@ -75,9 +75,9 @@ public class AnnotationProcessor extends AbstractProcessor {
 			
 			try {
 				ClassLoader classLoader = findAndPatchClassLoader(procEnv);
-				processor = (Processor)Class.forName("lombok.javac.apt.Processor", false, classLoader).newInstance();
+				processor = (Processor) Class.forName("lombok.javac.apt.LombokProcessor", false, classLoader).newInstance();
 			} catch (Exception e) {
-				delayedWarnings.add("You found a bug in lombok; lombok.javac.apt.Processor is not available. Lombok will not run during this compilation: " + trace(e));
+				delayedWarnings.add("You found a bug in lombok; lombok.javac.apt.LombokProcessor is not available. Lombok will not run during this compilation: " + trace(e));
 				return false;
 			} catch (NoClassDefFoundError e) {
 				delayedWarnings.add("Can't load javac processor due to (most likely) a class loader problem: " + trace(e));
@@ -86,7 +86,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 			try {
 				processor.init(procEnv);
 			} catch (Exception e) {
-				delayedWarnings.add("lombok.javac.apt.Processor could not be initialized. Lombok will not run during this compilation: " + trace(e));
+				delayedWarnings.add("lombok.javac.apt.LombokProcessor could not be initialized. Lombok will not run during this compilation: " + trace(e));
 				return false;
 			} catch (NoClassDefFoundError e) {
 				delayedWarnings.add("Can't initialize javac processor due to (most likely) a class loader problem: " + trace(e));

@@ -482,7 +482,7 @@ public class Delombok {
 		List<JCCompilationUnit> roots = new ArrayList<JCCompilationUnit>();
 		Map<JCCompilationUnit, File> baseMap = new IdentityHashMap<JCCompilationUnit, File>();
 		
-		compiler.initProcessAnnotations(Collections.singleton(new lombok.javac.apt.Processor()));
+		compiler.initProcessAnnotations(Collections.singleton(new lombok.javac.apt.LombokProcessor()));
 		
 		for (File fileToParse : filesToParse) {
 			@SuppressWarnings("deprecation") JCCompilationUnit unit = compiler.parse(fileToParse.getAbsolutePath());

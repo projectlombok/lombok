@@ -66,7 +66,7 @@ import com.sun.tools.javac.util.Context;
  * running javac; that's the only requirement.
  */
 @SupportedAnnotationTypes("*")
-public class Processor extends AbstractProcessor {
+public class LombokProcessor extends AbstractProcessor {
 
 	private JavacProcessingEnvironment processingEnv;
 	private JavacTransformer transformer;
