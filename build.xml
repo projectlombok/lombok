@@ -247,11 +247,13 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 				<include name="lombok/extern/**" />
 				<include name="lombok/launch/**" />
 				<include name="lombok/delombok/ant/Tasks*" />
+				<include name="lombok/javac/apt/Processor.class" />
 			</fileset>
 			<mappedresources>
 				<fileset dir="build/lombok">
 					<exclude name="com/sun/tools/javac/**" />
 					<exclude name="lombok/*.class" />
+					<exclude name="lombok/javac/apt/Processor.class" />
 					<exclude name="lombok/experimental/**" />
 					<exclude name="lombok/extern/**" />
 					<exclude name="lombok/launch/**" />
