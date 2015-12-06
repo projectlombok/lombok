@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 The Project Lombok Authors.
+ * Copyright (C) 2013-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,22 +24,22 @@ package lombok.javac;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import lombok.core.ImportList;
+import lombok.core.LombokInternalAliasing;
+import lombok.javac.JavacAST.PackageName;
+
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCImport;
 import com.sun.tools.javac.util.List;
 
-import lombok.core.ImportList;
-import lombok.core.LombokInternalAliasing;
-
 public class JavacImportList implements ImportList {
-	private final JCExpression pkg;
+	private final String pkgStr;
 	private final List<JCTree> defs;
 	
 	public JavacImportList(JCCompilationUnit cud) {
-		this.pkg = cud.pid;
+		this.pkgStr = PackageName.getPackageName(cud);
 		this.defs = cud.defs;
 	}
 	
@@ -58,7 +58,6 @@ public class JavacImportList implements ImportList {
 	}
 	
 	@Override public boolean hasStarImport(String packageName) {
-		String pkgStr = pkg == null ? null : pkg.toString();
 		if (pkgStr != null && pkgStr.equals(packageName)) return true;
 		if ("java.lang".equals(packageName)) return true;
 		
@@ -86,7 +85,7 @@ public class JavacImportList implements ImportList {
 	@Override public Collection<String> applyNameToStarImports(String startsWith, String name) {
 		ArrayList<String> out = new ArrayList<String>();
 		
-		if (pkg != null && topLevelName(pkg).equals(startsWith)) out.add(pkg.toString() + "." + name);
+		if (pkgStr != null && topLevelName(pkgStr).equals(startsWith)) out.add(pkgStr + "." + name);
 		
 		for (JCTree def : defs) {
 			if (!(def instanceof JCImport)) continue;
@@ -110,8 +109,14 @@ public class JavacImportList implements ImportList {
 		return tree.toString();
 	}
 	
+	private String topLevelName(String packageName) {
+		int idx = packageName.indexOf(".");
+		if (idx == -1) return packageName;
+		return packageName.substring(0, idx);
+	}
+	
 	@Override public String applyUnqualifiedNameToPackage(String unqualified) {
-		if (pkg == null) return unqualified;
-		return pkg.toString() + "." + unqualified;
+		if (pkgStr == null) return unqualified;
+		return pkgStr + "." + unqualified;
 	}
 }

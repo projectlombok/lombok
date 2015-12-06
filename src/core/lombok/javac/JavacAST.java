@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2015 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 package lombok.javac;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,16 +35,14 @@ import javax.tools.JavaFileObject;
 
 import lombok.core.AST;
 
-import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Source;
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCCatch;
-import com.sun.tools.javac.tree.JCTree.JCTry;
-import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
+import com.sun.tools.javac.tree.JCTree.JCCatch;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
@@ -51,11 +50,13 @@ import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
+import com.sun.tools.javac.tree.JCTree.JCTry;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.Name;
-import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
 /**
  * Wraps around javac's internal AST view to add useful features as well as the ability to visit parents from children,
@@ -78,7 +79,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	 * @param top The compilation unit, which serves as the top level node in the tree to be built.
 	 */
 	public JavacAST(Messager messager, Context context, JCCompilationUnit top) {
-		super(sourceName(top), packageDeclaration(top), new JavacImportList(top));
+		super(sourceName(top), PackageName.getPackageName(top), new JavacImportList(top));
 		setTop(buildCompilationUnit(top));
 		this.context = context;
 		this.messager = messager;
@@ -103,8 +104,25 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		return cu.sourcefile == null ? null : cu.sourcefile.toString();
 	}
 	
-	private static String packageDeclaration(JCCompilationUnit cu) {
-		return (cu.pid instanceof JCFieldAccess || cu.pid instanceof JCIdent) ? cu.pid.toString() : null;
+	// jdk9 support, types have changed, names stay the same
+	static class PackageName {
+		private static final Method packageNameMethod;
+		
+		static {
+			Method m = null;
+			try {
+				m = JCCompilationUnit.class.getDeclaredMethod("getPackageName");
+			} catch (Exception e) {}
+			packageNameMethod = m;
+		}
+		
+		static String getPackageName(JCCompilationUnit cu) {
+			try {
+				Object pkg = packageNameMethod.invoke(cu);
+				return (pkg instanceof JCFieldAccess || pkg instanceof JCIdent) ? pkg.toString() : null;
+			} catch (Exception e) {}
+			return null;
+		}
 	}
 	
 	public Context getContext() {
