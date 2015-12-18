@@ -15,8 +15,9 @@ Lombok Changelog
 * FEATURE: A `lombok.config` key can now be used to set the default behaviour of `@EqualsAndHashCode` when generating methods for a class that extends something in regards to calling the superclass implementations of `equals` and `hashCode` or not. [Issue #965](https://github.com/rzwitserloot/lombok/issues/965).
 * FEATURE: Putting `@Wither` on abstract classes now generates something slightly more useful: An abstract wither method. [Issue #945](https://github.com/rzwitserloot/lombok/issues/945).
 * BUGFIX: lambdas with 1 argument that has an explicit type did not pretty print correctly. [Issue #972](https://github.com/rzwitserloot/lombok/issues/972).
-* BUGFIX: `@Value` and `@FieldDefaults` no longer make uninitialized static fields final. [Issue #928](https://github.com/rzwitserloot/lombok/issues/928).
 * BUGFIX: When using delombok, a source file with only `@NonNull` annotations on parameters as lombok feature would not get properly delomboked.  [Issue #950](https://github.com/rzwitserloot/lombok/issues/950).
+* BUGFIX: `@Delegate` in javac would generate arrays instead of varargs parameters. [Issue #932](https://github.com/rzwitserloot/lombok/issues/932).
+* BUGFIX: `@Value` and `@FieldDefaults` no longer make uninitialized static fields final. [Issue #928](https://github.com/rzwitserloot/lombok/issues/928).
 * ENHANCEMENT: Putting `@NonNull` on a parameter of an abstract method no longer generates a warning, to allow you to use this annotation to document intended behaviour [Issue #807](https://github.com/rzwitserloot/lombok/issues/807).
 
 ### v1.16.6 (August 18th, 2015)
