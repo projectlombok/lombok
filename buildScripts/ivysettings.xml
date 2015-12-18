@@ -4,7 +4,7 @@
 			<filesystem name="projectLocalRepo">
 				<ivy pattern="${ivy.settings.dir}/ivy-repo/[organization]-[module]-[revision].xml" />
 			</filesystem>
-			<ibiblio name="maven-repo2" m2compatible="true" root="http://repo2.maven.org/maven2" />
+			<ibiblio name="maven-repo2" m2compatible="true" root="https://repo1.maven.org/maven2" />
 		</chain>
 	</resolvers>
 	<settings defaultResolver="projectRepos" validate="false" />
