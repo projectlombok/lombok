@@ -18,6 +18,7 @@ Lombok Changelog
 * BUGFIX: When using delombok, a source file with only `@NonNull` annotations on parameters as lombok feature would not get properly delomboked.  [Issue #950](https://github.com/rzwitserloot/lombok/issues/950).
 * BUGFIX: `@Delegate` in javac would generate arrays instead of varargs parameters. [Issue #932](https://github.com/rzwitserloot/lombok/issues/932).
 * BUGFIX: `@Value` and `@FieldDefaults` no longer make uninitialized static fields final. [Issue #928](https://github.com/rzwitserloot/lombok/issues/928).
+* ENHANCEMENT: `@Builder.ObtainVia` now has `@Retention(SOURCE)` [Issue #986](https://github.com/rzwitserloot/lombok/issues/986).
 * ENHANCEMENT: Putting `@NonNull` on a parameter of an abstract method no longer generates a warning, to allow you to use this annotation to document intended behaviour [Issue #807](https://github.com/rzwitserloot/lombok/issues/807).
 
 ### v1.16.6 (August 18th, 2015)

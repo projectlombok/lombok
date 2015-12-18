@@ -139,6 +139,8 @@ public @interface Builder {
 	 * <p>
 	 * The default behaviour is to obtain a value by referencing the name of the parameter as a field on 'this'.
 	 */
+	@Target({FIELD, PARAMETER})
+	@Retention(SOURCE)
 	public @interface ObtainVia {
 		/** Tells lombok to obtain a value with the expression {@code this.value}. */
 		String field() default "";
