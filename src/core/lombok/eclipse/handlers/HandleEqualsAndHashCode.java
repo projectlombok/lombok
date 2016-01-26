@@ -740,7 +740,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	
 	
 	public MethodDeclaration createCanEqual(EclipseNode type, ASTNode source, List<Annotation> onParam) {
-		/* public boolean canEqual(final java.lang.Object other) {
+		/* protected boolean canEqual(final java.lang.Object other) {
 		 *     return other instanceof Outer.Inner.MyType;
 		 * }
 		 */
