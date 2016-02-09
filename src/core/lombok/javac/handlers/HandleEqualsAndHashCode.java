@@ -92,6 +92,9 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		
 		deleteAnnotationIfNeccessary(annotationNode, EqualsAndHashCode.class);
 		EqualsAndHashCode ann = annotation.getInstance();
+		if (!ann.enabled()) {
+			return;
+		}
 		List<String> excludes = List.from(ann.exclude());
 		List<String> includes = List.from(ann.of());
 		JavacNode typeNode = annotationNode.up();
