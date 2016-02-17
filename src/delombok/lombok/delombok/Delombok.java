@@ -21,6 +21,24 @@
  */
 package lombok.delombok;
 
+import com.sun.tools.javac.comp.Todo;
+import com.sun.tools.javac.main.JavaCompiler;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.util.Context;
+import com.zwitserloot.cmdreader.CmdReader;
+import com.zwitserloot.cmdreader.Description;
+import com.zwitserloot.cmdreader.Excludes;
+import com.zwitserloot.cmdreader.FullName;
+import com.zwitserloot.cmdreader.InvalidCommandLineException;
+import com.zwitserloot.cmdreader.Mandatory;
+import com.zwitserloot.cmdreader.Sequential;
+import com.zwitserloot.cmdreader.Shorthand;
+import lombok.Lombok;
+import lombok.javac.CommentCatcher;
+import lombok.javac.LombokOptions;
+
+import javax.tools.DiagnosticListener;
+import javax.tools.JavaFileObject;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,35 +62,15 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import javax.tools.DiagnosticListener;
-import javax.tools.JavaFileObject;
-
-import lombok.Lombok;
-import lombok.javac.CommentCatcher;
-import lombok.javac.LombokOptions;
-
-import com.sun.tools.javac.comp.Todo;
-import com.sun.tools.javac.main.JavaCompiler;
-import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
-import com.sun.tools.javac.util.Context;
-import com.zwitserloot.cmdreader.CmdReader;
-import com.zwitserloot.cmdreader.Description;
-import com.zwitserloot.cmdreader.Excludes;
-import com.zwitserloot.cmdreader.FullName;
-import com.zwitserloot.cmdreader.InvalidCommandLineException;
-import com.zwitserloot.cmdreader.Mandatory;
-import com.zwitserloot.cmdreader.Sequential;
-import com.zwitserloot.cmdreader.Shorthand;
-
 public class Delombok {
 	private Charset charset = Charset.defaultCharset();
 	private Context context = new Context();
 	private Writer presetWriter;
-	
+
 	public void setWriter(Writer writer) {
 		this.presetWriter = writer;
 	}
-	
+
 	private PrintStream feedback = System.err;
 	private boolean verbose;
 	private boolean noCopy;
@@ -81,7 +79,8 @@ public class Delombok {
 	private LinkedHashMap<File, File> fileToBase = new LinkedHashMap<File, File>();
 	private List<File> filesToParse = new ArrayList<File>();
 	private Map<String, String> formatPrefs = new HashMap<String, String>();
-	
+	private boolean onlyChanged = false;
+
 	/** If null, output to standard out. */
 	private File output = null;
 	
@@ -134,6 +133,10 @@ public class Delombok {
 		@Description("Lombok will only delombok source files. Without this option, non-java, non-class files are copied to the target directory.")
 		@Shorthand("n")
 		private boolean nocopy;
+
+		  @Shorthand("c")
+		  @Description("Output only changed files")
+		  private boolean onlyChanged;
 		
 		private boolean help;
 	}
@@ -365,7 +368,11 @@ public class Delombok {
 	public void setOutputToStandardOut() {
 		this.output = null;
 	}
-	
+
+	public void setOnlyChanged(boolean onlyChanged) {
+		this.onlyChanged = onlyChanged;
+	}
+
 	public void addDirectory(File base) throws IOException {
 		addDirectory0(false, base, "", 0);
 	}
@@ -513,14 +520,17 @@ public class Delombok {
 			if (presetWriter != null) rawWriter = createUnicodeEscapeWriter(presetWriter);
 			else if (output == null) rawWriter = createStandardOutWriter();
 			else rawWriter = createFileWriter(output, baseMap.get(unit), unit.sourcefile.toUri());
-			BufferedWriter writer = new BufferedWriter(rawWriter);
-			try {
-				result.print(writer);
-			} finally {
-				if (output != null) {
-					writer.close();
-				} else {
-					writer.flush();
+
+			if (!onlyChanged || result.isChanged()) {
+				BufferedWriter writer = new BufferedWriter(rawWriter);
+				try {
+					result.print(writer);
+				} finally {
+					if (output != null) {
+						writer.close();
+					} else {
+						writer.flush();
+					}
 				}
 			}
 		}
