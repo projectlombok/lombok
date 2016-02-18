@@ -105,6 +105,14 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<FlagUsageType> DATA_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.data.flagUsage", "Emit a warning or error if @Data is used.") {};
 	
+	// ----- DataVersionable -----
+	/**
+	 * lombok configuration: {@code lombok.dataVersionable.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @DataVersionable} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> DATA_VERSIONABLE_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.dataVersionable.flagUsage", "Emit a warning or error if @DataVersionable is used.") {};
+	
 	// ----- Value -----
 	
 	/**
@@ -146,6 +154,14 @@ public class ConfigurationKeys {
 	 * If set, <em>any</em> usage of {@code @Setter} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> SETTER_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.setter.flagUsage", "Emit a warning or error if @Setter is used.") {};
+	
+	// ----- SetterVersionable -----
+	/**
+	 * lombok configuration: {@code lombok.setterVersionable.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @SetterVersionable} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> SETTER_VERSIONABLE_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.setterVersionable.flagUsage", "Emit a warning or error if @SetterVersionable is used.") {};
 	
 	// ----- EqualsAndHashCode -----
 	
@@ -461,4 +477,12 @@ public class ConfigurationKeys {
 	 * If set to {@code true}, no further {@code lombok.config} files will be checked.
 	 */
 	public static final ConfigurationKey<Boolean> STOP_BUBBLING = new ConfigurationKey<Boolean>("config.stopBubbling", "Tell the configuration system it should stop looking for other configuration files (default: false).") {};
+	
+	// ----- Versionable -----
+	/**
+	 * lombok configuration: {@code lombok.versionable.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @Versionable} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> VERSIONABLE_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.versionable.flagUsage", "Emit a warning or error if @Versionable is used.") {};
 }

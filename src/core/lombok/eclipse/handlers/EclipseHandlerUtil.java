@@ -36,24 +36,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import lombok.AccessLevel;
-import lombok.ConfigurationKeys;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Lombok;
-import lombok.core.AST.Kind;
-import lombok.core.AnnotationValues;
-import lombok.core.AnnotationValues.AnnotationValue;
-import lombok.core.TypeResolver;
-import lombok.core.configuration.NullCheckExceptionType;
-import lombok.core.debug.ProblemReporter;
-import lombok.core.handlers.HandlerUtil;
-import lombok.eclipse.Eclipse;
-import lombok.eclipse.EclipseAST;
-import lombok.eclipse.EclipseNode;
-import lombok.experimental.Accessors;
-import lombok.experimental.Tolerate;
-
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
@@ -104,6 +86,25 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 import org.eclipse.jdt.internal.compiler.lookup.WildcardBinding;
+
+import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
+import lombok.Data;
+import lombok.DataVersionable;
+import lombok.Getter;
+import lombok.Lombok;
+import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
+import lombok.core.AnnotationValues.AnnotationValue;
+import lombok.core.TypeResolver;
+import lombok.core.configuration.NullCheckExceptionType;
+import lombok.core.debug.ProblemReporter;
+import lombok.core.handlers.HandlerUtil;
+import lombok.eclipse.Eclipse;
+import lombok.eclipse.EclipseAST;
+import lombok.eclipse.EclipseNode;
+import lombok.experimental.Accessors;
+import lombok.experimental.Tolerate;
 
 /**
  * Container for static utility methods useful to handlers written for eclipse.
@@ -837,6 +838,7 @@ public class EclipseHandlerUtil {
 			EclipseNode containingType = field.up();
 			if (containingType != null) for (EclipseNode child : containingType.down()) {
 				if (child.getKind() == Kind.ANNOTATION && annotationTypeMatches(Data.class, child)) hasGetterAnnotation = true;
+				if (child.getKind() == Kind.ANNOTATION && annotationTypeMatches(DataVersionable.class, child)) hasGetterAnnotation = true;
 				if (child.getKind() == Kind.ANNOTATION && annotationTypeMatches(Getter.class, child)) {
 					AnnotationValues<Getter> ann = createAnnotation(Getter.class, child);
 					if (ann.getInstance().value() == AccessLevel.NONE) return null;   //Definitely WONT have a getter.
