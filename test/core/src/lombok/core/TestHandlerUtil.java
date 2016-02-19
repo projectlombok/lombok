@@ -21,11 +21,34 @@
  */
 package lombok.core;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import static lombok.core.handlers.HandlerUtil.buildAccessorName;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import org.junit.Test;
 
-@RunWith(Suite.class)
-@SuiteClasses({TestSingulars.class, TestHandlerUtil.class})
-public class RunCoreTests {
+public class TestHandlerUtil {
+	
+	@Test
+	public void testBuildAccessorName() {
+		
+		/* normal cases */
+		assertEquals("setFieldName", buildAccessorName("set", "fieldName"));
+		assertEquals("setI", buildAccessorName("set", "i"));
+		assertEquals("setI", buildAccessorName("set", "I"));
+		assertEquals("setUrl", buildAccessorName("set", "Url"));
+		
+		/* when the second character is uppercase, leave the first character unchanged */
+		assertEquals("setURL", buildAccessorName("set", "URL"));
+		assertEquals("setaI", buildAccessorName("set", "aI"));
+		assertEquals("setaIr", buildAccessorName("set", "aIr"));
+		
+		/* handle empty string cases */
+		assertEquals("URL", buildAccessorName("", "URL"));
+		assertEquals("set", buildAccessorName("set", ""));
+		try{
+			buildAccessorName("set", null);
+			buildAccessorName(null, "something");
+			fail("it's not supposed to be null");
+		}catch(NullPointerException e){}
+	}
 }
