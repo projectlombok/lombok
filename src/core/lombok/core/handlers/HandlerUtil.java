@@ -420,11 +420,11 @@ public class HandlerUtil {
 		
 		char first = suffix.charAt(0);
 		if (Character.isLowerCase(first)) {
-			boolean useUpperCase = suffix.length() > 2 &&
+			boolean useLowerCase = suffix.length() >= 2 &&
 				(Character.isTitleCase(suffix.charAt(1)) || Character.isUpperCase(suffix.charAt(1)));
 			suffix = String.format("%s%s",
-					useUpperCase ? Character.toUpperCase(first) : Character.toTitleCase(first),
-					suffix.subSequence(1, suffix.length()));
+				useLowerCase ? Character.toLowerCase(first) : Character.toUpperCase(first),
+				suffix.subSequence(1, suffix.length()));
 		}
 		return String.format("%s%s", prefix, suffix);
 	}
