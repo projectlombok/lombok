@@ -35,11 +35,13 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.TreeVisitor;
 import com.sun.source.util.TreeScanner;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCBlock;
+import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
@@ -57,21 +59,32 @@ import lombok.javac.JavacTreeMaker;
 
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleHelper extends JavacAnnotationHandler<Helper> {
+	private List<JCStatement> getStatementsFromJcNode(JCTree tree) {
+		if (tree instanceof JCBlock) return ((JCBlock) tree).stats;
+		if (tree instanceof JCCase) return ((JCCase) tree).stats;
+		return null;
+	}
+	
+	private void setStatementsOfJcNode(JCTree tree, List<JCStatement> statements) {
+		if (tree instanceof JCBlock) ((JCBlock) tree).stats = statements;
+		else if (tree instanceof JCCase) ((JCCase) tree).stats = statements;
+		else throw new IllegalArgumentException("Can't set statements on node type: " + tree.getClass());
+	}
+	
 	@Override public void handle(AnnotationValues<Helper> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.HELPER_FLAG_USAGE, "@Helper");
 		
 		deleteAnnotationIfNeccessary(annotationNode, Helper.class);
 		JavacNode annotatedType = annotationNode.up();
-		JavacNode containingMethod = annotatedType == null ? null : annotatedType.up();
+		JavacNode containingBlock = annotatedType == null ? null : annotatedType.directUp();
+		List<JCStatement> origStatements = getStatementsFromJcNode(containingBlock == null ? null : containingBlock.get());
 		
-		if (annotatedType == null || containingMethod == null || annotatedType.getKind() != Kind.TYPE || containingMethod.getKind() != Kind.METHOD) {
+		if (annotatedType == null || annotatedType.getKind() != Kind.TYPE || origStatements == null) {
 			annotationNode.addError("@Helper is legal only on method-local classes.");
 			return;
 		}
 		
 		JCClassDecl annotatedType_ = (JCClassDecl) annotatedType.get();
-		JCMethodDecl amd = (JCMethodDecl) containingMethod.get();
-		List<JCStatement> origStatements = amd.body.stats;
 		Iterator<JCStatement> it = origStatements.iterator();
 		while (it.hasNext()) {
 			if (it.next() == annotatedType_) {
@@ -133,6 +146,6 @@ public class HandleHelper extends JavacAnnotationHandler<Helper> {
 			JCVariableDecl decl = maker.VarDef(maker.Modifiers(Flags.FINAL), helperName, varType, init);
 			newStatements.append(decl);
 		}
-		amd.body.stats = newStatements.toList();
+		setStatementsOfJcNode(containingBlock.get(), newStatements.toList());
 	}
 }

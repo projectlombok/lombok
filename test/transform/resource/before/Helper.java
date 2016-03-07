@@ -1,18 +1,21 @@
 import lombok.experimental.Helper;
 
 class HelperTest {
-	void test() {
-		@Helper class H1 {
-			void foo() {
-				System.out.println("Hello");
+	{
+		final int z = 5;
+		if (Boolean.TRUE) {
+			@Helper class H1 {
+				void foo(int x) {
+					System.out.println("Hello, " + (x + z));
+				}
 			}
-		}
-		
-		foo();
-		
-		@Helper class H2 {
-			void bar() {
-				foo();
+			
+			foo(10);
+			
+			@Helper class H2 {
+				void bar() {
+					foo(12);
+				}
 			}
 		}
 	}

@@ -33,12 +33,14 @@ import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
+import org.eclipse.jdt.internal.compiler.ast.SwitchStatement;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
@@ -48,7 +50,6 @@ import org.mangosdk.spi.ProviderFor;
 import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
-import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.Helper;
@@ -58,19 +59,33 @@ import lombok.experimental.Helper;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleHelper extends EclipseAnnotationHandler<Helper> {
+	private Statement[] getStatementsFromAstNode(ASTNode node) {
+		if (node instanceof Block) return ((Block) node).statements;
+		if (node instanceof AbstractMethodDeclaration) return ((AbstractMethodDeclaration) node).statements;
+		if (node instanceof SwitchStatement) return ((SwitchStatement) node).statements;
+		return null;
+	}
+	
+	private void setStatementsOfAstNode(ASTNode node, Statement[] statements) {
+		if (node instanceof Block) ((Block) node).statements = statements;
+		else if (node instanceof AbstractMethodDeclaration) ((AbstractMethodDeclaration) node).statements = statements;
+		else if (node instanceof SwitchStatement) ((SwitchStatement) node).statements = statements;
+		else throw new IllegalArgumentException("Can't set statements on node type: " + node.getClass());
+	}
+	
 	@Override public void handle(AnnotationValues<Helper> annotation, Annotation ast, EclipseNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.HELPER_FLAG_USAGE, "@Helper");
 		
 		EclipseNode annotatedType = annotationNode.up();
-		EclipseNode containingMethod = annotatedType == null ? null : annotatedType.up();
-		if (annotatedType == null || containingMethod == null || annotatedType.getKind() != Kind.TYPE || containingMethod.getKind() != Kind.METHOD) {
+		EclipseNode containingBlock = annotatedType == null ? null : annotatedType.directUp();
+		Statement[] origStatements = getStatementsFromAstNode(containingBlock == null ? null : containingBlock.get());
+		
+		if (annotatedType == null || annotatedType.getKind() != Kind.TYPE || origStatements == null) {
 			annotationNode.addError("@Helper is legal only on method-local classes.");
 			return;
 		}
 		
 		TypeDeclaration annotatedType_ = (TypeDeclaration) annotatedType.get();
-		AbstractMethodDeclaration amd = (AbstractMethodDeclaration) containingMethod.get();
-		Statement[] origStatements = amd.statements;
 		int indexOfType = -1;
 		for (int i = 0; i < origStatements.length; i++) {
 			if (origStatements[i] == annotatedType_) {
@@ -105,7 +120,7 @@ public class HandleHelper extends EclipseAnnotationHandler<Helper> {
 				if (name == null || name.length == 0 || name[0] == '<') return true;
 				String n = new String(name);
 				if (Arrays.binarySearch(knownMethodNames_, n) < 0) return true;
-				messageSend.receiver = new SingleNameReference(helperName, Eclipse.pos(messageSend));
+				messageSend.receiver = new SingleNameReference(helperName, messageSend.nameSourcePosition);
 				helperUsed[0] = true;
 				return true;
 			}
@@ -132,6 +147,6 @@ public class HandleHelper extends EclipseAnnotationHandler<Helper> {
 		SetGeneratedByVisitor sgbvVisitor = new SetGeneratedByVisitor(annotationNode.get());
 		decl.traverse(sgbvVisitor, null);
 		newStatements[indexOfType + 1] = decl;
-		amd.statements = newStatements;
+		setStatementsOfAstNode(containingBlock.get(), newStatements);
 	}
 }
