@@ -1,13 +1,9 @@
 Lombok Changelog
 ----------------
 
-### v1.16.7 "Edgy Guinea Pig"
+### v1.16.8 (March 7th, 2016)
 
-#### Special Edge release features, feedback extra welcome
 * PLATFORM: Starting jdk9 support: No more error message regarding `pid`
-* BUGFIX-IN-PROGRESS: Added extra logging and reporting to investigate problems regarding `lombok.javac.apt.Processors`
-
-#### Regular changes 
 * FEATURE: `@Builder` updates: It now generates `clearFieldName()` methods if `@Singular` is used. [Issue #967](https://github.com/rzwitserloot/lombok/issues/967).
 * FEATURE: `@Builder` updates: The annotation can now be put on instance methods. [Issue #63](https://github.com/rzwitserloot/lombok/issues/63).
 * FEATURE: `@Builder` updates: `@Singular` now supports guava's ImmutableTable [Issue #937](https://github.com/rzwitserloot/lombok/issues/937).
