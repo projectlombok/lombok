@@ -40,6 +40,16 @@ h1 {
 	height: 170px;
 }
 
+.separator {
+	background-image: url(buttonbar.jpg);
+	width: 800px;
+	height: 8px;
+	line-height: 8px;
+	font-size: 14px;
+	text-align: center;
+	clear: both;
+}
+
 .endBar {
 	-webkit-border-bottom-right-radius: 15px 15px;
 	-webkit-border-bottom-left-radius: 15px 15px;
@@ -131,6 +141,10 @@ code {
 .downloadActions {
 	margin-top: 8px;
 	margin-left: 32px;
+}
+
+.note {
+	color: grey;
 }
 
 .footer {
