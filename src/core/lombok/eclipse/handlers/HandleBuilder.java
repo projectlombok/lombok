@@ -141,16 +141,21 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		String builderClassName = builderInstance.builderClassName();
 		String toBuilderMethodName = "toBuilder";
 		boolean toBuilder = builderInstance.toBuilder();
+		String setterPrefix = builderInstance.withPrefix();
 		List<char[]> typeArgsForToBuilder = null;
 		
 		if (builderMethodName == null) builderMethodName = "builder";
 		if (buildMethodName == null) builderMethodName = "build";
 		if (builderClassName == null) builderClassName = "";
+		if (setterPrefix == null) setterPrefix = "";
 		
 		if (!checkName("builderMethodName", builderMethodName, annotationNode)) return;
 		if (!checkName("buildMethodName", buildMethodName, annotationNode)) return;
 		if (!builderClassName.isEmpty()) {
 			if (!checkName("builderClassName", builderClassName, annotationNode)) return;
+		}
+		if (!setterPrefix.isEmpty()) {
+			if (!checkName("withPrefix", setterPrefix, annotationNode)) return;
 		}
 		
 		EclipseNode parent = annotationNode.up();
@@ -401,7 +406,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		for (BuilderFieldData bfd : builderFields) {
-			makeSetterMethodsForBuilder(builderType, bfd, annotationNode, fluent, chain);
+			makeSetterMethodsForBuilder(builderType, bfd, annotationNode, fluent, chain, setterPrefix);
 		}
 		
 		if (methodExists(buildMethodName, builderType, -1) == MemberExistsResult.NOT_EXISTS) {
@@ -633,15 +638,15 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	
 	private static final AbstractMethodDeclaration[] EMPTY = {};
 	
-	public void makeSetterMethodsForBuilder(EclipseNode builderType, BuilderFieldData bfd, EclipseNode sourceNode, boolean fluent, boolean chain) {
+	public void makeSetterMethodsForBuilder(EclipseNode builderType, BuilderFieldData bfd, EclipseNode sourceNode, boolean fluent, boolean chain, String setterPrefix) {
 		if (bfd.singularData == null || bfd.singularData.getSingularizer() == null) {
-			makeSimpleSetterMethodForBuilder(builderType, bfd.createdFields.get(0), sourceNode, fluent, chain);
+			makeSimpleSetterMethodForBuilder(builderType, bfd.createdFields.get(0), sourceNode, fluent, chain, setterPrefix);
 		} else {
-			bfd.singularData.getSingularizer().generateMethods(bfd.singularData, builderType, fluent, chain);
+			bfd.singularData.getSingularizer().generateMethods(bfd.singularData, builderType, fluent, chain, setterPrefix);
 		}
 	}
 	
-	private void makeSimpleSetterMethodForBuilder(EclipseNode builderType, EclipseNode fieldNode, EclipseNode sourceNode, boolean fluent, boolean chain) {
+	private void makeSimpleSetterMethodForBuilder(EclipseNode builderType, EclipseNode fieldNode, EclipseNode sourceNode, boolean fluent, boolean chain, String setterPrefix) {
 		TypeDeclaration td = (TypeDeclaration) builderType.get();
 		AbstractMethodDeclaration[] existing = td.methods;
 		if (existing == null) existing = EMPTY;
@@ -655,11 +660,19 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			if (Arrays.equals(name, existingName)) return;
 		}
 		
-		String setterName = fluent ? fieldNode.getName() : HandlerUtil.buildAccessorName("set", fieldNode.getName());
+		String setterName = getSetterName(fieldNode, fluent, setterPrefix);
 		
 		MethodDeclaration setter = HandleSetter.createSetter(td, fieldNode, setterName, chain, ClassFileConstants.AccPublic,
 			sourceNode, Collections.<Annotation>emptyList(), Collections.<Annotation>emptyList());
 		injectMethod(builderType, setter);
+	}
+
+	private String getSetterName(EclipseNode fieldNode, boolean fluent, String setterPrefix) {
+		if (setterPrefix.isEmpty()) {
+			return fluent ? fieldNode.getName() : HandlerUtil.buildAccessorName("set", fieldNode.getName());
+		} else {
+			return HandlerUtil.buildAccessorName(setterPrefix, fieldNode.getName());
+		}
 	}
 	
 	public EclipseNode findInnerClass(EclipseNode parent, String name) {

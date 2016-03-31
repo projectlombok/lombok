@@ -96,14 +96,14 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		return Collections.singletonList(injectFieldAndMarkGenerated(builderType, buildField));
 	}
 	
-	@Override public void generateMethods(SingularData data, EclipseNode builderType, boolean fluent, boolean chain) {
+	@Override public void generateMethods(SingularData data, EclipseNode builderType, boolean fluent, boolean chain, String setterPrefix) {
 		TypeReference returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		Statement returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
-		generateSingularMethod(returnType, returnStatement, data, builderType, fluent);
+		generateSingularMethod(returnType, returnStatement, data, builderType, fluent, setterPrefix);
 		
 		returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
-		generatePluralMethod(returnType, returnStatement, data, builderType, fluent);
+		generatePluralMethod(returnType, returnStatement, data, builderType, fluent, setterPrefix);
 		
 		returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
@@ -124,7 +124,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		injectMethod(builderType, md);
 	}
 	
-	void generateSingularMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {
+	void generateSingularMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent, String setterPrefix) {
 		LombokImmutableList<String> suffixes = getArgumentSuffixes();
 		char[][] names = new char[suffixes.size()][];
 		for (int i = 0; i < suffixes.size(); i++) {
@@ -158,13 +158,21 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 			md.arguments[i] = new Argument(names[i], 0, tr, 0);
 		}
 		md.returnType = returnType;
-		md.selector = fluent ? data.getSingularName() : HandlerUtil.buildAccessorName(getAddMethodName(), new String(data.getSingularName())).toCharArray();
+		md.selector = getSingularSelector(data, fluent, setterPrefix);
 		
 		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
 	}
+
+	private char[] getSingularSelector(SingularData data, boolean fluent, String setterPrefix) {
+		if (setterPrefix.isEmpty()) {
+			return fluent ? data.getSingularName() : HandlerUtil.buildAccessorName(getAddMethodName(), new String(data.getSingularName())).toCharArray();
+		} else {
+			return HandlerUtil.buildAccessorName(setterPrefix, new String(data.getSingularName())).toCharArray();
+		}
+	}
 	
-	void generatePluralMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {
+	void generatePluralMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent, String setterPrefix) {
 		MethodDeclaration md = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
 		md.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		md.modifiers = ClassFileConstants.AccPublic;
@@ -189,10 +197,18 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		Argument param = new Argument(data.getPluralName(), 0, paramType, 0);
 		md.arguments = new Argument[] {param};
 		md.returnType = returnType;
-		md.selector = fluent ? data.getPluralName() : HandlerUtil.buildAccessorName(getAddMethodName() + "All", new String(data.getPluralName())).toCharArray();
+		md.selector = getPluralSelector(data, fluent, setterPrefix);
 		
 		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
+	}
+
+	private char[] getPluralSelector(SingularData data, boolean fluent, String setterPrefix) {
+		if (setterPrefix.isEmpty()) {
+			return fluent ? data.getPluralName() : HandlerUtil.buildAccessorName(getAddMethodName() + "All", new String(data.getPluralName())).toCharArray();
+		} else {
+			return HandlerUtil.buildAccessorName(setterPrefix + "All", new String(data.getPluralName())).toCharArray();
+		}
 	}
 	
 	@Override public void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName) {
