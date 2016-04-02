@@ -2,6 +2,20 @@ Project Lombok makes java a spicier language by adding 'handlers' that know how 
 See LICENSE for the Project Lombok license.
 
 
+Download
+--------
+using Gradle:
+
+```gradle
+repositories {
+  mavenCentral() // jcenter() works as well because it pulls from Maven Central
+}
+
+dependencies {
+    compile 'org.projectlombok:lombok:1.16.8'
+}
+```
+
 To start, run:
 
 ant -projecthelp
