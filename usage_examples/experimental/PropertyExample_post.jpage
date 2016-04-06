@@ -1,0 +1,31 @@
+import java.util.UUID;
+
+public class PropertyExample {
+	private UUID id;
+	private String name;
+	private int age;
+
+	public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public UUID getId() {
+        return this.id;
+    }
+
+	public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getName() {
+        return this.name;
+    }
+
+	public void setAge(int age) {
+        this.age = age;
+    }
+
+    public int getAge() {
+        return this.age;
+    }
+}

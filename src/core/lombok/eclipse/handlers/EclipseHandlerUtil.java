@@ -51,6 +51,7 @@ import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.Accessors;
+import lombok.experimental.Property;
 import lombok.experimental.Tolerate;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
@@ -838,6 +839,7 @@ public class EclipseHandlerUtil {
 			EclipseNode containingType = field.up();
 			if (containingType != null) for (EclipseNode child : containingType.down()) {
 				if (child.getKind() == Kind.ANNOTATION && annotationTypeMatches(Data.class, child)) hasGetterAnnotation = true;
+				if (child.getKind() == Kind.ANNOTATION && annotationTypeMatches(Property.class, child)) hasGetterAnnotation = true;
 				if (child.getKind() == Kind.ANNOTATION && annotationTypeMatches(Getter.class, child)) {
 					AnnotationValues<Getter> ann = createAnnotation(Getter.class, child);
 					if (ann.getInstance().value() == AccessLevel.NONE) return null;   //Definitely WONT have a getter.

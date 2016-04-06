@@ -48,6 +48,7 @@ import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.handlers.HandlerUtil;
 import lombok.delombok.LombokOptionsFactory;
 import lombok.experimental.Accessors;
+import lombok.experimental.Property;
 import lombok.experimental.Tolerate;
 import lombok.javac.Javac;
 import lombok.javac.JavacNode;
@@ -725,6 +726,7 @@ public class JavacHandlerUtil {
 			JavacNode containingType = field.up();
 			if (containingType != null) for (JavacNode child : containingType.down()) {
 				if (child.getKind() == Kind.ANNOTATION && annotationTypeMatches(Data.class, child)) hasGetterAnnotation = true;
+				if (child.getKind() == Kind.ANNOTATION && annotationTypeMatches(Property.class, child)) hasGetterAnnotation = true;
 				if (child.getKind() == Kind.ANNOTATION && annotationTypeMatches(Getter.class, child)) {
 					AnnotationValues<Getter> ann = createAnnotation(Getter.class, child);
 					if (ann.getInstance().value() == AccessLevel.NONE) return null;   //Definitely WONT have a getter.

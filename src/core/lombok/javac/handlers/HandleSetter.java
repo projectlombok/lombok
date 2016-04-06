@@ -95,7 +95,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	/**
 	 * Generates a setter on the stated field.
 	 * 
-	 * Used by {@link HandleData}.
+	 * Used by {@link HandleData}, {@link HandleProperty}.
 	 * 
 	 * The difference between this call and the handle method is as follows:
 	 * 

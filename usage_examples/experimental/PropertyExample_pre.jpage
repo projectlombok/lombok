@@ -1,0 +1,8 @@
+import lombok.experimental.Peroperty;
+import java.util.UUID;
+
+@Property public class PropertyExample {
+	private UUID id;
+	private String name;
+	private int age;
+}
