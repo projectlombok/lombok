@@ -6,6 +6,7 @@ public class ToStringExample {
 	private Shape shape = new Square(5, 10);
 	private String[] tags;
 	private int id;
+	private Map<String, Object> metadata = new HashMap<>();
 	
 	public String getName() {
 		return this.getName();
@@ -25,6 +26,6 @@ public class ToStringExample {
 	}
 	
 	@Override public String toString() {
-		return "ToStringExample(" + this.getName() + ", " + this.shape + ", " + Arrays.deepToString(this.tags) + ")";
+		return "ToStringExample(name=" + this.getName() + ", shape=" + this.shape + ", tags.length=" + this.tags != null ? this.tags.length : null + ", metadata.size=" + this.metadata != null ? this.metadata.size() : null + ")";
 	}
 }
