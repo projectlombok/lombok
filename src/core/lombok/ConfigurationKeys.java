@@ -192,7 +192,14 @@ public class ConfigurationKeys {
 	 * For any class without an {@code @ToString} that explicitly defines the {@code includeFieldNames} option, this value is used  (default = true).
 	 */
 	public static final ConfigurationKey<Boolean> TO_STRING_INCLUDE_FIELD_NAMES = new ConfigurationKey<Boolean>("lombok.toString.includeFieldNames", "Include the field names in the generated toString method (default = true).") {};
-	
+
+	/**
+	 * lombok configuration: {@code lombok.toString.counts} = {@code true} | {@code false}.
+	 *
+	 * For any class without an {@code @ToString} that explicitly defines the {@code counts} option, this value is used  (default = false).
+	 */
+	public static final ConfigurationKey<Boolean> TO_STRING_COUNTS = new ConfigurationKey<Boolean>("lombok.toString.counts", "Substitute each collection, map or array by size in the generated toString method (default = false).") {};
+
 	// ----- Builder -----
 	
 	/**
