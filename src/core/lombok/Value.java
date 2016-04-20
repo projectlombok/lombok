@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
  * <p>
  * Equivalent to {@code @Getter @FieldDefaults(makeFinal=true, level=AccessLevel.PRIVATE) @AllArgsConstructor @ToString @EqualsAndHashCode}.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Value.html">the project lombok features page for &#64;Value</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/Value.html">the project lombok features page for &#64;Value</a>.
  * 
  * @see lombok.Getter
  * @see lombok.experimental.FieldDefaults
