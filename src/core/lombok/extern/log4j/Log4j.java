@@ -21,6 +21,8 @@
  */
 package lombok.extern.log4j;
 
+import lombok.AccessLevel;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -63,4 +65,10 @@ public @interface Log4j {
 	 * Sets the category of the constructed Logger. By default, it will use the type where the annotation is placed.
 	 */
 	String topic() default "";
+
+	/**
+	 * If you want your log to be non-private, you can specify an alternate access level here.
+	 */
+	lombok.AccessLevel value() default AccessLevel.PRIVATE;
+
 }
