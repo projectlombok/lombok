@@ -229,6 +229,17 @@ public class HandleLog {
 		}
 	}
 	
+	/**
+	 * Handles the {@link lombok.extern.jbosslog.JBossLog} annotation for Eclipse.
+	 */
+	@ProviderFor(EclipseAnnotationHandler.class)
+	public static class HandleJBossLog extends EclipseAnnotationHandler<lombok.extern.jbosslog.JBossLog> {
+		@Override public void handle(AnnotationValues<lombok.extern.jbosslog.JBossLog> annotation, Annotation source, EclipseNode annotationNode) {
+			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_JBOSSLOG_FLAG_USAGE, "@JBossLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
+			processAnnotation(LoggingFramework.JBOSSLOG, annotation, source, annotationNode, annotation.getInstance().topic());
+		}
+	}
+	
 	enum LoggingFramework {
 		// private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(TargetType.class);
 		COMMONS("org.apache.commons.logging.Log", "org.apache.commons.logging.LogFactory", "getLog", "@CommonsLog"),
@@ -264,7 +275,9 @@ public class HandleLog {
 		
 		// private static final org.slf4j.ext.XLogger log = org.slf4j.ext.XLoggerFactory.getXLogger(TargetType.class);
 		XSLF4J("org.slf4j.ext.XLogger", "org.slf4j.ext.XLoggerFactory", "getXLogger", "@XSlf4j"),
-		
+
+		// private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(TargetType.class);
+		JBOSSLOG("org.jboss.logging.Logger", "org.jboss.logging.Logger", "getLogger", "@JBossLog"),
 		;
 		
 		private final String loggerTypeName;
