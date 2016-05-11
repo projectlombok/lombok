@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Project Lombok Authors.
+ * Copyright (C) 2015-2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Lombok will eventually automatically add this annotation to all generated methods, fields, and classes.
+ * Lombok will eventually automatically add this annotation to all generated constructors, methods, fields, and types.
  * 
  * You can mark the presence of this annotation as 'ignore it' for all code style and bug finding tools.
  * <p>
@@ -35,7 +35,7 @@ import java.lang.annotation.Target;
  * it up so that lombok jars in widespread use start having this, which will make it easier to actually apply it
  * later on.
  */
-@Target({ElementType.FIELD, ElementType.METHOD, ElementType.TYPE})
+@Target({ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.FIELD, ElementType.TYPE})
 @Retention(RetentionPolicy.CLASS)
 public @interface Generated {
 }
