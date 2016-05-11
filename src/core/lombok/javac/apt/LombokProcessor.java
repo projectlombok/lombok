@@ -273,14 +273,12 @@ public class LombokProcessor extends AbstractProcessor {
 			
 			if (newLevels.isEmpty()) return false;
 			newLevels.retainAll(priorityLevelsRequiringResolutionReset);
-			if (newLevels.isEmpty()) {
-				// None of the new levels need resolution, so just keep going.
-				continue;
-			} else {
+			if (!newLevels.isEmpty()){
 				// Force a new round to reset resolution. The next round will cause this method (process) to be called again.
 				forceNewRound((JavacFiler) processingEnv.getFiler());
 				return false;
 			}
+		    // None of the new levels need resolution, so just keep going.
 		}
 	}
 	
@@ -310,6 +308,6 @@ public class LombokProcessor extends AbstractProcessor {
 	 * We just return the latest version of whatever JDK we run on. Stupid? Yeah, but it's either that or warnings on all versions but 1.
 	 */
 	@Override public SourceVersion getSupportedSourceVersion() {
-		return SourceVersion.values()[SourceVersion.values().length - 1];
+		return SourceVersion.latest();
 	}
 }
