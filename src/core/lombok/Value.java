@@ -49,7 +49,7 @@ public @interface Value {
 	 * We suggest the name: "of", like so:
 	 * 
 	 * <pre>
-	 *     public @Data(staticConstructor = "of") class Point { final int x, y; }
+	 *     public @Value(staticConstructor = "of") class Point { final int x, y; }
 	 * </pre>
 	 * 
 	 * Default: No static constructor, instead the normal constructor is public.
