@@ -44,7 +44,7 @@ public final class FormatPreferences {
 		keys.put("finalParams", "Either 'generate' or 'skip'. generate means: All lombok-generated methods set all parameters to final. Default: 'generate'");
 		keys.put("constructorProperties", "Either 'generate' or 'skip'. generate means: All lombok-generated constructors with 1 or more arguments get an @ConstructorProperties annotation. Default: 'generate'");
 		keys.put("suppressWarnings", "Either 'generate' or 'skip'. generate means: All lombok-generated methods, types, and fields get a @SuppressWarnings annotation. Default: 'generate'");
-		keys.put("generated", "Either 'generate' or 'skip'. generate means: All lombok-generated methods, types, and fields get a @Generated(\"lombok\") annotation. Default: 'generate'");
+		keys.put("generated", "Either 'generate' or 'skip'. generate means: All lombok-generated methods, types, and fields get a @javax.annotation.Generated(\"lombok\") annotation. Default: 'generate'");
 		keys.put("danceAroundIdeChecks", "Either 'generate' or 'skip'. generate means: Lombok will intentionally obfuscate some generated code to avoid IDE warnings. Default: 'generate'");
 		keys.put("generateDelombokComment", "Either 'generate' or 'skip'. generate means: Any file modified by delombok will have a comment stating this at the top. Default: 'generate'");
 		keys.put("javaLangAsFQN", "Either 'generate' or 'skip'. generate means: Any generated reference to java.lang classes are prefixed with `java.lang.`. Default: 'generate'");
