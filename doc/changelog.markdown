@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.16.9 "Edgy Guinea Pig"
+* FEATURE: Added support for JBoss logger [Issue #1103](https://github.com/rzwitserloot/lombok/issues/1103)
+
 ### v1.16.8 (March 7th, 2016)
 
 * PLATFORM: Starting jdk9 support: No more error message regarding `pid`
