@@ -1,5 +1,5 @@
 //skip compare content
-@lombok.experimental.Builder
+@lombok.Builder
 class BuilderInvalidUse {
 	private int something;
 
@@ -10,7 +10,7 @@ class BuilderInvalidUse {
 	}
 }
 
-@lombok.experimental.Builder
+@lombok.Builder
 class AlsoInvalid {
 	@lombok.Value
 	public static class AlsoInvalidBuilder {

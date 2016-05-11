@@ -1,5 +1,5 @@
 import java.util.List;
-@lombok.experimental.Builder class BuilderSimple<T> {
+@lombok.Builder class BuilderSimple<T> {
   public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") class BuilderSimpleBuilder<T> {
     private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int yes;
     private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") List<T> also;
