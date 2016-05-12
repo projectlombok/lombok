@@ -65,4 +65,10 @@ public @interface ToString {
 	 * <strong>default: false</strong>
 	 */
 	boolean doNotUseGetters() default false;
+
+	/**
+	 * Substitute each collection, map or array by its size.
+	 * <strong>default: false</strong>
+	 */
+	boolean counts() default false;
 }

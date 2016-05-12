@@ -33,3 +33,16 @@ import lombok.Getter;
     return this.x;
   }
 }
+@ToString(counts = true,includeFieldNames = true) class ToStringConfiguration4 {
+  java.lang.String[] array;
+  java.util.List<java.lang.String> strings;
+  java.util.Set<java.lang.Integer> set;
+  java.util.Map<java.lang.String, java.lang.Integer> map;
+  int x;
+  ToStringConfiguration4() {
+    super();
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.lang.String toString() {
+    return (((((((((("ToStringConfiguration4(array=" + java.util.Arrays.deepToString(this.array)) + ", strings=") + this.strings) + ", set=") + this.set) + ", map=") + this.map) + ", x=") + this.x) + ")");
+  }
+}

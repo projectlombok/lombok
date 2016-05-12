@@ -49,6 +49,7 @@ import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.MemberEnter;
+import com.sun.tools.javac.jvm.ClassReader;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -63,7 +64,7 @@ import com.sun.tools.javac.util.ListBuffer;
 public class JavacResolution {
 	private final Attr attr;
 	private final CompilerMessageSuppressor messageSuppressor;
-	
+
 	public JavacResolution(Context context) {
 		attr = Attr.instance(context);
 		messageSuppressor = new CompilerMessageSuppressor(context);
@@ -432,5 +433,37 @@ public class JavacResolution {
 	
 	public static boolean platformHasTargetTyping() {
 		return Javac.getJavaCompilerVersion() >= 8;
+	}
+
+	public static boolean isCollection(JCExpression expression, JavacNode node) {
+		Types types = Types.instance(node.getContext());
+		Symtab syms = Symtab.instance(node.getContext());
+		Type type = expression.type;
+		if (expression instanceof JCTree.JCTypeApply) {
+			JCTree.JCTypeApply jcTypeApply = (JCTree.JCTypeApply) expression;
+			type = jcTypeApply.clazz.type;
+
+		}
+		Type boundType = JavacResolution.ReflectiveAccess.Types_upperBound(types, type);
+
+		return types.isAssignable(boundType, syms.iterableType);
+	}
+
+	public static boolean isMap(JCExpression expression, JavacNode node) {
+		Types types = Types.instance(node.getContext());
+		Type type = expression.type;
+		if (expression instanceof JCTree.JCTypeApply) {
+			JCTree.JCTypeApply jcTypeApply = (JCTree.JCTypeApply) expression;
+			type = jcTypeApply.clazz.type;
+
+		}
+		Type boundType = JavacResolution.ReflectiveAccess.Types_upperBound(types, type);
+
+		return types.isAssignable(boundType, createMapType(node));
+	}
+
+	private static Type createMapType(JavacNode node) {
+		ClassReader reader = ClassReader.instance(node.getContext());
+		return reader.enterClass(node.toName("java.util.Map")).type;
 	}
 }

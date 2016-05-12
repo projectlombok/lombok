@@ -1,12 +1,13 @@
 import lombok.ToString;
 
-@ToString(exclude="id")
+@ToString(exclude="id", counts=true)
 public class ToStringExample {
 	private static final int STATIC_VAR = 10;
 	private String name;
 	private Shape shape = new Square(5, 10);
 	private String[] tags;
 	private int id;
+	private Map<String, Object> metadata = new HashMap<>();
 	
 	public String getName() {
 		return this.getName();

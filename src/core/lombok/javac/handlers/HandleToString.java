@@ -27,12 +27,14 @@ import static lombok.javac.Javac.*;
 
 import java.util.Collection;
 
+import com.sun.tools.javac.util.Name;
 import lombok.ConfigurationKeys;
 import lombok.ToString;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
+import lombok.javac.JavacResolution;
 import lombok.javac.JavacTreeMaker;
 
 import org.mangosdk.spi.ProviderFor;
@@ -71,74 +73,77 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			}
 		}
 	}
-	
+
 	@Override public void handle(AnnotationValues<ToString> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.TO_STRING_FLAG_USAGE, "@ToString");
-		
+
 		deleteAnnotationIfNeccessary(annotationNode, ToString.class);
-		
+
 		ToString ann = annotation.getInstance();
 		List<String> excludes = List.from(ann.exclude());
 		List<String> includes = List.from(ann.of());
 		JavacNode typeNode = annotationNode.up();
-		
+
 		checkForBogusFieldNames(typeNode, annotation);
-		
+
 		Boolean callSuper = ann.callSuper();
-		
+
 		if (!annotation.isExplicit("callSuper")) callSuper = null;
 		if (!annotation.isExplicit("exclude")) excludes = null;
 		if (!annotation.isExplicit("of")) includes = null;
-		
+
 		if (excludes != null && includes != null) {
 			excludes = null;
 			annotation.setWarning("exclude", "exclude and of are mutually exclusive; the 'exclude' parameter will be ignored.");
 		}
-		
+
 		Boolean doNotUseGettersConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_DO_NOT_USE_GETTERS);
 		boolean doNotUseGetters = annotation.isExplicit("doNotUseGetters") || doNotUseGettersConfiguration == null ? ann.doNotUseGetters() : doNotUseGettersConfiguration;
 		FieldAccess fieldAccess = doNotUseGetters ? FieldAccess.PREFER_FIELD : FieldAccess.GETTER;
-		
+
 		Boolean fieldNamesConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_INCLUDE_FIELD_NAMES);
 		boolean includeFieldNames = annotation.isExplicit("includeFieldNames") || fieldNamesConfiguration == null ? ann.includeFieldNames() : fieldNamesConfiguration;
-		
-		generateToString(typeNode, annotationNode, excludes, includes, includeFieldNames, callSuper, true, fieldAccess);
+
+		Boolean countsConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_COUNTS);
+		boolean counts = annotation.isExplicit("counts") || fieldNamesConfiguration == null ? ann.counts() : countsConfiguration;
+
+		generateToString(typeNode, annotationNode, excludes, includes, includeFieldNames, callSuper, true, fieldAccess, counts);
 	}
-	
+
 	public void generateToStringForType(JavacNode typeNode, JavacNode errorNode) {
 		if (hasAnnotation(ToString.class, typeNode)) {
 			//The annotation will make it happen, so we can skip it.
 			return;
 		}
-		
-		
+
+
 		boolean includeFieldNames = true;
 		try {
 			Boolean configuration = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_INCLUDE_FIELD_NAMES);
 			includeFieldNames = configuration != null ? configuration : ((Boolean)ToString.class.getMethod("includeFieldNames").getDefaultValue()).booleanValue();
 		} catch (Exception ignore) {}
-		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, FieldAccess.GETTER);
+		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, FieldAccess.GETTER, false);
 	}
-	
+
 	public void generateToString(JavacNode typeNode, JavacNode source, List<String> excludes, List<String> includes,
-			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
+			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess, boolean counts) {
 		boolean notAClass = true;
 		if (typeNode.get() instanceof JCClassDecl) {
 			long flags = ((JCClassDecl)typeNode.get()).mods.flags;
 			notAClass = (flags & (Flags.INTERFACE | Flags.ANNOTATION)) != 0;
 		}
-		
+
 		if (callSuper == null) {
 			try {
 				callSuper = ((Boolean)ToString.class.getMethod("callSuper").getDefaultValue()).booleanValue();
 			} catch (Exception ignore) {}
 		}
-		
+
 		if (notAClass) {
 			source.addError("@ToString is only supported on a class or enum.");
 			return;
 		}
-		
+
 		ListBuffer<JavacNode> nodesForToString = new ListBuffer<JavacNode>();
 		if (includes != null) {
 			for (JavacNode child : typeNode.down()) {
@@ -159,10 +164,10 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 				nodesForToString.append(child);
 			}
 		}
-		
+
 		switch (methodExists("toString", typeNode, 0)) {
 		case NOT_EXISTS:
-			JCMethodDecl method = createToString(typeNode, nodesForToString.toList(), includeFieldNames, callSuper, fieldAccess, source.get());
+			JCMethodDecl method = createToString(typeNode, nodesForToString.toList(), includeFieldNames, callSuper, fieldAccess, source.get(), counts);
 			injectMethod(typeNode, method);
 			break;
 		case EXISTS_BY_LOMBOK:
@@ -175,16 +180,16 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			break;
 		}
 	}
-	
-	static JCMethodDecl createToString(JavacNode typeNode, Collection<JavacNode> fields, boolean includeFieldNames, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
+
+	static JCMethodDecl createToString(JavacNode typeNode, Collection<JavacNode> fields, boolean includeFieldNames, boolean callSuper, FieldAccess fieldAccess, JCTree source, boolean counts) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
-		
+
 		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(typeNode, "Override"), List.<JCExpression>nil());
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
 		JCExpression returnType = genJavaLangTypeRef(typeNode, "String");
-		
+
 		boolean first = true;
-		
+
 		String typeName = getTypeName(typeNode);
 		String infix = ", ";
 		String suffix = ")";
@@ -193,14 +198,12 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			prefix = typeName + "(super=";
 		} else if (fields.isEmpty()) {
 			prefix = typeName + "()";
-		} else if (includeFieldNames) {
-			prefix = typeName + "(" + ((JCVariableDecl)fields.iterator().next().get()).name.toString() + "=";
 		} else {
 			prefix = typeName + "(";
 		}
-		
+
 		JCExpression current = maker.Literal(prefix);
-		
+
 		if (callSuper) {
 			JCMethodInvocation callToSuper = maker.Apply(List.<JCExpression>nil(),
 					maker.Select(maker.Ident(typeNode.toName("super")), typeNode.toName("toString")),
@@ -208,51 +211,68 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			current = maker.Binary(CTC_PLUS, current, callToSuper);
 			first = false;
 		}
-		
+
 		for (JavacNode fieldNode : fields) {
 			JCExpression expr;
-			
+
 			JCExpression fieldAccessor = createFieldAccessor(maker, fieldNode, fieldAccess);
-			
+
 			JCExpression fieldType = getFieldType(fieldNode, fieldAccess);
-			
+
+			Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
+
 			// The distinction between primitive and object will be useful if we ever add a 'hideNulls' option.
 			boolean fieldIsPrimitive = fieldType instanceof JCPrimitiveTypeTree;
 			boolean fieldIsPrimitiveArray = fieldType instanceof JCArrayTypeTree && ((JCArrayTypeTree) fieldType).elemtype instanceof JCPrimitiveTypeTree;
 			boolean fieldIsObjectArray = !fieldIsPrimitiveArray && fieldType instanceof JCArrayTypeTree;
+			boolean fieldIsCollection = JavacResolution.isCollection(fieldType, fieldNode);
+			boolean fieldIsMap = JavacResolution.isMap(fieldType, fieldNode);
 			@SuppressWarnings("unused")
 			boolean fieldIsObject = !fieldIsPrimitive && !fieldIsPrimitiveArray && !fieldIsObjectArray;
-			
-			if (fieldIsPrimitiveArray || fieldIsObjectArray) {
-				JCExpression tsMethod = chainDots(typeNode, "java", "util", "Arrays", fieldIsObjectArray ? "deepToString" : "toString");
-				expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of(fieldAccessor));
-			} else expr = fieldAccessor;
-			
-			if (first) {
-				current = maker.Binary(CTC_PLUS, current, expr);
-				first = false;
-				continue;
-			}
-			
-			if (includeFieldNames) {
-				current = maker.Binary(CTC_PLUS, current, maker.Literal(infix + fieldNode.getName() + "="));
+			String fieldNodeName = fieldNode.getName();
+
+			if ((fieldIsCollection || fieldIsMap) && counts) {
+				expr = callSizeMethodNullSafe(typeNode, maker, fieldName, fieldAccessor);
+				fieldNodeName = fieldNodeName + ".size";
+			} else if (fieldIsPrimitiveArray || fieldIsObjectArray) {
+				if (counts) {
+					expr = useLengthField(typeNode, maker, fieldName, fieldAccessor);
+					fieldNodeName = fieldNodeName + ".length";
+				} else {
+					JCExpression tsMethod = chainDots(typeNode, "java", "util", "Arrays", fieldIsObjectArray ? "deepToString" : "toString");
+					expr = maker.Apply(List.<JCExpression>nil(), tsMethod, List.<JCExpression>of(fieldAccessor));
+				}
 			} else {
-				current = maker.Binary(CTC_PLUS, current, maker.Literal(infix));
+				expr = fieldAccessor;
 			}
-			
+
+			if (includeFieldNames) {
+				current = maker.Binary(CTC_PLUS, current, maker.Literal((first ? "" : infix) + fieldNodeName + "="));
+			}
 			current = maker.Binary(CTC_PLUS, current, expr);
+			first = false;
 		}
-		
-		if (!first) current = maker.Binary(CTC_PLUS, current, maker.Literal(suffix));
-		
+
+		current = maker.Binary(CTC_PLUS, current, maker.Literal(suffix));
+
 		JCStatement returnStatement = maker.Return(current);
-		
+
 		JCBlock body = maker.Block(0, List.of(returnStatement));
-		
+
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("toString"), returnType,
 				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source, typeNode.getContext());
 	}
-	
+
+	private static JCExpression callSizeMethodNullSafe(JavacNode typeNode, JavacTreeMaker maker, Name fieldName, JCExpression fieldAccessor) {
+		JCMethodInvocation sizeInvocation = maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(fieldName), typeNode.toName("size")), List.<JCExpression>nil());
+		return maker.Conditional(maker.Binary(CTC_NOT_EQUAL, fieldAccessor, maker.Literal(CTC_BOT, null)), sizeInvocation, maker.Literal(CTC_BOT, null));
+	}
+
+	private static JCExpression useLengthField(JavacNode typeNode, JavacTreeMaker maker, Name fieldName, JCExpression fieldAccessor) {
+		JCTree.JCFieldAccess lengthField = maker.Select(maker.Ident(fieldName), typeNode.toName("length"));
+		return maker.Conditional(maker.Binary(CTC_NOT_EQUAL, fieldAccessor, maker.Literal(CTC_BOT, null)), lengthField, maker.Literal(CTC_BOT, null));
+	}
+
 	public static String getTypeName(JavacNode typeNode) {
 		String typeName = ((JCClassDecl) typeNode.get()).name.toString();
 		JavacNode upType = typeNode.up();
