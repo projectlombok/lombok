@@ -372,12 +372,16 @@ class ShadowClassLoader extends ClassLoader {
 		
 		if (altName != null) {
 			URL res = super.getResource(altName);
-			if (res != null && (!noSuper || inOwnBase(res, altName))) return res;
+			if (res != null && (!noSuper || !isSystemResource(name))) return res;
 		}
 		
 		URL res = super.getResource(name);
-		if (res != null && (!noSuper || inOwnBase(res, name))) return res;
+		if (res != null && (!noSuper || !isSystemResource(name))) return res;
 		return null;
+	}
+	
+	private static boolean isSystemResource(String name) {
+		return ClassLoader.getSystemResource(name) != null;
 	}
 	
 	private boolean exclusionListMatch(String name) {
