@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Project Lombok Authors.
+ * Copyright (C) 2014-2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@ import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Completion;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -72,6 +73,17 @@ class AnnotationProcessorHider {
 				if (t instanceof RuntimeException) throw (RuntimeException) t;
 				throw new RuntimeException(t);
 			}
+		}
+	}
+	
+	@SupportedAnnotationTypes("lombok.*")
+	public static class ClaimingProcessor extends AbstractProcessor {
+		@Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+			return true;
+		}
+		
+		@Override public SourceVersion getSupportedSourceVersion() {
+			return SourceVersion.latest();
 		}
 	}
 }
