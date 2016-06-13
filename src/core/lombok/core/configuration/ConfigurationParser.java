@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 
 public class ConfigurationParser {
 	private static final Pattern LINE = Pattern.compile("(?:clear\\s+([^=]+))|(?:(\\S*?)\\s*([-+]?=)\\s*(.*?))");
-	private static final Pattern NEWLINE_FINDER = Pattern.compile("^[\t ]*(.*?)[\t ]*$", Pattern.MULTILINE);
+	private static final Pattern NEWLINE_FINDER = Pattern.compile("^[\t ]*(.*?)[\t\r ]*$", Pattern.MULTILINE);
 	
 	private ConfigurationProblemReporter reporter;
 	
