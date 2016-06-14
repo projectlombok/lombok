@@ -4,6 +4,7 @@ Lombok Changelog
 ### v1.16.9 "Edgy Guinea Pig"
 * FEATURE: Added support for JBoss logger [Issue #1103](https://github.com/rzwitserloot/lombok/issues/1103)
 * ENHANCEMENT: Running `javac -Xlint:all` would generate a warning about unclaimed annotations [Issue #1117](https://github.com/rzwitserloot/lombok/issues/1117)
+* FEATURE: Adding custom extensions to lombok now easier. [More information](https://projectlombok.org/features/extending.html).
 
 ### v1.16.8 (March 7th, 2016)
 
