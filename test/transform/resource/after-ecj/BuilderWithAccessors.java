@@ -1,4 +1,4 @@
-@lombok.experimental.Builder @lombok.experimental.Accessors(prefix = {"p", "_"}) class BuilderWithAccessors {
+@lombok.Builder @lombok.experimental.Accessors(prefix = {"p", "_"}) class BuilderWithAccessors {
   public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") class BuilderWithAccessorsBuilder {
     private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int plower;
     private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int upper;

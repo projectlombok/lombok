@@ -66,12 +66,19 @@
             		<div class="snippet">libraryDependencies += "org.projectlombok" % "lombok" % "@VERSION@"</div>
         	</div>
 		<h2>Gradle</h2>
+		
 		<div>
-			You can use lombok with gradle by adding the following to your <strong>build.gradle</strong> in the <strong>dependencies</strong> block:
-			<div class="snippet">provided "org.projectlombok:lombok:@VERSION@"</div>
+			If your gradle version is <strong> >= 2.12</strong> you can use lombok by adding the following to your <strong>build.gradle</strong> in the <strong>dependencies</strong> block:
+			<div class="snippet">compileOnly "org.projectlombok:lombok:@VERSION@"</div>
 		</div>
 		<div>
-			<em>NOTE:</em> You'll still need to download lombok, or doubleclick on the lombok.jar file downloaded by maven / ivy / gradle, to install lombok into your eclipse installation.
+			If you use an older version you can still use the following:
+			<div class="snippet">provided "org.projectlombok:lombok:@VERSION@"</div>
+			as long as your gradle build include a war task (otherwise the "provided" scope is not available and you have to create your own configuration as <a href="https://issues.gradle.org/browse/GRADLE-784">explained here</a> )
+		</div>
+		<br>
+		<div>
+			<strong><em>NOTE:</em></strong> You'll still need to download lombok, or doubleclick on the lombok.jar file downloaded by maven / ivy / gradle, to install lombok into your eclipse installation.
 		</div>
 		<a id="downloadLink" href="https://projectlombok.org/downloads/lombok.jar">Download lombok.jar</a>
 		</div>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 The Project Lombok Authors.
+ * Copyright (C) 2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok;
+package lombok.extern.jbosslog;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -27,32 +27,41 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Generates a lot of code which fits with a class that is a representation of an immutable entity.
+ * Causes lombok to generate a logger field.
  * <p>
- * Equivalent to {@code @Getter @FieldDefaults(makeFinal=true, level=AccessLevel.PRIVATE) @AllArgsConstructor @ToString @EqualsAndHashCode}.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/Log.html">the project lombok features page for lombok log annotations</a>.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/Value.html">the project lombok features page for &#64;Value</a>.
+ * Example:
+ * <pre>
+ * &#64;JBossLog
+ * public class LogExample {
+ * }
+ * </pre>
  * 
- * @see lombok.Getter
- * @see lombok.experimental.FieldDefaults
- * @see lombok.AllArgsConstructor
- * @see lombok.ToString
- * @see lombok.EqualsAndHashCode
- * @see lombok.Data
- */
-@Target(ElementType.TYPE)
+ * will generate:
+ * 
+ * <pre>
+ * public class LogExample {
+ *     private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(LogExample.class);
+ * }
+ * </pre>
+ * 
+ * This annotation is valid for classes and enumerations.<br />
+ * @see org.jboss.logging.Logger org.jboss.logging.Logger
+ * @see org.jboss.logging.Logger#getLogger(java.lang.Class) org.jboss.logging.Logger.getLogger(Class target)
+ * @see lombok.extern.apachecommons.CommonsLog &#64;CommonsLog
+ * @see lombok.extern.java.Log &#64;Log
+ * @see lombok.extern.log4j.Log4j &#64;Log4j
+ * @see lombok.extern.log4j.Log4j2 &#64;Log4j2
+ * @see lombok.extern.slf4j.XSlf4j &#64;XSlf4j
+ * @see lombok.extern.jbosslog.JBossLog &#64;JBossLog
+ *  */
 @Retention(RetentionPolicy.SOURCE)
-public @interface Value {
+@Target(ElementType.TYPE)
+public @interface JBossLog {
+	
 	/**
-	 * If you specify a static constructor name, then the generated constructor will be private, and
-	 * instead a static factory method is created that other classes can use to create instances.
-	 * We suggest the name: "of", like so:
-	 * 
-	 * <pre>
-	 *     public @Value(staticConstructor = "of") class Point { final int x, y; }
-	 * </pre>
-	 * 
-	 * Default: No static constructor, instead the normal constructor is public.
+	 * Sets the category of the constructed Logger. By default, it will use the type where the annotation is placed.
 	 */
-	String staticConstructor() default "";
+	String topic() default "";
 }

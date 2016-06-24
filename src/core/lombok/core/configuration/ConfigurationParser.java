@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Project Lombok Authors.
+ * Copyright (C) 2014-2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
 
 public class ConfigurationParser {
 	private static final Pattern LINE = Pattern.compile("(?:clear\\s+([^=]+))|(?:(\\S*?)\\s*([-+]?=)\\s*(.*?))");
-	private static final Pattern NEWLINE_FINDER = Pattern.compile("^\\s*(.*?)\\s*$", Pattern.MULTILINE);
+	private static final Pattern NEWLINE_FINDER = Pattern.compile("^[\t ]*(.*?)[\t\r ]*$", Pattern.MULTILINE);
 	
 	private ConfigurationProblemReporter reporter;
 	
