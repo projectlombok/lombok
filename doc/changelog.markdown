@@ -4,9 +4,9 @@ Lombok Changelog
 ### v1.16.9 "Edgy Guinea Pig"
 * FEATURE: Added support for JBoss logger [Issue #1103](https://github.com/rzwitserloot/lombok/issues/1103)
 * ENHANCEMENT: Running `javac -Xlint:all` would generate a warning about unclaimed annotations [Issue #1117](https://github.com/rzwitserloot/lombok/issues/1117)
+* BUGFIX: Eclipse Mars would sometimes throw a NullPointerException when using `@Delegate` [Issue 913](https://github.com/rzwitserloot/lombok/issues/913)
 
 ### v1.16.8 (March 7th, 2016)
-
 * PLATFORM: Starting jdk9 support: No more error message regarding `pid`
 * FEATURE: `@Builder` updates: It now generates `clearFieldName()` methods if `@Singular` is used. [Issue #967](https://github.com/rzwitserloot/lombok/issues/967).
 * FEATURE: `@Builder` updates: The annotation can now be put on instance methods. [Issue #63](https://github.com/rzwitserloot/lombok/issues/63).

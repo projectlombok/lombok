@@ -699,7 +699,11 @@ public class PatchDelegate {
 	}
 	
 	private static void addAllMethodBindings0(List<BindingTuple> list, TypeBinding binding, Set<String> banList, char[] fieldName, ASTNode responsible) throws DelegateRecursion {
-		if (binding instanceof SourceTypeBinding) ((SourceTypeBinding) binding).scope.environment().globalOptions.storeAnnotations = true;
+		if (binding instanceof SourceTypeBinding) {
+			ClassScope scope = ((SourceTypeBinding) binding).scope;
+			if (scope == null) return;
+			scope.environment().globalOptions.storeAnnotations = true;
+		}
 		if (binding == null) return;
 		
 		TypeBinding inner;
@@ -721,41 +725,43 @@ public class PatchDelegate {
 			}
 		}
 		
-		if (binding instanceof ReferenceBinding) {
-			ReferenceBinding rb = (ReferenceBinding) binding;
-			MethodBinding[] availableMethods = rb.availableMethods();
-			FieldBinding[] availableFields = rb.availableFields();
-			failIfContainsAnnotation(binding, availableMethods); 
-			failIfContainsAnnotation(binding, availableFields); 
-			
-			MethodBinding[] parameterizedSigs = availableMethods;
-			MethodBinding[] baseSigs = parameterizedSigs;
-			if (binding instanceof ParameterizedTypeBinding) {
-				baseSigs = ((ParameterizedTypeBinding)binding).genericType().availableMethods();
-				if (baseSigs.length != parameterizedSigs.length) {
-					// The last known state of eclipse source says this can't happen, so we rely on it,
-					// but if this invariant is broken, better to go with 'arg0' naming instead of crashing.
-					baseSigs = parameterizedSigs;
-				}
+		if (!(binding instanceof ReferenceBinding)) {
+			return;
+		}
+		
+		ReferenceBinding rb = (ReferenceBinding) binding;
+		MethodBinding[] availableMethods = rb.availableMethods();
+		FieldBinding[] availableFields = rb.availableFields();
+		failIfContainsAnnotation(binding, availableMethods); 
+		failIfContainsAnnotation(binding, availableFields); 
+		
+		MethodBinding[] parameterizedSigs = availableMethods;
+		MethodBinding[] baseSigs = parameterizedSigs;
+		if (binding instanceof ParameterizedTypeBinding) {
+			baseSigs = ((ParameterizedTypeBinding)binding).genericType().availableMethods();
+			if (baseSigs.length != parameterizedSigs.length) {
+				// The last known state of eclipse source says this can't happen, so we rely on it,
+				// but if this invariant is broken, better to go with 'arg0' naming instead of crashing.
+				baseSigs = parameterizedSigs;
 			}
-			for (int i = 0; i < parameterizedSigs.length; i++) {
-				MethodBinding mb = parameterizedSigs[i];
-				String sig = printSig(mb);
-				if (mb.isStatic()) continue;
-				if (mb.isBridge()) continue;
-				if (mb.isConstructor()) continue;
-				if (mb.isDefaultAbstract()) continue;
-				if (!mb.isPublic()) continue;
-				if (mb.isSynthetic()) continue;
-				if (!banList.add(sig)) continue; // If add returns false, it was already in there.
-				BindingTuple pair = new BindingTuple(mb, baseSigs[i], fieldName, responsible);
-				list.add(pair);
-			}
-			addAllMethodBindings0(list, rb.superclass(), banList, fieldName, responsible);
-			ReferenceBinding[] interfaces = rb.superInterfaces();
-			if (interfaces != null) {
-				for (ReferenceBinding iface : interfaces) addAllMethodBindings0(list, iface, banList, fieldName, responsible);
-			}
+		}
+		for (int i = 0; i < parameterizedSigs.length; i++) {
+			MethodBinding mb = parameterizedSigs[i];
+			String sig = printSig(mb);
+			if (mb.isStatic()) continue;
+			if (mb.isBridge()) continue;
+			if (mb.isConstructor()) continue;
+			if (mb.isDefaultAbstract()) continue;
+			if (!mb.isPublic()) continue;
+			if (mb.isSynthetic()) continue;
+			if (!banList.add(sig)) continue; // If add returns false, it was already in there.
+			BindingTuple pair = new BindingTuple(mb, baseSigs[i], fieldName, responsible);
+			list.add(pair);
+		}
+		addAllMethodBindings0(list, rb.superclass(), banList, fieldName, responsible);
+		ReferenceBinding[] interfaces = rb.superInterfaces();
+		if (interfaces != null) {
+			for (ReferenceBinding iface : interfaces) addAllMethodBindings0(list, iface, banList, fieldName, responsible);
 		}
 	}
 	
