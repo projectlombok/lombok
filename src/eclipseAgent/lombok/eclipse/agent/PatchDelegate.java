@@ -732,8 +732,8 @@ public class PatchDelegate {
 		ReferenceBinding rb = (ReferenceBinding) binding;
 		MethodBinding[] availableMethods = rb.availableMethods();
 		FieldBinding[] availableFields = rb.availableFields();
-		failIfContainsAnnotation(binding, availableMethods); 
-		failIfContainsAnnotation(binding, availableFields); 
+		failIfContainsAnnotation(binding, availableMethods);
+		failIfContainsAnnotation(binding, availableFields);
 		
 		MethodBinding[] parameterizedSigs = availableMethods;
 		MethodBinding[] baseSigs = parameterizedSigs;
