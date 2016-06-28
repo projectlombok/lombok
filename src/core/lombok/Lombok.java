@@ -71,4 +71,16 @@ public class Lombok {
 	public static <T> T preventNullAnalysis(T value) {
 		return value;
 	}
+	
+	/**
+	 * Ensures that the {@code value} is not {@code null}.
+	 * @param value the value to test for null
+	 * @param message the message of the {@link NullPointerException}
+	 * @return the value if it is not null
+	 * @throws NullPointerException with the {@code message} if the value is null
+	 */
+	public static <T> T checkNotNull(T value, String message) {
+		if (value == null) throw new NullPointerException(message);
+		return value;
+	}
 }
