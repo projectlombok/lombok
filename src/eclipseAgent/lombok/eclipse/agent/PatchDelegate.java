@@ -701,8 +701,7 @@ public class PatchDelegate {
 	private static void addAllMethodBindings0(List<BindingTuple> list, TypeBinding binding, Set<String> banList, char[] fieldName, ASTNode responsible) throws DelegateRecursion {
 		if (binding instanceof SourceTypeBinding) {
 			ClassScope scope = ((SourceTypeBinding) binding).scope;
-			if (scope == null) return;
-			scope.environment().globalOptions.storeAnnotations = true;
+			if (scope != null) scope.environment().globalOptions.storeAnnotations = true;
 		}
 		if (binding == null) return;
 		
