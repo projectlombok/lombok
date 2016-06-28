@@ -103,7 +103,6 @@ public class AnnotationProcessor extends AbstractProcessor {
 					URL selfUrl = new File(ClassRootFinder.findClassRootOfClass(AnnotationProcessor.class)).toURI().toURL();
 					m.invoke(environmentClassLoader, selfUrl);
 				}
-				return environmentClassLoader;
 			}
 			
 			ClassLoader ourClassLoader = JavacDescriptor.class.getClassLoader();
