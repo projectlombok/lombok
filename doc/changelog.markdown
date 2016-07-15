@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.16.9 "Edgy Guinea Pig"
+### v1.16.10 (July 15th, 2016)
 * FEATURE: Added support for JBoss logger [Issue #1103](https://github.com/rzwitserloot/lombok/issues/1103)
 * ENHANCEMENT: Running `javac -Xlint:all` would generate a warning about unclaimed annotations [Issue #1117](https://github.com/rzwitserloot/lombok/issues/1117)
 * BUGFIX: Eclipse Mars would sometimes throw a NullPointerException when using `@Delegate` [Issue #913](https://github.com/rzwitserloot/lombok/issues/913)
