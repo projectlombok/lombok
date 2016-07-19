@@ -1075,7 +1075,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 	@Override public void visitForLoop(JCForLoop tree) {
 		aPrint("for (");
 		if (tree.init.nonEmpty()) {
-			// ForInit is either a list of StatementExpressionList or a LocalVariableDeclaration
+			// ForInit is either a StatementExpressionList or a LocalVariableDeclaration
 			if (tree.init.head instanceof JCVariableDecl) {
 				boolean first = true;
 				int dims = 0;
