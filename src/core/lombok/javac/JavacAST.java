@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2015 The Project Lombok Authors.
+ * Copyright (C) 2009-2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.annotation.processing.Messager;
 import javax.tools.Diagnostic;
@@ -315,7 +317,6 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			// @Foo int x, y; is handled in javac by putting the same annotation node on 2 JCVariableDecls.
 			return null;
 		}
-		
 		return putInMap(new JavacNode(this, annotation, null, Kind.ANNOTATION));
 	}
 	
@@ -333,10 +334,38 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		if (statement instanceof JCClassDecl) return buildType((JCClassDecl)statement);
 		if (statement instanceof JCVariableDecl) return buildLocalVar((JCVariableDecl)statement, Kind.LOCAL);
 		if (statement instanceof JCTry) return buildTry((JCTry) statement);
-		
+		if (statement.getClass().getSimpleName().equals("JCLambda")) return buildLambda(statement);
 		if (setAndGetAsHandled(statement)) return null;
 		
 		return drill(statement);
+	}
+	
+	private JavacNode buildLambda(JCTree jcTree) {
+		return buildStatementOrExpression(getBody(jcTree));
+	}
+	
+	private JCTree getBody(JCTree jcTree) {
+		try {
+			return (JCTree) getBodyMethod(jcTree.getClass()).invoke(jcTree);
+		} catch (Exception e) {
+			throw Javac.sneakyThrow(e);
+		}
+	}
+	
+	private final static ConcurrentMap<Class<?>, Method> getBodyMethods = new ConcurrentHashMap<Class<?>, Method>();
+	
+	private Method getBodyMethod(Class<?> c) {
+		Method m = getBodyMethods.get(c);
+		if (m != null) {
+			return m;
+		}
+		try {
+			m = c.getMethod("getBody");
+		} catch (NoSuchMethodException e) {
+			throw Javac.sneakyThrow(e);
+		}
+		getBodyMethods.putIfAbsent(c, m);
+		return getBodyMethods.get(c);
 	}
 	
 	private JavacNode drill(JCTree statement) {
