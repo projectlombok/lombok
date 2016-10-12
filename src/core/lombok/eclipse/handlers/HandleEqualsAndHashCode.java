@@ -254,9 +254,11 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			//fallthrough
 		}
 		
-		MethodDeclaration equalsMethod = createEquals(typeNode, nodesForEquality, callSuper, errorNode.get(), fieldAccess, needsCanEqual, onParam);
-		equalsMethod.traverse(new SetGeneratedByVisitor(errorNode.get()), ((TypeDeclaration)typeNode.get()).scope);
-		injectMethod(typeNode, equalsMethod);
+		if (methodReallyExists("equals", typeNode, 1) == MemberExistsResult.NOT_EXISTS) {
+			MethodDeclaration equalsMethod = createEquals(typeNode, nodesForEquality, callSuper, errorNode.get(), fieldAccess, needsCanEqual, onParam);
+			equalsMethod.traverse(new SetGeneratedByVisitor(errorNode.get()), ((TypeDeclaration)typeNode.get()).scope);
+			injectMethod(typeNode, equalsMethod);
+		}
 		
 		if (needsCanEqual && canEqualExists == MemberExistsResult.NOT_EXISTS) {
 			MethodDeclaration canEqualMethod = createCanEqual(typeNode, errorNode.get(), onParam);
@@ -264,9 +266,11 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			injectMethod(typeNode, canEqualMethod);
 		}
 		
-		MethodDeclaration hashCodeMethod = createHashCode(typeNode, nodesForEquality, callSuper, errorNode.get(), fieldAccess);
-		hashCodeMethod.traverse(new SetGeneratedByVisitor(errorNode.get()), ((TypeDeclaration)typeNode.get()).scope);
-		injectMethod(typeNode, hashCodeMethod);
+		if (methodReallyExists("hashCode", typeNode, 0) == MemberExistsResult.NOT_EXISTS) {
+			MethodDeclaration hashCodeMethod = createHashCode(typeNode, nodesForEquality, callSuper, errorNode.get(), fieldAccess);
+			hashCodeMethod.traverse(new SetGeneratedByVisitor(errorNode.get()), ((TypeDeclaration)typeNode.get()).scope);
+			injectMethod(typeNode, hashCodeMethod);
+		}
 	}
 	
 	public MethodDeclaration createHashCode(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {
