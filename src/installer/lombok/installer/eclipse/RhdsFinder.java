@@ -21,49 +21,50 @@
  */
 package lombok.installer.eclipse;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import lombok.installer.CorruptedIdeLocationException;
+import lombok.installer.IdeFinder;
 import lombok.installer.IdeLocation;
-import lombok.installer.IdeLocationProvider;
-import lombok.installer.IdeFinder.OS;
 
 import org.mangosdk.spi.ProviderFor;
 
-@ProviderFor(IdeLocationProvider.class)
-public class RhdsLocationProvider extends EclipseLocationProvider {
-	@Override protected List<String> getEclipseExecutableNames() {
-		return Arrays.asList("devstudio.app", "devstudio.exe", "devstudioc.exe", "devstudio");
+/**
+ * RHDS (Red Hat JBoss Developer Studio) is an eclipse variant.
+ * Other than different executable names, it's the same as eclipse, as far as lombok support goes.
+ */
+@ProviderFor(IdeFinder.class)
+public class RhdsFinder extends EclipseFinder {
+	@Override protected IdeLocation createLocation(String guess) throws CorruptedIdeLocationException {
+		return new RhdsLocationProvider().create0(guess);
 	}
 	
-	@Override protected String getIniName() {
-		return "devstudio.ini";
+	@Override protected String getDirName() {
+		return "studio";
 	}
 	
-	@Override protected IdeLocation makeLocation(String name, File ini) throws CorruptedIdeLocationException {
-		return new RhdsLocation(name, ini);
-	}
-	
-	@Override protected String getMacAppName() {
+	@Override protected String getMacExecutableName() {
 		return "devstudio.app";
 	}
 	
-	@Override protected String getUnixAppName() {
+	@Override protected String getUnixExecutableName() {
 		return "devstudio";
 	}
 	
-	@Override public Pattern getLocationSelectors(OS os) {
-		switch (os) {
-		case MAC_OS_X:
-			return Pattern.compile("^(devstudio|devstudio\\.ini|devstudio\\.app)$", Pattern.CASE_INSENSITIVE);
-		case WINDOWS:
-			return Pattern.compile("^(devstudioc?\\.exe|devstudio\\.ini)$", Pattern.CASE_INSENSITIVE);
-		default:
-		case UNIX:
-			return Pattern.compile("^(devstudio|devstudio\\.ini)$", Pattern.CASE_INSENSITIVE);
-		}
+	@Override protected String getWindowsExecutableName() {
+		return "devstudio.exe";
+	}
+	
+	@Override protected List<String> getSourceDirsOnWindows() {
+		return Arrays.asList("\\", "\\Program Files", "\\Program Files (x86)", System.getProperty("user.home", "."));
+	}
+	
+	@Override protected List<String> getSourceDirsOnMac() {
+		return Arrays.asList("/Applications", System.getProperty("user.home", "."));
+	}
+	
+	@Override protected List<String> getSourceDirsOnUnix() {
+		return Arrays.asList(System.getProperty("user.home", "."));
 	}
 }
