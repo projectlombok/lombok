@@ -62,12 +62,18 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	Map<N, N> identityDetector = new IdentityHashMap<N, N>();
 	private Map<N, L> nodeMap = new IdentityHashMap<N, L>();
 	private boolean changed = false;
+	
+	// The supertypes which are considered AST Node children. Usually, the Statement, and the Expression,
+	// though some platforms (such as Eclipse) group these under one common supertype.
+	private final Collection<Class<? extends N>> statementTypes;
+	
 	private static final HistogramTracker configTracker = System.getProperty("lombok.timeConfig") == null ? null : new HistogramTracker("lombok.config");
 	
-	protected AST(String fileName, String packageDeclaration, ImportList imports) {
+	protected AST(String fileName, String packageDeclaration, ImportList imports, Collection<Class<? extends N>> statementTypes) {
 		this.fileName = fileName == null ? "(unknown).java" : fileName;
 		this.packageDeclaration = packageDeclaration;
 		this.imports = imports;
+		this.statementTypes = statementTypes;
 	}
 	
 	/**
@@ -262,13 +268,8 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 		return Object.class;
 	}
 	
-	/**
-	 * The supertypes which are considered AST Node children. Usually, the Statement, and the Expression,
-	 * though some platforms (such as Eclipse) group these under one common supertype. */
-	protected abstract Collection<Class<? extends N>> getStatementTypes();
-	
-	protected boolean shouldDrill(Class<?> parentType, Class<?> childType, String fieldName) {
-		for (Class<?> statementType : getStatementTypes()) {
+	private boolean shouldDrill(Class<?> parentType, Class<?> childType, String fieldName) {
+		for (Class<?> statementType : statementTypes) {
 			if (statementType.isAssignableFrom(childType)) return true;
 		}
 		

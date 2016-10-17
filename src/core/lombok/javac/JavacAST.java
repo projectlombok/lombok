@@ -81,7 +81,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	 * @param top The compilation unit, which serves as the top level node in the tree to be built.
 	 */
 	public JavacAST(Messager messager, Context context, JCCompilationUnit top) {
-		super(sourceName(top), PackageName.getPackageName(top), new JavacImportList(top));
+		super(sourceName(top), PackageName.getPackageName(top), new JavacImportList(top), statementTypes());
 		setTop(buildCompilationUnit(top));
 		this.context = context;
 		this.messager = messager;
@@ -383,9 +383,8 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		}
 	}
 	
-	/** For javac, both JCExpression and JCStatement are considered as valid children types. */
-	@Override
-	protected Collection<Class<? extends JCTree>> getStatementTypes() {
+	/* For javac, both JCExpression and JCStatement are considered as valid children types. */
+	private static Collection<Class<? extends JCTree>> statementTypes() {
 		Collection<Class<? extends JCTree>> collection = new ArrayList<Class<? extends JCTree>>(3);
 		collection.add(JCStatement.class);
 		collection.add(JCExpression.class);
