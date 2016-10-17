@@ -276,7 +276,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		if (rv instanceof List) return (List<JCTree>) rv;
 		return Collections.emptyList();
 	}
-	
+
 	private JavacNode buildTry(JCTry tryNode) {
 		if (setAndGetAsHandled(tryNode)) return null;
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
@@ -315,7 +315,6 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			// @Foo int x, y; is handled in javac by putting the same annotation node on 2 JCVariableDecls.
 			return null;
 		}
-		
 		return putInMap(new JavacNode(this, annotation, null, Kind.ANNOTATION));
 	}
 	
@@ -333,12 +332,33 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		if (statement instanceof JCClassDecl) return buildType((JCClassDecl)statement);
 		if (statement instanceof JCVariableDecl) return buildLocalVar((JCVariableDecl)statement, Kind.LOCAL);
 		if (statement instanceof JCTry) return buildTry((JCTry) statement);
-		
+		if (statement.getClass().getSimpleName().equals("JCLambda")) return buildLambda(statement);
 		if (setAndGetAsHandled(statement)) return null;
-		
+
 		return drill(statement);
 	}
-	
+
+	private JavacNode buildLambda(JCTree jcTree) {
+		final JCTree body = getBody(jcTree);
+		JavacNode javacNode = buildStatementOrExpression(body);
+		return javacNode;
+	}
+
+	private JCTree getBody(JCTree jcTree) {
+		Method method;
+		try {
+			method = jcTree.getClass().getMethod("getBody");
+		} catch (NoSuchMethodException e) {
+			throw new RuntimeException(e);
+		}
+		try {
+			JCTree body = (JCTree) method.invoke(jcTree);
+			return body;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	private JavacNode drill(JCTree statement) {
 		try {
 			List<JavacNode> childNodes = new ArrayList<JavacNode>();
