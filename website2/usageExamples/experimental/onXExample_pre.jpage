@@ -1,0 +1,15 @@
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+import javax.inject.Inject;
+import javax.persistence.Id;
+import javax.persistence.Column;
+import javax.validation.constraints.Max;
+
+@AllArgsConstructor(onConstructor=@__(@Inject))
+public class OnXExample {
+	@Getter(onMethod=@__({@Id, @Column(name="unique-id")}))
+	@Setter(onParam=@__(@Max(10000)))
+	private long unid;
+}

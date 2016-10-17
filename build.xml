@@ -345,6 +345,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor</echo>
 			<srcdir dir="src/delombok" />
 			<srcdir dir="src/stubs" />
 			<srcdir dir="src/testAP" />
+			<srcdir dir="src/website" />
 			<srcdir dir="experimental/src" />
 			<srcdir dir="test/transform/src" />
 			<srcdir dir="test/core/src" />

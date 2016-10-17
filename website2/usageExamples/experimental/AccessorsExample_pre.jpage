@@ -1,0 +1,14 @@
+import lombok.experimental.Accessors;
+import lombok.Getter;
+import lombok.Setter;
+
+@Accessors(fluent = true)
+public class AccessorsExample {
+	@Getter @Setter
+	private int age = 10;
+}
+
+class PrefixExample {
+	@Accessors(prefix = "f") @Getter
+	private String fName = "Hello, World!";
+}

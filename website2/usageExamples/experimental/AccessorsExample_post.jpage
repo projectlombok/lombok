@@ -1,0 +1,20 @@
+public class AccessorsExample {
+	private int age = 10;
+	
+	public int age() {
+		return this.age;
+	}
+	
+	public AccessorsExample age(final int age) {
+		this.age = age;
+		return this;
+	}
+}
+
+class PrefixExample {
+	private String fName = "Hello, World!";
+	
+	public String getName() {
+		return this.fName;
+	}
+}

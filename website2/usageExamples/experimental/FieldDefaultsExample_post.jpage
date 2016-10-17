@@ -1,0 +1,12 @@
+public class FieldDefaultsExample {
+	public final int a;
+	private final int b;
+	private int c;
+	final int d;
+	
+	FieldDefaultsExample() {
+		a = 0;
+		b = 0;
+		d = 0;
+	}
+}

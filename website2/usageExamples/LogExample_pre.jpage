@@ -1,0 +1,26 @@
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
+
+@Log
+public class LogExample {
+	
+	public static void main(String... args) {
+		log.error("Something's wrong here");
+	}
+}
+
+@Slf4j
+public class LogExampleOther {
+	
+	public static void main(String... args) {
+		log.error("Something else is wrong here");
+	}
+}
+
+@CommonsLog(topic="CounterLog")
+public class LogExampleCategory {
+
+	public static void main(String... args) {
+		log.error("Calling the 'CounterLog' with a message");
+	}
+}

@@ -1,0 +1,42 @@
+<#import "../_features.html" as f>
+
+<@f.scaffold title="@UtilityClass" logline="Utility, metility, wetility! Utility classes for the masses.">
+	<@f.history>
+		<p>
+			<code>@UtilityClass</code> was introduced as an experimental feature in lombok v1.16.2.
+		</p>
+	</@f.history>
+
+	<@f.experimental>
+		<ul>
+			<li>Some debate as to whether its common enough to count as boilerplate.</li>
+		</ul>
+		Current status: <em>positive</em> - Currently we feel this feature may move out of experimental status with no or minor changes soon.
+	</@f.experimental>
+
+	<@f.overview>
+		<p>
+			A utility class is a class that is just a namespace for functions. No instances of it can exist, and all its members are static. For example, <code>java.lang.Math</code> and <code>java.util.Collections</code> are well known utility classes. This annotation automatically turns the annotated class into one.
+		</p><p>
+			A utility class cannot be instantiated. By marking your class with <code>@UtilityClass</code>, lombok will automatically generate a private constructor that throws an exception, flags as error any explicit constructors you add, and marks the class <code>final</code>. If the class is an inner class, the class is also marked <code>static</code>.
+		</p><p>
+			<em>All</em> members of a utility class are automatically marked as <code>static</code>. Even fields and inner classes.
+		</p>
+	</@f.overview>
+
+	<@f.snippets name="experimental/UtilityClass" />
+
+	<@f.confKeys>
+		<dt>
+			<code>lombok.utilityClass.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
+		</dt><dd>
+			Lombok will flag any usage of <code>@UtilityClass</code> as a warning or error if configured.
+		</dd>
+	</@f.confKeys>
+
+	<@f.smallPrint>
+		<p>
+			There isn't currently any way to create non-static members, or to define your own constructor. If you want to instantiate the utility class, even only as an internal implementation detail, <code>@UtilityClass</code> cannot be used.
+		</p>
+	</@f.smallPrint>
+</@f.scaffold>

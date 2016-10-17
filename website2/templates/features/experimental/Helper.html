@@ -1,0 +1,52 @@
+<#import "../_features.html" as f>
+
+<@f.scaffold title="@Helper" logline="With a little help from my friends... Helper methods for java.">
+	<@f.history>
+		<p>
+			<code>@Helper</code> was introduced as an experimental feature in lombok v1.16.6.
+		</p>
+	</@f.history>
+
+	<@f.experimental>
+		<ul>
+			<li>
+				Lambdas with general function types offer an alternative strategy.
+			</li><li>
+				Perhaps a way to make helper methods with less boilerplate is possible, making this feature obsolete.
+			</li>
+		</ul>
+		Current status: <em>unknown</em> - We don't have enough experience with this feature to make predictions on its future.
+	</@f.experimental>
+
+	<@f.overview>
+		<p>
+			This annotation lets you put methods in methods. You might not know this, but you can declare classes inside methods, and the methods in this class can access any (effectively) final local variable or parameter defined and set before the declaration. Unfortunately, to actually call any methods you'd have to make an instance of this method local class first, but that's where <code>@Helper</code> comes in and helps you out! Annotate a method local class with <code>@Helper</code> and it's as if all the methods in that helper class are methods that you can call directly, just as if java had allowed methods to exist inside methods.
+		</p><p>
+			Normally you'd have to declare an instance of your helper, for example: <code>HelperClass h = new HelperClass();</code> directly after declaring your helper class, and then call methods in your helper class with <code>h.helperMethod();</code>. With <code>@Helper</code>, both of these things are no longer needed: You do not need to waste a line of code declaring an instance of the helper, and you don't need to prefix all your calls to helper methods with <code>nameOfHelperInstance.</code>
+		</p>
+	</@f.overview>
+
+	<@f.snippets name="experimental/Helper" />
+
+	<@f.confKeys>
+		<dt>
+			<code>lombok.helper.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
+		</dt><dd>
+			Lombok will flag any usage of <code>@Helper</code> as a warning or error if configured.
+		</dd>
+	</@f.confKeys>
+
+	<@f.smallPrint>
+		<p>
+			<code>@Helper</code> requires that the helper class has a no-args constructor. A compiler error will be generated if this is not the case.
+		</p><p>
+			Currently, the instance of your helper that's made under the hood is called <code>$Foo</code>, where <code>Foo</code> is the name of your helper. We might change this in the future; please don't rely on this variable existing. We might even replace this later with a sibling method instead.
+		</p><p>
+			Please don't rely on <code>this</code> making any sense in the helper method code. You can refer to the real 'this' by using the syntax <code>NameOfMyClass.this</code>.
+		</p><p>
+			<em>ANY</em> unqualified method call in code that exists <em>below</em> the declaration of the helper method with the same name as any method in the helper is assumed to be a call to the helper. If the arguments don't end up being compatible, you get a compiler error.
+		</p><p>
+			Unless you're using JDK8 or higher (which introduced the concept of 'effectively final'), you'll have to declare local variables and parameters as <code>final</code> if you wish to refer to them in your method local class. This is a java limitation, not something specific to lombok's <code>@Helper</code>.
+		</p>
+	</@f.smallPrint>
+</@f.scaffold>

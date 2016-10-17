@@ -1,0 +1,14 @@
+public class HelperExample {
+	int someMethod(int arg1) {
+		int localVar = 5;
+
+		class Helpers {
+			int helperMethod(int arg) {
+				return arg + localVar;
+			}
+		}
+		Helpers $Helpers = new Helpers();
+
+		return $Helpers.helperMethod(10);
+	}
+}

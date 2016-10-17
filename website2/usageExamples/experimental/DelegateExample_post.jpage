@@ -1,0 +1,97 @@
+import java.util.ArrayList;
+import java.util.Collection;
+
+public class DelegationExample {
+	private interface SimpleCollection {
+		boolean add(String item);
+		boolean remove(Object item);
+	}
+	
+	private final Collection<String> collection = new ArrayList<String>();
+	
+	@java.lang.SuppressWarnings("all")
+	public boolean add(final java.lang.String item) {
+		return this.collection.add(item);
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public boolean remove(final java.lang.Object item) {
+		return this.collection.remove(item);
+	}
+}
+
+class ExcludesDelegateExample {
+	long counter = 0L;
+	
+	private interface Add {
+		boolean add(String x);
+		boolean addAll(Collection<? extends String> x);
+	}
+	
+	private final Collection<String> collection = new ArrayList<String>();
+	
+	public boolean add(String item) {
+		counter++;
+		return collection.add(item);
+	}
+	
+	public boolean addAll(Collection<? extends String> col) {
+		counter += col.size();
+		return collection.addAll(col);
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public int size() {
+		return this.collection.size();
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public boolean isEmpty() {
+		return this.collection.isEmpty();
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public boolean contains(final java.lang.Object arg0) {
+		return this.collection.contains(arg0);
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public java.util.Iterator<java.lang.String> iterator() {
+		return this.collection.iterator();
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public java.lang.Object[] toArray() {
+		return this.collection.toArray();
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public <T extends .java.lang.Object>T[] toArray(final T[] arg0) {
+		return this.collection.<T>toArray(arg0);
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public boolean remove(final java.lang.Object arg0) {
+		return this.collection.remove(arg0);
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public boolean containsAll(final java.util.Collection<?> arg0) {
+		return this.collection.containsAll(arg0);
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public boolean removeAll(final java.util.Collection<?> arg0) {
+		return this.collection.removeAll(arg0);
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public boolean retainAll(final java.util.Collection<?> arg0) {
+		return this.collection.retainAll(arg0);
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public void clear() {
+		this.collection.clear();
+	}
+}

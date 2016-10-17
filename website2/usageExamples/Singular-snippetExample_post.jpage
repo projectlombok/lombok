@@ -1,0 +1,160 @@
+import java.util.Collection;
+import java.util.Set;
+import java.util.SortedMap;
+import com.google.common.collect.ImmutableList;
+
+public class SingularExample<T extends Number> {
+	private Set<String> occupations;
+	private ImmutableList<String> axes;
+	private SortedMap<Integer, T> elves;
+	private Collection<?> minutiae;
+	
+	SingularExample(Set<String> occupations, ImmutableList<String> axes, SortedMap<Integer, T> elves, Collection<?> minutiae) {
+		this.occupations = occupations;
+		this.axes = axes;
+		this.elves = elves;
+		this.minutiae = minutiae;
+	}
+	
+	public static class SingularExampleBuilder<T extends Number> {
+		private java.util.ArrayList<String> occupations;
+		private com.google.common.collect.ImmutableList.Builder<String> axes;
+		private java.util.ArrayList<Integer> elves$key;
+		private java.util.ArrayList<T> elves$value;
+		private java.util.ArrayList<java.lang.Object> minutiae;
+		
+		SingularExampleBuilder() {
+		}
+		
+		public SingularExampleBuilder<T> occupation(String occupation) {
+			if (this.occupations == null) {
+				this.occupations = new java.util.ArrayList<String>();
+			}
+			
+			this.occupations.add(occupation);
+			return this;
+		}
+		
+		@java.lang.SuppressWarnings("all")
+		public SingularExampleBuilder<T> occupations(java.util.Collection<? extends String> occupations) {
+			if (this.occupations == null) {
+				this.occupations = new java.util.ArrayList<String>();
+			}
+			
+			this.occupations.addAll(occupations);
+			return this;
+		}
+		
+		public SingularExampleBuilder<T> axis(String axis) {
+			if (this.axes == null) {
+				this.axes = com.google.common.collect.ImmutableList.builder();
+			}
+			
+			this.axes.add(axis);
+			return this;
+		}
+		
+		public SingularExampleBuilder<T> axes(java.lang.Iterable<? extends String> axes) {
+			if (this.axes == null) {
+				this.axes = com.google.common.collect.ImmutableList.builder();
+			}
+			
+			this.axes.addAll(axes);
+			return this;
+		}
+		
+		public SingularExampleBuilder<T> elf(Integer elfKey, T elfValue) {
+			if (this.elves$key == null) {
+				this.elves$key = new java.util.ArrayList<Integer>();
+				this.elves$value = new java.util.ArrayList<T>();
+			}
+			
+			this.elves$key.add(elfKey);
+			this.elves$value.add(elfValue);
+			return this;
+		}
+		
+		public SingularExampleBuilder<T> elves(java.util.Map<? extends Integer, ? extends T> elves) {
+			if (this.elves$key == null) {
+				this.elves$key = new java.util.ArrayList<Integer>();
+				this.elves$value = new java.util.ArrayList<T>();
+			}
+			
+			for (java.util.Map.Entry<? extends Integer, ? extends T> $lombokEntry : elves.entrySet()) {
+				this.elves$key.add($lombokEntry.getKey());
+				this.elves$value.add($lombokEntry.getValue());
+			}
+			return this;
+		}
+		
+		public SingularExampleBuilder<T> minutia(java.lang.Object minutia) {
+			if (this.minutiae == null) {
+				this.minutiae = new java.util.ArrayList<java.lang.Object>();
+			}
+			
+			this.minutiae.add(minutia);
+			return this;
+		}
+		
+		public SingularExampleBuilder<T> minutiae(java.util.Collection<?> minutiae) {
+			if (this.minutiae == null) {
+				this.minutiae = new java.util.ArrayList<java.lang.Object>();
+			}
+			
+			this.minutiae.addAll(minutiae);
+			return this;
+		}
+		
+		public SingularExample<T> build() {
+			java.util.Set<String> occupations;
+			switch (this.occupations == null ? 0 : this.occupations.size()) {
+			case 0: 
+				occupations = java.util.Collections.emptySet();
+				break;
+			
+			case 1: 
+				occupations = java.util.Collections.singleton(this.occupations.get(0));
+				break;
+			
+			default: 
+				occupations = new java.util.LinkedHashSet<String>(this.occupations.size() < 1073741824 ? 1 + this.occupations.size() + (this.occupations.size() - 3) / 3 : java.lang.Integer.MAX_VALUE);
+				occupations.addAll(this.occupations);
+				occupations = java.util.Collections.unmodifiableSet(occupations);
+			
+			}
+			
+			com.google.common.collect.ImmutableList<String> axes = this.axes == null ? com.google.common.collect.ImmutableList.<String>of() : this.axes.build();
+			
+			java.util.SortedMap<Integer, T> elves = new java.util.TreeMap<Integer, T>();
+			if (this.elves$key != null) for (int $i = 0; $i < (this.elves$key == null ? 0 : this.elves$key.size()); $i++) elves.put(this.elves$key.get($i), this.elves$value.get($i));
+			elves = java.util.Collections.unmodifiableSortedMap(elves);
+			
+			java.util.Collection<java.lang.Object> minutiae;
+			switch (this.minutiae == null ? 0 : this.minutiae.size()) {
+			case 0: 
+				minutiae = java.util.Collections.emptyList();
+				break;
+			
+			case 1: 
+				minutiae = java.util.Collections.singletonList(this.minutiae.get(0));
+				break;
+			
+			default: 
+				minutiae = java.util.Collections.unmodifiableList(new java.util.ArrayList<java.lang.Object>(this.minutiae));
+			
+			}
+			
+			return new SingularExample<T>(occupations, axes, elves, minutiae);
+		}
+		
+		@java.lang.Override
+		public java.lang.String toString() {
+			return "SingularExample.SingularExampleBuilder(occupations=" + this.occupations + ", axes=" + this.axes + ", elves$key=" + this.elves$key + ", elves$value=" + this.elves$value + ", minutiae=" + this.minutiae + ")";
+		}
+	}
+	
+	@java.lang.SuppressWarnings("all")
+	public static <T extends Number> SingularExampleBuilder<T> builder() {
+		return new SingularExampleBuilder<T>();
+	}
+}

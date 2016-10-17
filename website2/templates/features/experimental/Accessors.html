@@ -1,0 +1,75 @@
+<#import "../_features.html" as f>
+
+<@f.scaffold title="@Accessors" logline="A more fluent API for getters and setters.">
+	<@f.history>
+		<p>
+			<code>@Accessors</code> was introduced as experimental feature in lombok v0.11.0.
+		</p>
+	</@f.history>
+
+	<@f.experimental>
+		<ul>
+			<li>
+				We may want to roll these features into a more complete property support concept.
+			</li><li>
+				New feature – community feedback requested.
+			</li>
+		</ul>
+		Current status: <em>positive</em> - Currently we feel this feature may move out of experimental status with no or minor changes soon.
+	</@f.experimental>
+
+	<@f.overview>
+		<p>
+			The <code>@Accessors</code> annotation is used to configure how lombok generates and looks for getters and setters.
+		</p><p>
+			By default, lombok follows the <em>bean specification</em> for getters and setters: The getter for a field named <code>pepper</code> is <code>getPepper</code> for example. However, some might like to break with the <em>bean specification</em> in order to end up with nicer looking APIs. <code>@Accessors</code> lets you do this.
+		</p><p>
+			Some programmers like to use a prefix for their fields, i.e. they write <code>fPepper</code> instead of <code>pepper</code>. We <em>strongly</em> discourage doing this, as you can't unit test the validity of your prefixes, and refactor scripts may turn fields into local variables or method names. Furthermore, your tools (such as your editor) can take care of rendering the identifier in a certain way if you want this information to be instantly visible. Nevertheless, you can list the prefixes that your project uses via <code>@Accessors</code> as well.
+		</p><p>
+			<code>@Accessors</code> therefore has 3 options:
+			<ul>
+				<li>
+					<code>fluent</code> – A boolean. If <em>true</em>, the getter for <code>pepper</code> is just <code>pepper()</code>, and the setter is <code>pepper(T newValue)</code>. Furthermore, unless specified, <code>chain</code> defaults to <em>true</em>. <br />
+					Default: <em>false</em>.
+				</li><li>
+					<code>chain</code> – A boolean. If <em>true</em>, generated setters return <code>this</code> instead of <code>void</code>.<br />
+					Default: <em>false</em>, unless <code>fluent=true</code>, then Default: <em>true</em>.
+				</li><li>
+					<code>prefix</code> – A list of strings. If present, fields must be prefixed with any of these prefixes. Each field name is compared to each prefix in the list in turn, and if a match is found, the prefix is stripped out to create the base name for the field. It is legal to include an empty string in the list, which will always match. For characters which are letters, the character following the prefix must not be a lowercase letter, i.e. <code>pepper</code> is not a match even to prefix <code>p</code>, but <code>pEpper</code> would be (and would mean the base name of this field is <code>epper</code>).
+				</li>
+			</ul>
+		<p><p>
+			The <code>@Accessors</code> annotation is legal on types and fields; the annotation that applies is the one on the field if present, otherwise the one on the class. When a <code>@Accessors</code> annotation on a field is present, any <code>@Accessors</code> annotation also present on that field's type is ignored.
+		</p>
+	</@f.overview>
+
+	<@f.snippets name="experimental/Accessors" />
+
+	<@f.confKeys>
+		<dt>
+			<code>lombok.accessors.chain</code> = [<code>true</code> | <code>false</code>] (default: false)
+		</dt><dd>
+			If set to <code>true</code>, any class that either doesn't have an <code>@Accessors</code> annotation, or it does, but that annotation does not have an explicit value for the <code>chain</code> parameter, will act as if <code>@Accessors(chain = true)</code> is present.
+		</dd><dt>
+			<code>lombok.accessors.fluent</code> = [<code>true</code> | <code>false</code>] (default: false)
+		</dt><dd>
+			If set to <code>true</code>, any class that either doesn't have an <code>@Accessors</code> annotation, or it does, but that annotation does not have an explicit value for the <code>fluent</code> parameter, will act as if <code>@Accessors(fluent = true)</code> is present.
+		</dd><dt>
+			<code>lombok.accessors.prefix</code> += <em>a field prefix</em> (default: empty list)
+		</dt><dd>
+			This is a list property; entries can be added with the <code>+=</code> operator. Inherited prefixes from parent config files can be removed with the <code>-=</code> operator. Any class that either doesn't have an <code>@Accessors</code> annotation, or it does, but that annotation does not have an explicit value for the <code>prefix</code> parameter, will act as if <code>@Accessors(prefix = {<em>prefixes listed in configuration</em>})</code> is present.
+		</dd><dt>
+			<code>lombok.accessors.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
+		</dt><dd>
+			Lombok will flag any usage of <code>@Accessors</code> as a warning or error if configured.
+		</dd>
+	</@f.confKeys>
+
+	<@f.smallPrint>
+		<p>
+			The nearest <code>@Accessors</code> annotation is also used for the various methods in lombok that look for getters, such as <code>@EqualsAndHashCode</code>.
+		</p><p>
+			If a prefix list is provided and a field does not start with one of them, that field is skipped entirely by lombok, and a warning will be generated.
+		</p>
+	</@f.smallPrint>
+</@f.scaffold>

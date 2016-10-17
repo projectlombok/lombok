@@ -460,6 +460,17 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<FlagUsageType> HELPER_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.helper.flagUsage", "Emit a warning or error if @Helper is used.") {};
 	
+	// ----- onX -----
+
+	/**
+	 * lombok configuration: {@code lombok.onX.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 *
+	 * If set, <em>any</em> usage of {@code onX} results in a warning / error.
+	 * <br />
+	 * Specifically, this flags usage of {@code @Getter(onMethod=...)}, {@code @Setter(onParam=...)}, {@code @Setter(onMethod=...)}, {@code @XArgsConstructor(onConstructor=...)}.
+	 */
+	public static final ConfigurationKey<FlagUsageType> ON_X_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.onX.flagUsage", "Emit a warning or error if onX is used.") {};
+	
 	// ----- UtilityClass -----
 	
 	/**

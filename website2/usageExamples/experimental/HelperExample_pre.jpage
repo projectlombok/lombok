@@ -1,0 +1,15 @@
+import lombok.experimental.Helper;
+
+public class HelperExample {
+	int someMethod(int arg1) {
+		int localVar = 5;
+
+		@Helper class Helpers {
+			int helperMethod(int arg) {
+				return arg + localVar;
+			}
+		}
+
+		return helperMethod(10);
+	}
+}

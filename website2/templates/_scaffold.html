@@ -1,0 +1,108 @@
+<#macro feature title code>
+	<div class="bs-callout bs-callout-danger">
+		<h4><a href="${code}"><code>${title}</code></a></h4>
+		<p><#nested></p>
+	</div>
+</#macro>
+
+<#macro scaffold load=[]>
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+		<meta name="google-site-verification" content="uCgX3Or3kDRGpbJ6JCsQc3Ub4JsnR5-p0itfsKAYZ_U" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link href="/favicon.ico" rel="icon" type="image/x-icon" />
+
+		<title>Project Lombok</title>
+
+		<script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+
+		<link href="/css/bootstrap.css" rel="stylesheet" />
+		<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" />
+
+		<link href="/css/custom.css" rel="stylesheet" />
+
+		<#list load as ld>
+			<#if ld?ends_with(".css")>
+				<link href="${ld?url_path}" rel="stylesheet" />
+			</#if>
+		</#list>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
+
+		<script src="/js/swfobject.js"></script>
+		<script src="/js/main.js"></script>
+		<#list load as ld>
+			<#if ld?ends_with(".js")>
+				<script src="${ld?url_path}"></script>
+			</#if>
+		</#list>
+	</head><body>
+		<a href="https://github.com/rzwitserloot/lombok" class="fork-me">
+			<img
+					alt="Fork me on GitHub"
+					src="//s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" />
+		</a>
+
+		<div class="navbar navbar-default navbar-fixed-top">
+			<div class="container">
+				<div class="navbar-header">
+					<a href="/" class="navbar-brand">Lombok Project</a>
+					<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+				</div>
+				<div class="navbar-collapse collapse" id="navbar-main">
+					<ul class="nav navbar-nav">
+						<li class="dropdown">
+							<a class="dropdown-toggle pointer" data-toggle="dropdown">Features<span class="caret"></span></a>
+							<ul class="dropdown-menu" aria-labelledby="themes">
+								<li><a href="/features/stable">Stable</a></li>
+								<li><a href="/features/experimental">Experimental</a></li>
+							</ul>
+						</li>
+						<li>
+							<a href="https://groups.google.com/group/project-lombok" target="_blank">
+								<span>Discuss/Help</span>
+							</a>
+						</li>
+						<li>
+							<a href="https://wiki.github.com/rzwitserloot/lombok/contributing" target="_blank">
+								<span>Contribute</span>
+							</a>
+						</li>
+						<li class="dropdown">
+							<a class="dropdown-toggle pointer" data-toggle="dropdown">Install<span class="caret"></span></a>
+							<ul class="dropdown-menu" aria-labelledby="themes">
+								<li><a href="/install/compilers">Compilers</a></li>
+								<li class="divider"></li>
+								<li><a href="/install/ide">IDE</a></li>
+								<li class="divider"></li>
+								<li><a href="/install/android">Android</a></li>
+								<li><a href="/install/others">Frameworks &amp; build systems</a></li>
+							</ul>
+						</li>
+						<li><a href="/download">Download</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="container-fluid main-section" id="main-section">
+			<#nested>
+		</div>
+		<footer class="container">
+			<footer class="footer text-center">
+				<div class="container">
+					<a href="/credits">credits</a> | Copyright &copy; 2009-${year} The Project Lombok
+					Authors, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT
+					license</a>.
+				</div>
+			</footer>
+		</footer>
+	</body>
+</html>
+</#macro>

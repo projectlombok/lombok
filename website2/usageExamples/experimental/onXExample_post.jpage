@@ -1,0 +1,22 @@
+import javax.inject.Inject;
+import javax.persistence.Id;
+import javax.persistence.Column;
+import javax.validation.constraints.Max;
+
+public class OnXExample {
+	private long unid;
+
+	@Inject
+	public OnXExample(long unid) {
+		this.unid = unid;
+	}
+
+	@Id @Column(name="unique-id")
+	public long getUnid() {
+		return unid;
+	}
+
+	public void setUnid(@Max(10000) long unid) {
+		this.unid = unid;
+	}
+}
