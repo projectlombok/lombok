@@ -62,7 +62,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	 * @param ast The compilation unit, which serves as the top level node in the tree to be built.
 	 */
 	public EclipseAST(CompilationUnitDeclaration ast) {
-		super(toFileName(ast), packageDeclaration(ast), new EclipseImportList(ast));
+		super(toFileName(ast), packageDeclaration(ast), new EclipseImportList(ast), statementTypes());
 		this.compilationUnitDeclaration = ast;
 		setTop(buildCompilationUnit(ast));
 		this.completeParse = isComplete(ast);
@@ -477,9 +477,9 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		return putInMap(new EclipseNode(this, statement, childNodes, Kind.STATEMENT));
 	}
 	
-	/** For Eclipse, only Statement counts, as Expression is a subclass of it, even though this isn't
+	/* For Eclipse, only Statement counts, as Expression is a subclass of it, even though this isn't
 	 * entirely correct according to the JLS spec (only some expressions can be used as statements, not all of them). */
-	@Override protected Collection<Class<? extends ASTNode>> getStatementTypes() {
+	private static Collection<Class<? extends ASTNode>> statementTypes() {
 		return Collections.<Class<? extends ASTNode>>singleton(Statement.class);
 	}
 	

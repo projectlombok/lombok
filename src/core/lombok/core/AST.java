@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  */
 package lombok.core;
 
-import static lombok.Lombok.*;
+import static lombok.Lombok.sneakyThrow;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -31,10 +31,11 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import lombok.core.configuration.ConfigurationKey;
 import lombok.core.debug.HistogramTracker;
@@ -61,12 +62,18 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	Map<N, N> identityDetector = new IdentityHashMap<N, N>();
 	private Map<N, L> nodeMap = new IdentityHashMap<N, L>();
 	private boolean changed = false;
+	
+	// The supertypes which are considered AST Node children. Usually, the Statement, and the Expression,
+	// though some platforms (such as Eclipse) group these under one common supertype.
+	private final Collection<Class<? extends N>> statementTypes;
+	
 	private static final HistogramTracker configTracker = System.getProperty("lombok.timeConfig") == null ? null : new HistogramTracker("lombok.config");
 	
-	protected AST(String fileName, String packageDeclaration, ImportList imports) {
+	protected AST(String fileName, String packageDeclaration, ImportList imports, Collection<Class<? extends N>> statementTypes) {
 		this.fileName = fileName == null ? "(unknown).java" : fileName;
 		this.packageDeclaration = packageDeclaration;
 		this.imports = imports;
+		this.statementTypes = statementTypes;
 	}
 	
 	/**
@@ -209,11 +216,11 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 		}
 	}
 	
-	private static Map<Class<?>, Collection<FieldAccess>> fieldsOfASTClasses = new HashMap<Class<?>, Collection<FieldAccess>>();
+	private static final ConcurrentMap<Class<?>, Collection<FieldAccess>> fieldsOfASTClasses = new ConcurrentHashMap<Class<?>, Collection<FieldAccess>>();
 	
 	/** Returns FieldAccess objects for the stated class. Each field that contains objects of the kind returned by
 	 * {@link #getStatementTypes()}, either directly or inside of an array or java.util.collection (or array-of-arrays,
-	 * or collection-of-collections, etcetera), is returned.
+	 * or collection-of-collections, et cetera), is returned.
 	 */
 	protected Collection<FieldAccess> fieldsOf(Class<?> c) {
 		Collection<FieldAccess> fields = fieldsOfASTClasses.get(c);
@@ -221,8 +228,8 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 		
 		fields = new ArrayList<FieldAccess>();
 		getFields(c, fields);
-		fieldsOfASTClasses.put(c, fields);
-		return fields;
+		fieldsOfASTClasses.putIfAbsent(c, fields);
+		return fieldsOfASTClasses.get(c);
 	}
 	
 	private void getFields(Class<?> c, Collection<FieldAccess> fields) {
@@ -261,13 +268,8 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 		return Object.class;
 	}
 	
-	/**
-	 * The supertypes which are considered AST Node children. Usually, the Statement, and the Expression,
-	 * though some platforms (such as Eclipse) group these under one common supertype. */
-	protected abstract Collection<Class<? extends N>> getStatementTypes();
-	
-	protected boolean shouldDrill(Class<?> parentType, Class<?> childType, String fieldName) {
-		for (Class<?> statementType : getStatementTypes()) {
+	private boolean shouldDrill(Class<?> parentType, Class<?> childType, String fieldName) {
+		for (Class<?> statementType : statementTypes) {
 			if (statementType.isAssignableFrom(childType)) return true;
 		}
 		
