@@ -22,6 +22,8 @@
 package lombok.eclipse.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.typeMatches;
+
 import lombok.ConfigurationKeys;
 import lombok.val;
 import lombok.core.HandlerPriority;
@@ -30,10 +32,12 @@ import lombok.eclipse.EclipseASTAdapter;
 import lombok.eclipse.EclipseASTVisitor;
 import lombok.eclipse.EclipseNode;
 
+import lombok.var;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ForStatement;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.mangosdk.spi.ProviderFor;
 
 /*
@@ -44,33 +48,39 @@ import org.mangosdk.spi.ProviderFor;
 @HandlerPriority(65536) // 2^16; resolution needs to work, so if the RHS expression is i.e. a call to a generated getter, we have to run after that getter has been generated.
 public class HandleVal extends EclipseASTAdapter {
 	@Override public void visitLocal(EclipseNode localNode, LocalDeclaration local) {
-		if (!EclipseHandlerUtil.typeMatches(val.class, localNode, local.type)) return;
-		handleFlagUsage(localNode, ConfigurationKeys.VAL_FLAG_USAGE, "val");
-		
+		TypeReference type = local.type;
+		boolean isVal = typeMatches(val.class, localNode, type);
+		boolean isVar = typeMatches(var.class, localNode, type);
+		if (!(isVal ||isVar)) return;
+
+		if (isVal) handleFlagUsage(localNode, ConfigurationKeys.VAL_FLAG_USAGE, "val");
+		if (isVar) handleFlagUsage(localNode, ConfigurationKeys.VAR_FLAG_USAGE, "var");
+
 		boolean variableOfForEach = false;
-		
+
 		if (localNode.directUp().get() instanceof ForeachStatement) {
 			ForeachStatement fs = (ForeachStatement) localNode.directUp().get();
 			variableOfForEach = fs.elementVariable == local;
 		}
-		
+
+		String annotation = isVal ? "val" : "var";
 		if (local.initialization == null && !variableOfForEach) {
-			localNode.addError("'val' on a local variable requires an initializer expression");
+			localNode.addError("'" + annotation + "' on a local variable requires an initializer expression");
 			return;
 		}
-		
+
 		if (local.initialization instanceof ArrayInitializer) {
-			localNode.addError("'val' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })");
+			localNode.addError("'" + annotation + "' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })");
 			return;
 		}
-		
-		if (localNode.directUp().get() instanceof ForStatement) {
+
+		if (isVal && localNode.directUp().get() instanceof ForStatement) {
 			localNode.addError("'val' is not allowed in old-style for loops");
 			return;
 		}
-		
+
 		if (local.initialization != null && local.initialization.getClass().getName().equals("org.eclipse.jdt.internal.compiler.ast.LambdaExpression")) {
-			localNode.addError("'val' is not allowed with lambda expressions.");
+			localNode.addError("'" + annotation + "' is not allowed with lambda expressions.");
 		}
 	}
 }

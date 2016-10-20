@@ -21,11 +21,6 @@
  */
 package lombok.eclipse.agent;
 
-import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
-import static lombok.eclipse.Eclipse.*;
-
-import java.lang.reflect.Field;
-
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
@@ -43,14 +38,19 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 
+import java.lang.reflect.Field;
+
+import static lombok.eclipse.Eclipse.poss;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.makeType;
+
 public class PatchVal {
-	
+
 	// This is half of the work for 'val' support - the other half is in PatchValEclipse. This half is enough for ecj.
 	// Creates a copy of the 'initialization' field on a LocalDeclaration if the type of the LocalDeclaration is 'val', because the completion parser will null this out,
 	// which in turn stops us from inferring the intended type for 'val x = 5;'. We look at the copy.
 	// Also patches local declaration to not call .resolveType() on the initializer expression if we've already done so (calling it twice causes weird errors),
 	// and patches .resolve() on LocalDeclaration itself to just-in-time replace the 'val' vartype with the right one.
-	
+
 	public static TypeBinding skipResolveInitializerIfAlreadyCalled(Expression expr, BlockScope scope) {
 		if (expr.resolvedType != null) return expr.resolvedType;
 		try {
@@ -62,7 +62,7 @@ public class PatchVal {
 			return null;
 		}
 	}
-	
+
 	public static TypeBinding skipResolveInitializerIfAlreadyCalled2(Expression expr, BlockScope scope, LocalDeclaration decl) {
 		if (decl != null && LocalDeclaration.class.equals(decl.getClass()) && expr.resolvedType != null) return expr.resolvedType;
 		try {
@@ -74,56 +74,56 @@ public class PatchVal {
 			return null;
 		}
 	}
-	
+
 	public static boolean matches(String key, char[] array) {
 		if (array == null || key.length() != array.length) return false;
 		for (int i = 0; i < array.length; i++) {
 			if (key.charAt(i) != array[i]) return false;
 		}
-		
+
 		return true;
 	}
-	
-	public static boolean couldBeVal(TypeReference ref) {
+
+	public static boolean couldBe(String key, TypeReference ref) {
 		if (ref instanceof SingleTypeReference) {
 			char[] token = ((SingleTypeReference)ref).token;
-			return matches("val", token);
+			return matches(key, token);
 		}
-		
+
 		if (ref instanceof QualifiedTypeReference) {
 			char[][] tokens = ((QualifiedTypeReference)ref).tokens;
 			if (tokens == null || tokens.length != 2) return false;
-			return matches("lombok", tokens[0]) && matches("val", tokens[1]);
+			return matches("lombok", tokens[0]) && matches(key, tokens[1]);
 		}
-		
+
 		return false;
 	}
-	
-	private static boolean isVal(TypeReference ref, BlockScope scope) {
-		if (!couldBeVal(ref)) return false;
-		
+
+	private static boolean is(TypeReference ref, BlockScope scope, String key) {
+		if (!couldBe(key, ref)) return false;
+
 		TypeBinding resolvedType = ref.resolvedType;
 		if (resolvedType == null) resolvedType = ref.resolveType(scope, false);
 		if (resolvedType == null) return false;
-		
+
 		char[] pkg = resolvedType.qualifiedPackageName();
 		char[] nm = resolvedType.qualifiedSourceName();
-		return matches("lombok", pkg) && matches("val", nm);
+		return matches("lombok", pkg) && matches(key, nm);
 	}
-	
+
 	public static final class Reflection {
 		private static final Field initCopyField, iterableCopyField;
-		
+
 		static {
 			Field a = null, b = null;
-			
+
 			try {
 				a = LocalDeclaration.class.getDeclaredField("$initCopy");
 				b = LocalDeclaration.class.getDeclaredField("$iterableCopy");
 			} catch (Throwable t) {
 				//ignore - no $initCopy exists when running in ecj.
 			}
-			
+
 			initCopyField = a;
 			iterableCopyField = b;
 		}
@@ -131,18 +131,22 @@ public class PatchVal {
 	public static boolean handleValForLocalDeclaration(LocalDeclaration local, BlockScope scope) {
 		if (local == null || !LocalDeclaration.class.equals(local.getClass())) return false;
 		boolean decomponent = false;
-		
-		if (!isVal(local.type, scope)) return false;
-		
+
+        boolean val = is(local.type, scope, "val");
+        boolean var = is(local.type, scope, "var");
+        if (!(val || var)) return false;
+
 		StackTraceElement[] st = new Throwable().getStackTrace();
 		for (int i = 0; i < st.length - 2 && i < 10; i++) {
 			if (st[i].getClassName().equals("lombok.launch.PatchFixesHider$Val")) {
-				if (st[i + 1].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration") &&
-					st[i + 2].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.ForStatement")) return false;
+				boolean valInForStatement = val &&
+						st[i + 1].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration") &&
+						st[i + 2].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.ForStatement");
+				if (valInForStatement) return false;
 				break;
 			}
 		}
-		
+
 		Expression init = local.initialization;
 		if (init == null && Reflection.initCopyField != null) {
 			try {
@@ -151,7 +155,7 @@ public class PatchVal {
 				// init remains null.
 			}
 		}
-		
+
 		if (init == null && Reflection.iterableCopyField != null) {
 			try {
 				init = (Expression) Reflection.iterableCopyField.get(local);
@@ -186,8 +190,8 @@ public class PatchVal {
 				}
 			}
 		}
-		
-		local.modifiers |= ClassFileConstants.AccFinal;
+
+		if(val) local.modifiers |= ClassFileConstants.AccFinal;
 		local.annotations = addValAnnotation(local.annotations, local.type, scope);
 		local.type = replacement != null ? replacement : new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(local.type, 3));
 		
@@ -196,21 +200,23 @@ public class PatchVal {
 	
 	public static boolean handleValForForEach(ForeachStatement forEach, BlockScope scope) {
 		if (forEach.elementVariable == null) return false;
-		
-		if (!isVal(forEach.elementVariable.type, scope)) return false;
-		
+
+        boolean val = is(forEach.elementVariable.type, scope, "val");
+        boolean var = is(forEach.elementVariable.type, scope, "var");
+        if (!(val || var)) return false;
+
 		TypeBinding component = getForEachComponentType(forEach.collection, scope);
 		if (component == null) return false;
 		TypeReference replacement = makeType(component, forEach.elementVariable.type, false);
-		
-		forEach.elementVariable.modifiers |= ClassFileConstants.AccFinal;
+
+		if (val) forEach.elementVariable.modifiers |= ClassFileConstants.AccFinal;
 		forEach.elementVariable.annotations = addValAnnotation(forEach.elementVariable.annotations, forEach.elementVariable.type, scope);
 		forEach.elementVariable.type = replacement != null ? replacement :
 				new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(forEach.elementVariable.type, 3));
-		
+
 		return false;
 	}
-	
+
 	private static Annotation[] addValAnnotation(Annotation[] originals, TypeReference originalRef, BlockScope scope) {
 		Annotation[] newAnn;
 		if (originals != null) {
@@ -219,12 +225,12 @@ public class PatchVal {
 		} else {
 			newAnn = new Annotation[1];
 		}
-		
+
 		newAnn[newAnn.length - 1] = new org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation(originalRef, originalRef.sourceStart);
-		
+
 		return newAnn;
 	}
-	
+
 	private static TypeBinding getForEachComponentType(Expression collection, BlockScope scope) {
 		if (collection != null) {
 			TypeBinding resolved = collection.resolvedType;
@@ -235,7 +241,7 @@ public class PatchVal {
 				return resolved;
 			} else if (resolved instanceof ReferenceBinding) {
 				ReferenceBinding iterableType = ((ReferenceBinding)resolved).findSuperTypeOriginatingFrom(TypeIds.T_JavaLangIterable, false);
-				
+
 				TypeBinding[] arguments = null;
 				if (iterableType != null) switch (iterableType.kind()) {
 					case Binding.GENERIC_TYPE : // for (T t : Iterable<T>) - in case used inside Iterable itself
@@ -247,16 +253,16 @@ public class PatchVal {
 					case Binding.RAW_TYPE : // for(Object e : Iterable)
 						return null;
 				}
-				
+
 				if (arguments != null && arguments.length == 1) {
 					return arguments[0];
 				}
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	private static TypeBinding resolveForExpression(Expression collection, BlockScope scope) {
 		try {
 			return collection.resolveType(scope);

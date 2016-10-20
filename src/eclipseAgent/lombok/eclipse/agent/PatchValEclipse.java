@@ -65,7 +65,9 @@ public class PatchValEclipse {
 		ForeachStatement foreachDecl = (ForeachStatement) astStack[astPtr];
 		ASTNode init = foreachDecl.collection;
 		if (init == null) return;
-		if (foreachDecl.elementVariable == null || !PatchVal.couldBeVal(foreachDecl.elementVariable.type)) return;
+		boolean val = PatchVal.couldBe("val", foreachDecl.elementVariable.type);
+		boolean var = PatchVal.couldBe("var", foreachDecl.elementVariable.type);
+		if (foreachDecl.elementVariable == null || !(val || var)) return;
 		
 		try {
 			if (Reflection.iterableCopyField != null) Reflection.iterableCopyField.set(foreachDecl.elementVariable, init);
@@ -88,7 +90,9 @@ public class PatchValEclipse {
 		if (!(variableDecl instanceof LocalDeclaration)) return;
 		ASTNode init = variableDecl.initialization;
 		if (init == null) return;
-		if (!PatchVal.couldBeVal(variableDecl.type)) return;
+		boolean val = PatchVal.couldBe("val", variableDecl.type);
+		boolean var = PatchVal.couldBe("var", variableDecl.type);
+		if (!(val || var)) return;
 		
 		try {
 			if (Reflection.initCopyField != null) Reflection.initCopyField.set(variableDecl, init);
@@ -115,7 +119,7 @@ public class PatchValEclipse {
 		Annotation valAnnotation = null;
 		
 		for (Annotation ann : in.annotations) {
-			if (PatchVal.couldBeVal(ann.type)) {
+			if (PatchVal.couldBe("val", ann.type)) {
 				found = true;
 				valAnnotation = ann;
 				break;
