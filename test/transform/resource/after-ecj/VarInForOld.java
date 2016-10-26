@@ -1,4 +1,4 @@
-import lombok.var;
+import lombok.experimental.var;
 public class VarInForOld {
   public VarInForOld() {
     super();

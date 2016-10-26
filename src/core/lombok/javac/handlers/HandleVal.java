@@ -31,7 +31,7 @@ import lombok.ConfigurationKeys;
 import lombok.core.HandlerPriority;
 import lombok.javac.*;
 import lombok.val;
-import lombok.var;
+import lombok.experimental.var;
 import org.mangosdk.spi.ProviderFor;
 
 import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
@@ -88,8 +88,8 @@ public class HandleVal extends JavacASTAdapter {
 		}
 
 		if (localNode.shouldDeleteLombokAnnotations()) {
-			JavacHandlerUtil.deleteImportFromCompilationUnit(localNode, "lombok.val");
-			JavacHandlerUtil.deleteImportFromCompilationUnit(localNode, "lombok.var");
+			JavacHandlerUtil.deleteImportFromCompilationUnit(localNode, val.class.getName());
+			JavacHandlerUtil.deleteImportFromCompilationUnit(localNode, var.class.getName());
 		}
 
 		if (isVal) local.mods.flags |= Flags.FINAL;

@@ -21,22 +21,9 @@
  */
 package lombok.eclipse.agent;
 
-import org.eclipse.jdt.internal.compiler.ast.Annotation;
-import org.eclipse.jdt.internal.compiler.ast.Expression;
-import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
-import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
-import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
-import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
-import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.ast.*;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
-import org.eclipse.jdt.internal.compiler.lookup.Binding;
-import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
-import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
-import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
-import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
-import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
-import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
+import org.eclipse.jdt.internal.compiler.lookup.*;
 
 import java.lang.reflect.Field;
 
@@ -85,15 +72,21 @@ public class PatchVal {
 	}
 
 	public static boolean couldBe(String key, TypeReference ref) {
+		String[] keyParts = key.split("\\.");
 		if (ref instanceof SingleTypeReference) {
 			char[] token = ((SingleTypeReference)ref).token;
-			return matches(key, token);
+			return matches(keyParts[keyParts.length - 1], token);
 		}
 
 		if (ref instanceof QualifiedTypeReference) {
 			char[][] tokens = ((QualifiedTypeReference)ref).tokens;
-			if (tokens == null || tokens.length != 2) return false;
-			return matches("lombok", tokens[0]) && matches(key, tokens[1]);
+			if (keyParts.length != tokens.length) return false;
+			for(int i = 0; i < tokens.length; ++i) {
+				String part = keyParts[i];
+				char[] token = tokens[i];
+				if (!matches(part, token)) return false;
+			}
+			return true;
 		}
 
 		return false;
@@ -105,10 +98,17 @@ public class PatchVal {
 		TypeBinding resolvedType = ref.resolvedType;
 		if (resolvedType == null) resolvedType = ref.resolveType(scope, false);
 		if (resolvedType == null) return false;
-
+		
 		char[] pkg = resolvedType.qualifiedPackageName();
 		char[] nm = resolvedType.qualifiedSourceName();
-		return matches("lombok", pkg) && matches(key, nm);
+		int pkgFullLength = pkg.length > 0 ? pkg.length + 1: 0;
+		char[] fullName = new char[pkgFullLength + nm.length];
+		if(pkg.length > 0) {
+			System.arraycopy(pkg, 0, fullName, 0, pkg.length);
+			fullName[pkg.length] = '.';
+		}
+		System.arraycopy(nm, 0, fullName, pkgFullLength, nm.length);
+		return matches(key, fullName);
 	}
 
 	public static final class Reflection {
@@ -132,8 +132,8 @@ public class PatchVal {
 		if (local == null || !LocalDeclaration.class.equals(local.getClass())) return false;
 		boolean decomponent = false;
 
-        boolean val = is(local.type, scope, "val");
-        boolean var = is(local.type, scope, "var");
+        boolean val = isVal(local, scope);
+        boolean var = isVar(local, scope);
         if (!(val || var)) return false;
 
 		StackTraceElement[] st = new Throwable().getStackTrace();
@@ -198,11 +198,19 @@ public class PatchVal {
 		return false;
 	}
 	
+	private static boolean isVar(LocalDeclaration local, BlockScope scope) {
+		return is(local.type, scope, "lombok.experimental.var");
+	}
+	
+	private static boolean isVal(LocalDeclaration local, BlockScope scope) {
+		return is(local.type, scope, "lombok.val");
+	}
+	
 	public static boolean handleValForForEach(ForeachStatement forEach, BlockScope scope) {
 		if (forEach.elementVariable == null) return false;
-
-        boolean val = is(forEach.elementVariable.type, scope, "val");
-        boolean var = is(forEach.elementVariable.type, scope, "var");
+		
+		boolean val = isVal(forEach.elementVariable, scope);
+		boolean var = isVar(forEach.elementVariable, scope);
         if (!(val || var)) return false;
 
 		TypeBinding component = getForEachComponentType(forEach.collection, scope);
@@ -216,7 +224,7 @@ public class PatchVal {
 
 		return false;
 	}
-
+	
 	private static Annotation[] addValAnnotation(Annotation[] originals, TypeReference originalRef, BlockScope scope) {
 		Annotation[] newAnn;
 		if (originals != null) {
