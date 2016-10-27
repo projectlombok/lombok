@@ -21,33 +21,24 @@
  */
 package lombok.core.handlers;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Pattern;
-
-import lombok.AllArgsConstructor;
-import lombok.ConfigurationKeys;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.Value;
+import lombok.*;
 import lombok.core.AST;
 import lombok.core.AnnotationValues;
 import lombok.core.JavaIdentifiers;
 import lombok.core.LombokNode;
+import lombok.core.configuration.AllowHelper;
 import lombok.core.configuration.ConfigurationKey;
 import lombok.core.configuration.FlagUsageType;
 import lombok.experimental.Accessors;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.Wither;
+
+import java.util.*;
+import java.util.regex.Pattern;
+
+import static lombok.core.configuration.FlagUsageType.ALLOW;
+import static lombok.core.configuration.FlagUsageType.ERROR;
+import static lombok.core.configuration.FlagUsageType.WARNING;
 
 /**
  * Container for static utility methods useful for some of the standard lombok handlers, regardless of
@@ -73,7 +64,7 @@ public class HandlerUtil {
 	}
 	
 	/** Checks if the given name is a valid identifier.
-	 * 
+	 *
 	 * If it is, this returns {@code true} and does nothing else.
 	 * If it isn't, this returns {@code false} and adds an error message to the supplied node.
 	 */
@@ -95,12 +86,19 @@ public class HandlerUtil {
 		return Singulars.autoSingularize(plural);
 	}
 	public static void handleFlagUsage(LombokNode<?, ?, ?> node, ConfigurationKey<FlagUsageType> key, String featureName) {
+		boolean allowable = AllowHelper.isAllowable(featureName);
+	
 		FlagUsageType fut = node.getAst().readConfiguration(key);
+		
+		boolean allowed = !allowable || ALLOW == fut;
+		if (!allowed) {
+			node.addError("Use of " + featureName + " is disabled by default. Please use flag " + ALLOW + " to enable.");
+		}
 		
 		if (fut != null) {
 			String msg = "Use of " + featureName + " is flagged according to lombok configuration.";
-			if (fut == FlagUsageType.WARNING) node.addWarning(msg);
-			else node.addError(msg);
+			if (fut == WARNING) node.addWarning(msg);
+			else if (fut == ERROR) node.addError(msg);
 		}
 	}
 	
@@ -114,13 +112,13 @@ public class HandlerUtil {
 		
 		FlagUsageType fut = null;
 		String featureName = null;
-		if (fut1 == FlagUsageType.ERROR) {
+		if (fut1 == ERROR) {
 			fut = fut1;
 			featureName = featureName1;
-		} else if (fut2 == FlagUsageType.ERROR) {
+		} else if (fut2 == ERROR) {
 			fut = fut2;
 			featureName = featureName2;
-		} else if (fut1 == FlagUsageType.WARNING) {
+		} else if (fut1 == WARNING) {
 			fut = fut1;
 			featureName = featureName1;
 		} else {
@@ -130,7 +128,7 @@ public class HandlerUtil {
 		
 		if (fut != null) {
 			String msg = "Use of " + featureName + " is flagged according to lombok configuration.";
-			if (fut == FlagUsageType.WARNING) node.addWarning(msg);
+			if (fut == WARNING) node.addWarning(msg);
 			else node.addError(msg);
 		}
 	}
@@ -161,8 +159,8 @@ public class HandlerUtil {
 	@SuppressWarnings({"all", "unchecked", "deprecation"})
 	public static final List<Class<? extends java.lang.annotation.Annotation>> INVALID_ON_BUILDERS = Collections.unmodifiableList(
 			Arrays.<Class<? extends java.lang.annotation.Annotation>>asList(
-			Getter.class, Setter.class, Wither.class, ToString.class, EqualsAndHashCode.class, 
-			RequiredArgsConstructor.class, AllArgsConstructor.class, NoArgsConstructor.class, 
+			Getter.class, Setter.class, Wither.class, ToString.class, EqualsAndHashCode.class,
+			RequiredArgsConstructor.class, AllArgsConstructor.class, NoArgsConstructor.class,
 			Data.class, Value.class, lombok.experimental.Value.class, FieldDefaults.class));
 	
 	/**
@@ -170,9 +168,9 @@ public class HandlerUtil {
 	 * For prefixes that end in a letter character, the next character must be a non-lowercase character (i.e. {@code hashCode} is not {@code ashCode} even if
 	 * {@code h} is in the prefix list, but {@code hAshcode} would become {@code ashCode}). The first prefix that matches is used. If the prefix list is empty,
 	 * or the empty string is in the prefix list and no prefix before it matches, the fieldName will be returned verbatim.
-	 * 
+	 *
 	 * If no prefix matches and the empty string is not in the prefix list and the prefix list is not empty, {@code null} is returned.
-	 * 
+	 *
 	 * @param fieldName The full name of a field.
 	 * @param prefixes A list of prefixes, usually provided by the {@code Accessors} settings annotation, listing field prefixes.
 	 * @return The base name of the field.
@@ -215,19 +213,19 @@ public class HandlerUtil {
 	
 	/**
 	 * Generates a getter name from a given field name.
-	 * 
+	 *
 	 * Strategy:
 	 * <ul>
 	 * <li>Reduce the field's name to its base name by stripping off any prefix (from {@code Accessors}). If the field name does not fit
 	 * the prefix list, this method immediately returns {@code null}.</li>
 	 * <li>If {@code Accessors} has {@code fluent=true}, then return the basename.</li>
 	 * <li>Pick a prefix. 'get' normally, but 'is' if {@code isBoolean} is true.</li>
-	 * <li>Only if {@code isBoolean} is true: Check if the field starts with {@code is} followed by a non-lowercase character. If so, return the field name verbatim.</li> 
+	 * <li>Only if {@code isBoolean} is true: Check if the field starts with {@code is} followed by a non-lowercase character. If so, return the field name verbatim.</li>
 	 * <li>Check if the first character of the field is lowercase. If so, check if the second character
 	 * exists and is title or upper case. If so, uppercase the first character. If not, titlecase the first character.</li>
 	 * <li>Return the prefix plus the possibly title/uppercased first character, and the rest of the field name.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param accessors Accessors configuration.
 	 * @param fieldName the name of the field.
 	 * @param isBoolean if the field is of type 'boolean'. For fields of type {@code java.lang.Boolean}, you should provide {@code false}.
@@ -239,19 +237,19 @@ public class HandlerUtil {
 	
 	/**
 	 * Generates a setter name from a given field name.
-	 * 
+	 *
 	 * Strategy:
 	 * <ul>
 	 * <li>Reduce the field's name to its base name by stripping off any prefix (from {@code Accessors}). If the field name does not fit
 	 * the prefix list, this method immediately returns {@code null}.</li>
 	 * <li>If {@code Accessors} has {@code fluent=true}, then return the basename.</li>
 	 * <li>Only if {@code isBoolean} is true: Check if the field starts with {@code is} followed by a non-lowercase character.
-	 * If so, replace {@code is} with {@code set} and return that.</li> 
+	 * If so, replace {@code is} with {@code set} and return that.</li>
 	 * <li>Check if the first character of the field is lowercase. If so, check if the second character
 	 * exists and is title or upper case. If so, uppercase the first character. If not, titlecase the first character.</li>
 	 * <li>Return {@code "set"} plus the possibly title/uppercased first character, and the rest of the field name.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param accessors Accessors configuration.
 	 * @param fieldName the name of the field.
 	 * @param isBoolean if the field is of type 'boolean'. For fields of type {@code java.lang.Boolean}, you should provide {@code false}.
@@ -263,18 +261,18 @@ public class HandlerUtil {
 	
 	/**
 	 * Generates a wither name from a given field name.
-	 * 
+	 *
 	 * Strategy:
 	 * <ul>
 	 * <li>Reduce the field's name to its base name by stripping off any prefix (from {@code Accessors}). If the field name does not fit
 	 * the prefix list, this method immediately returns {@code null}.</li>
 	 * <li>Only if {@code isBoolean} is true: Check if the field starts with {@code is} followed by a non-lowercase character.
-	 * If so, replace {@code is} with {@code with} and return that.</li> 
+	 * If so, replace {@code is} with {@code with} and return that.</li>
 	 * <li>Check if the first character of the field is lowercase. If so, check if the second character
 	 * exists and is title or upper case. If so, uppercase the first character. If not, titlecase the first character.</li>
 	 * <li>Return {@code "with"} plus the possibly title/uppercased first character, and the rest of the field name.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param accessors Accessors configuration.
 	 * @param fieldName the name of the field.
 	 * @param isBoolean if the field is of type 'boolean'. For fields of type {@code java.lang.Boolean}, you should provide {@code false}.
@@ -315,10 +313,10 @@ public class HandlerUtil {
 	
 	/**
 	 * Returns all names of methods that would represent the getter for a field with the provided name.
-	 * 
+	 *
 	 * For example if {@code isBoolean} is true, then a field named {@code isRunning} would produce:<br />
 	 * {@code [isRunning, getRunning, isIsRunning, getIsRunning]}
-	 * 
+	 *
 	 * @param accessors Accessors configuration.
 	 * @param fieldName the name of the field.
 	 * @param isBoolean if the field is of type 'boolean'. For fields of type 'java.lang.Boolean', you should provide {@code false}.
@@ -329,10 +327,10 @@ public class HandlerUtil {
 	
 	/**
 	 * Returns all names of methods that would represent the setter for a field with the provided name.
-	 * 
+	 *
 	 * For example if {@code isBoolean} is true, then a field named {@code isRunning} would produce:<br />
 	 * {@code [setRunning, setIsRunning]}
-	 * 
+	 *
 	 * @param accessors Accessors configuration.
 	 * @param fieldName the name of the field.
 	 * @param isBoolean if the field is of type 'boolean'. For fields of type 'java.lang.Boolean', you should provide {@code false}.
@@ -343,10 +341,10 @@ public class HandlerUtil {
 	
 	/**
 	 * Returns all names of methods that would represent the wither for a field with the provided name.
-	 * 
+	 *
 	 * For example if {@code isBoolean} is true, then a field named {@code isRunning} would produce:<br />
 	 * {@code [withRunning, withIsRunning]}
-	 * 
+	 *
 	 * @param accessors Accessors configuration.
 	 * @param fieldName the name of the field.
 	 * @param isBoolean if the field is of type 'boolean'. For fields of type 'java.lang.Boolean', you should provide {@code false}.

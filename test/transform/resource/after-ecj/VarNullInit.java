@@ -1,10 +1,10 @@
 import lombok.experimental.var;
 
 class VarNullInit {
-  ValNullInit() {
+  VarNullInit() {
     super();
   }
   void method() {
-    final @var java.lang.Object x = null;
+    @var java.lang.Object x = null;
   }
 }
