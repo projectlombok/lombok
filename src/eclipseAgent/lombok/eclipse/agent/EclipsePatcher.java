@@ -24,11 +24,14 @@ package lombok.eclipse.agent;
 import static lombok.patcher.scripts.ScriptBuilder.*;
 
 import java.lang.instrument.Instrumentation;
+import java.net.URLClassLoader;
+import java.security.ProtectionDomain;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import lombok.core.AgentLauncher;
+import lombok.patcher.Filter;
 import lombok.patcher.Hook;
 import lombok.patcher.MethodTarget;
 import lombok.patcher.ScriptManager;
@@ -74,6 +77,15 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	private static void registerPatchScripts(Instrumentation instrumentation, boolean reloadExistingClasses, boolean ecjOnly, Class<?> launchingContext) {
 		ScriptManager sm = new ScriptManager();
 		sm.registerTransformer(instrumentation);
+		sm.setFilter(new Filter() {
+			@Override public boolean shouldTransform(ClassLoader loader, String className, Class<?> classBeingDefined, ProtectionDomain protectionDomain, byte[] classfileBuffer) {
+				if (!(loader instanceof URLClassLoader)) return true;
+				ClassLoader parent = loader.getParent();
+				if (parent == null) return true;
+				return !parent.getClass().getName().startsWith("org.eclipse.jdt.apt.core.internal.AnnotationProcessorFactoryLoader");
+			}
+		});
+		
 		final boolean forceBaseResourceNames = !"".equals(System.getProperty("shadow.override.lombok", ""));
 		sm.setTransplantMapper(new TransplantMapper() {
 			public String mapResourceName(int classFileFormatVersion, String resourceName) {
