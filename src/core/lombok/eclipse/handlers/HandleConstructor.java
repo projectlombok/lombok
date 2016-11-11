@@ -48,6 +48,7 @@ import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
+import org.eclipse.jdt.internal.compiler.ast.ArrayTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.CharLiteral;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -381,6 +382,8 @@ public class HandleConstructor {
 	}
 	
 	private static Expression getDefaultExpr(TypeReference type, int s, int e) {
+		boolean array = type instanceof ArrayTypeReference;
+		if (array) return new NullLiteral(s, e);
 		char[] lastToken = type.getLastToken();
 		if (Arrays.equals(TypeConstants.BOOLEAN, lastToken)) return new FalseLiteral(s, e);
 		if (Arrays.equals(TypeConstants.CHAR, lastToken)) return new CharLiteral(new char[] {'\'', '\\', '0', '\''}, s, e);
