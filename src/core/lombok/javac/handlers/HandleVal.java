@@ -21,22 +21,31 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.javac.handlers.JavacHandlerUtil.*;
+import lombok.ConfigurationKeys;
+import lombok.experimental.var;
+import lombok.val;
+import lombok.core.HandlerPriority;
+import lombok.javac.JavacASTAdapter;
+import lombok.javac.JavacASTVisitor;
+import lombok.javac.JavacNode;
+import lombok.javac.JavacResolution;
+import lombok.javac.ResolutionResetNeeded;
+
+import org.mangosdk.spi.ProviderFor;
+
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.*;
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
+import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCForLoop;
+import com.sun.tools.javac.tree.JCTree.JCNewArray;
+import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
-import lombok.ConfigurationKeys;
-import lombok.core.HandlerPriority;
-import lombok.javac.*;
-import lombok.val;
-import lombok.experimental.var;
-import org.mangosdk.spi.ProviderFor;
-
-import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
-import static lombok.javac.handlers.JavacHandlerUtil.recursiveSetGeneratedBy;
-import static lombok.javac.handlers.JavacHandlerUtil.typeMatches;
 
 @ProviderFor(JavacASTVisitor.class)
 @HandlerPriority(65536) // 2^16; resolution needs to work, so if the RHS expression is i.e. a call to a generated getter, we have to run after that getter has been generated.
@@ -98,13 +107,13 @@ public class HandleVal extends JavacASTAdapter {
 			JCAnnotation valAnnotation = recursiveSetGeneratedBy(localNode.getTreeMaker().Annotation(local.vartype, List.<JCExpression>nil()), typeTree, localNode.getContext());
 			local.mods.annotations = local.mods.annotations == null ? List.of(valAnnotation) : local.mods.annotations.append(valAnnotation);
 		}
-
+		
 		if (JavacResolution.platformHasTargetTyping()) {
 			local.vartype = localNode.getAst().getTreeMaker().Ident(localNode.getAst().toName("___Lombok_VAL_Attrib__"));
 		} else {
 			local.vartype = JavacResolution.createJavaLangObject(localNode.getAst());
 		}
-
+		
 		Type type;
 		try {
 			if (rhsOfEnhancedForLoop == null) {
@@ -137,10 +146,10 @@ public class HandleVal extends JavacASTAdapter {
 					type = rhsOfEnhancedForLoop.type;
 				}
 			}
-
+			
 			try {
 				JCExpression replacement;
-
+				
 				if (rhsOfEnhancedForLoop != null) {
 					Type componentType = JavacResolution.ifTypeIsIterableToComponent(type, localNode.getAst());
 					if (componentType == null) replacement = JavacResolution.createJavaLangObject(localNode.getAst());
@@ -148,7 +157,7 @@ public class HandleVal extends JavacASTAdapter {
 				} else {
 					replacement = JavacResolution.typeToJCTree(type, localNode.getAst(), false);
 				}
-
+				
 				if (replacement != null) {
 					local.vartype = replacement;
 				} else {
