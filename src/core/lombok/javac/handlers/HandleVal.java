@@ -22,7 +22,10 @@
 package lombok.javac.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.eclipse.handlers.HandleVal.addVarNullInitMessage;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import lombok.ConfigurationKeys;
 import lombok.experimental.var;
 import lombok.val;
@@ -51,7 +54,9 @@ import com.sun.tools.javac.util.List;
 @HandlerPriority(65536) // 2^16; resolution needs to work, so if the RHS expression is i.e. a call to a generated getter, we have to run after that getter has been generated.
 @ResolutionResetNeeded
 public class HandleVal extends JavacASTAdapter {
-
+	
+	public static final String VARIABLE_INITIALIZER_IS_NULL = "variable initializer is 'null'";
+	
 	private static boolean eq(String typeTreeToString, String key) {
 		return (typeTreeToString.equals(key) || typeTreeToString.equals("lombok." + key));
 	}
@@ -118,6 +123,9 @@ public class HandleVal extends JavacASTAdapter {
 		try {
 			if (rhsOfEnhancedForLoop == null) {
 				if (local.init.type == null) {
+					if (isVar && local.init instanceof JCLiteral && ((JCLiteral) local.init).value == null) {
+						addVarNullInitMessage(localNode);
+					}
 					JavacResolution resolver = new JavacResolution(localNode.getContext());
 					try {
 						type = ((JCExpression) resolver.resolveMethodMember(localNode).get(local.init)).type;

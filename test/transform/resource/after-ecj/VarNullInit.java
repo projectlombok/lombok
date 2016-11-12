@@ -1,7 +1,6 @@
 import lombok.experimental.var;
-
-class VarNullInit {
-  VarNullInit() {
+public class VarNullInit {
+  public VarNullInit() {
     super();
   }
   void method() {

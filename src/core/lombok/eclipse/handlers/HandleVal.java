@@ -23,6 +23,7 @@ package lombok.eclipse.handlers;
 
 import lombok.ConfigurationKeys;
 import lombok.core.HandlerPriority;
+import lombok.core.LombokNode;
 import lombok.eclipse.DeferUntilPostDiet;
 import lombok.eclipse.EclipseASTAdapter;
 import lombok.eclipse.EclipseASTVisitor;
@@ -33,11 +34,13 @@ import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ForStatement;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.mangosdk.spi.ProviderFor;
 
 import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.typeMatches;
+import static lombok.javac.handlers.HandleVal.VARIABLE_INITIALIZER_IS_NULL;
 
 /*
  * This class just handles 3 basic error cases. The real meat of eclipse 'val' support is in {@code PatchVal} and {@code PatchValEclipse}.
@@ -81,5 +84,11 @@ public class HandleVal extends EclipseASTAdapter {
 		if (local.initialization != null && local.initialization.getClass().getName().equals("org.eclipse.jdt.internal.compiler.ast.LambdaExpression")) {
 			localNode.addError("'" + annotation + "' is not allowed with lambda expressions.");
 		}
+		
+		if(isVar && local.initialization instanceof NullLiteral) addVarNullInitMessage(localNode);
+	}
+	
+	public static void addVarNullInitMessage(LombokNode localNode) {
+		localNode.addError(VARIABLE_INITIALIZER_IS_NULL);
 	}
 }
