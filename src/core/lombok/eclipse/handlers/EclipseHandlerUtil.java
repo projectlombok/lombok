@@ -1168,9 +1168,8 @@ public class EclipseHandlerUtil {
 							if (params < minArgs || params > maxArgs) continue;
 						}
 						
-						if (def.annotations != null) for (Annotation anno : def.annotations) {
-							if (typeMatches(Tolerate.class, node, anno.type)) continue top;
-						}
+						
+						if (isTolerate(node, def)) continue top;
 						
 						return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
@@ -1179,6 +1178,13 @@ public class EclipseHandlerUtil {
 		}
 		
 		return MemberExistsResult.NOT_EXISTS;
+	}
+	
+	public static boolean isTolerate(EclipseNode node, AbstractMethodDeclaration def) {
+		if (def.annotations != null) for (Annotation anno : def.annotations) {
+			if (typeMatches(Tolerate.class, node, anno.type)) return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -1198,9 +1204,7 @@ public class EclipseHandlerUtil {
 				if (def instanceof ConstructorDeclaration) {
 					if ((def.bits & ASTNode.IsDefaultConstructor) != 0) continue;
 					
-					if (def.annotations != null) for (Annotation anno : def.annotations) {
-						if (typeMatches(Tolerate.class, node, anno.type)) continue top;
-					}
+					if (isTolerate(node, def)) continue;
 					
 					return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 				}

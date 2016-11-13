@@ -652,7 +652,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		for (int i = 0; i < len; i++) {
 			if (!(existing[i] instanceof MethodDeclaration)) continue;
 			char[] existingName = existing[i].selector;
-			if (Arrays.equals(name, existingName)) return;
+			if (Arrays.equals(name, existingName) && !isTolerate(fieldNode, existing[i])) return;
 		}
 		
 		String setterName = fluent ? fieldNode.getName() : HandlerUtil.buildAccessorName("set", fieldNode.getName());

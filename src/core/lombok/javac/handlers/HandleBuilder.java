@@ -608,8 +608,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		for (JavacNode child : builderType.down()) {
 			if (child.getKind() != Kind.METHOD) continue;
-			Name existingName = ((JCMethodDecl) child.get()).name;
-			if (existingName.equals(fieldName)) return;
+			JCMethodDecl methodDecl = (JCMethodDecl) child.get();
+			Name existingName = methodDecl.name;
+			if (existingName.equals(fieldName) && !isTolerate(fieldNode, methodDecl)) return;
 		}
 		
 		String setterName = fluent ? fieldNode.getName() : HandlerUtil.buildAccessorName("set", fieldNode.getName());

@@ -605,10 +605,7 @@ public class JavacHandlerUtil {
 							if (params < minArgs || params > maxArgs) continue;
 						}
 						
-						List<JCAnnotation> annotations = md.getModifiers().getAnnotations();
-						if (annotations != null) for (JCAnnotation anno : annotations) {
-							if (typeMatches(Tolerate.class, node, anno.getAnnotationType())) continue top;
-						}
+						if (isTolerate(node, md)) continue top;
 						
 						return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
@@ -617,6 +614,14 @@ public class JavacHandlerUtil {
 		}
 		
 		return MemberExistsResult.NOT_EXISTS;
+	}
+	
+	public static boolean isTolerate(JavacNode node, JCTree.JCMethodDecl md) {
+		List<JCAnnotation> annotations = md.getModifiers().getAnnotations();
+		if (annotations != null) for (JCTree.JCAnnotation anno : annotations) {
+			if (typeMatches(Tolerate.class, node, anno.getAnnotationType())) return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -634,10 +639,7 @@ public class JavacHandlerUtil {
 					JCMethodDecl md = (JCMethodDecl) def;
 					if (md.name.contentEquals("<init>")) {
 						if ((md.mods.flags & Flags.GENERATEDCONSTR) != 0) continue;
-						List<JCAnnotation> annotations = md.getModifiers().getAnnotations();
-						if (annotations != null) for (JCAnnotation anno : annotations) {
-							if (typeMatches(Tolerate.class, node, anno.getAnnotationType())) continue top;
-						}
+						if (isTolerate(node, md)) continue;
 						return getGeneratedBy(def) == null ? MemberExistsResult.EXISTS_BY_USER : MemberExistsResult.EXISTS_BY_LOMBOK;
 					}
 				}
