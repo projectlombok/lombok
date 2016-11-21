@@ -21,11 +21,6 @@
  */
 package lombok.eclipse.agent;
 
-import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
-import static lombok.eclipse.Eclipse.*;
-
-import java.lang.reflect.Field;
-
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
@@ -42,6 +37,11 @@ import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
+
+import java.lang.reflect.Field;
+
+import static lombok.eclipse.Eclipse.poss;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.makeType;
 
 public class PatchVal {
 	
@@ -84,31 +84,44 @@ public class PatchVal {
 		return true;
 	}
 	
-	public static boolean couldBeVal(TypeReference ref) {
+	public static boolean couldBe(String key, TypeReference ref) {
+		String[] keyParts = key.split("\\.");
 		if (ref instanceof SingleTypeReference) {
 			char[] token = ((SingleTypeReference)ref).token;
-			return matches("val", token);
+			return matches(keyParts[keyParts.length - 1], token);
 		}
 		
 		if (ref instanceof QualifiedTypeReference) {
 			char[][] tokens = ((QualifiedTypeReference)ref).tokens;
-			if (tokens == null || tokens.length != 2) return false;
-			return matches("lombok", tokens[0]) && matches("val", tokens[1]);
+			if (keyParts.length != tokens.length) return false;
+			for(int i = 0; i < tokens.length; ++i) {
+				String part = keyParts[i];
+				char[] token = tokens[i];
+				if (!matches(part, token)) return false;
+			}
+			return true;
 		}
 		
 		return false;
 	}
-	
-	private static boolean isVal(TypeReference ref, BlockScope scope) {
-		if (!couldBeVal(ref)) return false;
-		
+
+	private static boolean is(TypeReference ref, BlockScope scope, String key) {
+		if (!couldBe(key, ref)) return false;
+
 		TypeBinding resolvedType = ref.resolvedType;
 		if (resolvedType == null) resolvedType = ref.resolveType(scope, false);
 		if (resolvedType == null) return false;
 		
 		char[] pkg = resolvedType.qualifiedPackageName();
 		char[] nm = resolvedType.qualifiedSourceName();
-		return matches("lombok", pkg) && matches("val", nm);
+		int pkgFullLength = pkg.length > 0 ? pkg.length + 1: 0;
+		char[] fullName = new char[pkgFullLength + nm.length];
+		if(pkg.length > 0) {
+			System.arraycopy(pkg, 0, fullName, 0, pkg.length);
+			fullName[pkg.length] = '.';
+		}
+		System.arraycopy(nm, 0, fullName, pkgFullLength, nm.length);
+		return matches(key, fullName);
 	}
 	
 	public static final class Reflection {
@@ -132,13 +145,17 @@ public class PatchVal {
 		if (local == null || !LocalDeclaration.class.equals(local.getClass())) return false;
 		boolean decomponent = false;
 		
-		if (!isVal(local.type, scope)) return false;
+        boolean val = isVal(local, scope);
+        boolean var = isVar(local, scope);
+        if (!(val || var)) return false;
 		
 		StackTraceElement[] st = new Throwable().getStackTrace();
 		for (int i = 0; i < st.length - 2 && i < 10; i++) {
 			if (st[i].getClassName().equals("lombok.launch.PatchFixesHider$Val")) {
-				if (st[i + 1].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration") &&
-					st[i + 2].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.ForStatement")) return false;
+				boolean valInForStatement = val &&
+						st[i + 1].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration") &&
+						st[i + 2].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.ForStatement");
+				if (valInForStatement) return false;
 				break;
 			}
 		}
@@ -187,23 +204,33 @@ public class PatchVal {
 			}
 		}
 		
-		local.modifiers |= ClassFileConstants.AccFinal;
+		if(val) local.modifiers |= ClassFileConstants.AccFinal;
 		local.annotations = addValAnnotation(local.annotations, local.type, scope);
 		local.type = replacement != null ? replacement : new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(local.type, 3));
 		
 		return false;
 	}
 	
+	private static boolean isVar(LocalDeclaration local, BlockScope scope) {
+		return is(local.type, scope, "lombok.experimental.var");
+	}
+	
+	private static boolean isVal(LocalDeclaration local, BlockScope scope) {
+		return is(local.type, scope, "lombok.val");
+	}
+	
 	public static boolean handleValForForEach(ForeachStatement forEach, BlockScope scope) {
 		if (forEach.elementVariable == null) return false;
 		
-		if (!isVal(forEach.elementVariable.type, scope)) return false;
+		boolean val = isVal(forEach.elementVariable, scope);
+		boolean var = isVar(forEach.elementVariable, scope);
+        if (!(val || var)) return false;
 		
 		TypeBinding component = getForEachComponentType(forEach.collection, scope);
 		if (component == null) return false;
 		TypeReference replacement = makeType(component, forEach.elementVariable.type, false);
 		
-		forEach.elementVariable.modifiers |= ClassFileConstants.AccFinal;
+		if (val) forEach.elementVariable.modifiers |= ClassFileConstants.AccFinal;
 		forEach.elementVariable.annotations = addValAnnotation(forEach.elementVariable.annotations, forEach.elementVariable.type, scope);
 		forEach.elementVariable.type = replacement != null ? replacement :
 				new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(forEach.elementVariable.type, 3));

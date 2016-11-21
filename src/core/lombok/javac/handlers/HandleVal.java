@@ -22,8 +22,12 @@
 package lombok.javac.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.eclipse.handlers.HandleVal.addVarNullInitMessage;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import lombok.ConfigurationKeys;
+import lombok.experimental.var;
 import lombok.val;
 import lombok.core.HandlerPriority;
 import lombok.javac.JavacASTAdapter;
@@ -50,21 +54,33 @@ import com.sun.tools.javac.util.List;
 @HandlerPriority(65536) // 2^16; resolution needs to work, so if the RHS expression is i.e. a call to a generated getter, we have to run after that getter has been generated.
 @ResolutionResetNeeded
 public class HandleVal extends JavacASTAdapter {
-	@Override public void visitLocal(JavacNode localNode, JCVariableDecl local) {
+	
+	public static final String VARIABLE_INITIALIZER_IS_NULL = "variable initializer is 'null'";
+	
+	private static boolean eq(String typeTreeToString, String key) {
+		return (typeTreeToString.equals(key) || typeTreeToString.equals("lombok." + key));
+	}
+
+	@Override
+	public void visitLocal(JavacNode localNode, JCVariableDecl local) {
 		JCTree typeTree = local.vartype;
 		if (typeTree == null) return;
 		String typeTreeToString = typeTree.toString();
-		if (!typeTreeToString.equals("val") && !typeTreeToString.equals("lombok.val")) return;
-		if (!typeMatches(val.class, localNode, typeTree)) return;
-		
-		handleFlagUsage(localNode, ConfigurationKeys.VAL_FLAG_USAGE, "val");
-		
+
+		if (!(eq(typeTreeToString, "val") || eq(typeTreeToString, "var"))) return;
+		boolean isVal = typeMatches(val.class, localNode, typeTree);
+		boolean isVar = typeMatches(var.class, localNode, typeTree);
+		if (!(isVal || isVar)) return;
+
+		if (isVal) handleFlagUsage(localNode, ConfigurationKeys.VAL_FLAG_USAGE, "val");
+		if (isVar) handleFlagUsage(localNode, ConfigurationKeys.VAR_FLAG_USAGE, "var");
+
 		JCTree parentRaw = localNode.directUp().get();
-		if (parentRaw instanceof JCForLoop) {
+		if (isVal && parentRaw instanceof JCForLoop) {
 			localNode.addError("'val' is not allowed in old-style for loops");
 			return;
 		}
-		
+
 		JCExpression rhsOfEnhancedForLoop = null;
 		if (local.init == null) {
 			if (parentRaw instanceof JCEnhancedForLoop) {
@@ -72,21 +88,26 @@ public class HandleVal extends JavacASTAdapter {
 				if (efl.var == local) rhsOfEnhancedForLoop = efl.expr;
 			}
 		}
-		
+
+		final String annotation = typeTreeToString;
 		if (rhsOfEnhancedForLoop == null && local.init == null) {
-			localNode.addError("'val' on a local variable requires an initializer expression");
+			localNode.addError("'" + annotation + "' on a local variable requires an initializer expression");
 			return;
+
 		}
-		
+
 		if (local.init instanceof JCNewArray && ((JCNewArray)local.init).elemtype == null) {
-			localNode.addError("'val' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })");
+			localNode.addError("'" + annotation + "' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })");
 			return;
 		}
-		
-		if (localNode.shouldDeleteLombokAnnotations()) JavacHandlerUtil.deleteImportFromCompilationUnit(localNode, "lombok.val");
-		
-		local.mods.flags |= Flags.FINAL;
-		
+
+		if (localNode.shouldDeleteLombokAnnotations()) {
+			JavacHandlerUtil.deleteImportFromCompilationUnit(localNode, val.class.getName());
+			JavacHandlerUtil.deleteImportFromCompilationUnit(localNode, var.class.getName());
+		}
+
+		if (isVal) local.mods.flags |= Flags.FINAL;
+
 		if (!localNode.shouldDeleteLombokAnnotations()) {
 			JCAnnotation valAnnotation = recursiveSetGeneratedBy(localNode.getTreeMaker().Annotation(local.vartype, List.<JCExpression>nil()), typeTree, localNode.getContext());
 			local.mods.annotations = local.mods.annotations == null ? List.of(valAnnotation) : local.mods.annotations.append(valAnnotation);
@@ -102,6 +123,9 @@ public class HandleVal extends JavacASTAdapter {
 		try {
 			if (rhsOfEnhancedForLoop == null) {
 				if (local.init.type == null) {
+					if (isVar && local.init instanceof JCLiteral && ((JCLiteral) local.init).value == null) {
+						addVarNullInitMessage(localNode);
+					}
 					JavacResolution resolver = new JavacResolution(localNode.getContext());
 					try {
 						type = ((JCExpression) resolver.resolveMethodMember(localNode).get(local.init)).type;
