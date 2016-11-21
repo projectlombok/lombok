@@ -3,14 +3,14 @@ import lombok.var;
 
 public class ValExample {
 	public String example() {
-		ArrayList example = new ArrayList<String>();
+		ArrayList<String> example = new ArrayList<String>();
 		example.add("Hello, World!");
 		final String foo = example.get(0);
 		return foo.toLowerCase();
 	}
 
 	public void example2() {
-		ArrayList list = new ArrayList<String>();
+		ArrayList<String> list = new ArrayList<String>();
 		list.add("zero");
 		list.add("one");
 		list.add("two");

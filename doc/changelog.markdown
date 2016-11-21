@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v1.16.11 "Edgy Guinea Pig"
 * v1.16.10 is the latest release
+* FEATURE: `var` is the mutable sister of `val`. For now experimental, and opt-in using `ALLOW` in the flagUsage configuration key. Thanks for the contribution, Bulgakov Alexander. 
 * BUGFIX: Annotation Processors that use ecj internally (dagger) no longer give linkage errors [Issue #1218](https://github.com/rzwitserloot/lombok/issues/1218)
 * BUGFIX: `val` in lambda expressions now work as expected [Issue #911](https://github.com/rzwitserloot/lombok/issues/911)
 * PLATFORM: Red Hat JBoss Developer Studio is now correctly identified by the installer [Issue #1164](https://github.com/rzwitserloot/lombok/issues/1164)
