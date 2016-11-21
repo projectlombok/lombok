@@ -21,3 +21,12 @@ class Tolerate2 {
 		return withPattern(nameGlob.replace("*", ".*") + "\\." + extensionGlob.replace("*", ".*"));
 	}
 }
+
+@lombok.Getter @lombok.AllArgsConstructor @lombok.EqualsAndHashCode
+final class Tolerate3 {
+	private final java.math.RoundingMode mode;
+
+	@lombok.experimental.Tolerate public int hashCode() {
+		return 123456789 * mode.ordinal();
+	}
+}
