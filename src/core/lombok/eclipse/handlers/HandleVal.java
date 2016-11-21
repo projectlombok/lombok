@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 The Project Lombok Authors.
+ * Copyright (C) 2010-2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,17 @@
  */
 package lombok.eclipse.handlers;
 
+import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.typeMatches;
 import lombok.ConfigurationKeys;
+import lombok.val;
 import lombok.core.HandlerPriority;
-import lombok.core.LombokNode;
 import lombok.eclipse.DeferUntilPostDiet;
 import lombok.eclipse.EclipseASTAdapter;
 import lombok.eclipse.EclipseASTVisitor;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.var;
-import lombok.val;
+
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ForStatement;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
@@ -37,10 +39,6 @@ import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.mangosdk.spi.ProviderFor;
-
-import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
-import static lombok.eclipse.handlers.EclipseHandlerUtil.typeMatches;
-import static lombok.javac.handlers.HandleVal.VARIABLE_INITIALIZER_IS_NULL;
 
 /*
  * This class just handles 3 basic error cases. The real meat of eclipse 'val' support is in {@code PatchVal} and {@code PatchValEclipse}.
@@ -83,12 +81,12 @@ public class HandleVal extends EclipseASTAdapter {
 		
 		if (local.initialization != null && local.initialization.getClass().getName().equals("org.eclipse.jdt.internal.compiler.ast.LambdaExpression")) {
 			localNode.addError("'" + annotation + "' is not allowed with lambda expressions.");
+			return;
 		}
 		
-		if(isVar && local.initialization instanceof NullLiteral) addVarNullInitMessage(localNode);
-	}
-	
-	public static void addVarNullInitMessage(LombokNode localNode) {
-		localNode.addError(VARIABLE_INITIALIZER_IS_NULL);
+		if(isVar && local.initialization instanceof NullLiteral) {
+			localNode.addError("variable initializer is 'null'");
+			return;
+		}
 	}
 }

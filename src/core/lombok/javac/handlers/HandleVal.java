@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2015 The Project Lombok Authors.
+ * Copyright (C) 2010-2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,12 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.core.handlers.HandlerUtil.*;
-import static lombok.eclipse.handlers.HandleVal.addVarNullInitMessage;
+import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
-
-import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import lombok.ConfigurationKeys;
-import lombok.experimental.var;
 import lombok.val;
 import lombok.core.HandlerPriority;
+import lombok.experimental.var;
 import lombok.javac.JavacASTAdapter;
 import lombok.javac.JavacASTVisitor;
 import lombok.javac.JavacNode;
@@ -46,6 +43,7 @@ import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCEnhancedForLoop;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCForLoop;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCNewArray;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
@@ -55,12 +53,10 @@ import com.sun.tools.javac.util.List;
 @ResolutionResetNeeded
 public class HandleVal extends JavacASTAdapter {
 	
-	public static final String VARIABLE_INITIALIZER_IS_NULL = "variable initializer is 'null'";
-	
 	private static boolean eq(String typeTreeToString, String key) {
 		return (typeTreeToString.equals(key) || typeTreeToString.equals("lombok." + key));
 	}
-
+	
 	@Override
 	public void visitLocal(JavacNode localNode, JCVariableDecl local) {
 		JCTree typeTree = local.vartype;
@@ -124,7 +120,7 @@ public class HandleVal extends JavacASTAdapter {
 			if (rhsOfEnhancedForLoop == null) {
 				if (local.init.type == null) {
 					if (isVar && local.init instanceof JCLiteral && ((JCLiteral) local.init).value == null) {
-						addVarNullInitMessage(localNode);
+						localNode.addError("variable initializer is 'null'");
 					}
 					JavacResolution resolver = new JavacResolution(localNode.getContext());
 					try {
@@ -173,7 +169,7 @@ public class HandleVal extends JavacASTAdapter {
 				}
 				localNode.getAst().setChanged();
 			} catch (JavacResolution.TypeNotConvertibleException e) {
-				localNode.addError("Cannot use 'val' here because initializer expression does not have a representable type: " + e.getMessage());
+				localNode.addError("Cannot use '" + annotation + "' here because initializer expression does not have a representable type: " + e.getMessage());
 				local.vartype = JavacResolution.createJavaLangObject(localNode.getAst());
 			}
 		} catch (RuntimeException e) {
