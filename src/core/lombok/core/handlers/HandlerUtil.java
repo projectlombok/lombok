@@ -96,13 +96,10 @@ public class HandlerUtil {
 		return Singulars.autoSingularize(plural);
 	}
 	public static void handleFlagUsage(LombokNode<?, ?, ?> node, ConfigurationKey<FlagUsageType> key, String featureName) {
-		boolean allowable = AllowHelper.isAllowable(featureName);
-	
 		FlagUsageType fut = node.getAst().readConfiguration(key);
 		
-		boolean allowed = !allowable || FlagUsageType.ALLOW == fut;
-		if (!allowed) {
-			node.addError("Use of " + featureName + " is disabled by default. Please use flag " + FlagUsageType.ALLOW + " to enable.");
+		if (fut == null && AllowHelper.isAllowable(key)) {
+			node.addError("Use of " + featureName + " is disabled by default. Please add '" + key.getKeyName() + " = " + FlagUsageType.ALLOW + "' to 'lombok.config' if you want to enable is.");
 		}
 		
 		if (fut != null) {

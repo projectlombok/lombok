@@ -130,7 +130,7 @@ public class LombokTestSource {
 	
 	private static final Pattern IGNORE_PATTERN = Pattern.compile("^\\s*ignore\\s*(?:[-:].*)?$", Pattern.CASE_INSENSITIVE);
 	private static final Pattern UNCHANGED_PATTERN = Pattern.compile("^\\s*unchanged\\s*(?:[-:].*)?$", Pattern.CASE_INSENSITIVE);
-	private static final Pattern SKIP_COMPARE_CONTENT_PATTERN = Pattern.compile("^\\s*skip[- ]?compare[- ]?content\\s*(?:[-:].*)?$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern SKIP_COMPARE_CONTENT_PATTERN = Pattern.compile("^\\s*skip[- ]?compare[- ]?contents?\\s*(?:[-:].*)?$", Pattern.CASE_INSENSITIVE);
 	
 	private LombokTestSource(File file, String content, List<CompilerMessageMatcher> messages, List<String> directives) {
 		this.file = file;

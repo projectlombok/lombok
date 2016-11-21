@@ -57,10 +57,16 @@ public abstract class AbstractRunTests {
 	
 	public final FileTester createTester(final DirectoryRunner.TestParams params, final File file) throws IOException {
 		ConfigurationKeysLoader.LoaderLoader.loadAllConfigurationKeys();
-		final LombokTestSource sourceDirectives = LombokTestSource.readDirectives(file);
-		if (sourceDirectives.isIgnore()) return null;
-		if (!sourceDirectives.versionWithinLimit(params.getVersion())) return null;
-		if (!sourceDirectives.versionWithinLimit(getClasspathVersion())) return null;
+		AssertionError directiveFailure = null;
+		LombokTestSource sourceDirectives = null;
+		try {
+			sourceDirectives = LombokTestSource.readDirectives(file);
+			if (sourceDirectives.isIgnore()) return null;
+			if (!sourceDirectives.versionWithinLimit(params.getVersion())) return null;
+			if (!sourceDirectives.versionWithinLimit(getClasspathVersion())) return null;
+		} catch (AssertionError ae) {
+			directiveFailure = ae;
+		}
 		
 		String fileName = file.getName();
 		final LombokTestSource expected = LombokTestSource.read(params.getAfterDirectory(), params.getMessagesDirectory(), fileName);
@@ -68,23 +74,26 @@ public abstract class AbstractRunTests {
 		if (expected.isIgnore()) return null;
 		if (!expected.versionWithinLimit(params.getVersion())) return null;
 		
+		final LombokTestSource sourceDirectives_ = sourceDirectives;
+		final AssertionError directiveFailure_ = directiveFailure;
 		return new FileTester() {
 			@Override public void runTest() throws Throwable {
+				if (directiveFailure_ != null) throw directiveFailure_;
 				LinkedHashSet<CompilerMessage> messages = new LinkedHashSet<CompilerMessage>();
 				StringWriter writer = new StringWriter();
 				
 				LombokConfiguration.overrideConfigurationResolverFactory(new ConfigurationResolverFactory() {
 					@Override public ConfigurationResolver createResolver(AST<?, ?, ?> ast) {
-						return sourceDirectives.getConfiguration();
+						return sourceDirectives_.getConfiguration();
 					}
 				});
 				
-				boolean changed = transformCode(messages, writer, file, sourceDirectives.getSpecifiedEncoding(), sourceDirectives.getFormatPreferences());
-				boolean forceUnchanged = sourceDirectives.forceUnchanged() || sourceDirectives.isSkipCompareContent();
+				boolean changed = transformCode(messages, writer, file, sourceDirectives_.getSpecifiedEncoding(), sourceDirectives_.getFormatPreferences());
+				boolean forceUnchanged = sourceDirectives_.forceUnchanged() || sourceDirectives_.isSkipCompareContent();
 				if (params.expectChanges() && !forceUnchanged && !changed) messages.add(new CompilerMessage(-1, -1, true, "not flagged modified"));
 				if (!params.expectChanges() && changed) messages.add(new CompilerMessage(-1, -1, true, "unexpected modification"));
 				
-				compare(file.getName(), expected, writer.toString(), messages, params.printErrors(), sourceDirectives.isSkipCompareContent() || expected.isSkipCompareContent());
+				compare(file.getName(), expected, writer.toString(), messages, params.printErrors(), sourceDirectives_.isSkipCompareContent() || expected.isSkipCompareContent());
 			}
 		};
 	}
