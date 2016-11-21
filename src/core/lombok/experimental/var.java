@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Project Lombok Authors.
+ * Copyright (C) 2010-2013 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,9 +19,10 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.core.configuration;
+package lombok.experimental;
 
-/** Used for lombok configuration to flag usages of certain lombok feature. */
-public enum FlagUsageType {
-	WARNING, ERROR, ALLOW;
+/**
+ * like val but not final
+ */
+public @interface var {
 }

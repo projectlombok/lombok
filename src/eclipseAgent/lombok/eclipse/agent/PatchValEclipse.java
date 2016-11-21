@@ -47,6 +47,7 @@ import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.parser.Parser;
 
@@ -65,7 +66,9 @@ public class PatchValEclipse {
 		ForeachStatement foreachDecl = (ForeachStatement) astStack[astPtr];
 		ASTNode init = foreachDecl.collection;
 		if (init == null) return;
-		if (foreachDecl.elementVariable == null || !PatchVal.couldBeVal(foreachDecl.elementVariable.type)) return;
+		boolean val = couldBeVal(foreachDecl.elementVariable.type);
+		boolean var = couldBeVar(foreachDecl.elementVariable.type);
+		if (foreachDecl.elementVariable == null || !(val || var)) return;
 		
 		try {
 			if (Reflection.iterableCopyField != null) Reflection.iterableCopyField.set(foreachDecl.elementVariable, init);
@@ -88,13 +91,19 @@ public class PatchValEclipse {
 		if (!(variableDecl instanceof LocalDeclaration)) return;
 		ASTNode init = variableDecl.initialization;
 		if (init == null) return;
-		if (!PatchVal.couldBeVal(variableDecl.type)) return;
+		boolean val = couldBeVal(variableDecl.type);
+		boolean var = couldBeVar(variableDecl.type);
+		if (!(val || var)) return;
 		
 		try {
 			if (Reflection.initCopyField != null) Reflection.initCopyField.set(variableDecl, init);
 		} catch (Exception e) {
 			// In ecj mode this field isn't there and we don't need the copy anyway, so, we ignore the exception.
 		}
+	}
+	
+	private static boolean couldBeVar(TypeReference type) {
+		return PatchVal.couldBe("lombok.experimental.var", type);
 	}
 	
 	public static void addFinalAndValAnnotationToSingleVariableDeclaration(Object converter, SingleVariableDeclaration out, LocalDeclaration in) {
@@ -115,7 +124,7 @@ public class PatchValEclipse {
 		Annotation valAnnotation = null;
 		
 		for (Annotation ann : in.annotations) {
-			if (PatchVal.couldBeVal(ann.type)) {
+			if (couldBeVal(ann.type)) {
 				found = true;
 				valAnnotation = ann;
 				break;
@@ -165,6 +174,10 @@ public class PatchValEclipse {
 			}
 			modifiers.add(newAnnotation);
 		}
+	}
+	
+	private static boolean couldBeVal(TypeReference type) {
+		return PatchVal.couldBe("lombok.val", type);
 	}
 	
 	public static Modifier createModifier(AST ast, ModifierKeyword keyword, int start, int end) {

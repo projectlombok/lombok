@@ -43,6 +43,7 @@ import lombok.core.AST;
 import lombok.core.AnnotationValues;
 import lombok.core.JavaIdentifiers;
 import lombok.core.LombokNode;
+import lombok.core.configuration.AllowHelper;
 import lombok.core.configuration.ConfigurationKey;
 import lombok.core.configuration.FlagUsageType;
 import lombok.experimental.Accessors;
@@ -95,12 +96,19 @@ public class HandlerUtil {
 		return Singulars.autoSingularize(plural);
 	}
 	public static void handleFlagUsage(LombokNode<?, ?, ?> node, ConfigurationKey<FlagUsageType> key, String featureName) {
+		boolean allowable = AllowHelper.isAllowable(featureName);
+	
 		FlagUsageType fut = node.getAst().readConfiguration(key);
+		
+		boolean allowed = !allowable || FlagUsageType.ALLOW == fut;
+		if (!allowed) {
+			node.addError("Use of " + featureName + " is disabled by default. Please use flag " + FlagUsageType.ALLOW + " to enable.");
+		}
 		
 		if (fut != null) {
 			String msg = "Use of " + featureName + " is flagged according to lombok configuration.";
 			if (fut == FlagUsageType.WARNING) node.addWarning(msg);
-			else node.addError(msg);
+			else if (fut == FlagUsageType.ERROR) node.addError(msg);
 		}
 	}
 	

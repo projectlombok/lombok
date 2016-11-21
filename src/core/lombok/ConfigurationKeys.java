@@ -283,7 +283,8 @@ public class ConfigurationKeys {
 	 * If set, <em>any</em> usage of {@code val} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> VAL_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.val.flagUsage", "Emit a warning or error if 'val' is used.") {};
-	
+	public static final ConfigurationKey<FlagUsageType> VAR_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.var.flagUsage", "Emit a warning or error if 'var' is used.") {};
+
 	// ##### Extern #####
 	
 	// ----- Logging -----
