@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -180,6 +180,10 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		if (lazy) {
 			if ((fieldDecl.mods.flags & Flags.PRIVATE) == 0 || (fieldDecl.mods.flags & Flags.FINAL) == 0) {
 				source.addError("'lazy' requires the field to be private and final.");
+				return;
+			}
+			if ((fieldDecl.mods.flags & Flags.TRANSIENT) != 0) {
+				source.addError("'lazy' is not supported on transient fields.");
 				return;
 			}
 			if (fieldDecl.init == null) {
