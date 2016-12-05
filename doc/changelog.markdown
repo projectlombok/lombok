@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.16.13 "Edgy Guinea Pig"
+* v1.16.12 is the latest stable release of Project Lombok.
+
 ### v1.16.12 (December 5th, 2016)
 * FEATURE: `var` is the mutable sister of `val`. For now experimental, and opt-in using `ALLOW` in the flagUsage configuration key. Thanks for the contribution, Bulgakov Alexander. 
 * CHANGE: `@Value` and `@FieldDefaults` no longer touch static fields [Issue #1254](https://github.com/rzwitserloot/lombok/issues/1254)
