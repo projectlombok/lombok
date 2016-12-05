@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
 
 /**
  * Used to indicate the explicit intention for the annotated entity to <em>not</em> be {@code final}.
- * Currently used by {@code FieldDefaults} to avoid having it make a field final.
+ * Currently used by {@code FieldDefaults} and {@code Value} to avoid having it make a field final.
  */
 @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.ANNOTATION_TYPE, ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.SOURCE)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2015 The Project Lombok Authors.
+ * Copyright (C) 2012-2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -84,14 +84,16 @@ public class HandleFieldDefaults extends JavacASTAdapter {
 		if (level != null && level != AccessLevel.NONE) {
 			if ((field.mods.flags & (Flags.PUBLIC | Flags.PRIVATE | Flags.PROTECTED)) == 0) {
 				if (!hasAnnotationAndDeleteIfNeccessary(PackagePrivate.class, fieldNode)) {
-					field.mods.flags |= toJavacModifier(level);
+					if ((field.mods.flags & Flags.STATIC) == 0) {
+						field.mods.flags |= toJavacModifier(level);
+					}
 				}
 			}
 		}
 		
 		if (makeFinal && (field.mods.flags & Flags.FINAL) == 0) {
 			if (!hasAnnotationAndDeleteIfNeccessary(NonFinal.class, fieldNode)) {
-				if ((field.mods.flags & Flags.STATIC) == 0 || field.init != null) {
+				if ((field.mods.flags & Flags.STATIC) == 0) {
 					field.mods.flags |= Flags.FINAL;
 				}
 			}

@@ -33,9 +33,9 @@ import lombok.AccessLevel;
  * <p>
  * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/FieldDefaults.html">the project lombok features page for &#64;FieldDefaults</a>.
  * <p>
- * If {@code makeFinal} is {@code true}, then each field that is not annotated with {@code @NonFinal} will have the {@code final} modifier added.
+ * If {@code makeFinal} is {@code true}, then each (instance) field that is not annotated with {@code @NonFinal} will have the {@code final} modifier added.
  * <p>
- * If {@code level} is set, then each field that is package private (i.e. no access modifier) and does not have the {@code @PackagePrivate} annotation will
+ * If {@code level} is set, then each (instance) field that is package private (i.e. no access modifier) and does not have the {@code @PackagePrivate} annotation will
  * have the appropriate access level modifier added.
  */
 @Target(ElementType.TYPE)

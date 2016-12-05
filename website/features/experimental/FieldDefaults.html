@@ -36,10 +36,10 @@
 				to each field in the annotated class or enum. It can also add <code>final</code> to each field in the annotated class or enum.
 			</p>
 			</p><p>
-				To add <code>final</code> to each field, use <code>@FieldDefaults(makeFinal=true)</code>. Any non-final field which must remain nonfinal
+				To add <code>final</code> to each (instance) field, use <code>@FieldDefaults(makeFinal=true)</code>. Any non-final field which must remain nonfinal
 				can be annotated with <code>@NonFinal</code> (also in the <code>lombok.experimental</code> package).
 			</p><p>
-				To add an access modifier to each field, use <code>@FieldDefaults(level=AccessLevel.PRIVATE)</code>. Any field that does not already have an
+				To add an access modifier to each (instance) field, use <code>@FieldDefaults(level=AccessLevel.PRIVATE)</code>. Any field that does not already have an
 				access modifier (i.e. any field that looks like package private access) is changed to have the appropriate access modifier. Any package private
 				field which must remain package private can be annotated with <code>@PackagePrivate</code> (also in the <code>lombok.experimental</code> package).
 			</p>

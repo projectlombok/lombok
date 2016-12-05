@@ -1,7 +1,7 @@
 import lombok.Value;
 final @Value class ValueStaticField {
-  private static int x;
-  private static final String PASSWORD = "Ken sent me";
+  static int x;
+  static String PASSWORD = "Ken sent me";
   <clinit>() {
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {

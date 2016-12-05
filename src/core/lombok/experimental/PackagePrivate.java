@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
 
 /**
  * Used to indicate the explicit intention for the annotated entity to have the <em>package private</em> access level.
- * Currently used by {@code FieldDefaults} to avoid having it make a field one of {@code public}, {@code protected}, or {@code private}.
+ * Currently used by {@code FieldDefaults} and {@code Value} to avoid having it make a field one of {@code public}, {@code protected}, or {@code private}.
  */
 @Target({ElementType.TYPE, ElementType.FIELD, ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.SOURCE)

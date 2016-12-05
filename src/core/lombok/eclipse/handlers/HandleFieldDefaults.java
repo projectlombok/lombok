@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 The Project Lombok Authors.
+ * Copyright (C) 2012-2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -97,14 +97,16 @@ public class HandleFieldDefaults extends EclipseASTAdapter {
 		if (level != null && level != AccessLevel.NONE) {
 			if ((field.modifiers & (ClassFileConstants.AccPublic | ClassFileConstants.AccPrivate | ClassFileConstants.AccProtected)) == 0) {
 				if (!hasAnnotation(PackagePrivate.class, fieldNode)) {
-					field.modifiers |= EclipseHandlerUtil.toEclipseModifier(level);
+					if ((field.modifiers & ClassFileConstants.AccStatic) == 0) {
+						field.modifiers |= EclipseHandlerUtil.toEclipseModifier(level);
+					}
 				}
 			}
 		}
 		
 		if (makeFinal && (field.modifiers & ClassFileConstants.AccFinal) == 0) {
 			if (!hasAnnotation(NonFinal.class, fieldNode)) {
-				if ((field.modifiers & ClassFileConstants.AccStatic) == 0 || field.initialization != null) {
+				if ((field.modifiers & ClassFileConstants.AccStatic) == 0) {
 					field.modifiers |= ClassFileConstants.AccFinal;
 				}
 			}

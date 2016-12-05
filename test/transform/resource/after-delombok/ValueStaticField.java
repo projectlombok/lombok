@@ -1,6 +1,6 @@
 final class ValueStaticField {
-	private static int x;
-	private static final String PASSWORD = "Ken sent me";
+	static int x;
+	static String PASSWORD = "Ken sent me";
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	public ValueStaticField() {
