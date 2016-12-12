@@ -305,6 +305,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor</echo>
 				<srcdir dir="src/installer" />
 				<srcdir dir="src/delombok" />
 				<srcdir dir="src/stubs" />
+				<srcdir dir="src/testAP" />
 				<srcdir dir="experimental/src" />
 				<srcdir dir="test/transform/src" test="true" />
 				<srcdir dir="test/core/src" test="true" />
@@ -335,6 +336,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor</echo>
 			<srcdir dir="src/installer" />
 			<srcdir dir="src/delombok" />
 			<srcdir dir="src/stubs" />
+			<srcdir dir="src/testAP" />
 			<srcdir dir="experimental/src" />
 			<srcdir dir="test/transform/src" />
 			<srcdir dir="test/core/src" />
@@ -765,5 +767,54 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			<property name="ssh.username" value="${ssh.username}" />
 			<property name="ssh.keyfile" value="${ssh.keyfile}" />
 		</ant>
+	</target>
+
+	<target name="testAp-compile" depends="ensureBuildDeps">
+		<delete file="build/testAP/META-INF/services/javax.annotation.processing.Processor" quiet="true" />
+		<ivy:compile destdir="build/testAP" source="1.7" target="1.7" includeantruntime="false">
+			<src path="src/testAP" />
+		</ivy:compile>
+		
+		<mkdir dir="build/testAP/META-INF" />
+		<mkdir dir="build/testAP/META-INF/services" />
+		<echo file="build/testAP/META-INF/services/javax.annotation.processing.Processor">org.projectlombok.testAp.TestAp</echo>
+	</target>
+
+	<target name="testAp-dist" depends="testAp-compile">
+		<mkdir dir="dist" />
+		<tstamp>
+			<format property="releaseTimestamp" pattern="yyyy-MM-dd" />
+		</tstamp>
+		<zip destfile="dist/testAp-${releaseTimestamp}.jar">
+			<fileset dir="." includes="LICENSE" />
+			<fileset dir="build/testAp" />
+		</zip>
+		<copy file="dist/testAp-${releaseTimestamp}.jar" tofile="dist/testAp.jar" />
+	</target>
+
+	<target name="testAp" depends="testAp-dist, dist">
+		<echo>Running in order: First Lombok, Then testAP</echo>
+
+		<delete dir="build/useTestAp" quiet="true" />
+		<mkdir dir="build/useTestAp" />
+		<javac source="1.7" target="1.7" destdir="build/useTestAp" includeantruntime="false">
+			<src path="src/useTestAP" />
+			<classpath location="dist/lombok.jar" />
+			<classpath location="dist/testAp.jar" />
+			<compilerarg value="-processor" />
+			<compilerarg value="lombok.launch.AnnotationProcessorHider$AnnotationProcessor,org.projectlombok.testAp.TestAp" />
+		</javac>
+
+		<echo>Running in order: First TestAP, Then Lombok</echo>
+
+		<delete dir="build/useTestAp" quiet="true" />
+		<mkdir dir="build/useTestAp" />
+		<javac source="1.7" target="1.7" destdir="build/useTestAp" includeantruntime="false">
+			<src path="src/useTestAP" />
+			<classpath location="dist/lombok.jar" />
+			<classpath location="dist/testAp.jar" />
+			<compilerarg value="-processor" />
+			<compilerarg value="org.projectlombok.testAp.TestAp,lombok.launch.AnnotationProcessorHider$AnnotationProcessor" />
+		</javac>
 	</target>
 </project>
