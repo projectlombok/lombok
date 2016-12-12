@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@ import java.util.SortedSet;
 
 import javax.annotation.processing.Messager;
 
+import com.sun.source.util.Trees;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -38,9 +39,9 @@ public class JavacTransformer {
 	private final HandlerLibrary handlers;
 	private final Messager messager;
 	
-	public JavacTransformer(Messager messager) {
+	public JavacTransformer(Messager messager, Trees trees) {
 		this.messager = messager;
-		this.handlers = HandlerLibrary.load(messager);
+		this.handlers = HandlerLibrary.load(messager, trees);
 	}
 	
 	public SortedSet<Long> getPriorities() {
@@ -54,7 +55,7 @@ public class JavacTransformer {
 	public void transform(long priority, Context context, java.util.List<JCCompilationUnit> compilationUnitsRaw) {
 		List<JCCompilationUnit> compilationUnits;
 		if (compilationUnitsRaw instanceof List<?>) {
-			compilationUnits = (List<JCCompilationUnit>)compilationUnitsRaw;
+			compilationUnits = (List<JCCompilationUnit>) compilationUnitsRaw;
 		} else {
 			compilationUnits = List.nil();
 			for (int i = compilationUnitsRaw.size() -1; i >= 0; i--) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,7 @@ package lombok.javac;
 
 import java.util.List;
 
+import javax.lang.model.element.Element;
 import javax.tools.Diagnostic;
 
 import lombok.core.AST.Kind;
@@ -49,6 +50,13 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 	 */
 	public JavacNode(JavacAST ast, JCTree node, List<JavacNode> children, Kind kind) {
 		super(ast, node, children, kind);
+	}
+	
+	public Element getElement() {
+		if (node instanceof JCClassDecl) return ((JCClassDecl) node).sym;
+		if (node instanceof JCMethodDecl) return ((JCMethodDecl) node).sym;
+		if (node instanceof JCVariableDecl) return ((JCVariableDecl) node).sym;
+		return null;
 	}
 	
 	public int getEndPosition(DiagnosticPosition pos) {

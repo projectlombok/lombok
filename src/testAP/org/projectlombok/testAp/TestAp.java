@@ -30,7 +30,9 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 
 @SupportedAnnotationTypes("org.projectlombok.testAp.ExampleAnnotation")
 public final class TestAp extends AbstractProcessor {
@@ -54,14 +56,17 @@ public final class TestAp extends AbstractProcessor {
 		for (Element annotated : roundEnv.getElementsAnnotatedWith(ExampleAnnotation.class)) {
 			annotatedElemCount++;
 			for (Element child : annotated.getEnclosedElements()) {
-				if (child.getSimpleName().equals("getTest") && child.getKind() == ElementKind.METHOD) foundGetTest = true;
-				System.out.println(child);
+				if (child.getSimpleName().toString().equals("getTest") && child.getKind() == ElementKind.METHOD) foundGetTest = true;
+				if (child instanceof ExecutableElement) {
+					TypeMirror returnType = ((ExecutableElement) child).getReturnType();
+					System.out.println("RETURN TYPE for " + child.getSimpleName() + ": " + returnType.getClass() + " -- " + returnType.toString());
+				}
 			}
 		}
 		
 		if (foundGetTest) log("RESULT: POSITIVE -- found the getTest method");
-		else if (annotatedElemCount > 0) log("RESULT: NEGATIVE-T1 -- found the example class but there's no getTest method in it according to the type mirror.");
-		else log("RESULT: NEGATIVE-T2 -- The example class is not provided by 'getElementsAnnotatedWith' in this rond.");
+		else if (annotatedElemCount > 0) log("RESULT: NEGATIVE -- found the example class but there's no getTest method in it according to the type mirror.");
+		else log("RESULT: AMBIVALENT -- The example class is not provided by 'getElementsAnnotatedWith' in this round. Not an issue, unless previously you got a NEGATIVE result.");
 		
 		return false;
 	}

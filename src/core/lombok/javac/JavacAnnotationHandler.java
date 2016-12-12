@@ -26,6 +26,7 @@ import java.lang.annotation.Annotation;
 import lombok.core.AnnotationValues;
 import lombok.core.SpiLoadUtil;
 
+import com.sun.source.util.Trees;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 
 /**
@@ -40,6 +41,8 @@ import com.sun.tools.javac.tree.JCTree.JCAnnotation;
  * You also need to register yourself via SPI discovery as being an implementation of {@code JavacAnnotationHandler}.
  */
 public abstract class JavacAnnotationHandler<T extends Annotation> {
+	protected Trees trees;
+	
 	/**
 	 * Called when an annotation is found that is likely to match the annotation you're interested in.
 	 * 
@@ -62,5 +65,9 @@ public abstract class JavacAnnotationHandler<T extends Annotation> {
 	 */
 	@SuppressWarnings("unchecked") public Class<T> getAnnotationHandledByThisHandler() {
 		return (Class<T>) SpiLoadUtil.findAnnotationClass(getClass(), JavacAnnotationHandler.class);
+	}
+	
+	public void setTrees(Trees trees) {
+		this.trees = trees;
 	}
 }

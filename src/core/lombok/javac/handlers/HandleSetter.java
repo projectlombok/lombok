@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -188,7 +188,17 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
 		
 		JCMethodDecl createdSetter = createSetter(access, fieldNode, fieldNode.getTreeMaker(), sourceNode, onMethod, onParam);
-		injectMethod(fieldNode.up(), createdSetter);
+		Type fieldType = getMirrorForFieldType(fieldNode);
+		Type returnType;
+		
+		if (shouldReturnThis(fieldNode)) {
+			ClassSymbol sym = ((JCClassDecl) fieldNode.up().get()).sym;
+			returnType = sym == null ? null : sym.type;
+		} else {
+			returnType = Javac.createVoidType(fieldNode.getSymbolTable(), CTC_VOID);
+		}
+		
+		injectMethod(fieldNode.up(), createdSetter, fieldType == null ? null : List.of(fieldType), returnType);
 	}
 	
 	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {

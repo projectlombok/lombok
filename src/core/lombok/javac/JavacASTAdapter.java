@@ -21,6 +21,7 @@
  */
 package lombok.javac;
 
+import com.sun.source.util.Trees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -34,6 +35,9 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
  * has been implemented with an empty body. Override whichever methods you need.
  */
 public class JavacASTAdapter implements JavacASTVisitor {
+	/** {@inheritDoc} */
+	@Override public void setTrees(Trees trees) {}
+	
 	/** {@inheritDoc} */
 	@Override public void visitCompilationUnit(JavacNode top, JCCompilationUnit unit) {}
 	

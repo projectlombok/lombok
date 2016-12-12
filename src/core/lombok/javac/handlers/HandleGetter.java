@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2016 The Project Lombok Authors.
+ * Copyright (C) 2009-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,6 +46,7 @@ import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
@@ -219,7 +220,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		long access = toJavacModifier(level) | (fieldDecl.mods.flags & Flags.STATIC);
 		
-		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker(), source.get(), lazy, onMethod));
+		injectMethod(fieldNode.up(), createGetter(access, fieldNode, fieldNode.getTreeMaker(), source.get(), lazy, onMethod), List.<Type>nil(), getMirrorForFieldType(fieldNode));
 	}
 	
 	public JCMethodDecl createGetter(long access, JavacNode field, JavacTreeMaker treeMaker, JCTree source, boolean lazy, List<JCAnnotation> onMethod) {

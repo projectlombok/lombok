@@ -797,7 +797,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 
 		<delete dir="build/useTestAp" quiet="true" />
 		<mkdir dir="build/useTestAp" />
-		<javac source="1.7" target="1.7" destdir="build/useTestAp" includeantruntime="false">
+		<javac verbose="false" source="1.7" target="1.7" destdir="build/useTestAp" includeantruntime="false">
 			<src path="src/useTestAP" />
 			<classpath location="dist/lombok.jar" />
 			<classpath location="dist/testAp.jar" />
@@ -809,7 +809,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 
 		<delete dir="build/useTestAp" quiet="true" />
 		<mkdir dir="build/useTestAp" />
-		<javac source="1.7" target="1.7" destdir="build/useTestAp" includeantruntime="false">
+		<javac verbose="false" source="1.7" target="1.7" destdir="build/useTestAp" includeantruntime="false">
 			<src path="src/useTestAP" />
 			<classpath location="dist/lombok.jar" />
 			<classpath location="dist/testAp.jar" />

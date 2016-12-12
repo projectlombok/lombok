@@ -44,6 +44,7 @@ import lombok.core.TypeResolver;
 import lombok.core.configuration.ConfigurationKeysLoader;
 import lombok.javac.handlers.JavacHandlerUtil;
 
+import com.sun.source.util.Trees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -148,12 +149,12 @@ public class HandlerLibrary {
 	 * then uses SPI discovery to load all annotation and visitor based handlers so that future calls
 	 * to the handle methods will defer to these handlers.
 	 */
-	public static HandlerLibrary load(Messager messager) {
+	public static HandlerLibrary load(Messager messager, Trees trees) {
 		HandlerLibrary library = new HandlerLibrary(messager);
 		
 		try {
-			loadAnnotationHandlers(library);
-			loadVisitorHandlers(library);
+			loadAnnotationHandlers(library, trees);
+			loadVisitorHandlers(library, trees);
 		} catch (IOException e) {
 			System.err.println("Lombok isn't running due to misconfigured SPI files: " + e);
 		}
@@ -165,9 +166,10 @@ public class HandlerLibrary {
 	
 	/** Uses SPI Discovery to find implementations of {@link JavacAnnotationHandler}. */
 	@SuppressWarnings({"rawtypes", "unchecked"})
-	private static void loadAnnotationHandlers(HandlerLibrary lib) throws IOException {
+	private static void loadAnnotationHandlers(HandlerLibrary lib, Trees trees) throws IOException {
 		//No, that seemingly superfluous reference to JavacAnnotationHandler's classloader is not in fact superfluous!
 		for (JavacAnnotationHandler handler : SpiLoadUtil.findServices(JavacAnnotationHandler.class, JavacAnnotationHandler.class.getClassLoader())) {
+			handler.setTrees(trees);
 			Class<? extends Annotation> annotationClass = handler.getAnnotationHandledByThisHandler();
 			AnnotationHandlerContainer<?> container = new AnnotationHandlerContainer(handler, annotationClass);
 			String annotationClassName = container.annotationClass.getName().replace("$", ".");
@@ -179,9 +181,10 @@ public class HandlerLibrary {
 	}
 	
 	/** Uses SPI Discovery to find implementations of {@link JavacASTVisitor}. */
-	private static void loadVisitorHandlers(HandlerLibrary lib) throws IOException {
+	private static void loadVisitorHandlers(HandlerLibrary lib, Trees trees) throws IOException {
 		//No, that seemingly superfluous reference to JavacASTVisitor's classloader is not in fact superfluous!
 		for (JavacASTVisitor visitor : SpiLoadUtil.findServices(JavacASTVisitor.class, JavacASTVisitor.class.getClassLoader())) {
+			visitor.setTrees(trees);
 			lib.visitorHandlers.add(new VisitorContainer(visitor));
 		}
 	}

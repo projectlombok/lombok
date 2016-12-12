@@ -36,6 +36,11 @@ import javax.lang.model.element.TypeElement;
 
 class AnnotationProcessorHider {
 	public static class AnnotationProcessor extends AbstractProcessor {
+		private static final long START = System.currentTimeMillis();
+		
+		private void log(String txt) {
+			System.out.printf("***[%3d]: %s\n", System.currentTimeMillis() - START, txt);
+		}
 		private final AbstractProcessor instance = createWrappedInstance();
 		
 		@Override public Set<String> getSupportedOptions() {
@@ -51,11 +56,15 @@ class AnnotationProcessorHider {
 		}
 		
 		@Override public void init(ProcessingEnvironment processingEnv) {
+			log("Lombok in init");
 			instance.init(processingEnv);
 			super.init(processingEnv);
 		}
 		
+		private int roundCounter = 0;
 		@Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+			roundCounter++;
+			log("Lombok in round " + roundCounter);
 			return instance.process(annotations, roundEnv);
 		}
 		

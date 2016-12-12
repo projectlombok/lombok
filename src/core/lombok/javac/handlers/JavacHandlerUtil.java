@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2015 The Project Lombok Authors.
+ * Copyright (C) 2009-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.lang.model.element.Element;
+
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.Data;
@@ -59,7 +61,12 @@ import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Scope;
 import com.sun.tools.javac.code.Symbol;
+import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.parser.Tokens.Comment;
 import com.sun.tools.javac.tree.DocCommentTable;
 import com.sun.tools.javac.tree.JCTree;
@@ -819,6 +826,12 @@ public class JavacHandlerUtil {
 		return call;
 	}
 	
+	public static Type getMirrorForFieldType(JavacNode fieldNode) {
+		Element fieldElement = fieldNode.getElement();
+		if (fieldElement instanceof VarSymbol) return ((VarSymbol) fieldElement).type;
+		return null;
+	}
+	
 	/**
 	 * Adds the given new field declaration to the provided type AST Node.
 	 * The field carries the &#64;{@link SuppressWarnings}("all") annotation.
@@ -903,13 +916,17 @@ public class JavacHandlerUtil {
 		}
 	}
 	
+	public static void injectMethod(JavacNode typeNode, JCMethodDecl method) {
+		injectMethod(typeNode, method, null, null);
+	}
+	
 	/**
 	 * Adds the given new method declaration to the provided type AST Node.
 	 * Can also inject constructors.
 	 * 
 	 * Also takes care of updating the JavacAST.
 	 */
-	public static void injectMethod(JavacNode typeNode, JCMethodDecl method) {
+	public static void injectMethod(JavacNode typeNode, JCMethodDecl method, List<Type> paramTypes, Type returnType) {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
 		if (method.getName().contentEquals("<init>")) {
@@ -933,7 +950,16 @@ public class JavacHandlerUtil {
 		addGenerated(method.mods, typeNode, method.pos, getGeneratedBy(method), typeNode.getContext());
 		type.defs = type.defs.append(method);
 		
+		fixMethodMirror(typeNode.getContext(), typeNode.getElement(), method.getModifiers().flags, method.getName(), paramTypes, returnType);
+		
 		typeNode.add(method, Kind.METHOD);
+	}
+	
+	private static void fixMethodMirror(Context context, Element typeMirror, long access, Name methodName, List<Type> paramTypes, Type returnType) {
+		if (typeMirror == null || paramTypes == null || returnType == null) return;
+		ClassSymbol cs = (ClassSymbol) typeMirror;
+		MethodSymbol methodSymbol = new MethodSymbol(access, methodName, new MethodType(paramTypes, returnType, List.<Type>nil(), Symtab.instance(context).methodClass), cs);
+		cs.members_field.enter(methodSymbol);
 	}
 	
 	/**

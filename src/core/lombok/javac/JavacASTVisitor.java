@@ -23,6 +23,7 @@ package lombok.javac;
 
 import java.io.PrintStream;
 
+import com.sun.source.util.Trees;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -37,6 +38,8 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
  * calling the appropriate visit and endVisit methods.
  */
 public interface JavacASTVisitor {
+	void setTrees(Trees trees);
+	
 	/**
 	 * Called at the very beginning and end.
 	 */
@@ -120,6 +123,8 @@ public interface JavacASTVisitor {
 			this.printContent = printContent;
 			this.out = out;
 		}
+		
+		@Override public void setTrees(Trees trees) {}
 		
 		private void forcePrint(String text, Object... params) {
 			StringBuilder sb = new StringBuilder();
