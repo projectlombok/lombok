@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 The Project Lombok Authors.
+ * Copyright (C) 2009-2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ import lombok.Lombok;
 import lombok.core.LombokApp;
 import lombok.core.SpiLoadUtil;
 import lombok.core.Version;
-import lombok.installer.IdeFinder.OS;
+import lombok.installer.OsUtils.OS;
 import lombok.patcher.ClassRootFinder;
 
 import org.mangosdk.spi.ProviderFor;
@@ -72,10 +72,9 @@ public class Installer {
 	}
 	
 	static List<Pattern> getIdeExecutableNames() {
-		OS os = IdeFinder.getOS();
 		List<Pattern> list = new ArrayList<Pattern>();
 		for (IdeLocationProvider provider : locationProviders) {
-			Pattern p = provider.getLocationSelectors(os);
+			Pattern p = provider.getLocationSelectors();
 			if (p != null) list.add(p);
 		}
 		return list;
@@ -91,12 +90,8 @@ public class Installer {
 	}
 	
 	static void autoDiscover(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems) {
-		try {
-			for (IdeFinder finder : SpiLoadUtil.findServices(IdeFinder.class)) {
-				finder.findIdes(locations, problems);
-			}
-		} catch (IOException e) {
-			throw Lombok.sneakyThrow(e);
+		for (IdeLocationProvider provider : locationProviders) {
+			provider.findIdes(locations, problems);
 		}
 	}
 	
@@ -160,7 +155,7 @@ public class Installer {
 	}
 	
 	private static int guiInstaller() {
-		if (IdeFinder.getOS() == OS.MAC_OS_X) {
+		if (OsUtils.getOS() == OS.MAC_OS_X) {
 			System.setProperty("com.apple.mrj.application.apple.menu.about.name", "Lombok Installer");
 			System.setProperty("com.apple.macos.use-file-dialog-packages", "true");
 		}

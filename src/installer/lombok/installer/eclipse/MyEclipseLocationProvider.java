@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,48 +21,24 @@
  */
 package lombok.installer.eclipse;
 
-import lombok.installer.CorruptedIdeLocationException;
-import lombok.installer.IdeFinder.OS;
-import lombok.installer.IdeLocation;
+import java.util.Collections;
+
 import lombok.installer.IdeLocationProvider;
+
 import org.mangosdk.spi.ProviderFor;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Pattern;
-
 @ProviderFor(IdeLocationProvider.class)
-public class MyEclipseLocationProvider extends EclipseLocationProvider {
-	@Override protected List<String> getEclipseExecutableNames() {
-		return Arrays.asList("myeclipse.app", "myeclipse.exe", "myeclipsec.exe", "myeclipse");
-	}
+public class MyEclipseLocationProvider extends EclipseProductLocationProvider {
 	
-	@Override protected String getIniName() {
-		return "myeclipse.ini";
-	}
+	private static final EclipseProductDescriptor MY_ECLIPSE = new StandardProductDescriptor(
+			"MyEclipse",
+			"myeclipse",
+			"myeclipse",
+			MyEclipseLocationProvider.class.getResource("myeclipse.png"),
+			Collections.<String>emptySet()
+	);
 	
-	@Override protected IdeLocation makeLocation(String name, File ini) throws CorruptedIdeLocationException {
-		return new MyEclipseLocation(name, ini);
-	}
-	
-	@Override protected String getMacAppName() {
-		return "myeclipse.app";
-	}
-	
-	@Override protected String getUnixAppName() {
-		return "myeclipse";
-	}
-	
-	@Override public Pattern getLocationSelectors(OS os) {
-		switch (os) {
-		case MAC_OS_X:
-			return Pattern.compile("^(myeclipse|myeclipse\\.ini|myeclipse\\.app)$", Pattern.CASE_INSENSITIVE);
-		case WINDOWS:
-			return Pattern.compile("^(myeclipsec?\\.exe|myeclipse\\.ini)$", Pattern.CASE_INSENSITIVE);
-		default:
-		case UNIX:
-			return Pattern.compile("^(myeclipse|myeclipse\\.ini)$", Pattern.CASE_INSENSITIVE);
-		}
+	public MyEclipseLocationProvider() {
+		super(MY_ECLIPSE);
 	}
 }

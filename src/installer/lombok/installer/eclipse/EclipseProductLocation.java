@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import lombok.installer.CorruptedIdeLocationException;
-import lombok.installer.IdeFinder;
+import lombok.installer.OsUtils;
 import lombok.installer.IdeLocation;
 import lombok.installer.InstallException;
 import lombok.installer.Installer;
@@ -46,23 +46,18 @@ import lombok.installer.UninstallException;
  * An instance can figure out if an Eclipse installation has been lombok-ified, and can
  * install and uninstall lombok from the Eclipse installation.
  */
-public class EclipseLocation extends IdeLocation {
+public final class EclipseProductLocation extends IdeLocation {
+	
+	private static final String OS_NEWLINE = OsUtils.getOS().getLineEnding();
+	
+	private final EclipseProductDescriptor descriptor;
 	private final String name;
 	private final File eclipseIniPath;
 	private final String pathToLombokJarPrefix;
-	private volatile boolean hasLombok;
+	private final boolean hasLombok;
 	
-	private static final String OS_NEWLINE = IdeFinder.getOS().getLineEnding();
-	
-	protected String getTypeName() {
-		return "eclipse";
-	}
-	
-	protected String getIniFileName() {
-		return "eclipse.ini";
-	}
-	
-	EclipseLocation(String nameOfLocation, File pathToEclipseIni) throws CorruptedIdeLocationException {
+	EclipseProductLocation(EclipseProductDescriptor descriptor, String nameOfLocation, File pathToEclipseIni) throws CorruptedIdeLocationException {
+		this.descriptor = descriptor;
 		this.name = nameOfLocation;
 		this.eclipseIniPath = pathToEclipseIni;
 		File p1 = pathToEclipseIni.getParentFile();
@@ -78,8 +73,8 @@ public class EclipseLocation extends IdeLocation {
 			this.hasLombok = checkForLombok(eclipseIniPath);
 		} catch (IOException e) {
 			throw new CorruptedIdeLocationException(
-					"I can't read the configuration file of the " + getTypeName() + " installed at " + name + "\n" +
-					"You may need to run this installer with root privileges if you want to modify that " + getTypeName() + ".", getTypeName(), e);
+					"I can't read the configuration file of the " + descriptor.getProductName() + " installed at " + name + "\n" +
+					"You may need to run this installer with root privileges if you want to modify that " + descriptor.getProductName() + ".", descriptor.getProductName(), e);
 		}
 	}
 	
@@ -88,8 +83,8 @@ public class EclipseLocation extends IdeLocation {
 	}
 	
 	@Override public boolean equals(Object o) {
-		if (!(o instanceof EclipseLocation)) return false;
-		return ((EclipseLocation)o).eclipseIniPath.equals(eclipseIniPath);
+		if (!(o instanceof EclipseProductLocation)) return false;
+		return ((EclipseProductLocation)o).eclipseIniPath.equals(eclipseIniPath);
 	}
 	
 	/**
@@ -108,13 +103,13 @@ public class EclipseLocation extends IdeLocation {
 		return hasLombok;
 	}
 	
-	private final Pattern JAVA_AGENT_LINE_MATCHER = Pattern.compile(
+	private static final Pattern JAVA_AGENT_LINE_MATCHER = Pattern.compile(
 			"^\\-javaagent\\:.*lombok.*\\.jar$", Pattern.CASE_INSENSITIVE);
 	
-	private final Pattern BOOTCLASSPATH_LINE_MATCHER = Pattern.compile(
+	private static final Pattern BOOTCLASSPATH_LINE_MATCHER = Pattern.compile(
 			"^\\-Xbootclasspath\\/a\\:(.*lombok.*\\.jar.*)$", Pattern.CASE_INSENSITIVE);
 	
-	private boolean checkForLombok(File iniFile) throws IOException {
+	private static boolean checkForLombok(File iniFile) throws IOException {
 		if (!iniFile.exists()) return false;
 		FileInputStream fis = new FileInputStream(iniFile);
 		try {
@@ -206,7 +201,7 @@ public class EclipseLocation extends IdeLocation {
 			File lombokJar = new File(dir, "lombok.jar");
 			if (lombokJar.exists()) {
 				if (!lombokJar.delete()) {
-					if (IdeFinder.getOS() == IdeFinder.OS.WINDOWS && Installer.isSelf(lombokJar.getAbsolutePath())) {
+					if (OsUtils.getOS() == OsUtils.OS.WINDOWS && Installer.isSelf(lombokJar.getAbsolutePath())) {
 						lombokJarsForWhichCantDeleteSelf.add(lombokJar);
 					} else {
 						throw new UninstallException(
@@ -228,14 +223,14 @@ public class EclipseLocation extends IdeLocation {
 			throw new UninstallException(true, String.format(
 					"lombok.jar cannot delete itself on windows.\nHowever, lombok has been uncoupled from your %s.\n" +
 					"You can safely delete this jar file. You can find it at:\n%s",
-					getTypeName(), lombokJarsForWhichCantDeleteSelf.get(0).getAbsolutePath()), null);
+					descriptor.getProductName(), lombokJarsForWhichCantDeleteSelf.get(0).getAbsolutePath()), null);
 		}
 	}
 	
 	private static String generateWriteErrorMessage() {
 		String osSpecificError;
 		
-		switch (IdeFinder.getOS()) {
+		switch (OsUtils.getOS()) {
 		default:
 		case MAC_OS_X:
 		case UNIX:
@@ -265,7 +260,7 @@ public class EclipseLocation extends IdeLocation {
 		// If someone knows how to fix this, please do so, as this current hack solution (putting the absolute path
 		// to the jar files in your eclipse.ini) means you can't move your eclipse around on linux without lombok
 		// breaking it. NB: rerunning lombok.jar installer and hitting 'update' will fix it if you do that.
-		boolean fullPathRequired = IdeFinder.getOS() == EclipseFinder.OS.UNIX || System.getProperty("lombok.installer.fullpath") != null;
+		boolean fullPathRequired = OsUtils.getOS() == OsUtils.OS.UNIX || System.getProperty("lombok.installer.fullpath") != null;
 		
 		boolean installSucceeded = false;
 		StringBuilder newContents = new StringBuilder();
@@ -303,7 +298,7 @@ public class EclipseLocation extends IdeLocation {
 						"I can't read my own jar file. I think you've found a bug in this installer!\nI suggest you restart it " +
 						"and use the 'what do I do' link, to manually install lombok. Also, tell us about this at:\n" +
 						"http://groups.google.com/group/project-lombok - Thanks!", e);
-				throw new InstallException("I can't write to your " + getTypeName() + " directory at " + name + generateWriteErrorMessage(), e);
+				throw new InstallException("I can't write to your " + descriptor.getProductName() + " directory at " + name + generateWriteErrorMessage(), e);
 			}
 		}
 		
@@ -369,14 +364,14 @@ public class EclipseLocation extends IdeLocation {
 		}
 		
 		if (!installSucceeded) {
-			throw new InstallException("I can't find the " + getIniFileName() + " file. Is this a real " + getTypeName() + " installation?", null);
+			throw new InstallException("I can't find the " + descriptor.getIniFileName() + " file. Is this a real " + descriptor.getProductName() + " installation?", null);
 		}
 		
-		return "If you start " + getTypeName() + " with a custom -vm parameter, you'll need to add:<br>" +
+		return "If you start " + descriptor.getProductName() + " with a custom -vm parameter, you'll need to add:<br>" +
 				"<code>-vmargs -javaagent:lombok.jar</code><br>as parameter as well.";
 	}
 	
 	@Override public URL getIdeIcon() {
-		return EclipseLocation.class.getResource("eclipse.png");
+		return descriptor.getIdeIcon();
 	}
 }

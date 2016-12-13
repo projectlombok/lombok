@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 The Project Lombok Authors.
+ * Copyright (C) 2009-2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,12 @@ import lombok.core.Version;
 /**
  * Implement and provide this class to add auto-finding a certain brand of IDEs to the lombok installer.
  */
-public abstract class IdeFinder {
+public final class OsUtils {
 	private static final AtomicBoolean windowsDriveInfoLibLoaded = new AtomicBoolean(false);
+	
+	private OsUtils() {
+		// Prevent instantiation
+	}
 	
 	private static void loadWindowsDriveInfoLib() throws IOException {
 		if (!windowsDriveInfoLibLoaded.compareAndSet(false, true)) return;
@@ -63,7 +67,7 @@ public abstract class IdeFinder {
 	}
 	
 	private static boolean unpackDLL(String dllName, File target) throws IOException {
-		InputStream in = IdeFinder.class.getResourceAsStream(dllName);
+		InputStream in = OsUtils.class.getResourceAsStream(dllName);
 		try {
 			try {
 				FileOutputStream out = new FileOutputStream(target);
@@ -130,15 +134,4 @@ public abstract class IdeFinder {
 		
 		return OS.UNIX;
 	}
-	
-	/**
-	 * Look for installations of your IDE in the usual places.
-	 * 
-	 * @param locations Add to this list any valid locations that you found.
-	 * @param problems
-	 *     Add to this list any locations that look like installations,
-	 *     but have problems that prevent you from installing/uninstalling from them. DONT add to this list
-	 *     any common locations that have no installation at all - only add near misses.
-	 */
-	public abstract void findIdes(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2013-2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,24 @@
  */
 package lombok.installer.eclipse;
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Pattern;
+import java.util.Collections;
 
-import lombok.installer.CorruptedIdeLocationException;
-import lombok.installer.IdeLocation;
 import lombok.installer.IdeLocationProvider;
-import lombok.installer.IdeFinder.OS;
 
 import org.mangosdk.spi.ProviderFor;
 
 @ProviderFor(IdeLocationProvider.class)
-public class RhdsLocationProvider extends EclipseLocationProvider {
-	@Override protected List<String> getEclipseExecutableNames() {
-		return Arrays.asList("devstudio.app", "devstudio.exe", "devstudioc.exe", "devstudio");
-	}
+public class RhdsLocationProvider extends EclipseProductLocationProvider {
 	
-	@Override protected String getIniName() {
-		return "devstudio.ini";
-	}
+	private static final EclipseProductDescriptor RHDS = new StandardProductDescriptor(
+			"Red Hat JBoss Developer Studio",
+			"devstudio",
+			"studio",
+			RhdsLocationProvider.class.getResource("rhds.png"),
+			Collections.<String>emptySet()
+	); 
 	
-	@Override protected IdeLocation makeLocation(String name, File ini) throws CorruptedIdeLocationException {
-		return new RhdsLocation(name, ini);
-	}
-	
-	@Override protected String getMacAppName() {
-		return "devstudio.app";
-	}
-	
-	@Override protected String getUnixAppName() {
-		return "devstudio";
-	}
-	
-	@Override public Pattern getLocationSelectors(OS os) {
-		switch (os) {
-		case MAC_OS_X:
-			return Pattern.compile("^(devstudio|devstudio\\.ini|devstudio\\.app)$", Pattern.CASE_INSENSITIVE);
-		case WINDOWS:
-			return Pattern.compile("^(devstudioc?\\.exe|devstudio\\.ini)$", Pattern.CASE_INSENSITIVE);
-		default:
-		case UNIX:
-			return Pattern.compile("^(devstudio|devstudio\\.ini)$", Pattern.CASE_INSENSITIVE);
-		}
+	public RhdsLocationProvider() {
+		super(RHDS);
 	}
 }
