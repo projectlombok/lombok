@@ -198,7 +198,7 @@ public class ConfigurationApp extends LombokApp {
 			if (paths.size() == 1) {
 				if (!(argsPaths.size() == 1)) out.printf("Configuration for '%s'.%n%n", paths.iterator().next());
 			} else {
-				out.printf("Configuration for: %s%n", paths.iterator().next());
+				out.printf("Configuration for:%n");
 				for (String path : paths) out.printf("- %s%n", path);
 				out.println();
 			}
