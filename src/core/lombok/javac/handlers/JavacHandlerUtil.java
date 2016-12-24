@@ -1000,7 +1000,12 @@ public class JavacHandlerUtil {
 		if (!LombokOptionsFactory.getDelombokOptions(context).getFormatPreferences().generateGenerated()) return;
 		
 		if (!Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_GENERATED_ANNOTATIONS))) {
-			addAnnotation(mods, node, pos, source, context, "javax.annotation.Generated", node.getTreeMaker().Literal("lombok"));
+			String customAnnotation = node.getAst().readConfiguration(ConfigurationKeys.GENERATED_ANNOTATION_NAME);
+			if (customAnnotation == null || customAnnotation.trim().isEmpty()) {
+				addAnnotation(mods, node, pos, source, context, "javax.annotation.Generated", node.getTreeMaker().Literal("lombok"));
+			} else {
+				addAnnotation(mods, node, pos, source, context, customAnnotation, null);
+			}
 		}
 	}
 	

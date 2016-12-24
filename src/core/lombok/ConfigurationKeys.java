@@ -46,6 +46,13 @@ public class ConfigurationKeys {
 	public static final ConfigurationKey<Boolean> ADD_GENERATED_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addGeneratedAnnotation", "Generate @javax.annotation.Generated on all generated code (default: true).") {};
 	
 	/**
+	 * lombok configuration: {@code lombok.generatedAnnotationName} = {@code com.fully.qualified.AnnotationName}.
+	 * 
+	 * If set, lombok generates {@code @com.fully.qualified.AnnotationName} on all fields, methods, and types that are generated. If the specified annotation is to be used by code coverage tools, {@code @Retention(RetentionPolicy.CLASS)} is usually required.
+	 */
+	public static final ConfigurationKey<String> GENERATED_ANNOTATION_NAME = new ConfigurationKey<String>("lombok.generatedAnnotationName", "Name of the annotation to generate on all generated code (default: javax.annotation.Generated).") {};
+	
+	/**
 	 * lombok configuration: {@code lombok.extern.findbugs.addSuppressFBWarnings} = {@code true} | {@code false}.
 	 * 
 	 * If {@code true}, lombok generates {@code edu.umd.cs.findbugs.annotations.SuppressFBWarnings} on all fields, methods, and types that are generated.
