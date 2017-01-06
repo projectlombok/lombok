@@ -64,8 +64,7 @@
 </#macro>
 
 <#macro scaffold title logline load=[]>
-	<#assign load2=load + ["/js/history.js"]>
-	<@main.scaffold load2>
+	<@main.scaffold load>
 		<div class="page-header top5" id="featureContent">
 			<div class="row text-center">
 				<div class="header-group">

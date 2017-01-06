@@ -1,0 +1,37 @@
+<#import "../_features.html" as f>
+
+<@f.scaffold title="var" logline="Modifiable local variables with a type inferred by assigning value.">
+	<@f.history>
+		<p>
+			<code>var</code> was introduced in lombok 1.16.12 as experimental feature.
+		</p>
+	</@f.history>
+
+	<@f.experimental>
+		<ul>
+			<li>
+				This feature is very controversial.
+			</li><li>
+				There is <a href="http://openjdk.java.net/jeps/286">JEP 286</a> that should make <code>var</code> obsolete.
+			</li>
+		</ul>
+		Current status: <em>uncertain</em> – Currently we feel this feature cannot move out of experimental status.
+	</@f.experimental>
+
+	<@f.overview>
+		<p>
+			<code>var</code> works exactly like <a href="/features/val"><code>val</code></a>, except the local variable is <em>not</em> marked as <code>final</code>.
+		</p><p>
+			The type is still entirely derived from the mandatory initializer expression, and any further assignments, while now legal (because the variable is no longer <code>final</code>), aren't looked at to determine the appropriate type.<br />
+			For example, <code>var x = "Hello"; x = Color.RED;</code> does <em>not</em> work; the type of x will be inferred to be <code>java.lang.String</code> and thus, the <code>x = Color.RED</code> assignment will fail. If the type of <code>x</code> was inferred to be <code>java.lang.Object</code> this code would have compiled, but that's not how<code>var</code> works.
+		</p>
+	</@f.overview>
+
+	<@f.confKeys>
+		<dt>
+			<code>lombok.var.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
+		</dt><dd>
+			Lombok will flag any usage of <code>var</code> as a warning or error if configured.
+		</dd>
+	</@f.confKeys>
+</@f.scaffold>

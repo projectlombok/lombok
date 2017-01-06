@@ -24,9 +24,9 @@
 		<p>
 			The <code>@FieldDefaults</code> annotation can add an access modifier (<code>public</code>, <code>private</code>, or <code>protected</code>) to each field in the annotated class or enum. It can also add <code>final</code> to each field in the annotated class or enum.
 		</p><p>
-			To add <code>final</code> to each field, use <code>@FieldDefaults(makeFinal=true)</code>. Any non-final field which must remain nonfinal can be annotated with <code>@NonFinal</code> (also in the <code>lombok.experimental</code> package).
+			To add <code>final</code> to each (instance) field, use <code>@FieldDefaults(makeFinal=true)</code>. Any non-final field which must remain nonfinal can be annotated with <code>@NonFinal</code> (also in the <code>lombok.experimental</code> package).
 		</p><p>
-			To add an access modifier to each field, use <code>@FieldDefaults(level=AccessLevel.PRIVATE)</code>. Any field that does not already have an access modifier (i.e. any field that looks like package private access) is changed to have the appropriate access modifier. Any package private field which must remain package private can be annotated with <code>@PackagePrivate</code> (also in the <code>lombok.experimental</code> package).
+			To add an access modifier to each (instance) field, use <code>@FieldDefaults(level=AccessLevel.PRIVATE)</code>. Any field that does not already have an access modifier (i.e. any field that looks like package private access) is changed to have the appropriate access modifier. Any package private field which must remain package private can be annotated with <code>@PackagePrivate</code> (also in the <code>lombok.experimental</code> package).
 		</p>
 	</@f.overview>
 
@@ -37,6 +37,14 @@
 			<code>lombok.fieldDefaults.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
 			Lombok will flag any usage of <code>@FieldDefaults</code> as a warning or error if configured.
+		</dd><dt>
+			<code>lombok.fieldDefautls.defaultPrivate</code> = [<code>true</code> | <code>false</code>] (default: false)
+		</dt><dd>
+			(Since 1.16.8) If set to <code>true</code>, <em>every</em> field in <em>every</em> class or enum anywhere in the sources being compiled will be marked as <code>private</code> unless it has an explicit access modifier or the <code>@PackagePrivate</code> annotation, or an explicit <code>@FieldDefaults</code> annotation is present to override this config key.
+		</dd><dt>
+			<code>lombok.fieldDefaults.defaultFinal</code> = [<code>true</code> | <code>false</code>] (default: false)
+		</dt><dd>
+			(Since 1.16.8) If set to <code>true</code>, <em>every</em> field in <em>every</em> class or enum anywhere in the sources being compiled will be marked as <code>final</code> unless it has the <code>@NonFinal</code> annotation, or an explicit <code>@FieldDefaults</code> annotation is present to override this config key.
 		</dd>
 	</@f.confKeys>
 

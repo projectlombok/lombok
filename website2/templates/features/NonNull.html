@@ -38,6 +38,8 @@
 			While <code>@Data</code> and other method-generating lombok annotations will trigger on any annotation named <code>@NonNull</code> regardless of casing or package name, this feature only triggers on lombok's own <code>@NonNull</code> annotation from the <code>lombok</code> package.
 		</p><p>
 			A <code>@NonNull</code> on a primitive parameter results in a warning. No null-check will be generated.
+		</p><p>
+			A <code>@NonNull</code> on a parameter of an abstract method used to generate a warning; starting with version 1.16.8, this is no longer the case, to acknowledge the notion that <code>@NonNull</code> also has a documentary role. For the same reason, you can annotate a method as <code>@NonNull</code>; this is allowed, generates no warning, and does not generate any code.
 		</p>
 	</@f.smallPrint>
 </@f.scaffold>

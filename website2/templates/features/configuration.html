@@ -90,4 +90,17 @@
 			</div>
 		</p>
 	</@f.featureSection>
+
+	<@f.featureSection>
+		<h3>Config keys that can affect any source file</h3>
+
+		<p>
+			These config keys can make lombok affect source files even if they have 0 lombok annotations in them.<br />
+			<div class="snippet example">
+				<code>lombok.fieldDefaults.defaultPrivate = true</code><br />
+				<code>lombok.fieldDefaults.defaultFinal = true</code>
+			</div>
+			Turning either of these options on means lombok will make <em>every</em> field in <em>every</em> source file final and/or private unless it has an explicit access modifier or annotation to suppress this. <a href="experimental/FieldDefaults">See the <code>@FieldDefaults</code> documentation for more</a>.
+		</p>
+	</@f.featureSection>
 </@f.scaffold>

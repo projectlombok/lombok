@@ -13,12 +13,16 @@
 		<p>
 			You put the variant of <code>@Log</code> on your class (whichever one applies to the logging system you use); you then have a static final <code>log</code> field, initialized to the name of your class, which you can then use to write log statements.
 		</p><p>
-			There are six choices available:<br />
+			There are several choices available:<br />
 			<dl>
 				<dt>
 					<code>@CommonsLog</code>
 				</dt><dd>
 					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="https://commons.apache.org/logging/apidocs/org/apache/commons/logging/Log.html">org.apache.commons.logging.Log</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="https://commons.apache.org/logging/apidocs/org/apache/commons/logging/LogFactory.html#getLog(java.lang.Class)">org.apache.commons.logging.LogFactory.getLog</a>(LogExample.<span class="keyword">class</span>);</code>
+				</dd><dt>
+					<code>@JBossLog</code>
+				</dt><dd>
+					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="http://docs.jboss.org/jbosslogging/latest/org/jboss/logging/Logger.html">org.jboss.logging.Logger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="http://docs.jboss.org/jbosslogging/latest/org/jboss/logging/Logger.html#getLogger(java.lang.Class)">org.jboss.logging.Logger.getLogger</a>(LogExample.<span class="keyword">class</span>);</code>
 				</dd><dt>
 					<code>@Log</code>
 				</dt><dd>
@@ -69,6 +73,10 @@
 			<code>lombok.log.javaUtilLogging.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
 			Lombok will flag any usage of <code>@lombok.extern.java.Log</code> as a warning or error if configured.
+		</dd><dt>
+			<code>lombok.log.jbosslog.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
+		</dt><dd>
+			Lombok will flag any usage of <code>@lombok.extern.jbosslog.JBossLog</code> as a warning or error if configured.
 		</dd><dt>
 			<code>lombok.log.log4j.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
