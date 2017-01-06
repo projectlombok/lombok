@@ -634,7 +634,7 @@ public class JavacHandlerUtil {
 		node = upToTypeNode(node);
 		
 		if (node != null && node.get() instanceof JCClassDecl) {
-			top: for (JCTree def : ((JCClassDecl)node.get()).defs) {
+			for (JCTree def : ((JCClassDecl)node.get()).defs) {
 				if (def instanceof JCMethodDecl) {
 					JCMethodDecl md = (JCMethodDecl) def;
 					if (md.name.contentEquals("<init>")) {
