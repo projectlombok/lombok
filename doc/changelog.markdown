@@ -3,7 +3,7 @@ Lombok Changelog
 
 ### v1.16.13 "Edgy Guinea Pig"
 * v1.16.12 is the latest stable release of Project Lombok.
-* FEATURE: Generated classes, methods and fields are now also annotated with `@lombok.Generated`[Issue #1014](https://github.com/rzwitserloot/lombok/issues/1014)
+* FEATURE: Generated classes, methods and fields are now also annotated with `@lombok.Generated` [Issue #1014](https://github.com/rzwitserloot/lombok/issues/1014)
 
 ### v1.16.12 (December 5th, 2016)
 * FEATURE: `var` is the mutable sister of `val`. For now experimental, and opt-in using `ALLOW` in the flagUsage configuration key. Thanks for the contribution, Bulgakov Alexander. 
