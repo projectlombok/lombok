@@ -1,18 +1,26 @@
 package lombok.website;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import de.java2html.Java2Html;
 import freemarker.cache.FileTemplateLoader;
@@ -140,12 +148,30 @@ public class WebsiteMaker {
 		}
 	}
 	
-	private Map<String, Object> createDataModel() {
+	private static final Pattern LOMBOK_LINK = Pattern.compile("^.*<a(?: (?:id|class|rel|rev|download|target|type)(?:=\"[^\"]*\")?)* href=\"([^\"]+)\"(?: (?:id|class|rel|rev|download|target|type)(?:=\"[^\"]*\")?)*>([^<]+)</a>.*$");
+	private Map<String, Object> createDataModel() throws IOException {
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("version", lombok.core.Version.getVersion());
 		data.put("fullVersion", lombok.core.Version.getFullVersion());
 		data.put("year", "" + new GregorianCalendar().get(Calendar.YEAR));
 		data.put("usages", new HtmlMaker(new File(baseDir, "usageExamples")));
+		InputStream in = new URL("https://projectlombok.org/all-versions.html").openStream();
+		ArrayList<List<String>> links = new ArrayList<List<String>>();
+		try {
+			BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+			for (String line = br.readLine(); line != null; line = br.readLine()) {
+				Matcher m = LOMBOK_LINK.matcher(line);
+				if (m.matches()) links.add(Arrays.asList(m.group(1), m.group(2)));
+			}
+		} finally {
+			in.close();
+		}
+		
+		if (links.isEmpty() || !links.get(0).get(0).endsWith("lombok-" + lombok.core.Version.getVersion() + ".jar")) {
+			links.add(Arrays.asList("downloads/lombok-" + lombok.core.Version.getVersion() + ".jar", "lombok-" + lombok.core.Version.getVersion() + ".jar"));
+		}
+		
+		data.put("linksToVersions", links);
 		return data;
 	}
 	
