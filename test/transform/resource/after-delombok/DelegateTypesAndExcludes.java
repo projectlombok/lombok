@@ -26,6 +26,8 @@ class DelegatePlain {
 	@java.lang.SuppressWarnings("all")
 
 	@javax.annotation.Generated("lombok")
+
+	@lombok.Generated
 	public void bar(final java.util.ArrayList<java.lang.String> list) {
 		this.bar.bar(list);
 	}
@@ -33,6 +35,8 @@ class DelegatePlain {
 	@java.lang.SuppressWarnings("all")
 
 	@javax.annotation.Generated("lombok")
+
+	@lombok.Generated
 	public void foo() {
 		this.foo.foo();
 	}

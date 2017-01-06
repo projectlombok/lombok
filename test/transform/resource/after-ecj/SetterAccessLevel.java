@@ -8,19 +8,19 @@ class SetterAccessLevel {
   SetterAccessLevel() {
     super();
   }
-  private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setPrivate(final boolean isPrivate) {
+  private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated void setPrivate(final boolean isPrivate) {
     this.isPrivate = isPrivate;
   }
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setPackage(final boolean isPackage) {
+  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated void setPackage(final boolean isPackage) {
     this.isPackage = isPackage;
   }
-  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setProtected(final boolean isProtected) {
+  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated void setProtected(final boolean isProtected) {
     this.isProtected = isProtected;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setPublic(final boolean isPublic) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated void setPublic(final boolean isPublic) {
     this.isPublic = isPublic;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setValue(final boolean value) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated void setValue(final boolean value) {
     this.value = value;
   }
 }

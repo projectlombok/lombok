@@ -2,7 +2,7 @@
   EqualsAndHashCodeConfigKeys2Parent() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof EqualsAndHashCodeConfigKeys2Parent)))
@@ -12,10 +12,10 @@
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean canEqual(final java.lang.Object other) {
     return (other instanceof EqualsAndHashCodeConfigKeys2Parent);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated int hashCode() {
     int result = 1;
     return result;
   }
@@ -25,7 +25,7 @@
   EqualsAndHashCodeConfigKeys2() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof EqualsAndHashCodeConfigKeys2)))
@@ -39,10 +39,10 @@
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean canEqual(final java.lang.Object other) {
     return (other instanceof EqualsAndHashCodeConfigKeys2);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + super.hashCode());

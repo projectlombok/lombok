@@ -2,83 +2,83 @@ import java.util.Set;
 import java.util.SortedSet;
 import lombok.Singular;
 @lombok.Builder class BuilderSingularSets<T> {
-  public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") class BuilderSingularSetsBuilder<T> {
-    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<T> dangerMice;
-    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<Number> octopodes;
-    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<java.lang.Object> rawSet;
-    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.util.ArrayList<String> stringSet;
-    @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder() {
+  public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated class BuilderSingularSetsBuilder<T> {
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated java.util.ArrayList<T> dangerMice;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated java.util.ArrayList<Number> octopodes;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated java.util.ArrayList<java.lang.Object> rawSet;
+    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated java.util.ArrayList<String> stringSet;
+    @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated BuilderSingularSetsBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> dangerMouse(T dangerMouse) {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated BuilderSingularSetsBuilder<T> dangerMouse(T dangerMouse) {
       if ((this.dangerMice == null))
           this.dangerMice = new java.util.ArrayList<T>();
       this.dangerMice.add(dangerMouse);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> dangerMice(java.util.Collection<? extends T> dangerMice) {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated BuilderSingularSetsBuilder<T> dangerMice(java.util.Collection<? extends T> dangerMice) {
       if ((this.dangerMice == null))
           this.dangerMice = new java.util.ArrayList<T>();
       this.dangerMice.addAll(dangerMice);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> clearDangerMice() {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated BuilderSingularSetsBuilder<T> clearDangerMice() {
       if ((this.dangerMice != null))
           this.dangerMice.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> octopus(Number octopus) {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated BuilderSingularSetsBuilder<T> octopus(Number octopus) {
       if ((this.octopodes == null))
           this.octopodes = new java.util.ArrayList<Number>();
       this.octopodes.add(octopus);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> octopodes(java.util.Collection<? extends Number> octopodes) {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated BuilderSingularSetsBuilder<T> octopodes(java.util.Collection<? extends Number> octopodes) {
       if ((this.octopodes == null))
           this.octopodes = new java.util.ArrayList<Number>();
       this.octopodes.addAll(octopodes);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> clearOctopodes() {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated BuilderSingularSetsBuilder<T> clearOctopodes() {
       if ((this.octopodes != null))
           this.octopodes.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> rawSet(java.lang.Object rawSet) {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated BuilderSingularSetsBuilder<T> rawSet(java.lang.Object rawSet) {
       if ((this.rawSet == null))
           this.rawSet = new java.util.ArrayList<java.lang.Object>();
       this.rawSet.add(rawSet);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> rawSet(java.util.Collection<?> rawSet) {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated BuilderSingularSetsBuilder<T> rawSet(java.util.Collection<?> rawSet) {
       if ((this.rawSet == null))
           this.rawSet = new java.util.ArrayList<java.lang.Object>();
       this.rawSet.addAll(rawSet);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> clearRawSet() {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated BuilderSingularSetsBuilder<T> clearRawSet() {
       if ((this.rawSet != null))
           this.rawSet.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> stringSet(String stringSet) {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated BuilderSingularSetsBuilder<T> stringSet(String stringSet) {
       if ((this.stringSet == null))
           this.stringSet = new java.util.ArrayList<String>();
       this.stringSet.add(stringSet);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> stringSet(java.util.Collection<? extends String> stringSet) {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated BuilderSingularSetsBuilder<T> stringSet(java.util.Collection<? extends String> stringSet) {
       if ((this.stringSet == null))
           this.stringSet = new java.util.ArrayList<String>();
       this.stringSet.addAll(stringSet);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSetsBuilder<T> clearStringSet() {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated BuilderSingularSetsBuilder<T> clearStringSet() {
       if ((this.stringSet != null))
           this.stringSet.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSets<T> build() {
+    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated BuilderSingularSets<T> build() {
       java.util.Set<T> dangerMice;
       switch (((this.dangerMice == null) ? 0 : this.dangerMice.size())) {
       case 0 :
@@ -124,7 +124,7 @@ import lombok.Singular;
       }
       return new BuilderSingularSets<T>(dangerMice, octopodes, rawSet, stringSet);
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.lang.String toString() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated java.lang.String toString() {
       return (((((((("BuilderSingularSets.BuilderSingularSetsBuilder(dangerMice=" + this.dangerMice) + ", octopodes=") + this.octopodes) + ", rawSet=") + this.rawSet) + ", stringSet=") + this.stringSet) + ")");
     }
   }
@@ -132,14 +132,14 @@ import lombok.Singular;
   private @Singular SortedSet<? extends Number> octopodes;
   private @SuppressWarnings("all") @Singular("rawSet") Set rawSet;
   private @Singular("stringSet") Set<String> stringSet;
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSets(final Set<T> dangerMice, final SortedSet<? extends Number> octopodes, final Set rawSet, final Set<String> stringSet) {
+  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated BuilderSingularSets(final Set<T> dangerMice, final SortedSet<? extends Number> octopodes, final Set rawSet, final Set<String> stringSet) {
     super();
     this.dangerMice = dangerMice;
     this.octopodes = octopodes;
     this.rawSet = rawSet;
     this.stringSet = stringSet;
   }
-  public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") <T>BuilderSingularSetsBuilder<T> builder() {
+  public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated <T>BuilderSingularSetsBuilder<T> builder() {
     return new BuilderSingularSetsBuilder<T>();
   }
 }

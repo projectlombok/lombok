@@ -5,10 +5,10 @@ class WitherDeprecated {
   WitherDeprecated(int annotation, int javadoc) {
     super();
   }
-  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") WitherDeprecated withAnnotation(final int annotation) {
+  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated WitherDeprecated withAnnotation(final int annotation) {
     return ((this.annotation == annotation) ? this : new WitherDeprecated(annotation, this.javadoc));
   }
-  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") WitherDeprecated withJavadoc(final int javadoc) {
+  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated WitherDeprecated withJavadoc(final int javadoc) {
     return ((this.javadoc == javadoc) ? this : new WitherDeprecated(this.annotation, javadoc));
   }
 }

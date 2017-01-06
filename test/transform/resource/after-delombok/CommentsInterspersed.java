@@ -13,6 +13,7 @@ public class CommentsInterspersed {
 	}-*/
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public String getTest() {
 		return this.test;
 	}

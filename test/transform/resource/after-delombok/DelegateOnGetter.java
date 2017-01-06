@@ -6,6 +6,7 @@ class DelegateOnGetter {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public Bar getBar() {
 		java.lang.Object value = this.bar.get();
 		if (value == null) {
@@ -28,11 +29,13 @@ class DelegateOnGetter {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public void setList(final java.util.ArrayList<java.lang.String> list) {
 		this.getBar().setList(list);
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public int getInt() {
 		return this.getBar().getInt();
 	}

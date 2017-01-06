@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 The Project Lombok Authors.
+ * Copyright (C) 2013-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,9 +41,30 @@ public class ConfigurationKeys {
 	/**
 	 * lombok configuration: {@code lombok.addGeneratedAnnotation} = {@code true} | {@code false}.
 	 * 
-	 * If unset or {@code true}, lombok generates {@code @javax.annotation.Generated("lombok")} on all fields, methods, and types that are generated.
+	 * If unset or {@code true}, lombok generates various annotations to mark generated code like {@code @javax.annotation.Generated("lombok")} and {@code @lombok.Generated}.
+	 * 
+	 * @see ConfigurationKeys#ADD_JAVAX_GENERATED_ANNOTATIONS
+	 * @see ConfigurationKeys#ADD_LOMBOK_GENERATED_ANNOTATIONS
 	 */
 	public static final ConfigurationKey<Boolean> ADD_GENERATED_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addGeneratedAnnotation", "Generate @javax.annotation.Generated on all generated code (default: true).") {};
+	
+	/**
+	 * lombok configuration: {@code lombok.addJavaxGeneratedAnnotation} = {@code true} | {@code false}.
+	 * 
+	 * If unset or {@code true}, lombok generates {@code @javax.annotation.Generated("lombok")} on all fields, methods, and types that are generated, unless {@code lombok.addGeneratedAnnotation} is set to {@code false}.
+	 * 
+	 * @see ConfigurationKeys#ADD_GENERATED_ANNOTATIONS
+	 */
+	public static final ConfigurationKey<Boolean> ADD_JAVAX_GENERATED_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addJavaxGeneratedAnnotation", "Generate @javax.annotation.Generated on all generated code (default: follow lombok.addGeneratedAnnotation).") {};
+	
+	/**
+	 * lombok configuration: {@code lombok.addLombokGeneratedAnnotation} = {@code true} | {@code false}.
+	 * 
+	 * If unset or {@code true}, lombok generates {@code @lombok.Generated} on all fields, methods, and types that are generated, unless {@code lombok.addGeneratedAnnotation} is set to {@code false}. 
+	 * 
+	 * @see ConfigurationKeys#ADD_GENERATED_ANNOTATIONS
+	 */
+	public static final ConfigurationKey<Boolean> ADD_LOMBOK_GENERATED_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addLombokGeneratedAnnotation", "Generate @lombok.Generated on all generated code (default: follow lombok.addGeneratedAnnotation).") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.extern.findbugs.addSuppressFBWarnings} = {@code true} | {@code false}.

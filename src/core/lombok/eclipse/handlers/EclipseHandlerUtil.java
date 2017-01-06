@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2015 The Project Lombok Authors.
+ * Copyright (C) 2009-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1329,6 +1329,7 @@ public class EclipseHandlerUtil {
 	private static final char[] GENERATED_CODE = "generated code".toCharArray();
 	private static final char[] LOMBOK = "lombok".toCharArray();
 	private static final char[][] JAVAX_ANNOTATION_GENERATED = Eclipse.fromQualifiedName("javax.annotation.Generated");
+	private static final char[][] LOMBOK_GENERATED = Eclipse.fromQualifiedName("lombok.Generated");
 	private static final char[][] EDU_UMD_CS_FINDBUGS_ANNOTATIONS_SUPPRESSFBWARNINGS = Eclipse.fromQualifiedName("edu.umd.cs.findbugs.annotations.SuppressFBWarnings");
 	
 	public static Annotation[] addSuppressWarningsAll(EclipseNode node, ASTNode source, Annotation[] originalAnnotationArray) {
@@ -1343,24 +1344,29 @@ public class EclipseHandlerUtil {
 	}
 	
 	public static Annotation[] addGenerated(EclipseNode node, ASTNode source, Annotation[] originalAnnotationArray) {
-		if (Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_GENERATED_ANNOTATIONS))) return originalAnnotationArray;
-		return addAnnotation(source, originalAnnotationArray, JAVAX_ANNOTATION_GENERATED, new StringLiteral(LOMBOK, 0, 0, 0));
+		Annotation[] result = originalAnnotationArray;
+		if (HandlerUtil.shouldAddGenerated(node, ConfigurationKeys.ADD_JAVAX_GENERATED_ANNOTATIONS)) {
+			result = addAnnotation(source, result, JAVAX_ANNOTATION_GENERATED, new StringLiteral(LOMBOK, 0, 0, 0));
+		}
+		if (HandlerUtil.shouldAddGenerated(node, ConfigurationKeys.ADD_LOMBOK_GENERATED_ANNOTATIONS)) {
+			result = addAnnotation(source, result, LOMBOK_GENERATED, null);
+		}
+		return result;
 	}
 	
 	private static Annotation[] addAnnotation(ASTNode source, Annotation[] originalAnnotationArray, char[][] annotationTypeFqn, ASTNode arg) {
 		char[] simpleName = annotationTypeFqn[annotationTypeFqn.length - 1];
 		
 		if (originalAnnotationArray != null) for (Annotation ann : originalAnnotationArray) {
-			char[] lastToken = null;
-			
 			if (ann.type instanceof QualifiedTypeReference) {
 				char[][] t = ((QualifiedTypeReference) ann.type).tokens;
-				lastToken = t[t.length - 1];
-			} else if (ann.type instanceof SingleTypeReference) {
-				lastToken = ((SingleTypeReference) ann.type).token;
+				if (Arrays.deepEquals(t, annotationTypeFqn)) return originalAnnotationArray;
 			}
 			
-			if (lastToken != null && Arrays.equals(simpleName, lastToken)) return originalAnnotationArray;
+			if (ann.type instanceof SingleTypeReference) {
+				char[] lastToken = ((SingleTypeReference) ann.type).token;
+				if (Arrays.equals(lastToken, simpleName)) return originalAnnotationArray;
+			}
 		}
 		
 		int pS = source.sourceStart, pE = source.sourceEnd;

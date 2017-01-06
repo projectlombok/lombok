@@ -8,6 +8,7 @@ final class UtilityClass {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	private UtilityClass() {
 		throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
 	}
@@ -18,6 +19,7 @@ class UtilityInner {
 			static int member;
 			@java.lang.SuppressWarnings("all")
 			@javax.annotation.Generated("lombok")
+			@lombok.Generated
 			private InnerInnerInner() {
 				throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
 			}
@@ -29,6 +31,7 @@ class UtilityInner {
 			static int member;
 			@java.lang.SuppressWarnings("all")
 			@javax.annotation.Generated("lombok")
+			@lombok.Generated
 			private InsideEnum() {
 				throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
 			}
@@ -39,6 +42,7 @@ class UtilityInner {
 			static int member;
 			@java.lang.SuppressWarnings("all")
 			@javax.annotation.Generated("lombok")
+			@lombok.Generated
 			private InsideInterface() {
 				throw new java.lang.UnsupportedOperationException("This is a utility class and cannot be instantiated");
 			}

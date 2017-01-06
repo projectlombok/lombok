@@ -5,6 +5,7 @@ class GetterSetterJavadoc1 {
 	private int fieldName;
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public GetterSetterJavadoc1() {
 	}
 	/**
@@ -14,6 +15,7 @@ class GetterSetterJavadoc1 {
 	 */
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public int getFieldName() {
 		return this.fieldName;
 	}
@@ -24,12 +26,14 @@ class GetterSetterJavadoc1 {
 	 */
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public void setFieldName(final int fieldName) {
 		this.fieldName = fieldName;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof GetterSetterJavadoc1)) return false;
@@ -40,12 +44,14 @@ class GetterSetterJavadoc1 {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof GetterSetterJavadoc1;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -55,6 +61,7 @@ class GetterSetterJavadoc1 {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public java.lang.String toString() {
 		return "GetterSetterJavadoc1(fieldName=" + this.getFieldName() + ")";
 	}
@@ -71,6 +78,7 @@ class GetterSetterJavadoc2 {
 	 */
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public int getFieldName() {
 		return this.fieldName;
 	}
@@ -81,6 +89,7 @@ class GetterSetterJavadoc2 {
 	 */
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public void setFieldName(final int fieldName) {
 		this.fieldName = fieldName;
 	}
@@ -96,6 +105,7 @@ class GetterSetterJavadoc3 {
 	 */
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public int getFieldName() {
 		return this.fieldName;
 	}
@@ -105,6 +115,7 @@ class GetterSetterJavadoc3 {
 	 */
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public void setFieldName(final int fieldName) {
 		this.fieldName = fieldName;
 	}
@@ -121,6 +132,7 @@ class GetterSetterJavadoc4 {
 	 */
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public int fieldName() {
 		return this.fieldName;
 	}
@@ -132,6 +144,7 @@ class GetterSetterJavadoc4 {
 	 */
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public GetterSetterJavadoc4 fieldName(final int fieldName) {
 		this.fieldName = fieldName;
 		return this;
@@ -148,6 +161,7 @@ class GetterSetterJavadoc5 {
 	 */
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public int fieldName() {
 		return this.fieldName;
 	}
@@ -158,6 +172,7 @@ class GetterSetterJavadoc5 {
 	 */
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public GetterSetterJavadoc5 fieldName(final int fieldName) {
 		this.fieldName = fieldName;
 		return this;

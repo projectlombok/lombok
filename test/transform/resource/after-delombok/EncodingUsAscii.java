@@ -4,6 +4,7 @@ class EncodingUsAscii {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public java.lang.String toString() {
 		return "EncodingUsAscii(foo\u0e51\u0e51=" + this.foo\u0e51\u0e51 + ")";
 	}
