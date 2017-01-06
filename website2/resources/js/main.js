@@ -9,41 +9,51 @@
 		return lnk;
 	}
 
+	function captureLinkClick() {
+		var self = $(this);
+		if (self.data("clc")) return;
+		var href = self.attr("href");
+		self.data("clc", true);
+		if (!href || href.substr(0, 4) === "http" || href.substr(href.length - 4, 4) === ".xml") return;
+		self.on("click", function(evt) {
+			evt.preventDefault();
+			var key = toKey(window.location.pathname);
+			if ($("#" + key).length < 1) {
+				var d = $("<div />").attr("id", key).append($("#main-section").contents()).hide();
+				$("body").append(d);
+			}
+			History.pushState({urlPath: href}, self.text(), href);
+		});
+	}
+
 	function ajaxFeaturePages() {
 		if (!History.enabled) return;
 		History.replaceState({urlPath: window.location.pathname}, $("title").text(), History.getState().urlpath);
 
-		$("a").each(function() {
-			var self = $(this);
-			var href = self.attr("href");
-			if (!href) return;
-			if (href.substring(0, 10) !== "/features/") return;
-			self.on("click", function(evt) {
-				evt.preventDefault();
-				var key = toKey(window.location.pathname);
-				if ($("#" + key).length < 1) {
-					var d = $("<div />").attr("id", key).append($("#featureContent").contents()).hide();
-					$("body").append(d);
-				}
-				History.pushState({urlPath: href}, self.text(), href);
-			});
-		});
+		$("a").each(captureLinkClick);
 
 		$(window).on("statechange", function() {
 			var hs = History.getState();
 			var u = hs.data.urlPath;
+			if (u === "/" || u === "") u = "/main.html";
 			if (u.substring(u.length - 5) !== ".html") u += ".html";
 			var key = toKey(u);
 			var sc = $("#" + key);
 			if (sc.length > 0) {
-				var a = $("#featureContent");
-				sc.show().attr("id", "featureContent");
+				var a = $("#main-section");
+				sc.show().attr("id", "main-section").attr("class", "container-fluid main-section");
 				a.replaceWith(sc);
 			} else {
 				$.ajax({
 					url: u,
 					success: function(response) {
-						$("#featureContent").replaceWith($(response).find("#featureContent"));
+						var x = '<div class="container-fluid main-section" id="main-section">';
+						var y = '<footer';
+						var start = response.indexOf(x);
+						var end = response.indexOf(y);
+						var newH = $(response.substr(start, end - start));
+						$("#main-section").replaceWith(newH);
+						$("a").each(captureLinkClick);
 					}
 				});
 			}

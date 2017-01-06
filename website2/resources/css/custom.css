@@ -1,3 +1,7 @@
+ul.dropdown-menu .header {
+    padding-left: 10px;
+}
+
 div.snippet code {
     padding: 0;
 }
@@ -119,7 +123,7 @@ h1, h2, h3 {
     padding: 4px;
     border: 1px dotted #888;
     text-align: left;
-    width: 635px;
+    width: 760px;
 }
 
 .snippet font {

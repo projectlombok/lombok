@@ -1,6 +1,6 @@
-<#macro feature title code>
+<#macro feature title href>
 	<div class="bs-callout bs-callout-danger">
-		<h4><a href="${code}"><code>${title}</code></a></h4>
+		<h4><a href="${href}"><code>${title}</code></a></h4>
 		<p><#nested></p>
 	</div>
 </#macro>
@@ -33,6 +33,7 @@
 		<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.2.0/js/bootstrap.min.js"></script>
 
 		<script src="/js/swfobject.js"></script>
+		<script src="/js/history.js"></script>
 		<script src="/js/main.js"></script>
 		<#list load as ld>
 			<#if ld?ends_with(".js")>
@@ -61,8 +62,8 @@
 						<li class="dropdown">
 							<a class="dropdown-toggle pointer" data-toggle="dropdown">Features<span class="caret"></span></a>
 							<ul class="dropdown-menu" aria-labelledby="themes">
-								<li><a href="/features/stable">Stable</a></li>
-								<li><a href="/features/experimental">Experimental</a></li>
+								<li><a href="/features/all">Stable</a></li>
+								<li><a href="/features/experimental/all">Experimental</a></li>
 							</ul>
 						</li>
 						<li>
@@ -78,12 +79,21 @@
 						<li class="dropdown">
 							<a class="dropdown-toggle pointer" data-toggle="dropdown">Install<span class="caret"></span></a>
 							<ul class="dropdown-menu" aria-labelledby="themes">
-								<li><a href="/install/compilers">Compilers</a></li>
+								<li class="header">Compilers</li>
+								<li class="target"><a href="/setup/javac">Javac</a></li>
+								<li class="target"><a href="/setup/ecj">ecj</a></li>
 								<li class="divider"></li>
-								<li><a href="/install/ide">IDE</a></li>
+								<li class="header">IDEs</li>
+								<li class="target"><a href="/setup/eclipse">Eclipse</a></li>
+								<li class="target"><a href="/setup/intellij">IntelliJ IDEA</a></li>
+								<li class="target"><a href="/setup/netbeans">Netbeans</a></li>
+								<li class="target"><a href="/setup/eclipse">MyEclipse</a></li>
+								<li class="target"><a href="/setup/eclipse">Spring Tool Suite</a></li>
+								<li class="target"><a href="/setup/eclipse">JBoss Developer Studio</a></li>
 								<li class="divider"></li>
-								<li><a href="/install/android">Android</a></li>
-								<li><a href="/install/others">Frameworks &amp; build systems</a></li>
+								<li class="header">Platforms</li>
+								<li class="target"><a href="/setup/android">Android</a></li>
+								<li class="target"><a href="/setup/gwt">GWT</a></li>
 							</ul>
 						</li>
 						<li><a href="/download">Download</a></li>

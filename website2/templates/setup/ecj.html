@@ -1,0 +1,31 @@
+<#import "_setup.html" as s>
+
+<@s.scaffold title="ecj">
+	<@s.introduction>
+		<p>
+			ecj (the eclipse standalone compiler) is compatible with lombok. Use the following command line to enable lombok with ecj:
+			<pre>java <strong>-javaagent:lombok.jar=ECJ</strong> -jar ecj.jar -cp lombok.jar -source 1.8 <em class="note">(rest of arguments)</em></pre>
+		</p><p>
+			You may have to add the following VM argument, if you're using an older version of lombok or java:
+			<pre><strong>-Xbootclasspath/p:lombok.jar</strong></pre>
+		</p><p>
+			If you're using a tool based on ecj, adding these VM arguments and adding lombok.jar to the classpath should work.
+		</p>
+	</@s.introduction>
+
+	<@s.section title="Maven">
+		<p>
+			It is possible to <a href="/files/pom.xml">configure</a> <code>maven-compiler-plugin</code> with <code>maven-dependency-plugin</code> and <code>plexus-compiler-eclipse</code>.
+		</p><p>
+			Before the <code>compile</code> phase, you will have to set your <code>MAVEN_OPTS</code> environment variable to include the <code>javaagent</code> argument. In the example below, <code>target</code> is your <code>${r"${project.build.directory}"}</code>.
+		</p><p>
+			Use the following commands in sequence to enable lombok with ecj in your Maven build:
+<pre>
+mvn clean <strong>dependency:copy@get-lombok</strong>
+set MAVEN_OPTS=<strong>-javaagent:target/lombok.jar=ECJ</strong> <em class="note">(or your OS's equivalent)</em>
+mvn install
+set MAVEN_OPTS= <em class="note">(or your OS's equivalent)</em>
+</pre>
+		</p>
+	</@s.section>
+</@s.scaffold>

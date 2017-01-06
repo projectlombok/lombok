@@ -1,0 +1,15 @@
+<#import "_setup.html" as s>
+
+<@s.scaffold title="JavaC">
+	<@s.introduction>
+		<p>
+			Just put lombok on the classpath when compiling with any javac (version 1.6 - 1.8): <code>javac -cp lombok.jar ....</code>
+		</p>
+	</@s.introduction>
+
+	<@s.section title="JDK 9">
+		<p>
+			Support for JDK9 is ongoing. You need to set up some configuration to make lombok play nice with jigsaw (the JDK9 module system). The <a href="https://github.com/rzwitserloot/lombok/issues/985">github issue about JDK9 support for Lombok</a> has the details on how to set it up.
+		</p>
+	</@s.section>
+</@s.scaffold>

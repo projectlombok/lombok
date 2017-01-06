@@ -1,0 +1,16 @@
+<#import "_setup.html" as s>
+
+<@s.scaffold title="GWT">
+	<@s.introduction>
+		<p>
+			<a href="http://www.gwtproject.org/">GWT (Google Web Toolkit)</a> is compatible with lombok.
+		</p><p>
+			Edit your <code>proj-debug</code> and <code>proj-compile</code> batch scripts to add the following VM arguments:
+<pre>
+java <strong>-javaagent:lombok.jar=ECJ</strong> <em>(rest of arguments)</em>
+</pre>
+		</p><p>
+			Thanks to Stephen Haberman for figuring this out.
+		</p>
+	</@s.introduction>
+</@s.scaffold>
