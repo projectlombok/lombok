@@ -209,7 +209,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
 		for (JCTree s : top.defs) {
 			if (s instanceof JCClassDecl) {
-				addIfNotNull(childNodes, buildType((JCClassDecl)s));
+				addIfNotNull(childNodes, buildType((JCClassDecl) s));
 			} // else they are import statements, which we don't care about. Or Skip objects, whatever those are.
 		}
 		
@@ -228,10 +228,10 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			 *   JCVariableDecl for fields
 			 *   JCBlock for (static) initializers
 			 */
-			if (def instanceof JCMethodDecl) addIfNotNull(childNodes, buildMethod((JCMethodDecl)def));
-			else if (def instanceof JCClassDecl) addIfNotNull(childNodes, buildType((JCClassDecl)def));
-			else if (def instanceof JCVariableDecl) addIfNotNull(childNodes, buildField((JCVariableDecl)def));
-			else if (def instanceof JCBlock) addIfNotNull(childNodes, buildInitializer((JCBlock)def));
+			if (def instanceof JCMethodDecl) addIfNotNull(childNodes, buildMethod((JCMethodDecl) def));
+			else if (def instanceof JCClassDecl) addIfNotNull(childNodes, buildType((JCClassDecl) def));
+			else if (def instanceof JCVariableDecl) addIfNotNull(childNodes, buildField((JCVariableDecl) def));
+			else if (def instanceof JCBlock) addIfNotNull(childNodes, buildInitializer((JCBlock) def));
 		}
 		
 		return putInMap(new JavacNode(this, type, childNodes, Kind.TYPE));

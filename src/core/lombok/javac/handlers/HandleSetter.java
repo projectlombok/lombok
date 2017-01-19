@@ -41,6 +41,8 @@ import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -154,7 +156,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			return;
 		}
 		
-		JCVariableDecl fieldDecl = (JCVariableDecl)fieldNode.get();
+		JCVariableDecl fieldDecl = (JCVariableDecl) fieldNode.get();
 		String methodName = toSetterName(fieldNode);
 		
 		if (methodName == null) {
@@ -240,7 +242,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		
 		if (methodType == null) {
 			//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.
-			methodType = treeMaker.Type(Javac.createVoidType(treeMaker, CTC_VOID));
+			methodType = treeMaker.Type(Javac.createVoidType(field.getSymbolTable(), CTC_VOID));
 			shouldReturnThis = false;
 		}
 		

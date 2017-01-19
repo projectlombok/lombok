@@ -1200,7 +1200,7 @@ public class EclipseHandlerUtil {
 		
 		if (node != null && node.get() instanceof TypeDeclaration) {
 			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
-			if (typeDecl.methods != null) top: for (AbstractMethodDeclaration def : typeDecl.methods) {
+			if (typeDecl.methods != null) for (AbstractMethodDeclaration def : typeDecl.methods) {
 				if (def instanceof ConstructorDeclaration) {
 					if ((def.bits & ASTNode.IsDefaultConstructor) != 0) continue;
 					

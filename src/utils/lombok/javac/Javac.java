@@ -40,6 +40,7 @@ import lombok.javac.JavacTreeMaker.TreeTag;
 import lombok.javac.JavacTreeMaker.TypeTag;
 
 import com.sun.tools.javac.code.Source;
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree;
@@ -309,7 +310,21 @@ public class Javac {
 		JC_NO_TYPE = c;
 	}
 	
-	public static Type createVoidType(JavacTreeMaker maker, TypeTag tag) {
+	private static final Field symtabVoidType = getFieldIfExists(Symtab.class, "voidType");
+	
+	private static Field getFieldIfExists(Class<?> c, String fieldName) {
+		try {
+			return c.getField("voidType");
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	public static Type createVoidType(Symtab symbolTable, TypeTag tag) {
+		if (symtabVoidType != null) try {
+			return (Type) symtabVoidType.get(symbolTable);
+		} catch (IllegalAccessException ignore) {}
+		
 		if (Javac.getJavaCompilerVersion() < 8) {
 			return new JCNoType(((Integer) tag.value).intValue());
 		} else {

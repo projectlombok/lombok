@@ -33,6 +33,7 @@ import lombok.javac.handlers.JavacHandlerUtil;
 import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
 
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
@@ -82,17 +83,18 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		}
 		
 		JavacTreeMaker maker = builderType.getTreeMaker();
+		Symtab symbolTable = builderType.getSymbolTable();
 		Name thisName = builderType.toName("this");
 		
-		JCExpression returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(maker, CTC_VOID));
+		JCExpression returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(symbolTable, CTC_VOID));
 		JCStatement returnStatement = chain ? maker.Return(maker.Ident(thisName)) : null;
 		generateSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent);
 		
-		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(maker, CTC_VOID));
+		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(symbolTable, CTC_VOID));
 		returnStatement = chain ? maker.Return(maker.Ident(thisName)) : null;
 		generatePluralMethod(maker, returnType, returnStatement, data, builderType, source, fluent);
 		
-		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(maker, CTC_VOID));
+		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(symbolTable, CTC_VOID));
 		returnStatement = chain ? maker.Return(maker.Ident(thisName)) : null;
 		generateClearMethod(maker, returnType, returnStatement, data, builderType, source);
 	}
