@@ -34,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
 import lombok.delombok.LombokOptionsFactory;
+import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -41,6 +42,8 @@ import lombok.javac.JavacTreeMaker;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
@@ -226,10 +229,15 @@ public class HandleConstructor {
 		}
 		
 		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, suppressConstructorProperties, source);
-		injectMethod(typeNode, constr);
+		ListBuffer<Type> argTypes = new ListBuffer<Type>();
+		for (JavacNode fieldNode : fields) argTypes.append(getMirrorForFieldType(fieldNode));
+		List<Type> argTypes_ = argTypes.toList();
+		injectMethod(typeNode, constr, argTypes_, Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
 		if (staticConstrRequired) {
+			ClassSymbol sym = ((JCClassDecl) typeNode.get()).sym;
+			Type returnType = sym == null ? null : sym.type;
 			JCMethodDecl staticConstr = createStaticConstructor(staticName, level, typeNode, allToDefault ? List.<JavacNode>nil() : fields, source.get());
-			injectMethod(typeNode, staticConstr);
+			injectMethod(typeNode, staticConstr, argTypes_, returnType);
 		}
 	}
 	

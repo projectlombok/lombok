@@ -230,6 +230,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		}
 		
 		JCMethodDecl equalsMethod = createEquals(typeNode, nodesForEquality.toList(), callSuper, fieldAccess, needsCanEqual, source.get(), onParam);
+		
 		injectMethod(typeNode, equalsMethod);
 		
 		if (needsCanEqual && canEqualExists == MemberExistsResult.NOT_EXISTS) {

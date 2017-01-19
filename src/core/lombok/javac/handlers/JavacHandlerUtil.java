@@ -934,7 +934,7 @@ public class JavacHandlerUtil {
 			int idx = 0;
 			for (JCTree def : type.defs) {
 				if (def instanceof JCMethodDecl) {
-					if ((((JCMethodDecl)def).mods.flags & Flags.GENERATEDCONSTR) != 0) {
+					if ((((JCMethodDecl) def).mods.flags & Flags.GENERATEDCONSTR) != 0) {
 						JavacNode tossMe = typeNode.getNodeFor(def);
 						if (tossMe != null) tossMe.up().removeChild(tossMe);
 						type.defs = addAllButOne(type.defs, idx);

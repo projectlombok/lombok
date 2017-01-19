@@ -21,19 +21,14 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.core.handlers.HandlerUtil.handleExperimentalFlagUsage;
+import static lombok.javac.Javac.CTC_VOID;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
-import lombok.ConfigurationKeys;
-import lombok.core.AST.Kind;
-import lombok.core.AnnotationValues;
-import lombok.experimental.UtilityClass;
-import lombok.javac.JavacAnnotationHandler;
-import lombok.javac.JavacNode;
-import lombok.javac.JavacTreeMaker;
 
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
@@ -45,6 +40,15 @@ import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
+
+import lombok.ConfigurationKeys;
+import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
+import lombok.experimental.UtilityClass;
+import lombok.javac.Javac;
+import lombok.javac.JavacAnnotationHandler;
+import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
 
 /**
  * Handles the {@code @UtilityClass} annotation for javac.
@@ -141,7 +145,7 @@ public class HandleUtilityClass extends JavacAnnotationHandler<UtilityClass> {
 		JCBlock block = maker.Block(0L, createThrowStatement(typeNode, maker));
 		JCMethodDecl methodDef = maker.MethodDef(mods, name, null, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), block, null);
 		JCMethodDecl constructor = recursiveSetGeneratedBy(methodDef, typeNode.get(), typeNode.getContext());
-		JavacHandlerUtil.injectMethod(typeNode, constructor);
+		JavacHandlerUtil.injectMethod(typeNode, constructor, List.<Type>nil(), Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
 	}
 	
 	private List<JCStatement> createThrowStatement(JavacNode typeNode, JavacTreeMaker maker) {
