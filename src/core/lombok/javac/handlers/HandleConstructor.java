@@ -230,8 +230,15 @@ public class HandleConstructor {
 		
 		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, suppressConstructorProperties, source);
 		ListBuffer<Type> argTypes = new ListBuffer<Type>();
-		for (JavacNode fieldNode : fields) argTypes.append(getMirrorForFieldType(fieldNode));
-		List<Type> argTypes_ = argTypes.toList();
+		for (JavacNode fieldNode : fields) {
+			Type mirror = getMirrorForFieldType(fieldNode);
+			if (mirror == null) {
+				argTypes = null;
+				break;
+			}
+			argTypes.append(mirror);
+		}
+		List<Type> argTypes_ = argTypes == null ? null : argTypes.toList();
 		injectMethod(typeNode, constr, argTypes_, Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
 		if (staticConstrRequired) {
 			ClassSymbol sym = ((JCClassDecl) typeNode.get()).sym;
