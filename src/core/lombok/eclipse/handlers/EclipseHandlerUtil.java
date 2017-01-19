@@ -793,7 +793,7 @@ public class EclipseHandlerUtil {
 	}
 	
 	public static boolean isBoolean(TypeReference typeReference) {
-		return nameEquals(typeReference.getTypeName(), "boolean") && typeReference.dimensions() == 0;
+		return (nameEquals(typeReference.getTypeName(), "boolean") || nameEquals(typeReference.getTypeName(), "Boolean")) && typeReference.dimensions() == 0;
 	}
 	
 	private static GetterMethod findGetter(EclipseNode field) {

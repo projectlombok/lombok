@@ -115,7 +115,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		
 		List<Annotation> empty = Collections.emptyList();
 		
-		createSetterForField(level, fieldNode, sourceNode, false, empty, empty);
+		createSetterForField(level, fieldNode, sourceNode, false, empty, empty,null);
 	}
 	
 	public void handle(AnnotationValues<Setter> annotation, Annotation ast, EclipseNode annotationNode) {
@@ -125,12 +125,18 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		AccessLevel level = annotation.getInstance().value();
 		if (level == AccessLevel.NONE || node == null) return;
 		
+		String name=annotation.getInstance().name();
+		if(name.isEmpty())name=null;
+		
 		List<Annotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Setter(onMethod=", annotationNode);
 		List<Annotation> onParam = unboxAndRemoveAnnotationParameter(ast, "onParam", "@Setter(onParam=", annotationNode);
 		
+		
+		
+		
 		switch (node.getKind()) {
 		case FIELD:
-			createSetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, true, onMethod, onParam);
+			createSetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, true, onMethod, onParam,name);
 			break;
 		case TYPE:
 			if (!onMethod.isEmpty()) {
@@ -144,16 +150,16 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		}
 	}
 	
-	public void createSetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode sourceNode, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam) {
+	public void createSetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode sourceNode, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam,String name) {
 		for (EclipseNode fieldNode : fieldNodes) {
-			createSetterForField(level, fieldNode, sourceNode, whineIfExists, onMethod, onParam);
+			createSetterForField(level, fieldNode, sourceNode, whineIfExists, onMethod, onParam,name);
 		}
 	}
 	
 	public void createSetterForField(
 			AccessLevel level, EclipseNode fieldNode, EclipseNode sourceNode,
 			boolean whineIfExists, List<Annotation> onMethod,
-			List<Annotation> onParam) {
+			List<Annotation> onParam, String name) {
 		
 		ASTNode source = sourceNode.get();
 		if (fieldNode.getKind() != Kind.FIELD) {
@@ -164,7 +170,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		TypeReference fieldType = copyType(field.type, source);
 		boolean isBoolean = isBoolean(fieldType);
-		String setterName = toSetterName(fieldNode, isBoolean);
+		String setterName = name==null?toSetterName(fieldNode, isBoolean):name;
 		boolean shouldReturnThis = shouldReturnThis(fieldNode);
 		
 		if (setterName == null) {

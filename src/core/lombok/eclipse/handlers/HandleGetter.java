@@ -100,7 +100,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		}
 		
 		for (EclipseNode field : typeNode.down()) {
-			if (fieldQualifiesForGetterGeneration(field)) generateGetterForField(field, pos.get(), level, false);
+			if (fieldQualifiesForGetterGeneration(field)) generateGetterForField(field, pos.get(), level, false,null);
 		}
 		return true;
 	}
@@ -123,13 +123,13 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	 * If not, the getter is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
 	 */
-	public void generateGetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level, boolean lazy) {
+	public void generateGetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level, boolean lazy,String name) {
 		if (hasAnnotation(Getter.class, fieldNode)) {
 			//The annotation will make it happen, so we can skip it.
 			return;
 		}
 		
-		createGetterForField(level, fieldNode, fieldNode, pos, false, lazy, Collections.<Annotation>emptyList());
+		createGetterForField(level, fieldNode, fieldNode, pos, false, lazy, name,Collections.<Annotation>emptyList());
 	}
 	
 	public void handle(AnnotationValues<Getter> annotation, Annotation ast, EclipseNode annotationNode) {
@@ -146,13 +146,18 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 			return;
 		}
 		
+		String name=annotationInstance.name();
+		if(name.isEmpty())name=null;
+
+		
+		
 		if (node == null) return;
 		
 		List<Annotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Getter(onMethod=", annotationNode);
 		
 		switch (node.getKind()) {
 		case FIELD:
-			createGetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true, lazy, onMethod);
+			createGetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true, lazy,name, onMethod);
 			break;
 		case TYPE:
 			if (!onMethod.isEmpty()) {
@@ -164,14 +169,14 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		}
 	}
 	
-	public void createGetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, boolean lazy, List<Annotation> onMethod) {
+	public void createGetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, boolean lazy, String name,List<Annotation> onMethod) {
 		for (EclipseNode fieldNode : fieldNodes) {
-			createGetterForField(level, fieldNode, errorNode, source, whineIfExists, lazy, onMethod);
+			createGetterForField(level, fieldNode, errorNode, source, whineIfExists, lazy, name,onMethod);
 		}
 	}
 	
 	public void createGetterForField(AccessLevel level,
-			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists, boolean lazy, List<Annotation> onMethod) {
+			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists, boolean lazy, String name,List<Annotation> onMethod) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			errorNode.addError("@Getter is only supported on a class or a field.");
 			return;
@@ -195,7 +200,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		
 		TypeReference fieldType = copyType(field.type, source);
 		boolean isBoolean = isBoolean(fieldType);
-		String getterName = toGetterName(fieldNode, isBoolean);
+		String getterName = name==null?toGetterName(fieldNode, isBoolean):name;
 		
 		if (getterName == null) {
 			errorNode.addWarning("Not generating getter for this field: It does not fit your @Accessors prefix list.");

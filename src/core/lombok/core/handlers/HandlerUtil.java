@@ -299,6 +299,23 @@ public class HandlerUtil {
 			String booleanPrefix, String normalPrefix, boolean adhereToFluent) {
 		
 		fieldName = fieldName.toString();
+		
+        String fieldNameString=(String)fieldName;
+        if (Boolean.TRUE.equals(ast.readConfiguration(ConfigurationKeys.USE_CAMELCASE_FOR_UPPERCASE_VARS))){
+            if (fieldNameString.toUpperCase().equals(fieldNameString)) {
+                StringBuilder fieldNameSB = new StringBuilder();
+                String fs[] = fieldNameString.split("_");
+                for (String f : fs) {
+                    if(!f.isEmpty()){    
+                        fieldNameSB.append(f.substring(0, 1));
+                        fieldNameSB.append(f.substring(1).toLowerCase());
+                    }
+                }
+                fieldName = fieldNameSB.toString();
+            }
+        }
+		
+		
 		if (fieldName.length() == 0) return null;
 		
 		if (Boolean.TRUE.equals(ast.readConfiguration(ConfigurationKeys.GETTER_CONSEQUENT_BOOLEAN))) isBoolean = false;
