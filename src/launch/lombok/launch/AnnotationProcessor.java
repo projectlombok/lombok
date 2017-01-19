@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 The Project Lombok Authors.
+ * Copyright (C) 2014-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,14 +33,23 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+
+import org.mapstruct.ap.spi.AstModifyingAnnotationProcessor;
 
 class AnnotationProcessorHider {
-	public static class AnnotationProcessor extends AbstractProcessor {
-		private static final long START = System.currentTimeMillis();
-		
-		private void log(String txt) {
-			System.out.printf("***[%3d]: %s\n", System.currentTimeMillis() - START, txt);
+	public static class AstModificationNotifier implements AstModifyingAnnotationProcessor {
+		@Override public boolean isTypeComplete(TypeMirror type) {
+			if (System.getProperty("lombok.disable") != null) return true;
+			return AstModificationNotifierData.lombokInvoked;
 		}
+	}
+	
+	static class AstModificationNotifierData {
+		volatile static boolean lombokInvoked = false;
+	}
+	
+	public static class AnnotationProcessor extends AbstractProcessor {
 		private final AbstractProcessor instance = createWrappedInstance();
 		
 		@Override public Set<String> getSupportedOptions() {
@@ -56,15 +65,12 @@ class AnnotationProcessorHider {
 		}
 		
 		@Override public void init(ProcessingEnvironment processingEnv) {
-			log("Lombok in init");
+			AstModificationNotifierData.lombokInvoked = true;
 			instance.init(processingEnv);
 			super.init(processingEnv);
 		}
 		
-		private int roundCounter = 0;
 		@Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-			roundCounter++;
-			log("Lombok in round " + roundCounter);
 			return instance.process(annotations, roundEnv);
 		}
 		

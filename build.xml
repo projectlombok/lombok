@@ -143,6 +143,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		anymore until you 'ant clean'. That's very much not desired, so we kill the processor, which stops lombok from running.
 		We re-create the file at the end of this target. -->
 		<delete file="build/lombok/META-INF/services/javax.annotation.processing.Processor" quiet="true" />
+		<delete file="build/lombok/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor" quiet="true" />
 		<ivy:compile destdir="build/stubsstubs" source="1.5" target="1.5" includeantruntime="false">
 			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
 			<src path="src/stubsstubs" />
@@ -228,6 +229,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<mkdir dir="build/lombok/META-INF/services" />
 		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.launch.AnnotationProcessorHider$AnnotationProcessor
 lombok.launch.AnnotationProcessorHider$ClaimingProcessor</echo>
+		<echo file="build/lombok/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor">lombok.launch.AnnotationProcessorHider$AstModificationNotifier</echo>
 	</target>
 	
 	<target name="dist" description="Builds THE lombok.jar file which contains everything." depends="version, compile">

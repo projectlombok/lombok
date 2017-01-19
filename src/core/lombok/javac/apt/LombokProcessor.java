@@ -81,10 +81,6 @@ public class LombokProcessor extends AbstractProcessor {
 		}
 		
 		this.processingEnv = (JavacProcessingEnvironment) procEnv;
-		String beforeOurs = listAnnotationProcessorsBeforeOurs();
-		if (beforeOurs != null) {
-			procEnv.getMessager().printMessage(Kind.NOTE, "Lombok is not the first annotation processor in the lineup. Configure your build tool with an explicit list of processors so that lombok is first. See https://projectlombok.org/configureMultipleProcessors for more. Processors before lombok in the lineup: " + beforeOurs);
-		}
 		
 		placePostCompileAndDontMakeForceRoundDummiesHook();
 		trees = Trees.instance(procEnv);
@@ -119,6 +115,11 @@ public class LombokProcessor extends AbstractProcessor {
 		}
 	}
 	
+	// The intent of this method is to have lombok emit a warning if it's not 'first in line'. However, pragmatically speaking, you're always looking at one of two cases:
+	// (A) The other processor(s) running before lombok require lombok to have run or they crash. So, they crash, and unfortunately we are never even init-ed; the warning is never emitted.
+	// (B) The other processor(s) don't care about it at all. So, it doesn't actually matter that lombok isn't first.
+	// Hence, for now, no warnings.
+	@SuppressWarnings("unused")
 	private String listAnnotationProcessorsBeforeOurs() {
 		try {
 			Object discoveredProcessors = javacProcessingEnvironment_discoveredProcs.get(this.processingEnv);
