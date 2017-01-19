@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-import lombok.installer.eclipse.EclipseFinder;
 import lombok.patcher.ClassRootFinder;
 
 /**
@@ -46,7 +45,7 @@ public abstract class IdeLocation {
 	 * a jar that wasn't accessed via the file-system, or if its started via e.g. unpacking the jar.
 	 */
 	public static File findOurJar() {
-		return new File(ClassRootFinder.findClassRootOfClass(IdeFinder.class));
+		return new File(ClassRootFinder.findClassRootOfClass(OsUtils.class));
 	}
 	
 	@Override public String toString() {
@@ -70,7 +69,7 @@ public abstract class IdeLocation {
 	private static final String LEGAL_PATH_CHARS_WINDOWS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_/:\\ ";
 	public static String escapePath(String path) {
 		StringBuilder out = new StringBuilder();
-		String legalChars = IdeFinder.getOS() == EclipseFinder.OS.UNIX ? LEGAL_PATH_CHARS : LEGAL_PATH_CHARS_WINDOWS; 
+		String legalChars = OsUtils.getOS() == OsUtils.OS.UNIX ? LEGAL_PATH_CHARS : LEGAL_PATH_CHARS_WINDOWS; 
 		for (char c : path.toCharArray()) {
 			if (legalChars.indexOf(c) == -1) out.append('\\');
 			out.append(c);

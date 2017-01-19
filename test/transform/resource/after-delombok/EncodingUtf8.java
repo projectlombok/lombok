@@ -3,6 +3,7 @@ class EncodingUtf8 {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public java.lang.String toString() {
 		return "EncodingUtf8(foo๑๑=" + this.foo๑๑ + ")";
 	}

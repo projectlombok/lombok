@@ -6,6 +6,7 @@ public class NoArgsConstructorForce {
 	
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public NoArgsConstructorForce() {
 		this.i = null;
 		this.o = null;

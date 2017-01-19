@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2015 The Project Lombok Authors.
+ * Copyright (C) 2013-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -107,6 +107,12 @@ public class HandlerUtil {
 			if (fut == FlagUsageType.WARNING) node.addWarning(msg);
 			else if (fut == FlagUsageType.ERROR) node.addError(msg);
 		}
+	}
+	
+	public static boolean shouldAddGenerated(LombokNode<?, ?, ?> node, ConfigurationKey<Boolean> key) {
+		Boolean add = node.getAst().readConfiguration(key);
+		if (add != null) return add;
+		return !Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_GENERATED_ANNOTATIONS));
 	}
 	
 	public static void handleExperimentalFlagUsage(LombokNode<?, ?, ?> node, ConfigurationKey<FlagUsageType> key, String featureName) {

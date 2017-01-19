@@ -10,6 +10,7 @@ class GetterLazyNative {
 	private final java.util.concurrent.atomic.AtomicReference<java.lang.Object> intArrayField = new java.util.concurrent.atomic.AtomicReference<java.lang.Object>();
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public boolean isBooleanField() {
 		java.lang.Object value = this.booleanField.get();
 		if (value == null) {
@@ -26,6 +27,7 @@ class GetterLazyNative {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public byte getByteField() {
 		java.lang.Object value = this.byteField.get();
 		if (value == null) {
@@ -42,6 +44,7 @@ class GetterLazyNative {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public short getShortField() {
 		java.lang.Object value = this.shortField.get();
 		if (value == null) {
@@ -58,6 +61,7 @@ class GetterLazyNative {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public int getIntField() {
 		java.lang.Object value = this.intField.get();
 		if (value == null) {
@@ -74,6 +78,7 @@ class GetterLazyNative {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public long getLongField() {
 		java.lang.Object value = this.longField.get();
 		if (value == null) {
@@ -90,6 +95,7 @@ class GetterLazyNative {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public float getFloatField() {
 		java.lang.Object value = this.floatField.get();
 		if (value == null) {
@@ -106,6 +112,7 @@ class GetterLazyNative {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public double getDoubleField() {
 		java.lang.Object value = this.doubleField.get();
 		if (value == null) {
@@ -122,6 +129,7 @@ class GetterLazyNative {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public char getCharField() {
 		java.lang.Object value = this.charField.get();
 		if (value == null) {
@@ -138,6 +146,7 @@ class GetterLazyNative {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public int[] getIntArrayField() {
 		java.lang.Object value = this.intArrayField.get();
 		if (value == null) {

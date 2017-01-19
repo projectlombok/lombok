@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2009-2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,9 +21,8 @@
  */
 package lombok.installer;
 
+import java.util.List;
 import java.util.regex.Pattern;
-
-import lombok.installer.IdeFinder.OS;
 
 public interface IdeLocationProvider {
 	/**
@@ -31,10 +30,21 @@ public interface IdeLocationProvider {
 	 *    Only throw this exception if the location seems like a proper installation except there's something wrong with it.
 	 *    Do not throw it (just return {@code null}) if there's nothing there or it looks absolutely nothing like your IDE.
 	 */
-	public abstract IdeLocation create(String path) throws CorruptedIdeLocationException;
+	IdeLocation create(String path) throws CorruptedIdeLocationException;
 	
 	/**
-	 * Return the usual name of the IDE executable or other obvious marker of an IDE installation on the provided platform.
+	 * Return the usual name of the IDE executable or other obvious marker of an IDE installation on the current platform.
 	 */
-	public abstract Pattern getLocationSelectors(OS os);
+	Pattern getLocationSelectors();
+	
+	/**
+	 * Look for installations of your IDE in the usual places.
+	 * 
+	 * @param locations Add to this list any valid locations that you found.
+	 * @param problems
+	 *     Add to this list any locations that look like installations,
+	 *     but have problems that prevent you from installing/uninstalling from them. DONT add to this list
+	 *     any common locations that have no installation at all - only add near misses.
+	 */
+	void findIdes(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems);
 }

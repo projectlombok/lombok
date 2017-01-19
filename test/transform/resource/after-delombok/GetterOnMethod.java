@@ -7,6 +7,7 @@ class GetterOnMethod {
 	@Deprecated
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public int getI() {
 		return this.i;
 	}
@@ -14,6 +15,7 @@ class GetterOnMethod {
 	@Test
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public int getJ() {
 		return this.j;
 	}
@@ -21,6 +23,7 @@ class GetterOnMethod {
 	@Test
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public int getK() {
 		return this.k;
 	}

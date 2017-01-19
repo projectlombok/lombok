@@ -14,6 +14,7 @@ class GetterLazyInvalidClass {
 	private final String fieldName = "";
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public String getFieldName() {
 		return this.fieldName;
 	}

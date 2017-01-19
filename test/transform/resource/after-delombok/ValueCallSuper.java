@@ -3,11 +3,13 @@ class ValueParent {
 final class ValueCallSuper extends ValueParent {
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public ValueCallSuper() {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof ValueCallSuper)) return false;
@@ -18,12 +20,14 @@ final class ValueCallSuper extends ValueParent {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof ValueCallSuper;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -33,6 +37,7 @@ final class ValueCallSuper extends ValueParent {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public java.lang.String toString() {
 		return "ValueCallSuper()";
 	}

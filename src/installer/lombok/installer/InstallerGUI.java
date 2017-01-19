@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 The Project Lombok Authors.
+ * Copyright (C) 2009-2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,7 +67,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
 import lombok.core.Version;
-import lombok.installer.IdeFinder.OS;
+import lombok.installer.OsUtils.OS;
 
 /**
  * The lombok GUI installer.
@@ -313,7 +313,7 @@ public class InstallerGUI {
 				final List<Pattern> exeNames = Installer.getIdeExecutableNames();
 				String file = null;
 				
-				if (IdeFinder.getOS() == OS.MAC_OS_X) {
+				if (OsUtils.getOS() == OS.MAC_OS_X) {
 					FileDialog chooser = new FileDialog(appWindow);
 					chooser.setMode(FileDialog.LOAD);
 					
@@ -740,7 +740,7 @@ public class InstallerGUI {
 				} catch (Exception e) {
 					Runtime rt = Runtime.getRuntime();
 					try {
-						switch (IdeFinder.getOS()) {
+						switch (OsUtils.getOS()) {
 						case WINDOWS:
 							String[] cmd = new String[4];
 							cmd[0] = "cmd.exe";
@@ -781,7 +781,7 @@ public class InstallerGUI {
 	 */
 	public void show() {
 		appWindow.setVisible(true);
-		if (IdeFinder.getOS() == OS.MAC_OS_X) {
+		if (OsUtils.getOS() == OS.MAC_OS_X) {
 			try {
 				AppleNativeLook.go();
 			} catch (Throwable ignore) {

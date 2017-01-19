@@ -1025,8 +1025,11 @@ public class JavacHandlerUtil {
 	public static void addGenerated(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context) {
 		if (!LombokOptionsFactory.getDelombokOptions(context).getFormatPreferences().generateGenerated()) return;
 		
-		if (!Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_GENERATED_ANNOTATIONS))) {
+		if (HandlerUtil.shouldAddGenerated(node, ConfigurationKeys.ADD_JAVAX_GENERATED_ANNOTATIONS)) {
 			addAnnotation(mods, node, pos, source, context, "javax.annotation.Generated", node.getTreeMaker().Literal("lombok"));
+		}
+		if (HandlerUtil.shouldAddGenerated(node, ConfigurationKeys.ADD_LOMBOK_GENERATED_ANNOTATIONS)) {
+			addAnnotation(mods, node, pos, source, context, "lombok.Generated", null);
 		}
 	}
 	
@@ -1041,12 +1044,16 @@ public class JavacHandlerUtil {
 		
 		for (JCAnnotation ann : mods.annotations) {
 			JCTree annType = ann.getAnnotationType();
-			Name lastPart = null;
-			if (annType instanceof JCIdent) lastPart = ((JCIdent) annType).name;
-			else if (annType instanceof JCFieldAccess) lastPart = ((JCFieldAccess) annType).name;
+			if (annType instanceof JCIdent) {
+				Name lastPart = ((JCIdent) annType).name;
+				if (lastPart.contentEquals(simpleName)) return;
+			}
 			
-			if (lastPart != null && lastPart.contentEquals(simpleName)) return;
+			if (annType instanceof JCFieldAccess) {
+				if (annType.toString().equals(annotationTypeFqn)) return;
+			}
 		}
+		
 		JavacTreeMaker maker = node.getTreeMaker();
 		JCExpression annType = isJavaLangBased ? genJavaLangTypeRef(node, simpleName) : chainDotsString(node, annotationTypeFqn);
 		annType.pos = pos;

@@ -12,6 +12,8 @@ class Tolerate {
 	@java.lang.SuppressWarnings("all")
 	
 	@javax.annotation.Generated("lombok")
+	
+	@lombok.Generated
 	public void setPattern(final Pattern pattern) {
 		this.pattern = pattern;
 	}
@@ -19,6 +21,8 @@ class Tolerate {
 	@java.lang.SuppressWarnings("all")
 	
 	@javax.annotation.Generated("lombok")
+	
+	@lombok.Generated
 	public Pattern getPattern() {
 		return this.pattern;
 	}
@@ -38,6 +42,8 @@ class Tolerate2 {
 	@java.lang.SuppressWarnings("all")
 	
 	@javax.annotation.Generated("lombok")
+	
+	@lombok.Generated
 	public Pattern getPattern() {
 		return this.pattern;
 	}
@@ -45,6 +51,8 @@ class Tolerate2 {
 	@java.lang.SuppressWarnings("all")
 	
 	@javax.annotation.Generated("lombok")
+	
+	@lombok.Generated
 	public Tolerate2 withPattern(final Pattern pattern) {
 		return this.pattern == pattern ? this : new Tolerate2(pattern);
 	}
@@ -52,6 +60,7 @@ class Tolerate2 {
 	@java.beans.ConstructorProperties({"pattern"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public Tolerate2(final Pattern pattern) {
 		this.pattern = pattern;
 	}

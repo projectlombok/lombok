@@ -2,6 +2,7 @@ class ConflictingStaticConstructorNames {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof ConflictingStaticConstructorNames)) return false;
@@ -11,12 +12,14 @@ class ConflictingStaticConstructorNames {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof ConflictingStaticConstructorNames;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public int hashCode() {
 		int result = 1;
 		return result;
@@ -24,11 +27,13 @@ class ConflictingStaticConstructorNames {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public java.lang.String toString() {
 		return "ConflictingStaticConstructorNames()";
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
+	@lombok.Generated
 	public ConflictingStaticConstructorNames() {
 	}
 }

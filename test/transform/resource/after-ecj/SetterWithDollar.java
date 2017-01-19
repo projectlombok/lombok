@@ -3,7 +3,7 @@ class SetterWithDollar1 {
   SetterWithDollar1() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void set$i(final int $i) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated void set$i(final int $i) {
     this.$i = $i;
   }
 }
@@ -13,10 +13,10 @@ class SetterWithDollar2 {
   SetterWithDollar2() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void set$i(final int $i) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated void set$i(final int $i) {
     this.$i = $i;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setI(final int i) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated void setI(final int i) {
     this.i = i;
   }
 }

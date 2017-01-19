@@ -8,7 +8,7 @@ class PlaceFillerToMakeSurePositionIsRelevant {
   GetterOnMethodErrors() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int getTest() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated int getTest() {
     return this.test;
   }
 }

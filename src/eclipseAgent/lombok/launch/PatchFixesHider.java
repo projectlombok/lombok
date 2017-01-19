@@ -36,11 +36,13 @@ import lombok.eclipse.EclipseAugments;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IAnnotation;
+import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -55,9 +57,11 @@ import org.eclipse.jdt.internal.compiler.lookup.Scope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.parser.Parser;
 import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
+import org.eclipse.jdt.internal.core.SourceField;
 import org.eclipse.jdt.internal.core.dom.rewrite.NodeRewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
+import org.eclipse.jdt.internal.corext.refactoring.SearchResultGroup;
 import org.eclipse.jdt.internal.corext.refactoring.structure.ASTNodeSearchUtil;
 
 /** These contain a mix of the following:
@@ -563,6 +567,48 @@ final class PatchFixesHider {
 				if (m.getNameRange().getLength() > 0 && !m.getNameRange().equals(m.getSourceRange())) result.add(m);
 			}
 			return result.size() == methods.length ? methods : result.toArray(new IMethod[result.size()]);
+		}
+		
+		public static SearchMatch[] removeGenerated(SearchMatch[] returnValue) {
+			List<SearchMatch> result = new ArrayList<SearchMatch>();
+			for (int j = 0; j < returnValue.length; j++) {
+				SearchMatch searchResult = returnValue[j];
+				if (searchResult.getElement() instanceof IField) {
+					IField field = (IField) searchResult.getElement();
+					
+					// can not check for value=lombok because annotation is
+					// not fully resolved
+					IAnnotation annotation = field.getAnnotation("Generated");
+					if (annotation != null) {
+						// Method generated at field location, skip
+						continue;
+					}
+					
+				}
+				result.add(searchResult);
+			}
+			return result.toArray(new SearchMatch[result.size()]);
+		}
+		
+		public static SearchResultGroup[] createFakeSearchResult(SearchResultGroup[] returnValue,
+				Object/*
+						 * org.eclipse.jdt.internal.corext.refactoring.rename.
+						 * RenameFieldProcessor
+						 */ processor) throws Exception {
+			if (returnValue == null || returnValue.length == 0) {
+				// if no matches were found, check if Data annotation is present on the class
+				Field declaredField = processor.getClass().getDeclaredField("fField");
+				if (declaredField != null) {
+					declaredField.setAccessible(true);
+					SourceField fField = (SourceField) declaredField.get(processor);
+					IAnnotation dataAnnotation = fField.getDeclaringType().getAnnotation("Data");
+					if (dataAnnotation != null) {
+						// add fake item, to make refactoring checks pass
+						return new SearchResultGroup[] {new SearchResultGroup(null, new SearchMatch[1])};
+					}
+				}
+			}
+			return returnValue;
 		}
 		
 		public static SimpleName[] removeGeneratedSimpleNames(SimpleName[] in) throws Exception {

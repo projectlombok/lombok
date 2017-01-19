@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2016 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,25 +21,21 @@
  */
 package lombok.installer.eclipse;
 
-import java.io.File;
 import java.net.URL;
+import java.util.List;
+import java.util.regex.Pattern;
 
-import lombok.installer.CorruptedIdeLocationException;
-
-public class STSLocation extends EclipseLocation {
-	public STSLocation(String nameOfLocation, File pathToEclipseIni) throws CorruptedIdeLocationException {
-		super(nameOfLocation, pathToEclipseIni);
-	}
-	
-	@Override public URL getIdeIcon() {
-		return STSLocation.class.getResource("STS.png");
-	}
-	
-	@Override protected String getIniFileName() {
-		return "STS.ini";
-	}
-	
-	@Override protected String getTypeName() {
-		return "STS";
-	}
+public interface EclipseProductDescriptor {
+	String getProductName();
+	String getWindowsExecutableName();
+	String getUnixAppName();
+	String getMacAppName();
+	String getDirectoryName();
+	List<String> getExecutableNames();
+	List<String> getSourceDirsOnWindows();
+	List<String> getSourceDirsOnMac();
+	List<String> getSourceDirsOnUnix();
+	String getIniFileName();
+	Pattern getLocationSelectors();
+	URL getIdeIcon();
 }
