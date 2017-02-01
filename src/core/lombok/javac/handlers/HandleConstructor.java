@@ -291,7 +291,7 @@ public class HandleConstructor {
 				JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, nonNulls.appendList(nullables)), fieldName, field.vartype, null);
 				params.append(param);
 				if (!nonNulls.isEmpty()) {
-					JCStatement nullCheck = generateNullCheck(maker, fieldNode, source);
+					JCStatement nullCheck = generateNullCheck(maker, fieldNode, param, source);
 					if (nullCheck != null) nullChecks.append(nullCheck);
 				}
 			}

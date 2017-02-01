@@ -1175,16 +1175,23 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
-	 * Generates a new statement that checks if the given variable is null, and if so, throws a specified exception with the
+	 * Generates a new statement that checks if the given variable is null, and if so, throws a configured exception with the
 	 * variable name as message.
-	 * 
-	 * @param exName The name of the exception to throw; normally {@code java.lang.NullPointerException}.
 	 */
 	public static JCStatement generateNullCheck(JavacTreeMaker maker, JavacNode variable, JavacNode source) {
+		return generateNullCheck(maker, variable, (JCVariableDecl)variable.get(), source);
+	}
+
+	/**
+	 * Generates a new statement that checks if the given variable is null, and if so, throws a configured exception with the
+	 * variable name as message. This is a special case method reserved for use when the provided declaration differs from the
+	 * variable's declaration, i.e. in a constructor or setter where the local parameter is named the same but with the prefix
+	 * stripped as a result of @Accessors.prefix.
+	 */
+	public static JCStatement generateNullCheck(JavacTreeMaker maker, JavacNode variable, JCVariableDecl varDecl, JavacNode source) {
 		NullCheckExceptionType exceptionType = source.getAst().readConfiguration(ConfigurationKeys.NON_NULL_EXCEPTION_TYPE);
 		if (exceptionType == null) exceptionType = NullCheckExceptionType.NULL_POINTER_EXCEPTION;
 		
-		JCVariableDecl varDecl = (JCVariableDecl) variable.get();
 		if (isPrimitive(varDecl.vartype)) return null;
 		Name fieldName = varDecl.name;
 		JCExpression exType = genTypeRef(variable, exceptionType.getExceptionType());
