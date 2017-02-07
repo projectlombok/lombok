@@ -243,6 +243,19 @@ such as converting the changelog into HTML, and creating javadoc.
 		</copy>
 	</target>
 	
+	<target name="latestChanges" depends="-compile-webclasses, version">
+		<java fork="true" classname="lombok.website.CompileChangelog" failonerror="true">
+			<classpath>
+				<path refid="build.path" />
+				<pathelement location="build/webclasses" />
+			</classpath>
+			<arg value="doc/changelog.markdown" />
+			<arg value="build/latestchanges.html" />
+			<arg value="-latest" />
+			<arg value="${lombok.version}" />
+		</java>
+	</target>
+	
 	<target name="edgeRelease-build" depends="-compile-webclasses, version">
 		<mkdir dir="build/website-edge" />
 		<property name="CHANGELOG_FILE" location="doc/changelog.markdown" />

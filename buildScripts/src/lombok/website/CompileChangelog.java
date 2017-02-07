@@ -1,18 +1,20 @@
 package lombok.website;
 
-import com.petebevin.markdown.MarkdownProcessor;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.petebevin.markdown.MarkdownProcessor;
+
 public class CompileChangelog {
 	public static void main(String[] args) {
 		String fileIn = args[0];
 		String fileOut = args[1];
 		boolean edge = args.length > 3 && "-edge".equals(args[2]);
-		String version = edge ? args[3] : null;
+		boolean latest = args.length > 3 && "-latest".equals(args[2]);
+		String version = args.length > 3 ? args[3] : null;
 		
 		try {
 			FileInputStream in = new FileInputStream(fileIn);
@@ -27,7 +29,14 @@ public class CompileChangelog {
 			in.close();
 			String markdown = new String(out.toByteArray(), "UTF-8");
 			
-			String result = edge ? buildEdge(markdown, version) : build(markdown);
+			String result;
+			if (edge) {
+				result = buildEdge(sectionByVersion(markdown, version));
+			} else if (latest) {
+				result = buildLatest(sectionByVersion(markdown, version));
+			} else {
+				result = build(markdown);
+			}
 			
 			FileOutputStream file = new FileOutputStream(fileOut);
 			file.write(result.getBytes("UTF-8"));
@@ -43,9 +52,19 @@ public class CompileChangelog {
 		return new MarkdownProcessor().markdown(markdown);
 	}
 	
-	private static final Pattern LAST_CHANGELOG = Pattern.compile(
-			"^.*### v$", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-	private static String buildEdge(String markdown, String version) {
+	private static String buildEdge(String section) {
+		String latest = section != null ? section : "* No changelog records for this edge release.";
+		return new MarkdownProcessor().markdown(latest);
+	}
+	
+	private static String buildLatest(String section) {
+		String latest = section != null ? section : "* No changelog records for this release.";
+		String noIssueLinks = latest.replaceAll("\\[[^]]*[Ii]ssue[^]]*\\]\\([^)]*\\)", "");
+		String noLinks = noIssueLinks.replaceAll("\\[([^]]*)\\]\\([^)]*\\)", "$1");
+		return new MarkdownProcessor().markdown(noLinks);
+	}
+	
+	private static String sectionByVersion(String markdown, String version) {
 		if (version.toUpperCase().endsWith("-HEAD") || version.toUpperCase().endsWith("-EDGE")) {
 			version = version.substring(0, version.length() - 5);
 		}
@@ -53,7 +72,6 @@ public class CompileChangelog {
 		Pattern p = Pattern.compile(
 				"(?is-m)^.*###\\s*v" + version + ".*?\n(.*?)(?:###\\s*v.*)?$");
 		Matcher m = p.matcher(markdown);
-		String subMarkdown = m.matches() ? m.group(1) : "* No changelog records for this edge release.";
-		return new MarkdownProcessor().markdown(subMarkdown);
+		return m.matches() ? m.group(1) : null;
 	}
 }
