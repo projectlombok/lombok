@@ -24,7 +24,7 @@
 This buildfile is part of projectlombok.org. It is the main entry point that contains
 the common tasks and can be called on to run the main aspects of all the sub-scripts.
 	</description>
-	
+	<setproxy proxyhost="127.0.0.1" proxyport="1080"/>
 	<property name="build.compiler" value="javac1.6" />
 	<property name="ivy.retrieve.pattern" value="lib/[conf]/[organisation]-[artifact].[ext]" />
 	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
