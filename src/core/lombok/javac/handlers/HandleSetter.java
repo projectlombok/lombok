@@ -21,34 +21,27 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.javac.Javac.*;
 import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.javac.Javac.CTC_VOID;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+import static lombok.javac.handlers.JavacHandlerUtil.toAllSetterNames;
+import static lombok.javac.handlers.JavacHandlerUtil.toSetterName;
 
 import java.util.Collection;
-
-import lombok.AccessLevel;
-import lombok.ConfigurationKeys;
-import lombok.Setter;
-import lombok.core.AST.Kind;
-import lombok.core.AnnotationValues;
-import lombok.javac.Javac;
-import lombok.javac.JavacAnnotationHandler;
-import lombok.javac.JavacNode;
-import lombok.javac.JavacTreeMaker;
-import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCReturn;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
@@ -56,6 +49,20 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
+
+import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
+import lombok.Setter;
+import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
+import lombok.core.util.Names;
+import lombok.javac.Javac;
+import lombok.javac.JavacAnnotationHandler;
+import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
+import lombok.javac.handlers.JavacHandlerUtil.CopyJavadoc;
+import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
+import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 
 /**
  * Handles the {@code lombok.Setter} annotation for javac.
@@ -169,6 +176,8 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			return;
 		}
 		
+		createPropertyNameConstantForField(fieldNode, sourceNode);
+		
 		for (String altName : toAllSetterNames(fieldNode)) {
 			switch (methodExists(altName, fieldNode, false, 1)) {
 			case EXISTS_BY_LOMBOK:
@@ -203,13 +212,31 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		injectMethod(fieldNode.up(), createdSetter, fieldType == null ? null : List.of(fieldType), returnType);
 	}
 	
+	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, String setterName, boolean shouldReturnThis, JCTree source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+		return null;
+	}
+	
 	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		String setterName = toSetterName(field);
 		boolean returnThis = shouldReturnThis(field);
-		return createSetter(access, field, treeMaker, setterName, returnThis, source, onMethod, onParam);
+		boolean bound = shouldAddBoundProperty(field);
+		String propertyChangeSupportFieldName = null;
+		if (bound) {
+			propertyChangeSupportFieldName = propertyChangeSupportFieldName(field);
+		}
+		return createSetter(access, field, treeMaker, setterName, returnThis, source, onMethod, onParam, bound, propertyChangeSupportFieldName);
 	}
 	
 	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, String setterName, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+		boolean bound = shouldAddBoundProperty(field);
+		String propertyChangeSupportFieldName = null;
+		if (bound) {
+			propertyChangeSupportFieldName = propertyChangeSupportFieldName(field);
+		}
+		return createSetter(access, field, treeMaker, setterName, shouldReturnThis, source, onMethod, onParam, bound, propertyChangeSupportFieldName);
+	}
+	
+	private static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, String setterName, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam, boolean bound, String propertyChangeSupportFieldName) {
 		if (setterName == null) return null;
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
@@ -226,6 +253,12 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		
 		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, field.getContext());
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(flags, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
+		
+		JCVariableDecl oldVar = null;
+		if (bound) {
+			oldVar = treeMaker.VarDef(treeMaker.Modifiers(Flags.FINAL), field.toName("old"), fieldDecl.vartype, fieldRef);
+			statements.append(oldVar);
+		}
 		
 		if (nonNulls.isEmpty()) {
 			statements.append(treeMaker.Exec(assign));
@@ -244,6 +277,17 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.
 			methodType = treeMaker.Type(Javac.createVoidType(field.getSymbolTable(), CTC_VOID));
 			shouldReturnThis = false;
+		}
+		
+		if (bound) {
+			JCExpression callFirePropChanged = chainDotsString(field, "this." + propertyChangeSupportFieldName + ".firePropertyChange");
+			JCExpression propNameParam = chainDotsString(field, createPropConstantName(field.getName()));
+			JCExpression oldValueParam = treeMaker.Ident(oldVar.name);
+			JCExpression currentValueParam = fieldRef;
+			
+			JCMethodInvocation callFire = treeMaker.Apply(List.<JCExpression>nil(), callFirePropChanged, List.<JCExpression>of(propNameParam, oldValueParam, currentValueParam));
+			
+			statements.append(treeMaker.Exec(callFire));
 		}
 		
 		if (shouldReturnThis) {
@@ -266,5 +310,33 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 				methodGenericParams, parameters, throwsClauses, methodBody, annotationMethodDefaultValue), source.get(), field.getContext());
 		copyJavadoc(field, decl, CopyJavadoc.SETTER);
 		return decl;
+	}
+	
+	private void createPropertyNameConstantForField(JavacNode fieldNode, JavacNode sourceNode) {
+		boolean propConstant = shouldAddPropertyNameConstant(fieldNode);
+		String propConstantName = createPropConstantName(fieldNode.getName());
+		if (propConstant && MemberExistsResult.NOT_EXISTS.equals(fieldExists(propConstantName, fieldNode))) {
+			JCVariableDecl propConstantDecl = createPropConstant(fieldNode.up(), sourceNode, fieldNode.getName());
+			injectField(fieldNode.up(), propConstantDecl);
+		}
+	}
+	
+	private static JCVariableDecl createPropConstant(JavacNode typeNode, JavacNode source, String propertyName) {
+		String constantName = createPropConstantName(propertyName);
+		return createStringConstant(typeNode, source, constantName, propertyName);
+	}
+	
+	private static JCVariableDecl createStringConstant(JavacNode typeNode, JavacNode source, String constantName, String constantValue) {
+		JavacTreeMaker maker = typeNode.getTreeMaker();
+		
+		JCExpression propConstantType = chainDotsString(typeNode, "java.lang.String");
+		JCExpression initValue = maker.Literal(constantValue);
+		
+		JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(maker.Modifiers(Flags.PUBLIC | Flags.FINAL | Flags.STATIC), typeNode.toName(constantName), propConstantType, initValue), source.get(), typeNode.getContext());
+		return fieldDecl;
+	}
+	
+	private static String createPropConstantName(String propertyName) {
+		return "PROP_" + Names.camelCaseToConstant(propertyName);
 	}
 }

@@ -466,6 +466,30 @@ public class JavacHandlerUtil {
 		return HandlerUtil.shouldReturnThis0(accessors, field.getAst());
 	}
 	
+	public static boolean shouldAddPropertyNameConstant(JavacNode field) {
+		if ((((JCVariableDecl) field.get()).mods.flags & Flags.STATIC) != 0) return false;
+		
+		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
+		
+		Accessors instance = accessors.getInstance();
+		return instance.propertyNameConstant() || instance.bound();
+	}
+	
+	public static boolean shouldAddBoundProperty(JavacNode field) {
+		if ((((JCVariableDecl) field.get()).mods.flags & Flags.STATIC) != 0) return false;
+		
+		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
+		
+		Accessors instance = accessors.getInstance();
+		return instance.bound();
+	}
+	
+	public static String propertyChangeSupportFieldName(JavacNode field) {
+		AnnotationValues<Accessors> accessors = JavacHandlerUtil.getAccessorsForField(field);
+		Accessors instance = accessors.getInstance();
+		return instance.propertyChangeSupportFieldName();
+	}
+	
 	public static JCExpression cloneSelfType(JavacNode childOfType) {
 		JavacNode typeNode = childOfType;
 		JavacTreeMaker maker = childOfType.getTreeMaker();

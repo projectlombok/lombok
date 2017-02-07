@@ -51,10 +51,30 @@ public @interface Accessors {
 	boolean chain() default false;
 	
 	/**
-	 * If present, only fields with any of the stated prefixes are given the getter/setter treatment.
-	 * Note that a prefix only counts if the next character is NOT a lowercase character or the last
-	 * letter of the prefix is not a letter (for instance an underscore). If multiple fields
-	 * all turn into the same name when the prefix is stripped, an error will be generated.
+	 * If present, only fields with any of the stated prefixes are given the
+	 * getter/setter treatment. Note that a prefix only counts if the next
+	 * character is NOT a lowercase character or the last letter of the prefix
+	 * is not a letter (for instance an underscore). If multiple fields all turn
+	 * into the same name when the prefix is stripped, an error will be
+	 * generated.
 	 */
 	String[] prefix() default {};
+	
+	/**
+	 * If true, a propertyName constant is generated (e. g. 'public final String
+	 * PROP_FOO = "foo";' for the property foo).
+	 */
+	boolean propertyNameConstant() default false;
+	
+	/**
+	 * If true, property change support is added to the setter implementation.
+	 * This will also cause the generation of propertyNameConstant(s).
+	 */
+	boolean bound() default false;
+	
+	/**
+	 * field name to use for bound setters to call firePropertyChange on -
+	 * instance type must be java.beans.PropertyChangeSupport.
+	 */
+	String propertyChangeSupportFieldName() default "propertySupport";
 }

@@ -1010,6 +1010,28 @@ public class EclipseHandlerUtil {
 		return HandlerUtil.toWitherName(field.getAst(), getAccessorsForField(field), field.getName(), isBoolean);
 	}
 	
+	public static boolean shouldAddPropertyNameConstant(EclipseNode field) {
+		if ((((FieldDeclaration) field.get()).modifiers & ClassFileConstants.AccStatic) != 0) return false;
+		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
+		Accessors instance = accessors.getInstance();
+		return instance.propertyNameConstant() || instance.bound();
+	}
+	
+	public static boolean shouldAddBoundProperty(EclipseNode field) {
+		if ((((FieldDeclaration) field.get()).modifiers & ClassFileConstants.AccStatic) != 0) return false;
+		
+		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
+		
+		Accessors instance = accessors.getInstance();
+		return instance.bound();
+	}
+	
+	public static String propertyChangeSupportFieldName(EclipseNode field) {
+		AnnotationValues<Accessors> accessors = EclipseHandlerUtil.getAccessorsForField(field);
+		Accessors instance = accessors.getInstance();
+		return instance.propertyChangeSupportFieldName();
+	}
+	
 	/**
 	 * When generating a setter, the setter either returns void (beanspec) or Self (fluent).
 	 * This method scans for the {@code Accessors} annotation and associated config properties to figure that out.
