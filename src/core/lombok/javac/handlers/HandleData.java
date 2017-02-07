@@ -51,14 +51,17 @@ public class HandleData extends JavacAnnotationHandler<Data> {
 			annotationNode.addError("@Data is only supported on a class.");
 			return;
 		}
-		
-		String staticConstructorName = annotation.getInstance().staticConstructor();
-		
+
+		Data ann = annotation.getInstance();
+		String staticConstructorName = ann.staticConstructor();
+		Boolean callSuper = ann.callSuper();
+		if (!annotation.isExplicit("callSuper")) callSuper = null;
+
 		// TODO move this to the end OR move it to the top in eclipse.
 		new HandleConstructor().generateRequiredArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, SkipIfConstructorExists.YES, annotationNode);
 		new HandleGetter().generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
 		new HandleSetter().generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
-		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
-		new HandleToString().generateToStringForType(typeNode, annotationNode);
+		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode, callSuper);
+		new HandleToString().generateToStringForType(typeNode, annotationNode, callSuper);
 	}
 }

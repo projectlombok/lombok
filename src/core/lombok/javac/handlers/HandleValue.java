@@ -63,9 +63,12 @@ public class HandleValue extends JavacAnnotationHandler<Value> {
 			annotationNode.addError("@Value is only supported on a class.");
 			return;
 		}
-		
-		String staticConstructorName = annotation.getInstance().staticConstructor();
-		
+
+		Value ann = annotation.getInstance();
+		String staticConstructorName = ann.staticConstructor();
+		Boolean callSuper = ann.callSuper();
+		if (!annotation.isExplicit("callSuper")) callSuper = null;
+
 		if (!hasAnnotationAndDeleteIfNeccessary(NonFinal.class, typeNode)) {
 			JCModifiers jcm = ((JCClassDecl) typeNode.get()).mods;
 			if ((jcm.flags & Flags.FINAL) == 0) {
@@ -78,7 +81,7 @@ public class HandleValue extends JavacAnnotationHandler<Value> {
 		// TODO move this to the end OR move it to the top in eclipse.
 		new HandleConstructor().generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, SkipIfConstructorExists.YES, annotationNode);
 		new HandleGetter().generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
-		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
-		new HandleToString().generateToStringForType(typeNode, annotationNode);
+		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode, callSuper);
+		new HandleToString().generateToStringForType(typeNode, annotationNode, callSuper);
 	}
 }

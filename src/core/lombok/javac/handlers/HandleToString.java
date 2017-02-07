@@ -105,7 +105,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		generateToString(typeNode, annotationNode, excludes, includes, includeFieldNames, callSuper, true, fieldAccess);
 	}
 	
-	public void generateToStringForType(JavacNode typeNode, JavacNode errorNode) {
+	public void generateToStringForType(JavacNode typeNode, JavacNode errorNode, Boolean callSuper) {
 		if (hasAnnotation(ToString.class, typeNode)) {
 			//The annotation will make it happen, so we can skip it.
 			return;
@@ -117,7 +117,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			Boolean configuration = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_INCLUDE_FIELD_NAMES);
 			includeFieldNames = configuration != null ? configuration : ((Boolean)ToString.class.getMethod("includeFieldNames").getDefaultValue()).booleanValue();
 		} catch (Exception ignore) {}
-		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, FieldAccess.GETTER);
+		generateToString(typeNode, errorNode, null, null, includeFieldNames, callSuper, false, FieldAccess.GETTER);
 	}
 	
 	public void generateToString(JavacNode typeNode, JavacNode source, List<String> excludes, List<String> includes,

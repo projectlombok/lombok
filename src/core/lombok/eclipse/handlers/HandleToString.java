@@ -83,7 +83,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		}
 	}
 	
-	public void generateToStringForType(EclipseNode typeNode, EclipseNode errorNode) {
+	public void generateToStringForType(EclipseNode typeNode, EclipseNode errorNode, Boolean callSuper) {
 		if (hasAnnotation(ToString.class, typeNode)) {
 			//The annotation will make it happen, so we can skip it.
 			return;
@@ -94,7 +94,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 			Boolean configuration = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_INCLUDE_FIELD_NAMES);
 			includeFieldNames = configuration != null ? configuration : ((Boolean)ToString.class.getMethod("includeFieldNames").getDefaultValue()).booleanValue();
 		} catch (Exception ignore) {}
-		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, FieldAccess.GETTER);
+		generateToString(typeNode, errorNode, null, null, includeFieldNames, callSuper, false, FieldAccess.GETTER);
 	}
 	
 	public void handle(AnnotationValues<ToString> annotation, Annotation ast, EclipseNode annotationNode) {
