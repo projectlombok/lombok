@@ -451,7 +451,12 @@ class ShadowClassLoader extends ClassLoader {
 				Class<?> alreadyDefined = highlanderMap.get(name);
 				if (alreadyDefined != null) return alreadyDefined;
 			}
-			throw e;
+			try {
+				c = this.findLoadedClass(name);
+			} catch (LinkageError e2) {
+				throw e;
+			}
+			if (c == null) throw e;
 		}
 		
 		if (highlanders.contains(name)) {
