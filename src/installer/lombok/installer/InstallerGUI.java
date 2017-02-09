@@ -80,6 +80,7 @@ import lombok.installer.OsUtils.OS;
  * Also offers info on what this installer does in case people want to instrument their IDE manually.
  */
 public class InstallerGUI {
+	private static final int INSTALLER_WINDOW_WIDTH = 662;
 	static final AtomicReference<Integer> exitMarker = new AtomicReference<Integer>();
 	
 	private JFrame appWindow;
@@ -169,7 +170,7 @@ public class InstallerGUI {
 		constraints.gridy = 2;
 		container.add(buttonBar, constraints);
 		
-		container.setPreferredSize(new Dimension(462, 415));
+		container.setPreferredSize(new Dimension(INSTALLER_WINDOW_WIDTH, 415));
 		return container;
 	}
 	
@@ -215,9 +216,9 @@ public class InstallerGUI {
 		
 		JScrollPane scroller = new JScrollPane(notes);
 		container.add(scroller, constraints);
-		scroller.setPreferredSize(new Dimension(380, 240));
+		scroller.setPreferredSize(new Dimension(INSTALLER_WINDOW_WIDTH - 82, 240));
 		
-		container.setPreferredSize(new Dimension(462, 415));
+		container.setPreferredSize(new Dimension(INSTALLER_WINDOW_WIDTH, 415));
 		return container;
 	}
 	
@@ -290,7 +291,7 @@ public class InstallerGUI {
 		constraints.gridy = 4;
 		container.add(buttonBar, constraints);
 		
-		container.setPreferredSize(new Dimension(462, 415));
+		container.setPreferredSize(new Dimension(INSTALLER_WINDOW_WIDTH, 415));
 		return container;
 	}
 	
@@ -313,7 +314,7 @@ public class InstallerGUI {
 		
 		constraints.gridy = 2;
 		container.add(example, constraints);
-		container.setPreferredSize(new Dimension(462, 105));
+		container.setPreferredSize(new Dimension(INSTALLER_WINDOW_WIDTH, 105));
 		return container;
 	}
 	
@@ -501,7 +502,7 @@ public class InstallerGUI {
 		uninstallPlaceholder.setVisible(false);
 		container.add(uninstallPlaceholder, constraints);
 		
-		container.setPreferredSize(new Dimension(462, 296));
+		container.setPreferredSize(new Dimension(INSTALLER_WINDOW_WIDTH, 296));
 		return container;
 	}
 	
