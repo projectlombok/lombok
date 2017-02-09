@@ -5,7 +5,6 @@ class Getter1 {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public boolean isFoo() {
 		return this.foo;
 	}
@@ -29,7 +28,6 @@ class Getter4 {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public String getFoo() {
 		return this.foo;
 	}
@@ -41,7 +39,6 @@ class Getter5 {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public String getFoo() {
 		return this.foo;
 	}
@@ -59,7 +56,6 @@ class Getter7 {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public String getFoo() {
 		return this.foo;
 	}
@@ -71,7 +67,6 @@ class Getter8 {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public String getFoo() {
 		return this.foo;
 	}
@@ -89,7 +84,6 @@ class Getter10 {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public boolean isFoo() {
 		return this.foo;
 	}
@@ -113,7 +107,6 @@ class Getter13 {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public String getFoo() {
 		return this.foo;
 	}
@@ -125,7 +118,6 @@ class Getter14 {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public String getFoo() {
 		return this.foo;
 	}
@@ -143,7 +135,6 @@ class Getter16 {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public String getFoo() {
 		return this.foo;
 	}
@@ -155,7 +146,6 @@ class Getter17 {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public String getFoo() {
 		return this.foo;
 	}

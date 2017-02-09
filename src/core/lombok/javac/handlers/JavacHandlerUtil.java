@@ -1025,10 +1025,10 @@ public class JavacHandlerUtil {
 	public static void addGenerated(JCModifiers mods, JavacNode node, int pos, JCTree source, Context context) {
 		if (!LombokOptionsFactory.getDelombokOptions(context).getFormatPreferences().generateGenerated()) return;
 		
-		if (HandlerUtil.shouldAddGenerated(node, ConfigurationKeys.ADD_JAVAX_GENERATED_ANNOTATIONS)) {
+		if (HandlerUtil.shouldAddGenerated(node)) {
 			addAnnotation(mods, node, pos, source, context, "javax.annotation.Generated", node.getTreeMaker().Literal("lombok"));
 		}
-		if (HandlerUtil.shouldAddGenerated(node, ConfigurationKeys.ADD_LOMBOK_GENERATED_ANNOTATIONS)) {
+		if (Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_LOMBOK_GENERATED_ANNOTATIONS))) {
 			addAnnotation(mods, node, pos, source, context, "lombok.Generated", null);
 		}
 	}

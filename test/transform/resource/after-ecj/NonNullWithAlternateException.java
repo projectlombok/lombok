@@ -10,7 +10,7 @@ public class NonNullWithAlternateException {
         }
     System.out.println(arg);
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated void setTest(final @lombok.NonNull String test) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setTest(final @lombok.NonNull String test) {
     if ((test == null))
         {
           throw new java.lang.IllegalArgumentException("test is null");

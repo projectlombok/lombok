@@ -7,7 +7,7 @@ class SimpleTypeResolutionSuccess {
   private @lombok.Getter int x;
   SimpleTypeResolutionSuccess() {
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated int getX() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int getX() {
     return this.x;
   }
 }

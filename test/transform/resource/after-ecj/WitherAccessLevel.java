@@ -9,19 +9,19 @@ class WitherAccessLevel {
   WitherAccessLevel(boolean isNone, boolean isPrivate, boolean isPackage, boolean isProtected, boolean isPublic, boolean value) {
     super();
   }
-  private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated WitherAccessLevel withPrivate(final boolean isPrivate) {
+  private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") WitherAccessLevel withPrivate(final boolean isPrivate) {
     return ((this.isPrivate == isPrivate) ? this : new WitherAccessLevel(this.isNone, isPrivate, this.isPackage, this.isProtected, this.isPublic, this.value));
   }
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated WitherAccessLevel withPackage(final boolean isPackage) {
+  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") WitherAccessLevel withPackage(final boolean isPackage) {
     return ((this.isPackage == isPackage) ? this : new WitherAccessLevel(this.isNone, this.isPrivate, isPackage, this.isProtected, this.isPublic, this.value));
   }
-  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated WitherAccessLevel withProtected(final boolean isProtected) {
+  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") WitherAccessLevel withProtected(final boolean isProtected) {
     return ((this.isProtected == isProtected) ? this : new WitherAccessLevel(this.isNone, this.isPrivate, this.isPackage, isProtected, this.isPublic, this.value));
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated WitherAccessLevel withPublic(final boolean isPublic) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") WitherAccessLevel withPublic(final boolean isPublic) {
     return ((this.isPublic == isPublic) ? this : new WitherAccessLevel(this.isNone, this.isPrivate, this.isPackage, this.isProtected, isPublic, this.value));
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated WitherAccessLevel withValue(final boolean value) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") WitherAccessLevel withValue(final boolean value) {
     return ((this.value == value) ? this : new WitherAccessLevel(this.isNone, this.isPrivate, this.isPackage, this.isProtected, this.isPublic, value));
   }
 }

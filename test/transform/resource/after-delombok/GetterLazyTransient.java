@@ -4,7 +4,6 @@ class GetterLazyTransient {
 	private final transient int nonLazyTransientField = 3;
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public int getNonTransientField() {
 		java.lang.Object value = this.nonTransientField.get();
 		if (value == null) {
@@ -21,7 +20,6 @@ class GetterLazyTransient {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public int getNonLazyTransientField() {
 		return this.nonLazyTransientField;
 	}

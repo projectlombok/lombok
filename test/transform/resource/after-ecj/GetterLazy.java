@@ -8,7 +8,7 @@ class GetterLazy {
   GetterLazy() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated ValueType getFieldName() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") ValueType getFieldName() {
     java.lang.Object value = this.fieldName.get();
     if ((value == null))
         {

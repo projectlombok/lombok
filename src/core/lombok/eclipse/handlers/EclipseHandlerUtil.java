@@ -1345,10 +1345,10 @@ public class EclipseHandlerUtil {
 	
 	public static Annotation[] addGenerated(EclipseNode node, ASTNode source, Annotation[] originalAnnotationArray) {
 		Annotation[] result = originalAnnotationArray;
-		if (HandlerUtil.shouldAddGenerated(node, ConfigurationKeys.ADD_JAVAX_GENERATED_ANNOTATIONS)) {
+		if (HandlerUtil.shouldAddGenerated(node)) {
 			result = addAnnotation(source, result, JAVAX_ANNOTATION_GENERATED, new StringLiteral(LOMBOK, 0, 0, 0));
 		}
-		if (HandlerUtil.shouldAddGenerated(node, ConfigurationKeys.ADD_LOMBOK_GENERATED_ANNOTATIONS)) {
+		if (Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_LOMBOK_GENERATED_ANNOTATIONS))) {
 			result = addAnnotation(source, result, LOMBOK_GENERATED, null);
 		}
 		return result;

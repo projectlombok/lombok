@@ -5,7 +5,6 @@ class WitherOnClass1 {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public WitherOnClass1 withPublic(final boolean isPublic) {
 		return this.isPublic == isPublic ? this : new WitherOnClass1(this.isNone, isPublic);
 	}
@@ -18,13 +17,11 @@ class WitherOnClass2 {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	protected WitherOnClass2 withProtected(final boolean isProtected) {
 		return this.isProtected == isProtected ? this : new WitherOnClass2(this.isNone, isProtected, this.isPackage);
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	WitherOnClass2 withPackage(final boolean isPackage) {
 		return this.isPackage == isPackage ? this : new WitherOnClass2(this.isNone, this.isProtected, isPackage);
 	}
@@ -37,13 +34,11 @@ class WitherOnClass3 {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public WitherOnClass3 withCouldBeNull(final String couldBeNull) {
 		return this.couldBeNull == couldBeNull ? this : new WitherOnClass3(couldBeNull, this.nonNull);
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public WitherOnClass3 withNonNull(@lombok.NonNull final String nonNull) {
 		if (nonNull == null) {
 			throw new java.lang.NullPointerException("nonNull");
@@ -59,7 +54,6 @@ class WitherOnClass4 {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public WitherOnClass4 withY(final int fY) {
 		return this.fY == fY ? this : new WitherOnClass4(fY);
 	}

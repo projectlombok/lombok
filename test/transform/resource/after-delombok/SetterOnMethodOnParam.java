@@ -7,7 +7,6 @@ class SetterOnMethodOnParam {
 	@Deprecated
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public void setI(final int i) {
 		this.i = i;
 	}
@@ -15,7 +14,6 @@ class SetterOnMethodOnParam {
 	@Test
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public void setJ(@Test final int j) {
 		this.j = j;
 	}
@@ -23,7 +21,6 @@ class SetterOnMethodOnParam {
 	@Test
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public void setK(@Test final int k) {
 		this.k = k;
 	}

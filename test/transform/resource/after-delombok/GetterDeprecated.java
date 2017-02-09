@@ -8,7 +8,6 @@ class GetterDeprecated {
 	@java.lang.Deprecated
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public int getAnnotation() {
 		return this.annotation;
 	}
@@ -18,7 +17,6 @@ class GetterDeprecated {
 	@java.lang.Deprecated
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public int getJavadoc() {
 		return this.javadoc;
 	}
