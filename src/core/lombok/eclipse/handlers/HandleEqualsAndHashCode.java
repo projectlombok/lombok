@@ -67,6 +67,7 @@ import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NameReference;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
+import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
@@ -458,7 +459,14 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		return assignment;
 	}
 	
-	public TypeReference createTypeReference(EclipseNode type, long p) {
+	/**
+	 * @param type Type to 'copy' into a typeref
+	 * @param p position
+	 * @param addWildcards If false, all generics are cut off. If true, replaces all genericparams with a ?.
+	 * @return
+	 */
+	public TypeReference createTypeReference(EclipseNode type, long p, ASTNode source, boolean addWildcards) {
+		int pS = source.sourceStart; int pE = source.sourceEnd;
 		List<String> list = new ArrayList<String>();
 		list.add(type.getName());
 		EclipseNode tNode = type.up();
@@ -468,21 +476,44 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		}
 		Collections.reverse(list);
 		
-		if (list.size() == 1) return new SingleTypeReference(list.get(0).toCharArray(), p);
+		TypeDeclaration typeDecl = (TypeDeclaration) type.get();
+		int typeParamCount = typeDecl.typeParameters == null ? 0 : typeDecl.typeParameters.length;
+		if (typeParamCount == 0) addWildcards = false;
+		TypeReference[] typeArgs = null;
+		if (addWildcards) {
+			typeArgs = new TypeReference[typeParamCount];
+			for (int i = 0; i < typeParamCount; i++) {
+				typeArgs[i] = new Wildcard(Wildcard.UNBOUND);
+				typeArgs[i].sourceStart = pS; typeArgs[i].sourceEnd = pE;
+				setGeneratedBy(typeArgs[i], source);
+			}
+		}
+		
+		if (list.size() == 1) {
+			if (addWildcards) {
+				return new ParameterizedSingleTypeReference(list.get(0).toCharArray(), typeArgs, 0, p);
+			} else {
+				return new SingleTypeReference(list.get(0).toCharArray(), p);
+			}
+		}
 		long[] ps = new long[list.size()];
 		char[][] tokens = new char[list.size()][];
 		for (int i = 0; i < list.size(); i++) {
 			ps[i] = p;
 			tokens[i] = list.get(i).toCharArray();
 		}
-		
-		return new QualifiedTypeReference(tokens, ps);
+		if (addWildcards) {
+			TypeReference[][] typeArgs2 = new TypeReference[tokens.length][];
+			typeArgs2[typeArgs2.length - 1] = typeArgs;
+			return new ParameterizedQualifiedTypeReference(tokens, typeArgs2, 0, ps);
+		} else {
+			return new QualifiedTypeReference(tokens, ps);
+		}
 	}
 	
 	public MethodDeclaration createEquals(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess, boolean needsCanEqual, List<Annotation> onParam) {
 		int pS = source.sourceStart; int pE = source.sourceEnd;
 		long p = (long)pS << 32 | pE;
-		TypeDeclaration typeDecl = (TypeDeclaration)type.get();
 		
 		MethodDeclaration method = new MethodDeclaration(
 				((CompilationUnitDeclaration) type.top().get()).compilationResult);
@@ -528,7 +559,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			SingleNameReference oRef = new SingleNameReference(new char[] { 'o' }, p);
 			setGeneratedBy(oRef, source);
 			
-			TypeReference typeReference = createTypeReference(type, p);
+			TypeReference typeReference = createTypeReference(type, p, source, false);
 			setGeneratedBy(typeReference, source);
 
 			InstanceOfExpression instanceOf = new InstanceOfExpression(oRef, typeReference);
@@ -551,30 +582,15 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		
 		char[] otherName = "other".toCharArray();
 		
-		/* MyType<?> other = (MyType<?>) o; */ {
+		/* Outer.Inner.MyType<?> other = (Outer.Inner.MyType<?>) o; */ {
 			if (!fields.isEmpty() || needsCanEqual) {
 				LocalDeclaration other = new LocalDeclaration(otherName, pS, pE);
 				other.modifiers |= ClassFileConstants.AccFinal;
 				setGeneratedBy(other, source);
-				char[] typeName = typeDecl.name;
-				TypeReference targetType;
-				if (typeDecl.typeParameters == null || typeDecl.typeParameters.length == 0) {
-					targetType = new SingleTypeReference(typeName, p);
-					setGeneratedBy(targetType, source);
-					other.type = new SingleTypeReference(typeName, p);
-					setGeneratedBy(other.type, source);
-				} else {
-					TypeReference[] typeArgs = new TypeReference[typeDecl.typeParameters.length];
-					for (int i = 0; i < typeArgs.length; i++) {
-						typeArgs[i] = new Wildcard(Wildcard.UNBOUND);
-						typeArgs[i].sourceStart = pS; typeArgs[i].sourceEnd = pE;
-						setGeneratedBy(typeArgs[i], source);
-					}
-					targetType = new ParameterizedSingleTypeReference(typeName, typeArgs, 0, p);
-					setGeneratedBy(targetType, source);
-					other.type = new ParameterizedSingleTypeReference(typeName, copyTypes(typeArgs, source), 0, p);
-					setGeneratedBy(other.type, source);
-				}
+				TypeReference targetType = createTypeReference(type, p, source, true);
+				setGeneratedBy(targetType, source);
+				other.type = createTypeReference(type, p, source, true);
+				setGeneratedBy(other.type, source);
 				NameReference oRef = new SingleNameReference(new char[] { 'o' }, p);
 				setGeneratedBy(oRef, source);
 				other.initialization = makeCastExpression(oRef, targetType, source);
@@ -772,7 +788,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		SingleNameReference otherRef = new SingleNameReference(otherName, p);
 		setGeneratedBy(otherRef, source);
 		
-		TypeReference typeReference = createTypeReference(type, p);
+		TypeReference typeReference = createTypeReference(type, p, source, false);
 		setGeneratedBy(typeReference, source);
 		
 		InstanceOfExpression instanceOf = new InstanceOfExpression(otherRef, typeReference);

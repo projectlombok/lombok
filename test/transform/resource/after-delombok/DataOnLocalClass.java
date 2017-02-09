@@ -97,7 +97,7 @@ class DataOnLocalClass2 {
 				public boolean equals(final java.lang.Object o) {
 					if (o == this) return true;
 					if (!(o instanceof Local.InnerLocal)) return false;
-					final InnerLocal other = (InnerLocal) o;
+					final Local.InnerLocal other = (Local.InnerLocal) o;
 					if (!other.canEqual((java.lang.Object) this)) return false;
 					final java.lang.Object this$name = this.getName();
 					final java.lang.Object other$name = other.getName();
