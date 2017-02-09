@@ -64,11 +64,12 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 import javax.swing.Scrollable;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.plaf.basic.BasicHTML;
-import javax.swing.text.View;
+import javax.swing.text.html.HTMLDocument;
 
 import lombok.core.Version;
 import lombok.installer.OsUtils.OS;
@@ -199,18 +200,22 @@ public class InstallerGUI {
 		constraints.gridy++;
 		constraints.fill = GridBagConstraints.BOTH;
 		
-		JLabel notes = new JLabel();
+		JTextPane notes = new JTextPane();
+		notes.setContentType("text/html");
 		notes.setText(readChangeLog());
+		notes.setEditable(false);
+		notes.setOpaque(false);
+		notes.setBorder(null);
+		notes.setSelectionStart(0);
+		notes.setSelectionEnd(0);
+		
+		Font font = UIManager.getFont("Label.font");
+		String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + font.getSize() + "pt; }";
+		((HTMLDocument)notes.getDocument()).getStyleSheet().addRule(bodyRule);
 		
 		JScrollPane scroller = new JScrollPane(notes);
 		container.add(scroller, constraints);
 		scroller.setPreferredSize(new Dimension(380, 240));
-		
-		View view = (View) notes.getClientProperty(BasicHTML.propertyKey);
-		view.setSize(380, 0.0f);
-		float w = view.getPreferredSpan(View.X_AXIS);
-		float h = view.getPreferredSpan(View.Y_AXIS);
-		notes.setSize((int) w, (int) h);
 		
 		container.setPreferredSize(new Dimension(462, 415));
 		return container;
