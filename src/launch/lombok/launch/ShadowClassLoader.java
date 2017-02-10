@@ -118,12 +118,16 @@ class ShadowClassLoader extends ClassLoader {
 			SELF_BASE = selfBase;
 			SELF_BASE_LENGTH = selfBase.length();
 		} else {
-			String sclClassUrl = ShadowClassLoader.class.getResource("ShadowClassLoader.class").toString();
-			if (!sclClassUrl.endsWith(SELF_NAME)) throw new InternalError("ShadowLoader can't find itself.");
-			SELF_BASE_LENGTH = sclClassUrl.length() - SELF_NAME.length();
+			URL sclClassUrl = ShadowClassLoader.class.getResource("ShadowClassLoader.class");
+			String sclClassStr = sclClassUrl == null ? null : sclClassUrl.toString();
+			if (sclClassStr == null || !sclClassStr.endsWith(SELF_NAME)) {
+				ClassLoader cl = ShadowClassLoader.class.getClassLoader();
+				throw new RuntimeException("ShadowLoader can't find itself. SCL loader type: " + (cl == null ? "*NULL*" : cl.getClass().toString()));
+			}
+			SELF_BASE_LENGTH = sclClassStr.length() - SELF_NAME.length();
 			String decoded;
 			try {
-				decoded = URLDecoder.decode(sclClassUrl.substring(0, SELF_BASE_LENGTH), "UTF-8");
+				decoded = URLDecoder.decode(sclClassStr.substring(0, SELF_BASE_LENGTH), "UTF-8");
 			} catch (UnsupportedEncodingException e) {
 				throw new InternalError("UTF-8 not available");
 			}
