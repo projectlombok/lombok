@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.16.13 "Edgy Guinea Pig"
+### v1.16.14 (February 10th, 2017)
 * v1.16.12 is the latest stable release of Project Lombok.
 * FEATURE: Generated classes, methods and fields can now also annotated with `@lombok.Generated` [Issue #1014](https://github.com/rzwitserloot/lombok/issues/1014)<br>
 * PLATFORM: Lombok can now be used together with other annotation processors that are looking for lombok-generated methods, but only if lombok is the first annotation processor executed. The most commonly used annotation processor affected by this change is [MapStruct](http://mapstruct.org/); we've worked with the mapstruct team specifically to allow any order. Other annotation processors might follow the framework we've built to make this possible; point the authors of any such processor to us and we'll get it sorted [MapStruct issue #510](https://github.com/mapstruct/mapstruct/issues/510) [Lombok issue #973](https://github.com/rzwitserloot/lombok/issues/973)
