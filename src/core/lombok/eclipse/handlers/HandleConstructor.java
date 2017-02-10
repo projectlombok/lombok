@@ -64,10 +64,12 @@ import org.eclipse.jdt.internal.compiler.ast.IntLiteral;
 import org.eclipse.jdt.internal.compiler.ast.LongLiteral;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
+import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
@@ -95,7 +97,7 @@ public class HandleConstructor {
 			List<EclipseNode> fields = force ? findFinalFields(typeNode) : Collections.<EclipseNode>emptyList();
 			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@NoArgsConstructor(onConstructor=", annotationNode);
 			
-			new HandleConstructor().generateConstructor(typeNode, level, fields, force, staticName, SkipIfConstructorExists.NO, null, onConstructor, annotationNode);
+			new HandleConstructor().generateConstructor(typeNode, level, fields, force, staticName, SkipIfConstructorExists.NO, null, onConstructor, annotationNode, null, false);
 		}
 	}
 	
@@ -121,7 +123,7 @@ public class HandleConstructor {
 			
 			new HandleConstructor().generateConstructor(
 				typeNode, level, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO,
-				suppressConstructorProperties, onConstructor, annotationNode);
+				suppressConstructorProperties, onConstructor, annotationNode, null, false);
 		}
 	}
 	
@@ -183,7 +185,7 @@ public class HandleConstructor {
 			
 			new HandleConstructor().generateConstructor(
 				typeNode, level, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO,
-				suppressConstructorProperties, onConstructor, annotationNode);
+				suppressConstructorProperties, onConstructor, annotationNode, null, false);
 		}
 	}
 	
@@ -205,23 +207,34 @@ public class HandleConstructor {
 			EclipseNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists,
 			List<Annotation> onConstructor, EclipseNode sourceNode) {
 		
-		generateConstructor(typeNode, level, findRequiredFields(typeNode), false, staticName, skipIfConstructorExists, null, onConstructor, sourceNode);
+		generateConstructor(typeNode, level, findRequiredFields(typeNode), false, staticName, skipIfConstructorExists, null, onConstructor, sourceNode, null, false);
 	}
 	
 	public void generateAllArgsConstructor(
 			EclipseNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists,
 			List<Annotation> onConstructor, EclipseNode sourceNode) {
 		
-		generateConstructor(typeNode, level, findAllFields(typeNode), false, staticName, skipIfConstructorExists, null, onConstructor, sourceNode);
+		generateConstructor(typeNode, level, findAllFields(typeNode), false, staticName, skipIfConstructorExists, null, onConstructor, sourceNode, null, false);
 	}
 	
 	public enum SkipIfConstructorExists {
 		YES, NO, I_AM_BUILDER;
 	}
 	
+	/**
+	 * @param builderClassnameAsParameter
+	 *            if {@code != null}, the only parameter of the constructor will
+	 *            be a builder with this classname; the constructor will then
+	 *            use the values within this builder to assign the fields of new
+	 *            instances.
+	 * @param callBuilderBasedSuperConstructor
+	 *            if {@code true}, the constructor will explicitly call a super
+	 *            constructor with the builder as argument. Requires
+	 *            {@code builderClassAsParameter != null}.
+	 */
 	public void generateConstructor(
 		EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists,
-		Boolean suppressConstructorProperties, List<Annotation> onConstructor, EclipseNode sourceNode) {
+		Boolean suppressConstructorProperties, List<Annotation> onConstructor, EclipseNode sourceNode, String builderClassnameAsParameter, boolean callBuilderBasedSuperConstructor) {
 		
 		ASTNode source = sourceNode.get();
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
@@ -256,7 +269,7 @@ public class HandleConstructor {
 		
 		ConstructorDeclaration constr = createConstructor(
 			staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields, allToDefault,
-			suppressConstructorProperties, sourceNode, onConstructor);
+			suppressConstructorProperties, sourceNode, onConstructor, builderClassnameAsParameter, callBuilderBasedSuperConstructor);
 		injectMethod(typeNode, constr);
 		if (staticConstrRequired) {
 			MethodDeclaration staticConstr = createStaticConstructor(level, staticName, typeNode, allToDefault ? Collections.<EclipseNode>emptyList() : fields, source);
@@ -296,9 +309,28 @@ public class HandleConstructor {
 		return new Annotation[] { ann };
 	}
 	
+	/**
+	 * @param builderClassnameAsParameter
+	 *            if {@code != null}, the only parameter of the constructor will
+	 *            be a builder with this classname; the constructor will then
+	 *            use the values within this builder to assign the fields of new
+	 *            instances.
+	 * @param callBuilderBasedSuperConstructor
+	 *            if {@code true}, the constructor will explicitly call a super
+	 *            constructor with the builder as argument. Requires
+	 *            {@code builderClassnameAsParameter != null}.
+	 */
 	public static ConstructorDeclaration createConstructor(
 		AccessLevel level, EclipseNode type, Collection<EclipseNode> fields, boolean allToDefault,
-		Boolean suppressConstructorProperties, EclipseNode sourceNode, List<Annotation> onConstructor) {
+		Boolean suppressConstructorProperties, EclipseNode sourceNode, List<Annotation> onConstructor,
+		String builderClassnameAsParameter, boolean callBuilderBasedSuperConstructor) {
+
+		if (builderClassnameAsParameter != null && builderClassnameAsParameter.isEmpty()) {
+			builderClassnameAsParameter = null;
+		}
+		if (callBuilderBasedSuperConstructor && builderClassnameAsParameter == null) {
+			type.addError("Calling a builder-based superclass constructor ('callBuilderBasedSuperConstructor') requires a non-empty 'builderClassnameAsParameter' value.");
+		}
 		
 		ASTNode source = sourceNode.get();
 		TypeDeclaration typeDeclaration = ((TypeDeclaration) type.get());
@@ -320,7 +352,12 @@ public class HandleConstructor {
 		
 		constructor.modifiers = toEclipseModifier(level);
 		constructor.selector = typeDeclaration.name;
-		constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
+		if (callBuilderBasedSuperConstructor) {
+			constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.Super);
+			constructor.constructorCall.arguments = new Expression[] {new SingleNameReference("b".toCharArray(), p)};
+		} else {
+			constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
+		}
 		constructor.constructorCall.sourceStart = source.sourceStart;
 		constructor.constructorCall.sourceEnd = source.sourceEnd;
 		constructor.thrownExceptions = null;
@@ -343,7 +380,16 @@ public class HandleConstructor {
 			int e = (int) p;
 			thisX.receiver = new ThisReference(s, e);
 			
-			Expression assignmentExpr = allToDefault ? getDefaultExpr(field.type, s, e) : new SingleNameReference(fieldName, p);
+			Expression assignmentExpr;
+			if (allToDefault) {
+				assignmentExpr = getDefaultExpr(field.type, s, e);
+			} else if (builderClassnameAsParameter != null) {
+				char[][] variableInBuilder = new char[][] {"b".toCharArray(), fieldName};
+				long[] positions = new long[] {p, p};
+				assignmentExpr = new QualifiedNameReference(variableInBuilder, positions, s, e);
+			} else {
+				assignmentExpr = new SingleNameReference(fieldName, p);
+			}
 			
 			Assignment assignment = new Assignment(thisX, assignmentExpr, (int) p);
 			assignment.sourceStart = (int) (p >> 32); assignment.sourceEnd = assignment.statementEnd = (int) (p >> 32);
@@ -364,7 +410,11 @@ public class HandleConstructor {
 		
 		nullChecks.addAll(assigns);
 		constructor.statements = nullChecks.isEmpty() ? null : nullChecks.toArray(new Statement[nullChecks.size()]);
-		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[params.size()]);
+		if (builderClassnameAsParameter != null) {
+			constructor.arguments = new Argument[] {new Argument("b".toCharArray(), p, new SingleTypeReference(builderClassnameAsParameter.toCharArray(), p), Modifier.FINAL)};
+		} else {
+			constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[params.size()]);
+		}
 		
 		/* Generate annotations that must  be put on the generated method, and attach them. */ {
 			Annotation[] constructorProperties = null;

@@ -139,6 +139,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		String builderMethodName = builderInstance.builderMethodName();
 		String buildMethodName = builderInstance.buildMethodName();
 		String builderClassName = builderInstance.builderClassName();
+		
+		boolean inherit = builderInstance.inherit();
+		String superclassBuilderClassName = builderInstance.superclassBuilderClassName();
+
 		String toBuilderMethodName = "toBuilder";
 		boolean toBuilder = builderInstance.toBuilder();
 		List<char[]> typeArgsForToBuilder = null;
@@ -146,6 +150,9 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		if (builderMethodName == null) builderMethodName = "builder";
 		if (buildMethodName == null) builderMethodName = "build";
 		if (builderClassName == null) builderClassName = "";
+		if (superclassBuilderClassName == null) {
+			superclassBuilderClassName = "";
+		}
 		
 		if (!checkName("builderMethodName", builderMethodName, annotationNode)) return;
 		if (!checkName("buildMethodName", buildMethodName, annotationNode)) return;
@@ -189,15 +196,26 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				allFields.add(fieldNode);
 			}
 			
-			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER, null,
-				Collections.<Annotation>emptyList(), annotationNode);
+			if (builderClassName.isEmpty()) {
+				builderClassName = new String(td.name) + "Builder";
+			}
+			if (superclassBuilderClassName.isEmpty() && td.superclass != null) {
+				superclassBuilderClassName = new String(td.superclass.getLastToken()) + "Builder";
+			}
+			
+			boolean callSuperConstructor = inherit && td.superclass != null;
+			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PROTECTED, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER, true,
+				Collections.<Annotation>emptyList(), annotationNode, builderClassName, callSuperConstructor);
 			
 			returnType = namePlusTypeParamsToTypeReference(td.name, td.typeParameters, p);
 			typeParams = td.typeParameters;
 			thrownExceptions = null;
 			nameOfStaticBuilderMethod = null;
-			if (builderClassName.isEmpty()) builderClassName = new String(td.name) + "Builder";
 		} else if (parent.get() instanceof ConstructorDeclaration) {
+			if (inherit) {
+				annotationNode.addError("@Builder(inherit=true) is only supported for type builders.");
+				return;
+			}
 			ConstructorDeclaration cd = (ConstructorDeclaration) parent.get();
 			if (cd.typeParameters != null && cd.typeParameters.length > 0) {
 				annotationNode.addError("@Builder is not supported on constructors with constructor type parameters.");
@@ -212,6 +230,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			nameOfStaticBuilderMethod = null;
 			if (builderClassName.isEmpty()) builderClassName = new String(cd.selector) + "Builder";
 		} else if (parent.get() instanceof MethodDeclaration) {
+			if (inherit) {
+				annotationNode.addError("@Builder(inherit=true) is only supported for type builders.");
+				return;
+			}
 			MethodDeclaration md = (MethodDeclaration) parent.get();
 			tdParent = parent.up();
 			isStatic = md.isStatic();
@@ -341,7 +363,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		
 		EclipseNode builderType = findInnerClass(tdParent, builderClassName);
 		if (builderType == null) {
-			builderType = makeBuilderClass(isStatic, tdParent, builderClassName, typeParams, ast);
+			builderType = makeBuilderClass(isStatic, tdParent, builderClassName, typeParams, ast, inherit ? superclassBuilderClassName : null);
 		} else {
 			TypeDeclaration builderTypeDeclaration = (TypeDeclaration) builderType.get();
 			if (isStatic && (builderTypeDeclaration.modifiers & ClassFileConstants.AccStatic) == 0) {
@@ -396,7 +418,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		if (constructorExists(builderType) == MemberExistsResult.NOT_EXISTS) {
 			ConstructorDeclaration cd = HandleConstructor.createConstructor(
 				AccessLevel.PACKAGE, builderType, Collections.<EclipseNode>emptyList(), false, null,
-				annotationNode, Collections.<Annotation>emptyList());
+				annotationNode, Collections.<Annotation>emptyList(), null, false);
 			if (cd != null) injectMethod(builderType, cd);
 		}
 		
@@ -405,7 +427,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		if (methodExists(buildMethodName, builderType, -1) == MemberExistsResult.NOT_EXISTS) {
-			MethodDeclaration md = generateBuildMethod(isStatic, buildMethodName, nameOfStaticBuilderMethod, returnType, builderFields, builderType, thrownExceptions, addCleaning, ast);
+			boolean useBuilderBasedConstructor = parent.get() instanceof TypeDeclaration;
+			MethodDeclaration md = generateBuildMethod(isStatic, buildMethodName, nameOfStaticBuilderMethod, returnType, builderFields, builderType, thrownExceptions, addCleaning, ast, useBuilderBasedConstructor);
 			if (md != null) injectMethod(builderType, md);
 		}
 		
@@ -514,7 +537,13 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return decl;
 	}
 	
-	public MethodDeclaration generateBuildMethod(boolean isStatic, String name, char[] staticName, TypeReference returnType, List<BuilderFieldData> builderFields, EclipseNode type, TypeReference[] thrownExceptions, boolean addCleaning, ASTNode source) {
+	/**
+	 * @param useBuilderBasedConstructor
+	 *            if true, the {@code build()} method will use a constructor
+	 *            that takes the builder instance as parameter (instead of a
+	 *            constructor with all relevant fields as parameters)
+	 */
+	public MethodDeclaration generateBuildMethod(boolean isStatic, String name, char[] staticName, TypeReference returnType, List<BuilderFieldData> builderFields, EclipseNode type, TypeReference[] thrownExceptions, boolean addCleaning, ASTNode source, boolean useBuilderBasedConstructor) {
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		List<Statement> statements = new ArrayList<Statement>();
@@ -554,7 +583,13 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		if (staticName == null) {
 			AllocationExpression allocationStatement = new AllocationExpression();
 			allocationStatement.type = copyType(out.returnType);
-			allocationStatement.arguments = args.isEmpty() ? null : args.toArray(new Expression[args.size()]);
+			if (useBuilderBasedConstructor) {
+				// Use a constructor that only has this builder as parameter.
+				allocationStatement.arguments = new Expression[] {new ThisReference(0, 0)};
+			} else {
+				// Use a constructor with all the fields.
+				allocationStatement.arguments = args.isEmpty() ? null : args.toArray(new Expression[args.size()]);
+			}
 			statements.add(new ReturnStatement(allocationStatement, 0, 0));
 		} else {
 			MessageSend invoke = new MessageSend();
@@ -672,7 +707,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return null;
 	}
 	
-	public EclipseNode makeBuilderClass(boolean isStatic, EclipseNode tdParent, String builderClassName, TypeParameter[] typeParams, ASTNode source) {
+	public EclipseNode makeBuilderClass(boolean isStatic, EclipseNode tdParent, String builderClassName, TypeParameter[] typeParams, ASTNode source, String parentBuilderClassName) {
 		TypeDeclaration parent = (TypeDeclaration) tdParent.get();
 		TypeDeclaration builder = new TypeDeclaration(parent.compilationResult);
 		builder.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
@@ -680,6 +715,9 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		if (isStatic) builder.modifiers |= ClassFileConstants.AccStatic;
 		builder.typeParameters = copyTypeParams(typeParams, source);
 		builder.name = builderClassName.toCharArray();
+		if (parentBuilderClassName != null) {
+			builder.superclass = new SingleTypeReference(parentBuilderClassName.toCharArray(), 0);
+		}
 		builder.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return injectType(tdParent, builder);
 	}

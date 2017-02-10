@@ -123,6 +123,23 @@ public @interface Builder {
 	String builderClassName() default "";
 	
 	/**
+	 * If true, the generated builder class will extend the builder of the
+	 * superclass. In this way, the builder will also contain methods for fields
+	 * from the superclass. Note that both this builder and the superclass'
+	 * builder must be a type {@code @Builder}; this feature does neither work
+	 * for constructor nor method {@code @Builder}s.
+	 */
+	boolean inherit() default false;
+
+	/**
+	 * Name of the builder class in the superclass. Only relevant if
+	 * {@code inherit = true} (see {@link #inherit()}).
+	 * 
+	 * Default {@code (SuperclassTypeName)Builder}.
+	 */
+	String superclassBuilderClassName() default "";
+	
+	/**
 	 * If true, generate an instance method to obtain a builder that is initialized with the values of this instance.
 	 * Legal only if {@code @Builder} is used on a constructor, on the type itself, or on a static method that returns
 	 * an instance of the declaring type.
