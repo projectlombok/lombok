@@ -109,6 +109,7 @@ public class HandlerUtil {
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	public static boolean shouldAddGenerated(LombokNode<?, ?, ?> node) {
 		Boolean add = node.getAst().readConfiguration(ConfigurationKeys.ADD_JAVAX_GENERATED_ANNOTATIONS);
 		if (add != null) return add;
