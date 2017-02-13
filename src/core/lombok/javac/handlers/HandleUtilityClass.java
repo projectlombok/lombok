@@ -44,6 +44,7 @@ import com.sun.tools.javac.util.Name;
 import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
 import lombok.experimental.UtilityClass;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
@@ -53,6 +54,7 @@ import lombok.javac.JavacTreeMaker;
 /**
  * Handles the {@code @UtilityClass} annotation for javac.
  */
+@HandlerPriority(-4096) //-2^12; to ensure @FieldDefaults picks up on the 'static' we set here.
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleUtilityClass extends JavacAnnotationHandler<UtilityClass> {
 	@Override public void handle(AnnotationValues<UtilityClass> annotation, JCAnnotation ast, JavacNode annotationNode) {

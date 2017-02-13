@@ -49,6 +49,7 @@ import org.mangosdk.spi.ProviderFor;
 
 import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
 import lombok.core.AST.Kind;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
@@ -57,6 +58,7 @@ import lombok.experimental.UtilityClass;
 /**
  * Handles the {@code lombok.experimental.UtilityClass} annotation for eclipse.
  */
+@HandlerPriority(-4096) //-2^12; to ensure @FieldDefaults picks up on the 'static' we set here.
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleUtilityClass extends EclipseAnnotationHandler<UtilityClass> {
 	@Override public void handle(AnnotationValues<UtilityClass> annotation, Annotation ast, EclipseNode annotationNode) {
