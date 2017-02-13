@@ -192,11 +192,15 @@ public class InstallerGUI {
 		GridBagConstraints constraints = new GridBagConstraints();
 		constraints.anchor = GridBagConstraints.WEST;
 		
-		container.add(new JLabel(SUCCESS_TITLE), constraints);
+		JLabel title;
+		container.add(title = new JLabel(SUCCESS_TITLE), constraints);
+		title.setPreferredSize(new Dimension(INSTALLER_WINDOW_WIDTH - 82, 20));
 		
 		constraints.gridy = 1;
 		constraints.insets = new Insets(8, 0, 0, 16);
 		container.add(successExplanation = new JLabel(SUCCESS_EXPLANATION), constraints);
+		successExplanation.setPreferredSize(new Dimension(INSTALLER_WINDOW_WIDTH - 82, 175));
+		successExplanation.setMinimumSize(new Dimension(INSTALLER_WINDOW_WIDTH - 82, 175));
 		
 		constraints.gridy++;
 		constraints.fill = GridBagConstraints.BOTH;
@@ -212,13 +216,13 @@ public class InstallerGUI {
 		
 		Font font = UIManager.getFont("Label.font");
 		String bodyRule = "body { font-family: " + font.getFamily() + "; font-size: " + font.getSize() + "pt; }";
-		((HTMLDocument)notes.getDocument()).getStyleSheet().addRule(bodyRule);
-		
+		((HTMLDocument) notes.getDocument()).getStyleSheet().addRule(bodyRule);
 		JScrollPane scroller = new JScrollPane(notes);
 		container.add(scroller, constraints);
-		scroller.setPreferredSize(new Dimension(INSTALLER_WINDOW_WIDTH - 82, 240));
-		
+		scroller.setPreferredSize(new Dimension(INSTALLER_WINDOW_WIDTH - 82, 200));
+		scroller.setMinimumSize(new Dimension(INSTALLER_WINDOW_WIDTH - 82, 200));
 		container.setPreferredSize(new Dimension(INSTALLER_WINDOW_WIDTH, 415));
+		container.setMinimumSize(new Dimension(INSTALLER_WINDOW_WIDTH, 415));
 		return container;
 	}
 	
@@ -372,11 +376,11 @@ public class InstallerGUI {
 							
 							if (locations.size() + problems.size() == 0) {
 								JOptionPane.showMessageDialog(appWindow,
-										"I can't find any IDEs on your computer.\n" +
-										"If you have IDEs installed on this computer, please use the " +
-										"'Specify Location...' button to manually point out the \n" +
-										"location of your IDE installation to me. Thanks!",
-										"Can't find IDE", JOptionPane.INFORMATION_MESSAGE);
+									"I can't find any IDEs on your computer.\n" +
+									"If you have IDEs installed on this computer, please use the " +
+									"'Specify Location...' button to manually point out the \n" +
+									"location of your IDE installation to me. Thanks!",
+									"Can't find IDE", JOptionPane.INFORMATION_MESSAGE);
 							}
 						}
 					});
@@ -929,8 +933,8 @@ public class InstallerGUI {
 	
 	private static final String SUCCESS_TITLE = "<html><font size=\"+1\"><b><i>Install successful </i></b></font></html>";
 	private static final String SUCCESS_EXPLANATION = "<html>Lombok has been installed on the selected IDE installations.<br>" +
-			"Don't forget to add <code>lombok.jar</code> to your projects, and <b>exit and start</b> your IDE!%%%</html>";
-
+			"Don't forget to:<ul><li> add <code>lombok.jar</code> to your projects,<li><b>exit and start</b> your IDE,<li><b>rebuild</b> all projects!</ul>%%%</html>";
+	
 	
 	private static class JHyperLink extends JButton {
 		private static final long serialVersionUID = 1L;
