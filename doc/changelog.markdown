@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v1.16.15 "Edgy Guinea Pig"
 * v1.16.14 is the latest stable release of Project Lombok.
+* PLATFORM: Improved jdk9 support, work in progress.
 
 ### v1.16.14 (February 10th, 2017)
 * FEATURE: Generated classes, methods and fields can now also annotated with `@lombok.Generated` [Issue #1014](https://github.com/rzwitserloot/lombok/issues/1014)<br>
