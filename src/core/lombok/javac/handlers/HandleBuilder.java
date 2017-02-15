@@ -22,7 +22,10 @@
 package lombok.javac.handlers;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.function.Consumer;
 
 import javax.lang.model.element.Modifier;
 
@@ -50,6 +53,7 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
+import jdk.nashorn.internal.runtime.Context;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.ObtainVia;
@@ -64,6 +68,7 @@ import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
+import lombok.javac.JavacTreeMaker.TypeTag;
 import lombok.javac.handlers.HandleConstructor.SkipIfConstructorExists;
 import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
 import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
@@ -103,12 +108,19 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		String buildMethodName = builderInstance.buildMethodName();
 		String builderClassName = builderInstance.builderClassName();
 		String toBuilderMethodName = "toBuilder";
+		
+		boolean inherit = builderInstance.inherit();
+		String superclassBuilderClassName = builderInstance.superclassBuilderClassName();
+
 		boolean toBuilder = builderInstance.toBuilder();
 		java.util.List<Name> typeArgsForToBuilder = null;
 		
 		if (builderMethodName == null) builderMethodName = "builder";
 		if (buildMethodName == null) buildMethodName = "build";
 		if (builderClassName == null) builderClassName = "";
+		if (superclassBuilderClassName == null) {
+			superclassBuilderClassName = "";
+		}
 		
 		if (!checkName("builderMethodName", builderMethodName, annotationNode)) return;
 		if (!checkName("buildMethodName", buildMethodName, annotationNode)) return;
@@ -155,15 +167,27 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				allFields.append(fieldNode);
 			}
 			
-			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, null, annotationNode);
+			if (builderClassName.isEmpty()) {
+				builderClassName = td.name.toString() + "Builder";
+			}
+			
+			JCTree extendsClause = Javac.getExtendsClause(td);
+			if (superclassBuilderClassName.isEmpty() && extendsClause != null) {
+				superclassBuilderClassName = extendsClause + "Builder";
+			}
+			
+			boolean callSuperConstructor = inherit && extendsClause != null;
+			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PROTECTED, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, null, annotationNode, builderClassName, callSuperConstructor);
 			
 			returnType = namePlusTypeParamsToTypeReference(tdParent.getTreeMaker(), td.name, td.typarams);
 			typeParams = td.typarams;
 			thrownExceptions = List.nil();
 			nameOfBuilderMethod = null;
-			if (builderClassName.isEmpty()) builderClassName = td.name.toString() + "Builder";
 		} else if (fillParametersFrom != null && fillParametersFrom.getName().toString().equals("<init>")) {
-			JCMethodDecl jmd = (JCMethodDecl) fillParametersFrom.get();
+			if (inherit) {
+				annotationNode.addError("@Builder(inherit=true) is only supported for type builders.");
+				return;
+			}			JCMethodDecl jmd = (JCMethodDecl) fillParametersFrom.get();
 			if (!jmd.typarams.isEmpty()) {
 				annotationNode.addError("@Builder is not supported on constructors with constructor type parameters.");
 				return;
@@ -177,6 +201,10 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			nameOfBuilderMethod = null;
 			if (builderClassName.isEmpty()) builderClassName = td.name.toString() + "Builder";
 		} else if (fillParametersFrom != null) {
+			if (inherit) {
+				annotationNode.addError("@Builder(inherit=true) is only supported for type builders.");
+				return;
+			}
 			tdParent = parent.up();
 			JCClassDecl td = (JCClassDecl) tdParent.get();
 			JCMethodDecl jmd = (JCMethodDecl) fillParametersFrom.get();
@@ -298,7 +326,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		JavacNode builderType = findInnerClass(tdParent, builderClassName);
 		if (builderType == null) {
-			builderType = makeBuilderClass(isStatic, tdParent, builderClassName, typeParams, ast);
+			builderType = makeBuilderClass(isStatic, tdParent, builderClassName, typeParams, ast, inherit ? superclassBuilderClassName : null);
 		} else {
 			JCClassDecl builderTypeDeclaration = (JCClassDecl) builderType.get();
 			if (isStatic && !builderTypeDeclaration.getModifiers().getFlags().contains(Modifier.STATIC)) {
@@ -350,7 +378,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		if (constructorExists(builderType) == MemberExistsResult.NOT_EXISTS) {
-			JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PACKAGE, List.<JCAnnotation>nil(), builderType, List.<JavacNode>nil(), false, null, annotationNode);
+			JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PACKAGE, List.<JCAnnotation>nil(), builderType, List.<JavacNode>nil(), false, null, annotationNode, null, false);
 			if (cd != null) injectMethod(builderType, cd);
 		}
 		
@@ -359,7 +387,8 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		if (methodExists(buildMethodName, builderType, -1) == MemberExistsResult.NOT_EXISTS) {
-			JCMethodDecl md = generateBuildMethod(isStatic, buildMethodName, nameOfBuilderMethod, returnType, builderFields, builderType, thrownExceptions, ast, addCleaning);
+			boolean useBuilderBasedConstructor = parent.get() instanceof JCClassDecl;
+			JCMethodDecl md = generateBuildMethod(isStatic, buildMethodName, nameOfBuilderMethod, returnType, builderFields, builderType, thrownExceptions, ast, addCleaning, useBuilderBasedConstructor);
 			if (md != null) injectMethod(builderType, md);
 		}
 		
@@ -496,7 +525,13 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		 */
 	}
 	
-	private JCMethodDecl generateBuildMethod(boolean isStatic, String buildName, Name builderName, JCExpression returnType, java.util.List<BuilderFieldData> builderFields, JavacNode type, List<JCExpression> thrownExceptions, JCTree source, boolean addCleaning) {
+	/**
+	 * @param useBuilderBasedConstructor
+	 *            if true, the {@code build()} method will use a constructor
+	 *            that takes the builder instance as parameter (instead of a
+	 *            constructor with all relevant fields as parameters)
+	 */
+	private JCMethodDecl generateBuildMethod(boolean isStatic, String buildName, Name builderName, JCExpression returnType, java.util.List<BuilderFieldData> builderFields, JavacNode type, List<JCExpression> thrownExceptions, JCTree source, boolean addCleaning, boolean useBuilderBasedConstructor) {
 		JavacTreeMaker maker = type.getTreeMaker();
 		
 		JCExpression call;
@@ -525,7 +560,14 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		if (builderName == null) {
-			call = maker.NewClass(null, List.<JCExpression>nil(), returnType, args.toList(), null);
+			if (useBuilderBasedConstructor) {
+				// Use a constructor that only has this builder as parameter.
+				List<JCExpression> builderArg = List.<JCExpression>of(maker.Ident(type.toName("this")));
+				call = maker.NewClass(null, List.<JCExpression>nil(), returnType, builderArg, null);
+			} else {
+				// Use a constructor with all the fields.
+				call = maker.NewClass(null, List.<JCExpression>nil(), returnType, args.toList(), null);
+			}
 			statements.append(maker.Return(call));
 		} else {
 
@@ -629,12 +671,16 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		return null;
 	}
 	
-	public JavacNode makeBuilderClass(boolean isStatic, JavacNode tdParent, String builderClassName, List<JCTypeParameter> typeParams, JCAnnotation ast) {
+	public JavacNode makeBuilderClass(boolean isStatic, JavacNode tdParent, String builderClassName, List<JCTypeParameter> typeParams, JCAnnotation ast, String parentBuilderClassName) {
 		JavacTreeMaker maker = tdParent.getTreeMaker();
 		int modifiers = Flags.PUBLIC;
 		if (isStatic) modifiers |= Flags.STATIC;
 		JCModifiers mods = maker.Modifiers(modifiers);
-		JCClassDecl builder = maker.ClassDef(mods, tdParent.toName(builderClassName), copyTypeParams(maker, typeParams), null, List.<JCExpression>nil(), List.<JCTree>nil());
+		JCExpression extending = null;
+		if (parentBuilderClassName != null) {
+			extending = maker.Ident(tdParent.toName(parentBuilderClassName));
+		}
+		JCClassDecl builder = maker.ClassDef(mods, tdParent.toName(builderClassName), copyTypeParams(maker, typeParams), extending, List.<JCExpression>nil(), List.<JCTree>nil());
 		return injectType(tdParent, builder);
 	}
 	
