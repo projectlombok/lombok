@@ -1,3 +1,4 @@
+//VERSION 7:
 class GenerateSuppressFBWarnings {
 	int y;
 	@java.lang.SuppressWarnings("all")
