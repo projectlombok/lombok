@@ -907,7 +907,7 @@ public class JavacHandlerUtil {
 			} catch (Exception ex) {}
 			membersField = f;
 			removeMethod = r;
-			enterMethod = r;
+			enterMethod = e;
 		}
 		
 		static void remove(ClassSymbol from, Symbol toRemove) {
