@@ -92,6 +92,7 @@ import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.JCTree.TypeBoundKind;
+import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.tree.TreeScanner;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
@@ -1317,10 +1318,22 @@ public class JavacHandlerUtil {
 		return result.toList();
 	}
 	
-	public static List<JCTypeParameter> copyTypeParams(JavacTreeMaker maker, List<JCTypeParameter> params) {
+	public static List<JCTypeParameter> copyTypeParams(JavacNode source, List<JCTypeParameter> params) {
 		if (params == null || params.isEmpty()) return params;
 		ListBuffer<JCTypeParameter> out = new ListBuffer<JCTypeParameter>();
-		for (JCTypeParameter tp : params) out.append(maker.TypeParameter(tp.name, tp.bounds));
+		JavacTreeMaker maker = source.getTreeMaker();
+		Context context = source.getContext();
+		for (JCTypeParameter tp : params) {
+			List<JCExpression> bounds = tp.bounds;
+			if (bounds != null && !bounds.isEmpty()) {
+				ListBuffer<JCExpression> boundsCopy = new ListBuffer<JCExpression>();
+				for (JCExpression expr : tp.bounds) {
+					boundsCopy.append(cloneType(maker, expr, source.get(), context));
+				}
+				bounds = boundsCopy.toList();
+			}
+			out.append(maker.TypeParameter(tp.name, bounds));
+		}
 		return out.toList();
 	}
 	
