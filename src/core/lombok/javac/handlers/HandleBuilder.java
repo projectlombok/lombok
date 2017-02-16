@@ -270,8 +270,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					}
 					
 					if (pos == -1 || tpOnType.size() <= pos) {
-						annotationNode.addError("**" + returnType.getClass().toString());
-//						annotationNode.addError("@Builder(toBuilder=true) requires that each type parameter on the static method is part of the typeargs of the return value. Type parameter " + tp.name + " is not part of the return type.");
+						annotationNode.addError("@Builder(toBuilder=true) requires that each type parameter on the static method is part of the typeargs of the return value. Type parameter " + tp.name + " is not part of the return type.");
 						return;
 					}
 					typeArgsForToBuilder.add(tpOnType.get(pos).name);
