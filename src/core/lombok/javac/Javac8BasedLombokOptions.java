@@ -21,11 +21,40 @@
  */
 package lombok.javac;
 
+import java.lang.reflect.Field;
+
 import com.sun.tools.javac.main.Option;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Options;
 
 public class Javac8BasedLombokOptions extends LombokOptions {
+	private static class Namer {
+		static final Field nameField;
+		
+		static {
+			Field f = null;
+			try {
+				// jdk9
+				f = Option.class.getField("primaryName");
+			}
+			catch (NoSuchFieldException e) {
+				try {
+					f = Option.class.getField("text");
+				}
+				catch (NoSuchFieldException e2) {}
+			}
+			nameField = f;
+		}
+		
+		static String name(Option option) {
+			try {
+				return (String)nameField.get(option);
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
+	
 	public static Javac8BasedLombokOptions replaceWithDelombokOptions(Context context) {
 		Options options = Options.instance(context);
 		context.put(optionsKey, (Options)null);
@@ -39,7 +68,7 @@ public class Javac8BasedLombokOptions extends LombokOptions {
 	}
 	
 	@Override public void putJavacOption(String optionName, String value) {
-		String optionText = Option.valueOf(optionName).text;
+		String optionText = Namer.name(Option.valueOf(optionName));
 		put(optionText, value);
 	}
 }
