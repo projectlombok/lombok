@@ -30,6 +30,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Writer;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -43,6 +44,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
@@ -50,7 +52,9 @@ import javax.tools.JavaFileObject;
 import lombok.Lombok;
 import lombok.javac.CommentCatcher;
 import lombok.javac.LombokOptions;
+import lombok.javac.apt.LombokProcessor;
 
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.comp.Todo;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -471,8 +475,8 @@ public class Delombok {
 		options.deleteLombokAnnotations();
 		options.putJavacOption("ENCODING", charset.name());
 		if (classpath != null) options.putJavacOption("CLASSPATH", classpath);
-		if (sourcepath != null) options.putJavacOption("SOURCEPATH", sourcepath);
-		if (bootclasspath != null) options.putJavacOption("BOOTCLASSPATH", bootclasspath);
+		if (sourcepath != null) options.putJavacOption("SOURCE_PATH", sourcepath);
+		if (bootclasspath != null) options.putJavacOption("BOOT_CLASS_PATH", bootclasspath);
 		options.setFormatPreferences(new FormatPreferences(formatPrefs));
 		options.put("compilePolicy", "check");
 		
@@ -482,10 +486,43 @@ public class Delombok {
 		List<JCCompilationUnit> roots = new ArrayList<JCCompilationUnit>();
 		Map<JCCompilationUnit, File> baseMap = new IdentityHashMap<JCCompilationUnit, File>();
 		
-		compiler.initProcessAnnotations(Collections.singleton(new lombok.javac.apt.LombokProcessor()));
+		Set<LombokProcessor> processors = Collections.singleton(new lombok.javac.apt.LombokProcessor());
+		for (Method m : compiler.getClass().getMethods()) {
+			if (!m.getName().equals("initProcessAnnotations")) continue;
+			Object[] parameters;
+			if (m.getParameterTypes().length == 1) {
+				parameters = new Object[] {processors};
+			} else {
+				parameters = new Object[] {processors, Collections.emptySet(), Collections.emptySet()};
+			}
+			try {
+				m.invoke(compiler, parameters);
+			} catch (InvocationTargetException e) {
+				throw new RuntimeException(e.getCause());
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
+		Object unnamedModule = null;
+		Field modle = null;
+		try {
+			unnamedModule = Symtab.class.getField("unnamedModule").get(Symtab.instance(context));
+			modle = JCCompilationUnit.class.getField("modle");
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
 		
 		for (File fileToParse : filesToParse) {
 			@SuppressWarnings("deprecation") JCCompilationUnit unit = compiler.parse(fileToParse.getAbsolutePath());
+			if (modle != null) {
+				try {
+					modle.set(unit, unnamedModule);
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+			}
 			baseMap.put(unit, fileToBase.get(fileToParse));
 			roots.add(unit);
 		}
