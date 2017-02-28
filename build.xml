@@ -26,6 +26,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</description>
 	
 	<property name="build.compiler" value="javac1.6" />
+	<property name="java9" value="D:/jdk-9/bin/java.exe" />
 	<property name="ivy.retrieve.pattern" value="lib/[conf]/[organisation]-[artifact].[ext]" />
 	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
 	
@@ -121,7 +122,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	
 	<target name="version" depends="ensure-ipp" description="Shows the version number." unless="lombok.version">
 		<mkdir dir="build/lombok" />
-		<javac includeDestClasses="false" srcdir="src/core" debug="on" destdir="build/lombok" source="1.5" target="1.5" includes="lombok/core/Version.java" includeantruntime="false" />
+		<javac includeDestClasses="false" srcdir="src/core" debug="on" destdir="build/lombok" source="1.6" target="1.6" includes="lombok/core/Version.java" includeantruntime="false" />
 		<java
 			classname="lombok.core.Version"
 			classpath="build/lombok"
@@ -144,18 +145,18 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		We re-create the file at the end of this target. -->
 		<delete file="build/lombok/META-INF/services/javax.annotation.processing.Processor" quiet="true" />
 		<delete file="build/lombok/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor" quiet="true" />
-		<ivy:compile destdir="build/stubsstubs" source="1.5" target="1.5" includeantruntime="false">
+		<ivy:compile destdir="build/stubsstubs" source="1.6" target="1.6" includeantruntime="false">
 			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
 			<src path="src/stubsstubs" />
 		</ivy:compile>
-		<ivy:compile destdir="build/stubs" source="1.5" target="1.5" includeantruntime="false">
+		<ivy:compile destdir="build/stubs" source="1.6" target="1.6" includeantruntime="false">
 			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
 			<src path="src/stubs" />
 			<src path="src/javac-only-stubs" />
 			<classpath location="build/stubsstubs" />
 		</ivy:compile>
 		
-		<ivy:compile destdir="build/lombok-utils" source="1.5" target="1.5" includeantruntime="false">
+		<ivy:compile destdir="build/lombok-utils" source="1.6" target="1.6" includeantruntime="false">
 			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
 			<src path="src/utils" />
 			<exclude name="lombok/javac/**" />
@@ -191,12 +192,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<src path="build/transformedSources" />
 		</ivy:compile>
 
-		<ivy:compile destdir="build/lombok/Class50" source="1.4" target="1.6" includeantruntime="false">
+		<ivy:compile destdir="build/lombok/Class50" source="1.6" target="1.6" includeantruntime="false">
 			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
 			<src path="build/transformedSources" />
 		</ivy:compile>
 
-		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" includeantruntime="false">
+		<ivy:compile destdir="build/lombok" source="1.6" target="1.6" includeantruntime="false">
 			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
 			<src path="src/launch" />
 			<src path="src/core" />
@@ -208,7 +209,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<classpath refid="build.path" />
 		</ivy:compile>
 		
-		<ivy:compile destdir="build/lombok/Class50" source="1.5" target="1.6" includeantruntime="false">
+		<ivy:compile destdir="build/lombok/Class50" source="1.6" target="1.6" includeantruntime="false">
 			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
 			<src path="src/eclipseAgent" />
 			<include name="lombok/launch/PatchFixesHider.java" />
@@ -458,7 +459,7 @@ ${sourceWarning}</echo>
 	
 	<target name="-test-compile" depends="ensureTestDeps, compile" unless="skipTests">
 		<mkdir dir="build/tests" />
-		<ivy:compile destdir="build/tests" source="1.5" target="1.5" includeantruntime="false">
+		<ivy:compile destdir="build/tests" source="1.6" target="1.6" includeantruntime="false">
 			<classpath refid="test.path" />
 			<classpath refid="build.path" />
 			<classpath path="build/lombok" />
@@ -596,6 +597,42 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		<junit haltonfailure="no" fork="true">
 			<jvmarg value="-javaagent:dist/lombok.jar" />
 			<jvmarg value="-Ddelombok.bootclasspath=${test.location.bootclasspath}" />
+			<formatter type="plain" usefile="false" unless="tests.quiet" />
+			<classpath refid="test.path" />
+			<classpath path="${test.location.ecj}" />
+			<classpath path="${test.location.javac}" />
+			<classpath path="build/lombok" />
+			<classpath path="build/tests" />
+			<batchtest>
+				<fileset dir="test/core/src">
+					<include name="lombok/RunAllTests.java" />
+				</fileset>
+			</batchtest>
+		</junit>
+		<echo level="info">All tests successful.</echo>
+	</target>
+	
+	<target name="test9" depends="-loadTestEnvironmentProperties, -failIfNoTestEnvironmentProperties, -test-compile, dist, test-ecj" unless="tests.skip" description="Runs the tests using jdk9.">
+		<echo>${java9}</echo>
+		<junit haltonfailure="no" fork="true" jvm="${java9}">
+			<jvmarg value="-javaagent:dist/lombok.jar" />
+			<jvmarg value="-Ddelombok.bootclasspath=${test.location.bootclasspath}" />
+			<jvmarg value="--add-opens" />
+			<jvmarg value="jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED" />
+			<jvmarg value="--add-opens" />
+			<jvmarg value="jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED" />
+			<jvmarg value="--add-opens" />
+			<jvmarg value="jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED" />
+			<jvmarg value="--add-opens" />
+			<jvmarg value="jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED" />
+			<jvmarg value="--add-opens" />
+			<jvmarg value="jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED" />
+			<jvmarg value="--add-opens" />
+			<jvmarg value="jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED" />
+			<jvmarg value="--add-opens" />
+			<jvmarg value="jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED" />
+			<jvmarg value="--add-opens" />
+			<jvmarg value="jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED" />
 			<formatter type="plain" usefile="false" unless="tests.quiet" />
 			<classpath refid="test.path" />
 			<classpath path="${test.location.ecj}" />
