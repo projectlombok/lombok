@@ -65,12 +65,12 @@ import com.sun.tools.javac.util.Name;
  * something javac's own AST system does not offer.
  */
 public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
-	private final Messager messager;
 	private final JavacElements elements;
 	private final JavacTreeMaker treeMaker;
 	private final Symtab symtab;
 	private final JavacTypes javacTypes;
 	private final Log log;
+	private final ErrorLog errorLogger;
 	private final Context context;
 	
 	/**
@@ -84,8 +84,8 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		super(sourceName(top), PackageName.getPackageName(top), new JavacImportList(top), statementTypes());
 		setTop(buildCompilationUnit(top));
 		this.context = context;
-		this.messager = messager;
 		this.log = Log.instance(context);
+		this.errorLogger = ErrorLog.create(messager, log);
 		this.elements = JavacElements.instance(context);
 		this.treeMaker = new JavacTreeMaker(TreeMaker.instance(context));
 		this.symtab = Symtab.instance(context);
@@ -422,22 +422,21 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		try {
 			switch (kind) {
 			case ERROR:
-				increaseErrorCount(messager);
-				boolean prev = log.multipleErrors;
-				log.multipleErrors = true;
-				try {
-					log.error(pos, "proc.messager", message);
-				} finally {
-					log.multipleErrors = prev;
-				}
+				errorLogger.error(pos, message);
+				break;
+			case MANDATORY_WARNING:
+				errorLogger.mandatoryWarning(pos, message);
+				break;
+			case WARNING:
+				errorLogger.warning(pos, message);
 				break;
 			default:
-			case WARNING:
-				log.warning(pos, "proc.messager", message);
+			case NOTE:
+				errorLogger.note(pos, message);
 				break;
 			}
 		} finally {
-			if (oldSource != null) log.useSource(oldSource);
+			if (newSource != null) log.useSource(oldSource);
 		}
 	}
 
@@ -475,16 +474,118 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		return oldL;
 	}
 	
-	private void increaseErrorCount(Messager m) {
-		try {
-			Field f = m.getClass().getDeclaredField("errorCount");
-			f.setAccessible(true);
-			if (f.getType() == int.class) {
-				int val = ((Number)f.get(m)).intValue();
-				f.set(m, val +1);
+	abstract static class ErrorLog {
+		final Log log;
+		private final Messager messager;
+		private final Field errorCount;
+		private final Field warningCount;
+		
+		private ErrorLog(Log log, Messager messager, Field errorCount, Field warningCount) {
+			this.log = log;
+			this.messager = messager;
+			this.errorCount = errorCount;
+			this.warningCount = warningCount;
+		}
+
+		final void error(DiagnosticPosition pos, String message) {
+			increment(errorCount);
+			error1(pos, message);
+		}
+		
+		final void warning(DiagnosticPosition pos, String message) {
+			increment(warningCount);
+			log.warning(pos, "proc.messager", message);
+		}
+		
+		final void mandatoryWarning(DiagnosticPosition pos, String message) {
+			increment(warningCount);
+			log.mandatoryWarning(pos, "proc.messager", message);
+		}
+		
+		final void note(DiagnosticPosition pos, String message) {
+			log.note(pos, "proc.messager", message);
+		}
+		
+		abstract void error1(DiagnosticPosition pos, String message);
+		
+		private void increment(Field field) {
+			if (field == null) return;
+			try {
+				int val = ((Number)field.get(messager)).intValue();
+				field.set(messager, val +1);
+			} catch (Throwable t) {
+				//Very unfortunate, but in most cases it still works fine, so we'll silently swallow it.
 			}
-		} catch (Throwable t) {
-			//Very unfortunate, but in most cases it still works fine, so we'll silently swallow it.
+		}
+		
+		static ErrorLog create(Messager messager, Log log) {
+			Field errorCount = null;
+			try {
+				Field f = messager.getClass().getDeclaredField("errorCount");
+				f.setAccessible(true);
+				errorCount = f;
+			} catch (Throwable t) {}
+			boolean hasMultipleErrors = false;
+			for (Field field : log.getClass().getFields()) {
+				if (field.getName().equals("multipleErrors")) {
+					hasMultipleErrors = true;
+					break;
+				}
+			}
+			if (hasMultipleErrors) return new JdkBefore9(log, messager, errorCount);
+
+			Field warningCount = null;
+			try {
+				Field f = messager.getClass().getDeclaredField("warningCount");
+				f.setAccessible(true);
+				warningCount = f;
+			} catch (Throwable t) {}
+
+			
+			Method logMethod = null;
+			Object multiple = null;
+			try {
+				Class<?> df = Class.forName("com.sun.tools.javac.util.JCDiagnostic$DiagnosticFlag");
+				for (Object constant : df.getEnumConstants()) {
+					if (constant.toString().equals("MULTIPLE")) multiple = constant;
+				}
+				logMethod = log.getClass().getMethod("error", new Class<?>[] {df, DiagnosticPosition.class, String.class, Object[].class});
+			} catch (Throwable t) {}
+			
+			return new Jdk9Plus(log, messager, errorCount, warningCount, logMethod, multiple);
+		}
+	}
+	
+	static class JdkBefore9 extends ErrorLog {
+		private JdkBefore9(Log log, Messager messager, Field errorCount) {
+			super(log, messager, errorCount, null);
+		}
+
+		@Override void error1(DiagnosticPosition pos, String message) {
+			boolean prev = log.multipleErrors;
+			log.multipleErrors = true;
+			try {
+				log.error(pos, "proc.messager", message);
+			} finally {
+				log.multipleErrors = prev;
+			}
+		}
+	}
+	
+	static class Jdk9Plus extends ErrorLog {
+		private final Object multiple;
+		private final Method logMethod;
+		
+		private Jdk9Plus(Log log, Messager messager, Field errorCount, Field warningCount, Method logMethod, Object multiple) {
+			super(log, messager, errorCount, warningCount);
+			this.logMethod = logMethod;
+			this.multiple = multiple;
+		}
+		
+		@Override void error1(DiagnosticPosition pos, String message) {
+			try {
+				logMethod.invoke(multiple, pos, "proc.messager", message);
+			} catch (Throwable t) {}
 		}
 	}
 }
