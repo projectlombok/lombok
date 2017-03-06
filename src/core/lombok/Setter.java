@@ -59,12 +59,22 @@ public @interface Setter {
 	lombok.AccessLevel value() default lombok.AccessLevel.PUBLIC;
 	
 	/**
-	 * Any annotations listed here are put on the generated method. The syntax for this feature is: {@code @Setter(onMethod=@__({@AnnotationsGoHere}))}
+	 * Any annotations listed here are put on the generated method.
+	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br />
+	 * up to JDK7:<br />
+	 *  {@code @Setter(onMethod=@__({@AnnotationsGoHere}))}<br />
+	 * from JDK8:<br />
+	 *  {@code @Setter(onMethod_={@AnnotationsGohere})} // note the underscore after {@code onMethod}.
 	 */
 	AnyAnnotation[] onMethod() default {};
 	
 	/**
-	 * Any annotations listed here are put on the generated method's parameter. The syntax for this feature is: {@code @Setter(onParam=@__({@AnnotationsGoHere}))}
+	 * Any annotations listed here are put on the generated method's parameter.
+	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br />
+	 * up to JDK7:<br />
+	 *  {@code @Setter(onParam=@__({@AnnotationsGoHere}))}<br />
+	 * from JDK8:<br />
+	 *  {@code @Setter(onParam_={@AnnotationsGohere})} // note the underscore after {@code onParam}.
 	 */
 	AnyAnnotation[] onParam() default {};
 	

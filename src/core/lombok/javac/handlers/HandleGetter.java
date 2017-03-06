@@ -147,7 +147,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		
 		if (node == null) return;
 		
-		List<JCAnnotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Getter(onMethod=", annotationNode);
+		List<JCAnnotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Getter(onMethod", annotationNode);
 		
 		switch (node.getKind()) {
 		case FIELD:

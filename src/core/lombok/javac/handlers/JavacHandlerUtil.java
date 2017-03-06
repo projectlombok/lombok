@@ -1240,19 +1240,9 @@ public class JavacHandlerUtil {
 		ListBuffer<JCExpression> params = new ListBuffer<JCExpression>();
 		ListBuffer<JCAnnotation> result = new ListBuffer<JCAnnotation>();
 		
-		try {
-			for (JCExpression arg : ast.args) {
-				String argName = "value";
-				if (arg instanceof JCAssign) {
-					JCAssign as = (JCAssign) arg;
-					argName = as.lhs.toString();
-				}
-				if (!argName.equals(parameterName)) continue;
-			}
-		} catch (Exception ignore) {}
-		
 		outer:
 		for (JCExpression param : ast.args) {
+			boolean allowRaw;
 			String nameOfParam = "value";
 			JCExpression valueOfParam = null;
 			if (param instanceof JCAssign) {
@@ -1262,6 +1252,15 @@ public class JavacHandlerUtil {
 					nameOfParam = ident.name.toString();
 				}
 				valueOfParam = assign.rhs;
+			}
+			
+			/* strip trailing underscores */ {
+				int lastIdx;
+				for (lastIdx = nameOfParam.length() ; lastIdx > 0; lastIdx--) {
+					if (nameOfParam.charAt(lastIdx - 1) != '_') break;
+				}
+				allowRaw = lastIdx < nameOfParam.length();
+				nameOfParam = nameOfParam.substring(0, lastIdx);
 			}
 			
 			if (!parameterName.equals(nameOfParam)) {
@@ -1276,46 +1275,66 @@ public class JavacHandlerUtil {
 				String dummyAnnotationName = ((JCAnnotation) valueOfParam).annotationType.toString();
 				dummyAnnotationName = dummyAnnotationName.replace("_", "").replace("$", "").replace("x", "").replace("X", "");
 				if (dummyAnnotationName.length() > 0) {
-					annotationNode.addError("The correct format is " + errorName + "@__({@SomeAnnotation, @SomeOtherAnnotation}))");
-					continue outer;
-				}
-				for (JCExpression expr : ((JCAnnotation) valueOfParam).args) {
-					if (expr instanceof JCAssign && ((JCAssign) expr).lhs instanceof JCIdent) {
-						JCIdent id = (JCIdent) ((JCAssign) expr).lhs;
-						if ("value".equals(id.name.toString())) {
-							expr = ((JCAssign) expr).rhs;
+					if (allowRaw) {
+						result.append((JCAnnotation) valueOfParam);
+					} else {
+						addError(errorName, annotationNode);
+						continue outer;
+					}
+				} else {
+					for (JCExpression expr : ((JCAnnotation) valueOfParam).args) {
+						if (expr instanceof JCAssign && ((JCAssign) expr).lhs instanceof JCIdent) {
+							JCIdent id = (JCIdent) ((JCAssign) expr).lhs;
+							if ("value".equals(id.name.toString())) {
+								expr = ((JCAssign) expr).rhs;
+							} else {
+								addError(errorName, annotationNode);
+							}
+						}
+						
+						if (expr instanceof JCAnnotation) {
+							result.append((JCAnnotation) expr);
+						} else if (expr instanceof JCNewArray) {
+							for (JCExpression expr2 : ((JCNewArray) expr).elems) {
+								if (expr2 instanceof JCAnnotation) {
+									result.append((JCAnnotation) expr2);
+								} else {
+									addError(errorName, annotationNode);
+									continue outer;
+								}
+							}
 						} else {
-							annotationNode.addError("The correct format is " + errorName + "@__({@SomeAnnotation, @SomeOtherAnnotation}))");
+							addError(errorName, annotationNode);
 							continue outer;
 						}
 					}
-					
-					if (expr instanceof JCAnnotation) {
-						result.append((JCAnnotation) expr);
-					} else if (expr instanceof JCNewArray) {
-						for (JCExpression expr2 : ((JCNewArray) expr).elems) {
-							if (expr2 instanceof JCAnnotation) {
-								result.append((JCAnnotation) expr2);
-							} else {
-								annotationNode.addError("The correct format is " + errorName + "@__({@SomeAnnotation, @SomeOtherAnnotation}))");
-								continue outer;
-							}
-						}
-					} else {
-						annotationNode.addError("The correct format is " + errorName + "@__({@SomeAnnotation, @SomeOtherAnnotation}))");
-						continue outer;
+				}
+			} else if (valueOfParam instanceof JCNewArray) {
+				JCNewArray arr = (JCNewArray) valueOfParam;
+				if (arr.elems.isEmpty()) {
+					// Just remove it, this is always fine.
+				} else if (allowRaw) {
+					for (JCExpression jce : arr.elems) {
+						if (jce instanceof JCAnnotation) result.append((JCAnnotation) jce);
+						else addError(errorName, annotationNode);
 					}
+				} else {
+					addError(errorName, annotationNode);
 				}
 			} else {
-				if (valueOfParam instanceof JCNewArray && ((JCNewArray) valueOfParam).elems.isEmpty()) {
-					// Then we just remove it and move on (it's onMethod={} for example).
-				} else {
-					annotationNode.addError("The correct format is " + errorName + "@__({@SomeAnnotation, @SomeOtherAnnotation}))");
-				}
+				addError(errorName, annotationNode);
 			}
 		}
 		ast.args = params.toList();
 		return result.toList();
+	}
+	
+	private static void addError(String errorName, JavacNode node) {
+		if (node.getLatestJavaSpecSupported() < 8) {
+			node.addError("The correct format up to JDK7 is " + errorName + "=@__({@SomeAnnotation, @SomeOtherAnnotation}))");
+		} else {
+			node.addError("The correct format for JDK8+ is " + errorName + "_={@SomeAnnotation, @SomeOtherAnnotation})");
+		}
 	}
 	
 	public static List<JCTypeParameter> copyTypeParams(JavacNode source, List<JCTypeParameter> params) {

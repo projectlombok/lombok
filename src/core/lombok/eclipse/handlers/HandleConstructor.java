@@ -93,7 +93,7 @@ public class HandleConstructor {
 			boolean force = ann.force();
 			
 			List<EclipseNode> fields = force ? findFinalFields(typeNode) : Collections.<EclipseNode>emptyList();
-			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@NoArgsConstructor(onConstructor=", annotationNode);
+			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@NoArgsConstructor(onConstructor", annotationNode);
 			
 			new HandleConstructor().generateConstructor(typeNode, level, fields, force, staticName, SkipIfConstructorExists.NO, null, onConstructor, annotationNode);
 		}
@@ -117,7 +117,7 @@ public class HandleConstructor {
 				suppressConstructorProperties = suppress;
 			}
 			
-			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@RequiredArgsConstructor(onConstructor=", annotationNode);
+			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@RequiredArgsConstructor(onConstructor", annotationNode);
 			
 			new HandleConstructor().generateConstructor(
 				typeNode, level, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO,
@@ -179,7 +179,7 @@ public class HandleConstructor {
 				suppressConstructorProperties = suppress;
 			}
 			
-			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@AllArgsConstructor(onConstructor=", annotationNode);
+			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@AllArgsConstructor(onConstructor", annotationNode);
 			
 			new HandleConstructor().generateConstructor(
 				typeNode, level, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO,

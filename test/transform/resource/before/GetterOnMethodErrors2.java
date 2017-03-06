@@ -1,3 +1,4 @@
+//version 8:
 class GetterOnMethodErrors2 {
 	@lombok.Getter(onMethod=@_A_(@Deprecated)) private int bad1;
 	@lombok.Getter(onMethod=@__(5)) private int bad2;

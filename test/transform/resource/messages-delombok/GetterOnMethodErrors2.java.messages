@@ -1,4 +1,4 @@
-2 The correct format is @Getter(onMethod=@__({@SomeAnnotation, @SomeOtherAnnotation}))
-3 The correct format is @Getter(onMethod=@__({@SomeAnnotation, @SomeOtherAnnotation}))
-4 The correct format is @Getter(onMethod=@__({@SomeAnnotation, @SomeOtherAnnotation}))
-5 The correct format is @Getter(onMethod=@__({@SomeAnnotation, @SomeOtherAnnotation}))
+2 The correct format is @Getter(onMethod_={@SomeAnnotation, @SomeOtherAnnotation})
+3 The correct format is @Getter(onMethod_={@SomeAnnotation, @SomeOtherAnnotation})
+4 The correct format is @Getter(onMethod_={@SomeAnnotation, @SomeOtherAnnotation})
+5 The correct format is @Getter(onMethod_={@SomeAnnotation, @SomeOtherAnnotation})

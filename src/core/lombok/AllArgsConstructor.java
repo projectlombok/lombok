@@ -49,7 +49,12 @@ public @interface AllArgsConstructor {
 	String staticName() default "";
 	
 	/**
-	 * Any annotations listed here are put on the generated constructor. The syntax for this feature is: {@code @AllArgsConstructor(onConstructor=@__({@AnnotationsGoHere}))}
+	 * Any annotations listed here are put on the generated constructor.
+	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br />
+	 * up to JDK7:<br />
+	 *  {@code @AllArgsConstructor(onConstructor=@__({@AnnotationsGoHere}))}<br />
+	 * from JDK8:<br />
+	 *  {@code @AllArgsConstructor(onConstructor_={@AnnotationsGohere})} // note the underscore after {@code onConstructor}.
 	 */
 	AnyAnnotation[] onConstructor() default {};
 	
