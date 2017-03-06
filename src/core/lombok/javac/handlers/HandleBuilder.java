@@ -139,12 +139,21 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			ListBuffer<JavacNode> allFields = new ListBuffer<JavacNode>();
 			@SuppressWarnings("deprecation")
 			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation(lombok.experimental.Value.class, parent));
-			for (JavacNode fieldNode : HandleConstructor.findAllFields(tdParent)) {
+			for (JavacNode fieldNode : HandleConstructor.findAllFields(tdParent, true)) {
 				JCVariableDecl fd = (JCVariableDecl) fieldNode.get();
-				// final fields with an initializer cannot be written to, so they can't be 'builderized'. Unfortunately presence of @Value makes
-				// non-final fields final, but @Value's handler hasn't done this yet, so we have to do this math ourselves.
-				// Value will only skip making a field final if it has an explicit @NonFinal annotation, so we check for that.
-				if (fd.init != null && valuePresent && !hasAnnotation(NonFinal.class, fieldNode)) continue;
+				boolean isFinal = (fd.mods.flags & Flags.FINAL) != 0 || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));
+				JavacNode isConstant = findAnnotation(Builder.Constant.class, fieldNode, true);
+				
+				if (fd.init != null && isFinal) {
+					if (isConstant != null) continue;
+				}
+				
+				if (isConstant != null) {
+					if (!isFinal && fd.init == null) isConstant.addWarning("@Builder.Constant doesn't do anything unless the field has an initializing expression (' = something;') and is final.");
+					else if (!isFinal) isConstant.addWarning("@Builder.Constant doesn't do anything unless the field is final.");
+					else if (fd.init == null) isConstant.addWarning("@Builder.Constant doesn't do anything unless the field has an initializing expression (' = something;').");
+				}
+				
 				BuilderFieldData bfd = new BuilderFieldData();
 				bfd.rawName = fd.name;
 				bfd.name = removePrefixFromField(fieldNode);

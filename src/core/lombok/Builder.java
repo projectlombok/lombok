@@ -107,6 +107,13 @@ import java.lang.annotation.Target;
 @Target({TYPE, METHOD, CONSTRUCTOR})
 @Retention(SOURCE)
 public @interface Builder {
+	/**
+	 * Marks a given field as being a 'constant' (initialized by the initializing expression during construction and not eligible to be modified as part of {@code @Builder}.
+	 */
+	@Target(FIELD)
+	@Retention(SOURCE)
+	public @interface Constant {}
+
 	/** Name of the method that creates a new builder instance. Default: {@code builder}. */
 	String builderMethodName() default "builder";
 	
