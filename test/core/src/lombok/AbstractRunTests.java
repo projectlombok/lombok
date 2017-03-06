@@ -55,7 +55,7 @@ public abstract class AbstractRunTests {
 		this.dumpActualFilesHere = findPlaceToDumpActualFiles();
 	}
 	
-	public final FileTester createTester(final DirectoryRunner.TestParams params, final File file, int version) throws IOException {
+	public final FileTester createTester(final DirectoryRunner.TestParams params, final File file, String platform, int version) throws IOException {
 		ConfigurationKeysLoader.LoaderLoader.loadAllConfigurationKeys();
 		AssertionError directiveFailure = null;
 		LombokTestSource sourceDirectives = null;
@@ -65,6 +65,7 @@ public abstract class AbstractRunTests {
 			if (!sourceDirectives.versionWithinLimit(params.getVersion())) return null;
 			if (!sourceDirectives.versionWithinLimit(getClasspathVersion())) return null;
 			if (!sourceDirectives.versionWithinLimit(version)) return null;
+			if (!sourceDirectives.runOnPlatform(platform)) return null;
 		} catch (AssertionError ae) {
 			directiveFailure = ae;
 		}

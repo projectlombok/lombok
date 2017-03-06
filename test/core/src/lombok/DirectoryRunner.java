@@ -157,9 +157,9 @@ public class DirectoryRunner extends Runner {
 		File file = new File(params.getBeforeDirectory(), fileName);
 		switch (params.getCompiler()) {
 		case DELOMBOK:
-			return new RunTestsViaDelombok().createTester(params, file, params.getVersion());
+			return new RunTestsViaDelombok().createTester(params, file, "javac", params.getVersion());
 		case ECJ:
-			return new RunTestsViaEcj().createTester(params, file, params.getVersion());
+			return new RunTestsViaEcj().createTester(params, file, "ecj", params.getVersion());
 		default:
 		case JAVAC:
 			throw new UnsupportedOperationException();
