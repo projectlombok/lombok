@@ -78,7 +78,7 @@ public class HandleConstructor {
 			String staticName = ann.staticName();
 			boolean force = ann.force();
 			List<JavacNode> fields = force ? findFinalFields(typeNode) : List.<JavacNode>nil();
-			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, fields, force, staticName, SkipIfConstructorExists.NO, null, annotationNode);
+			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, fields, force, staticName, SkipIfConstructorExists.NO, annotationNode);
 		}
 	}
 	
@@ -96,14 +96,11 @@ public class HandleConstructor {
 			AccessLevel level = ann.access();
 			if (level == AccessLevel.NONE) return;
 			String staticName = ann.staticName();
-			Boolean suppressConstructorProperties = null;
 			if (annotation.isExplicit("suppressConstructorProperties")) {
-				@SuppressWarnings("deprecation")
-				boolean suppress = ann.suppressConstructorProperties();
-				suppressConstructorProperties = suppress;
+				annotationNode.addError("This deprecated feature is no longer supported. Remove it; you can create a lombok.config file with 'lombok.anyConstructor.suppressConstructorProperties = true'.");
 			}
 			
-			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO, suppressConstructorProperties, annotationNode);
+			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode);
 		}
 	}
 	
@@ -146,13 +143,10 @@ public class HandleConstructor {
 			AccessLevel level = ann.access();
 			if (level == AccessLevel.NONE) return;
 			String staticName = ann.staticName();
-			Boolean suppressConstructorProperties = null;
 			if (annotation.isExplicit("suppressConstructorProperties")) {
-				@SuppressWarnings("deprecation")
-				boolean suppress = ann.suppressConstructorProperties();
-				suppressConstructorProperties = suppress;
+				annotationNode.addError("This deprecated feature is no longer supported. Remove it; you can create a lombok.config file with 'lombok.anyConstructor.suppressConstructorProperties = true'.");
 			}
-			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO, suppressConstructorProperties, annotationNode);
+			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode);
 		}
 	}
 	
@@ -188,7 +182,7 @@ public class HandleConstructor {
 	}
 	
 	public void generateRequiredArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
-		generateConstructor(typeNode, level, List.<JCAnnotation>nil(), findRequiredFields(typeNode), false, staticName, skipIfConstructorExists, null, source);
+		generateConstructor(typeNode, level, List.<JCAnnotation>nil(), findRequiredFields(typeNode), false, staticName, skipIfConstructorExists, source);
 	}
 	
 	public enum SkipIfConstructorExists {
@@ -196,10 +190,10 @@ public class HandleConstructor {
 	}
 	
 	public void generateAllArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
-		generateConstructor(typeNode, level, List.<JCAnnotation>nil(), findAllFields(typeNode), false, staticName, skipIfConstructorExists, null, source);
+		generateConstructor(typeNode, level, List.<JCAnnotation>nil(), findAllFields(typeNode), false, staticName, skipIfConstructorExists, source);
 	}
 	
-	public void generateConstructor(JavacNode typeNode, AccessLevel level, List<JCAnnotation> onConstructor, List<JavacNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists, Boolean suppressConstructorProperties, JavacNode source) {
+	public void generateConstructor(JavacNode typeNode, AccessLevel level, List<JCAnnotation> onConstructor, List<JavacNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
 		
 		if (skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) return;
@@ -228,7 +222,7 @@ public class HandleConstructor {
 			}
 		}
 		
-		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, suppressConstructorProperties, source);
+		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, source);
 		ListBuffer<Type> argTypes = new ListBuffer<Type>();
 		for (JavacNode fieldNode : fields) {
 			Type mirror = getMirrorForFieldType(fieldNode);
@@ -262,18 +256,18 @@ public class HandleConstructor {
 		mods.annotations = mods.annotations.append(annotation);
 	}
 	
-	public static JCMethodDecl createConstructor(AccessLevel level, List<JCAnnotation> onConstructor, JavacNode typeNode, List<JavacNode> fields, boolean allToDefault, Boolean suppressConstructorProperties, JavacNode source) {
+	public static JCMethodDecl createConstructor(AccessLevel level, List<JCAnnotation> onConstructor, JavacNode typeNode, List<JavacNode> fields, boolean allToDefault, JavacNode source) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		boolean isEnum = (((JCClassDecl) typeNode.get()).mods.flags & Flags.ENUM) != 0;
 		if (isEnum) level = AccessLevel.PRIVATE;
 		
-		if (suppressConstructorProperties == null) {
-			if (fields.isEmpty()) {
-				suppressConstructorProperties = false;
-			} else {
-				suppressConstructorProperties = Boolean.TRUE.equals(typeNode.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES));
-			}
+		boolean suppressConstructorProperties;
+		
+		if (fields.isEmpty()) {
+			suppressConstructorProperties = false;
+		} else {
+			suppressConstructorProperties = Boolean.TRUE.equals(typeNode.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES));
 		}
 		
 		ListBuffer<JCStatement> nullChecks = new ListBuffer<JCStatement>();
