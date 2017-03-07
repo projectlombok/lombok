@@ -128,6 +128,8 @@ public @interface Builder {
 	 * an instance of the declaring type.
 	 */
 	boolean toBuilder() default false;
+
+	String withPrefix() default "";
 	
 	/**
 	 * Put on a field (in case of {@code @Builder} on a type) or a parameter (for {@code @Builder} on a constructor or static method) to

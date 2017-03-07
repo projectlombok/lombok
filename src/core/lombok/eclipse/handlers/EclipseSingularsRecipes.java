@@ -211,7 +211,7 @@ public class EclipseSingularsRecipes {
 		}
 		
 		public abstract List<EclipseNode> generateFields(SingularData data, EclipseNode builderType);
-		public abstract void generateMethods(SingularData data, EclipseNode builderType, boolean fluent, boolean chain);
+		public abstract void generateMethods(SingularData data, EclipseNode builderType, boolean fluent, boolean chain, String setterPrefix);
 		public abstract void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName);
 		
 		public boolean requiresCleaning() {
