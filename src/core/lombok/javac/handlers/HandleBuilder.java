@@ -546,27 +546,30 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		JCExpression call;
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		
-		if (addCleaning) {
-			JCExpression notClean = maker.Unary(CTC_NOT, maker.Select(maker.Ident(type.toName("this")), type.toName("$lombokUnclean")));
-			JCStatement invokeClean = maker.Exec(maker.Apply(List.<JCExpression>nil(), maker.Ident(type.toName("$lombokClean")), List.<JCExpression>nil()));
-			JCIf ifUnclean = maker.If(notClean, invokeClean, null);
-			statements.append(ifUnclean);
-		}
-		
-		for (BuilderFieldData bfd : builderFields) {
-			if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
-				bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, type, source, statements, bfd.name);
-			}
-		}
-		
 		ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
-		for (BuilderFieldData bfd : builderFields) {
-			args.append(maker.Ident(bfd.name));
-		}
+
+		// Extendable builders assign their values in the constructor, not in this build() method.
+		if (!useBuilderBasedConstructor) {
+			if (addCleaning) {
+				JCExpression notClean = maker.Unary(CTC_NOT, maker.Select(maker.Ident(type.toName("this")), type.toName("$lombokUnclean")));
+				JCStatement invokeClean = maker.Exec(maker.Apply(List.<JCExpression>nil(), maker.Ident(type.toName("$lombokClean")), List.<JCExpression>nil()));
+				JCIf ifUnclean = maker.If(notClean, invokeClean, null);
+				statements.append(ifUnclean);
+			}
+			
+			for (BuilderFieldData bfd : builderFields) {
+				if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
+					bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, type, source, statements, bfd.name);
+				}
+			}
 		
-		if (addCleaning) {
-			statements.append(maker.Exec(maker.Assign(maker.Select(maker.Ident(type.toName("this")), type.toName("$lombokUnclean")), maker.Literal(CTC_BOOLEAN, true))));
+			for (BuilderFieldData bfd : builderFields) {
+				args.append(maker.Ident(bfd.name));
+			}
+			
+			if (addCleaning) {
+				statements.append(maker.Exec(maker.Assign(maker.Select(maker.Ident(type.toName("this")), type.toName("$lombokUnclean")), maker.Literal(CTC_BOOLEAN, true))));
+			}
 		}
 		
 		if (builderName == null) {

@@ -556,31 +556,34 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		List<Statement> statements = new ArrayList<Statement>();
-		
-		if (addCleaning) {
-			FieldReference thisUnclean = new FieldReference(CLEAN_FIELD_NAME, 0);
-			thisUnclean.receiver = new ThisReference(0, 0);
-			Expression notClean = new UnaryExpression(thisUnclean, OperatorIds.NOT);
-			MessageSend invokeClean = new MessageSend();
-			invokeClean.selector = CLEAN_METHOD_NAME;
-			statements.add(new IfStatement(notClean, invokeClean, 0, 0));
-		}
-		
-		for (BuilderFieldData bfd : builderFields) {
-			if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
-				bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, type, statements, bfd.name);
-			}
-		}
-		
 		List<Expression> args = new ArrayList<Expression>();
-		for (BuilderFieldData bfd : builderFields) {
-			args.add(new SingleNameReference(bfd.name, 0L));
-		}
 		
-		if (addCleaning) {
-			FieldReference thisUnclean = new FieldReference(CLEAN_FIELD_NAME, 0);
-			thisUnclean.receiver = new ThisReference(0, 0);
-			statements.add(new Assignment(thisUnclean, new TrueLiteral(0, 0), 0));
+		// Extendable builders assign their values in the constructor, not in this build() method.
+		if (!useBuilderBasedConstructor) {
+			if (addCleaning) {
+				FieldReference thisUnclean = new FieldReference(CLEAN_FIELD_NAME, 0);
+				thisUnclean.receiver = new ThisReference(0, 0);
+				Expression notClean = new UnaryExpression(thisUnclean, OperatorIds.NOT);
+				MessageSend invokeClean = new MessageSend();
+				invokeClean.selector = CLEAN_METHOD_NAME;
+				statements.add(new IfStatement(notClean, invokeClean, 0, 0));
+			}
+		
+			for (BuilderFieldData bfd : builderFields) {
+				if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
+					bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, type, statements, bfd.name);
+				}
+			}
+		
+			for (BuilderFieldData bfd : builderFields) {
+				args.add(new SingleNameReference(bfd.name, 0L));
+			}
+		
+			if (addCleaning) {
+				FieldReference thisUnclean = new FieldReference(CLEAN_FIELD_NAME, 0);
+				thisUnclean.receiver = new ThisReference(0, 0);
+				statements.add(new Assignment(thisUnclean, new TrueLiteral(0, 0), 0));
+			}
 		}
 		
 		out.modifiers = ClassFileConstants.AccPublic;
