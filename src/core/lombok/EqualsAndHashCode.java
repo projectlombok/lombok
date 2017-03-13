@@ -63,8 +63,13 @@ public @interface EqualsAndHashCode {
 	boolean doNotUseGetters() default false;
 	
 	/**
-	 * Any annotations listed here are put on the generated parameter of {@code equals} and {@code canEqual}. The syntax for this feature is: {@code @EqualsAndHashCode(onParam=@__({@AnnotationsGoHere}))}
-	 * This is useful to add for example a {@code Nullable} annotation.
+	 * Any annotations listed here are put on the generated parameter of {@code equals} and {@code canEqual}.
+	 * This is useful to add for example a {@code Nullable} annotation.<br />
+	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br />
+	 * up to JDK7:<br />
+	 *  {@code @EqualsAndHashCode(onParam=@__({@AnnotationsGoHere}))}<br />
+	 * from JDK8:<br />
+	 *  {@code @EqualsAndHashCode(onParam_={@AnnotationsGohere})} // note the underscore after {@code onParam}.
 	 */
 	AnyAnnotation[] onParam() default {};
 	

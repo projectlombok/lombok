@@ -2,16 +2,16 @@ import lombok.Data;
 @lombok.Data class Data1 {
   final int x;
   String name;
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated int getX() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int getX() {
     return this.x;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated String getName() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") String getName() {
     return this.name;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated void setName(final String name) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setName(final String name) {
     this.name = name;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof Data1)))
@@ -27,10 +27,10 @@ import lombok.Data;
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean canEqual(final java.lang.Object other) {
     return (other instanceof Data1);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.getX());
@@ -38,10 +38,10 @@ import lombok.Data;
     result = ((result * PRIME) + (($name == null) ? 43 : $name.hashCode()));
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.lang.String toString() {
     return (((("Data1(x=" + this.getX()) + ", name=") + this.getName()) + ")");
   }
-  public @java.beans.ConstructorProperties({"x"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated Data1(final int x) {
+  public @java.beans.ConstructorProperties({"x"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") Data1(final int x) {
     super();
     this.x = x;
   }
@@ -49,16 +49,16 @@ import lombok.Data;
 @Data class Data2 {
   final int x;
   String name;
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated int getX() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int getX() {
     return this.x;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated String getName() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") String getName() {
     return this.name;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated void setName(final String name) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setName(final String name) {
     this.name = name;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof Data2)))
@@ -74,10 +74,10 @@ import lombok.Data;
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean canEqual(final java.lang.Object other) {
     return (other instanceof Data2);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.getX());
@@ -85,10 +85,10 @@ import lombok.Data;
     result = ((result * PRIME) + (($name == null) ? 43 : $name.hashCode()));
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.lang.String toString() {
     return (((("Data2(x=" + this.getX()) + ", name=") + this.getName()) + ")");
   }
-  public @java.beans.ConstructorProperties({"x"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated Data2(final int x) {
+  public @java.beans.ConstructorProperties({"x"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") Data2(final int x) {
     super();
     this.x = x;
   }
@@ -96,16 +96,16 @@ import lombok.Data;
 final @Data class Data3 {
   final int x;
   String name;
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated int getX() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int getX() {
     return this.x;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated String getName() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") String getName() {
     return this.name;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated void setName(final String name) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setName(final String name) {
     this.name = name;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof Data3)))
@@ -119,7 +119,7 @@ final @Data class Data3 {
         return false;
     return true;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.getX());
@@ -127,10 +127,10 @@ final @Data class Data3 {
     result = ((result * PRIME) + (($name == null) ? 43 : $name.hashCode()));
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.lang.String toString() {
     return (((("Data3(x=" + this.getX()) + ", name=") + this.getName()) + ")");
   }
-  public @java.beans.ConstructorProperties({"x"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated Data3(final int x) {
+  public @java.beans.ConstructorProperties({"x"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") Data3(final int x) {
     super();
     this.x = x;
   }
@@ -140,16 +140,16 @@ final @Data @lombok.EqualsAndHashCode(callSuper = true) class Data4 extends java
   Data4() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated int getX() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int getX() {
     return this.x;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated void setX(final int x) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setX(final int x) {
     this.x = x;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.lang.String toString() {
     return (("Data4(x=" + this.getX()) + ")");
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof Data4)))
@@ -163,10 +163,10 @@ final @Data @lombok.EqualsAndHashCode(callSuper = true) class Data4 extends java
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean canEqual(final java.lang.Object other) {
     return (other instanceof Data4);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + super.hashCode());
@@ -175,7 +175,7 @@ final @Data @lombok.EqualsAndHashCode(callSuper = true) class Data4 extends java
   }
 }
 @Data class Data5 {
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof Data5)))
@@ -185,36 +185,36 @@ final @Data @lombok.EqualsAndHashCode(callSuper = true) class Data4 extends java
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean canEqual(final java.lang.Object other) {
     return (other instanceof Data5);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
     int result = 1;
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.lang.String toString() {
     return "Data5()";
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated Data5() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") Data5() {
     super();
   }
 }
 final @Data class Data6 {
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof Data6)))
         return false;
     return true;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
     int result = 1;
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.lang.String toString() {
     return "Data6()";
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated Data6() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") Data6() {
     super();
   }
 }

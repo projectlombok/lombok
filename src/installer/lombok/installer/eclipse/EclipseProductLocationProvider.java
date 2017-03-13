@@ -288,10 +288,10 @@ public class EclipseProductLocationProvider implements IdeLocationProvider {
 		abstract String findEclipseOnPlatform(File dir);
 		
 		void recurseDirectory(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems, File dir) {
-			recurseDirectory0(locations, problems, dir, 0);
+			recurseDirectory0(locations, problems, dir, 0, false);
 		}
 		
-		private void recurseDirectory0(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems, File f, int loopCounter) {
+		private void recurseDirectory0(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems, File f, int loopCounter, boolean nameFound) {
 			//Various try/catch/ignore statements are in this for loop. Weird conditions on the disk can cause exceptions,
 			//such as an unformatted drive causing a NullPointerException on listFiles. Best action is almost invariably to just
 			//continue onwards.
@@ -301,9 +301,9 @@ public class EclipseProductLocationProvider implements IdeLocationProvider {
 			for (File dir : listFiles) {
 				if (!dir.isDirectory()) continue;
 				try {
-					if (dir.getName().toLowerCase().contains(descriptor.getDirectoryName())) {
+					if (nameFound || dir.getName().toLowerCase().contains(descriptor.getDirectoryName())) {
 						findEclipse(locations, problems, dir);
-						if (loopCounter < 50) recurseDirectory0(locations, problems, dir, loopCounter + 1);
+						if (loopCounter < 50) recurseDirectory0(locations, problems, dir, loopCounter + 1, true);
 					}
 				} catch (Exception ignore) {}
 			}

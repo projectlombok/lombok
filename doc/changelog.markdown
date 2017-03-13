@@ -1,11 +1,16 @@
 Lombok Changelog
 ----------------
 
-### v1.16.13 "Edgy Guinea Pig"
-* v1.16.12 is the latest stable release of Project Lombok.
-* FEATURE: Generated classes, methods and fields are now also annotated with `@lombok.Generated` [Issue #1014](https://github.com/rzwitserloot/lombok/issues/1014)
-* PLATFORM: Lombok can now be used together with other annotation processors that are looking for lombok-generated methods, but only if lombok is the first annotation processor executed. The most commonly used annotation processor affected by this change is [MapStruct](http://mapstruct.org/); we've worked with the mapstruct team specifically to allow any order. Other annotation processors might follow the framework we've built to make this possible; point the authors of any such processor to us and we'll get it sorted. [MapStruct issue #510](https://github.com/mapstruct/mapstruct/issues/510) [Lombok issue #973](https://github.com/rzwitserloot/lombok/issues/973).
-* PLATFORM: Eclipse: Refactor script 'rename field' when lombok has also generated getters and/or setters for this field is nicer now [Issue #210](https://github.com/rzwitserloot/lombok/issues/210).
+### v1.16.15 "Edgy Guinea Pig"
+* v1.16.14 is the latest stable release of Project Lombok.
+* PLATFORM: Improved jdk9 support, work in progress.
+* BUGFIX: The `onX` feature (which lets you add annotations to generated methods) did not work if the annotation you added contained named parameters, and you are compiling with JDK8's javac. We can't fix this (it's a bug in javac), but we have provided an alternate, prettier way to do `onX` on javac8+. [Issue #778](https://github.com/rzwitserloot/lombok/issues/778) [onX documentation](https://projectlombok.org/features/experimental/onX.html)
+
+### v1.16.14 (February 10th, 2017)
+* FEATURE: Generated classes, methods and fields can now also annotated with `@lombok.Generated` [Issue #1014](https://github.com/rzwitserloot/lombok/issues/1014)<br>
+* PLATFORM: Lombok can now be used together with other annotation processors that are looking for lombok-generated methods, but only if lombok is the first annotation processor executed. The most commonly used annotation processor affected by this change is [MapStruct](http://mapstruct.org/); we've worked with the mapstruct team specifically to allow any order. Other annotation processors might follow the framework we've built to make this possible; point the authors of any such processor to us and we'll get it sorted [MapStruct issue #510](https://github.com/mapstruct/mapstruct/issues/510) [Lombok issue #973](https://github.com/rzwitserloot/lombok/issues/973)
+* PLATFORM: Eclipse: Refactor script 'rename field' when lombok has also generated getters and/or setters for this field is nicer now [Issue #210](https://github.com/rzwitserloot/lombok/issues/210)
+* BUGFIX: Something you never encountered. [Issue #1274](https://github.com/rzwitserloot/lombok/issues/1274)
 
 ### v1.16.12 (December 5th, 2016)
 * FEATURE: `var` is the mutable sister of `val`. For now experimental, and opt-in using `ALLOW` in the flagUsage configuration key. Thanks for the contribution, Bulgakov Alexander. 

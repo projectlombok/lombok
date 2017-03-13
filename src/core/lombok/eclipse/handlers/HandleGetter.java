@@ -148,7 +148,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		
 		if (node == null) return;
 		
-		List<Annotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Getter(onMethod=", annotationNode);
+		List<Annotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Getter(onMethod", annotationNode);
 		
 		switch (node.getKind()) {
 		case FIELD:

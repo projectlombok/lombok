@@ -1,6 +1,6 @@
-class GeneratedGlobalOff {
+class GeneratedOff {
   @lombok.Getter int x;
-  GeneratedGlobalOff() {
+  GeneratedOff() {
     super();
   }
   public @java.lang.SuppressWarnings("all") int getX() {

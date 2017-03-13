@@ -9,7 +9,9 @@ import javax.validation.constraints.Max;
 
 @AllArgsConstructor(onConstructor=@__(@Inject))
 public class OnXExample {
-	@Getter(onMethod=@__({@Id, @Column(name="unique-id")}))
-	@Setter(onParam=@__(@Max(10000)))
+//	@Getter(onMethod=@__({@Id, @Column(name="unique-id")})) //JDK7
+//	@Setter(onParam=@__(@Max(10000))) //JDK7
+	@Getter(onMethod_={@Id, @Column(name="unique-id")}) //JDK8
+	@Setter(onParam_=@Max(10000)) //JDK8
 	private long unid;
 }

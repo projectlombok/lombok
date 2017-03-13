@@ -9,7 +9,6 @@ abstract class DelegateOnMethods {
 	
 	@javax.annotation.Generated("lombok")
 	
-	@lombok.Generated
 	public void bar(final java.util.ArrayList<java.lang.String> list) {
 		this.getBar().bar(list);
 	}

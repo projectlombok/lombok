@@ -30,8 +30,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.jdt.internal.corext.refactoring.SearchResultGroup;
-
 import lombok.core.AgentLauncher;
 import lombok.patcher.Filter;
 import lombok.patcher.Hook;

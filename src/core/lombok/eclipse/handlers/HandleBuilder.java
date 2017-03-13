@@ -205,7 +205,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			}
 			
 			boolean callBuilderBasedSuperConstructor = inherit && td.superclass != null;
-			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PROTECTED, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER, true,
+			new HandleConstructor().generateConstructor(tdParent, extendable ? AccessLevel.PROTECTED : AccessLevel.PACKAGE, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER,
 				Collections.<Annotation>emptyList(), annotationNode, extendable ? builderClassName : null, callBuilderBasedSuperConstructor);
 			
 			returnType = namePlusTypeParamsToTypeReference(td.name, td.typeParameters, p);
@@ -426,7 +426,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		
 		if (constructorExists(builderType) == MemberExistsResult.NOT_EXISTS) {
 			ConstructorDeclaration cd = HandleConstructor.createConstructor(
-				AccessLevel.PACKAGE, builderType, Collections.<EclipseNode>emptyList(), false, null,
+				AccessLevel.PACKAGE, builderType, Collections.<EclipseNode>emptyList(), false,
 				annotationNode, Collections.<Annotation>emptyList(), null, false);
 			if (cd != null) injectMethod(builderType, cd);
 		}

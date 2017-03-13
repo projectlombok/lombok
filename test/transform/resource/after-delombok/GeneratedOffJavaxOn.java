@@ -1,4 +1,4 @@
-class GeneratedLombokOff {
+class GeneratedOffJavaxOn {
 	int x;
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")

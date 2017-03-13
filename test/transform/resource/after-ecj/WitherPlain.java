@@ -7,10 +7,10 @@ class WitherPlain {
     this.i = i;
     this.foo = foo;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated WitherPlain withI(final int i) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") WitherPlain withI(final int i) {
     return ((this.i == i) ? this : new WitherPlain(i, this.foo));
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated WitherPlain withFoo(final int foo) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") WitherPlain withFoo(final int foo) {
     return ((this.foo == foo) ? this : new WitherPlain(this.i, foo));
   }
 }

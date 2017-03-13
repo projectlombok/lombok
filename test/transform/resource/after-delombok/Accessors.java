@@ -2,13 +2,11 @@ class AccessorsFluent {
 	private String fieldName = "";
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public String fieldName() {
 		return this.fieldName;
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public AccessorsFluent fieldName(final String fieldName) {
 		this.fieldName = fieldName;
 		return this;
@@ -19,19 +17,16 @@ class AccessorsFluentOnClass {
 	private String otherFieldWithOverride = "";
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public String fieldName() {
 		return this.fieldName;
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public String getOtherFieldWithOverride() {
 		return this.otherFieldWithOverride;
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public AccessorsFluentOnClass fieldName(final String fieldName) {
 		this.fieldName = fieldName;
 		return this;
@@ -41,7 +36,6 @@ class AccessorsChain {
 	private boolean isRunning;
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public AccessorsChain setRunning(final boolean isRunning) {
 		this.isRunning = isRunning;
 		return this;
@@ -52,7 +46,6 @@ class AccessorsPrefix {
 	private String fActualField;
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public void setActualField(final String fActualField) {
 		this.fActualField = fActualField;
 	}
@@ -62,13 +55,11 @@ class AccessorsPrefix2 {
 	private String fActualField;
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public void setFieldName(final String fieldName) {
 		this.fieldName = fieldName;
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public void setActualField(final String fActualField) {
 		this.fActualField = fActualField;
 	}
@@ -81,14 +72,12 @@ class AccessorsPrefix3 {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public java.lang.String toString() {
 		return "AccessorsPrefix3(fName=" + this.getName() + ")";
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof AccessorsPrefix3)) return false;
@@ -101,14 +90,12 @@ class AccessorsPrefix3 {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof AccessorsPrefix3;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -121,7 +108,6 @@ class AccessorsFluentGenerics<T extends Number> {
 	private String name;
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public AccessorsFluentGenerics<T> name(final String name) {
 		this.name = name;
 		return this;
@@ -131,7 +117,6 @@ class AccessorsFluentNoChaining {
 	private String name;
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public void name(final String name) {
 		this.name = name;
 	}
@@ -140,7 +125,6 @@ class AccessorsFluentStatic<T extends Number> {
 	private static String name;
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public static void name(final String name) {
 		AccessorsFluentStatic.name = name;
 	}

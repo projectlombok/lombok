@@ -3,5 +3,5 @@ abstract class WitherWithAbstract {
   WitherWithAbstract() {
     super();
   }
-  public abstract @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated WitherWithAbstract withFoo(final String foo);
+  public abstract @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") WitherWithAbstract withFoo(final String foo);
 }

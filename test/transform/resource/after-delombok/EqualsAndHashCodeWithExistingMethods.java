@@ -18,7 +18,6 @@ final class EqualsAndHashCodeWithExistingMethods3 extends EqualsAndHashCodeWithE
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof EqualsAndHashCodeWithExistingMethods3)) return false;
@@ -31,7 +30,6 @@ final class EqualsAndHashCodeWithExistingMethods3 extends EqualsAndHashCodeWithE
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;

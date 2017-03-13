@@ -1,4 +1,4 @@
-class GeneratedGlobalOff {
+class GeneratedOff {
 	int x;
 	@java.lang.SuppressWarnings("all")
 	public int getX() {

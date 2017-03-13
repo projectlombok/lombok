@@ -1,6 +1,6 @@
-class GeneratedGlobalOffLombokOn {
+class GeneratedOffLombokOn {
   @lombok.Getter int x;
-  GeneratedGlobalOffLombokOn() {
+  GeneratedOffLombokOn() {
     super();
   }
   public @java.lang.SuppressWarnings("all") @lombok.Generated int getX() {

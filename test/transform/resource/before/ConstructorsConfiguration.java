@@ -3,7 +3,3 @@
 class ConstructorsConfiguration {
 	int x;
 }
-@lombok.AllArgsConstructor(suppressConstructorProperties=false)
-class ConstructorsConfigurationExplicit {
-	int x;
-}

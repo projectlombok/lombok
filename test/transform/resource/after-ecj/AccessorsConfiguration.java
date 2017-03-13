@@ -3,10 +3,10 @@ class AccessorsConfiguration {
   AccessorsConfiguration() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated String fieldName() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") String fieldName() {
     return this.m_FieldName;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated void fieldName(final String m_FieldName) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void fieldName(final String m_FieldName) {
     this.m_FieldName = m_FieldName;
   }
 }
@@ -15,7 +15,7 @@ class AccessorsConfiguration {
   AccessorsConfiguration2() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated void setM_FieldName(final String m_FieldName) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setM_FieldName(final String m_FieldName) {
     this.m_FieldName = m_FieldName;
   }
 }
@@ -24,7 +24,7 @@ class AccessorsConfiguration {
   AccessorsConfiguration3() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated AccessorsConfiguration3 setFieldName(final String fFieldName) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") AccessorsConfiguration3 setFieldName(final String fFieldName) {
     this.fFieldName = fFieldName;
     return this;
   }

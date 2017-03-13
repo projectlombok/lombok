@@ -42,7 +42,9 @@
 			</p><p>
 			<code>@Setter</code> and <code>@Wither</code> support <code>onParam</code> in addition to <code>onMethod</code>; annotations listed will be put on the only parameter that the generated method has. <code>@EqualsAndHashCode</code> also supports <code>onParam</code>; the listed annotation(s) will be placed on the single parameter of the generated <code>equals</code> method, as well as any generated <code>canEqual</code> method.
 			</p><p>
-			The syntax is a little strange; to use any of the 3 <code>onX</code> features, you must wrap the annotations to be applied to the constructor / method / parameter in <code>@__(@AnnotationGoesHere)</code>. To apply multiple annotations, use <code>@__({@Annotation1, @Annotation2})</code>. The annotations can themselves obviously have parameters as well.
+			The syntax is a little strange and depends on the javac you are using.<br />
+			On javac7, to use any of the 3 <code>onX</code> features, you must wrap the annotations to be applied to the constructor / method / parameter in <code>@__(@AnnotationGoesHere)</code>. To apply multiple annotations, use <code>@__({@Annotation1, @Annotation2})</code>. The annotations can themselves obviously have parameters as well.<br />
+			On javac8 and up, you add an underscore after <code>onMethod</code>, <code>onParam</code>, or <code>onConstructor</code>.
 			</p>
 		</div>
 		<div class="snippets">
@@ -61,6 +63,8 @@
 			<h3>Small print</h3><div class="smallprint">
 				<p>
 				The reason of the weird syntax is to make this feature work in javac 7 compilers; the <code>@__</code> type is an annotation reference to the annotation type <code>__</code> (double underscore) which doesn't actually exist; this makes javac 7 delay aborting the compilation process due to an error because it is possible an annotation processor will later create the <code>__</code> type. Instead, lombok applies the annotations and removes the references so that the error will never actually occur. The point is: The <code>__</code> type <em>must not exist</em>, otherwise the feature does not work. In the rare case that the <code>__</code> type does exist (and is imported or in the package), you can simply add more underscores. Technically any non-existent type would work, but to maintain consistency and readability and catch erroneous use, lombok considers it an error if the 'wrapper' annotation is anything but a series of underscores.
+				</p><p>
+				In javac8, the above feature should work but due to a bug in javac8 it does not. However, starting in javac8, if the parameter name does not exist in the annotation type, compilation proceeds to a phase where lombok can fix it.
 				</p><p>
 				To reiterate: This feature can disappear at any time; if you use this feature, be prepared to adjust your code when we find a nicer way of implementing this feature, or, if a future version of javac forces us to remove this feature entirely with no alternative.
 				</p><p>

@@ -1,6 +1,6 @@
-class GeneratedGlobalOffJavaxOn {
+class GeneratedOffJavaxOn {
   @lombok.Getter int x;
-  GeneratedGlobalOffJavaxOn() {
+  GeneratedOffJavaxOn() {
     super();
   }
   public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int getX() {
