@@ -141,6 +141,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		String builderClassName = builderInstance.builderClassName();
 		
 		boolean inherit = builderInstance.inherit();
+		boolean extendable = inherit || builderInstance.extendable(); // inherit implies extendable
 		String superclassBuilderClassName = builderInstance.superclassBuilderClassName();
 
 		String toBuilderMethodName = "toBuilder";
@@ -203,9 +204,9 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				superclassBuilderClassName = new String(td.superclass.getLastToken()) + "Builder";
 			}
 			
-			boolean callSuperConstructor = inherit && td.superclass != null;
+			boolean callBuilderBasedSuperConstructor = inherit && td.superclass != null;
 			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PROTECTED, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER, true,
-				Collections.<Annotation>emptyList(), annotationNode, builderClassName, callSuperConstructor);
+				Collections.<Annotation>emptyList(), annotationNode, extendable ? builderClassName : null, callBuilderBasedSuperConstructor);
 			
 			returnType = namePlusTypeParamsToTypeReference(td.name, td.typeParameters, p);
 			typeParams = td.typeParameters;
@@ -214,6 +215,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		} else if (parent.get() instanceof ConstructorDeclaration) {
 			if (inherit) {
 				annotationNode.addError("@Builder(inherit=true) is only supported for type builders.");
+				return;
+			}
+			if (extendable) {
+				annotationNode.addError("@Builder(extendable=true) is only supported for type builders.");
 				return;
 			}
 			ConstructorDeclaration cd = (ConstructorDeclaration) parent.get();
@@ -232,6 +237,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		} else if (parent.get() instanceof MethodDeclaration) {
 			if (inherit) {
 				annotationNode.addError("@Builder(inherit=true) is only supported for type builders.");
+				return;
+			}
+			if (extendable) {
+				annotationNode.addError("@Builder(extendable=true) is only supported for type builders.");
 				return;
 			}
 			MethodDeclaration md = (MethodDeclaration) parent.get();
@@ -427,7 +436,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		if (methodExists(buildMethodName, builderType, -1) == MemberExistsResult.NOT_EXISTS) {
-			boolean useBuilderBasedConstructor = parent.get() instanceof TypeDeclaration;
+			boolean useBuilderBasedConstructor = parent.get() instanceof TypeDeclaration && extendable;
 			MethodDeclaration md = generateBuildMethod(isStatic, buildMethodName, nameOfStaticBuilderMethod, returnType, builderFields, builderType, thrownExceptions, addCleaning, ast, useBuilderBasedConstructor);
 			if (md != null) injectMethod(builderType, md);
 		}

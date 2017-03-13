@@ -123,13 +123,28 @@ public @interface Builder {
 	String builderClassName() default "";
 	
 	/**
-	 * If true, the generated builder class will extend the builder of the
+	 * If true, the generated builder class will extend the {@code @Builder} of the
 	 * superclass. In this way, the builder will also contain methods for fields
-	 * from the superclass. Note that both this builder and the superclass'
-	 * builder must be a type {@code @Builder}; this feature does neither work
-	 * for constructor nor method {@code @Builder}s.
+	 * from the superclass.<br>
+	 * Note that both this builder and the superclass' builder must be a type
+	 * {@code @Builder}; this feature does neither work for constructor nor
+	 * method {@code @Builder}s. The parent {@code @Builder} must be
+	 * {@link #extendable()}. <br>
+	 * Implies {@link #extendable()}.
 	 */
 	boolean inherit() default false;
+
+	/**
+	 * If true, the generated builder pattern will be extendable by
+	 * {@code @Builder}s of subclasses, using the {@link #inherit()} feature.
+	 * This is achieved by generating a special constructor that takes a builder
+	 * instance as parameter (instead of an {@link AllArgsConstructor}). <br>
+	 * Note that this builder must be a type {@code @Builder}; this feature does
+	 * neither work for constructor nor method {@code @Builder}s.<br>
+	 * If {@link #inherit()} {@code == true}, {@link #extendable()} will
+	 * automatically be {@code true}.
+	 */
+	boolean extendable() default false;
 
 	/**
 	 * Name of the builder class in the superclass. Only relevant if

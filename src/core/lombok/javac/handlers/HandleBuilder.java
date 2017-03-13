@@ -110,6 +110,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		String toBuilderMethodName = "toBuilder";
 		
 		boolean inherit = builderInstance.inherit();
+		boolean extendable = inherit || builderInstance.extendable(); // inherit implies extendable
 		String superclassBuilderClassName = builderInstance.superclassBuilderClassName();
 
 		boolean toBuilder = builderInstance.toBuilder();
@@ -176,8 +177,8 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				superclassBuilderClassName = extendsClause + "Builder";
 			}
 			
-			boolean callSuperConstructor = inherit && extendsClause != null;
-			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PROTECTED, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, null, annotationNode, builderClassName, callSuperConstructor);
+			boolean callBuilderBasedSuperConstructor = inherit && extendsClause != null;
+			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PROTECTED, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, null, annotationNode, extendable ? builderClassName : null, callBuilderBasedSuperConstructor);
 			
 			returnType = namePlusTypeParamsToTypeReference(tdParent.getTreeMaker(), td.name, td.typarams);
 			typeParams = td.typarams;
@@ -187,7 +188,12 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			if (inherit) {
 				annotationNode.addError("@Builder(inherit=true) is only supported for type builders.");
 				return;
-			}			JCMethodDecl jmd = (JCMethodDecl) fillParametersFrom.get();
+			}
+			if (extendable) {
+				annotationNode.addError("@Builder(extendable=true) is only supported for type builders.");
+				return;
+			}
+			JCMethodDecl jmd = (JCMethodDecl) fillParametersFrom.get();
 			if (!jmd.typarams.isEmpty()) {
 				annotationNode.addError("@Builder is not supported on constructors with constructor type parameters.");
 				return;
@@ -203,6 +209,10 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		} else if (fillParametersFrom != null) {
 			if (inherit) {
 				annotationNode.addError("@Builder(inherit=true) is only supported for type builders.");
+				return;
+			}
+			if (extendable) {
+				annotationNode.addError("@Builder(extendable=true) is only supported for type builders.");
 				return;
 			}
 			tdParent = parent.up();
@@ -387,7 +397,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		if (methodExists(buildMethodName, builderType, -1) == MemberExistsResult.NOT_EXISTS) {
-			boolean useBuilderBasedConstructor = parent.get() instanceof JCClassDecl;
+			boolean useBuilderBasedConstructor = parent.get() instanceof JCClassDecl && extendable;
 			JCMethodDecl md = generateBuildMethod(isStatic, buildMethodName, nameOfBuilderMethod, returnType, builderFields, builderType, thrownExceptions, ast, addCleaning, useBuilderBasedConstructor);
 			if (md != null) injectMethod(builderType, md);
 		}
