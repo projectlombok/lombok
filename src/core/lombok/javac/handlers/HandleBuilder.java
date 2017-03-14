@@ -43,6 +43,7 @@ import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCIf;
 import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
@@ -63,6 +64,7 @@ import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.core.handlers.HandlerUtil;
+import lombok.delombok.LombokOptionsFactory;
 import lombok.experimental.NonFinal;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
@@ -87,6 +89,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	}
 	
 	private static class BuilderFieldData {
+		JavacNode fieldNode;
 		JCExpression type;
 		Name rawName;
 		Name name;
@@ -159,6 +162,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				// Value will only skip making a field final if it has an explicit @NonFinal annotation, so we check for that.
 				if (fd.init != null && valuePresent && !hasAnnotation(NonFinal.class, fieldNode)) continue;
 				BuilderFieldData bfd = new BuilderFieldData();
+				bfd.fieldNode = fieldNode;
 				bfd.rawName = fd.name;
 				bfd.name = removePrefixFromField(fieldNode);
 				bfd.type = fd.vartype;
@@ -178,7 +182,11 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			}
 			
 			boolean callBuilderBasedSuperConstructor = inherit && extendsClause != null;
-			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PROTECTED, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, annotationNode, extendable ? builderClassName : null, callBuilderBasedSuperConstructor);
+			if (extendable) {
+				generateBuilderBasedConstructor(tdParent, builderFields, annotationNode, builderClassName, callBuilderBasedSuperConstructor);
+			} else {
+				new HandleConstructor().generateConstructor(tdParent, AccessLevel.PROTECTED, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, annotationNode);
+			}
 			
 			returnType = namePlusTypeParamsToTypeReference(tdParent.getTreeMaker(), td.name, td.typarams);
 			typeParams = td.typarams;
@@ -504,6 +512,89 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		JCBlock body = maker.Block(0, List.<JCStatement>of(statement));
 		return maker.MethodDef(maker.Modifiers(Flags.PUBLIC), type.toName(toBuilderMethodName), namePlusTypeParamsToTypeReference(maker, type.toName(builderClassName), typeParams), List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+	}
+
+	/**
+	 * Generates a constructor that has a builder as the only parameter.
+	 * 
+	 * @param builderClassnameAsParameter
+	 *            the only parameter of the constructor will be a builder with
+	 *            this classname; the constructor will use the values within
+	 *            this builder to assign the fields of new instances.
+	 * @param callBuilderBasedSuperConstructor
+	 *            if {@code true}, the constructor will explicitly call a super
+	 *            constructor with the builder as argument. Requires
+	 *            {@code builderClassAsParameter != null}.
+	 */
+	private void generateBuilderBasedConstructor(JavacNode typeNode, java.util.List<BuilderFieldData> builderFields, JavacNode source, String builderClassnameAsParameter, boolean callBuilderBasedSuperConstructor) {
+		if (builderClassnameAsParameter == null || builderClassnameAsParameter.isEmpty()) {
+			source.addError("A builder-based constructor requires a non-empty 'builderClassnameAsParameter' value.");
+		}
+		
+		JavacTreeMaker maker = typeNode.getTreeMaker();
+		
+		AccessLevel level = AccessLevel.PROTECTED;
+		boolean isEnum = (((JCClassDecl) typeNode.get()).mods.flags & Flags.ENUM) != 0;
+		if (isEnum) {
+			level = AccessLevel.PRIVATE;
+		}
+		
+		ListBuffer<JCStatement> nullChecks = new ListBuffer<JCStatement>();
+		ListBuffer<JCStatement> assigns = new ListBuffer<JCStatement>();
+		
+		Name builderVariableName = typeNode.toName("b");
+		for (BuilderFieldData field : builderFields) {
+			List<JCAnnotation> nonNulls = findAnnotations(field.fieldNode, NON_NULL_PATTERN);
+			if (!nonNulls.isEmpty()) {
+				JCStatement nullCheck = generateNullCheck(maker, field.fieldNode, source);
+				if (nullCheck != null) {
+					nullChecks.append(nullCheck);
+				}
+			}
+			
+			if (field.singularData != null && field.singularData.getSingularizer() != null) {
+				field.singularData.getSingularizer().appendBuildCode(field.singularData, field.fieldNode, field.type, assigns, field.name);
+			} else {
+				JCFieldAccess thisX = maker.Select(maker.Ident(field.fieldNode.toName("this")), field.rawName);
+				
+				JCExpression rhs;
+				rhs = maker.Select(maker.Ident(builderVariableName), field.rawName);
+				JCExpression assign = maker.Assign(thisX, rhs);
+				
+				assigns.append(maker.Exec(assign));
+			}
+		}
+		
+		JCModifiers mods = maker.Modifiers(toJavacModifier(level), List.<JCAnnotation>nil());
+		
+		// Add ConstructorProperties
+		JCExpression constructorPropertiesType = chainDots(typeNode, "java", "beans", "ConstructorProperties");
+		ListBuffer<JCExpression> fieldNames = new ListBuffer<JCExpression>();
+		fieldNames.append(maker.Literal(builderVariableName.toString()));
+		JCExpression fieldNamesArray = maker.NewArray(null, List.<JCExpression>nil(), fieldNames.toList());
+		JCAnnotation annotation = maker.Annotation(constructorPropertiesType, List.of(fieldNamesArray));
+		mods.annotations = mods.annotations.append(annotation);
+		
+		// Create a constructor that has just the builder as parameter.
+		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
+		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
+		Name builderClassname = typeNode.toName(builderClassnameAsParameter);
+		JCVariableDecl param = maker.VarDef(maker.Modifiers(flags), builderVariableName, maker.Ident(builderClassname), null);
+		params.append(param);
+
+		if (callBuilderBasedSuperConstructor) {
+			// The first statement must be the call to the super constructor.
+			JCMethodInvocation callToSuperConstructor = maker.Apply(List.<JCExpression>nil(),
+					maker.Ident(typeNode.toName("super")),
+					List.<JCExpression>of(maker.Ident(builderVariableName)));
+			assigns.prepend(maker.Exec(callToSuperConstructor));
+		}
+
+		JCMethodDecl constr = recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
+			null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(),
+			maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source.get(), typeNode.getContext());
+
+		injectMethod(typeNode, constr, null, Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
 	}
 	
 	private JCMethodDecl generateCleanMethod(java.util.List<BuilderFieldData> builderFields, JavacNode type, JCTree source) {

@@ -24,8 +24,6 @@ package lombok.javac.handlers;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
-import java.util.Arrays;
-
 import static lombok.javac.Javac.*;
 
 import lombok.AccessLevel;
@@ -82,7 +80,7 @@ public class HandleConstructor {
 			String staticName = ann.staticName();
 			boolean force = ann.force();
 			List<JavacNode> fields = force ? findFinalFields(typeNode) : List.<JavacNode>nil();
-			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, fields, force, staticName, SkipIfConstructorExists.NO, annotationNode, null, false);
+			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, fields, force, staticName, SkipIfConstructorExists.NO, annotationNode);
 		}
 	}
 	
@@ -104,7 +102,7 @@ public class HandleConstructor {
 				annotationNode.addError("This deprecated feature is no longer supported. Remove it; you can create a lombok.config file with 'lombok.anyConstructor.suppressConstructorProperties = true'.");
 			}
 			
-			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode, null, false);
+			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode);
 		}
 	}
 	
@@ -150,7 +148,7 @@ public class HandleConstructor {
 			if (annotation.isExplicit("suppressConstructorProperties")) {
 				annotationNode.addError("This deprecated feature is no longer supported. Remove it; you can create a lombok.config file with 'lombok.anyConstructor.suppressConstructorProperties = true'.");
 			}
-			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode, null, false);
+			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode);
 		}
 	}
 	
@@ -186,7 +184,7 @@ public class HandleConstructor {
 	}
 	
 	public void generateRequiredArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
-		generateConstructor(typeNode, level, List.<JCAnnotation>nil(), findRequiredFields(typeNode), false, staticName, skipIfConstructorExists, source, null, false);
+		generateConstructor(typeNode, level, List.<JCAnnotation>nil(), findRequiredFields(typeNode), false, staticName, skipIfConstructorExists, source);
 	}
 	
 	public enum SkipIfConstructorExists {
@@ -194,21 +192,10 @@ public class HandleConstructor {
 	}
 	
 	public void generateAllArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
-		generateConstructor(typeNode, level, List.<JCAnnotation>nil(), findAllFields(typeNode), false, staticName, skipIfConstructorExists, source, null, false);
+		generateConstructor(typeNode, level, List.<JCAnnotation>nil(), findAllFields(typeNode), false, staticName, skipIfConstructorExists, source);
 	}
 	
-	/**
-	 * @param builderClassnameAsParameter
-	 *            if {@code != null}, the only parameter of the constructor will
-	 *            be a builder with this classname; the constructor will then
-	 *            use the values within this builder to assign the fields of new
-	 *            instances.
-	 * @param callBuilderBasedSuperConstructor
-	 *            if {@code true}, the constructor will explicitly call a super
-	 *            constructor with the builder as argument. Requires
-	 *            {@code builderClassAsParameter != null}.
-	 */
-	public void generateConstructor(JavacNode typeNode, AccessLevel level, List<JCAnnotation> onConstructor, List<JavacNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source, String builderClassnameAsParameter, boolean callBuilderBasedSuperConstructor) {
+	public void generateConstructor(JavacNode typeNode, AccessLevel level, List<JCAnnotation> onConstructor, List<JavacNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
 		
 		if (skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) return;
@@ -237,7 +224,7 @@ public class HandleConstructor {
 			}
 		}
 		
-		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, source, builderClassnameAsParameter, callBuilderBasedSuperConstructor);
+		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, source, null, false);
 		ListBuffer<Type> argTypes = new ListBuffer<Type>();
 		for (JavacNode fieldNode : fields) {
 			Type mirror = getMirrorForFieldType(fieldNode);
