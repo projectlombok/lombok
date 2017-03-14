@@ -394,7 +394,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		if (constructorExists(builderType) == MemberExistsResult.NOT_EXISTS) {
-			JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PACKAGE, List.<JCAnnotation>nil(), builderType, List.<JavacNode>nil(), false, annotationNode, null, false);
+			JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PACKAGE, List.<JCAnnotation>nil(), builderType, List.<JavacNode>nil(), false, annotationNode);
 			if (cd != null) injectMethod(builderType, cd);
 		}
 		

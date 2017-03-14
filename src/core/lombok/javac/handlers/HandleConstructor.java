@@ -23,7 +23,6 @@ package lombok.javac.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
-
 import static lombok.javac.Javac.*;
 
 import lombok.AccessLevel;
@@ -52,7 +51,6 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
-import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCPrimitiveTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCReturn;
@@ -224,7 +222,7 @@ public class HandleConstructor {
 			}
 		}
 		
-		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, source, null, false);
+		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, source);
 		ListBuffer<Type> argTypes = new ListBuffer<Type>();
 		for (JavacNode fieldNode : fields) {
 			Type mirror = getMirrorForFieldType(fieldNode);
@@ -258,25 +256,7 @@ public class HandleConstructor {
 		mods.annotations = mods.annotations.append(annotation);
 	}
 	
-	/**
-	 * @param builderClassnameAsParameter
-	 *            if {@code != null}, the only parameter of the constructor will
-	 *            be a builder with this classname; the constructor will then
-	 *            use the values within this builder to assign the fields of new
-	 *            instances.
-	 * @param callBuilderBasedSuperConstructor
-	 *            if {@code true}, the constructor will explicitly call a super
-	 *            constructor with the builder as argument. Requires
-	 *            {@code builderClassnameAsParameter != null}.
-	 */
-	public static JCMethodDecl createConstructor(AccessLevel level, List<JCAnnotation> onConstructor, JavacNode typeNode, List<JavacNode> fields, boolean allToDefault, JavacNode source, String builderClassnameAsParameter, boolean callBuilderBasedSuperConstructor) {
-		if (builderClassnameAsParameter != null && builderClassnameAsParameter.isEmpty()) {
-			builderClassnameAsParameter = null;
-		}
-		if (callBuilderBasedSuperConstructor && builderClassnameAsParameter == null) {
-			source.addError("Calling a builder-based superclass constructor ('callBuilderBasedSuperConstructor') requires a non-empty 'builderClassnameAsParameter' value.");
-		}
-		
+	public static JCMethodDecl createConstructor(AccessLevel level, List<JCAnnotation> onConstructor, JavacNode typeNode, List<JavacNode> fields, boolean allToDefault, JavacNode source) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		boolean isEnum = (((JCClassDecl) typeNode.get()).mods.flags & Flags.ENUM) != 0;
@@ -294,7 +274,6 @@ public class HandleConstructor {
 		ListBuffer<JCStatement> assigns = new ListBuffer<JCStatement>();
 		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
 		
-		Name builderVariableName = typeNode.toName("b");
 		for (JavacNode fieldNode : fields) {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			Name fieldName = removePrefixFromField(fieldNode);
@@ -311,17 +290,7 @@ public class HandleConstructor {
 				}
 			}
 			JCFieldAccess thisX = maker.Select(maker.Ident(fieldNode.toName("this")), rawName);
-			
-			JCExpression rhs;
-			if (allToDefault) {
-				rhs = getDefaultExpr(maker, field.vartype);
-			} else if (builderClassnameAsParameter != null) {
-				rhs = maker.Select(maker.Ident(builderVariableName), rawName);
-			} else {
-				rhs = maker.Ident(fieldName);
-			}
-			JCExpression assign = maker.Assign(thisX, rhs);
-			
+			JCExpression assign = maker.Assign(thisX, allToDefault ? getDefaultExpr(maker, field.vartype) : maker.Ident(fieldName));
 			assigns.append(maker.Exec(assign));
 		}
 		
@@ -331,23 +300,6 @@ public class HandleConstructor {
 		}
 		if (onConstructor != null) mods.annotations = mods.annotations.appendList(copyAnnotations(onConstructor));
 		
-		if (builderClassnameAsParameter != null) {
-			// Create a constructor that has just the builder as parameter.
-			params.clear();
-			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
-			Name builderClassname = typeNode.toName(builderClassnameAsParameter);
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags), builderVariableName, maker.Ident(builderClassname), null);
-			params.append(param);
-		}
-
-		if (callBuilderBasedSuperConstructor) {
-			// The first statement must be the call to the super constructor.
-			JCMethodInvocation callToSuperConstructor = maker.Apply(List.<JCExpression>nil(),
-					maker.Ident(typeNode.toName("super")),
-					List.<JCExpression>of(maker.Ident(builderVariableName)));
-			assigns.prepend(maker.Exec(callToSuperConstructor));
-		}
-
 		return recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
 			null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(),
 			maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source.get(), typeNode.getContext());
