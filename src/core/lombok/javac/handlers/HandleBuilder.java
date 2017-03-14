@@ -22,10 +22,7 @@
 package lombok.javac.handlers;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.function.Consumer;
 
 import javax.lang.model.element.Modifier;
 
@@ -54,7 +51,6 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
-import jdk.nashorn.internal.runtime.Context;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.ObtainVia;
@@ -64,13 +60,11 @@ import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.core.handlers.HandlerUtil;
-import lombok.delombok.LombokOptionsFactory;
 import lombok.experimental.NonFinal;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
-import lombok.javac.JavacTreeMaker.TypeTag;
 import lombok.javac.handlers.HandleConstructor.SkipIfConstructorExists;
 import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
 import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
@@ -540,29 +534,30 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		ListBuffer<JCStatement> nullChecks = new ListBuffer<JCStatement>();
-		ListBuffer<JCStatement> assigns = new ListBuffer<JCStatement>();
+		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		
 		Name builderVariableName = typeNode.toName("b");
-		for (BuilderFieldData field : builderFields) {
-			List<JCAnnotation> nonNulls = findAnnotations(field.fieldNode, NON_NULL_PATTERN);
+		for (BuilderFieldData bfd : builderFields) {
+			List<JCAnnotation> nonNulls = findAnnotations(bfd.fieldNode, NON_NULL_PATTERN);
 			if (!nonNulls.isEmpty()) {
-				JCStatement nullCheck = generateNullCheck(maker, field.fieldNode, source);
+				JCStatement nullCheck = generateNullCheck(maker, bfd.fieldNode, source);
 				if (nullCheck != null) {
 					nullChecks.append(nullCheck);
 				}
 			}
 			
-			if (field.singularData != null && field.singularData.getSingularizer() != null) {
-				field.singularData.getSingularizer().appendBuildCode(field.singularData, field.fieldNode, field.type, assigns, field.name);
+			JCExpression rhs;
+			if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
+				bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, bfd.fieldNode, bfd.type, statements, bfd.name, "b");
+				rhs = maker.Ident(bfd.singularData.getPluralName());
 			} else {
-				JCFieldAccess thisX = maker.Select(maker.Ident(field.fieldNode.toName("this")), field.rawName);
-				
-				JCExpression rhs;
-				rhs = maker.Select(maker.Ident(builderVariableName), field.rawName);
-				JCExpression assign = maker.Assign(thisX, rhs);
-				
-				assigns.append(maker.Exec(assign));
+				rhs = maker.Select(maker.Ident(builderVariableName), bfd.rawName);
 			}
+			JCFieldAccess thisX = maker.Select(maker.Ident(bfd.fieldNode.toName("this")), bfd.rawName);
+			
+			JCExpression assign = maker.Assign(thisX, rhs);
+				
+			statements.append(maker.Exec(assign));
 		}
 		
 		JCModifiers mods = maker.Modifiers(toJavacModifier(level), List.<JCAnnotation>nil());
@@ -587,12 +582,12 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			JCMethodInvocation callToSuperConstructor = maker.Apply(List.<JCExpression>nil(),
 					maker.Ident(typeNode.toName("super")),
 					List.<JCExpression>of(maker.Ident(builderVariableName)));
-			assigns.prepend(maker.Exec(callToSuperConstructor));
+			statements.prepend(maker.Exec(callToSuperConstructor));
 		}
 
 		JCMethodDecl constr = recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
 			null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(),
-			maker.Block(0L, nullChecks.appendList(assigns).toList()), null), source.get(), typeNode.getContext());
+			maker.Block(0L, nullChecks.appendList(statements).toList()), null), source.get(), typeNode.getContext());
 
 		injectMethod(typeNode, constr, null, Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
 	}
@@ -648,7 +643,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			
 			for (BuilderFieldData bfd : builderFields) {
 				if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
-					bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, type, source, statements, bfd.name);
+					bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, type, source, statements, bfd.name, "this");
 				}
 			}
 		
