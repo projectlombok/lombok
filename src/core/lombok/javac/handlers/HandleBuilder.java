@@ -562,13 +562,16 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		JCModifiers mods = maker.Modifiers(toJavacModifier(level), List.<JCAnnotation>nil());
 		
-		// Add ConstructorProperties
-		JCExpression constructorPropertiesType = chainDots(typeNode, "java", "beans", "ConstructorProperties");
-		ListBuffer<JCExpression> fieldNames = new ListBuffer<JCExpression>();
-		fieldNames.append(maker.Literal(builderVariableName.toString()));
-		JCExpression fieldNamesArray = maker.NewArray(null, List.<JCExpression>nil(), fieldNames.toList());
-		JCAnnotation annotation = maker.Annotation(constructorPropertiesType, List.of(fieldNamesArray));
-		mods.annotations = mods.annotations.append(annotation);
+		boolean suppressConstructorProperties = Boolean.TRUE.equals(typeNode.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES));
+		if (!suppressConstructorProperties) {
+			// Add ConstructorProperties
+			JCExpression constructorPropertiesType = chainDots(typeNode, "java", "beans", "ConstructorProperties");
+			ListBuffer<JCExpression> fieldNames = new ListBuffer<JCExpression>();
+			fieldNames.append(maker.Literal(builderVariableName.toString()));
+			JCExpression fieldNamesArray = maker.NewArray(null, List.<JCExpression>nil(), fieldNames.toList());
+			JCAnnotation annotation = maker.Annotation(constructorPropertiesType, List.of(fieldNamesArray));
+			mods.annotations = mods.annotations.append(annotation);
+		}
 		
 		// Create a constructor that has just the builder as parameter.
 		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
