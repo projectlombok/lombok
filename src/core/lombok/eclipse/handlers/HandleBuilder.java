@@ -25,6 +25,7 @@ import static lombok.eclipse.Eclipse.*;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,6 +40,7 @@ import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.ExplicitConstructorCall;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
@@ -49,6 +51,7 @@ import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedThisReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
@@ -80,6 +83,7 @@ import lombok.core.HandlerPriority;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.SingularData;
 import lombok.eclipse.handlers.HandleConstructor.SkipIfConstructorExists;
@@ -99,6 +103,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	}
 	
 	private static class BuilderFieldData {
+		EclipseNode fieldNode;
 		TypeReference type;
 		char[] rawName;
 		char[] name;
@@ -188,6 +193,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				// Value will only skip making a field final if it has an explicit @NonFinal annotation, so we check for that.
 				if (fd.initialization != null && valuePresent && !hasAnnotation(NonFinal.class, fieldNode)) continue;
 				BuilderFieldData bfd = new BuilderFieldData();
+				bfd.fieldNode = fieldNode;
 				bfd.rawName = fieldNode.getName().toCharArray();
 				bfd.name = removePrefixFromField(fieldNode);
 				bfd.type = fd.type;
@@ -205,8 +211,13 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			}
 			
 			boolean callBuilderBasedSuperConstructor = inherit && td.superclass != null;
-			new HandleConstructor().generateConstructor(tdParent, extendable ? AccessLevel.PROTECTED : AccessLevel.PACKAGE, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER,
-				Collections.<Annotation>emptyList(), annotationNode, extendable ? builderClassName : null, callBuilderBasedSuperConstructor);
+			if (extendable) {
+				generateConstructor(tdParent, builderFields, annotationNode, 
+						builderClassName, callBuilderBasedSuperConstructor);
+			} else {
+				new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER,
+					Collections.<Annotation>emptyList(), annotationNode);
+			}
 			
 			returnType = namePlusTypeParamsToTypeReference(td.name, td.typeParameters, p);
 			typeParams = td.typeParameters;
@@ -427,7 +438,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		if (constructorExists(builderType) == MemberExistsResult.NOT_EXISTS) {
 			ConstructorDeclaration cd = HandleConstructor.createConstructor(
 				AccessLevel.PACKAGE, builderType, Collections.<EclipseNode>emptyList(), false,
-				annotationNode, Collections.<Annotation>emptyList(), null, false);
+				annotationNode, Collections.<Annotation>emptyList());
 			if (cd != null) injectMethod(builderType, cd);
 		}
 		
@@ -522,6 +533,105 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		out.traverse(new SetGeneratedByVisitor(source), ((TypeDeclaration) type.get()).scope);
 		return out;
 
+	}
+	
+	/**
+	 * @param builderClassnameAsParameter
+	 *            if {@code != null}, the only parameter of the constructor will
+	 *            be a builder with this classname; the constructor will then
+	 *            use the values within this builder to assign the fields of new
+	 *            instances.
+	 * @param callBuilderBasedSuperConstructor
+	 *            if {@code true}, the constructor will explicitly call a super
+	 *            constructor with the builder as argument. Requires
+	 *            {@code builderClassAsParameter != null}.
+	 */
+	private void generateConstructor(EclipseNode typeNode, List<BuilderFieldData> builderFields, EclipseNode sourceNode,
+			String builderClassnameAsParameter, boolean callBuilderBasedSuperConstructor) {
+
+		if (builderClassnameAsParameter == null || builderClassnameAsParameter.isEmpty()) {
+			typeNode.addError("A builder-based constructor requires a non-empty 'builderClassnameAsParameter' value.");
+		}
+
+		AccessLevel level = AccessLevel.PROTECTED;
+		ASTNode source = sourceNode.get();
+
+		TypeDeclaration typeDeclaration = ((TypeDeclaration) typeNode.get());
+		long p = (long) source.sourceStart << 32 | source.sourceEnd;
+		
+		boolean isEnum = (((TypeDeclaration) typeNode.get()).modifiers & ClassFileConstants.AccEnum) != 0;
+		if (isEnum) {
+			level = AccessLevel.PRIVATE;
+		}
+
+//		boolean suppressConstructorProperties = Boolean.TRUE.equals(typeNode.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES));
+		
+		ConstructorDeclaration constructor = new ConstructorDeclaration(((CompilationUnitDeclaration) typeNode.top().get()).compilationResult);
+		
+		constructor.modifiers = toEclipseModifier(level);
+		constructor.selector = typeDeclaration.name;
+		if (callBuilderBasedSuperConstructor) {
+			constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.Super);
+			constructor.constructorCall.arguments = new Expression[] {new SingleNameReference("b".toCharArray(), p)};
+		} else {
+			constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
+		}
+		constructor.constructorCall.sourceStart = source.sourceStart;
+		constructor.constructorCall.sourceEnd = source.sourceEnd;
+		constructor.thrownExceptions = null;
+		constructor.typeParameters = null;
+		constructor.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
+		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = source.sourceStart;
+		constructor.bodyEnd = constructor.declarationSourceEnd = constructor.sourceEnd = source.sourceEnd;
+		constructor.arguments = null;
+		
+		List<Statement> assigns = new ArrayList<Statement>();
+		List<Statement> nullChecks = new ArrayList<Statement>();
+		
+		for (BuilderFieldData fieldNode : builderFields) {
+			char[] fieldName = removePrefixFromField(fieldNode.fieldNode);
+			FieldReference thisX = new FieldReference(fieldNode.rawName, p);
+			int s = (int) (p >> 32);
+			int e = (int) p;
+			thisX.receiver = new ThisReference(s, e);
+
+			if (fieldNode.singularData != null && fieldNode.singularData.getSingularizer() != null) {
+				fieldNode.singularData.getSingularizer().appendBuildCode(fieldNode.singularData, typeNode, assigns, fieldNode.name);
+			}
+			
+			Expression assignmentExpr;
+			if (builderClassnameAsParameter != null) {
+				char[][] variableInBuilder = new char[][] {"b".toCharArray(), fieldName};
+				long[] positions = new long[] {p, p};
+				assignmentExpr = new QualifiedNameReference(variableInBuilder, positions, s, e);
+			} else {
+				assignmentExpr = new SingleNameReference(fieldName, p);
+			}
+			
+			Assignment assignment = new Assignment(thisX, assignmentExpr, (int) p);
+			assigns.add(assignment);
+			Annotation[] nonNulls = findAnnotations((FieldDeclaration)fieldNode.fieldNode.get(), NON_NULL_PATTERN);
+			if (nonNulls.length != 0) {
+				Statement nullCheck = generateNullCheck((FieldDeclaration)fieldNode.fieldNode.get(), sourceNode);
+				if (nullCheck != null) {
+					nullChecks.add(nullCheck);
+				}
+			}
+		}
+		
+		nullChecks.addAll(assigns);
+		constructor.statements = nullChecks.isEmpty() ? null : nullChecks.toArray(new Statement[nullChecks.size()]);
+		constructor.arguments = new Argument[] {new Argument("b".toCharArray(), p, new SingleTypeReference(builderClassnameAsParameter.toCharArray(), p), Modifier.FINAL)};
+		
+		// Generate annotations that must  be put on the generated method, and attach them.
+//		Annotation[] constructorProperties = null;
+//		if (!suppressConstructorProperties && level != AccessLevel.PRIVATE && level != AccessLevel.PACKAGE && !HandleConstructor.isLocalType(typeNode)) {
+//			constructorProperties = HandleConstructor.createConstructorProperties(source, builderFields);
+//		}
+		
+		constructor.traverse(new SetGeneratedByVisitor(source), typeDeclaration.scope);
+
+		injectMethod(typeNode, constructor);
 	}
 	
 	private MethodDeclaration generateCleanMethod(List<BuilderFieldData> builderFields, EclipseNode builderType, ASTNode source) {
