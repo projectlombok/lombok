@@ -5,7 +5,6 @@ class BuilderSingularNoAuto {
 	private List<String> items;
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	BuilderSingularNoAuto(final List<String> things, final List<String> widgets, final List<String> items) {
 		this.things = things;
 		this.widgets = widgets;
@@ -13,28 +12,22 @@ class BuilderSingularNoAuto {
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public static class BuilderSingularNoAutoBuilder {
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
-		@lombok.Generated
 		private java.util.ArrayList<String> things;
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
-		@lombok.Generated
 		private java.util.ArrayList<String> widgets;
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
-		@lombok.Generated
 		private java.util.ArrayList<String> items;
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
-		@lombok.Generated
 		BuilderSingularNoAutoBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
-		@lombok.Generated
 		public BuilderSingularNoAutoBuilder things(final String things) {
 			if (this.things == null) this.things = new java.util.ArrayList<String>();
 			this.things.add(things);
@@ -42,7 +35,6 @@ class BuilderSingularNoAuto {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
-		@lombok.Generated
 		public BuilderSingularNoAutoBuilder things(final java.util.Collection<? extends String> things) {
 			if (this.things == null) this.things = new java.util.ArrayList<String>();
 			this.things.addAll(things);
@@ -50,14 +42,12 @@ class BuilderSingularNoAuto {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
-		@lombok.Generated
 		public BuilderSingularNoAutoBuilder clearThings() {
 			if (this.things != null) this.things.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
-		@lombok.Generated
 		public BuilderSingularNoAutoBuilder widget(final String widget) {
 			if (this.widgets == null) this.widgets = new java.util.ArrayList<String>();
 			this.widgets.add(widget);
@@ -65,7 +55,6 @@ class BuilderSingularNoAuto {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
-		@lombok.Generated
 		public BuilderSingularNoAutoBuilder widgets(final java.util.Collection<? extends String> widgets) {
 			if (this.widgets == null) this.widgets = new java.util.ArrayList<String>();
 			this.widgets.addAll(widgets);
@@ -73,14 +62,12 @@ class BuilderSingularNoAuto {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
-		@lombok.Generated
 		public BuilderSingularNoAutoBuilder clearWidgets() {
 			if (this.widgets != null) this.widgets.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
-		@lombok.Generated
 		public BuilderSingularNoAutoBuilder items(final String items) {
 			if (this.items == null) this.items = new java.util.ArrayList<String>();
 			this.items.add(items);
@@ -88,7 +75,6 @@ class BuilderSingularNoAuto {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
-		@lombok.Generated
 		public BuilderSingularNoAutoBuilder items(final java.util.Collection<? extends String> items) {
 			if (this.items == null) this.items = new java.util.ArrayList<String>();
 			this.items.addAll(items);
@@ -96,14 +82,12 @@ class BuilderSingularNoAuto {
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
-		@lombok.Generated
 		public BuilderSingularNoAutoBuilder clearItems() {
 			if (this.items != null) this.items.clear();
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
-		@lombok.Generated
 		public BuilderSingularNoAuto build() {
 			java.util.List<String> things;
 			switch (this.things == null ? 0 : this.things.size()) {
@@ -143,14 +127,12 @@ class BuilderSingularNoAuto {
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
-		@lombok.Generated
 		public java.lang.String toString() {
 			return "BuilderSingularNoAuto.BuilderSingularNoAutoBuilder(things=" + this.things + ", widgets=" + this.widgets + ", items=" + this.items + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public static BuilderSingularNoAutoBuilder builder() {
 		return new BuilderSingularNoAutoBuilder();
 	}

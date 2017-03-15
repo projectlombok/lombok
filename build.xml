@@ -232,7 +232,13 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor</echo>
 		<echo file="build/lombok/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor">lombok.launch.AnnotationProcessorHider$AstModificationNotifier</echo>
 	</target>
 	
-	<target name="dist" description="Builds THE lombok.jar file which contains everything." depends="version, compile">
+	<target name="-latestChanges" depends="version">
+		<ant antfile="buildScripts/website.ant.xml" target="latestChanges" inheritAll="false">
+			<property name="lombok.version" value="${lombok.version}" />
+		</ant>
+	</target>
+	
+	<target name="dist" description="Builds THE lombok.jar file which contains everything." depends="version, compile, -latestChanges">
 		<mkdir dir="dist" />
 		<copy file="doc/changelog.markdown" tofile="build/changelog.txt" />
 		<tstamp>
@@ -240,7 +246,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor</echo>
 		</tstamp>
 		<echo file="release-timestamp.txt">${releaseTimestamp}</echo>
 		<zip destfile="dist/lombok-${lombok.version}.jar">
-			<fileset dir="build" includes="changelog.txt" />
+			<fileset dir="build" includes="changelog.txt, latestchanges.html" />
 			<fileset dir="." includes="LICENSE" />
 			<fileset dir="." includes="AUTHORS" />
 			<fileset dir="." includes="release-timestamp.txt" />

@@ -127,8 +127,8 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		AccessLevel level = annotation.getInstance().value();
 		if (level == AccessLevel.NONE || node == null) return;
 		
-		List<Annotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Wither(onMethod=", annotationNode);
-		List<Annotation> onParam = unboxAndRemoveAnnotationParameter(ast, "onParam", "@Wither(onParam=", annotationNode);
+		List<Annotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Wither(onMethod", annotationNode);
+		List<Annotation> onParam = unboxAndRemoveAnnotationParameter(ast, "onParam", "@Wither(onParam", annotationNode);
 		
 		switch (node.getKind()) {
 		case FIELD:

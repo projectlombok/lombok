@@ -3,7 +3,7 @@ class GeneratedJavaxOff {
   GeneratedJavaxOff() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") @lombok.Generated int getX() {
+  public @java.lang.SuppressWarnings("all") int getX() {
     return this.x;
   }
 }

@@ -20,7 +20,7 @@ class TrickySuccess {
   TrickySuccess() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated int getX() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int getX() {
     return this.x;
   }
 }

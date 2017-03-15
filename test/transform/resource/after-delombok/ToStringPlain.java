@@ -4,7 +4,6 @@ class ToString1 {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public java.lang.String toString() {
 		return "ToString1(x=" + this.x + ", name=" + this.name + ")";
 	}
@@ -15,7 +14,6 @@ class ToString2 {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	@lombok.Generated
 	public java.lang.String toString() {
 		return "ToString2(x=" + this.x + ", name=" + this.name + ")";
 	}

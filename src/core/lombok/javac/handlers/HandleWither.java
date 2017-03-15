@@ -131,8 +131,8 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		
 		if (level == AccessLevel.NONE || node == null) return;
 		
-		List<JCAnnotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Wither(onMethod=", annotationNode);
-		List<JCAnnotation> onParam = unboxAndRemoveAnnotationParameter(ast, "onParam", "@Wither(onParam=", annotationNode);
+		List<JCAnnotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@Wither(onMethod", annotationNode);
+		List<JCAnnotation> onParam = unboxAndRemoveAnnotationParameter(ast, "onParam", "@Wither(onParam", annotationNode);
 		
 		switch (node.getKind()) {
 		case FIELD:

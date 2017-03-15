@@ -7,7 +7,7 @@ abstract class DelegateOnMethods {
     super();
   }
   public abstract @Delegate Bar getBar();
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated void bar(final java.util.ArrayList<java.lang.String> list) {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void bar(final java.util.ArrayList<java.lang.String> list) {
     this.getBar().bar(list);
   }
 }

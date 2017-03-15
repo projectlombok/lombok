@@ -93,9 +93,9 @@ public class HandleConstructor {
 			boolean force = ann.force();
 			
 			List<EclipseNode> fields = force ? findFinalFields(typeNode) : Collections.<EclipseNode>emptyList();
-			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@NoArgsConstructor(onConstructor=", annotationNode);
+			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@NoArgsConstructor(onConstructor", annotationNode);
 			
-			new HandleConstructor().generateConstructor(typeNode, level, fields, force, staticName, SkipIfConstructorExists.NO, null, onConstructor, annotationNode);
+			new HandleConstructor().generateConstructor(typeNode, level, fields, force, staticName, SkipIfConstructorExists.NO, onConstructor, annotationNode);
 		}
 	}
 	
@@ -110,18 +110,15 @@ public class HandleConstructor {
 			AccessLevel level = ann.access();
 			if (level == AccessLevel.NONE) return;
 			String staticName = ann.staticName();
-			Boolean suppressConstructorProperties = null;
 			if (annotation.isExplicit("suppressConstructorProperties")) {
-				@SuppressWarnings("deprecation")
-				boolean suppress = ann.suppressConstructorProperties();
-				suppressConstructorProperties = suppress;
+				annotationNode.addError("This deprecated feature is no longer supported. Remove it; you can create a lombok.config file with 'lombok.anyConstructor.suppressConstructorProperties = true'.");
 			}
 			
-			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@RequiredArgsConstructor(onConstructor=", annotationNode);
+			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@RequiredArgsConstructor(onConstructor", annotationNode);
 			
 			new HandleConstructor().generateConstructor(
 				typeNode, level, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO,
-				suppressConstructorProperties, onConstructor, annotationNode);
+				onConstructor, annotationNode);
 		}
 	}
 	
@@ -172,18 +169,15 @@ public class HandleConstructor {
 			AccessLevel level = ann.access();
 			if (level == AccessLevel.NONE) return;
 			String staticName = ann.staticName();
-			Boolean suppressConstructorProperties = null;
 			if (annotation.isExplicit("suppressConstructorProperties")) {
-				@SuppressWarnings("deprecation")
-				boolean suppress = ann.suppressConstructorProperties();
-				suppressConstructorProperties = suppress;
+				annotationNode.addError("This deprecated feature is no longer supported. Remove it; you can create a lombok.config file with 'lombok.anyConstructor.suppressConstructorProperties = true'.");
 			}
 			
-			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@AllArgsConstructor(onConstructor=", annotationNode);
+			List<Annotation> onConstructor = unboxAndRemoveAnnotationParameter(ast, "onConstructor", "@AllArgsConstructor(onConstructor", annotationNode);
 			
 			new HandleConstructor().generateConstructor(
 				typeNode, level, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO,
-				suppressConstructorProperties, onConstructor, annotationNode);
+				onConstructor, annotationNode);
 		}
 	}
 	
@@ -205,14 +199,14 @@ public class HandleConstructor {
 			EclipseNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists,
 			List<Annotation> onConstructor, EclipseNode sourceNode) {
 		
-		generateConstructor(typeNode, level, findRequiredFields(typeNode), false, staticName, skipIfConstructorExists, null, onConstructor, sourceNode);
+		generateConstructor(typeNode, level, findRequiredFields(typeNode), false, staticName, skipIfConstructorExists, onConstructor, sourceNode);
 	}
 	
 	public void generateAllArgsConstructor(
 			EclipseNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists,
 			List<Annotation> onConstructor, EclipseNode sourceNode) {
 		
-		generateConstructor(typeNode, level, findAllFields(typeNode), false, staticName, skipIfConstructorExists, null, onConstructor, sourceNode);
+		generateConstructor(typeNode, level, findAllFields(typeNode), false, staticName, skipIfConstructorExists, onConstructor, sourceNode);
 	}
 	
 	public enum SkipIfConstructorExists {
@@ -221,7 +215,7 @@ public class HandleConstructor {
 	
 	public void generateConstructor(
 		EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists,
-		Boolean suppressConstructorProperties, List<Annotation> onConstructor, EclipseNode sourceNode) {
+		List<Annotation> onConstructor, EclipseNode sourceNode) {
 		
 		ASTNode source = sourceNode.get();
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
@@ -256,7 +250,7 @@ public class HandleConstructor {
 		
 		ConstructorDeclaration constr = createConstructor(
 			staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields, allToDefault,
-			suppressConstructorProperties, sourceNode, onConstructor);
+			sourceNode, onConstructor);
 		injectMethod(typeNode, constr);
 		if (staticConstrRequired) {
 			MethodDeclaration staticConstr = createStaticConstructor(level, staticName, typeNode, allToDefault ? Collections.<EclipseNode>emptyList() : fields, source);
@@ -298,7 +292,7 @@ public class HandleConstructor {
 	
 	public static ConstructorDeclaration createConstructor(
 		AccessLevel level, EclipseNode type, Collection<EclipseNode> fields, boolean allToDefault,
-		Boolean suppressConstructorProperties, EclipseNode sourceNode, List<Annotation> onConstructor) {
+		EclipseNode sourceNode, List<Annotation> onConstructor) {
 		
 		ASTNode source = sourceNode.get();
 		TypeDeclaration typeDeclaration = ((TypeDeclaration) type.get());
@@ -308,12 +302,11 @@ public class HandleConstructor {
 		
 		if (isEnum) level = AccessLevel.PRIVATE;
 		
-		if (suppressConstructorProperties == null) {
-			if (fields.isEmpty()) {
-				suppressConstructorProperties = false;
-			} else {
-				suppressConstructorProperties = Boolean.TRUE.equals(type.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES));
-			}
+		boolean suppressConstructorProperties;
+		if (fields.isEmpty()) {
+			suppressConstructorProperties = false;
+		} else {
+			suppressConstructorProperties = Boolean.TRUE.equals(type.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES));
 		}
 		
 		ConstructorDeclaration constructor = new ConstructorDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);

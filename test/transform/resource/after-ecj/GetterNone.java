@@ -6,7 +6,7 @@ import lombok.Getter;
   GetterNone() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated int getI() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int getI() {
     return this.i;
   }
 }

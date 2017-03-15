@@ -13,31 +13,31 @@ class GetterAccessLevel {
   GetterAccessLevel() {
     super();
   }
-  private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean isPrivate() {
+  private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean isPrivate() {
     return this.isPrivate;
   }
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean isPackage() {
+  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean isPackage() {
     return this.isPackage;
   }
-  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean isProtected() {
+  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean isProtected() {
     return this.isProtected;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated boolean isPublic() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean isPublic() {
     return this.isPublic;
   }
-  private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated String getPrivateString() {
+  private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") String getPrivateString() {
     return this.privateString;
   }
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated String getPackageString() {
+  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") String getPackageString() {
     return this.packageString;
   }
-  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated String getProtectedString() {
+  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") String getProtectedString() {
     return this.protectedString;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated String getPublicString() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") String getPublicString() {
     return this.publicString;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") @lombok.Generated String getValue() {
+  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") String getValue() {
     return this.value;
   }
 }

@@ -49,7 +49,12 @@ public @interface RequiredArgsConstructor {
 	String staticName() default "";
 	
 	/**
-	 * Any annotations listed here are put on the generated constructor. The syntax for this feature is: {@code @RequiredArgsConstructor(onConstructor=@__({@AnnotationsGoHere}))}
+	 * Any annotations listed here are put on the generated constructor.
+	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br />
+	 * up to JDK7:<br />
+	 *  {@code @RequiredArgsConstructor(onConstructor=@__({@AnnotationsGoHere}))}<br />
+	 * from JDK8:<br />
+	 *  {@code @RequiredArgsConstructor(onConstructor_={@AnnotationsGohere})} // note the underscore after {@code onConstructor}.
 	 */
 	AnyAnnotation[] onConstructor() default {};
 	
@@ -57,16 +62,6 @@ public @interface RequiredArgsConstructor {
 	 * Sets the access level of the constructor. By default, generated constructors are {@code public}.
 	 */
 	AccessLevel access() default lombok.AccessLevel.PUBLIC;
-	
-	/**
-	 * Constructors are generated with the {@link java.beans.ConstructorProperties} annotation.
-	 * However, this annotation is new in 1.6 which means those compiling for 1.5 will need
-	 * to set this value to true.
-	 * 
-	 * @deprecated THIS FEATURE WILL BE REMOVED after March 31st 2015. Use configuration key {@link ConfigurationKeys#ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES} instead.
-	 */
-	@Deprecated
-	boolean suppressConstructorProperties() default false;
 	
 	/**
 	  * Placeholder annotation to enable the placement of annotations on the generated code.

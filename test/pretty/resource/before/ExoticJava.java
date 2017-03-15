@@ -1,3 +1,4 @@
+//VERSION 7:
 import static java.lang.String.*;
 
 import java.io.*;

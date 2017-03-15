@@ -1,5 +1,5 @@
 //CONF: lombok.addGeneratedAnnotation = false
-class GeneratedGlobalOff {
+class GeneratedOff {
 	@lombok.Getter
 	int x;
 }

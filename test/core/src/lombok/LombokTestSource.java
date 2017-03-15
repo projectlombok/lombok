@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -55,7 +56,14 @@ public class LombokTestSource {
 	private final int versionLowerLimit, versionUpperLimit;
 	private final ConfigurationResolver configuration;
 	private final String specifiedEncoding;
+	private final List<String> platforms;
 
+	public boolean runOnPlatform(String platform) {
+		if (platforms == null || platforms.isEmpty()) return true;
+		for (String pl : platforms) if (pl.equalsIgnoreCase(platform)) return true;
+		return false;
+	}
+	
 	public boolean versionWithinLimit(int version) {
 		return version >= versionLowerLimit && version <= versionUpperLimit;
 	}
@@ -145,6 +153,7 @@ public class LombokTestSource {
 		boolean unchanged = false;
 		String encoding = null;
 		Map<String, String> formats = new HashMap<String, String>();
+		String[] platformLimit = null;
 		
 		for (String directive : directives) {
 			directive = directive.trim();
@@ -161,6 +170,14 @@ public class LombokTestSource {
 			
 			if (SKIP_COMPARE_CONTENT_PATTERN.matcher(directive).matches()) {
 				skipCompareContent = true;
+				continue;
+			}
+			
+			if (lc.startsWith("platform ")) {
+				String platformDesc = lc.substring("platform ".length());
+				int idx = platformDesc.indexOf(':');
+				if (idx != -1) platformDesc = platformDesc.substring(0, idx).trim();
+				platformLimit = platformDesc.split("\\s*,\\s*");
 				continue;
 			}
 			
@@ -207,6 +224,7 @@ public class LombokTestSource {
 		this.ignore = ignore;
 		this.skipCompareContent = skipCompareContent;
 		this.unchanged = unchanged;
+		this.platforms = platformLimit == null ? null : Arrays.asList(platformLimit);
 		ConfigurationProblemReporter reporter = new ConfigurationProblemReporter() {
 			@Override public void report(String sourceDescription, String problem, int lineNumber, CharSequence line) {
 				Assert.fail("Problem on directive line: " + problem + " at conf line #" + lineNumber + " (" + line + ")");
