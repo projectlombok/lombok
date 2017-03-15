@@ -11,3 +11,33 @@
     this.__huh2 = _huh2;
   }
 }
+@lombok.AllArgsConstructor @lombok.experimental.Accessors(prefix = {"p", "_"}) class NonNullConstructorsWithAccessors {
+  @lombok.NonNull Integer plower;
+  @lombok.NonNull Integer pUpper;
+  @lombok.NonNull Integer _huh;
+  final @lombok.NonNull Integer __huh2;
+  public @java.beans.ConstructorProperties({"plower", "upper", "huh", "_huh2"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") NonNullConstructorsWithAccessors(final @lombok.NonNull Integer plower, final @lombok.NonNull Integer upper, final @lombok.NonNull Integer huh, final @lombok.NonNull Integer _huh2) {
+    super();
+    if ((plower == null))
+        {
+          throw new java.lang.NullPointerException("plower");
+        }
+    if ((upper == null))
+        {
+          throw new java.lang.NullPointerException("upper");
+        }
+    if ((huh == null))
+        {
+          throw new java.lang.NullPointerException("huh");
+        }
+    if ((_huh2 == null))
+        {
+          throw new java.lang.NullPointerException("_huh2");
+        }
+    this.plower = plower;
+    this.pUpper = upper;
+    this._huh = huh;
+    this.__huh2 = _huh2;
+  }
+}
+

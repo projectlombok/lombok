@@ -9,6 +9,6 @@
 	@lombok.NonNull Integer plower;
 	@lombok.NonNull Integer pUpper;
 	@lombok.NonNull Integer _huh;
-	@lombok.NonNull Integer __huh2;
+	@lombok.NonNull final Integer __huh2;
 }
 
