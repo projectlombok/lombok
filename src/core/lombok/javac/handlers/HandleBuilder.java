@@ -175,8 +175,8 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				superclassBuilderClassName = extendsClause + "Builder";
 			}
 			
-			boolean callBuilderBasedSuperConstructor = inherit && extendsClause != null;
 			if (extendable) {
+				boolean callBuilderBasedSuperConstructor = extendsClause != null;
 				generateBuilderBasedConstructor(tdParent, builderFields, annotationNode, builderClassName, callBuilderBasedSuperConstructor);
 			} else {
 				new HandleConstructor().generateConstructor(tdParent, AccessLevel.PROTECTED, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, annotationNode);
@@ -510,13 +510,20 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 
 	/**
 	 * Generates a constructor that has a builder as the only parameter.
-	 * 
+	 * The values from the builder are used to initialize the fields of new instances.
+	 *
+	 * @param typeNode
+	 *            the type (with the {@code @Builder} annotation) for which a
+	 *            constructor should be generated.
+	 * @param builderFields a list of fields in the builder which should be assigned to new instances.
+	 * @param source the annotation (used for setting source code locations for the generated code).
 	 * @param builderClassnameAsParameter
-	 *            the only parameter of the constructor will be a builder with
-	 *            this classname; the constructor will use the values within
-	 *            this builder to assign the fields of new instances.
+	 *            If {@code != null}, the only parameter of the constructor will
+	 *            be a builder with this classname; the constructor will then
+	 *            use the values within this builder to assign the fields of new
+	 *            instances.
 	 * @param callBuilderBasedSuperConstructor
-	 *            if {@code true}, the constructor will explicitly call a super
+	 *            If {@code true}, the constructor will explicitly call a super
 	 *            constructor with the builder as argument. Requires
 	 *            {@code builderClassAsParameter != null}.
 	 */
@@ -561,17 +568,6 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		JCModifiers mods = maker.Modifiers(toJavacModifier(level), List.<JCAnnotation>nil());
-		
-		boolean suppressConstructorProperties = Boolean.TRUE.equals(typeNode.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES));
-		if (!suppressConstructorProperties) {
-			// Add ConstructorProperties
-			JCExpression constructorPropertiesType = chainDots(typeNode, "java", "beans", "ConstructorProperties");
-			ListBuffer<JCExpression> fieldNames = new ListBuffer<JCExpression>();
-			fieldNames.append(maker.Literal(builderVariableName.toString()));
-			JCExpression fieldNamesArray = maker.NewArray(null, List.<JCExpression>nil(), fieldNames.toList());
-			JCAnnotation annotation = maker.Annotation(constructorPropertiesType, List.of(fieldNamesArray));
-			mods.annotations = mods.annotations.append(annotation);
-		}
 		
 		// Create a constructor that has just the builder as parameter.
 		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();

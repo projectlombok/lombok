@@ -37,7 +37,6 @@ import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
-import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
@@ -56,11 +55,9 @@ import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedThisReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
-import org.eclipse.jdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
-import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TrueLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
@@ -213,8 +210,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				superclassBuilderClassName = new String(td.superclass.getLastToken()) + "Builder";
 			}
 			
-			boolean callBuilderBasedSuperConstructor = inherit && td.superclass != null;
 			if (extendable) {
+				boolean callBuilderBasedSuperConstructor = td.superclass != null;
 				generateBuilderBasedConstructor(tdParent, builderFields, annotationNode, 
 						builderClassName, callBuilderBasedSuperConstructor);
 			} else {
@@ -539,13 +536,21 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	}
 	
 	/**
+	 * Generates a constructor that has a builder as the only parameter.
+	 * The values from the builder are used to initialize the fields of new instances.
+	 *
+	 * @param typeNode
+	 *            the type (with the {@code @Builder} annotation) for which a
+	 *            constructor should be generated.
+	 * @param builderFields a list of fields in the builder which should be assigned to new instances.
+	 * @param sourceNode the annotation (used for setting source code locations for the generated code).
 	 * @param builderClassnameAsParameter
-	 *            if {@code != null}, the only parameter of the constructor will
+	 *            If {@code != null}, the only parameter of the constructor will
 	 *            be a builder with this classname; the constructor will then
 	 *            use the values within this builder to assign the fields of new
 	 *            instances.
 	 * @param callBuilderBasedSuperConstructor
-	 *            if {@code true}, the constructor will explicitly call a super
+	 *            If {@code true}, the constructor will explicitly call a super
 	 *            constructor with the builder as argument. Requires
 	 *            {@code builderClassAsParameter != null}.
 	 */
@@ -621,31 +626,6 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		nullChecks.addAll(statements);
 		constructor.statements = nullChecks.isEmpty() ? null : nullChecks.toArray(new Statement[nullChecks.size()]);
 		constructor.arguments = new Argument[] {new Argument("b".toCharArray(), p, new SingleTypeReference(builderClassnameAsParameter.toCharArray(), p), Modifier.FINAL)};
-		
-		boolean suppressConstructorProperties = Boolean.TRUE.equals(typeNode.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES));
-		if (!suppressConstructorProperties) {
-			// Add ConstructorProperties
-			long[] poss = new long[3];
-			Arrays.fill(poss, p);
-			QualifiedTypeReference constructorPropertiesType = new QualifiedTypeReference(HandleConstructor.JAVA_BEANS_CONSTRUCTORPROPERTIES, poss);
-			setGeneratedBy(constructorPropertiesType, source);
-			SingleMemberAnnotation ann = new SingleMemberAnnotation(constructorPropertiesType, source.sourceStart);
-			ann.declarationSourceEnd = source.sourceEnd;
-			
-			ArrayInitializer fieldNames = new ArrayInitializer();
-			fieldNames.sourceStart = source.sourceStart;
-			fieldNames.sourceEnd = source.sourceEnd;
-			fieldNames.expressions = new Expression[1];
-			
-			fieldNames.expressions[0] = new StringLiteral("b".toCharArray(), source.sourceStart, source.sourceEnd, 0);
-			setGeneratedBy(fieldNames.expressions[0], source);
-			
-			ann.memberValue = fieldNames;
-			setGeneratedBy(ann, source);
-			setGeneratedBy(ann.memberValue, source);
-			Annotation[] constructorProperties = new Annotation[] { ann };
-			constructor.annotations = copyAnnotations(source, constructorProperties);
-		}
 		
 		constructor.traverse(new SetGeneratedByVisitor(source), typeDeclaration.scope);
 
