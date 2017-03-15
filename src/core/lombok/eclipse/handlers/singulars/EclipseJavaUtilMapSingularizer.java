@@ -293,16 +293,16 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		injectMethod(builderType, md);
 	}
 	
-	@Override public void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName) {
+	@Override public void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName, String builderVariable) {
 		if (useGuavaInstead(builderType)) {
-			guavaMapSingularizer.appendBuildCode(data, builderType, statements, targetVariableName);
+			guavaMapSingularizer.appendBuildCode(data, builderType, statements, targetVariableName, builderVariable);
 			return;
 		}
 		
 		if (data.getTargetFqn().equals("java.util.Map")) {
-			statements.addAll(createJavaUtilSetMapInitialCapacitySwitchStatements(data, builderType, true, "emptyMap", "singletonMap", "LinkedHashMap"));
+			statements.addAll(createJavaUtilSetMapInitialCapacitySwitchStatements(data, builderType, true, "emptyMap", "singletonMap", "LinkedHashMap", builderVariable));
 		} else {
-			statements.addAll(createJavaUtilSimpleCreationAndFillStatements(data, builderType, true, true, false, true, "TreeMap"));
+			statements.addAll(createJavaUtilSimpleCreationAndFillStatements(data, builderType, true, true, false, true, "TreeMap", builderVariable));
 		}
 	}
 }

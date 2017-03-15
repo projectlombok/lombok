@@ -90,7 +90,7 @@ abstract class EclipseJavaUtilSingularizer extends EclipseSingularizer {
 		return Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.SINGULAR_USE_GUAVA));
 	}
 	
-	protected List<Statement> createJavaUtilSetMapInitialCapacitySwitchStatements(SingularData data, EclipseNode builderType, boolean mapMode, String emptyCollectionMethod, String singletonCollectionMethod, String targetType) {
+	protected List<Statement> createJavaUtilSetMapInitialCapacitySwitchStatements(SingularData data, EclipseNode builderType, boolean mapMode, String emptyCollectionMethod, String singletonCollectionMethod, String targetType, String builderVariable) {
 		List<Statement> switchContents = new ArrayList<Statement>();
 		char[] keyName = mapMode ? (new String(data.getPluralName()) + "$key").toCharArray() : data.getPluralName();
 		
@@ -112,7 +112,7 @@ abstract class EclipseJavaUtilSingularizer extends EclipseSingularizer {
 			/* !mapMode: pluralName = java.util.Collections.singletonCollectionMethod(this.pluralName.get(0));
 			   mapMode: pluralName = java.util.Collections.singletonCollectionMethod(this.pluralName$key.get(0), this.pluralName$value.get(0)); */ {
 				FieldReference thisDotKey = new FieldReference(keyName, 0L);
-				thisDotKey.receiver = new ThisReference(0, 0);
+				thisDotKey.receiver = getBuilderReference(builderVariable);
 				MessageSend thisDotKeyGet0 = new MessageSend();
 				thisDotKeyGet0.receiver = thisDotKey;
 				thisDotKeyGet0.selector = new char[] {'g', 'e', 't'};
@@ -122,7 +122,7 @@ abstract class EclipseJavaUtilSingularizer extends EclipseSingularizer {
 				if (mapMode) {
 					char[] valueName = (new String(data.getPluralName()) + "$value").toCharArray();
 					FieldReference thisDotValue = new FieldReference(valueName, 0L);
-					thisDotValue.receiver = new ThisReference(0, 0);
+					thisDotValue.receiver = getBuilderReference(builderVariable);
 					MessageSend thisDotValueGet0 = new MessageSend();
 					thisDotValueGet0.receiver = thisDotValue;
 					thisDotValueGet0.selector = new char[] {'g', 'e', 't'};
@@ -143,12 +143,12 @@ abstract class EclipseJavaUtilSingularizer extends EclipseSingularizer {
 		
 		{ // default:
 			switchContents.add(new CaseStatement(null, 0, 0));
-			switchContents.addAll(createJavaUtilSimpleCreationAndFillStatements(data, builderType, mapMode, false, true, emptyCollectionMethod == null, targetType));
+			switchContents.addAll(createJavaUtilSimpleCreationAndFillStatements(data, builderType, mapMode, false, true, emptyCollectionMethod == null, targetType, builderVariable));
 		}
 		
 		SwitchStatement switchStat = new SwitchStatement();
 		switchStat.statements = switchContents.toArray(new Statement[switchContents.size()]);
-		switchStat.expression = getSize(builderType, keyName, true);
+		switchStat.expression = getSize(builderType, keyName, true, builderVariable);
 		
 		TypeReference localShadowerType = new QualifiedTypeReference(fromQualifiedName(data.getTargetFqn()), NULL_POSS);
 		localShadowerType = addTypeArgs(mapMode ? 2 : 1, false, builderType, localShadowerType, data.getTypeArgs());
@@ -157,7 +157,7 @@ abstract class EclipseJavaUtilSingularizer extends EclipseSingularizer {
 		return Arrays.asList(varDefStat, switchStat);
 	}
 	
-	protected List<Statement> createJavaUtilSimpleCreationAndFillStatements(SingularData data, EclipseNode builderType, boolean mapMode, boolean defineVar, boolean addInitialCapacityArg, boolean nullGuard, String targetType) {
+	protected List<Statement> createJavaUtilSimpleCreationAndFillStatements(SingularData data, EclipseNode builderType, boolean mapMode, boolean defineVar, boolean addInitialCapacityArg, boolean nullGuard, String targetType, String builderVariable) {
 		char[] varName = mapMode ? (new String(data.getPluralName()) + "$key").toCharArray() : data.getPluralName();
 		
 		Statement createStat; {
@@ -166,11 +166,11 @@ abstract class EclipseJavaUtilSingularizer extends EclipseSingularizer {
 			if (addInitialCapacityArg) {
 				// this.varName.size() < MAX_POWER_OF_2 ? 1 + this.varName.size() + (this.varName.size() - 3) / 3 : Integer.MAX_VALUE;
 				// lessThanCutOff = this.varName.size() < MAX_POWER_OF_2
-				Expression lessThanCutoff = new BinaryExpression(getSize(builderType, varName, nullGuard), makeIntLiteral("0x40000000".toCharArray(), null), OperatorIds.LESS);
+				Expression lessThanCutoff = new BinaryExpression(getSize(builderType, varName, nullGuard, builderVariable), makeIntLiteral("0x40000000".toCharArray(), null), OperatorIds.LESS);
 				FieldReference integerMaxValue = new FieldReference("MAX_VALUE".toCharArray(), 0L);
 				integerMaxValue.receiver = new QualifiedNameReference(TypeConstants.JAVA_LANG_INTEGER, NULL_POSS, 0, 0);
-				Expression sizeFormulaLeft = new BinaryExpression(makeIntLiteral(new char[] {'1'}, null), getSize(builderType, varName, nullGuard), OperatorIds.PLUS);
-				Expression sizeFormulaRightLeft = new BinaryExpression(getSize(builderType, varName, nullGuard), makeIntLiteral(new char[] {'3'}, null), OperatorIds.MINUS);
+				Expression sizeFormulaLeft = new BinaryExpression(makeIntLiteral(new char[] {'1'}, null), getSize(builderType, varName, nullGuard, builderVariable), OperatorIds.PLUS);
+				Expression sizeFormulaRightLeft = new BinaryExpression(getSize(builderType, varName, nullGuard, builderVariable), makeIntLiteral(new char[] {'3'}, null), OperatorIds.MINUS);
 				Expression sizeFormulaRight = new BinaryExpression(sizeFormulaRightLeft, makeIntLiteral(new char[] {'3'}, null), OperatorIds.DIVIDE);
 				Expression sizeFormula = new BinaryExpression(sizeFormulaLeft, sizeFormulaRight, OperatorIds.PLUS);
 				Expression cond = new ConditionalExpression(lessThanCutoff, sizeFormula, integerMaxValue);
@@ -203,9 +203,9 @@ abstract class EclipseJavaUtilSingularizer extends EclipseSingularizer {
 				pluralnameDotPut.selector = new char[] {'p', 'u', 't'};
 				pluralnameDotPut.receiver = new SingleNameReference(data.getPluralName(), 0L);
 				FieldReference thisDotKey = new FieldReference(varName, 0L);
-				thisDotKey.receiver = new ThisReference(0, 0);
+				thisDotKey.receiver = getBuilderReference(builderVariable);
 				FieldReference thisDotValue = new FieldReference((new String(data.getPluralName()) + "$value").toCharArray(), 0L);
-				thisDotValue.receiver = new ThisReference(0, 0);
+				thisDotValue.receiver = getBuilderReference(builderVariable);
 				MessageSend keyArg = new MessageSend();
 				keyArg.receiver = thisDotKey;
 				keyArg.arguments = new Expression[] {new SingleNameReference(iVar, 0L)};
@@ -219,7 +219,7 @@ abstract class EclipseJavaUtilSingularizer extends EclipseSingularizer {
 				LocalDeclaration forInit = new LocalDeclaration(iVar, 0, 0);
 				forInit.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 				forInit.initialization = makeIntLiteral(new char[] {'0'}, null);
-				Expression checkExpr = new BinaryExpression(new SingleNameReference(iVar, 0L), getSize(builderType, varName, nullGuard), OperatorIds.LESS);
+				Expression checkExpr = new BinaryExpression(new SingleNameReference(iVar, 0L), getSize(builderType, varName, nullGuard, builderVariable), OperatorIds.LESS);
 				Expression incrementExpr = new PostfixExpression(new SingleNameReference(iVar, 0L), IntLiteral.One, OperatorIds.PLUS, 0);
 				fillStat = new ForStatement(new Statement[] {forInit}, checkExpr, new Statement[] {incrementExpr}, pluralnameDotPut, true, 0, 0);
 			} else {
@@ -228,14 +228,14 @@ abstract class EclipseJavaUtilSingularizer extends EclipseSingularizer {
 				pluralnameDotAddAll.selector = new char[] {'a', 'd', 'd', 'A', 'l', 'l'};
 				pluralnameDotAddAll.receiver = new SingleNameReference(data.getPluralName(), 0L);
 				FieldReference thisDotPluralname = new FieldReference(varName, 0L);
-				thisDotPluralname.receiver = new ThisReference(0, 0);
+				thisDotPluralname.receiver = getBuilderReference(builderVariable);
 				pluralnameDotAddAll.arguments = new Expression[] {thisDotPluralname};
 				fillStat = pluralnameDotAddAll;
 			}
 			
 			if (nullGuard) {
 				FieldReference thisDotField = new FieldReference(varName, 0L);
-				thisDotField.receiver = new ThisReference(0, 0);
+				thisDotField.receiver = getBuilderReference(builderVariable);
 				Expression cond = new EqualExpression(thisDotField, new NullLiteral(0, 0), OperatorIds.NOT_EQUAL);
 				fillStat = new IfStatement(cond, fillStat, 0, 0);
 			}

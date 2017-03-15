@@ -195,7 +195,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		injectMethod(builderType, md);
 	}
 	
-	@Override public void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName) {
+	@Override public void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName, String builderVariable) {
 		TypeReference varType = new QualifiedTypeReference(fromQualifiedName(data.getTargetFqn()), NULL_POSS);
 		String simpleTypeName = getSimpleTargetTypeName(data);
 		int agrumentsCount = getTypeArgumentsCount();
@@ -214,14 +214,14 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 			invokeBuild = new MessageSend();
 			invokeBuild.selector = new char[] {'b', 'u', 'i', 'l', 'd'};
 			FieldReference thisDotField = new FieldReference(data.getPluralName(), 0L);
-			thisDotField.receiver = new ThisReference(0, 0);
+			thisDotField.receiver = getBuilderReference(builderVariable);
 			invokeBuild.receiver = thisDotField;
 		}
 		
 		Expression isNull; {
 			//this.pluralName == null
 			FieldReference thisDotField = new FieldReference(data.getPluralName(), 0L);
-			thisDotField.receiver = new ThisReference(0, 0);
+			thisDotField.receiver = getBuilderReference(builderVariable);
 			isNull = new EqualExpression(thisDotField, new NullLiteral(0, 0), OperatorIds.EQUAL_EQUAL);
 		}
 		

@@ -45,6 +45,8 @@ import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.Reference;
+import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
@@ -212,7 +214,7 @@ public class EclipseSingularsRecipes {
 		
 		public abstract List<EclipseNode> generateFields(SingularData data, EclipseNode builderType);
 		public abstract void generateMethods(SingularData data, EclipseNode builderType, boolean fluent, boolean chain);
-		public abstract void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName);
+		public abstract void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName, String builderVariable);
 		
 		public boolean requiresCleaning() {
 			try {
@@ -302,17 +304,18 @@ public class EclipseSingularsRecipes {
 		
 		private static final char[] SIZE_TEXT = new char[] {'s', 'i', 'z', 'e'};
 		
-		/** Generates 'this.<em>name</em>.size()' as an expression; if nullGuard is true, it's this.name == null ? 0 : this.name.size(). */
-		protected Expression getSize(EclipseNode builderType, char[] name, boolean nullGuard) {
+		/** Generates 'this.<em>name</em>.size()' as an expression; if nullGuard is true, it's this.name == null ? 0 : this.name.size(). 
+		 * @param builderVariable */
+		protected Expression getSize(EclipseNode builderType, char[] name, boolean nullGuard, String builderVariable) {
 			MessageSend invoke = new MessageSend();
-			ThisReference thisRef = new ThisReference(0, 0);
+			Reference thisRef = getBuilderReference(builderVariable);
 			FieldReference thisDotName = new FieldReference(name, 0L);
 			thisDotName.receiver = thisRef;
 			invoke.receiver = thisDotName;
 			invoke.selector = SIZE_TEXT;
 			if (!nullGuard) return invoke;
 			
-			ThisReference cdnThisRef = new ThisReference(0, 0);
+			Reference cdnThisRef = getBuilderReference(builderVariable);
 			FieldReference cdnThisDotName = new FieldReference(name, 0L);
 			cdnThisDotName.receiver = cdnThisRef;
 			NullLiteral nullLiteral = new NullLiteral(0, 0);
@@ -340,6 +343,17 @@ public class EclipseSingularsRecipes {
 			}
 			
 			return new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, NULL_POSS);
+		}
+		
+		/**
+		 * @return a {@link SingleNameReference} to the builder in the variable <code>builderVariable</code>. If <code>builderVariable == "this"</code>, a {@link ThisReference} is returned.
+		 */
+		protected static Reference getBuilderReference(String builderVariable) {
+			if ("this".equals(builderVariable)) {
+				return new ThisReference(0, 0);
+			} else {
+				return new SingleNameReference(builderVariable.toCharArray(), 0);
+			}
 		}
 	}
 }

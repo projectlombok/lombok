@@ -169,7 +169,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		injectMethod(builderType, method);
 	}
 	
-	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName) {
+	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		List<JCExpression> jceBlank = List.nil();
 		
@@ -186,12 +186,12 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		
 		JCExpression invokeBuild; {
 			//this.pluralName.build();
-			invokeBuild = maker.Apply(jceBlank, chainDots(builderType, "this", data.getPluralName().toString(), "build"), jceBlank);
+			invokeBuild = maker.Apply(jceBlank, chainDots(builderType, builderVariable, data.getPluralName().toString(), "build"), jceBlank);
 		}
 		
 		JCExpression isNull; {
 			//this.pluralName == null
-			isNull = maker.Binary(CTC_EQUAL, maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName()), maker.Literal(CTC_BOT, null));
+			isNull = maker.Binary(CTC_EQUAL, maker.Select(maker.Ident(builderType.toName(builderVariable)), data.getPluralName()), maker.Literal(CTC_BOT, null));
 		}
 		
 		JCExpression init = maker.Conditional(isNull, empty, invokeBuild); // this.pluralName == null ? ImmutableX.of() : this.pluralName.build()
