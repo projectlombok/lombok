@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 The Project Lombok Authors.
+ * Copyright (C) 2013-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -108,11 +108,11 @@ import java.lang.annotation.Target;
 @Retention(SOURCE)
 public @interface Builder {
 	/**
-	 * Marks a given field as being a 'constant' (initialized by the initializing expression during construction and not eligible to be modified as part of {@code @Builder}.
+	 * The field annotated with {@code @Default} must have an initializing expression; that expression is taken as the default to be used if not explicitly set during building.
 	 */
 	@Target(FIELD)
 	@Retention(SOURCE)
-	public @interface Constant {}
+	public @interface Default {}
 
 	/** Name of the method that creates a new builder instance. Default: {@code builder}. */
 	String builderMethodName() default "builder";

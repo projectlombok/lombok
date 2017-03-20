@@ -20,6 +20,8 @@
 				<code>@Builder</code> gained <code>@Singular</code> support and was promoted to the main <code>lombok</code> package since lombok v1.16.0.
 			</p><p>
 				<code>@Builder</code> with <code>@Singular</code> adds a clear method since lombok v1.16.8.
+			</p><p>
+				<code>@Builder.Default</code> functionality was added in lombok v1.16.16.
 		</div>
 		<div class="overview">
 			<h3>Overview</h3>
@@ -79,7 +81,14 @@
 			</p>
 		</div>
 		<div class="overview">
-			<h3><a name="singular">@Singular</a></h3>
+			<h3><a id="builderdefault" name="builderdefault">@Builder.Default</a></h3>
+			<p>
+				To specify a default value, which will be used if, during the build process this value is never set, initialize the field and add the <code>@Builder.Default</code> annotation:<br />
+				<code>@Builder.Default private final long created = System.currentTimeMillis();</code>
+			</p>
+		</div>
+		<div class="overview">
+			<h3><a id="singular" name="singular">@Singular</a></h3>
 			<p>
 				By annotating one of the parameters (if annotating a method or constructor with <code>@Builder</code>) or fields (if annotating a class with <code>@Builder</code>) with the
 				<code>@Singular</code> annotation, lombok will treat that builder node as a collection, and it generates 2 'adder' methods instead of a 'setter' method. One which adds a single element to the collection, and one

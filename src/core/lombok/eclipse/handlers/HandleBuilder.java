@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2015 The Project Lombok Authors.
+ * Copyright (C) 2013-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@ import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
@@ -102,6 +103,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		TypeReference type;
 		char[] rawName;
 		char[] name;
+		char[] nameOfDefaultProvider;
+		char[] nameOfSetFlag;
 		SingularData singularData;
 		ObtainVia obtainVia;
 		EclipseNode obtainViaNode;
@@ -125,6 +128,16 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			if (!equals(aParts[i], b[i])) return false;
 		}
 		return true;
+	}
+	
+	private static final char[] DEFAULT_PREFIX = {'$', 'd', 'e', 'f', 'a', 'u', 'l', 't', '$'};
+	private static final char[] SET_PREFIX = {'$', 's', 'e', 't'};
+	
+	private static final char[] prefixWith(char[] prefix, char[] name) {
+		char[] out = new char[prefix.length + name.length];
+		System.arraycopy(prefix, 0, out, 0, prefix.length);
+		System.arraycopy(name, 0, out, prefix.length, name.length);
+		return out;
 	}
 	
 	@Override public void handle(AnnotationValues<Builder> annotation, Annotation ast, EclipseNode annotationNode) {
@@ -173,17 +186,38 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			List<EclipseNode> allFields = new ArrayList<EclipseNode>();
 			@SuppressWarnings("deprecation")
 			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation(lombok.experimental.Value.class, parent));
-			for (EclipseNode fieldNode : HandleConstructor.findAllFields(tdParent)) {
+			for (EclipseNode fieldNode : HandleConstructor.findAllFields(tdParent, true)) {
 				FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
-				// final fields with an initializer cannot be written to, so they can't be 'builderized'. Unfortunately presence of @Value makes
-				// non-final fields final, but @Value's handler hasn't done this yet, so we have to do this math ourselves.
-				// Value will only skip making a field final if it has an explicit @NonFinal annotation, so we check for that.
-				if (fd.initialization != null && valuePresent && !hasAnnotation(NonFinal.class, fieldNode)) continue;
+				EclipseNode isDefault = findAnnotation(Builder.Default.class, fieldNode);
+				boolean isFinal = ((fd.modifiers & ClassFileConstants.AccFinal) != 0) || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));
+				
+				if (fd.initialization == null && isDefault != null) {
+					isDefault.addWarning("@Builder.Default requires an initializing expression (' = something;').");
+					isDefault = null;
+				}
+				
+				if (fd.initialization != null && isDefault == null) {
+					if (isFinal) continue;
+					fieldNode.addWarning("@Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. if it is not supposed to be settable during building, add @Builder.Constant.");
+				}
+				
 				BuilderFieldData bfd = new BuilderFieldData();
 				bfd.rawName = fieldNode.getName().toCharArray();
 				bfd.name = removePrefixFromField(fieldNode);
 				bfd.type = fd.type;
 				bfd.singularData = getSingularData(fieldNode, ast);
+				if (isDefault != null) {
+					if (bfd.singularData != null) {
+						isDefault.addError("@Builder.Default and @Singular cannot be mixed.");
+						isDefault = null;
+					} else {
+						bfd.nameOfDefaultProvider = prefixWith(DEFAULT_PREFIX, bfd.name);
+						bfd.nameOfSetFlag = prefixWith(bfd.name, SET_PREFIX);
+						
+						MethodDeclaration md = generateDefaultProvider(bfd.nameOfDefaultProvider, fieldNode, ast);
+						if (md != null) injectMethod(tdParent, md);
+					}
+				}
 				addObtainVia(bfd, fieldNode);
 				builderFields.add(bfd);
 				allFields.add(fieldNode);
@@ -405,7 +439,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		if (methodExists(buildMethodName, builderType, -1) == MemberExistsResult.NOT_EXISTS) {
-			MethodDeclaration md = generateBuildMethod(isStatic, buildMethodName, nameOfStaticBuilderMethod, returnType, builderFields, builderType, thrownExceptions, addCleaning, ast);
+			MethodDeclaration md = generateBuildMethod(tdParent, isStatic, buildMethodName, nameOfStaticBuilderMethod, returnType, builderFields, builderType, thrownExceptions, addCleaning, ast);
 			if (md != null) injectMethod(builderType, md);
 		}
 		
@@ -514,7 +548,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return decl;
 	}
 	
-	public MethodDeclaration generateBuildMethod(boolean isStatic, String name, char[] staticName, TypeReference returnType, List<BuilderFieldData> builderFields, EclipseNode type, TypeReference[] thrownExceptions, boolean addCleaning, ASTNode source) {
+	public MethodDeclaration generateBuildMethod(EclipseNode tdParent, boolean isStatic, String name, char[] staticName, TypeReference returnType, List<BuilderFieldData> builderFields, EclipseNode type, TypeReference[] thrownExceptions, boolean addCleaning, ASTNode source) {
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		List<Statement> statements = new ArrayList<Statement>();
@@ -536,7 +570,20 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		
 		List<Expression> args = new ArrayList<Expression>();
 		for (BuilderFieldData bfd : builderFields) {
-			args.add(new SingleNameReference(bfd.name, 0L));
+			if (bfd.nameOfSetFlag != null) {
+				MessageSend inv = new MessageSend();
+				inv.sourceStart = source.sourceStart;
+				inv.sourceEnd = source.sourceEnd;
+				inv.receiver = new SingleNameReference(((TypeDeclaration) tdParent.get()).name, 0L);
+				inv.selector = bfd.nameOfDefaultProvider;
+				
+				args.add(new ConditionalExpression(
+					new SingleNameReference(bfd.nameOfSetFlag,  0L),
+					new SingleNameReference(bfd.name, 0L),
+					inv));
+			} else {
+				args.add(new SingleNameReference(bfd.name, 0L));
+			}
 		}
 		
 		if (addCleaning) {
@@ -583,6 +630,22 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return out;
 	}
 	
+	public MethodDeclaration generateDefaultProvider(char[] methodName, EclipseNode fieldNode, ASTNode source) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		
+		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) fieldNode.top().get()).compilationResult);
+		out.selector = methodName;
+		out.modifiers = ClassFileConstants.AccPrivate | ClassFileConstants.AccStatic;
+		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
+		FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
+		out.returnType = copyType(fd.type, source);
+		out.statements = new Statement[] {new ReturnStatement(fd.initialization, pS, pE)};
+		fd.initialization = null;
+		
+		out.traverse(new SetGeneratedByVisitor(source), ((TypeDeclaration) fieldNode.up().get()).scope);
+		return out;
+	}
+	
 	public MethodDeclaration generateBuilderMethod(boolean isStatic, String builderMethodName, String builderClassName, EclipseNode type, TypeParameter[] typeParams, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
@@ -608,25 +671,34 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			if (child.getKind() == Kind.FIELD) existing.add(child);
 		}
 		
-		top:
 		for (BuilderFieldData bfd : builderFields) {
 			if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
 				bfd.createdFields.addAll(bfd.singularData.getSingularizer().generateFields(bfd.singularData, builderType));
 			} else {
+				EclipseNode field = null, setFlag = null;
 				for (EclipseNode exists : existing) {
 					char[] n = ((FieldDeclaration) exists.get()).name;
-					if (Arrays.equals(n, bfd.name)) {
-						bfd.createdFields.add(exists);
-						continue top;
-					}
+					if (Arrays.equals(n, bfd.name)) field = exists;
+					if (bfd.nameOfSetFlag != null && Arrays.equals(n, bfd.nameOfSetFlag)) setFlag = exists;
 				}
 				
-				FieldDeclaration fd = new FieldDeclaration(bfd.name, 0, 0);
-				fd.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
-				fd.modifiers = ClassFileConstants.AccPrivate;
-				fd.type = copyType(bfd.type);
-				fd.traverse(new SetGeneratedByVisitor(source), (MethodScope) null);
-				bfd.createdFields.add(injectFieldAndMarkGenerated(builderType, fd));
+				if (field == null) {
+					FieldDeclaration fd = new FieldDeclaration(bfd.name, 0, 0);
+					fd.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
+					fd.modifiers = ClassFileConstants.AccPrivate;
+					fd.type = copyType(bfd.type);
+					fd.traverse(new SetGeneratedByVisitor(source), (MethodScope) null);
+					field = injectFieldAndMarkGenerated(builderType, fd);
+				}
+				if (setFlag == null && bfd.nameOfSetFlag != null) {
+					FieldDeclaration fd = new FieldDeclaration(bfd.nameOfSetFlag, 0, 0);
+					fd.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
+					fd.modifiers = ClassFileConstants.AccPrivate;
+					fd.type = TypeReference.baseTypeReference(TypeIds.T_boolean, 0);
+					fd.traverse(new SetGeneratedByVisitor(source), (MethodScope) null);
+					injectFieldAndMarkGenerated(builderType, fd);
+				}
+				bfd.createdFields.add(field);
 			}
 		}
 	}
@@ -635,13 +707,13 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	
 	public void makeSetterMethodsForBuilder(EclipseNode builderType, BuilderFieldData bfd, EclipseNode sourceNode, boolean fluent, boolean chain) {
 		if (bfd.singularData == null || bfd.singularData.getSingularizer() == null) {
-			makeSimpleSetterMethodForBuilder(builderType, bfd.createdFields.get(0), sourceNode, fluent, chain);
+			makeSimpleSetterMethodForBuilder(builderType, bfd.createdFields.get(0), bfd.nameOfSetFlag, sourceNode, fluent, chain);
 		} else {
 			bfd.singularData.getSingularizer().generateMethods(bfd.singularData, builderType, fluent, chain);
 		}
 	}
 	
-	private void makeSimpleSetterMethodForBuilder(EclipseNode builderType, EclipseNode fieldNode, EclipseNode sourceNode, boolean fluent, boolean chain) {
+	private void makeSimpleSetterMethodForBuilder(EclipseNode builderType, EclipseNode fieldNode, char[] nameOfSetFlag, EclipseNode sourceNode, boolean fluent, boolean chain) {
 		TypeDeclaration td = (TypeDeclaration) builderType.get();
 		AbstractMethodDeclaration[] existing = td.methods;
 		if (existing == null) existing = EMPTY;
@@ -657,7 +729,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		
 		String setterName = fluent ? fieldNode.getName() : HandlerUtil.buildAccessorName("set", fieldNode.getName());
 		
-		MethodDeclaration setter = HandleSetter.createSetter(td, fieldNode, setterName, chain, ClassFileConstants.AccPublic,
+		MethodDeclaration setter = HandleSetter.createSetter(td, fieldNode, setterName, nameOfSetFlag, chain, ClassFileConstants.AccPublic,
 			sourceNode, Collections.<Annotation>emptyList(), Collections.<Annotation>emptyList());
 		injectMethod(builderType, setter);
 	}

@@ -1,6 +1,7 @@
 import java.util.Set;
 
 public class BuilderExample {
+	private long created;
 	private String name;
 	private int age;
 	private Set<String> occupations;
@@ -11,16 +12,28 @@ public class BuilderExample {
 		this.occupations = occupations;
 	}
 	
+	private static long $default$created() {
+		return System.currentTimeMillis();
+	}
+	
 	public static BuilderExampleBuilder builder() {
 		return new BuilderExampleBuilder();
 	}
 	
 	public static class BuilderExampleBuilder {
+		private long created;
+		private boolean created$set;
 		private String name;
 		private int age;
 		private java.util.ArrayList<String> occupations;
 		
 		BuilderExampleBuilder() {
+		}
+		
+		public BuilderExampleBuilder created(long created) {
+			this.created = created;
+			this.created$set = true;
+			return this;
 		}
 		
 		public BuilderExampleBuilder name(String name) {
@@ -63,12 +76,12 @@ public class BuilderExample {
 			// complicated switch statement to produce a compact properly sized immutable set omitted.
 			// go to https://projectlombok.org/features/Singular-snippet.html to see it.
 			Set<String> occupations = ...;
-			return new BuilderExample(name, age, occupations);
+			return new BuilderExample(created$set ? created : BuilderExample.$default$created(), name, age, occupations);
 		}
 		
 		@java.lang.Override
 		public String toString() {
-			return "BuilderExample.BuilderExampleBuilder(name = " + this.name + ", age = " + this.age + ", occupations = " + this.occupations + ")";
+			return "BuilderExample.BuilderExampleBuilder(created = " + this.created + ", name = " + this.name + ", age = " + this.age + ", occupations = " + this.occupations + ")";
 		}
 	}
 }

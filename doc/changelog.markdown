@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v1.16.15 "Edgy Guinea Pig"
 * v1.16.14 is the latest stable release of Project Lombok.
+* FEATURE: `@Builder.Default` lets you configure default values for your fields when using `@Builder`. See the [Builder feature page](https://projectlombok.org/features/Builder.html) for more information. [Issue #1201](https://github.com/rzwitserloot/lombok/issues/1201)
 * PLATFORM: Improved jdk9 support, work in progress.
 * BUGFIX: The `onX` feature (which lets you add annotations to generated methods) did not work if the annotation you added contained named parameters, and you are compiling with JDK8's javac. We can't fix this (it's a bug in javac), but we have provided an alternate, prettier way to do `onX` on javac8+. [Issue #778](https://github.com/rzwitserloot/lombok/issues/778) [onX documentation](https://projectlombok.org/features/experimental/onX.html)
 

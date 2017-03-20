@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2015 The Project Lombok Authors.
+ * Copyright (C) 2010-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -144,14 +144,17 @@ public class HandleConstructor {
 	}
 	
 	static List<EclipseNode> findAllFields(EclipseNode typeNode) {
+		return findAllFields(typeNode, false);
+	}
+	
+	static List<EclipseNode> findAllFields(EclipseNode typeNode, boolean evenFinalInitialized) {
 		List<EclipseNode> fields = new ArrayList<EclipseNode>();
 		for (EclipseNode child : typeNode.down()) {
 			if (child.getKind() != Kind.FIELD) continue;
 			FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
 			if (!filterField(fieldDecl)) continue;
 			
-			// Skip initialized final fields.
-			if (((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) && fieldDecl.initialization != null) continue;
+			if (!evenFinalInitialized && ((fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0) && fieldDecl.initialization != null) continue;
 			
 			fields.add(child);
 		}

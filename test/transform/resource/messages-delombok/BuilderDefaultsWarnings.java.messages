@@ -1,0 +1,2 @@
+5 @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. if it is not supposed to be settable during building, add @Builder.Constant.
+7 @Builder.Default requires an initializing expression (' = something;').

@@ -206,10 +206,10 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		String setterName = toSetterName(field);
 		boolean returnThis = shouldReturnThis(field);
-		return createSetter(access, field, treeMaker, setterName, returnThis, source, onMethod, onParam);
+		return createSetter(access, field, treeMaker, setterName, null, returnThis, source, onMethod, onParam);
 	}
 	
-	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, String setterName, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name booleanFieldToSet, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (setterName == null) return null;
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
@@ -233,6 +233,11 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			JCStatement nullCheck = generateNullCheck(treeMaker, field, source);
 			if (nullCheck != null) statements.append(nullCheck);
 			statements.append(treeMaker.Exec(assign));
+		}
+		
+		if (booleanFieldToSet != null) {
+			JCAssign setBool = treeMaker.Assign(treeMaker.Ident(booleanFieldToSet), treeMaker.Literal(CTC_BOOLEAN, 1));
+			statements.append(treeMaker.Exec(setBool));
 		}
 		
 		JCExpression methodType = null;
