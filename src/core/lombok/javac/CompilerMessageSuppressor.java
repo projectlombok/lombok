@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -43,38 +44,40 @@ import com.sun.tools.javac.util.Log;
  * then they will be generated AGAIN, this time with proper names and line numbers, at the end. Therefore, we want to suppress the logger.
  */
 public final class CompilerMessageSuppressor {
+	
 	private final Log log;
-	private static final Field errWriterField, warnWriterField, noticeWriterField, dumpOnErrorField, promptOnErrorField, diagnosticListenerField;
+	private static final WriterField errWriterField, warnWriterField, noticeWriterField;
+	private static final Field dumpOnErrorField, promptOnErrorField, diagnosticListenerField;
 	private static final Field deferDiagnosticsField, deferredDiagnosticsField, diagnosticHandlerField;
 	private static final ConcurrentMap<Class<?>, Field> handlerDeferredFields = new ConcurrentHashMap<Class<?>, Field>();
 	private static final Field NULL_FIELD;
-	private PrintWriter errWriter, warnWriter, noticeWriter;
 	private Boolean dumpOnError, promptOnError;
 	private DiagnosticListener<?> contextDiagnosticListener, logDiagnosticListener;
 	private final Context context;
 	
-	// If this is true, the fields changed. Better to print weird error messages than to fail outright.
-	private static final boolean dontBother;
-	
 	private static final ThreadLocal<Queue<?>> queueCache = new ThreadLocal<Queue<?>>();
 	
+	enum Writers {
+		ERROR("errWriter", "ERROR"),
+		WARNING("warnWriter", "WARNING"),
+		NOTICE("noticeWriter", "NOTICE");
+		
+		final String fieldName;
+		final String keyName;
+		
+		Writers(String fieldName, String keyName) {
+			this.fieldName = fieldName;
+			this.keyName = keyName;
+		}
+	}
+	
 	static {
-		errWriterField = getDeclaredField(Log.class, "errWriter");
-		warnWriterField = getDeclaredField(Log.class, "warnWriter");
-		noticeWriterField = getDeclaredField(Log.class, "noticeWriter");
+		errWriterField = createWriterField(Writers.ERROR);
+		warnWriterField = createWriterField(Writers.WARNING);
+		noticeWriterField = createWriterField(Writers.NOTICE);
 		dumpOnErrorField = getDeclaredField(Log.class, "dumpOnError");
 		promptOnErrorField = getDeclaredField(Log.class, "promptOnError");
 		diagnosticListenerField = getDeclaredField(Log.class, "diagListener");
-		
-		dontBother = 
-					errWriterField == null || 
-					warnWriterField == null || 
-					noticeWriterField == null || 
-					dumpOnErrorField == null || 
-					promptOnErrorField == null || 
-					diagnosticListenerField == null;
-		
-		
 		deferDiagnosticsField = getDeclaredField(Log.class, "deferDiagnostics");
 		deferredDiagnosticsField = getDeclaredField(Log.class, "deferredDiagnostics");
 		
@@ -100,17 +103,13 @@ public final class CompilerMessageSuppressor {
 		this.context = context;
 	}
 	
-	public boolean disableLoggers() {
+	public void disableLoggers() {
 		contextDiagnosticListener = context.get(DiagnosticListener.class);
 		context.put(DiagnosticListener.class, (DiagnosticListener<?>) null);
-		if (dontBother) return false;
-		boolean dontBotherInstance = false;
-		
-		PrintWriter dummyWriter = new PrintWriter(new OutputStream() {
-			@Override public void write(int b) throws IOException {
-				// Do nothing on purpose
-			}
-		});
+
+		errWriterField.pauze(log);
+		warnWriterField.pauze(log);
+		noticeWriterField.pauze(log);
 		
 		if (deferDiagnosticsField != null) try {
 			if (Boolean.TRUE.equals(deferDiagnosticsField.get(log))) {
@@ -130,50 +129,23 @@ public final class CompilerMessageSuppressor {
 			}
 		} catch (Exception e) {}
 		
-		if (!dontBotherInstance) try {
-			errWriter = (PrintWriter) errWriterField.get(log);
-			errWriterField.set(log, dummyWriter);
-		} catch (Exception e) {
-			dontBotherInstance = true;
-		}
-		
-		if (!dontBotherInstance) try {
-			warnWriter = (PrintWriter) warnWriterField.get(log);
-			warnWriterField.set(log, dummyWriter);
-		} catch (Exception e) {
-			dontBotherInstance = true;
-		}
-		
-		if (!dontBotherInstance) try {
-			noticeWriter = (PrintWriter) noticeWriterField.get(log);
-			noticeWriterField.set(log, dummyWriter);
-		} catch (Exception e) {
-			dontBotherInstance = true;
-		}
-		
-		if (!dontBotherInstance) try {
+		if (dumpOnErrorField != null) try {
 			dumpOnError = (Boolean) dumpOnErrorField.get(log);
 			dumpOnErrorField.set(log, false);
 		} catch (Exception e) {
-			dontBotherInstance = true;
 		}
 		
-		if (!dontBotherInstance) try {
+		if (promptOnErrorField != null) try {
 			promptOnError = (Boolean) promptOnErrorField.get(log);
 			promptOnErrorField.set(log, false);
 		} catch (Exception e) {
-			dontBotherInstance = true;
 		}
 		
-		if (!dontBotherInstance) try {
+		if (diagnosticListenerField != null) try {
 			logDiagnosticListener = (DiagnosticListener<?>) diagnosticListenerField.get(log);
 			diagnosticListenerField.set(log, null);
 		} catch (Exception e) {
-			dontBotherInstance = true;
 		}
-		
-		if (dontBotherInstance) enableLoggers();
-		return !dontBotherInstance;
 	}
 	
 	private static Field getDeferredField(Object handler) {
@@ -193,20 +165,9 @@ public final class CompilerMessageSuppressor {
 			contextDiagnosticListener = null;
 		}
 		
-		if (errWriter != null) try {
-			errWriterField.set(log, errWriter);
-			errWriter = null;
-		} catch (Exception e) {}
-		
-		if (warnWriter != null) try {
-			warnWriterField.set(log, warnWriter);
-			warnWriter = null;
-		} catch (Exception e) {}
-		
-		if (noticeWriter != null) try {
-			noticeWriterField.set(log, noticeWriter);
-			noticeWriter = null;
-		} catch (Exception e) {}
+		errWriterField.resume(log);
+		warnWriterField.resume(log);
+		noticeWriterField.resume(log);
 		
 		if (dumpOnError != null) try {
 			dumpOnErrorField.set(log, dumpOnError);
@@ -281,6 +242,109 @@ public final class CompilerMessageSuppressor {
 		} catch (Exception e) {
 			// We do not expect failure here; if failure does occur, the best course of action is to silently continue; the result will be that the error output of
 			// javac will contain rather a lot of messages, but this is a lot better than just crashing during compilation!
+		}
+	}
+	
+	private static WriterField createWriterField(Writers w) {
+		// jdk9
+		try {
+			Field writers = getDeclaredField(Log.class, "writer");
+			if (writers != null) {
+				Class<?> kindsClass = Class.forName("com.sun.tools.javac.util.Log$WriterKind");
+				for (Object enumConstant : kindsClass.getEnumConstants()) {
+					if (enumConstant.toString().equals(w.keyName)) {
+						return new Java9WriterField(writers, enumConstant);
+					}
+				}
+				return WriterField.NONE;
+			}
+		} catch (Exception e) {
+		}
+		
+		// jdk8
+		Field writerField = getDeclaredField(Log.class, w.fieldName);
+		if (writerField != null) return new Java8WriterField(writerField);
+		
+		// other jdk
+		return WriterField.NONE;
+	}
+	
+	interface WriterField {
+		final PrintWriter NO_WRITER = new PrintWriter(new OutputStream() {
+			@Override public void write(int b) throws IOException {
+				// Do nothing on purpose
+			}
+		});
+
+		final WriterField NONE = new WriterField() {
+			@Override public void pauze(Log log) {
+				// do nothing
+			}
+			@Override public void resume(Log log) {
+				// no nothing
+			}
+		};
+		
+		void pauze(Log log);
+		void resume(Log log);
+	}
+	
+	static class Java8WriterField implements WriterField {
+		private final Field field;
+		private PrintWriter writer;
+		
+		public Java8WriterField(Field field) {
+			this.field = field;
+		}
+
+		@Override public void pauze(Log log) {
+			try {
+				writer = (PrintWriter) field.get(log);
+				field.set(log, NO_WRITER);
+			} catch (Exception e) {
+			}
+		}
+
+		@Override public void resume(Log log) {
+			if (writer != null) {
+				try {
+					field.set(log, writer);
+				} catch (Exception e) {
+				}
+			}
+			writer = null;
+		}
+	}
+	
+	
+	static class Java9WriterField implements WriterField {
+		private final Field field;
+		private final Object key;
+		private PrintWriter writer;
+		
+		public Java9WriterField(Field field, Object key) {
+			this.field = field;
+			this.key = key;
+		}
+		
+		@Override public void pauze(Log log) {
+			try {
+				@SuppressWarnings("unchecked") Map<Object,PrintWriter> map = (Map<Object,PrintWriter>)field.get(log);
+				writer = map.get(key);
+				map.put(key, NO_WRITER);
+			} catch (Exception e) {
+			}
+		}
+		
+		@Override public void resume(Log log) {
+			if (writer != null) {
+				try {
+					@SuppressWarnings("unchecked") Map<Object,PrintWriter> map = (Map<Object,PrintWriter>)field.get(log);
+					map.put(key, writer);
+				} catch (Exception e) {
+				}
+			}
+			writer = null;
 		}
 	}
 }
