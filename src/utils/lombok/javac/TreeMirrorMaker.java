@@ -90,12 +90,13 @@ public class TreeMirrorMaker extends TreeCopier<Void> {
 		return Collections.unmodifiableMap(originalToCopy);
 	}
 	
-	// Monitor issue 205 and issue 694 when making changes here.
+	// Monitor the following issues when making changes here.
+	// - https://github.com/rzwitserloot/lombok/issues/278
+	// - https://github.com/rzwitserloot/lombok/issues/729
 	@Override public JCTree visitVariable(VariableTree node, Void p) {
 		JCVariableDecl original = node instanceof JCVariableDecl ? (JCVariableDecl) node : null;
 		JCVariableDecl copy = (JCVariableDecl) super.visitVariable(node, p);
 		if (original == null) return copy;
-		
 		copy.sym = original.sym;
 		if (copy.sym != null) copy.type = original.type;
 		if (copy.type != null) {
@@ -114,7 +115,7 @@ public class TreeMirrorMaker extends TreeCopier<Void> {
 		return copy;
 	}
 	
-	// Fix for NPE in HandleVal. See http://code.google.com/p/projectlombok/issues/detail?id=299
+	// Fix for NPE in HandleVal. See https://github.com/rzwitserloot/lombok/issues/372
 	// This and visitVariable is rather hacky but we're working around evident bugs or at least inconsistencies in javac.
 	@Override public JCTree visitLabeledStatement(LabeledStatementTree node, Void p) {
 		return node.getStatement().accept(this, p);
