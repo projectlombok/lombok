@@ -18,7 +18,7 @@ class DataConfiguration {
 		if (!(o instanceof DataConfiguration)) return false;
 		final DataConfiguration other = (DataConfiguration) o;
 		if (!other.canEqual((java.lang.Object) this)) return false;
-		if (this.getX() != other.getX()) return false;
+		if (this.x != other.x) return false;
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
@@ -32,13 +32,13 @@ class DataConfiguration {
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
-		result = result * PRIME + this.getX();
+		result = result * PRIME + this.x;
 		return result;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	public java.lang.String toString() {
-		return "DataConfiguration(x=" + this.getX() + ")";
+		return "DataConfiguration(x=" + this.x + ")";
 	}
 }

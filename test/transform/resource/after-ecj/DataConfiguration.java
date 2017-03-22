@@ -11,7 +11,7 @@
     final DataConfiguration other = (DataConfiguration) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
-    if ((this.getX() != other.getX()))
+    if ((this.x != other.x))
         return false;
     return true;
   }
@@ -21,11 +21,11 @@
   public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
     final int PRIME = 59;
     int result = 1;
-    result = ((result * PRIME) + this.getX());
+    result = ((result * PRIME) + this.x);
     return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.lang.String toString() {
-    return (("DataConfiguration(x=" + this.getX()) + ")");
+    return (("DataConfiguration(x=" + this.x) + ")");
   }
   public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") DataConfiguration(final int x) {
     super();
