@@ -145,6 +145,16 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				JCVariableDecl fd = (JCVariableDecl) fieldNode.get();
 				JavacNode isDefault = findAnnotation(Builder.Default.class, fieldNode, true);
 				boolean isFinal = (fd.mods.flags & Flags.FINAL) != 0 || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));
+				BuilderFieldData bfd = new BuilderFieldData();
+				bfd.rawName = fd.name;
+				bfd.name = removePrefixFromField(fieldNode);
+				bfd.type = fd.vartype;
+				bfd.singularData = getSingularData(fieldNode);
+				
+				if (bfd.singularData != null && isDefault != null) {
+					isDefault.addError("@Builder.Default and @Singular cannot be mixed.");
+					isDefault = null;
+				}
 				
 				if (fd.init == null && isDefault != null) {
 					isDefault.addWarning("@Builder.Default requires an initializing expression (' = something;').");
@@ -156,22 +166,12 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					fieldNode.addWarning("@Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. if it is not supposed to be settable during building, add @Builder.Constant.");
 				}
 				
-				BuilderFieldData bfd = new BuilderFieldData();
-				bfd.rawName = fd.name;
-				bfd.name = removePrefixFromField(fieldNode);
-				bfd.type = fd.vartype;
-				bfd.singularData = getSingularData(fieldNode);
 				if (isDefault != null) {
-					if (bfd.singularData != null) {
-						isDefault.addError("@Builder.Default and @Singular cannot be mixed.");
-						isDefault = null;
-					} else {
-						bfd.nameOfDefaultProvider = parent.toName("$default$" + bfd.name);
-						bfd.nameOfSetFlag = parent.toName(bfd.name + "$set");
-						JCMethodDecl md = generateDefaultProvider(bfd.nameOfDefaultProvider, fieldNode);
-						recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
-						if (md != null) injectMethod(tdParent, md);
-					}
+					bfd.nameOfDefaultProvider = parent.toName("$default$" + bfd.name);
+					bfd.nameOfSetFlag = parent.toName(bfd.name + "$set");
+					JCMethodDecl md = generateDefaultProvider(bfd.nameOfDefaultProvider, fieldNode);
+					recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
+					if (md != null) injectMethod(tdParent, md);
 				}
 				addObtainVia(bfd, fieldNode);
 				builderFields.add(bfd);

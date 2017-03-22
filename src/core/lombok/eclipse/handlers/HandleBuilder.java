@@ -191,6 +191,17 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				EclipseNode isDefault = findAnnotation(Builder.Default.class, fieldNode);
 				boolean isFinal = ((fd.modifiers & ClassFileConstants.AccFinal) != 0) || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));
 				
+				BuilderFieldData bfd = new BuilderFieldData();
+				bfd.rawName = fieldNode.getName().toCharArray();
+				bfd.name = removePrefixFromField(fieldNode);
+				bfd.type = fd.type;
+				bfd.singularData = getSingularData(fieldNode, ast);
+				
+				if (bfd.singularData != null && isDefault != null) {
+					isDefault.addError("@Builder.Default and @Singular cannot be mixed.");
+					isDefault = null;
+				}
+				
 				if (fd.initialization == null && isDefault != null) {
 					isDefault.addWarning("@Builder.Default requires an initializing expression (' = something;').");
 					isDefault = null;
@@ -201,22 +212,12 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 					fieldNode.addWarning("@Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. if it is not supposed to be settable during building, add @Builder.Constant.");
 				}
 				
-				BuilderFieldData bfd = new BuilderFieldData();
-				bfd.rawName = fieldNode.getName().toCharArray();
-				bfd.name = removePrefixFromField(fieldNode);
-				bfd.type = fd.type;
-				bfd.singularData = getSingularData(fieldNode, ast);
 				if (isDefault != null) {
-					if (bfd.singularData != null) {
-						isDefault.addError("@Builder.Default and @Singular cannot be mixed.");
-						isDefault = null;
-					} else {
-						bfd.nameOfDefaultProvider = prefixWith(DEFAULT_PREFIX, bfd.name);
-						bfd.nameOfSetFlag = prefixWith(bfd.name, SET_PREFIX);
-						
-						MethodDeclaration md = generateDefaultProvider(bfd.nameOfDefaultProvider, fieldNode, ast);
-						if (md != null) injectMethod(tdParent, md);
-					}
+					bfd.nameOfDefaultProvider = prefixWith(DEFAULT_PREFIX, bfd.name);
+					bfd.nameOfSetFlag = prefixWith(bfd.name, SET_PREFIX);
+					
+					MethodDeclaration md = generateDefaultProvider(bfd.nameOfDefaultProvider, fieldNode, ast);
+					if (md != null) injectMethod(tdParent, md);
 				}
 				addObtainVia(bfd, fieldNode);
 				builderFields.add(bfd);
