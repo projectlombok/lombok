@@ -166,11 +166,11 @@ class BuilderSingularMaps<K, V> {
 				break;
 			default:
 				women = new java.util.LinkedHashMap<K, V>(this.women$key.size() < 1073741824 ? 1 + this.women$key.size() + (this.women$key.size() - 3) / 3 : Integer.MAX_VALUE);
-				for (int $i = 0; $i < this.women$key.size(); $i++) women.put(this.women$key.get($i), this.women$value.get($i));
+				for (int $i = 0; $i < this.women$key.size(); $i++) women.put(this.women$key.get($i), (V) this.women$value.get($i));
 				women = java.util.Collections.unmodifiableMap(women);
 			}
 			java.util.SortedMap<K, Number> men = new java.util.TreeMap<K, Number>();
-			if (this.men$key != null) for (int $i = 0; $i < (this.men$key == null ? 0 : this.men$key.size()); $i++) men.put(this.men$key.get($i), this.men$value.get($i));
+			if (this.men$key != null) for (int $i = 0; $i < (this.men$key == null ? 0 : this.men$key.size()); $i++) men.put(this.men$key.get($i), (Number) this.men$value.get($i));
 			men = java.util.Collections.unmodifiableSortedMap(men);
 			java.util.Map<Object, Object> rawMap;
 			switch (this.rawMap$key == null ? 0 : this.rawMap$key.size()) {
@@ -182,7 +182,7 @@ class BuilderSingularMaps<K, V> {
 				break;
 			default:
 				rawMap = new java.util.LinkedHashMap<Object, Object>(this.rawMap$key.size() < 1073741824 ? 1 + this.rawMap$key.size() + (this.rawMap$key.size() - 3) / 3 : Integer.MAX_VALUE);
-				for (int $i = 0; $i < this.rawMap$key.size(); $i++) rawMap.put(this.rawMap$key.get($i), this.rawMap$value.get($i));
+				for (int $i = 0; $i < this.rawMap$key.size(); $i++) rawMap.put(this.rawMap$key.get($i), (Object) this.rawMap$value.get($i));
 				rawMap = java.util.Collections.unmodifiableMap(rawMap);
 			}
 			java.util.Map<String, V> stringMap;
@@ -195,7 +195,7 @@ class BuilderSingularMaps<K, V> {
 				break;
 			default:
 				stringMap = new java.util.LinkedHashMap<String, V>(this.stringMap$key.size() < 1073741824 ? 1 + this.stringMap$key.size() + (this.stringMap$key.size() - 3) / 3 : Integer.MAX_VALUE);
-				for (int $i = 0; $i < this.stringMap$key.size(); $i++) stringMap.put(this.stringMap$key.get($i), this.stringMap$value.get($i));
+				for (int $i = 0; $i < this.stringMap$key.size(); $i++) stringMap.put(this.stringMap$key.get($i), (V) this.stringMap$value.get($i));
 				stringMap = java.util.Collections.unmodifiableMap(stringMap);
 			}
 			return new BuilderSingularMaps<K, V>(women, men, rawMap, stringMap);

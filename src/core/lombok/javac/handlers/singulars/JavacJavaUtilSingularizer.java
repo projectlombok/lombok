@@ -165,6 +165,9 @@ abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 				JCExpression pluralnameDotPut = maker.Select(maker.Ident(data.getPluralName()), builderType.toName("put"));
 				JCExpression arg1 = maker.Apply(jceBlank, chainDots(builderType, "this", data.getPluralName() + "$key", "get"), List.<JCExpression>of(maker.Ident(ivar)));
 				JCExpression arg2 = maker.Apply(jceBlank, chainDots(builderType, "this", data.getPluralName() + "$value", "get"), List.<JCExpression>of(maker.Ident(ivar)));
+				// [jdk9] We add an unneccessary (V) cast here. Not doing so gives an error in javac (build 9-ea+156-jigsaw-nightly-h6072-20170212):
+				//   error: method put in interface Map<K#2,V#2> cannot be applied to given types;
+				arg2 = maker.TypeCast(createTypeArgs(2, false, builderType, data.getTypeArgs(), source).get(1), arg2);
 				JCStatement putStatement = maker.Exec(maker.Apply(jceBlank, pluralnameDotPut, List.of(arg1, arg2)));
 				JCStatement forInit = maker.VarDef(maker.Modifiers(0), ivar, maker.TypeIdent(CTC_INT), maker.Literal(CTC_INT, 0));
 				JCExpression checkExpr = maker.Binary(CTC_LESS_THAN, maker.Ident(ivar), getSize(maker, builderType, keyVarName, nullGuard, true));
