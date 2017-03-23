@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.16.17 "Edgy Guinea Pig"
+* v1.16.16 is the latest stable release of Project Lombok.
+
 ### v1.16.16 "Dancing Elephant" (March 23rd, 2017)
 * FEATURE: `@Builder.Default` lets you configure default values for your fields when using `@Builder`. See the [Builder feature page](https://projectlombok.org/features/Builder.html) for more information. [Issue #1201](https://github.com/rzwitserloot/lombok/issues/1201)
 * PLATFORM: JDK9 now supported for compilation (delomboking with java9 not yet possible). Note, you'll have to do some command line wrangling. See [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
