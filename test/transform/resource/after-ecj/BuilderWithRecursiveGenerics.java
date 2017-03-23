@@ -28,7 +28,7 @@ public class BuilderWithRecursiveGenerics {
     }
     private final Foo foo;
     private final Bar bar;
-    @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") Test(final Foo foo, final Bar bar) {
+    @java.beans.ConstructorProperties({"foo", "bar"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") Test(final Foo foo, final Bar bar) {
       super();
       this.foo = foo;
       this.bar = bar;

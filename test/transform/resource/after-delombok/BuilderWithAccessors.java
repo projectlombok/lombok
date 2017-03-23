@@ -3,6 +3,7 @@ class BuilderWithAccessors {
 	private final int pUpper;
 	private int _foo;
 	private int __bar;
+	@java.beans.ConstructorProperties({"plower", "upper", "foo", "_bar"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	BuilderWithAccessors(final int plower, final int upper, final int foo, final int _bar) {

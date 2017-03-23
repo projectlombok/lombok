@@ -364,7 +364,7 @@ public class HandleConstructor {
 		
 		/* Generate annotations that must  be put on the generated method, and attach them. */ {
 			Annotation[] constructorProperties = null;
-			if (!allToDefault && !suppressConstructorProperties && level != AccessLevel.PRIVATE && level != AccessLevel.PACKAGE && !isLocalType(type)) {
+			if (!allToDefault && !suppressConstructorProperties && !isLocalType(type)) {
 				constructorProperties = createConstructorProperties(source, fields);
 			}
 			

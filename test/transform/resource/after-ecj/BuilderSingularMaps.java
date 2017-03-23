@@ -196,7 +196,7 @@ import lombok.Singular;
   private @Singular SortedMap<K, ? extends Number> men;
   private @SuppressWarnings("all") @Singular("rawMap") Map rawMap;
   private @Singular("stringMap") Map<String, V> stringMap;
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularMaps(final Map<K, V> women, final SortedMap<K, ? extends Number> men, final Map rawMap, final Map<String, V> stringMap) {
+  @java.beans.ConstructorProperties({"women", "men", "rawMap", "stringMap"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularMaps(final Map<K, V> women, final SortedMap<K, ? extends Number> men, final Map rawMap, final Map<String, V> stringMap) {
     super();
     this.women = women;
     this.men = men;

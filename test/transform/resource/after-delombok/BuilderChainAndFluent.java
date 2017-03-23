@@ -1,5 +1,6 @@
 class BuilderChainAndFluent {
 	private final int yes;
+	@java.beans.ConstructorProperties({"yes"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	BuilderChainAndFluent(final int yes) {

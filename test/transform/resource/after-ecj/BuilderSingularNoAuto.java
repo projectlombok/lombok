@@ -102,7 +102,7 @@ import lombok.Singular;
   private @Singular List<String> things;
   private @Singular("widget") List<String> widgets;
   private @Singular List<String> items;
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAuto(final List<String> things, final List<String> widgets, final List<String> items) {
+  @java.beans.ConstructorProperties({"things", "widgets", "items"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularNoAuto(final List<String> things, final List<String> widgets, final List<String> items) {
     super();
     this.things = things;
     this.widgets = widgets;

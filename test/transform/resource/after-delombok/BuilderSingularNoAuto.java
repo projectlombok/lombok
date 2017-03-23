@@ -3,6 +3,7 @@ class BuilderSingularNoAuto {
 	private List<String> things;
 	private List<String> widgets;
 	private List<String> items;
+	@java.beans.ConstructorProperties({"things", "widgets", "items"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	BuilderSingularNoAuto(final List<String> things, final List<String> widgets, final List<String> items) {

@@ -71,7 +71,7 @@ import lombok.Singular;
   private @Singular Set<String> dangerMice;
   private @Singular NavigableMap<Integer, Number> things;
   private @Singular Collection<Class<?>> doohickeys;
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularRedirectToGuava(final Set<String> dangerMice, final NavigableMap<Integer, Number> things, final Collection<Class<?>> doohickeys) {
+  @java.beans.ConstructorProperties({"dangerMice", "things", "doohickeys"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularRedirectToGuava(final Set<String> dangerMice, final NavigableMap<Integer, Number> things, final Collection<Class<?>> doohickeys) {
     super();
     this.dangerMice = dangerMice;
     this.things = things;

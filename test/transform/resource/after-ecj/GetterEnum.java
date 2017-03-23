@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
   public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") String getName() {
     return this.name;
   }
-  private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") GetterEnum(final int id, final String name) {
+  private @java.beans.ConstructorProperties({"id", "name"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") GetterEnum(final int id, final String name) {
     super();
     this.id = id;
     this.name = name;

@@ -10,6 +10,7 @@ class BuilderSingularGuavaListsSets<T> {
 	private ImmutableSet rawSet;
 	private ImmutableSortedSet<String> passes;
 	private ImmutableTable<? extends Number, ? extends Number, String> users;
+	@java.beans.ConstructorProperties({"cards", "frogs", "rawSet", "passes", "users"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	BuilderSingularGuavaListsSets(final ImmutableList<T> cards, final ImmutableCollection<? extends Number> frogs, final ImmutableSet rawSet, final ImmutableSortedSet<String> passes, final ImmutableTable<? extends Number, ? extends Number, String> users) {

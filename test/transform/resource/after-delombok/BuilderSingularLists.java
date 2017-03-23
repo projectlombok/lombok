@@ -5,6 +5,7 @@ class BuilderSingularLists<T> {
 	private Collection<? extends Number> scarves;
 	@SuppressWarnings("all")
 	private List rawList;
+	@java.beans.ConstructorProperties({"children", "scarves", "rawList"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	BuilderSingularLists(final List<T> children, final Collection<? extends Number> scarves, final List rawList) {

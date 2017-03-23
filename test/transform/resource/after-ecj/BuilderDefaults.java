@@ -40,7 +40,7 @@ public final @Value @Builder class BuilderDefaults {
   private static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") long $default$z() {
     return System.currentTimeMillis();
   }
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderDefaults(final int x, final String name, final long z) {
+  @java.beans.ConstructorProperties({"x", "name", "z"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderDefaults(final int x, final String name, final long z) {
     super();
     this.x = x;
     this.name = name;

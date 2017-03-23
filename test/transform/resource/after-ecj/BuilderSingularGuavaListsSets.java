@@ -111,7 +111,7 @@ import lombok.Singular;
   private @SuppressWarnings("all") @Singular("rawSet") ImmutableSet rawSet;
   private @Singular ImmutableSortedSet<String> passes;
   private @Singular ImmutableTable<? extends Number, ? extends Number, String> users;
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaListsSets(final ImmutableList<T> cards, final ImmutableCollection<? extends Number> frogs, final ImmutableSet rawSet, final ImmutableSortedSet<String> passes, final ImmutableTable<? extends Number, ? extends Number, String> users) {
+  @java.beans.ConstructorProperties({"cards", "frogs", "rawSet", "passes", "users"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaListsSets(final ImmutableList<T> cards, final ImmutableCollection<? extends Number> frogs, final ImmutableSet rawSet, final ImmutableSortedSet<String> passes, final ImmutableTable<? extends Number, ? extends Number, String> users) {
     super();
     this.cards = cards;
     this.frogs = frogs;

@@ -12,6 +12,7 @@ public enum DataOnEnum {
 	public java.lang.String toString() {
 		return "DataOnEnum(someField=" + this.getSomeField() + ")";
 	}
+	@java.beans.ConstructorProperties({"someField"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	private DataOnEnum(final String someField) {

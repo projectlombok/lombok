@@ -5,6 +5,7 @@ public class BuilderWithRecursiveGenerics {
 	public static final class Test<Foo, Bar extends Set<Foo>, Quz extends Inter<Bar, Quz>> {
 		private final Foo foo;
 		private final Bar bar;
+		@java.beans.ConstructorProperties({"foo", "bar"})
 		@java.lang.SuppressWarnings("all")
 		@javax.annotation.Generated("lombok")
 		Test(final Foo foo, final Bar bar) {

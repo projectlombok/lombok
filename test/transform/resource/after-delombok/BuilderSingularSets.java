@@ -6,6 +6,7 @@ class BuilderSingularSets<T> {
 	@SuppressWarnings("all")
 	private Set rawSet;
 	private Set<String> stringSet;
+	@java.beans.ConstructorProperties({"dangerMice", "octopodes", "rawSet", "stringSet"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	BuilderSingularSets(final Set<T> dangerMice, final SortedSet<? extends Number> octopodes, final Set rawSet, final Set<String> stringSet) {

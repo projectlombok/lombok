@@ -6,6 +6,7 @@ class BuilderSingularGuavaMaps<K, V> {
 	private ImmutableSortedMap<Integer, ? extends V> vertices;
 	@SuppressWarnings("all")
 	private ImmutableBiMap rawMap;
+	@java.beans.ConstructorProperties({"battleaxes", "vertices", "rawMap"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	BuilderSingularGuavaMaps(final ImmutableMap<K, V> battleaxes, final ImmutableSortedMap<Integer, ? extends V> vertices, final ImmutableBiMap rawMap) {

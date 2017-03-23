@@ -3,6 +3,7 @@ public class BuilderDefaultsWarnings {
 	final int y = 5;
 	int z;
 	java.util.List<String> items;
+	@java.beans.ConstructorProperties({"x", "z", "items"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	BuilderDefaultsWarnings(final long x, final int z, final java.util.List<String> items) {

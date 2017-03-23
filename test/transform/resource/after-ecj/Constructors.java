@@ -17,7 +17,7 @@
 @lombok.RequiredArgsConstructor(staticName = "staticname") class RequiredArgsConstructorStaticName {
   final int x;
   String name;
-  private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") RequiredArgsConstructorStaticName(final int x) {
+  private @java.beans.ConstructorProperties({"x"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") RequiredArgsConstructorStaticName(final int x) {
     super();
     this.x = x;
   }
@@ -52,7 +52,7 @@
 @lombok.RequiredArgsConstructor(staticName = "of") class RequiredArgsConstructorStaticNameGenerics<T extends Number> {
   final T x;
   String name;
-  private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") RequiredArgsConstructorStaticNameGenerics(final T x) {
+  private @java.beans.ConstructorProperties({"x"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") RequiredArgsConstructorStaticNameGenerics(final T x) {
     super();
     this.x = x;
   }
@@ -63,7 +63,7 @@
 @lombok.RequiredArgsConstructor(staticName = "of") class RequiredArgsConstructorStaticNameGenerics2<T extends Number> {
   final Class<T> x;
   String name;
-  private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") RequiredArgsConstructorStaticNameGenerics2(final Class<T> x) {
+  private @java.beans.ConstructorProperties({"x"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") RequiredArgsConstructorStaticNameGenerics2(final Class<T> x) {
     super();
     this.x = x;
   }
@@ -73,7 +73,7 @@
 }
 @lombok.AllArgsConstructor(access = lombok.AccessLevel.PACKAGE) class AllArgsConstructorPackageAccess {
   final String x;
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") AllArgsConstructorPackageAccess(final String x) {
+  @java.beans.ConstructorProperties({"x"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") AllArgsConstructorPackageAccess(final String x) {
     super();
     this.x = x;
   }

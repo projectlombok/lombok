@@ -63,7 +63,7 @@ import lombok.Builder;
   public static <K>K rrr(BuilderWithToBuilder<K> x) {
     return x.foo;
   }
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderWithToBuilder(final String one, final String two, final T foo, final List<T> bars) {
+  @java.beans.ConstructorProperties({"one", "two", "foo", "bars"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderWithToBuilder(final String one, final String two, final T foo, final List<T> bars) {
     super();
     this.mOne = one;
     this.mTwo = two;

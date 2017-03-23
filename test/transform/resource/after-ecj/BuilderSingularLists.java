@@ -104,7 +104,7 @@ import lombok.Singular;
   private @Singular List<T> children;
   private @Singular Collection<? extends Number> scarves;
   private @SuppressWarnings("all") @Singular("rawList") List rawList;
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularLists(final List<T> children, final Collection<? extends Number> scarves, final List rawList) {
+  @java.beans.ConstructorProperties({"children", "scarves", "rawList"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularLists(final List<T> children, final Collection<? extends Number> scarves, final List rawList) {
     super();
     this.children = children;
     this.scarves = scarves;

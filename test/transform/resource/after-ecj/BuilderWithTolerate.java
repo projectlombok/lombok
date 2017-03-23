@@ -24,7 +24,7 @@ public @Builder class BuilderWithTolerate {
   public static void main(String[] args) {
     BuilderWithTolerate.builder().value("42").build();
   }
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderWithTolerate(final int value) {
+  @java.beans.ConstructorProperties({"value"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderWithTolerate(final int value) {
     super();
     this.value = value;
   }

@@ -1,5 +1,6 @@
 class BuilderSingularWithPrefixes {
 	private java.util.List<String> _elems;
+	@java.beans.ConstructorProperties({"elems"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	BuilderSingularWithPrefixes(final java.util.List<String> elems) {

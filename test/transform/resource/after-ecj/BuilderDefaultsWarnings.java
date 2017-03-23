@@ -55,7 +55,7 @@ public @Builder class BuilderDefaultsWarnings {
   final int y = 5;
   @Builder.Default int z;
   @Builder.Default @Singular java.util.List<String> items;
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderDefaultsWarnings(final long x, final int z, final java.util.List<String> items) {
+  @java.beans.ConstructorProperties({"x", "z", "items"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderDefaultsWarnings(final long x, final int z, final java.util.List<String> items) {
     super();
     this.x = x;
     this.z = z;

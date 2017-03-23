@@ -21,6 +21,7 @@ class RequiredArgsConstructorAccess {
 class RequiredArgsConstructorStaticName {
 	final int x;
 	String name;
+	@java.beans.ConstructorProperties({"x"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	private RequiredArgsConstructorStaticName(final int x) {
@@ -65,6 +66,7 @@ class NoArgsConstructor1 {
 class RequiredArgsConstructorStaticNameGenerics<T extends Number> {
 	final T x;
 	String name;
+	@java.beans.ConstructorProperties({"x"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	private RequiredArgsConstructorStaticNameGenerics(final T x) {
@@ -79,6 +81,7 @@ class RequiredArgsConstructorStaticNameGenerics<T extends Number> {
 class RequiredArgsConstructorStaticNameGenerics2<T extends Number> {
 	final Class<T> x;
 	String name;
+	@java.beans.ConstructorProperties({"x"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	private RequiredArgsConstructorStaticNameGenerics2(final Class<T> x) {
@@ -92,6 +95,7 @@ class RequiredArgsConstructorStaticNameGenerics2<T extends Number> {
 }
 class AllArgsConstructorPackageAccess {
 	final String x;
+	@java.beans.ConstructorProperties({"x"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	AllArgsConstructorPackageAccess(final String x) {

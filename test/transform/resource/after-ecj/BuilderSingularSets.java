@@ -132,7 +132,7 @@ import lombok.Singular;
   private @Singular SortedSet<? extends Number> octopodes;
   private @SuppressWarnings("all") @Singular("rawSet") Set rawSet;
   private @Singular("stringSet") Set<String> stringSet;
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSets(final Set<T> dangerMice, final SortedSet<? extends Number> octopodes, final Set rawSet, final Set<String> stringSet) {
+  @java.beans.ConstructorProperties({"dangerMice", "octopodes", "rawSet", "stringSet"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularSets(final Set<T> dangerMice, final SortedSet<? extends Number> octopodes, final Set rawSet, final Set<String> stringSet) {
     super();
     this.dangerMice = dangerMice;
     this.octopodes = octopodes;

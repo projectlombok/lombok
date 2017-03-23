@@ -41,7 +41,7 @@ import lombok.Singular;
     }
   }
   private @Singular java.util.List<String> _elems;
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularWithPrefixes(final java.util.List<String> elems) {
+  @java.beans.ConstructorProperties({"elems"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularWithPrefixes(final java.util.List<String> elems) {
     super();
     this._elems = elems;
   }

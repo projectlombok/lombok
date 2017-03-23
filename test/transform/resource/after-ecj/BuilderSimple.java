@@ -25,7 +25,7 @@ import java.util.List;
   private final int yes;
   private List<T> also;
   private int $butNotMe;
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSimple(final int yes, final List<T> also) {
+  @java.beans.ConstructorProperties({"yes", "also"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSimple(final int yes, final List<T> also) {
     super();
     this.yes = yes;
     this.also = also;

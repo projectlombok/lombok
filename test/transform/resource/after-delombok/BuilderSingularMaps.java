@@ -6,6 +6,7 @@ class BuilderSingularMaps<K, V> {
 	@SuppressWarnings("all")
 	private Map rawMap;
 	private Map<String, V> stringMap;
+	@java.beans.ConstructorProperties({"women", "men", "rawMap", "stringMap"})
 	@SuppressWarnings("all")
 	BuilderSingularMaps(Map<K, V> women, SortedMap<K, ? extends Number> men, Map rawMap, Map<String, V> stringMap) {
 		this.women = women;

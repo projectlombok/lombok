@@ -5,6 +5,7 @@ class BuilderSingularRedirectToGuava {
 	private Set<String> dangerMice;
 	private NavigableMap<Integer, Number> things;
 	private Collection<Class<?>> doohickeys;
+	@java.beans.ConstructorProperties({"dangerMice", "things", "doohickeys"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	BuilderSingularRedirectToGuava(final Set<String> dangerMice, final NavigableMap<Integer, Number> things, final Collection<Class<?>> doohickeys) {

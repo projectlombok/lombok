@@ -71,7 +71,7 @@ import lombok.Singular;
   private @Singular ImmutableMap<K, V> battleaxes;
   private @Singular ImmutableSortedMap<Integer, ? extends V> vertices;
   private @SuppressWarnings("all") @Singular("rawMap") ImmutableBiMap rawMap;
-  @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaMaps(final ImmutableMap<K, V> battleaxes, final ImmutableSortedMap<Integer, ? extends V> vertices, final ImmutableBiMap rawMap) {
+  @java.beans.ConstructorProperties({"battleaxes", "vertices", "rawMap"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderSingularGuavaMaps(final ImmutableMap<K, V> battleaxes, final ImmutableSortedMap<Integer, ? extends V> vertices, final ImmutableBiMap rawMap) {
     super();
     this.battleaxes = battleaxes;
     this.vertices = vertices;

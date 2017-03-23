@@ -12,6 +12,7 @@ public final class BuilderDefaults {
 	private static long $default$z() {
 		return System.currentTimeMillis();
 	}
+	@java.beans.ConstructorProperties({"x", "name", "z"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	BuilderDefaults(final int x, final String name, final long z) {
