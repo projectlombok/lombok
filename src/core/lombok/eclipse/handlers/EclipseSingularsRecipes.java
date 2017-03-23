@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Project Lombok Authors.
+ * Copyright (C) 2015-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -132,6 +132,10 @@ public class EclipseSingularsRecipes {
 			}
 		}
 		
+		public ASTNode getSource() {
+			return source;
+		}
+		
 		public EclipseNode getAnnotation() {
 			return annotation;
 		}
@@ -211,7 +215,7 @@ public class EclipseSingularsRecipes {
 		}
 		
 		public abstract List<EclipseNode> generateFields(SingularData data, EclipseNode builderType);
-		public abstract void generateMethods(SingularData data, EclipseNode builderType, boolean fluent, boolean chain);
+		public abstract void generateMethods(SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, boolean chain);
 		public abstract void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName);
 		
 		public boolean requiresCleaning() {

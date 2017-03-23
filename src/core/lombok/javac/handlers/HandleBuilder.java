@@ -90,6 +90,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		SingularData singularData;
 		ObtainVia obtainVia;
 		JavacNode obtainViaNode;
+		JavacNode originalFieldNode;
 		
 		java.util.List<JavacNode> createdFields = new ArrayList<JavacNode>();
 	}
@@ -150,6 +151,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				bfd.name = removePrefixFromField(fieldNode);
 				bfd.type = fd.vartype;
 				bfd.singularData = getSingularData(fieldNode);
+				bfd.originalFieldNode = fieldNode;
 				
 				if (bfd.singularData != null && isDefault != null) {
 					isDefault.addError("@Builder.Default and @Singular cannot be mixed.");
@@ -313,6 +315,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				bfd.rawName = raw.name;
 				bfd.type = raw.vartype;
 				bfd.singularData = getSingularData(param);
+				bfd.originalFieldNode = param;
 				addObtainVia(bfd, param);
 				builderFields.add(bfd);
 			}
@@ -638,14 +641,15 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	}
 	
 	public void makeSetterMethodsForBuilder(JavacNode builderType, BuilderFieldData fieldNode, JavacNode source, boolean fluent, boolean chain) {
+		boolean deprecate = isFieldDeprecated(fieldNode.originalFieldNode);
 		if (fieldNode.singularData == null || fieldNode.singularData.getSingularizer() == null) {
-			makeSimpleSetterMethodForBuilder(builderType, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, fluent, chain);
+			makeSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, fluent, chain);
 		} else {
-			fieldNode.singularData.getSingularizer().generateMethods(fieldNode.singularData, builderType, source.get(), fluent, chain);
+			fieldNode.singularData.getSingularizer().generateMethods(fieldNode.singularData, deprecate, builderType, source.get(), fluent, chain);
 		}
 	}
 	
-	private void makeSimpleSetterMethodForBuilder(JavacNode builderType, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, boolean chain) {
+	private void makeSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, boolean chain) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
 		
 		for (JavacNode child : builderType.down()) {
@@ -658,7 +662,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		String setterName = fluent ? fieldNode.getName() : HandlerUtil.buildAccessorName("set", fieldNode.getName());
 		
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
-		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, fieldNode, maker, setterName, nameOfSetFlag, chain, source, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
+		
+		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, nameOfSetFlag, chain, source, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
+		
 		injectMethod(builderType, newMethod);
 	}
 	

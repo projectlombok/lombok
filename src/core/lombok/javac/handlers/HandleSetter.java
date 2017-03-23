@@ -206,10 +206,10 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		String setterName = toSetterName(field);
 		boolean returnThis = shouldReturnThis(field);
-		return createSetter(access, field, treeMaker, setterName, null, returnThis, source, onMethod, onParam);
+		return createSetter(access, false, field, treeMaker, setterName, null, returnThis, source, onMethod, onParam);
 	}
 	
-	public static JCMethodDecl createSetter(long access, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name booleanFieldToSet, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name booleanFieldToSet, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (setterName == null) return null;
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
@@ -263,7 +263,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		JCExpression annotationMethodDefaultValue = null;
 		
 		List<JCAnnotation> annsOnMethod = copyAnnotations(onMethod);
-		if (isFieldDeprecated(field)) {
+		if (isFieldDeprecated(field) || deprecate) {
 			annsOnMethod = annsOnMethod.prepend(treeMaker.Annotation(genJavaLangTypeRef(field, "Deprecated"), List.<JCExpression>nil()));
 		}
 		

@@ -193,11 +193,11 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			}
 		}
 		
-		MethodDeclaration method = createSetter((TypeDeclaration) fieldNode.up().get(), fieldNode, setterName, null, shouldReturnThis, modifier, sourceNode, onMethod, onParam);
+		MethodDeclaration method = createSetter((TypeDeclaration) fieldNode.up().get(), false, fieldNode, setterName, null, shouldReturnThis, modifier, sourceNode, onMethod, onParam);
 		injectMethod(fieldNode.up(), method);
 	}
 	
-	static MethodDeclaration createSetter(TypeDeclaration parent, EclipseNode fieldNode, String name, char[] booleanFieldToSet, boolean shouldReturnThis, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {
+	static MethodDeclaration createSetter(TypeDeclaration parent, boolean deprecate, EclipseNode fieldNode, String name, char[] booleanFieldToSet, boolean shouldReturnThis, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		ASTNode source = sourceNode.get();
 		int pS = source.sourceStart, pE = source.sourceEnd;
@@ -214,7 +214,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			shouldReturnThis = false;
 		}
 		Annotation[] deprecated = null;
-		if (isFieldDeprecated(fieldNode)) {
+		if (isFieldDeprecated(fieldNode) || deprecate) {
 			deprecated = new Annotation[] { generateDeprecatedAnnotation(source) };
 		}
 		method.annotations = copyAnnotations(source, onMethod.toArray(new Annotation[0]), deprecated);

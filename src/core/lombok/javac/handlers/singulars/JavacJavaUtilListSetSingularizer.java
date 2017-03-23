@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Project Lombok Authors.
+ * Copyright (C) 2015-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,9 +76,9 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		return Collections.singletonList(injectFieldAndMarkGenerated(builderType, buildField));
 	}
 	
-	@Override public void generateMethods(SingularData data, JavacNode builderType, JCTree source, boolean fluent, boolean chain) {
+	@Override public void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, boolean chain) {
 		if (useGuavaInstead(builderType)) {
-			guavaListSetSingularizer.generateMethods(data, builderType, source, fluent, chain);
+			guavaListSetSingularizer.generateMethods(data, deprecate, builderType, source, fluent, chain);
 			return;
 		}
 		
@@ -88,19 +88,19 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		
 		JCExpression returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(symbolTable, CTC_VOID));
 		JCStatement returnStatement = chain ? maker.Return(maker.Ident(thisName)) : null;
-		generateSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent);
+		generateSingularMethod(deprecate, maker, returnType, returnStatement, data, builderType, source, fluent);
 		
 		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(symbolTable, CTC_VOID));
 		returnStatement = chain ? maker.Return(maker.Ident(thisName)) : null;
-		generatePluralMethod(maker, returnType, returnStatement, data, builderType, source, fluent);
+		generatePluralMethod(deprecate, maker, returnType, returnStatement, data, builderType, source, fluent);
 		
 		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(symbolTable, CTC_VOID));
 		returnStatement = chain ? maker.Return(maker.Ident(thisName)) : null;
-		generateClearMethod(maker, returnType, returnStatement, data, builderType, source);
+		generateClearMethod(deprecate, maker, returnType, returnStatement, data, builderType, source);
 	}
 	
-	private void generateClearMethod(JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {
-		JCModifiers mods = maker.Modifiers(Flags.PUBLIC);
+	private void generateClearMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {
+		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		List<JCTypeParameter> typeParams = List.nil();
 		List<JCExpression> thrown = List.nil();
 		List<JCVariableDecl> params = List.nil();
@@ -119,11 +119,10 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		injectMethod(builderType, method);
 	}
 	
-	void generateSingularMethod(JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
+	void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 		List<JCTypeParameter> typeParams = List.nil();
 		List<JCExpression> thrown = List.nil();
-		
-		JCModifiers mods = maker.Modifiers(Flags.PUBLIC);
+		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, false, source));
 		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), "add");
@@ -140,11 +139,10 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		injectMethod(builderType, method);
 	}
 	
-	void generatePluralMethod(JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
+	void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 		List<JCTypeParameter> typeParams = List.nil();
 		List<JCExpression> thrown = List.nil();
-		
-		JCModifiers mods = maker.Modifiers(Flags.PUBLIC);
+		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, false, source));
 		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), "addAll");

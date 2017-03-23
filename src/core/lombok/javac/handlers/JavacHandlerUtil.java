@@ -243,6 +243,7 @@ public class JavacHandlerUtil {
 	 * @return {@code true} if a field is marked deprecated, either by {@code @Deprecated} or in javadoc, otherwise {@code false}
 	 */
 	public static boolean isFieldDeprecated(JavacNode field) {
+		if (!(field.get() instanceof JCVariableDecl)) return false;
 		JCVariableDecl fieldNode = (JCVariableDecl) field.get();
 		if ((fieldNode.mods.flags & Flags.DEPRECATED) != 0) {
 			return true;

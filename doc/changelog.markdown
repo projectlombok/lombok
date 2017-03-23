@@ -7,6 +7,7 @@ Lombok Changelog
 * PLATFORM: JDK9 now supported for compilation (delomboking with java9 not yet possible). Note, you'll have to do some command line wrangling. See [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
 * BUGFIX: The `onX` feature (which lets you add annotations to generated methods) did not work if the annotation you added contained named parameters, and you are compiling with JDK8's javac. We can't fix this (it's a bug in javac), but we have provided an alternate, prettier way to do `onX` on javac8+. [Issue #778](https://github.com/rzwitserloot/lombok/issues/778) [onX documentation](https://projectlombok.org/features/experimental/onX.html)
 * BUGFIX: `@Data` and `@Value` now respect the configuration for field access when generating equals, hashCode and toString [Issue #1329](https://github.com/rzwitserloot/lombok/issues/1329)
+* BUGFIX: `@Builder` now marks generated builder 'setters' as `@Deprecated` if the source field is deprecated. [Issue #1342](https://github.com/rzwitserloot/lombok/issues/1342)
 * CHANGE: `@ConstructorProperties` will now also be generated for private and package private constructors. This is useful for Jackson [Issue #1180](https://github.com/rzwitserloot/lombok/issues/1180)
 
 ### v1.16.14 (February 10th, 2017)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Project Lombok Authors.
+ * Copyright (C) 2015-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -132,26 +133,26 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		return Arrays.asList(keyFieldNode, valueFieldNode);
 	}
 	
-	@Override public void generateMethods(SingularData data, EclipseNode builderType, boolean fluent, boolean chain) {
+	@Override public void generateMethods(SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, boolean chain) {
 		if (useGuavaInstead(builderType)) {
-			guavaMapSingularizer.generateMethods(data, builderType, fluent, chain);
+			guavaMapSingularizer.generateMethods(data, deprecate, builderType, fluent, chain);
 			return;
 		}
 		
 		TypeReference returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		Statement returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
-		generateSingularMethod(returnType, returnStatement, data, builderType, fluent);
+		generateSingularMethod(deprecate, returnType, returnStatement, data, builderType, fluent);
 		
 		returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
-		generatePluralMethod(returnType, returnStatement, data, builderType, fluent);
+		generatePluralMethod(deprecate, returnType, returnStatement, data, builderType, fluent);
 		
 		returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
-		generateClearMethod(returnType, returnStatement, data, builderType);
+		generateClearMethod(deprecate, returnType, returnStatement, data, builderType);
 	}
 	
-	private void generateClearMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType) {
+	private void generateClearMethod(boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType) {
 		MethodDeclaration md = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
 		md.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		md.modifiers = ClassFileConstants.AccPublic;
@@ -178,10 +179,12 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		Statement clearStatement = new IfStatement(new EqualExpression(thisDotField, new NullLiteral(0, 0), OperatorIds.NOT_EQUAL), clearMsgs, 0, 0);
 		md.statements = returnStatement != null ? new Statement[] {clearStatement, returnStatement} : new Statement[] {clearStatement};
 		md.returnType = returnType;
+		md.annotations = deprecate ? new Annotation[] { generateDeprecatedAnnotation(data.getSource()) } : null;
+		
 		injectMethod(builderType, md);
 	}
 	
-	private void generateSingularMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {
+	private void generateSingularMethod(boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {
 		MethodDeclaration md = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
 		md.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		md.modifiers = ClassFileConstants.AccPublic;
@@ -225,12 +228,13 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		md.arguments = new Argument[] {keyParam, valueParam};
 		md.returnType = returnType;
 		md.selector = fluent ? data.getSingularName() : HandlerUtil.buildAccessorName("put", new String(data.getSingularName())).toCharArray();
+		md.annotations = deprecate ? new Annotation[] { generateDeprecatedAnnotation(data.getSource()) } : null;
 		
 		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
 	}
 	
-	private void generatePluralMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {
+	private void generatePluralMethod(boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {
 		MethodDeclaration md = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
 		md.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		md.modifiers = ClassFileConstants.AccPublic;
@@ -288,6 +292,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		md.arguments = new Argument[] {param};
 		md.returnType = returnType;
 		md.selector = fluent ? data.getPluralName() : HandlerUtil.buildAccessorName("putAll", new String(data.getPluralName())).toCharArray();
+		md.annotations = deprecate ? new Annotation[] { generateDeprecatedAnnotation(data.getSource()) } : null;
 		
 		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);

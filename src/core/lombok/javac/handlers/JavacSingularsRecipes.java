@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Project Lombok Authors.
+ * Copyright (C) 2015-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,9 +38,12 @@ import lombok.javac.JavacTreeMaker;
 
 import com.sun.source.tree.Tree.Kind;
 import com.sun.tools.javac.code.BoundKind;
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.tree.JCTree.JCWildcard;
@@ -141,6 +144,11 @@ public class JavacSingularsRecipes {
 	public static abstract class JavacSingularizer {
 		public abstract LombokImmutableList<String> getSupportedTypes();
 		
+		protected JCModifiers makeMods(JavacTreeMaker maker, JavacNode node, boolean deprecate) {
+			if (deprecate) return maker.Modifiers(Flags.PUBLIC, List.<JCAnnotation>of(maker.Annotation(genJavaLangTypeRef(node, "Deprecated"), List.<JCExpression>nil())));
+			return maker.Modifiers(Flags.PUBLIC);
+		}
+		
 		/** Checks if any of the to-be-generated nodes (fields, methods) already exist. If so, errors on these (singulars don't support manually writing some of it, and returns true). */
 		public boolean checkForAlreadyExistingNodesAndGenerateError(JavacNode builderType, SingularData data) {
 			for (JavacNode child : builderType.down()) {
@@ -186,7 +194,7 @@ public class JavacSingularsRecipes {
 		}
 		
 		public abstract java.util.List<JavacNode> generateFields(SingularData data, JavacNode builderType, JCTree source);
-		public abstract void generateMethods(SingularData data, JavacNode builderType, JCTree source, boolean fluent, boolean chain);
+		public abstract void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, boolean chain);
 		public abstract void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName);
 		
 		public boolean requiresCleaning() {

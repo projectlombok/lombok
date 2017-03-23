@@ -167,6 +167,7 @@ public class EclipseHandlerUtil {
 	}
 	
 	public static boolean isFieldDeprecated(EclipseNode fieldNode) {
+		if (!(fieldNode.get() instanceof FieldDeclaration)) return false;
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		if ((field.modifiers & ClassFileConstants.AccDeprecated) != 0) {
 			return true;

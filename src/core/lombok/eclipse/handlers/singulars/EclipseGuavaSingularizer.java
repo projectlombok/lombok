@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Project Lombok Authors.
+ * Copyright (C) 2015-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@ import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.SingularData;
 
+import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
@@ -96,21 +97,21 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		return Collections.singletonList(injectFieldAndMarkGenerated(builderType, buildField));
 	}
 	
-	@Override public void generateMethods(SingularData data, EclipseNode builderType, boolean fluent, boolean chain) {
+	@Override public void generateMethods(SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, boolean chain) {
 		TypeReference returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		Statement returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
-		generateSingularMethod(returnType, returnStatement, data, builderType, fluent);
+		generateSingularMethod(deprecate, returnType, returnStatement, data, builderType, fluent);
 		
 		returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
-		generatePluralMethod(returnType, returnStatement, data, builderType, fluent);
+		generatePluralMethod(deprecate, returnType, returnStatement, data, builderType, fluent);
 		
 		returnType = chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
 		returnStatement = chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
-		generateClearMethod(returnType, returnStatement, data,  builderType);
+		generateClearMethod(deprecate, returnType, returnStatement, data,  builderType);
 	}
 	
-	void generateClearMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType) {
+	void generateClearMethod(boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType) {
 		MethodDeclaration md = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
 		md.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		md.modifiers = ClassFileConstants.AccPublic;
@@ -121,10 +122,12 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		md.selector = HandlerUtil.buildAccessorName("clear", new String(data.getPluralName())).toCharArray();
 		md.statements = returnStatement != null ? new Statement[] {a, returnStatement} : new Statement[] {a};
 		md.returnType = returnType;
+		md.annotations = deprecate ? new Annotation[] { generateDeprecatedAnnotation(data.getSource()) } : null;
+		
 		injectMethod(builderType, md);
 	}
 	
-	void generateSingularMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {
+	void generateSingularMethod(boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {
 		LombokImmutableList<String> suffixes = getArgumentSuffixes();
 		char[][] names = new char[suffixes.size()][];
 		for (int i = 0; i < suffixes.size(); i++) {
@@ -159,12 +162,13 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		}
 		md.returnType = returnType;
 		md.selector = fluent ? data.getSingularName() : HandlerUtil.buildAccessorName(getAddMethodName(), new String(data.getSingularName())).toCharArray();
+		md.annotations = deprecate ? new Annotation[] { generateDeprecatedAnnotation(data.getSource()) } : null;
 		
 		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
 	}
 	
-	void generatePluralMethod(TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {
+	void generatePluralMethod(boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {
 		MethodDeclaration md = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
 		md.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		md.modifiers = ClassFileConstants.AccPublic;
@@ -190,6 +194,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		md.arguments = new Argument[] {param};
 		md.returnType = returnType;
 		md.selector = fluent ? data.getPluralName() : HandlerUtil.buildAccessorName(getAddMethodName() + "All", new String(data.getPluralName())).toCharArray();
+		md.annotations = deprecate ? new Annotation[] { generateDeprecatedAnnotation(data.getSource()) } : null;
 		
 		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
