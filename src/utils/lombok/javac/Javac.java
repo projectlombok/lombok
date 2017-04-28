@@ -188,7 +188,8 @@ public class Javac {
 	public static final TreeTag CTC_PREDEC = treeTag("PREDEC");
 	public static final TreeTag CTC_POSTINC = treeTag("POSTINC");
 	public static final TreeTag CTC_POSTDEC = treeTag("POSTDEC");
-	
+	public static final TreeTag CTC_AND = treeTag("AND");
+
 	private static final Method getExtendsClause, getEndPosition, storeEnd;
 	
 	static {

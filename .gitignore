@@ -20,3 +20,4 @@
 /eclipse.location
 /.apt_generated/
 /out
+*.iml

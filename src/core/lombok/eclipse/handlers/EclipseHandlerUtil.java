@@ -795,6 +795,11 @@ public class EclipseHandlerUtil {
 		}
 	}
 	
+	public static void copySourcePosition(ASTNode from, ASTNode to) {
+		to.sourceStart = from.sourceStart;
+		to.sourceEnd = from.sourceEnd;
+	}
+	
 	private static class GetterMethod {
 		private final char[] name;
 		private final TypeReference type;

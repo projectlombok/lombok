@@ -105,7 +105,7 @@ public class PatchVal {
 		return false;
 	}
 
-	private static boolean is(TypeReference ref, BlockScope scope, String key) {
+	public static boolean is(TypeReference ref, BlockScope scope, String key) {
 		if (!couldBe(key, ref)) return false;
 
 		TypeBinding resolvedType = ref.resolvedType;

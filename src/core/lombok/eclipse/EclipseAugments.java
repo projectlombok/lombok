@@ -35,5 +35,6 @@ public final class EclipseAugments {
 	public static final FieldAugment<FieldDeclaration, Boolean> FieldDeclaration_booleanLazyGetter = FieldAugment.augment(FieldDeclaration.class, boolean.class, "lombok$booleanLazyGetter");
 	public static final FieldAugment<ASTNode, Boolean> ASTNode_handled = FieldAugment.augment(ASTNode.class, boolean.class, "lombok$handled");
 	public static final FieldAugment<ASTNode, ASTNode> ASTNode_generatedBy = FieldAugment.augment(ASTNode.class, ASTNode.class, "$generatedBy");
+	public static final FieldAugment<ASTNode, ASTNode> ASTNode_parentNode = FieldAugment.augment(ASTNode.class, ASTNode.class, "$parentNode");
 	public static final FieldAugment<Annotation, Boolean> Annotation_applied = FieldAugment.augment(Annotation.class, boolean.class, "lombok$applied");
 }
