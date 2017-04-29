@@ -59,6 +59,10 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 			return;
 		}
 
+		if (varDecl.init == null) {
+			return;
+		}
+
 		JCBlock initBlock;
 		try {
 			initBlock = newInitBlock(varDecl, annotationNode);
@@ -88,10 +92,10 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 		JCTree varParent = varNode.up().get();
 		Place illegalPlace = null;
 		if (varParent instanceof JCTree.JCEnhancedForLoop && ((JCTree.JCEnhancedForLoop) varParent).var == varDecl) {
-			illegalPlace = folLoopVariable;
+			illegalPlace = forLoopVariable;
 		} else if (varParent instanceof JCTree.JCForLoop) {
 			com.sun.tools.javac.util.List<JCStatement> initializer = ((JCTree.JCForLoop) varParent).getInitializer();
-			if (initializer != null && initializer.contains(varDecl)) illegalPlace = folLoopInitializer;
+			if (initializer != null && initializer.contains(varDecl)) illegalPlace = forLoopInitializer;
 		} else if (varParent instanceof JCTree.JCTry) {
 			Collection<JCTree> resources = getResources((JCTree.JCTry) varParent);
 			if (resources != null && resources.contains(varDecl)) {
@@ -147,12 +151,12 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 		} else if (root instanceof JCForLoop) {
 			JCForLoop forLoopTree = (JCForLoop) root;
 			Tree parent = getParent(variable, forLoopTree, forLoopTree.getInitializer());
-			if (parent != null) throw new SafeCallIllegalUsingException(folLoopInitializer, variable, parent);
+			if (parent != null) throw new SafeCallIllegalUsingException(forLoopInitializer, variable, parent);
 			return getParent(variable, forLoopTree, forLoopTree.getStatement());
 		} else if (root instanceof JCEnhancedForLoop) {
 			JCEnhancedForLoop forLoopTree = (JCEnhancedForLoop) root;
 			Tree parent = getParent(variable, forLoopTree, forLoopTree.getVariable());
-			if (parent != null) throw new SafeCallIllegalUsingException(folLoopVariable, variable, parent);
+			if (parent != null) throw new SafeCallIllegalUsingException(forLoopVariable, variable, parent);
 			return getParent(variable, forLoopTree, forLoopTree.getStatement());
 		} else if (root instanceof JCWhileLoop) {
 			return getParent(variable, root, ((JCWhileLoop) root).getStatement());

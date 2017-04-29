@@ -30,8 +30,8 @@ public class SafeCallIllegalUsingException extends RuntimeException {
 	}
 
 	public enum Place {
-		folLoopInitializer,
-		folLoopVariable,
+		forLoopInitializer,
+		forLoopVariable,
 		tryResource
 	}
 }
