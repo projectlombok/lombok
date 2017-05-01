@@ -238,7 +238,6 @@ public final class HandleSafeCallHelper {
 					VarRef varRef = populateFieldAccess(javacResolution, annotationNode,
 							notDuplicatedLevel, name, type, (JCFieldAccess) meth, true, mi.args,
 							statements);
-					varName = varRef.varName;
 					varDecl = varRef.var;
 					lastLevel = varRef.level;
 				}
@@ -258,7 +257,6 @@ public final class HandleSafeCallHelper {
 				VarRef varRef = populateFieldAccess(javacResolution, annotationNode,
 						notDuplicatedLevel, name, type, (JCFieldAccess) expr,
 						false, null, statements);
-				varName = varRef.varName;
 				varDecl = varRef.var;
 				lastLevel = varRef.level;
 			}
@@ -271,7 +269,6 @@ public final class HandleSafeCallHelper {
 		} else if (expr instanceof JCLiteral || isLambda(expr)) {
 			lastLevel = NOT_USED;
 			varDecl = null;
-			varName = null;
 		} else if (expr instanceof JCIdent) {
 			JCIdent resolvedIdent = (JCIdent) resolvedExpr;
 			Symbol sym = resolvedIdent.sym;
@@ -280,7 +277,6 @@ public final class HandleSafeCallHelper {
 			if (isClass || isThis) {
 				lastLevel = NOT_USED;
 				varDecl = null;
-				varName = null;
 			} else {
 				lastLevel = notDuplicatedLevel;
 				varDecl = makeVariableDecl(treeMaker, statements, varName, type, expr);
@@ -299,7 +295,6 @@ public final class HandleSafeCallHelper {
 			} else {
 				lastLevel = NOT_USED;
 				varDecl = null;
-				varName = null;
 			}
 		} else if (expr instanceof JCTypeCast) {
 			JCTypeCast typeCast = (JCTypeCast) expr;
@@ -326,7 +321,6 @@ public final class HandleSafeCallHelper {
 			JCExpression index = arrayAccess.index;
 			VarRef indexVarRef = populateInitStatements(notDuplicatedLevel + 1, name,
 					index, statements, annotationNode, javacResolution);
-
 
 			if (indexVarRef.var != null) {
 				lastLevel = indexVarRef.level;
@@ -356,7 +350,7 @@ public final class HandleSafeCallHelper {
 		} else {
 			throw new SafeCallUnexpectedStateException(populateInitStatements, expr, expr.getClass());
 		}
-		return new VarRef(varDecl, varName, lastLevel);
+		return new VarRef(varDecl, lastLevel);
 	}
 
 	private static boolean isLambda(JCExpression expr) {
@@ -657,7 +651,7 @@ public final class HandleSafeCallHelper {
 				javacResolution);
 		JCExpression variableExpr;
 		if (varRef.var != null) {
-			Name childName = varRef.varName;
+			Name childName = varRef.getVarName();
 			JCFieldAccess newFa = newSelect(treeMaker, fa, childName);
 			newFa.type = annotationNode.getSymbolTable().objectType;
 			JCExpression newExpr = isMeth ? args != null ? treeMaker.App(newFa, args) : treeMaker.App(newFa) : newFa;
@@ -673,7 +667,7 @@ public final class HandleSafeCallHelper {
 		Name newName = newVarName(name, verifyLevel, annotationNode);
 		JCVariableDecl variableDecl = makeVariableDecl(treeMaker, statements, newName, type, variableExpr);
 		int maxLevel = varRef.level > verifyLevel ? varRef.level : verifyLevel;
-		return new VarRef(variableDecl, newName, maxLevel);
+		return new VarRef(variableDecl, maxLevel);
 
 	}
 
@@ -688,7 +682,7 @@ public final class HandleSafeCallHelper {
 		JCExpression resolveExpr = resolveExprType(expr, annotationNode, javacResolution);
 		VarRef varRef = populateInitStatements(1, varDecl.name, resolveExpr, statements,
 				annotationNode, javacResolution);
-		Name name = varRef.varName;
+		Name name = varRef.getVarName();
 		if (name == null) return null;
 		boolean removeOnlyOneStatement = statements.length() == 1;
 
@@ -733,14 +727,16 @@ public final class HandleSafeCallHelper {
 	}
 
 	private static class VarRef {
-		Name varName;
-		JCVariableDecl var;
-		private int level;
+		final JCVariableDecl var;
+		final private int level;
 
-		VarRef(JCVariableDecl var, Name varName, int level) {
+		VarRef(JCVariableDecl var, int level) {
 			this.var = var;
-			this.varName = varName;
 			this.level = level;
+		}
+
+		public Name getVarName() {
+			return var != null ? var.name : null;
 		}
 	}
 }
