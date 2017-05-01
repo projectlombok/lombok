@@ -306,7 +306,7 @@ final class PatchSafeHelper {
 			}
 		} else if (expr instanceof AllocationExpression ||
 				expr instanceof ArrayAllocationExpression /*||
-	            expr instanceof Literal*/) {
+		        expr instanceof Literal*/) {
 			resultVar = makeLocalDeclaration(statements, varName, expr, type);
 			lastLevel = notDuplicatedLevel;
 		} else if (expr instanceof Literal || isLambda(expr)) {
@@ -322,16 +322,20 @@ final class PatchSafeHelper {
 			Expression expression = castExpression.expression;
 			VarRef varRef = populateInitStatements(notDuplicatedLevel + 1, var, expression,
 					statements, rootScope);
-			lastLevel = getLast(varRef, notDuplicatedLevel);
-			castExpression.expression = varRef.ref;
 
-			CastExpression newCastExpression = copyOf(castExpression);
-
-			TypeReference varTypeRef = varRef.var.type;
-			boolean primitive = Eclipse.isPrimitive(varTypeRef);
-			resultVar = !primitive
-					? newElvisDeclaration(statements, varName, newCastExpression, type)
-					: makeLocalDeclaration(statements, varName, newCastExpression, type);
+			LocalDeclaration expressionVar = varRef.var;
+			if (expressionVar != null) {
+				lastLevel = varRef.level;
+				castExpression.expression = varRef.ref;
+				TypeReference varTypeRef = expressionVar.type;
+				boolean primitive = Eclipse.isPrimitive(varTypeRef);
+				resultVar = !primitive
+						? newElvisDeclaration(statements, varName, copyOf(castExpression), type)
+						: makeLocalDeclaration(statements, varName, copyOf(castExpression), type);
+			} else {
+				lastLevel = notDuplicatedLevel;
+				resultVar = makeLocalDeclaration(statements, varName, copyOf(castExpression), type);
+			}
 		} else if (expr instanceof ArrayReference) {
 			ArrayReference arrayReference = ((ArrayReference) expr);
 			Expression position = arrayReference.position;

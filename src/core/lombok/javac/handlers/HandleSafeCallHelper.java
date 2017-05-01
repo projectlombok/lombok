@@ -289,25 +289,38 @@ public final class HandleSafeCallHelper {
 			JCParens parens = (JCParens) expr;
 			VarRef varRef = populateInitStatements(notDuplicatedLevel, name,
 					parens.expr, statements, annotationNode, javacResolution);
-			parens.expr = newIdent(treeMaker, varRef);
-			JCVariableDecl var = varRef.var;
-			parens.expr = var.init;
-			var.init = parens;
-			varDecl = var;
-			lastLevel = varRef.level;
+			if (varRef.var != null) {
+				parens.expr = newIdent(treeMaker, varRef);
+				JCVariableDecl var = varRef.var;
+				parens.expr = var.init;
+				var.init = parens;
+				varDecl = var;
+				lastLevel = varRef.level;
+			} else {
+				lastLevel = NOT_USED;
+				varDecl = null;
+				varName = null;
+			}
 		} else if (expr instanceof JCTypeCast) {
 			JCTypeCast typeCast = (JCTypeCast) expr;
 			VarRef varRef = populateInitStatements(notDuplicatedLevel + 1, name,
 					typeCast.expr, statements, annotationNode, javacResolution);
-			typeCast.expr = newIdent(treeMaker, varRef);
 
-			JCVariableDecl var = varRef.var;
-			boolean primitive = isPrimitive(var.vartype);
+			if (varRef.var != null) {
+				typeCast.expr = newIdent(treeMaker, varRef);
 
-			JCExpression newExpr = primitive ? typeCast : newElvis(treeMaker, ast, typeCast, type);
+				JCVariableDecl var = varRef.var;
+				boolean primitive = isPrimitive(var.vartype);
 
-			varDecl = makeVariableDecl(treeMaker, statements, varName, type, newExpr);
-			lastLevel = varRef.level;
+				JCExpression newExpr = primitive ? typeCast : newElvis(treeMaker, ast, typeCast, type);
+
+				lastLevel = varRef.level;
+				varDecl = makeVariableDecl(treeMaker, statements, varName, type, newExpr);
+			} else {
+
+				lastLevel = notDuplicatedLevel;
+				varDecl = makeVariableDecl(treeMaker, statements, varName, type, typeCast);
+			}
 		} else if (expr instanceof JCArrayAccess) {
 			JCArrayAccess arrayAccess = (JCArrayAccess) expr;
 			JCExpression index = arrayAccess.index;

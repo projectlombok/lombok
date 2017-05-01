@@ -33,7 +33,8 @@ public class SafeCallUnexpectedStateException extends RuntimeException {
 		populateInitStatementsTokenAmount,
 		populateInitStatementsMethodInvocation,
 		populateInitStatements,
-		cannotRecognizeType
+		cannotRecognizeType,
+		copy
 
 	}
 }
