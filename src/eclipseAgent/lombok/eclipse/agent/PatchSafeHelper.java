@@ -13,7 +13,7 @@ import static java.util.Collections.emptySet;
 import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.*;
 import static lombok.eclipse.Eclipse.fromQualifiedName;
 import static lombok.eclipse.EclipseAugments.ASTNode_parentNode;
-import static lombok.eclipse.agent.PatchSafeCallCopyHelper.copyOf;
+import static lombok.eclipse.agent.PatchSafeCallCopyHelper.copy;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.copySourcePosition;
 import static org.eclipse.jdt.internal.compiler.ast.IntLiteral.buildIntLiteral;
 import static org.eclipse.jdt.internal.compiler.ast.OperatorIds.*;
@@ -130,7 +130,7 @@ final class PatchSafeHelper {
 	}
 
 	private static ConditionalExpression newConditional(Expression checkable, Expression truePart, Expression falsePart) {
-		EqualExpression checkExpr = new EqualExpression(copyOf(checkable), newNullLiteral(), NOT_EQUAL);
+		EqualExpression checkExpr = new EqualExpression(copy(checkable), newNullLiteral(), NOT_EQUAL);
 		//checkExpr.constant = NotAConstant;
 
 		if (truePart instanceof ArrayReference) {
@@ -149,8 +149,8 @@ final class PatchSafeHelper {
 			IntLiteral zero = buildIntLiteral("0".toCharArray(), 0, 0);
 			Expression position = arrayReference.position;
 
-			EqualExpression noLessZero = new EqualExpression(copyOf(position), zero, GREATER_EQUAL);
-			EqualExpression lessLength = new EqualExpression(copyOf(position), lengthCall, LESS);
+			EqualExpression noLessZero = new EqualExpression(copy(position), zero, GREATER_EQUAL);
+			EqualExpression lessLength = new EqualExpression(copy(position), lengthCall, LESS);
 			EqualExpression indexRangeCondition = new EqualExpression(noLessZero, lessLength, AND_AND);
 			if (position instanceof IntLiteral) {
 				IntLiteral intLiteral = (IntLiteral) position;
@@ -163,7 +163,7 @@ final class PatchSafeHelper {
 			checkExpr = new EqualExpression(checkExpr, indexRangeCondition, AND_AND);
 		}
 		copySourcePosition(checkable, checkExpr);
-		ConditionalExpression cexpr = new ConditionalExpression(checkExpr, copyOf(truePart), falsePart);
+		ConditionalExpression cexpr = new ConditionalExpression(checkExpr, copy(truePart), falsePart);
 		copySourcePosition(truePart, cexpr);
 		return cexpr;
 	}
@@ -249,7 +249,7 @@ final class PatchSafeHelper {
 				VarRef varRef = populateInitStatements(notDuplicatedLevel + 1, var, receiver,
 						statements, rootScope);
 
-				MessageSend newMessageSend = copyOf(messageSend);
+				MessageSend newMessageSend = copy(messageSend);
 
 				if (varRef.var != null) {
 					lastLevel = varRef.level;
@@ -307,11 +307,46 @@ final class PatchSafeHelper {
 				} else lastLevel = notDuplicatedLevel;
 				resultVar = newElvisDeclaration(statements, varName, expr, type);
 			}
-		} else if (expr instanceof AllocationExpression ||
-				expr instanceof ArrayAllocationExpression /*||
+		} else if (expr instanceof AllocationExpression /*||
 			    expr instanceof Literal*/) {
 			resultVar = makeLocalDeclaration(statements, varName, expr, type);
 			lastLevel = notDuplicatedLevel;
+		} else if (expr instanceof ArrayAllocationExpression) {
+			ArrayAllocationExpression arrayAllocation = ((ArrayAllocationExpression) expr);
+			ArrayAllocationExpression resultArrayAlloc = copy(arrayAllocation);
+			ArrayInitializer initializer = arrayAllocation.initializer;
+			if (initializer != null && initializer.expressions != null) {
+				int initializerLevel = notDuplicatedLevel;
+				Expression[] oldExprs = initializer.expressions;
+				Expression[] resultExprs = resultArrayAlloc.initializer.expressions;
+				for (int i = 0; i < oldExprs.length; i++) {
+					Expression expression = oldExprs[i];
+					VarRef varRef = populateInitStatements(initializerLevel + 1, var, expression,
+							statements, rootScope);
+					Reference newInitExpr;
+					LocalDeclaration localDeclaration = varRef.var;
+					if (localDeclaration != null) {
+						newInitExpr = varRef.getRef();
+						boolean mustBeConditional = Eclipse.isPrimitive(arrayAllocation.type) &&
+								!Eclipse.isPrimitive(localDeclaration.type);
+						if (mustBeConditional) {
+							int conditionalLevel = verifyNotDuplicateLevel(varRef.level + 1, var, rootScope);
+							char[] conditionalVarName = newName(conditionalLevel, var.name);
+							LocalDeclaration condition = newElvisDeclaration(statements, conditionalVarName,
+									newInitExpr, localDeclaration.type, arrayAllocation.type);
+							newInitExpr = newSingleNameReference(condition.name, getP(condition));
+							initializerLevel = conditionalLevel;
+						} else
+							initializerLevel = varRef.level;
+						resultExprs[i] = newInitExpr;
+					}
+				}
+				lastLevel = initializerLevel;
+			} else {
+				lastLevel = notDuplicatedLevel;
+			}
+			resultVar = makeLocalDeclaration(statements, varName, (resultArrayAlloc), type);
+
 		} else if (expr instanceof Literal || isLambda(expr)) {
 			resultVar = null;
 			lastLevel = NOT_USED;
@@ -331,11 +366,11 @@ final class PatchSafeHelper {
 				TypeReference varTypeRef = expressionVar.type;
 				boolean primitive = Eclipse.isPrimitive(varTypeRef);
 				resultVar = !primitive
-						? newElvisDeclaration(statements, varName, copyOf(castExpression), type)
-						: makeLocalDeclaration(statements, varName, copyOf(castExpression), type);
+						? newElvisDeclaration(statements, varName, copy(castExpression), type)
+						: makeLocalDeclaration(statements, varName, copy(castExpression), type);
 			} else {
 				lastLevel = notDuplicatedLevel;
-				resultVar = makeLocalDeclaration(statements, varName, copyOf(castExpression), type);
+				resultVar = makeLocalDeclaration(statements, varName, copy(castExpression), type);
 			}
 		} else if (expr instanceof ArrayReference) {
 			ArrayReference arrayReference = ((ArrayReference) expr);
@@ -364,11 +399,19 @@ final class PatchSafeHelper {
 			arrayReference.receiver = receiverVarRef.getRef();
 			resultVar = newElvisDeclaration(statements, varName, arrayReference, type);
 			lastLevel = getLast(receiverVarRef, notDuplicatedLevel);
+		} else if (expr instanceof UnaryExpression) {
+			UnaryExpression unaryExpression = (UnaryExpression) expr;
+			UnaryExpression resultExpression = copy(unaryExpression);
+			Expression expression = unaryExpression.expression;
+			VarRef varRef = populateInitStatements(notDuplicatedLevel + 1, var, expression,
+					statements, rootScope);
+			if (varRef.var != null) {
+				resultExpression.expression = varRef.getRef();
+				lastLevel = varRef.level;
+			} else lastLevel = notDuplicatedLevel;
+			resultVar = makeLocalDeclaration(statements, varName, resultExpression, type);
 		} else {
 			throw new SafeCallUnexpectedStateException(populateInitStatements, expr, expr.getClass());
-		}
-
-		if (resultVar != null) {
 		}
 
 		return new VarRef(resultVar, lastLevel);
@@ -444,7 +487,7 @@ final class PatchSafeHelper {
 			TypeReference truePartType, TypeReference falsePartType) {
 		Expression elvis = newElvis(expression, truePartType, falsePartType);
 		Expression expr = elvis != null ? elvis : expression;
-		return newLocalDeclaration(varName, expr, truePartType);
+		return newLocalDeclaration(varName, expr, falsePartType);
 	}
 
 	private static boolean isDuplicateLocalVariable(

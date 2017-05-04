@@ -210,7 +210,7 @@ public final class HandleSafeCallHelper {
 
 	public static VarRef populateInitStatements(
 			final int level,
-			Name name,
+			Name templateName,
 			JCExpression expr,
 			ListBuffer<JCStatement> statements,
 			JavacNode annotationNode,
@@ -221,8 +221,8 @@ public final class HandleSafeCallHelper {
 		JCExpression resolvedExpr = expr;//resolveExprType(expr, annotationNode, javacResolution);
 		Type type = resolvedExpr.type;
 
-		int notDuplicatedLevel = verifyNotDuplicateLevel(name, level, annotationNode);
-		Name varName = newVarName(name, notDuplicatedLevel, annotationNode);
+		int notDuplicatedLevel = verifyNotDuplicateLevel(templateName, level, annotationNode);
+		Name varName = newVarName(templateName, notDuplicatedLevel, annotationNode);
 		JCVariableDecl varDecl;
 		int lastLevel;
 		if (expr instanceof JCMethodInvocation) {
@@ -236,7 +236,7 @@ public final class HandleSafeCallHelper {
 					varDecl = makeVariableDecl(treeMaker, statements, varName, type, expr);
 				} else {
 					VarRef varRef = populateFieldAccess(javacResolution, annotationNode,
-							notDuplicatedLevel, name, type, (JCFieldAccess) meth, true, mi.args,
+							notDuplicatedLevel, templateName, type, (JCFieldAccess) meth, true, mi.args,
 							statements);
 					varDecl = varRef.var;
 					lastLevel = varRef.level;
@@ -255,17 +255,61 @@ public final class HandleSafeCallHelper {
 				varDecl = makeVariableDecl(treeMaker, statements, varName, type, expr);
 			} else {
 				VarRef varRef = populateFieldAccess(javacResolution, annotationNode,
-						notDuplicatedLevel, name, type, (JCFieldAccess) expr,
+						notDuplicatedLevel, templateName, type, (JCFieldAccess) expr,
 						false, null, statements);
 				varDecl = varRef.var;
 				lastLevel = varRef.level;
 			}
 		} else if (
-				expr instanceof JCNewClass ||
-						expr instanceof JCNewArray
+				expr instanceof JCNewClass
 				) {
 			lastLevel = notDuplicatedLevel;
 			varDecl = makeVariableDecl(treeMaker, statements, varName, type, expr);
+		} else if (expr instanceof JCNewArray) {
+			JCNewArray newArray = (JCNewArray) expr;
+			List<JCExpression> elems = newArray.elems;
+			if (elems != null && !elems.isEmpty()) {
+				ArrayType arrayType = (ArrayType) type;
+				Type componentType = arrayType.getComponentType();
+				int elemLevel = notDuplicatedLevel;
+
+				int elemIndex = 0;
+				JCExpression[] newElems = new JCExpression[elems.size()];
+				for (JCExpression elem : elems) {
+					VarRef varRef = populateInitStatements(elemLevel + 1, templateName, elem,
+							statements, annotationNode, javacResolution);
+					JCVariableDecl var = varRef.var;
+					JCExpression newElem;
+					if (var != null) {
+						JCExpression vartypeExpr = var.vartype;
+						Type varType = vartypeExpr.type;
+						boolean mustBeConditional = componentType.isPrimitive() &&
+								!varType.isPrimitive();
+
+						if (mustBeConditional) {
+							int conditionalLevel = verifyNotDuplicateLevel(templateName,
+									varRef.level + 1, annotationNode);
+							Name conditionalVarName = newVarName(templateName, conditionalLevel, annotationNode);
+
+							JCIdent ident = newIdent(treeMaker, varRef);
+							JCExpression checkNullExpr = newElvis(treeMaker, ast, ident, varType, componentType);
+
+							JCVariableDecl conditionalVar = makeVariableDecl(treeMaker, statements,
+									conditionalVarName, componentType, checkNullExpr);
+
+							newElem = newIdent(treeMaker, conditionalVar);
+							elemLevel = conditionalLevel;
+						} else {
+							newElem = newIdent(treeMaker, varRef);
+							elemLevel = varRef.level;
+						}
+					} else newElem = elem;
+					newElems[elemIndex++] = newElem;
+				}
+				newArray.elems = List.from(newElems);
+				lastLevel = elemLevel;
+			} else lastLevel = notDuplicatedLevel;
+			varDecl = makeVariableDecl(treeMaker, statements, varName, type, newArray);
 		} else if (expr instanceof JCLiteral || isLambda(expr)) {
 			lastLevel = NOT_USED;
 			varDecl = null;
@@ -283,7 +327,7 @@ public final class HandleSafeCallHelper {
 			}
 		} else if (expr instanceof JCParens) {
 			JCParens parens = (JCParens) expr;
-			VarRef varRef = populateInitStatements(notDuplicatedLevel, name,
+			VarRef varRef = populateInitStatements(notDuplicatedLevel, templateName,
 					parens.expr, statements, annotationNode, javacResolution);
 			if (varRef.var != null) {
 				parens.expr = newIdent(treeMaker, varRef);
@@ -298,7 +342,7 @@ public final class HandleSafeCallHelper {
 			}
 		} else if (expr instanceof JCTypeCast) {
 			JCTypeCast typeCast = (JCTypeCast) expr;
-			VarRef varRef = populateInitStatements(notDuplicatedLevel + 1, name,
+			VarRef varRef = populateInitStatements(notDuplicatedLevel + 1, templateName,
 					typeCast.expr, statements, annotationNode, javacResolution);
 
 			if (varRef.var != null) {
@@ -319,7 +363,7 @@ public final class HandleSafeCallHelper {
 		} else if (expr instanceof JCArrayAccess) {
 			JCArrayAccess arrayAccess = (JCArrayAccess) expr;
 			JCExpression index = arrayAccess.index;
-			VarRef indexVarRef = populateInitStatements(notDuplicatedLevel + 1, name,
+			VarRef indexVarRef = populateInitStatements(notDuplicatedLevel + 1, templateName,
 					index, statements, annotationNode, javacResolution);
 
 			if (indexVarRef.var != null) {
@@ -331,8 +375,8 @@ public final class HandleSafeCallHelper {
 				else {
 					Type intType = (Type) ast.getTypesUtil().getPrimitiveType(INT);
 					JCExpression newExpr = newElvis(treeMaker, ast, indexVarIdent, indexType.type, intType);
-					lastLevel = verifyNotDuplicateLevel(name, ++lastLevel, annotationNode);
-					Name indexVarName = newVarName(name, lastLevel, annotationNode);
+					lastLevel = verifyNotDuplicateLevel(templateName, ++lastLevel, annotationNode);
+					Name indexVarName = newVarName(templateName, lastLevel, annotationNode);
 
 					JCVariableDecl positionVar = makeVariableDecl(treeMaker, statements, indexVarName, type, newExpr);
 					arrayAccess.index = newIdent(treeMaker, positionVar);
@@ -340,13 +384,23 @@ public final class HandleSafeCallHelper {
 			} else lastLevel = notDuplicatedLevel;
 
 			JCExpression indexed = arrayAccess.indexed;
-			VarRef indexedVarRef = populateInitStatements(lastLevel + 1, name,
+			VarRef indexedVarRef = populateInitStatements(lastLevel + 1, templateName,
 					indexed, statements, annotationNode, javacResolution);
 			arrayAccess.indexed = newIdent(treeMaker, indexedVarRef);
 			JCExpression checkNullExpr = newElvis(treeMaker, ast, arrayAccess, type);
 
 			varDecl = makeVariableDecl(treeMaker, statements, varName, type, checkNullExpr);
 			lastLevel = indexedVarRef.level;
+		} else if (expr instanceof JCUnary) {
+			JCUnary unary = (JCUnary) expr;
+			JCExpression expression = unary.arg;
+			VarRef varRef = populateInitStatements(notDuplicatedLevel + 1, templateName, expression,
+					statements, annotationNode, javacResolution);
+			if (varRef.var != null) {
+				unary.arg = newIdent(treeMaker, varRef);
+				lastLevel = varRef.level;
+			} else lastLevel = notDuplicatedLevel;
+			varDecl = makeVariableDecl(treeMaker, statements, varName, type, unary);
 		} else {
 			throw new SafeCallUnexpectedStateException(populateInitStatements, expr, expr.getClass());
 		}

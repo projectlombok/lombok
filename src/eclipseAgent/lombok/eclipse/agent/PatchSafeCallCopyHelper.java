@@ -5,10 +5,10 @@ import org.eclipse.jdt.internal.compiler.ast.*;
 
 import java.util.Arrays;
 
-import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.copy;
+import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.copyExpr;
 import static lombok.eclipse.agent.PatchSafeHelper.newSingleNameReference;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.copySourcePosition;
-import static org.eclipse.jdt.internal.compiler.ast.ASTNode.IsImplicitThis;
+import static org.eclipse.jdt.internal.compiler.ast.ASTNode.*;
 import static org.eclipse.jdt.internal.compiler.ast.IntLiteral.buildIntLiteral;
 
 /**
@@ -17,48 +17,75 @@ import static org.eclipse.jdt.internal.compiler.ast.IntLiteral.buildIntLiteral;
 public class PatchSafeCallCopyHelper {
 
 	@SuppressWarnings("unchecked")
-	static <T extends Expression> T copyOf(T expression) {
+	static <T extends Expression> T copy(T expression) {
+		if (expression == null) return null;
 		T newRes;
-		if (expression instanceof MessageSend) {
-			newRes = (T) copy((MessageSend) expression);
-		} else if (expression instanceof ThisReference) {
-			newRes = (T) copy((ThisReference) expression);
-		} else if (expression instanceof SingleNameReference) {
-			newRes = (T) copy((SingleNameReference) expression);
-		} else if (expression instanceof QualifiedNameReference) {
-			newRes = (T) copy((QualifiedNameReference) expression);
-		} else if (expression instanceof FieldReference) {
-			newRes = (T) copy((FieldReference) expression);
-		} else if (expression instanceof AllocationExpression) {
+		if (expression instanceof AllocationExpression) {
 			newRes = (T) copy((AllocationExpression) expression);
+		} else if (expression instanceof ArrayInitializer) {
+			newRes = (T) copy((ArrayInitializer) expression);
+		} else if (expression instanceof Reference) {
+			newRes = (T) copy((Reference) expression);
+		} else if (expression instanceof TypeReference) {
+			newRes = (T) copy((TypeReference) expression);
+		} else if (expression instanceof MessageSend) {
+			newRes = (T) copy((MessageSend) expression);
 		} else if (expression instanceof Literal) {
 			newRes = (T) copy((Literal) expression);
-		} else if (expression instanceof ArrayReference) {
-			newRes = (T) copy((ArrayReference) expression);
 		} else if (expression instanceof CastExpression) {
 			newRes = (T) copy((CastExpression) expression);
-		} else if (expression instanceof ConditionalExpression) {
-			newRes = (T) copy((ConditionalExpression) expression);
+		} else if (expression instanceof OperatorExpression) {
+			newRes = (T) copy((OperatorExpression) expression);
+		} else if (expression instanceof ArrayAllocationExpression) {
+			newRes = (T) copy((ArrayAllocationExpression) expression);
 		} else throw uoe(expression);
 		newRes.constant = expression.constant;
 		return newRes;
+	}
+
+	private static ArrayInitializer copy(ArrayInitializer expression) {
+		ArrayInitializer result = new ArrayInitializer();
+		result.expressions = copy(expression.expressions);
+		return result;
+	}
+
+	private static ArrayAllocationExpression copy(ArrayAllocationExpression expression) {
+		ArrayAllocationExpression result = new ArrayAllocationExpression();
+		result.type = copy(expression.type);
+		result.dimensions = copy(expression.dimensions);
+		result.initializer = copy(expression.initializer);
+		return result;
+	}
+
+
+	private static Reference copy(Reference reference) {
+		if (reference instanceof ThisReference) {
+			return copy((ThisReference) reference);
+		} else if (reference instanceof ArrayReference) {
+			return copy((ArrayReference) reference);
+		} else if (reference instanceof SingleNameReference) {
+			return copy((SingleNameReference) reference);
+		} else if (reference instanceof QualifiedNameReference) {
+			return copy((QualifiedNameReference) reference);
+		} else if (reference instanceof FieldReference) {
+			return copy((FieldReference) reference);
+		} else throw uoe(reference);
 	}
 
 	private static Expression[] copy(Expression[] expressions) {
 		if (expressions == null) return null;
 		Expression[] result = new Expression[expressions.length];
 		for (int i = 0; i < expressions.length; ++i) {
-			result[i] = copyOf(expressions[i]);
+			result[i] = copy(expressions[i]);
 		}
 		return result;
 	}
-
 
 	private static MessageSend copy(MessageSend from) {
 		MessageSend result = new MessageSend();
 		result.arguments = copy(from.arguments);
 		result.selector = from.selector;
-		result.receiver = copyOf(from.receiver);
+		result.receiver = copy(from.receiver);
 		result.nameSourcePosition = from.nameSourcePosition;
 		result.binding = from.binding;
 		result.actualReceiverType = from.actualReceiverType;
@@ -67,13 +94,50 @@ public class PatchSafeCallCopyHelper {
 	}
 
 	private static SafeCallUnexpectedStateException uoe(Expression expression) {
-		return new SafeCallUnexpectedStateException(copy, expression, expression != null ? expression.getClass() : null);
+		return new SafeCallUnexpectedStateException(copyExpr, expression, expression != null ?
+				expression.getClass() : null);
 	}
 
-	private static ConditionalExpression copy(ConditionalExpression literal) {
-		ConditionalExpression result = new ConditionalExpression(literal.condition,
-				literal.valueIfTrue, literal.valueIfFalse);
-		copySourcePosition(literal, result);
+	private static OperatorExpression copy(OperatorExpression expression) {
+		if (expression instanceof BinaryExpression) {
+			return copy((BinaryExpression) expression);
+		} else if (expression instanceof InstanceOfExpression) {
+			return copy((InstanceOfExpression) expression);
+		} else if (expression instanceof ConditionalExpression) {
+			return copy((ConditionalExpression) expression);
+		} else if (expression instanceof UnaryExpression) {
+			return copy((UnaryExpression) expression);
+		} else throw uoe(expression);
+	}
+
+	private static BinaryExpression copy(BinaryExpression expression) {
+		BinaryExpression result = new BinaryExpression(expression.left,
+				expression.right, getOperator(expression));
+		copySourcePosition(expression, result);
+		return result;
+	}
+
+	private static int getOperator(OperatorExpression expression) {
+		return (expression.bits & OperatorMASK) >> OperatorSHIFT;
+	}
+
+	private static InstanceOfExpression copy(InstanceOfExpression expression) {
+		InstanceOfExpression result = new InstanceOfExpression(expression.expression,
+				expression.type);
+		copySourcePosition(expression, result);
+		return result;
+	}
+
+	private static ConditionalExpression copy(ConditionalExpression expression) {
+		ConditionalExpression result = new ConditionalExpression(expression.condition,
+				expression.valueIfTrue, expression.valueIfFalse);
+		copySourcePosition(expression, result);
+		return result;
+	}
+
+	private static UnaryExpression copy(UnaryExpression expression) {
+		UnaryExpression result = new UnaryExpression(expression.expression, getOperator(expression));
+		copySourcePosition(expression, result);
 		return result;
 	}
 
@@ -130,15 +194,6 @@ public class PatchSafeCallCopyHelper {
 		} else throw uoe(literal);
 	}
 
-	private static StringLiteral copy(StringLiteral literal) {
-		StringLiteral result = new StringLiteral(literal.source(),
-				literal.sourceStart,
-				literal.sourceEnd,
-				0);
-		copySourcePosition(literal, result);
-		return result;
-	}
-
 	private static AllocationExpression copy(AllocationExpression parent) {
 		AllocationExpression result = new AllocationExpression();
 		copySourcePosition(parent, result);
@@ -163,7 +218,7 @@ public class PatchSafeCallCopyHelper {
 
 	private static FieldReference copy(FieldReference parent) {
 		FieldReference result = new FieldReference(parent.token, PatchSafeHelper.getP(parent));
-		result.receiver = copyOf(parent.receiver);
+		result.receiver = copy(parent.receiver);
 		result.token = parent.token;
 		return result;
 	}

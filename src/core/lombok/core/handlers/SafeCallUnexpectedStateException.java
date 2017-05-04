@@ -25,6 +25,10 @@ public class SafeCallUnexpectedStateException extends RuntimeException {
 				(type != null ? type.getSimpleName() : "");
 	}
 
+	public Object getVar() {
+		return var;
+	}
+
 	public enum Place {
 		findDuplicateCandidates,
 		elvisConditional,
@@ -34,7 +38,7 @@ public class SafeCallUnexpectedStateException extends RuntimeException {
 		populateInitStatementsMethodInvocation,
 		populateInitStatements,
 		cannotRecognizeType,
-		copy
+		copyExpr
 
 	}
 }
