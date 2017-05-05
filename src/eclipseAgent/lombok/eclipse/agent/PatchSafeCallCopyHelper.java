@@ -17,7 +17,7 @@ import static org.eclipse.jdt.internal.compiler.ast.IntLiteral.buildIntLiteral;
 public class PatchSafeCallCopyHelper {
 
 	@SuppressWarnings("unchecked")
-	static <T extends Expression> T copy(T expression) {
+	static <T extends Expression> T copy(T expression) throws SafeCallUnexpectedStateException {
 		if (expression == null) return null;
 		T newRes;
 		if (expression instanceof AllocationExpression) {
@@ -43,13 +43,15 @@ public class PatchSafeCallCopyHelper {
 		return newRes;
 	}
 
-	private static ArrayInitializer copy(ArrayInitializer expression) {
+	private static ArrayInitializer copy(ArrayInitializer expression
+	) throws SafeCallUnexpectedStateException {
 		ArrayInitializer result = new ArrayInitializer();
 		result.expressions = copy(expression.expressions);
 		return result;
 	}
 
-	private static ArrayAllocationExpression copy(ArrayAllocationExpression expression) {
+	private static ArrayAllocationExpression copy(ArrayAllocationExpression expression
+	) throws SafeCallUnexpectedStateException {
 		ArrayAllocationExpression result = new ArrayAllocationExpression();
 		result.type = copy(expression.type);
 		result.dimensions = copy(expression.dimensions);
@@ -58,7 +60,7 @@ public class PatchSafeCallCopyHelper {
 	}
 
 
-	private static Reference copy(Reference reference) {
+	private static Reference copy(Reference reference) throws SafeCallUnexpectedStateException {
 		if (reference instanceof ThisReference) {
 			return copy((ThisReference) reference);
 		} else if (reference instanceof ArrayReference) {
@@ -72,7 +74,7 @@ public class PatchSafeCallCopyHelper {
 		} else throw uoe(reference);
 	}
 
-	private static Expression[] copy(Expression[] expressions) {
+	private static Expression[] copy(Expression[] expressions) throws SafeCallUnexpectedStateException {
 		if (expressions == null) return null;
 		Expression[] result = new Expression[expressions.length];
 		for (int i = 0; i < expressions.length; ++i) {
@@ -81,7 +83,7 @@ public class PatchSafeCallCopyHelper {
 		return result;
 	}
 
-	private static MessageSend copy(MessageSend from) {
+	private static MessageSend copy(MessageSend from) throws SafeCallUnexpectedStateException {
 		MessageSend result = new MessageSend();
 		result.arguments = copy(from.arguments);
 		result.selector = from.selector;
@@ -98,7 +100,7 @@ public class PatchSafeCallCopyHelper {
 				expression.getClass() : null);
 	}
 
-	private static OperatorExpression copy(OperatorExpression expression) {
+	private static OperatorExpression copy(OperatorExpression expression) throws SafeCallUnexpectedStateException {
 		if (expression instanceof BinaryExpression) {
 			return copy((BinaryExpression) expression);
 		} else if (expression instanceof InstanceOfExpression) {
@@ -153,7 +155,7 @@ public class PatchSafeCallCopyHelper {
 		return result;
 	}
 
-	private static MagicLiteral copy(MagicLiteral literal) {
+	private static MagicLiteral copy(MagicLiteral literal) throws SafeCallUnexpectedStateException {
 		if (literal instanceof NullLiteral) {
 			return new NullLiteral(literal.sourceStart(), literal.sourceEnd());
 		} else if (literal instanceof FalseLiteral) {
@@ -164,7 +166,7 @@ public class PatchSafeCallCopyHelper {
 
 	}
 
-	private static NumberLiteral copy(NumberLiteral literal) {
+	private static NumberLiteral copy(NumberLiteral literal) throws SafeCallUnexpectedStateException {
 		if (literal instanceof IntLiteral) {
 			return buildIntLiteral(literal.source(), literal.sourceStart(), literal.sourceEnd());
 		} else if (literal instanceof LongLiteral) {
@@ -178,7 +180,7 @@ public class PatchSafeCallCopyHelper {
 		} else throw uoe(literal);
 	}
 
-	private static Literal copy(Literal literal) {
+	private static Literal copy(Literal literal) throws SafeCallUnexpectedStateException {
 		if (literal instanceof MagicLiteral) {
 			return copy((MagicLiteral) literal);
 		} else if (literal instanceof StringLiteral) {
@@ -194,14 +196,14 @@ public class PatchSafeCallCopyHelper {
 		} else throw uoe(literal);
 	}
 
-	private static AllocationExpression copy(AllocationExpression parent) {
+	private static AllocationExpression copy(AllocationExpression parent) throws SafeCallUnexpectedStateException {
 		AllocationExpression result = new AllocationExpression();
 		copySourcePosition(parent, result);
 		result.type = copy(parent.type);
 		return result;
 	}
 
-	private static TypeReference copy(TypeReference parent) {
+	private static TypeReference copy(TypeReference parent) throws SafeCallUnexpectedStateException {
 		TypeReference result;
 		if (parent instanceof SingleTypeReference) {
 			SingleTypeReference src = (SingleTypeReference) parent;
@@ -216,7 +218,7 @@ public class PatchSafeCallCopyHelper {
 		return result;
 	}
 
-	private static FieldReference copy(FieldReference parent) {
+	private static FieldReference copy(FieldReference parent) throws SafeCallUnexpectedStateException {
 		FieldReference result = new FieldReference(parent.token, PatchSafeHelper.getP(parent));
 		result.receiver = copy(parent.receiver);
 		result.token = parent.token;

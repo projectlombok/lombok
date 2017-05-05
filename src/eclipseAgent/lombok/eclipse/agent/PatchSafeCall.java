@@ -1,5 +1,6 @@
 package lombok.eclipse.agent;
 
+import lombok.core.handlers.SafeCallInternalException;
 import lombok.core.handlers.SafeCallUnexpectedStateException;
 import lombok.experimental.SafeCall;
 import org.eclipse.jdt.internal.compiler.ast.*;
@@ -46,10 +47,13 @@ public class PatchSafeCall {
 					if (astNode != null) problemReporter.abortDueToInternalError(message, astNode);
 					else problemReporter.abortDueToInternalError(message);
 					return;
+				} catch (SafeCallInternalException e) {
+					ProblemReporter problemReporter = upperScope.problemReporter();
+					problemReporter.abortDueToInternalError(e.getMessage(), (ASTNode) e.getVar());
+					return;
 				}
 
 				if (statements != null) {
-
 					boolean isFinal = (var.modifiers & AccFinal) != 0;
 					if (isFinal) {
 						if (var instanceof LocalDeclaration) {

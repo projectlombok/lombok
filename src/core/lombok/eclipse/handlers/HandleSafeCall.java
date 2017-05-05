@@ -39,7 +39,7 @@ import java.util.List;
 import static java.lang.reflect.Modifier.STATIC;
 import static java.util.Arrays.asList;
 import static lombok.core.handlers.SafeCallIllegalUsingException.Place.*;
-import static lombok.core.handlers.SafeCallIllegalUsingException.errorMessage;
+import static lombok.core.handlers.SafeCallIllegalUsingException.unsupportedMessage;
 import static lombok.eclipse.Eclipse.getEcjCompilerVersion;
 import static lombok.eclipse.EclipseAugments.ASTNode_parentNode;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.copySourcePosition;
@@ -101,16 +101,20 @@ public class HandleSafeCall extends EclipseASTAdapter {
 	}
 
 	private static void addIllegalPlaceError(EclipseNode variable, Place place) {
-		variable.addError(errorMessage(place));
+		variable.addError(unsupportedMessage(place));
 	}
 
-	private static ASTNode getParentASTNode(AbstractVariableDeclaration local, EclipseNode root) {
+	private static ASTNode getParentASTNode(
+			AbstractVariableDeclaration local, EclipseNode root
+	) throws SafeCallIllegalUsingException {
 		ASTNode parentASTNode = getParent(local, root.get());
 		if (parentASTNode == null) throw new IllegalStateException("cannot find parent block for variable " + local);
 		return parentASTNode;
 	}
 
-	private static ASTNode getParent(AbstractVariableDeclaration variable, ASTNode root) {
+	private static ASTNode getParent(
+			AbstractVariableDeclaration variable, ASTNode root
+	) throws SafeCallIllegalUsingException {
 		if (root instanceof Block) {
 			return getParent(variable, root, ((Block) root).statements);
 		} else if (root instanceof AbstractMethodDeclaration) {
@@ -199,7 +203,8 @@ public class HandleSafeCall extends EclipseASTAdapter {
 
 	private static ASTNode getParent(
 			AbstractVariableDeclaration local,
-			ASTNode parent, Statement... statements) {
+			ASTNode parent, Statement... statements
+	) throws SafeCallIllegalUsingException {
 		List<Statement> childBlocks = new ArrayList<Statement>();
 		for (Statement statement : statements) {
 			if (statement == local) {
@@ -215,7 +220,7 @@ public class HandleSafeCall extends EclipseASTAdapter {
 		return null;
 	}
 
-	static void insertBlockAfterVariable(AbstractVariableDeclaration local, Block initBlock, ASTNode parentNode) {
+	private static void insertBlockAfterVariable(AbstractVariableDeclaration local, Block initBlock, ASTNode parentNode) {
 		if (parentNode instanceof AbstractMethodDeclaration) {
 			AbstractMethodDeclaration md = (AbstractMethodDeclaration) parentNode;
 			md.statements = insertInitBlockAfterVariable(initBlock, local, md.statements);

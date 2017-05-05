@@ -5,7 +5,7 @@ import lombok.experimental.SafeCall;
 /**
  * Created by Bulgakov Alexander on 22.04.17.
  */
-public class SafeCallIllegalUsingException extends RuntimeException {
+public class SafeCallIllegalUsingException extends Exception {
 	private final Place place;
 	private final Object variable;
 	private final Object parent;
@@ -16,7 +16,7 @@ public class SafeCallIllegalUsingException extends RuntimeException {
 		this.parent = parent;
 	}
 
-	public static String errorMessage(Place place) {
+	public static String unsupportedMessage(Place place) {
 		return "'" + SafeCall.class.getSimpleName() + "' doesn't supported here. " + place;
 	}
 

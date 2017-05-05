@@ -5,7 +5,7 @@ import lombok.experimental.SafeCall;
 /**
  * Created by Bulgakov Alexander on 23.04.17.
  */
-public class SafeCallUnexpectedStateException extends RuntimeException {
+public class SafeCallUnexpectedStateException extends Exception {
 	private final Place place;
 	private final Object var;
 	private final Class type;
@@ -38,7 +38,9 @@ public class SafeCallUnexpectedStateException extends RuntimeException {
 		populateInitStatementsMethodInvocation,
 		populateInitStatements,
 		cannotRecognizeType,
-		copyExpr
+		copyExpr,
+		addBlockAfterVarDec,
+		getParent
 
 	}
 }
