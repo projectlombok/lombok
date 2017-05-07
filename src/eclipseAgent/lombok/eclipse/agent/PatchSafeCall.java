@@ -74,7 +74,7 @@ public class PatchSafeCall {
 		}
 	}
 
-	public static boolean isSafe(AbstractVariableDeclaration local, BlockScope scope) {
+	private static boolean isSafe(AbstractVariableDeclaration local, BlockScope scope) {
 		Annotation[] annotations = local.annotations;
 		if (annotations != null) for (Annotation annotation : annotations) {
 			if (is(annotation.type, scope, SafeCall.class.getName())) {

@@ -70,7 +70,7 @@ public final class HandleSafeCallHelper {
 		throw new IllegalArgumentException("unsupported type " + typeKind);
 	}
 
-	public static JCExpression newElvis(
+	private static JCExpression newElvis(
 			JavacTreeMaker maker,
 			JavacAST ast, JCExpression expr,
 			Type truePartType
@@ -78,7 +78,7 @@ public final class HandleSafeCallHelper {
 		return newElvis(maker, ast, expr, truePartType, truePartType);
 	}
 
-	public static JCExpression newElvis(
+	private static JCExpression newElvis(
 			JavacTreeMaker maker,
 			JavacAST ast,
 			JCExpression expr,
@@ -133,7 +133,7 @@ public final class HandleSafeCallHelper {
 		return result;
 	}
 
-	public static JCExpression getFalsePart(JavacTreeMaker maker, Type falsePartType, int pos) {
+	private static JCExpression getFalsePart(JavacTreeMaker maker, Type falsePartType, int pos) {
 		JCExpression falsePart;
 		if (falsePartType instanceof ClassType || falsePartType instanceof ArrayType) {
 			falsePart = newNullLiteral(maker, pos);
@@ -143,7 +143,7 @@ public final class HandleSafeCallHelper {
 		return falsePart;
 	}
 
-	public static JCConditional newIfNullThenConditional(
+	private static JCConditional newIfNullThenConditional(
 			JavacTreeMaker maker, JavacAST ast,
 			JCExpression checkable, JCExpression truePart, JCExpression falsePart
 	) {
@@ -191,13 +191,13 @@ public final class HandleSafeCallHelper {
 		return literal;
 	}
 
-	public static JCLiteral newNullLiteral(JavacTreeMaker maker, int pos) {
+	private static JCLiteral newNullLiteral(JavacTreeMaker maker, int pos) {
 		JCLiteral literal = maker.Literal(CTC_BOT, null);
 		literal.pos = pos;
 		return literal;
 	}
 
-	public static JCExpression resolveExprType(
+	private static JCExpression resolveExprType(
 			JCExpression expression, JavacNode annotationNode, JavacResolution javacResolution
 	) throws TypeNotConvertibleException {
 		JavacNode javacNode = annotationNode.directUp();
@@ -220,7 +220,7 @@ public final class HandleSafeCallHelper {
 		} else return result;
 	}
 
-	public static VarRef populateInitStatements(
+	private static VarRef populateInitStatements(
 			final int level,
 			JCVariableDecl rootVar,
 			JCExpression expr,
@@ -231,8 +231,7 @@ public final class HandleSafeCallHelper {
 		Name templateName = rootVar.name;
 		JavacAST ast = annotationNode.getAst();
 		JavacTreeMaker treeMaker = annotationNode.getTreeMaker();
-		JCExpression resolvedExpr = expr;//resolveExprType(expr, annotationNode, javacResolution);
-		Type type = resolvedExpr.type;
+		Type type = expr.type;
 
 		int notDuplicatedLevel = verifyNotDuplicateLevel(templateName, level, annotationNode);
 		Name varName = newVarName(templateName, notDuplicatedLevel, annotationNode);
@@ -313,7 +312,7 @@ public final class HandleSafeCallHelper {
 			lastLevel = NOT_USED;
 			resultVar = null;
 		} else if (expr instanceof JCIdent) {
-			JCIdent resolvedIdent = (JCIdent) resolvedExpr;
+			JCIdent resolvedIdent = (JCIdent) expr;
 			Symbol sym = resolvedIdent.sym;
 			boolean isClass = sym instanceof ClassSymbol;
 			boolean isThis = sym instanceof VarSymbol && sym.name.contentEquals("this");
@@ -457,7 +456,6 @@ public final class HandleSafeCallHelper {
 		}
 		return expectedType;
 	}
-
 
 	private static int populateArrayInitializer(
 			JCVariableDecl rootVar, int notDuplicatedLevel, List<JCExpression> args,
@@ -787,7 +785,7 @@ public final class HandleSafeCallHelper {
 		return name + level;
 	}
 
-	public static JCVariableDecl newVarDecl(JavacTreeMaker treeMaker, Name name, Type type, JCExpression expr) {
+	private static JCVariableDecl newVarDecl(JavacTreeMaker treeMaker, Name name, Type type, JCExpression expr) {
 		Type checkType = (type instanceof ExecutableType) ? type.getReturnType() : type;
 		boolean nonameOwner = hasNonameOwner(checkType);
 
@@ -919,7 +917,7 @@ public final class HandleSafeCallHelper {
 
 	}
 
-	public static <T> List<T> addBlockAfterVarDec(T varDecl, T initBlock, List<T> members) {
+	static <T> List<T> addBlockAfterVarDec(T varDecl, T initBlock, List<T> members) {
 		ListBuffer<T> newMembers = new ListBuffer<T>();
 		for (T tree : members) {
 			newMembers.add(tree);
@@ -939,7 +937,7 @@ public final class HandleSafeCallHelper {
 			this.level = level;
 		}
 
-		public Name getVarName() {
+		Name getVarName() {
 			return var != null ? var.name : null;
 		}
 	}
