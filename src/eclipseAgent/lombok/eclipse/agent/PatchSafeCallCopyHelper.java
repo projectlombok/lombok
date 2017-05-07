@@ -20,26 +20,27 @@ public class PatchSafeCallCopyHelper {
 	static <T extends Expression> T copy(T expression) throws SafeCallUnexpectedStateException {
 		if (expression == null) return null;
 		T newRes;
-		if (expression instanceof AllocationExpression) {
+/*		if (expression instanceof AllocationExpression) {
 			newRes = (T) copy((AllocationExpression) expression);
 		} else if (expression instanceof ArrayInitializer) {
 			newRes = (T) copy((ArrayInitializer) expression);
-		} else if (expression instanceof Reference) {
+		} else*/ if (expression instanceof Reference) {
 			newRes = (T) copy((Reference) expression);
-		} else if (expression instanceof TypeReference) {
-			newRes = (T) copy((TypeReference) expression);
-		} else if (expression instanceof MessageSend) {
-			newRes = (T) copy((MessageSend) expression);
+//		} else if (expression instanceof TypeReference) {
+//			newRes = (T) copy((TypeReference) expression);
+//		} else if (expression instanceof MessageSend) {
+//			newRes = (T) copy((MessageSend) expression);
 		} else if (expression instanceof Literal) {
 			newRes = (T) copy((Literal) expression);
-		} else if (expression instanceof CastExpression) {
-			newRes = (T) copy((CastExpression) expression);
-		} else if (expression instanceof OperatorExpression) {
-			newRes = (T) copy((OperatorExpression) expression);
-		} else if (expression instanceof ArrayAllocationExpression) {
-			newRes = (T) copy((ArrayAllocationExpression) expression);
+//		} else if (expression instanceof CastExpression) {
+//			newRes = (T) copy((CastExpression) expression);
+//		} else if (expression instanceof OperatorExpression) {
+//			newRes = (T) copy((OperatorExpression) expression);
+//		} else if (expression instanceof ArrayAllocationExpression) {
+//			newRes = (T) copy((ArrayAllocationExpression) expression);
 		} else throw uoe(expression);
 		newRes.constant = expression.constant;
+//		return expression;
 		return newRes;
 	}
 
@@ -119,7 +120,7 @@ public class PatchSafeCallCopyHelper {
 		return result;
 	}
 
-	private static int getOperator(OperatorExpression expression) {
+	public static int getOperator(OperatorExpression expression) {
 		return (expression.bits & OperatorMASK) >> OperatorSHIFT;
 	}
 

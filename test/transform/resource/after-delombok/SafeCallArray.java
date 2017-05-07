@@ -60,6 +60,15 @@ class SafeCallArray {
 			int[] iAr1 = new int[] {iAr2, iAr6, iAr8, iAr10, 1};
 			iAr = iAr1;
 		}
+		int[][][] iAr2;
+		{
+			java.lang.Integer iAr22 = nullIndex();
+			int iAr23 = iAr22 != null ? iAr22 : 0;
+			int iAr24 = iAr23 >= 0 ? iAr23 : 0;
+			int iAr25 = -1 >= 0 ? -1 : 0;
+			int[][][] iAr21 = new int[iAr24][iAr25][];
+			iAr2 = iAr21;
+		}
 	}
 
 	public int[] intNullArray() {

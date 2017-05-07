@@ -86,7 +86,6 @@ public final class HandleSafeCallHelper {
 			Type falsePartType
 	) throws SafeCallUnexpectedStateException {
 		JCExpression result;
-		JCExpression falsePart = getFalsePart(maker, falsePartType);
 		if (expr instanceof JCMethodInvocation) {
 			JCMethodInvocation mi = (JCMethodInvocation) expr;
 			JCExpression meth = mi.meth;
@@ -95,7 +94,7 @@ public final class HandleSafeCallHelper {
 				if (parentExpr instanceof JCNewClass) {
 					result = null;
 				} else {
-					JCConditional notNullCond = newConditional(maker, ast, parentExpr, mi, falsePart);
+					JCConditional notNullCond = newIfNullThenConditional(maker, ast, parentExpr, mi, getFalsePart(maker, falsePartType, expr.pos));
 					JCExpression newParentCnd = newElvis(maker, ast, parentExpr, falsePartType);
 					if (newParentCnd instanceof JCConditional) {
 						JCConditional cnd = (JCConditional) newParentCnd;
@@ -114,19 +113,19 @@ public final class HandleSafeCallHelper {
 				throw new SafeCallUnexpectedStateException(elvisConditionalMethodInvocation, expr, meth.getClass());
 			}
 		} else if (expr instanceof JCFieldAccess) {
-			result = newConditional(maker, ast, ((JCFieldAccess) expr).selected, expr, falsePart);
+			result = newIfNullThenConditional(maker, ast, ((JCFieldAccess) expr).selected, expr, getFalsePart(maker, falsePartType, expr.pos));
 		} else if (expr instanceof JCIdent) {
 			if (!truePartType.isPrimitive() && falsePartType.isPrimitive()) {
-				return newConditional(maker, ast, expr, expr, falsePart);
+				return newIfNullThenConditional(maker, ast, expr, expr, getFalsePart(maker, falsePartType, expr.pos));
 			} else return null;
 		} else if (expr instanceof JCLiteral) {
 			result = null;
 		} else if (expr instanceof JCArrayAccess) {
 			JCArrayAccess arrayAccess = (JCArrayAccess) expr;
 			JCExpression indexed = arrayAccess.indexed;
-			result = newConditional(maker, ast, indexed, expr, falsePart);
+			result = newIfNullThenConditional(maker, ast, indexed, expr, getFalsePart(maker, falsePartType, expr.pos));
 		} else if (expr instanceof JCTypeCast) {
-			result = newConditional(maker, ast, ((JCTypeCast) expr).expr, expr, falsePart);
+			result = newIfNullThenConditional(maker, ast, ((JCTypeCast) expr).expr, expr, getFalsePart(maker, falsePartType, expr.pos));
 		} else if (expr == null) result = null;
 		else {
 			throw new SafeCallUnexpectedStateException(elvisConditional, expr, expr.getClass());
@@ -134,22 +133,22 @@ public final class HandleSafeCallHelper {
 		return result;
 	}
 
-	public static JCExpression getFalsePart(JavacTreeMaker maker, Type falsePartType) {
+	public static JCExpression getFalsePart(JavacTreeMaker maker, Type falsePartType, int pos) {
 		JCExpression falsePart;
 		if (falsePartType instanceof ClassType || falsePartType instanceof ArrayType) {
-			falsePart = newNullLiteral(maker);
+			falsePart = newNullLiteral(maker, pos);
 		} else {
 			falsePart = getDefaultValue(maker, falsePartType.getKind());
 		}
 		return falsePart;
 	}
 
-	public static JCConditional newConditional(
+	public static JCConditional newIfNullThenConditional(
 			JavacTreeMaker maker, JavacAST ast,
 			JCExpression checkable, JCExpression truePart, JCExpression falsePart
 	) {
 
-		JCBinary checkNull = maker.Binary(CTC_NOT_EQUAL, checkable, newNullLiteral(maker));
+		JCBinary checkNull = maker.Binary(CTC_NOT_EQUAL, checkable, newNullLiteral(maker, checkable.pos));
 		checkNull.pos = checkable.pos;
 		if (truePart instanceof JCArrayAccess) {
 			JCArrayAccess arrayAccess = (JCArrayAccess) truePart;
@@ -164,27 +163,38 @@ public final class HandleSafeCallHelper {
 				JCLiteral literal = (JCLiteral) index;
 				Object value = literal.value;
 				if (value instanceof Integer) {
-					minIsZero = ((Integer) value).equals(0);
+					minIsZero = value.equals(0);
 				}
 			}
 
-			JCLiteral literal = maker.Literal(0);
-			literal.pos = index.pos;
-			JCBinary checkMin = maker.Binary(CTC_GREATER_OR_EQUAL, index, literal);
-			checkMin.pos = index.pos;
-			JCBinary checkLength = minIsZero ? checkMax : maker.Binary(CTC_AND, checkMin, checkMax);
+			JCBinary noLessZero = maker.Binary(CTC_GREATER_OR_EQUAL, index, newZeroLiteral(maker, index.pos));
+			noLessZero.pos = index.pos;
+			JCBinary checkLength = minIsZero ? checkMax : maker.Binary(CTC_AND, noLessZero, checkMax);
 			checkLength.pos = checkMax.pos;
 			checkNull = maker.Binary(CTC_AND, checkNull, checkLength);
 			checkNull.pos = checkLength.pos;
 		}
 
-		JCConditional conditional = maker.Conditional(checkNull, truePart, falsePart);
-		conditional.pos = checkable.pos;
+		return newConditional(maker, checkNull, truePart, falsePart);
+	}
+
+	private static JCConditional newConditional(
+			JavacTreeMaker maker, JCBinary condition, JCExpression truePart, JCExpression falsePart) {
+		JCConditional conditional = maker.Conditional(condition, truePart, falsePart);
+		conditional.pos = truePart.pos;
 		return conditional;
 	}
 
-	public static JCLiteral newNullLiteral(JavacTreeMaker maker) {
-		return maker.Literal(CTC_BOT, null);
+	private static JCLiteral newZeroLiteral(JavacTreeMaker maker, int pos) {
+		JCLiteral literal = maker.Literal(0);
+		literal.pos = pos;
+		return literal;
+	}
+
+	public static JCLiteral newNullLiteral(JavacTreeMaker maker, int pos) {
+		JCLiteral literal = maker.Literal(CTC_BOT, null);
+		literal.pos = pos;
+		return literal;
 	}
 
 	public static JCExpression resolveExprType(
@@ -278,14 +288,26 @@ public final class HandleSafeCallHelper {
 			lastLevel = notDuplicatedLevel;
 			resultVar = makeVariableDecl(treeMaker, statements, varName, type, expr);
 		} else if (expr instanceof JCNewArray) {
+			lastLevel = notDuplicatedLevel;
 			JCNewArray newArray = (JCNewArray) expr;
 			List<JCExpression> elems = newArray.elems;
 			if (elems != null && !elems.isEmpty()) {
 				JCExpression[] newElems = new JCExpression[elems.size()];
-				lastLevel = populateArrayInitializer(rootVar, notDuplicatedLevel,
-						elems, (ArrayType) type, newElems, statements, annotationNode, javacResolution);
+				Type expectedType = ((ArrayType) type).getComponentType();
+				lastLevel = populateArrayInitializer(rootVar, lastLevel,
+						elems, expectedType, newElems, statements, annotationNode, javacResolution);
 				newArray.elems = List.from(newElems);
-			} else lastLevel = notDuplicatedLevel;
+			}
+			;
+
+			List<JCExpression> dimensions = newArray.dims;
+			if (dimensions != null && !dimensions.isEmpty()) {
+				JCExpression[] newDimensions = new JCExpression[dimensions.size()];
+				lastLevel = populateArrayDimensions(rootVar, lastLevel,
+						dimensions, getIntType(ast), newDimensions, statements, annotationNode, javacResolution);
+				newArray.dims = List.from(newDimensions);
+			}
+
 			resultVar = makeVariableDecl(treeMaker, statements, varName, type, newArray);
 		} else if (expr instanceof JCLiteral || isLambda(expr)) {
 			lastLevel = NOT_USED;
@@ -350,8 +372,7 @@ public final class HandleSafeCallHelper {
 				JCIdent indexVarIdent = newIdent(treeMaker, indexVarRef);
 				if (primitive) arrayAccess.index = indexVarIdent;
 				else {
-					Type intType = (Type) ast.getTypesUtil().getPrimitiveType(INT);
-					JCExpression newExpr = newElvis(treeMaker, ast, indexVarIdent, indexType.type, intType);
+					JCExpression newExpr = newElvis(treeMaker, ast, indexVarIdent, indexType.type, getIntType(ast));
 					lastLevel = verifyNotDuplicateLevel(templateName, ++lastLevel, annotationNode);
 					Name indexVarName = newVarName(templateName, lastLevel, annotationNode);
 
@@ -382,6 +403,10 @@ public final class HandleSafeCallHelper {
 			throw new SafeCallUnexpectedStateException(populateInitStatements, expr, expr.getClass());
 		}
 		return new VarRef(resultVar, lastLevel);
+	}
+
+	private static Type getIntType(JavacAST ast) {
+		return (Type) ast.getTypesUtil().getPrimitiveType(INT);
 	}
 
 
@@ -435,12 +460,11 @@ public final class HandleSafeCallHelper {
 
 
 	private static int populateArrayInitializer(
-			JCVariableDecl rootVar, int notDuplicatedLevel, List<JCExpression> args, ArrayType type,
-			JCExpression[] resultArgs, ListBuffer<JCStatement> statements,
+			JCVariableDecl rootVar, int notDuplicatedLevel, List<JCExpression> args,
+			Type expectedType, JCExpression[] resultArgs, ListBuffer<JCStatement> statements,
 			JavacNode annotationNode, JavacResolution javacResolution
 	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException {
 		int lastLevel;
-		Type expectedType = type.getComponentType();
 		int elemLevel = notDuplicatedLevel;
 
 		int elemIndex = 0;
@@ -449,6 +473,42 @@ public final class HandleSafeCallHelper {
 					elemIndex++, statements, annotationNode, javacResolution
 			);
 
+		}
+		lastLevel = elemLevel;
+		return lastLevel;
+	}
+
+	private static int populateArrayDimensions(
+			JCVariableDecl rootVar, int notDuplicatedLevel, List<JCExpression> args,
+			Type expectedType, JCExpression[] resultArgs, ListBuffer<JCStatement> statements,
+			JavacNode annotationNode, JavacResolution javacResolution
+	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException {
+		int lastLevel;
+		int elemLevel = notDuplicatedLevel;
+
+		int elemIndex = 0;
+		for (JCExpression arg : args) {
+
+			elemLevel = populateArgument(rootVar, elemLevel, arg, expectedType, resultArgs,
+					elemIndex, statements, annotationNode, javacResolution
+			);
+
+			JCExpression resultArg = resultArgs[elemIndex];
+			JavacTreeMaker treeMaker = annotationNode.getTreeMaker();
+			int pos = resultArg.pos;
+			JCBinary noLessZero = treeMaker.Binary(CTC_GREATER_OR_EQUAL, resultArg,
+					newZeroLiteral(treeMaker, pos));
+			JCConditional condition = newConditional(treeMaker, noLessZero, resultArg,
+					newZeroLiteral(treeMaker, pos));
+
+			Name templateName = rootVar.name;
+			elemLevel = verifyNotDuplicateLevel(templateName, elemLevel + 1, annotationNode);
+			Name conditionVarName = newVarName(templateName, elemLevel, annotationNode);
+
+			JCVariableDecl conditionVar = makeVariableDecl(treeMaker, statements, conditionVarName,
+					getIntType(annotationNode.getAst()), condition);
+			resultArgs[elemIndex] = newIdent(treeMaker, conditionVar);
+			elemIndex++;
 		}
 		lastLevel = elemLevel;
 		return lastLevel;
@@ -842,7 +902,7 @@ public final class HandleSafeCallHelper {
 				throw new SafeCallUnexpectedStateException(cannotRecognizeType, varType, varType.getClass());
 			} else kind = varType.type.getKind();
 			//JCExpression expression = resolveExprType(expr, annotationNode, javacResolution);
-			rhs = newConditional(maker, annotationNode.getAst(), rhs, rhs,
+			rhs = newIfNullThenConditional(maker, annotationNode.getAst(), rhs, rhs,
 					getDefaultValue(maker, kind));
 			removeOnlyOneStatement = false;
 		}
