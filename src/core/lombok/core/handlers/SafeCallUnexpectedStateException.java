@@ -40,7 +40,9 @@ public class SafeCallUnexpectedStateException extends Exception {
 		cannotRecognizeType,
 		copyExpr,
 		addBlockAfterVarDec,
-		getParent
+		getParent,
+		unsupportedUnaryOperator,
+		unsupportedUnaryOperatorType,
 
 	}
 }

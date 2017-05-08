@@ -30,7 +30,7 @@ import static java.util.Arrays.asList;
 import static lombok.core.AST.Kind.FIELD;
 import static lombok.core.AST.Kind.LOCAL;
 import static lombok.core.handlers.SafeCallIllegalUsingException.Place.*;
-import static lombok.core.handlers.SafeCallIllegalUsingException.unsupportedMessage;
+import static lombok.core.handlers.SafeCallIllegalUsingException.unsupportedPlaceMessage;
 import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.addBlockAfterVarDec;
 import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.getParent;
 import static lombok.javac.handlers.HandleSafeCallHelper.newInitBlock;
@@ -58,7 +58,7 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 		Place illegalPlace = checkIllegalUsing(varNode, varDecl);
 
 		if (illegalPlace != null) {
-			annotationNode.addError(unsupportedMessage(illegalPlace));
+			annotationNode.addError(unsupportedPlaceMessage(illegalPlace));
 			return;
 		}
 
@@ -75,8 +75,7 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 				annotationNode.getAst().setChanged();
 			}
 		} catch (SafeCallIllegalUsingException e) {
-			Place place = e.getPlace();
-			annotationNode.addError(unsupportedMessage(place));
+			annotationNode.addError(e.illegalUsingMessage());
 		} catch (SafeCallUnexpectedStateException e) {
 			annotationNode.addError(e.getMessage());
 		} catch (SafeCallInternalException e) {

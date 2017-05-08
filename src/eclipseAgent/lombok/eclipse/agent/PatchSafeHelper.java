@@ -1,5 +1,6 @@
 package lombok.eclipse.agent;
 
+import lombok.core.handlers.SafeCallIllegalUsingException;
 import lombok.core.handlers.SafeCallInternalException;
 import lombok.core.handlers.SafeCallUnexpectedStateException;
 import lombok.eclipse.Eclipse;
@@ -161,7 +162,11 @@ final class PatchSafeHelper {
 	}
 
 	private static Expression newDefaultValueLiterall(TypeReference typeName) {
-		Literal expression = getDefaultValue(typeName.getTypeName());
+		return newDefaultValueLiterall(typeName.getTypeName());
+	}
+
+	private static Expression newDefaultValueLiterall(char[][] name) {
+		Literal expression = getDefaultValue(name);
 		expression.computeConstant();
 		return expression;
 	}
@@ -190,7 +195,7 @@ final class PatchSafeHelper {
 
 	static ArrayList<Statement> newInitStatements(
 			AbstractVariableDeclaration varDecl, Expression expr, long p, BlockScope rootScope
-	) throws SafeCallUnexpectedStateException, SafeCallInternalException {
+	) throws SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException {
 		char[] name = varDecl.name;
 		ArrayList<Statement> statements = new ArrayList<Statement>();
 
@@ -200,8 +205,8 @@ final class PatchSafeHelper {
 
 		Expression rhs = childVarRef;
 		TypeReference varType = varDecl.type;
-		if (Eclipse.isPrimitive(varType) && !Eclipse.isPrimitive(varRef.var.type)) {
-			rhs = newIfNullThenConditional(childVarRef, childVarRef, getDefaultValue(varType.getTypeName()));
+		if (mustBeProtected(varType, varRef.var.type)) {
+			rhs = newIfNullThenConditional(childVarRef, childVarRef, newDefaultValueLiterall(varType));
 		}
 
 		SingleNameReference lhs = newSingleNameReference(name, p);
@@ -217,7 +222,7 @@ final class PatchSafeHelper {
 			Expression expr,
 			List<Statement> statements,
 			BlockScope rootScope
-	) throws SafeCallUnexpectedStateException, SafeCallInternalException {
+	) throws SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException {
 		int notDuplicatedLevel = verifyNotDuplicateLevel(level, rootVar, rootScope);
 		char[] templateName = rootVar.name;
 		char[] varName = newName(notDuplicatedLevel, templateName);
@@ -241,7 +246,6 @@ final class PatchSafeHelper {
 			if (methodBinding.isStatic()) {
 				resultVar = makeLocalDeclaration(statements, varName, messageSend, type);
 			} else {
-
 				VarRef varRef = populateInitStatements(lastLevel + 1, rootVar, messageSend.receiver,
 						statements, rootScope);
 
@@ -404,6 +408,8 @@ final class PatchSafeHelper {
 			VarRef varRef = populateInitStatements(notDuplicatedLevel + 1, rootVar, expression,
 					statements, rootScope);
 			if (varRef.var != null) {
+				TypeBinding typeBinding = unaryExpression.resolvedType;
+				varRef = protectIfPrimitive(varRef, expr, typeBinding, rootVar, rootScope, statements);
 				lastLevel = varRef.level;
 				UnaryExpression resultExpression = new UnaryExpression(varRef.getRef(), getOperator(unaryExpression));
 				resultVar = makeLocalDeclaration(statements, varName, resultExpression, type);
@@ -411,11 +417,54 @@ final class PatchSafeHelper {
 				lastLevel = notDuplicatedLevel;
 				resultVar = makeLocalDeclaration(statements, varName, unaryExpression, type);
 			}
-		} else {
-			throw new SafeCallUnexpectedStateException(populateInitStatements, expr, expr.getClass());
-		}
+		} else if (expr instanceof PostfixExpression || expr instanceof PrefixExpression) {
+			CompoundAssignment pe = (CompoundAssignment) expr;
+			Expression lhs = pe.lhs;
 
+			VarRef varRef = populateInitStatements(notDuplicatedLevel + 1, rootVar, lhs,
+					statements, rootScope);
+			if (varRef.var != null) {
+				TypeBinding opType = pe.expression.resolvedType;
+				varRef = protectIfPrimitive(varRef, expr, opType, rootVar, rootScope, statements);
+				lastLevel = varRef.level;
+				CompoundAssignment resultExpression = pe;// new PostfixExpression(varRef.getRef(), getOperator(unaryExpression));
+				resultExpression.lhs = varRef.getRef();
+				resultVar = makeLocalDeclaration(statements, varName, resultExpression, opType);
+			} else {
+				lastLevel = notDuplicatedLevel;
+				resultVar = makeLocalDeclaration(statements, varName, pe, type);
+			}
+		} else {
+			throw new SafeCallIllegalUsingException(null, expr);
+		}
 		return new VarRef(resultVar, lastLevel);
+	}
+
+	private static VarRef protectIfPrimitive(
+			VarRef varRef, Expression expr, TypeBinding expectedType,
+			AbstractVariableDeclaration rootVar, BlockScope rootScope, List<Statement> statements
+	) throws SafeCallUnexpectedStateException {
+		return protectIfPrimitive(varRef, getType(expr, expectedType), rootVar, rootScope, statements);
+	}
+
+	private static VarRef protectIfPrimitive(
+			VarRef varRef, TypeReference expectedType,
+			AbstractVariableDeclaration rootVar, BlockScope rootScope, List<Statement> statements
+	) throws SafeCallUnexpectedStateException {
+		char[] templateName = rootVar.name;
+		TypeReference actualType = varRef.var.type;
+		if (mustBeProtected(expectedType, actualType)) {
+			int lastLevel = varRef.level;
+			lastLevel = verifyNotDuplicateLevel(++lastLevel, rootVar, rootScope);
+			char[] varName = newName(lastLevel, templateName);
+			LocalDeclaration localDeclaration = newElvisDeclaration(statements, varName, varRef.getRef(),
+					actualType, expectedType);
+			return new VarRef(localDeclaration, lastLevel);
+		} else return varRef;
+	}
+
+	private static boolean mustBeProtected(TypeReference expectedType, TypeReference actualType) {
+		return Eclipse.isPrimitive(expectedType) && !Eclipse.isPrimitive(actualType);
 	}
 
 	private static TypeReference getIntTypeRef() {
@@ -423,26 +472,26 @@ final class PatchSafeHelper {
 	}
 
 	private static int populateArrayDimensions(
-			AbstractVariableDeclaration var,
+			AbstractVariableDeclaration rootVar,
 			Expression[] args, Expression[] resultArgs,
 			int startLevel, List<Statement> statements,
 			BlockScope rootScope
-	) throws SafeCallInternalException, SafeCallUnexpectedStateException {
+	) throws SafeCallInternalException, SafeCallUnexpectedStateException, SafeCallIllegalUsingException {
 		if (args == null) return startLevel;
 
-		if (resultArgs == null) throw new SafeCallInternalException(var, "resultArgs cannot be null");
+		if (resultArgs == null) throw new SafeCallInternalException(rootVar, "resultArgs cannot be null");
 		int initializerLevel = startLevel;
 		for (int i = 0; i < args.length; i++) {
 			Expression arg = args[i];
 			if (arg != null) {
-				initializerLevel = populateArgument(var, initializerLevel, arg, getIntTypeRef(), resultArgs,
+				initializerLevel = populateArgument(rootVar, initializerLevel, arg, getIntTypeRef(), resultArgs,
 						i, statements, rootScope
 				);
 				Expression resultArg = resultArgs[i];
 				EqualExpression noLessZero = newBinaryExpresion(resultArg, GREATER_EQUAL, newZeroLiteral());
 				ConditionalExpression condition = newConditional(noLessZero, resultArg, newZeroLiteral());
-				initializerLevel = verifyNotDuplicateLevel(initializerLevel + 1, var, rootScope);
-				char[] templateName = var.name;
+				initializerLevel = verifyNotDuplicateLevel(initializerLevel + 1, rootVar, rootScope);
+				char[] templateName = rootVar.name;
 				char[] conditionVarName = newName(initializerLevel, templateName);
 
 				LocalDeclaration conditionVar = makeLocalDeclaration(statements, conditionVarName,
@@ -460,7 +509,7 @@ final class PatchSafeHelper {
 			Expression[] args, Expression[] resultArgs, TypeReference arrayType,
 			int startLevel, List<Statement> statements,
 			BlockScope rootScope
-	) throws SafeCallInternalException, SafeCallUnexpectedStateException {
+	) throws SafeCallInternalException, SafeCallUnexpectedStateException, SafeCallIllegalUsingException {
 		if (args == null) return startLevel;
 
 		if (resultArgs == null) throw new SafeCallInternalException(var, "resultArgs cannot be null");
@@ -481,7 +530,7 @@ final class PatchSafeHelper {
 			Expression[] args, Expression[] resultArgs, MethodBinding methodBinding,
 			int startLevel, List<Statement> statements,
 			BlockScope rootScope
-	) throws SafeCallInternalException, SafeCallUnexpectedStateException {
+	) throws SafeCallInternalException, SafeCallUnexpectedStateException, SafeCallIllegalUsingException {
 		if (args == null) return startLevel;
 
 		if (resultArgs == null) throw new SafeCallInternalException(var, "resultArgs cannot be null");
@@ -496,29 +545,31 @@ final class PatchSafeHelper {
 	}
 
 	private static int populateArgument(
-			AbstractVariableDeclaration var, int level,
+			AbstractVariableDeclaration rootVar, int level,
 			Expression arg, TypeReference expectedType,
 			Expression[] resultArgs, int resultPosition,
 			List<Statement> statements,
 			BlockScope rootScope
-	) throws SafeCallInternalException, SafeCallUnexpectedStateException {
-		VarRef varRef = populateInitStatements(level + 1, var, arg,
+	) throws SafeCallInternalException, SafeCallUnexpectedStateException, SafeCallIllegalUsingException {
+		VarRef varRef = populateInitStatements(level + 1, rootVar, arg,
 				statements, rootScope);
 		Reference newInitExpr;
 		LocalDeclaration localDeclaration = varRef.var;
 		if (localDeclaration != null) {
+
+			varRef = protectIfPrimitive(varRef, expectedType, rootVar, rootScope, statements);
+
 			newInitExpr = varRef.getRef();
-			boolean mustBeConditional = Eclipse.isPrimitive(expectedType) &&
-					!Eclipse.isPrimitive(localDeclaration.type);
-			if (mustBeConditional) {
-				int conditionalLevel = verifyNotDuplicateLevel(varRef.level + 1, var, rootScope);
-				char[] conditionalVarName = newName(conditionalLevel, var.name);
-				LocalDeclaration condition = newElvisDeclaration(statements, conditionalVarName,
-						newInitExpr, localDeclaration.type, expectedType);
-				newInitExpr = newSingleNameReference(condition.name, getP(condition));
-				level = conditionalLevel;
-			} else
-				level = varRef.level;
+//			boolean mustBeConditional = mustBeProtected(expectedType, localDeclaration.type);
+//			if (mustBeConditional) {
+//				int conditionalLevel = verifyNotDuplicateLevel(varRef.level + 1, rootVar, rootScope);
+//				char[] conditionalVarName = newName(conditionalLevel, rootVar.name);
+//				LocalDeclaration condition = newElvisDeclaration(statements, conditionalVarName,
+//						newInitExpr, localDeclaration.type, expectedType);
+//				newInitExpr = newSingleNameReference(condition.name, getP(condition));
+//				level = conditionalLevel;
+//			} else
+			level = varRef.level;
 			resultArgs[resultPosition] = newInitExpr;
 		} else resultArgs[resultPosition] = arg;
 		return level;
@@ -677,7 +728,7 @@ final class PatchSafeHelper {
 			QualifiedNameReference src, Expression first,
 			char[] last, long pos, TypeBinding resolvedType, List<Statement> statements,
 			AbstractVariableDeclaration var, BlockScope rootScope
-	) throws SafeCallUnexpectedStateException, SafeCallInternalException {
+	) throws SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException {
 		VarRef varRef = populateInitStatements(level + 1, var, first, statements, rootScope);
 		Reference reference = varRef.getRef();
 		char[] name = reference.toString().toCharArray();

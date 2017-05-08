@@ -10,6 +10,7 @@ class SafeCallPrimitives {
 		@SafeCall byte bl = (byte)(long)Integer();
 		@SafeCall long lb = Integer().byteValue();
 		@SafeCall long l = (long)(getNullString().length());
+		@SafeCall long l2 = (long)getNullString((String)getNullObject()).length();
 		@SafeCall float f = (float)(getNullString().length());
 		@SafeCall double d = (double)(getNullString().length());
 		@SafeCall char c = getNullString().charAt(0);
@@ -17,6 +18,12 @@ class SafeCallPrimitives {
 	}
 
 	public String getNullString() {
+		return null;
+	}
+	public String getNullString(String arg1) {
+		return null;
+	}
+	public Object getNullObject() {
 		return null;
 	}
 	public Integer Integer() {

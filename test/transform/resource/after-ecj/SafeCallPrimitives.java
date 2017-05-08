@@ -41,6 +41,15 @@ class SafeCallPrimitives {
       long l1 = (long) l2;
       l = l1;
     }
+    @SafeCall long l2;
+    {
+      java.lang.Object l25 = getNullObject();
+      java.lang.String l24 = ((l25 != null) ? (String) l25 : null);
+      java.lang.String l23 = getNullString(l24);
+      int l22 = ((l23 != null) ? l23.length() : 0);
+      long l21 = (long) l22;
+      l2 = l21;
+    }
     @SafeCall float f;
     {
       java.lang.String f3 = getNullString();
@@ -69,6 +78,12 @@ class SafeCallPrimitives {
     }
   }
   public String getNullString() {
+    return null;
+  }
+  public String getNullString(String arg1) {
+    return null;
+  }
+  public Object getNullObject() {
     return null;
   }
   public Integer Integer() {

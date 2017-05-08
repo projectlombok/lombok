@@ -6,6 +6,7 @@ import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.OperatorSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
@@ -17,6 +18,7 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 import lombok.core.AST;
+import lombok.core.handlers.SafeCallIllegalUsingException;
 import lombok.core.handlers.SafeCallInternalException;
 import lombok.core.handlers.SafeCallUnexpectedStateException;
 import lombok.javac.JavacAST;
@@ -227,7 +229,8 @@ public final class HandleSafeCallHelper {
 			ListBuffer<JCStatement> statements,
 			JavacNode annotationNode,
 			JavacResolution javacResolution
-	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException {
+	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException,
+			SafeCallInternalException, SafeCallIllegalUsingException {
 		Name templateName = rootVar.name;
 		JavacAST ast = annotationNode.getAst();
 		JavacTreeMaker treeMaker = annotationNode.getTreeMaker();
@@ -246,7 +249,7 @@ public final class HandleSafeCallHelper {
 			JCExpression[] newArgs = new JCExpression[args.size()];
 
 			boolean varArgs = mi.varargsElement != null;
-			lastLevel = populateMethodCallArgs(rootVar, templateName, notDuplicatedLevel,
+			lastLevel = populateMethodCallArgs(rootVar, notDuplicatedLevel,
 					args, methodType, varArgs, newArgs, statements, annotationNode, javacResolution);
 			mi.args = List.from(newArgs);
 
@@ -393,15 +396,56 @@ public final class HandleSafeCallHelper {
 			JCExpression expression = unary.arg;
 			VarRef varRef = populateInitStatements(notDuplicatedLevel + 1, rootVar, expression,
 					statements, annotationNode, javacResolution);
+			Type varType;
 			if (varRef.var != null) {
-				unary.arg = newIdent(treeMaker, varRef);
+				Type expectedType = unary.type;
+				if (!expectedType.isPrimitive()) expectedType = getOperatorType(unary.operator, expr);
+				varRef = protectIfPrimitive(annotationNode, varRef, templateName, expression.type, expectedType, statements);
 				lastLevel = varRef.level;
-			} else lastLevel = notDuplicatedLevel;
-			resultVar = makeVariableDecl(treeMaker, statements, varName, type, unary);
+				unary.arg = newIdent(treeMaker, varRef);
+				varType = expectedType;
+			} else {
+				lastLevel = notDuplicatedLevel;
+				varType = type;
+			}
+
+			resultVar = makeVariableDecl(treeMaker, statements, varName, varType, unary);
 		} else {
-			throw new SafeCallUnexpectedStateException(populateInitStatements, expr, expr.getClass());
+			throw new SafeCallIllegalUsingException(null, expr);
 		}
 		return new VarRef(resultVar, lastLevel);
+	}
+
+	private static Type getOperatorType(Symbol operator, JCExpression expr) throws SafeCallUnexpectedStateException {
+		if (!(operator instanceof OperatorSymbol)) {
+			throw new SafeCallUnexpectedStateException(unsupportedUnaryOperator, expr, operator.getClass());
+		}
+		OperatorSymbol opSym = (OperatorSymbol) operator;
+
+		Type opSymType = opSym.type;
+		if (!(opSymType instanceof MethodType)) {
+			throw new SafeCallUnexpectedStateException(unsupportedUnaryOperatorType, expr, opSymType.getClass());
+		}
+		MethodType opSymMethodType = (MethodType) opSymType;
+		return opSymMethodType.getReturnType();
+	}
+
+	private static VarRef protectIfPrimitive(
+			JavacNode annotationNode, VarRef varRef, Name templateName, Type actualType,
+			Type expectedType, ListBuffer<JCStatement> statements
+	) throws SafeCallUnexpectedStateException {
+		if (expectedType.isPrimitive() && !actualType.isPrimitive()) {
+			JavacTreeMaker treeMaker = annotationNode.getTreeMaker();
+			JavacAST ast = annotationNode.getAst();
+			JCIdent ref = newIdent(treeMaker, varRef);
+			JCExpression elvis = newElvis(treeMaker, ast, ref, actualType, expectedType);
+			int notDuplicateLevel = verifyNotDuplicateLevel(templateName, varRef.level + 1, annotationNode);
+			Name newVarName = newVarName(templateName, notDuplicateLevel, annotationNode);
+			JCVariableDecl variableDecl = makeVariableDecl(treeMaker, statements, newVarName, expectedType, elvis);
+			varRef = new VarRef(variableDecl, notDuplicateLevel);
+
+		}
+		return varRef;
 	}
 
 	private static Type getIntType(JavacAST ast) {
@@ -410,12 +454,12 @@ public final class HandleSafeCallHelper {
 
 
 	private static int populateMethodCallArgs(
-			JCVariableDecl rootVar, Name templateName, int notDuplicatedLevel, List<JCExpression> args,
+			JCVariableDecl rootVar, int notDuplicatedLevel, List<JCExpression> args,
 			MethodType type,
 			boolean varArg,
 			JCExpression[] resultArgs, ListBuffer<JCStatement> statements,
 			JavacNode annotationNode, JavacResolution javacResolution
-	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException {
+	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException {
 
 		List<Type> argtypes = type.argtypes;
 
@@ -437,7 +481,7 @@ public final class HandleSafeCallHelper {
 		return lastLevel;
 	}
 
-	private static Type getParamType(JCTree.JCVariableDecl rootVar, boolean varArg, List<Type> argtypes, int elemIndex) throws SafeCallInternalException {
+	private static Type getParamType(JCVariableDecl rootVar, boolean varArg, List<Type> argtypes, int elemIndex) throws SafeCallInternalException {
 		Type expectedType;
 		if (varArg) {
 			int lastParameterIndex = argtypes.length() - 1;
@@ -461,7 +505,7 @@ public final class HandleSafeCallHelper {
 			JCVariableDecl rootVar, int notDuplicatedLevel, List<JCExpression> args,
 			Type expectedType, JCExpression[] resultArgs, ListBuffer<JCStatement> statements,
 			JavacNode annotationNode, JavacResolution javacResolution
-	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException {
+	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException {
 		int lastLevel;
 		int elemLevel = notDuplicatedLevel;
 
@@ -480,7 +524,7 @@ public final class HandleSafeCallHelper {
 			JCVariableDecl rootVar, int notDuplicatedLevel, List<JCExpression> args,
 			Type expectedType, JCExpression[] resultArgs, ListBuffer<JCStatement> statements,
 			JavacNode annotationNode, JavacResolution javacResolution
-	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException {
+	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException {
 		int lastLevel;
 		int elemLevel = notDuplicatedLevel;
 
@@ -518,12 +562,12 @@ public final class HandleSafeCallHelper {
 			JCExpression[] resultArgs, int resultPosition,
 			ListBuffer<JCStatement> statements,
 			JavacNode annotationNode, JavacResolution javacResolution
-	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException {
+	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException {
 		Name templateName = rootVar.name;
 		JavacTreeMaker treeMaker = annotationNode.getTreeMaker();
 		VarRef varRef = populateInitStatements(level + 1, rootVar, arg,
 				statements, annotationNode, javacResolution);
-		JCTree.JCVariableDecl var = varRef.var;
+		JCVariableDecl var = varRef.var;
 		JCExpression newElem;
 		if (var != null) {
 			JCExpression vartypeExpr = var.vartype;
@@ -536,10 +580,10 @@ public final class HandleSafeCallHelper {
 						varRef.level + 1, annotationNode);
 				Name conditionalVarName = newVarName(templateName, conditionalLevel, annotationNode);
 
-				JCTree.JCIdent ident = newIdent(treeMaker, varRef);
+				JCIdent ident = newIdent(treeMaker, varRef);
 				JCExpression checkNullExpr = newElvis(treeMaker, annotationNode.getAst(), ident, varType, expectedType);
 
-				JCTree.JCVariableDecl conditionalVar = makeVariableDecl(treeMaker, statements,
+				JCVariableDecl conditionalVar = makeVariableDecl(treeMaker, statements,
 						conditionalVarName, expectedType, checkNullExpr);
 
 				newElem = newIdent(treeMaker, conditionalVar);
@@ -563,7 +607,7 @@ public final class HandleSafeCallHelper {
 		return select;
 	}
 
-	private static JCTree.JCIdent newIdent(JavacTreeMaker treeMaker, Name childName, int pos) {
+	private static JCIdent newIdent(JavacTreeMaker treeMaker, Name childName, int pos) {
 		JCIdent ident = treeMaker.Ident(childName);
 		ident.pos = pos;
 		return ident;
@@ -844,7 +888,7 @@ public final class HandleSafeCallHelper {
 			JCVariableDecl rootVar, JavacResolution javacResolution, JavacNode annotationNode,
 			int level, Type type, JCFieldAccess fa, boolean isMeth,
 			List<JCExpression> args, ListBuffer<JCStatement> statements)
-			throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException {
+			throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException {
 		Name templateName = rootVar.name;
 		JavacTreeMaker treeMaker = annotationNode.getTreeMaker();
 		JCExpression selected = fa.selected;
@@ -873,7 +917,7 @@ public final class HandleSafeCallHelper {
 	}
 
 	static JCBlock newInitBlock(JCVariableDecl varDecl, JavacNode annotationNode) throws TypeNotConvertibleException,
-			SafeCallUnexpectedStateException, SafeCallInternalException {
+			SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException {
 		JavacResolution javacResolution = new JavacResolution(annotationNode.getContext());
 
 		JavacTreeMaker maker = annotationNode.getTreeMaker();

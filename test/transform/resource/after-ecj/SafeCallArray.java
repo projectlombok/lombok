@@ -7,9 +7,10 @@ class SafeCallArray {
     {
       SafeCallArray i44 = nullSafeCallArray();
       java.lang.Integer i43 = ((i44 != null) ? i44.nullIndex() : null);
-      int i42 = (- i43);
-      int[] i45 = empty;
-      int i41 = (((i45 != null) && ((i42 >= 0) && (i42 < i45.length))) ? i45[i42] : 0);
+      int i45 = ((i43 != null) ? i43 : 0);
+      int i42 = (- i45);
+      int[] i46 = empty;
+      int i41 = (((i46 != null) && ((i42 >= 0) && (i42 < i46.length))) ? i46[i42] : 0);
       i4 = i41;
     }
     @SafeCall int i;

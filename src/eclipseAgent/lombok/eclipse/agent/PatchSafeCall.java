@@ -1,11 +1,13 @@
 package lombok.eclipse.agent;
 
+import lombok.core.handlers.SafeCallIllegalUsingException;
 import lombok.core.handlers.SafeCallInternalException;
 import lombok.core.handlers.SafeCallUnexpectedStateException;
 import lombok.experimental.SafeCall;
 import org.eclipse.jdt.internal.compiler.ast.*;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
 import org.eclipse.jdt.internal.compiler.lookup.LocalVariableBinding;
+import org.eclipse.jdt.internal.compiler.problem.AbortCompilation;
 import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
 
 import java.util.ArrayList;
@@ -36,20 +38,25 @@ public class PatchSafeCall {
 			Expression expression = var.initialization;
 			boolean hasTypeError = expression.resolvedType == null;
 			if (!hasTypeError) {
-				ArrayList<Statement> statements;
+				ArrayList<Statement> statements = null;
 				try {
-					statements = newInitStatements(var, expression, p, upperScope);
-				} catch (SafeCallUnexpectedStateException e) {
-					Object eVar = e.getVar();
-					ASTNode astNode = eVar != null ? (ASTNode) eVar : null;
-					ProblemReporter problemReporter = upperScope.problemReporter();
-					String message = e.getMessage();
-					if (astNode != null) problemReporter.abortDueToInternalError(message, astNode);
-					else problemReporter.abortDueToInternalError(message);
-					return;
-				} catch (SafeCallInternalException e) {
-					ProblemReporter problemReporter = upperScope.problemReporter();
-					problemReporter.abortDueToInternalError(e.getMessage(), (ASTNode) e.getVar());
+					try {
+						statements = newInitStatements(var, expression, p, upperScope);
+					} catch (SafeCallUnexpectedStateException e) {
+						Object eVar = e.getVar();
+						ASTNode astNode = eVar != null ? (ASTNode) eVar : null;
+						ProblemReporter problemReporter = upperScope.problemReporter();
+						String message = e.getMessage();
+						if (astNode != null) problemReporter.abortDueToInternalError(message, astNode);
+						else problemReporter.abortDueToInternalError(message);
+					} catch (SafeCallInternalException e) {
+						ProblemReporter problemReporter = upperScope.problemReporter();
+						problemReporter.abortDueToInternalError(e.getMessage(), (ASTNode) e.getVar());
+					} catch (SafeCallIllegalUsingException e) {
+						ProblemReporter problemReporter = upperScope.problemReporter();
+						problemReporter.abortDueToInternalError(e.illegalUsingMessage(), (ASTNode) e.getNode());
+					}
+				} catch (AbortCompilation ae) {
 					return;
 				}
 

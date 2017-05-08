@@ -39,7 +39,7 @@ import java.util.List;
 import static java.lang.reflect.Modifier.STATIC;
 import static java.util.Arrays.asList;
 import static lombok.core.handlers.SafeCallIllegalUsingException.Place.*;
-import static lombok.core.handlers.SafeCallIllegalUsingException.unsupportedMessage;
+import static lombok.core.handlers.SafeCallIllegalUsingException.unsupportedPlaceMessage;
 import static lombok.eclipse.Eclipse.getEcjCompilerVersion;
 import static lombok.eclipse.EclipseAugments.ASTNode_parentNode;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.copySourcePosition;
@@ -101,7 +101,7 @@ public class HandleSafeCall extends EclipseASTAdapter {
 	}
 
 	private static void addIllegalPlaceError(EclipseNode variable, Place place) {
-		variable.addError(unsupportedMessage(place));
+		variable.addError(unsupportedPlaceMessage(place));
 	}
 
 	private static ASTNode getParentASTNode(
