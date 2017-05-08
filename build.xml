@@ -126,9 +126,17 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			classname="lombok.core.Version"
 			classpath="build/lombok"
 			failonerror="true"
+			output="build/version.txt">
+			<arg value="full" />
+		</java>
+		<ivy:loadversion property="lombok.fullversion" file="build/version.txt" />
+		<java
+			classname="lombok.core.Version"
+			classpath="build/lombok"
+			failonerror="true"
 			output="build/version.txt" />
 		<ivy:loadversion property="lombok.version" file="build/version.txt" />
-		<echo level="info">Lombok version: ${lombok.version}</echo>
+		<echo level="info">Lombok version: ${lombok.version} (${lombok.fullversion})</echo>
 	</target>
 	
 	<target name="-unpackLibs" depends="ensureRuntimeDeps">
@@ -235,6 +243,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor</echo>
 	<target name="-latestChanges" depends="version">
 		<ant antfile="buildScripts/website.ant.xml" target="latestChanges" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
+			<property name="lombok.fullversion" value="${lombok.fullversion}" />
 		</ant>
 	</target>
 	
@@ -655,6 +664,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 	<target name="javadoc" depends="compile, version" description="Builds javadoc into doc/api.">
 		<ant antfile="buildScripts/website.ant.xml" target="javadoc" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
+			<property name="lombok.fullversion" value="${lombok.fullversion}" />
 		</ant>
 	</target>
 	
@@ -744,6 +754,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		description="Publishes an edge release for those who need to test a cutting edge build.">
 		<ant antfile="buildScripts/website.ant.xml" target="edgeRelease" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
+			<property name="lombok.fullversion" value="${lombok.fullversion}" />
 			<property name="ssh.username" value="${ssh.username}" />
 			<property name="ssh.keyfile" value="${ssh.keyfile}" />
 		</ant>
@@ -766,6 +777,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 	<target name="website" depends="version" description="Prepares the website for distribution.">
 		<ant antfile="buildScripts/website.ant.xml" target="website" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
+			<property name="lombok.fullversion" value="${lombok.fullversion}" />
 		</ant>
 	</target>
 	
@@ -773,6 +785,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			description="Prepares the website for distribution and then publishes it to projectlombok.org.">
 		<ant antfile="buildScripts/website.ant.xml" target="website-publish" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
+			<property name="lombok.fullversion" value="${lombok.fullversion}" />
 			<property name="ssh.username" value="${ssh.username}" />
 			<property name="ssh.keyfile" value="${ssh.keyfile}" />
 		</ant>

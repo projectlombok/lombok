@@ -22,7 +22,7 @@
 <project name="lombok-website" basedir=".." default="website">
 	<description>
 This buildfile is part of projectlombok.org. It is responsible for building the website and all website-related aspects,
-such as converting the changelog into HTML, and creating javadoc.
+such as applying the templates to produce the website, converting the changelog into HTML, and creating javadoc.
 	</description>
 	
 	<path id="build.path">
@@ -34,159 +34,49 @@ such as converting the changelog into HTML, and creating javadoc.
 	<property name="SNIPPET_TAB_STOP" value="2" />
 	
 	<target name="-website-clean">
-		<delete dir="build/website-old" quiet="true" />
+		<delete dir="build/website" quiet="true" />
 	</target>
 	
-	<target name="website" description="Prepares the website for distribution" depends="-website-main, -website-videos, -website-dist" />
+	<target name="website" description="Prepares the website for distribution" depends="-website-main, -website-dist" />
 	
-	<target name="version" unless="lombok.version">
+	<target name="-ensure-version" unless="lombok.version">
 		<fail>Supply lombok.version</fail>
+	</target>
+	
+	<target name="-ensure-fullversion" unless="lombok.fullversion">
+		<fail>Supply lombok.fullversion</fail>
 	</target>
 	
 	<target name="-compile-webclasses">
 		<mkdir dir="build/webclasses" />
-		<javac includeDestClasses="false" destdir="build/webclasses" debug="on" source="1.4" target="1.4">
+		<javac includeDestClasses="false" destdir="build/webclasses" debug="on" source="1.8" target="1.8">
 			<classpath refid="build.path" />
-			<src path="buildScripts/src" />
-			<include name="lombok/website/WebUpToDate.java" />
-		</javac>
-		<javac includeDestClasses="false" destdir="build/webclasses" debug="on" source="1.5" target="1.5">
-			<classpath refid="build.path" />
-			<src path="buildScripts/src" />
-			<include name="lombok/website/CompileChangelog.java" />
+			<src path="src/website" />
 		</javac>
 	</target>
 	
-	<target name="build-webuptodate" depends="-compile-webclasses">
-		<taskdef name="webuptodate" classname="lombok.website.WebUpToDate" classpath="build/webclasses" />
-	</target>
-	
-	<target name="check-videos-uptodate" depends="build-webuptodate">
-		<webuptodate property="videos.uptodate" urlbase="https://projectlombok.org/videos/">
-			<srcfiles dir="website-old/videos" includes="**/*" />
-		</webuptodate>
-	</target>
-	
-	<target name="-website-videos" depends="-website-clean, check-videos-uptodate" unless="videos.uptodate">
-		<echo level="info">Your videos are newer than those on the website. They will be included too.</echo>
-		<mkdir dir="build/website-old/videos" />
-		<copy todir="build/website-old/videos">
-			<fileset dir="website-old/videos" />
-		</copy>
-	</target>
-	
-	<target name="-website-main" depends="-website-clean, version, javadoc, changelogToHtml">
-		<taskdef classpath="lib/build/de.java2html-java2html.jar" name="java2html" classname="de.java2html.anttasks.Java2HtmlTask" />
-		<mkdir dir="build/website-old" />
-		<copy todir="build/website-old">
-			<fileset dir="website-old">
-				<exclude name="**/*.jpage" />
-				<exclude name="**/*.svg" />
-				<exclude name="**/*.psd" />
-				<exclude name="**/*.ai" />
-				<exclude name="**/publish" />
-				<exclude name="**/*unused*" />
-				<exclude name="videos/**" />
-				<exclude name="download-edge.html" />
-				<exclude name="download-edge-none.html" />
-			</fileset>
+	<target name="-website-main" depends="-ensure-version, -ensure-fullversion, -website-clean, -compile-webclasses, javadoc, changelogToHtml">
+		<mkdir dir="build/website" />
+		<copy todir="build/website">
+			<fileset dir="website/resources" />
 			<fileset dir=".">
-				<include name="LICENCE" />
+				<include name="LICENSE" />
 			</fileset>
 		</copy>
-		<copy file="website/download-edge-none.html" tofile="build/website-old/download-edge.html" />
-		<copy todir="build/website-old" overwrite="true">
-			<fileset dir="website-old">
-				<include name="index.html" />
-				<include name="download.html" />
-				<include name="slideshow.html" />
-				<include name="setup/*.html" />
-				<include name="mavenrepo/index.html" />
-			</fileset>
-			<filterchain>
-				<replacetokens>
-					<token key="VERSION" value="${lombok.version}" />
-				</replacetokens>
-			</filterchain>
-		</copy>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="GetterSetter" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="GetterLazy" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="ToString" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="EqualsAndHashCode" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Data" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Cleanup" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Synchronized" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="SneakyThrows" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Constructor" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Log" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="val" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Value" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="NonNull" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Builder" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Singular-snippet" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/var" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/Delegate" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/Accessors" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/ExtensionMethod" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/FieldDefaults" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/Wither" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/onX" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/UtilityClass" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/Helper" />
-		</antcall>
+		<java classname="lombok.website.WebsiteMaker" failonerror="true">
+			<classpath>
+				<path refid="build.path" />
+				<pathelement location="build/webclasses" />
+			</classpath>
+			<arg value="${lombok.version}" />
+			<arg value="${lombok.fullversion}" />
+		</java>
 	</target>
 	
 	<target name="-website-dist">
 		<mkdir dir="dist" />
 		<tar destfile="dist/website.tar.bz2" compression="bzip2">
-			<tarfileset dir="build/website-old" />
+			<tarfileset dir="build/website" />
 			<tarfileset dir="doc/api" prefix="api" />
 		</tar>
 	</target>
@@ -206,44 +96,7 @@ such as converting the changelog into HTML, and creating javadoc.
 			trust="true" command="/data/lombok/stagingCmd/deployWebsite" />
 	</target>
 	
-	<target name="-integrateSnippet">
-		<mkdir dir="build/website-old" />
-		<property name="prefile" location="usage_examples/${transformationName}Example_pre.jpage" />
-		<property name="postfile" location="usage_examples/${transformationName}Example_post.jpage" />
-		<property name="htmlfile" location="website-old/features/${transformationName}.html" />
-		<mkdir dir="build/temp" />
-		<property name="preout" location="build/temp/${transformationName}Example_pre.jpage.html" />
-		<property name="postout" location="build/temp/${transformationName}Example_post.jpage.html" />
-		<java2html srcdir="usage_examples" includes="${transformationName}Example_*.jpage" destdir="build/temp" tabs="${SNIPPET_TAB_STOP}"
-			showLineNumbers="true" overwrite="true" />
-		<loadfile property="pre" encoding="UTF-8" srcFile="${preout}">
-			<filterchain>
-				<linecontainsregexp>
-					<regexp pattern="(code>)|(font>)" />
-				</linecontainsregexp>
-				<striplinebreaks />
-			</filterchain>
-		</loadfile>
-		<loadfile property="post" encoding="UTF-8" srcFile="${postout}">
-			<filterchain>
-				<linecontainsregexp>
-					<regexp pattern="(code>)|(font>)" />
-				</linecontainsregexp>
-				<striplinebreaks />
-			</filterchain>
-		</loadfile>
-		<delete dir="build/temp" quiet="true" />
-		<copy file="${htmlfile}" tofile="build/website-old/features/${transformationName}.html" overwrite="true">
-			<filterchain>
-				<replacetokens>
-					<token key="HTML_PRE" value="${pre}" />
-					<token key="HTML_POST" value="${post}" />
-				</replacetokens>
-			</filterchain>
-		</copy>
-	</target>
-	
-	<target name="latestChanges" depends="-compile-webclasses, version">
+	<target name="latestChanges" depends="-compile-webclasses, -ensure-version, -ensure-fullversion">
 		<java fork="true" classname="lombok.website.CompileChangelog" failonerror="true">
 			<classpath>
 				<path refid="build.path" />
@@ -256,7 +109,7 @@ such as converting the changelog into HTML, and creating javadoc.
 		</java>
 	</target>
 	
-	<target name="edgeRelease-build" depends="-compile-webclasses, version">
+	<target name="edgeRelease-build" depends="-compile-webclasses, -ensure-version, -ensure-fullversion">
 		<mkdir dir="build/website-edge" />
 		<property name="CHANGELOG_FILE" location="doc/changelog.markdown" />
 		<property name="CHANGELOG_HTML" location="build/website-edge/changelog-edge.html" />
@@ -276,7 +129,7 @@ such as converting the changelog into HTML, and creating javadoc.
 			<format property="edgeRelease-timestamp" pattern="yyyy-MM-dd HH:mm 'UTC'" timezone="UTC" />
 		</tstamp>
 		<copy todir="build/website-edge" overwrite="true">
-			<fileset dir="website-old">
+			<fileset dir="website/extra">
 				<include name="download-edge.html" />
 			</fileset>
 			<filterchain>
@@ -336,7 +189,7 @@ such as converting the changelog into HTML, and creating javadoc.
 		</copy>
 	</target>
 	
-	<target name="javadoc" description="Generates the javadoc" depends="version">
+	<target name="javadoc" description="Generates the javadoc" depends="-ensure-version, -ensure-fullversion">
 		<delete dir="build/api" quiet="true" />
 		<delete dir="doc/api" quiet="true" />
 		<mkdir dir="build/api" />

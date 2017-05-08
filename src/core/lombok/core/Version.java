@@ -49,7 +49,7 @@ public class Version {
 	 */
 	public static void main(String[] args) {
 		if (args.length > 0) {
-			System.out.printf("Lombok %s\n", getFullVersion());
+			System.out.printf("%s\n", getFullVersion());
 		} else {
 			System.out.println(VERSION);
 		}

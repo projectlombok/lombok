@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,32 +32,70 @@ import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
 
 public class WebsiteMaker {
+	private final String version, fullVersion;
 	private final File baseDir, outputDir;
 	
-	public WebsiteMaker(File baseDir, File outputDir) {
+	public WebsiteMaker(String version, String fullVersion, File baseDir, File outputDir) {
+		this.version = version;
+		this.fullVersion = fullVersion;
 		this.baseDir = baseDir;
 		this.outputDir = outputDir;
 	}
 	
+	private static final class VersionFinder {
+		public static String getVersion() {
+			return getVersion0("getVersion");
+		}
+		
+		public static String getFullVersion() {
+			return getVersion0("getFullVersion");
+		}
+		
+		private static String getVersion0(String mName) {
+			try {
+				Class<?> c = Class.forName("lombok.core.Version");
+				Method m = c.getMethod(mName);
+				return (String) m.invoke(null);
+			} catch (ClassNotFoundException e) {
+				System.err.println("You need to specify the version string, and the full version string, as first 2 arguments.");
+				System.exit(1);
+				return null;
+			} catch (Exception e) {
+				if (e instanceof RuntimeException) throw (RuntimeException) e;
+				throw new RuntimeException(e);
+			}
+		}
+	}
+	
 	public static void main(String[] args) throws Exception {
 		File in, out;
-		if (args.length == 0) {
+		String version, fullVersion;
+		if (args.length < 2) {
+			version = VersionFinder.getVersion();
+			fullVersion = VersionFinder.getFullVersion();
+		} else {
+			version = args[0];
+			fullVersion = args[1];
+		}
+		
+		if (args.length < 3) {
 			in = new File(".");
 			if (new File(in, "build.xml").isFile() && new File(in, "website").isDirectory()) in = new File(in, "website");
 		} else {
-			in = new File(args[0]);
+			in = new File(args[2]);
 		}
 		
-		if (args.length < 2) {
+		if (args.length < 4) {
 			if (new File("./build.xml").isFile() && new File("./website").isDirectory() && new File("./build").isDirectory()) {
 				out = new File("./build/website");
 			} else {
 				out = new File(in, "output");
 			}
 		} else {
-			out = new File(args[1]);
+			out = new File(args[3]);
 		}
-		WebsiteMaker maker = new WebsiteMaker(in, out);
+		
+		WebsiteMaker maker = new WebsiteMaker(version, fullVersion, in, out);
 		
 		maker.buildWebsite();
 	}
@@ -151,8 +190,8 @@ public class WebsiteMaker {
 	private static final Pattern LOMBOK_LINK = Pattern.compile("^.*<a(?: (?:id|class|rel|rev|download|target|type)(?:=\"[^\"]*\")?)* href=\"([^\"]+)\"(?: (?:id|class|rel|rev|download|target|type)(?:=\"[^\"]*\")?)*>([^<]+)</a>.*$");
 	private Map<String, Object> createDataModel() throws IOException {
 		Map<String, Object> data = new HashMap<String, Object>();
-		data.put("version", lombok.core.Version.getVersion());
-		data.put("fullVersion", lombok.core.Version.getFullVersion());
+		data.put("version", version);
+		data.put("fullVersion", fullVersion);
 		data.put("year", "" + new GregorianCalendar().get(Calendar.YEAR));
 		data.put("usages", new HtmlMaker(new File(baseDir, "usageExamples")));
 		InputStream in = new URL("https://projectlombok.org/all-versions.html").openStream();
@@ -167,8 +206,8 @@ public class WebsiteMaker {
 			in.close();
 		}
 		
-		if (links.isEmpty() || !links.get(0).get(0).endsWith("lombok-" + lombok.core.Version.getVersion() + ".jar")) {
-			links.add(Arrays.asList("downloads/lombok-" + lombok.core.Version.getVersion() + ".jar", "lombok-" + lombok.core.Version.getVersion() + ".jar"));
+		if (links.isEmpty() || !links.get(0).get(0).endsWith("lombok-" + version + ".jar")) {
+			links.add(Arrays.asList("downloads/lombok-" + version + ".jar", "lombok-" + version + ".jar"));
 		}
 		
 		data.put("linksToVersions", links);
