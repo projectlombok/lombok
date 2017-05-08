@@ -116,7 +116,15 @@ final class LombokFileObjects {
 			if (Class.forName("com.sun.tools.javac.util.BaseFileObject") == null) throw new NullPointerException();
 			return Compiler.JAVAC6;
 		} catch (Exception e) {}
-		return null;
+		
+		StringBuilder sb = new StringBuilder(jfmClassName);
+		if (jfm != null) {
+			sb.append(" extends ").append(jfm.getClass().getSuperclass().getName());
+			for (Class<?> cls : jfm.getClass().getInterfaces()) {
+				sb.append(" implements ").append(cls.getName());
+			}
+		}
+		throw new IllegalArgumentException(sb.toString());
 	}
 	
 	static JavaFileObject createEmpty(Compiler compiler, String name, Kind kind) {
