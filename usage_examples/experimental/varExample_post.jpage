@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 import lombok.var;
 
-public class ValExample {
+public class VarExample {
 	public String example() {
 		ArrayList<String> example = new ArrayList<String>();
 		example.add("Hello, World!");
