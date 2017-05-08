@@ -34,7 +34,7 @@ such as converting the changelog into HTML, and creating javadoc.
 	<property name="SNIPPET_TAB_STOP" value="2" />
 	
 	<target name="-website-clean">
-		<delete dir="build/website" quiet="true" />
+		<delete dir="build/website-old" quiet="true" />
 	</target>
 	
 	<target name="website" description="Prepares the website for distribution" depends="-website-main, -website-videos, -website-dist" />
@@ -63,23 +63,23 @@ such as converting the changelog into HTML, and creating javadoc.
 	
 	<target name="check-videos-uptodate" depends="build-webuptodate">
 		<webuptodate property="videos.uptodate" urlbase="https://projectlombok.org/videos/">
-			<srcfiles dir="website/videos" includes="**/*" />
+			<srcfiles dir="website-old/videos" includes="**/*" />
 		</webuptodate>
 	</target>
 	
 	<target name="-website-videos" depends="-website-clean, check-videos-uptodate" unless="videos.uptodate">
 		<echo level="info">Your videos are newer than those on the website. They will be included too.</echo>
-		<mkdir dir="build/website/videos" />
-		<copy todir="build/website/videos">
-			<fileset dir="website/videos" />
+		<mkdir dir="build/website-old/videos" />
+		<copy todir="build/website-old/videos">
+			<fileset dir="website-old/videos" />
 		</copy>
 	</target>
 	
 	<target name="-website-main" depends="-website-clean, version, javadoc, changelogToHtml">
 		<taskdef classpath="lib/build/de.java2html-java2html.jar" name="java2html" classname="de.java2html.anttasks.Java2HtmlTask" />
-		<mkdir dir="build/website" />
-		<copy todir="build/website">
-			<fileset dir="website">
+		<mkdir dir="build/website-old" />
+		<copy todir="build/website-old">
+			<fileset dir="website-old">
 				<exclude name="**/*.jpage" />
 				<exclude name="**/*.svg" />
 				<exclude name="**/*.psd" />
@@ -94,9 +94,9 @@ such as converting the changelog into HTML, and creating javadoc.
 				<include name="LICENCE" />
 			</fileset>
 		</copy>
-		<copy file="website/download-edge-none.html" tofile="build/website/download-edge.html" />
-		<copy todir="build/website" overwrite="true">
-			<fileset dir="website">
+		<copy file="website/download-edge-none.html" tofile="build/website-old/download-edge.html" />
+		<copy todir="build/website-old" overwrite="true">
+			<fileset dir="website-old">
 				<include name="index.html" />
 				<include name="download.html" />
 				<include name="slideshow.html" />
@@ -186,7 +186,7 @@ such as converting the changelog into HTML, and creating javadoc.
 	<target name="-website-dist">
 		<mkdir dir="dist" />
 		<tar destfile="dist/website.tar.bz2" compression="bzip2">
-			<tarfileset dir="build/website" />
+			<tarfileset dir="build/website-old" />
 			<tarfileset dir="doc/api" prefix="api" />
 		</tar>
 	</target>
@@ -207,10 +207,10 @@ such as converting the changelog into HTML, and creating javadoc.
 	</target>
 	
 	<target name="-integrateSnippet">
-		<mkdir dir="build/website" />
+		<mkdir dir="build/website-old" />
 		<property name="prefile" location="usage_examples/${transformationName}Example_pre.jpage" />
 		<property name="postfile" location="usage_examples/${transformationName}Example_post.jpage" />
-		<property name="htmlfile" location="website/features/${transformationName}.html" />
+		<property name="htmlfile" location="website-old/features/${transformationName}.html" />
 		<mkdir dir="build/temp" />
 		<property name="preout" location="build/temp/${transformationName}Example_pre.jpage.html" />
 		<property name="postout" location="build/temp/${transformationName}Example_post.jpage.html" />
@@ -233,7 +233,7 @@ such as converting the changelog into HTML, and creating javadoc.
 			</filterchain>
 		</loadfile>
 		<delete dir="build/temp" quiet="true" />
-		<copy file="${htmlfile}" tofile="build/website/features/${transformationName}.html" overwrite="true">
+		<copy file="${htmlfile}" tofile="build/website-old/features/${transformationName}.html" overwrite="true">
 			<filterchain>
 				<replacetokens>
 					<token key="HTML_PRE" value="${pre}" />
@@ -276,7 +276,7 @@ such as converting the changelog into HTML, and creating javadoc.
 			<format property="edgeRelease-timestamp" pattern="yyyy-MM-dd HH:mm 'UTC'" timezone="UTC" />
 		</tstamp>
 		<copy todir="build/website-edge" overwrite="true">
-			<fileset dir="website">
+			<fileset dir="website-old">
 				<include name="download-edge.html" />
 			</fileset>
 			<filterchain>
@@ -311,9 +311,9 @@ such as converting the changelog into HTML, and creating javadoc.
 	</target>
 	
 	<target name="changelogToHtml" depends="-compile-webclasses">
-		<mkdir dir="build/website" />
+		<mkdir dir="build/website-old" />
 		<property name="CHANGELOG_FILE" location="doc/changelog.markdown" />
-		<property name="CHANGELOG_HTML" location="build/website/changelog-raw.html" />
+		<property name="CHANGELOG_HTML" location="build/website-old/changelog-raw.html" />
 		<java fork="true" classname="lombok.website.CompileChangelog" failonerror="true">
 			<classpath>
 				<path refid="build.path" />
@@ -322,10 +322,10 @@ such as converting the changelog into HTML, and creating javadoc.
 			<arg value="${CHANGELOG_FILE}" />
 			<arg value="${CHANGELOG_HTML}" />
 		</java>
-		<loadfile property="changelog.main" srcFile="build/website/changelog-raw.html" />
-		<delete file="build/website/changelog-raw.html" />
-		<copy todir="build/website" overwrite="true">
-			<fileset dir="website">
+		<loadfile property="changelog.main" srcFile="build/website-old/changelog-raw.html" />
+		<delete file="build/website-old/changelog-raw.html" />
+		<copy todir="build/website-old" overwrite="true">
+			<fileset dir="website-old">
 				<include name="changelog.html" />
 			</fileset>
 			<filterchain>

@@ -42,14 +42,14 @@ public class WebsiteMaker {
 		File in, out;
 		if (args.length == 0) {
 			in = new File(".");
-			if (new File(in, "build.xml").isFile() && new File(in, "website2").isDirectory()) in = new File(in, "website2");
+			if (new File(in, "build.xml").isFile() && new File(in, "website").isDirectory()) in = new File(in, "website");
 		} else {
 			in = new File(args[0]);
 		}
 		
 		if (args.length < 2) {
-			if (new File("./build.xml").isFile() && new File("./website2").isDirectory() && new File("./build").isDirectory()) {
-				out = new File("./build/website2");
+			if (new File("./build.xml").isFile() && new File("./website").isDirectory() && new File("./build").isDirectory()) {
+				out = new File("./build/website");
 			} else {
 				out = new File(in, "output");
 			}
