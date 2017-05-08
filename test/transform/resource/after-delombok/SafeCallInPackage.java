@@ -1,8 +1,10 @@
-class SafeCallDefaultPackage {
-	public SafeCallDefaultPackage() {
+package first.second;
+
+class SafeCallInPackage {
+	public SafeCallInPackage() {
 		String s;
 		{
-			SafeCallDefaultPackage s3 = new SafeCallDefaultPackage();
+			first.second.SafeCallInPackage s3 = new first.second.SafeCallInPackage();
 			java.lang.String s2 = s3 != null ? s3.getNullString() : null;
 			java.lang.String s1 = s2 != null ? s2.trim() : null;
 			s = s1;
