@@ -8,6 +8,8 @@
 			<code>@Builder</code> gained <code>@Singular</code> support and was promoted to the main <code>lombok</code> package since lombok v1.16.0.
 		</p><p>
 			<code>@Builder</code> with <code>@Singular</code> adds a clear method since lombok v1.16.8.
+		</p><p>
+			<code>@Builder.Default</code> functionality was added in lombok v1.16.16.
 		</p>
 	</@f.history>
 	
@@ -66,10 +68,19 @@
 			<code>@Builder(builderClassName = "HelloWorldBuilder", buildMethodName = "execute", builderMethodName = "helloWorld", toBuilder = true)</code><br />
 		</p>
 	</@f.overview>
-
+	
+	<@f.featureSection>
+		<h3 id="builderdefault"><a name="builderdefault">@Builder.Default</a></h3>
+		
+		<p>
+			If a certain field/parameter is never set during a build session, then it always gets 0 / <code>null</code> / false. If you've put <code>@Builder</code> on a class (and not a method or constructor) you can instead specify the default directly on the field, and annotate the field with <code>@Builder.Default</code>:<br />
+			<code>@Builder.Default private final long created = System.currentTimeMillis();</code>	</@f.featureSection>
+		</p>
+	</@f.featureSection>
+	
 	<@f.featureSection>
 		<h3 id="singular"><a name="singular">@Singular</a></h3>
-
+		
 		<p>
 			By annotating one of the parameters (if annotating a method or constructor with <code>@Builder</code>) or fields (if annotating a class with <code>@Builder</code>) with the <code>@Singular</code> annotation, lombok will treat that builder node as a collection, and it generates 2 'adder' methods instead of a 'setter' method. One which adds a single element to the collection, and one which adds all elements of another collection to the collection. No setter to just set the collection (replacing whatever was already added) will be generated. A 'clear' method is also generated. These 'singular' builders are very complicated in order to guarantee the following properties:
 			<ul>

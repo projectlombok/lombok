@@ -45,7 +45,7 @@
 		<p>
 			Even if a field is explicitly initialized with <code>null</code>, lombok will consider the requirement to avoid null as fulfilled, and will <em>NOT</em> consider the field as a 'required' argument. The assumption is that if you explicitly assign <code>null</code> to a field that you've also marked as <code>@NonNull</code> signals you must know what you're doing.
 		</p><p>
-			The <code>@java.beans.ConstructorProperties</code> annotation is never generated for a constructor with no arguments. This also explains why <code>@NoArgsConstructor</code> lacks the <code>suppressConstructorProperties</code> annotation method. The <code>@ConstructorProperties</code> annotation is also omitted for private constructors. The generated static factory methods also do not get <code>@ConstructorProperties</code>, as this annotation can only be added to real constructors.
+			The <code>@java.beans.ConstructorProperties</code> annotation is never generated for a constructor with no arguments. This also explains why <code>@NoArgsConstructor</code> lacks the <code>suppressConstructorProperties</code> annotation method. The generated static factory methods also do not get <code>@ConstructorProperties</code>, as this annotation can only be added to real constructors.
 		</p><p>
 			<code>@XArgsConstructor</code> can also be used on an enum definition. The generated constructor will always be private, because non-private constructors aren't legal in enums. You don't have to specify <code>AccessLevel.PRIVATE</code>.
 		</p><p>
