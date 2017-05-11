@@ -15,6 +15,8 @@ class SafeCallStaticMethods {
 		}
 		@SafeCall String s3 = SafeCallStaticMethods.nullSafeCall.nullString.trim();
 		@SafeCall String s4 = SafeCallStaticMethods.getNullSafeCall().nullSafeCall.nullString.trim();
+		@SafeCall String s5 = SafeCallStaticMethods.getNullSafeCall(SafeCallStaticMethods.getNullArg()).nullSafeCall.nullString.trim();
+		@SafeCall String s6 = SafeCallStaticMethods.nullSafeCall.getNullSafeCall(SafeCallStaticMethods.getNullArg()).nullString.trim();
 	}
 
 	{
@@ -46,6 +48,15 @@ class SafeCallStaticMethods {
 	public static first.second.SafeCallStaticMethods getNullSafeCall() {
 		return null;
 	}
+
+	public static first.second.SafeCallStaticMethods getNullSafeCall(Object arg) {
+		return null;
+	}
+
+	public static Object getNullArg() {
+		return null;
+	}
+
 	public static SafeCallStaticMethods getNullSafeCall2() {
 		return null;
 	}

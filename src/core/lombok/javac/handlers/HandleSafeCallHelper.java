@@ -41,6 +41,7 @@ import static javax.lang.model.type.TypeKind.INT;
 import static lombok.core.AST.Kind.TYPE;
 import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.*;
 import static lombok.javac.Javac.*;
+import static lombok.javac.JavacResolution.createJavaType;
 
 /**
  * Created by Bulgakov Alexander on 20.12.16.
@@ -254,10 +255,12 @@ public final class HandleSafeCallHelper {
 			mi.args = List.from(newArgs);
 
 			if (meth instanceof JCFieldAccess) {
-				Symbol sym = ((JCFieldAccess) meth).sym;
+				JCFieldAccess fieldAccess = (JCFieldAccess) meth;
+				Symbol sym = fieldAccess.sym;
 				boolean isStatic = sym.isStatic();
 				if (isStatic) {
-					resultVar = makeVariableDecl(treeMaker, statements, varName, type, expr);
+					fieldAccess.selected = newIndentOfSymbolOwner(ast, treeMaker, sym, fieldAccess.pos);
+					resultVar = makeVariableDecl(treeMaker, statements, varName, type, mi);
 				} else {
 					VarRef varRef = populateFieldAccess(rootVar, javacResolution, annotationNode,
 							lastLevel, type, (JCFieldAccess) meth, true, args,
@@ -272,14 +275,16 @@ public final class HandleSafeCallHelper {
 						expr, meth.getClass());
 			}
 		} else if (expr instanceof JCFieldAccess) {
-			Symbol sym = ((JCFieldAccess) expr).sym;
+			JCFieldAccess fieldAccess = (JCFieldAccess) expr;
+			Symbol sym = fieldAccess.sym;
 			boolean isStatic = sym.isStatic();
 			if (isStatic) {
+				fieldAccess.selected = newIndentOfSymbolOwner(ast, treeMaker, sym, fieldAccess.pos);
+				resultVar = makeVariableDecl(treeMaker, statements, varName, type, fieldAccess);
 				lastLevel = notDuplicatedLevel;
-				resultVar = makeVariableDecl(treeMaker, statements, varName, type, expr);
 			} else {
 				VarRef varRef = populateFieldAccess(rootVar, javacResolution, annotationNode,
-						notDuplicatedLevel, type, (JCFieldAccess) expr,
+						notDuplicatedLevel, type, fieldAccess,
 						false, null, statements);
 				resultVar = varRef.var;
 				lastLevel = varRef.level;
@@ -300,7 +305,6 @@ public final class HandleSafeCallHelper {
 						elems, expectedType, newElems, statements, annotationNode, javacResolution);
 				newArray.elems = List.from(newElems);
 			}
-			;
 
 			List<JCExpression> dimensions = newArray.dims;
 			if (dimensions != null && !dimensions.isEmpty()) {
@@ -414,6 +418,14 @@ public final class HandleSafeCallHelper {
 			throw new SafeCallIllegalUsingException(null, expr);
 		}
 		return new VarRef(resultVar, lastLevel);
+	}
+
+	private static JCExpression newIndentOfSymbolOwner(JavacAST ast, JavacTreeMaker treeMaker, Symbol sym, int pos) {
+		ClassSymbol owner = (ClassSymbol) sym.owner;
+		Name fullname = owner.fullname;
+		JCExpression javaType = createJavaType(fullname.toString(), ast);
+		javaType.pos = pos;
+		return javaType;
 	}
 
 	private static Type getOperatorType(Symbol operator, JCExpression expr) throws SafeCallUnexpectedStateException {
@@ -908,7 +920,7 @@ public final class HandleSafeCallHelper {
 			variableExpr.pos = fa.pos;
 		} else variableExpr = fa;
 
-		int verifyLevel = verifyNotDuplicateLevel(templateName, level, annotationNode);
+		int verifyLevel = level;// verifyNotDuplicateLevel(templateName, level + 1, annotationNode);
 		Name newName = newVarName(templateName, verifyLevel, annotationNode);
 		JCVariableDecl variableDecl = makeVariableDecl(treeMaker, statements, newName, type, variableExpr);
 		int maxLevel = varRef.level > verifyLevel ? varRef.level : verifyLevel;

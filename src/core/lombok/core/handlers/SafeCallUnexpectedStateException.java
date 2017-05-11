@@ -43,6 +43,7 @@ public class SafeCallUnexpectedStateException extends Exception {
 		getParent,
 		unsupportedUnaryOperator,
 		unsupportedUnaryOperatorType,
+		getBindings,
 
 	}
 }

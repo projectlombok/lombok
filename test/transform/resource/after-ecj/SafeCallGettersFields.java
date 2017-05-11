@@ -68,18 +68,18 @@ class SafeCallGettersFields {
     }
     @SafeCall String s2;
     {
-      final @lombok.val first.second.SafeCallGettersFields s24 = nullSafeCall;
-      first.second.SafeCallGettersFields s23 = ((s24 != null) ? s24.nullSafeCall2 : null);
-      java.lang.String s22 = ((s23 != null) ? s23.getNullString() : null);
+      first.second.SafeCallGettersFields s23 = nullSafeCall;
+      first.second.SafeCallGettersFields s24 = ((s23 != null) ? ((s23.nullSafeCall2 != null) ? s23.nullSafeCall2 : null) : null);
+      java.lang.String s22 = ((s24 != null) ? s24.getNullString() : null);
       java.lang.String s21 = ((s22 != null) ? s22.trim() : null);
       s2 = s21;
     }
     @SafeCall String s3;
     {
-      final @lombok.val first.second.SafeCallGettersFields s34 = nullSafeCall;
-      final @lombok.val first.second.SafeCallGettersFields s33 = ((s34 != null) ? s34.nullSafeCall : null);
-      java.lang.String s32 = ((s33 != null) ? s33.nullString : null);
-      java.lang.String s31 = ((s32 != null) ? s32.trim() : null);
+      first.second.SafeCallGettersFields s32 = nullSafeCall;
+      first.second.SafeCallGettersFields s33 = ((s32 != null) ? ((s32.nullSafeCall != null) ? s32.nullSafeCall : null) : null);
+      java.lang.String s34 = ((s32 != null) ? ((s32.nullString != null) ? s32.nullString : null) : null);
+      java.lang.String s31 = ((s34 != null) ? s34.trim() : null);
       s3 = s31;
     }
     @SafeCall String s4;

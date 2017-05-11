@@ -3,7 +3,8 @@ class SafeCallPrimitives {
 	public SafeCallPrimitives() {
 		int i;
 		{
-			SafeCallPrimitives i3 = newSafeCallPrimitives();
+			java.lang.Integer i4 = SafeCallPrimitives.getNullArg2();
+			SafeCallPrimitives i3 = newSafeCallPrimitives(i4);
 			java.lang.Integer i2 = i3 != null ? i3.Integer() : null;
 			int i1 = i2 != null ? i2.intValue() : 0;
 			i = i1;
@@ -19,6 +20,12 @@ class SafeCallPrimitives {
 			int i32 = i33 != null ? i33.length() : 0;
 			int i31 = (int) i32;
 			i3 = i31;
+		}
+		Integer i4;
+		{
+			java.lang.Integer i42 = Integer();
+			int i41 = i42 != null ? (int) i42 : 0;
+			i4 = i41;
 		}
 		byte bl;
 		{
@@ -93,7 +100,19 @@ class SafeCallPrimitives {
 		return null;
 	}
 
-	public SafeCallPrimitives newSafeCallPrimitives() {
+	public SafeCallPrimitives newSafeCallPrimitives(Object arg) {
+		return null;
+	}
+
+	public static String getNullString(Object arg) {
+		return null;
+	}
+
+	public static Integer getNullArg1() {
+		return null;
+	}
+
+	public static Integer getNullArg2() {
 		return null;
 	}
 }
