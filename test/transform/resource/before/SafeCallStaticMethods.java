@@ -7,8 +7,10 @@ class SafeCallStaticMethods {
 	public static first.second.SafeCallStaticMethods nullSafeCall;
 	public static SafeCallStaticMethods nullSafeCall2;
 	public static String nullString;
+	public String nullString2;
 
 	static {
+		@SafeCall String s7 = SafeCallStaticMethods.nullSafeCall.nullString2;
 		String s22 = "";
 		{
 			@SafeCall String s2 = SafeCallStaticMethods.nullSafeCall2.getNullString().trim();

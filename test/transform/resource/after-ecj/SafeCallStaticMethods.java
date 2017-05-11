@@ -4,7 +4,14 @@ class SafeCallStaticMethods {
   public static first.second.SafeCallStaticMethods nullSafeCall;
   public static SafeCallStaticMethods nullSafeCall2;
   public static String nullString;
+  public String nullString2;
   static {
+    @SafeCall String s7;
+    {
+      first.second.SafeCallStaticMethods s71 = first.second.SafeCallStaticMethods.nullSafeCall;
+      java.lang.String s72 = ((s71 != null) ? s71.nullString2 : null);
+      s7 = s72;
+    }
     String s22 = "";
     {
       @SafeCall String s2;

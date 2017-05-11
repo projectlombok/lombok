@@ -63,7 +63,7 @@ final class PatchSafeHelper {
 			}
 		} else if (expr instanceof QualifiedNameReference) {
 			QualifiedNameReference qnr = (QualifiedNameReference) expr;
-			Expression expression = newIfNullThenConditional(qnr, qnr, falsePart);
+			Expression expression = expr;//newIfNullThenConditional(qnr, qnr, falsePart);
 			char[][] tokens = qnr.tokens;
 			long[] sp = qnr.sourcePositions;
 			if (tokens.length == 2) {
@@ -299,7 +299,7 @@ final class PatchSafeHelper {
 			final LocalDeclaration firstVar;
 			if (firstStatic != null) {
 				parentPositionIndex = staticIndex + delta;
-				firstVar = makeLocalDeclarationForFieldReference(statements, varName, type,
+				firstVar = makeLocalDeclarationForFieldReference(statements, varName, firstStatic.type,
 						firstStatic, firstStatic.name, sourcePositions[parentPositionIndex]);
 				firstIndex = staticIndex;
 			} else {

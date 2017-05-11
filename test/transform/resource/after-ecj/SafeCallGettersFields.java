@@ -69,7 +69,7 @@ class SafeCallGettersFields {
     @SafeCall String s2;
     {
       first.second.SafeCallGettersFields s23 = nullSafeCall;
-      first.second.SafeCallGettersFields s24 = ((s23 != null) ? ((s23.nullSafeCall2 != null) ? s23.nullSafeCall2 : null) : null);
+      first.second.SafeCallGettersFields s24 = ((s23 != null) ? s23.nullSafeCall2 : null);
       java.lang.String s22 = ((s24 != null) ? s24.getNullString() : null);
       java.lang.String s21 = ((s22 != null) ? s22.trim() : null);
       s2 = s21;
@@ -77,8 +77,8 @@ class SafeCallGettersFields {
     @SafeCall String s3;
     {
       first.second.SafeCallGettersFields s32 = nullSafeCall;
-      first.second.SafeCallGettersFields s33 = ((s32 != null) ? ((s32.nullSafeCall != null) ? s32.nullSafeCall : null) : null);
-      java.lang.String s34 = ((s32 != null) ? ((s32.nullString != null) ? s32.nullString : null) : null);
+      first.second.SafeCallGettersFields s33 = ((s32 != null) ? s32.nullSafeCall : null);
+      java.lang.String s34 = ((s32 != null) ? s32.nullString : null);
       java.lang.String s31 = ((s34 != null) ? s34.trim() : null);
       s3 = s31;
     }
