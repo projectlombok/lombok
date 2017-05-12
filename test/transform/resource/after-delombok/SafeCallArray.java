@@ -22,7 +22,7 @@ class SafeCallArray {
 		int i2;
 		{
 			int[] i22 = intEmptyArray();
-			int i21 = i22 != null && 1 >= 0 && 1 < i22.length ? i22[1] : 0;
+			int i21 = i22 != null && 1 < i22.length ? i22[1] : 0;
 			i2 = i21;
 		}
 		int i3;
@@ -44,7 +44,7 @@ class SafeCallArray {
 			java.lang.Integer i65 = nullIndex();
 			int i66 = i65 != null ? i65 : 0;
 			int[] i62 = new int[] {i63, i66, 3};
-			int i61 = i62 != null && -1 >= 0 && -1 < i62.length ? i62[-1] : 0;
+			int i61 = 0;
 			i6 = i61;
 		}
 		int[] iAr;
@@ -66,8 +66,9 @@ class SafeCallArray {
 			java.lang.Integer iAr22 = nullIndex();
 			int iAr23 = iAr22 != null ? iAr22 : 0;
 			int iAr24 = iAr23 >= 0 ? iAr23 : 0;
-			int iAr25 = -1 >= 0 ? -1 : 0;
-			int[][][] iAr21 = new int[iAr24][iAr25][];
+			int iAr25 = 0;
+			int iAr26 = 1;
+			int[][][] iAr21 = new int[iAr24][iAr25][iAr26];
 			iAr2 = iAr21;
 		}
 	}

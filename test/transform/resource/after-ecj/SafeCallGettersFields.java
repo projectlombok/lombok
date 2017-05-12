@@ -31,10 +31,8 @@ class SafeCallGettersFields {
   public @SafeCall String s5 = "";
   {
   }
-  public @SafeCall SafeCallGettersFields s1;
+  public @SafeCall SafeCallGettersFields s1 = nullSafeCall;
   {
-    first.second.SafeCallGettersFields s11 = nullSafeCall;
-    s1 = s11;
   }
   <clinit>() {
   }
@@ -61,10 +59,8 @@ class SafeCallGettersFields {
         }
       }
     }
-    @SafeCall SafeCallGettersFields nullSafeCall;
+    @SafeCall SafeCallGettersFields nullSafeCall = getNullSafeCall();
     {
-      first.second.SafeCallGettersFields nullSafeCall1 = getNullSafeCall();
-      nullSafeCall = nullSafeCall1;
     }
     @SafeCall String s2;
     {

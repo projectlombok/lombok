@@ -37,6 +37,7 @@ import java.util.Map;
 
 import static com.sun.tools.javac.code.Flags.STATIC;
 import static java.util.Arrays.asList;
+import static javax.lang.model.type.TypeKind.BOOLEAN;
 import static javax.lang.model.type.TypeKind.INT;
 import static lombok.core.AST.Kind.TYPE;
 import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.*;
@@ -97,7 +98,8 @@ public final class HandleSafeCallHelper {
 				if (parentExpr instanceof JCNewClass) {
 					result = null;
 				} else {
-					JCConditional notNullCond = newIfNullThenConditional(maker, ast, parentExpr, mi, getFalsePart(maker, falsePartType, expr.pos));
+					JCExpression notNullCond = newIfNullThenConditional(maker, ast, parentExpr, mi,
+							getFalsePart(maker, falsePartType, expr.pos));
 					JCExpression newParentCnd = newElvis(maker, ast, parentExpr, falsePartType);
 					if (newParentCnd instanceof JCConditional) {
 						JCConditional cnd = (JCConditional) newParentCnd;
@@ -146,43 +148,89 @@ public final class HandleSafeCallHelper {
 		return falsePart;
 	}
 
-	private static JCConditional newIfNullThenConditional(
+	private static JCExpression newIfNullThenConditional(
 			JavacTreeMaker maker, JavacAST ast,
 			JCExpression checkable, JCExpression truePart, JCExpression falsePart
 	) {
 
-		JCBinary checkNull = maker.Binary(CTC_NOT_EQUAL, checkable, newNullLiteral(maker, checkable.pos));
-		checkNull.pos = checkable.pos;
+		JCBinary baseCheck = maker.Binary(CTC_NOT_EQUAL, checkable, newNullLiteral(maker, checkable.pos));
+		baseCheck.pos = checkable.pos;
+		final JCExpression result;
 		if (truePart instanceof JCArrayAccess) {
 			JCArrayAccess arrayAccess = (JCArrayAccess) truePart;
 			JCExpression indexed = arrayAccess.indexed;
 			JCFieldAccess length = maker.Select(indexed, ast.toName("length"));
 			length.pos = indexed.pos;
 			JCExpression index = arrayAccess.index;
-			JCBinary checkMax = maker.Binary(CTC_LESS_THAN, index, length);
-			checkMax.pos = index.pos;
-			boolean minIsZero = false;
-			if (index instanceof JCLiteral) {
-				JCLiteral literal = (JCLiteral) index;
-				Object value = literal.value;
-				if (value instanceof Integer) {
-					minIsZero = value.equals(0);
-				}
-			}
 
-			JCBinary noLessZero = maker.Binary(CTC_GREATER_OR_EQUAL, index, newZeroLiteral(maker, index.pos));
-			noLessZero.pos = index.pos;
-			JCBinary checkLength = minIsZero ? checkMax : maker.Binary(CTC_AND, noLessZero, checkMax);
-			checkLength.pos = checkMax.pos;
-			checkNull = maker.Binary(CTC_AND, checkNull, checkLength);
-			checkNull.pos = checkLength.pos;
+			Integer value = getIntConstant(index);
+
+			if (value != null) {
+				if (value < 0) {
+					result = maker.Literal(false);
+				} else {
+					result = newAnd(maker, baseCheck, newLess(maker, index, length));
+				}
+			} else {
+				result = newAnd(maker, baseCheck, newIndexRange(maker, length, index));
+			}
+		} else {
+			result = baseCheck;
 		}
 
-		return newConditional(maker, checkNull, truePart, falsePart);
+		return newConditional(maker, result, truePart, falsePart);
 	}
 
-	private static JCConditional newConditional(
-			JavacTreeMaker maker, JCBinary condition, JCExpression truePart, JCExpression falsePart) {
+	private static JCBinary newIndexRange(JavacTreeMaker maker, JCFieldAccess length, JCExpression index) {
+		return newAnd(maker, newGE(maker, index, newZeroLiteral(maker, index.pos)), newLess(maker, index, length));
+	}
+
+	private static JCBinary newAnd(JavacTreeMaker maker, JCExpression left, JCExpression right) {
+		JCBinary binary = maker.Binary(CTC_AND, left, right);
+		binary.pos = left.pos;
+		return binary;
+	}
+
+	private static JCBinary newLess(JavacTreeMaker maker, JCExpression left, JCFieldAccess right) {
+		JCBinary checkMax = maker.Binary(CTC_LESS_THAN, left, right);
+		checkMax.pos = left.pos;
+		return checkMax;
+	}
+
+	private static Integer getIntConstant(JCExpression expression) {
+		Integer value = null;
+		if (expression instanceof JCLiteral) {
+			JCLiteral literal = (JCLiteral) expression;
+			Object litVal = literal.value;
+			if (litVal instanceof Number) {
+				Number num = (Number) litVal;
+				value = num.intValue();
+				//minIsZero = value.equals(0);
+			}
+		}
+		return value;
+	}
+
+	private static JCBinary newGE(JavacTreeMaker maker, JCExpression left, JCExpression right) {
+		JCBinary noLessZero = maker.Binary(CTC_GREATER_OR_EQUAL, left, right);
+		noLessZero.pos = left.pos;
+		return noLessZero;
+	}
+
+	private static JCExpression newConditional(
+			JavacTreeMaker maker, JCExpression condition, JCExpression truePart, JCExpression falsePart) {
+		if (condition instanceof JCLiteral) {
+			JCLiteral literal = (JCLiteral) condition;
+			Type type = condition.type;
+			if (type.getKind() == BOOLEAN) {
+				Object value = literal.value;
+				if (value instanceof Number) {
+					int intValue = ((Number) value).intValue();
+					if (intValue == 0) return falsePart;
+					if (intValue == 1) return truePart;
+				}
+			}
+		}
 		JCConditional conditional = maker.Conditional(condition, truePart, falsePart);
 		conditional.pos = truePart.pos;
 		return conditional;
@@ -263,7 +311,7 @@ public final class HandleSafeCallHelper {
 					resultVar = makeVariableDecl(treeMaker, statements, varName, type, mi);
 				} else {
 					VarRef varRef = populateFieldAccess(rootVar, javacResolution, annotationNode,
-							lastLevel, type, (JCFieldAccess) meth, true, args,
+							notDuplicatedLevel, lastLevel, type, (JCFieldAccess) meth, true, mi.args,
 							statements);
 					resultVar = varRef.var;
 					lastLevel = varRef.level;
@@ -284,7 +332,7 @@ public final class HandleSafeCallHelper {
 				lastLevel = notDuplicatedLevel;
 			} else {
 				VarRef varRef = populateFieldAccess(rootVar, javacResolution, annotationNode,
-						notDuplicatedLevel, type, fieldAccess,
+						notDuplicatedLevel, notDuplicatedLevel, type, fieldAccess,
 						false, null, statements);
 				resultVar = varRef.var;
 				lastLevel = varRef.level;
@@ -315,7 +363,16 @@ public final class HandleSafeCallHelper {
 			}
 
 			resultVar = makeVariableDecl(treeMaker, statements, varName, type, newArray);
-		} else if (expr instanceof JCLiteral || isLambda(expr)) {
+		} else if (expr instanceof JCLiteral) {
+			//JCLiteral literal = (JCLiteral) expr;
+			//if (literal.getKind() == NULL_LITERAL) {
+			lastLevel = NOT_USED;
+			resultVar = null;
+			//} else {
+			//	lastLevel = notDuplicatedLevel;
+			//	resultVar = makeVariableDecl(treeMaker, statements, varName, type, expr);
+			//}
+		} else if (isLambda(expr)) {
 			lastLevel = NOT_USED;
 			resultVar = null;
 		} else if (expr instanceof JCIdent) {
@@ -550,10 +607,22 @@ public final class HandleSafeCallHelper {
 			JCExpression resultArg = resultArgs[elemIndex];
 			JavacTreeMaker treeMaker = annotationNode.getTreeMaker();
 			int pos = resultArg.pos;
-			JCBinary noLessZero = treeMaker.Binary(CTC_GREATER_OR_EQUAL, resultArg,
+
+			final JCExpression condition;
+			JCExpression baseCnd = newConditional(treeMaker, newGE(treeMaker, resultArg,
+					newZeroLiteral(treeMaker, pos)), resultArg,
 					newZeroLiteral(treeMaker, pos));
-			JCConditional condition = newConditional(treeMaker, noLessZero, resultArg,
-					newZeroLiteral(treeMaker, pos));
+
+			Integer intConstant = getIntConstant(resultArg);
+			if (intConstant != null) {
+				if (intConstant < 0) {
+					condition = newZeroLiteral(treeMaker, pos);
+				} else {
+					condition = resultArg;
+				}
+			} else {
+				condition = baseCnd;
+			}
 
 			Name templateName = rootVar.name;
 			elemLevel = verifyNotDuplicateLevel(templateName, elemLevel + 1, annotationNode);
@@ -898,13 +967,14 @@ public final class HandleSafeCallHelper {
 
 	private static VarRef populateFieldAccess(
 			JCVariableDecl rootVar, JavacResolution javacResolution, JavacNode annotationNode,
-			int level, Type type, JCFieldAccess fa, boolean isMeth,
+			int fieldVarLevel, int lastLevel, Type type, JCFieldAccess fa, boolean isMeth,
 			List<JCExpression> args, ListBuffer<JCStatement> statements)
-			throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException {
+			throws TypeNotConvertibleException, SafeCallUnexpectedStateException,
+			SafeCallInternalException, SafeCallIllegalUsingException {
 		Name templateName = rootVar.name;
 		JavacTreeMaker treeMaker = annotationNode.getTreeMaker();
 		JCExpression selected = fa.selected;
-		VarRef varRef = populateInitStatements(level + 1, rootVar, selected, statements, annotationNode,
+		VarRef varRef = populateInitStatements(lastLevel + 1, rootVar, selected, statements, annotationNode,
 				javacResolution);
 		JCExpression variableExpr;
 		if (varRef.var != null) {
@@ -920,10 +990,9 @@ public final class HandleSafeCallHelper {
 			variableExpr.pos = fa.pos;
 		} else variableExpr = fa;
 
-		int verifyLevel = level;// verifyNotDuplicateLevel(templateName, level + 1, annotationNode);
-		Name newName = newVarName(templateName, verifyLevel, annotationNode);
+		Name newName = newVarName(templateName, fieldVarLevel, annotationNode);
 		JCVariableDecl variableDecl = makeVariableDecl(treeMaker, statements, newName, type, variableExpr);
-		int maxLevel = varRef.level > verifyLevel ? varRef.level : verifyLevel;
+		int maxLevel = varRef.level > fieldVarLevel ? varRef.level : fieldVarLevel;
 		return new VarRef(variableDecl, maxLevel);
 
 	}
@@ -938,6 +1007,7 @@ public final class HandleSafeCallHelper {
 		if (expr == null) return null;
 
 		JCExpression resolveExpr = resolveExprType(expr, annotationNode, javacResolution);
+
 		VarRef varRef = populateInitStatements(1, varDecl, resolveExpr, statements,
 				annotationNode, javacResolution);
 		Name name = varRef.getVarName();

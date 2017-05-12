@@ -6,7 +6,7 @@ import org.eclipse.jdt.internal.compiler.ast.*;
 import java.util.Arrays;
 
 import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.copyExpr;
-import static lombok.eclipse.agent.PatchSafeHelper.newSingleNameReference;
+import static lombok.eclipse.agent.PatchSafeCallHelper.newSingleNameReference;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.copySourcePosition;
 import static org.eclipse.jdt.internal.compiler.ast.ASTNode.*;
 import static org.eclipse.jdt.internal.compiler.ast.IntLiteral.buildIntLiteral;
@@ -34,8 +34,8 @@ public class PatchSafeCallCopyHelper {
 			newRes = (T) copy((Literal) expression);
 //		} else if (expression instanceof CastExpression) {
 //			newRes = (T) copy((CastExpression) expression);
-//		} else if (expression instanceof OperatorExpression) {
-//			newRes = (T) copy((OperatorExpression) expression);
+		} else if (expression instanceof OperatorExpression) {
+			newRes = (T) copy((OperatorExpression) expression);
 //		} else if (expression instanceof ArrayAllocationExpression) {
 //			newRes = (T) copy((ArrayAllocationExpression) expression);
 		} else throw uoe(expression);
@@ -220,7 +220,7 @@ public class PatchSafeCallCopyHelper {
 	}
 
 	private static FieldReference copy(FieldReference parent) throws SafeCallUnexpectedStateException {
-		FieldReference result = new FieldReference(parent.token, PatchSafeHelper.getP(parent));
+		FieldReference result = new FieldReference(parent.token, PatchSafeCallHelper.getP(parent));
 		result.receiver = copy(parent.receiver);
 		result.token = parent.token;
 		return result;
@@ -235,7 +235,7 @@ public class PatchSafeCallCopyHelper {
 	}
 
 	private static SingleNameReference copy(SingleNameReference parent) {
-		SingleNameReference result = newSingleNameReference(parent.token, PatchSafeHelper.getP(parent));
+		SingleNameReference result = newSingleNameReference(parent.token, PatchSafeCallHelper.getP(parent));
 		result.token = parent.token;
 		return result;
 	}

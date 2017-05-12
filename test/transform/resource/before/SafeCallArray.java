@@ -11,7 +11,7 @@ class SafeCallArray {
 		@SafeCall Integer i5 = IntegerNullArray()[0];
 		@SafeCall int i6 = new int[]{empty[0], nullIndex(), 3}[-1];
 		@SafeCall int[] iAr = new int[]{empty[0], IntegerNullArray()[0], nullIndex(), (Integer) null, 1};
-		@SafeCall int[][][] iAr2 = new int[nullIndex()][-1][];
+		@SafeCall int[][][] iAr2 = new int[nullIndex()][-1][1];
 	}
 
 	public int[] intNullArray() {

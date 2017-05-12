@@ -8,6 +8,7 @@ import lombok.eclipse.handlers.EclipseHandlerUtil;
 import org.eclipse.jdt.core.compiler.CategorizedProblem;
 import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.ast.*;
+import org.eclipse.jdt.internal.compiler.impl.Constant;
 import org.eclipse.jdt.internal.compiler.lookup.*;
 
 import java.util.*;
@@ -32,12 +33,12 @@ import static org.eclipse.jdt.internal.compiler.lookup.TypeIds.T_int;
 /**
  * Created by Bulgakov Alexander on 21.12.16.
  */
-final class PatchSafeHelper {
+final class PatchSafeCallHelper {
 
 	public static final int NOT_USED = -1;
 	private static final long[] NULL_POSS = {0L};
 
-	private PatchSafeHelper() {
+	private PatchSafeCallHelper() {
 	}
 
 	static ASTNode getVarByBlock(Block block) {
@@ -102,16 +103,16 @@ final class PatchSafeHelper {
 		return Eclipse.isPrimitive(typeName) ? newDefaultValueLiterall(typeName) : newNullLiteral();
 	}
 
-	private static ConditionalExpression newIfNullThenConditional(
+	private static Expression newIfNullThenConditional(
 			Expression checkable, Expression truePart, Expression falsePart
 	) throws SafeCallUnexpectedStateException {
 		if (checkable instanceof ThisReference) {
 			return null;
 		}
 
-		EqualExpression checkExpr = newBinaryExpresion(checkable, NOT_EQUAL, newNullLiteral());
-		//checkExpr.constant = NotAConstant;
+		final Expression result;
 
+		final EqualExpression baseCheck = new EqualExpression(copy(checkable), newNullLiteral(), NOT_EQUAL);
 		if (truePart instanceof ArrayReference) {
 			ArrayReference arrayReference = (ArrayReference) truePart;
 			char[][] arrayLengthCall = new char[2][];
@@ -127,33 +128,52 @@ final class PatchSafeHelper {
 
 			Expression position = arrayReference.position;
 
-			EqualExpression noLessZero = newBinaryExpresion(position, GREATER_EQUAL, newZeroLiteral());
-			EqualExpression lessLength = newBinaryExpresion(position, LESS, lengthCall);
-			EqualExpression indexRangeCondition = new EqualExpression(noLessZero, lessLength, AND_AND);
-			if (position instanceof IntLiteral) {
-				IntLiteral intLiteral = (IntLiteral) position;
-				int value = intLiteral.constant.intValue();
-				if (value == 0) {
-					indexRangeCondition = lessLength;
+			Constant constant = getConstant(position);
+			if (constant != null) {
+				int value = constant.intValue();
+				if (value < 0) {
+					result = new FalseLiteral(position.statementEnd, position.statementEnd);
+				} else {
+					result = newAnd(baseCheck, newLess(position, lengthCall));
 				}
+			} else {
+				result = newAnd(baseCheck, newIndexRange(lengthCall, position));
 			}
-
-			checkExpr = new EqualExpression(checkExpr, indexRangeCondition, AND_AND);
+		} else {
+			result = baseCheck;
 		}
-		copySourcePosition(checkable, checkExpr);
-		return newConditional(checkExpr, truePart, falsePart);
+		copySourcePosition(checkable, result);
+		return newConditional(result, truePart, falsePart);
 	}
 
-	private static EqualExpression newBinaryExpresion(
-			Expression left, int operator, Expression right) throws SafeCallUnexpectedStateException {
-		return new EqualExpression(copy(left), right, operator);
+	private static AND_AND_Expression newAnd(Expression left, BinaryExpression right) throws SafeCallUnexpectedStateException {
+		return new AND_AND_Expression(left, right, AND_AND);
+	}
+
+	private static Constant getConstant(Expression position) {
+		return (position instanceof IntLiteral || position instanceof UnaryExpression) ?
+				position.constant : null;
+	}
+
+	private static AND_AND_Expression newIndexRange(QualifiedNameReference lengthCall, Expression position) throws SafeCallUnexpectedStateException {
+		return newAnd(newGE(position), newLess(position, lengthCall));
+	}
+
+	private static BinaryExpression newGE(Expression position) throws SafeCallUnexpectedStateException {
+		return new BinaryExpression(copy(position), newZeroLiteral(), GREATER_EQUAL);
+	}
+
+	private static BinaryExpression newLess(Expression left, Expression rigth) throws SafeCallUnexpectedStateException {
+		return new BinaryExpression(copy(left), rigth, LESS);
 	}
 
 	private static IntLiteral newZeroLiteral() {
 		return buildIntLiteral("0".toCharArray(), 0, 0);
 	}
 
-	private static ConditionalExpression newConditional(BinaryExpression condition, Expression truePart, Expression falsePart) {
+	private static Expression newConditional(Expression condition, Expression truePart, Expression falsePart) {
+		if (condition instanceof FalseLiteral) return falsePart;
+		if (condition instanceof TrueLiteral) return truePart;
 		ConditionalExpression cexpr = new ConditionalExpression(condition, truePart, falsePart);
 		copySourcePosition(truePart, cexpr);
 		return cexpr;
@@ -205,12 +225,18 @@ final class PatchSafeHelper {
 
 		VarRef varRef = populateInitStatements(1, varDecl, expr, statements, rootScope);
 		if (varRef.var == null) return null;
+
+		boolean removeOnlyOneStatement = statements.size() == 1;
+
 		Expression rhs = varRef.getRef();
 
 		TypeReference varType = varDecl.type;
 		if (mustBeProtected(varType, varRef.var.type)) {
 			rhs = newIfNullThenConditional(rhs, rhs, newDefaultValueLiterall(varType));
+			removeOnlyOneStatement = false;
 		}
+
+		if (removeOnlyOneStatement) return null;
 
 		SingleNameReference lhs = newSingleNameReference(name, p);
 
@@ -447,16 +473,23 @@ final class PatchSafeHelper {
 			final UnaryExpression unaryExpression = (UnaryExpression) expr;
 
 			Expression expression = unaryExpression.expression;
-			VarRef varRef = populateInitStatements(notDuplicatedLevel + 1, rootVar, expression,
-					statements, rootScope);
-			if (varRef.var != null) {
-				varRef = protectIfPrimitive(varRef, expr, type, rootVar, rootScope, statements);
-				lastVarLevel = varRef.level;
-				UnaryExpression resultExpression = new UnaryExpression(varRef.getRef(), getOperator(unaryExpression));
-				resultVar = makeLocalDeclaration(statements, varName, resultExpression, type);
+			if (expression instanceof Literal) {
+				resultVar = null;
+				lastVarLevel = NOT_USED;
+//				lastVarLevel = notDuplicatedLevel;
+//				resultVar = makeLocalDeclaration(statements, varName, unaryExpression, type);
 			} else {
-				lastVarLevel = notDuplicatedLevel;
-				resultVar = makeLocalDeclaration(statements, varName, unaryExpression, type);
+				VarRef varRef = populateInitStatements(notDuplicatedLevel + 1, rootVar, expression,
+						statements, rootScope);
+				if (varRef.var != null) {
+					varRef = protectIfPrimitive(varRef, expr, type, rootVar, rootScope, statements);
+					lastVarLevel = varRef.level;
+					UnaryExpression resultExpression = new UnaryExpression(varRef.getRef(), getOperator(unaryExpression));
+					resultVar = makeLocalDeclaration(statements, varName, resultExpression, type);
+				} else {
+					lastVarLevel = notDuplicatedLevel;
+					resultVar = makeLocalDeclaration(statements, varName, unaryExpression, type);
+				}
 			}
 		} else if (expr instanceof PostfixExpression || expr instanceof PrefixExpression) {
 			CompoundAssignment pe = (CompoundAssignment) expr;
@@ -585,8 +618,19 @@ final class PatchSafeHelper {
 						i, statements, rootScope
 				);
 				Expression resultArg = resultArgs[i];
-				EqualExpression noLessZero = newBinaryExpresion(resultArg, GREATER_EQUAL, newZeroLiteral());
-				ConditionalExpression condition = newConditional(noLessZero, resultArg, newZeroLiteral());
+				final Expression condition;
+				final Expression baseCnd = newConditional(newGE(resultArg), resultArg, newZeroLiteral());
+				final Constant constant = getConstant(resultArg);
+				if (constant != null) {
+					int value = constant.intValue();
+					if (value < 0) {
+						condition = newZeroLiteral();
+					} else {
+						condition = resultArg;
+					}
+				} else {
+					condition = baseCnd;
+				}
 				initializerLevel = verifyNotDuplicateLevel(initializerLevel + 1, rootVar, rootScope);
 				char[] templateName = rootVar.name;
 				char[] conditionVarName = newName(initializerLevel, templateName);

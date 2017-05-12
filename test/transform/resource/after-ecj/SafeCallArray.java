@@ -22,7 +22,7 @@ class SafeCallArray {
     @SafeCall int i2;
     {
       int[] i22 = intEmptyArray();
-      int i21 = (((i22 != null) && ((1 >= 0) && (1 < i22.length))) ? i22[1] : 0);
+      int i21 = (((i22 != null) && (1 < i22.length)) ? i22[1] : 0);
       i2 = i21;
     }
     @SafeCall int i3;
@@ -39,13 +39,12 @@ class SafeCallArray {
     }
     @SafeCall int i6;
     {
-      int i62 = (- 1);
-      int[] i65 = empty;
-      int i64 = (((i65 != null) && (0 < i65.length)) ? i65[0] : 0);
-      java.lang.Integer i66 = nullIndex();
-      int i67 = ((i66 != null) ? i66 : 0);
-      int[] i63 = new int[]{i64, i67, 3};
-      int i61 = (((i63 != null) && ((i62 >= 0) && (i62 < i63.length))) ? i63[i62] : 0);
+      int[] i64 = empty;
+      int i63 = (((i64 != null) && (0 < i64.length)) ? i64[0] : 0);
+      java.lang.Integer i65 = nullIndex();
+      int i66 = ((i65 != null) ? i65 : 0);
+      int[] i62 = new int[]{i63, i66, 3};
+      int i61 = 0;
       i6 = i61;
     }
     @SafeCall int[] iAr;
@@ -67,9 +66,9 @@ class SafeCallArray {
       java.lang.Integer iAr22 = nullIndex();
       int iAr23 = ((iAr22 != null) ? iAr22 : 0);
       int iAr24 = ((iAr23 >= 0) ? iAr23 : 0);
-      int iAr25 = (- 1);
-      int iAr26 = ((iAr25 >= 0) ? iAr25 : 0);
-      int[][][] iAr21 = new int[iAr24][iAr26][];
+      int iAr25 = 0;
+      int iAr26 = 1;
+      int[][][] iAr21 = new int[iAr24][iAr25][iAr26];
       iAr2 = iAr21;
     }
   }

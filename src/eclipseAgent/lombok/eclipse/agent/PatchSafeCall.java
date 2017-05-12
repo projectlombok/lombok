@@ -4,8 +4,6 @@ import lombok.core.handlers.SafeCallIllegalUsingException;
 import lombok.core.handlers.SafeCallInternalException;
 import lombok.core.handlers.SafeCallUnexpectedStateException;
 import lombok.experimental.SafeCall;
-import org.eclipse.jdt.core.compiler.CategorizedProblem;
-import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.ast.*;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
 import org.eclipse.jdt.internal.compiler.lookup.LocalVariableBinding;
@@ -14,7 +12,7 @@ import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
 
 import java.util.ArrayList;
 
-import static lombok.eclipse.agent.PatchSafeHelper.*;
+import static lombok.eclipse.agent.PatchSafeCallHelper.*;
 import static lombok.eclipse.agent.PatchVal.is;
 import static org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants.AccFinal;
 import static org.eclipse.jdt.internal.compiler.lookup.ExtraCompilerModifiers.AccBlankFinal;
