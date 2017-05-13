@@ -17,6 +17,7 @@ import java.util.*;
 import static java.util.Arrays.copyOf;
 import static java.util.Collections.emptySet;
 import static lombok.core.handlers.SafeCallAbortProcessing.Place.methodErrorType;
+import static lombok.core.handlers.SafeCallIllegalUsingException.Place.unsupportedExpression;
 import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.*;
 import static lombok.eclipse.Eclipse.fromQualifiedName;
 import static lombok.eclipse.EclipseAugments.ASTNode_parentNode;
@@ -514,7 +515,7 @@ final class PatchSafeCallHelper {
 				resultVar = makeLocalDeclaration(statements, varName, pe, type);
 			}
 		} else {
-			throw new SafeCallIllegalUsingException(null, expr);
+			throw new SafeCallIllegalUsingException(unsupportedExpression, expr);
 		}
 		if ((expr.implicitConversion & TypeIds.UNBOXING) != 0) {
 			expr.implicitConversion ^= TypeIds.UNBOXING;

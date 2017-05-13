@@ -7,11 +7,11 @@ import lombok.experimental.SafeCall;
  */
 public class SafeCallUnexpectedStateException extends Exception {
 	private final Place place;
-	private final Object var;
+	private final Object node;
 	private final Class type;
-	public SafeCallUnexpectedStateException(Place place, Object var, Class type) {
+	public SafeCallUnexpectedStateException(Place place, Object node, Class type) {
 		this.place = place;
-		this.var = var;
+		this.node = node;
 		this.type = type;
 	}
 
@@ -21,12 +21,12 @@ public class SafeCallUnexpectedStateException extends Exception {
 	}
 
 	private String getInternalMessage() {
-		return "Internal " + SafeCall.class.getSimpleName() + " error. " + place + " " + var + " " +
+		return "Internal " + SafeCall.class.getSimpleName() + " error. " + place + " " + node + " " +
 				(type != null ? type.getSimpleName() : "");
 	}
 
-	public Object getVar() {
-		return var;
+	public Object getNode() {
+		return node;
 	}
 
 	public enum Place {

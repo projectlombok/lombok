@@ -76,15 +76,15 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 				annotationNode.getAst().setChanged();
 			}
 		} catch (SafeCallIllegalUsingException e) {
-			annotationNode.addError(e.illegalUsingMessage());
+			annotationNode.addError(e.getMessage());
 		} catch (SafeCallUnexpectedStateException e) {
 			annotationNode.addError(e.getMessage());
 		} catch (SafeCallInternalException e) {
 			annotationNode.addError(e.getMessage());
 		} catch (TypeNotConvertibleException e) {
 			//error already must be printed
-		} catch (SafeCallAbortProcessing safeCallAbortProcessing) {
-			//error already must be printed
+		} catch (SafeCallAbortProcessing e) {
+			annotationNode.addWarning(e.getMessage());
 		}
 	}
 
@@ -156,12 +156,12 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 		} else if (root instanceof JCForLoop) {
 			JCForLoop forLoopTree = (JCForLoop) root;
 			Tree parent = getParent(variable, forLoopTree, forLoopTree.getInitializer());
-			if (parent != null) throw new SafeCallIllegalUsingException(forLoopInitializer, variable, parent);
+			if (parent != null) throw new SafeCallIllegalUsingException(forLoopInitializer, variable);
 			return getParent(variable, forLoopTree, forLoopTree.getStatement());
 		} else if (root instanceof JCEnhancedForLoop) {
 			JCEnhancedForLoop forLoopTree = (JCEnhancedForLoop) root;
 			Tree parent = getParent(variable, forLoopTree, forLoopTree.getVariable());
-			if (parent != null) throw new SafeCallIllegalUsingException(forLoopVariable, variable, parent);
+			if (parent != null) throw new SafeCallIllegalUsingException(forLoopVariable, variable);
 			return getParent(variable, forLoopTree, forLoopTree.getStatement());
 		} else if (root instanceof JCWhileLoop) {
 			return getParent(variable, root, ((JCWhileLoop) root).getStatement());
@@ -172,7 +172,7 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 			Collection<JCTree> resources = getResources(jcTry);
 			for (JCTree resource : resources) {
 				JCTree parent = getParent(variable, resource);
-				if (parent != null) throw new SafeCallIllegalUsingException(tryResource, variable, jcTry);
+				if (parent != null) throw new SafeCallIllegalUsingException(tryResource, variable);
 			}
 
 			JCTree parent = getParent(variable, jcTry.body);

@@ -128,14 +128,14 @@ public class HandleSafeCall extends EclipseASTAdapter {
 			ForStatement forStatement = (ForStatement) root;
 
 			ASTNode parent = getParent(variable, root, forStatement.initializations);
-			if (parent != null) throw new SafeCallIllegalUsingException(forLoopInitializer, variable, parent);
+			if (parent != null) throw new SafeCallIllegalUsingException(forLoopInitializer, variable);
 
 			return getParent(variable, root, forStatement.action);
 		} else if (root instanceof ForeachStatement) {
 			ForeachStatement forStatement = (ForeachStatement) root;
 
 			ASTNode parent = getParent(variable, root, forStatement.elementVariable);
-			if (parent != null) throw new SafeCallIllegalUsingException(forLoopVariable, variable, parent);
+			if (parent != null) throw new SafeCallIllegalUsingException(forLoopVariable, variable);
 
 			return getParent(variable, root, forStatement.action);
 		} else if (root instanceof WhileStatement) {
@@ -147,7 +147,7 @@ public class HandleSafeCall extends EclipseASTAdapter {
 			LocalDeclaration[] resources = getResources(tryStatement);
 			for (LocalDeclaration resource : resources) {
 				ASTNode parent = getParent(variable, root, resource);
-				if (parent != null) throw new SafeCallIllegalUsingException(tryResource, variable, tryStatement);
+				if (parent != null) throw new SafeCallIllegalUsingException(tryResource, variable);
 
 			}
 			ASTNode parent = getParent(variable, root, tryStatement.tryBlock);

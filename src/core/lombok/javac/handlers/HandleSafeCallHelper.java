@@ -43,6 +43,7 @@ import static javax.lang.model.type.TypeKind.BOOLEAN;
 import static javax.lang.model.type.TypeKind.INT;
 import static lombok.core.AST.Kind.TYPE;
 import static lombok.core.handlers.SafeCallAbortProcessing.Place.methodErrorType;
+import static lombok.core.handlers.SafeCallIllegalUsingException.Place.unsupportedExpression;
 import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.*;
 import static lombok.javac.Javac.*;
 import static lombok.javac.JavacResolution.createJavaType;
@@ -484,7 +485,7 @@ public final class HandleSafeCallHelper {
 
 			resultVar = makeVariableDecl(treeMaker, statements, varName, varType, unary);
 		} else {
-			throw new SafeCallIllegalUsingException(null, expr);
+			throw new SafeCallIllegalUsingException(unsupportedExpression, expr);
 		}
 		return new VarRef(resultVar, lastLevel);
 	}

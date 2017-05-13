@@ -5,7 +5,9 @@ import lombok.core.handlers.SafeCallIllegalUsingException;
 import lombok.core.handlers.SafeCallInternalException;
 import lombok.core.handlers.SafeCallUnexpectedStateException;
 import lombok.experimental.SafeCall;
+import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.ast.*;
+import org.eclipse.jdt.internal.compiler.impl.ReferenceContext;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
 import org.eclipse.jdt.internal.compiler.lookup.LocalVariableBinding;
 import org.eclipse.jdt.internal.compiler.problem.AbortCompilation;
@@ -13,6 +15,7 @@ import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
 
 import java.util.ArrayList;
 
+import static lombok.eclipse.EclipseAstProblemView.addProblemToCompilationResult;
 import static lombok.eclipse.agent.PatchSafeCallHelper.*;
 import static lombok.eclipse.agent.PatchVal.is;
 import static org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants.AccFinal;
@@ -44,20 +47,13 @@ public class PatchSafeCall {
 					try {
 						statements = newInitStatements(var, expression, p, upperScope);
 					} catch (SafeCallUnexpectedStateException e) {
-						Object eVar = e.getVar();
-						ASTNode astNode = eVar != null ? (ASTNode) eVar : null;
-						ProblemReporter problemReporter = upperScope.problemReporter();
-						String message = e.getMessage();
-						if (astNode != null) problemReporter.abortDueToInternalError(message, astNode);
-						else problemReporter.abortDueToInternalError(message);
+						addError(upperScope, (ASTNode) e.getNode(), e.getMessage());
 					} catch (SafeCallInternalException e) {
-						ProblemReporter problemReporter = upperScope.problemReporter();
-						problemReporter.abortDueToInternalError(e.getMessage(), (ASTNode) e.getVar());
+						addError(upperScope, (ASTNode) e.getNode(), e.getMessage());
 					} catch (SafeCallIllegalUsingException e) {
-						ProblemReporter problemReporter = upperScope.problemReporter();
-						problemReporter.abortDueToInternalError(e.illegalUsingMessage(), (ASTNode) e.getNode());
-					} catch (SafeCallAbortProcessing safeCallAbortProcessing) {
-						return;
+						addError(upperScope, (ASTNode) e.getNode(), e.getMessage());
+					} catch (SafeCallAbortProcessing e) {
+						addWarning(upperScope, (ASTNode) e.getNode(), e.getMessage());
 					}
 				} catch (AbortCompilation ae) {
 					return;
@@ -82,6 +78,21 @@ public class PatchSafeCall {
 				}
 			}
 		}
+	}
+
+	private static void addWarning(BlockScope upperScope, ASTNode node, String message) {
+		ProblemReporter problemReporter = upperScope.problemReporter();
+		ReferenceContext referenceContext = problemReporter.referenceContext;
+		char[] fileName = referenceContext.getCompilationUnitDeclaration().getFileName();
+		CompilationResult compilationResult = referenceContext.compilationResult();
+		addProblemToCompilationResult(fileName, compilationResult,
+				true, message, node.sourceStart, node.sourceEnd);
+	}
+
+	private static void addError(BlockScope upperScope, ASTNode node, String message) {
+		ProblemReporter problemReporter = upperScope.problemReporter();
+		if (node != null) problemReporter.abortDueToInternalError(message, node);
+		else problemReporter.abortDueToInternalError(message);
 	}
 
 	private static boolean isSafe(AbstractVariableDeclaration local, BlockScope scope) {
