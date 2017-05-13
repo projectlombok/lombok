@@ -45,7 +45,7 @@ public class TestWithEcj extends DirectoryRunner.TestParams {
 	
 	@Override
 	public File getBeforeDirectory() {
-		return new File("test/transform/resource/before");
+		return new File("test/transform/resource/test");
 	}
 	
 	@Override

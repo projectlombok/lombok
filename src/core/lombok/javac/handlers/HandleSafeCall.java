@@ -8,6 +8,7 @@ import com.sun.tools.javac.tree.JCTree.*;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
+import lombok.core.handlers.SafeCallAbortProcessing;
 import lombok.core.handlers.SafeCallIllegalUsingException;
 import lombok.core.handlers.SafeCallIllegalUsingException.Place;
 import lombok.core.handlers.SafeCallInternalException;
@@ -81,6 +82,8 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 		} catch (SafeCallInternalException e) {
 			annotationNode.addError(e.getMessage());
 		} catch (TypeNotConvertibleException e) {
+			//error already must be printed
+		} catch (SafeCallAbortProcessing safeCallAbortProcessing) {
 			//error already must be printed
 		}
 	}

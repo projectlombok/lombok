@@ -1,5 +1,6 @@
 package lombok.eclipse.agent;
 
+import lombok.core.handlers.SafeCallAbortProcessing;
 import lombok.core.handlers.SafeCallIllegalUsingException;
 import lombok.core.handlers.SafeCallInternalException;
 import lombok.core.handlers.SafeCallUnexpectedStateException;
@@ -15,6 +16,7 @@ import java.util.*;
 
 import static java.util.Arrays.copyOf;
 import static java.util.Collections.emptySet;
+import static lombok.core.handlers.SafeCallAbortProcessing.Place.methodErrorType;
 import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.*;
 import static lombok.eclipse.Eclipse.fromQualifiedName;
 import static lombok.eclipse.EclipseAugments.ASTNode_parentNode;
@@ -219,7 +221,7 @@ final class PatchSafeCallHelper {
 
 	static ArrayList<Statement> newInitStatements(
 			AbstractVariableDeclaration varDecl, Expression expr, long p, BlockScope rootScope
-	) throws SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException {
+	) throws SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
 		char[] name = varDecl.name;
 		ArrayList<Statement> statements = new ArrayList<Statement>();
 
@@ -251,7 +253,7 @@ final class PatchSafeCallHelper {
 			Expression expr,
 			List<Statement> statements,
 			BlockScope rootScope
-	) throws SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException {
+	) throws SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
 		int notDuplicatedLevel = verifyNotDuplicateLevel(level, rootVar, rootScope);
 		char[] templateName = rootVar.name;
 		char[] varName = newName(notDuplicatedLevel, templateName);
@@ -267,6 +269,9 @@ final class PatchSafeCallHelper {
 			Expression[] arguments = messageSend.arguments;
 
 			MethodBinding methodBinding = messageSend.binding;
+			if (methodBinding == null) {
+				throw new SafeCallAbortProcessing(methodErrorType, expr);
+			}
 
 			Expression[] resultArguments = arguments != null ? new Expression[arguments.length] : null;
 			lastVarLevel = populateMethodCallArgs(rootVar, arguments, resultArguments,
@@ -606,7 +611,7 @@ final class PatchSafeCallHelper {
 			Expression[] args, Expression[] resultArgs,
 			int startLevel, List<Statement> statements,
 			BlockScope rootScope
-	) throws SafeCallInternalException, SafeCallUnexpectedStateException, SafeCallIllegalUsingException {
+	) throws SafeCallInternalException, SafeCallUnexpectedStateException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
 		if (args == null) return startLevel;
 
 		if (resultArgs == null) throw new SafeCallInternalException(rootVar, "resultArgs cannot be null");
@@ -650,7 +655,7 @@ final class PatchSafeCallHelper {
 			Expression[] args, Expression[] resultArgs, TypeReference arrayType,
 			int startLevel, List<Statement> statements,
 			BlockScope rootScope
-	) throws SafeCallInternalException, SafeCallUnexpectedStateException, SafeCallIllegalUsingException {
+	) throws SafeCallInternalException, SafeCallUnexpectedStateException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
 		if (args == null) return startLevel;
 
 		if (resultArgs == null) throw new SafeCallInternalException(var, "resultArgs cannot be null");
@@ -671,7 +676,7 @@ final class PatchSafeCallHelper {
 			Expression[] args, Expression[] resultArgs, MethodBinding methodBinding,
 			int startLevel, List<Statement> statements,
 			BlockScope rootScope
-	) throws SafeCallInternalException, SafeCallUnexpectedStateException, SafeCallIllegalUsingException {
+	) throws SafeCallInternalException, SafeCallUnexpectedStateException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
 		if (args == null) return startLevel;
 
 		if (resultArgs == null) throw new SafeCallInternalException(var, "resultArgs cannot be null");
@@ -691,7 +696,7 @@ final class PatchSafeCallHelper {
 			Expression[] resultArgs, int resultPosition,
 			List<Statement> statements,
 			BlockScope rootScope
-	) throws SafeCallInternalException, SafeCallUnexpectedStateException, SafeCallIllegalUsingException {
+	) throws SafeCallInternalException, SafeCallUnexpectedStateException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
 		VarRef varRef = populateInitStatements(level + 1, rootVar, arg,
 				statements, rootScope);
 		Expression newInitExpr;

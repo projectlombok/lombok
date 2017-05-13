@@ -1,5 +1,6 @@
 package lombok.eclipse.agent;
 
+import lombok.core.handlers.SafeCallAbortProcessing;
 import lombok.core.handlers.SafeCallIllegalUsingException;
 import lombok.core.handlers.SafeCallInternalException;
 import lombok.core.handlers.SafeCallUnexpectedStateException;
@@ -55,6 +56,8 @@ public class PatchSafeCall {
 					} catch (SafeCallIllegalUsingException e) {
 						ProblemReporter problemReporter = upperScope.problemReporter();
 						problemReporter.abortDueToInternalError(e.illegalUsingMessage(), (ASTNode) e.getNode());
+					} catch (SafeCallAbortProcessing safeCallAbortProcessing) {
+						return;
 					}
 				} catch (AbortCompilation ae) {
 					return;

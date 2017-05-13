@@ -11,6 +11,7 @@ import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ArrayType;
 import com.sun.tools.javac.code.Type.ClassType;
+import com.sun.tools.javac.code.Type.ErrorType;
 import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
@@ -18,6 +19,7 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 import lombok.core.AST;
+import lombok.core.handlers.SafeCallAbortProcessing;
 import lombok.core.handlers.SafeCallIllegalUsingException;
 import lombok.core.handlers.SafeCallInternalException;
 import lombok.core.handlers.SafeCallUnexpectedStateException;
@@ -40,6 +42,7 @@ import static java.util.Arrays.asList;
 import static javax.lang.model.type.TypeKind.BOOLEAN;
 import static javax.lang.model.type.TypeKind.INT;
 import static lombok.core.AST.Kind.TYPE;
+import static lombok.core.handlers.SafeCallAbortProcessing.Place.methodErrorType;
 import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.*;
 import static lombok.javac.Javac.*;
 import static lombok.javac.JavacResolution.createJavaType;
@@ -279,7 +282,7 @@ public final class HandleSafeCallHelper {
 			JavacNode annotationNode,
 			JavacResolution javacResolution
 	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException,
-			SafeCallInternalException, SafeCallIllegalUsingException {
+			SafeCallInternalException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
 		Name templateName = rootVar.name;
 		JavacAST ast = annotationNode.getAst();
 		JavacTreeMaker treeMaker = annotationNode.getTreeMaker();
@@ -293,34 +296,43 @@ public final class HandleSafeCallHelper {
 			JCMethodInvocation mi = (JCMethodInvocation) expr;
 			JCExpression meth = mi.meth;
 
-			MethodType methodType = (MethodType) meth.type;
-			List<JCExpression> args = mi.args;
-			JCExpression[] newArgs = new JCExpression[args.size()];
 
-			boolean varArgs = mi.varargsElement != null;
-			lastLevel = populateMethodCallArgs(rootVar, notDuplicatedLevel,
-					args, methodType, varArgs, newArgs, statements, annotationNode, javacResolution);
-			mi.args = List.from(newArgs);
+			Type mType = meth.type;
+			if (mType instanceof MethodType) {
+				MethodType methodType = (MethodType) mType;
+				List<JCExpression> args = mi.args;
+				JCExpression[] newArgs = new JCExpression[args.size()];
 
-			if (meth instanceof JCFieldAccess) {
-				JCFieldAccess fieldAccess = (JCFieldAccess) meth;
-				Symbol sym = fieldAccess.sym;
-				boolean isStatic = sym.isStatic();
-				if (isStatic) {
-					fieldAccess.selected = newIndentOfSymbolOwner(ast, treeMaker, sym, fieldAccess.pos);
-					resultVar = makeVariableDecl(treeMaker, statements, varName, type, mi);
+				boolean varArgs = mi.varargsElement != null;
+				lastLevel = populateMethodCallArgs(rootVar, notDuplicatedLevel,
+						args, methodType, varArgs, newArgs, statements, annotationNode, javacResolution);
+				mi.args = List.from(newArgs);
+
+				if (meth instanceof JCFieldAccess) {
+					JCFieldAccess fieldAccess = (JCFieldAccess) meth;
+					Symbol sym = fieldAccess.sym;
+					boolean isStatic = sym.isStatic();
+					if (isStatic) {
+						fieldAccess.selected = newIndentOfSymbolOwner(ast, treeMaker, sym, fieldAccess.pos);
+						resultVar = makeVariableDecl(treeMaker, statements, varName, type, mi);
+					} else {
+						VarRef varRef = populateFieldAccess(rootVar, javacResolution, annotationNode,
+								notDuplicatedLevel, lastLevel, type, (JCFieldAccess) meth, true, mi.args,
+								statements);
+						resultVar = varRef.var;
+						lastLevel = varRef.level;
+					}
+				} else if (meth instanceof JCIdent) {
+					resultVar = makeVariableDecl(treeMaker, statements, varName, type, expr);
 				} else {
-					VarRef varRef = populateFieldAccess(rootVar, javacResolution, annotationNode,
-							notDuplicatedLevel, lastLevel, type, (JCFieldAccess) meth, true, mi.args,
-							statements);
-					resultVar = varRef.var;
-					lastLevel = varRef.level;
+					throw new SafeCallUnexpectedStateException(populateInitStatementsMethodInvocation,
+							expr, meth.getClass());
 				}
-			} else if (meth instanceof JCIdent) {
-				resultVar = makeVariableDecl(treeMaker, statements, varName, type, expr);
+			} else if (mType instanceof ErrorType) {
+				throw new SafeCallAbortProcessing(methodErrorType, expr);
 			} else {
-				throw new SafeCallUnexpectedStateException(populateInitStatementsMethodInvocation,
-						expr, meth.getClass());
+				throw new SafeCallUnexpectedStateException(unsupportedMethodType,
+						expr, mType != null ? mType.getClass() : null);
 			}
 		} else if (expr instanceof JCFieldAccess) {
 			JCFieldAccess fieldAccess = (JCFieldAccess) expr;
@@ -528,7 +540,7 @@ public final class HandleSafeCallHelper {
 			boolean varArg,
 			JCExpression[] resultArgs, ListBuffer<JCStatement> statements,
 			JavacNode annotationNode, JavacResolution javacResolution
-	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException {
+	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
 
 		List<Type> argtypes = type.argtypes;
 
@@ -574,7 +586,7 @@ public final class HandleSafeCallHelper {
 			JCVariableDecl rootVar, int notDuplicatedLevel, List<JCExpression> args,
 			Type expectedType, JCExpression[] resultArgs, ListBuffer<JCStatement> statements,
 			JavacNode annotationNode, JavacResolution javacResolution
-	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException {
+	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
 		int lastLevel;
 		int elemLevel = notDuplicatedLevel;
 
@@ -593,7 +605,7 @@ public final class HandleSafeCallHelper {
 			JCVariableDecl rootVar, int notDuplicatedLevel, List<JCExpression> args,
 			Type expectedType, JCExpression[] resultArgs, ListBuffer<JCStatement> statements,
 			JavacNode annotationNode, JavacResolution javacResolution
-	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException {
+	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
 		int lastLevel;
 		int elemLevel = notDuplicatedLevel;
 
@@ -643,7 +655,8 @@ public final class HandleSafeCallHelper {
 			JCExpression[] resultArgs, int resultPosition,
 			ListBuffer<JCStatement> statements,
 			JavacNode annotationNode, JavacResolution javacResolution
-	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException {
+	) throws TypeNotConvertibleException, SafeCallUnexpectedStateException,
+			SafeCallInternalException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
 		Name templateName = rootVar.name;
 		JavacTreeMaker treeMaker = annotationNode.getTreeMaker();
 		VarRef varRef = populateInitStatements(level + 1, rootVar, arg,
@@ -970,7 +983,7 @@ public final class HandleSafeCallHelper {
 			int fieldVarLevel, int lastLevel, Type type, JCFieldAccess fa, boolean isMeth,
 			List<JCExpression> args, ListBuffer<JCStatement> statements)
 			throws TypeNotConvertibleException, SafeCallUnexpectedStateException,
-			SafeCallInternalException, SafeCallIllegalUsingException {
+			SafeCallInternalException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
 		Name templateName = rootVar.name;
 		JavacTreeMaker treeMaker = annotationNode.getTreeMaker();
 		JCExpression selected = fa.selected;
@@ -998,7 +1011,8 @@ public final class HandleSafeCallHelper {
 	}
 
 	static JCBlock newInitBlock(JCVariableDecl varDecl, JavacNode annotationNode) throws TypeNotConvertibleException,
-			SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException {
+			SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException,
+			SafeCallAbortProcessing {
 		JavacResolution javacResolution = new JavacResolution(annotationNode.getContext());
 
 		JavacTreeMaker maker = annotationNode.getTreeMaker();

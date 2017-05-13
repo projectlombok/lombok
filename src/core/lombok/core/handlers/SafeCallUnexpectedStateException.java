@@ -36,6 +36,7 @@ public class SafeCallUnexpectedStateException extends Exception {
 		newConditional,
 		populateInitStatementsTokenAmount,
 		populateInitStatementsMethodInvocation,
+		unsupportedMethodType,
 		populateInitStatements,
 		cannotRecognizeType,
 		copyExpr,
@@ -44,6 +45,5 @@ public class SafeCallUnexpectedStateException extends Exception {
 		unsupportedUnaryOperator,
 		unsupportedUnaryOperatorType,
 		getBindings,
-
 	}
 }
