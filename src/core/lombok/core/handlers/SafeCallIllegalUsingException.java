@@ -5,7 +5,8 @@ import lombok.experimental.SafeCall;
 /**
  * Created by Bulgakov Alexander on 22.04.17.
  */
-public class SafeCallIllegalUsingException extends Exception {
+public class SafeCallIllegalUsingException extends RuntimeException {
+	public static final String PREFIX = "'" + SafeCall.class.getSimpleName() + "'";
 	private final Place place;
 	private final Object node;
 
@@ -15,14 +16,12 @@ public class SafeCallIllegalUsingException extends Exception {
 	}
 
 	public static String unsupportedPlaceMessage(Place place) {
-		return "'" + SafeCall.class.getSimpleName() + "' doesn't supported here. " + place;
+		return PREFIX + " doesn't supported here. " + place;
 	}
 
 	@Override
 	public String getMessage() {
-		return "'" + SafeCall.class.getSimpleName() + "' doesn't support" +
-				(place != null ? " " + place : "") +
-				(node != null ? " " + node.getClass().getSimpleName() : "");
+		return place.getMessage(this);
 	}
 
 	public Place getPlace() {
@@ -33,10 +32,24 @@ public class SafeCallIllegalUsingException extends Exception {
 		return node;
 	}
 
+	private String getNodeString() {
+		return this.node != null ? " " + this.node.getClass().getSimpleName() : "";
+	}
+
 	public enum Place {
 		forLoopInitializer,
 		forLoopVariable,
 		tryResource,
-		unsupportedExpression
+		unsupportedExpression {
+			@Override
+			public String getMessage(SafeCallIllegalUsingException e) {
+				return PREFIX + " doesn't support expressions of type" + e.getNodeString();
+			}
+		};
+
+		public String getMessage(SafeCallIllegalUsingException e) {
+			return PREFIX + " doesn't support " +
+					this + e.getNodeString();
+		}
 	}
 }

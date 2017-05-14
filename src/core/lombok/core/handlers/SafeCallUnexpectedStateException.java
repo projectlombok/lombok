@@ -5,7 +5,7 @@ import lombok.experimental.SafeCall;
 /**
  * Created by Bulgakov Alexander on 23.04.17.
  */
-public class SafeCallUnexpectedStateException extends Exception {
+public class SafeCallUnexpectedStateException extends RuntimeException {
 	private final Place place;
 	private final Object node;
 	private final Class type;

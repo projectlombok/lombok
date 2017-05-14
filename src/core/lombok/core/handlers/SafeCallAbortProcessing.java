@@ -5,7 +5,7 @@ import lombok.experimental.SafeCall;
 /**
  * Created by Bulgakov Alexander on 13.05.17.
  */
-public class SafeCallAbortProcessing extends Exception {
+public class SafeCallAbortProcessing extends RuntimeException {
 	private final Place place;
 	private final Object node;
 
@@ -25,5 +25,6 @@ public class SafeCallAbortProcessing extends Exception {
 
 	public enum Place {
 		methodErrorType,
+		fieldErrorType,
 	}
 }

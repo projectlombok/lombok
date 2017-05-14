@@ -16,6 +16,7 @@ import java.util.*;
 
 import static java.util.Arrays.copyOf;
 import static java.util.Collections.emptySet;
+import static lombok.core.handlers.SafeCallAbortProcessing.Place.fieldErrorType;
 import static lombok.core.handlers.SafeCallAbortProcessing.Place.methodErrorType;
 import static lombok.core.handlers.SafeCallIllegalUsingException.Place.unsupportedExpression;
 import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.*;
@@ -52,7 +53,7 @@ final class PatchSafeCallHelper {
 			Expression expr,
 			TypeReference truePartType,
 			TypeReference falsePartType
-	) throws SafeCallUnexpectedStateException {
+	) {
 		Expression result;
 		Expression falsePart = getFalsePart(falsePartType);
 		if (expr instanceof MessageSend) {
@@ -108,7 +109,7 @@ final class PatchSafeCallHelper {
 
 	private static Expression newIfNullThenConditional(
 			Expression checkable, Expression truePart, Expression falsePart
-	) throws SafeCallUnexpectedStateException {
+	) {
 		if (checkable instanceof ThisReference) {
 			return null;
 		}
@@ -149,7 +150,7 @@ final class PatchSafeCallHelper {
 		return newConditional(result, truePart, falsePart);
 	}
 
-	private static AND_AND_Expression newAnd(Expression left, BinaryExpression right) throws SafeCallUnexpectedStateException {
+	private static AND_AND_Expression newAnd(Expression left, BinaryExpression right) {
 		return new AND_AND_Expression(left, right, AND_AND);
 	}
 
@@ -158,15 +159,15 @@ final class PatchSafeCallHelper {
 				position.constant : null;
 	}
 
-	private static AND_AND_Expression newIndexRange(QualifiedNameReference lengthCall, Expression position) throws SafeCallUnexpectedStateException {
+	private static AND_AND_Expression newIndexRange(QualifiedNameReference lengthCall, Expression position) {
 		return newAnd(newGE(position), newLess(position, lengthCall));
 	}
 
-	private static BinaryExpression newGE(Expression position) throws SafeCallUnexpectedStateException {
+	private static BinaryExpression newGE(Expression position) {
 		return new BinaryExpression(copy(position), newZeroLiteral(), GREATER_EQUAL);
 	}
 
-	private static BinaryExpression newLess(Expression left, Expression rigth) throws SafeCallUnexpectedStateException {
+	private static BinaryExpression newLess(Expression left, Expression rigth) {
 		return new BinaryExpression(copy(left), rigth, LESS);
 	}
 
@@ -222,7 +223,7 @@ final class PatchSafeCallHelper {
 
 	static ArrayList<Statement> newInitStatements(
 			AbstractVariableDeclaration varDecl, Expression expr, long p, BlockScope rootScope
-	) throws SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
+	) {
 		char[] name = varDecl.name;
 		ArrayList<Statement> statements = new ArrayList<Statement>();
 
@@ -254,7 +255,7 @@ final class PatchSafeCallHelper {
 			Expression expr,
 			List<Statement> statements,
 			BlockScope rootScope
-	) throws SafeCallUnexpectedStateException, SafeCallInternalException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
+	) {
 		int notDuplicatedLevel = verifyNotDuplicateLevel(level, rootVar, rootScope);
 		char[] templateName = rootVar.name;
 		char[] varName = newName(notDuplicatedLevel, templateName);
@@ -365,11 +366,15 @@ final class PatchSafeCallHelper {
 
 		} else if (expr instanceof FieldReference) {
 			FieldReference fr = (FieldReference) expr;
-			boolean staticField = fr.binding.isStatic();
+			FieldBinding binding = fr.binding;
+			if (binding == null) {
+				throw new SafeCallAbortProcessing(fieldErrorType, expr);
+			}
+			boolean staticField = binding.isStatic();
 			if (staticField) {
 				removeNonStaticAccessToStaticElement(rootVar, rootScope);
 				lastVarLevel = notDuplicatedLevel;
-				resultVar = makeLocalDeclarationForFieldReference(statements, varName, type, fr.binding, fr.token, getP(fr));
+				resultVar = makeLocalDeclarationForFieldReference(statements, varName, type, binding, fr.token, getP(fr));
 			} else {
 				Expression receiver = fr.receiver;
 				VarRef varRef = populateInitStatements(notDuplicatedLevel + 1, rootVar, receiver,
@@ -579,14 +584,14 @@ final class PatchSafeCallHelper {
 	private static VarRef protectIfPrimitive(
 			VarRef varRef, Expression expr, TypeBinding expectedType,
 			AbstractVariableDeclaration rootVar, BlockScope rootScope, List<Statement> statements
-	) throws SafeCallUnexpectedStateException {
+	) {
 		return protectIfPrimitive(varRef, getType(expr, expectedType), rootVar, rootScope, statements);
 	}
 
 	private static VarRef protectIfPrimitive(
 			VarRef varRef, TypeReference expectedType,
 			AbstractVariableDeclaration rootVar, BlockScope rootScope, List<Statement> statements
-	) throws SafeCallUnexpectedStateException {
+	) {
 		char[] templateName = rootVar.name;
 		TypeReference actualType = varRef.var.type;
 		if (mustBeProtected(expectedType, actualType)) {
@@ -612,7 +617,7 @@ final class PatchSafeCallHelper {
 			Expression[] args, Expression[] resultArgs,
 			int startLevel, List<Statement> statements,
 			BlockScope rootScope
-	) throws SafeCallInternalException, SafeCallUnexpectedStateException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
+	) {
 		if (args == null) return startLevel;
 
 		if (resultArgs == null) throw new SafeCallInternalException(rootVar, "resultArgs cannot be null");
@@ -656,7 +661,7 @@ final class PatchSafeCallHelper {
 			Expression[] args, Expression[] resultArgs, TypeReference arrayType,
 			int startLevel, List<Statement> statements,
 			BlockScope rootScope
-	) throws SafeCallInternalException, SafeCallUnexpectedStateException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
+	) {
 		if (args == null) return startLevel;
 
 		if (resultArgs == null) throw new SafeCallInternalException(var, "resultArgs cannot be null");
@@ -677,7 +682,7 @@ final class PatchSafeCallHelper {
 			Expression[] args, Expression[] resultArgs, MethodBinding methodBinding,
 			int startLevel, List<Statement> statements,
 			BlockScope rootScope
-	) throws SafeCallInternalException, SafeCallUnexpectedStateException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
+	) {
 		if (args == null) return startLevel;
 
 		if (resultArgs == null) throw new SafeCallInternalException(var, "resultArgs cannot be null");
@@ -697,7 +702,7 @@ final class PatchSafeCallHelper {
 			Expression[] resultArgs, int resultPosition,
 			List<Statement> statements,
 			BlockScope rootScope
-	) throws SafeCallInternalException, SafeCallUnexpectedStateException, SafeCallIllegalUsingException, SafeCallAbortProcessing {
+	) {
 		VarRef varRef = populateInitStatements(level + 1, rootVar, arg,
 				statements, rootScope);
 		Expression newInitExpr;
@@ -713,7 +718,7 @@ final class PatchSafeCallHelper {
 
 	private static TypeReference getParamType(
 			AbstractVariableDeclaration var, MethodBinding methodBinding, int argIndex
-	) throws SafeCallInternalException {
+	) {
 		TypeBinding[] paramTypes = methodBinding.parameters;
 
 		TypeBinding parameterTypeBinding;
@@ -739,19 +744,7 @@ final class PatchSafeCallHelper {
 		return expr != null && expr.getClass().getSimpleName().equals("LambdaExpression");
 	}
 
-	private static boolean isStaticField(QualifiedNameReference qnr) {
-		FieldBinding binding = null;
-
-		FieldBinding[] otherBindings = qnr.otherBindings;
-		if (otherBindings != null && otherBindings.length > 0) {
-			binding = otherBindings[otherBindings.length - 1];
-		} else if (qnr.binding instanceof FieldBinding) binding = (FieldBinding) qnr.binding;
-
-		return binding != null && binding.isStatic();
-	}
-
-	private static List<VariableBinding> getBindings(QualifiedNameReference qnr)
-			throws SafeCallInternalException, SafeCallUnexpectedStateException {
+	private static List<VariableBinding> getBindings(QualifiedNameReference qnr) {
 		final List<VariableBinding> result = new ArrayList<VariableBinding>();
 		if (qnr.binding instanceof VariableBinding) {
 			result.add((VariableBinding) qnr.binding);
@@ -796,7 +789,7 @@ final class PatchSafeCallHelper {
 
 	private static LocalDeclaration makeElvisDeclaration(
 			List<Statement> statements, char[] varName, Expression truePart, TypeBinding truePartType
-	) throws SafeCallUnexpectedStateException {
+	) {
 		TypeReference truePartTypeRef = newTypeReference(truePartType, truePart);
 		TypeReference falsePartTypeRef = newTypeReference(truePartType, truePart);
 		return newElvisDeclaration(statements, varName, truePart, truePartTypeRef, falsePartTypeRef);
@@ -805,7 +798,7 @@ final class PatchSafeCallHelper {
 	private static LocalDeclaration newElvisDeclaration(
 			List<Statement> statements, char[] varName, Expression truePart,
 			TypeReference truePartType,
-			TypeReference falsePartType) throws SafeCallUnexpectedStateException {
+			TypeReference falsePartType) {
 		Expression elvis = newElvis(truePart, truePartType, falsePartType);
 		Expression initialization = elvis != null ? elvis : truePart;
 		return makeLocalDeclaration(statements, varName, initialization, falsePartType);
