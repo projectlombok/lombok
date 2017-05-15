@@ -187,7 +187,7 @@ public class WebsiteMaker {
 		}
 	}
 	
-	private static final Pattern LOMBOK_LINK = Pattern.compile("^.*<a(?: (?:id|class|rel|rev|download|target|type)(?:=\"[^\"]*\")?)* href=\"([^\"]+)\"(?: (?:id|class|rel|rev|download|target|type)(?:=\"[^\"]*\")?)*>([^<]+)</a>.*$");
+	private static final Pattern LOMBOK_LINK = Pattern.compile("^.*<a(?: (?:id|class|rel|rev|download|target|type)(?:=\"[^\"]*\")?)* href=\"(downloads/[^\"]+)\"(?: (?:id|class|rel|rev|download|target|type)(?:=\"[^\"]*\")?)*>([^<]+)</a>.*$");
 	private Map<String, Object> createDataModel() throws IOException {
 		Map<String, Object> data = new HashMap<String, Object>();
 		data.put("version", version);
@@ -206,11 +206,9 @@ public class WebsiteMaker {
 			in.close();
 		}
 		
-		if (links.isEmpty() || !links.get(0).get(0).endsWith("lombok-" + version + ".jar")) {
-			links.add(Arrays.asList("downloads/lombok-" + version + ".jar", "lombok-" + version + ".jar"));
-		}
-		
 		data.put("linksToVersions", links);
+		data.put("changelog", CompileChangelog.getHtml(baseDir.getParentFile()));
+		
 		return data;
 	}
 	

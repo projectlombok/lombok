@@ -1,8 +1,10 @@
 package lombok.website;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,7 +37,7 @@ public class CompileChangelog {
 			} else if (latest) {
 				result = buildLatest(sectionByVersion(markdown, version));
 			} else {
-				result = build(markdown);
+				result = markdownToHtml(markdown);
 			}
 			
 			FileOutputStream file = new FileOutputStream(fileOut);
@@ -48,20 +50,55 @@ public class CompileChangelog {
 		}
 	}
 	
-	private static String build(String markdown) {
+	public static String getHtmlForEdge(File root, String edgeVersion) throws IOException {
+		File f = new File(root, "doc/changelog.markdown");
+		String raw = readFile(f);
+		return buildEdge(sectionByVersion(raw, edgeVersion));
+	}
+	
+	public static String getHtmlForLatest(File root, String latestVersion) throws IOException {
+		File f = new File(root, "doc/changelog.markdown");
+		String raw = readFile(f);
+		return buildLatest(sectionByVersion(raw, latestVersion));
+	}
+	
+	public static String getHtml(File root) throws IOException {
+		File f = new File(root, "doc/changelog.markdown");
+		String raw = readFile(f);
+		return markdownToHtml(raw);
+	}
+	
+	private static String readFile(File f) throws IOException {
+		byte[] b = new byte[65536];
+		FileInputStream in = new FileInputStream(f);
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			while (true) {
+				int r = in.read(b);
+				if ( r == -1 ) break;
+				out.write(b, 0, r);
+			}
+			in.close();
+			return new String(out.toByteArray(), "UTF-8");
+		} finally {
+			in.close();
+		}
+	}
+	
+	private static String markdownToHtml(String markdown) {
 		return new MarkdownProcessor().markdown(markdown);
 	}
 	
 	private static String buildEdge(String section) {
 		String latest = section != null ? section : "* No changelog records for this edge release.";
-		return new MarkdownProcessor().markdown(latest);
+		return markdownToHtml(latest);
 	}
 	
 	private static String buildLatest(String section) {
 		String latest = section != null ? section : "* No changelog records for this release.";
 		String noIssueLinks = latest.replaceAll("\\[[^]]*[Ii]ssue[^]]*\\]\\([^)]*\\)", "");
 		String noLinks = noIssueLinks.replaceAll("\\[([^]]*)\\]\\([^)]*\\)", "$1");
-		return new MarkdownProcessor().markdown(noLinks);
+		return markdownToHtml(noLinks);
 	}
 	
 	private static String sectionByVersion(String markdown, String version) {
