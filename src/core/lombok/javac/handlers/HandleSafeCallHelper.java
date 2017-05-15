@@ -9,10 +9,7 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.OperatorSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.Type.ArrayType;
-import com.sun.tools.javac.code.Type.ClassType;
-import com.sun.tools.javac.code.Type.ErrorType;
-import com.sun.tools.javac.code.Type.MethodType;
+import com.sun.tools.javac.code.Type.*;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.util.List;
@@ -144,7 +141,8 @@ public final class HandleSafeCallHelper {
 
 	private static JCExpression getFalsePart(JavacTreeMaker maker, Type falsePartType, int pos) {
 		JCExpression falsePart;
-		if (falsePartType instanceof ClassType || falsePartType instanceof ArrayType) {
+		if (falsePartType instanceof ClassType || falsePartType instanceof ArrayType ||
+				falsePartType instanceof CapturedType) {
 			falsePart = newNullLiteral(maker, pos);
 		} else {
 			falsePart = getDefaultValue(maker, falsePartType.getKind());
@@ -923,7 +921,11 @@ public final class HandleSafeCallHelper {
 	}
 
 	private static JCVariableDecl newVarDecl(JavacTreeMaker treeMaker, Name name, Type type, JCExpression expr) {
-		Type checkType = (type instanceof ExecutableType) ? type.getReturnType() : type;
+		Type checkType;
+		if (type instanceof ExecutableType) checkType = type.getReturnType();
+		else if (type instanceof CapturedType) checkType = type.getUpperBound();
+		else checkType = type;
+
 		boolean nonameOwner = hasNonameOwner(checkType);
 
 		JCExpression vartype;
@@ -931,6 +933,7 @@ public final class HandleSafeCallHelper {
 			vartype = newIdent(treeMaker, checkType.asElement().name, expr.pos);
 		} else {
 			JCExpression type1 = treeMaker.Type(checkType);
+			//remove dot if it is at start of type
 			vartype = newType(treeMaker, type1);
 		}
 
@@ -941,7 +944,7 @@ public final class HandleSafeCallHelper {
 
 	private static boolean hasNonameOwner(Type type) {
 		boolean nonameOwner = false;
-		if (type instanceof ClassType) {
+		if (type instanceof ClassType || type instanceof CapturedType) {
 			Symbol owner = type.tsym.owner;
 			nonameOwner = owner.name.isEmpty();
 		} else if (type instanceof ArrayType) {
@@ -953,7 +956,17 @@ public final class HandleSafeCallHelper {
 	}
 
 	private static JCExpression newType(JavacTreeMaker treeMaker, JCExpression expression) {
-		if (expression instanceof JCFieldAccess) {
+		if (expression instanceof JCTypeApply) {
+			JCTypeApply typeApply = (JCTypeApply) expression;
+			typeApply.clazz = newType(treeMaker, typeApply.clazz);
+			List<JCExpression> arguments = typeApply.arguments;
+			JCExpression[] newArguments = new JCExpression[arguments.length()];
+			int index = 0;
+			for (JCExpression argument : arguments) {
+				newArguments[index++] = newType(treeMaker, argument);
+			}
+			typeApply.arguments = List.from(newArguments);
+		} else if (expression instanceof JCFieldAccess) {
 			JCFieldAccess fieldAccess = (JCFieldAccess) expression;
 			JCExpression selected = fieldAccess.selected;
 			JCFieldAccess parent = null;

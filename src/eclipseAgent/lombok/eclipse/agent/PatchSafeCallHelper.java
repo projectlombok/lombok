@@ -577,6 +577,7 @@ final class PatchSafeCallHelper {
 		resultMessageSend.arguments = resultArguments;
 		resultMessageSend.selector = src.selector;
 		resultMessageSend.nameSourcePosition = src.nameSourcePosition;
+		resultMessageSend.typeArguments = (src.typeArguments);
 		copySourcePosition(src, resultMessageSend);
 		return resultMessageSend;
 	}

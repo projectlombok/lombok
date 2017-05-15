@@ -45,6 +45,16 @@ public class PatchSafeCallCopyHelper {
 		return newRes;
 	}
 
+
+	static TypeReference[] copy(TypeReference[] expressions) {
+		if (expressions == null) return null;
+		TypeReference[] result = new TypeReference[expressions.length];
+		for (int i = 0; i < expressions.length; ++i) {
+			result[i] = copy(expressions[i]);
+		}
+		return result;
+	}
+
 	private static ArrayInitializer copy(ArrayInitializer expression
 	) {
 		ArrayInitializer result = new ArrayInitializer();
