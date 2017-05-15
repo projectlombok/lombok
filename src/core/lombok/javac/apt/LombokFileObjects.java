@@ -98,7 +98,8 @@ final class LombokFileObjects {
 		String jfmClassName = jfm != null ? jfm.getClass().getName() : "null";
 		if (jfmClassName.equals("com.sun.tools.javac.util.DefaultFileManager")) return Compiler.JAVAC6;
 		if (jfmClassName.equals("com.sun.tools.javac.util.JavacFileManager")) return Compiler.JAVAC6;
-		if (jfmClassName.equals("com.sun.tools.javac.file.JavacFileManager")) {
+		if (jfmClassName.equals("com.sun.tools.javac.file.JavacFileManager") ||
+				jfmClassName.equals("com.google.errorprone.MaskedClassLoader$MaskedFileManager")) {
 			try {
 				Class<?> superType = Class.forName("com.sun.tools.javac.file.BaseFileManager");
 				if (superType.isInstance(jfm)) {
