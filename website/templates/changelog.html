@@ -1,11 +1,8 @@
 <#import "/_scaffold.html" as main>
 <@main.scaffold>
 	<div class="page-header top5">
-		<div class="row text-center">
-			<h1>Changelog</h1>
-		</div>
-		<div class="row text-center">
-			<h1>@CHANGELOG@</h1>
+		<div class="row text-center changelog">
+			${changelog?no_esc}
 		</div>
 	</div>
 </@main.scaffold>

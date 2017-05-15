@@ -37,6 +37,7 @@
 			var u = hs.data.urlPath;
 			if (u === "/" || u === "") u = "/main.html";
 			if (u.substring(u.length - 5) !== ".html") u += ".html";
+			if (u.substring(u.length - 8) === "all.html") u = u.substring(0, u.length - 8) + "index.html";
 			var key = toKey(u);
 			var sc = $("#" + key);
 			if (sc.length > 0) {
