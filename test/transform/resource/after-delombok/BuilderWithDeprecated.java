@@ -10,6 +10,7 @@ public class BuilderWithDeprecated {
 	java.util.List<String> strings;
 	@Deprecated
 	ImmutableList<Integer> numbers;
+	@java.beans.ConstructorProperties({"dep1", "dep2", "strings", "numbers"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
 	BuilderWithDeprecated(final String dep1, final int dep2, final java.util.List<String> strings, final ImmutableList<Integer> numbers) {
