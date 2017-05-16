@@ -13,7 +13,7 @@ class SafeCallMethodGenerics {
 		}
 		CharSequence cs;
 		{
-			java.util.List<? extends .java.lang.CharSequence> cs2 = wildCardList;
+			java.util.List<? extends java.lang.CharSequence> cs2 = wildCardList;
 			java.lang.CharSequence cs1 = cs2 != null ? cs2.get(0) : null;
 			cs = cs1;
 		}
