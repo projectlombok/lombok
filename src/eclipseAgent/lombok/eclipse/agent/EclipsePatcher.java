@@ -51,7 +51,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	// At some point I'd like the agent to be capable of auto-detecting if its on eclipse or on ecj. This class is a sure sign we're not in ecj but in eclipse. -ReinierZ
 	@SuppressWarnings("unused")
 	private static final String ECLIPSE_SIGNATURE_CLASS = "org/eclipse/core/runtime/adaptor/EclipseStarter";
-	public static final String ELVIS_PATHCER = "lombok.launch.PatchFixesHider$Safe";
+	public static final String ELVIS_PATHCER = "lombok.launch.PatchFixesHider$SafeCall";
 	
 	@Override public void runAgent(String agentArgs, Instrumentation instrumentation, boolean injected, Class<?> launchingContext) throws Exception {
 		String[] args = agentArgs == null ? new String[0] : agentArgs.split(":");

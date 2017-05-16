@@ -934,7 +934,7 @@ public final class HandleSafeCallHelper {
 		} else {
 			JCExpression type1 = treeMaker.Type(checkType);
 			//remove dot if it is at start of type
-			vartype = newType(treeMaker, type1);
+			vartype = removeStartDot(treeMaker, type1);
 		}
 
 		JCVariableDecl variableDecl = treeMaker.VarDef(treeMaker.Modifiers(0), name, vartype, expr);
@@ -955,17 +955,23 @@ public final class HandleSafeCallHelper {
 		return nonameOwner;
 	}
 
-	private static JCExpression newType(JavacTreeMaker treeMaker, JCExpression expression) {
+	private static JCExpression removeStartDot(JavacTreeMaker treeMaker, JCExpression expression) {
 		if (expression instanceof JCTypeApply) {
 			JCTypeApply typeApply = (JCTypeApply) expression;
-			typeApply.clazz = newType(treeMaker, typeApply.clazz);
+			typeApply.clazz = removeStartDot(treeMaker, typeApply.clazz);
 			List<JCExpression> arguments = typeApply.arguments;
 			JCExpression[] newArguments = new JCExpression[arguments.length()];
 			int index = 0;
 			for (JCExpression argument : arguments) {
-				newArguments[index++] = newType(treeMaker, argument);
+				newArguments[index++] = removeStartDot(treeMaker, argument);
 			}
 			typeApply.arguments = List.from(newArguments);
+		} else if (expression instanceof JCWildcard) {
+			JCWildcard wildcard = (JCWildcard) expression;
+			JCTree inner = wildcard.inner;
+			if (inner instanceof JCExpression) {
+				wildcard.inner = removeStartDot(treeMaker, (JCExpression) inner);
+			}
 		} else if (expression instanceof JCFieldAccess) {
 			JCFieldAccess fieldAccess = (JCFieldAccess) expression;
 			JCExpression selected = fieldAccess.selected;
@@ -985,7 +991,7 @@ public final class HandleSafeCallHelper {
 			}
 		} else if (expression instanceof JCArrayTypeTree) {
 			JCArrayTypeTree arrayTypeTree = (JCArrayTypeTree) expression;
-			arrayTypeTree.elemtype = newType(treeMaker, arrayTypeTree.elemtype);
+			arrayTypeTree.elemtype = removeStartDot(treeMaker, arrayTypeTree.elemtype);
 		}
 		return expression;
 	}

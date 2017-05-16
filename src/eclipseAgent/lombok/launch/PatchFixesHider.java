@@ -263,7 +263,7 @@ final class PatchFixesHider {
 	}
 	
 	
-	public static final class Safe {
+	public static final class SafeCall {
 		
 		private static final Method HANDLE_SAFE_FOR_LOCAL_DECLARATION;
 		
