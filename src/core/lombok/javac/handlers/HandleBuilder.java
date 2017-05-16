@@ -165,7 +165,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				
 				if (fd.init != null && isDefault == null) {
 					if (isFinal) continue;
-					fieldNode.addWarning("@Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. if it is not supposed to be settable during building, add @Builder.Constant.");
+					fieldNode.addWarning("@Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.");
 				}
 				
 				if (isDefault != null) {

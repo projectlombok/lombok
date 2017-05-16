@@ -171,6 +171,7 @@ public class InstallerGUI {
 		container.add(buttonBar, constraints);
 		
 		container.setPreferredSize(new Dimension(INSTALLER_WINDOW_WIDTH, 415));
+		container.setMinimumSize(new Dimension(INSTALLER_WINDOW_WIDTH, 415));
 		return container;
 	}
 	
@@ -195,6 +196,7 @@ public class InstallerGUI {
 		JLabel title;
 		container.add(title = new JLabel(SUCCESS_TITLE), constraints);
 		title.setPreferredSize(new Dimension(INSTALLER_WINDOW_WIDTH - 82, 20));
+		title.setMinimumSize(new Dimension(INSTALLER_WINDOW_WIDTH - 82, 20));
 		
 		constraints.gridy = 1;
 		constraints.insets = new Insets(8, 0, 0, 16);
@@ -296,6 +298,7 @@ public class InstallerGUI {
 		container.add(buttonBar, constraints);
 		
 		container.setPreferredSize(new Dimension(INSTALLER_WINDOW_WIDTH, 415));
+		container.setMinimumSize(new Dimension(INSTALLER_WINDOW_WIDTH, 415));
 		return container;
 	}
 	
@@ -319,6 +322,7 @@ public class InstallerGUI {
 		constraints.gridy = 2;
 		container.add(example, constraints);
 		container.setPreferredSize(new Dimension(INSTALLER_WINDOW_WIDTH, 105));
+		container.setMinimumSize(new Dimension(INSTALLER_WINDOW_WIDTH, 105));
 		return container;
 	}
 	
@@ -507,6 +511,7 @@ public class InstallerGUI {
 		container.add(uninstallPlaceholder, constraints);
 		
 		container.setPreferredSize(new Dimension(INSTALLER_WINDOW_WIDTH, 296));
+		container.setMinimumSize(new Dimension(INSTALLER_WINDOW_WIDTH, 296));
 		return container;
 	}
 	
