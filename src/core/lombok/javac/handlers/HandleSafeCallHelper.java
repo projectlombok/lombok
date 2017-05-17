@@ -837,8 +837,11 @@ public final class HandleSafeCallHelper {
 						tree instanceof JCThrow
 				) {
 			return false;
+		} else if (tree instanceof JCSynchronized) {
+			JCSynchronized sync = (JCSynchronized) tree;
+			return findDuplicateCandidates(waterline, sync.body, vars);
 		} else {
-			throw new UnsupportedOperationException(tree.getKind() + "\n" + tree.toString());
+			throw new SafeCallUnexpectedStateException(findDuplicateCandidates, waterline, tree.getClass());
 		}
 	}
 

@@ -55,6 +55,10 @@ class SafeCallInStatements {
 				break;
 		}
 
+		synchronized (empty) {
+			@SafeCall int i10 = IntegerNullArray()[0];
+		}
+
 	}
 
 	public int[] intNullArray() {

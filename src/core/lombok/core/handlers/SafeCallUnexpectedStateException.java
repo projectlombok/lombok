@@ -45,5 +45,6 @@ public class SafeCallUnexpectedStateException extends RuntimeException {
 		unsupportedUnaryOperator,
 		unsupportedUnaryOperatorType,
 		getBindings,
+		insertBlockAfterVariable
 	}
 }

@@ -198,6 +198,9 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 			return getParent(variable, root, ((JCCase) root).getStatements());
 		} else if (root instanceof JCVariableDecl) {
 			return root == variable ? root : null;
+		} else if (root instanceof JCSynchronized) {
+			JCSynchronized sync = (JCSynchronized) root;
+			return getParent(variable, sync.body);
 		} else {
 			throw new SafeCallUnexpectedStateException(getParent, variable, root.getClass());
 		}

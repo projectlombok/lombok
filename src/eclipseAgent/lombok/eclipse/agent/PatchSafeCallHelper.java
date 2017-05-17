@@ -741,7 +741,7 @@ final class PatchSafeCallHelper {
 		return newTypeReference(parameterTypeBinding, var);
 	}
 
-	private static boolean isLambda(Expression expr) {
+	public static boolean isLambda(Expression expr) {
 		return expr != null && expr.getClass().getSimpleName().equals("LambdaExpression");
 	}
 

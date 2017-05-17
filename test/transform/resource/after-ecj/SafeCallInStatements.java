@@ -142,6 +142,15 @@ while ((i6 < 0));
         }
         break;
     }
+    synchronized (empty)
+      {
+        @SafeCall int i10;
+        {
+          java.lang.Integer[] i102 = IntegerNullArray();
+          java.lang.Integer i101 = (((i102 != null) && (0 < i102.length)) ? i102[0] : null);
+          i10 = ((i101 != null) ? i101 : 0);
+        }
+      }
   }
   public int[] intNullArray() {
     return null;

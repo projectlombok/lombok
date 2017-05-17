@@ -24,6 +24,7 @@ package lombok.eclipse.handlers;
 import lombok.core.HandlerPriority;
 import lombok.core.handlers.SafeCallIllegalUsingException;
 import lombok.core.handlers.SafeCallIllegalUsingException.Place;
+import lombok.core.handlers.SafeCallUnexpectedStateException;
 import lombok.eclipse.DeferUntilPostDiet;
 import lombok.eclipse.EclipseASTAdapter;
 import lombok.eclipse.EclipseASTVisitor;
@@ -33,6 +34,8 @@ import org.eclipse.jdt.internal.compiler.ast.*;
 import org.mangosdk.spi.ProviderFor;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +43,8 @@ import static java.lang.reflect.Modifier.STATIC;
 import static java.util.Arrays.asList;
 import static lombok.core.handlers.SafeCallIllegalUsingException.Place.*;
 import static lombok.core.handlers.SafeCallIllegalUsingException.unsupportedPlaceMessage;
+import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.getParent;
+import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.insertBlockAfterVariable;
 import static lombok.eclipse.Eclipse.getEcjCompilerVersion;
 import static lombok.eclipse.EclipseAugments.ASTNode_parentNode;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.copySourcePosition;
@@ -76,6 +81,10 @@ public class HandleSafeCall extends EclipseASTAdapter {
 			parentNode = getParentASTNode(local, parent);
 		} catch (SafeCallIllegalUsingException e) {
 			addIllegalPlaceError(variable, e.getPlace());
+			return;
+		} catch (SafeCallUnexpectedStateException e) {
+			String message = e.getMessage();
+			variable.addError(message);
 			return;
 		}
 
@@ -173,13 +182,34 @@ public class HandleSafeCall extends EclipseASTAdapter {
 			return null;
 		} else if (root instanceof LocalDeclaration) {
 			return root == variable ? root : null;
-		} else if (root instanceof LambdaExpression) {
-			LambdaExpression lambdaExpression = (LambdaExpression) root;
-			return getParent(variable, lambdaExpression.body);
+		} else if (isLambda(root)) {
+			return getParent(variable, getLambdaBody(root));
+		} else if (root instanceof SynchronizedStatement) {
+			SynchronizedStatement synchronizedStatement = (SynchronizedStatement) root;
+			return getParent(variable, synchronizedStatement.block);
 		} else {
-			throw new UnsupportedOperationException("unsupported for root type " +
-					root.getClass().getName());
+			throw new SafeCallUnexpectedStateException(getParent, variable, root.getClass());
 		}
+	}
+
+	private static ASTNode getLambdaBody(ASTNode root) {
+		Method body;
+		try {
+			body = root.getClass().getMethod("body");
+		} catch (NoSuchMethodException e) {
+			throw new IllegalStateException(e);
+		}
+		try {
+			return (ASTNode) body.invoke(root);
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException(e);
+		} catch (InvocationTargetException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	public static boolean isLambda(ASTNode expr) {
+		return expr != null && expr.getClass().getSimpleName().equals("LambdaExpression");
 	}
 
 	private static LocalDeclaration[] getResources(TryStatement tryStatement) {
@@ -220,7 +250,9 @@ public class HandleSafeCall extends EclipseASTAdapter {
 		return null;
 	}
 
-	private static void insertBlockAfterVariable(AbstractVariableDeclaration local, Block initBlock, ASTNode parentNode) {
+	private static void insertBlockAfterVariable(
+			AbstractVariableDeclaration local, Block initBlock, ASTNode parentNode
+	) {
 		if (parentNode instanceof AbstractMethodDeclaration) {
 			AbstractMethodDeclaration md = (AbstractMethodDeclaration) parentNode;
 			md.statements = insertInitBlockAfterVariable(initBlock, local, md.statements);
@@ -244,7 +276,7 @@ public class HandleSafeCall extends EclipseASTAdapter {
 			SwitchStatement switchStatement = (SwitchStatement) parentNode;
 			switchStatement.statements = insertInitBlockAfterVariable(initBlock, local, switchStatement.statements);
 		} else {
-			throw new UnsupportedOperationException(parentNode.getClass().toString());
+			throw new SafeCallUnexpectedStateException(insertBlockAfterVariable, local, parentNode.getClass());
 		}
 	}
 

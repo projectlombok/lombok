@@ -41,7 +41,7 @@ public class TestWithDelombok extends DirectoryRunner.TestParams {
 	
 	@Override
 	public File getBeforeDirectory() {
-		return new File("test/transform/resource/test");
+		return new File("test/transform/resource/before");
 	}
 	
 	@Override
