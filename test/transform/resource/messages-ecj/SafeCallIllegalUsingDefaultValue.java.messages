@@ -1,0 +1,9 @@
+17 'SafeCall'. Invalid reference defaultint. Must be wrongRef
+18 'SafeCall'. Invalid reference type 'QualifiedNameReference' of expression 'obj.nonStaticField'
+19 'SafeCall'. Invalid reference type 'MessageSend' of expression 'inMethod()'
+20 'SafeCall'. The default value must be a primitive but has type 'java.lang.Integer'
+21 'SafeCall'. Invalid default value type 'QualifiedNameReference'. Must be a reference, literal constant or static field access
+22 'SafeCall'. Invalid default value type 'QualifiedNameReference'. Must be a reference, literal constant or static field access
+23 'SafeCall'. Invalid default value type 'MessageSend'. Must be a reference, literal constant or static field access
+24 'SafeCall'. Invalid default value type 'QualifiedNameReference'. Must be a reference, literal constant or static field access
+25 Type mismatch: cannot convert from boolean to int
