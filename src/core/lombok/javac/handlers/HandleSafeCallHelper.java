@@ -1104,7 +1104,7 @@ public final class HandleSafeCallHelper {
 			
 			if (isPrimitive(varDecl.vartype) && !resolved.type.isPrimitive()) {
 				throw new SafeCallIllegalUsingException(
-						incorrectFalseNotPrimitive(resolved.type.toString(), defaultValue),
+						incorrectFalseNotPrimitive(resolved.type.toString()),
 						defaultValue);
 			}
 		} finally {
@@ -1113,8 +1113,8 @@ public final class HandleSafeCallHelper {
 	}
 	
 	private static boolean isStaticField(JCExpression resolved) {
-		if (resolved instanceof JCTree.JCFieldAccess) {
-			JCTree.JCFieldAccess fieldAccess = (JCTree.JCFieldAccess) resolved;
+		if (resolved instanceof JCFieldAccess) {
+			JCFieldAccess fieldAccess = (JCFieldAccess) resolved;
 			Symbol sym = fieldAccess.sym;
 			if (sym instanceof VarSymbol) {
 				VarSymbol varSymbol = (VarSymbol) sym;

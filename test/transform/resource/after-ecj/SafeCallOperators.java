@@ -50,9 +50,6 @@ class SafeCallOperators {
     @SafeCall int compoundAssignment = (assignResult += nullInt);
     {
     }
-    @SafeCall int condition = ((nullInt == 0) ? (nullInt + 1) : nullInt);
-    {
-    }
     @SafeCall byte bitwiseOperators = (byte) (1 | ((Byte() & Byte()) ^ (- 1)));
     {
     }

@@ -57,7 +57,7 @@ public class PatchSafeCall {
 							TypeBinding defaultValueType = defaultValue.resolvedType;
 							if (Eclipse.isPrimitive(var.type) && !Eclipse.isPrimitive(defaultValueType)) {
 								addError(upperScope, defaultValue,
-										incorrectFalseNotPrimitive(toFullName(defaultValueType), defaultValue));
+										incorrectFalseNotPrimitive(toFullName(defaultValueType)));
 								return;
 							}
 						}
@@ -105,7 +105,13 @@ public class PatchSafeCall {
 	private static boolean isValidDefaultType(Expression defaultValue) {
 		if (defaultValue instanceof QualifiedNameReference) {
 			QualifiedNameReference qnr = (QualifiedNameReference) defaultValue;
-			Binding binding = qnr.binding;
+			FieldBinding[] otherBindings = qnr.otherBindings;
+			Binding binding;
+			if (otherBindings != null && otherBindings.length > 0) {
+				binding = otherBindings[otherBindings.length - 1];
+			} else {
+				binding = qnr.binding;
+			}
 			if (binding instanceof FieldBinding) {
 				FieldBinding fieldBinding = (FieldBinding) binding;
 				return fieldBinding.isStatic();

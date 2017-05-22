@@ -43,30 +43,29 @@ class SafeCallOperators {
 		Integer assignResult = null;
 		int assignment = assignResult = nullInt;
 		int compoundAssignment = assignResult += nullInt;
-		int condition = nullInt == 0 ? nullInt + 1 : nullInt;
 		byte bitwiseOperators = (byte) (1 | Byte() & Byte() ^ -1);
 	}
-
+	
 	public String getNullString() {
 		return null;
 	}
-
+	
 	public Integer Integer() {
 		return null;
 	}
-
+	
 	public Byte Byte() {
 		return null;
 	}
-
+	
 	public Integer Integer(Integer arg) {
 		return null;
 	}
-
+	
 	public Boolean Boolean() {
 		return null;
 	}
-
+	
 	public SafeCallOperators nullObject() {
 		return null;
 	}

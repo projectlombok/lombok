@@ -90,12 +90,9 @@ public class HandleSafeCall extends EclipseASTAdapter {
 			return;
 		}
 		
-		insertBlockAfterVariable(local, initBlock, parentNode);
-		
-		registerBlock(local, initBlock);
-		
 		if (initialization instanceof ConditionalExpression) {
 			ConditionalExpression conditionalExpression = (ConditionalExpression) initialization;
+			local.initialization = conditionalExpression.condition;
 			Expression valueIfTrue = conditionalExpression.valueIfTrue;
 			if (valueIfTrue != null) {
 				if (!(valueIfTrue instanceof SingleNameReference)) {
@@ -112,11 +109,15 @@ public class HandleSafeCall extends EclipseASTAdapter {
 			}
 			Expression valueIfFalse = conditionalExpression.valueIfFalse;
 			
-			local.initialization = conditionalExpression.condition;
 			SingleNameReference lhs = new SingleNameReference(local.name, 0);
 			
 			initBlock.statements = new Statement[]{new Assignment(lhs, valueIfFalse, 0)};
 		}
+		
+		insertBlockAfterVariable(local, initBlock, parentNode);
+		
+		registerBlock(local, initBlock);
+		
 		parent.rebuild();
 	}
 	

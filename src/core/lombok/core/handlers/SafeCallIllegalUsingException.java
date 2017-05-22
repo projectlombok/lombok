@@ -35,16 +35,16 @@ public class SafeCallIllegalUsingException extends RuntimeException {
 	}
 	
 	public static String incorrectTrueExprType(Class type, Object truePart) {
-		return PREFIX + ". Invalid reference type '" + type.getSimpleName() + "' of  expression '" + truePart + "'";
+		return PREFIX + ". Invalid reference type '" + type.getSimpleName() + "' of expression '" + truePart + "'";
 	}
 	
-	public static String incorrectFalseExprType(Object type) {
-		return PREFIX + ". Invalid default value type " + type +
-				". Must be a reference, literal constant or static field access";
+	public static String incorrectFalseExprType(Class type) {
+		return PREFIX + ". Invalid default value type '" + type.getSimpleName() +
+				"'. Must be a reference, literal constant or static field access";
 	}
 	
-	public static String incorrectFalseNotPrimitive(Object type, Object defaultValue) {
-		return PREFIX + ". Default value '" + defaultValue + "' type must be a primitive but has type '" + type + "'";
+	public static String incorrectFalseNotPrimitive(Object type) {
+		return PREFIX + ". The default value must be a primitive but has type '" + type + "'";
 	}
 	
 	public Object getNode() {

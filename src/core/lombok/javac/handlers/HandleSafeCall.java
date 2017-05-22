@@ -69,6 +69,8 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 		final JCExpression defaultValue;
 		if (init instanceof JCConditional) {
 			JCConditional conditional = (JCConditional) init;
+			varDecl.init = conditional.cond;
+			
 			JCExpression truepart = conditional.truepart;
 			if (truepart != null) {
 				if (!(truepart instanceof JCIdent)) {
@@ -83,8 +85,6 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 					return;
 				}
 			}
-			
-			varDecl.init = conditional.cond;
 			
 			defaultValue = conditional.falsepart;
 		} else defaultValue = null;

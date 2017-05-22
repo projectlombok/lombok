@@ -14,9 +14,6 @@ class SafeCallOperators {
 		Integer assignResult = null;
 		@SafeCall int assignment = assignResult = nullInt;
 		@SafeCall int compoundAssignment = assignResult += nullInt;
-		@SafeCall int condition = nullInt == 0 ?
-				nullInt + 1:
-				nullInt;
 		@SafeCall byte bitwiseOperators = (byte)(1 | Byte() & Byte() ^ -1);
 
 	}
