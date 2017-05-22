@@ -55,6 +55,19 @@ such as applying the templates to produce the website, converting the changelog 
 		</javac>
 	</target>
 	
+	<target name="changelogToHtml" depends="-compile-webclasses">
+		<mkdir dir="build/website" />
+		<java classname="lombok.website.WebsiteMaker" failonerror="true">
+			<classpath>
+				<path refid="build.path" />
+				<pathelement location="build/webclasses" />
+			</classpath>
+			<arg value="${lombok.version}" />
+			<arg value="${lombok.fullversion}" />
+			<arg value="changelog" />
+		</java>
+	</target>
+	
 	<target name="-website-main" depends="-ensure-version, -ensure-fullversion, -website-clean, -compile-webclasses, javadoc, changelogToHtml">
 		<mkdir dir="build/website" />
 		<copy todir="build/website">
@@ -63,6 +76,7 @@ such as applying the templates to produce the website, converting the changelog 
 				<include name="LICENSE" />
 			</fileset>
 		</copy>
+		<copy file="website/extra/htaccess" tofile="build/website/.htaccess" />
 		<java classname="lombok.website.WebsiteMaker" failonerror="true">
 			<classpath>
 				<path refid="build.path" />
@@ -70,6 +84,7 @@ such as applying the templates to produce the website, converting the changelog 
 			</classpath>
 			<arg value="${lombok.version}" />
 			<arg value="${lombok.fullversion}" />
+			<arg value="all" />
 		</java>
 	</target>
 	
@@ -97,50 +112,33 @@ such as applying the templates to produce the website, converting the changelog 
 	</target>
 	
 	<target name="latestChanges" depends="-compile-webclasses, -ensure-version, -ensure-fullversion">
-		<java fork="true" classname="lombok.website.CompileChangelog" failonerror="true">
+		<mkdir dir="build/website" />
+		<java classname="lombok.website.WebsiteMaker" failonerror="true">
 			<classpath>
 				<path refid="build.path" />
 				<pathelement location="build/webclasses" />
 			</classpath>
-			<arg value="doc/changelog.markdown" />
-			<arg value="build/latestchanges.html" />
-			<arg value="-latest" />
 			<arg value="${lombok.version}" />
+			<arg value="${lombok.fullversion}" />
+			<arg value="changelog-latest" />
+			<arg value="website" />
+			<arg value="build/latestchanges.html" />
 		</java>
 	</target>
 	
 	<target name="edgeRelease-build" depends="-compile-webclasses, -ensure-version, -ensure-fullversion">
 		<mkdir dir="build/website-edge" />
-		<property name="CHANGELOG_FILE" location="doc/changelog.markdown" />
-		<property name="CHANGELOG_HTML" location="build/website-edge/changelog-edge.html" />
-		<java fork="true" classname="lombok.website.CompileChangelog" failonerror="true">
+		<java classname="lombok.website.WebsiteMaker" failonerror="true">
 			<classpath>
 				<path refid="build.path" />
 				<pathelement location="build/webclasses" />
 			</classpath>
-			<arg value="${CHANGELOG_FILE}" />
-			<arg value="${CHANGELOG_HTML}" />
-			<arg value="-edge" />
 			<arg value="${lombok.version}" />
+			<arg value="${lombok.fullversion}" />
+			<arg value="download-edge" />
+			<arg value="website" />
+			<arg value="build/website-edge/download-edge.html" />
 		</java>
-		<loadfile property="changelog.edge" srcFile="build/website-edge/changelog-edge.html" encoding="UTF-8" />
-		
-		<tstamp>
-			<format property="edgeRelease-timestamp" pattern="yyyy-MM-dd HH:mm 'UTC'" timezone="UTC" />
-		</tstamp>
-		<copy todir="build/website-edge" overwrite="true">
-			<fileset dir="website/extra">
-				<include name="download-edge.html" />
-			</fileset>
-			<filterchain>
-				<replacetokens>
-					<token key="VERSION-EDGE" value="${lombok.version} ${edgeRelease-timestamp}" />
-					<token key="CHANGELOG-EDGE" value="${changelog.edge}" />
-				</replacetokens>
-			</filterchain>
-		</copy>
-		
-		<delete file="build/website-edge/changelog-edge.html" />
 		<copy file="dist/lombok.jar" tofile="build/website-edge/lombok-edge.jar" />
 		
 		<tar destfile="dist/website-edge.tar.bz2" compression="bzip2">
@@ -161,32 +159,6 @@ such as applying the templates to produce the website, converting the changelog 
 		<sshexec
 			host="projectlombok.org" username="${ssh.username}" keyfile="${ssh.keyfile}" passphrase=""
 			trust="true" command="/data/lombok/stagingCmd/deployEdge" />
-	</target>
-	
-	<target name="changelogToHtml" depends="-compile-webclasses">
-		<mkdir dir="build/website-old" />
-		<property name="CHANGELOG_FILE" location="doc/changelog.markdown" />
-		<property name="CHANGELOG_HTML" location="build/website-old/changelog-raw.html" />
-		<java fork="true" classname="lombok.website.CompileChangelog" failonerror="true">
-			<classpath>
-				<path refid="build.path" />
-				<pathelement location="build/webclasses" />
-			</classpath>
-			<arg value="${CHANGELOG_FILE}" />
-			<arg value="${CHANGELOG_HTML}" />
-		</java>
-		<loadfile property="changelog.main" srcFile="build/website-old/changelog-raw.html" />
-		<delete file="build/website-old/changelog-raw.html" />
-		<copy todir="build/website-old" overwrite="true">
-			<fileset dir="website-old">
-				<include name="changelog.html" />
-			</fileset>
-			<filterchain>
-				<replacetokens>
-					<token key="CHANGELOG" value="${changelog.main}" />
-				</replacetokens>
-			</filterchain>
-		</copy>
 	</target>
 	
 	<target name="javadoc" description="Generates the javadoc" depends="-ensure-version, -ensure-fullversion">

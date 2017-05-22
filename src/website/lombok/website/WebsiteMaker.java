@@ -67,9 +67,97 @@ public class WebsiteMaker {
 		}
 	}
 	
-	public static void main(String[] args) throws Exception {
+	private static void buildAll(String version, String fullVersion, String argIn, String argOut) throws Exception {
 		File in, out;
+		if (argIn == null) {
+			in = new File(".");
+			if (new File(in, "build.xml").isFile() && new File(in, "website").isDirectory()) in = new File(in, "website");
+		} else {
+			in = new File(argIn);
+		}
+		
+		if (argOut == null) {
+			if (new File("./build.xml").isFile() && new File("./website").isDirectory() && new File("./build").isDirectory()) {
+				out = new File("./build/website");
+			} else {
+				out = new File(in, "output");
+			}
+		} else {
+			out = new File(argOut);
+		}
+		WebsiteMaker maker = new WebsiteMaker(version, fullVersion, in, out);
+		maker.buildWebsite();
+	}
+	
+	private static void buildChangelog(String version, String fullVersion, String argIn, String argOut) throws Exception {
+		File in, out;
+		if (argIn == null) {
+			in = new File(".");
+			if (new File(in, "build.xml").isFile() && new File(in, "website").isDirectory()) in = new File(in, "website");
+		} else {
+			in = new File(argIn);
+		}
+		
+		if (argOut == null) {
+			if (new File("./build.xml").isFile() && new File("./website").isDirectory() && new File("./build").isDirectory()) {
+				out = new File("./build/website/changelog.html");
+			} else {
+				out = new File(in, "output/changelog.html");
+			}
+		} else {
+			out = new File(argOut);
+		}
+		WebsiteMaker maker = new WebsiteMaker(version, fullVersion, in, out.getParentFile());
+		maker.buildChangelog(out);
+	}
+	
+	private static void buildDownloadEdge(String version, String fullVersion, String argIn, String argOut) throws Exception {
+		File in, out;
+		if (argIn == null) {
+			in = new File(".");
+			if (new File(in, "build.xml").isFile() && new File(in, "website").isDirectory()) in = new File(in, "website");
+		} else {
+			in = new File(argIn);
+		}
+		
+		if (argOut == null) {
+			if (new File("./build.xml").isFile() && new File("./website").isDirectory() && new File("./build").isDirectory()) {
+				out = new File("./build/website-edge/download-edge.html");
+			} else {
+				out = new File(in, "output/download-edge.html");
+			}
+		} else {
+			out = new File(argOut);
+		}
+		WebsiteMaker maker = new WebsiteMaker(version, fullVersion, in, out.getParentFile());
+		maker.buildDownloadEdge(out);
+	}
+	
+	private static void buildChangelogLatest(String version, String fullVersion, String argIn, String argOut) throws Exception {
+		File in, out;
+		if (argIn == null) {
+			in = new File(".");
+			if (new File(in, "build.xml").isFile() && new File(in, "website").isDirectory()) in = new File(in, "website");
+		} else {
+			in = new File(argIn);
+		}
+		
+		if (argOut == null) {
+			if (new File("./build.xml").isFile() && new File("./website").isDirectory() && new File("./build").isDirectory()) {
+				out = new File("./build/latestchanges.html");
+			} else {
+				out = new File(in, "output/latestchanges.html");
+			}
+		} else {
+			out = new File(argOut);
+		}
+		WebsiteMaker maker = new WebsiteMaker(version, fullVersion, in, out.getParentFile());
+		maker.buildChangelogLatest(out);
+	}
+	
+	public static void main(String[] args) throws Exception {
 		String version, fullVersion;
+		
 		if (args.length < 2) {
 			version = VersionFinder.getVersion();
 			fullVersion = VersionFinder.getFullVersion();
@@ -78,101 +166,115 @@ public class WebsiteMaker {
 			fullVersion = args[1];
 		}
 		
-		if (args.length < 3) {
-			in = new File(".");
-			if (new File(in, "build.xml").isFile() && new File(in, "website").isDirectory()) in = new File(in, "website");
+		if (args.length < 3 || args[2].equalsIgnoreCase("all")) {
+			buildAll(version, fullVersion, args.length < 4 ? null : args[3], args.length < 5 ? null : args[4]);
+		} else if (args[2].equalsIgnoreCase("changelog")) {
+			buildChangelog(version, fullVersion, args.length < 4 ? null : args[3], args.length < 5 ? null : args[4]);
+		} else if (args[2].equalsIgnoreCase("download-edge")) {
+			buildDownloadEdge(version, fullVersion, args.length < 4 ? null : args[3], args.length < 5 ? null : args[4]);
+		} else if (args[2].equalsIgnoreCase("changelog-latest")) {
+			buildChangelogLatest(version, fullVersion, args.length < 4 ? null : args[3], args.length < 5 ? null : args[4]);
 		} else {
-			in = new File(args[2]);
+			throw new IllegalArgumentException("3rd argument must be one of 'all', 'changelog', 'download-edge', 'changelog-latest'");
 		}
-		
-		if (args.length < 4) {
-			if (new File("./build.xml").isFile() && new File("./website").isDirectory() && new File("./build").isDirectory()) {
-				out = new File("./build/website");
-			} else {
-				out = new File(in, "output");
-			}
-		} else {
-			out = new File(args[3]);
-		}
-		
-		WebsiteMaker maker = new WebsiteMaker(version, fullVersion, in, out);
-		
-		maker.buildWebsite();
 	}
 	
-	public void buildWebsite() throws Exception {
+	private Configuration makeFreemarkerConfig() throws IOException {
 		Configuration freemarkerConfig = new Configuration(Configuration.VERSION_2_3_25);
 		freemarkerConfig.setEncoding(Locale.ENGLISH, "UTF-8");
 		freemarkerConfig.setOutputEncoding("UTF-8");
 		freemarkerConfig.setOutputFormat(HTMLOutputFormat.INSTANCE);
 		freemarkerConfig.setTemplateLoader(createLoader());
 		freemarkerConfig.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-		
-		deleteAll(outputDir, 0);
+		return freemarkerConfig;
+	}
+	
+	public void buildChangelog(File out) throws Exception {
+		Configuration freemarkerConfig = makeFreemarkerConfig();
 		outputDir.mkdirs();
-		copyResources();
+		convertChangelog(freemarkerConfig, out);
+	}
+	
+	public void buildChangelogLatest(File out) throws Exception {
+		outputDir.mkdirs();
+		String htmlForLatest = CompileChangelog.getHtmlForLatest(baseDir.getParentFile(), version);
+		FileOutputStream fos = new FileOutputStream(out);
+		try {
+			BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(fos, "UTF-8"));
+			bw.write(htmlForLatest);
+			bw.close();
+		} finally {
+			fos.close();
+		}
+	}
+	
+	public void buildDownloadEdge(File out) throws Exception {
+		Configuration freemarkerConfig = new Configuration(Configuration.VERSION_2_3_25);
+		freemarkerConfig.setEncoding(Locale.ENGLISH, "UTF-8");
+		freemarkerConfig.setOutputEncoding("UTF-8");
+		freemarkerConfig.setOutputFormat(HTMLOutputFormat.INSTANCE);
+		freemarkerConfig.setTemplateLoader(createLoader("extra"));
+		freemarkerConfig.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+		
+		outputDir.mkdirs();
+		convertDownloadEdge(freemarkerConfig, out);
+	}
+	
+	public void buildWebsite() throws Exception {
+		Configuration freemarkerConfig = makeFreemarkerConfig();
+		
+		outputDir.mkdirs();
 		convertTemplates(freemarkerConfig);
 	}
 	
-	private static void deleteAll(File outputDir, int depth) {
-		if (!outputDir.isDirectory()) return;
-		if (depth > 50) throw new IllegalArgumentException("50 levels is too deep: " + outputDir);
-		
-		for (File f : outputDir.listFiles()) {
-			String n = f.getName();
-			if (n.equals(".") || n.equals("..")) continue;
-			if (f.isDirectory()) deleteAll(f, depth + 1);
-			f.delete();
-		}
-	}
-	
-	private void copyResources() throws Exception {
-		File resourcesLoc = new File(baseDir, "resources");
-		byte[] b = new byte[65536];
-		copyResources_(resourcesLoc, outputDir, b, 0);
-	}
-	
-	private void copyResources_(File from, File to, byte[] b, int depth) throws IOException {
-		if (depth > 50) throw new IllegalArgumentException("50 levels is too deep: " + from);
-		if (!to.exists()) to.mkdirs();
-		for (File f : from.listFiles()) {
-			if (f.isDirectory()) copyResources_(f, new File(to, f.getName()), b, depth + 1);
-			if (!f.isFile()) continue;
-			
-			FileInputStream fIn = new FileInputStream(f);
-			try {
-				FileOutputStream fOut = new FileOutputStream(new File(to, f.getName()));
-				try {
-					while (true) {
-						int r = fIn.read(b);
-						if (r == -1) break;
-						fOut.write(b, 0, r);
-					}
-				} finally {
-					fOut.close();
-				}
-			} finally {
-				fIn.close();
-			}
-		}
-	}
-	
 	private TemplateLoader createLoader() throws IOException {
-		return new FileTemplateLoader(new File(baseDir, "templates"));
+		return createLoader("templates");
+	}
+	
+	private TemplateLoader createLoader(String base) throws IOException {
+		return new FileTemplateLoader(new File(baseDir, base));
+	}
+	
+	private void convertChangelog(Configuration freemarker, File outFile) throws Exception {
+		Map<String, Object> dataModel = createBasicDataModel();
+		
+		Template template = freemarker.getTemplate("changelog.html");
+		FileOutputStream fileOut = new FileOutputStream(outFile);
+		try {
+			Writer wr = new BufferedWriter(new OutputStreamWriter(fileOut, "UTF-8"));
+			template.process(dataModel, wr);
+			wr.close();
+		} finally {
+			fileOut.close();
+		}
+	}
+	
+	private void convertDownloadEdge(Configuration freemarker, File outFile) throws Exception {
+		Map<String, Object> dataModel = createBasicDataModel();
+		
+		Template template = freemarker.getTemplate("download-edge.html");
+		FileOutputStream fileOut = new FileOutputStream(outFile);
+		try {
+			Writer wr = new BufferedWriter(new OutputStreamWriter(fileOut, "UTF-8"));
+			template.process(dataModel, wr);
+			wr.close();
+		} finally {
+			fileOut.close();
+		}
 	}
 	
 	private void convertTemplates(Configuration freemarker) throws Exception {
 		File basePagesLoc = new File(baseDir, "templates");
-		convertTemplates_(freemarker, "", basePagesLoc, outputDir, 0);
+		Map<String, Object> dataModel = createBasicDataModel();
+		dataModel.putAll(createExtendedDataModel());
+		convertTemplates_(freemarker, "", basePagesLoc, outputDir, 0, dataModel);
 	}
 	
-	private void convertTemplates_(Configuration freemarker, String prefix, File from, File to, int depth) throws Exception {
+	private void convertTemplates_(Configuration freemarker, String prefix, File from, File to, int depth, Map<String, Object> dataModel) throws Exception {
 		if (depth > 50) throw new IllegalArgumentException("50 levels is too deep: " + from);
 		
-		Map<String, Object> dataModel = createDataModel();
-		
 		for (File f : from.listFiles()) {
-			if (f.isDirectory()) convertTemplates_(freemarker, prefix + f.getName() + "/", f, new File(to, f.getName()), depth + 1);
+			if (f.isDirectory()) convertTemplates_(freemarker, prefix + f.getName() + "/", f, new File(to, f.getName()), depth + 1, dataModel);
 			if (!f.isFile() || !f.getName().endsWith(".html") || f.getName().startsWith("_")) continue;
 			to.mkdirs();
 			Template template = freemarker.getTemplate(prefix + f.getName());
@@ -187,12 +289,22 @@ public class WebsiteMaker {
 		}
 	}
 	
-	private static final Pattern LOMBOK_LINK = Pattern.compile("^.*<a(?: (?:id|class|rel|rev|download|target|type)(?:=\"[^\"]*\")?)* href=\"(downloads/[^\"]+)\"(?: (?:id|class|rel|rev|download|target|type)(?:=\"[^\"]*\")?)*>([^<]+)</a>.*$");
-	private Map<String, Object> createDataModel() throws IOException {
+	private Map<String, Object> createBasicDataModel() throws IOException {
 		Map<String, Object> data = new HashMap<String, Object>();
+		
 		data.put("version", version);
 		data.put("fullVersion", fullVersion);
 		data.put("year", "" + new GregorianCalendar().get(Calendar.YEAR));
+		data.put("changelog", CompileChangelog.getHtml(baseDir.getParentFile()));
+		data.put("changelogEdge", CompileChangelog.getHtmlForEdge(baseDir.getParentFile(), version));
+		
+		return data;
+	}
+	
+	private static final Pattern LOMBOK_LINK = Pattern.compile("^.*<a(?: (?:id|class|rel|rev|download|target|type)(?:=\"[^\"]*\")?)* href=\"(downloads/[^\"]+)\"(?: (?:id|class|rel|rev|download|target|type)(?:=\"[^\"]*\")?)*>([^<]+)</a>.*$");
+	private Map<String, Object> createExtendedDataModel() throws IOException {
+		Map<String, Object> data = new HashMap<String, Object>();
+		
 		data.put("usages", new HtmlMaker(new File(baseDir, "usageExamples")));
 		InputStream in = new URL("https://projectlombok.org/all-versions.html").openStream();
 		ArrayList<List<String>> links = new ArrayList<List<String>>();
@@ -207,7 +319,6 @@ public class WebsiteMaker {
 		}
 		
 		data.put("linksToVersions", links);
-		data.put("changelog", CompileChangelog.getHtml(baseDir.getParentFile()));
 		
 		return data;
 	}
