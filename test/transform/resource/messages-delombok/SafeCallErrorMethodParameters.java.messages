@@ -1,2 +1,4 @@
+6 'SafeCall' abort processing. resolveExprType
+7 'SafeCall' abort processing. resolveExprType
 6 method nullObject in class SafeCallErrorMethodParameters cannot be applied to given types;
 7 method nullObject2 in class SafeCallErrorMethodParameters cannot be applied to given types;

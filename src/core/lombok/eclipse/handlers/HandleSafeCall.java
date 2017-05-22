@@ -23,7 +23,7 @@ package lombok.eclipse.handlers;
 
 import lombok.core.HandlerPriority;
 import lombok.core.handlers.SafeCallIllegalUsingException;
-import lombok.core.handlers.SafeCallIllegalUsingException.Place;
+import lombok.core.handlers.SafeCallIllegalUsingException.MsgBuilder;
 import lombok.core.handlers.SafeCallUnexpectedStateException;
 import lombok.eclipse.DeferUntilPostDiet;
 import lombok.eclipse.EclipseASTAdapter;
@@ -37,12 +37,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.reflect.Modifier.STATIC;
 import static java.util.Arrays.asList;
-import static lombok.core.handlers.SafeCallIllegalUsingException.Place.*;
-import static lombok.core.handlers.SafeCallIllegalUsingException.unsupportedPlaceMessage;
+import static lombok.core.handlers.SafeCallIllegalUsingException.MsgBuilder.*;
+import static lombok.core.handlers.SafeCallIllegalUsingException.incorrectTrueExprReference;
+import static lombok.core.handlers.SafeCallIllegalUsingException.incorrectTrueExprType;
 import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.getParent;
 import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.insertBlockAfterVariable;
 import static lombok.eclipse.Eclipse.getEcjCompilerVersion;
@@ -55,49 +57,74 @@ import static lombok.eclipse.handlers.EclipseHandlerUtil.typeMatches;
 @DeferUntilPostDiet
 @HandlerPriority(65536 + 1)
 public class HandleSafeCall extends EclipseASTAdapter {
-
+	
 	public static void registerBlock(AbstractVariableDeclaration var, Block block) {
 		ASTNode_parentNode.set(block, var);
 	}
-
+	
 	public static void elivisation(AbstractVariableDeclaration local, EclipseNode variable) {
-		Place illegalPlace = checkIllegalUsing(local, variable);
+		
+		MsgBuilder illegalPlace = checkIllegalUsing(local, variable);
 		if (illegalPlace != null) {
-			addIllegalPlaceError(variable, illegalPlace);
+			addIllegalPlaceError(variable, illegalPlace.message(local));
 			return;
 		}
-
-		if (local.initialization == null) {
+		
+		Expression initialization = local.initialization;
+		if (initialization == null) {
 			return;
 		}
-
+		
 		Block initBlock = newStubBlock(local);
 		if (initBlock == null) return;
-
-
+		
 		ASTNode parentNode;
 		EclipseNode parent = variable.up();
 		try {
 			parentNode = getParentASTNode(local, parent);
 		} catch (SafeCallIllegalUsingException e) {
-			addIllegalPlaceError(variable, e.getPlace());
+			addIllegalPlaceError(variable, e.getMessage());
 			return;
 		} catch (SafeCallUnexpectedStateException e) {
-			String message = e.getMessage();
-			variable.addError(message);
+			variable.addError(e.getMessage());
 			return;
 		}
-
+		
 		insertBlockAfterVariable(local, initBlock, parentNode);
-
+		
 		registerBlock(local, initBlock);
+		
+		if (initialization instanceof ConditionalExpression) {
+			ConditionalExpression conditionalExpression = (ConditionalExpression) initialization;
+			Expression valueIfTrue = conditionalExpression.valueIfTrue;
+			if (valueIfTrue != null) {
+				if (!(valueIfTrue instanceof SingleNameReference)) {
+					variable.addError(incorrectTrueExprType(valueIfTrue.getClass(), valueIfTrue));
+					return;
+				}
+				SingleNameReference snr = (SingleNameReference) valueIfTrue;
+				char[] refName = snr.token;
+				char[] localName = local.name;
+				if (!Arrays.equals(localName, refName)) {
+					variable.addError(incorrectTrueExprReference(new String(refName), new String(localName)));
+					return;
+				}
+			}
+			Expression valueIfFalse = conditionalExpression.valueIfFalse;
+			
+			local.initialization = conditionalExpression.condition;
+			SingleNameReference lhs = new SingleNameReference(local.name, 0);
+			
+			initBlock.statements = new Statement[]{new Assignment(lhs, valueIfFalse, 0)};
+		}
 		parent.rebuild();
 	}
-
-	private static Place checkIllegalUsing(AbstractVariableDeclaration local, EclipseNode variable) {
+	
+	
+	private static MsgBuilder checkIllegalUsing(AbstractVariableDeclaration local, EclipseNode variable) {
 		EclipseNode parentENode = variable.up();
 		ASTNode parent = parentENode.get();
-		Place illegalPlace = null;
+		MsgBuilder illegalPlace = null;
 		if (parent instanceof ForStatement && asList(((ForStatement) parent).initializations).contains(local)) {
 			illegalPlace = forLoopInitializer;
 		} else if (parent instanceof ForeachStatement && ((ForeachStatement) parent).elementVariable == local) {
@@ -108,11 +135,11 @@ public class HandleSafeCall extends EclipseASTAdapter {
 		}
 		return illegalPlace;
 	}
-
-	private static void addIllegalPlaceError(EclipseNode variable, Place place) {
-		variable.addError(unsupportedPlaceMessage(place));
+	
+	private static void addIllegalPlaceError(EclipseNode variable, String message) {
+		variable.addError(message);
 	}
-
+	
 	private static ASTNode getParentASTNode(
 			AbstractVariableDeclaration local, EclipseNode root
 	) throws SafeCallIllegalUsingException {
@@ -120,7 +147,7 @@ public class HandleSafeCall extends EclipseASTAdapter {
 		if (parentASTNode == null) throw new IllegalStateException("cannot find parent block for variable " + local);
 		return parentASTNode;
 	}
-
+	
 	private static ASTNode getParent(
 			AbstractVariableDeclaration variable, ASTNode root
 	) throws SafeCallIllegalUsingException {
@@ -135,17 +162,17 @@ public class HandleSafeCall extends EclipseASTAdapter {
 			return getParent(variable, root, ifStatement.thenStatement, ifStatement.elseStatement);
 		} else if (root instanceof ForStatement) {
 			ForStatement forStatement = (ForStatement) root;
-
+			
 			ASTNode parent = getParent(variable, root, forStatement.initializations);
 			if (parent != null) throw new SafeCallIllegalUsingException(forLoopInitializer, variable);
-
+			
 			return getParent(variable, root, forStatement.action);
 		} else if (root instanceof ForeachStatement) {
 			ForeachStatement forStatement = (ForeachStatement) root;
-
+			
 			ASTNode parent = getParent(variable, root, forStatement.elementVariable);
 			if (parent != null) throw new SafeCallIllegalUsingException(forLoopVariable, variable);
-
+			
 			return getParent(variable, root, forStatement.action);
 		} else if (root instanceof WhileStatement) {
 			return getParent(variable, root, ((WhileStatement) root).action);
@@ -157,7 +184,7 @@ public class HandleSafeCall extends EclipseASTAdapter {
 			for (LocalDeclaration resource : resources) {
 				ASTNode parent = getParent(variable, root, resource);
 				if (parent != null) throw new SafeCallIllegalUsingException(tryResource, variable);
-
+				
 			}
 			ASTNode parent = getParent(variable, root, tryStatement.tryBlock);
 			Block[] catchBlocks = tryStatement.catchBlocks;
@@ -171,7 +198,7 @@ public class HandleSafeCall extends EclipseASTAdapter {
 			return parent;
 		} else if (root instanceof SwitchStatement) {
 			SwitchStatement switchStatement = (SwitchStatement) root;
-
+			
 			ASTNode parent = getParent(variable, root, switchStatement.statements);
 			if (parent != null) {
 				return root;
@@ -191,7 +218,7 @@ public class HandleSafeCall extends EclipseASTAdapter {
 			throw new SafeCallUnexpectedStateException(getParent, variable, root.getClass());
 		}
 	}
-
+	
 	private static ASTNode getLambdaBody(ASTNode root) {
 		Method body;
 		try {
@@ -207,11 +234,11 @@ public class HandleSafeCall extends EclipseASTAdapter {
 			throw new IllegalStateException(e);
 		}
 	}
-
+	
 	public static boolean isLambda(ASTNode expr) {
 		return expr != null && expr.getClass().getSimpleName().equals("LambdaExpression");
 	}
-
+	
 	private static LocalDeclaration[] getResources(TryStatement tryStatement) {
 		LocalDeclaration[] resources;
 		if (getEcjCompilerVersion() > 6) {
@@ -229,8 +256,8 @@ public class HandleSafeCall extends EclipseASTAdapter {
 		} else resources = new LocalDeclaration[0];
 		return resources;
 	}
-
-
+	
+	
 	private static ASTNode getParent(
 			AbstractVariableDeclaration local,
 			ASTNode parent, Statement... statements
@@ -249,7 +276,7 @@ public class HandleSafeCall extends EclipseASTAdapter {
 		}
 		return null;
 	}
-
+	
 	private static void insertBlockAfterVariable(
 			AbstractVariableDeclaration local, Block initBlock, ASTNode parentNode
 	) {
@@ -279,7 +306,7 @@ public class HandleSafeCall extends EclipseASTAdapter {
 			throw new SafeCallUnexpectedStateException(insertBlockAfterVariable, local, parentNode.getClass());
 		}
 	}
-
+	
 	private static Statement[] insertInitBlockAfterVariable(
 			Block initBlock, AbstractVariableDeclaration local, Statement[] statements) {
 		Statement[] newStatements = new Statement[statements.length + 1];
@@ -292,17 +319,17 @@ public class HandleSafeCall extends EclipseASTAdapter {
 		}
 		return newStatements;
 	}
-
+	
 	public static Block newStubBlock(AbstractVariableDeclaration varDecl) {
 		Expression expr = varDecl.initialization;
 		if (expr == null) return null;
-
+		
 		Block block = new Block(1);
 		copySourcePosition(varDecl, block);
 		block.statements = new Statement[0];
 		return block;
 	}
-
+	
 	static boolean isSafe(EclipseNode fieldNode, AbstractVariableDeclaration field) {
 		Annotation[] annotations = field.annotations;
 		if (annotations != null) for (Annotation annotation : annotations) {
@@ -312,17 +339,17 @@ public class HandleSafeCall extends EclipseASTAdapter {
 		}
 		return false;
 	}
-
+	
 	@Override
 	public void visitLocal(EclipseNode localNode, LocalDeclaration local) {
 		visit(localNode, local);
 	}
-
+	
 	@Override
 	public void visitField(EclipseNode fieldNode, FieldDeclaration field) {
 		visit(fieldNode, field);
 	}
-
+	
 	public void visit(EclipseNode fieldNode, AbstractVariableDeclaration field) {
 		if (isSafe(fieldNode, field)) elivisation(field, fieldNode);
 	}

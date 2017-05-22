@@ -31,20 +31,18 @@ public class SafeCallUnexpectedStateException extends RuntimeException {
 
 	public enum Place {
 		findDuplicateCandidates,
-		elvisConditional,
+		newElvis,
 		elvisConditionalMethodInvocation,
-		newConditional,
+		newIfNullThenConditional,
 		populateInitStatementsTokenAmount,
 		populateInitStatementsMethodInvocation,
 		unsupportedMethodType,
-		populateInitStatements,
 		cannotRecognizeType,
 		copyExpr,
 		addBlockAfterVarDec,
 		getParent,
-		unsupportedUnaryOperator,
-		unsupportedUnaryOperatorType,
 		getBindings,
-		insertBlockAfterVariable
+		insertBlockAfterVariable,
+		isPrimitive
 	}
 }

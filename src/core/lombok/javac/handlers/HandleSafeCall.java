@@ -5,19 +5,19 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
+import com.sun.tools.javac.util.Name;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.core.handlers.SafeCallAbortProcessing;
 import lombok.core.handlers.SafeCallIllegalUsingException;
-import lombok.core.handlers.SafeCallIllegalUsingException.Place;
+import lombok.core.handlers.SafeCallIllegalUsingException.*;
 import lombok.core.handlers.SafeCallInternalException;
 import lombok.core.handlers.SafeCallUnexpectedStateException;
 import lombok.experimental.SafeCall;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
-import lombok.javac.JavacResolution.TypeNotConvertibleException;
 import org.mangosdk.spi.ProviderFor;
 
 import java.lang.reflect.InvocationTargetException;
@@ -30,8 +30,8 @@ import java.util.List;
 import static java.util.Arrays.asList;
 import static lombok.core.AST.Kind.FIELD;
 import static lombok.core.AST.Kind.LOCAL;
-import static lombok.core.handlers.SafeCallIllegalUsingException.Place.*;
-import static lombok.core.handlers.SafeCallIllegalUsingException.unsupportedPlaceMessage;
+import static lombok.core.handlers.SafeCallIllegalUsingException.MsgBuilder.*;
+import static lombok.core.handlers.SafeCallIllegalUsingException.*;
 import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.addBlockAfterVarDec;
 import static lombok.core.handlers.SafeCallUnexpectedStateException.Place.getParent;
 import static lombok.javac.handlers.HandleSafeCallHelper.newInitBlock;
@@ -40,12 +40,11 @@ import static lombok.javac.handlers.JavacHandlerUtil.deleteAnnotationIfNeccessar
 @ProviderFor(JavacAnnotationHandler.class)
 @HandlerPriority(65536 + 1) // before val
 public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
-
+	
 	@Override
 	public void handle(AnnotationValues<SafeCall> annotation, JCAnnotation ast, JavacNode annotationNode) {
-
 		deleteAnnotationIfNeccessary(annotationNode, SafeCall.class);
-
+		
 		JavacNode varNode = annotationNode.up();
 		Kind k = varNode.getKind();
 		boolean supportedNode = LOCAL == k || FIELD == k;
@@ -53,22 +52,45 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 			annotationNode.addError("'" + SafeCall.class.getSimpleName() + "' is supported only for local variables or class fields");
 			return;
 		}
-
+		
 		JCVariableDecl varDecl = (JCVariableDecl) varNode.get();
-
-		Place illegalPlace = checkIllegalUsing(varNode, varDecl);
-
+		
+		MsgBuilder illegalPlace = checkIllegalUsing(varNode, varDecl);
+		
 		if (illegalPlace != null) {
-			annotationNode.addError(unsupportedPlaceMessage(illegalPlace));
+			annotationNode.addError(illegalPlace.message(varDecl));
 			return;
 		}
-
-		if (varDecl.init == null) {
+		
+		JCExpression init = varDecl.init;
+		if (init == null) {
 			return;
 		}
-
+		final JCExpression defaultValue;
+		if (init instanceof JCConditional) {
+			JCConditional conditional = (JCConditional) init;
+			JCExpression truepart = conditional.truepart;
+			if (truepart != null) {
+				if (!(truepart instanceof JCIdent)) {
+					annotationNode.addError(incorrectTrueExprType(truepart.getClass(), truepart));
+					return;
+				}
+				JCIdent ref = (JCIdent) truepart;
+				Name refName = ref.name;
+				Name varName = varDecl.getName();
+				if (!refName.equals(varName)) {
+					annotationNode.addError(incorrectTrueExprReference(refName, varName));
+					return;
+				}
+			}
+			
+			varDecl.init = conditional.cond;
+			
+			defaultValue = conditional.falsepart;
+		} else defaultValue = null;
+		
 		try {
-			JCBlock initBlock = newInitBlock(varDecl, annotationNode);
+			JCBlock initBlock = newInitBlock(varDecl, defaultValue, annotationNode);
 			if (initBlock != null) {
 				Tree parent = getParentJCNode(varNode);
 				addBlockAfterVarDec(varDecl, initBlock, parent);
@@ -81,16 +103,14 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 			annotationNode.addError(e.getMessage());
 		} catch (SafeCallInternalException e) {
 			annotationNode.addError(e.getMessage());
-		} catch (TypeNotConvertibleException e) {
-			//error already must be printed
 		} catch (SafeCallAbortProcessing e) {
 			annotationNode.addWarning(e.getMessage());
 		}
 	}
-
-	private Place checkIllegalUsing(JavacNode varNode, JCTree.JCVariableDecl varDecl) {
+	
+	private MsgBuilder checkIllegalUsing(JavacNode varNode, JCTree.JCVariableDecl varDecl) {
 		JCTree varParent = varNode.up().get();
-		Place illegalPlace = null;
+		MsgBuilder illegalPlace = null;
 		if (varParent instanceof JCTree.JCEnhancedForLoop && ((JCTree.JCEnhancedForLoop) varParent).var == varDecl) {
 			illegalPlace = forLoopVariable;
 		} else if (varParent instanceof JCTree.JCForLoop) {
@@ -104,7 +124,7 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 		}
 		return illegalPlace;
 	}
-
+	
 	private void addBlockAfterVarDec(JCVariableDecl varDecl, JCBlock initBlock, Tree parent) {
 		if (parent instanceof JCMethodDecl) {
 			JCMethodDecl method = (JCMethodDecl) parent;
@@ -123,7 +143,7 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 			throw new SafeCallUnexpectedStateException(addBlockAfterVarDec, varDecl, parent.getClass());
 		}
 	}
-
+	
 	private Tree getParentJCNode(
 			JavacNode varNode
 	) {
@@ -134,7 +154,7 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 				variable);
 		return parent;
 	}
-
+	
 	private JCTree getParent(JCVariableDecl variable, JCTree root
 	) {
 		if (root instanceof JCExpressionStatement ||
@@ -173,7 +193,7 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 				JCTree parent = getParent(variable, resource);
 				if (parent != null) throw new SafeCallIllegalUsingException(tryResource, variable);
 			}
-
+			
 			JCTree parent = getParent(variable, jcTry.body);
 			if (parent == null) {
 				Collection<JCCatch> catchers = jcTry.catchers;
@@ -205,7 +225,7 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 			throw new SafeCallUnexpectedStateException(getParent, variable, root.getClass());
 		}
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	private Collection<JCTree> getResources(JCTry jcTry) {
 		Collection<JCTree> resources;
@@ -226,13 +246,13 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 		} else resources = Collections.emptyList();
 		return resources;
 	}
-
+	
 	private JCTree getParent(
 			JCVariableDecl variable, JCTree root, JCStatement... statement
 	) {
 		return getParent(variable, root, asList(statement));
 	}
-
+	
 	private JCTree getParent(
 			JCVariableDecl variable, JCTree root, Collection<? extends JCStatement> statements
 	) {
@@ -252,5 +272,5 @@ public class HandleSafeCall extends JavacAnnotationHandler<SafeCall> {
 		}
 		return null;
 	}
-
+	
 }

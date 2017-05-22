@@ -1,5 +1,5 @@
-13 'SafeCall' doesn't support JCBinary
-15 'SafeCall' doesn't support JCAssign
-16 'SafeCall' doesn't support JCAssignOp
-17 'SafeCall' doesn't support JCConditional
-20 'SafeCall' doesn't support JCBinary
+13 'SafeCall' doesn't support expressions of type JCBinary
+15 'SafeCall' doesn't support expressions of type JCAssign
+16 'SafeCall' doesn't support expressions of type JCAssignOp
+17 'SafeCall'. Invalid reference type 'JCBinary' of  expression 'nullInt + 1'
+20 'SafeCall' doesn't support expressions of type JCBinary

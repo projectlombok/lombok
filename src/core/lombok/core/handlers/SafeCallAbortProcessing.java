@@ -26,5 +26,6 @@ public class SafeCallAbortProcessing extends RuntimeException {
 	public enum Place {
 		methodErrorType,
 		fieldErrorType,
+		resolveExprType
 	}
 }

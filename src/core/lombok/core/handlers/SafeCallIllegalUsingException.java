@@ -7,49 +7,71 @@ import lombok.experimental.SafeCall;
  */
 public class SafeCallIllegalUsingException extends RuntimeException {
 	public static final String PREFIX = "'" + SafeCall.class.getSimpleName() + "'";
-	private final Place place;
 	private final Object node;
-
-	public SafeCallIllegalUsingException(Place place, Object node) {
-		this.place = place;
+	
+	public SafeCallIllegalUsingException(String message, Object node) {
+		super(message);
 		this.node = node;
 	}
-
-	public static String unsupportedPlaceMessage(Place place) {
-		return PREFIX + " doesn't supported here. " + place;
+	
+	public SafeCallIllegalUsingException(MsgBuilder place, Object node) {
+		this(place.message(node), node);
 	}
-
-	@Override
-	public String getMessage() {
-		return place.getMessage(this);
+	
+	private static String getNodeType(Object node) {
+		return node != null ? " " + node.getClass().getSimpleName() : "";
 	}
-
-	public Place getPlace() {
-		return place;
+	
+	public static String unsupportedUnaryOperatorSymbol(Object node, Object operatorSymbol) {
+		return PREFIX + " doesn't support operator " + operatorSymbol + " in " + getNodeType(node);
 	}
-
+	
+	public static String unsupportedUnaryOperatorType(Object node, Object operatorType) {
+		return PREFIX + " doesn't support operator type " + operatorType + " in " + getNodeType(node);
+	}
+	
+	public static String incorrectTrueExprReference(Object invalid, Object valid) {
+		return PREFIX + ". Invalid reference " + invalid + ". Must be " + valid;
+	}
+	
+	public static String incorrectTrueExprType(Class type, Object truePart) {
+		return PREFIX + ". Invalid reference type '" + type.getSimpleName() + "' of  expression '" + truePart + "'";
+	}
+	
+	public static String incorrectFalseExprType(Object type) {
+		return PREFIX + ". Invalid default value type " + type +
+				". Must be a reference, literal constant or static field access";
+	}
+	
+	public static String incorrectFalseNotPrimitive(Object type, Object defaultValue) {
+		return PREFIX + ". Default value '" + defaultValue + "' type must be a primitive but has type '" + type + "'";
+	}
+	
 	public Object getNode() {
 		return node;
 	}
-
-	private String getNodeString() {
-		return this.node != null ? " " + this.node.getClass().getSimpleName() : "";
-	}
-
-	public enum Place {
+	
+	public enum MsgBuilder {
 		forLoopInitializer,
 		forLoopVariable,
 		tryResource,
+		
 		unsupportedExpression {
 			@Override
-			public String getMessage(SafeCallIllegalUsingException e) {
-				return PREFIX + " doesn't support expressions of type" + e.getNodeString();
+			public String message(Object node) {
+				return PREFIX + " doesn't support expressions of type" + getNodeType(node);
 			}
-		};
-
-		public String getMessage(SafeCallIllegalUsingException e) {
-			return PREFIX + " doesn't support " +
-					this + e.getNodeString();
+		},
+		
+		unsupportedConditionExpression {
+			@Override
+			public String message(Object node) {
+				return PREFIX + " doesn't support condition expressions of type" + getNodeType(node);
+			}
+		};;
+		
+		public String message(Object node) {
+			return PREFIX + " doesn't supported here. " + this;
 		}
 	}
 }

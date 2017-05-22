@@ -37,6 +37,7 @@ import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
+import org.eclipse.jdt.internal.compiler.problem.AbortCompilation;
 
 import java.lang.reflect.Field;
 
@@ -72,6 +73,8 @@ public class PatchVal {
 		} catch (ArrayIndexOutOfBoundsException e) {
 			// This will occur internally due to for example 'val x = mth("X");', where mth takes 2 arguments.
 			return null;
+		} catch (AbortCompilation e) {
+			throw e;
 		}
 	}
 	

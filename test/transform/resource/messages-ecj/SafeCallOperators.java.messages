@@ -1,5 +1,6 @@
-13 'SafeCall' doesn't support BinaryExpression
-15 'SafeCall' doesn't support Assignment
-16 'SafeCall' doesn't support CompoundAssignment
-17 'SafeCall' doesn't support ConditionalExpression
-20 'SafeCall' doesn't support BinaryExpression
+13 'SafeCall' doesn't support expressions of type BinaryExpression
+15 'SafeCall' doesn't support expressions of type Assignment
+16 'SafeCall' doesn't support expressions of type CompoundAssignment
+17 'SafeCall'. Invalid reference type 'BinaryExpression' of  expression '(nullInt + 1)'
+17 'SafeCall' doesn't support expressions of type ConditionalExpression
+20 'SafeCall' doesn't support expressions of type BinaryExpression
