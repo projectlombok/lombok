@@ -36,6 +36,6 @@ import java.lang.annotation.Target;
  * later on.
  */
 @Target({ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.FIELD, ElementType.TYPE})
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 public @interface Generated {
 }

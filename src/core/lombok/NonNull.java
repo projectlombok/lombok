@@ -42,7 +42,7 @@ import java.lang.annotation.Target;
  * you, you should use your own annotation named {@code @NonNull} instead of this one.
  */
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface NonNull {
 }

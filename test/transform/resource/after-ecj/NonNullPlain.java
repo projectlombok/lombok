@@ -1,6 +1,6 @@
 import java.lang.annotation.*;
 @lombok.RequiredArgsConstructor @lombok.Getter @lombok.Setter class NonNullPlain {
-  public @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE}) @Retention(RetentionPolicy.CLASS) @interface NotNull {
+  public @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE}) @Retention(RetentionPolicy.RUNTIME) @interface NotNull {
   }
   @lombok.NonNull int i;
   @lombok.NonNull String s;
