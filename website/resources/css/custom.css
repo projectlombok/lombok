@@ -5,6 +5,7 @@ html {
 
 body {
 	margin-bottom: 60px;
+	overflow-y: scroll;
 }
 
 ul.dropdown-menu .header {
@@ -22,12 +23,6 @@ div.snippet code {
 	top: 0;
 	right: 0;
 	z-index: 2000;
-}
-
-@media (max-width: 768px) {
-	.fork-me {
-		display: none;
-	}
 }
 
 .video {
@@ -150,3 +145,32 @@ a {
 .changelog li {
 	text-align: left;
 }
+
+@media (max-width: 768px) {
+	.fork-me {
+		display: none;
+	}
+	
+	h1 {
+		font-size: 20px;
+	}
+	
+	h2 {
+		font-size: 18px;
+	}
+	
+	h3 {
+		font-size: 16px;
+	}
+	
+	.main-section {
+		padding-left: 30px;
+		padding-right: 30px;
+	}
+	
+	video {
+		width: 100%;
+		height: auto;
+	}
+}
+
