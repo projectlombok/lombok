@@ -163,7 +163,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		
 		for (ProcessorDescriptor proc : active) proc.process(annotations, roundEnv);
 		
-		return false;
+		return true;
 	}
 	
 	/**
