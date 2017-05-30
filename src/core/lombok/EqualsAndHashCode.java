@@ -74,6 +74,12 @@ public @interface EqualsAndHashCode {
 	AnyAnnotation[] onParam() default {};
 	
 	/**
+	 * Whether hashCode and equals should be generated.
+	 * <strong>default: true</strong>
+	 */
+	boolean enabled() default true;
+	
+	/**
 	 * Placeholder annotation to enable the placement of annotations on the generated code.
 	 * @deprecated Don't use this annotation, ever - Read the documentation.
 	 */
