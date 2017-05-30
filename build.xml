@@ -19,13 +19,18 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 -->
-<project name="lombok" default="dist" xmlns:ivy="antlib:com.zwitserloot.ivyplusplus">
+<project name="lombok" default="dist"
+         xmlns:ivy="antlib:com.zwitserloot.ivyplusplus"
+         xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 	<description>
 This buildfile is part of projectlombok.org. It is the main entry point that contains
 the common tasks and can be called on to run the main aspects of all the sub-scripts.
-	</description>
-	
+  </description>
+
 	<property name="build.compiler" value="javac1.6" />
+  <property name="nexus.hostname" value="nexus.q-branch.io"/>
+  <property name="nexus.port" value="80"/>
+
 	<property name="ivy.retrieve.pattern" value="lib/[conf]/[organisation]-[artifact].[ext]" />
 	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
 	
@@ -34,7 +39,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<include name="*.jar" />
 		</fileset>
 	</path>
-	
+
+  <path id="maven-ant-tasks.classpath" path="lib/maven/maven-ant-tasks-2.1.3.jar" />
+  <typedef resource="org/apache/maven/artifact/ant/antlib.xml"
+           uri="antlib:org.apache.maven.artifact.ant"
+           classpathref="maven-ant-tasks.classpath" />
+
 	<path id="runtime.path">
 		<fileset dir="lib/runtime">
 			<include name="*.jar" />
@@ -52,7 +62,13 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<include name="*.jar" />
 		</fileset>
 	</path>
-	
+
+  <taskdef resource="net/sf/antcontrib/antcontrib.properties">
+    <classpath>
+      <pathelement location="lib/ant/ant-contrib.jar"/>
+    </classpath>
+  </taskdef>
+
 	<target name="-defSSH" depends="ensureBuildDeps">
 		<taskdef name="scp" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.Scp" classpathref="build.path" />
 		<taskdef name="sshexec" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="build.path" />
@@ -650,15 +666,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 					<token key="VERSION" value="${lombok.version}" />
 				</replacetokens>
 			</filterchain>
-		</copy>
-		<tar destfile="build/utils-mavenPublish/utils-mavenPublish.tar.bz2" compression="bzip2">
-			<tarfileset dir="dist">
-				<include name="lombok-utils-${lombok.version}.jar" />
-				<include name="lombok-utils-${lombok.version}-sources.jar" />
-				<include name="lombok-utils-${lombok.version}-javadoc.jar" />
-			</tarfileset>
-			<tarfileset dir="build/utils-mavenPublish" includes="pom.xml" />
-		</tar>
+    </copy>
 	</target>
 	
 	<target name="javadoc" depends="compile, version" description="Builds javadoc into doc/api.">
@@ -689,15 +697,52 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 					<token key="VERSION" value="${lombok.version}" />
 				</replacetokens>
 			</filterchain>
-		</copy>
-		<tar destfile="build/mavenPublish/mavenPublish.tar.bz2" compression="bzip2">
-			<tarfileset dir="dist">
-				<include name="lombok-${lombok.version}.jar" />
-				<include name="lombok-${lombok.version}-sources.jar" />
-				<include name="lombok-${lombok.version}-javadoc.jar" />
-			</tarfileset>
-			<tarfileset dir="build/mavenPublish" includes="pom.xml" />
-		</tar>
+    </copy>
+    <copy todir="build/mavenPublish">
+      <fileset dir="dist" includes="**/*.jar"/>
+    </copy>
+
+    <artifact:pom id="mavenpom" file="build/mavenPublish/pom.xml" />
+    <artifact:install file="build/mavenPublish/lombok-${lombok.version}.jar">
+      <pom refid="mavenpom"/>
+    </artifact:install>
+    <artifact:install-provider artifactId="wagon-http-lightweight" version="2.12"/>
+
+
+    <fail unless="artifact.type">
+      You must set the artifact.type property in order to push artifacts to nexus.
+      Valid values are either 'snapshot' or 'release'
+    </fail>
+
+    <if>
+      <equals arg1="${artifact.type}" arg2="snapshot"/>
+      <then>
+        <condition property="version-value-ends-in-snapshot">
+          <matches pattern=".*-SNAPSHOT$" string="${lombok.version}"/>
+        </condition>
+
+        <fail
+            unless="version-value-ends-in-snapshot"
+            message="Your version (lombok.version) must end with '-SNAPSHOT' for snapshot versions."
+        />
+        <property name="nexus.repo.url" value="http://${nexus.hostname}:${nexus.port}/repository/maven-snapshots"/>
+      </then>
+    </if>
+
+    <if>
+      <equals arg1="${artifact.type}" arg2="release"/>
+      <then>
+        <property name="nexus.repo.url" value="http://${nexus.hostname}:${nexus.port}/repository/maven-releases"/>
+      </then>
+    </if>
+
+    <fail unless="nexus.repo.url" message="artifact.type must be release or snapshot!"/>
+
+    <artifact:deploy file="build/mavenPublish/lombok-${lombok.version}.jar">
+      <remoteRepository url="${nexus.repo.url}"/>
+      <pom refid="mavenpom"/>
+    </artifact:deploy>
+
 	</target>
 	
 	<target name="maven-publish" depends="config-ssh, -defSSH, maven, utils-maven" description="Build a maven artifact bundle then upload it to projectlombok.org and ask the server to upload it to maven central">

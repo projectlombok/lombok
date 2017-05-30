@@ -12,6 +12,6 @@ class NonNullPlain {
 	Object o;
 	
 	@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
-	@Retention(RetentionPolicy.CLASS)
+	@Retention(RetentionPolicy.RUNTIME)
 	public @interface NotNull {}
 }
