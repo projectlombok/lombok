@@ -50,7 +50,7 @@ public class HandleLog {
 		throw new UnsupportedOperationException();
 	}
 
-	public static void processAnnotation(LoggingFramework framework, AnnotationValues<?> annotation, JavacNode annotationNode, String loggerTopic) {
+	public static void processAnnotation(LoggingFramework framework, AnnotationValues<?> annotation, JavacNode annotationNode, String loggerTopic, boolean dynamic) {
 		deleteAnnotationIfNeccessary(annotationNode, framework.getAnnotationClass());
 
 		JavacNode typeNode = annotationNode.up();
@@ -59,7 +59,7 @@ public class HandleLog {
 			String logFieldName = annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_NAME);
 			if (logFieldName == null) logFieldName = "log";
 			
-			boolean useStatic = !Boolean.FALSE.equals(annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_IS_STATIC));
+			boolean useStatic = !dynamic && !Boolean.FALSE.equals(annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_IS_STATIC));
 			
 			if ((((JCClassDecl)typeNode.get()).mods.flags & Flags.INTERFACE) != 0) {
 				annotationNode.addError("@Log is legal only on classes and enums.");
@@ -71,7 +71,7 @@ public class HandleLog {
 			}
 
 			JCFieldAccess loggingType = selfType(typeNode);
-			createField(framework, typeNode, loggingType, annotationNode.get(), logFieldName, useStatic, loggerTopic);
+			createField(framework, typeNode, loggingType, annotationNode.get(), logFieldName, useStatic, loggerTopic, dynamic);
 			break;
 		default:
 			annotationNode.addError("@Log is legal only on types.");
@@ -85,7 +85,7 @@ public class HandleLog {
 		return maker.Select(maker.Ident(name), typeNode.toName("class"));
 	}
 	
-	private static boolean createField(LoggingFramework framework, JavacNode typeNode, JCFieldAccess loggingType, JCTree source, String logFieldName, boolean useStatic, String loggerTopic) {
+	private static boolean createField(LoggingFramework framework, JavacNode typeNode, JCFieldAccess loggingType, JCTree source, String logFieldName, boolean useStatic, String loggerTopic, boolean dynamic) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		// private static final <loggerType> log = <factoryMethod>(<parameter>);
@@ -94,7 +94,7 @@ public class HandleLog {
 
 		JCExpression loggerName;
 		if (loggerTopic == null || loggerTopic.trim().length() == 0) {
-			loggerName = framework.createFactoryParameter(typeNode, loggingType);
+			loggerName = framework.createFactoryParameter(typeNode, loggingType, dynamic);
 		} else {
 			loggerName = maker.Literal(loggerTopic);
 		}
@@ -116,7 +116,7 @@ public class HandleLog {
 	public static class HandleCommonsLog extends JavacAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_COMMONS_FLAG_USAGE, "@apachecommons.CommonsLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.COMMONS, annotation, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.COMMONS, annotation, annotationNode, annotation.getInstance().topic(), annotation.getInstance().dynamic());
 		}
 	}
 	
@@ -127,7 +127,7 @@ public class HandleLog {
 	public static class HandleJulLog extends JavacAnnotationHandler<lombok.extern.java.Log> {
 		@Override public void handle(AnnotationValues<lombok.extern.java.Log> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_JUL_FLAG_USAGE, "@java.Log", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.JUL, annotation, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.JUL, annotation, annotationNode, annotation.getInstance().topic(), annotation.getInstance().dynamic());
 		}
 	}
 	
@@ -138,7 +138,7 @@ public class HandleLog {
 	public static class HandleLog4jLog extends JavacAnnotationHandler<lombok.extern.log4j.Log4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_LOG4J_FLAG_USAGE, "@Log4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.LOG4J, annotation, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.LOG4J, annotation, annotationNode, annotation.getInstance().topic(), annotation.getInstance().dynamic());
 		}
 	}
 	
@@ -149,7 +149,7 @@ public class HandleLog {
 	public static class HandleLog4j2Log extends JavacAnnotationHandler<lombok.extern.log4j.Log4j2> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j2> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_LOG4J2_FLAG_USAGE, "@Log4j2", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.LOG4J2, annotation, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.LOG4J2, annotation, annotationNode, annotation.getInstance().topic(), annotation.getInstance().dynamic());
 		}
 	}
 	
@@ -160,7 +160,7 @@ public class HandleLog {
 	public static class HandleSlf4jLog extends JavacAnnotationHandler<lombok.extern.slf4j.Slf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_SLF4J_FLAG_USAGE, "@Slf4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.SLF4J, annotation, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.SLF4J, annotation, annotationNode, annotation.getInstance().topic(), annotation.getInstance().dynamic());
 		}
 	}
 	
@@ -171,7 +171,7 @@ public class HandleLog {
 	public static class HandleXSlf4jLog extends JavacAnnotationHandler<lombok.extern.slf4j.XSlf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.XSlf4j> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_XSLF4J_FLAG_USAGE, "@XSlf4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.XSLF4J, annotation, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.XSLF4J, annotation, annotationNode, annotation.getInstance().topic(), annotation.getInstance().dynamic());
 		}
 	}
 	
@@ -192,9 +192,15 @@ public class HandleLog {
 		
 		// private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(TargetType.class.getName());
 		JUL(lombok.extern.java.Log.class, "java.util.logging.Logger", "java.util.logging.Logger.getLogger") {
-			@Override public JCExpression createFactoryParameter(JavacNode typeNode, JCFieldAccess loggingType) {
+			@Override public JCExpression createFactoryParameter(JavacNode typeNode, JCFieldAccess loggingType, boolean dynamic) {
 				JavacTreeMaker maker = typeNode.getTreeMaker();
-				JCExpression method = maker.Select(loggingType, typeNode.toName("getName"));
+				JCExpression type;
+				if (dynamic) {
+					type = maker.Apply(List.<JCExpression>nil(), chainDotsString(typeNode, "getClass"), List.<JCExpression>nil());
+				} else {
+					type = loggingType;
+				}
+				JCExpression method = maker.Select(type, typeNode.toName("getName"));
 				return maker.Apply(List.<JCExpression>nil(), method, List.<JCExpression>nil());
 			}
 		},
@@ -237,8 +243,11 @@ public class HandleLog {
 			return loggerFactoryName;
 		}
 		
-		JCExpression createFactoryParameter(JavacNode typeNode, JCFieldAccess loggingType) {
-			return loggingType;
+		JCExpression createFactoryParameter(JavacNode typeNode, JCFieldAccess loggingType, boolean dynamic) {
+			if (!dynamic) return loggingType;
+			JavacTreeMaker maker = typeNode.getTreeMaker();
+			JCExpression method = chainDotsString(typeNode, "getClass");
+			return maker.Apply(List.<JCExpression>nil(), method, List.<JCExpression>nil());
 		}
 	}
 }
