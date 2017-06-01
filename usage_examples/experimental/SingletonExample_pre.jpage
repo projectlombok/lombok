@@ -1,0 +1,16 @@
+import lombok.experimental.Singleton;
+import lombok.experimental.Singleton.Style;
+
+@Singleton (style = Style.LAZY)
+public class LazySingletonExample {
+    public static void main(String[] args) {
+      assert getInstance() == getInstance();
+    }
+}
+
+@Singleton (style = Style.EAGER)
+class EagerSingletonExample {
+    public static void main(String[] args) {
+      assert getInstance() == getInstance();
+    }
+}

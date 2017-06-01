@@ -1,0 +1,29 @@
+public class LazySingletonExample {
+	private LazySingletonExample() {}
+
+	private static final class SingletonHolder {
+		private static final LazySingletonExample INSTANCE = new LazySingletonExample();
+	}
+	
+	public static LazySingletonExample getInstance() {
+		return SingletonHolder.INSTANCE;
+	}
+	
+	public static void main(String[] args) {
+      assert getInstance() == getInstance();
+    }
+}
+
+class EagerSingletonExample {
+	private static final EagerSingletonExample INSTANCE = new EagerSingletonExample();
+	
+	private EagerSingletonExample() {}
+	
+	public static EagerSingletonExample getInstance() {
+		return INSTANCE;
+	}
+	
+	public static void main(String[] args) {
+      assert getInstance() == getInstance();
+    }
+}

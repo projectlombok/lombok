@@ -224,6 +224,46 @@ public class EclipseHandlerUtil {
 		errorNode.addError(out.append(" are not allowed on builder classes.").toString());
 	}
 	
+	/**
+	 * Performs a sanity check for the annotations on a {@code 'X'} type of class.
+	 * 
+	 * <p>
+	 * Adds an appropriate error message to the <tt>errorNode</tt> if any unsupported annotation(s)
+	 * was used in combination with the class type annotation: {@code X}.
+	 * 
+	 * @param typeNode  the type the annotation is used on
+	 * @param errorNode  the node the errors (if any) should be displayed on; usually the annotation node
+	 * @param classX  the type of the class; like {@code Builder}, {@code Singleton} etc. This will be used
+	 * as such in the error/warning messages in case sanity check failed
+	 * @param unsupportedAnnotations  a collection of all the unsupported annotations for the annotation in question
+	 * @return the result of the sanity check; {@code true} if the validation passed; {@code false} otherwise
+	 */
+	public static boolean sanityCheckForMethodGeneratingAnnotationsOnXClass(EclipseNode typeNode, EclipseNode errorNode, String classX,
+	    List<Class<? extends java.lang.annotation.Annotation>> unsupportedAnnotations) {
+    List<String> disallowed = null;
+    for (EclipseNode child : typeNode.down()) {
+      if (child.getKind() != Kind.ANNOTATION) continue;
+      for (Class<? extends java.lang.annotation.Annotation> annType : unsupportedAnnotations) {
+        if (annotationTypeMatches(annType, child)) {
+          if (disallowed == null) disallowed = new ArrayList<String>();
+          disallowed.add(annType.getSimpleName());
+        }
+      }
+    }
+    
+    int size = disallowed == null ? 0 : disallowed.size();
+    if (size == 0) return true;
+    if (size == 1) {
+      errorNode.addError("@" + disallowed.get(0) + " is not allowed on " + classX + " classes.");
+      return false;
+    }
+    StringBuilder out = new StringBuilder();
+    for (String a : disallowed) out.append("@").append(a).append(", ");
+    out.setLength(out.length() - 2);
+    errorNode.addError(out.append(" are not allowed on " + classX + " classes.").toString());
+    return false;
+  }
+	
 	public static Annotation copyAnnotation(Annotation annotation, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		
