@@ -220,11 +220,24 @@ public class WebsiteMaker {
 		convertDownloadEdge(freemarkerConfig, out);
 	}
 	
+	public void buildHtAccess(File out) throws Exception {
+		Configuration freemarkerConfig = new Configuration(Configuration.VERSION_2_3_25);
+		freemarkerConfig.setEncoding(Locale.ENGLISH, "UTF-8");
+		freemarkerConfig.setOutputEncoding("UTF-8");
+		freemarkerConfig.setOutputFormat(HTMLOutputFormat.INSTANCE);
+		freemarkerConfig.setTemplateLoader(createLoader("extra"));
+		freemarkerConfig.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+		
+		outputDir.mkdirs();
+		convertHtAccess(freemarkerConfig, out);
+	}
+	
 	public void buildWebsite() throws Exception {
 		Configuration freemarkerConfig = makeFreemarkerConfig();
 		
 		outputDir.mkdirs();
 		convertTemplates(freemarkerConfig);
+		buildHtAccess(new File(outputDir, ".htaccess"));
 	}
 	
 	private TemplateLoader createLoader() throws IOException {
@@ -233,6 +246,30 @@ public class WebsiteMaker {
 	
 	private TemplateLoader createLoader(String base) throws IOException {
 		return new FileTemplateLoader(new File(baseDir, base));
+	}
+	
+	private void convertHtAccess(Configuration freemarker, File outFile) throws Exception {
+		Map<String, Object> dataModel = new HashMap<String, Object>();
+		dataModel.put("setupPages", listHtmlNames(new File(outputDir, "setup")));
+		dataModel.put("featurePages", listHtmlNames(new File(outputDir, "features")));
+		dataModel.put("experimentalPages", listHtmlNames(new File(outputDir, "features/experimental")));
+		Template template = freemarker.getTemplate("htaccess");
+		FileOutputStream fileOut = new FileOutputStream(outFile);
+		try {
+			Writer wr = new BufferedWriter(new OutputStreamWriter(fileOut, "UTF-8"));
+			template.process(dataModel, wr);
+			wr.close();
+		} finally {
+			fileOut.close();
+		}
+	}
+	
+	private List<String> listHtmlNames(File dir) {
+		List<String> out = new ArrayList<String>();
+		for (String s : dir.list()) {
+			if (s.endsWith(".html") && !s.equals("index.html")) out.add(s.substring(0, s.length() - 5));
+		}
+		return out;
 	}
 	
 	private void convertChangelog(Configuration freemarker, File outFile) throws Exception {

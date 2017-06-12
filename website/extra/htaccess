@@ -1,17 +1,36 @@
 RewriteEngine On
-RewriteRule ^features/all$ /features/index.html [L,END]
-RewriteRule ^features/index(\.html)?$ /features/index.html [L,END]
-RewriteRule ^features/experimental/all$ /features/experimental/index.html [L,END]
-RewriteRule ^features/experimental/index(\.html)?$ /features/experimental/index.html [L,END]
-RewriteRule ^features/.*\.html$ - [L,END]
-RewriteRule ^features/(.*)$ /features/$1.html [L,END]
-RewriteRule ^features$ /features/index.html [L,END]
-RewriteRule ^features/experimental$ /features/experimental/index.html [L,END]
-RewriteRule ^changelog$ /changelog.html [L,END]
+
 RewriteRule ^$ /main.html [L,END]
-RewriteRule ^index(\.html)?$ /main.html [L,END]
+RewriteRule ^(index|home)(\.html)?$ / [NC,RC=301]
+
+RewriteRule ^changelog$ /changelog.html [L,END]
+RewriteRule ^changelog(\.html)?$ /changelog [NC,R=301]
 RewriteRule ^credits$ /credits.html [L,END]
+RewriteRule ^credits(\.html)?$ /credits [NC,R=301]
 RewriteRule ^download$ /download.html [L,END]
+RewriteRule ^download(\.html)?$ /download [NC,R=301]
 RewriteRule ^all-versions$ /all-versions.html [L,END]
-RewriteRule ^setup/.*\.html$ - [L,END]
-RewriteRule ^setup/(.*) /setup/$1.html [L,END]
+RewriteRule ^all-versions(\.html)?$ /all-versions [NC,R=301]
+
+<#list setupPages as pg>
+RewriteRule ^setup/${pg?no_esc}$ /setup/${pg?no_esc}.html [L,END]
+RewriteRule ^setup/${pg?no_esc}(\.html)?$ /setup/${pg?no_esc} [NC,R=301]
+</#list>
+
+RewriteRule ^features/all$ /features/index.html [L,END]
+RewriteRule ^features(/all)?$ /features/all [NC,R=301]
+RewriteRule ^features/index(\.html)?$ /features/all [NC,R=301]
+
+<#list featurePages as pg>
+RewriteRule ^features/${pg?no_esc}$ /features/${pg?no_esc}.html [L,END]
+RewriteRule ^features/${pg?no_esc}(\.html)?$ /features/${pg?no_esc} [NC,R=301]
+</#list>
+
+RewriteRule ^features/experimental/all$ /features/experimental/index.html [L,END]
+RewriteRule ^features/experimental(/all)?$ /features/experimental/all [NC,R=301]
+RewriteRule ^features/experimental/index(\.html)?$ /features/experimental/all [NC,R=301]
+
+<#list experimentalPages as pg>
+RewriteRule ^features/experimental/${pg?no_esc}$ /features/experimental/${pg?no_esc}.html [L,END]
+RewriteRule ^features/experimental/${pg?no_esc}(\.html)?$ /features/experimental/${pg?no_esc} [NC,R=301]
+</#list>

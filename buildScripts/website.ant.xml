@@ -76,7 +76,6 @@ such as applying the templates to produce the website, converting the changelog 
 				<include name="LICENSE" />
 			</fileset>
 		</copy>
-		<copy file="website/extra/htaccess" tofile="build/website/.htaccess" />
 		<java classname="lombok.website.WebsiteMaker" failonerror="true">
 			<classpath>
 				<path refid="build.path" />
