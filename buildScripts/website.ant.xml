@@ -49,7 +49,7 @@ such as applying the templates to produce the website, converting the changelog 
 	
 	<target name="-compile-webclasses">
 		<mkdir dir="build/webclasses" />
-		<javac includeDestClasses="false" destdir="build/webclasses" debug="on" source="1.8" target="1.8">
+		<javac includeDestClasses="false" includeantruntime="false" destdir="build/webclasses" debug="on" source="1.8" target="1.8">
 			<classpath refid="build.path" />
 			<src path="src/website" />
 		</javac>

@@ -209,12 +209,7 @@ public class WebsiteMaker {
 	}
 	
 	public void buildDownloadEdge(File out) throws Exception {
-		Configuration freemarkerConfig = new Configuration(Configuration.VERSION_2_3_25);
-		freemarkerConfig.setEncoding(Locale.ENGLISH, "UTF-8");
-		freemarkerConfig.setOutputEncoding("UTF-8");
-		freemarkerConfig.setOutputFormat(HTMLOutputFormat.INSTANCE);
-		freemarkerConfig.setTemplateLoader(createLoader("extra"));
-		freemarkerConfig.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+		Configuration freemarkerConfig = makeFreemarkerConfig();
 		
 		outputDir.mkdirs();
 		convertDownloadEdge(freemarkerConfig, out);
@@ -289,7 +284,7 @@ public class WebsiteMaker {
 	private void convertDownloadEdge(Configuration freemarker, File outFile) throws Exception {
 		Map<String, Object> dataModel = createBasicDataModel();
 		
-		Template template = freemarker.getTemplate("download-edge.html");
+		Template template = freemarker.getTemplate("_download-edge.html");
 		FileOutputStream fileOut = new FileOutputStream(outFile);
 		try {
 			Writer wr = new BufferedWriter(new OutputStreamWriter(fileOut, "UTF-8"));
