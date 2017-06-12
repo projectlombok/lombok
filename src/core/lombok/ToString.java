@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 /**
  * Generates an implementation for the {@code toString} method inherited by all objects, consisting of printing the values of relevant fields.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/ToString.html">the project lombok features page for &#64;ToString</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/ToString">the project lombok features page for &#64;ToString</a>.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)

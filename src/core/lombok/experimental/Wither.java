@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 The Project Lombok Authors.
+ * Copyright (C) 2012-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ import lombok.AccessLevel;
 /**
  * Put on any field to make lombok build a 'wither' - a withX method which produces a clone of this object (except for 1 field which gets a new value).
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Wither.html">the project lombok features page for &#64;Wither</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Wither">the project lombok features page for &#64;Wither</a>.
  * <p>
  * Even though it is not listed, this annotation also has the {@code onParam} and {@code onMethod} parameter. See the full documentation for more details.
  * <p>

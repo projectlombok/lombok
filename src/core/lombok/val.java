@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2013 The Project Lombok Authors.
+ * Copyright (C) 2010-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@ package lombok;
  * <p>
  * Note that this is an annotation type because {@code val x = 10;} will be desugared to {@code @val final int x = 10;}
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/val.html">the project lombok features page for &#64;val</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/val">the project lombok features page for &#64;val</a>.
  */
 public @interface val {
 }

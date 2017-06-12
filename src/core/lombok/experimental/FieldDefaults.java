@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 The Project Lombok Authors.
+ * Copyright (C) 2012-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ import lombok.AccessLevel;
 /**
  * Adds modifiers to each field in the type with this annotation.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/FieldDefaults.html">the project lombok features page for &#64;FieldDefaults</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/FieldDefaults">the project lombok features page for &#64;FieldDefaults</a>.
  * <p>
  * If {@code makeFinal} is {@code true}, then each (instance) field that is not annotated with {@code @NonFinal} will have the {@code final} modifier added.
  * <p>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 The Project Lombok Authors.
+ * Copyright (C) 2012-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,8 @@ import java.lang.annotation.*;
  * otherwise modifying the original type. Extension methods are a special kind of static method, but they are called as
  * if they were instance methods on the extended type.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/ExtensionMethod.html">the project lombok features page for &#64;ExtensionMethod</a>.
- * <p>
+ * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/ExtensionMethod">the project lombok features page for &#64;ExtensionMethod</a>.
+ * <br>
  * <p>
  * Before:
  * 

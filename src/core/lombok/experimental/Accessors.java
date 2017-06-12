@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 The Project Lombok Authors.
+ * Copyright (C) 2012-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 /**
  * A container for settings for the generation of getters and setters.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Accessors.html">the project lombok features page for &#64;Accessors</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Accessors">the project lombok features page for &#64;Accessors</a>.
  * <p>
  * Using this annotation does nothing by itself; an annotation that makes lombok generate getters and setters,
  * such as {@link lombok.Setter} or {@link lombok.Data} is also required.

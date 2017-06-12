@@ -172,12 +172,11 @@ such as applying the templates to produce the website, converting the changelog 
 			write your own plugins, the other packages are what you're looking for.</body></html>
 		]]></echo>
 		<javadoc sourcepath="src/core" defaultexcludes="yes" destdir="build/api" windowtitle="Lombok" Overview="${javadoc.overview.html}">
+			<package name="lombok" />
+			<package name="lombok.experimental" />
+			<package name="lombok.extern.*" />
 			<classpath refid="build.path" />
 			<classpath location="build/lombok" />
-			<link href="http://download.oracle.com/javase/6/docs/api/" />
-			<link href="http://www.slf4j.org/api/" />
-			<link href="http://commons.apache.org/logging/apidocs/" />
-			<link href="http://logging.apache.org/log4j/1.2/apidocs/" />
 			<header><![CDATA[<a href='https://projectlombok.org/' target='_blank'>Lombok</a> - ]]>v${lombok.version}</header>
 			<bottom><![CDATA[<i>Copyright &copy; 2009-2015 The Project Lombok Authors, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php' target='_blank'>MIT licence</a>.]]></bottom>
 		</javadoc>

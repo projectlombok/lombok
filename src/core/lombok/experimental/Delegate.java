@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 The Project Lombok Authors.
+ * Copyright (C) 2010-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@ import java.lang.annotation.Target;
  * that exist in {@link Object}, the {@code canEqual(Object)} method, and any methods that appear in types
  * that are listed in the {@code excludes} property.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Delegate.html">the project lombok features page for &#64;Delegate</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Delegate">the project lombok features page for &#64;Delegate</a>.
  */
 @Target({ElementType.FIELD, ElementType.METHOD})
 @Retention(RetentionPolicy.SOURCE)

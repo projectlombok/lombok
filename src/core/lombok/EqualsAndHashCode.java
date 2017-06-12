@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 /**
  * Generates implementations for the {@code equals} and {@code hashCode} methods inherited by all objects, based on relevant fields.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/EqualsAndHashCode.html">the project lombok features page for &#64;EqualsAndHashCode</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/EqualsAndHashCode">the project lombok features page for &#64;EqualsAndHashCode</a>.
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)

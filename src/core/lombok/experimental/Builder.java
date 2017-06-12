@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 The Project Lombok Authors.
+ * Copyright (C) 2013-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,8 +48,8 @@ import java.lang.annotation.Target;
  * as the relevant class, unless a method has been annotated, in which case it'll be equal to the
  * return type of that method.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Builder.html">the project lombok features page for &#64;Builder</a>.
- * <p>
+ * Complete documentation is found at <a href="https://projectlombok.org/features/Builder">the project lombok features page for &#64;Builder</a>.
+ * <br>
  * <p>
  * Before:
  * 
