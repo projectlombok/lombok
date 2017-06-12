@@ -14,7 +14,9 @@
 		if (self.data("clc")) return;
 		var href = self.attr("href");
 		self.data("clc", true);
-		if (!href || href.substr(0, 4) === "http" || href.substr(href.length - 4, 4) === ".xml") return;
+		if (!href || href.substr(0, 4) === "http") return;
+		var ext = href.substr(href.length - 4, 4);
+		if (ext === ".xml" || ext === ".jar") return;
 		self.on("click", function(evt) {
 			evt.preventDefault();
 			var key = toKey(window.location.pathname);
@@ -27,7 +29,7 @@
 	}
 	
 	function collapseMenu() {
-		if ($(".navbar-collapse").is(".in")) $(".navbar-toggle").click()
+		if ($(".navbar-collapse").is(".in")) $(".navbar-toggle").click();
 	}
 	
 	function ajaxFeaturePages() {

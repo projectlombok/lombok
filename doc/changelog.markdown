@@ -164,7 +164,7 @@ Lombok Changelog
 * FEATURE: Added support for Slf4j extended logger [Issue #494](https://github.com/rzwitserloot/lombok/issues/494)
 * BUGFIX: {Delombok} Running delombok has been causing VerifyError errors when used with javac 1.7 since 0.11.0. [Issue #495](https://github.com/rzwitserloot/lombok/issues/495)
 * BUGFIX: A conflict between lombok and certain eclipse plugins would result in NullPointerExceptions in the log when using `@Delegate`.
-* BUGFIX: `NullPointerException in lombok.javac.handlers.JavacHandlerUtil.upToTypeNode(JavacHandlerUtil.java:978)` when compiling with `@ExtensionMethod` in javac and generated constructors are involved. [Issue #496](https://github.com/rzwitserloot/lombok/issues/496)
+* BUGFIX: `NullPointerException in lombok.&#8203;javac.&#8203;handlers.&#8203;JavacHandlerUtil.&#8203;upToTypeNode&#8203;(JavacHandlerUtil.java:978)` when compiling with `@ExtensionMethod` in javac and generated constructors are involved. [Issue #496](https://github.com/rzwitserloot/lombok/issues/496)
 * BUGFIX: `@Deprecated` on a field that gets a generated setter in eclipse would result in `IllegalArgumentException`, which you wouldn't see unless you have the error log open. If you have save actions defined, you'd get a popup box with the exception. Now fixed. [Issue #481](https://github.com/rzwitserloot/lombok/issues/481)
 
 ### v0.11.4 (August 13th, 2012)

@@ -140,6 +140,7 @@ a {
 .main-section {
 	padding-left: 100px;
 	padding-right: 100px;
+	max-width: 900px;
 }
 
 .changelog li {
@@ -174,3 +175,7 @@ a {
 	}
 }
 
+img {
+	max-width: 100%;
+	height: auto;
+}
