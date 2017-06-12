@@ -55,6 +55,8 @@ public @interface Value {
 	 * </pre>
 	 * 
 	 * Default: No static constructor, instead the normal constructor is public.
+	 * 
+	 * @return Name of static 'constructor' method to generate (blank = generate a normal constructor).
 	 */
 	String staticConstructor() default "";
 }

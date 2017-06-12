@@ -46,9 +46,9 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * 
- * This annotation is valid for classes and enumerations.<br />
- * @see org.jboss.logging.Logger org.jboss.logging.Logger
- * @see org.jboss.logging.Logger#getLogger(java.lang.Class) org.jboss.logging.Logger.getLogger(Class target)
+ * This annotation is valid for classes and enumerations.<br>
+ * @see <a href="https://docs.jboss.org/jbosslogging/latest/org/jboss/logging/Logger.html">org.jboss.logging.Logger</a>
+ * @see <a href="https://docs.jboss.org/jbosslogging/latest/org/jboss/logging/Logger.html#getLogger(java.lang.Class)">org.jboss.logging.Logger#getLogger(java.lang.Class)</a>
  * @see lombok.extern.apachecommons.CommonsLog &#64;CommonsLog
  * @see lombok.extern.java.Log &#64;Log
  * @see lombok.extern.log4j.Log4j &#64;Log4j
@@ -59,9 +59,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface JBossLog {
-	
-	/**
-	 * Sets the category of the constructed Logger. By default, it will use the type where the annotation is placed.
-	 */
+	/** @return The category of the constructed Logger. By default, it will use the type where the annotation is placed. */
 	String topic() default "";
 }

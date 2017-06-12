@@ -45,21 +45,27 @@ public @interface RequiredArgsConstructor {
 	 * is generated with the same argument list that wraps the real constructor.
 	 * 
 	 * Such a static 'constructor' is primarily useful as it infers type arguments.
+	 * 
+	 * @return Name of static 'constructor' method to generate (blank = generate a normal constructor).
 	 */
 	String staticName() default "";
 	
 	/**
 	 * Any annotations listed here are put on the generated constructor.
-	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br />
-	 * up to JDK7:<br />
-	 *  {@code @RequiredArgsConstructor(onConstructor=@__({@AnnotationsGoHere}))}<br />
-	 * from JDK8:<br />
+	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br>
+	 * up to JDK7:<br>
+	 *  {@code @RequiredArgsConstructor(onConstructor=@__({@AnnotationsGoHere}))}<br>
+	 * from JDK8:<br>
 	 *  {@code @RequiredArgsConstructor(onConstructor_={@AnnotationsGohere})} // note the underscore after {@code onConstructor}.
+	 * 
+	 * @return List of annotations to apply to the generated constructor.
 	 */
 	AnyAnnotation[] onConstructor() default {};
 	
 	/**
 	 * Sets the access level of the constructor. By default, generated constructors are {@code public}.
+	 * 
+	 * @return The constructor will be generated with this access modifier.
 	 */
 	AccessLevel access() default lombok.AccessLevel.PUBLIC;
 	

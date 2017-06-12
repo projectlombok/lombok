@@ -35,9 +35,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 public @interface EqualsAndHashCode {
 	/**
-	 * Any fields listed here will not be taken into account in the generated
-	 * {@code equals} and {@code hashCode} implementations.
+	 * Any fields listed here will not be taken into account in the generated {@code equals} and {@code hashCode} implementations.
 	 * Mutually exclusive with {@link #of()}.
+	 * 
+	 * @return A list of fields to exclude.
 	 */
 	String[] exclude() default {};
 	
@@ -46,30 +47,37 @@ public @interface EqualsAndHashCode {
 	 * Normally, all non-static, non-transient fields are used for identity.
 	 * <p>
 	 * Mutually exclusive with {@link #exclude()}.
+	 * 
+	 * @return A list of fields to use (<em>default</em>: all of them).
 	 */
 	String[] of() default {};
 	
 	/**
-	 * Call on the superclass's implementations of {@code equals} and {@code hashCode} before calculating
-	 * for the fields in this class.
+	 * Call on the superclass's implementations of {@code equals} and {@code hashCode} before calculating for the fields in this class.
 	 * <strong>default: false</strong>
+	 * 
+	 * @return Whether to call the superclass's {@code equals} implementation as part of the generated equals algorithm.
 	 */
 	boolean callSuper() default false;
 	
 	/**
 	 * Normally, if getters are available, those are called. To suppress this and let the generated code use the fields directly, set this to {@code true}.
 	 * <strong>default: false</strong>
+	 * 
+	 * @return If {@code true}, always use direct field access instead of calling the getter method.
 	 */
 	boolean doNotUseGetters() default false;
 	
 	/**
 	 * Any annotations listed here are put on the generated parameter of {@code equals} and {@code canEqual}.
-	 * This is useful to add for example a {@code Nullable} annotation.<br />
-	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br />
-	 * up to JDK7:<br />
-	 *  {@code @EqualsAndHashCode(onParam=@__({@AnnotationsGoHere}))}<br />
-	 * from JDK8:<br />
+	 * This is useful to add for example a {@code Nullable} annotation.<br>
+	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br>
+	 * up to JDK7:<br>
+	 *  {@code @EqualsAndHashCode(onParam=@__({@AnnotationsGoHere}))}<br>
+	 * from JDK8:<br>
 	 *  {@code @EqualsAndHashCode(onParam_={@AnnotationsGohere})} // note the underscore after {@code onParam}.
+	 *  
+	 * @return List of annotations to apply to the generated parameter in the {@code equals()} method.
 	 */
 	AnyAnnotation[] onParam() default {};
 	

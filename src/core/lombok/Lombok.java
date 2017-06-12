@@ -30,7 +30,6 @@ public class Lombok {
 	 * The exception is still thrown - javac will just stop whining about it.
 	 * <p>
 	 * Example usage:
-	 * <p>
 	 * <pre>public void run() {
 	 *     throw sneakyThrow(new IOException("You don't need to catch me!"));
 	 * }</pre>
@@ -59,14 +58,13 @@ public class Lombok {
 	}
 	
 	/**
-	 * Returns the parameter directly. <br />
+	 * Returns the parameter directly.
 	 * 
-	 * This method can be used to prevent a static analyzer to determine
-	 * the nullness of the passed parameter.
+	 * This method can be used to prevent a static analyzer to determine the nullness of the passed parameter.
 	 * 
-	 * @param <T> the type of the parameter
-	 * @param value the value to return
-	 * @return value
+	 * @param <T> the type of the parameter.
+	 * @param value the value to return.
+	 * @return value (this method just returns the parameter).
 	 */
 	public static <T> T preventNullAnalysis(T value) {
 		return value;
@@ -74,10 +72,12 @@ public class Lombok {
 	
 	/**
 	 * Ensures that the {@code value} is not {@code null}.
-	 * @param value the value to test for null
-	 * @param message the message of the {@link NullPointerException}
-	 * @return the value if it is not null
-	 * @throws NullPointerException with the {@code message} if the value is null
+	 * 
+	 * @param <T> Type of the parameter.
+	 * @param value the value to test for null.
+	 * @param message the message of the {@link NullPointerException}.
+	 * @return the value if it is not null.
+	 * @throws NullPointerException with the {@code message} if the value is null.
 	 */
 	public static <T> T checkNotNull(T value, String message) {
 		if (value == null) throw new NullPointerException(message);

@@ -46,10 +46,10 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * 
- * This annotation is valid for classes and enumerations.<br />
+ * This annotation is valid for classes and enumerations.<br>
  * 
- * @see org.apache.commons.logging.Log org.apache.commons.logging.Log
- * @see org.apache.commons.logging.LogFactory#getLog(java.lang.Class) org.apache.commons.logging.LogFactory.getLog(Class target)
+ * @see <a href="https://commons.apache.org/proper/commons-logging/apidocs/org/apache/commons/logging/Log.html">org.apache.commons.logging.Log</a>
+ * @see <a href="https://commons.apache.org/proper/commons-logging/apidocs/org/apache/commons/logging/LogFactory.html#getLog(java.lang.Class)">org.apache.commons.logging.LogFactory#getLog(java.lang.Class)</a>
  * @see lombok.extern.java.Log &#64;Log
  * @see lombok.extern.log4j.Log4j &#64;Log4j
  * @see lombok.extern.log4j.Log4j2 &#64;Log4j2
@@ -60,8 +60,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface CommonsLog {
-	/**
-	 * Sets the category of the constructed Logger. By default, it will use the type where the annotation is placed.
-	 */
+	/** @return The category of the constructed Logger. By default, it will use the type where the annotation is placed. */
 	String topic() default "";
 }

@@ -46,9 +46,9 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * 
- * This annotation is valid for classes and enumerations.<br />
- * @see org.slf4j.ext.XLogger org.slf4j.ext.XLogger
- * @see org.slf4j.ext.XLoggerFactory#getLogger(java.lang.Class) org.slf4j.ext.XLoggerFactory.getXLogger(Class target)
+ * This annotation is valid for classes and enumerations.<br>
+ * @see <a href="https://www.slf4j.org/api/org/slf4j/ext/XLogger.html">org.slf4j.ext.XLogger</a>
+ * @see <a href="https://www.slf4j.org/api/org/slf4j/ext/XLoggerFactory.html#getXLogger(java.lang.Class)">org.slf4j.ext.XLoggerFactory#getLogger(java.lang.Class)</a>
  * @see lombok.extern.apachecommons.CommonsLog &#64;CommonsLog
  * @see lombok.extern.java.Log &#64;Log
  * @see lombok.extern.log4j.Log4j &#64;Log4j
@@ -59,8 +59,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface XSlf4j {
-	/**
-	 * Sets the category of the constructed Logger. By default, it will use the type where the annotation is placed.
-	 */
+	/** @return The category of the constructed Logger. By default, it will use the type where the annotation is placed. */
 	String topic() default "";
 }

@@ -38,15 +38,19 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 public @interface Accessors {
 	/**
-	 * If true, accessors will be named after the field and not include a <code>get</code> or <code>set</code>
-	 * prefix. If true and <code>chain</code> is omitted, <code>chain</code> defaults to <code>true</code>.
+	 * If true, accessors will be named after the field and not include a {@code get} or {@code set}
+	 * prefix. If true and {@code chain} is omitted, {@code chain} defaults to {@code true}.
 	 * <strong>default: false</strong>
+	 * 
+	 * @return Whether or not to make fluent methods (named {@code fieldName()}, not for example {@code setFieldName}).
 	 */
 	boolean fluent() default false;
 	
 	/**
-	 * If true, setters return <code>this</code> instead of <code>void</code>.
-	 * <strong>default: false</strong>, unless <code>fluent=true</code>, then <strong>default: true</code>
+	 * If true, setters return {@code this} instead of {@code void}.
+	 * <strong>default: false</strong>, unless {@code fluent=true}, then <strong>default: true</strong>
+	 * 
+	 * @return Whether or not setters should return themselves (chaining) or {@code void} (no chaining).
 	 */
 	boolean chain() default false;
 	
@@ -55,6 +59,8 @@ public @interface Accessors {
 	 * Note that a prefix only counts if the next character is NOT a lowercase character or the last
 	 * letter of the prefix is not a letter (for instance an underscore). If multiple fields
 	 * all turn into the same name when the prefix is stripped, an error will be generated.
+	 * 
+	 * @return If you are in the habit of prefixing your fields (for example, you name them {@code fFieldName}, specify such prefixes here).
 	 */
 	String[] prefix() default {};
 }

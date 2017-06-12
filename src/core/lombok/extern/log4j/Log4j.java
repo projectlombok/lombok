@@ -46,10 +46,10 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * 
- * This annotation is valid for classes and enumerations.<br />
+ * This annotation is valid for classes and enumerations.<br>
  * 
- * @see org.apache.log4j.Logger org.apache.log4j.Logger
- * @see org.apache.log4j.Logger#getLogger(java.lang.Class) org.apache.log4j.Logger.getLogger(Class target)
+ * @see <a href="https://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Logger.html">org.apache.log4j.Logger</a>
+ * @see <a href="https://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Logger.html#getLogger(java.lang.Class)">org.apache.log4j.Logger#getLogger(java.lang.Class)</a>
  * @see lombok.extern.log4j.Log4j2 &#64;Log4j2
  * @see lombok.extern.apachecommons.CommonsLog &#64;CommonsLog
  * @see lombok.extern.java.Log &#64;Log
@@ -60,8 +60,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface Log4j {
-	/**
-	 * Sets the category of the constructed Logger. By default, it will use the type where the annotation is placed.
-	 */
+	/** @return The category of the constructed Logger. By default, it will use the type where the annotation is placed. */
 	String topic() default "";
 }

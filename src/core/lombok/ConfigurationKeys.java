@@ -261,7 +261,7 @@ public class ConfigurationKeys {
 	// ----- NonNull -----
 	
 	/**
-	 * lombok configuration: {@code lombok.nonNull.exceptionType} = &lt;String: <em>a java exception type; either [{@code IllegalArgumentException} or: {@code NullPointerException}].
+	 * lombok configuration: {@code lombok.nonNull.exceptionType} = &lt;String: <em>a java exception type</em>; either [{@code IllegalArgumentException} or: {@code NullPointerException}].
 	 * 
 	 * Sets the exception to throw if {@code @NonNull} is applied to a method parameter, and a caller passes in {@code null}.
 	 */
@@ -466,7 +466,7 @@ public class ConfigurationKeys {
 	 * lombok configuration: {@code lombok.onX.flagUsage} = {@code WARNING} | {@code ERROR}.
 	 *
 	 * If set, <em>any</em> usage of {@code onX} results in a warning / error.
-	 * <br />
+	 * <br>
 	 * Specifically, this flags usage of {@code @Getter(onMethod=...)}, {@code @Setter(onParam=...)}, {@code @Setter(onMethod=...)}, {@code @XArgsConstructor(onConstructor=...)}.
 	 */
 	public static final ConfigurationKey<FlagUsageType> ON_X_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.onX.flagUsage", "Emit a warning or error if onX is used.") {};

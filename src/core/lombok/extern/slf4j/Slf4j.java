@@ -46,9 +46,9 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * 
- * This annotation is valid for classes and enumerations.<br />
- * @see org.slf4j.Logger org.slf4j.Logger
- * @see org.slf4j.LoggerFactory#getLogger(java.lang.Class) org.slf4j.LoggerFactory.getLogger(Class target)
+ * This annotation is valid for classes and enumerations.<br>
+ * @see <a href="https://www.slf4j.org/api/org/slf4j/Logger.html">org.slf4j.Logger</a>
+ * @see <a href="https://www.slf4j.org/api/org/slf4j/LoggerFactory.html#getLogger(java.lang.Class)">org.slf4j.LoggerFactory#getLogger(java.lang.Class)</a>
  * @see lombok.extern.apachecommons.CommonsLog &#64;CommonsLog
  * @see lombok.extern.java.Log &#64;Log
  * @see lombok.extern.log4j.Log4j &#64;Log4j
@@ -59,9 +59,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface Slf4j {
-	/**
-	 * Sets the category of the constructed Logger. By default, it will use the type where the annotation is placed.
-	 */
+	/** @return The category of the constructed Logger. By default, it will use the type where the annotation is placed. */
 	String topic() default "";
 }
 

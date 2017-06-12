@@ -110,15 +110,20 @@ import java.lang.annotation.Target;
 @Retention(SOURCE)
 @Deprecated
 public @interface Builder {
-	/** Name of the method that creates a new builder instance. Default: {@code builder}. */
+	/** @return Name of the method that creates a new builder instance. Default: {@code builder}. */
 	String builderMethodName() default "builder";
 	
-	/** Name of the method in the builder class that creates an instance of your {@code @Builder}-annotated class. */
+	/** @return Name of the method in the builder class that creates an instance of your {@code @Builder}-annotated class. */
 	String buildMethodName() default "build";
 	
-	/** Name of the builder class.
+	/**
+	 * Name of the builder class.
+	 * 
 	 * Default for {@code @Builder} on types and constructors: {@code (TypeName)Builder}.
+	 * <p>
 	 * Default for {@code @Builder} on methods: {@code (ReturnTypeName)Builder}.
+	 * 
+	 * @return Name of the builder class that will be generated (or if it already exists, will be filled with builder elements).
 	 */
 	String builderClassName() default "";
 	
@@ -127,6 +132,8 @@ public @interface Builder {
 	 * to {@code false} to name the setter method for field {@code someField}: {@code setSomeField}.
 	 * <p>
 	 * <strong>Default: true</strong>
+	 * 
+	 * @return Whether to generate fluent methods (just {@code fieldName()} instead of {@code setFieldName()}).
 	 */
 	boolean fluent() default true;
 	
@@ -135,6 +142,8 @@ public @interface Builder {
 	 * calls to set methods. Set this to {@code false} to have these 'set' methods return {@code void} instead.
 	 * <p>
 	 * <strong>Default: true</strong>
+	 * 
+	 * @return Whether to generate chaining methods (each build call returns itself instead of returning {@code void}).
 	 */
 	boolean chain() default true;
 }

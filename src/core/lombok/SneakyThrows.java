@@ -59,8 +59,9 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @Retention(RetentionPolicy.SOURCE)
 public @interface SneakyThrows {
-	/** The exception type(s) you want to sneakily throw onward. */
+	/** @return The exception type(s) you want to sneakily throw onward. */
 	Class<? extends Throwable>[] value() default java.lang.Throwable.class;
 	
-	//The package is mentioned in java.lang due to a bug in javac (presence of an annotation processor throws off the type resolver for some reason).
+	//The fully qualified name is used for java.lang.Throwable in the parameter only. This works around a bug in javac:
+	//   presence of an annotation processor throws off the type resolver for some reason.
 }

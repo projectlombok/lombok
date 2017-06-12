@@ -56,26 +56,32 @@ import lombok.AccessLevel;
 public @interface Wither {
 	/**
 	 * If you want your wither to be non-public, you can specify an alternate access level here.
+	 * 
+	 * @return The method will be generated with this access modifier.
 	 */
 	AccessLevel value() default AccessLevel.PUBLIC;
 	
 	/**
 	 * Any annotations listed here are put on the generated method.
-	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br />
-	 * up to JDK7:<br />
-	 *  {@code @Wither(onMethod=@__({@AnnotationsGoHere}))}<br />
-	 * from JDK8:<br />
+	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br>
+	 * up to JDK7:<br>
+	 *  {@code @Wither(onMethod=@__({@AnnotationsGoHere}))}<br>
+	 * from JDK8:<br>
 	 *  {@code @Wither(onMethod_={@AnnotationsGohere})} // note the underscore after {@code onMethod}.
+	 * 
+	 * @return List of annotations to apply to the generated method.
 	 */
 	AnyAnnotation[] onMethod() default {};
 	
 	/**
 	 * Any annotations listed here are put on the generated method's parameter.
-	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br />
-	 * up to JDK7:<br />
-	 *  {@code @Wither(onParam=@__({@AnnotationsGoHere}))}<br />
-	 * from JDK8:<br />
+	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br>
+	 * up to JDK7:<br>
+	 *  {@code @Wither(onParam=@__({@AnnotationsGoHere}))}<br>
+	 * from JDK8:<br>
 	 *  {@code @Wither(onParam_={@AnnotationsGohere})} // note the underscore after {@code onParam}.
+	 * 
+	 * @return List of annotations to apply to the generated parameter in the method.
 	 */
 	AnyAnnotation[] onParam() default {};
 	

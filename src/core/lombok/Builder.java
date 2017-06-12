@@ -114,10 +114,10 @@ public @interface Builder {
 	@Retention(SOURCE)
 	public @interface Default {}
 
-	/** Name of the method that creates a new builder instance. Default: {@code builder}. */
+	/** @return Name of the method that creates a new builder instance. Default: {@code builder}. */
 	String builderMethodName() default "builder";
 	
-	/** Name of the method in the builder class that creates an instance of your {@code @Builder}-annotated class. */
+	/** @return Name of the method in the builder class that creates an instance of your {@code @Builder}-annotated class. */
 	String buildMethodName() default "build";
 	
 	/**
@@ -126,6 +126,8 @@ public @interface Builder {
 	 * Default for {@code @Builder} on types and constructors: {@code (TypeName)Builder}.
 	 * <p>
 	 * Default for {@code @Builder} on methods: {@code (ReturnTypeName)Builder}.
+	 * 
+	 * @return Name of the builder class that will be generated (or if it already exists, will be filled with builder elements).
 	 */
 	String builderClassName() default "";
 	
@@ -133,6 +135,8 @@ public @interface Builder {
 	 * If true, generate an instance method to obtain a builder that is initialized with the values of this instance.
 	 * Legal only if {@code @Builder} is used on a constructor, on the type itself, or on a static method that returns
 	 * an instance of the declaring type.
+	 * 
+	 * @return Whether to generate a {@code toBuilder()} method.
 	 */
 	boolean toBuilder() default false;
 	
@@ -149,13 +153,19 @@ public @interface Builder {
 	@Target({FIELD, PARAMETER})
 	@Retention(SOURCE)
 	public @interface ObtainVia {
-		/** Tells lombok to obtain a value with the expression {@code this.value}. */
+		/**
+		 * @return Tells lombok to obtain a value with the expression {@code this.value}.
+		 */
 		String field() default "";
 		
-		/** Tells lombok to obtain a value with the expression {@code this.method()}. */
+		/**
+		 * @return Tells lombok to obtain a value with the expression {@code this.method()}.
+		 */
 		String method() default "";
 		
-		/** Tells lombok to obtain a value with the expression {@code SelfType.method(this)}; requires {@code method} to be set. */
+		/**
+		 * @return Tells lombok to obtain a value with the expression {@code SelfType.method(this)}; requires {@code method} to be set.
+		 */
 		boolean isStatic() default false;
 	}
 }
