@@ -24,6 +24,7 @@ package lombok.javac.apt;
 
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -31,9 +32,9 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 
-import com.sun.tools.javac.file.BaseFileManager;
-
 import lombok.core.DiagnosticsReceiver;
+
+import com.sun.tools.javac.file.BaseFileManager;
 
 //Can't use SimpleJavaFileObject so we copy/paste most of its content here, because javac doesn't follow the interface,
 //and casts to its own BaseFileObject type. D'oh!
@@ -148,7 +149,13 @@ final class LombokFileObjects {
 			if (uri.getScheme() == null) {
 				uri = URI.create("file://" + uri);
 			}
-			return new Javac9BaseFileObjectWrapper(fileManager, Paths.get(uri), fileObject);
+			Path path;
+			try {
+				path = Paths.get(uri);
+			} catch (IllegalArgumentException e) {
+				throw new IllegalArgumentException("Problems in URI '" + uri + "' (" + fileObject.toUri() + ")", e);
+			}
+			return new Javac9BaseFileObjectWrapper(fileManager, path, fileObject);
 		}
 		
 		@Override public Method getDecoderMethod() {
