@@ -12,14 +12,17 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -324,8 +327,13 @@ public class WebsiteMaker {
 	private Map<String, Object> createBasicDataModel() throws IOException {
 		Map<String, Object> data = new HashMap<String, Object>();
 		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss 'UTC'");
+		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+		String currentTime = sdf.format(new Date());
+		
 		data.put("version", version);
 		data.put("fullVersion", fullVersion);
+		data.put("timestampString", currentTime);
 		data.put("year", "" + new GregorianCalendar().get(Calendar.YEAR));
 		data.put("changelog", CompileChangelog.getHtml(baseDir.getParentFile()));
 		data.put("changelogEdge", CompileChangelog.getHtmlForEdge(baseDir.getParentFile(), version));
