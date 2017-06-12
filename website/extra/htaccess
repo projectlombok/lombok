@@ -11,6 +11,12 @@ RewriteRule ^download$ /download.html [L,END]
 RewriteRule ^download(\.html)?$ /download [NC,R=301]
 RewriteRule ^all-versions$ /all-versions.html [L,END]
 RewriteRule ^all-versions(\.html)?$ /all-versions [NC,R=301]
+RewriteRule ^all-versions$ /all-versions.html [L,END]
+RewriteRule ^all-versions(\.html)?$ /all-versions [NC,R=301]
+RewriteRule ^disable-checked-exceptions$ /disable-checked-exceptions.html [L,END]
+RewriteRule ^disable-checked-exceptions(\.html)?$ /disable-checked-exceptions [NC,R=301]
+RewriteRule ^contributing$ /contributing.html [L,END]
+RewriteRule ^contributing(\.html)?$ /contributing [NC,R=301]
 
 <#list setupPages as pg>
 RewriteRule ^setup/${pg?no_esc}$ /setup/${pg?no_esc}.html [L,END]

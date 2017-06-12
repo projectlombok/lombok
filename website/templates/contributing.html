@@ -1,0 +1,35 @@
+<#import "/_scaffold.html" as main>
+
+<@main.scaffold>
+	<div class="page-header top5">
+		<div class="row text-center">
+			<h1>How to work on Project Lombok yourself</h1>
+		</div><div class="row">
+			Project Lombok is being developed via the <a href="https://github.com/rzwitserloot/lombok">lombok git repository on github</a>.
+		</div><div class="row">
+			<p>
+				If you want to start development on lombok, clone the repository and run <code>ant eclipse</code> or <code>ant intellij</code>, then open the working directory as a project in eclipse / intellij. Because the main contributors of lombok all use eclipse, that'll probably work a little more smoothly.
+			</p><p>
+				To produce a lombok jar, run <code>ant dist</code>; in general run <code>ant -p</code>; there's lots of stuff there, including downloading various versions of java runtimes to run the test suite against, and building this website.
+			</p>
+		</div><div class="row text-center">
+			<h2>Adding your own handlers and annotations to Lombok</h2>
+		</div><div class="row">
+			<p>
+				If you want to extend lombok, we advise that you fork lombok and add handlers directly into the same place and package that lombok's handlers are in (<code>lombok.javac.handlers</code> and <code>lombok.eclipse.handlers</code>) – lombok does some fancy footwork to ensure various modular class loading systems don't interface with finding the lombok classes, but that system is not (currently) easily expanded to include separate jars.
+			</p>
+		</div><div class="row text-center">
+			<h2>Contributing to Project Lombok</h2>
+		</div><div class="row">
+			<p>
+				To create new features and add them to project lombok itself, send us pull requests via github. However, before you start, discuss the feature or fix you'd like to contribute, preferably via the <a href="https://groups.google.com/forum/#!forum/project-lombok">Project Lombok Forum</a>. If you're going to add a new feature, make sure to post 2 snippets (one with the annotation, the other with what that would generate), similar to how the feature pages list 'with lombok' and 'without lombok' variants.
+			</p><p>
+				We've considered many designs and features amongst ourselves and with the community, and often there are complications or interesting design choices that have already been mentioned. We'd like to share them with you before you set out.
+			</p><p>
+				Pull requests for new features that haven't been discussed are unlikely to be accepted. Of course, if you've already built a proof of concept implementation prior to bringing a new idea to the forum, we'll take it that much more seriously.
+			</p><p>
+				Happy coding!
+			</p>
+		</div>
+	</div>
+</@main.scaffold>
