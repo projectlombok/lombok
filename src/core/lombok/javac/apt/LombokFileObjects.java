@@ -147,7 +147,7 @@ final class LombokFileObjects {
 		@Override public JavaFileObject wrap(LombokFileObject fileObject) {
 			URI uri = fileObject.toUri();
 			if (uri.getScheme() == null) {
-				uri = URI.create("file://" + uri);
+				uri = URI.create("file:///" + uri);
 			}
 			Path path;
 			try {
