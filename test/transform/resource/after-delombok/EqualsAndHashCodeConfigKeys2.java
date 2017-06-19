@@ -1,3 +1,27 @@
+class EqualsAndHashCodeConfigKeys2Object extends Object {
+	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
+	public boolean equals(final java.lang.Object o) {
+		if (o == this) return true;
+		if (!(o instanceof EqualsAndHashCodeConfigKeys2Object)) return false;
+		final EqualsAndHashCodeConfigKeys2Object other = (EqualsAndHashCodeConfigKeys2Object) o;
+		if (!other.canEqual((java.lang.Object) this)) return false;
+		return true;
+	}
+	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
+	protected boolean canEqual(final java.lang.Object other) {
+		return other instanceof EqualsAndHashCodeConfigKeys2Object;
+	}
+	@java.lang.Override
+	@java.lang.SuppressWarnings("all")
+	@javax.annotation.Generated("lombok")
+	public int hashCode() {
+		int result = 1;
+		return result;
+	}
+}
 class EqualsAndHashCodeConfigKeys2Parent {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")

@@ -1,5 +1,7 @@
 //CONF: lombok.equalsAndHashCode.callSuper = call
-
+@lombok.EqualsAndHashCode
+class EqualsAndHashCodeConfigKeys2Object extends Object {
+}
 @lombok.EqualsAndHashCode
 class EqualsAndHashCodeConfigKeys2Parent {
 }

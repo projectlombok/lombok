@@ -1,3 +1,25 @@
+@lombok.EqualsAndHashCode class EqualsAndHashCodeConfigKeys2Object extends Object {
+  EqualsAndHashCodeConfigKeys2Object() {
+    super();
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
+    if ((o == this))
+        return true;
+    if ((! (o instanceof EqualsAndHashCodeConfigKeys2Object)))
+        return false;
+    final EqualsAndHashCodeConfigKeys2Object other = (EqualsAndHashCodeConfigKeys2Object) o;
+    if ((! other.canEqual((java.lang.Object) this)))
+        return false;
+    return true;
+  }
+  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean canEqual(final java.lang.Object other) {
+    return (other instanceof EqualsAndHashCodeConfigKeys2Object);
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
+    int result = 1;
+    return result;
+  }
+}
 @lombok.EqualsAndHashCode class EqualsAndHashCodeConfigKeys2Parent {
   EqualsAndHashCodeConfigKeys2Parent() {
     super();
