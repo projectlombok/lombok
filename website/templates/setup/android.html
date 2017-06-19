@@ -16,16 +16,13 @@
 			<ul><li>
 				Make sure that the version of your android plugin is <code>&gt;= 0.4.3</code>
 			</li><li>
-				Add Lombok to your application's <code>dependencies</code> block:<br /><br />
-<pre>
-	provided "org.projectlombok:lombok:${version}"
-</pre>
+				Use the <a href="https://github.com/franzbecker/gradle-lombok">gradle-lombok</a> plugin.
 			</li><li>
-				When using <a href="https://bitbucket.org/hvisser/android-apt">android-apt</a>, you also have to specify Lombok as an annotation processor (with the <code>apt</code> directive) in the <code>dependencies</code> block:<br  /><br />
+				If you don't want to use the plugin, add Lombok to your application's <code>dependencies</code> block (requires Gradle v2.12 or newer):<br /><br />
 <pre>
-	provided "org.projectlombok:lombok:${version}"
-	apt "org.projectlombok:lombok:${version}"
-</pre>
+dependencies {
+	compileOnly "org.projectlombok:lombok:${version}"
+}</pre>
 			</li></ul>
 		</p>
 	</@s.section>
@@ -58,7 +55,7 @@ java -jar lombok.jar publicApi</pre>
 
 	<@s.section title="Maven">
 		<p>
-			You should be able to just follow the normal <a href="../mavenrepo/index.html">lombok with maven instructions</a>.<br />
+			You should be able to just follow the normal <a href="maven">integrate lombok with maven instructions</a>.<br />
 			Note that if you use android, eclipse, and maven together you may have to replace <code>lombok.jar</code> in your eclipse android project's build path (which you can modify in that project's properties page) with <code>lombok-api.jar</code>, as produced in the procedure explained for <em>Eclipse</em>, above.
 		</p>
 	</@s.section>

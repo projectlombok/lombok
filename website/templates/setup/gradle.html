@@ -1,0 +1,59 @@
+<#import "_setup.html" as s>
+
+<@s.scaffold title="Gradle">
+	<@s.introduction>
+		<p>
+			To set up lombok with any build tool, you have to specify that the lombok dependency is required to compile your source code, but does not need to be present when running/testing/jarring/otherwise deploying your code. Generally this is called a 'provided' dependency. This page explains how to integrate lombok with the <a href="https://gradle.org/">Gradle build tool</a>.
+		</p><p>
+			Lombok is available in maven central, so telling Gradle to download lombok is easy.
+		</p>
+	</@s.introduction>
+
+	<@s.section title="The Lombok Gradle Plugin">
+		<p>
+			There is a plugin for gradle that we recommend you use; it makes deployment a breeze, works around shortcomings of gradle prior to v2.12, and makes it easy to do additional tasks, such as running the lombok eclipse installer or delomboking. The plugin is open source. Read more <a href="https://github.com/franzbecker/gradle-lombok">about the gradle-lombok plugin</a>.
+		</p><p>
+			Note, to tell the <code>gradle-lombok</code> plugin to use the latest version of lombok, you need to explicitly tell it about the latest version number and the SHA-256. For our current latest version, put this in your <code>build.gradle</code> file:<pre>
+lombok {
+	version = ${version} 
+	sha256 = ""
+}</pre>
+		</p>
+	</@s.section>
+	
+	<@s.section title="Gradle v2.12 and up">
+		<p>
+			If you don't want to use the plugin, gradle has the built-in <code>compileOnly</code> scope, which can be used to tell gradle to add lombok only during compilation. Your <code>build.gradle</code> will look like:<pre>
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compileOnly 'org.projectlombok:lombok:${version}'
+}</pre>
+		</p><p>
+			Remember that you still have to download <code>lombok.jar</code> (or find it in gradle's caches) and run it as a jarfile, if you wish to program in eclipse. The plugin makes that part easier.
+		</p>
+	</@s.section>
+	<@s.section title="Gradle prior to v2.12">
+		<p>
+			If you don't want to use the plugin and you're on gradle prior to v2.12, there's a bit of problem: Gradle didn't introduce the 'provided' concept until v2.12. The concept is added by a few well known plugins: The gradle <code>war</code> plugin has the <code>providedCompile</code> scope, and the <a href="https://github.com/nebula-plugins/gradle-extra-configurations-plugin">Gradle Extra Configurations Plugin</a> supports the <code>provided</code> scope. With these plugins, your <code>build.gradle</code> file will look something like this:<pre>
+apply plugin: 'java'
+apply plugin: 'nebula.provided-base'
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	provided 'org.projectlombok:lombok:${version}'
+}</pre>
+		</p>
+	</@s.section>
+
+	<@s.section title="Android development">
+		<p>
+			Complete instructions for integrating lombok with your android development is available on our <a href="android">Using lombok for android development</a> page.
+		</p>
+	</@s.section>
+</@s.scaffold>
