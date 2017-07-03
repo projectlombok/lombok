@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Project Lombok Authors.
+ * Copyright (C) 2015-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,5 +48,9 @@ public class TestSingulars {
 		assertEquals("dataBase", autoSingularize("dataBases"));
 		assertEquals("Query", autoSingularize("Queries"));
 		assertEquals("Movie", autoSingularize("Movies"));
+		assertEquals("cafe", autoSingularize("cafes"));
+		assertEquals("cave", autoSingularize("caves"));
+		assertEquals("leaf", autoSingularize("leaves"));
+		assertEquals("autosave", autoSingularize("autosaves"));
 	}
 }
