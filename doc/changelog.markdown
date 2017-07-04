@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.16.19 "Edgy Guinea Pig"
+* v1.16.18 is the latest stable release of Project Lombok.
+
 ### v1.16.18 (July 3rd, 2017)
 * PLATFORM: JDK9 support much improved since v1.16.6; [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
 * BUGFIX: Lombok now works with [Bazel](https://bazel.build/) and [Error Prone](https://error-prone.info/). [Issue #1290](https://github.com/rzwitserloot/lombok/issues/1290)
