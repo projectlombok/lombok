@@ -1,8 +1,10 @@
 Lombok Changelog
 ----------------
 
-### v1.16.17 "Edgy Guinea Pig"
-* v1.16.16 is the latest stable release of Project Lombok.
+### v1.16.18 (July 3rd, 2017)
+* PLATFORM: JDK9 support much improved since v1.16.6; [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
+* BUGFIX: Lombok now works with [Bazel](https://bazel.build/) and [Error Prone](https://error-prone.info/). [Issue #1290](https://github.com/rzwitserloot/lombok/issues/1290)
+* FEATURE: Lombok has a new [website](https://projectlombok.org/)! A few very minor changes to the code to be more consistent with it have been added, mostly to the javadoc.
 
 ### v1.16.16 "Dancing Elephant" (March 23rd, 2017)
 * FEATURE: `@Builder.Default` lets you configure default values for your fields when using `@Builder`. See the [Builder feature page](https://projectlombok.org/features/Builder.html) for more information. [Issue #1201](https://github.com/rzwitserloot/lombok/issues/1201)
