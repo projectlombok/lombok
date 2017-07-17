@@ -22,6 +22,7 @@
 
 package lombok.javac.apt;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.file.Path;
@@ -110,6 +111,18 @@ final class LombokFileObjects {
 			}
 			catch (Exception e) {}
 			return Compiler.JAVAC7;
+		}
+		if (jfmClassName.equals("com.sun.tools.javac.api.ClientCodeWrapper$WrappedStandardJavaFileManager")) {
+			try {
+				Field wrappedField = Class.forName("com.sun.tools.javac.api.ClientCodeWrapper$WrappedJavaFileManager").getDeclaredField("clientJavaFileManager");
+				wrappedField.setAccessible(true);
+				JavaFileManager wrappedManager = (JavaFileManager)wrappedField.get(jfm);
+				Class<?> superType = Class.forName("com.sun.tools.javac.file.BaseFileManager");
+				if (superType.isInstance(wrappedManager)) {
+					return new Java9Compiler(wrappedManager);
+				}
+			}
+			catch (Exception e) {}
 		}
 		try {
 			if (Class.forName("com.sun.tools.javac.file.BaseFileObject") == null) throw new NullPointerException();
