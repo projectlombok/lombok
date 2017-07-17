@@ -133,6 +133,27 @@ h1, h2, h3 {
 	margin: 8px 16px 8px 16px;
 }
 
+.snippet-col {
+	position: relative;
+	min-height: 1px;
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
+@media (min-width: 769px) {
+	.snippet-col {
+		margin-left: -60px;
+		margin-right: -60px;
+	}
+}
+
+@media (min-width: 1000px) {
+	.snippet-col {
+		margin-left: -120px;
+		margin-right: -120px;
+	}
+}
+
 a {
 	cursor: pointer;
 }

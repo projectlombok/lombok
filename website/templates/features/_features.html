@@ -30,13 +30,13 @@
 
 <#macro snippets name>
 	<div class="row container-fluid">
-		<div class="col-lg-6">
+		<div class="snippet-col first-snippet">
 			<h3>With Lombok</h3>
 
 			<div class="snippet">${usages.pre(name)?no_esc}</div>
 		</div>
 		<div class="sep"></div>
-		<div class="col-lg-6">
+		<div class="snippet-col second-snippet">
 			<h3>Vanilla Java</h3>
 
 			<div class="snippet">${usages.post(name)?no_esc}</div>
