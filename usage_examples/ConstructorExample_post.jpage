@@ -1,6 +1,6 @@
 public class ConstructorExample<T> {
 	private int x, y;
-	@NonNull private T description;
+	private T description;
 	
 	private ConstructorExample(T description) {
 		if (description == null) throw new NullPointerException("description");
@@ -20,7 +20,7 @@ public class ConstructorExample<T> {
 	}
 	
 	public static class NoArgsExample {
-		@NonNull private String field;
+		private String field;
 		
 		public NoArgsExample() {
 		}
