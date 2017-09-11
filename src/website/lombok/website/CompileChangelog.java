@@ -1,10 +1,12 @@
 package lombok.website;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,7 +39,7 @@ public class CompileChangelog {
 			} else if (latest) {
 				result = buildLatest(sectionByVersion(markdown, version));
 			} else {
-				result = markdownToHtml(markdown);
+				result = markdownToHtml(sectionStartingAt(markdown, version));
 			}
 			
 			FileOutputStream file = new FileOutputStream(fileOut);
@@ -66,6 +68,12 @@ public class CompileChangelog {
 		File f = new File(root, "doc/changelog.markdown");
 		String raw = readFile(f);
 		return markdownToHtml(raw);
+	}
+	
+	public static String getHtmlStartingAtSection(File root, String version) throws IOException {
+		File f = new File(root, "doc/changelog.markdown");
+		String raw = readFile(f);
+		return markdownToHtml(sectionStartingAt(raw, version));
 	}
 	
 	private static String readFile(File f) throws IOException {
@@ -101,13 +109,38 @@ public class CompileChangelog {
 		return markdownToHtml(noLinks);
 	}
 	
+	private static String sectionStartingAt(String markdown, String version) {
+		if (version.toUpperCase().endsWith("-HEAD") || version.toUpperCase().endsWith("-EDGE")) {
+			version = version.substring(0, version.length() - 5);
+		}
+		
+		Pattern p = Pattern.compile("^.*###\\s*v(.*)$");
+		BufferedReader br = new BufferedReader(new StringReader(markdown));
+		StringBuilder out = new StringBuilder();
+		int state = 0;
+		try {
+			for (String line = br.readLine(); line != null; line = br.readLine()) {
+				if (state < 2) {
+					Matcher m = p.matcher(line);
+					if (m.matches()) state = m.group(1).startsWith(version) ? 2 : 1;
+				}
+				if (state != 1) {
+					out.append(line);
+					out.append("\n");
+				}
+			}
+			return out.toString();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	private static String sectionByVersion(String markdown, String version) {
 		if (version.toUpperCase().endsWith("-HEAD") || version.toUpperCase().endsWith("-EDGE")) {
 			version = version.substring(0, version.length() - 5);
 		}
 		
-		Pattern p = Pattern.compile(
-				"(?is-m)^.*###\\s*v" + version + ".*?\n(.*?)(?:###\\s*v.*)?$");
+		Pattern p = Pattern.compile("(?is-m)^.*###\\s*v" + version + ".*?\n(.*?)(?:###\\s*v.*)?$");
 		Matcher m = p.matcher(markdown);
 		return m.matches() ? m.group(1) : null;
 	}

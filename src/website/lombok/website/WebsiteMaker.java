@@ -335,7 +335,7 @@ public class WebsiteMaker {
 		data.put("fullVersion", fullVersion);
 		data.put("timestampString", currentTime);
 		data.put("year", "" + new GregorianCalendar().get(Calendar.YEAR));
-		data.put("changelog", CompileChangelog.getHtml(baseDir.getParentFile()));
+		data.put("changelog", CompileChangelog.getHtmlStartingAtSection(baseDir.getParentFile(), version));
 		data.put("changelogEdge", CompileChangelog.getHtmlForEdge(baseDir.getParentFile(), version));
 		
 		return data;

@@ -37,12 +37,42 @@ such as applying the templates to produce the website, converting the changelog 
 		<delete dir="build/website" quiet="true" />
 	</target>
 	
-	<target name="website" description="Prepares the website for distribution" depends="-website-main, -website-dist" />
+	<target name="website-only" description="Prepares the website for distribution using the lombok version currently 'live'." depends="-fetch-version-from-site, -show-version, -ensure-version, -website-main, -delete-edge-page, -website-only-dist" />
+	
+	<target name="-delete-edge-page">
+		<delete file="build/website/download-edge.html" />
+	</target>
+	
+	<target name="website" description="Prepares the website for distribution" depends="javadoc, -website-main, -website-dist" />
+	
+	<target name="-fetch-version-from-site" depends="-compile-webclasses">
+		<fail if="lombok.version">lombok.version already set.</fail>
+		<fail if="lombok.fullversion">lombok.fullversion already set.</fail>
+		<java classname="lombok.website.FetchCurrentVersion" outputproperty="lombok.version" failonerror="true">
+			<classpath>
+				<path refid="build.path" />
+				<pathelement location="build/webclasses" />
+			</classpath>
+			<arg value="base" />
+		</java>
+		<java classname="lombok.website.FetchCurrentVersion" outputproperty="lombok.fullversion" failonerror="true">
+			<classpath>
+				<path refid="build.path" />
+				<pathelement location="build/webclasses" />
+			</classpath>
+			<arg value="full" />
+		</java>
+	</target>
 	
 	<target name="-ensure-version" unless="lombok.version">
 		<fail>Supply lombok.version</fail>
 	</target>
 	
+	<target name="-show-version">
+		<echo>Version: ${lombok.version}</echo>
+		<echo>Full: ${lombok.fullversion}</echo>
+	</target>
+		
 	<target name="-ensure-fullversion" unless="lombok.fullversion">
 		<fail>Supply lombok.fullversion</fail>
 	</target>
@@ -68,7 +98,7 @@ such as applying the templates to produce the website, converting the changelog 
 		</java>
 	</target>
 	
-	<target name="-website-main" depends="-ensure-version, -ensure-fullversion, -website-clean, -compile-webclasses, javadoc, changelogToHtml">
+	<target name="-website-main" depends="-ensure-version, -ensure-fullversion, -website-clean, -compile-webclasses, changelogToHtml">
 		<mkdir dir="build/website" />
 		<copy todir="build/website">
 			<fileset dir="website/resources" />
@@ -95,9 +125,18 @@ such as applying the templates to produce the website, converting the changelog 
 		</tar>
 	</target>
 	
+	<target name="-website-only-dist">
+		<mkdir dir="dist" />
+		<tar destfile="dist/website.tar.bz2" compression="bzip2">
+			<tarfileset dir="build/website" />
+		</tar>
+	</target>
+	
 	<taskdef name="scp" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.Scp" classpathref="build.path" />
 	<taskdef name="sshexec" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="build.path" />
-	<target name="website-publish" depends="website, -requires-ssh">
+	<target name="website-publish" depends="website, -send-site-to-remote" />
+	<target name="website-only-publish" depends="website-only, -send-site-to-remote" />
+	<target name="-send-site-to-remote" depends="-requires-ssh">
 		<scp
 			localFile="dist/website.tar.bz2"
 			todir="${ssh.username}@projectlombok.org:/data/lombok/staging"
