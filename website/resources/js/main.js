@@ -14,7 +14,7 @@
 		if (self.data("clc")) return;
 		var href = self.attr("href");
 		self.data("clc", true);
-		if (!href || href.substr(0, 4) === "http") return;
+		if (!href || href.substr(0, 4) === "http" || href === "/api/") return;
 		var ext = href.substr(href.length - 4, 4);
 		if (ext === ".xml" || ext === ".jar") return;
 		self.on("click", function(evt) {
@@ -63,6 +63,8 @@
 						$("#main-section").replaceWith(newH);
 						collapseMenu();
 						$("a").each(captureLinkClick);
+					}, error: function() {
+						window.location = u;
 					}
 				});
 			}
