@@ -15,7 +15,7 @@ class ConstructorsWithAccessors {
 	}
 }
 
-class NonNullConstructorsWithAccessors {
+class ConstructorsWithAccessorsNonNull {
 	@lombok.NonNull
 	Integer plower;
 	@lombok.NonNull
@@ -28,7 +28,7 @@ class NonNullConstructorsWithAccessors {
 	@java.beans.ConstructorProperties({"plower", "upper", "huh", "_huh2"})
 	@java.lang.SuppressWarnings("all")
 	@javax.annotation.Generated("lombok")
-	public NonNullConstructorsWithAccessors(@lombok.NonNull final Integer plower, @lombok.NonNull final Integer upper, @lombok.NonNull final Integer huh, @lombok.NonNull final Integer _huh2) {
+	public ConstructorsWithAccessorsNonNull(@lombok.NonNull final Integer plower, @lombok.NonNull final Integer upper, @lombok.NonNull final Integer huh, @lombok.NonNull final Integer _huh2) {
 		if (plower == null) {
 			throw new java.lang.NullPointerException("plower");
 		}
@@ -47,4 +47,3 @@ class NonNullConstructorsWithAccessors {
 		this.__huh2 = _huh2;
 	}
 }
-

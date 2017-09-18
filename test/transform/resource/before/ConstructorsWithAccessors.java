@@ -5,7 +5,7 @@
 	int __huh2;
 }
 
-@lombok.AllArgsConstructor @lombok.experimental.Accessors(prefix={"p", "_"}) class NonNullConstructorsWithAccessors {
+@lombok.AllArgsConstructor @lombok.experimental.Accessors(prefix={"p", "_"}) class ConstructorsWithAccessorsNonNull {
 	@lombok.NonNull Integer plower;
 	@lombok.NonNull Integer pUpper;
 	@lombok.NonNull Integer _huh;

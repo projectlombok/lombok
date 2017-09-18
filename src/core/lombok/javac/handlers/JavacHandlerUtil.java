@@ -1220,7 +1220,9 @@ public class JavacHandlerUtil {
 
 	/**
 	 * Generates a new statement that checks if the given variable is null, and if so, throws a configured exception with the
-	 * variable name as message. This is a special case method reserved for use when the provided declaration differs from the
+	 * variable name as message. 
+	 * 
+	 * This is a special case method reserved for use when the provided declaration differs from the
 	 * variable's declaration, i.e. in a constructor or setter where the local parameter is named the same but with the prefix
 	 * stripped as a result of @Accessors.prefix.
 	 */
