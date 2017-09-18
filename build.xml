@@ -28,7 +28,8 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<property name="build.compiler" value="javac1.6" />
 	<property name="ivy.retrieve.pattern" value="lib/[conf]/[organisation]-[artifact].[ext]" />
 	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
-	
+	<available file="lib/openJDK6Environment/rt-openjdk6.jar" property="rt-openjdk6.available" />
+
 	<path id="build.path">
 		<fileset dir="lib/build">
 			<include name="*.jar" />
@@ -101,8 +102,8 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="contrib, ecj7, ecj8" />
 		<ivy:retrieve />
 	</target>
-	
-	<target name="ensureBuildDeps" depends="config-ivy">
+
+	<target name="ensureBuildDeps" depends="config-ivy" unless="rt-openjdk6.available">
 		<mkdir dir="lib/openJDK6Environment" />
 		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />
 		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build, javac7" />

@@ -137,7 +137,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 				i.remove();
 			}
 		}
-		classpath.add("bin");
+		if (new File("bin").exists()) classpath.add("bin");
 		classpath.add("dist/lombok.jar");
 		classpath.add("lib/test/commons-logging-commons-logging.jar");
 		classpath.add("lib/test/org.slf4j-slf4j-api.jar");
