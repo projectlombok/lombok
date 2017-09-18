@@ -350,7 +350,7 @@ public class HandleConstructor {
 				Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
 				Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
 				if (nonNulls.length != 0) {
-					Statement nullCheck = generateNullCheck(field, sourceNode);
+					Statement nullCheck = generateNullCheck(parameter, sourceNode);
 					if (nullCheck != null) nullChecks.add(nullCheck);
 				}
 				parameter.annotations = copyAnnotations(source, nonNulls, nullables);
