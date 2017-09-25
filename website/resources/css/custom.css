@@ -1,3 +1,44 @@
+#clickForVideo {
+	padding: 20px 30px;
+	background-color: #DDD;
+	cursor: pointer;
+	margin-left: auto;
+	margin-right: auto;
+	margin-bottom: 40px;
+}
+
+.errorBox {
+	border: 1px dashed #F44;
+	font-size: 1.2em;
+	padding: 20px;
+	background-color: #EEE;
+	text-align: center;
+}
+
+.noSupportersBox {
+	font-size: 1.2em;
+	padding: 20px;
+	background-color: #EEE;
+	text-align: center;
+}
+
+.spinner {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	width: 16px;
+	height: 16px;
+}
+
+.legalese {
+	font-style: italic;
+	font-size: 0.8em;
+}
+
+#companyLogo {
+	margin-right: 8px;
+}
+
 html {
 	position: relative;
 	min-height: 100%;
@@ -96,7 +137,7 @@ div.snippet code {
 }
 
 h1, h2, h3 {
-	padding: 40px;
+	padding: 12px 40px;
 	text-align: center;
 }
 

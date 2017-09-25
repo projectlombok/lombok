@@ -1,16 +1,16 @@
 <#import "/_scaffold.html" as main>
-<@main.scaffold>
+<@main.scaffold load=["/js/supporters.js"]>
 	<div class="page-header top5">
 		<div class="row text-center">
 			<@main.h1 title="Project Lombok" />
 			<p>
 				Project Lombok is a java library that automatically plugs into your editor and build tools, spicing up your java.<br />
-				Never write another getter or equals method again. Early access to future java features such as <code>val</code>, and much more.<br />
-				Watch the 4 minute demo below to learn more!
+				Never write another getter or equals method again. Early access to future java features such as <code>val</code>, and much more.
 			</p>
 		</div>
 		<div class="video text-center">
-			<video width="800" height="480" poster="/img/poster.png" controls="controls" preload="none">
+			<div id="clickForVideo"><span class="clickToTap">Click</span> to watch a 4 minute demo to learn more.</div>
+			<video id="demoVideo" hidden="hidden" width="800" height="480" poster="/img/poster.png" controls="controls" preload="none">
 				<source src="/videos/lombok.ogv" type="video/ogg" />
 				<source src="/videos/lombok.mp4" type="video/mp4" />
 				<source src="/videos/lombok-iPhone.m4v" type="video/mp4" />
@@ -36,8 +36,10 @@
 			</video>
 			<div class="row">
 				<div class="text-center">
-					<a href="http://jnb.ociweb.com/jnb/jnbJan2010.html">I can't see video. Show me a text and images based explanation and tutorial instead!</a>
+					<a href="http://jnb.ociweb.com/jnb/jnbJan2010.html">Show me a text and images based explanation and tutorial instead!</a>
 				</div>
+			</div>
+			<div class="row supporterBar">
 			</div>
 		</div>
 	</div>

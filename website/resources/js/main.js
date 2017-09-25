@@ -3,6 +3,31 @@
 (function($) {
 	swfobject.registerObject("player", "9.0.98", "videos/expressInstall.swf");
 	
+	function clickToTap() {
+		if (matchMedia && matchMedia('(hover: none)').matches) $(".clickToTap").each(function() {
+			var x = $(this);
+			if (x.text() === "Click") x.text("Tap");
+			else x.text("tap");
+		});
+	}
+	
+	function clickForVideo() {
+		var cfv = $("#clickForVideo");
+		var f = function() {
+			if (!cfv.is(":visible")) return;
+			cfv.hide();
+			$("#demoVideo").show().get(0).play();
+		};
+		
+		cfv.css("cursor", "pointer").on("click", f).on("touchstart", function() {
+			$(this).data("moved", 0);
+		}).on("touchmove", function() {
+			$(this).data("moved", 1);
+		}).on("touchend", function() {
+			if ($(this).data("moved") === 0) f();
+		});
+	}
+	
 	function toKey(href) {
 		var lnk = "__savedContent_" + href.replace(/\//g, '_');
 		if (lnk.substring(lnk.length - 5) === ".html") lnk = lnk.substring(0, lnk.length - 5);
@@ -72,4 +97,6 @@
 	}
 	
 	$(ajaxFeaturePages);
+	$(clickToTap);
+	$(clickForVideo);
 })($);
