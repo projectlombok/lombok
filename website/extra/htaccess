@@ -3,6 +3,11 @@ RewriteEngine On
 RewriteRule ^$ /main.html [L,END]
 RewriteRule ^(index|home)(\.html)?$ / [NC,R=301]
 
+RewriteRule ^setup/overview$ /setup/main.html [L,END]
+RewriteRule ^setup/main(\.html)?$ /setup/overview [NC,R=301]
+RewriteRule ^setup/index(\.html)?$ /setup/overview [NC,R=301]
+RewriteRule ^setup(/(overview)?)?$ /setup/overview [NC,R=301]
+
 RewriteRule ^changelog$ /changelog.html [L,END]
 RewriteRule ^changelog(\.html)?$ /changelog [NC,R=301]
 RewriteRule ^credits$ /credits.html [L,END]

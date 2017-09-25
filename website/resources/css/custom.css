@@ -209,7 +209,7 @@ a {
 	text-align: left;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
 	.fork-me {
 		display: none;
 	}
@@ -235,9 +235,31 @@ a {
 		width: 100%;
 		height: auto;
 	}
+	
+	.smallOnly {
+		display: block !important;
+	}
+	
+	.wideOnly {
+		display: none !important;
+	}
+}
+
+@media (min-width: 768px) {
+	.smallOnly {
+		display: none !important;
+	}
+	
+	.wideOnly {
+		display: block !important;
+	}
 }
 
 img {
 	max-width: 100%;
 	height: auto;
+}
+
+h3.listHeader {
+	text-align: left;
 }

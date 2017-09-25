@@ -5,6 +5,31 @@
 	</div>
 </#macro>
 
+<#assign setupTargets = {
+	"Compilers": {
+		"Javac": "javac",
+		"ECJ": "ecj"
+	},
+	"Build tools": {
+		"maven": "maven",
+		"gradle": "gradle",
+		"ant": "ant",
+		"kobalt": "kobalt"
+	},
+	"IDEs": {
+		"Eclipse": "eclipse",
+		"IntelliJ IDEA": "intellij",
+		"Netbeans": "netbeans",
+		"MyEclipse": "eclipse",
+		"Spring Tool Suite": "eclipse",
+		"JBoss Developer Studio": "eclipse"
+	},
+	"Platforms": {
+		"Android": "android",
+		"GWT": "gwt"
+	}
+}>
+
 <#macro scaffold load=[]>
 	<!DOCTYPE html>
 	<html lang="en">
@@ -79,28 +104,16 @@ ga('send', 'pageview');
 							</a>
 						</li>
 						<li class="dropdown">
-							<a class="dropdown-toggle pointer" data-toggle="dropdown">Install<span class="caret"></span></a>
+							<a href="/setup/overview" class="smallOnly"><span>Install</span></a>
+							<a class="dropdown-toggle pointer wideOnly" data-toggle="dropdown">Install<span class="caret"></span></a>
 							<ul class="dropdown-menu" aria-labelledby="themes">
-								<li class="header">Compilers</li>
-								<li class="target"><a href="/setup/javac">Javac</a></li>
-								<li class="target"><a href="/setup/ecj">ecj</a></li>
-								<li class="divider"></li>
-								<li class="header">Build tools</li>
-								<li class="target"><a href="/setup/maven">maven</a></li>
-								<li class="target"><a href="/setup/gradle">gradle</a></li>
-								<li class="target"><a href="/setup/ant">ant</a></li>
-								<li class="target"><a href="/setup/kobalt">kobalt</a></li>
-								<li class="header">IDEs</li>
-								<li class="target"><a href="/setup/eclipse">Eclipse</a></li>
-								<li class="target"><a href="/setup/intellij">IntelliJ IDEA</a></li>
-								<li class="target"><a href="/setup/netbeans">Netbeans</a></li>
-								<li class="target"><a href="/setup/eclipse">MyEclipse</a></li>
-								<li class="target"><a href="/setup/eclipse">Spring Tool Suite</a></li>
-								<li class="target"><a href="/setup/eclipse">JBoss Developer Studio</a></li>
-								<li class="divider"></li>
-								<li class="header">Platforms</li>
-								<li class="target"><a href="/setup/android">Android</a></li>
-								<li class="target"><a href="/setup/gwt">GWT</a></li>
+								<#list setupTargets as cat, tgtList>
+									<li class="header">${cat}</li>
+									<#list tgtList as name, url>
+										<li class="target"><a href="/setup/${url}">${name}</a></li>
+									</#list>
+									<#sep><li class="divider"></li></#sep>
+								</#list>
 							</ul>
 						</li>
 						<li><a href="/download">Download</a></li>
