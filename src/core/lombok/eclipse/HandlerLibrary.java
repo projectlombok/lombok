@@ -148,15 +148,14 @@ public class HandlerLibrary {
 		return priorities;
 	}
 	
-	private void calculatePriorities() {
+	private void calculatePriorities()  {
 		SortedSet<Long> set = new TreeSet<Long>();
 		for (AnnotationHandlerContainer<?> container : annotationHandlers.values()) set.add(container.getPriority());
-		for (VisitorContainer container : visitorHandlers) set.add(container.getPriority());
+		visitorHandlers.forEach(container -> {
+set.add(container.getPriority());
+});
 		this.priorities = Collections.unmodifiableSortedSet(set);
-	}
-	
-	/** Uses SPI Discovery to find implementations of {@link EclipseAnnotationHandler}. */
-	@SuppressWarnings({"rawtypes", "unchecked"})
+	}@SuppressWarnings({"rawtypes", "unchecked"})
 	private static void loadAnnotationHandlers(HandlerLibrary lib) {
 		try {
 			for (EclipseAnnotationHandler<?> handler : SpiLoadUtil.findServices(EclipseAnnotationHandler.class, EclipseAnnotationHandler.class.getClassLoader())) {

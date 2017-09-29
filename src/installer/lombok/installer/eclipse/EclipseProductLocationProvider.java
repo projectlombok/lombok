@@ -176,15 +176,13 @@ public class EclipseProductLocationProvider implements IdeLocationProvider {
 		}
 	}
 	
-	private List<File> transformToFiles(List<String> fileNames) {
+	private List<File> transformToFiles(List<String> fileNames)  {
 		List<File> files = new ArrayList<File>();
-		for (String fileName : fileNames) {
-			files.add(new File(fileName));
-		}
+		fileNames.forEach(fileName -> {
+files.add(new File(fileName));
+});
 		return files;
-	}
-	
-	private List<File> getFlatSourceLocationsOnUnix() {
+	}private List<File> getFlatSourceLocationsOnUnix() {
 		List<File> dirs = new ArrayList<File>();
 		dirs.add(new File("/usr/bin/"));
 		dirs.add(new File("/usr/local/bin/"));
@@ -280,12 +278,12 @@ public class EclipseProductLocationProvider implements IdeLocationProvider {
 			this.flatSourceDirs = flatSourceDirs;
 		}
 		
-		void findEclipse(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems) {
+		 void findEclipse(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems)  {
 			for (File dir : nestedSourceDirs) recurseDirectory(locations, problems, dir);
-			for (File dir : flatSourceDirs) findEclipse(locations, problems, dir);
-		}
-		
-		abstract String findEclipseOnPlatform(File dir);
+			flatSourceDirs.forEach(dir -> {
+findEclipse(locations, problems, dir);
+});
+		}abstract String findEclipseOnPlatform(File dir);
 		
 		void recurseDirectory(List<IdeLocation> locations, List<CorruptedIdeLocationException> problems, File dir) {
 			recurseDirectory0(locations, problems, dir, 0, false);

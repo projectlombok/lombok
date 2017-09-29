@@ -146,13 +146,11 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		}
 	}
 	
-	public void createWitherForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode sourceNode, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam) {
-		for (EclipseNode fieldNode : fieldNodes) {
-			createWitherForField(level, fieldNode, sourceNode, whineIfExists, onMethod, onParam);
-		}
-	}
-	
-	public void createWitherForField(
+	public void createWitherForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode sourceNode, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam)  {
+		fieldNodes.forEach(fieldNode -> {
+createWitherForField(level, fieldNode, sourceNode, whineIfExists, onMethod, onParam);
+});
+	}public void createWitherForField(
 			AccessLevel level, EclipseNode fieldNode, EclipseNode sourceNode,
 			boolean whineIfExists, List<Annotation> onMethod,
 			List<Annotation> onParam) {

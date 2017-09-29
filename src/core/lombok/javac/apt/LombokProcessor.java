@@ -266,7 +266,7 @@ public class LombokProcessor extends AbstractProcessor {
 	private Set<Long> priorityLevelsRequiringResolutionReset;
 	
 	/** {@inheritDoc} */
-	@Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+	@Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv)  {
 		if (lombokDisabled) return false;
 		if (roundEnv.processingOver()) return false;
 		
@@ -307,9 +307,9 @@ public class LombokProcessor extends AbstractProcessor {
 						newLevels.add(nextLevel);
 					}
 				}
-				for (JCCompilationUnit unit : cusToAdvance) {
-					roots.put(unit, nextLevel);
-				}
+				cusToAdvance.forEach(unit -> {
+roots.put(unit, nextLevel);
+});
 			}
 			newLevels.remove(null);
 			
@@ -324,9 +324,7 @@ public class LombokProcessor extends AbstractProcessor {
 			}
 		    // None of the new levels need resolution, so just keep going.
 		}
-	}
-	
-	private int dummyCount = 0;
+	}private int dummyCount = 0;
 	private void forceNewRound(JavacFiler filer) {
 		if (!filer.newFiles()) {
 			try {

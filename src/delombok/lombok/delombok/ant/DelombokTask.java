@@ -175,7 +175,7 @@ class Tasks {
 		}
 		
 		@Override
-		public void execute() throws BuildException {
+		public void execute() throws BuildException  {
 			Location loc = getLocation();
 			
 			try {
@@ -187,10 +187,10 @@ class Tasks {
 					selfField.setAccessible(true);
 					if (selfField.getName().equals("formatOptions")) {
 						List<String> rep = new ArrayList<String>();
-						for (Format f : formatOptions) {
-							if (f.getValue() == null) throw new BuildException("'value' property required for <format>");
-							rep.add(f.getValue());
-						}
+						formatOptions.forEach(f -> {
+if (f.getValue() == null) throw new BuildException("'value' property required for <format>");
+rep.add(f.getValue());
+});
 						otherField.set(instance, rep);
 					} else {
 						otherField.set(instance, selfField.get(this));
@@ -205,6 +205,5 @@ class Tasks {
 			} catch (Exception e) {
 				throw Lombok.sneakyThrow(e);
 			}
-		}
-	}
+		}}
 }

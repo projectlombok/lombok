@@ -226,7 +226,7 @@ public class PatchExtensionMethod {
 		MessageSend_postponedErrors.set(messageSend, new PostponedInvalidMethodError(problemReporter, messageSend, method, scope));
 	}
 	
-	public static TypeBinding resolveType(TypeBinding resolvedType, MessageSend methodCall, BlockScope scope) {
+	public static TypeBinding resolveType(TypeBinding resolvedType, MessageSend methodCall, BlockScope scope)  {
 		List<Extension> extensions = new ArrayList<Extension>();
 		TypeDeclaration decl = scope.classScope().referenceContext;
 		
@@ -261,10 +261,9 @@ public class PatchExtensionMethod {
 				arguments.add(methodCall.receiver);
 				if (methodCall.arguments != null) arguments.addAll(Arrays.asList(methodCall.arguments));
 				List<TypeBinding> argumentTypes = new ArrayList<TypeBinding>();
-				for (Expression argument : arguments) {
-					if (argument.resolvedType != null) argumentTypes.add(argument.resolvedType);
-					// TODO: Instead of just skipping nulls entirely, there is probably a 'unresolved type' placeholder. THAT is what we ought to be adding here!
-				}
+				arguments.forEach(argument -> {
+if (argument.resolvedType != null) argumentTypes.add(argument.resolvedType);
+});
 				Expression[] originalArgs = methodCall.arguments;
 				methodCall.arguments = arguments.toArray(new Expression[0]);
 				MethodBinding fixedBinding = scope.getMethod(extensionMethod.declaringClass, methodCall.selector, argumentTypes.toArray(new TypeBinding[0]), methodCall);
@@ -303,9 +302,7 @@ public class PatchExtensionMethod {
 		
 		MessageSend_postponedErrors.clear(methodCall);
 		return resolvedType;
-	}
-	
-	private static NameReference createNameRef(TypeBinding typeBinding, ASTNode source) {
+	}private static NameReference createNameRef(TypeBinding typeBinding, ASTNode source) {
 		long p = ((long) source.sourceStart << 32) | source.sourceEnd;
 		char[] pkg = typeBinding.qualifiedPackageName();
 		char[] basename = typeBinding.qualifiedSourceName();

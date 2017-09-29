@@ -249,20 +249,15 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	}
 	
 	@SuppressWarnings({"unchecked", "rawtypes"})
-	private void gatherAndRemoveChildren(Map<N, L> map) {
-		for (LombokNode child : children) child.gatherAndRemoveChildren(map);
+	private void gatherAndRemoveChildren(Map<N, L> map)  {
+		children.forEach(child -> {
+child.gatherAndRemoveChildren(map);
+});
 		ast.identityDetector.remove(get());
 		map.put(get(), (L) this);
 		children = LombokImmutableList.of();
 		ast.getNodeMap().remove(get());
-	}
-	
-	/**
-	 * Removes the stated node, which must be a direct child of this node, from the AST.
-	 * 
-	 * Does not change the underlying (javac/Eclipse) AST, only the wrapped view.
-	 */
-	public void removeChild(L child) {
+	}public void removeChild(L child) {
 		ast.setChanged();
 		children = children.removeElement(child);
 	}

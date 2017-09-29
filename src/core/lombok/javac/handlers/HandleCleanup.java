@@ -155,11 +155,11 @@ public class HandleCleanup extends JavacAnnotationHandler<Cleanup> {
 		}
 	}
 	
-	public void doAssignmentCheck(JavacNode node, List<JCStatement> statements, Name name) {
-		for (JCStatement statement : statements) doAssignmentCheck0(node, statement, name);
-	}
-	
-	public void doAssignmentCheck0(JavacNode node, JCTree statement, Name name) {
+	public void doAssignmentCheck(JavacNode node, List<JCStatement> statements, Name name)  {
+		statements.forEach(statement -> {
+doAssignmentCheck0(node, statement, name);
+});
+	}public void doAssignmentCheck0(JavacNode node, JCTree statement, Name name) {
 		if (statement instanceof JCAssign) doAssignmentCheck0(node, ((JCAssign)statement).rhs, name);
 		if (statement instanceof JCExpressionStatement) doAssignmentCheck0(node,
 				((JCExpressionStatement)statement).expr, name);

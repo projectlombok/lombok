@@ -112,13 +112,13 @@ public class PostCompilerApp extends LombokApp {
 		return filesVisited == 0 ? 1 : 0;
 	}
 	
-	static List<File> cmdArgsToFiles(List<String> fileNames) {
+	static List<File> cmdArgsToFiles(List<String> fileNames)  {
 		List<File> filesToProcess = new ArrayList<File>();
-		for (String f : fileNames) addFiles(filesToProcess, f);
+		fileNames.forEach(f -> {
+addFiles(filesToProcess, f);
+});
 		return filesToProcess;
-	}
-	
-	static void addFiles(List<File> filesToProcess, String f) {
+	}static void addFiles(List<File> filesToProcess, String f) {
 		File file = new File(f);
 		if (file.isDirectory()) {
 			addRecursively(filesToProcess, file);

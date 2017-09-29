@@ -145,13 +145,11 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		}
 	}
 	
-	public void createSetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode sourceNode, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam) {
-		for (EclipseNode fieldNode : fieldNodes) {
-			createSetterForField(level, fieldNode, sourceNode, whineIfExists, onMethod, onParam);
-		}
-	}
-	
-	public void createSetterForField(
+	public void createSetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode sourceNode, boolean whineIfExists, List<Annotation> onMethod, List<Annotation> onParam)  {
+		fieldNodes.forEach(fieldNode -> {
+createSetterForField(level, fieldNode, sourceNode, whineIfExists, onMethod, onParam);
+});
+	}public void createSetterForField(
 			AccessLevel level, EclipseNode fieldNode, EclipseNode sourceNode,
 			boolean whineIfExists, List<Annotation> onMethod,
 			List<Annotation> onParam) {
