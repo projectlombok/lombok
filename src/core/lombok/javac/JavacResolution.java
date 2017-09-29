@@ -392,17 +392,17 @@ public class JavacResolution {
 		return genericsToJCTreeNodes(generics, ast, replacement);
 	}
 	
-	private static JCExpression genericsToJCTreeNodes(List<Type> generics, JavacAST ast, JCExpression rawTypeNode) throws TypeNotConvertibleException {
+	private static JCExpression genericsToJCTreeNodes(List<Type> generics, JavacAST ast, JCExpression rawTypeNode) throws TypeNotConvertibleException  {
 		if (generics != null && !generics.isEmpty()) {
 			ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
-			for (Type t : generics) args.append(typeToJCTree(t, ast, true, false));
+			generics.forEach(t -> {
+args.append(typeToJCTree(t, ast, true, false));
+});
 			return ast.getTreeMaker().TypeApply(rawTypeNode, args.toList());
 		}
 		
 		return rawTypeNode;
-	}
-	
-	private static JCExpression primitiveToJCTree(TypeKind kind, JavacTreeMaker maker) throws TypeNotConvertibleException {
+	}private static JCExpression primitiveToJCTree(TypeKind kind, JavacTreeMaker maker) throws TypeNotConvertibleException {
 		switch (kind) {
 		case BYTE:
 			return maker.TypeIdent(CTC_BYTE);

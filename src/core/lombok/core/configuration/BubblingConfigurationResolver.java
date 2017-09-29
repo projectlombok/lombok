@@ -38,7 +38,7 @@ public class BubblingConfigurationResolver implements ConfigurationResolver {
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> T resolve(ConfigurationKey<T> key) {
+	public <T> T resolve(ConfigurationKey<T> key)  {
 		boolean isList = key.getType().isList();
 		List<List<ListModification>> listModificationsList = null;
 		for (ConfigurationSource source : sources) {
@@ -59,11 +59,12 @@ public class BubblingConfigurationResolver implements ConfigurationResolver {
 		List<Object> listValues = new ArrayList<Object>();
 		Collections.reverse(listModificationsList);
 		for (List<ListModification> listModifications : listModificationsList) {
-			if (listModifications != null) for (ListModification modification : listModifications) {
-				listValues.remove(modification.getValue());
-				if (modification.isAdded()) listValues.add(modification.getValue());
-			}
+			if (listModifications != null) listModifications.stream().map(modification -> {
+listValues.remove(modification.getValue());
+return modification;
+}).filter(modification -> modification.isAdded()).forEach(modification -> {
+listValues.add(modification.getValue());
+});
 		}
 		return (T) listValues;
-	}
-}
+	}}

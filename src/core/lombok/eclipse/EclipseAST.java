@@ -255,15 +255,15 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		}
 	}
 	
-	private void propagateProblems() {
+	private void propagateProblems()  {
 		if (queuedProblems.isEmpty()) return;
 		CompilationUnitDeclaration cud = (CompilationUnitDeclaration) top().get();
 		if (cud.compilationResult == null) return;
-		for (ParseProblem problem : queuedProblems) problem.addToCompilationResult();
+		queuedProblems.forEach(problem -> {
+problem.addToCompilationResult();
+});
 		queuedProblems.clear();
-	}
-	
-	private final List<ParseProblem> queuedProblems = new ArrayList<ParseProblem>();
+	}private final List<ParseProblem> queuedProblems = new ArrayList<ParseProblem>();
 	
 	void addProblem(ParseProblem problem) {
 		queuedProblems.add(problem);

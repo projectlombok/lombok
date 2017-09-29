@@ -164,13 +164,11 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		}
 	}
 	
-	public void createGetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, boolean lazy, List<Annotation> onMethod) {
-		for (EclipseNode fieldNode : fieldNodes) {
-			createGetterForField(level, fieldNode, errorNode, source, whineIfExists, lazy, onMethod);
-		}
-	}
-	
-	public void createGetterForField(AccessLevel level,
+	public void createGetterForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists, boolean lazy, List<Annotation> onMethod)  {
+		fieldNodes.forEach(fieldNode -> {
+createGetterForField(level, fieldNode, errorNode, source, whineIfExists, lazy, onMethod);
+});
+	}public void createGetterForField(AccessLevel level,
 			EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists, boolean lazy, List<Annotation> onMethod) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			errorNode.addError("@Getter is only supported on a class or a field.");

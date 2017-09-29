@@ -146,13 +146,11 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		}
 	}
 	
-	public void createWitherForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
-		for (JavacNode fieldNode : fieldNodes) {
-			createWitherForField(level, fieldNode, errorNode, whineIfExists, onMethod, onParam);
-		}
-	}
-	
-	public void createWitherForField(AccessLevel level, JavacNode fieldNode, JavacNode source, boolean strictMode, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	public void createWitherForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode errorNode, boolean whineIfExists, List<JCAnnotation> onMethod, List<JCAnnotation> onParam)  {
+		fieldNodes.forEach(fieldNode -> {
+createWitherForField(level, fieldNode, errorNode, whineIfExists, onMethod, onParam);
+});
+	}public void createWitherForField(AccessLevel level, JavacNode fieldNode, JavacNode source, boolean strictMode, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		JavacNode typeNode = fieldNode.up();
 		boolean makeAbstract = typeNode != null && typeNode.getKind() == Kind.TYPE && (((JCClassDecl) typeNode.get()).mods.flags & Flags.ABSTRACT) != 0;
 		

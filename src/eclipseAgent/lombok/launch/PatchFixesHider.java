@@ -324,21 +324,17 @@ final class PatchFixesHider {
 			return true;
 		}
 		
-		@java.lang.SuppressWarnings({"unchecked", "rawtypes"}) public static java.util.List removeGeneratedNodes(java.util.List list) {
+		@java.lang.SuppressWarnings({"unchecked", "rawtypes"}) public static java.util.List removeGeneratedNodes(java.util.List list)  {
 			try {
 				java.util.List realNodes = new java.util.ArrayList(list.size());
-				for (java.lang.Object node : list) {
-					if(!isGenerated(((org.eclipse.jdt.core.dom.ASTNode)node))) {
+				list.stream().filter(node -> !isGenerated(((org.eclipse.jdt.core.dom.ASTNode)node))).forEach(node -> {
 						realNodes.add(node);
-					}
-				}
+					});
 				return realNodes;
 			} catch (Exception e) {
 			}
 			return list;
-		}
-		
-		public static java.lang.String getRealMethodDeclarationSource(java.lang.String original, Object processor, org.eclipse.jdt.core.dom.MethodDeclaration declaration) throws Exception {
+		}public static java.lang.String getRealMethodDeclarationSource(java.lang.String original, Object processor, org.eclipse.jdt.core.dom.MethodDeclaration declaration) throws Exception {
 			if (!isGenerated(declaration)) return original;
 			
 			List<org.eclipse.jdt.core.dom.Annotation> annotations = new ArrayList<org.eclipse.jdt.core.dom.Annotation>();
@@ -374,7 +370,7 @@ final class PatchFixesHider {
 		}
 		
 		// part of getRealMethodDeclarationSource(...)
-		public static void addAnnotations(List<org.eclipse.jdt.core.dom.Annotation> annotations, StringBuilder signature) {
+		public static void addAnnotations(List<org.eclipse.jdt.core.dom.Annotation> annotations, StringBuilder signature)  {
 			/*
 			 * We SHOULD be able to handle the following cases:
 			 * @Override
@@ -404,18 +400,16 @@ final class PatchFixesHider {
 				if (!values.isEmpty()) {
 					signature.append("(");
 					boolean first = true;
-					for (String string : values) {
-						if (!first) signature.append(", ");
-						first = false;
-						signature.append('"').append(string).append('"');
-					}
+					values.forEach(string -> {
+if (!first) signature.append(", ");
+first = false;
+signature.append('"').append(string).append('"');
+});
 					signature.append(")");
 				}
 				signature.append(" ");
 			}
-		}
-		
-		public static org.eclipse.jdt.core.dom.MethodDeclaration getRealMethodDeclarationNode(org.eclipse.jdt.core.IMethod sourceMethod, org.eclipse.jdt.core.dom.CompilationUnit cuUnit) throws JavaModelException {
+		}public static org.eclipse.jdt.core.dom.MethodDeclaration getRealMethodDeclarationNode(org.eclipse.jdt.core.IMethod sourceMethod, org.eclipse.jdt.core.dom.CompilationUnit cuUnit) throws JavaModelException {
 			MethodDeclaration methodDeclarationNode = ASTNodeSearchUtil.getMethodDeclarationNode(sourceMethod, cuUnit);
 			if (isGenerated(methodDeclarationNode)) {
 				IType declaringType = sourceMethod.getDeclaringType();
