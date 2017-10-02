@@ -7,6 +7,29 @@
 	margin-bottom: 40px;
 }
 
+.supporterBar .introText {
+	margin-top: 16px;
+}
+
+.barItem {
+	margin: 16px;
+	max-width: 168px;
+}
+
+.barItem img {
+	width: 100%;
+}
+
+.supportItem, .barItem {
+	display: inline-block;
+}
+
+.supporterBar {
+	width: 100%;
+	margin-left: auto;
+	margin-right: auto;
+}
+
 .errorBox {
 	border: 1px dashed #F44;
 	font-size: 1.2em;

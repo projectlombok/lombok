@@ -1,0 +1,78 @@
+<#import "/_scaffold.html" as main>
+
+<@main.scaffold load=["/js/order-license.js"]>
+	<div class="page-header top5">
+		<div class="row text-center">
+			<h2>Order a professional or enterprise license</h2>
+		</div>
+		<div class="row">
+			<form>
+				<fieldset class="form-group">
+					<legend>Basic information</legend>
+					<div class="form-group">
+						<label for="companyName">Company name</label>
+						<input type="text" class="form-control" aria-describedby="companyNameHelp" id="companyName" placeholder="license holder name" />
+						<small id="companyNameHelp" class="form-text text-muted">If applying for an individual license, fill in your own name.</small>
+					</div>
+					<div class="form-group">
+						<label for="email">Email</label>
+						<input type="email" class="form-control" aria-describedby="emailHelp" id="email" placeholder="email of contact / holder" />
+						<small id="emailHelp" class="form-text text-muted">We will never share this email with any third parties; we'll email you the invoice at this email address.</small>
+					</div>
+				</fieldset>
+				<fieldset class="form-group">
+					<legend>Type of license</legend>
+					<div class="form-check">
+						<label class="form-check-label">
+							<input type="radio" class="form-check-input" name="licenseType" value="professional" checked="checked" />
+							Professional
+						</label>
+					</div>
+					<div class="form-check">
+						<label class="form-check-label">
+							<input type="radio" class="form-check-input" name="licenseType" value="enterprise" />
+							Enterprise
+						</label>
+					</div>
+				</fieldset>
+				<fieldset class="form-group">
+					<legend>Mention</legend>
+					<div class="form-check">
+						<label class="form-check-label">
+							<input type="checkbox" class="form-check-input" name="mentionMe" checked="checked" />
+							Mention me on the <em>supporters / licensees</em> page.
+						</label>
+					</div>
+					<div class="form-group">
+						<label for="companyUrl">Company URL (optional)</label>
+						<input type="url" class="form-control" id="companyUrl" placeholder="URL of your company website" />
+					</div>
+					<div class="form-group">
+						<label for="logo">Company Logo (optional)</label>
+						<input type="file" style="display: none;" id="logo" name="logo" />
+						<button class="form-control" id="companyLogo">Upload a logo</button>
+						<div id="logoCnt" style="display: none;"></div>
+						<button class="form-control" id="deleteCompanyLogo" style="display: none;">Remove logo</button>
+					</div>
+				</fieldset>
+				<button type="submit" class="btn btn-primary">Submit order</button>
+			</p>
+		</div>
+	</div>
+	<div>
+Form fields:
+
+* EU / US / Elders
+* Naam bedrijf
+* Do you want to be mentioned?
+* Link to logo
+* Link to website
+* Professional of enterprise
+* # of developers
+* Email of contact.sta
+* In EU: VAT Number
+* In EU: How would you like to pay? IBAN or Payoneer
+* In US: How would you like to pay? International wire transfer, or Payoneer (default = payoneer).
+* Elders: We’ll get back to you..
+	</div>		
+</@main.scaffold>

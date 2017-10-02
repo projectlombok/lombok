@@ -1,0 +1,13 @@
+{
+	"modWeight": {
+		"professional": 2.0,
+		"enterprise": 4.0,
+		"patron": 1.0
+	},
+	"professional": [
+	],
+	"enterprise": [
+	],
+	"patron": [
+	]
+}

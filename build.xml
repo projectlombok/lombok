@@ -118,6 +118,11 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<ivy:retrieve />
 	</target>
 	
+	<target name="ensureSupportersDeps" depends="config-ivy">
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="supporters" />
+		<ivy:retrieve />
+	</target>
+	
 	<target name="version" depends="ensure-ipp" description="Shows the version number." unless="lombok.version">
 		<mkdir dir="build/lombok" />
 		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" ecj="true" nowarn="true">
@@ -889,7 +894,11 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</ant>
 	</target>
 	
-	<target name="website-only-publish" depends="config-ssh, clean, version"
+	<target name="website-supporters" depends="ensureSupportersDeps, website-only" description="Updates the supporters repo and adds it to the website build.">
+		<ant antfile="buildScripts/supporters.ant.xml" target="deployToWebsiteBuild" inheritAll="false" />
+	</target>
+	
+	<target name="website-only-publish" depends="config-ssh, clean, ensureSupportersDeps"
 			description="Prepares the website (using lombok version current 'live') for distribution and then publishes it to projectlombok.org.">
 		<ant antfile="buildScripts/website.ant.xml" target="website-only-publish" inheritAll="false">
 			<property name="ssh.username" value="${ssh.username}" />
@@ -897,7 +906,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</ant>
 	</target>
 	
-	<target name="website-publish" depends="config-ssh, clean, version"
+	<target name="website-publish" depends="config-ssh, clean, version, ensureSupportersDeps"
 			description="Prepares the website for distribution and then publishes it to projectlombok.org.">
 		<ant antfile="buildScripts/website.ant.xml" target="website-publish" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
