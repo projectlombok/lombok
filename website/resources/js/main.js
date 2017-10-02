@@ -1,8 +1,6 @@
 "use strict";
 
 (function($) {
-	swfobject.registerObject("player", "9.0.98", "videos/expressInstall.swf");
-	
 	function clickToTap() {
 		if (matchMedia && matchMedia('(hover: none)').matches) $(".clickToTap").each(function() {
 			var x = $(this);

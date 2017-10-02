@@ -11,28 +11,17 @@
 		<div class="video text-center">
 			<div id="clickForVideo"><span class="clickToTap">Click</span> to watch a 4 minute demo to learn more.</div>
 			<video id="demoVideo" hidden="hidden" width="800" height="480" poster="/img/poster.png" controls="controls" preload="none">
-				<source src="/videos/lombok.ogv" type="video/ogg" />
-				<source src="/videos/lombok.mp4" type="video/mp4" />
-				<source src="/videos/lombok-iPhone.m4v" type="video/mp4" />
-				<object id="player" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="800" height="500">
-					<param name="movie" value="/videos/player.swf?image=/img/poster.png&amp;file=/videos/lombok.mp4" />
-					<param name="allowfullscreen" value="true" />
-					<!--[if !IE]>-->
-					<object width="800" height="500" type="application/x-shockwave-flash"
-							data="/videos/player.swf?image=poster.png&amp;file=lombok.mp4" allowfullscreen="true">
-						<!--<![endif]-->
-						<@main.h1 title="Can't watch the video?" />
-						<p>
-							<a href="https://www.youtube.com/watch?v=y6zMyM-YTgg">See it on Youtube instead</a>.
-						</p><p>
-							Or, download the video:<br/>
-							<a href="/videos/lombok.mp4">MPEG4 / H.264 (Windows / Mac)</a> |
-							<a href="/videos/lombok.ogv">Ogg Theora &amp; Vorbis ".ogv" (Linux)</a>
-						</p>
-						<!--[if !IE]>-->
-					</object>
-					<!--<![endif]-->
-				</object>
+				<source src="https://projectlombok.org/videos/lombok.ogv" type="video/ogg" />
+				<source src="https://projectlombok.org/videos/lombok.mp4" type="video/mp4" />
+				<source src="https://projectlombok.org/videos/lombok-iPhone.m4v" type="video/mp4" />
+				<@main.h1 title="Can't watch the video?" />
+				<p>
+					<a href="https://www.youtube.com/watch?v=y6zMyM-YTgg">See it on Youtube instead</a>.
+				</p><p>
+					Or, download the video:<br/>
+					<a href="/videos/lombok.mp4">MPEG4 / H.264 (Windows / Mac)</a> |
+					<a href="/videos/lombok.ogv">Ogg Theora &amp; Vorbis ".ogv" (Linux)</a>
+				</p>
 			</video>
 			<div class="row">
 				<div class="text-center">

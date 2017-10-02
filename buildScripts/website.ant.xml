@@ -199,7 +199,7 @@ such as applying the templates to produce the website, converting the changelog 
 			trust="true" command="/data/lombok/stagingCmd/deployEdge" />
 	</target>
 	
-	<target name="javadoc" description="Generates the javadoc" depends="-ensure-version, -ensure-fullversion">
+	<target name="javadoc" description="Generates the javadoc" depends="-ensure-version, -ensure-fullversion" unless="skip.javadoc">
 		<delete dir="build/api" quiet="true" />
 		<delete dir="doc/api" quiet="true" />
 		<mkdir dir="build/api" />
