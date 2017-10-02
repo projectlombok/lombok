@@ -123,3 +123,18 @@ ga('send', 'pageview');
 	</body>
 </html>
 </#macro>
+
+<#macro h1 title class="">
+<#assign idvalue="*"?no_esc + "${title}"/>
+<h1 class="${class}" id="${idvalue?markup_string?replace("[ _]", "-", "r")?lower_case?replace("[^a-zA-Z0-9-]", "", "r")}">${title}</h1>
+</#macro>
+
+<#macro h2 title class="">
+<#assign idvalue="*"?no_esc + "${title}"/>
+<h2 class="${class}" id="${idvalue?markup_string?replace("[ _]", "-", "r")?lower_case?replace("[^a-zA-Z0-9-]", "", "r")}">${title}</h2>
+</#macro>
+
+<#macro h3 title class="">
+<#assign idvalue="*"?no_esc + "${title}"/>
+<h3 class="${class}" id="${idvalue?markup_string?replace("[ _]", "-", "r")?lower_case?replace("[^a-zA-Z0-9-]", "", "r")}">${title}</h3>
+</#macro>

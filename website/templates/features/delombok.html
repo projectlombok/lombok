@@ -13,7 +13,7 @@
 			Delombok's output format can be configured with command line options (use <code>--format-help</code> for a complete list). A few such options are automatically scanned from input if possible (such as indent). If delombok's formatting is not conforming to your preferred code style, have a look!
 		</p>
 
-		<h3>Running delombok on the command line</h3>
+		<@f.main.h3 title="Running delombok on the command line" />
 
 		<p>
 			Delombok is included in <code>lombok.jar</code>. To use it, all you need to run on the command line is:
@@ -28,7 +28,7 @@
 			</div>
 		</p>
 
-		<h3>Running delombok in ant</h3>
+		<@f.main.h3 title="Running delombok in ant" />
 
 		<p>
 			<code>lombok.jar</code> includes an ant task which can apply delombok for you. For example, to create javadoc for your project, your <code>build.xml</code> file would look something like:
@@ -45,13 +45,13 @@
 			Instead of a <code>from</code> attribute, you can also nest <code>&lt;fileset&gt;</code> nodes.
 		</p>
 
-		<h3>Running delombok in maven</h3>
+		<@f.main.h3 title="Running delombok in maven" />
 
 		<p>
 			Anthony Whitford has written a <a href="https://github.com/awhitford/lombok.maven">maven plugin</a> for delomboking your source code.
 		</p>
 		
-		<h3>Limitations</h3>
+		<@f.main.h3 title="Limitations" />
 
 		<p>
 			Delombok tries to preserve your code as much as it can, but comments may move around a little bit, especially comments that are in the middle of a syntax node. For example, any comments appearing in the middle of a list of method modifiers, such as <code>public /*comment*/ static ...</code> will move towards the front of the list of modifiers. In practice, any java source parsing tool will not be affected.<br />
