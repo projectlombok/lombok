@@ -143,12 +143,22 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			return;
 		}
 		
+		boolean hasFieldIncludes = false;
+		for (JavacNode child : typeNode.down()) {
+			if (child.getKind() != Kind.FIELD) continue;
+			if (hasAnnotation(ToString.Of.class, child)) {
+				hasFieldIncludes = true;
+				break;
+			}
+		}
+		
 		ListBuffer<JavacNode> nodesForToString = new ListBuffer<JavacNode>();
-		if (includes != null) {
+		if (includes != null || hasFieldIncludes) {
 			for (JavacNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
 				JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
-				if (includes.contains(fieldDecl.name.toString())) nodesForToString.append(child);
+				if (includes != null && includes.contains(fieldDecl.name.toString())) nodesForToString.append(child);
+				if (hasAnnotation(ToString.Of.class, child)) nodesForToString.append(child);
 			}
 		} else {
 			for (JavacNode child : typeNode.down()) {
@@ -158,6 +168,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 				if ((fieldDecl.mods.flags & Flags.STATIC) != 0) continue;
 				//Skip excluded fields.
 				if (excludes != null && excludes.contains(fieldDecl.name.toString())) continue;
+				if (hasAnnotation(ToString.Exclude.class, child)) continue;
 				//Skip fields that start with $.
 				if (fieldDecl.name.toString().startsWith("$")) continue;
 				nodesForToString.append(child);

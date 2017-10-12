@@ -150,12 +150,22 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 			} catch (Exception ignore) {}
 		}
 		
+		boolean hasFieldIncludes = false;
+		for (EclipseNode child : typeNode.down()) {
+			if (child.getKind() != Kind.FIELD) continue;
+			if (hasAnnotation(ToString.Of.class, child)) {
+				hasFieldIncludes = true;
+				break;
+			}
+		}
+		
 		List<EclipseNode> nodesForToString = new ArrayList<EclipseNode>();
-		if (includes != null) {
+		if (includes != null || hasFieldIncludes) {
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
 				FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
-				if (includes.contains(new String(fieldDecl.name))) nodesForToString.add(child);
+				if (includes != null && includes.contains(new String(fieldDecl.name))) nodesForToString.add(child);
+				if (hasAnnotation(ToString.Of.class, child)) nodesForToString.add(child);
 			}
 		} else {
 			for (EclipseNode child : typeNode.down()) {
@@ -165,6 +175,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 				
 				//Skip excluded fields.
 				if (excludes != null && excludes.contains(new String(fieldDecl.name))) continue;
+				if (hasAnnotation(ToString.Exclude.class, child)) continue;
 				
 				nodesForToString.add(child);
 			}

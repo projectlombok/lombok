@@ -18,3 +18,23 @@
     return (("ToStringExclude(x=" + this.x) + ")");
   }
 }
+@lombok.ToString class ToStringOfField {
+  @lombok.ToString.Of int x;
+  int y;
+  ToStringOfField() {
+    super();
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.lang.String toString() {
+    return (("ToStringOfField(x=" + this.x) + ")");
+  }
+}
+@lombok.ToString class ToStringExcludeField {
+  int x;
+  @lombok.ToString.Exclude int y;
+  ToStringExcludeField() {
+    super();
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.lang.String toString() {
+    return (("ToStringExcludeField(x=" + this.x) + ")");
+  }
+}

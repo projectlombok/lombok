@@ -8,3 +8,15 @@ class ToStringExclude {
     int x;
     int y;
 }
+@lombok.ToString
+class ToStringOfField {
+    @lombok.ToString.Of
+    int x;
+    int y;
+}
+@lombok.ToString
+class ToStringExcludeField {
+    int x;
+    @lombok.ToString.Exclude
+    int y;
+}
