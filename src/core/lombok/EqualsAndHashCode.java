@@ -89,4 +89,18 @@ public @interface EqualsAndHashCode {
 	@Retention(RetentionPolicy.SOURCE)
 	@Target({})
 	@interface AnyAnnotation {}
+	
+	/**
+	 * The field annotated with {@code @Of} is added to the class's {@link #of()}.
+	 */
+	@Target(ElementType.FIELD)
+	@Retention(RetentionPolicy.SOURCE)
+	public @interface Of {}
+	
+	/**
+	 * The field annotated with {@code @Exclude} is added to the class's {@link #exclude()}.
+	 */
+	@Target(ElementType.FIELD)
+	@Retention(RetentionPolicy.SOURCE)
+	public @interface Exclude {}
 }

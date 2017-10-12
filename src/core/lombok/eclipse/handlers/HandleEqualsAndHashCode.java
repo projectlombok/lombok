@@ -209,12 +209,22 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			}
 		}
 		
+		boolean hasFieldIncludes = false;
+		for (EclipseNode child : typeNode.down()) {
+			if (child.getKind() != Kind.FIELD) continue;
+			if (hasAnnotation(EqualsAndHashCode.Of.class, child)) {
+				hasFieldIncludes = true;
+				break;
+			}
+		}
+		
 		List<EclipseNode> nodesForEquality = new ArrayList<EclipseNode>();
-		if (includes != null) {
+		if (includes != null || hasFieldIncludes) {
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
 				FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
-				if (includes.contains(new String(fieldDecl.name))) nodesForEquality.add(child);
+				if (includes != null && includes.contains(new String(fieldDecl.name))) nodesForEquality.add(child);
+				if (hasAnnotation(EqualsAndHashCode.Of.class, child)) nodesForEquality.add(child);
 			}
 		} else {
 			for (EclipseNode child : typeNode.down()) {
@@ -226,6 +236,8 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 				if ((fieldDecl.modifiers & ClassFileConstants.AccTransient) != 0) continue;
 				//Skip excluded fields.
 				if (excludes != null && excludes.contains(new String(fieldDecl.name))) continue;
+				if (hasAnnotation(EqualsAndHashCode.Exclude.class, child)) continue;
+				
 				nodesForEquality.add(child);
 			}
 		}
