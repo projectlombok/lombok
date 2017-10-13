@@ -215,6 +215,13 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			}
 		}
 		
+		for (JavacNode child : typeNode.down()) {
+			if (child.getKind() != Kind.FIELD) continue;
+			//Abuse hasAnnotation just for deleting directly on the children
+			hasAnnotationAndDeleteIfNeccessary(EqualsAndHashCode.Of.class, child);
+			hasAnnotationAndDeleteIfNeccessary(EqualsAndHashCode.Exclude.class, child);
+		}
+		
 		boolean isFinal = (((JCClassDecl) typeNode.get()).mods.flags & Flags.FINAL) != 0;
 		boolean needsCanEqual = !isFinal || !isDirectDescendantOfObject;
 		MemberExistsResult equalsExists = methodExists("equals", typeNode, 1);

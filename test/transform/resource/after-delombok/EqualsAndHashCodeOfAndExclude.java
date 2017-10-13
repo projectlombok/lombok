@@ -45,7 +45,6 @@ final class EqualsAndHashCodeExclude {
 	}
 }
 final class EqualsAndHashCodeOfField {
-	@lombok.EqualsAndHashCode.Of
 	int x;
 	int y;
 	@java.lang.Override
@@ -70,7 +69,6 @@ final class EqualsAndHashCodeOfField {
 }
 final class EqualsAndHashCodeExcludeField {
 	int x;
-	@lombok.EqualsAndHashCode.Exclude
 	int y;
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")

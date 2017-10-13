@@ -19,7 +19,6 @@ class ToStringExclude {
     }
 }
 class ToStringOfField {
-    @lombok.ToString.Of
     int x;
     int y;
     @java.lang.Override
@@ -31,7 +30,6 @@ class ToStringOfField {
 }
 class ToStringExcludeField {
     int x;
-    @lombok.ToString.Exclude
     int y;
     @java.lang.Override
     @java.lang.SuppressWarnings("all")

@@ -175,6 +175,13 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			}
 		}
 		
+		for (JavacNode child : typeNode.down()) {
+			if (child.getKind() != Kind.FIELD) continue;
+			//Abuse hasAnnotation just for deleting directly on the children
+			hasAnnotationAndDeleteIfNeccessary(ToString.Of.class, child);
+			hasAnnotationAndDeleteIfNeccessary(ToString.Exclude.class, child);
+		}
+		
 		switch (methodExists("toString", typeNode, 0)) {
 		case NOT_EXISTS:
 			JCMethodDecl method = createToString(typeNode, nodesForToString.toList(), includeFieldNames, callSuper, fieldAccess, source.get());
