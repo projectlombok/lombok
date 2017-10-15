@@ -154,7 +154,7 @@ final class LombokFileObjects {
 		JavaFileManager manager;
 
 		public BaseFileManagerWrapper(JavaFileManager manager) {
-			super(StandardCharsets.UTF_8);
+			super(null); // use default encoding
 			this.manager = manager;
 		}
 		
