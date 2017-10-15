@@ -22,13 +22,18 @@
 
 package lombok.javac.apt;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
@@ -120,6 +125,8 @@ final class LombokFileObjects {
 				Class<?> superType = Class.forName("com.sun.tools.javac.file.BaseFileManager");
 				if (superType.isInstance(wrappedManager)) {
 					return new Java9Compiler(wrappedManager);
+				} else {
+					return new Java9Compiler(new BaseFileManagerWrapper(wrappedManager));
 				}
 			}
 			catch (Exception e) {}
@@ -141,6 +148,80 @@ final class LombokFileObjects {
 			}
 		}
 		throw new IllegalArgumentException(sb.toString());
+	}
+
+	static class BaseFileManagerWrapper extends BaseFileManager {
+		JavaFileManager manager;
+
+		public BaseFileManagerWrapper(JavaFileManager manager) {
+			super(StandardCharsets.UTF_8); // TODO:
+			this.manager = manager;
+		}
+		
+		@Override
+		public int isSupportedOption(String option) {
+			return manager.isSupportedOption(option);
+		}
+
+		@Override
+		public ClassLoader getClassLoader(Location location) {
+			return manager.getClassLoader(location);
+		}
+
+		@Override
+		public Iterable<JavaFileObject> list(Location location, String packageName, Set<Kind> kinds, boolean recurse) throws IOException {
+			return manager.list(location, packageName, kinds, recurse);
+		}
+
+		@Override
+		public String inferBinaryName(Location location, JavaFileObject file) {
+			return manager.inferBinaryName(location, file);
+		}
+
+		@Override
+		public boolean isSameFile(FileObject a, FileObject b) {
+			return manager.isSameFile(a, b);
+		}
+
+		@Override
+		public boolean handleOption(String current, Iterator<String> remaining) {
+			return manager.handleOption(current, remaining);
+		}
+
+		@Override
+		public boolean hasLocation(Location location) {
+			return manager.hasLocation(location);
+		}
+
+		@Override
+		public JavaFileObject getJavaFileForInput(Location location, String className, Kind kind) throws IOException {
+			return manager.getJavaFileForInput(location, className, kind);
+		}
+
+		@Override
+		public JavaFileObject getJavaFileForOutput(Location location, String className, Kind kind, FileObject sibling) throws IOException {
+			return manager.getJavaFileForOutput(location, className, kind, sibling);
+		}
+
+		@Override
+		public FileObject getFileForInput(Location location, String packageName, String relativeName) throws IOException {
+			return manager.getFileForInput(location, packageName, relativeName);
+		}
+
+		@Override
+		public FileObject getFileForOutput(Location location, String packageName, String relativeName, FileObject sibling) throws IOException {
+			return manager.getFileForOutput(location, packageName, relativeName, sibling);
+		}
+
+		@Override
+		public void flush() throws IOException {
+			manager.flush();
+		}
+
+		@Override
+		public void close() throws IOException {
+			manager.close();
+		}
 	}
 	
 	static JavaFileObject createEmpty(Compiler compiler, String name, Kind kind) {
