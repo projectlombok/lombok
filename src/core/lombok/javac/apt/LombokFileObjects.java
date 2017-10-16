@@ -26,7 +26,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Iterator;
@@ -37,6 +37,7 @@ import javax.tools.FileObject;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
+import javax.tools.StandardLocation;
 
 import lombok.core.DiagnosticsReceiver;
 
@@ -126,7 +127,8 @@ final class LombokFileObjects {
 				if (superType.isInstance(wrappedManager)) {
 					return new Java9Compiler(wrappedManager);
 				} else {
-					return new Java9Compiler(new BaseFileManagerWrapper(wrappedManager));
+					String encoding = getEncodingOf(wrappedManager);
+					return new Java9Compiler(new BaseFileManagerWrapper(wrappedManager, encoding != null ? Charset.forName(encoding) : null));
 				}
 			}
 			catch (Exception e) {}
@@ -150,11 +152,23 @@ final class LombokFileObjects {
 		throw new IllegalArgumentException(sb.toString());
 	}
 
+	private static String getEncodingOf(JavaFileManager manager) {
+		try {
+			// FileObject may be instance of org.jetbrains.jps.javac.OutputFileObject
+            FileObject fo = manager.getFileForOutput(StandardLocation.CLASS_OUTPUT, "", "dummy", null);
+            Field encodingField = fo.getClass().getDeclaredField("myEncodingName");
+            encodingField.setAccessible(true);
+            return (String)encodingField.get(fo);
+        } catch (Exception e) {
+            return null;
+        }
+	}
+
 	static class BaseFileManagerWrapper extends BaseFileManager {
 		JavaFileManager manager;
 
-		public BaseFileManagerWrapper(JavaFileManager manager) {
-			super(null); // use default encoding
+		public BaseFileManagerWrapper(JavaFileManager manager, Charset charset) {
+			super(charset);
 			this.manager = manager;
 		}
 		
