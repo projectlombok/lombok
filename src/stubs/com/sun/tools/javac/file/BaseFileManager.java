@@ -4,5 +4,8 @@
 package com.sun.tools.javac.file;
 
 import javax.tools.JavaFileManager;
+import java.nio.charset.Charset;
 
-public abstract class BaseFileManager implements JavaFileManager{}
+public abstract class BaseFileManager implements JavaFileManager {
+	protected BaseFileManager(Charset charset) {}
+}
