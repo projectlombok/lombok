@@ -23,12 +23,13 @@
 package lombok.javac.apt;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -100,13 +101,18 @@ final class LombokFileObjects {
 	
 	private LombokFileObjects() {}
 	
+	private static final List<String> KNOWN_JAVA9_FILE_MANAGERS = Arrays.asList(
+		"com.google.errorprone.MaskedClassLoader$MaskedFileManager",
+		"com.google.devtools.build.buildjar.javac.BlazeJavacMain$ClassloaderMaskingFileManager",
+		"org.netbeans.modules.java.source.parsing.ProxyFileManager",
+		"com.sun.tools.javac.api.ClientCodeWrapper$WrappedStandardJavaFileManager"
+	);
+	
 	static Compiler getCompiler(JavaFileManager jfm) {
 		String jfmClassName = jfm != null ? jfm.getClass().getName() : "null";
 		if (jfmClassName.equals("com.sun.tools.javac.util.DefaultFileManager")) return Compiler.JAVAC6;
 		if (jfmClassName.equals("com.sun.tools.javac.util.JavacFileManager")) return Compiler.JAVAC6;
-		if (jfmClassName.equals("com.sun.tools.javac.file.JavacFileManager") ||
-				jfmClassName.equals("com.google.errorprone.MaskedClassLoader$MaskedFileManager") ||
-				jfmClassName.equals("com.google.devtools.build.buildjar.javac.BlazeJavacMain$ClassloaderMaskingFileManager")) {
+		if (jfmClassName.equals("com.sun.tools.javac.file.JavacFileManager")) {
 			try {
 				Class<?> superType = Class.forName("com.sun.tools.javac.file.BaseFileManager");
 				if (superType.isInstance(jfm)) {
@@ -116,12 +122,9 @@ final class LombokFileObjects {
 			catch (Exception e) {}
 			return Compiler.JAVAC7;
 		}
-		if (jfmClassName.equals("com.sun.tools.javac.api.ClientCodeWrapper$WrappedStandardJavaFileManager")) {
+		if (KNOWN_JAVA9_FILE_MANAGERS.contains(jfmClassName)) {
 			try {
-				Field wrappedField = Class.forName("com.sun.tools.javac.api.ClientCodeWrapper$WrappedJavaFileManager").getDeclaredField("clientJavaFileManager");
-				wrappedField.setAccessible(true);
-				JavaFileManager wrappedManager = (JavaFileManager) wrappedField.get(jfm);
-				return new Java9Compiler(wrappedManager);
+				return new Java9Compiler(jfm);
 			}
 			catch (Exception e) {}
 		}
