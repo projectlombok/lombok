@@ -42,6 +42,13 @@ dependencies {
 				Restart Android Studio
 			</li></ul>
 		</p>
+		<p>
+			Modify your application's <code>dependencies</code> block:
+<pre>
+dependencies {
+	compileOnly 'org.projectlombok:lombok:${version}'
+	annotationProcessor 'org.projectlombok:lombok:${version}'
+}</pre>
 	</@s.section>
 
 	<@s.section title="Eclipse">
