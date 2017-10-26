@@ -1,0 +1,5 @@
+apply plugin: 'java'
+
+dependencies {
+	compileOnly files('lombok.jar')
+}
