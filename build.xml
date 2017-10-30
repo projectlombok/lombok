@@ -81,7 +81,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	
 	<target name="load-ipp" depends="download-ipp">
 		<taskdef classpath="lib/ivyplusplus.jar" resource="com/zwitserloot/ivyplusplus/antlib.xml" uri="antlib:com.zwitserloot.ivyplusplus" />
-		<ivy:ensureippversion version="1.12" property="ivyplusplus.minimumAvailable" />
+		<ivy:ensureippversion version="1.22" property="ivyplusplus.minimumAvailable" />
 	</target>
 	
 	<target name="redownload-ipp" unless="ivyplusplus.minimumAvailable">
@@ -122,7 +122,10 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	
 	<target name="version" depends="ensure-ipp" description="Shows the version number." unless="lombok.version">
 		<mkdir dir="build/lombok" />
-		<javac includeDestClasses="false" srcdir="src/core" debug="on" destdir="build/lombok" source="1.5" target="1.5" includes="lombok/core/Version.java" includeantruntime="false" />
+		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" ecj="true" nowarn="true">
+			<src path="src/core" />
+			<include name="lombok/core/Version.java" />
+		</ivy:compile>
 		<java
 			classname="lombok.core.Version"
 			classpath="build/lombok"
@@ -153,25 +156,23 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		We re-create the file at the end of this target. -->
 		<delete file="build/lombok/META-INF/services/javax.annotation.processing.Processor" quiet="true" />
 		<delete file="build/lombok/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor" quiet="true" />
-		<ivy:compile destdir="build/stubsstubs" source="1.5" target="1.5" includeantruntime="false">
-			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
+		<ivy:compile destdir="build/stubsstubs" source="1.5" target="1.5" ecj="true" nowarn="true">
 			<src path="src/stubsstubs" />
 		</ivy:compile>
-		<ivy:compile destdir="build/stubs" source="1.5" target="1.5" includeantruntime="false">
-			<compilerarg value="-Xbootclasspath/p:lib/openJDK6Environment/rt-openjdk6.jar" />
+		<ivy:compile destdir="build/stubs" source="1.5" target="1.5" ecj="true" nowarn="true">
 			<src path="src/stubs" />
 			<src path="src/javac-only-stubs" />
 			<classpath location="build/stubsstubs" />
 		</ivy:compile>
 		
-		<ivy:compile destdir="build/lombok-utils" source="1.5" target="1.5" includeantruntime="false">
-			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
+		<ivy:compile destdir="build/lombok-utils" source="1.5" target="1.5" ecj="true" nowarn="true" includeSystemBootclasspath="true">
+			<bootclasspath location="build/stubs" />
 			<src path="src/utils" />
 			<exclude name="lombok/javac/**" />
 			<classpath refid="build.path" />
 		</ivy:compile>
 		
-		<ivy:compile destdir="build/lombok-utils" source="1.6" target="1.6" includeantruntime="false">
+		<ivy:compile destdir="build/lombok-utils" source="1.6" target="1.6">
 			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
 			<src path="src/utils" />
 			<include name="lombok/javac/**" />
@@ -195,18 +196,18 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			</filterchain>
 		</copy>
 
-		<ivy:compile destdir="build/lombok" source="1.4" target="1.4" includeantruntime="false">
-			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
+		<ivy:compile destdir="build/lombok" source="1.4" target="1.4" ecj="true" nowarn="true" includeSystemBootclasspath="true">
+			<bootclasspath location="build/stubs" />
 			<src path="build/transformedSources" />
 		</ivy:compile>
 
-		<ivy:compile destdir="build/lombok/Class50" source="1.4" target="1.6" includeantruntime="false">
-			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
+		<ivy:compile destdir="build/lombok/Class50" source="1.4" target="1.6" ecj="true" nowarn="true" includeSystemBootclasspath="true">
+			<bootclasspath location="build/stubs" />
 			<src path="build/transformedSources" />
 		</ivy:compile>
 
-		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" includeantruntime="false">
-			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
+		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" ecj="true" nowarn="true" includeSystemBootclasspath="true">
+			<bootclasspath location="build/stubs" />
 			<src path="src/launch" />
 			<src path="src/core" />
 			<src path="src/installer" />
@@ -217,15 +218,15 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<classpath refid="build.path" />
 		</ivy:compile>
 		
-		<ivy:compile destdir="build/lombok/Class50" source="1.5" target="1.6" includeantruntime="false">
-			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
+		<ivy:compile destdir="build/lombok/Class50" source="1.5" target="1.6" ecj="true" nowarn="true" includeSystemBootclasspath="true">
+			<bootclasspath location="build/stubs" />
 			<src path="src/eclipseAgent" />
 			<include name="lombok/launch/PatchFixesHider.java" />
 			<classpath location="build/lombok" />
 			<classpath refid="build.path" />
 		</ivy:compile>
 		
-		<ivy:compile destdir="build/lombok" source="1.6" target="1.6" includeantruntime="false">
+		<ivy:compile destdir="build/lombok" source="1.6" target="1.6">
 			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
 			<src path="src/core" />
 			<src path="src/delombok" />
@@ -469,7 +470,7 @@ ${sourceWarning}</echo>
 	
 	<target name="-test-compile" depends="ensureTestDeps, compile" unless="skipTests">
 		<mkdir dir="build/tests" />
-		<ivy:compile destdir="build/tests" source="1.5" target="1.5" includeantruntime="false">
+		<ivy:compile destdir="build/tests" source="1.5" target="1.5" ecj="true" nowarn="true">
 			<classpath refid="test.path" />
 			<classpath refid="build.path" />
 			<classpath path="build/lombok" />
@@ -806,7 +807,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 
 	<target name="testAp-compile" depends="ensureBuildDeps">
 		<delete file="build/testAP/META-INF/services/javax.annotation.processing.Processor" quiet="true" />
-		<ivy:compile destdir="build/testAP" source="1.7" target="1.7" includeantruntime="false">
+		<ivy:compile destdir="build/testAP" source="1.7" target="1.7">
 			<src path="src/testAP" />
 		</ivy:compile>
 		
