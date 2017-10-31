@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.net.URL;
@@ -94,7 +95,7 @@ public class SpiLoadUtil {
 		final Set<String> entries = new LinkedHashSet<String>();
 		while (resources.hasMoreElements()) {
 			URL url = resources.nextElement();
-			readServicesFromUrl(entries, url);
+			readServicesFromUrl(entries, url, loader);
 		}
 		
 		final Iterator<String> names = entries.iterator();
@@ -123,7 +124,7 @@ public class SpiLoadUtil {
 		};
 	}
 	
-	private static void readServicesFromUrl(Collection<String> list, URL url) throws IOException {
+	private static void readServicesFromUrl(Collection<String> list, URL url, ClassLoader loader) throws IOException {
 		InputStream in = url.openStream();
 		try {
 			if (in == null) return;
@@ -136,6 +137,7 @@ public class SpiLoadUtil {
 				line = line.trim();
 				if (line.length() == 0) continue;
 				list.add(line);
+				addExtensionBase(url, line, loader);
 			}
 		} finally {
 			try {
@@ -144,6 +146,15 @@ public class SpiLoadUtil {
 		}
 	}
 	
+	private static void addExtensionBase(URL url, String name, ClassLoader loader) {
+		try {
+			Method method = loader.getClass().getDeclaredMethod("addExtensionBase", URL.class, String.class);
+			method.setAccessible(true);
+			method.invoke(loader, url, name);
+		} catch (Exception ignore) { // NOSONAR
+		}
+	}
+
 	/**
 	 * This method will find the @{code T} in {@code public class Foo extends BaseType<T>}.
 	 * 

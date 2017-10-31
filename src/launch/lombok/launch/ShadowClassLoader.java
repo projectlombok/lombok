@@ -94,6 +94,7 @@ class ShadowClassLoader extends ClassLoader {
 	private final String sclSuffix;
 	private final List<String> parentExclusion = new ArrayList<String>();
 	private final List<String> highlanders = new ArrayList<String>();
+	private final Map<String, String> extensionBases = new HashMap<String, String>();
 	
 	/**
 	 * @param source The 'parent' classloader.
@@ -302,6 +303,11 @@ class ShadowClassLoader extends ClassLoader {
 	private boolean inOwnBase(URL item, String name) {
 		if (item == null) return false;
 		String itemString = item.toString();
+		if (extensionBases.containsKey(name)) {
+			String base = extensionBases.get(name);
+			int baseLength = base.length();
+			return (itemString.length() == baseLength + name.length()) && base.regionMatches(0, itemString, 0, baseLength);
+		}
 		return (itemString.length() == SELF_BASE_LENGTH + name.length()) && SELF_BASE.regionMatches(0, itemString, 0, SELF_BASE_LENGTH);
 	}
 	
@@ -481,5 +487,21 @@ class ShadowClassLoader extends ClassLoader {
 	
 	public void addOverrideClasspathEntry(String entry) {
 		override.add(new File(entry));
+	}
+
+	/**
+	 * used in SpiLoadUtil via reflect
+	 *
+	 * @param url
+	 * @param name
+	 */
+	private void addExtensionBase(URL url, String name) {
+		String base = url.toString().split("!")[0] + "!/";
+		if (!base.equals(SELF_BASE)) {
+			String className = name.replace(".", "/") + ".class";
+			String altClassName = name.replace(".", "/") + ".SCL." + sclSuffix;
+			extensionBases.put(className, base);
+			extensionBases.put(altClassName, base);
+		}
 	}
 }
