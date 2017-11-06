@@ -3,8 +3,9 @@ Lombok Changelog
 
 ### v1.16.19 "Edgy Guinea Pig"
 * v1.16.18 is the latest stable release of Project Lombok.
-* PLATFORM: Possible support for jdk9 in the new IntelliJ, Netbeans and for Gradle
+* PLATFORM: Possible support for jdk9 in the new IntelliJ, Netbeans and for Gradle.
 * DEVELOPMENT: Compiling lombok on JDK1.9 is now possible.
+* BUGFIX: The generated hashCode would break the contract if `callSuper=true,of={}`. [Issue #1505](https://github.com/rzwitserloot/lombok/issues/1505)
 
 ### v1.16.18 (July 3rd, 2017)
 * PLATFORM: JDK9 support much improved since v1.16.6; [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
@@ -15,7 +16,7 @@ Lombok Changelog
 * FEATURE: `@Builder.Default` lets you configure default values for your fields when using `@Builder`. See the [Builder feature page](https://projectlombok.org/features/Builder.html) for more information. [Issue #1201](https://github.com/rzwitserloot/lombok/issues/1201)
 * PLATFORM: JDK9 now supported for compilation (delomboking with java9 not yet possible). Note, you'll have to do some command line wrangling. See [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
 * BUGFIX: The `onX` feature (which lets you add annotations to generated methods) did not work if the annotation you added contained named parameters, and you are compiling with JDK8's javac. We can't fix this (it's a bug in javac), but we have provided an alternate, prettier way to do `onX` on javac8+. [Issue #778](https://github.com/rzwitserloot/lombok/issues/778) [onX documentation](https://projectlombok.org/features/experimental/onX.html)
-* BUGFIX: `@Data` and `@Value` now respect the configuration for field access when generating equals, hashCode and toString [Issue #1329](https://github.com/rzwitserloot/lombok/issues/1329)
+* BUGFIX: `@Data` and `@Value` now respect the configuration for field access when generating equals, hashCode and toString. [Issue #1329](https://github.com/rzwitserloot/lombok/issues/1329)
 * BUGFIX: `@Builder` now marks generated builder 'setters' as `@Deprecated` if the source field is deprecated. [Issue #1342](https://github.com/rzwitserloot/lombok/issues/1342)
 * CHANGE: `@ConstructorProperties` will now also be generated for private and package private constructors. This is useful for Jackson [Issue #1180](https://github.com/rzwitserloot/lombok/issues/1180)
 
