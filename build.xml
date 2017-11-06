@@ -235,6 +235,24 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<classpath location="build/lombok" />
 			<classpath refid="build.path" />
 		</ivy:compile>
+		<delete dir="build/lombok-proc-result" quiet="true" />
+		<ivy:compile destdir="build/lombok-proc-result" source="1.6" target="1.6" nowarn="true">
+			<compilerarg value="-Xbootclasspath/p:build/stubs" />
+			<compilerarg value="-proc:only" />
+			<compilerarg value="-processor" />
+			<compilerarg value="org.mangosdk.spi.processor.SpiProcessor" />
+			<src path="src/launch" />
+			<src path="src/core" />
+			<src path="src/installer" />
+			<src path="src/eclipseAgent" />
+			<classpath location="build/lombok" />
+			<classpath refid="build.path" />
+		</ivy:compile>
+		<copy todir="build/lombok">
+			<fileset dir="build/lombok-proc-result">
+				<include name="META-INF/services/*" />
+			</fileset>
+		</copy>
 		<mkdir dir="build/lombok/META-INF" />
 		<mkdir dir="build/lombok/META-INF/services" />
 		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.launch.AnnotationProcessorHider$AnnotationProcessor
