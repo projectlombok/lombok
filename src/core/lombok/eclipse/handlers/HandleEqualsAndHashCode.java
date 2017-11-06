@@ -299,7 +299,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		
 		/* final int PRIME = X; */ {
 			/* Without fields, PRIME isn't used, and that would trigger a 'local variable not used' warning. */
-			if (!isEmpty || callSuper) {
+			if (!isEmpty) {
 				LocalDeclaration primeDecl = new LocalDeclaration(PRIME, pS, pE);
 				setGeneratedBy(primeDecl, source);
 				primeDecl.modifiers |= Modifier.FINAL;
@@ -311,24 +311,28 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			}
 		}
 		
-		/* int result = 1; */ {
-			LocalDeclaration resultDecl = new LocalDeclaration(RESULT, pS, pE);
+		/*int result = ... */{
+		LocalDeclaration resultDecl = new LocalDeclaration(RESULT, pS, pE);
 			setGeneratedBy(resultDecl, source);
-			resultDecl.initialization = makeIntLiteral("1".toCharArray(), source);
+			final Expression init;
+			if (callSuper) {
+				/* ... super.hashCode(); */
+				MessageSend callToSuper = new MessageSend();
+				setGeneratedBy(callToSuper, source);
+				callToSuper.sourceStart = pS; callToSuper.sourceEnd = pE;
+				callToSuper.receiver = new SuperReference(pS, pE);
+				setGeneratedBy(callToSuper.receiver, source);
+				callToSuper.selector = "hashCode".toCharArray();
+				init = callToSuper;
+			} else {
+				/* ... 1; */
+				init = makeIntLiteral("1".toCharArray(), source);
+			}
+			resultDecl.initialization = init;
 			resultDecl.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 			resultDecl.type.sourceStart = pS; resultDecl.type.sourceEnd = pE;
 			setGeneratedBy(resultDecl.type, source);
 			statements.add(resultDecl);
-		}
-		
-		if (callSuper) {
-			MessageSend callToSuper = new MessageSend();
-			setGeneratedBy(callToSuper, source);
-			callToSuper.sourceStart = pS; callToSuper.sourceEnd = pE;
-			callToSuper.receiver = new SuperReference(pS, pE);
-			setGeneratedBy(callToSuper.receiver, source);
-			callToSuper.selector = "hashCode".toCharArray();
-			statements.add(createResultCalculation(source, callToSuper));
 		}
 		
 		for (EclipseNode field : fields) {

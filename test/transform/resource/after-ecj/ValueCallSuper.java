@@ -20,9 +20,7 @@ final @lombok.Value class ValueCallSuper extends ValueParent {
     return (other instanceof ValueCallSuper);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
-    final int PRIME = 59;
-    int result = 1;
-    result = ((result * PRIME) + super.hashCode());
+    int result = super.hashCode();
     return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.lang.String toString() {

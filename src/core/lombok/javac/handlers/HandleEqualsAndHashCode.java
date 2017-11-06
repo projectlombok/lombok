@@ -258,20 +258,23 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		long finalFlag = JavacHandlerUtil.addFinalIfNeeded(0L, typeNode.getContext());
 		
 		/* final int PRIME = X; */ {
-			if (!fields.isEmpty() || callSuper) {
+			if (!fields.isEmpty()) {
 				statements.append(maker.VarDef(maker.Modifiers(finalFlag), primeName, maker.TypeIdent(CTC_INT), maker.Literal(HandlerUtil.primeForHashcode())));
 			}
 		}
 		
-		/* int result = 1; */ {
-			statements.append(maker.VarDef(maker.Modifiers(0), resultName, maker.TypeIdent(CTC_INT), maker.Literal(1)));
-		}
-		
-		if (callSuper) {
-			JCMethodInvocation callToSuper = maker.Apply(List.<JCExpression>nil(),
-				maker.Select(maker.Ident(typeNode.toName("super")), typeNode.toName("hashCode")),
-				List.<JCExpression>nil());
-			statements.append(createResultCalculation(typeNode, callToSuper));
+		/* int result = ... */ {
+			final JCExpression init;
+			if (callSuper) {
+				/* ... super.hashCode(); */
+				init = maker.Apply(List.<JCExpression>nil(),
+						maker.Select(maker.Ident(typeNode.toName("super")), typeNode.toName("hashCode")),
+						List.<JCExpression>nil());
+			} else {
+				/* ... 1; */
+				init = maker.Literal(1);
+			}
+			statements.append(maker.VarDef(maker.Modifiers(0), resultName, maker.TypeIdent(CTC_INT), init));
 		}
 		
 		Name dollar = typeNode.toName("$");

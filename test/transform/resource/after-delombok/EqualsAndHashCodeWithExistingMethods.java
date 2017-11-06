@@ -32,8 +32,7 @@ final class EqualsAndHashCodeWithExistingMethods3 extends EqualsAndHashCodeWithE
 	@javax.annotation.Generated("lombok")
 	public int hashCode() {
 		final int PRIME = 59;
-		int result = 1;
-		result = result * PRIME + super.hashCode();
+		int result = super.hashCode();
 		result = result * PRIME + this.x;
 		return result;
 	}

@@ -129,9 +129,7 @@ final @lombok.EqualsAndHashCode(callSuper = false) class EqualsAndHashCode3 exte
     return (other instanceof EqualsAndHashCode4);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
-    final int PRIME = 59;
-    int result = 1;
-    result = ((result * PRIME) + super.hashCode());
+    int result = super.hashCode();
     return result;
   }
 }
