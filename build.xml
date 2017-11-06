@@ -99,7 +99,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<target name="deps" depends="ensureBuildDeps, ensureRuntimeDeps, ensureTestDeps, contrib" description="Downloads all dependencies." />
 	
 	<target name="contrib" depends="config-ivy" description="Downloads various non-crucial documentation, sources, etc that are useful when developing lombok.ast.">
-		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="contrib, ecj7, ecj8" />
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="contrib, ecj7, ecj8, ecj9" />
 		<ivy:retrieve />
 	</target>
 
@@ -500,12 +500,18 @@ ${sourceWarning}</echo>
 	</target>
 	
 	<target name="test-ecj" depends="dist, contrib" unless="tests.skip">
-		<java jar="lib/ecj7/org.eclipse.custom-ecj.jar" fork="true" failonerror="true">
+		<condition property="ecj.loc" value="lib/ecj9/*" else="lib/ecj8/*">
+			<equals arg1="${ant.java.version}" arg2="9" />
+		</condition>
+		<java classname="org.eclipse.jdt.internal.compiler.batch.Main" fork="true" failonerror="true">
+			<classpath path="${ecj.loc}" />
 			<jvmarg value="-javaagent:dist/lombok.jar=ecj" />
 			<arg value="-source" />
 			<arg value="1.6" />
 			<arg value="-target" />
 			<arg value="1.6" />
+			<arg value="-cp" />
+			<arg value="dist/lombok.jar" />
 			<arg value="test/ecj/SimpleTest.java" />
 		</java>
 	</target>

@@ -11,6 +11,7 @@
 		<conf name="contrib" />
 		<conf name="ecj7" />
 		<conf name="ecj8" />
+		<conf name="ecj9" />
 		<conf name="javac6" />
 		<conf name="javac7" />
 	</configurations>
@@ -40,7 +41,9 @@
 		<dependency org="net.java.openjdk.custom" name="javac6" rev="1.6.0.18" conf="javac6->runtime; contrib->sources" />
 		<dependency org="net.java.openjdk.custom" name="javac7" rev="1.7.0" conf="javac7->runtime; contrib->sources" />
 		<dependency org="org.eclipse.custom" name="ecj" rev="4.3.1" conf="ecj7->default; contrib->sources" />
-		<dependency org="org.eclipse.jdt.core.compiler" name="ecj" rev="4.6.1" conf="ecj8->default; contrib->sources; eclipseBuild->default" />
+		<dependency org="org.eclipse.jdt.core.compiler" name="ecj" rev="4.6.1" conf="ecj8->default; contrib->sources" />
+		<dependency org="org.eclipse.tycho" name="org.eclipse.jdt.core" rev="3.13.50.v20171007-0855" conf="ecj9->default; eclipseBuild->default" />
+		<dependency org="org.eclipse.tycho" name="org.eclipse.jdt.compiler.apt" rev="1.3.50.v20170920-0950" conf="ecj9->default; eclipseBuild->default" />
 		
 		<dependency org="netbeans.org" name="boot" rev="6.8beta" conf="netbeansBuild->build" />
 		<dependency org="netbeans.org" name="openide.modules" rev="6.8beta" conf="netbeansBuild->build" />
