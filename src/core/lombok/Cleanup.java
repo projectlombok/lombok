@@ -61,10 +61,10 @@ import java.lang.annotation.Target;
  *                 outStream.write(b, 0, r);
  *             }
  *         } finally {
- *             if (out != null) out.close();
+ *             if (outStream != null) outStream.close();
  *         }
  *     } finally {
- *         if (in != null) in.close();
+ *         if (inStream != null) inStream.close();
  *     }
  * }
  * </pre>
