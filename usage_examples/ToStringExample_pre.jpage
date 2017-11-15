@@ -9,7 +9,7 @@ public class ToStringExample {
 	private int id;
 	
 	public String getName() {
-		return this.getName();
+		return this.name;
 	}
 	
 	@ToString(callSuper=true, includeFieldNames=true)
