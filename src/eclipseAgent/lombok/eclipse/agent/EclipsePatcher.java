@@ -86,7 +86,8 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 			}
 		});
 		
-		final boolean forceBaseResourceNames = !"".equals(System.getProperty("shadow.override.lombok", ""));
+		final boolean forceBaseResourceNames = !"".equals(System.getProperty("shadow.override.lombok", ""))
+			&& (System.getProperty("lombok.eclipseAgent.forceClass50", null) == null);
 		sm.setTransplantMapper(new TransplantMapper() {
 			public String mapResourceName(int classFileFormatVersion, String resourceName) {
 				if (classFileFormatVersion < 50 || forceBaseResourceNames) return resourceName;
