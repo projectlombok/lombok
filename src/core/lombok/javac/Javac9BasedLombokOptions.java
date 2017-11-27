@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2017 The Project Lombok Authors.
+ * Copyright (C) 2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,21 +25,23 @@ import com.sun.tools.javac.main.Option;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Options;
 
-public class Javac8BasedLombokOptions extends LombokOptions {
-	public static Javac8BasedLombokOptions replaceWithDelombokOptions(Context context) {
+public class Javac9BasedLombokOptions extends LombokOptions {
+	public static Javac9BasedLombokOptions replaceWithDelombokOptions(Context context) {
 		Options options = Options.instance(context);
 		context.put(optionsKey, (Options) null);
-		Javac8BasedLombokOptions result = new Javac8BasedLombokOptions(context);
+		Javac9BasedLombokOptions result = new Javac9BasedLombokOptions(context);
 		result.putAll(options);
 		return result;
 	}
 	
-	private Javac8BasedLombokOptions(Context context) {
+	private Javac9BasedLombokOptions(Context context) {
 		super(context);
 	}
 	
 	@Override public void putJavacOption(String optionName, String value) {
-		String optionText = Option.valueOf(optionName).text;
+		if (optionName.equals("SOURCEPATH")) optionName = "SOURCE_PATH";
+		if (optionName.equals("BOOTCLASSPATH")) optionName = "BOOT_CLASS_PATH";
+		String optionText = Option.valueOf(optionName).primaryName;
 		put(optionText, value);
 	}
 }

@@ -26,7 +26,6 @@ import java.util.Collection;
 
 import lombok.core.ImportList;
 import lombok.core.LombokInternalAliasing;
-import lombok.javac.JavacAST.PackageName;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;

@@ -30,12 +30,14 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Writer;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -43,14 +45,18 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 
 import lombok.Lombok;
 import lombok.javac.CommentCatcher;
+import lombok.javac.Javac;
 import lombok.javac.LombokOptions;
+import lombok.javac.apt.LombokProcessor;
 
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.comp.Todo;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -466,6 +472,17 @@ public class Delombok {
 		return out;
 	}
 	
+	private static final Field MODULE_FIELD = getModuleField();
+	private static Field getModuleField() {
+		try {
+			return JCCompilationUnit.class.getField("modle");
+		} catch (NoSuchFieldException e) {
+			return null;
+		} catch (SecurityException e) {
+			return null;
+		}
+	}
+	
 	public boolean delombok() throws IOException {
 		LombokOptions options = LombokOptionsFactory.getDelombokOptions(context);
 		options.deleteLombokAnnotations();
@@ -482,10 +499,24 @@ public class Delombok {
 		List<JCCompilationUnit> roots = new ArrayList<JCCompilationUnit>();
 		Map<JCCompilationUnit, File> baseMap = new IdentityHashMap<JCCompilationUnit, File>();
 		
-		compiler.initProcessAnnotations(Collections.singleton(new lombok.javac.apt.LombokProcessor()));
+		Set<LombokProcessor> processors = Collections.singleton(new lombok.javac.apt.LombokProcessor());
+		
+		if (Javac.getJavaCompilerVersion() < 9) {
+			compiler.initProcessAnnotations(processors);
+		} else {
+			compiler.initProcessAnnotations(processors, Collections.<JavaFileObject>emptySet(), Collections.<String>emptySet());
+		}
+		
+		Object unnamedModule = null;
+		if (Javac.getJavaCompilerVersion() >= 9) unnamedModule = Symtab.instance(context).unnamedModule;
 		
 		for (File fileToParse : filesToParse) {
-			@SuppressWarnings("deprecation") JCCompilationUnit unit = compiler.parse(fileToParse.getAbsolutePath());
+			JCCompilationUnit unit = compiler.parse(fileToParse.getAbsolutePath());
+			if (Javac.getJavaCompilerVersion() >= 9) try {
+				MODULE_FIELD.set(unit, unnamedModule);
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
 			baseMap.put(unit, fileToBase.get(fileToParse));
 			roots.add(unit);
 		}
@@ -498,9 +529,19 @@ public class Delombok {
 			catcher.setComments(unit, new DocCommentIntegrator().integrate(catcher.getComments(unit), unit));
 		}
 		
+		if (Javac.getJavaCompilerVersion() >= 9) {
+			compiler.initModules(com.sun.tools.javac.util.List.from(roots.toArray(new JCCompilationUnit[0])));
+		}
 		com.sun.tools.javac.util.List<JCCompilationUnit> trees = compiler.enterTrees(toJavacList(roots));
 		
-		JavaCompiler delegate = compiler.processAnnotations(trees);
+		JavaCompiler delegate;
+		if (Javac.getJavaCompilerVersion() < 9) {
+			delegate = compiler.processAnnotations(trees, com.sun.tools.javac.util.List.<String>nil());
+		} else {
+			delegate = compiler;
+			Collection<String> c = com.sun.tools.javac.util.List.nil();
+			compiler.processAnnotations(trees, c);
+		}
 		
 		Object care = callAttributeMethodOnJavaCompiler(delegate, delegate.todo);
 		

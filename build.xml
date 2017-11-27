@@ -627,8 +627,61 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 * test.javaversion = 6
 </fail>
 	</target>
-
-	<target name="test" depends="-loadTestEnvironmentProperties, -failIfNoTestEnvironmentProperties, -test-compile, dist, test-ecj" unless="tests.skip" description="Runs the tests.">
+	
+	<target name="test" depends="-loadTestEnvironmentProperties, -failIfNoTestEnvironmentProperties, -test-compile, dist, test-ecj, -test-check, -test8, -test9" />
+	
+	<target name="-test-check">
+		<condition property="test9.run">
+			<and>
+				<not><isset property="tests.skip" /></not>
+				<equals arg1="${ant.java.version}" arg2="9" />
+			</and>
+		</condition>
+		<condition property="test8.run">
+			<and>
+				<not><isset property="tests.skip" /></not>
+				<not><equals arg1="${ant.java.version}" arg2="9" /></not>
+			</and>
+		</condition>
+	</target>
+	
+	<target name="-test9" depends="-loadTestEnvironmentProperties, -failIfNoTestEnvironmentProperties, -test-compile, dist, test-ecj" if="test9.run">
+		<echo>Running test suite in JDK9+ mode</echo>
+		<junit haltonfailure="no" fork="true">
+			<jvmarg value="-javaagent:dist/lombok.jar" />
+				<jvmarg value="-Ddelombok.bootclasspath=${test.location.bootclasspath}" />
+				<jvmarg value="--add-opens" />
+				<jvmarg value="jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED" />
+				<jvmarg value="--add-opens" />
+				<jvmarg value="jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED" />
+				<jvmarg value="--add-opens" />
+				<jvmarg value="jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED" />
+				<jvmarg value="--add-opens" />
+				<jvmarg value="jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED" />
+				<jvmarg value="--add-opens" />
+				<jvmarg value="jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED" />
+				<jvmarg value="--add-opens" />
+				<jvmarg value="jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED" />
+				<jvmarg value="--add-opens" />
+				<jvmarg value="jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED" />
+				<jvmarg value="--add-opens" />
+				<jvmarg value="jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED" />
+				<formatter type="plain" usefile="false" unless="tests.quiet" />
+				<classpath refid="test.path" />
+				<classpath path="${test.location.ecj}" />
+				<classpath path="${test.location.javac}" />
+				<classpath path="build/lombok" />
+				<classpath path="build/tests" />
+				<batchtest>
+					<fileset dir="test/core/src">
+						<include name="lombok/RunAllTests.java" />
+					</fileset>
+				</batchtest>
+			</junit>
+	</target>
+	
+	<target name="-test8" depends="-loadTestEnvironmentProperties, -failIfNoTestEnvironmentProperties, -test-compile, dist, test-ecj" if="test8.run" description="Runs the tests.">
+		<echo>Running test suite in JDK6-8 mode</echo>
 		<junit haltonfailure="no" fork="true">
 			<jvmarg value="-javaagent:dist/lombok.jar" />
 			<jvmarg value="-Ddelombok.bootclasspath=${test.location.bootclasspath}" />
@@ -644,7 +697,6 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 				</fileset>
 			</batchtest>
 		</junit>
-		<echo level="info">All tests successful.</echo>
 	</target>
 	
 	<target name="utils-javadoc" depends="compile">

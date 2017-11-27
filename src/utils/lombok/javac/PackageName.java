@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2017 The Project Lombok Authors.
+ * Copyright (C) 2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,25 +21,35 @@
  */
 package lombok.javac;
 
-import com.sun.tools.javac.main.Option;
-import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Options;
+import java.lang.reflect.Method;
 
-public class Javac8BasedLombokOptions extends LombokOptions {
-	public static Javac8BasedLombokOptions replaceWithDelombokOptions(Context context) {
-		Options options = Options.instance(context);
-		context.put(optionsKey, (Options) null);
-		Javac8BasedLombokOptions result = new Javac8BasedLombokOptions(context);
-		result.putAll(options);
-		return result;
+import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
+
+// Supports JDK6-9
+public class PackageName {
+	private static final Method packageNameMethod = getPackageNameMethod();
+	
+	private static Method getPackageNameMethod() {
+		try {
+			return JCCompilationUnit.class.getDeclaredMethod("getPackageName");
+		} catch (Exception e) {
+			return null;
+		}
 	}
 	
-	private Javac8BasedLombokOptions(Context context) {
-		super(context);
+	public static String getPackageName(JCCompilationUnit cu) {
+		JCTree t = getPackageNode(cu);
+		return t != null ? t.toString() : null;
 	}
 	
-	@Override public void putJavacOption(String optionName, String value) {
-		String optionText = Option.valueOf(optionName).text;
-		put(optionText, value);
+	public static JCTree getPackageNode(JCCompilationUnit cu) {
+		if (packageNameMethod != null) try {
+			Object pkg = packageNameMethod.invoke(cu);
+			return (pkg instanceof JCFieldAccess || pkg instanceof JCIdent) ? (JCTree) pkg : null;
+		} catch (Exception e) {}
+		return cu.pid instanceof JCFieldAccess || cu.pid instanceof JCIdent ? cu.pid : null;
 	}
 }

@@ -92,6 +92,7 @@ import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
 
 import lombok.javac.CommentInfo;
+import lombok.javac.PackageName;
 import lombok.javac.CommentInfo.EndConnection;
 import lombok.javac.CommentInfo.StartConnection;
 import lombok.javac.JavacTreeMaker.TreeTag;
@@ -457,11 +458,12 @@ public class PrettyPrinter extends JCTree.Visitor {
 	
 	@Override public void visitTopLevel(JCCompilationUnit tree) {
 		printDocComment(tree);
-		if (tree.pid != null) {
+		JCTree n = PackageName.getPackageNode(tree);
+		if (n != null) {
 			consumeComments(tree);
 			aPrint("package ");
-			print(tree.pid);
-			println(";", tree.pid);
+			print(n);
+			println(";", n);
 		}
 		
 		boolean first = true;

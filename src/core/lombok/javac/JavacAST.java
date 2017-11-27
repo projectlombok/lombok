@@ -48,8 +48,6 @@ import com.sun.tools.javac.tree.JCTree.JCCatch;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
-import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTry;
@@ -104,27 +102,6 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	
 	private static String sourceName(JCCompilationUnit cu) {
 		return cu.sourcefile == null ? null : cu.sourcefile.toString();
-	}
-	
-	// jdk9 support, types have changed, names stay the same
-	static class PackageName {
-		private static final Method packageNameMethod;
-		
-		static {
-			Method m = null;
-			try {
-				m = JCCompilationUnit.class.getDeclaredMethod("getPackageName");
-			} catch (Exception e) {}
-			packageNameMethod = m;
-		}
-		
-		static String getPackageName(JCCompilationUnit cu) {
-			try {
-				Object pkg = packageNameMethod.invoke(cu);
-				return (pkg instanceof JCFieldAccess || pkg instanceof JCIdent) ? pkg.toString() : null;
-			} catch (Exception e) {}
-			return null;
-		}
 	}
 	
 	public Context getContext() {
