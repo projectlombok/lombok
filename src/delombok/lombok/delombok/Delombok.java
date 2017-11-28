@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
@@ -487,9 +488,9 @@ public class Delombok {
 		LombokOptions options = LombokOptionsFactory.getDelombokOptions(context);
 		options.deleteLombokAnnotations();
 		options.putJavacOption("ENCODING", charset.name());
-		if (classpath != null) options.putJavacOption("CLASSPATH", classpath);
+		if (classpath != null) options.putJavacOption("CLASSPATH", unpackClasspath(classpath));
 		if (sourcepath != null) options.putJavacOption("SOURCEPATH", sourcepath);
-		if (bootclasspath != null) options.putJavacOption("BOOTCLASSPATH", bootclasspath);
+		if (bootclasspath != null) options.putJavacOption("BOOTCLASSPATH", unpackClasspath(bootclasspath));
 		options.setFormatPreferences(new FormatPreferences(formatPrefs));
 		options.put("compilePolicy", "check");
 		
@@ -568,6 +569,29 @@ public class Delombok {
 		delegate.close();
 		
 		return true;
+	}
+	
+	private String unpackClasspath(String cp) {
+		String[] parts = cp.split(Pattern.quote(File.pathSeparator));
+		StringBuilder out = new StringBuilder();
+		for (String p : parts) {
+			if (!p.endsWith("*")) {
+				if (out.length() > 0) out.append(File.pathSeparator);
+				out.append(p);
+				continue;
+			}
+			File f = new File(p.substring(0, p.length() - 2));
+			File[] files = f.listFiles();
+			if (files == null) continue;
+			for (File file : files) {
+				if (file.isFile()) {
+					if (out.length() > 0) out.append(File.pathSeparator);
+					out.append(p, 0, p.length() - 1);
+					out.append(file.getName());
+				}
+			}
+		}
+		return out.toString();
 	}
 	
 	private static Method attributeMethod;
