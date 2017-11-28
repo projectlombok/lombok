@@ -1,7 +1,7 @@
 FROM ubuntu:16.04 as downloader
 
-ARG jdk=1.9
-ADD provision/jdk/ provision/jdk/
+ARG jdk=9
+ADD provision/jdk/java-${jdk}.sh provision/jdk/java-${jdk}.sh
 RUN provision/jdk/java-${jdk}.sh
 
 ARG maven=3.5.0
@@ -18,11 +18,13 @@ RUN update-alternatives  --install /usr/bin/java java /opt/jdk/bin/java 1000 && 
 WORKDIR workspace
 
 ADD shared/ ./
-ADD maven/files/ ./
+
+ARG jdk=9
+ADD maven/files/jdk-${jdk} ./
+
 ARG lombokjar=lombok.jar
 ADD https://projectlombok.org/downloads/${lombokjar} lombok.jar
 
-ARG jdk
 ENV JDK_VERSION=${jdk}
 ENV JAVA_HOME=/opt/jdk
 ENV M2_HOME=/usr/local/apache-maven/apache-maven

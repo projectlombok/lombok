@@ -10,12 +10,12 @@ Each docker image contains a `/workspace` where all relevant files are located.
 When building the image, a lombok.jar will be downloaded to `/workspace`. By default, this is the latest released version. You
 can download a specific version by adding `--build-arg lombokjar=lombok-<major.minor.build>.jar`
 
-### `ARG jdk=1.9`
+### `ARG jdk=9`
 
 The jdk version to be used. Supported values:
 
-- `1.9` (default)
-- `1.8`
+- `9` (default)
+- `8`
 
 The version is also accessible in `JDK_VERSION`.
 

@@ -1,0 +1,25 @@
+<project name="example" default="dist" basedir=".">
+	<property name="src" location="src/main/java"/>
+	<property name="build" location="build"/>
+	<property name="dist" location="dist"/>
+	<property name="build.sysclasspath" value="ignore"/>
+	
+	<target name="init">
+		<tstamp/>
+		<mkdir dir="${build}"/>
+	</target>
+	
+	<target name="compile" depends="init" description="compile the source">
+		<javac classpath="lombok.jar" srcdir="${src}" destdir="${build}" fork="true"/>
+	</target>
+	
+	<target name="dist" depends="compile" description="generate the distribution">
+		<mkdir dir="${dist}/lib"/>
+		<jar jarfile="${dist}/lib/example-${DSTAMP}.jar" basedir="${build}"/>
+	</target>
+	
+	<target name="clean" description="clean up">
+		<delete dir="${build}"/>
+		<delete dir="${dist}"/>
+	</target>
+</project>
