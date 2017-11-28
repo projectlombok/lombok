@@ -47,12 +47,12 @@ public class SneakyThrowsRemover implements PostCompilerTransformation {
 		
 		ClassReader reader = new ClassReader(fixedByteCode);
 		ClassWriter writer = new ClassWriter(reader, 0);
-		
+
 		final AtomicBoolean changesMade = new AtomicBoolean();
 		
 		class SneakyThrowsRemoverVisitor extends MethodVisitor {
 			SneakyThrowsRemoverVisitor(MethodVisitor mv) {
-				super(Opcodes.ASM5, mv);
+				super(Opcodes.ASM6, mv);
 			}
 			
 			private boolean methodInsnQueued = false;
