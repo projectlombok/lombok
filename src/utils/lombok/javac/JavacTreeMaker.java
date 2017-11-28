@@ -226,6 +226,7 @@ public class JavacTreeMaker {
 		}
 		
 		public static TypeTag typeTag(Type t) {
+			if (t == null) return Javac.CTC_VOID;
 			try {
 				return new TypeTag(getFieldCached(FIELD_CACHE, t, "tag"));
 			} catch (NoSuchFieldException e) {

@@ -261,6 +261,7 @@ public class JavacResolution {
 	}
 	
 	public static Type ifTypeIsIterableToComponent(Type type, JavacAST ast) {
+		if (type == null) return null;
 		Types types = Types.instance(ast.getContext());
 		Symtab syms = Symtab.instance(ast.getContext());
 		Type boundType = ReflectiveAccess.Types_upperBound(types, type);
