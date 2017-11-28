@@ -245,6 +245,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<src path="src/core" />
 			<src path="src/installer" />
 			<src path="src/eclipseAgent" />
+			<src path="src/delombok" />
 			<classpath location="build/lombok" />
 			<classpath refid="build.path" />
 		</ivy:compile>
