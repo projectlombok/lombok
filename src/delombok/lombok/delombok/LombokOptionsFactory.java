@@ -50,7 +50,7 @@ public class LombokOptionsFactory {
 			}
 		};
 		
-		abstract LombokOptions createAndRegisterOptions(Context context); 
+		abstract LombokOptions createAndRegisterOptions(Context context);
 	}
 	
 	public static LombokOptions getDelombokOptions(Context context) {

@@ -39,6 +39,7 @@ public class Javac9BasedLombokOptions extends LombokOptions {
 	}
 	
 	@Override public void putJavacOption(String optionName, String value) {
+		if (optionName.equals("CLASSPATH")) optionName = "CLASS_PATH";
 		if (optionName.equals("SOURCEPATH")) optionName = "SOURCE_PATH";
 		if (optionName.equals("BOOTCLASSPATH")) optionName = "BOOT_CLASS_PATH";
 		String optionText = Option.valueOf(optionName).primaryName;
