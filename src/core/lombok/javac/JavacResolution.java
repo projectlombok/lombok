@@ -223,7 +223,7 @@ public class JavacResolution {
 	
 	private void attrib(JCTree tree, Env<AttrContext> env) {
 		if (tree instanceof JCBlock) attr.attribStat(tree, env);
-		else if (tree instanceof JCMethodDecl) attr.attribStat(((JCMethodDecl)tree).body, env);
+		else if (tree instanceof JCMethodDecl) attr.attribStat(((JCMethodDecl) tree).body, env);
 		else if (tree instanceof JCVariableDecl) attr.attribStat(tree, env);
 		else throw new IllegalStateException("Called with something that isn't a block, method decl, or variable decl");
 	}

@@ -1433,22 +1433,19 @@ public class PrettyPrinter extends JCTree.Visitor {
 		if ("JCTypeUnion".equals(simpleName)) {
 			List<JCExpression> types = readObject(tree, "alternatives", List.<JCExpression>nil());
 			print(types, " | ");
-			return;
 		} else if ("JCTypeIntersection".equals(simpleName)) {
 			print(readObject(tree, "bounds", List.<JCExpression>nil()), " & ");
-			return;
 		} else if ("JCMemberReference".equals(simpleName)) {
 			printMemberReference0(tree);
-			return;
 		} else if ("JCLambda".equals(simpleName)) {
 			printLambda0(tree);
-			return;
 		} else if ("JCAnnotatedType".equals(simpleName)) {
 			printAnnotatedType0(tree);
-			return;
+		} else if ("JCPackageDecl".equals(simpleName)) {
+			// Starting with JDK9, this is inside the import list, but we've already printed it. Just ignore it.
+		} else {
+			throw new AssertionError("Unhandled tree type: " + tree.getClass() + ": " + tree);
 		}
-		
-		throw new AssertionError("Unhandled tree type: " + tree.getClass() + ": " + tree);
 	}
 	
 	private void printMemberReference0(JCTree tree) {

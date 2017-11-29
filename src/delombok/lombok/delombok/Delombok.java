@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2015 The Project Lombok Authors.
+ * Copyright (C) 2009-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,6 +49,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.tools.DiagnosticListener;
+import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 
 import lombok.Lombok;
@@ -59,6 +60,8 @@ import lombok.javac.apt.LombokProcessor;
 
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.comp.Todo;
+import com.sun.tools.javac.file.BaseFileManager;
+import com.sun.tools.javac.main.Arguments;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
@@ -494,6 +497,29 @@ public class Delombok {
 		options.setFormatPreferences(new FormatPreferences(formatPrefs));
 		options.put("compilePolicy", "check");
 		
+		if (Javac.getJavaCompilerVersion() >= 9) {
+			Arguments args = Arguments.instance(context);
+			List<String> argsList = new ArrayList<String>();
+			if (classpath != null) {
+				argsList.add("--class-path");
+				argsList.add(options.get("--class-path"));
+			}
+			if (sourcepath != null) {
+				argsList.add("--source-path");
+				argsList.add(options.get("--source-path"));
+			}
+			if (bootclasspath != null) {
+				argsList.add("--boot-class-path");
+				argsList.add(options.get("--boot-class-path"));
+			}
+			if (charset != null) {
+				argsList.add("-encoding");
+				argsList.add(charset.name());
+			}
+			String[] argv = argsList.toArray(new String[0]);
+			args.init("javac", argv);
+		}
+		
 		CommentCatcher catcher = CommentCatcher.create(context);
 		JavaCompiler compiler = catcher.getCompiler();
 		
@@ -501,6 +527,15 @@ public class Delombok {
 		Map<JCCompilationUnit, File> baseMap = new IdentityHashMap<JCCompilationUnit, File>();
 		
 		Set<LombokProcessor> processors = Collections.singleton(new lombok.javac.apt.LombokProcessor());
+		
+		if (Javac.getJavaCompilerVersion() >= 9) {
+			JavaFileManager jfm_ = context.get(JavaFileManager.class);
+			if (jfm_ instanceof BaseFileManager) {
+				Arguments args = Arguments.instance(context);
+				((BaseFileManager) jfm_).setContext(context); // reinit with options
+				((BaseFileManager) jfm_).handleOptions(args.getDeferredFileManagerOptions());
+			}
+		}
 		
 		if (Javac.getJavaCompilerVersion() < 9) {
 			compiler.initProcessAnnotations(processors);
