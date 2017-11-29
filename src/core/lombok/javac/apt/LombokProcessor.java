@@ -54,6 +54,8 @@ import lombok.javac.JavacTransformer;
 
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.jvm.ClassWriter;
+import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.processing.JavacFiler;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -156,7 +158,6 @@ public class LombokProcessor extends AbstractProcessor {
 			@SuppressWarnings("unchecked")
 			Map<Object,Object> ht = (Map<Object,Object>) htField.get(context);
 			final JavaFileManager originalFiler = (JavaFileManager) ht.get(key);
-			
 			if (!(originalFiler instanceof InterceptingJavaFileManager)) {
 				final Messager messager = processingEnv.getMessager();
 				DiagnosticsReceiver receiver = new MessagerDiagnosticsReceiver(messager);
@@ -166,9 +167,35 @@ public class LombokProcessor extends AbstractProcessor {
 				Field filerFileManagerField = JavacFiler.class.getDeclaredField("fileManager");
 				filerFileManagerField.setAccessible(true);
 				filerFileManagerField.set(processingEnv.getFiler(), newFiler);
+				
+				replaceFileManagerJdk9(context, newFiler);
 			}
 		} catch (Exception e) {
 			throw Lombok.sneakyThrow(e);
+		}
+	}
+
+	private void replaceFileManagerJdk9(Context context, JavaFileManager newFiler) {
+		try {
+			JavaCompiler compiler = (JavaCompiler) JavaCompiler.class.getDeclaredMethod("instance", Context.class).invoke(null, context);
+			try {
+				Field fileManagerField = JavaCompiler.class.getDeclaredField("fileManager");
+				fileManagerField.setAccessible(true);
+				fileManagerField.set(compiler, newFiler);
+			}
+			catch (Exception e) {}
+			
+			try {
+				Field writerField = JavaCompiler.class.getDeclaredField("writer");
+				writerField.setAccessible(true);
+				ClassWriter writer = (ClassWriter) writerField.get(compiler);
+				Field fileManagerField = ClassWriter.class.getDeclaredField("fileManager");
+				fileManagerField.setAccessible(true);
+				fileManagerField.set(writer, newFiler);
+			}
+			catch (Exception e) {}
+		}
+		catch (Exception e) {
 		}
 	}
 	
