@@ -79,10 +79,12 @@
 			</div>
 			can be included. We suggest you put this in the root of your workspace directory.
 		</p><p>
-			Lombok normally adds <code>@javax.annotation.Generated</code> annotations to all generated nodes where possible. You can stop this with:
+			Lombok can add <code>@javax.annotation.Generated</code> annotations to all generated nodes where possible. You can enable this with:
 			<div class="snippet example">
-				<code>lombok.addJavaxGeneratedAnnotation = false</code>
+				<code>lombok.addJavaxGeneratedAnnotation = true</code>
 			</div>
+			We advise against this; JDK9 breaks this annotation, and it's unlikely to ever get fixed.<br />
+			<em>NB:</em> Until Lombok v2.0.0, this setting defaulted to <code>true</code>.
 		</p><p>
 			Lombok can be configured to add <code>@lombok.Generated</code> annotations to all generated nodes where possible; useful for JaCoCo (which has built in support),
 			or other style checkers and code coverage tools:

@@ -6,6 +6,7 @@ Lombok Changelog
 * PLATFORM: Possible support for jdk9 in the new IntelliJ, Netbeans and for Gradle.
 * DEVELOPMENT: Compiling lombok on JDK1.9 is now possible.
 * BUGFIX: The generated hashCode would break the contract if `callSuper=true,of={}`. [Issue #1505](https://github.com/rzwitserloot/lombok/issues/1505)
+* BREAKING CHANGE: _lombok config_ key `lombok.addJavaxGeneratedAnnotation` now defaults to `false` instead of true. Oracle broke this annotation with the release of JDK9, neccessitating this breaking change.
 
 ### v1.16.18 (July 3rd, 2017)
 * PLATFORM: JDK9 support much improved since v1.16.6; [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)

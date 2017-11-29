@@ -41,19 +41,23 @@ public class ConfigurationKeys {
 	/**
 	 * lombok configuration: {@code lombok.addGeneratedAnnotation} = {@code true} | {@code false}.
 	 * 
-	 * If unset or {@code true}, lombok generates {@code @javax.annotation.Generated("lombok")} on all fields, methods, and types that are generated, unless {@code lombok.addJavaxGeneratedAnnotation} is set.
+	 * If {@code true}, lombok generates {@code @javax.annotation.Generated("lombok")} on all fields, methods, and types that are generated, unless {@code lombok.addJavaxGeneratedAnnotation} is set.
+	 * <br />
+	 * <em>BREAKING CHANGE</em>: Starting with lombok v2.0.0, defaults to {@code false} instead of {@code true}, as this annotation is broken in JDK9.
 	 * 
 	 * @see ConfigurationKeys#ADD_JAVAX_GENERATED_ANNOTATIONS
 	 * @see ConfigurationKeys#ADD_LOMBOK_GENERATED_ANNOTATIONS
 	 * @deprecated Since version 1.16.14, use {@link #ADD_JAVAX_GENERATED_ANNOTATIONS} instead.
 	 */
 	@Deprecated
-	public static final ConfigurationKey<Boolean> ADD_GENERATED_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addGeneratedAnnotation", "Generate @javax.annotation.Generated on all generated code (default: true). Deprecated, use 'lombok.addJavaxGeneratedAnnotation' instead.") {};
+	public static final ConfigurationKey<Boolean> ADD_GENERATED_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addGeneratedAnnotation", "Generate @javax.annotation.Generated on all generated code (default: false). Deprecated, use 'lombok.addJavaxGeneratedAnnotation' instead.") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.addJavaxGeneratedAnnotation} = {@code true} | {@code false}.
 	 * 
-	 * If unset or {@code true}, lombok generates {@code @javax.annotation.Generated("lombok")} on all fields, methods, and types that are generated, unless {@code lombok.addGeneratedAnnotation} is set to {@code false}.
+	 * If {@code true}, lombok generates {@code @javax.annotation.Generated("lombok")} on all fields, methods, and types that are generated.
+	 * <br />
+	 * <em>BREAKING CHANGE</em>: Starting with lombok v2.0.0, defaults to {@code false} instead of {@code true}, as this annotation is broken in JDK9.
 	 */
 	public static final ConfigurationKey<Boolean> ADD_JAVAX_GENERATED_ANNOTATIONS = new ConfigurationKey<Boolean>("lombok.addJavaxGeneratedAnnotation", "Generate @javax.annotation.Generated on all generated code (default: follow lombok.addGeneratedAnnotation).") {};
 	

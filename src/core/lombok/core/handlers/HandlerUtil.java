@@ -113,7 +113,7 @@ public class HandlerUtil {
 	public static boolean shouldAddGenerated(LombokNode<?, ?, ?> node) {
 		Boolean add = node.getAst().readConfiguration(ConfigurationKeys.ADD_JAVAX_GENERATED_ANNOTATIONS);
 		if (add != null) return add;
-		return !Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_GENERATED_ANNOTATIONS));
+		return Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_GENERATED_ANNOTATIONS));
 	}
 	
 	public static void handleExperimentalFlagUsage(LombokNode<?, ?, ?> node, ConfigurationKey<FlagUsageType> key, String featureName) {
