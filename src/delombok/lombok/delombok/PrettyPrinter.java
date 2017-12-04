@@ -813,6 +813,11 @@ public class PrettyPrinter extends JCTree.Visitor {
 			print(tree.encl);
 			print(".");
 		}
+		boolean moveFirstParameter = tree.args.nonEmpty() && tree.args.head instanceof JCUnary && tree.args.head.toString().startsWith("<*nullchk*>");
+		if (moveFirstParameter) {
+			print(((JCUnary) tree.args.head).arg);
+			print(".");
+		}
 		
 		print("new ");
 		if (!tree.typeargs.isEmpty()) {
@@ -822,12 +827,10 @@ public class PrettyPrinter extends JCTree.Visitor {
 		}
 		print(tree.clazz);
 		print("(");
-		if (tree.args.nonEmpty()) {
-			if (tree.args.head instanceof JCIdent) {
-				print(tree.args, ", ");
-			} else {
-				print(tree.args.tail, ", ");
-			}
+		if (moveFirstParameter) {
+			print(tree.args.tail, ", ");
+		} else {
+			print(tree.args, ", ");
 		}
 		print(")");
 		if (tree.def != null) {
