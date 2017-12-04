@@ -822,7 +822,13 @@ public class PrettyPrinter extends JCTree.Visitor {
 		}
 		print(tree.clazz);
 		print("(");
-		print(tree.args, ", ");
+		if (tree.args.nonEmpty()) {
+			if (tree.args.head instanceof JCIdent) {
+				print(tree.args, ", ");
+			} else {
+				print(tree.args.tail, ", ");
+			}
+		}
 		print(")");
 		if (tree.def != null) {
 			Name previousTypeName = currentTypeName;

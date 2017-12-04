@@ -4,9 +4,10 @@ Lombok Changelog
 ### v1.16.19 "Edgy Guinea Pig"
 * v1.16.18 is the latest stable release of Project Lombok.
 * PLATFORM: Possible support for jdk9 in the new IntelliJ, Netbeans and for Gradle.
+* BREAKING CHANGE: _lombok config_ key `lombok.addJavaxGeneratedAnnotation` now defaults to `false` instead of true. Oracle broke this annotation with the release of JDK9, necessitating this breaking change.
 * DEVELOPMENT: Compiling lombok on JDK1.9 is now possible.
 * BUGFIX: The generated hashCode would break the contract if `callSuper=true,of={}`. [Issue #1505](https://github.com/rzwitserloot/lombok/issues/1505)
-* BREAKING CHANGE: _lombok config_ key `lombok.addJavaxGeneratedAnnotation` now defaults to `false` instead of true. Oracle broke this annotation with the release of JDK9, neccessitating this breaking change.
+* BUGFIX: `delombok` no longer prints the synthetic outer-class parameter. [Issue #1521](https://github.com/rzwitserloot/lombok/issues/1521)
 
 ### v1.16.18 (July 3rd, 2017)
 * PLATFORM: JDK9 support much improved since v1.16.6; [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
