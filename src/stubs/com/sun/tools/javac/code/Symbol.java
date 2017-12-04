@@ -4,7 +4,6 @@
 package com.sun.tools.javac.code;
 
 import java.lang.annotation.Annotation;
-import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationValue;
@@ -32,11 +31,11 @@ public abstract class Symbol implements Element {
 	public Name flatName() { return null; }
 	public Name getQualifiedName() { return null; }
 	public <A extends Annotation> A[] getAnnotationsByType(Class<A> annoType) { return null; }
-	@Override public List<Attribute.Compound> getAnnotationMirrors() { return null; }
+	@Override public java.util.List<Attribute.Compound> getAnnotationMirrors() { return null; }
 	@Override public TypeMirror asType() { return null; }
 	public <A extends java.lang.annotation.Annotation> A getAnnotation(Class<A> annoType) { return null; }
 	@Override public Name getSimpleName() { return null; }
-	@Override public List<Symbol> getEnclosedElements() { return null; }
+	@Override public java.util.List<Symbol> getEnclosedElements() { return null; }
 	@Override public Element getEnclosingElement() { return null; }
 	
 	public static abstract class TypeSymbol extends Symbol {}
@@ -46,15 +45,15 @@ public abstract class Symbol implements Element {
 		@Override public ElementKind getKind() { return null; }
 		@Override public Set<Modifier> getModifiers() { return null; }
 		@Override public <R, P> R accept(ElementVisitor<R, P> v, P p) { return null; }
-		@Override public List<? extends TypeParameterElement> getTypeParameters() { return null; }
+		@Override public java.util.List<? extends TypeParameterElement> getTypeParameters() { return null; }
 		@Override public TypeMirror getReturnType() { return null; }
-		@Override public List<? extends VariableElement> getParameters() { return null; }
+		@Override public java.util.List<? extends VariableElement> getParameters() { return null; }
 		@Override public boolean isVarArgs() { return false; }
-		@Override public List<? extends TypeMirror> getThrownTypes() { return null; }
+		@Override public java.util.List<? extends TypeMirror> getThrownTypes() { return null; }
 		@Override public AnnotationValue getDefaultValue() { return null; }
 		public TypeMirror getReceiverType() { return null; }
 		public boolean isDefault() { return false; }
-		public List<VarSymbol> params() { return null; }
+		public com.sun.tools.javac.util.List<VarSymbol> params() { return null; }
 	}
 	
 	public static class VarSymbol extends Symbol implements VariableElement {
@@ -67,13 +66,13 @@ public abstract class Symbol implements Element {
 	
 	public static class ClassSymbol extends TypeSymbol implements TypeElement {
 		@Override public Name getQualifiedName() { return null; }
-		@Override public List<? extends TypeMirror> getInterfaces() { return null; }
+		@Override public java.util.List<? extends TypeMirror> getInterfaces() { return null; }
 		@Override public TypeMirror getSuperclass() { return null; }
 		@Override public ElementKind getKind() { return null; }
 		@Override public Set<Modifier> getModifiers() { return null; }
 		@Override public NestingKind getNestingKind() { return null; }
 		@Override public <R, P> R accept(ElementVisitor<R, P> v, P p) { return null; }
-		@Override public List<? extends TypeParameterElement> getTypeParameters() { return null; }
+		@Override public java.util.List<? extends TypeParameterElement> getTypeParameters() { return null; }
 	}
 	
 	// JDK9
