@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 
 import lombok.javac.CommentInfo;
 import lombok.javac.Javac;
+import lombok.javac.PackageName;
 import lombok.javac.handlers.JavacHandlerUtil;
 
 import com.sun.tools.javac.parser.Tokens.Comment;
@@ -120,7 +121,8 @@ public class DocCommentIntegrator {
 	}
 	
 	private JCTree findJavadocableNodeOnOrAfter(JCCompilationUnit unit, int endPos) {
-		if (unit.pid != null && endPos <= unit.pid.pos) return null;
+		JCTree pid = PackageName.getPackageNode(unit);
+		if (pid != null && endPos <= pid.pos) return null;
 		Iterator<JCTree> it = unit.defs.iterator();
 		
 		while (it.hasNext()) {
