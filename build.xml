@@ -103,9 +103,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<ivy:retrieve />
 	</target>
 
-	<target name="ensureBuildDeps" depends="config-ivy" unless="rt-openjdk6.available">
+	<target name="ensureOpenJdk7Rt" unless="rt-openjdk6.available">
 		<mkdir dir="lib/openJDK6Environment" />
 		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />
+	</target>
+	
+	<target name="ensureBuildDeps" depends="config-ivy,ensureOpenJdk7Rt">
 		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build, javac7" />
 		<ivy:retrieve />
 	</target>
