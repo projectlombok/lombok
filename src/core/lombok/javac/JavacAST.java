@@ -561,7 +561,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		
 		@Override void error1(DiagnosticPosition pos, String message) {
 			try {
-				logMethod.invoke(multiple, pos, "proc.messager", message);
+				logMethod.invoke(log, multiple, pos, "proc.messager", new Object[] { message });
 			} catch (Throwable t) {}
 		}
 	}
