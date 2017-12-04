@@ -293,7 +293,7 @@ public class HandleConstructor {
 		return new Annotation[] { ann };
 	}
 	
-	public static ConstructorDeclaration createConstructor(
+	@SuppressWarnings("deprecation") public static ConstructorDeclaration createConstructor(
 		AccessLevel level, EclipseNode type, Collection<EclipseNode> fields, boolean allToDefault,
 		EclipseNode sourceNode, List<Annotation> onConstructor) {
 		
@@ -305,11 +305,13 @@ public class HandleConstructor {
 		
 		if (isEnum) level = AccessLevel.PRIVATE;
 		
-		boolean suppressConstructorProperties;
+		boolean addConstructorProperties;
 		if (fields.isEmpty()) {
-			suppressConstructorProperties = false;
+			addConstructorProperties = false;
 		} else {
-			suppressConstructorProperties = Boolean.TRUE.equals(type.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES));
+			Boolean v = type.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_ADD_CONSTRUCTOR_PROPERTIES);
+			addConstructorProperties = v != null ? v.booleanValue() :
+				Boolean.FALSE.equals(type.getAst().readConfiguration(ConfigurationKeys.ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES));
 		}
 		
 		ConstructorDeclaration constructor = new ConstructorDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
@@ -364,7 +366,7 @@ public class HandleConstructor {
 		
 		/* Generate annotations that must  be put on the generated method, and attach them. */ {
 			Annotation[] constructorProperties = null;
-			if (!allToDefault && !suppressConstructorProperties && !isLocalType(type)) {
+			if (!allToDefault && addConstructorProperties && !isLocalType(type)) {
 				constructorProperties = createConstructorProperties(source, fields);
 			}
 			

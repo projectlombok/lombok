@@ -93,8 +93,23 @@ public class ConfigurationKeys {
 	 * To suppress the generation of it, set this configuration to {@code true}.
 	 * 
 	 * NB: GWT projects, and probably android projects, should explicitly set this key to {@code true} for the entire project.
+	 * 
+	 * <br />
+	 * <em>BREAKING CHANGE</em>: Starting with lombok v2.0.0, defaults to {@code false} instead of {@code true}, as {@code @ConstructorProperties} requires extra modules in JDK9.
+	 * 
+	 * @see ConfigurationKeys#ANY_CONSTRUCTOR_ADD_CONSTRUCTOR_PROPERTIES
+	 * @deprecated Since version 2.0, use {@link #ANY_CONSTRUCTOR_ADD_CONSTRUCTOR_PROPERTIES} instead.
 	 */
+	@Deprecated
 	public static final ConfigurationKey<Boolean> ANY_CONSTRUCTOR_SUPPRESS_CONSTRUCTOR_PROPERTIES = new ConfigurationKey<Boolean>("lombok.anyConstructor.suppressConstructorProperties", "Suppress the generation of @ConstructorProperties for generated constructors (default: false).") {};
+	
+	/**
+	 * lombok configuration: {@code lombok.anyConstructor.addConstructorProperties} = {@code true} | {@code false}.
+	 * 
+	 * If {@code true}, all generated constructors with at least 1 argument get a {@code @ConstructorProperties}.
+	 * 
+	 */
+	public static final ConfigurationKey<Boolean> ANY_CONSTRUCTOR_ADD_CONSTRUCTOR_PROPERTIES = new ConfigurationKey<Boolean>("lombok.anyConstructor.addConstructorProperties", "Generate @ConstructorProperties for generated constructors (default: false).") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.allArgsConstructor.flagUsage} = {@code WARNING} | {@code ERROR}.
