@@ -9,7 +9,7 @@ class DelegateOnGetter {
   DelegateOnGetter() {
     super();
   }
-  public @Delegate @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") Bar getBar() {
+  public @Delegate @java.lang.SuppressWarnings("all") Bar getBar() {
     java.lang.Object value = this.bar.get();
     if ((value == null))
         {
@@ -35,10 +35,10 @@ class DelegateOnGetter {
         }
     return (Bar) ((value == this.bar) ? null : value);
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int getInt() {
+  public @java.lang.SuppressWarnings("all") int getInt() {
     return this.getBar().getInt();
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setList(final java.util.ArrayList<java.lang.String> list) {
+  public @java.lang.SuppressWarnings("all") void setList(final java.util.ArrayList<java.lang.String> list) {
     this.getBar().setList(list);
   }
 }

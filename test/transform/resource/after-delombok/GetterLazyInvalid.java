@@ -13,7 +13,6 @@ class GetterLazyInvalidNone {
 class GetterLazyInvalidClass {
 	private final String fieldName = "";
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public String getFieldName() {
 		return this.fieldName;
 	}

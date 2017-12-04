@@ -11,18 +11,15 @@ class DelegateWithDeprecated {
 	}
 	@java.lang.Deprecated
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public void deprecatedAnnotation() {
 		this.bar.deprecatedAnnotation();
 	}
 	@java.lang.Deprecated
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public void deprecatedComment() {
 		this.bar.deprecatedComment();
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public void notDeprecated() {
 		this.bar.notDeprecated();
 	}

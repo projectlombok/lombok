@@ -1,26 +1,21 @@
 final class Value1 {
 	private final int x;
 	private final String name;
-	@java.beans.ConstructorProperties({"x", "name"})
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public Value1(final int x, final String name) {
 		this.x = x;
 		this.name = name;
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public int getX() {
 		return this.x;
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public String getName() {
 		return this.name;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof Value1)) return false;
@@ -33,7 +28,6 @@ final class Value1 {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -44,7 +38,6 @@ final class Value1 {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public java.lang.String toString() {
 		return "Value1(x=" + this.getX() + ", name=" + this.getName() + ")";
 	}
@@ -52,26 +45,21 @@ final class Value1 {
 class Value2 {
 	public final int x;
 	private final String name;
-	@java.beans.ConstructorProperties({"x", "name"})
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public Value2(final int x, final String name) {
 		this.x = x;
 		this.name = name;
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public int getX() {
 		return this.x;
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public String getName() {
 		return this.name;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof Value2)) return false;
@@ -84,13 +72,11 @@ class Value2 {
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof Value2;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -101,7 +87,6 @@ class Value2 {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public java.lang.String toString() {
 		return "Value2(x=" + this.getX() + ", name=" + this.getName() + ")";
 	}
@@ -109,26 +94,21 @@ class Value2 {
 final class Value3 {
 	private int x;
 	private final int y;
-	@java.beans.ConstructorProperties({"x", "y"})
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public Value3(final int x, final int y) {
 		this.x = x;
 		this.y = y;
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public int getX() {
 		return this.x;
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public int getY() {
 		return this.y;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof Value3)) return false;
@@ -139,7 +119,6 @@ final class Value3 {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -149,7 +128,6 @@ final class Value3 {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public java.lang.String toString() {
 		return "Value3(x=" + this.getX() + ", y=" + this.getY() + ")";
 	}

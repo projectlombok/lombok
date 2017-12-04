@@ -1,64 +1,64 @@
 import lombok.Builder;
 import lombok.Value;
 public final @Value @Builder class BuilderDefaults {
-  public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") class BuilderDefaultsBuilder {
-    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int x;
-    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean x$set;
-    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") String name;
-    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") long z;
-    private @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean z$set;
-    @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderDefaultsBuilder() {
+  public static @java.lang.SuppressWarnings("all") class BuilderDefaultsBuilder {
+    private @java.lang.SuppressWarnings("all") int x;
+    private @java.lang.SuppressWarnings("all") boolean x$set;
+    private @java.lang.SuppressWarnings("all") String name;
+    private @java.lang.SuppressWarnings("all") long z;
+    private @java.lang.SuppressWarnings("all") boolean z$set;
+    @java.lang.SuppressWarnings("all") BuilderDefaultsBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderDefaultsBuilder x(final int x) {
+    public @java.lang.SuppressWarnings("all") BuilderDefaultsBuilder x(final int x) {
       this.x = x;
       x$set = true;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderDefaultsBuilder name(final String name) {
+    public @java.lang.SuppressWarnings("all") BuilderDefaultsBuilder name(final String name) {
       this.name = name;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderDefaultsBuilder z(final long z) {
+    public @java.lang.SuppressWarnings("all") BuilderDefaultsBuilder z(final long z) {
       this.z = z;
       z$set = true;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderDefaults build() {
+    public @java.lang.SuppressWarnings("all") BuilderDefaults build() {
       return new BuilderDefaults((x$set ? x : BuilderDefaults.$default$x()), name, (z$set ? z : BuilderDefaults.$default$z()));
     }
-    public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.lang.String toString() {
+    public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((((("BuilderDefaults.BuilderDefaultsBuilder(x=" + this.x) + ", name=") + this.name) + ", z=") + this.z) + ")");
     }
   }
   private final @Builder.Default int x;
   private final String name;
   private final @Builder.Default long z;
-  private static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int $default$x() {
+  private static @java.lang.SuppressWarnings("all") int $default$x() {
     return 10;
   }
-  private static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") long $default$z() {
+  private static @java.lang.SuppressWarnings("all") long $default$z() {
     return System.currentTimeMillis();
   }
-  @java.beans.ConstructorProperties({"x", "name", "z"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderDefaults(final int x, final String name, final long z) {
+  @java.lang.SuppressWarnings("all") BuilderDefaults(final int x, final String name, final long z) {
     super();
     this.x = x;
     this.name = name;
     this.z = z;
   }
-  public static @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") BuilderDefaultsBuilder builder() {
+  public static @java.lang.SuppressWarnings("all") BuilderDefaultsBuilder builder() {
     return new BuilderDefaultsBuilder();
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int getX() {
+  public @java.lang.SuppressWarnings("all") int getX() {
     return this.x;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") String getName() {
+  public @java.lang.SuppressWarnings("all") String getName() {
     return this.name;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") long getZ() {
+  public @java.lang.SuppressWarnings("all") long getZ() {
     return this.z;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof BuilderDefaults)))
@@ -74,7 +74,7 @@ public final @Value @Builder class BuilderDefaults {
         return false;
     return true;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.getX());
@@ -84,7 +84,7 @@ public final @Value @Builder class BuilderDefaults {
     result = ((result * PRIME) + (int) ($z ^ ($z >>> 32)));
     return result;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.lang.String toString() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
     return (((((("BuilderDefaults(x=" + this.getX()) + ", name=") + this.getName()) + ", z=") + this.getZ()) + ")");
   }
 }

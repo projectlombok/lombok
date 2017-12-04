@@ -7,22 +7,18 @@ class DelegateWithVarargs {
 		void arrayVarargs(int[]... arrayVarargs);
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public void justOneParameter(final int... varargs) {
 		this.bar.justOneParameter(varargs);
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public void multipleParameters(final java.lang.String first, final int... varargs) {
 		this.bar.multipleParameters(first, varargs);
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public void array(final int[] array) {
 		this.bar.array(array);
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public void arrayVarargs(final int[]... arrayVarargs) {
 		this.bar.arrayVarargs(arrayVarargs);
 	}

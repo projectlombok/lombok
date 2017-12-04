@@ -5,7 +5,7 @@ class GetterLazyTransient {
   GetterLazyTransient() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int getNonTransientField() {
+  public @java.lang.SuppressWarnings("all") int getNonTransientField() {
     java.lang.Object value = this.nonTransientField.get();
     if ((value == null))
         {
@@ -22,7 +22,7 @@ class GetterLazyTransient {
         }
     return (java.lang.Integer) value;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int getNonLazyTransientField() {
+  public @java.lang.SuppressWarnings("all") int getNonLazyTransientField() {
     return this.nonLazyTransientField;
   }
 }

@@ -9,7 +9,6 @@ class WitherDeprecated {
 	}
 	@java.lang.Deprecated
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public WitherDeprecated withAnnotation(final int annotation) {
 		return this.annotation == annotation ? this : new WitherDeprecated(annotation, this.javadoc);
 	}
@@ -18,7 +17,6 @@ class WitherDeprecated {
 	 */
 	@java.lang.Deprecated
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public WitherDeprecated withJavadoc(final int javadoc) {
 		return this.javadoc == javadoc ? this : new WitherDeprecated(this.annotation, javadoc);
 	}

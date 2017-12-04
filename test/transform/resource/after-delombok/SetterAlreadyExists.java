@@ -23,7 +23,6 @@ class Setter5 {
 	void setFoo() {
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public void setFoo(final String foo) {
 		this.foo = foo;
 	}
@@ -33,7 +32,6 @@ class Setter6 {
 	void setFoo(String foo, int x) {
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public void setFoo(final String foo) {
 		this.foo = foo;
 	}

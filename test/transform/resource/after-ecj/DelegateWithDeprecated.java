@@ -9,13 +9,13 @@ class DelegateWithDeprecated {
   DelegateWithDeprecated() {
     super();
   }
-  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void deprecatedAnnotation() {
+  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") void deprecatedAnnotation() {
     this.bar.deprecatedAnnotation();
   }
-  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void deprecatedComment() {
+  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") void deprecatedComment() {
     this.bar.deprecatedComment();
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void notDeprecated() {
+  public @java.lang.SuppressWarnings("all") void notDeprecated() {
     this.bar.notDeprecated();
   }
 }

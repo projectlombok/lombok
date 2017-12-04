@@ -37,7 +37,7 @@ class Wither5 {
   Wither5(String foo) {
     super();
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") Wither5 withFoo(final String foo) {
+  public @java.lang.SuppressWarnings("all") Wither5 withFoo(final String foo) {
     return ((this.foo == foo) ? this : new Wither5(foo));
   }
 }
@@ -48,7 +48,7 @@ class Wither6 {
   Wither6(String foo) {
     super();
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") Wither6 withFoo(final String foo) {
+  public @java.lang.SuppressWarnings("all") Wither6 withFoo(final String foo) {
     return ((this.foo == foo) ? this : new Wither6(foo));
   }
 }
