@@ -576,7 +576,7 @@ ${sourceWarning}</echo>
 		<antcall target="-createEclipseLaunchForTestEnvironmentIfEclipseProject" />
 	</target>
 	
-	<target name="setupJavaOracle7TestEnvironment" depends="ensureTestDeps, contrib" description="Sets up the test so that 'ant test' will test against OpenJDK7.">
+	<target name="setupJavaOracle7TestEnvironment" depends="ensureTestDeps, contrib" description="Sets up the test so that 'ant test' will test against Oracle JDK7.">
 		<mkdir dir="lib/oracleJDK7Environment" />		
 		<get src="https://projectlombok.org/ivyrepo/langtools/oracle-jdk7-tools.jar" dest="lib/oracleJDK7Environment/tools.jar" verbose="true" usetimestamp="true" />
 		<get src="https://projectlombok.org/ivyrepo/langtools/oracle-jdk7-rt.jar" dest="lib/oracleJDK7Environment/rt.jar" verbose="true" usetimestamp="true" />
@@ -591,7 +591,7 @@ ${sourceWarning}</echo>
 		<antcall target="-createEclipseLaunchForTestEnvironmentIfEclipseProject" />
 	</target>
 	
-	<target name="setupJavaOracle8TestEnvironment" depends="ensureTestDeps, contrib" description="Sets up the test so that 'ant test' will test against OpenJDK8.">
+	<target name="setupJavaOracle8TestEnvironment" depends="ensureTestDeps, contrib" description="Sets up the test so that 'ant test' will test against Oracle JDK8.">
 		<mkdir dir="lib/oracleJDK8Environment" />
 		<get src="https://projectlombok.org/ivyrepo/langtools/jdk8-javac.jar" dest="lib/oracleJDK8Environment/javac8.jar" verbose="true" usetimestamp="true" />
 		<get src="https://projectlombok.org/ivyrepo/langtools/oracle-jdk8-rt.jar" dest="lib/oracleJDK8Environment/rt.jar" verbose="true" usetimestamp="true" />
