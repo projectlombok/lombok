@@ -24,7 +24,6 @@ package lombok;
 import java.io.File;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -131,7 +130,6 @@ public class RunTestsViaEcj extends AbstractRunTests {
 	
 	private FileSystem createFileSystem(File file) {
 		List<String> classpath = new ArrayList<String>();
-		classpath.addAll(Arrays.asList(System.getProperty("sun.boot.class.path").split(File.pathSeparator)));
 		for (Iterator<String> i = classpath.iterator(); i.hasNext();) {
 			if (FileSystem.getClasspath(i.next(), "UTF-8", null) == null) {
 				i.remove();
@@ -139,6 +137,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		}
 		if (new File("bin").exists()) classpath.add("bin");
 		classpath.add("dist/lombok.jar");
+		classpath.add("lib/oracleJDK8Environment/rt.jar");
 		classpath.add("lib/test/commons-logging-commons-logging.jar");
 		classpath.add("lib/test/org.slf4j-slf4j-api.jar");
 		classpath.add("lib/test/org.slf4j-slf4j-ext.jar");

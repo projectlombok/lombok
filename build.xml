@@ -503,7 +503,7 @@ ${sourceWarning}</echo>
 		</ivy:compile>
 	</target>
 	
-	<target name="test-ecj" depends="dist, contrib" unless="tests.skip">
+	<target name="test-ecj" depends="dist, contrib, setupJavaOracle8TestEnvironment" unless="tests.skip">
 		<condition property="ecj.loc" value="lib/ecj9/*" else="lib/ecj8/*">
 			<equals arg1="${ant.java.version}" arg2="9" />
 		</condition>
