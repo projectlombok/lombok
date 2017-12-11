@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2010-2014 The Project Lombok Authors.
+ Copyright (C) 2010-2017 The Project Lombok Authors.
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -161,11 +161,13 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<delete file="build/lombok/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor" quiet="true" />
 		<ivy:compile destdir="build/stubsstubs" source="1.5" target="1.5" ecj="true" nowarn="true">
 			<src path="src/stubsstubs" />
+			<classpath location="build/stubsstubs" />
 		</ivy:compile>
 		<ivy:compile destdir="build/stubs" source="1.5" target="1.5" ecj="true" nowarn="true">
 			<src path="src/stubs" />
 			<src path="src/javac-only-stubs" />
 			<classpath location="build/stubsstubs" />
+			<classpath location="build/stubs" />
 		</ivy:compile>
 		
 		<ivy:compile destdir="build/lombok-utils" source="1.5" target="1.5" ecj="true" nowarn="true" includeSystemBootclasspath="true">
