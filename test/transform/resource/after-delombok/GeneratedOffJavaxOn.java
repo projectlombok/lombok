@@ -1,3 +1,4 @@
+//version :8
 class GeneratedOffJavaxOn {
 	int x;
 	@java.lang.SuppressWarnings("all")

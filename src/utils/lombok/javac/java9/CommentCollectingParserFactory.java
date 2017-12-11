@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 The Project Lombok Authors.
+ * Copyright (C) 2013-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.javac.java8;
+package lombok.javac.java9;
 
 import java.lang.reflect.Field;
 
@@ -43,22 +43,16 @@ public class CommentCollectingParserFactory extends ParserFactory {
 	}
 	
 	public JavacParser newParser(CharSequence input, boolean keepDocComments, boolean keepEndPos, boolean keepLineMap) {
-		ScannerFactory scannerFactory = ScannerFactory.instance(context);
-		Lexer lexer = scannerFactory.newScanner(input, true);
-		Object x = new CommentCollectingParser(this, lexer, true, keepLineMap, keepEndPos);
-		return (JavacParser) x;
-		// CCP is based on a stub which extends nothing, but at runtime the stub is replaced with either
-		//javac6's EndPosParser which extends Parser, or javac8's JavacParser which implements Parser.
-		//Either way this will work out.
+		return newParser(input, keepDocComments, keepEndPos, keepLineMap, false);
 	}
 	
 	public JavacParser newParser(CharSequence input, boolean keepDocComments, boolean keepEndPos, boolean keepLineMap, boolean parseModuleInfo) {
 		ScannerFactory scannerFactory = ScannerFactory.instance(context);
 		Lexer lexer = scannerFactory.newScanner(input, true);
-		Object x = new CommentCollectingParser(this, lexer, true, keepLineMap, keepEndPos);
+		Object x = new CommentCollectingParser(this, lexer, true, keepLineMap, keepEndPos, parseModuleInfo);
 		return (JavacParser) x;
 		// CCP is based on a stub which extends nothing, but at runtime the stub is replaced with either
-		//javac6's EndPosParser which extends Parser, or javac8's JavacParser which implements Parser.
+		//javac6's EndPosParser which extends Parser, or javac-9's JavacParser which implements Parser.
 		//Either way this will work out.
 	}
 	

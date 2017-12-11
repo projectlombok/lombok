@@ -52,6 +52,10 @@ public class CapturingDiagnosticListener implements DiagnosticListener<JavaFileO
 				"^" + Pattern.quote(file.getAbsolutePath()) +
 				"\\s*:\\s*\\d+\\s*:\\s*(?:warning:\\s*)?(.*)$", Pattern.DOTALL).matcher(msg);
 		if (m.matches()) msg = m.group(1);
+		if (msg.equals("deprecated item is not annotated with @Deprecated")) {
+			// This is new in JDK9; prior to that you don't see this. We shall ignore these.
+			return;
+		}
 		messages.add(new CompilerMessage(d.getLineNumber(), d.getStartPosition(), d.getKind() == Kind.ERROR, msg));
 	}
 	
