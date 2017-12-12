@@ -5,7 +5,7 @@ Lombok Changelog
 * v1.16.18 is the latest stable release of Project Lombok.
 * PLATFORM: Possible support for jdk9 in the new IntelliJ, Netbeans and for Gradle.
 * BREAKING CHANGE: _lombok config_ key `lombok.addJavaxGeneratedAnnotation` now defaults to `false` instead of true. Oracle broke this annotation with the release of JDK9, necessitating this breaking change.
-* BREAKING CHANGE: _lombok config_ key `lombok.anyConstructor.suppressConstructorProperties` is now deprecated and defaults to `true`, that is, by default lombok no longer automatically generates `@ConstructorProperties` annotations. New config key `lombok.anyConstructor.addConstructorProperties` now exists; set it to `code` true if you want the old behaviour. Oracle more or less broke this annotation with the release of JDK9, necessitating this breaking change.
+* BREAKING CHANGE: _lombok config_ key `lombok.anyConstructor.suppressConstructorProperties` is now deprecated and defaults to `true`, that is, by default lombok no longer automatically generates `@ConstructorProperties` annotations. New config key `lombok.anyConstructor.addConstructorProperties` now exists; set it to `true` if you want the old behavior. Oracle more or less broke this annotation with the release of JDK9, necessitating this breaking change.
 * DEVELOPMENT: Compiling lombok on JDK1.9 is now possible.
 * BUGFIX: The generated hashCode would break the contract if `callSuper=true,of={}`. [Issue #1505](https://github.com/rzwitserloot/lombok/issues/1505)
 * BUGFIX: `delombok` no longer prints the synthetic outer-class parameter. [Issue #1521](https://github.com/rzwitserloot/lombok/issues/1521)
