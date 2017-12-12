@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 -->
-<project name="lombok-website" basedir=".." default="website">
+<project name="lombok-website" basedir=".." default="website" xmlns:ivy="antlib:com.zwitserloot.ivyplusplus">
 	<description>
 This buildfile is part of projectlombok.org. It is responsible for building the website and all website-related aspects,
 such as applying the templates to produce the website, converting the changelog into HTML, and creating javadoc.
