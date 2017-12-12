@@ -212,7 +212,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			thrownExceptions = jmd.thrown;
 			nameOfBuilderMethod = jmd.name;
 			if (returnType instanceof JCTypeApply) {
-				returnType = ((JCTypeApply) returnType).clazz;
+				returnType = cloneType(tdParent.getTreeMaker(), returnType, ast, annotationNode.getContext());
 			}
 			if (builderClassName.isEmpty()) {
 				if (returnType instanceof JCFieldAccess) {
@@ -232,7 +232,16 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					if (Character.isLowerCase(builderClassName.charAt(0))) {
 						builderClassName = Character.toTitleCase(builderClassName.charAt(0)) + builderClassName.substring(1);
 					}
-				} else {
+				} else if (returnType instanceof JCTypeApply) {
+					JCExpression clazz = ((JCTypeApply) returnType).clazz;
+					if (clazz instanceof JCFieldAccess) {
+						builderClassName = ((JCFieldAccess) clazz).name + "Builder";
+					} else if (clazz instanceof JCIdent) {
+						builderClassName = ((JCIdent) clazz).name + "Builder";
+					}
+				}
+				
+				if (builderClassName.isEmpty()) {
 					// This shouldn't happen.
 					System.err.println("Lombok bug ID#20140614-1651: javac HandleBuilder: return type to name conversion failed: " + returnType.getClass());
 					builderClassName = td.name.toString() + "Builder";
@@ -253,11 +262,14 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					tpOnRet = ((JCTypeApply) fullReturnType).arguments;
 				}
 				
-				if (returnType instanceof JCIdent) {
-					simpleName = ((JCIdent) returnType).name;
+				JCExpression namingType = returnType;
+				if (returnType instanceof JCTypeApply) namingType = ((JCTypeApply) returnType).clazz;
+				
+				if (namingType instanceof JCIdent) {
+					simpleName = ((JCIdent) namingType).name;
 					pkg = null;
-				} else if (returnType instanceof JCFieldAccess) {
-					JCFieldAccess jcfa = (JCFieldAccess) returnType;
+				} else if (namingType instanceof JCFieldAccess) {
+					JCFieldAccess jcfa = (JCFieldAccess) namingType;
 					simpleName = jcfa.name;
 					pkg = unpack(jcfa.selected);
 					if (pkg.startsWith("ERR:")) {
@@ -266,7 +278,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 						return;
 					}
 				} else {
-					annotationNode.addError("Expected a (parameterized) type here instead of a " + returnType.getClass().getName());
+					annotationNode.addError("Expected a (parameterized) type here instead of a " + namingType.getClass().getName());
 					return;
 				}
 				

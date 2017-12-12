@@ -24,7 +24,7 @@ class BuilderWithExistingBuilderClass<T, K extends Number> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public BuilderWithExistingBuilderClass build() {
+		public BuilderWithExistingBuilderClass<String, Z> build() {
 			return BuilderWithExistingBuilderClass.<Z>staticMethod(arg1, arg2, arg3);
 		}
 		@java.lang.Override
