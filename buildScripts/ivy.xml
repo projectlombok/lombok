@@ -32,8 +32,7 @@
 		
 		<dependency org="org.apache.ant" name="ant" rev="1.8.1" conf="buildBase->default; contrib->sources" />
 		<dependency org="projectlombok.org" name="spi" rev="0.2.7" conf="buildBase->build" />
-		<dependency org="com.jcraft" name="jsch" rev="0.1.42" conf="buildBase->default" />
-		<dependency org="projectlombok.org" name="jsch-ant-fixed" rev="0.1.42" conf="buildBase->build" />
+		<dependency org="com.hierynomus" name="sshj" rev="0.23.0" conf="buildBase->default" />
 		<dependency org="projectlombok.org" name="markdownj" rev="1.02b4" conf="buildBase->build" />
 		<dependency org="de.java2html" name="java2html" rev="5.0" conf="buildBase->default" />
 		<dependency org="org.freemarker" name="freemarker" rev="2.3.25-incubating" conf="buildBase->default" />
