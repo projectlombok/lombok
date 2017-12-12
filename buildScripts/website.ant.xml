@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 -->
-<project name="lombok-website" basedir=".." default="website">
+<project name="lombok-website" basedir=".." default="website" xmlns:ivy="antlib:com.zwitserloot.ivyplusplus">
 	<description>
 This buildfile is part of projectlombok.org. It is responsible for building the website and all website-related aspects,
 such as applying the templates to produce the website, converting the changelog into HTML, and creating javadoc.
@@ -132,21 +132,22 @@ such as applying the templates to produce the website, converting the changelog 
 		</tar>
 	</target>
 	
-	<taskdef name="scp" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.Scp" classpathref="build.path" />
-	<taskdef name="sshexec" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="build.path" />
 	<target name="website-publish" depends="website, -send-site-to-remote" />
 	<target name="website-only-publish" depends="website-only, -send-site-to-remote" />
 	<target name="-send-site-to-remote" depends="-requires-ssh">
-		<scp
-			localFile="dist/website.tar.bz2"
-			todir="${ssh.username}@projectlombok.org:/data/lombok/staging"
-			keyfile="${ssh.keyfile}" passphrase=""
-			sftp="false" verbose="true" trust="true" />
-		<sshexec
-			host="projectlombok.org"
+		<ivy:scpUpload
+			from="dist/website.tar.bz2"
+			to="/data/lombok/staging"
+			server="projectlombok.org"
 			username="${ssh.username}"
-			keyfile="${ssh.keyfile}" passphrase=""
-			trust="true" command="/data/lombok/stagingCmd/deployWebsite" />
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
+		<ivy:sshExec
+			cmd="/data/lombok/stagingCmd/deployWebsite"
+			server="projectlombok.org"
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
 	</target>
 	
 	<target name="latestChanges" depends="-compile-webclasses, -ensure-version, -ensure-fullversion">
@@ -189,14 +190,19 @@ such as applying the templates to produce the website, converting the changelog 
 	</target>
 
 	<target name="edgeRelease" depends="-requires-ssh, edgeRelease-build">
-		<scp
-			localFile="dist/website-edge.tar.bz2"
-			todir="${ssh.username}@projectlombok.org:/data/lombok/staging"
-			keyfile="${ssh.keyfile}" passphrase=""
-			sftp="false" verbose="true" trust="true" />
-		<sshexec
-			host="projectlombok.org" username="${ssh.username}" keyfile="${ssh.keyfile}" passphrase=""
-			trust="true" command="/data/lombok/stagingCmd/deployEdge" />
+		<ivy:scpUpload
+			from="dist/website-edge.tar.bz2"
+			to="/data/lombok/staging"
+			server="projectlombok.org"
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
+		<ivy:sshExec
+			cmd="/data/lombok/stagingCmd/deployEdge"
+			server="projectlombok.org"
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
 	</target>
 	
 	<target name="javadoc" description="Generates the javadoc" depends="-ensure-version, -ensure-fullversion" unless="skip.javadoc">

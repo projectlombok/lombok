@@ -5,10 +5,13 @@ Lombok Changelog
 * v1.16.18 is the latest stable release of Project Lombok.
 * PLATFORM: Possible support for jdk9 in the new IntelliJ, Netbeans and for Gradle.
 * BREAKING CHANGE: _lombok config_ key `lombok.addJavaxGeneratedAnnotation` now defaults to `false` instead of true. Oracle broke this annotation with the release of JDK9, necessitating this breaking change.
-* BREAKING CHANGE: _lombok config_ key `lombok.anyConstructor.suppressConstructorProperties` is now deprecated and defaults to `true`, that is, by default lombok no longer automatically generates `@ConstructorProperties` annotations. New config key `lombok.anyConstructor.addConstructorProperties` now exists; set it to `code` true if you want the old behaviour. Oracle more or less broke this annotation with the release of JDK9, necessitating this breaking change.
+* BREAKING CHANGE: _lombok config_ key `lombok.anyConstructor.suppressConstructorProperties` is now deprecated and defaults to `true`, that is, by default lombok no longer automatically generates `@ConstructorProperties` annotations. New config key `lombok.anyConstructor.addConstructorProperties` now exists; set it to `true` if you want the old behavior. Oracle more or less broke this annotation with the release of JDK9, necessitating this breaking change.
 * DEVELOPMENT: Compiling lombok on JDK1.9 is now possible.
 * BUGFIX: The generated hashCode would break the contract if `callSuper=true,of={}`. [Issue #1505](https://github.com/rzwitserloot/lombok/issues/1505)
 * BUGFIX: `delombok` no longer prints the synthetic outer-class parameter. [Issue #1521](https://github.com/rzwitserloot/lombok/issues/1521)
+* BUGFIX: @Builder.Default now also works when type parameters are present. [Issue #1527](https://github.com/rzwitserloot/lombok/issues/1527)
+* BUGFIX: @Builder now also works on method with a generified return type. [Issue #1420](https://github.com/rzwitserloot/lombok/issues/1420)
+* INSTALLER: By default, the lombok installer now inserts an absolute path in `eclipse.ini` and friends, instead of a relative path. If you want the old behavior, you can use `java -jar -Dlombok.installer.fullpath=false lombok.jar`.
 
 ### v1.16.18 (July 3rd, 2017)
 * PLATFORM: JDK9 support much improved since v1.16.6; [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
@@ -28,6 +31,7 @@ Lombok Changelog
 * PLATFORM: Lombok can now be used together with other annotation processors that are looking for lombok-generated methods, but only if lombok is the first annotation processor executed. The most commonly used annotation processor affected by this change is [MapStruct](http://mapstruct.org/); we've worked with the mapstruct team specifically to allow any order. Other annotation processors might follow the framework we've built to make this possible; point the authors of any such processor to us and we'll get it sorted [MapStruct issue #510](https://github.com/mapstruct/mapstruct/issues/510) [Lombok issue #973](https://github.com/rzwitserloot/lombok/issues/973)
 * PLATFORM: Eclipse: Refactor script 'rename field' when lombok has also generated getters and/or setters for this field is nicer now [Issue #210](https://github.com/rzwitserloot/lombok/issues/210)
 * BUGFIX: Something you never encountered. [Issue #1274](https://github.com/rzwitserloot/lombok/issues/1274)
+* DEPRECATION: The configuration key `lombok.addGeneratedAnnotation` is now deprecated, use `lombok.addJavaxGeneratedAnnotation` instead.
 
 ### v1.16.12 (December 5th, 2016)
 * FEATURE: `var` is the mutable sister of `val`. For now experimental, and opt-in using `ALLOW` in the flagUsage configuration key. Thanks for the contribution, Bulgakov Alexander. 

@@ -165,7 +165,7 @@ class StaticWithToBuilder<T, K> {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
-		public StaticWithToBuilder build() {
+		public StaticWithToBuilder<Z, String> build() {
 			return StaticWithToBuilder.<Z>test(mOne, bar);
 		}
 		@java.lang.Override

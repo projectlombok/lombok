@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2016 The Project Lombok Authors.
+ * Copyright (C) 2009-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -256,11 +256,11 @@ public final class EclipseProductLocation extends IdeLocation {
 	 */
 	@Override
 	public String install() throws InstallException {
-		// For whatever reason, relative paths in your eclipse.ini file don't work on linux, but only for -javaagent.
-		// If someone knows how to fix this, please do so, as this current hack solution (putting the absolute path
-		// to the jar files in your eclipse.ini) means you can't move your eclipse around on linux without lombok
-		// breaking it. NB: rerunning lombok.jar installer and hitting 'update' will fix it if you do that.
-		boolean fullPathRequired = OsUtils.getOS() == OsUtils.OS.UNIX || System.getProperty("lombok.installer.fullpath") != null;
+		// On Linux, for whatever reason, relative paths in your eclipse.ini file don't work, but only for -javaagent.
+		// On Windows, since the Oomph, the generated shortcut starts in the wrong directory.
+		// So the default is to use absolute paths, breaking lombok when you move the eclipse directory.
+		// Or not break when you copy your directory, but break later when you remove the original one.
+		boolean fullPathRequired = !"false".equals(System.getProperty("lombok.installer.fullpath", "true"));
 		
 		boolean installSucceeded = false;
 		StringBuilder newContents = new StringBuilder();

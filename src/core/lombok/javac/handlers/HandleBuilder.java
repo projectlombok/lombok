@@ -171,7 +171,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				if (isDefault != null) {
 					bfd.nameOfDefaultProvider = parent.toName("$default$" + bfd.name);
 					bfd.nameOfSetFlag = parent.toName(bfd.name + "$set");
-					JCMethodDecl md = generateDefaultProvider(bfd.nameOfDefaultProvider, fieldNode);
+					JCMethodDecl md = generateDefaultProvider(bfd.nameOfDefaultProvider, fieldNode, td.typarams);
 					recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
 					if (md != null) injectMethod(tdParent, md);
 				}
@@ -212,7 +212,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			thrownExceptions = jmd.thrown;
 			nameOfBuilderMethod = jmd.name;
 			if (returnType instanceof JCTypeApply) {
-				returnType = ((JCTypeApply) returnType).clazz;
+				returnType = cloneType(tdParent.getTreeMaker(), returnType, ast, annotationNode.getContext());
 			}
 			if (builderClassName.isEmpty()) {
 				if (returnType instanceof JCFieldAccess) {
@@ -232,7 +232,16 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					if (Character.isLowerCase(builderClassName.charAt(0))) {
 						builderClassName = Character.toTitleCase(builderClassName.charAt(0)) + builderClassName.substring(1);
 					}
-				} else {
+				} else if (returnType instanceof JCTypeApply) {
+					JCExpression clazz = ((JCTypeApply) returnType).clazz;
+					if (clazz instanceof JCFieldAccess) {
+						builderClassName = ((JCFieldAccess) clazz).name + "Builder";
+					} else if (clazz instanceof JCIdent) {
+						builderClassName = ((JCIdent) clazz).name + "Builder";
+					}
+				}
+				
+				if (builderClassName.isEmpty()) {
 					// This shouldn't happen.
 					System.err.println("Lombok bug ID#20140614-1651: javac HandleBuilder: return type to name conversion failed: " + returnType.getClass());
 					builderClassName = td.name.toString() + "Builder";
@@ -253,11 +262,14 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					tpOnRet = ((JCTypeApply) fullReturnType).arguments;
 				}
 				
-				if (returnType instanceof JCIdent) {
-					simpleName = ((JCIdent) returnType).name;
+				JCExpression namingType = returnType;
+				if (returnType instanceof JCTypeApply) namingType = ((JCTypeApply) returnType).clazz;
+				
+				if (namingType instanceof JCIdent) {
+					simpleName = ((JCIdent) namingType).name;
 					pkg = null;
-				} else if (returnType instanceof JCFieldAccess) {
-					JCFieldAccess jcfa = (JCFieldAccess) returnType;
+				} else if (namingType instanceof JCFieldAccess) {
+					JCFieldAccess jcfa = (JCFieldAccess) namingType;
 					simpleName = jcfa.name;
 					pkg = unpack(jcfa.selected);
 					if (pkg.startsWith("ERR:")) {
@@ -266,7 +278,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 						return;
 					}
 				} else {
-					annotationNode.addError("Expected a (parameterized) type here instead of a " + returnType.getClass().getName());
+					annotationNode.addError("Expected a (parameterized) type here instead of a " + namingType.getClass().getName());
 					return;
 				}
 				
@@ -543,7 +555,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		for (BuilderFieldData bfd : builderFields) {
 			if (bfd.nameOfSetFlag != null) {
 				args.append(maker.Conditional(maker.Ident(bfd.nameOfSetFlag), maker.Ident(bfd.name),
-					maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(((JCClassDecl) tdParent.get()).name), bfd.nameOfDefaultProvider), List.<JCExpression>nil())));
+					maker.Apply(typeParameterNames(maker, ((JCClassDecl) tdParent.get()).typarams), maker.Select(maker.Ident(((JCClassDecl) tdParent.get()).name), bfd.nameOfDefaultProvider), List.<JCExpression>nil())));
 			} else {
 				args.append(maker.Ident(bfd.name));
 			}
@@ -577,7 +589,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		return maker.MethodDef(maker.Modifiers(Flags.PUBLIC), type.toName(buildName), returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), thrownExceptions, body, null);
 	}
 	
-	public JCMethodDecl generateDefaultProvider(Name methodName, JavacNode fieldNode) {
+	public JCMethodDecl generateDefaultProvider(Name methodName, JavacNode fieldNode, List<JCTypeParameter> params) {
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 		
@@ -586,7 +598,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		JCBlock body = maker.Block(0, List.<JCStatement>of(statement));
 		int modifiers = Flags.PRIVATE | Flags.STATIC;
-		return maker.MethodDef(maker.Modifiers(modifiers), methodName, cloneType(maker, field.vartype, field, fieldNode.getContext()), List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+		return maker.MethodDef(maker.Modifiers(modifiers), methodName, cloneType(maker, field.vartype, field, fieldNode.getContext()), copyTypeParams(fieldNode, params), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 	}
 	
 	public JCMethodDecl generateBuilderMethod(boolean isStatic, String builderMethodName, String builderClassName, JavacNode source, JavacNode type, List<JCTypeParameter> typeParams) {

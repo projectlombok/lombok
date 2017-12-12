@@ -1388,17 +1388,18 @@ public class JavacHandlerUtil {
 	}
 	
 	public static JCExpression namePlusTypeParamsToTypeReference(JavacTreeMaker maker, Name typeName, List<JCTypeParameter> params) {
-		ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
-		
-		if (!params.isEmpty()) {
-			for (JCTypeParameter param : params) {
-				typeArgs.append(maker.Ident(param.name));
-			}
-			
-			return maker.TypeApply(maker.Ident(typeName), typeArgs.toList());
+		if (params.isEmpty()) {
+			return maker.Ident(typeName);
 		}
-		
-		return maker.Ident(typeName);
+		return maker.TypeApply(maker.Ident(typeName), typeParameterNames(maker, params));
+	}
+	
+	public static List<JCExpression> typeParameterNames(JavacTreeMaker maker, List<JCTypeParameter> params) {
+		ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
+		for (JCTypeParameter param : params) {
+			typeArgs.append(maker.Ident(param.name));
+		}
+		return typeArgs.toList();
 	}
 	
 	public static void sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(JavacNode typeNode, JavacNode errorNode) {
