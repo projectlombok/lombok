@@ -9,6 +9,7 @@ Lombok Changelog
 * DEVELOPMENT: Compiling lombok on JDK1.9 is now possible.
 * BUGFIX: The generated hashCode would break the contract if `callSuper=true,of={}`. [Issue #1505](https://github.com/rzwitserloot/lombok/issues/1505)
 * BUGFIX: `delombok` no longer prints the synthetic outer-class parameter. [Issue #1521](https://github.com/rzwitserloot/lombok/issues/1521)
+* BUGFIX: @Builder.Default now also works when type parameters are present. [Issue #1527](https://github.com/rzwitserloot/lombok/issues/1527)
 * INSTALLER: By default, the lombok installer now inserts an absolute path in `eclipse.ini` and friends, instead of a relative path. If you want the old behavior, you can use `java -jar -Dlombok.installer.fullpath=false lombok.jar`.
 
 ### v1.16.18 (July 3rd, 2017)

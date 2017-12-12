@@ -218,7 +218,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 					bfd.nameOfDefaultProvider = prefixWith(DEFAULT_PREFIX, bfd.name);
 					bfd.nameOfSetFlag = prefixWith(bfd.name, SET_PREFIX);
 					
-					MethodDeclaration md = generateDefaultProvider(bfd.nameOfDefaultProvider, fieldNode, ast);
+					MethodDeclaration md = generateDefaultProvider(bfd.nameOfDefaultProvider, td.typeParameters, fieldNode, ast);
 					if (md != null) injectMethod(tdParent, md);
 				}
 				addObtainVia(bfd, fieldNode);
@@ -580,6 +580,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				inv.sourceEnd = source.sourceEnd;
 				inv.receiver = new SingleNameReference(((TypeDeclaration) tdParent.get()).name, 0L);
 				inv.selector = bfd.nameOfDefaultProvider;
+				inv.typeArguments = typeParameterNames(((TypeDeclaration) type.get()).typeParameters);
 				
 				args.add(new ConditionalExpression(
 					new SingleNameReference(bfd.nameOfSetFlag,  0L),
@@ -614,14 +615,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				invoke.receiver = new SingleNameReference(type.up().getName().toCharArray(), 0);
 			else
 				invoke.receiver = new QualifiedThisReference(new SingleTypeReference(type.up().getName().toCharArray(), 0) , 0, 0);
-			TypeParameter[] tps = ((TypeDeclaration) type.get()).typeParameters;
-			if (tps != null) {
-				TypeReference[] trs = new TypeReference[tps.length];
-				for (int i = 0; i < trs.length; i++) {
-					trs[i] = new SingleTypeReference(tps[i].name, 0);
-				}
-				invoke.typeArguments = trs;
-			}
+			
+			invoke.typeArguments = typeParameterNames(((TypeDeclaration) type.get()).typeParameters);
 			invoke.arguments = args.isEmpty() ? null : args.toArray(new Expression[args.size()]);
 			if (returnType instanceof SingleTypeReference && Arrays.equals(TypeConstants.VOID, ((SingleTypeReference) returnType).token)) {
 				statements.add(invoke);
@@ -634,10 +629,21 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return out;
 	}
 	
-	public MethodDeclaration generateDefaultProvider(char[] methodName, EclipseNode fieldNode, ASTNode source) {
+	private TypeReference[] typeParameterNames(TypeParameter[] typeParameters) {
+		if (typeParameters == null) return null;
+		
+		TypeReference[] trs = new TypeReference[typeParameters.length];
+		for (int i = 0; i < trs.length; i++) {
+			trs[i] = new SingleTypeReference(typeParameters[i].name, 0);
+		}
+		return trs;
+	}
+	
+	public MethodDeclaration generateDefaultProvider(char[] methodName, TypeParameter[] typeParameters, EclipseNode fieldNode, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) fieldNode.top().get()).compilationResult);
+		out.typeParameters = copyTypeParams(typeParameters, source);
 		out.selector = methodName;
 		out.modifiers = ClassFileConstants.AccPrivate | ClassFileConstants.AccStatic;
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
