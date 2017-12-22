@@ -14,7 +14,7 @@ Lombok Changelog
 * INSTALLER: By default, the lombok installer now inserts an absolute path in `eclipse.ini` and friends, instead of a relative path. If you want the old behavior, you can use `java -jar -Dlombok.installer.fullpath=false lombok.jar`.
 
 ### v1.16.18 (July 3rd, 2017)
-* PLATFORM: JDK9 support much improved since v1.16.6; [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
+* PLATFORM: JDK9 support much improved since v1.16.16; [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
 * BUGFIX: Lombok now works with [Bazel](https://bazel.build/) and [Error Prone](https://error-prone.info/). [Issue #1290](https://github.com/rzwitserloot/lombok/issues/1290)
 * FEATURE: Lombok has a new [website](https://projectlombok.org/)! A few very minor changes to the code to be more consistent with it have been added, mostly to the javadoc.
 
