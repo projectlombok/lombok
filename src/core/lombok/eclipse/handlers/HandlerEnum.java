@@ -2,8 +2,6 @@ package lombok.eclipse.handlers;
 
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
-import java.io.FileWriter;
-import java.io.PrintWriter;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -38,23 +36,13 @@ import lombok.core.AnnotationValues;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
-import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
 import lombok.eclipse.handlers.HandleConstructor.SkipIfConstructorExists;
 
 @ProviderFor(EclipseAnnotationHandler.class) public class HandlerEnum extends EclipseAnnotationHandler<lombok.Enum> {
 	
-	PrintWriter out = null;
-	
 	@Override public void handle(AnnotationValues<Enum> annotation, Annotation ast, EclipseNode annotationNode) {
-		try {
-			out = new PrintWriter(new FileWriter("C:\\projekte\\lombok\\lombok.log"));
-			Generator generator = new Generator(annotationNode.up(), annotationNode);
-			generator.generate();
-		} catch (Exception e) {
-			e.printStackTrace(out);
-		} finally {
-			out.close();
-		}
+		Generator generator = new Generator(annotationNode.up(), annotationNode);
+		generator.generate();
 	}
 	
 	private class Generator {
@@ -98,9 +86,50 @@ import lombok.eclipse.handlers.HandleConstructor.SkipIfConstructorExists;
 			SetGeneratedByVisitor setGeneratedByVisitor = new SetGeneratedByVisitor(classNode.get());
 			createdFinder.traverse(setGeneratedByVisitor, createdFinder.scope);
 			
-			injectMethod(classNode, createdFinder);
+			if (!methodExists(createdFinder)) {
+				injectMethod(classNode, createdFinder);
+			}
 		}
 		
+		// EclipseHandlerUtil.methodExists() does not check the argument types, so overloading
+		// methods are not found.
+		private boolean methodExists(AbstractMethodDeclaration createdFinder) {
+			String finderName = String.valueOf(createdFinder.selector);
+			for(EclipseNode node : classNode.down()) {
+				if (node.get() instanceof MethodDeclaration) {
+					MethodDeclaration methodDeclaration = (MethodDeclaration) node.get();
+
+					String methodName = String.valueOf(methodDeclaration.selector);
+					boolean namesEqual = finderName.equals(methodName);
+
+					if (namesEqual) {
+						boolean argumentTypesAreEqual = argumentTypesAreEqual(createdFinder.arguments, methodDeclaration.arguments);
+						boolean found = namesEqual && argumentTypesAreEqual;
+						if (found) {
+							return true;
+						}
+					}
+				}
+			}
+			return false;
+		}
+
+		private boolean argumentTypesAreEqual(Argument[] left, Argument[] right) {
+			if (left.length == right.length) {
+				for (int i = 0; i < right.length; i++) {
+					// Compare String representation because TypeReference instances are not equals.
+					String leftType = left[i].type.toString();
+					String rightType = right[i].type.toString();
+					boolean typeDifferenceFound = !leftType.equals(rightType);
+					if (typeDifferenceFound) {
+						return false;
+					}
+				}
+				return true;
+			}
+			return false;
+		}
+
 		private void makeFieldFinal(EclipseNode field) {
 			FieldDeclaration fieldDeclaration = (FieldDeclaration) field.get();
 			fieldDeclaration.modifiers |= ClassFileConstants.AccFinal;
@@ -133,20 +162,12 @@ import lombok.eclipse.handlers.HandleConstructor.SkipIfConstructorExists;
 		}
 		
 		public MethodDeclaration createFinder() {
-			MethodDeclaration method = null;
-			
-			out.println("createFinder");
-			out.printf("- name: %s%n", methodName());
-			
-			method = new MethodDeclaration(classDeclaration.compilationResult);
+			MethodDeclaration method = new MethodDeclaration(classDeclaration.compilationResult);
 			method.modifiers = modifiers();
 			method.selector = methodName().toCharArray();
 			method.returnType = classAsType;
 			method.arguments = arguments();
 			method.statements = body();
-			
-			out.println(method);
-			
 			return method;
 		}
 		

@@ -90,9 +90,48 @@ public class HandlerEnum extends JavacAnnotationHandler<lombok.Enum> {
 		private void addFinderMethodForField(JavacNode field) {
 			FinderGenerator finderGenerator = new FinderGenerator(classNode, field);
 			JCMethodDecl createdFinder = finderGenerator.createFinder();
-			injectMethod(classNode, createdFinder);
+			if (!methodExists(createdFinder)) {
+				injectMethod(classNode, createdFinder);
+			}
 		}
 		
+		private boolean methodExists(JCMethodDecl createdFinder) {
+			String finderName = createdFinder.getName().toString();
+			for(JavacNode node : classNode.down()) {
+				if (node.get() instanceof JCMethodDecl) {
+					JCMethodDecl methodDeclaration = (JCMethodDecl) node.get();
+					
+					String methodName = methodDeclaration.getName().toString();
+					boolean namesEqual = finderName.equals(methodName);
+
+					if (namesEqual) {
+						boolean argumentTypesAreEqual = argumentTypesAreEqual(createdFinder.getParameters(), methodDeclaration.getParameters());
+						boolean found = namesEqual && argumentTypesAreEqual;
+						if (found) {
+							return true;
+						}
+					}
+				}
+			}
+			return false;
+		}
+
+		private boolean argumentTypesAreEqual(List<JCVariableDecl> left, List<JCVariableDecl> right) {
+			if (left.size() == right.size()) {
+				for (int i = 0; i < right.size(); i++) {
+					// Compare String representation because TypeReference instances are not equals.
+					String leftType = left.get(i).toString();
+					String rightType = right.get(i).toString();
+					boolean typeDifferenceFound = !leftType.equals(rightType);
+					if (typeDifferenceFound) {
+						return false;
+					}
+				}
+				return true;
+			}
+			return false;
+		}
+
 		private void makeFieldFinal(JavacNode field) {
 			JCVariableDecl fieldDeclaration = (JCVariableDecl) field.get();
 			fieldDeclaration.mods.flags |= Flags.FINAL;
