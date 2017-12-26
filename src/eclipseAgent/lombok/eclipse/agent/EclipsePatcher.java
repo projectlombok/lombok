@@ -217,7 +217,6 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	private static void patchDisableLombokForCodeFormatterAndCleanup(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.setSymbolDuringMethodCall()
 				.target(new MethodTarget("org.eclipse.jdt.internal.formatter.DefaultCodeFormatter", "formatCompilationUnit"))
-				//.target(new MethodTarget("org.eclipse.jdt.internal.formatter.DefaultCodeFormatter", "parseSourceCode"))
 				.callToWrap(new Hook("org.eclipse.jdt.internal.core.util.CodeSnippetParsingUtil", "parseCompilationUnit", "org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration", "char[]", "java.util.Map", "boolean"))
 				.symbol("lombok.disable")
 				.build());
