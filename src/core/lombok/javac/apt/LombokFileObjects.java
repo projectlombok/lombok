@@ -104,6 +104,7 @@ final class LombokFileObjects {
 	private static final List<String> KNOWN_JAVA9_FILE_MANAGERS = Arrays.asList(
 		"com.google.errorprone.MaskedClassLoader$MaskedFileManager",
 		"com.google.devtools.build.buildjar.javac.BlazeJavacMain$ClassloaderMaskingFileManager",
+		"com.google.devtools.build.java.turbine.javac.JavacTurbineCompiler$ClassloaderMaskingFileManager",
 		"org.netbeans.modules.java.source.parsing.ProxyFileManager",
 		"com.sun.tools.javac.api.ClientCodeWrapper$WrappedStandardJavaFileManager"
 	);
