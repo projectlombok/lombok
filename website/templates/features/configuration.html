@@ -86,10 +86,10 @@
 			We advise against this; JDK9 breaks this annotation, and it's unlikely to ever get fixed.<br />
 			<em>NB:</em> Until Lombok v2.0.0, this setting defaulted to <code>true</code>.
 		</p><p>
-			Lombok can be configured to add <code>@lombok.Generated</code> annotations to all generated nodes where possible; useful for JaCoCo (which has built in support),
-			or other style checkers and code coverage tools:
+			Lombok is configured to add <code>@lombok.Generated</code> annotations to all generated nodes where possible; useful for JaCoCo (which has built in support),
+			or other style checkers and code coverage tools.  You can disable this with:
 			<div class="snippet example">
-				<code>lombok.addLombokGeneratedAnnotation = true</code>
+				<code>lombok.addLombokGeneratedAnnotation = false</code>
 			</div>
 		</p><p>
 			Lombok can add the <code>@SuppressFBWarnings</code> annotation which is useful if you want to run <a href="http://findbugs.sourceforge.net/">FindBugs</a> on your class files. To enable this feature, make sure findbugs is on the classpath when you compile, and add the following config key:
