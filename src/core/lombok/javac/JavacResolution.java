@@ -31,6 +31,7 @@ import java.util.ArrayDeque;
 import java.util.Map;
 
 import javax.lang.model.type.TypeKind;
+import javax.tools.JavaFileObject;
 
 import lombok.Lombok;
 import lombok.core.debug.AssertionLogger;
@@ -59,6 +60,7 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
+import com.sun.tools.javac.util.Log;
 
 public class JavacResolution {
 	private final Attr attr;
@@ -142,9 +144,14 @@ public class JavacResolution {
 			
 			TreeMirrorMaker mirrorMaker = new TreeMirrorMaker(node.getTreeMaker(), node.getContext());
 			JCTree copy = mirrorMaker.copy(finder.copyAt());
-			
-			memberEnterAndAttribute(copy, finder.get(), node.getContext());
-			return mirrorMaker.getOriginalToCopyMap();
+			Log log = Log.instance(node.getContext());
+			JavaFileObject oldFileObject = log.useSource(((JCCompilationUnit) node.top().get()).getSourceFile());
+			try {
+				memberEnterAndAttribute(copy, finder.get(), node.getContext());
+				return mirrorMaker.getOriginalToCopyMap();
+			} finally {
+				log.useSource(oldFileObject);
+			}
 		} finally {
 			messageSuppressor.enableLoggers();
 		}
