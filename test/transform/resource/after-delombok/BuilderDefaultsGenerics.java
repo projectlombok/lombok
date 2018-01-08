@@ -58,7 +58,13 @@ public class BuilderDefaultsGenerics<N extends Number, T, R extends List<T>> {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaultsGenerics<N, T, R> build() {
-			return new BuilderDefaultsGenerics<N, T, R>(callable$set ? callable : BuilderDefaultsGenerics.<N, T, R>$default$callable(), tee$set ? tee : BuilderDefaultsGenerics.<N, T, R>$default$tee(), arrr$set ? arrr : BuilderDefaultsGenerics.<N, T, R>$default$arrr());
+			java.util.concurrent.Callable<N> callable = this.callable;
+			if (!callable$set) callable = BuilderDefaultsGenerics.<N, T, R>$default$callable();
+			T tee = this.tee;
+			if (!tee$set) tee = BuilderDefaultsGenerics.<N, T, R>$default$tee();
+			R arrr = this.arrr;
+			if (!arrr$set) arrr = BuilderDefaultsGenerics.<N, T, R>$default$arrr();
+			return new BuilderDefaultsGenerics<N, T, R>(callable, tee, arrr);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
