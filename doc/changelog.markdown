@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.16.21 "Edgy Guinea Pig"
+* v1.16.20 is the latest stable release of Project Lombok.
+
 ### v1.16.20 (January 9th, 2018)
 * PLATFORM: Better support for jdk9 in the new IntelliJ, Netbeans and for Gradle.
 * BREAKING CHANGE: _lombok config_ key `lombok.addJavaxGeneratedAnnotation` now defaults to `false` instead of true. Oracle broke this annotation with the release of JDK9, necessitating this breaking change.
