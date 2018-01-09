@@ -120,23 +120,23 @@ final class LombokFileObjects {
 					return new Java9Compiler(jfm);
 				}
 			}
-			catch (Exception e) {}
+			catch (Throwable e) {}
 			return Compiler.JAVAC7;
 		}
 		if (KNOWN_JAVA9_FILE_MANAGERS.contains(jfmClassName)) {
 			try {
 				return new Java9Compiler(jfm);
 			}
-			catch (Exception e) {}
+			catch (Throwable e) {}
 		}
 		try {
 			if (Class.forName("com.sun.tools.javac.file.BaseFileObject") == null) throw new NullPointerException();
 			return Compiler.JAVAC7;
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 		try {
 			if (Class.forName("com.sun.tools.javac.util.BaseFileObject") == null) throw new NullPointerException();
 			return Compiler.JAVAC6;
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 		
 		StringBuilder sb = new StringBuilder(jfmClassName);
 		if (jfm != null) {

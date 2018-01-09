@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v1.16.21 "Edgy Guinea Pig"
 * v1.16.20 is the latest stable release of Project Lombok.
+* Potential fix for Netbeans < 9. [Issue #1555](https://github.com/rzwitserloot/lombok/issues/1555)
 
 ### v1.16.20 (January 9th, 2018)
 * PLATFORM: Better support for jdk9 in the new IntelliJ, Netbeans and for Gradle.
