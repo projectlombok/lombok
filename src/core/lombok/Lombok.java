@@ -48,12 +48,11 @@ public class Lombok {
 	 */
 	public static RuntimeException sneakyThrow(Throwable t) {
 		if (t == null) throw new NullPointerException("t");
-		Lombok.<RuntimeException>sneakyThrow0(t);
-		return null;
+		return Lombok.<RuntimeException>sneakyThrow0(t);
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static <T extends Throwable> void sneakyThrow0(Throwable t) throws T {
+	private static <T extends Throwable> T sneakyThrow0(Throwable t) throws T {
 		throw (T)t;
 	}
 	
