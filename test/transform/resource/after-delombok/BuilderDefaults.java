@@ -50,7 +50,11 @@ public final class BuilderDefaults {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderDefaults build() {
-			return new BuilderDefaults(x$set ? x : BuilderDefaults.$default$x(), name, z$set ? z : BuilderDefaults.$default$z());
+			int x = this.x;
+			if (!x$set) x = BuilderDefaults.$default$x();
+			long z = this.z;
+			if (!z$set) z = BuilderDefaults.$default$z();
+			return new BuilderDefaults(x, name, z);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")

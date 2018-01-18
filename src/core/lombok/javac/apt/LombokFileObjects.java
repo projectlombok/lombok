@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2017 The Project Lombok Authors.
+ * Copyright (C) 2010-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -120,23 +120,23 @@ final class LombokFileObjects {
 					return new Java9Compiler(jfm);
 				}
 			}
-			catch (Exception e) {}
+			catch (Throwable e) {}
 			return Compiler.JAVAC7;
 		}
 		if (KNOWN_JAVA9_FILE_MANAGERS.contains(jfmClassName)) {
 			try {
 				return new Java9Compiler(jfm);
 			}
-			catch (Exception e) {}
+			catch (Throwable e) {}
 		}
 		try {
 			if (Class.forName("com.sun.tools.javac.file.BaseFileObject") == null) throw new NullPointerException();
 			return Compiler.JAVAC7;
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 		try {
 			if (Class.forName("com.sun.tools.javac.util.BaseFileObject") == null) throw new NullPointerException();
 			return Compiler.JAVAC6;
-		} catch (Exception e) {}
+		} catch (Throwable e) {}
 		
 		StringBuilder sb = new StringBuilder(jfmClassName);
 		if (jfm != null) {
