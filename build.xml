@@ -876,7 +876,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</ant>
 	</target>
 	
-	<target name="website-only-publish" depends="config-ssh, clean"
+	<target name="website-only-publish" depends="config-ssh, clean, version"
 			description="Prepares the website (using lombok version current 'live') for distribution and then publishes it to projectlombok.org.">
 		<ant antfile="buildScripts/website.ant.xml" target="website-only-publish" inheritAll="false">
 			<property name="ssh.username" value="${ssh.username}" />
