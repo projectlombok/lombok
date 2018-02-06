@@ -218,6 +218,15 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<classpath refid="build.path" />
 		</ivy:compile>
 		
+		<ivy:compile destdir="build/lombok" source="1.9" target="1.9">
+			<compilerarg value="-Xlint:none" />
+			<!-- The above is because javac9 whines about 'service interface provided but not exported or used' for some unfathomable reason. -->
+			<src path="src/core9" />
+			<src path="src/j9stubs" />
+			<!-- This includes org.mapstruct.ap.spi.AstModifyingAnnotationProcessor; putting this on the classpath doesn't work (needs to be internal or a module) so we just add it and then delete the class file for convenience. -->
+		</ivy:compile>
+		<delete file="build/lombok/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.class" />
+		
 		<ivy:compile destdir="build/lombok/Class50" source="1.5" target="1.6" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />
 			<src path="src/eclipseAgent" />
@@ -281,6 +290,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor</echo>
 			<fileset dir="." includes="AUTHORS" />
 			<fileset dir="." includes="release-timestamp.txt" />
 			<fileset dir="build/lombok">
+				<include name="module-info.class" />
 				<include name="lombok/*.class" />
 				<include name="lombok/experimental/**" />
 				<include name="lombok/extern/**" />
@@ -291,6 +301,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor</echo>
 			<mappedresources>
 				<fileset dir="build/lombok">
 					<exclude name="com/sun/tools/javac/**" />
+					<exclude name="module-info.class" />
 					<exclude name="lombok/*.class" />
 					<exclude name="lombok/javac/apt/Processor.class" />
 					<exclude name="lombok/experimental/**" />
