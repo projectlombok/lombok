@@ -12,7 +12,6 @@ module lombok {
 	exports lombok.extern.slf4j;
 	
 	provides javax.annotation.processing.Processor with lombok.launch.AnnotationProcessorHider.AnnotationProcessor;
-//	provides javax.annotation.processing.Processor with lombok.launch.AnnotationProcessorHider.ClaimingProcessor;
 	provides org.mapstruct.ap.spi.AstModifyingAnnotationProcessor with lombok.launch.AnnotationProcessorHider.AstModificationNotifier;
 }
 
