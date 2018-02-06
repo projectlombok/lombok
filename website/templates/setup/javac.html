@@ -11,11 +11,8 @@
 		<p>
 			Support for JDK9, if you haven't modularized your own projects yet (no <code>module-info.java</code> yet), is included in lombok starting with version 1.16.20. Just use lombok as normal: <code> javac -cp lombok.jar ...</code>
 		</p><p>
-			Support for JDK9 if you did modularize your own projects (you've written a <code>module-info.java</code> file) is available in the <a href="/download-edge">edge release</a>. To use it, you can choose:<ul>
-				<li><code>javac --processor-module-path lombok.jar -p lombok.jar ...</code></li>
-				<li><code>javac -cp lombok.jar -p lombok.jar ...</code></li>
-			</ul>
-			Both are equally effective. Note that you will have to add lombok to your <code>module-info.java</code> file:<pre>
+			Support for JDK9 if you did modularize your own projects (you've written a <code>module-info.java</code> file) is available in the <a href="/download-edge">edge release</a>. To use it: <code>javac -cp lombok.jar -p lombok.jar ...</code><br />
+			Note that you will have to add lombok to your <code>module-info.java</code> file:<pre>
 module <em>myapp</em> {
 	requires static lombok;
 }</pre>

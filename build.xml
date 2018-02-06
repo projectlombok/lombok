@@ -221,7 +221,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		
 		<ivy:compile destdir="build/lombok" source="1.9" target="1.9">
 			<compilerarg value="-Xlint:none" />
-			<!-- The above is because javac9 whines about 'service interface provided but not exported or used' for some unfathomable reason. -->
+			<!-- The above is because javac9 warns about 'service interface provided but not exported or used', probably because lombok uses SPI internally, and uses the 'old' classpath discovery system for it. We're fine with this, hence, ignore this warning. -->
 			<src path="src/core9" />
 			<src path="src/j9stubs" />
 			<!-- This includes org.mapstruct.ap.spi.AstModifyingAnnotationProcessor; putting this on the classpath doesn't work (needs to be internal or a module) so we just add it and then delete the class file for convenience. -->
