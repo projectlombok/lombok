@@ -197,17 +197,36 @@ public class EclipseHandlerUtil {
 		
 		TypeResolver resolver = new TypeResolver(node.getImportList());
 		return resolver.typeMatches(node, type.getName(), typeName);
+	}
+	
+	/**
+	 * Checks if the given TypeReference node is likely to be a reference to the provided class.
+	 * 
+	 * @param type An actual type. This method checks if {@code typeNode} is likely to be a reference to this type.
+	 * @param node A Lombok AST node. Any node in the appropriate compilation unit will do (used to get access to import statements).
+	 * @param typeRef A type reference to check.
+	 */
+	public static boolean typeMatches(String type, EclipseNode node, TypeReference typeRef) {
+		if (typeRef == null || typeRef.getTypeName() == null || typeRef.getTypeName().length == 0) return false;
+		String lastPartA = new String(typeRef.getTypeName()[typeRef.getTypeName().length -1]);
+		int lastIndex = type.lastIndexOf('.');
+		String lastPartB = lastIndex == -1 ? type : type.substring(lastIndex + 1);
+		if (!lastPartA.equals(lastPartB)) return false;
+		String typeName = toQualifiedName(typeRef.getTypeName());
 		
+		TypeResolver resolver = new TypeResolver(node.getImportList());
+		return resolver.typeMatches(node, type, typeName);
 	}
 	
 	public static void sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(EclipseNode typeNode, EclipseNode errorNode) {
 		List<String> disallowed = null;
 		for (EclipseNode child : typeNode.down()) {
 			if (child.getKind() != Kind.ANNOTATION) continue;
-			for (Class<? extends java.lang.annotation.Annotation> annType : INVALID_ON_BUILDERS) {
+			for (String annType : INVALID_ON_BUILDERS) {
 				if (annotationTypeMatches(annType, child)) {
 					if (disallowed == null) disallowed = new ArrayList<String>();
-					disallowed.add(annType.getSimpleName());
+					int lastIndex = annType.lastIndexOf('.');
+					disallowed.add(lastIndex == -1 ? annType : annType.substring(lastIndex + 1));
 				}
 			}
 		}
@@ -444,6 +463,24 @@ public class EclipseHandlerUtil {
 		}
 	}
 	
+	public static boolean hasAnnotation(String type, EclipseNode node) {
+		if (node == null) return false;
+		if (type == null) return false;
+		switch (node.getKind()) {
+		case ARGUMENT:
+		case FIELD:
+		case LOCAL:
+		case TYPE:
+		case METHOD:
+			for (EclipseNode child : node.down()) {
+				if (annotationTypeMatches(type, child)) return true;
+			}
+			// intentional fallthrough
+		default:
+			return false;
+		}
+	}
+	
 	public static EclipseNode findAnnotation(Class<? extends java.lang.annotation.Annotation> type, EclipseNode node) {
 		if (node == null) return null;
 		if (type == null) return null;
@@ -468,6 +505,16 @@ public class EclipseHandlerUtil {
 	 * This is a guess, but a decent one.
 	 */
 	public static boolean annotationTypeMatches(Class<? extends java.lang.annotation.Annotation> type, EclipseNode node) {
+		if (node.getKind() != Kind.ANNOTATION) return false;
+		return typeMatches(type, node, ((Annotation) node.get()).type);
+	}
+	
+	/**
+	 * Checks if the provided annotation type is likely to be the intended type for the given annotation node.
+	 * 
+	 * This is a guess, but a decent one.
+	 */
+	public static boolean annotationTypeMatches(String type, EclipseNode node) {
 		if (node.getKind() != Kind.ANNOTATION) return false;
 		return typeMatches(type, node, ((Annotation) node.get()).type);
 	}

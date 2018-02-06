@@ -16,12 +16,11 @@ import lombok.javac.JavacNode;
 @ProviderFor(JavacAnnotationHandler.class)
 @HandlerPriority(-1025) //HandleBuilder's level, minus one.
 public class HandleBuilderDefault extends JavacAnnotationHandler<Builder.Default> {
-	@SuppressWarnings("deprecation")
 	@Override public void handle(AnnotationValues<Builder.Default> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		JavacNode annotatedField = annotationNode.up();
 		if (annotatedField.getKind() != Kind.FIELD) return;
 		JavacNode classWithAnnotatedField = annotatedField.up();
-		if (!hasAnnotation(Builder.class, classWithAnnotatedField) && !hasAnnotation(lombok.experimental.Builder.class, classWithAnnotatedField)) {
+		if (!hasAnnotation(Builder.class, classWithAnnotatedField) && !hasAnnotation("lombok.experimental.Builder", classWithAnnotatedField)) {
 			annotationNode.addWarning("@Builder.Default requires @Builder on the class for it to mean anything.");
 			deleteAnnotationIfNeccessary(annotationNode, Builder.Default.class);
 		}

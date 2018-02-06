@@ -185,8 +185,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			TypeDeclaration td = (TypeDeclaration) tdParent.get();
 			
 			List<EclipseNode> allFields = new ArrayList<EclipseNode>();
-			@SuppressWarnings("deprecation")
-			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation(lombok.experimental.Value.class, parent));
+			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
 			for (EclipseNode fieldNode : HandleConstructor.findAllFields(tdParent, true)) {
 				FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
 				EclipseNode isDefault = findAnnotation(Builder.Default.class, fieldNode);
