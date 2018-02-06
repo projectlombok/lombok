@@ -74,7 +74,7 @@ public class DocCommentIntegrator {
 		return out;
 	}
 	
-	private static final Pattern CONTENT_STRIPPER = Pattern.compile("^(?:\\s*\\*)?[ \\t]*(.*?)$", Pattern.MULTILINE);
+	private static final Pattern CONTENT_STRIPPER = Pattern.compile("^(?:\\s*\\*)?(.*?)$", Pattern.MULTILINE);
 	@SuppressWarnings("unchecked") private boolean attach(JCCompilationUnit top, final JCTree node, CommentInfo cmt) {
 		String docCommentContent = cmt.content;
 		if (docCommentContent.startsWith("/**")) docCommentContent = docCommentContent.substring(3);
