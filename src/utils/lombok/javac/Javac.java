@@ -63,8 +63,8 @@ public class Javac {
 	/** Matches any of the 8 primitive names, such as {@code boolean}. */
 	private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern.compile("^(boolean|byte|short|int|long|float|double|char)$");
 	
-	private static final Pattern VERSION_PARSER = Pattern.compile("^(\\d{1,6})\\.(\\d{1,6}).*$");
-	private static final Pattern SOURCE_PARSER = Pattern.compile("^JDK(\\d{1,6})_(\\d{1,6}).*$");
+	private static final Pattern VERSION_PARSER = Pattern.compile("^(\\d{1,6})\\.?(\\d{1,6})?.*$");
+	private static final Pattern SOURCE_PARSER = Pattern.compile("^JDK(\\d{1,6})_?(\\d{1,6})?.*$");
 	
 	private static final AtomicInteger compilerVersion = new AtomicInteger(-1);
 	
@@ -79,11 +79,11 @@ public class Javac {
 			Matcher m = VERSION_PARSER.matcher(JavaCompiler.version());
 			if (m.matches()) {
 				int major = Integer.parseInt(m.group(1));
-				int minor = Integer.parseInt(m.group(2));
 				if (major == 1) {
-					compilerVersion.set(minor);
-					return minor;
+					int minor = Integer.parseInt(m.group(2));
+					return setVersion(minor);
 				}
+				if (major >= 9) return setVersion(major);
 			}
 		}
 		
@@ -92,16 +92,19 @@ public class Javac {
 			Matcher m = SOURCE_PARSER.matcher(name);
 			if (m.matches()) {
 				int major = Integer.parseInt(m.group(1));
-				int minor = Integer.parseInt(m.group(2));
 				if (major == 1) {
-					compilerVersion.set(minor);
-					return minor;
+					int minor = Integer.parseInt(m.group(2));
+					return setVersion(minor);
 				}
+				if (major >= 9) return setVersion(major);
 			}
 		}
-		
-		compilerVersion.set(6);
-		return 6;
+		return setVersion(6);
+	}
+	
+	private static int setVersion(int version) {
+		compilerVersion.set(version);
+		return version;
 	}
 	
 	private static final Class<?> DOCCOMMENTTABLE_CLASS;
