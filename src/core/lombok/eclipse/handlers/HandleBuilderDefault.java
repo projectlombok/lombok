@@ -39,7 +39,7 @@ public class HandleBuilderDefault extends EclipseAnnotationHandler<Builder.Defau
 		EclipseNode annotatedField = annotationNode.up();
 		if (annotatedField.getKind() != Kind.FIELD) return;
 		EclipseNode classWithAnnotatedField = annotatedField.up();
-		if (!hasAnnotation(Builder.class, classWithAnnotatedField)) {
+		if (!hasAnnotation(Builder.class, classWithAnnotatedField) && !hasAnnotation("lombok.experimental.Builder", classWithAnnotatedField)) {
 			annotationNode.addWarning("@Builder.Default requires @Builder on the class for it to mean anything.");
 		}
 	}
