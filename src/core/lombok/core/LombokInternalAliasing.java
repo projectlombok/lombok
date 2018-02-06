@@ -51,6 +51,7 @@ public class LombokInternalAliasing {
 		Map<String, String> m2 = new HashMap<String, String>();
 		m2.put("lombok.experimental.Value", "lombok.Value");
 		m2.put("lombok.experimental.Builder", "lombok.Builder");
+		m2.put("lombok.experimental.var", "lombok.var");
 		m2.put("lombok.Delegate", "lombok.experimental.Delegate");
 		ALIASES = Collections.unmodifiableMap(m2);
 	}

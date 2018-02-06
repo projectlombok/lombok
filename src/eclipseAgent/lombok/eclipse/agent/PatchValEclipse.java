@@ -103,7 +103,7 @@ public class PatchValEclipse {
 	}
 	
 	private static boolean couldBeVar(TypeReference type) {
-		return PatchVal.couldBe("lombok.experimental.var", type);
+		return PatchVal.couldBe("lombok.experimental.var", type) || PatchVal.couldBe("lombok.var", type);
 	}
 	
 	public static void addFinalAndValAnnotationToSingleVariableDeclaration(Object converter, SingleVariableDeclaration out, LocalDeclaration in) {

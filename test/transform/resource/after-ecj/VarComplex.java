@@ -1,4 +1,4 @@
-import lombok.experimental.var;
+import lombok.var;
 public class VarComplex {
   private String field = "";
   private static final int CONSTANT = 20;

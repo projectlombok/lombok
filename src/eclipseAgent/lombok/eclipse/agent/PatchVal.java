@@ -212,7 +212,7 @@ public class PatchVal {
 	}
 	
 	private static boolean isVar(LocalDeclaration local, BlockScope scope) {
-		return is(local.type, scope, "lombok.experimental.var");
+		return is(local.type, scope, "lombok.experimental.var") || is(local.type, scope, "lombok.var");
 	}
 	
 	private static boolean isVal(LocalDeclaration local, BlockScope scope) {
