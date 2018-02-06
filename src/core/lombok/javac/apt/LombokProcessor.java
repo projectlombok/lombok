@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -301,7 +301,10 @@ public class LombokProcessor extends AbstractProcessor {
 		
 		// Step 1: Take all CUs which aren't already in the map. Give them the first priority level.
 		
+		String randomModuleName = null;
+		
 		for (Element element : roundEnv.getRootElements()) {
+			if (randomModuleName == null) randomModuleName = getModuleNameFor(element);
 			JCCompilationUnit unit = toUnit(element);
 			if (unit == null) continue;
 			if (roots.containsKey(unit)) continue;
@@ -344,20 +347,22 @@ public class LombokProcessor extends AbstractProcessor {
 			
 			if (newLevels.isEmpty()) return false;
 			newLevels.retainAll(priorityLevelsRequiringResolutionReset);
-			if (!newLevels.isEmpty()){
+			if (!newLevels.isEmpty()) {
 				// Force a new round to reset resolution. The next round will cause this method (process) to be called again.
-				forceNewRound((JavacFiler) processingEnv.getFiler());
+				forceNewRound(randomModuleName, (JavacFiler) processingEnv.getFiler());
 				return false;
 			}
-		    // None of the new levels need resolution, so just keep going.
+			// None of the new levels need resolution, so just keep going.
 		}
 	}
 	
 	private int dummyCount = 0;
-	private void forceNewRound(JavacFiler filer) {
+	private void forceNewRound(String randomModuleName, JavacFiler filer) {
 		if (!filer.newFiles()) {
 			try {
-				JavaFileObject dummy = filer.createSourceFile("lombok.dummy.ForceNewRound" + (dummyCount++));
+				String name = "lombok.dummy.ForceNewRound" + (dummyCount++);
+				if (randomModuleName != null) name = randomModuleName + "/" + name;
+				JavaFileObject dummy = filer.createSourceFile(name);
 				Writer w = dummy.openWriter();
 				w.close();
 			} catch (Exception e) {
@@ -366,6 +371,19 @@ public class LombokProcessor extends AbstractProcessor {
 						"Can't force a new processing round. Lombok won't work.");
 			}
 		}
+	}
+	
+	private String getModuleNameFor(Element element) {
+		while (element != null) {
+			if (element.getKind().name().equals("MODULE")) {
+				String n = element.getSimpleName().toString().trim();
+				return n.isEmpty() ? null : n;
+			}
+			Element n = element.getEnclosingElement();
+			if (n == element) return null;
+			element = n;
+		}
+		return null;
 	}
 	
 	private JCCompilationUnit toUnit(Element element) {

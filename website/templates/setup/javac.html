@@ -17,8 +17,10 @@
 			</ul>
 			Both are equally effective. Note that you will have to add lombok to your <code>module-info.java</code> file:<pre>
 module <em>myapp</em> {
-	requires lombok;
+	requires static lombok;
 }</pre>
+		</p><p>
+			The 'static' part ensures that you won't need lombok to be present at runtime.
 		</p><p>
 			Feedback about JDK9 module-info support can be given at <a href="https://github.com/rzwitserloot/lombok/issues/985">github issue #985</a>.
 		</p>
