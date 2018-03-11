@@ -33,7 +33,7 @@
 	function getPriceIndication() {
 		try {
 			var seats = parseInt($("#seats").val());
-			if (isNaN(seats)) return "";
+			if (isNaN(seats) || seats < 1) return "";
 			var licenseType = $("input:radio[name='licenseType']:checked").val();
 			var costPer;
 			if (licenseType === "enterprise") costPer = 5;
@@ -110,7 +110,7 @@
 				formFail = true;
 			}
 			
-			if (!data.seats || isNaN(data.seats)) {
+			if (!data.seats || isNaN(data.seats) || data.seats < 1) {
 				$("#seats").focus();
 				showError("seats");
 				formFail = true;
