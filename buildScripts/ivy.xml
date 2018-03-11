@@ -58,8 +58,8 @@
 		<dependency org="org.eclipse.custom" name="core.resources" rev="3.8.100" conf="eclipseBuild->default; contrib->sources" />
 		<dependency org="org.eclipse.custom" name="core.jobs" rev="3.5.300" conf="eclipseBuild->default; contrib->sources" />
 		
-		<dependency org="org.eclipse.jgit" name="org.eclipse.jgit.ant" rev="4.8.0.201706111038-r" conf="supporters->default" />
-		<dependency org="org.eclipse.jgit" name="org.eclipse.jgit" rev="4.8.0.201706111038-r" conf="supporters->default" />
+		<dependency org="org.eclipse.jgit" name="org.eclipse.jgit.ant" rev="4.11.0.201803080745-r" conf="supporters->default" />
+		<dependency org="org.eclipse.jgit" name="org.eclipse.jgit" rev="4.11.0.201803080745-r" conf="supporters->default" />
 		<dependency org="com.jcraft" name="jsch" rev="0.1.54" conf="supporters->default" />
 		<dependency org="com.rimerosolutions.ant" name="ant-git-tasks" rev="1.3.2" conf="supporters->default" />
 		<dependency org="org.slf4j" name="slf4j-simple" rev="1.6.1" conf="supporters->default" />

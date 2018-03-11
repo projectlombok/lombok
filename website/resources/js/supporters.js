@@ -3,7 +3,7 @@
 (function($) {
 	var supporters = {};
 	var weights = {};
-	var types = ["patron", "professional", "enterprise"];
+	var types = ["enterprise", "professional", "patron"];
 	
 	function shuffle(array) {
 		var i = 0, j = 0, temp = null;
@@ -49,7 +49,7 @@
 		var d = $("<div />").addClass("supportItem").addClass(this.type);
 		var a = d;
 		if (this.url) {
-			a = $("<a />").attr("href", this.url).attr("rel", "noopener");
+			a = $("<a />").attr("href", this.url).attr("rel", "noopener").attr("target", "_blank");
 			d.append(a);
 		}
 		var n = $("<span />").text(this.name);
@@ -69,8 +69,13 @@
 				var ht = Math.round(h / f);
 				i.width = wt;
 				i.height = ht;
+				var ji = $(i);
 				if (!showName) a.empty();
-				a.prepend(i);
+				ji.css("width", wt + "px");
+				ji.css("height", ht + "px");
+				ji.attr("alt", n);
+				ji.attr("title", n);
+				a.prepend(ji);
 			};
 			i.src = 'files/' + this.logo;
 		}
@@ -129,6 +134,8 @@
 		var s = $(".supporterBar");
 		s.find(".introText").show();
 		s.append($("<div />").addClass("sbCnt"));
+		var sf = s.find(".supporterFooter").show();
+		s.append(sf);
 		s = s.find(".sbCnt");
 		var now = new Date();
 		var list = [];

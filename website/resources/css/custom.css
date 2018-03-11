@@ -7,6 +7,68 @@
 	margin-bottom: 40px;
 }
 
+.buttonLike {
+	cursor: pointer;
+	background: -webkit-linear-gradient(top, #FFFEF7, #CFCEC7);
+	background: -moz-linear-gradient(top, #FFFEF7, #CFCEC7);
+	background: -o-linear-gradient(#FFFEF7, #CFCEC7);
+	background: -ms-linear-gradient(#FFFEF7, #CFCEC7);
+	background: linear-gradient(top, #FFFEF7, #CFCEC7);
+	line-height: 1;
+	padding: 3px 10px;
+	border: 1px solid black;
+	position: relative;
+	overflow: visible;
+	color: black;
+	margin: 2px;
+	border-radius: 5px;
+	display: inline-block;
+	text-align: center;
+}
+
+.orderButton {
+	width: 280px;
+}
+
+.formErr {
+	color: #FF7777;
+}
+
+.order-license #deleteCompanyLogo {
+	margin-top: 12px;
+}
+
+.formSubmitFail {
+	color: #FF6666;
+	font-size: 1.2em;
+	font-style: italic;
+}
+
+.order-license .btn-primary {
+	float: left;
+	margin-right: 20px;
+	background: -webkit-linear-gradient(#1725e0, #0923df 6%, #0b21ce);
+	background: -o-linear-gradient(#1725e0, #0923df 6%, #0b21ce);
+	background: -webkit-gradient(linear, left top, left bottom, from(#1725e0), color-stop(6%, #0923df), to(#0b21ce));
+	background: linear-gradient(#1725e0, #0923df 6%, #0b21ce);
+	background-repeat: no-repeat;
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ff1725e0', endColorstr='#ff0b21ce', GradientType=0);
+	-webkit-filter: none;
+	filter: none;
+	border: 1px solid #091bac;
+}
+
+#onlyYearlyWarning {
+	font-size: 0.8em;
+	padding-left: 16px;
+}
+
+.deemphasize {
+	color: #AAAAAA;
+	font-size: 0.8em;
+	font-style: italic;
+}
+
 .supporterBar .introText {
 	margin-top: 16px;
 }
@@ -22,6 +84,10 @@
 
 .supportItem, .barItem {
 	display: inline-block;
+}
+
+.supporters .supportItem {
+	margin: 6px 10px;
 }
 
 .supporterBar {
@@ -51,11 +117,6 @@
 	margin-right: auto;
 	width: 16px;
 	height: 16px;
-}
-
-.legalese {
-	font-style: italic;
-	font-size: 0.8em;
 }
 
 #companyLogo {

@@ -39,11 +39,11 @@ containing the status of lombok's supporters.
 	
 	<target name="initRepo" depends="checkIfRepoExists" unless="supportersrepo.exists">
 		<git:git directory="website/lombokSupporters">
-			<git:clone uri="escudo:/data/git/lombokSupporters.git" />
+			<git:clone uri="escudo2:/data/git/lombokSupporters.git" />
 		</git:git>
 	</target>
 	
-	<target name="updateRepo" depends="initRepo">
+	<target name="updateRepo" depends="initRepo" unless="noUpdateRepo">
 		<git:git directory="website/lombokSupporters">
 			<git:pull />
 		</git:git>
