@@ -30,6 +30,12 @@
 	width: 280px;
 }
 
+.orderDetails {
+	font-style: italic;
+	font-size: 10px;
+	margin-top: 20px;
+}
+
 .formErr {
 	color: #FF7777;
 }

@@ -73,8 +73,8 @@
 				if (!showName) a.empty();
 				ji.css("width", wt + "px");
 				ji.css("height", ht + "px");
-				ji.attr("alt", n);
-				ji.attr("title", n);
+				ji.attr("alt", n.text());
+				ji.attr("title", n.text());
 				a.prepend(ji);
 			};
 			i.src = 'files/' + this.logo;
