@@ -1,5 +1,5 @@
 import java.util.List;
-import lombok.experimental.Builder;
+import lombok.Builder;
 class BuilderComplex {
   public static @java.lang.SuppressWarnings("all") class VoidBuilder<T extends Number> {
     private @java.lang.SuppressWarnings("all") T number;
