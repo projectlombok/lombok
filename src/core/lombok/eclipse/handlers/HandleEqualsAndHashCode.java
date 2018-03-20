@@ -475,47 +475,62 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	public TypeReference createTypeReference(EclipseNode type, long p, ASTNode source, boolean addWildcards) {
 		int pS = source.sourceStart; int pE = source.sourceEnd;
 		List<String> list = new ArrayList<String>();
+		List<Integer> genericsCount = addWildcards ? new ArrayList<Integer>() : null;
+		
 		list.add(type.getName());
+		if (addWildcards) genericsCount.add(arraySizeOf(((TypeDeclaration) type.get()).typeParameters));
+		boolean staticContext = (((TypeDeclaration) type.get()).modifiers & Modifier.STATIC) != 0;
 		EclipseNode tNode = type.up();
+		
 		while (tNode != null && tNode.getKind() == Kind.TYPE) {
 			list.add(tNode.getName());
+			if (addWildcards) genericsCount.add(staticContext ? 0 : arraySizeOf(((TypeDeclaration) tNode.get()).typeParameters));
+			if (!staticContext) staticContext = (((TypeDeclaration) tNode.get()).modifiers & Modifier.STATIC) != 0;
 			tNode = tNode.up();
 		}
 		Collections.reverse(list);
-		
-		TypeDeclaration typeDecl = (TypeDeclaration) type.get();
-		int typeParamCount = typeDecl.typeParameters == null ? 0 : typeDecl.typeParameters.length;
-		if (typeParamCount == 0) addWildcards = false;
-		TypeReference[] typeArgs = null;
-		if (addWildcards) {
-			typeArgs = new TypeReference[typeParamCount];
-			for (int i = 0; i < typeParamCount; i++) {
-				typeArgs[i] = new Wildcard(Wildcard.UNBOUND);
-				typeArgs[i].sourceStart = pS; typeArgs[i].sourceEnd = pE;
-				setGeneratedBy(typeArgs[i], source);
-			}
-		}
+		if (addWildcards) Collections.reverse(genericsCount);
 		
 		if (list.size() == 1) {
-			if (addWildcards) {
-				return new ParameterizedSingleTypeReference(list.get(0).toCharArray(), typeArgs, 0, p);
-			} else {
+			if (!addWildcards || genericsCount.get(0) == 0) {
 				return new SingleTypeReference(list.get(0).toCharArray(), p);
+			} else {
+				return new ParameterizedSingleTypeReference(list.get(0).toCharArray(), wildcardify(pS, pE, source, genericsCount.get(0)), 0, p);
 			}
 		}
+		
+		if (addWildcards) {
+			addWildcards = false;
+			for (int i : genericsCount) if (i > 0) addWildcards = true;
+		}
+		
 		long[] ps = new long[list.size()];
 		char[][] tokens = new char[list.size()][];
 		for (int i = 0; i < list.size(); i++) {
 			ps[i] = p;
 			tokens[i] = list.get(i).toCharArray();
 		}
-		if (addWildcards) {
-			TypeReference[][] typeArgs2 = new TypeReference[tokens.length][];
-			typeArgs2[typeArgs2.length - 1] = typeArgs;
-			return new ParameterizedQualifiedTypeReference(tokens, typeArgs2, 0, ps);
-		} else {
-			return new QualifiedTypeReference(tokens, ps);
+		
+		if (!addWildcards) return new QualifiedTypeReference(tokens, ps);
+		TypeReference[][] typeArgs2 = new TypeReference[tokens.length][];
+		for (int i = 0; i < tokens.length; i++) typeArgs2[i] = wildcardify(pS, pE, source, genericsCount.get(i));
+		return new ParameterizedQualifiedTypeReference(tokens, typeArgs2, 0, ps);
+	}
+	
+	private TypeReference[] wildcardify(int pS, int pE, ASTNode source, int count) {
+		if (count == 0) return null;
+		TypeReference[] typeArgs = new TypeReference[count];
+		for (int i = 0; i < count; i++) {
+			typeArgs[i] = new Wildcard(Wildcard.UNBOUND);
+			typeArgs[i].sourceStart = pS; typeArgs[i].sourceEnd = pE;
+			setGeneratedBy(typeArgs[i], source);
 		}
+		
+		return typeArgs;
+	}
+	
+	private int arraySizeOf(Object[] arr) {
+		return arr == null ? 0 : arr.length;
 	}
 	
 	public MethodDeclaration createEquals(EclipseNode type, Collection<EclipseNode> fields, boolean callSuper, ASTNode source, FieldAccess fieldAccess, boolean needsCanEqual, List<Annotation> onParam) {
@@ -683,7 +698,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 				} else /* objects */ {
 					/* final java.lang.Object this$fieldName = this.fieldName; */
 					/* final java.lang.Object other$fieldName = other.fieldName; */
-					/* if (this$fieldName == null ? other$fieldName != null : !this$fieldName.equals(other$fieldName)) return false;; */
+					/* if (this$fieldName == null ? other$fieldName != null : !this$fieldName.equals(other$fieldName)) return false; */
 					char[] thisDollarFieldName = ("this$" + field.getName()).toCharArray();
 					char[] otherDollarFieldName = ("other$" + field.getName()).toCharArray();
 					
