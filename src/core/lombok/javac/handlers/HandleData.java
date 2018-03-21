@@ -23,6 +23,7 @@ package lombok.javac.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
+
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.Data;
@@ -40,25 +41,27 @@ import com.sun.tools.javac.tree.JCTree.JCAnnotation;
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleData extends JavacAnnotationHandler<Data> {
-	@Override public void handle(AnnotationValues<Data> annotation, JCAnnotation ast, JavacNode annotationNode) {
+	@Override
+	public void handle(AnnotationValues<Data> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.DATA_FLAG_USAGE, "@Data");
-		
+
 		deleteAnnotationIfNeccessary(annotationNode, Data.class);
 		JavacNode typeNode = annotationNode.up();
 		boolean notAClass = !isClass(typeNode);
-		
+
 		if (notAClass) {
 			annotationNode.addError("@Data is only supported on a class.");
 			return;
 		}
-		
+
 		String staticConstructorName = annotation.getInstance().staticConstructor();
-		
+		boolean excludeToString = annotation.getInstance().excludeToString();
+
 		// TODO move this to the end OR move it to the top in eclipse.
 		new HandleConstructor().generateRequiredArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, SkipIfConstructorExists.YES, annotationNode);
 		new HandleGetter().generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
 		new HandleSetter().generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
 		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
-		new HandleToString().generateToStringForType(typeNode, annotationNode);
+		if (!excludeToString) new HandleToString().generateToStringForType(typeNode, annotationNode);
 	}
 }
