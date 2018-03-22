@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 The Project Lombok Authors.
+ * Copyright (C) 2012-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@ package lombok.javac.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
-
-import java.lang.annotation.Annotation;
 
 import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
@@ -50,12 +48,9 @@ import com.sun.tools.javac.tree.JCTree.JCModifiers;
 @HandlerPriority(-512) //-2^9; to ensure @EqualsAndHashCode and such pick up on this handler making the class final and messing with the fields' access levels, run earlier.
 public class HandleValue extends JavacAnnotationHandler<Value> {
 	@Override public void handle(AnnotationValues<Value> annotation, JCAnnotation ast, JavacNode annotationNode) {
-		@SuppressWarnings("deprecation")
-		Class<? extends Annotation> oldExperimentalValue = lombok.experimental.Value.class;
-		
 		handleFlagUsage(annotationNode, ConfigurationKeys.VALUE_FLAG_USAGE, "@Value");
 		
-		deleteAnnotationIfNeccessary(annotationNode, Value.class, oldExperimentalValue);
+		deleteAnnotationIfNeccessary(annotationNode, Value.class, "lombok.experimental.Value");
 		JavacNode typeNode = annotationNode.up();
 		boolean notAClass = !isClass(typeNode);
 		

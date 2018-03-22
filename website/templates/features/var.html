@@ -1,22 +1,12 @@
-<#import "../_features.html" as f>
+<#import "_features.html" as f>
 
-<@f.scaffold title="var" logline="Modifiable local variables with a type inferred by assigning value.">
+<@f.scaffold title="var" logline="Mutably! Hassle-free local variables.">
 	<@f.history>
-		<p>
-			<code>var</code> was introduced in lombok 1.16.12 as experimental feature.
-		</p>
+		<p><ul>
+			<li><code>var</code> was promoted to the main package in lombok 2.0.0; given that <a href="http://openjdk.java.net/jeps/286">JEP 286</a> establishes expectations, and lombok's take on <code>var</code> follows these, we've decided to promote <code>var</code> eventhough the feature remains controversial.</li>
+			<li><code>var</code> was introduced in lombok 1.16.12 as experimental feature.</li>
+		</ul></p>
 	</@f.history>
-
-	<@f.experimental>
-		<ul>
-			<li>
-				This feature is very controversial.
-			</li><li>
-				There is <a href="http://openjdk.java.net/jeps/286">JEP 286</a> that should make <code>var</code> obsolete.
-			</li>
-		</ul>
-		Current status: <em>uncertain</em> – Currently we feel this feature cannot move out of experimental status.
-	</@f.experimental>
 
 	<@f.overview>
 		<p>

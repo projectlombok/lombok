@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2017 The Project Lombok Authors.
+ * Copyright (C) 2013-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -185,8 +185,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			TypeDeclaration td = (TypeDeclaration) tdParent.get();
 			
 			List<EclipseNode> allFields = new ArrayList<EclipseNode>();
-			@SuppressWarnings("deprecation")
-			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation(lombok.experimental.Value.class, parent));
+			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
 			for (EclipseNode fieldNode : HandleConstructor.findAllFields(tdParent, true)) {
 				FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
 				EclipseNode isDefault = findAnnotation(Builder.Default.class, fieldNode);

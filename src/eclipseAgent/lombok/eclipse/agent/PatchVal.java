@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The Project Lombok Authors.
+ * Copyright (C) 2010-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -212,7 +212,7 @@ public class PatchVal {
 	}
 	
 	private static boolean isVar(LocalDeclaration local, BlockScope scope) {
-		return is(local.type, scope, "lombok.experimental.var");
+		return is(local.type, scope, "lombok.experimental.var") || is(local.type, scope, "lombok.var");
 	}
 	
 	private static boolean isVal(LocalDeclaration local, BlockScope scope) {

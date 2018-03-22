@@ -371,31 +371,44 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 	
 	public JCExpression createTypeReference(JavacNode type, boolean addWildcards) {
 		java.util.List<String> list = new ArrayList<String>();
+		java.util.List<Integer> genericsCount = addWildcards ? new ArrayList<Integer>() : null;
+		
 		list.add(type.getName());
+		if (addWildcards) genericsCount.add(((JCClassDecl) type.get()).typarams.size());
+		boolean staticContext = (((JCClassDecl) type.get()).getModifiers().flags & Flags.STATIC) != 0;
 		JavacNode tNode = type.up();
+		
 		while (tNode != null && tNode.getKind() == Kind.TYPE) {
 			list.add(tNode.getName());
+			if (addWildcards) genericsCount.add(staticContext ? 0 : ((JCClassDecl) tNode.get()).typarams.size());
+			if (!staticContext) staticContext = (((JCClassDecl) tNode.get()).getModifiers().flags & Flags.STATIC) != 0;
 			tNode = tNode.up();
 		}
 		Collections.reverse(list);
-		JCClassDecl typeDecl = (JCClassDecl) type.get();
+		if (addWildcards) Collections.reverse(genericsCount);
 		
 		JavacTreeMaker maker = type.getTreeMaker();
 		
 		JCExpression chain = maker.Ident(type.toName(list.get(0)));
+		if (addWildcards) chain = wildcardify(maker, chain, genericsCount.get(0));
 		
 		for (int i = 1; i < list.size(); i++) {
 			chain = maker.Select(chain, type.toName(list.get(i)));
+			if (addWildcards) chain = wildcardify(maker, chain, genericsCount.get(i));
 		}
 		
-		if (!addWildcards || typeDecl.typarams.length() == 0) return chain;
+		return chain;
+	}
+	
+	private JCExpression wildcardify(JavacTreeMaker maker, JCExpression expr, int count) {
+		if (count == 0) return expr;
 		
 		ListBuffer<JCExpression> wildcards = new ListBuffer<JCExpression>();
-		for (int i = 0 ; i < typeDecl.typarams.length() ; i++) {
+		for (int i = 0 ; i < count ; i++) {
 			wildcards.append(maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null));
 		}
 		
-		return maker.TypeApply(chain, wildcards.toList());
+		return maker.TypeApply(expr, wildcards.toList());
 	}
 	
 	public JCMethodDecl createEquals(JavacNode typeNode, List<JavacNode> fields, boolean callSuper, FieldAccess fieldAccess, boolean needsCanEqual, JCTree source, List<JCAnnotation> onParam) {

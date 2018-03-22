@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2016 The Project Lombok Authors.
+ * Copyright (C) 2010-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,13 +25,14 @@ import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.typeMatches;
 import lombok.ConfigurationKeys;
 import lombok.val;
+import lombok.var;
 import lombok.core.HandlerPriority;
 import lombok.eclipse.DeferUntilPostDiet;
 import lombok.eclipse.EclipseASTAdapter;
 import lombok.eclipse.EclipseASTVisitor;
 import lombok.eclipse.EclipseNode;
-import lombok.experimental.var;
 
+import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ForStatement;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
@@ -74,8 +75,15 @@ public class HandleVal extends EclipseASTAdapter {
 			return;
 		}
 		
-		if (isVal && localNode.directUp().get() instanceof ForStatement) {
+		ASTNode parentRaw = localNode.directUp().get();
+		
+		if (isVal && parentRaw instanceof ForStatement) {
 			localNode.addError("'val' is not allowed in old-style for loops");
+			return;
+		}
+		
+		if (parentRaw instanceof ForStatement && ((ForStatement) parentRaw).initializations != null && ((ForStatement) parentRaw).initializations.length > 1) {
+			localNode.addError("'var' is not allowed in old-style for loops if there is more than 1 initializer");
 			return;
 		}
 		

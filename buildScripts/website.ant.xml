@@ -37,13 +37,17 @@ such as applying the templates to produce the website, converting the changelog 
 		<delete dir="build/website" quiet="true" />
 	</target>
 	
-	<target name="website-only" description="Prepares the website for distribution using the lombok version currently 'live'." depends="-fetch-version-from-site, -show-version, -ensure-version, -website-main, -delete-edge-page, -website-only-dist" />
+	<target name="website-only" description="Prepares the website for distribution using the lombok version currently 'live'." depends="-fetch-version-from-site, -show-version, -ensure-version, -website-main, -delete-edge-page" />
 	
 	<target name="-delete-edge-page">
 		<delete file="build/website/download-edge.html" />
 	</target>
 	
-	<target name="website" description="Prepares the website for distribution" depends="javadoc, -website-main, -website-dist" />
+	<target name="website" description="Prepares the website for distribution" depends="javadoc, -website-main" />
+	
+	<target name="website-supporters" description="Updates website supporters store and adds it to the website build.">
+		<ant antfile="buildScripts/supporters.ant.xml" target="deployToWebsiteBuild" inheritAll="false" />
+	</target>
 	
 	<target name="-fetch-version-from-site" depends="-compile-webclasses">
 		<fail if="lombok.version">lombok.version already set.</fail>
@@ -80,6 +84,8 @@ such as applying the templates to produce the website, converting the changelog 
 	<target name="-compile-webclasses">
 		<mkdir dir="build/webclasses" />
 		<javac includeDestClasses="false" includeantruntime="false" destdir="build/webclasses" debug="on" source="1.8" target="1.8">
+			<compilerarg value="-proc:none" />
+			<compilerarg value="-Xlint:-options" />
 			<classpath refid="build.path" />
 			<src path="src/website" />
 		</javac>
@@ -132,8 +138,8 @@ such as applying the templates to produce the website, converting the changelog 
 		</tar>
 	</target>
 	
-	<target name="website-publish" depends="website, -send-site-to-remote" />
-	<target name="website-only-publish" depends="website-only, -send-site-to-remote" />
+	<target name="website-publish" depends="website, website-supporters, -website-dist, -send-site-to-remote" />
+	<target name="website-only-publish" depends="website-only, website-supporters, -website-only-dist, -send-site-to-remote" />
 	<target name="-send-site-to-remote" depends="-requires-ssh">
 		<ivy:scpUpload
 			from="dist/website.tar.bz2"

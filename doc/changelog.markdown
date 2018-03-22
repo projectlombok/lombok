@@ -3,7 +3,11 @@ Lombok Changelog
 
 ### v1.16.21 "Edgy Guinea Pig"
 * v1.16.20 is the latest stable release of Project Lombok.
-* Potential fix for Netbeans < 9. [Issue #1555](https://github.com/rzwitserloot/lombok/issues/1555)
+* PLATFORM: Fix for using lombok together with JDK9's new `module-info.java` feature. [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
+* PLATFORM: Some initial work on supporting JDK10.
+* BUGFIX: Potential fix for Netbeans < 9. [Issue #1555](https://github.com/rzwitserloot/lombok/issues/1555)
+* PROMOTION: `var` has been promoted from experimental to the main package with no changes. The 'old' experimental one is still around but is deprecated, and is an alias for the new main package one. [var documentation](https://projectlombok.org/features/var.html).
+* OLD-CRUFT: `lombok.experimental.Builder` and `lombok.experimental.Value` are deprecated remnants of when these features were still in experimental. They are now removed entirely. If your project is dependent on an older version of lombok which still has those; fret not, lombok still processes these annotations. It just no longer includes them in the jar.
 
 ### v1.16.20 (January 9th, 2018)
 * PLATFORM: Better support for jdk9 in the new IntelliJ, Netbeans and for Gradle.

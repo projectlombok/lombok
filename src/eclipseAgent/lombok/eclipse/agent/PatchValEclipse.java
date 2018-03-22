@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The Project Lombok Authors.
+ * Copyright (C) 2010-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -103,7 +103,7 @@ public class PatchValEclipse {
 	}
 	
 	private static boolean couldBeVar(TypeReference type) {
-		return PatchVal.couldBe("lombok.experimental.var", type);
+		return PatchVal.couldBe("lombok.experimental.var", type) || PatchVal.couldBe("lombok.var", type);
 	}
 	
 	public static void addFinalAndValAnnotationToSingleVariableDeclaration(Object converter, SingleVariableDeclaration out, LocalDeclaration in) {

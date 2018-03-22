@@ -26,7 +26,7 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 import lombok.ConfigurationKeys;
 import lombok.val;
 import lombok.core.HandlerPriority;
-import lombok.experimental.var;
+import lombok.var;
 import lombok.javac.JavacASTAdapter;
 import lombok.javac.JavacASTVisitor;
 import lombok.javac.JavacNode;
@@ -54,10 +54,10 @@ import com.sun.tools.javac.util.List;
 public class HandleVal extends JavacASTAdapter {
 	
 	private static boolean eq(String typeTreeToString, String key) {
-		return (typeTreeToString.equals(key) || typeTreeToString.equals("lombok." + key));
+		return typeTreeToString.equals(key) || typeTreeToString.equals("lombok." + key) || typeTreeToString.equals("lombok.experimental." + key);
 	}
 	
-	@Override
+	@SuppressWarnings("deprecation") @Override
 	public void visitLocal(JavacNode localNode, JCVariableDecl local) {
 		JCTree typeTree = local.vartype;
 		if (typeTree == null) return;
@@ -74,6 +74,11 @@ public class HandleVal extends JavacASTAdapter {
 		JCTree parentRaw = localNode.directUp().get();
 		if (isVal && parentRaw instanceof JCForLoop) {
 			localNode.addError("'val' is not allowed in old-style for loops");
+			return;
+		}
+		
+		if (parentRaw instanceof JCForLoop && ((JCForLoop) parentRaw).getInitializer().size() > 1) {
+			localNode.addError("'var' is not allowed in old-style for loops if there is more than 1 initializer");
 			return;
 		}
 		
@@ -98,6 +103,7 @@ public class HandleVal extends JavacASTAdapter {
 		
 		if (localNode.shouldDeleteLombokAnnotations()) {
 			JavacHandlerUtil.deleteImportFromCompilationUnit(localNode, val.class.getName());
+			JavacHandlerUtil.deleteImportFromCompilationUnit(localNode, lombok.experimental.var.class.getName());
 			JavacHandlerUtil.deleteImportFromCompilationUnit(localNode, var.class.getName());
 		}
 		

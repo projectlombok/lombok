@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 
@@ -163,7 +164,21 @@ public class AnnotationProcessor extends AbstractProcessor {
 		
 		for (ProcessorDescriptor proc : active) proc.process(annotations, roundEnv);
 		
-		return false;
+		boolean onlyLombok = true;
+		boolean zeroElems = true;
+		for (TypeElement elem : annotations) {
+			zeroElems = false;
+			Name n = elem.getQualifiedName();
+			if (n.length() > 7 && n.subSequence(0, 7).toString().equals("lombok.")) continue;
+			onlyLombok = false;
+		}
+		
+		// Normally we rely on the claiming processor to claim away all lombok annotations.
+		// One of the many Java9 oversights is that this 'process' API has not been fixed to address the point that 'files I want to look at' and 'annotations I want to claim' must be one and the same,
+		// and yet in java9 you can no longer have 2 providers for the same service, thus, if you go by module path, lombok no longer loads the ClaimingProcessor.
+		// This doesn't do as good a job, but it'll have to do. The only way to go from here, I think, is either 2 modules, or use reflection hackery to add ClaimingProcessor during our init.
+		
+		return onlyLombok && !zeroElems;
 	}
 	
 	/**

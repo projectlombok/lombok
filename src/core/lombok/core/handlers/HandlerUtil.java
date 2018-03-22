@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2017 The Project Lombok Authors.
+ * Copyright (C) 2013-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -171,11 +171,12 @@ public class HandlerUtil {
 	}
 	
 	@SuppressWarnings({"all", "unchecked", "deprecation"})
-	public static final List<Class<? extends java.lang.annotation.Annotation>> INVALID_ON_BUILDERS = Collections.unmodifiableList(
-			Arrays.<Class<? extends java.lang.annotation.Annotation>>asList(
-			Getter.class, Setter.class, Wither.class, ToString.class, EqualsAndHashCode.class, 
-			RequiredArgsConstructor.class, AllArgsConstructor.class, NoArgsConstructor.class, 
-			Data.class, Value.class, lombok.experimental.Value.class, FieldDefaults.class));
+	public static final List<String> INVALID_ON_BUILDERS = Collections.unmodifiableList(
+			Arrays.<String>asList(
+			Getter.class.getName(), Setter.class.getName(), Wither.class.getName(),
+			ToString.class.getName(), EqualsAndHashCode.class.getName(), 
+			RequiredArgsConstructor.class.getName(), AllArgsConstructor.class.getName(), NoArgsConstructor.class.getName(), 
+			Data.class.getName(), Value.class.getName(), "lombok.experimental.Value", FieldDefaults.class.getName()));
 	
 	/**
 	 * Given the name of a field, return the 'base name' of that field. For example, {@code fFoobar} becomes {@code foobar} if {@code f} is in the prefix list.

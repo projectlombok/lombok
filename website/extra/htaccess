@@ -24,6 +24,12 @@ RewriteRule ^disable-checked-exceptions$ /disable-checked-exceptions.html [L,END
 RewriteRule ^disable-checked-exceptions(\.html)?$ /disable-checked-exceptions [NC,R=301]
 RewriteRule ^contributing$ /contributing.html [L,END]
 RewriteRule ^contributing(\.html)?$ /contributing [NC,R=301]
+RewriteRule ^supporters$ /supporters.html [L,END]
+RewriteRule ^supporters(.html)?$ /supporters [NC,R=301]
+RewriteRule ^order-license-info$ /order-license-info.html [L,END]
+RewriteRule ^order-?license-?info(.html)?$ /order-license-info [NC,R=301]
+RewriteRule ^order-license$ /order-license.html [L,END]
+RewriteRule ^order-?license(.html)?$ /order-license [NC,R=301]
 
 <#list setupPages as pg>
 RewriteRule ^setup/${pg?no_esc}$ /setup/${pg?no_esc}.html [L,END]
@@ -38,6 +44,10 @@ RewriteRule ^features/index(\.html)?$ /features/all [NC,R=301]
 RewriteRule ^features/${pg?no_esc}$ /features/${pg?no_esc}.html [L,END]
 RewriteRule ^features/${pg?no_esc}(\.html)?$ /features/${pg?no_esc} [NC,R=301]
 </#list>
+
+RewriteRule ^features/experimental/Builder(\.html)?$ /features/Builder [NC,R=301]
+RewriteRule ^features/experimental/Value(\.html)?$ /features/Value [NC,R=301]
+RewriteRule ^features/experimental/var(\.html)?$ /features/var [NC,R=301]
 
 RewriteRule ^features/experimental/all$ /features/experimental/index.html [L,END]
 RewriteRule ^features/experimental(/all)?$ /features/experimental/all [NC,R=301]

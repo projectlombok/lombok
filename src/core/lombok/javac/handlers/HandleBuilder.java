@@ -21,7 +21,6 @@
  */
 package lombok.javac.handlers;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 
 import javax.lang.model.element.Modifier;
@@ -119,9 +118,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			if (!checkName("builderClassName", builderClassName, annotationNode)) return;
 		}
 		
-		@SuppressWarnings("deprecation")
-		Class<? extends Annotation> oldExperimentalBuilder = lombok.experimental.Builder.class;
-		deleteAnnotationIfNeccessary(annotationNode, Builder.class, oldExperimentalBuilder);
+		deleteAnnotationIfNeccessary(annotationNode, Builder.class, "lombok.experimental.Builder");
 		
 		JavacNode parent = annotationNode.up();
 		
@@ -140,8 +137,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			tdParent = parent;
 			JCClassDecl td = (JCClassDecl) tdParent.get();
 			ListBuffer<JavacNode> allFields = new ListBuffer<JavacNode>();
-			@SuppressWarnings("deprecation")
-			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation(lombok.experimental.Value.class, parent));
+			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
 			for (JavacNode fieldNode : HandleConstructor.findAllFields(tdParent, true)) {
 				JCVariableDecl fd = (JCVariableDecl) fieldNode.get();
 				JavacNode isDefault = findAnnotation(Builder.Default.class, fieldNode, true);

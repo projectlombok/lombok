@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2010-2017 The Project Lombok Authors.
+ Copyright (C) 2010-2018 The Project Lombok Authors.
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -118,6 +118,11 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<ivy:retrieve />
 	</target>
 	
+	<target name="ensureSupportersDeps" depends="config-ivy">
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="supporters" />
+		<ivy:retrieve />
+	</target>
+	
 	<target name="version" depends="ensure-ipp" description="Shows the version number." unless="lombok.version">
 		<mkdir dir="build/lombok" />
 		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" ecj="true" nowarn="true">
@@ -174,6 +179,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		
 		<ivy:compile destdir="build/lombok-utils" source="1.6" target="1.6">
 			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
+			<compilerarg value="-Xlint:-options" />
 			<src path="src/utils" />
 			<include name="lombok/javac/**" />
 			<classpath location="build/lombok-utils" />
@@ -195,17 +201,17 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 				</lineContainsRegExp>
 			</filterchain>
 		</copy>
-
+		
 		<ivy:compile destdir="build/lombok" source="1.4" target="1.4" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />
 			<src path="build/transformedSources" />
 		</ivy:compile>
-
+		
 		<ivy:compile destdir="build/lombok/Class50" source="1.4" target="1.6" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />
 			<src path="build/transformedSources" />
 		</ivy:compile>
-
+		
 		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />
 			<src path="src/launch" />
@@ -218,6 +224,15 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<classpath refid="build.path" />
 		</ivy:compile>
 		
+		<ivy:compile destdir="build/lombok" source="1.9" target="1.9">
+			<compilerarg value="-Xlint:none" />
+			<!-- The above is because javac9 warns about 'service interface provided but not exported or used', probably because lombok uses SPI internally, and uses the 'old' classpath discovery system for it. We're fine with this, hence, ignore this warning. -->
+			<src path="src/core9" />
+			<src path="src/j9stubs" />
+			<!-- This includes org.mapstruct.ap.spi.AstModifyingAnnotationProcessor; putting this on the classpath doesn't work (needs to be internal or a module) so we just add it and then delete the class file for convenience. -->
+		</ivy:compile>
+		<delete file="build/lombok/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.class" />
+		
 		<ivy:compile destdir="build/lombok/Class50" source="1.5" target="1.6" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />
 			<src path="src/eclipseAgent" />
@@ -228,6 +243,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		
 		<ivy:compile destdir="build/lombok" source="1.6" target="1.6">
 			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
+			<compilerarg value="-Xlint:-options" />
 			<src path="src/core" />
 			<src path="src/delombok" />
 			<include name="lombok/javac/**" />
@@ -281,6 +297,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor</echo>
 			<fileset dir="." includes="AUTHORS" />
 			<fileset dir="." includes="release-timestamp.txt" />
 			<fileset dir="build/lombok">
+				<include name="module-info.class" />
 				<include name="lombok/*.class" />
 				<include name="lombok/experimental/**" />
 				<include name="lombok/extern/**" />
@@ -291,6 +308,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor</echo>
 			<mappedresources>
 				<fileset dir="build/lombok">
 					<exclude name="com/sun/tools/javac/**" />
+					<exclude name="module-info.class" />
 					<exclude name="lombok/*.class" />
 					<exclude name="lombok/javac/apt/Processor.class" />
 					<exclude name="lombok/experimental/**" />
@@ -876,7 +894,17 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</ant>
 	</target>
 	
-	<target name="website-only-publish" depends="config-ssh, clean"
+	<target name="website-supporters" depends="ensureSupportersDeps, website-only" description="Updates the supporters repo and adds it to the website build.">
+		<ant antfile="buildScripts/supporters.ant.xml" target="deployToWebsiteBuild" inheritAll="false" />
+	</target>
+	
+	<target name="website-supporters-fast" depends="website-only" description="Updates the supporters repo and adds it to the website build.">
+		<ant antfile="buildScripts/supporters.ant.xml" target="deployToWebsiteBuild" inheritAll="false">
+			<property name="noUpdateRepo" value="true" />
+		</ant>
+	</target>
+	
+	<target name="website-only-publish" depends="config-ssh, clean, ensureSupportersDeps"
 			description="Prepares the website (using lombok version current 'live') for distribution and then publishes it to projectlombok.org.">
 		<ant antfile="buildScripts/website.ant.xml" target="website-only-publish" inheritAll="false">
 			<property name="ssh.username" value="${ssh.username}" />
@@ -884,7 +912,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</ant>
 	</target>
 	
-	<target name="website-publish" depends="config-ssh, clean, version"
+	<target name="website-publish" depends="config-ssh, clean, version, ensureSupportersDeps"
 			description="Prepares the website for distribution and then publishes it to projectlombok.org.">
 		<ant antfile="buildScripts/website.ant.xml" target="website-publish" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />

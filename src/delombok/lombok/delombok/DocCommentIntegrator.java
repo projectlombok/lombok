@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,7 +74,7 @@ public class DocCommentIntegrator {
 		return out;
 	}
 	
-	private static final Pattern CONTENT_STRIPPER = Pattern.compile("^(?:\\s*\\*)?[ \\t]*(.*?)$", Pattern.MULTILINE);
+	private static final Pattern CONTENT_STRIPPER = Pattern.compile("^(?:\\s*\\*)?(.*?)$", Pattern.MULTILINE);
 	@SuppressWarnings("unchecked") private boolean attach(JCCompilationUnit top, final JCTree node, CommentInfo cmt) {
 		String docCommentContent = cmt.content;
 		if (docCommentContent.startsWith("/**")) docCommentContent = docCommentContent.substring(3);
