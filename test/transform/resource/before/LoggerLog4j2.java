@@ -11,3 +11,7 @@ class LoggerLog4j2WithImport {
 @Log4j2(topic="DifferentName")
 class LoggerLog4j2WithDifferentName {
 }
+
+@Log4j2(isStatic=false)
+class LoggerLog4j2WithStatic {
+}

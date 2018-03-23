@@ -36,3 +36,11 @@ class LoggerJBossLogOuter {
     super();
   }
 }
+@JBossLog(isStatic = false) class LoggerJBossLogWithStatic {
+  private final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(this.getClass());
+  <clinit>() {
+  }
+  LoggerJBossLogWithStatic() {
+    super();
+  }
+}

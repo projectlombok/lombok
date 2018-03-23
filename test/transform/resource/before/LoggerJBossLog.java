@@ -18,3 +18,7 @@ class LoggerJBossLogOuter {
 @JBossLog(topic="DifferentLogger")
 class LoggerJBossLogWithDifferentLoggerName {
 }
+
+@JBossLog(isStatic=false)
+class LoggerJBossLogWithStatic {
+}

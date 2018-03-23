@@ -61,4 +61,6 @@ import java.lang.annotation.Target;
 public @interface Log {
 	/** @return The category of the constructed Logger. By default, it will use the type where the annotation is placed. */
 	String topic() default "";
+    /** @return if it's true logger will be static, else won't */
+    boolean isStatic() default true;
 }

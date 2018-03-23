@@ -23,3 +23,11 @@ import lombok.extern.java.Log;
     super();
   }
 }
+@Log(isStatic = false) class LoggerJulWithStatic {
+  private final java.util.logging.Logger log = java.util.logging.Logger.getLogger(this.getClass().getName());
+  <clinit>() {
+  }
+  LoggerJulWithStatic() {
+    super();
+  }
+}

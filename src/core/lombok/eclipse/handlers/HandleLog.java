@@ -52,7 +52,7 @@ public class HandleLog {
 		throw new UnsupportedOperationException();
 	}
 	
-	public static void processAnnotation(LoggingFramework framework, AnnotationValues<? extends java.lang.annotation.Annotation> annotation, Annotation source, EclipseNode annotationNode, String loggerTopic) {
+	public static void processAnnotation(LoggingFramework framework, Annotation source, EclipseNode annotationNode, String loggerTopic, boolean isStatic) {
 		EclipseNode owner = annotationNode.up();
 		
 		switch (owner.getKind()) {
@@ -61,6 +61,7 @@ public class HandleLog {
 			if (logFieldName == null) logFieldName = "log";
 			
 			boolean useStatic = !Boolean.FALSE.equals(annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_IS_STATIC));
+			useStatic = useStatic & isStatic;
 			
 			TypeDeclaration typeDecl = null;
 			if (owner.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) owner.get();
@@ -127,7 +128,12 @@ public class HandleLog {
 		
 		Expression parameter;
 		if (loggerTopic == null || loggerTopic.trim().length() == 0) {
-			parameter = framework.createFactoryParameter(loggingType, source);
+			if (useStatic) {
+                parameter = framework.createFactoryParameter(loggingType, source);
+            }else {
+			    // TODO there we should to invoke this.getClass, but I don't know how I can do it
+                parameter = framework.createFactoryParameter(loggingType, source);
+            }
 		} else {
 			parameter = new StringLiteral(loggerTopic.toCharArray(), pS, pE, 0);
 		}
@@ -170,7 +176,7 @@ public class HandleLog {
 	public static class HandleCommonsLog extends EclipseAnnotationHandler<lombok.extern.apachecommons.CommonsLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.apachecommons.CommonsLog> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_COMMONS_FLAG_USAGE, "@apachecommons.CommonsLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.COMMONS, annotation, source, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.COMMONS, source, annotationNode, annotation.getInstance().topic(), annotation.getInstance().isStatic());
 		}
 	}
 	
@@ -181,7 +187,7 @@ public class HandleLog {
 	public static class HandleJulLog extends EclipseAnnotationHandler<lombok.extern.java.Log> {
 		@Override public void handle(AnnotationValues<lombok.extern.java.Log> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_JUL_FLAG_USAGE, "@java.Log", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.JUL, annotation, source, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.JUL, source, annotationNode, annotation.getInstance().topic(), annotation.getInstance().isStatic());
 		}
 	}
 	
@@ -192,7 +198,7 @@ public class HandleLog {
 	public static class HandleLog4jLog extends EclipseAnnotationHandler<lombok.extern.log4j.Log4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_LOG4J_FLAG_USAGE, "@Log4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.LOG4J, annotation, source, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.LOG4J, source, annotationNode, annotation.getInstance().topic(), annotation.getInstance().isStatic());
 		}
 	}
 	
@@ -203,7 +209,7 @@ public class HandleLog {
 	public static class HandleLog4j2Log extends EclipseAnnotationHandler<lombok.extern.log4j.Log4j2> {
 		@Override public void handle(AnnotationValues<lombok.extern.log4j.Log4j2> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_LOG4J2_FLAG_USAGE, "@Log4j2", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.LOG4J2, annotation, source, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.LOG4J2, source, annotationNode, annotation.getInstance().topic(), annotation.getInstance().isStatic());
 		}
 	}
 	
@@ -214,7 +220,7 @@ public class HandleLog {
 	public static class HandleSlf4jLog extends EclipseAnnotationHandler<lombok.extern.slf4j.Slf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.Slf4j> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_SLF4J_FLAG_USAGE, "@Slf4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.SLF4J, annotation, source, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.SLF4J, source, annotationNode, annotation.getInstance().topic(), annotation.getInstance().isStatic());
 		}
 	}
 	
@@ -225,7 +231,7 @@ public class HandleLog {
 	public static class HandleXSlf4jLog extends EclipseAnnotationHandler<lombok.extern.slf4j.XSlf4j> {
 		@Override public void handle(AnnotationValues<lombok.extern.slf4j.XSlf4j> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_XSLF4J_FLAG_USAGE, "@XSlf4j", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.XSLF4J, annotation, source, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.XSLF4J, source, annotationNode, annotation.getInstance().topic(), annotation.getInstance().isStatic());
 		}
 	}
 	
@@ -236,7 +242,7 @@ public class HandleLog {
 	public static class HandleJBossLog extends EclipseAnnotationHandler<lombok.extern.jbosslog.JBossLog> {
 		@Override public void handle(AnnotationValues<lombok.extern.jbosslog.JBossLog> annotation, Annotation source, EclipseNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_JBOSSLOG_FLAG_USAGE, "@JBossLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
-			processAnnotation(LoggingFramework.JBOSSLOG, annotation, source, annotationNode, annotation.getInstance().topic());
+			processAnnotation(LoggingFramework.JBOSSLOG, source, annotationNode, annotation.getInstance().topic(), annotation.getInstance().isStatic());
 		}
 	}
 	

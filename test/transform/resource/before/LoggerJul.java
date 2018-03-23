@@ -11,3 +11,7 @@ class LoggerJulWithImport {
 @Log(topic="DifferentName")
 class LoggerJulWithDifferentName {
 }
+
+@Log(isStatic=false)
+class LoggerJulWithStatic {
+}
