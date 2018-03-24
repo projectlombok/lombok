@@ -131,6 +131,10 @@ final class LombokFileObjects {
 			catch (Throwable e) {}
 		}
 		try {
+			if (Class.forName("com.sun.tools.javac.file.PathFileObject") == null) throw new NullPointerException();
+			return new Java9Compiler(jfm);
+		} catch (Throwable e) {}
+		try {
 			if (Class.forName("com.sun.tools.javac.file.BaseFileObject") == null) throw new NullPointerException();
 			return Compiler.JAVAC7;
 		} catch (Throwable e) {}
