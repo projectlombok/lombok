@@ -43,7 +43,6 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleData extends EclipseAnnotationHandler<Data> {
-	
 	private HandleGetter handleGetter = new HandleGetter();
 	private HandleSetter handleSetter = new HandleSetter();
 	private HandleEqualsAndHashCode handleEqualsAndHashCode = new HandleEqualsAndHashCode();

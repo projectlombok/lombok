@@ -105,7 +105,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		return true;
 	}
 	
-	public boolean fieldQualifiesForGetterGeneration(EclipseNode field) {
+	public static boolean fieldQualifiesForGetterGeneration(EclipseNode field) {
 		if (field.getKind() != Kind.FIELD) return false;
 		FieldDeclaration fieldDecl = (FieldDeclaration) field.get();
 		return filterField(fieldDecl);

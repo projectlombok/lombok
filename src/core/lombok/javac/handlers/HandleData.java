@@ -40,6 +40,12 @@ import com.sun.tools.javac.tree.JCTree.JCAnnotation;
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleData extends JavacAnnotationHandler<Data> {
+	private HandleConstructor handleConstructor = new HandleConstructor();
+	private HandleGetter handleGetter = new HandleGetter();
+	private HandleSetter handleSetter = new HandleSetter();
+	private HandleEqualsAndHashCode handleEqualsAndHashCode = new HandleEqualsAndHashCode();
+	private HandleToString handleToString = new HandleToString();
+	
 	@Override public void handle(AnnotationValues<Data> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.DATA_FLAG_USAGE, "@Data");
 		
@@ -54,11 +60,10 @@ public class HandleData extends JavacAnnotationHandler<Data> {
 		
 		String staticConstructorName = annotation.getInstance().staticConstructor();
 		
-		// TODO move this to the end OR move it to the top in eclipse.
-		new HandleConstructor().generateRequiredArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, SkipIfConstructorExists.YES, annotationNode);
-		new HandleGetter().generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
-		new HandleSetter().generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
-		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
-		new HandleToString().generateToStringForType(typeNode, annotationNode);
+		handleConstructor.generateRequiredArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, SkipIfConstructorExists.YES, annotationNode);
+		handleGetter.generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
+		handleSetter.generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
+		handleEqualsAndHashCode.generateEqualsAndHashCodeForType(typeNode, annotationNode);
+		handleToString.generateToStringForType(typeNode, annotationNode);
 	}
 }
