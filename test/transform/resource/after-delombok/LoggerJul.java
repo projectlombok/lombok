@@ -10,3 +10,7 @@ class LoggerJulWithDifferentName {
 	@java.lang.SuppressWarnings("all")
 	private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger("DifferentName");
 }
+class LoggerJulWithStatic {
+	@java.lang.SuppressWarnings("all")
+	private final java.util.logging.Logger log = java.util.logging.Logger.getLogger(this.getClass().getName());
+}

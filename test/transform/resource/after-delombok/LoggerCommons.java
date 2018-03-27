@@ -10,3 +10,7 @@ class LoggerCommonsWithDifferentName {
 	@java.lang.SuppressWarnings("all")
 	private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog("DifferentName");
 }
+class LoggerCommonsWithStaticLogger {
+	@java.lang.SuppressWarnings("all")
+	private final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(this.getClass());
+}

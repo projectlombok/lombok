@@ -11,3 +11,7 @@ class LoggerCommonsWithImport {
 @CommonsLog(topic="DifferentName")
 class LoggerCommonsWithDifferentName {
 }
+
+@CommonsLog(isStatic=false)
+class LoggerCommonsWithStaticLogger {
+}

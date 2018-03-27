@@ -12,8 +12,11 @@ class LoggerJBossLogOuter {
 		private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(Inner.class);
 	}
 }
-
 class LoggerJBossLogWithDifferentLoggerName {
 	@java.lang.SuppressWarnings("all")
 	private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger("DifferentLogger");
+}
+class LoggerJBossLogWithStatic {
+	@java.lang.SuppressWarnings("all")
+	private final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(this.getClass());
 }

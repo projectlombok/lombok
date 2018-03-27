@@ -21,3 +21,11 @@ public class LogExampleCategory {
 		log.error("Calling the 'CounterLog' with a message");
 	}
 }
+
+public class AnotherLogExample {
+    private final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(this.getClass());
+
+	public static void main(String... args) {
+		log.info("Follow the white rabbit");
+	}
+}

@@ -37,3 +37,11 @@ class LoggerSlf4jOuter {
     super();
   }
 }
+@Slf4j(isStatic = false) class LoggerSlf4jWithStatic {
+  private final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(this.getClass());
+  <clinit>() {
+  }
+  LoggerSlf4jWithStatic() {
+    super();
+  }
+}

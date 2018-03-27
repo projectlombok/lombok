@@ -18,3 +18,7 @@ class LoggerSlf4jOuter {
 @Slf4j(topic="DifferentLogger")
 class LoggerSlf4jWithDifferentLoggerName {
 }
+
+@Slf4j(isStatic=false)
+class LoggerSlf4jWithStatic {
+}
