@@ -195,7 +195,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				boolean callBuilderBasedSuperConstructor = extendsClause != null;
 				generateBuilderBasedConstructor(tdParent, builderFields, annotationNode, builderClassName, callBuilderBasedSuperConstructor);
 			} else {
-				handleConstructor.generateConstructor(tdParent, AccessLevel.PROTECTED, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, annotationNode);
+				handleConstructor.generateConstructor(tdParent, AccessLevel.PACKAGE, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, annotationNode);
 			}
 			
 			returnType = namePlusTypeParamsToTypeReference(tdParent.getTreeMaker(), td.name, td.typarams);
@@ -569,9 +569,6 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	private void generateBuilderBasedConstructor(JavacNode typeNode, java.util.List<BuilderFieldData> builderFields, JavacNode source, String builderClassnameAsParameter, boolean callBuilderBasedSuperConstructor) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
-		boolean isEnum = (((JCClassDecl) typeNode.get()).mods.flags & Flags.ENUM) != 0;
-		AccessLevel level = isEnum ? AccessLevel.PRIVATE : AccessLevel.PROTECTED;
-		
 		ListBuffer<JCStatement> nullChecks = new ListBuffer<JCStatement>();
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		
@@ -599,7 +596,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			statements.append(maker.Exec(assign));
 		}
 		
-		JCModifiers mods = maker.Modifiers(toJavacModifier(level), List.<JCAnnotation>nil());
+		JCModifiers mods = maker.Modifiers(toJavacModifier(AccessLevel.PROTECTED), List.<JCAnnotation>nil());
 		
 		// Create a constructor that has just the builder as parameter.
 		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();

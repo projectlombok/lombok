@@ -604,12 +604,9 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		TypeDeclaration typeDeclaration = ((TypeDeclaration) typeNode.get());
 		long p = (long) source.sourceStart << 32 | source.sourceEnd;
 		
-		boolean isEnum = (((TypeDeclaration) typeNode.get()).modifiers & ClassFileConstants.AccEnum) != 0;
-		AccessLevel level = isEnum ? AccessLevel.PRIVATE : AccessLevel.PROTECTED;
-		
 		ConstructorDeclaration constructor = new ConstructorDeclaration(((CompilationUnitDeclaration) typeNode.top().get()).compilationResult);
 		
-		constructor.modifiers = toEclipseModifier(level);
+		constructor.modifiers = toEclipseModifier(AccessLevel.PROTECTED);
 		constructor.selector = typeDeclaration.name;
 		if (callBuilderBasedSuperConstructor) {
 			constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.Super);
