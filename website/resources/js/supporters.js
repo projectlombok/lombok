@@ -153,6 +153,8 @@
 		shuffle(list);
 		
 		var len = list.length;
+		if (!len) return;
+		
 		var pos = 0;
 		var c = [], cd = [];
 		for (var i = 0; i < supPerBar; i++) {
