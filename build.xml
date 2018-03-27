@@ -28,18 +28,10 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<property name="build.compiler" value="javac1.6" />
 	<property name="ivy.retrieve.pattern" value="lib/[conf]/[organisation]-[artifact].[ext]" />
 	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
-	<property name="rt-openjdk6" location="lib/openJDk6Environment/rt-openjdk6.jar" />
-	<property name="rt-openjdk8" location="lib/openJDk8Environment/rt-openjdk8.jar" />
-	<property name="openjdk6.md5" value="de953d5062b7183fbf3fa9f5d623e2e7" />
-	<property name="openjdk8.md5" value="8099e5d7aa182374d299d03f5003a27f" />
-	<checksum file="${rt-openjdk6}" property="${openjdk6.md5}" verifyProperty="rt-openjdk6.checksumOk" />
-	<checksum file="${rt-openjdk8}" property="${openjdk8.md5}" verifyProperty="rt-openjdk8.checksumOk" />
-	<condition property="rt-openjdk6.available">
-		<equals arg1="${rt-openjdk6.checksumOk}" arg2="true" />
-	</condition>
-	<condition property="rt-openjdk8.available">
-		<equals arg1="${rt-openjdk8.checksumOk}" arg2="true" />
-	</condition>
+	<property name="rt-openjdk6" location="lib/openJDK6Environment/openjdk6_rt.jar" />
+	<property name="rt-openjdk8" location="lib/openJDK8Environment/openjdk8_rt.jar" />
+	<available file="${rt-openjdk6}" property="rt-openjdk6.available" />
+	<available file="${rt-openjdk8}" property="rt-openjdk8.available" />
 	
 	<path id="build.path">
 		<fileset dir="lib/build">
