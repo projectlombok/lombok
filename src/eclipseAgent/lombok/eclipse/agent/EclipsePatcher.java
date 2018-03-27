@@ -23,6 +23,7 @@ package lombok.eclipse.agent;
 
 import static lombok.patcher.scripts.ScriptBuilder.*;
 
+import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URLClassLoader;
 import java.security.ProtectionDomain;
@@ -86,7 +87,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 			}
 		});
 		
-		final boolean forceBaseResourceNames = !"".equals(System.getProperty("shadow.override.lombok", ""));
+		final boolean forceBaseResourceNames = shouldForceBaseResourceNames();
 		sm.setTransplantMapper(new TransplantMapper() {
 			public String mapResourceName(int classFileFormatVersion, String resourceName) {
 				if (classFileFormatVersion < 50 || forceBaseResourceNames) return resourceName;
@@ -123,6 +124,15 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		patchRenameField(sm);
 		
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
+	}
+	
+	private static boolean shouldForceBaseResourceNames() {
+		String shadowOverride = System.getProperty("shadow.override.lombok", "");
+		if (shadowOverride == null || shadowOverride.length() == 0) return false;
+		for (String part : shadowOverride.split("\\s*" + (File.pathSeparatorChar == ';' ? ";" : ":") + "\\s*")) {
+			if (part.equalsIgnoreCase("lombok.jar")) return false;
+		}
+		return true;
 	}
 	
 	private static void patchRenameField(ScriptManager sm) {
