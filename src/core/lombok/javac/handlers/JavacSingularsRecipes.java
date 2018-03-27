@@ -195,7 +195,7 @@ public class JavacSingularsRecipes {
 		
 		public abstract java.util.List<JavacNode> generateFields(SingularData data, JavacNode builderType, JCTree source);
 		public abstract void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, boolean chain);
-		public abstract void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName);
+		public abstract void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable);
 		
 		public boolean requiresCleaning() {
 			try {
@@ -274,9 +274,9 @@ public class JavacSingularsRecipes {
 			return arguments.toList();
 		}
 		
-		/** Generates 'this.<em>name</em>.size()' as an expression; if nullGuard is true, it's this.name == null ? 0 : this.name.size(). */
-		protected JCExpression getSize(JavacTreeMaker maker, JavacNode builderType, Name name, boolean nullGuard, boolean parens) {
-			Name thisName = builderType.toName("this");
+		/** Generates '<em>builderVariable</em>.<em>name</em>.size()' as an expression; if nullGuard is true, it's this.name == null ? 0 : this.name.size(). */
+		protected JCExpression getSize(JavacTreeMaker maker, JavacNode builderType, Name name, boolean nullGuard, boolean parens, String builderVariable) {
+			Name thisName = builderType.toName(builderVariable);
 			JCExpression fn = maker.Select(maker.Select(maker.Ident(thisName), name), builderType.toName("size"));
 			JCExpression sizeInvoke = maker.Apply(List.<JCExpression>nil(), fn, List.<JCExpression>nil());
 			if (nullGuard) {

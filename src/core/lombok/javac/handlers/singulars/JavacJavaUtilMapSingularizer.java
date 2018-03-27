@@ -212,18 +212,18 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		injectMethod(builderType, method);
 	}
 	
-	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName) {
+	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {
 		if (useGuavaInstead(builderType)) {
-			guavaMapSingularizer.appendBuildCode(data, builderType, source, statements, targetVariableName);
+			guavaMapSingularizer.appendBuildCode(data, builderType, source, statements, targetVariableName, builderVariable);
 			return;
 		}
 		
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		
 		if (data.getTargetFqn().equals("java.util.Map")) {
-			statements.appendList(createJavaUtilSetMapInitialCapacitySwitchStatements(maker, data, builderType, true, "emptyMap", "singletonMap", "LinkedHashMap", source));
+			statements.appendList(createJavaUtilSetMapInitialCapacitySwitchStatements(maker, data, builderType, true, "emptyMap", "singletonMap", "LinkedHashMap", source, builderVariable));
 		} else {
-			statements.appendList(createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, true, true, false, true, "TreeMap", source));
+			statements.appendList(createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, true, true, false, true, "TreeMap", source, builderVariable));
 		}
 	}
 }

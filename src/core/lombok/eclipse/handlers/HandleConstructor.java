@@ -267,7 +267,7 @@ public class HandleConstructor {
 		}
 	}
 	
-	private static final char[][] JAVA_BEANS_CONSTRUCTORPROPERTIES = new char[][] { "java".toCharArray(), "beans".toCharArray(), "ConstructorProperties".toCharArray() };
+	public static final char[][] JAVA_BEANS_CONSTRUCTORPROPERTIES = new char[][] { "java".toCharArray(), "beans".toCharArray(), "ConstructorProperties".toCharArray() };
 	public static Annotation[] createConstructorProperties(ASTNode source, Collection<EclipseNode> fields) {
 		if (fields.isEmpty()) return null;
 		
