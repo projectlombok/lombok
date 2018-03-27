@@ -28,10 +28,17 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<property name="build.compiler" value="javac1.6" />
 	<property name="ivy.retrieve.pattern" value="lib/[conf]/[organisation]-[artifact].[ext]" />
 	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
+	<property name="rt-openjdk6" location="lib/openJDk6Environment/rt-openjdk6.jar" />
+	<property name="rt-openjdk8" location="lib/openJDk8Environment/rt-openjdk8.jar" />
 	<property name="openjdk6.md5" value="de953d5062b7183fbf3fa9f5d623e2e7" />
-	<checksum file="lib/openJDK6Environment/rt-openjdk6.jar" property="${openjdk6.md5}" verifyProperty="rt-openjdk6.checksumOk" />
+	<property name="openjdk8.md5" value="8099e5d7aa182374d299d03f5003a27f" />
+	<checksum file="${rt-openjdk6}" property="${openjdk6.md5}" verifyProperty="rt-openjdk6.checksumOk" />
+	<checksum file="${rt-openjdk8}" property="${openjdk8.md5}" verifyProperty="rt-openjdk8.checksumOk" />
 	<condition property="rt-openjdk6.available">
 		<equals arg1="${rt-openjdk6.checksumOk}" arg2="true" />
+	</condition>
+	<condition property="rt-openjdk8.available">
+		<equals arg1="${rt-openjdk8.checksumOk}" arg2="true" />
 	</condition>
 	
 	<path id="build.path">
@@ -102,12 +109,17 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<ivy:retrieve />
 	</target>
 
-	<target name="ensureOpenJdk7Rt" unless="rt-openjdk6.available">
+	<target name="ensureOpenJdk6Rt" unless="rt-openjdk6.available">
 		<mkdir dir="lib/openJDK6Environment" />
-		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="${rt-openjdk6}" verbose="true" usetimestamp="true" />
 	</target>
 	
-	<target name="ensureBuildDeps" depends="config-ivy,ensureOpenJdk7Rt">
+	<target name="ensureOpenJdk8Rt" unless="rt-openjdk8.available">
+		<mkdir dir="lib/openJDK8Environment" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk8.jar" dest="${rt-openjdk8}" verbose="true" usetimestamp="true" />
+	</target>
+	
+	<target name="ensureBuildDeps" depends="config-ivy,ensureOpenJdk6Rt">
 		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build, javac7" />
 		<ivy:retrieve />
 	</target>
@@ -127,9 +139,10 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<ivy:retrieve />
 	</target>
 	
-	<target name="version" depends="ensure-ipp" description="Shows the version number." unless="lombok.version">
+	<target name="version" depends="ensure-ipp, ensureOpenJdk8Rt" description="Shows the version number." unless="lombok.version">
 		<mkdir dir="build/lombok" />
 		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" ecj="true" nowarn="true">
+			<bootclasspath path="${rt-openjdk8}" />
 			<src path="src/core" />
 			<include name="lombok/core/Version.java" />
 		</ivy:compile>
@@ -164,10 +177,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<delete file="build/lombok/META-INF/services/javax.annotation.processing.Processor" quiet="true" />
 		<delete file="build/lombok/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor" quiet="true" />
 		<ivy:compile destdir="build/stubsstubs" source="1.5" target="1.5" ecj="true" nowarn="true">
+			<bootclasspath path="${rt-openjdk8}" />
 			<src path="src/stubsstubs" />
 			<classpath location="build/stubsstubs" />
 		</ivy:compile>
 		<ivy:compile destdir="build/stubs" source="1.5" target="1.5" ecj="true" nowarn="true">
+			<bootclasspath path="${rt-openjdk8}" />
 			<src path="src/stubs" />
 			<src path="src/javac-only-stubs" />
 			<classpath location="build/stubsstubs" />
@@ -176,6 +191,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		
 		<ivy:compile destdir="build/lombok-utils" source="1.5" target="1.5" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />
+			<bootclasspath path="${rt-openjdk8}" />
 			<src path="src/utils" />
 			<exclude name="lombok/javac/**" />
 			<classpath refid="build.path" />
@@ -208,16 +224,19 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		
 		<ivy:compile destdir="build/lombok" source="1.4" target="1.4" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />
+			<bootclasspath path="${rt-openjdk8}" />
 			<src path="build/transformedSources" />
 		</ivy:compile>
 		
 		<ivy:compile destdir="build/lombok/Class50" source="1.4" target="1.6" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />
+			<bootclasspath path="${rt-openjdk8}" />
 			<src path="build/transformedSources" />
 		</ivy:compile>
 		
 		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />
+			<bootclasspath path="${rt-openjdk8}" />
 			<src path="src/launch" />
 			<src path="src/core" />
 			<src path="src/installer" />
@@ -239,6 +258,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		
 		<ivy:compile destdir="build/lombok/Class50" source="1.5" target="1.6" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />
+			<bootclasspath path="${rt-openjdk8}" />
 			<src path="src/eclipseAgent" />
 			<include name="lombok/launch/PatchFixesHider.java" />
 			<classpath location="build/lombok" />
@@ -512,6 +532,7 @@ ${sourceWarning}</echo>
 	<target name="-test-compile" depends="ensureTestDeps, compile" unless="skipTests">
 		<mkdir dir="build/tests" />
 		<ivy:compile destdir="build/tests" source="1.5" target="1.5" ecj="true" nowarn="true">
+			<bootclasspath path="${rt-openjdk8}" />
 			<classpath refid="test.path" />
 			<classpath refid="build.path" />
 			<classpath path="build/lombok" />
