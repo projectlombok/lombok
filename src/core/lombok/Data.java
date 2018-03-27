@@ -36,7 +36,6 @@ import java.lang.annotation.Target;
  * 
  * @see Getter
  * @see Setter
- * @see RequiredArgsConstructor
  * @see ToString
  * @see EqualsAndHashCode
  * @see lombok.Value
