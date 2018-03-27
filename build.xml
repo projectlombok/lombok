@@ -28,8 +28,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<property name="build.compiler" value="javac1.6" />
 	<property name="ivy.retrieve.pattern" value="lib/[conf]/[organisation]-[artifact].[ext]" />
 	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
-	<available file="lib/openJDK6Environment/rt-openjdk6.jar" property="rt-openjdk6.available" />
-
+	<property name="openjdk6.md5" value="de953d5062b7183fbf3fa9f5d623e2e7" />
+	<checksum file="lib/openJDK6Environment/rt-openjdk6.jar" property="${openjdk6.md5}" verifyProperty="rt-openjdk6.checksumOk" />
+	<condition property="rt-openjdk6.available">
+		<equals arg1="${rt-openjdk6.checksumOk}" arg2="true" />
+	</condition>
+	
 	<path id="build.path">
 		<fileset dir="lib/build">
 			<include name="*.jar" />
