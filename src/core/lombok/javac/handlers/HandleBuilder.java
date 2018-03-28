@@ -74,6 +74,8 @@ import static lombok.javac.JavacTreeMaker.TypeTag.*;
 @ProviderFor(JavacAnnotationHandler.class)
 @HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
 public class HandleBuilder extends JavacAnnotationHandler<Builder> {
+	private HandleConstructor handleConstructor = new HandleConstructor();
+	
 	private static final boolean toBoolean(Object expr, boolean defaultValue) {
 		if (expr == null) return defaultValue;
 		if (expr instanceof JCLiteral) return ((Integer) ((JCLiteral) expr).value) != 0;
@@ -176,7 +178,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				allFields.append(fieldNode);
 			}
 			
-			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, annotationNode);
+			handleConstructor.generateConstructor(tdParent, AccessLevel.PACKAGE, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, annotationNode);
 			
 			returnType = namePlusTypeParamsToTypeReference(tdParent.getTreeMaker(), td.name, td.typarams);
 			typeParams = td.typarams;

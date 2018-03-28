@@ -897,7 +897,7 @@ public class EclipseHandlerUtil {
 		
 		// Check if the class has a @Getter annotation.
 		
-		if (!hasGetterAnnotation && new HandleGetter().fieldQualifiesForGetterGeneration(field)) {
+		if (!hasGetterAnnotation && HandleGetter.fieldQualifiesForGetterGeneration(field)) {
 			//Check if the class has @Getter or @Data annotation.
 			
 			EclipseNode containingType = field.up();

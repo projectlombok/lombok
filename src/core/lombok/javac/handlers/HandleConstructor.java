@@ -64,6 +64,8 @@ import com.sun.tools.javac.util.Name;
 public class HandleConstructor {
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleNoArgsConstructor extends JavacAnnotationHandler<NoArgsConstructor> {
+		private HandleConstructor handleConstructor = new HandleConstructor();
+		
 		@Override public void handle(AnnotationValues<NoArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.NO_ARGS_CONSTRUCTOR_FLAG_USAGE, "@NoArgsConstructor", ConfigurationKeys.ANY_CONSTRUCTOR_FLAG_USAGE, "any @xArgsConstructor");
 			
@@ -78,12 +80,14 @@ public class HandleConstructor {
 			String staticName = ann.staticName();
 			boolean force = ann.force();
 			List<JavacNode> fields = force ? findFinalFields(typeNode) : List.<JavacNode>nil();
-			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, fields, force, staticName, SkipIfConstructorExists.NO, annotationNode);
+			handleConstructor.generateConstructor(typeNode, level, onConstructor, fields, force, staticName, SkipIfConstructorExists.NO, annotationNode);
 		}
 	}
 	
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleRequiredArgsConstructor extends JavacAnnotationHandler<RequiredArgsConstructor> {
+		private HandleConstructor handleConstructor = new HandleConstructor();
+		
 		@Override public void handle(AnnotationValues<RequiredArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.REQUIRED_ARGS_CONSTRUCTOR_FLAG_USAGE, "@RequiredArgsConstructor", ConfigurationKeys.ANY_CONSTRUCTOR_FLAG_USAGE, "any @xArgsConstructor");
 			
@@ -100,7 +104,7 @@ public class HandleConstructor {
 				annotationNode.addError("This deprecated feature is no longer supported. Remove it; you can create a lombok.config file with 'lombok.anyConstructor.suppressConstructorProperties = true'.");
 			}
 			
-			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode);
+			handleConstructor.generateConstructor(typeNode, level, onConstructor, findRequiredFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode);
 		}
 	}
 	
@@ -131,6 +135,8 @@ public class HandleConstructor {
 	
 	@ProviderFor(JavacAnnotationHandler.class)
 	public static class HandleAllArgsConstructor extends JavacAnnotationHandler<AllArgsConstructor> {
+		private HandleConstructor handleConstructor = new HandleConstructor();
+		
 		@Override public void handle(AnnotationValues<AllArgsConstructor> annotation, JCAnnotation ast, JavacNode annotationNode) {
 			handleFlagUsage(annotationNode, ConfigurationKeys.ALL_ARGS_CONSTRUCTOR_FLAG_USAGE, "@AllArgsConstructor", ConfigurationKeys.ANY_CONSTRUCTOR_FLAG_USAGE, "any @xArgsConstructor");
 			
@@ -146,7 +152,7 @@ public class HandleConstructor {
 			if (annotation.isExplicit("suppressConstructorProperties")) {
 				annotationNode.addError("This deprecated feature is no longer supported. Remove it; you can create a lombok.config file with 'lombok.anyConstructor.suppressConstructorProperties = true'.");
 			}
-			new HandleConstructor().generateConstructor(typeNode, level, onConstructor, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode);
+			handleConstructor.generateConstructor(typeNode, level, onConstructor, findAllFields(typeNode), false, staticName, SkipIfConstructorExists.NO, annotationNode);
 		}
 	}
 	

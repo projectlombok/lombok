@@ -47,6 +47,12 @@ import com.sun.tools.javac.tree.JCTree.JCModifiers;
 @ProviderFor(JavacAnnotationHandler.class)
 @HandlerPriority(-512) //-2^9; to ensure @EqualsAndHashCode and such pick up on this handler making the class final and messing with the fields' access levels, run earlier.
 public class HandleValue extends JavacAnnotationHandler<Value> {
+	private HandleFieldDefaults handleFieldDefaults = new HandleFieldDefaults();
+	private HandleConstructor handleConstructor = new HandleConstructor();
+	private HandleGetter handleGetter = new HandleGetter();
+	private HandleEqualsAndHashCode handleEqualsAndHashCode = new HandleEqualsAndHashCode();
+	private HandleToString handleToString = new HandleToString();
+	
 	@Override public void handle(AnnotationValues<Value> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.VALUE_FLAG_USAGE, "@Value");
 		
@@ -68,12 +74,10 @@ public class HandleValue extends JavacAnnotationHandler<Value> {
 				typeNode.rebuild();
 			}
 		}
-		new HandleFieldDefaults().generateFieldDefaultsForType(typeNode, annotationNode, AccessLevel.PRIVATE, true, true);
-		
-		// TODO move this to the end OR move it to the top in eclipse.
-		new HandleConstructor().generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, SkipIfConstructorExists.YES, annotationNode);
-		new HandleGetter().generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
-		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
-		new HandleToString().generateToStringForType(typeNode, annotationNode);
+		handleFieldDefaults.generateFieldDefaultsForType(typeNode, annotationNode, AccessLevel.PRIVATE, true, true);
+		handleConstructor.generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, SkipIfConstructorExists.YES, annotationNode);
+		handleGetter.generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
+		handleEqualsAndHashCode.generateEqualsAndHashCodeForType(typeNode, annotationNode);
+		handleToString.generateToStringForType(typeNode, annotationNode);
 	}
 }

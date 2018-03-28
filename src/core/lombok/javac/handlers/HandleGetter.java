@@ -95,7 +95,7 @@ public class HandleGetter extends JavacAnnotationHandler<Getter> {
 		}
 	}
 	
-	public boolean fieldQualifiesForGetterGeneration(JavacNode field) {
+	public static boolean fieldQualifiesForGetterGeneration(JavacNode field) {
 		if (field.getKind() != Kind.FIELD) return false;
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
 		//Skip fields that start with $

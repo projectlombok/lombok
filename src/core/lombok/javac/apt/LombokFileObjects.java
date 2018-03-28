@@ -106,7 +106,8 @@ final class LombokFileObjects {
 		"com.google.devtools.build.buildjar.javac.BlazeJavacMain$ClassloaderMaskingFileManager",
 		"com.google.devtools.build.java.turbine.javac.JavacTurbineCompiler$ClassloaderMaskingFileManager",
 		"org.netbeans.modules.java.source.parsing.ProxyFileManager",
-		"com.sun.tools.javac.api.ClientCodeWrapper$WrappedStandardJavaFileManager"
+		"com.sun.tools.javac.api.ClientCodeWrapper$WrappedStandardJavaFileManager",
+		"com.sun.tools.javac.main.DelegatingJavaFileManager$DelegatingSJFM" // IntelliJ + JDK10
 	);
 	
 	static Compiler getCompiler(JavaFileManager jfm) {
@@ -129,6 +130,10 @@ final class LombokFileObjects {
 			}
 			catch (Throwable e) {}
 		}
+		try {
+			if (Class.forName("com.sun.tools.javac.file.PathFileObject") == null) throw new NullPointerException();
+			return new Java9Compiler(jfm);
+		} catch (Throwable e) {}
 		try {
 			if (Class.forName("com.sun.tools.javac.file.BaseFileObject") == null) throw new NullPointerException();
 			return Compiler.JAVAC7;
