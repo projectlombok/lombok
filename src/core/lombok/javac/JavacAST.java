@@ -35,6 +35,7 @@ import javax.annotation.processing.Messager;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
 
+import com.sun.tools.javac.util.JCDiagnostic;
 import lombok.core.AST;
 
 import com.sun.tools.javac.code.Source;
@@ -470,22 +471,21 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			increment(errorCount);
 			error1(pos, message);
 		}
-		
+
 		final void warning(DiagnosticPosition pos, String message) {
 			increment(warningCount);
-			log.warning(pos, "proc.messager", message);
+			warning1(pos, message);
 		}
-		
+
 		final void mandatoryWarning(DiagnosticPosition pos, String message) {
 			increment(warningCount);
-			log.mandatoryWarning(pos, "proc.messager", message);
+			mandatoryWarning1(pos, message);
 		}
-		
-		final void note(DiagnosticPosition pos, String message) {
-			log.note(pos, "proc.messager", message);
-		}
-		
+
 		abstract void error1(DiagnosticPosition pos, String message);
+		abstract void warning1(DiagnosticPosition pos, String message);
+		abstract void mandatoryWarning1(DiagnosticPosition pos, String message);
+		abstract void note(DiagnosticPosition pos, String message);
 		
 		private void increment(Field field) {
 			if (field == null) return;
@@ -520,18 +520,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 				warningCount = f;
 			} catch (Throwable t) {}
 
-			
-			Method logMethod = null;
-			Object multiple = null;
-			try {
-				Class<?> df = Class.forName("com.sun.tools.javac.util.JCDiagnostic$DiagnosticFlag");
-				for (Object constant : df.getEnumConstants()) {
-					if (constant.toString().equals("MULTIPLE")) multiple = constant;
-				}
-				logMethod = log.getClass().getMethod("error", new Class<?>[] {df, DiagnosticPosition.class, String.class, Object[].class});
-			} catch (Throwable t) {}
-			
-			return new Jdk9Plus(log, messager, errorCount, warningCount, logMethod, multiple);
+			return new Jdk9Plus(log, messager, errorCount, warningCount);
 		}
 	}
 	
@@ -549,22 +538,99 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 				log.multipleErrors = prev;
 			}
 		}
+
+		@Override void warning1(DiagnosticPosition pos, String message) {
+			log.warning(pos, "proc.messager", message);
+		}
+
+		@Override void mandatoryWarning1(DiagnosticPosition pos, String message) {
+			log.mandatoryWarning(pos, "proc.messager", message);
+		}
+
+		@Override void note(DiagnosticPosition pos, String message) {
+			log.note(pos, "proc.messager", message);
+		}
 	}
 	
 	static class Jdk9Plus extends ErrorLog {
-		private final Object multiple;
-		private final Method logMethod;
+		private static final String PROC_MESSAGER = "proc.messager";
+		private Object multiple;
+		private Method errorMethod, warningMethod, mandatoryWarningMethod, noteMethod;
+		private Method errorKey, warningKey, noteKey;
+		private JCDiagnostic.Factory diags;
 		
-		private Jdk9Plus(Log log, Messager messager, Field errorCount, Field warningCount, Method logMethod, Object multiple) {
+		private Jdk9Plus(Log log, Messager messager, Field errorCount, Field warningCount) {
 			super(log, messager, errorCount, warningCount);
-			this.logMethod = logMethod;
-			this.multiple = multiple;
+
+			try {
+				final String jcd = "com.sun.tools.javac.util.JCDiagnostic";
+				Class<?> df = Class.forName(jcd + "$DiagnosticFlag");
+				for (Object constant : df.getEnumConstants()) {
+					if (constant.toString().equals("MULTIPLE")) this.multiple = constant;
+				}
+
+				Class<?> errorCls = Class.forName(jcd + "$Error");
+				Class<?> warningCls = Class.forName(jcd + "$Warning");
+				Class<?> noteCls = Class.forName(jcd + "$Note");
+				
+				Class<?> lc = log.getClass();
+				this.errorMethod = lc.getMethod("error", df, DiagnosticPosition.class, errorCls);
+				this.warningMethod = lc.getMethod("warning", DiagnosticPosition.class, warningCls);
+				this.mandatoryWarningMethod = lc.getMethod("mandatoryWarning", DiagnosticPosition.class, warningCls);
+				this.noteMethod = lc.getMethod("note", DiagnosticPosition.class, noteCls);
+
+				Field diagsField = lc.getSuperclass().getDeclaredField("diags");
+				diagsField.setAccessible(true);
+				this.diags = (JCDiagnostic.Factory)diagsField.get(log);
+
+				Class<?> dc = this.diags.getClass();
+				this.errorKey = dc.getMethod("errorKey", String.class, Object[].class);
+				this.warningKey = dc.getDeclaredMethod("warningKey", String.class, Object[].class);
+				this.warningKey.setAccessible(true);
+				this.noteKey = dc.getDeclaredMethod("noteKey", String.class, Object[].class);
+				this.noteKey.setAccessible(true);
+			} catch (Throwable t) {
+				//t.printStackTrace();
+			}
 		}
 		
 		@Override void error1(DiagnosticPosition pos, String message) {
 			try {
-				logMethod.invoke(log, multiple, pos, "proc.messager", new Object[] { message });
-			} catch (Throwable t) {}
+				Object error = this.errorKey.invoke(diags, PROC_MESSAGER, new Object[] { message });
+				errorMethod.invoke(log, multiple, pos, error);
+			} catch (Throwable t) {
+				//t.printStackTrace();
+			}
+		}
+
+		@Override
+		void warning1(DiagnosticPosition pos, String message) {
+			try {
+				Object warning = this.warningKey.invoke(diags, PROC_MESSAGER, new Object[] { message });
+				warningMethod.invoke(log, pos, warning);
+			} catch (Throwable t) {
+				//t.printStackTrace();
+			}
+		}
+
+		@Override
+		void mandatoryWarning1(DiagnosticPosition pos, String message) {
+			try {
+				Object warning = this.warningKey.invoke(diags, PROC_MESSAGER, new Object[] { message });
+				mandatoryWarningMethod.invoke(log, pos, warning);
+			} catch (Throwable t) {
+				//t.printStackTrace();
+			}
+		}
+
+		@Override
+		void note(DiagnosticPosition pos, String message) {
+			try {
+				Object note = this.noteKey.invoke(diags, PROC_MESSAGER, new Object[] { message });
+				noteMethod.invoke(log, pos, note);
+			} catch (Throwable t) {
+				//t.printStackTrace();
+			}
 		}
 	}
 }
