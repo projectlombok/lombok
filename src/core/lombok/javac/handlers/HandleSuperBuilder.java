@@ -36,9 +36,11 @@ import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
+import com.sun.tools.javac.tree.JCTree.JCReturn;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
@@ -188,15 +190,15 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		// Create the abstract builder class.
 		JavacNode builderType = findInnerClass(tdParent, builderClassName);
 		if (builderType == null) {
-			builderType = makeBuilderClass(true, true, annotationNode, tdParent, builderClassName, useInheritanceOnBuilder ? superclassBuilderClassName : null, typeParams, ast);
+			builderType = makeBuilderClass(annotationNode, tdParent, builderClassName, useInheritanceOnBuilder ? superclassBuilderClassName : null, typeParams, ast);
 		} else {
 			annotationNode.addError("@SuperBuilder does not support customized builders. Use @Builder instead.");
 		}
-
+		
 		// Create the builder implementation class.
 		JavacNode builderImplType = findInnerClass(tdParent, builderImplClassName);
 		if (builderImplType == null) {
-			builderImplType = makeBuilderClass(false, false, annotationNode, tdParent, builderImplClassName, builderClassName, typeParams, ast);
+			builderImplType = makeBuilderImplClass(annotationNode, tdParent, builderImplClassName, builderClassName, typeParams, ast);
 		} else {
 			annotationNode.addError("@SuperBuilder does not support customized builders. Use @Builder instead.");
 		}
@@ -232,7 +234,11 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		// Create a simple constructor for the builder class.
 		JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PRIVATE, List.<JCAnnotation>nil(), builderImplType, List.<JavacNode>nil(), false, annotationNode);
 		if (cd != null) injectMethod(builderImplType, cd);
-		
+
+		// Generate abstract getInstance() and build() methods.
+		injectMethod(builderType, generateAbstractGetInstanceMethod(tdParent));
+		injectMethod(builderType, generateAbstractBuildMethod(tdParent, builderMethodName));
+
 		// Create the setter methods in the abstract builder.
 		for (BuilderFieldData bfd : builderFields) {
 			makeSetterMethodsForBuilder(builderType, bfd, annotationNode);
@@ -420,6 +426,24 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		return maker.MethodDef(maker.Modifiers(Flags.PUBLIC), type.toName(toBuilderMethodName), namePlusTypeParamsToTypeReference(maker, type.toName(builderClassName), typeParams), List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 	}
 	
+	private JCMethodDecl generateAbstractGetInstanceMethod(JavacNode type) {
+		JavacTreeMaker maker = type.getTreeMaker();
+		JCModifiers modifiers = maker.Modifiers(Flags.PUBLIC | Flags.ABSTRACT);
+		Name name = type.toName("getInstance");
+		JCExpression returnType = maker.Ident(type.toName("B"));
+
+		return maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), null, null);
+	}
+	
+	private JCMethodDecl generateAbstractBuildMethod(JavacNode type, String methodName) {
+		JavacTreeMaker maker = type.getTreeMaker();
+		JCModifiers modifiers = maker.Modifiers(Flags.PUBLIC | Flags.ABSTRACT);
+		Name name = type.toName(methodName);
+		JCExpression returnType = maker.Ident(type.toName("C"));
+
+		return maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), null, null);
+	}
+	
 	private JCMethodDecl generateCleanMethod(java.util.List<BuilderFieldData> builderFields, JavacNode type, JCTree source) {
 		JavacTreeMaker maker = type.getTreeMaker();
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
@@ -549,7 +573,10 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
-		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, nameOfSetFlag, chain, source, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
+		JCExpression returnType = maker.Ident(builderType.toName("B"));
+		JCReturn returnStatement = maker.Return(maker.Ident(builderType.toName("this")));
+
+		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, nameOfSetFlag, returnType, returnStatement, source, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
 		
 		injectMethod(builderType, newMethod);
 	}
@@ -563,22 +590,42 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		return null;
 	}
 	
-	public JavacNode makeBuilderClass(boolean isAbstract, boolean isPublic, JavacNode source, JavacNode tdParent, String builderClassName, String parentBuilderClassName, List<JCTypeParameter> typeParams, JCAnnotation ast) {
+	public JavacNode makeBuilderClass(JavacNode source, JavacNode tdParent, String builderClass, String parentBuilderClass, List<JCTypeParameter> typeParams, JCAnnotation ast) {
 		JavacTreeMaker maker = tdParent.getTreeMaker();
-		int modifiers = Flags.STATIC;
-		if (isAbstract) modifiers |= Flags.ABSTRACT;
-		if (isPublic) {
-			modifiers |= Flags.PUBLIC;
-		} else {
-			modifiers |= Flags.PRIVATE;
-		}
-		JCModifiers mods = maker.Modifiers(modifiers);
+		JCModifiers mods = maker.Modifiers(Flags.STATIC | Flags.ABSTRACT | Flags.PUBLIC);
 		
 		JCExpression extending = null;
-		if (parentBuilderClassName != null) {
-			extending = maker.Ident(tdParent.toName(parentBuilderClassName));
+		if (parentBuilderClass != null) {
+			extending = maker.Ident(tdParent.toName(parentBuilderClass));
 		}
-		JCClassDecl builder = maker.ClassDef(mods, tdParent.toName(builderClassName), copyTypeParams(source, typeParams), extending, List.<JCExpression>nil(), List.<JCTree>nil());
+		
+		// Keep any type params of the annotated class.
+		// TODO: Prevent name clashes with type params from annotated class.
+		ListBuffer<JCTypeParameter> allTypeParams = new ListBuffer<JCTypeParameter>();
+		allTypeParams.addAll(copyTypeParams(source, typeParams));
+		// Add builder-specific type params required for inheritable builders.
+		// 1. The return type for the build() method, named "C", which extends the annotated class.
+		JCIdent annotatedClass = maker.Ident(tdParent.toName(tdParent.getName()));
+		allTypeParams.add(maker.TypeParameter(tdParent.toName("C"), List.<JCExpression>of(annotatedClass)));
+		// 2. The return type for all setter methods, named "B", which extends this builder class.
+		Name builderClassName = tdParent.toName(builderClass);
+		JCTypeApply typeApply = maker.TypeApply(maker.Ident(builderClassName), 
+				List.<JCExpression>of(maker.Ident(tdParent.toName("C")), maker.Ident(tdParent.toName("B"))));
+		allTypeParams.add(maker.TypeParameter(tdParent.toName("B"), List.<JCExpression>of(typeApply)));
+		
+		JCClassDecl builder = maker.ClassDef(mods, builderClassName, allTypeParams.toList(), extending, List.<JCExpression>nil(), List.<JCTree>nil());
+		return injectType(tdParent, builder);
+	}
+	
+	public JavacNode makeBuilderImplClass(JavacNode source, JavacNode tdParent, String builderImplClassName, String builderClassName, List<JCTypeParameter> typeParams, JCAnnotation ast) {
+		JavacTreeMaker maker = tdParent.getTreeMaker();
+		JCModifiers mods = maker.Modifiers(Flags.STATIC | Flags.PRIVATE);
+		
+		JCExpression extending = null;
+		if (builderClassName != null) {
+			extending = maker.Ident(tdParent.toName(builderClassName));
+		}
+		JCClassDecl builder = maker.ClassDef(mods, tdParent.toName(builderImplClassName), copyTypeParams(source, typeParams), extending, List.<JCExpression>nil(), List.<JCTree>nil());
 		return injectType(tdParent, builder);
 	}
 	
