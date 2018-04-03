@@ -29,6 +29,7 @@ import java.util.ArrayList;
 
 import org.mangosdk.spi.ProviderFor;
 
+import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -45,6 +46,7 @@ import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
@@ -525,7 +527,17 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JCBlock body = maker.Block(0, List.<JCStatement>of(statement));
 		int modifiers = Flags.PUBLIC;
 		modifiers |= Flags.STATIC;
-		return maker.MethodDef(maker.Modifiers(modifiers), type.toName(builderMethodName), namePlusTypeParamsToTypeReference(maker, type.toName(builderClassName), typeParams), copyTypeParams(source, typeParams), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+		
+		// Add any type params of the annotated class to the return type.
+		ListBuffer<JCExpression> typeParameterNames = new ListBuffer<JCExpression>();
+		typeParameterNames.addAll(typeParameterNames(maker, typeParams));
+		// Now add the <?, ?>.
+		JCWildcard wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
+		typeParameterNames.add(wildcard);
+		typeParameterNames.add(wildcard);
+		JCTypeApply returnType = maker.TypeApply(maker.Ident(type.toName(builderClassName)), typeParameterNames.toList());
+
+		return maker.MethodDef(maker.Modifiers(modifiers), type.toName(builderMethodName), returnType, copyTypeParams(source, typeParams), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 	}
 	
 	public void generateBuilderFields(JavacNode builderType, java.util.List<BuilderFieldData> builderFields, JCTree source) {
