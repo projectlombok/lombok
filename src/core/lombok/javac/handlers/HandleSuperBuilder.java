@@ -377,7 +377,13 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
 		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
 		Name builderClassname = typeNode.toName(builderClassName);
-		JCVariableDecl param = maker.VarDef(maker.Modifiers(flags), builderVariableName, maker.Ident(builderClassname), null);
+		// Now add the <?, ?>.
+		ListBuffer<JCExpression> typeParams = new ListBuffer<JCExpression>();
+		JCWildcard wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
+		typeParams.add(wildcard);
+		typeParams.add(wildcard);
+		JCTypeApply paramType = maker.TypeApply(maker.Ident(builderClassname), typeParams.toList());
+		JCVariableDecl param = maker.VarDef(maker.Modifiers(flags), builderVariableName, paramType, null);
 		params.append(param);
 
 		if (callBuilderBasedSuperConstructor) {
