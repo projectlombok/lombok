@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2017 The Project Lombok Authors.
+ * Copyright (C) 2013-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,8 +55,8 @@ import java.lang.annotation.Target;
  * 
  * <pre>
  * &#064;Builder
- * class Example {
- * 	private int foo;
+ * class Example&lt;T&gt; {
+ * 	private T foo;
  * 	private final String bar;
  * }
  * </pre>
@@ -103,6 +103,8 @@ import java.lang.annotation.Target;
  * 	}
  * }
  * </pre>
+ * 
+ * @see Singular
  */
 @Target({TYPE, METHOD, CONSTRUCTOR})
 @Retention(SOURCE)
@@ -130,48 +132,6 @@ public @interface Builder {
 	 * @return Name of the builder class that will be generated (or if it already exists, will be filled with builder elements).
 	 */
 	String builderClassName() default "";
-	
-	/**
-	 * Should the generated builder extend the parent class's builder?
-	 * 
-	 * If {@code true}, the generated builder class will extend the builder of the
-	 * superclass. This means the builder also contains the methods for fields from
-	 * the superclass.
-	 * <p>
-	 * Note that both this builder and the superclass' builder must be a builder
-	 * for a type (so, not for a static method or a constructor). You must mark
-	 * the parent extendable: {@code @Builder(extensible = true)}.
-	 * <p>
-	 * This builder will also be {@code extensible = true} if you set {@code inherit = true}.
-	 * 
-	 * @see #extensible()
-	 */
-	boolean inherit() default false;
-	
-	/**
-	 * Should the generated builder be extensible by subclasses?
-	 * 
-	 * If {@code true} the generated builder class will be extensible by
-	 * {@code @Builder} classes of this class's subclasses, by marking them
-	 * with {@code @Builder(inherit = true)}.
-	 * <p>
-	 * The {@code @Builder} extensible system only works for {@code @Builder}
-	 * annotations on types (so, not on a static method or a constructor).
-	 * 
-	 * @see #inherit()
-	 */
-	boolean extensible() default false;
-	
-	/**
-	 * Name of the builder class in the superclass.
-	 * 
-	 * Only relevant if {@code inherit = true}
-	 * 
-	 * Default: {@code (SuperclassTypeName)Builder}.
-	 * 
-	 * @see #inherit()
-	 */
-	String superclassBuilderClassName() default "";
 	
 	/**
 	 * If true, generate an instance method to obtain a builder that is initialized with the values of this instance.

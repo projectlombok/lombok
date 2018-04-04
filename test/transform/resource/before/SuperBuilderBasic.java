@@ -1,15 +1,15 @@
-import lombok.Builder;
+import lombok.experimental.SuperBuilder;
 import lombok.Singular;
 import java.util.List;
 
-public class BuilderWithInherit {
-	@Builder(extensible = true)
+public class SuperBuilderBasic {
+	@SuperBuilder
 	public static class Parent {
 		int field1;
 		@Singular List<String> items;
 	}
 	
-	@Builder(inherit = true)
+	@SuperBuilder
 	public static class Child extends Parent {
 		double field3;
 	}
