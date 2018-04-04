@@ -190,7 +190,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ivy:compile>
 		
 		<ivy:compile destdir="build/lombok-utils" source="1.6" target="1.6">
-			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
+			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}${rt-openjdk6}" />
 			<compilerarg value="-Xlint:-options" />
 			<src path="src/utils" />
 			<include name="lombok/javac/**" />
@@ -258,7 +258,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ivy:compile>
 		
 		<ivy:compile destdir="build/lombok" source="1.6" target="1.6">
-			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
+			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}${rt-openjdk6}" />
 			<compilerarg value="-Xlint:-options" />
 			<src path="src/core" />
 			<src path="src/delombok" />
@@ -581,11 +581,11 @@ ${sourceWarning}</echo>
 	<target name="setupJavaOpenJDK6TestEnvironment" depends="ensureTestDeps, contrib" description="Sets up the test so that 'ant test' will test against OpenJDK6.">
 		<mkdir dir="lib/openJDK6Environment" />
 		<get src="https://projectlombok.org/ivyrepo/langtools/javac-1.6.0.18.jar" dest="lib/openJDK6Environment/javac6.jar" verbose="true" usetimestamp="true" />
-		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="${rt-openjdk6}" verbose="true" usetimestamp="true" />
 		<propertyfile file="testenvironment.properties">
 			<entry key="test.location.javac" value="lib/openJDK6Environment/javac6.jar" />
 			<entry key="test.location.ecj" value="lib/ecj7/org.eclipse.custom-ecj.jar" />
-			<entry key="test.location.bootclasspath" value="lib/openJDK6Environment/rt-openjdk6.jar" />
+			<entry key="test.location.bootclasspath" value="${rt-openjdk6}" />
 			<entry key="test.location.name" value="OpenJDK6" />
 			<entry key="test.javaversion" value="6" />
 		</propertyfile>
