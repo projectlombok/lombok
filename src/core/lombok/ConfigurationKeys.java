@@ -499,6 +499,14 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<FlagUsageType> UTILITY_CLASS_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.utilityClass.flagUsage", "Emit a warning or error if @UtilityClass is used.") {};
 	
+	// ----- FieldNameConstants -----
+	/**
+	 * lombok configuration: {@code lombok.fieldNameConstants.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @FieldNameConstants} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> FIELD_NAME_CONSTANTS_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.fieldNameConstants.flagUsage", "Emit a warning or error if @FieldNameConstants is used.") {};
+	
 	// ----- Wither -----
 	
 	/**

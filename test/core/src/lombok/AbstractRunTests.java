@@ -243,7 +243,7 @@ public abstract class AbstractRunTests {
 		
 		int size = Math.min(expectedLines.length, actualLines.length);
 		if (size == 0 && expectedLines.length + actualLines.length > 0) {
-			Assert.fail("Missing / empty expected file.");
+			Assert.fail("Missing / empty expected file: " + name);
 		}
 		
 		for (int i = 0; i < size; i++) {

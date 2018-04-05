@@ -1,0 +1,44 @@
+<#import "../_features.html" as f>
+
+<@f.scaffold title="@FieldNameConstants" logline="Name... that... field! String constants for your field's names.">
+	<@f.history>
+		<p>
+			@FieldNameConstants was introduced as experimental feature in lombok v2.0.0.
+		</p>
+	</@f.history>
+
+	<@f.experimental>
+		<ul>
+			<li>
+				New feature; unsure if this busts enough boilerplate.
+			</li>
+		</ul>
+		Current status: <em>neutral</em> - As a just-introduced feature we're still gathering feedback.
+	</@f.experimental>
+
+	<@f.overview>
+		<p>
+			The <code>@FieldNameConstants</code> annotation generates string constants (fields marked <code>public static final</code>, of type <code>java.lang.String</code>) containing the field's name, as a string. This is useful for various marshalling and serialization frameworks. The constant field has the same as the field it represents, except with all uppercase letters, with underscores in front of the uppercase letters in the original field. If this results in the exact same name, the constant is not generated (a warning is generated instead).
+		</p><p>
+			The <code>public</code> access modifier can be changed via the parameter <code>level = AccessLevel.PACKAGE</code> for example. You can force a field to be skipped by supplying <code>level = AccessLevel.NONE</code>.
+		</p><p>
+			Can be applied to classes (in which case every field gets a constant), or to an individual field.
+		</p>
+	</@f.overview>
+
+	<@f.snippets name="experimental/FieldNameConstants" />
+
+	<@f.confKeys>
+		<dt>
+			<code>lombok.fieldNameConstants.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
+		</dt><dd>
+			Lombok will flag any usage of <code>@FieldDefaults</code> as a warning or error if configured.
+		</dd>
+	</@f.confKeys>
+
+	<@f.smallPrint>
+		<p>
+			Like other lombok handlers that touch fields, any field whose name starts with a dollar (<code>$</code>) symbol is skipped entirely. Such a field will not be modified at all. Static fields are also skipped.
+		</p>
+	</@f.smallPrint>
+</@f.scaffold>

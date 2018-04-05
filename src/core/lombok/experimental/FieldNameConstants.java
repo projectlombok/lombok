@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2014-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +28,11 @@ import java.lang.annotation.Target;
 
 import lombok.AccessLevel;
 
-
-
-
 /**
  * Generates String constants containing the field name for each field.
- *
  */
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.FIELD})
 @Retention(RetentionPolicy.SOURCE)
 public @interface FieldNameConstants {
-	
-	lombok.AccessLevel level()default AccessLevel.PUBLIC;
+	lombok.AccessLevel level() default AccessLevel.PUBLIC;
 }

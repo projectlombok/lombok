@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2014 The Project Lombok Authors.
+ * Copyright (C) 2014-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,13 +21,16 @@
  */
 package lombok.javac.handlers;
 
+import static lombok.core.handlers.HandlerUtil.handleExperimentalFlagUsage;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 
 import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
+import lombok.core.handlers.HandlerUtil;
 import lombok.core.AnnotationValues;
 import lombok.experimental.FieldNameConstants;
 import lombok.javac.JavacAnnotationHandler;
@@ -43,18 +46,10 @@ import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
-import com.sun.tools.javac.util.List;
 
-@ProviderFor(JavacAnnotationHandler.class) @SuppressWarnings("restriction") public class HandleFieldNameConstants extends JavacAnnotationHandler<FieldNameConstants> {
-	
-	public void generateFieldDefaultsForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelFieldNameConstants) {
-		
-		if (checkForTypeLevelFieldNameConstants) {
-			if (hasAnnotation(FieldNameConstants.class, typeNode)) {
-				return;
-			}
-		}
-		
+@ProviderFor(JavacAnnotationHandler.class)
+public class HandleFieldNameConstants extends JavacAnnotationHandler<FieldNameConstants> {
+	public void generateFieldNameConstantsForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level) {
 		JCClassDecl typeDecl = null;
 		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) typeNode.get();
 		
@@ -62,21 +57,18 @@ import com.sun.tools.javac.util.List;
 		boolean notAClass = (modifiers & (Flags.INTERFACE | Flags.ANNOTATION)) != 0;
 		
 		if (typeDecl == null || notAClass) {
-			errorNode.addError("@FieldNameConstants is only supported on a class or an enum or a field.");
+			errorNode.addError("@FieldNameConstants is only supported on a class, an enum, or a field.");
 			return;
 		}
 		
 		for (JavacNode field : typeNode.down()) {
 			if (fieldQualifiesForFieldNameConstantsGeneration(field)) generateFieldNameConstantsForField(field, errorNode.get(), level);
-			
 		}
 	}
 	
 	private void generateFieldNameConstantsForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level) {
-		if (hasAnnotation(FieldNameConstants.class, fieldNode)) {
-			return;
-		}
-		createFieldNameConstantsForField(level, fieldNode, fieldNode, false, List.<JCAnnotation>nil());
+		if (hasAnnotation(FieldNameConstants.class, fieldNode)) return;
+		createFieldNameConstantsForField(level, fieldNode, fieldNode, false);
 	}
 	
 	private boolean fieldQualifiesForFieldNameConstantsGeneration(JavacNode field) {
@@ -88,6 +80,7 @@ import com.sun.tools.javac.util.List;
 	}
 	
 	public void handle(AnnotationValues<FieldNameConstants> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.FIELD_NAME_CONSTANTS_FLAG_USAGE, "@FieldNameConstants");
 		
 		Collection<JavacNode> fields = annotationNode.upFromAnnotationToFields();
 		deleteAnnotationIfNeccessary(annotationNode, FieldNameConstants.class);
@@ -95,40 +88,36 @@ import com.sun.tools.javac.util.List;
 		JavacNode node = annotationNode.up();
 		FieldNameConstants annotatationInstance = annotation.getInstance();
 		AccessLevel level = annotatationInstance.level();
-		if (level == AccessLevel.NONE) {
-			annotationNode.addWarning("'lazy' does not work with AccessLevel.NONE.");
-			return;
-		}
 		if (node == null) return;
-		List<JCAnnotation> onMethod = unboxAndRemoveAnnotationParameter(ast, "onMethod", "@FieldNameConstants(onMethod=", annotationNode);
 		switch (node.getKind()) {
 		case FIELD:
-			createFieldNameConstantsForFields(level, fields, annotationNode, annotationNode, true, onMethod);
+			if (level != AccessLevel.NONE) createFieldNameConstantsForFields(level, fields, annotationNode, annotationNode, true);
 			break;
 		case TYPE:
-			if (!onMethod.isEmpty()) {
-				annotationNode.addError("'onMethod' is not supported for @FieldNameConstants on a type.");
+			if (level == AccessLevel.NONE) {
+				annotationNode.addWarning("type-level '@FieldNameConstants' does not work with AccessLevel.NONE.");
+				return;
 			}
-			generateFieldDefaultsForType(node, annotationNode, level, false);
+			generateFieldNameConstantsForType(node, annotationNode, level);
 			break;
 		}
 	}
 	
-	private void createFieldNameConstantsForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode annotationNode, JavacNode errorNode, boolean whineIfExists, List<JCAnnotation> onMethod) {
-		for (JavacNode fieldNode : fieldNodes) {
-			createFieldNameConstantsForField(level, fieldNode, errorNode, whineIfExists, onMethod);
-		}
+	private void createFieldNameConstantsForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode annotationNode, JavacNode errorNode, boolean whineIfExists) {
+		for (JavacNode fieldNode : fieldNodes) createFieldNameConstantsForField(level, fieldNode, errorNode, whineIfExists);
 	}
 	
-	private void createFieldNameConstantsForField(AccessLevel level, JavacNode fieldNode, JavacNode source, boolean whineIfExists, List<JCAnnotation> onMethod) {
+	private void createFieldNameConstantsForField(AccessLevel level, JavacNode fieldNode, JavacNode source, boolean whineIfExists) {
 		if (fieldNode.getKind() != Kind.FIELD) {
-			source.addError("@FieldNameConstants is only supported on a class or a field");
+			source.addError("@FieldNameConstants is only supported on a class, an enum, or a field");
 			return;
 		}
+		
 		JCVariableDecl field = (JCVariableDecl) fieldNode.get();
-		String constantName = camelCaseToConstant(field.name.toString());
-		if (constantName == null) {
-			source.addWarning("Not generating constant for this field: It does not fit in your @Accessors prefix list");
+		String fieldName = field.name.toString();
+		String constantName = HandlerUtil.camelCaseToConstant(fieldName);
+		if (constantName.equals(fieldName)) {
+			fieldNode.addWarning("Not generating constant for this field: The name of the constant would be equal to the name of this field.");
 			return;
 		}
 		
@@ -138,22 +127,5 @@ import com.sun.tools.javac.util.List;
 		JCExpression init = treeMaker.Literal(fieldNode.getName());
 		JCVariableDecl fieldConstant = treeMaker.VarDef(modifiers, fieldNode.toName(constantName), returnType, init);
 		injectField(fieldNode.up(), fieldConstant);
-	}
-	
-	public static String camelCaseToConstant(final String fieldName) {
-		if (fieldName == null || fieldName.isEmpty()) return "";
-		char[] chars = fieldName.toCharArray();
-		StringBuilder b = new StringBuilder();
-		b.append(Character.toUpperCase(chars[0]));
-		for (int i = 1, iend = chars.length; i < iend; i++) {
-			char c = chars[i];
-			if (Character.isUpperCase(c)) {
-				b.append('_');
-			} else {
-				c = Character.toUpperCase(c);
-			}
-			b.append(c);
-		}
-		return b.toString();
 	}
 }
