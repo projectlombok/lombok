@@ -441,4 +441,16 @@ public class HandlerUtil {
 		}
 		return String.format("%s%s", prefix, suffix);
 	}
+	
+	public static String camelCaseToConstant(String fieldName) {
+		if (fieldName == null || fieldName.isEmpty()) return "";
+		StringBuilder b = new StringBuilder();
+		b.append(Character.toUpperCase(fieldName.charAt(0)));
+		for (int i = 1; i < fieldName.length(); i++) {
+			char c = fieldName.charAt(i);
+			if (Character.isUpperCase(c)) b.append('_');
+			b.append(Character.toUpperCase(c));
+		}
+		return b.toString();
+	}
 }

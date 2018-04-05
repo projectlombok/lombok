@@ -1,3 +1,4 @@
+//version 7:
 public class EqualsAndHashCodeWithGenericsOnInners<A> {
 	class Inner<B> {
 		int x;

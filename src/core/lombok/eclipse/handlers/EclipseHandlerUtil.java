@@ -1097,7 +1097,7 @@ public class EclipseHandlerUtil {
 	public static boolean filterField(FieldDeclaration declaration, boolean skipStatic) {
 		// Skip the fake fields that represent enum constants.
 		if (declaration.initialization instanceof AllocationExpression &&
-				((AllocationExpression)declaration.initialization).enumConstant != null) return false;
+				((AllocationExpression) declaration.initialization).enumConstant != null) return false;
 		
 		if (declaration.type == null) return false;
 		
