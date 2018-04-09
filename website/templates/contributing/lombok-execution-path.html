@@ -1,0 +1,45 @@
+<#import "../_scaffold.html" as main>
+
+<@main.scaffold title="Lombok Execution Path">
+	<div class="page-header top5">
+		<div class="row text-center">
+			<@main.h1 title="Lombok Execution Path" />
+		</div><div class="row text-center">
+			<@main.h1 title="Javac: Launching as annotation processor" />
+		</div><div class="row">
+		<p>
+			With <code>javac</code> (and netbeans, maven, gradle, and most other build systems), lombok runs as an annotation processor.
+		</p><p>
+			Lombok is on the classpath, and <code>javac</code> will load every <code>META-INF/services/javax.annotation.processing.Processor</code> file on the classpath it can find, reading each line and loading that class, then executing it as an annotation processor. <code>lombok.jar</code> has this file, it lists <code>lombok.launch.AnnotationProcessorHider$AnnotationProcessor</code> as entry.
+		</p><p>
+			This class is not actually visible (it is public, but its outer class (<code>AnnotationProcessorHider</code>) is package private, making it invisible to java-the-language), however, it is considered visible for the purposes of java-the-VM and therefore it will run. This convoluted trick is used to ensure that anybody who develops with lombok on the classpath doesn't get lombok's classes or lombok's dependencies injected into their 'namespace' (for example, if you add lombok to your project, your IDE will <em>not</em> start suggesting lombok classes for auto-complete dialogs).
+		</p><p>
+			The <code>lombok.launch.AnnotationProcessorHider$AnnotationProcessor</code> class is loaded by <code>javac</code>, instantiated, and <code>init()</code> is called on it. This class starts lombok's <code>ShadowClassLoader</code>; it finds the jar file it is in, then will start loading classes from this jar file. It looks not for files ending in <code>.class</code> like normal loaders, it looks for files ending in <code>.SCL.lombok</code> instead (this too is for the purpose of hiding lombok's classes from IDEs and such). Via this classloader, the <em>real</em> annotation processor is launched, which is class <code>lombok.core.AnnotationProcessor</code>.
+		</p><p>
+			The <code>lombok.core.AnnotationProcessor</code> is also a delegating processor. It can delegate to one of 2 sub-processors based on the environment lombok finds itself in: If it's javac, class <code>lombok.javac.apt.LombokProcessor</code> is used (and if the plexus compiler framework is used, which can be the case when compiling with javac, some extra code runs to patch lombok into its modular classloading architecture). If it's ecj (eclipse's compiler, which means we're either running inside eclipse itself, or being invoked as annotation processor for ecj, the standalone eclipse compiler), errors/warnings are injected into the compilation process to tell the user they should use different parameters to <a href="/setup/ecj">use lombok in eclipse/ecj</a>.
+		</p><p>
+			<code>lombok.javac.apt.LombokProcessor</code> is the 'real' annotation processor that does the work of transforming your code.
+		</p><p>
+			code transformation is fundamentally a cyclic concept: To generate some code you want to know about the code (which annotations are in it, for example), but when you generate new code, interpreting it means we start over. The same applies to lombok itself: Some of lombok's transformations add methods which then have an effect on other lombok transformations. Because of that, lombok divides up the handlers into 'levels'. All handlers at the highest level are executed, then a new annotation round is forced (which integrates generated stuff into the symbol tables and such), and then the handlers at the next level are executed. These levels are indicated via the <code>@HandlerPriority</code> annotation. You force javac to run another round by generating a file. We don't actually want to generate any files, so we generate a dummy file and patch the javac <em>filer</em> to not actually save lombok-generated dummy files anywhere. The various <code>HandleX</code> classes, which apply the actual lombok transformations, are stored in <code>HandlerLibrary</code> which uses SPI to discover the handle classes.
+		</p>
+		</div><div class="row text-center">
+			<@main.h1 title="Eclipse/ECJ: Launching as agent" />
+		</div><div class="row">
+		<p>
+			With <code>ecj</code> and <code>eclipse</code>, lombok starts as an 'agent'. That's a bit like a debugger: It lets lombok inspect raw class bytecode <em>before</em> the JVM actually loads these classes, and lombok will modify this code in order to ensure that ecj/eclipse involves lombok in the compilation process.
+		</p><p>
+			The patching of classes is done by the code in the <code>src/eclipseAgent</code> sourcedir. Note that the patching code has to patch equinox, the eclipse module system, to ensure lombok and the java compilation module (The 'JDT' module, in eclipse parlance) can see each other.
+		</p><p>
+			A bunch of ad-hoc fixes to issues (such as the eclipse format-my-code feature needing a few tactical bytecode patches to ensure it doesn't mess up formatting source) are applied, but the main 'run lombok as part of the compilation process' hook injected into ecj/eclipse leads to the <code>lombok.eclipse.TransformEclipseAST</code> class, which can be considered the entrypoint. Unless you want to mess with how lombok is loaded into eclipse/ecj, start there.
+		</p><p>
+			Each <code>HandleX</code> class is discovered via SPI and lombok will invoke the handle classes as needed. Handle classes find lombok annotations and apply the desired transformations. The handlers are in the <code>lombok.eclipse.handlers</code> package from the <code>src/core</code> sourcedir.
+		</p>
+		</div><div class="row text-center">
+			<@main.h1 title="VSCode and IntelliJ: Launching as a plugin" />
+		</div><div class="row">
+		<p>
+			Lombok support in these two IDEs is taken care of by plugins for these IDEs.
+		</p>
+		</div>
+	</div>
+</@main.scaffold>
