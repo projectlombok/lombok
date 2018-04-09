@@ -7,7 +7,8 @@ Lombok Changelog
 * PLATFORM: Fix for using lombok together with JDK9's new `module-info.java` feature. [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
 * PLATFORM: Some initial work on supporting JDK10 and JDK11.
 * BUGFIX: Solved some issues in eclipse that resulted in error 'A save participant caused problems'. [Issue #879](https://github.com/rzwitserloot/lombok/issues/879)
-* BUGFIX: Bugfix for Netbeans < 9. [Issue #1555](https://github.com/rzwitserloot/lombok/issues/1555)
+* BUGFIX: Netbeans on jdk9 [Issue #1617](https://github.com/rzwitserloot/lombok/issues/1617)
+* BUGFIX: Netbeans < 9. [Issue #1555](https://github.com/rzwitserloot/lombok/issues/1555)
 * PROMOTION: `var` has been promoted from experimental to the main package with no changes. The 'old' experimental one is still around but is deprecated, and is an alias for the new main package one. [var documentation](https://projectlombok.org/features/var.html).
 * OLD-CRUFT: `lombok.experimental.Builder` and `lombok.experimental.Value` are deprecated remnants of when these features were still in experimental. They are now removed entirely. If your project is dependent on an older version of lombok which still has those; fret not, lombok still processes these annotations. It just no longer includes them in the jar.
 
