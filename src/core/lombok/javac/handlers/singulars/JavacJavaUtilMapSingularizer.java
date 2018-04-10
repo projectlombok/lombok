@@ -37,7 +37,6 @@ import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
@@ -101,25 +100,15 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		return Arrays.asList(keyFieldNode, valueFieldNode);
 	}
 	
-	@Override public void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, boolean chain) {
+	@Override public void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, JCExpression returnType, JCStatement returnStatement) {
 		if (useGuavaInstead(builderType)) {
-			guavaMapSingularizer.generateMethods(data, deprecate, builderType, source, fluent, chain);
+			guavaMapSingularizer.generateMethods(data, deprecate, builderType, source, fluent, returnType, returnStatement);
 			return;
 		}
 		
 		JavacTreeMaker maker = builderType.getTreeMaker();
-		Symtab symbolTable = builderType.getSymbolTable();
-		
-		JCExpression returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(symbolTable, CTC_VOID));
-		JCStatement returnStatement = chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
 		generateSingularMethod(deprecate, maker, returnType, returnStatement, data, builderType, source, fluent);
-		
-		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(symbolTable, CTC_VOID));
-		returnStatement = chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
 		generatePluralMethod(deprecate, maker, returnType, returnStatement, data, builderType, source, fluent);
-		
-		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(symbolTable, CTC_VOID));
-		returnStatement = chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
 		generateClearMethod(deprecate, maker, returnType, returnStatement, data, builderType, source);
 	}
 	

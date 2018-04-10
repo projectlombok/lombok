@@ -497,15 +497,17 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	
 	public void makeSetterMethodsForBuilder(JavacNode builderType, BuilderFieldData fieldNode, JavacNode source) {
 		boolean deprecate = isFieldDeprecated(fieldNode.originalFieldNode);
+		JavacTreeMaker maker = builderType.getTreeMaker();
+		JCExpression returnType = maker.Ident(builderType.toName("B"));
+		JCReturn returnStatement = maker.Return(maker.Apply(List.<JCExpression>nil(), maker.Ident(builderType.toName(SELF_METHOD)), List.<JCExpression>nil()));
 		if (fieldNode.singularData == null || fieldNode.singularData.getSingularizer() == null) {
-			makeSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, true, true);
+			makeSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, true, true, returnType, returnStatement);
 		} else {
-			// TODO: Fix singular methods to return self().
-			fieldNode.singularData.getSingularizer().generateMethods(fieldNode.singularData, deprecate, builderType, source.get(), true, true);
+			fieldNode.singularData.getSingularizer().generateMethods(fieldNode.singularData, deprecate, builderType, source.get(), true, returnType, returnStatement);
 		}
 	}
 	
-	private void makeSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, boolean chain) {
+	private void makeSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, boolean chain, JCExpression returnType, JCReturn returnStatement) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
 		
 		for (JavacNode child : builderType.down()) {
@@ -519,9 +521,6 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
-		JCExpression returnType = maker.Ident(builderType.toName("B"));
-		JCReturn returnStatement = maker.Return(maker.Apply(List.<JCExpression>nil(), maker.Ident(builderType.toName(SELF_METHOD)), List.<JCExpression>nil()));
-
 		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, nameOfSetFlag, returnType, returnStatement, source, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
 		
 		injectMethod(builderType, newMethod);
@@ -557,6 +556,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JCExpression extending = null;
 		if (parentBuilderClass != null) {
 			// If the annotated class extends another class, we want this builder to extend the builder of the superclass.
+			// FIXME: The extends clause should look like "Parent.ParentBuilder", not just "ParentBuilder" (risk of name clashes).
 			extending = maker.TypeApply(maker.Ident(tdParent.toName(parentBuilderClass)), 
 					List.<JCExpression>of(maker.Ident(tdParent.toName("C")), maker.Ident(tdParent.toName("B"))));
 			// TODO: type params from annotated class

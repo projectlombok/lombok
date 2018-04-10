@@ -194,7 +194,30 @@ public class JavacSingularsRecipes {
 		}
 		
 		public abstract java.util.List<JavacNode> generateFields(SingularData data, JavacNode builderType, JCTree source);
-		public abstract void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, boolean chain);
+		
+		/**
+		 * Generates the singular, plural, and clear methods for the given
+		 * {@link SingularData}.<br>
+		 * Uses the given <code>builderType</code> as return type if
+		 * <code>chain == true</code>, <code>void</code> otherwise.. If you need more
+		 * control over the return type and value, use
+		 * {@link #generateMethods(SingularData, boolean, JavacNode, JCTree, boolean, JCExpression, JCStatement)}.
+		 */
+		public void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, boolean chain) {
+			JavacTreeMaker maker = builderType.getTreeMaker();
+			JCExpression returnType = chain ?
+					cloneSelfType(builderType) : 
+						maker.Type(createVoidType(builderType.getSymbolTable(), CTC_VOID));
+			JCStatement returnStatement = chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
+			generateMethods(data, deprecate, builderType, source, fluent, returnType, returnStatement);
+		}
+		/**
+		 * Generates the singular, plural, and clear methods for the given
+		 * {@link SingularData}.<br>
+		 * Uses the given <code>returnType</code> and <code>returnStatement</code> for the generated methods. 
+		 */
+		public abstract void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, JCExpression returnType, JCStatement returnStatement);
+		
 		public abstract void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable);
 		
 		public boolean requiresCleaning() {
