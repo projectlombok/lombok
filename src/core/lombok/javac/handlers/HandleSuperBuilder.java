@@ -236,6 +236,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			for (BuilderFieldData bfd : builderFields) {
 				fieldNodes.addAll(bfd.createdFields);
 			}
+			// TODO: toString() should also call super.toString(), so that it also shows fields from the superclass.
 			JCMethodDecl md = HandleToString.createToString(builderType, fieldNodes, true, false, FieldAccess.ALWAYS_FIELD, ast);
 			if (md != null) injectMethod(builderType, md);
 		}
