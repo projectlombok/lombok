@@ -163,18 +163,22 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		String builderClassName = td.name.toString() + "Builder";
 		String builderImplClassName = builderClassName + "Impl";
 		JCTree extendsClause = Javac.getExtendsClause(td);
-		String superclassBuilderClassName = null;
+		JCExpression superclassBuilderClassExpression = null;
 		if (extendsClause instanceof JCFieldAccess) {
 			// The extends clause consists of a fully-qualified name. 
-			superclassBuilderClassName = ((JCFieldAccess)extendsClause).getIdentifier() + "Builder";
+			Name superclassClassName = ((JCFieldAccess)extendsClause).getIdentifier();
+			String superclassBuilderClassName = superclassClassName + "Builder";
+			superclassBuilderClassExpression = tdParent.getTreeMaker().Select((JCFieldAccess)extendsClause, 
+					tdParent.toName(superclassBuilderClassName));
 		} else if (extendsClause != null) {
 			// A simple class name is used in the extends clause.
-			superclassBuilderClassName = extendsClause + "Builder";
+			String superclassBuilderClassName = extendsClause + "Builder";
+			superclassBuilderClassExpression = chainDots(tdParent, extendsClause.toString(), superclassBuilderClassName);
 		}
 		// If there is no superclass, superclassBuilderClassName is still == null at this point.
 		// You can use it to check whether to inherit or not.
 
-		generateBuilderBasedConstructor(tdParent, builderFields, annotationNode, builderClassName, superclassBuilderClassName != null);
+		generateBuilderBasedConstructor(tdParent, builderFields, annotationNode, builderClassName, superclassBuilderClassExpression != null);
 
 		returnType = namePlusTypeParamsToTypeReference(tdParent.getTreeMaker(), td.name, td.typarams);
 		typeParams = td.typarams;
@@ -183,7 +187,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		// Create the abstract builder class.
 		JavacNode builderType = findInnerClass(tdParent, builderClassName);
 		if (builderType == null) {
-			builderType = makeBuilderClass(annotationNode, tdParent, builderClassName, superclassBuilderClassName, typeParams, ast);
+			builderType = makeBuilderClass(annotationNode, tdParent, builderClassName, superclassBuilderClassExpression, typeParams, ast);
 		} else {
 			annotationNode.addError("@SuperBuilder does not support customized builders. Use @Builder instead.");
 			return;
@@ -218,8 +222,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}
 
 		// Generate abstract self() and build() methods in the abstract builder.
-		injectMethod(builderType, generateAbstractSelfMethod(tdParent, superclassBuilderClassName != null));
-		injectMethod(builderType, generateAbstractBuildMethod(tdParent, buildMethodName, superclassBuilderClassName != null));
+		injectMethod(builderType, generateAbstractSelfMethod(tdParent, superclassBuilderClassExpression != null));
+		injectMethod(builderType, generateAbstractBuildMethod(tdParent, buildMethodName, superclassBuilderClassExpression != null));
 
 		// Create the setter methods in the abstract builder.
 		for (BuilderFieldData bfd : builderFields) {
@@ -535,7 +539,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		return null;
 	}
 	
-	public JavacNode makeBuilderClass(JavacNode source, JavacNode tdParent, String builderClass, String parentBuilderClass, List<JCTypeParameter> typeParams, JCAnnotation ast) {
+	public JavacNode makeBuilderClass(JavacNode source, JavacNode tdParent, String builderClass, JCExpression superclassBuilderClassExpression, List<JCTypeParameter> typeParams, JCAnnotation ast) {
 		JavacTreeMaker maker = tdParent.getTreeMaker();
 		JCModifiers mods = maker.Modifiers(Flags.STATIC | Flags.ABSTRACT | Flags.PUBLIC);
 
@@ -554,10 +558,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		allTypeParams.add(maker.TypeParameter(tdParent.toName("B"), List.<JCExpression>of(typeApply)));
 
 		JCExpression extending = null;
-		if (parentBuilderClass != null) {
+		if (superclassBuilderClassExpression != null) {
 			// If the annotated class extends another class, we want this builder to extend the builder of the superclass.
-			// FIXME: The extends clause should look like "Parent.ParentBuilder", not just "ParentBuilder" (risk of name clashes).
-			extending = maker.TypeApply(maker.Ident(tdParent.toName(parentBuilderClass)), 
+			extending = maker.TypeApply(superclassBuilderClassExpression, 
 					List.<JCExpression>of(maker.Ident(tdParent.toName("C")), maker.Ident(tdParent.toName("B"))));
 			// TODO: type params from annotated class
 		}
