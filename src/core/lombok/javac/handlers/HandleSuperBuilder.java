@@ -37,6 +37,7 @@ import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
@@ -358,10 +359,14 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		injectMethod(typeNode, constr, null, Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
 	}
 
-	private ListBuffer<JCExpression> getTypeParamExpressions(List<JCTypeParameter> typeParams, JavacTreeMaker maker) {
+	private ListBuffer<JCExpression> getTypeParamExpressions(List<? extends JCTree> typeParams, JavacTreeMaker maker) {
 		ListBuffer<JCExpression> typeParamsForBuilderParameter = new ListBuffer<JCExpression>();
-		for (JCTypeParameter typeParam : typeParams) {
-			typeParamsForBuilderParameter.add(maker.Ident(typeParam.getName()));
+		for (JCTree typeParam : typeParams) {
+			if (typeParam instanceof JCTypeParameter) {
+				typeParamsForBuilderParameter.add(maker.Ident(((JCTypeParameter)typeParam).getName()));
+			} else if (typeParam instanceof JCIdent) {
+				typeParamsForBuilderParameter.add(maker.Ident(((JCIdent)typeParam).getName()));
+			}
 		}
 		return typeParamsForBuilderParameter;
 	}
@@ -583,7 +588,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		if (superclassBuilderClassExpression != null) {
 			// If the annotated class extends another class, we want this builder to extend the builder of the superclass.
 			// 1. Add the type parameters of the superclass.
-			typeParamsForBuilder = getTypeParamExpressions(typeParams, maker);
+			typeParamsForBuilder = getTypeParamExpressions(superclassTypeParams, maker);
 			// 2. Add the builder type params <C, B>.
 			typeParamsForBuilder.add(maker.Ident(tdParent.toName("C")));
 			typeParamsForBuilder.add(maker.Ident(tdParent.toName("B")));
