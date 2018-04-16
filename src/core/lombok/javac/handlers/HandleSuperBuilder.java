@@ -181,7 +181,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			String superclassBuilderClassName = extendsClause.toString() + "Builder";
 			superclassBuilderClassExpression = chainDots(tdParent, extendsClause.toString(), superclassBuilderClassName);
 		}
-		// If there is no superclass, superclassBuilderClassName is still == null at this point.
+		// If there is no superclass, superclassBuilderClassExpression is still == null at this point.
 		// You can use it to check whether to inherit or not.
 
 		returnType = namePlusTypeParamsToTypeReference(tdParent.getTreeMaker(), td.name, td.typarams);
@@ -257,8 +257,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			for (BuilderFieldData bfd : builderFields) {
 				fieldNodes.addAll(bfd.createdFields);
 			}
-			// TODO: toString() should also call super.toString(), so that it also shows fields from the superclass.
-			JCMethodDecl md = HandleToString.createToString(builderType, fieldNodes, true, false, FieldAccess.ALWAYS_FIELD, ast);
+			// Let toString() call super.toString() if there is a superclass, so that it also shows fields from the superclass' builder.
+			JCMethodDecl md = HandleToString.createToString(builderType, fieldNodes, true, superclassBuilderClassExpression != null, FieldAccess.ALWAYS_FIELD, ast);
 			if (md != null) injectMethod(builderType, md);
 		}
 		
