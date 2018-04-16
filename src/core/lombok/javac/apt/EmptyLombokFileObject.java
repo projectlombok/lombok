@@ -57,7 +57,7 @@ class EmptyLombokFileObject implements LombokFileObject {
 	}
 	
 	@Override public URI toUri() {
-		return URI.create("file://" + name);
+		return URI.create("file:///" + name);
 	}
 	
 	@Override public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
