@@ -746,7 +746,7 @@ public class EclipseHandlerUtil {
 	 * Provides AnnotationValues with the data it needs to do its thing.
 	 */
 	public static <A extends java.lang.annotation.Annotation> AnnotationValues<A>
-			createAnnotation(Class<A> type, final EclipseNode annotationNode) {
+		createAnnotation(Class<A> type, final EclipseNode annotationNode) {
 		
 		final Annotation annotation = (Annotation) annotationNode.get();
 		Map<String, AnnotationValue> values = new HashMap<String, AnnotationValue>();
@@ -763,7 +763,7 @@ public class EclipseHandlerUtil {
 			String mName = (n == null || n.length == 0) ? "value" : new String(pair.name);
 			final Expression rhs = pair.value;
 			if (rhs instanceof ArrayInitializer) {
-				expressions = ((ArrayInitializer)rhs).expressions;
+				expressions = ((ArrayInitializer) rhs).expressions;
 			} else if (rhs != null) {
 				expressions = new Expression[] { rhs };
 			}

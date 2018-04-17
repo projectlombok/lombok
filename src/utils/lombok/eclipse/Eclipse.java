@@ -44,6 +44,8 @@ import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 
+import lombok.core.AnnotationValues;
+
 public class Eclipse {
 	private static final Annotation[] EMPTY_ANNOTATIONS_ARRAY = new Annotation[0];
 	/**
@@ -161,7 +163,7 @@ public class Eclipse {
 	 */
 	public static Object calculateValue(Expression e) {
 		if (e instanceof Literal) {
-			((Literal)e).computeConstant();
+			((Literal) e).computeConstant();
 			switch (e.constant.typeID()) {
 			case TypeIds.T_int: return e.constant.intValue();
 			case TypeIds.T_byte: return e.constant.byteValue();
@@ -175,13 +177,13 @@ public class Eclipse {
 			default: return null;
 			}
 		} else if (e instanceof ClassLiteralAccess) {
-			return Eclipse.toQualifiedName(((ClassLiteralAccess)e).type.getTypeName());
+			return new AnnotationValues.ClassLiteral(Eclipse.toQualifiedName(((ClassLiteralAccess)e).type.getTypeName()));
 		} else if (e instanceof SingleNameReference) {
-			return new String(((SingleNameReference)e).token);
+			return new AnnotationValues.FieldSelect(new String(((SingleNameReference)e).token));
 		} else if (e instanceof QualifiedNameReference) {
 			String qName = Eclipse.toQualifiedName(((QualifiedNameReference)e).tokens);
 			int idx = qName.lastIndexOf('.');
-			return idx == -1 ? qName : qName.substring(idx+1);
+			return new AnnotationValues.FieldSelect(idx == -1 ? qName : qName.substring(idx+1));
 		}
 		
 		return null;

@@ -360,7 +360,10 @@ public class JavacHandlerUtil {
 					expressions.add(inner);
 					if (inner instanceof JCAnnotation) {
 						try {
-							guesses.add(createAnnotation((Class<A>) Class.forName(inner.type.toString()), (JCAnnotation) inner, node));
+							@SuppressWarnings("unchecked")
+							Class<A> innerClass = (Class<A>) Class.forName(inner.type.toString());
+							
+							guesses.add(createAnnotation(innerClass, (JCAnnotation) inner, node));
 						} catch (ClassNotFoundException ex) {
 							throw new IllegalStateException(ex);
 						}

@@ -43,6 +43,30 @@ public class AnnotationValues<A extends Annotation> {
 	private final Map<String, AnnotationValue> values;
 	private final LombokNode<?, ?, ?> ast;
 	
+	public static class ClassLiteral {
+		private final String className;
+		
+		public ClassLiteral(String className) {
+			this.className = className;
+		}
+		
+		public String getClassName() {
+			return className;
+		}
+	}
+	
+	public static class FieldSelect {
+		private final String finalPart;
+		
+		public FieldSelect(String finalPart) {
+			this.finalPart = finalPart;
+		}
+		
+		public String getFinalPart() {
+			return finalPart;
+		}
+	}
+	
 	/**
 	 * Represents a single method on the annotation class. For example, the value() method on the Getter annotation.
 	 */
@@ -50,8 +74,7 @@ public class AnnotationValues<A extends Annotation> {
 		/** A list of the raw expressions. List is size 1 unless an array is provided. */
 		public final List<String> raws;
 		
-		/** Guesses for each raw expression. If the raw expression is a literal expression, the guess will
-		 * likely be right. If not, it'll be wrong. */
+		/** Guesses for each raw expression. It's 'primitive' (String or primitive), an AV.ClassLiteral, an AV.FieldSelect, or an array of one of those. */
 		public final List<Object> valueGuesses;
 		
 		/** A list of the actual expressions. List is size 1 unless an array is provided. */
@@ -190,7 +213,7 @@ public class AnnotationValues<A extends Annotation> {
 				
 				if (!isArray && v.valueGuesses.size() > 1) {
 					throw new AnnotationValueDecodeFail(v, 
-							"Expected a single value, but " + method.getName() + " has an array of values", -1);
+						"Expected a single value, but " + method.getName() + " has an array of values", -1);
 				}
 				
 				if (v.valueGuesses.size() == 0 && !isArray) {
@@ -217,7 +240,7 @@ public class AnnotationValues<A extends Annotation> {
 							return defaultValue;
 						} 
 						throw new AnnotationValueDecodeFail(v, 
-								"I can't make sense of this annotation value. Try using a fully qualified literal.", idx);
+							"I can't make sense of this annotation value. Try using a fully qualified literal.", idx);
 					}
 					Array.set(array, idx++, result);
 				}
@@ -232,46 +255,46 @@ public class AnnotationValues<A extends Annotation> {
 	private Object guessToType(Object guess, Class<?> expected, AnnotationValue v, int pos) {
 		if (expected == int.class) {
 			if (guess instanceof Integer || guess instanceof Short || guess instanceof Byte) {
-				return ((Number)guess).intValue();
+				return ((Number) guess).intValue();
 			}
 		}
 		
 		if (expected == long.class) {
 			if (guess instanceof Long || guess instanceof Integer || guess instanceof Short || guess instanceof Byte) {
-				return ((Number)guess).longValue();
+				return ((Number) guess).longValue();
 			}
 		}
 		
 		if (expected == short.class) {
 			if (guess instanceof Integer || guess instanceof Short || guess instanceof Byte) {
-				int intVal = ((Number)guess).intValue();
-				int shortVal = ((Number)guess).shortValue();
+				int intVal = ((Number) guess).intValue();
+				int shortVal = ((Number) guess).shortValue();
 				if (shortVal == intVal) return shortVal;
 			}
 		}
 		
 		if (expected == byte.class) {
 			if (guess instanceof Integer || guess instanceof Short || guess instanceof Byte) {
-				int intVal = ((Number)guess).intValue();
-				int byteVal = ((Number)guess).byteValue();
+				int intVal = ((Number) guess).intValue();
+				int byteVal = ((Number) guess).byteValue();
 				if (byteVal == intVal) return byteVal;
 			}
 		}
 		
 		if (expected == double.class) {
-			if (guess instanceof Number) return ((Number)guess).doubleValue();
+			if (guess instanceof Number) return ((Number) guess).doubleValue();
 		}
 		
 		if (expected == float.class) {
-			if (guess instanceof Number) return ((Number)guess).floatValue();
+			if (guess instanceof Number) return ((Number) guess).floatValue();
 		}
 		
 		if (expected == boolean.class) {
-			if (guess instanceof Boolean) return ((Boolean)guess).booleanValue();
+			if (guess instanceof Boolean) return ((Boolean) guess).booleanValue();
 		}
 		
 		if (expected == char.class) {
-			if (guess instanceof Character) return ((Character)guess).charValue();
+			if (guess instanceof Character) return ((Character) guess).charValue();
 		}
 		
 		if (expected == String.class) {
@@ -279,31 +302,36 @@ public class AnnotationValues<A extends Annotation> {
 		}
 		
 		if (Enum.class.isAssignableFrom(expected) ) {
-			if (guess instanceof String) {
+			if (guess instanceof FieldSelect) {
+				String fieldSel = ((FieldSelect) guess).getFinalPart();
 				for (Object enumConstant : expected.getEnumConstants()) {
-					String target = ((Enum<?>)enumConstant).name();
-					if (target.equals(guess)) return enumConstant;
+					String target = ((Enum<?>) enumConstant).name();
+					if (target.equals(fieldSel)) return enumConstant;
 				}
 				throw new AnnotationValueDecodeFail(v,
-						"Can't translate " + guess + " to an enum of type " + expected, pos);
+					"Can't translate " + fieldSel + " to an enum of type " + expected, pos);
 			}
 		}
 		
 		if (Class.class == expected) {
-			if (guess instanceof String) try {
-				return Class.forName(toFQ((String)guess));
+			if (guess instanceof ClassLiteral) try {
+				String classLit = ((ClassLiteral) guess).getClassName();
+				return Class.forName(toFQ(classLit));
 			} catch (ClassNotFoundException e) {
 				throw new AnnotationValueDecodeFail(v,
-						"Can't translate " + guess + " to a class object.", pos);
+					"Can't translate " + guess + " to a class object.", pos);
 			}
 		}
 		
 		if (guess instanceof AnnotationValues) {
-			return ((AnnotationValues) guess).getInstance();
+			return ((AnnotationValues<?>) guess).getInstance();
 		}
 		
+		if (guess instanceof FieldSelect) throw new AnnotationValueDecodeFail(v,
+			"You must use constant literals in lombok annotations; they cannot be references to (static) fields.", pos);
+		
 		throw new AnnotationValueDecodeFail(v,
-				"Can't translate a " + guess.getClass() + " to the expected " + expected, pos);
+			"Can't translate a " + guess.getClass() + " to the expected " + expected, pos);
 	}
 	
 	/**

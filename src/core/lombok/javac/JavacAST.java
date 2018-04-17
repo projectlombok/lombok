@@ -396,7 +396,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			oldSource = log.useSource(newSource);
 			if (pos == null) pos = astObject.pos();
 		}
-		if (pos != null && attemptToRemoveErrorsInRange) {
+		if (pos != null && node != null && attemptToRemoveErrorsInRange) {
 			removeFromDeferredDiagnostics(pos.getStartPosition(), node.getEndPosition(pos));
 		}
 		try {
