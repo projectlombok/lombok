@@ -51,7 +51,7 @@ public class EclipseProductLocationProvider implements IdeLocationProvider {
 	 * Create a new EclipseLocation by pointing at either the directory contains the Eclipse executable, or the executable itself,
 	 * or an eclipse.ini file.
 	 * 
-	 * @throws NotAnIdeLocationException
+	 * @throws CorruptedIdeLocationException
 	 *             If this isn't an Eclipse executable or a directory with an
 	 *             Eclipse executable.
 	 */
