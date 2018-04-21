@@ -27,6 +27,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import lombok.core.ClassLiteral;
+import lombok.core.FieldSelect;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -43,8 +45,6 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
-
-import lombok.core.AnnotationValues;
 
 public class Eclipse {
 	private static final Annotation[] EMPTY_ANNOTATIONS_ARRAY = new Annotation[0];
@@ -177,13 +177,13 @@ public class Eclipse {
 			default: return null;
 			}
 		} else if (e instanceof ClassLiteralAccess) {
-			return new AnnotationValues.ClassLiteral(Eclipse.toQualifiedName(((ClassLiteralAccess)e).type.getTypeName()));
+			return new ClassLiteral(Eclipse.toQualifiedName(((ClassLiteralAccess)e).type.getTypeName()));
 		} else if (e instanceof SingleNameReference) {
-			return new AnnotationValues.FieldSelect(new String(((SingleNameReference)e).token));
+			return new FieldSelect(new String(((SingleNameReference)e).token));
 		} else if (e instanceof QualifiedNameReference) {
 			String qName = Eclipse.toQualifiedName(((QualifiedNameReference)e).tokens);
 			int idx = qName.lastIndexOf('.');
-			return new AnnotationValues.FieldSelect(idx == -1 ? qName : qName.substring(idx+1));
+			return new FieldSelect(idx == -1 ? qName : qName.substring(idx+1));
 		}
 		
 		return null;
