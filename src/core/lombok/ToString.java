@@ -75,4 +75,10 @@ public @interface ToString {
 	 * @return If {@code true}, always use direct field access instead of calling the getter method.
 	 */
 	boolean doNotUseGetters() default false;
+
+    boolean fqn() default false;
+	String prefix() default "(";
+	String separator() default "=";
+	String infix() default ", ";
+	String suffix() default ")";
 }

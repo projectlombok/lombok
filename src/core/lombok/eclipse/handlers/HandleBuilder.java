@@ -453,7 +453,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			for (BuilderFieldData bfd : builderFields) {
 				fieldNodes.addAll(bfd.createdFields);
 			}
-			MethodDeclaration md = HandleToString.createToString(builderType, fieldNodes, true, false, ast, FieldAccess.ALWAYS_FIELD);
+			MethodDeclaration md = HandleToString.createToString(builderType, ast, false, "(", false, true,
+					"=", FieldAccess.ALWAYS_FIELD, fieldNodes, ", ", ")");
 			if (md != null) injectMethod(builderType, md);
 		}
 		
