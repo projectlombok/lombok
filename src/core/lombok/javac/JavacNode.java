@@ -21,13 +21,17 @@
  */
 package lombok.javac;
 
+import java.lang.annotation.Annotation;
 import java.util.List;
 
 import javax.lang.model.element.Element;
 import javax.tools.Diagnostic;
 
+import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
+import lombok.javac.handlers.JavacHandlerUtil;
 
+import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.tree.JCTree;
@@ -36,6 +40,7 @@ import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
+import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
@@ -255,5 +260,71 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 	 */
 	public void addWarning(String message, DiagnosticPosition pos) {
 		ast.printMessage(Diagnostic.Kind.WARNING, message, null, pos, false);
+	}
+	
+	@Override public boolean hasAnnotation(Class<? extends Annotation> type) {
+		return JavacHandlerUtil.hasAnnotationAndDeleteIfNeccessary(type, this);
+	}
+	
+	@Override public <Z extends Annotation> AnnotationValues<Z> findAnnotation(Class<Z> type) {
+		JavacNode annotation = JavacHandlerUtil.findAnnotation(type, this, true);
+		if (annotation == null) return null;
+		return JavacHandlerUtil.createAnnotation(type, annotation);
+	}
+	
+	private JCModifiers getModifiers() {
+		if (node instanceof JCClassDecl) return ((JCClassDecl) node).getModifiers();
+		if (node instanceof JCMethodDecl) return ((JCMethodDecl) node).getModifiers();
+		if (node instanceof JCVariableDecl) return ((JCVariableDecl) node).getModifiers();
+		return null;
+	}
+	
+	@Override public boolean isStatic() {
+		if (node instanceof JCClassDecl) {
+			JavacNode directUp = directUp();
+			if (directUp == null || directUp.getKind() == Kind.COMPILATION_UNIT) return true;
+			if (!(directUp.get() instanceof JCClassDecl)) return false;
+			JCClassDecl p = (JCClassDecl) directUp.get();
+			long f = p.mods.flags;
+			if ((Flags.INTERFACE & f) != 0) return true;
+			if ((Flags.ENUM & f) != 0) return true;
+		}
+		
+		if (node instanceof JCVariableDecl) {
+			JavacNode directUp = directUp();
+			if (directUp != null && directUp.get() instanceof JCClassDecl) {
+				JCClassDecl p = (JCClassDecl) directUp.get();
+				long f = p.mods.flags;
+				if ((Flags.INTERFACE & f) != 0) return true;
+			}
+		}
+		
+		JCModifiers mods = getModifiers();
+		if (mods == null) return false;
+		return (mods.flags & Flags.STATIC) != 0;
+	}
+	
+	@Override public boolean isEnumMember() {
+		if (getKind() != Kind.FIELD) return false;
+		JCModifiers mods = getModifiers();
+		return mods != null && (Flags.ENUM & mods.flags) != 0;
+	}
+	
+	@Override public boolean isTransient() {
+		if (getKind() != Kind.FIELD) return false;
+		JCModifiers mods = getModifiers();
+		return mods != null && (Flags.TRANSIENT & mods.flags) != 0;
+	}
+	
+	@Override public int countMethodParameters() {
+		if (getKind() != Kind.METHOD) return 0;
+		
+		com.sun.tools.javac.util.List<JCVariableDecl> params = ((JCMethodDecl) node).params;
+		if (params == null) return 0;
+		return params.size();
+	}
+	
+	@Override public int getStartPos() {
+		return node.getPreferredPosition();
 	}
 }

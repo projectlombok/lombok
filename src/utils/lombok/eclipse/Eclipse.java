@@ -42,6 +42,7 @@ import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.TryStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.ast.UnaryExpression;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
@@ -184,6 +185,17 @@ public class Eclipse {
 			String qName = Eclipse.toQualifiedName(((QualifiedNameReference)e).tokens);
 			int idx = qName.lastIndexOf('.');
 			return new FieldSelect(idx == -1 ? qName : qName.substring(idx+1));
+		} else if (e instanceof UnaryExpression) {
+			if ("-".equals(((UnaryExpression) e).operatorToString())) {
+				Object inner = calculateValue(((UnaryExpression) e).expression);
+				if (inner instanceof Integer) return - ((Integer) inner).intValue();
+				if (inner instanceof Byte) return - ((Byte) inner).byteValue();
+				if (inner instanceof Short) return - ((Short) inner).shortValue();
+				if (inner instanceof Long) return - ((Long) inner).longValue();
+				if (inner instanceof Float) return - ((Float) inner).floatValue();
+				if (inner instanceof Double) return - ((Double) inner).doubleValue();
+				return null;
+			}
 		}
 		
 		return null;

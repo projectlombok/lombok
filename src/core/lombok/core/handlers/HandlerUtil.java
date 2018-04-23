@@ -57,6 +57,10 @@ import lombok.experimental.Wither;
 public class HandlerUtil {
 	private HandlerUtil() {}
 	
+	public enum FieldAccess {
+		GETTER, PREFER_FIELD, ALWAYS_FIELD;
+	}
+	
 	public static int primeForHashcode() {
 		return 59;
 	}

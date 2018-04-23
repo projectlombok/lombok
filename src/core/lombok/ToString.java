@@ -45,6 +45,8 @@ public @interface ToString {
 	/**
 	 * Any fields listed here will not be printed in the generated {@code toString} implementation.
 	 * Mutually exclusive with {@link #of()}.
+	 * <p>
+	 * Will soon be marked {@code @Deprecated}; use the {@code @ToString.Exclude} annotation instead.
 	 * 
 	 * @return A list of fields to exclude.
 	 */
@@ -55,6 +57,8 @@ public @interface ToString {
 	 * Normally, all non-static fields are printed.
 	 * <p>
 	 * Mutually exclusive with {@link #exclude()}.
+	 * <p>
+	 * Will soon be marked {@code @Deprecated}; use the {@code @ToString.Only} annotation instead.
 	 * 
 	 * @return A list of fields to use (<em>default</em>: all of them).
 	 */
@@ -75,4 +79,33 @@ public @interface ToString {
 	 * @return If {@code true}, always use direct field access instead of calling the getter method.
 	 */
 	boolean doNotUseGetters() default false;
+	
+	/**
+	 * Only include fields and methods explicitly marked with {@code @ToString.Include}.
+	 * Normally, all (non-static) fields are included by default.
+	 */
+	boolean onlyExplicitlyIncluded() default false;
+	
+	/**
+	 * If present, do not include this field in the generated {@code toString}.
+	 */
+	@Target(ElementType.FIELD)
+	@Retention(RetentionPolicy.SOURCE)
+	public @interface Exclude {}
+	
+	/**
+	 * Configure the behaviour of how this member is rendered in the {@code toString}; if on a method, include the method's return value in the output.
+	 */
+	@Target({ElementType.FIELD, ElementType.METHOD})
+	@Retention(RetentionPolicy.SOURCE)
+	public @interface Include {
+//		/** If true and the return value is {@code null}, omit this member entirely from the {@code toString} output. */
+//		boolean skipNull() default false; // -- We'll add it later, it requires a complete rework on the toString code we generate.
+		
+		/** Higher ranks are printed first. Members of the same rank are printed in the order they appear in the source file. */
+		int rank() default 0;
+		
+		/** Defaults to the field / method name of the annotated member. If the name equals the name of a default-included field, this member takes its place. */
+		String name() default "";
+	}
 }

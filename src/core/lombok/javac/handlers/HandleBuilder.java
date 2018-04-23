@@ -58,6 +58,7 @@ import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.core.handlers.HandlerUtil;
+import lombok.core.handlers.InclusionExclusionUtils.ToStringMember;
 import lombok.experimental.NonFinal;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
@@ -398,10 +399,13 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		if (methodExists("toString", builderType, 0) == MemberExistsResult.NOT_EXISTS) {
-			java.util.List<JavacNode> fieldNodes = new ArrayList<JavacNode>();
+			java.util.List<ToStringMember<JavacNode>> fieldNodes = new ArrayList<ToStringMember<JavacNode>>();
 			for (BuilderFieldData bfd : builderFields) {
-				fieldNodes.addAll(bfd.createdFields);
+				for (JavacNode f : bfd.createdFields) {
+					fieldNodes.add(new ToStringMember<JavacNode>(f, null, true));
+				}
 			}
+			
 			JCMethodDecl md = HandleToString.createToString(builderType, fieldNodes, true, false, FieldAccess.ALWAYS_FIELD, ast);
 			if (md != null) injectMethod(builderType, md);
 		}

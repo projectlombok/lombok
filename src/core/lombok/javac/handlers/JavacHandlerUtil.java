@@ -216,7 +216,11 @@ public class JavacHandlerUtil {
 		}
 	}
 	
-	static JavacNode findAnnotation(Class<? extends Annotation> type, JavacNode node, boolean delete) {
+	public static JavacNode findAnnotation(Class<? extends Annotation> type, JavacNode node) {
+		return findAnnotation(type, node, false);
+	}
+	
+	public static JavacNode findAnnotation(Class<? extends Annotation> type, JavacNode node, boolean delete) {
 		if (node == null) return null;
 		if (type == null) return null;
 		switch (node.getKind()) {
@@ -874,10 +878,6 @@ public class JavacHandlerUtil {
 		return null;
 	}
 	
-	public enum FieldAccess {
-		GETTER, PREFER_FIELD, ALWAYS_FIELD;
-	}
-	
 	static boolean lookForGetter(JavacNode field, FieldAccess fieldAccess) {
 		if (fieldAccess == FieldAccess.GETTER) return true;
 		if (fieldAccess == FieldAccess.ALWAYS_FIELD) return false;
@@ -899,12 +899,14 @@ public class JavacHandlerUtil {
 	 * @see #createFieldAccessor(TreeMaker, JavacNode, FieldAccess)
 	 */
 	static JCExpression getFieldType(JavacNode field, FieldAccess fieldAccess) {
+		if (field.getKind() == Kind.METHOD) return ((JCMethodDecl) field.get()).restype;
+		
 		boolean lookForGetter = lookForGetter(field, fieldAccess);
 		
 		GetterMethod getter = lookForGetter ? findGetter(field) : null;
 		
 		if (getter == null) {
-			return ((JCVariableDecl)field.get()).vartype;
+			return ((JCVariableDecl) field.get()).vartype;
 		}
 		
 		return getter.type;
@@ -941,7 +943,28 @@ public class JavacHandlerUtil {
 		
 		if (receiver == null) receiver = maker.Ident(field.toName("this"));
 		JCMethodInvocation call = maker.Apply(List.<JCExpression>nil(),
-				maker.Select(receiver, getter.name), List.<JCExpression>nil());
+			maker.Select(receiver, getter.name), List.<JCExpression>nil());
+		return call;
+	}
+	
+	static JCExpression createMethodAccessor(JavacTreeMaker maker, JavacNode method) {
+		JCExpression receiver;
+		JCMethodDecl methodDecl = (JCMethodDecl) method.get();
+		
+		if ((methodDecl.mods.flags & Flags.STATIC) == 0) {
+			receiver = maker.Ident(method.toName("this"));
+		} else {
+			JavacNode containerNode = method.up();
+			if (containerNode != null && containerNode.get() instanceof JCClassDecl) {
+				JCClassDecl container = (JCClassDecl) method.up().get();
+				receiver = maker.Ident(container.name);
+			} else {
+				receiver = null;
+			}
+		}
+		
+		JCMethodInvocation call = maker.Apply(List.<JCExpression>nil(),
+			receiver == null ? maker.Ident(methodDecl.name) : maker.Select(receiver, methodDecl.name), List.<JCExpression>nil());
 		return call;
 	}
 	

@@ -920,10 +920,6 @@ public class EclipseHandlerUtil {
 		return null;
 	}
 	
-	public enum FieldAccess {
-		GETTER, PREFER_FIELD, ALWAYS_FIELD;
-	}
-	
 	static boolean lookForGetter(EclipseNode field, FieldAccess fieldAccess) {
 		if (fieldAccess == FieldAccess.GETTER) return true;
 		if (fieldAccess == FieldAccess.ALWAYS_FIELD) return false;
@@ -940,11 +936,13 @@ public class EclipseHandlerUtil {
 	}
 	
 	static TypeReference getFieldType(EclipseNode field, FieldAccess fieldAccess) {
+		if (field.get() instanceof MethodDeclaration) return ((MethodDeclaration) field.get()).returnType;
+		
 		boolean lookForGetter = lookForGetter(field, fieldAccess);
 		
 		GetterMethod getter = lookForGetter ? findGetter(field) : null;
 		if (getter == null) {
-			return ((FieldDeclaration)field.get()).type;
+			return ((FieldDeclaration) field.get()).type;
 		}
 		
 		return getter.type;
@@ -952,7 +950,7 @@ public class EclipseHandlerUtil {
 	
 	static Expression createFieldAccessor(EclipseNode field, FieldAccess fieldAccess, ASTNode source) {
 		int pS = source == null ? 0 : source.sourceStart, pE = source == null ? 0 : source.sourceEnd;
-		long p = (long)pS << 32 | pE;
+		long p = (long) pS << 32 | pE;
 		
 		boolean lookForGetter = lookForGetter(field, fieldAccess);
 		
@@ -1017,6 +1015,29 @@ public class EclipseHandlerUtil {
 		call.receiver = new SingleNameReference(receiver, p);
 		setGeneratedBy(call.receiver, source);
 		call.selector = getter.name;
+		return call;
+	}
+	
+	static Expression createMethodAccessor(EclipseNode method, ASTNode source) {
+		int pS = source == null ? 0 : source.sourceStart, pE = source == null ? 0 : source.sourceEnd;
+		long p = (long) pS << 32 | pE;
+		
+		MethodDeclaration methodDecl = (MethodDeclaration) method.get();
+		MessageSend call = new MessageSend();
+		setGeneratedBy(call, source);
+		call.sourceStart = pS; call.statementEnd = call.sourceEnd = pE;
+		if ((methodDecl.modifiers & ClassFileConstants.AccStatic) == 0) {
+			call.receiver = new ThisReference(pS, pE);
+			setGeneratedBy(call.receiver, source);
+		} else {
+			EclipseNode containerNode = method.up();
+			if (containerNode != null && containerNode.get() instanceof TypeDeclaration) {
+				call.receiver = new SingleNameReference(((TypeDeclaration) containerNode.get()).name, p);
+				setGeneratedBy(call.receiver, source);
+			}
+		}
+		
+		call.selector = methodDecl.selector;
 		return call;
 	}
 	
