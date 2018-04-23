@@ -43,10 +43,6 @@ public class EclipseProductLocationProvider implements IdeLocationProvider {
 		this.descriptor = descriptor;
 	}
 	
-	@Override public final IdeLocation create(String path) throws CorruptedIdeLocationException {
-		return create0(path);
-	}
-	
 	/**
 	 * Create a new EclipseLocation by pointing at either the directory contains the Eclipse executable, or the executable itself,
 	 * or an eclipse.ini file.
@@ -54,7 +50,12 @@ public class EclipseProductLocationProvider implements IdeLocationProvider {
 	 * @throws CorruptedIdeLocationException
 	 *             If this isn't an Eclipse executable or a directory with an
 	 *             Eclipse executable.
+	 * @throws NullPointerException if {@code path} is {@code null}.
 	 */
+	@Override public final IdeLocation create(String path) throws CorruptedIdeLocationException {
+		return create0(path);
+	}
+	
 	private IdeLocation create0(String path) throws CorruptedIdeLocationException {
 		if (path == null) throw new NullPointerException("path");
 		String iniName = descriptor.getIniFileName();
