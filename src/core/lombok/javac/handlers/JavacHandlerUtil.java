@@ -354,7 +354,7 @@ public class JavacHandlerUtil {
 			}
 			
 			if (rhs instanceof JCNewArray) {
-				List<JCExpression> elems = ((JCNewArray)rhs).elems;
+				List<JCExpression> elems = ((JCNewArray) rhs).elems;
 				for (JCExpression inner : elems) {
 					raws.add(inner.toString());
 					expressions.add(inner);
@@ -365,7 +365,7 @@ public class JavacHandlerUtil {
 							
 							guesses.add(createAnnotation(innerClass, (JCAnnotation) inner, node));
 						} catch (ClassNotFoundException ex) {
-							throw new IllegalStateException(ex);
+							guesses.add(calculateGuess(inner));
 						}
 					} else {
 						guesses.add(calculateGuess(inner));
@@ -375,7 +375,18 @@ public class JavacHandlerUtil {
 			} else {
 				raws.add(rhs.toString());
 				expressions.add(rhs);
-				guesses.add(calculateGuess(rhs));
+				if (rhs instanceof JCAnnotation) {
+					try {
+						@SuppressWarnings("unchecked")
+						Class<A> innerClass = (Class<A>) Class.forName(rhs.type.toString());
+						
+						guesses.add(createAnnotation(innerClass, (JCAnnotation) rhs, node));
+					} catch (ClassNotFoundException ex) {
+						guesses.add(calculateGuess(rhs));
+					}
+				} else {
+					guesses.add(calculateGuess(rhs));
+				}
 				positions.add(rhs.pos());
 			}
 			
