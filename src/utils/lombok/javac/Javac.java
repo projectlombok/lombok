@@ -36,7 +36,8 @@ import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVisitor;
 
-import lombok.core.AnnotationValues;
+import lombok.core.ClassLiteral;
+import lombok.core.FieldSelect;
 import lombok.javac.JavacTreeMaker.TreeTag;
 import lombok.javac.JavacTreeMaker.TypeTag;
 
@@ -148,10 +149,10 @@ public class Javac {
 		
 		if (expr instanceof JCIdent || expr instanceof JCFieldAccess) {
 			String x = expr.toString();
-			if (x.endsWith(".class")) return new AnnotationValues.ClassLiteral(x.substring(0, x.length() - 6));
+			if (x.endsWith(".class")) return new ClassLiteral(x.substring(0, x.length() - 6));
 			int idx = x.lastIndexOf('.');
 			if (idx > -1) x = x.substring(idx + 1);
-			return new AnnotationValues.FieldSelect(x);
+			return new FieldSelect(x);
 		}
 		
 		return null;

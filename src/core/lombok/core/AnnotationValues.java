@@ -42,31 +42,7 @@ public class AnnotationValues<A extends Annotation> {
 	private final Class<A> type;
 	private final Map<String, AnnotationValue> values;
 	private final LombokNode<?, ?, ?> ast;
-	
-	public static class ClassLiteral {
-		private final String className;
-		
-		public ClassLiteral(String className) {
-			this.className = className;
-		}
-		
-		public String getClassName() {
-			return className;
-		}
-	}
-	
-	public static class FieldSelect {
-		private final String finalPart;
-		
-		public FieldSelect(String finalPart) {
-			this.finalPart = finalPart;
-		}
-		
-		public String getFinalPart() {
-			return finalPart;
-		}
-	}
-	
+
 	/**
 	 * Represents a single method on the annotation class. For example, the value() method on the Getter annotation.
 	 */
