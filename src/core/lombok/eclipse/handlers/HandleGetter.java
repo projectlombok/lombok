@@ -80,7 +80,7 @@ import org.mangosdk.spi.ProviderFor;
 public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	private static final Annotation[] EMPTY_ANNOTATIONS_ARRAY = new Annotation[0];
 
-	public boolean generateGetterForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelGetter) {
+	public boolean generateGetterForType(EclipseNode typeNode, EclipseNode pos, AccessLevel level, boolean checkForTypeLevelGetter, List<Annotation> onMethod) {
 		if (checkForTypeLevelGetter) {
 			if (hasAnnotation(Getter.class, typeNode)) {
 				//The annotation will make it happen, so we can skip it.
@@ -100,7 +100,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 		}
 		
 		for (EclipseNode field : typeNode.down()) {
-			if (fieldQualifiesForGetterGeneration(field)) generateGetterForField(field, pos.get(), level, false);
+			if (fieldQualifiesForGetterGeneration(field)) generateGetterForField(field, pos.get(), level, false, onMethod);
 		}
 		return true;
 	}
@@ -123,13 +123,13 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 	 * If not, the getter is still generated if it isn't already there, though there will not
 	 * be a warning if its already there. The default access level is used.
 	 */
-	public void generateGetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level, boolean lazy) {
+	public void generateGetterForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level, boolean lazy, List<Annotation> onMethod) {
 		if (hasAnnotation(Getter.class, fieldNode)) {
 			//The annotation will make it happen, so we can skip it.
 			return;
 		}
 		
-		createGetterForField(level, fieldNode, fieldNode, pos, false, lazy, Collections.<Annotation>emptyList());
+		createGetterForField(level, fieldNode, fieldNode, pos, false, lazy, onMethod);
 	}
 	
 	public void handle(AnnotationValues<Getter> annotation, Annotation ast, EclipseNode annotationNode) {
@@ -155,11 +155,8 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 			createGetterForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true, lazy, onMethod);
 			break;
 		case TYPE:
-			if (!onMethod.isEmpty()) {
-				annotationNode.addError("'onMethod' is not supported for @Getter on a type.");
-			}
 			if (lazy) annotationNode.addError("'lazy' is not supported for @Getter on a type.");
-			generateGetterForType(node, annotationNode, level, false);
+			generateGetterForType(node, annotationNode, level, false, onMethod);
 			break;
 		}
 	}

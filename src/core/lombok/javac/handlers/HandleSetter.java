@@ -62,7 +62,7 @@ import com.sun.tools.javac.util.Name;
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleSetter extends JavacAnnotationHandler<Setter> {
-	public void generateSetterForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelSetter) {
+	public void generateSetterForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelSetter, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (checkForTypeLevelSetter) {
 			if (hasAnnotation(Setter.class, typeNode)) {
 				//The annotation will make it happen, so we can skip it.
@@ -90,7 +90,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			//Skip final fields.
 			if ((fieldDecl.mods.flags & Flags.FINAL) != 0) continue;
 			
-			generateSetterForField(field, errorNode, level);
+			generateSetterForField(field, errorNode, level, onMethod, onParam);
 		}
 	}
 	
@@ -109,13 +109,13 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	 * @param fieldNode The node representing the field you want a setter for.
 	 * @param pos The node responsible for generating the setter (the {@code @Data} or {@code @Setter} annotation).
 	 */
-	public void generateSetterForField(JavacNode fieldNode, JavacNode sourceNode, AccessLevel level) {
+	public void generateSetterForField(JavacNode fieldNode, JavacNode sourceNode, AccessLevel level, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (hasAnnotation(Setter.class, fieldNode)) {
 			//The annotation will make it happen, so we can skip it.
 			return;
 		}
 		
-		createSetterForField(level, fieldNode, sourceNode, false, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
+		createSetterForField(level, fieldNode, sourceNode, false, onMethod, onParam);
 	}
 	
 	@Override public void handle(AnnotationValues<Setter> annotation, JCAnnotation ast, JavacNode annotationNode) {
@@ -137,9 +137,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			createSetterForFields(level, fields, annotationNode, true, onMethod, onParam);
 			break;
 		case TYPE:
-			if (!onMethod.isEmpty()) annotationNode.addError("'onMethod' is not supported for @Setter on a type.");
-			if (!onParam.isEmpty()) annotationNode.addError("'onParam' is not supported for @Setter on a type.");
-			generateSetterForType(node, annotationNode, level, false);
+			generateSetterForType(node, annotationNode, level, false, onMethod, onParam);
 			break;
 		}
 	}

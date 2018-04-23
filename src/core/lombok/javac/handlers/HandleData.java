@@ -34,6 +34,7 @@ import lombok.javac.handlers.HandleConstructor.SkipIfConstructorExists;
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.util.List;
 
 /**
  * Handles the {@code lombok.Data} annotation for javac.
@@ -61,8 +62,8 @@ public class HandleData extends JavacAnnotationHandler<Data> {
 		String staticConstructorName = annotation.getInstance().staticConstructor();
 		
 		handleConstructor.generateRequiredArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, SkipIfConstructorExists.YES, annotationNode);
-		handleGetter.generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
-		handleSetter.generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
+		handleGetter.generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true, List.<JCAnnotation>nil());
+		handleSetter.generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
 		handleEqualsAndHashCode.generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		handleToString.generateToStringForType(typeNode, annotationNode);
 	}

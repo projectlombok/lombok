@@ -86,7 +86,7 @@ public class HandleValue extends EclipseAnnotationHandler<Value> {
 		//for whatever reason, though you can find callers of that one by focusing on the class name itself
 		//and hitting 'find callers'.
 		
-		handleGetter.generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
+		handleGetter.generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true, Collections.<Annotation>emptyList());
 		handleEqualsAndHashCode.generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		handleToString.generateToStringForType(typeNode, annotationNode);
 		handleConstructor.generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, ann.staticConstructor(), SkipIfConstructorExists.YES,

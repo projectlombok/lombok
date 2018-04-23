@@ -72,8 +72,8 @@ public class HandleData extends EclipseAnnotationHandler<Data> {
 		//for whatever reason, though you can find callers of that one by focusing on the class name itself
 		//and hitting 'find callers'.
 		
-		handleGetter.generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
-		handleSetter.generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
+		handleGetter.generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true, Collections.<Annotation>emptyList());
+		handleSetter.generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true, Collections.<Annotation>emptyList(), Collections.<Annotation>emptyList());
 		handleEqualsAndHashCode.generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		handleToString.generateToStringForType(typeNode, annotationNode);
 		handleConstructor.generateRequiredArgsConstructor(
