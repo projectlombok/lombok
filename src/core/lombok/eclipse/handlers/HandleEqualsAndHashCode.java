@@ -479,14 +479,16 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		
 		list.add(type.getName());
 		if (addWildcards) genericsCount.add(arraySizeOf(((TypeDeclaration) type.get()).typeParameters));
-		boolean staticContext = (((TypeDeclaration) type.get()).modifiers & Modifier.STATIC) != 0;
+		boolean staticContext = (((TypeDeclaration) type.get()).modifiers & ClassFileConstants.AccStatic) != 0;
 		EclipseNode tNode = type.up();
+		if (!staticContext && tNode.getKind() == Kind.TYPE && (((TypeDeclaration) tNode.get()).modifiers & ClassFileConstants.AccInterface) != 0) staticContext = true;
 		
 		while (tNode != null && tNode.getKind() == Kind.TYPE) {
 			list.add(tNode.getName());
 			if (addWildcards) genericsCount.add(staticContext ? 0 : arraySizeOf(((TypeDeclaration) tNode.get()).typeParameters));
 			if (!staticContext) staticContext = (((TypeDeclaration) tNode.get()).modifiers & Modifier.STATIC) != 0;
 			tNode = tNode.up();
+			if (!staticContext && tNode.getKind() == Kind.TYPE && (((TypeDeclaration) tNode.get()).modifiers & ClassFileConstants.AccInterface) != 0) staticContext = true;
 		}
 		Collections.reverse(list);
 		if (addWildcards) Collections.reverse(genericsCount);
