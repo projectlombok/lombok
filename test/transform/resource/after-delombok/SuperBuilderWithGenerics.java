@@ -1,6 +1,7 @@
 import java.util.List;
 
 public class SuperBuilderWithGenerics {
+	@lombok.experimental.SuperBuilder
 	public static class Parent<A> {
 		A field1;
 		List<String> items;
@@ -97,7 +98,7 @@ public class SuperBuilderWithGenerics {
 		}
 	}
 
-
+	@lombok.experimental.SuperBuilder
 	public static class Child<A> extends Parent<A> {
 		double field3;
 
@@ -130,7 +131,7 @@ public class SuperBuilderWithGenerics {
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {
-				return "SuperBuilderWithGenerics.Child.ChildBuilder(field3=" + this.field3 + ")";
+				return "SuperBuilderWithGenerics.Child.ChildBuilder(super=" + super.toString() + ", field3=" + this.field3 + ")";
 			}
 		}
 
