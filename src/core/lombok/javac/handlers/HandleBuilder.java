@@ -591,7 +591,6 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 		
 		JCStatement statement = maker.Return(field.init);
-		field.init = null;
 		
 		JCBlock body = maker.Block(0, List.<JCStatement>of(statement));
 		int modifiers = Flags.PRIVATE | Flags.STATIC;

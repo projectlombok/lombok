@@ -651,7 +651,6 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
 		out.returnType = copyType(fd.type, source);
 		out.statements = new Statement[] {new ReturnStatement(fd.initialization, pS, pE)};
-		fd.initialization = null;
 		
 		out.traverse(new SetGeneratedByVisitor(source), ((TypeDeclaration) fieldNode.up().get()).scope);
 		return out;
