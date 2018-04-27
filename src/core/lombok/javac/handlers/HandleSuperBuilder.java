@@ -26,6 +26,7 @@ import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.ArrayList;
+import java.util.function.Supplier;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -214,7 +215,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			return;
 		}
 		
-		// Check that all builder fields for @Singular and @ObtainVia.
+		// Check validity of @ObtainVia fields, and add check if adding cleaning for @Singular is necessary.
 		for (BuilderFieldData bfd : builderFields) {
 			if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
 				if (bfd.singularData.getSingularizer().requiresCleaning()) {
@@ -365,6 +366,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		// Now add the <?, ?>.
 		JCWildcard wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
 		typeParamsForBuilderParameter.add(wildcard);
+		wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
 		typeParamsForBuilderParameter.add(wildcard);
 		JCTypeApply paramType = maker.TypeApply(maker.Ident(builderClassname), typeParamsForBuilderParameter.toList());
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(flags), builderVariableName, paramType, null);
@@ -546,13 +548,18 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}
 	}
 	
-	public void makeSetterMethodsForBuilder(JavacNode builderType, BuilderFieldData fieldNode, JavacNode source, String builderGenericName) {
+	public void makeSetterMethodsForBuilder(final JavacNode builderType, BuilderFieldData fieldNode, JavacNode source, final String builderGenericName) {
 		boolean deprecate = isFieldDeprecated(fieldNode.originalFieldNode);
-		JavacTreeMaker maker = builderType.getTreeMaker();
-		JCExpression returnType = maker.Ident(builderType.toName(builderGenericName));
-		JCReturn returnStatement = maker.Return(maker.Apply(List.<JCExpression>nil(), maker.Ident(builderType.toName(SELF_METHOD)), List.<JCExpression>nil()));
+		final JavacTreeMaker maker = builderType.getTreeMaker();
+		// TODO: Make these lambdas when switching to a source level >= 1.8.
+		Supplier<JCExpression> returnType = new Supplier<JCExpression>() { @Override public JCExpression get() {
+			return maker.Ident(builderType.toName(builderGenericName));
+		}};
+		Supplier<? extends JCReturn> returnStatement = new Supplier<JCReturn>() { @Override public JCReturn get() {
+			return maker.Return(maker.Apply(List.<JCExpression>nil(), maker.Ident(builderType.toName(SELF_METHOD)), List.<JCExpression>nil()));
+		}};
 		if (fieldNode.singularData == null || fieldNode.singularData.getSingularizer() == null) {
-			makeSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, true, true, returnType, returnStatement);
+			makeSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, true, true, returnType.get(), returnStatement.get());
 		} else {
 			fieldNode.singularData.getSingularizer().generateMethods(fieldNode.singularData, deprecate, builderType, source.get(), true, returnType, returnStatement);
 		}

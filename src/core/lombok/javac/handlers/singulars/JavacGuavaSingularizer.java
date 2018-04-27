@@ -25,6 +25,7 @@ import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.Collections;
+import java.util.function.Supplier;
 
 import lombok.core.GuavaTypeMap;
 import lombok.core.LombokImmutableList;
@@ -69,11 +70,11 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		return Collections.singletonList(injectFieldAndMarkGenerated(builderType, buildField));
 	}
 	
-	@Override public void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, JCExpression returnType, JCStatement returnStatement) {
+	@Override public void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, Supplier<JCExpression> returnType, Supplier<? extends JCStatement> returnStatement) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
-		generateSingularMethod(deprecate, maker, returnType, returnStatement, data, builderType, source, fluent);
-		generatePluralMethod(deprecate, maker, returnType, returnStatement, data, builderType, source, fluent);
-		generateClearMethod(deprecate, maker, returnType, returnStatement, data, builderType, source);
+		generateSingularMethod(deprecate, maker, returnType.get(), returnStatement.get(), data, builderType, source, fluent);
+		generatePluralMethod(deprecate, maker, returnType.get(), returnStatement.get(), data, builderType, source, fluent);
+		generateClearMethod(deprecate, maker, returnType.get(), returnStatement.get(), data, builderType, source);
 	}
 	
 	private void generateClearMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {

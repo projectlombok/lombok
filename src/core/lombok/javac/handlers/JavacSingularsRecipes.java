@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import lombok.core.LombokImmutableList;
 import lombok.core.SpiLoadUtil;
@@ -203,12 +204,17 @@ public class JavacSingularsRecipes {
 		 * control over the return type and value, use
 		 * {@link #generateMethods(SingularData, boolean, JavacNode, JCTree, boolean, JCExpression, JCStatement)}.
 		 */
-		public void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, boolean chain) {
-			JavacTreeMaker maker = builderType.getTreeMaker();
-			JCExpression returnType = chain ?
-					cloneSelfType(builderType) : 
+		public void generateMethods(SingularData data, boolean deprecate, final JavacNode builderType, JCTree source, boolean fluent, final boolean chain) {
+			final JavacTreeMaker maker = builderType.getTreeMaker();
+			// TODO: Make these lambdas when switching to a source level >= 1.8.
+			Supplier<JCExpression> returnType = new Supplier<JCExpression>() { @Override public JCExpression get() {
+				return chain ? 
+						cloneSelfType(builderType) : 
 						maker.Type(createVoidType(builderType.getSymbolTable(), CTC_VOID));
-			JCStatement returnStatement = chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
+			}};
+			Supplier<JCStatement> returnStatement = new Supplier<JCStatement>() { @Override public JCStatement get() {
+				return chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
+			}};
 			generateMethods(data, deprecate, builderType, source, fluent, returnType, returnStatement);
 		}
 		/**
@@ -216,7 +222,7 @@ public class JavacSingularsRecipes {
 		 * {@link SingularData}.<br>
 		 * Uses the given <code>returnType</code> and <code>returnStatement</code> for the generated methods. 
 		 */
-		public abstract void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, JCExpression returnType, JCStatement returnStatement);
+		public abstract void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, Supplier<JCExpression> returnType, Supplier<? extends JCStatement> returnStatement);
 		
 		public abstract void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable);
 		

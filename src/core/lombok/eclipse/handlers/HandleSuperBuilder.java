@@ -225,7 +225,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		// You can use it to check whether to inherit or not.
 
 		returnType = namePlusTypeParamsToTypeReference(td.name, td.typeParameters, p);
-		typeParams = td.typeParameters;
+		typeParams = td.typeParameters != null ? td.typeParameters : new TypeParameter[0];
 
 		// <C, B> are the generics for our builder.
 		String classGenericName = "C";
