@@ -1,0 +1,4 @@
+http_jar(
+    name = "lombok_jar",
+    url = "https://projectlombok.org/lombok-edge.jar",
+)
