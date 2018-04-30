@@ -13,17 +13,17 @@ The maven version to be used. Supported values:
 (To be executed from the `<lombokhome>/docker` directory)
 
 ```
-docker build -t lombok-maven-jdk9 -f maven/Dockerfile .
+docker build -t lombok-maven-jdk10 -f maven/Dockerfile .
 
-docker build -t lombok-maven-jdk9 --build-arg lombokjar=lombok-1.16.18.jar -f maven/Dockerfile .
+docker build -t lombok-maven-jdk10 --build-arg lombokjar=lombok-1.16.20.jar -f maven/Dockerfile .
 ```
 
 ## Example run commands:
 
 ```
-docker run -it lombok-maven-jdk9
+docker run -it lombok-maven-jdk10
 
-docker run --rm -it -v /<lombokhome>/dist/lombok.jar:/workspace/lombok.jar lombok-maven-jdk9
+docker run --rm -it -v /<lombokhome>/dist/lombok.jar:/workspace/lombok.jar lombok-maven-jdk10
 ```
 
 ## Example container commands:
