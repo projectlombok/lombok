@@ -15,7 +15,7 @@ can download a specific version by adding `--build-arg lombokjar=lombok-<major.m
 The jdk version to be used. Supported values:
 
 - `10` (default)
-- `9` (currently broken because the download is no longer available)
+- `9` (OpenJDK)
 - `8`
 
 The version is also accessible in `JDK_VERSION`.
