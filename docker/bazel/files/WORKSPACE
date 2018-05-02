@@ -1,4 +1,5 @@
-http_jar(
+new_local_repository(
     name = "lombok_jar",
-    url = "https://projectlombok.org/lombok-edge.jar",
+    path = "/workspace",
+    build_file = "BUILD.lombok",
 )

@@ -6,13 +6,13 @@ java_binary(
 )
 
 java_plugin(
-  name = "lombok_plugin",
-  processor_class = "lombok.launch.AnnotationProcessorHider$AnnotationProcessor",
-  deps = ["@lombok_jar//jar"],
+    name = "lombok_plugin",
+    processor_class = "lombok.launch.AnnotationProcessorHider$AnnotationProcessor",
+    deps = ["@lombok_jar//:jar"],
 )
 
 java_library(
-  name = "lombok",
-  exports = ["@lombok_jar//jar"],
-  exported_plugins = [":lombok_plugin"],
+    name = "lombok",
+    exports = ["@lombok_jar//:jar"],
+    exported_plugins = [":lombok_plugin"],
 )
