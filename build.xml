@@ -306,6 +306,9 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.launch.AnnotationProcessorHider$AnnotationProcessor
 lombok.launch.AnnotationProcessorHider$ClaimingProcessor</echo>
 		<echo file="build/lombok/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor">lombok.launch.AnnotationProcessorHider$AstModificationNotifier</echo>
+		<mkdir dir="build/lombok/META-INF/gradle" />
+		<echo file="build/lombok/META-INF/gradle/incremental.annotation.processors">lombok.launch.AnnotationProcessorHider$AnnotationProcessor,isolating
+lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 	</target>
 	
 	<target name="-latestChanges" depends="version">
@@ -335,6 +338,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor</echo>
 				<include name="lombok/launch/**" />
 				<include name="lombok/delombok/ant/Tasks*" />
 				<include name="lombok/javac/apt/Processor.class" />
+				<include name="lombok/META-INF/**" />
 			</fileset>
 			<mappedresources>
 				<fileset dir="build/lombok">

@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
@@ -69,7 +70,9 @@ import com.sun.tools.javac.util.Context;
  */
 @SupportedAnnotationTypes("*")
 public class LombokProcessor extends AbstractProcessor {
-	private JavacProcessingEnvironment processingEnv;
+	private ProcessingEnvironment processingEnv;
+	private JavacProcessingEnvironment javacProcessingEnv;
+	private JavacFiler javacFiler;
 	private JavacTransformer transformer;
 	private Trees trees;
 	private boolean lombokDisabled = false;
@@ -81,11 +84,13 @@ public class LombokProcessor extends AbstractProcessor {
 			lombokDisabled = true;
 			return;
 		}
-		
-		this.processingEnv = (JavacProcessingEnvironment) procEnv;
-		
+
+		this.processingEnv = procEnv;
+		this.javacProcessingEnv = getJavacProcessingEnvironment(procEnv);
+		this.javacFiler = getJavacFiler(procEnv.getFiler());
+
 		placePostCompileAndDontMakeForceRoundDummiesHook();
-		trees = Trees.instance(procEnv);
+		trees = Trees.instance(javacProcessingEnv);
 		transformer = new JavacTransformer(procEnv.getMessager(), trees);
 		SortedSet<Long> p = transformer.getPriorities();
 		if (p.isEmpty()) {
@@ -124,7 +129,7 @@ public class LombokProcessor extends AbstractProcessor {
 	@SuppressWarnings("unused")
 	private String listAnnotationProcessorsBeforeOurs() {
 		try {
-			Object discoveredProcessors = javacProcessingEnvironment_discoveredProcs.get(this.processingEnv);
+			Object discoveredProcessors = javacProcessingEnvironment_discoveredProcs.get(this.javacProcessingEnv);
 			ArrayList<?> states = (ArrayList<?>) discoveredProcessors_procStateList.get(discoveredProcessors);
 			if (states == null || states.isEmpty()) return null;
 			if (states.size() == 1) return processorState_processor.get(states.get(0)).getClass().getName();
@@ -147,7 +152,7 @@ public class LombokProcessor extends AbstractProcessor {
 		stopJavacProcessingEnvironmentFromClosingOurClassloader();
 		
 		forceMultipleRoundsInNetBeansEditor();
-		Context context = processingEnv.getContext();
+		Context context = javacProcessingEnv.getContext();
 		disablePartialReparseInNetBeansEditor(context);
 		try {
 			Method keyMethod = Context.class.getDeclaredMethod("key", Class.class);
@@ -161,14 +166,14 @@ public class LombokProcessor extends AbstractProcessor {
 			if (!(originalFiler instanceof InterceptingJavaFileManager)) {
 				final Messager messager = processingEnv.getMessager();
 				DiagnosticsReceiver receiver = new MessagerDiagnosticsReceiver(messager);
-				
-				JavaFileManager newFiler = new InterceptingJavaFileManager(originalFiler, receiver);
-				ht.put(key, newFiler);
+
+				JavaFileManager newFilerManager = new InterceptingJavaFileManager(originalFiler, receiver);
+				ht.put(key, newFilerManager);
 				Field filerFileManagerField = JavacFiler.class.getDeclaredField("fileManager");
 				filerFileManagerField.setAccessible(true);
-				filerFileManagerField.set(processingEnv.getFiler(), newFiler);
-				
-				replaceFileManagerJdk9(context, newFiler);
+				filerFileManagerField.set(javacFiler, newFilerManager);
+
+				replaceFileManagerJdk9(context, newFilerManager);
 			}
 		} catch (Exception e) {
 			throw Lombok.sneakyThrow(e);
@@ -203,7 +208,7 @@ public class LombokProcessor extends AbstractProcessor {
 		try {
 			Field f = JavacProcessingEnvironment.class.getDeclaredField("isBackgroundCompilation");
 			f.setAccessible(true);
-			f.set(processingEnv, true);
+			f.set(javacProcessingEnv, true);
 		} catch (NoSuchFieldException e) {
 			// only NetBeans has it
 		} catch (Throwable t) {
@@ -277,10 +282,10 @@ public class LombokProcessor extends AbstractProcessor {
 		try {
 			Field f = JavacProcessingEnvironment.class.getDeclaredField("processorClassLoader");
 			f.setAccessible(true);
-			ClassLoader unwrapped = (ClassLoader) f.get(processingEnv);
+			ClassLoader unwrapped = (ClassLoader) f.get(javacProcessingEnv);
 			if (unwrapped == null) return;
 			ClassLoader wrapped = wrapClassLoader(unwrapped);
-			f.set(processingEnv, wrapped);
+			f.set(javacProcessingEnv, wrapped);
 		} catch (NoSuchFieldException e) {
 			// Some versions of javac have this (and call close on it), some don't. I guess this one doesn't have it.
 		} catch (Throwable t) {
@@ -321,7 +326,7 @@ public class LombokProcessor extends AbstractProcessor {
 					if (prioOfCu == null || prioOfCu != prio) continue;
 					cusForThisRound.add(entry.getKey());
 				}
-				transformer.transform(prio, processingEnv.getContext(), cusForThisRound);
+				transformer.transform(prio, javacProcessingEnv.getContext(), cusForThisRound);
 			}
 			
 			// Step 3: Push up all CUs to the next level. Set level to null if there is no next level.
@@ -349,7 +354,7 @@ public class LombokProcessor extends AbstractProcessor {
 			newLevels.retainAll(priorityLevelsRequiringResolutionReset);
 			if (!newLevels.isEmpty()) {
 				// Force a new round to reset resolution. The next round will cause this method (process) to be called again.
-				forceNewRound(randomModuleName, (JavacFiler) processingEnv.getFiler());
+				forceNewRound(randomModuleName, javacFiler);
 				return false;
 			}
 			// None of the new levels need resolution, so just keep going.
@@ -399,4 +404,47 @@ public class LombokProcessor extends AbstractProcessor {
 	@Override public SourceVersion getSupportedSourceVersion() {
 		return SourceVersion.latest();
 	}
+
+	/**
+	 * This class casts the given processing environment to a JavacProcessingEnvironment. In case of
+	 * gradle incremental compilation, the delegate ProcessingEnvironment of the gradle wrapper is returned.
+	 */
+	public JavacProcessingEnvironment getJavacProcessingEnvironment(ProcessingEnvironment procEnv) {
+		final Class<?> procEnvClass = procEnv.getClass();
+		if (procEnv.getClass().getName().equals("org.gradle.api.internal.tasks.compile.processing.IncrementalProcessingEnvironment")) {
+			try {
+				Field field = procEnvClass.getDeclaredField("delegate");
+				field.setAccessible(true);
+				Object delegate = field.get(procEnv);
+				return (JavacProcessingEnvironment) delegate;
+			} catch (final Exception e) {
+				e.printStackTrace();
+				procEnv.getMessager().printMessage(Kind.WARNING,
+						"Can't get the delegate of the gradle IncrementalProcessingEnvironment. Lombok won't work.");
+			}
+		}
+		return (JavacProcessingEnvironment) procEnv;
+	}
+
+	/**
+	 * This class casts the given filer to a JavacFiler. In case of
+	 * gradle incremental compilation, the delegate Filer of the gradle wrapper is returned.
+	 */
+	public JavacFiler getJavacFiler(Filer filer) {
+		final Class<?> filerSuperClass = filer.getClass().getSuperclass();
+		if (filerSuperClass.getName().equals("org.gradle.api.internal.tasks.compile.processing.IncrementalFiler")) {
+			try {
+				Field field = filerSuperClass.getDeclaredField("delegate");
+				field.setAccessible(true);
+				Object delegate = field.get(filer);
+				return (JavacFiler) delegate;
+			} catch (final Exception e) {
+				e.printStackTrace();
+				processingEnv.getMessager().printMessage(Kind.WARNING,
+						"Can't get the delegate of the gradle IncrementalFiler. Lombok won't work.");
+			}
+		}
+		return (JavacFiler) filer;
+	}
+
 }
