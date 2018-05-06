@@ -194,7 +194,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		}
 
 		// Set the names of the builder classes.
-		String builderClassName = td.name.toString() + "Builder";
+		String builderClassName = String.valueOf(td.name) + "Builder";
 		String builderImplClassName = builderClassName + "Impl";
 
 		TypeReference extendsClause = td.superclass;
@@ -224,8 +224,8 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		// If there is no superclass, superclassBuilderClassExpression is still == null at this point.
 		// You can use it to check whether to inherit or not.
 
-		returnType = namePlusTypeParamsToTypeReference(td.name, td.typeParameters, p);
 		typeParams = td.typeParameters != null ? td.typeParameters : new TypeParameter[0];
+		returnType = namePlusTypeParamsToTypeReference(td.name, typeParams, p);
 
 		// <C, B> are the generics for our builder.
 		String classGenericName = "C";
@@ -607,7 +607,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		out.modifiers = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic;
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		out.returnType = namePlusTypeParamsToTypeReference(builderClassName.toCharArray(), typeParams, p);
-		out.typeParameters = copyTypeParams(typeParams, source);
+		//out.typeParameters = copyTypeParams(typeParams, source);
 		AllocationExpression invoke = new AllocationExpression();
 		invoke.type = namePlusTypeParamsToTypeReference(builderClassName.toCharArray(), typeParams, p);
 		out.statements = new Statement[] {new ReturnStatement(invoke, pS, pE)};
@@ -770,6 +770,22 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		return null;
 	}
 
+	private TypeParameter[] copyTypeParamsAndAddBuilderParams(TypeParameter[] typeParams, ASTNode source, String classGenericName, String builderGenericName) {
+		TypeParameter[] result = Arrays.copyOf(copyTypeParams(typeParams, source), typeParams.length + 2);
+
+		TypeParameter o = new TypeParameter();
+		setGeneratedBy(o, source);
+		o.name = classGenericName.toCharArray();
+		result[result.length - 2] = o;
+
+		o = new TypeParameter();
+		setGeneratedBy(o, source);
+		o.name = builderGenericName.toCharArray();
+		result[result.length - 1] = o;
+
+		return result;
+	}
+
 	public EclipseNode makeBuilderAbstractClass(EclipseNode tdParent, String builderClass,
 			TypeReference superclassBuilderClass, TypeParameter[] typeParams,
 			TypeParameter[] superclassTypeParams, ASTNode source, String classGenericName, String builderGenericName) {
@@ -778,8 +794,8 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		TypeDeclaration builder = new TypeDeclaration(parent.compilationResult);
 		builder.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
 		builder.modifiers |= ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccAbstract;
-		builder.typeParameters = copyTypeParams(typeParams, source);
 		builder.name = builderClass.toCharArray();
+		builder.typeParameters = copyTypeParamsAndAddBuilderParams(typeParams, source, classGenericName, builderGenericName);
 		builder.superclass = superclassBuilderClass;
 
 //		// Keep any type params of the annotated class.
