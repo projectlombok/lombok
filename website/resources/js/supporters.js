@@ -26,7 +26,7 @@
 	
 	function toDate(s) {
 		var x = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
-		if (x) return new Date(parseInt(x[1]), parseInt(x[2]), parseInt(x[3]));
+		if (x) return new Date(parseInt(x[1]), parseInt(x[2]) - 1, parseInt(x[3]));
 		return null;
 	}
 	
