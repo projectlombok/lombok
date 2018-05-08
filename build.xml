@@ -552,7 +552,10 @@ ${sourceWarning}</echo>
 	
 	<target name="test-ecj" depends="dist, contrib, setupJavaOracle8TestEnvironment" unless="tests.skip">
 		<condition property="ecj.loc" value="lib/ecj9/*" else="lib/ecj8/*">
-			<equals arg1="${ant.java.version}" arg2="9" />
+			<or>
+				<equals arg1="${ant.java.version}" arg2="9" />
+				<equals arg1="${ant.java.version}" arg2="10" />
+			</or>
 		</condition>
 		<java classname="org.eclipse.jdt.internal.compiler.batch.Main" fork="true" failonerror="true">
 			<classpath path="${ecj.loc}" />

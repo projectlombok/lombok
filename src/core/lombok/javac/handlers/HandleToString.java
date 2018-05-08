@@ -59,20 +59,21 @@ import com.sun.tools.javac.util.ListBuffer;
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleToString extends JavacAnnotationHandler<ToString> {
-	public void checkForBogusFieldNames(JavacNode type, AnnotationValues<ToString> annotation) {
+	private void checkForBogusFieldNames(JavacNode type, AnnotationValues<ToString> annotation, List<String> excludes, List<String> includes) {
 		if (annotation.isExplicit("exclude")) {
-			for (int i : createListOfNonExistentFields(List.from(annotation.getInstance().exclude()), type, true, false)) {
+			for (int i : createListOfNonExistentFields(excludes, type, true, false)) {
 				annotation.setWarning("exclude", "This field does not exist, or would have been excluded anyway.", i);
 			}
 		}
 		if (annotation.isExplicit("of")) {
-			for (int i : createListOfNonExistentFields(List.from(annotation.getInstance().of()), type, false, false)) {
+			for (int i : createListOfNonExistentFields(includes, type, false, false)) {
 				annotation.setWarning("of", "This field does not exist.", i);
 			}
 		}
 	}
 	
-	@Override public void handle(AnnotationValues<ToString> annotation, JCAnnotation ast, JavacNode annotationNode) {
+	@Override
+	public void handle(AnnotationValues<ToString> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.TO_STRING_FLAG_USAGE, "@ToString");
 		
 		deleteAnnotationIfNeccessary(annotationNode, ToString.class);
@@ -82,18 +83,27 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		List<String> includes = List.from(ann.of());
 		JavacNode typeNode = annotationNode.up();
 		
-		checkForBogusFieldNames(typeNode, annotation);
-		
-		Boolean callSuper = ann.callSuper();
-		
-		if (!annotation.isExplicit("callSuper")) callSuper = null;
-		if (!annotation.isExplicit("exclude")) excludes = null;
-		if (!annotation.isExplicit("of")) includes = null;
-		
 		if (excludes != null && includes != null) {
 			excludes = null;
 			annotation.setWarning("exclude", "exclude and of are mutually exclusive; the 'exclude' parameter will be ignored.");
 		}
+		checkForBogusFieldNames(typeNode, annotation, excludes, includes);
+
+		Boolean fqn = ann.fqn();
+		Boolean callSuper = ann.callSuper();
+		String prefix = ann.prefix();
+		String separator = ann.separator();
+		String infix = ann.infix();
+		String suffix = ann.suffix();
+
+		if (!annotation.isExplicit("fqn")) fqn = null;
+		if (!annotation.isExplicit("callSuper")) callSuper = null;
+		if (!annotation.isExplicit("exclude")) excludes = null;
+		if (!annotation.isExplicit("of")) includes = null;
+		if (!annotation.isExplicit("prefix")) prefix = null;
+		if (!annotation.isExplicit("separator")) separator = null;
+		if (!annotation.isExplicit("infix")) infix = null;
+		if (!annotation.isExplicit("suffix")) suffix = null;
 		
 		Boolean doNotUseGettersConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_DO_NOT_USE_GETTERS);
 		boolean doNotUseGetters = annotation.isExplicit("doNotUseGetters") || doNotUseGettersConfiguration == null ? ann.doNotUseGetters() : doNotUseGettersConfiguration;
@@ -101,8 +111,8 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		
 		Boolean fieldNamesConfiguration = annotationNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_INCLUDE_FIELD_NAMES);
 		boolean includeFieldNames = annotation.isExplicit("includeFieldNames") || fieldNamesConfiguration == null ? ann.includeFieldNames() : fieldNamesConfiguration;
-		
-		generateToString(typeNode, annotationNode, excludes, includes, includeFieldNames, callSuper, true, fieldAccess);
+
+		generateToString(typeNode, annotationNode, fqn, prefix, callSuper, includeFieldNames, separator, fieldAccess, excludes, includes, infix, suffix, true);
 	}
 	
 	public void generateToStringForType(JavacNode typeNode, JavacNode errorNode) {
@@ -121,28 +131,47 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		Boolean doNotUseGettersConfiguration = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_DO_NOT_USE_GETTERS);
 		FieldAccess access = doNotUseGettersConfiguration == null || !doNotUseGettersConfiguration ? FieldAccess.GETTER : FieldAccess.PREFER_FIELD;
 		
-		generateToString(typeNode, errorNode, null, null, includeFieldNames, null, false, access);
+		generateToString(typeNode, errorNode, null, null, null, includeFieldNames, null, access, null, null, null, null, false);
 	}
 	
-	public void generateToString(JavacNode typeNode, JavacNode source, List<String> excludes, List<String> includes,
-			boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
+	private void generateToString(JavacNode typeNode, JavacNode source, Boolean fqn, String prefix, Boolean callSuper,
+								  boolean includeFieldNames, String separator, FieldAccess fieldAccess, List<String> excludes, List<String> includes,
+								  String infix, String suffix, boolean whineIfExists) {
 		boolean notAClass = true;
 		if (typeNode.get() instanceof JCClassDecl) {
 			long flags = ((JCClassDecl)typeNode.get()).mods.flags;
 			notAClass = (flags & (Flags.INTERFACE | Flags.ANNOTATION)) != 0;
 		}
 		
+		if (notAClass) {
+			source.addError("@ToString is only supported on a class or enum.");
+			return;
+		}
+
+		if (fqn == null) {
+			try {
+				fqn = ((Boolean)ToString.class.getMethod("fqn").getDefaultValue()).booleanValue();
+			} catch (Exception ignore) {}
+		}
+
+		if (prefix == null) {
+			try {
+				prefix = ((String)ToString.class.getMethod("prefix").getDefaultValue());
+			} catch (Exception ignore) {}
+		}
+
 		if (callSuper == null) {
 			try {
 				callSuper = ((Boolean)ToString.class.getMethod("callSuper").getDefaultValue()).booleanValue();
 			} catch (Exception ignore) {}
 		}
-		
-		if (notAClass) {
-			source.addError("@ToString is only supported on a class or enum.");
-			return;
+
+		if (separator == null) {
+			try {
+				separator = ((String)ToString.class.getMethod("separator").getDefaultValue());
+			} catch (Exception ignore) {}
 		}
-		
+
 		ListBuffer<JavacNode> nodesForToString = new ListBuffer<JavacNode>();
 		if (includes != null) {
 			for (JavacNode child : typeNode.down()) {
@@ -163,10 +192,23 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 				nodesForToString.append(child);
 			}
 		}
+
+		if (infix == null) {
+			try {
+				infix = ((String)ToString.class.getMethod("infix").getDefaultValue());
+			} catch (Exception ignore) {}
+		}
+
+		if (suffix == null) {
+			try {
+				suffix = ((String)ToString.class.getMethod("suffix").getDefaultValue());
+			} catch (Exception ignore) {}
+		}
 		
 		switch (methodExists("toString", typeNode, 0)) {
 		case NOT_EXISTS:
-			JCMethodDecl method = createToString(typeNode, nodesForToString.toList(), includeFieldNames, callSuper, fieldAccess, source.get());
+			JCMethodDecl method = createToString(typeNode, source.get(), fqn, prefix, callSuper, includeFieldNames,
+					separator, fieldAccess, nodesForToString.toList(), infix, suffix);
 			injectMethod(typeNode, method);
 			break;
 		case EXISTS_BY_LOMBOK:
@@ -180,30 +222,29 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		}
 	}
 	
-	static JCMethodDecl createToString(JavacNode typeNode, Collection<JavacNode> fields, boolean includeFieldNames, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
+	static JCMethodDecl createToString(JavacNode typeNode, JCTree source, boolean fqn, String prefix, boolean callSuper,
+									   boolean includeFieldNames, String separator, FieldAccess fieldAccess,
+									   Collection<JavacNode> fields, String infix, String suffix) {
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(typeNode, "Override"), List.<JCExpression>nil());
 		JCModifiers mods = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
 		JCExpression returnType = genJavaLangTypeRef(typeNode, "String");
-		
-		boolean first = true;
-		
-		String typeName = getTypeName(typeNode);
-		String infix = ", ";
-		String suffix = ")";
-		String prefix;
+
+		String resultLiteral;
+		String typeName = getTypeName(typeNode, fqn);
 		if (callSuper) {
-			prefix = typeName + "(super=";
+			resultLiteral = typeName + prefix + "super" + separator;
 		} else if (fields.isEmpty()) {
-			prefix = typeName + "()";
+			resultLiteral = typeName + prefix + suffix;
 		} else if (includeFieldNames) {
-			prefix = typeName + "(" + ((JCVariableDecl)fields.iterator().next().get()).name.toString() + "=";
+			resultLiteral = typeName + prefix + ((JCVariableDecl)fields.iterator().next().get()).name.toString() + separator;
 		} else {
-			prefix = typeName + "(";
+			resultLiteral = typeName + prefix;
 		}
-		
-		JCExpression current = maker.Literal(prefix);
+
+		boolean first = true;
+		JCExpression current = maker.Literal(resultLiteral);
 		
 		if (callSuper) {
 			JCMethodInvocation callToSuper = maker.Apply(List.<JCExpression>nil(),
@@ -239,7 +280,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			}
 			
 			if (includeFieldNames) {
-				current = maker.Binary(CTC_PLUS, current, maker.Literal(infix + fieldNode.getName() + "="));
+				current = maker.Binary(CTC_PLUS, current, maker.Literal(infix + fieldNode.getName() + separator));
 			} else {
 				current = maker.Binary(CTC_PLUS, current, maker.Literal(infix));
 			}
@@ -257,13 +298,17 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 				List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null), source, typeNode.getContext());
 	}
 	
-	public static String getTypeName(JavacNode typeNode) {
-		String typeName = ((JCClassDecl) typeNode.get()).name.toString();
-		JavacNode upType = typeNode.up();
-		while (upType.getKind() == Kind.TYPE) {
-			typeName = ((JCClassDecl) upType.get()).name.toString() + "." + typeName;
-			upType = upType.up();
+	private static String getTypeName(JavacNode typeNode, boolean fqn) {
+		if (fqn) {
+			return ((JCClassDecl) typeNode.get()).sym.getQualifiedName().toString();
+		} else {
+			String typeName = ((JCClassDecl) typeNode.get()).name.toString();
+			JavacNode upType = typeNode.up();
+			while (upType.getKind() == Kind.TYPE) {
+				typeName = ((JCClassDecl) upType.get()).name.toString() + "." + typeName;
+				upType = upType.up();
+			}
+			return typeName;
 		}
-		return typeName;
 	}
 }
