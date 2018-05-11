@@ -200,7 +200,7 @@ public class JavacSingularsRecipes {
 		 * Generates the singular, plural, and clear methods for the given
 		 * {@link SingularData}.<br>
 		 * Uses the given <code>builderType</code> as return type if
-		 * <code>chain == true</code>, <code>void</code> otherwise.. If you need more
+		 * <code>chain == true</code>, <code>void</code> otherwise. If you need more
 		 * control over the return type and value, use
 		 * {@link #generateMethods(SingularData, boolean, JavacNode, JCTree, boolean, JCExpression, JCStatement)}.
 		 */

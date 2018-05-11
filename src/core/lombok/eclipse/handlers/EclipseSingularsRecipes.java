@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -46,6 +47,7 @@ import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Reference;
+import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
@@ -55,6 +57,7 @@ import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
 import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
+import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 
 import lombok.core.LombokImmutableList;
 import lombok.core.SpiLoadUtil;
@@ -217,7 +220,37 @@ public class EclipseSingularsRecipes {
 		}
 		
 		public abstract List<EclipseNode> generateFields(SingularData data, EclipseNode builderType);
-		public abstract void generateMethods(SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, boolean chain);
+
+		/**
+		 * Generates the singular, plural, and clear methods for the given
+		 * {@link SingularData}.<br>
+		 * Uses the given <code>builderType</code> as return type if
+		 * <code>chain == true</code>, <code>void</code> otherwise. If you need more
+		 * control over the return type and value, use
+		 * {@link #generateMethods(SingularData, boolean, EclipseNode, boolean, Supplier, Supplier)}.
+		 */
+		public void generateMethods(SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, boolean chain) {
+			// TODO: Make these lambdas when switching to a source level >= 1.8.
+			Supplier<TypeReference> returnType = new Supplier<TypeReference>() {
+				@Override public TypeReference get() {
+					return chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
+				}
+			};
+			Supplier<ReturnStatement> returnStatement = new Supplier<ReturnStatement>() {
+				@Override public ReturnStatement get() {
+					return chain ? new ReturnStatement(new ThisReference(0, 0), 0, 0) : null;
+				}
+			};
+			generateMethods(data, deprecate, builderType, fluent, returnType, returnStatement);
+		}
+		
+		/**
+		 * Generates the singular, plural, and clear methods for the given
+		 * {@link SingularData}.<br>
+		 * Uses the given <code>returnType</code> and <code>returnStatement</code> for the generated methods. 
+		 */
+		public abstract void generateMethods(SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, Supplier<TypeReference> returnType, Supplier<ReturnStatement> returnStatement);
+
 		public abstract void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName, String builderVariable);
 		
 		public boolean requiresCleaning() {
