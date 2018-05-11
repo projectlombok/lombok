@@ -1,98 +1,62 @@
 import java.util.List;
-
 public class SuperBuilderBasic {
   public static @lombok.experimental.SuperBuilder class Parent {
+    public static abstract @java.lang.SuppressWarnings("all") class ParentBuilder<C extends Parent, B extends ParentBuilder<C, B>> {
+      private @java.lang.SuppressWarnings("all") int field1;
+      private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> items;
+      protected abstract @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.SuppressWarnings("all") C build();
+      public @java.lang.SuppressWarnings("all") B field1(final int field1) {
+        this.field1 = field1;
+        return self();
+      }
+      public @java.lang.SuppressWarnings("all") B item(final String item) {
+        if (this.items == null) this.items = new java.util.ArrayList<String>();
+        this.items.add(item);
+        return self();
+      }
+      public @java.lang.SuppressWarnings("all") B items(final java.util.Collection<? extends String> items) {
+        if (this.items == null) this.items = new java.util.ArrayList<String>();
+        this.items.addAll(items);
+        return self();
+      }
+      public @java.lang.SuppressWarnings("all") B clearItems() {
+        if (this.items != null) this.items.clear();
+        return self();
+      }
+      public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+        return "SuperBuilderBasic.Parent.ParentBuilder(field1=" + this.field1 + ", items=" + this.items + ")";
+      }
+    }
+    private static final @java.lang.SuppressWarnings("all") class ParentBuilderImpl extends ParentBuilder<Parent, ParentBuilderImpl> {
+      private @java.lang.SuppressWarnings("all") ParentBuilderImpl() {
+      }
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") ParentBuilderImpl self() {
+        return this;
+      }
+      public @java.lang.Override @java.lang.SuppressWarnings("all") Parent build() {
+        return new Parent(this);
+      }
+    }
+    public @java.lang.SuppressWarnings("all") static ParentBuilder<?, ?> builder() {
+      return new ParentBuilderImpl();
+    }
     int field1;
     @lombok.Singular List<String> items;
-
-    protected Parent(final ParentBuilder<?, ?> b) {
+    protected @java.lang.SuppressWarnings("all") Parent(final ParentBuilder<?, ?> b) {
       this.field1 = b.field1;
       java.util.List<String> items;
       switch (b.items == null ? 0 : b.items.size()) {
       case 0: 
         items = java.util.Collections.emptyList();
         break;
-
       case 1: 
         items = java.util.Collections.singletonList(b.items.get(0));
         break;
-
       default: 
         items = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(b.items));
       }
       this.items = items;
-    }
-
-
-    @java.lang.SuppressWarnings("all")
-    public static abstract class ParentBuilder<C extends Parent, B extends ParentBuilder<C, B>> {
-      @java.lang.SuppressWarnings("all")
-      private int field1;
-      @java.lang.SuppressWarnings("all")
-      private java.util.ArrayList<String> items;
-
-      @java.lang.SuppressWarnings("all")
-      protected abstract B self();
-
-      @java.lang.SuppressWarnings("all")
-      public abstract C build();
-
-      @java.lang.SuppressWarnings("all")
-      public B field1(final int field1) {
-        this.field1 = field1;
-        return self();
-      }
-
-      @java.lang.SuppressWarnings("all")
-      public B item(final String item) {
-        if (this.items == null) this.items = new java.util.ArrayList<String>();
-        this.items.add(item);
-        return self();
-      }
-
-      @java.lang.SuppressWarnings("all")
-      public B items(final java.util.Collection<? extends String> items) {
-        if (this.items == null) this.items = new java.util.ArrayList<String>();
-        this.items.addAll(items);
-        return self();
-      }
-
-      @java.lang.SuppressWarnings("all")
-      public B clearItems() {
-        if (this.items != null) this.items.clear();
-        return self();
-      }
-
-      @java.lang.Override
-      @java.lang.SuppressWarnings("all")
-      public java.lang.String toString() {
-        return "SuperBuilderBasic.Parent.ParentBuilder(field1=" + this.field1 + ", items=" + this.items + ")";
-      }
-    }
-
-
-    @java.lang.SuppressWarnings("all")
-    private static final class ParentBuilderImpl extends ParentBuilder<Parent, ParentBuilderImpl> {
-      @java.lang.SuppressWarnings("all")
-      private ParentBuilderImpl() {
-      }
-
-      @java.lang.Override
-      @java.lang.SuppressWarnings("all")
-      protected ParentBuilderImpl self() {
-        return this;
-      }
-
-      @java.lang.Override
-      @java.lang.SuppressWarnings("all")
-      public Parent build() {
-        return new Parent(this);
-      }
-    }
-
-    @java.lang.SuppressWarnings("all")
-    public static ParentBuilder<?, ?> builder() {
-      return new ParentBuilderImpl();
     }
   }
 

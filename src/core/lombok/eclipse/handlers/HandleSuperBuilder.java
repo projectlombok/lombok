@@ -58,6 +58,7 @@ import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
 import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
@@ -393,7 +394,10 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		constructor.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		constructor.bodyStart = constructor.declarationSourceStart = constructor.sourceStart = source.sourceStart;
 		constructor.bodyEnd = constructor.declarationSourceEnd = constructor.sourceEnd = source.sourceEnd;
-		constructor.arguments = null;
+		
+		TypeReference[] wildcards = new TypeReference[] {new Wildcard(Wildcard.UNBOUND), new Wildcard(Wildcard.UNBOUND)};
+		TypeReference builderType = new ParameterizedSingleTypeReference(builderClassName.toCharArray(), wildcards, 0, p);
+		constructor.arguments = new Argument[] {new Argument("b".toCharArray(), p, builderType, Modifier.FINAL)};
 
 		List<Statement> statements = new ArrayList<Statement>();
 		List<Statement> nullChecks = new ArrayList<Statement>();
@@ -428,7 +432,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 
 		nullChecks.addAll(statements);
 		constructor.statements = nullChecks.isEmpty() ? null : nullChecks.toArray(new Statement[nullChecks.size()]);
-		constructor.arguments = new Argument[] {new Argument("b".toCharArray(), p, new SingleTypeReference(builderClassName.toCharArray(), p), Modifier.FINAL)};
 
 		constructor.traverse(new SetGeneratedByVisitor(source), typeDeclaration.scope);
 
@@ -448,21 +451,11 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 //	}
 
 	private MethodDeclaration generateAbstractSelfMethod(EclipseNode tdParent, boolean override, String builderGenericName) {
-//		JavacTreeMaker maker = tdParent.getTreeMaker();
-//		List<JCAnnotation> annotations = List.nil();
-//		if (override) {
-//			JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(tdParent, "Override"), List.<JCExpression>nil());
-//			annotations = List.of(overrideAnnotation);
-//		}
-//		JCModifiers modifiers = maker.Modifiers(Flags.PROTECTED | Flags.ABSTRACT, annotations);
-//		Name name = tdParent.toName(SELF_METHOD);
-//		JCExpression returnType = maker.Ident(tdParent.toName(builderGenericName));
-//
-//		return maker.MthodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), null, null);
+		// TODO: @Override annotation if override == true.
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) tdParent.top().get()).compilationResult);
 		out.selector = SELF_METHOD.toCharArray();
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		out.modifiers = ClassFileConstants.AccAbstract;
+		out.modifiers = ClassFileConstants.AccAbstract | ClassFileConstants.AccProtected;
 		out.returnType = new SingleTypeReference(builderGenericName.toCharArray(), 0);
 		return out;
 	}
@@ -770,22 +763,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		return null;
 	}
 
-	private TypeParameter[] copyTypeParamsAndAddBuilderParams(TypeParameter[] typeParams, ASTNode source, String classGenericName, String builderGenericName) {
-		TypeParameter[] result = Arrays.copyOf(copyTypeParams(typeParams, source), typeParams.length + 2);
-
-		TypeParameter o = new TypeParameter();
-		setGeneratedBy(o, source);
-		o.name = classGenericName.toCharArray();
-		result[result.length - 2] = o;
-
-		o = new TypeParameter();
-		setGeneratedBy(o, source);
-		o.name = builderGenericName.toCharArray();
-		result[result.length - 1] = o;
-
-		return result;
-	}
-
 	public EclipseNode makeBuilderAbstractClass(EclipseNode tdParent, String builderClass,
 			TypeReference superclassBuilderClass, TypeParameter[] typeParams,
 			TypeParameter[] superclassTypeParams, ASTNode source, String classGenericName, String builderGenericName) {
@@ -795,28 +772,26 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		builder.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
 		builder.modifiers |= ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccAbstract;
 		builder.name = builderClass.toCharArray();
-		builder.typeParameters = copyTypeParamsAndAddBuilderParams(typeParams, source, classGenericName, builderGenericName);
-		builder.superclass = superclassBuilderClass;
 
-//		// Keep any type params of the annotated class.
-//		ListBuffer<JCTypeParameter> allTypeParams = new ListBuffer<JCTypeParameter>();
-//		allTypeParams.addAll(copyTypeParams(source, typeParams));
-//		// Add builder-specific type params required for inheritable builders.
-//		// 1. The return type for the build() method, named "C", which extends the annotated class.
-//		JCExpression annotatedClass = maker.Ident(tdParent.toName(tdParent.getName()));
-//		if (typeParams.nonEmpty()) {
-//			// Add type params of the annotated class.
-//			annotatedClass = maker.TypeApply(annotatedClass, getTypeParamExpressions(typeParams, maker).toList());
-//		}
-//		allTypeParams.add(maker.TypeParameter(tdParent.toName(classGenericName), List.<JCExpression>of(annotatedClass)));
-//		// 2. The return type for all setter methods, named "B", which extends this builder class.
-//		Name builderClassName = tdParent.toName(builderClass);
-//		ListBuffer<JCExpression> typeParamsForBuilder = getTypeParamExpressions(typeParams, maker);
-//		typeParamsForBuilder.add(maker.Ident(tdParent.toName(classGenericName)));
-//		typeParamsForBuilder.add(maker.Ident(tdParent.toName(builderGenericName)));
-//		JCTypeApply typeApply = maker.TypeApply(maker.Ident(builderClassName), typeParamsForBuilder.toList());
-//		allTypeParams.add(maker.TypeParameter(tdParent.toName(builderGenericName), List.<JCExpression>of(typeApply)));
-//
+		// Keep any type params of the annotated class.
+		builder.typeParameters = Arrays.copyOf(copyTypeParams(typeParams, source), typeParams.length + 2);
+		// Add builder-specific type params required for inheritable builders.
+		// 1. The return type for the build() method, named "C", which extends the annotated class.
+		TypeParameter o = new TypeParameter();
+		o.name = classGenericName.toCharArray();
+		o.type = cloneSelfType(tdParent, source);
+		builder.typeParameters[builder.typeParameters.length - 2] = o;
+		// 2. The return type for all setter methods, named "B", which extends this builder class.
+		o = new TypeParameter();
+		o.name = builderGenericName.toCharArray();
+		TypeReference[] typerefs = new TypeReference[] {
+				new SingleTypeReference(classGenericName.toCharArray(), 0), 
+				new SingleTypeReference(builderGenericName.toCharArray(), 0)
+		};
+		o.type = new ParameterizedSingleTypeReference(builderClass.toCharArray(), typerefs, 0, 0);
+		builder.typeParameters[builder.typeParameters.length - 1] = o;
+
+		builder.superclass = superclassBuilderClass;
 //		JCExpression extending = null;
 //		if (superclassBuilderClassExpression != null) {
 //			// If the annotated class extends another class, we want this builder to extend the builder of the superclass.
@@ -827,8 +802,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 //			typeParamsForBuilder.add(maker.Ident(tdParent.toName(builderGenericName)));
 //			extending = maker.TypeApply(superclassBuilderClassExpression, typeParamsForBuilder.toList());
 //		}
-//
-//		JCClassDecl builder = maker.ClassDef(mods, builderClassName, allTypeParams.toList(), extending, List.<JCExpression>nil(), List.<JCTree>nil());
 
 		builder.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return injectType(tdParent, builder);
