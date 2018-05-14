@@ -3,10 +3,8 @@ Lombok Changelog
 
 ### v1.16.21 "Edgy Guinea Pig"
 * v1.16.20 is the latest stable release of Project Lombok.
-* Fix file url bug in edge release
-* Fix TypeTags error in jdk10+
+* PLATFORM: lombok now counts as an _incremental annotation processor_ for gradle. Should speed up your gradle builds considerably! [Issue #1580](https://github.com/rzwitserloot/lombok/issues/1580)
 * FEATURE: `@Getter` and `@Setter` also allow `onMethod` and `onParam` when put on a type. [Issue #1653](https://github.com/rzwitserloot/lombok/issues/1653) 
-* POTENTIAL FIX: IBM RAD. [Issue #1604](https://github.com/rzwitserloot/lombok/issues/1604)
 * FEATURE: `@FieldNameConstants` is an new feature that generates string constants for your field names. [Docs on @FieldNameConstants](https://projectlombok.org/features/experimental/FieldNameConstants).
 * PLATFORM: Fix for using lombok together with JDK9's new `module-info.java` feature. [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
 * PLATFORM: Some initial work on supporting JDK10 and JDK11.
