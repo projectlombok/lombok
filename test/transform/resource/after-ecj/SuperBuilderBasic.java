@@ -12,27 +12,28 @@ public class SuperBuilderBasic {
       }
       public @java.lang.SuppressWarnings("all") B item(String item) {
         if ((this.items == null))
-          this.items = new java.util.ArrayList<String>();
+            this.items = new java.util.ArrayList<String>();
         this.items.add(item);
         return self();
       }
       public @java.lang.SuppressWarnings("all") B items(java.util.Collection<? extends String> items) {
         if ((this.items == null))
-          this.items = new java.util.ArrayList<String>();
+            this.items = new java.util.ArrayList<String>();
         this.items.addAll(items);
         return self();
       }
       public @java.lang.SuppressWarnings("all") B clearItems() {
         if ((this.items != null))
-          this.items.clear();
+            this.items.clear();
         return self();
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-        return "SuperBuilderBasic.Parent.ParentBuilder(field1=" + this.field1 + ", items=" + this.items + ")";
+        return (((("SuperBuilderBasic.Parent.ParentBuilder(field1=" + this.field1) + ", items=") + this.items) + ")");
       }
     }
     private static final @java.lang.SuppressWarnings("all") class ParentBuilderImpl extends ParentBuilder<Parent, ParentBuilderImpl> {
       private @java.lang.SuppressWarnings("all") ParentBuilderImpl() {
+        super();
       }
       protected @java.lang.Override @java.lang.SuppressWarnings("all") ParentBuilderImpl self() {
         return this;
@@ -41,25 +42,26 @@ public class SuperBuilderBasic {
         return new Parent(this);
       }
     }
-    public @java.lang.SuppressWarnings("all") static ParentBuilder<?, ?> builder() {
-      return new ParentBuilderImpl();
-    }
     int field1;
     @lombok.Singular List<String> items;
     protected @java.lang.SuppressWarnings("all") Parent(final ParentBuilder<?, ?> b) {
+      super();
       this.field1 = b.field1;
       java.util.List<String> items;
-      switch (b.items == null ? 0 : b.items.size()) {
-      case 0: 
-        items = java.util.Collections.emptyList();
-        break;
-      case 1: 
-        items = java.util.Collections.singletonList(b.items.get(0));
-        break;
-      default: 
-        items = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(b.items));
+      switch (((b.items == null) ? 0 : b.items.size())) {
+      case 0 :
+          items = java.util.Collections.emptyList();
+          break;
+      case 1 :
+          items = java.util.Collections.singletonList(b.items.get(0));
+          break;
+      default :
+          items = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(b.items));
       }
       this.items = items;
+    }
+    public static @java.lang.SuppressWarnings("all") ParentBuilder<?, ?> builder() {
+    	return new ParentBuilderImpl();
     }
   }
 
