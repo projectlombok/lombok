@@ -44,3 +44,49 @@ final @lombok.EqualsAndHashCode(exclude = {"y"}) class EqualsAndHashCodeExclude 
     return result;
   }
 }
+final @lombok.EqualsAndHashCode class EqualsAndHashCodeOfField {
+  @lombok.EqualsAndHashCode.Of int x;
+  int y;
+  EqualsAndHashCodeOfField() {
+    super();
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
+    if ((o == this))
+        return true;
+    if ((! (o instanceof EqualsAndHashCodeOfField)))
+        return false;
+    final EqualsAndHashCodeOfField other = (EqualsAndHashCodeOfField) o;
+    if ((this.x != other.x))
+        return false;
+    return true;
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
+    final int PRIME = 59;
+    int result = 1;
+    result = ((result * PRIME) + this.x);
+    return result;
+  }
+}
+final @lombok.EqualsAndHashCode class EqualsAndHashCodeExcludeField {
+  int x;
+  @lombok.EqualsAndHashCode.Exclude int y;
+  EqualsAndHashCodeExcludeField() {
+    super();
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
+    if ((o == this))
+        return true;
+    if ((! (o instanceof EqualsAndHashCodeExcludeField)))
+        return false;
+    final EqualsAndHashCodeExcludeField other = (EqualsAndHashCodeExcludeField) o;
+    if ((this.x != other.x))
+        return false;
+    return true;
+  }
+  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
+    final int PRIME = 59;
+    int result = 1;
+    result = ((result * PRIME) + this.x);
+    return result;
+  }
+}

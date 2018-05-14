@@ -181,12 +181,22 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			}
 		}
 		
+		boolean hasFieldIncludes = false;
+		for (JavacNode child : typeNode.down()) {
+			if (child.getKind() != Kind.FIELD) continue;
+			if (hasAnnotation(EqualsAndHashCode.Of.class, child)) {
+				hasFieldIncludes = true;
+				break;
+			}
+		}
+		
 		ListBuffer<JavacNode> nodesForEquality = new ListBuffer<JavacNode>();
-		if (includes != null) {
+		if (includes != null || hasFieldIncludes) {
 			for (JavacNode child : typeNode.down()) {
 				if (child.getKind() != Kind.FIELD) continue;
 				JCVariableDecl fieldDecl = (JCVariableDecl) child.get();
-				if (includes.contains(fieldDecl.name.toString())) nodesForEquality.append(child);
+				if (includes != null && includes.contains(fieldDecl.name.toString())) nodesForEquality.append(child);
+				if (hasAnnotation(EqualsAndHashCode.Of.class, child)) nodesForEquality.append(child);
 			}
 		} else {
 			for (JavacNode child : typeNode.down()) {
@@ -198,10 +208,18 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				if ((fieldDecl.mods.flags & Flags.TRANSIENT) != 0) continue;
 				//Skip excluded fields.
 				if (excludes != null && excludes.contains(fieldDecl.name.toString())) continue;
+				if (hasAnnotation(EqualsAndHashCode.Exclude.class, child)) continue;
 				//Skip fields that start with $
 				if (fieldDecl.name.toString().startsWith("$")) continue;
 				nodesForEquality.append(child);
 			}
+		}
+		
+		for (JavacNode child : typeNode.down()) {
+			if (child.getKind() != Kind.FIELD) continue;
+			//Abuse hasAnnotation just for deleting directly on the children
+			hasAnnotationAndDeleteIfNeccessary(EqualsAndHashCode.Of.class, child);
+			hasAnnotationAndDeleteIfNeccessary(EqualsAndHashCode.Exclude.class, child);
 		}
 		
 		boolean isFinal = (((JCClassDecl) typeNode.get()).mods.flags & Flags.FINAL) != 0;
