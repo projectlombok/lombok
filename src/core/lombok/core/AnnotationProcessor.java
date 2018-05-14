@@ -26,6 +26,7 @@ import static lombok.core.Augments.ClassLoader_lombokAlreadyAddedTo;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
@@ -63,6 +64,27 @@ public class AnnotationProcessor extends AbstractProcessor {
 	private final List<ProcessorDescriptor> registered = Arrays.asList(new JavacDescriptor(), new EcjDescriptor());
 	private final List<ProcessorDescriptor> active = new ArrayList<ProcessorDescriptor>();
 	private final List<String> delayedWarnings = new ArrayList<String>();
+
+	/**
+	 * This method is a simplified version of {@link lombok.javac.apt.LombokProcessor.getJavacProcessingEnvironment}
+	 * It simply returns the processing environment, but in case of gradle incremental compilation,
+	 * the delegate ProcessingEnvironment of the gradle wrapper is returned.
+	 */
+	public static ProcessingEnvironment getJavacProcessingEnvironment(ProcessingEnvironment procEnv, List<String> delayedWarnings) {
+		final Class<? extends ProcessingEnvironment> procEnvClass = procEnv.getClass();
+		if (procEnvClass.getName().equals("org.gradle.api.internal.tasks.compile.processing.IncrementalProcessingEnvironment")) {
+			try {
+				Field field = procEnvClass.getDeclaredField("delegate");
+				field.setAccessible(true);
+				Object delegate = field.get(procEnv);
+				return (ProcessingEnvironment) delegate;
+			} catch (final Exception e) {
+				delayedWarnings.add("Can't get the delegate of the gradle IncrementalProcessingEnvironment: " + trace(e));
+			}
+		}
+		return procEnv;
+	}
+
 	
 	static class JavacDescriptor extends ProcessorDescriptor {
 		private Processor processor;
@@ -72,10 +94,12 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		
 		@Override boolean want(ProcessingEnvironment procEnv, List<String> delayedWarnings) {
-			if (!procEnv.getClass().getName().equals("com.sun.tools.javac.processing.JavacProcessingEnvironment")) return false;
-			
+			ProcessingEnvironment javacProcEnv = getJavacProcessingEnvironment(procEnv, delayedWarnings);
+
+			if (!javacProcEnv.getClass().getName().equals("com.sun.tools.javac.processing.JavacProcessingEnvironment")) return false;
+
 			try {
-				ClassLoader classLoader = findAndPatchClassLoader(procEnv);
+				ClassLoader classLoader = findAndPatchClassLoader(javacProcEnv);
 				processor = (Processor) Class.forName("lombok.javac.apt.LombokProcessor", false, classLoader).newInstance();
 			} catch (Exception e) {
 				delayedWarnings.add("You found a bug in lombok; lombok.javac.apt.LombokProcessor is not available. Lombok will not run during this compilation: " + trace(e));
