@@ -37,7 +37,7 @@ import lombok.ToString;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.handlers.InclusionExclusionUtils;
-import lombok.core.handlers.InclusionExclusionUtils.ToStringMember;
+import lombok.core.handlers.InclusionExclusionUtils.Included;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
@@ -73,7 +73,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		handleFlagUsage(annotationNode, ConfigurationKeys.TO_STRING_FLAG_USAGE, "@ToString");
 		
 		ToString ann = annotation.getInstance();
-		List<ToStringMember<EclipseNode>> members = InclusionExclusionUtils.handleToStringMarking(annotationNode.up(), annotation, annotationNode);
+		List<Included<EclipseNode, ToString.Include>> members = InclusionExclusionUtils.handleToStringMarking(annotationNode.up(), annotation, annotationNode);
 		if (members == null) return;
 		
 		Boolean callSuper = ann.callSuper();
@@ -105,11 +105,11 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		Boolean doNotUseGettersConfiguration = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_DO_NOT_USE_GETTERS);
 		FieldAccess access = doNotUseGettersConfiguration == null || !doNotUseGettersConfiguration ? FieldAccess.GETTER : FieldAccess.PREFER_FIELD;
 		
-		List<ToStringMember<EclipseNode>> members = InclusionExclusionUtils.handleToStringMarking(typeNode, null, null);
+		List<Included<EclipseNode, ToString.Include>> members = InclusionExclusionUtils.handleToStringMarking(typeNode, null, null);
 		generateToString(typeNode, errorNode, members, includeFieldNames, null, false, access);
 	}
 	
-	public void generateToString(EclipseNode typeNode, EclipseNode errorNode, List<ToStringMember<EclipseNode>> members,
+	public void generateToString(EclipseNode typeNode, EclipseNode errorNode, List<Included<EclipseNode, ToString.Include>> members,
 		boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
 		
 		TypeDeclaration typeDecl = null;
@@ -145,7 +145,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		}
 	}
 	
-	public static MethodDeclaration createToString(EclipseNode type, Collection<ToStringMember<EclipseNode>> members,
+	public static MethodDeclaration createToString(EclipseNode type, Collection<Included<EclipseNode, ToString.Include>> members,
 		boolean includeNames, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {
 		
 		String typeName = getTypeName(type);
@@ -163,7 +163,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 		} else if (members.isEmpty()) {
 			prefix = (typeName + "()").toCharArray();
 		} else if (includeNames) {
-			ToStringMember<EclipseNode> firstMember = members.iterator().next();
+			Included<EclipseNode, ToString.Include> firstMember = members.iterator().next();
 			String name = firstMember.getInc() == null ? "" : firstMember.getInc().name();
 			if (name.isEmpty()) name = firstMember.getNode().getName();
 			prefix = (typeName + "(" + name + "=").toCharArray();
@@ -187,7 +187,7 @@ public class HandleToString extends EclipseAnnotationHandler<ToString> {
 			first = false;
 		}
 		
-		for (ToStringMember<EclipseNode> member : members) {
+		for (Included<EclipseNode, ToString.Include> member : members) {
 			EclipseNode memberNode = member.getNode();
 			
 			TypeReference fieldType = getFieldType(memberNode, fieldAccess);

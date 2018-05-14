@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,8 @@ public @interface EqualsAndHashCode {
 	/**
 	 * Any fields listed here will not be taken into account in the generated {@code equals} and {@code hashCode} implementations.
 	 * Mutually exclusive with {@link #of()}.
+	 * <p>
+	 * Will soon be marked {@code @Deprecated}; use the {@code @EqualsAndHashCode.Exclude} annotation instead.
 	 * 
 	 * @return A list of fields to exclude.
 	 */
@@ -47,6 +49,8 @@ public @interface EqualsAndHashCode {
 	 * Normally, all non-static, non-transient fields are used for identity.
 	 * <p>
 	 * Mutually exclusive with {@link #exclude()}.
+	 * <p>
+	 * Will soon be marked {@code @Deprecated}; use the {@code @EqualsAndHashCode.Include} annotation together with {@code @EqualsAndHashCode(onlyExplicitlyIncluded = true)}.
 	 * 
 	 * @return A list of fields to use (<em>default</em>: all of them).
 	 */
@@ -89,4 +93,27 @@ public @interface EqualsAndHashCode {
 	@Retention(RetentionPolicy.SOURCE)
 	@Target({})
 	@interface AnyAnnotation {}
+	
+	/**
+	 * Only include fields and methods explicitly marked with {@code @EqualsAndHashCode.Include}.
+	 * Normally, all (non-static, non-transient) fields are included by default.
+	 */
+	boolean onlyExplicitlyIncluded() default false;
+	
+	/**
+	 * If present, do not include this field in the generated {@code equals} and {@code hashCode} methods.
+	 */
+	@Target(ElementType.FIELD)
+	@Retention(RetentionPolicy.SOURCE)
+	public @interface Exclude {}
+	
+	/**
+	 * Configure the behaviour of how this member is treated in the {@code equals} and {@code hashCode} implementation; if on a method, include the method's return value as part of calculating hashCode/equality.
+	 */
+	@Target({ElementType.FIELD, ElementType.METHOD})
+	@Retention(RetentionPolicy.SOURCE)
+	public @interface Include {
+		/** Defaults to the method name of the annotated member. If on a method and the name equals the name of a default-included field, this member takes its place. */
+		String replaces() default "";
+	}
 }

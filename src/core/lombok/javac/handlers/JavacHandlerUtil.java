@@ -948,18 +948,19 @@ public class JavacHandlerUtil {
 	}
 	
 	static JCExpression createMethodAccessor(JavacTreeMaker maker, JavacNode method) {
-		JCExpression receiver;
+		return createMethodAccessor(maker, method, null);
+	}
+	
+	static JCExpression createMethodAccessor(JavacTreeMaker maker, JavacNode method, JCExpression receiver) {
 		JCMethodDecl methodDecl = (JCMethodDecl) method.get();
 		
-		if ((methodDecl.mods.flags & Flags.STATIC) == 0) {
+		if (receiver == null && (methodDecl.mods.flags & Flags.STATIC) == 0) {
 			receiver = maker.Ident(method.toName("this"));
-		} else {
+		} else if (receiver == null) {
 			JavacNode containerNode = method.up();
 			if (containerNode != null && containerNode.get() instanceof JCClassDecl) {
 				JCClassDecl container = (JCClassDecl) method.up().get();
 				receiver = maker.Ident(container.name);
-			} else {
-				receiver = null;
 			}
 		}
 		

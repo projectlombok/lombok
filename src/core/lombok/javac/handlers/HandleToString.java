@@ -32,7 +32,7 @@ import lombok.ToString;
 import lombok.core.AnnotationValues;
 import lombok.core.AST.Kind;
 import lombok.core.handlers.InclusionExclusionUtils;
-import lombok.core.handlers.InclusionExclusionUtils.ToStringMember;
+import lombok.core.handlers.InclusionExclusionUtils.Included;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -66,7 +66,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		deleteAnnotationIfNeccessary(annotationNode, ToString.class);
 		
 		ToString ann = annotation.getInstance();
-		java.util.List<ToStringMember<JavacNode>> members = InclusionExclusionUtils.handleToStringMarking(annotationNode.up(), annotation, annotationNode);
+		java.util.List<Included<JavacNode, ToString.Include>> members = InclusionExclusionUtils.handleToStringMarking(annotationNode.up(), annotation, annotationNode);
 		if (members == null) return;
 		
 		Boolean callSuper = ann.callSuper();
@@ -98,11 +98,11 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		Boolean doNotUseGettersConfiguration = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_DO_NOT_USE_GETTERS);
 		FieldAccess access = doNotUseGettersConfiguration == null || !doNotUseGettersConfiguration ? FieldAccess.GETTER : FieldAccess.PREFER_FIELD;
 		
-		java.util.List<ToStringMember<JavacNode>> members = InclusionExclusionUtils.handleToStringMarking(typeNode, null, null);
+		java.util.List<Included<JavacNode, ToString.Include>> members = InclusionExclusionUtils.handleToStringMarking(typeNode, null, null);
 		generateToString(typeNode, errorNode, members, includeFieldNames, null, false, access);
 	}
 	
-	public void generateToString(JavacNode typeNode, JavacNode source, java.util.List<ToStringMember<JavacNode>> members,
+	public void generateToString(JavacNode typeNode, JavacNode source, java.util.List<Included<JavacNode, ToString.Include>> members,
 		boolean includeFieldNames, Boolean callSuper, boolean whineIfExists, FieldAccess fieldAccess) {
 		
 		boolean notAClass = true;
@@ -138,7 +138,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		}
 	}
 	
-	static JCMethodDecl createToString(JavacNode typeNode, Collection<ToStringMember<JavacNode>> members,
+	static JCMethodDecl createToString(JavacNode typeNode, Collection<Included<JavacNode, ToString.Include>> members,
 		boolean includeNames, boolean callSuper, FieldAccess fieldAccess, JCTree source) {
 		
 		JavacTreeMaker maker = typeNode.getTreeMaker();
@@ -158,7 +158,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		} else if (members.isEmpty()) {
 			prefix = typeName + "()";
 		} else if (includeNames) {
-			ToStringMember<JavacNode> firstMember = members.iterator().next();
+			Included<JavacNode, ToString.Include> firstMember = members.iterator().next();
 			String name = firstMember.getInc() == null ? "" : firstMember.getInc().name();
 			if (name.isEmpty()) name = firstMember.getNode().getName();
 			prefix = typeName + "(" + name + "=";
@@ -176,7 +176,7 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			first = false;
 		}
 		
-		for (ToStringMember<JavacNode> member : members) {
+		for (Included<JavacNode, ToString.Include> member : members) {
 			JCExpression expr;
 			
 			JCExpression memberAccessor;

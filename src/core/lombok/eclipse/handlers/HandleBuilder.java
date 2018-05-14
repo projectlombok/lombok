@@ -74,9 +74,10 @@ import lombok.Builder;
 import lombok.Builder.ObtainVia;
 import lombok.ConfigurationKeys;
 import lombok.Singular;
+import lombok.ToString;
 import lombok.core.AST.Kind;
 import lombok.core.handlers.HandlerUtil;
-import lombok.core.handlers.InclusionExclusionUtils.ToStringMember;
+import lombok.core.handlers.InclusionExclusionUtils.Included;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.eclipse.Eclipse;
@@ -450,10 +451,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		if (methodExists("toString", builderType, 0) == MemberExistsResult.NOT_EXISTS) {
-			List<ToStringMember<EclipseNode>> fieldNodes = new ArrayList<ToStringMember<EclipseNode>>();
+			List<Included<EclipseNode, ToString.Include>> fieldNodes = new ArrayList<Included<EclipseNode, ToString.Include>>();
 			for (BuilderFieldData bfd : builderFields) {
 				for (EclipseNode f : bfd.createdFields) {
-					fieldNodes.add(new ToStringMember<EclipseNode>(f, null, true));
+					fieldNodes.add(new Included<EclipseNode, ToString.Include>(f, null, true));
 				}
 			}
 			MethodDeclaration md = HandleToString.createToString(builderType, fieldNodes, true, false, ast, FieldAccess.ALWAYS_FIELD);

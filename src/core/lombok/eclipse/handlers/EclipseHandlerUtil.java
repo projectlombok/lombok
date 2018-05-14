@@ -1041,6 +1041,20 @@ public class EclipseHandlerUtil {
 		return call;
 	}
 	
+	static Expression createMethodAccessor(EclipseNode method, ASTNode source, char[] receiver) {
+		int pS = source == null ? 0 : source.sourceStart, pE = source == null ? 0 : source.sourceEnd;
+		long p = (long) pS << 32 | pE;
+		
+		MethodDeclaration methodDecl = (MethodDeclaration) method.get();
+		MessageSend call = new MessageSend();
+		setGeneratedBy(call, source);
+		call.sourceStart = pS; call.statementEnd = call.sourceEnd = pE;
+		call.receiver = new SingleNameReference(receiver, p);
+		setGeneratedBy(call.receiver, source);
+		call.selector = methodDecl.selector;
+		return call;
+	}
+	
 	/** Serves as return value for the methods that check for the existence of fields and methods. */
 	public enum MemberExistsResult {
 		NOT_EXISTS, EXISTS_BY_LOMBOK, EXISTS_BY_USER;

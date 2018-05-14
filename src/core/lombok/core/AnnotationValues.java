@@ -27,6 +27,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -158,6 +159,62 @@ public class AnnotationValues<A extends Annotation> {
 	}
 	
 	private A cachedInstance = null;
+	
+	public List<String> getAsStringList(String methodName) {
+		AnnotationValue v = values.get(methodName);
+		
+		if (v == null) {
+			String[] s = getDefaultIf(methodName, String[].class, new String[0]);
+			return Collections.unmodifiableList(Arrays.asList(s));
+		}
+		
+		List<String> out = new ArrayList<String>(v.valueGuesses.size());
+		int idx = 0;
+		for (Object guess : v.valueGuesses) {
+			Object result = guess == null ? null : guessToType(guess, String.class, v, idx);
+			if (result == null) {
+				if (v.valueGuesses.size() == 1) {
+					String[] s = getDefaultIf(methodName, String[].class, new String[0]);
+					return Collections.unmodifiableList(Arrays.asList(s));
+				} 
+				throw new AnnotationValueDecodeFail(v, 
+					"I can't make sense of this annotation value. Try using a fully qualified literal.", idx);
+			}
+			out.add((String) result);
+		}
+		
+		return Collections.unmodifiableList(out);
+	}
+	
+	public String getAsString(String methodName) {
+		AnnotationValue v = values.get(methodName);
+		if (v == null || v.valueGuesses.size() != 1) {
+			return getDefaultIf(methodName, String.class, "");
+		}
+		
+		Object guess = guessToType(v.valueGuesses.get(0), String.class, v, 0);
+		if (guess instanceof String) return (String) guess;
+		return getDefaultIf(methodName, String.class, "");
+	}
+	
+	public boolean getAsBoolean(String methodName) {
+		AnnotationValue v = values.get(methodName);
+		if (v == null || v.valueGuesses.size() != 1) {
+			return getDefaultIf(methodName, Boolean.class, false);
+		}
+		
+		Object guess = guessToType(v.valueGuesses.get(0), Boolean.class, v, 0);
+		if (guess instanceof Boolean) return ((Boolean) guess).booleanValue();
+		return getDefaultIf(methodName, Boolean.class, false);
+	}
+	
+	public <T> T getDefaultIf(String methodName, Class<T> type, T defaultValue) {
+		try {
+			return type.cast(type.getMethod(methodName).getDefaultValue());
+		} catch (Exception e) {
+			return defaultValue;
+		}
+	}
 	
 	/**
 	 * Creates an actual annotation instance. You can use this to query any annotation methods, except for

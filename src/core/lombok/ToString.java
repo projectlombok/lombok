@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ public @interface ToString {
 	 * <p>
 	 * Mutually exclusive with {@link #exclude()}.
 	 * <p>
-	 * Will soon be marked {@code @Deprecated}; use the {@code @ToString.Only} annotation instead.
+	 * Will soon be marked {@code @Deprecated}; use the {@code @ToString.Include} annotation together with {@code @ToString(onlyExplicitlyIncluded = true)}.
 	 * 
 	 * @return A list of fields to use (<em>default</em>: all of them).
 	 */
