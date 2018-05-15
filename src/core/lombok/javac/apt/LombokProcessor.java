@@ -42,6 +42,7 @@ import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -69,6 +70,7 @@ import com.sun.tools.javac.util.Context;
  * running javac; that's the only requirement.
  */
 @SupportedAnnotationTypes("*")
+@SupportedOptions("org.gradle.annotation.processing.isolating")
 public class LombokProcessor extends AbstractProcessor {
 	private ProcessingEnvironment processingEnv;
 	private JavacProcessingEnvironment javacProcessingEnv;
