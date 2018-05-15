@@ -39,6 +39,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedOptions;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
@@ -48,6 +49,7 @@ import javax.tools.Diagnostic.Kind;
 import lombok.patcher.ClassRootFinder;
 
 @SupportedAnnotationTypes("*")
+@SupportedOptions("org.gradle.annotation.processing.isolating")
 public class AnnotationProcessor extends AbstractProcessor {
 	private static String trace(Throwable t) {
 		StringWriter w = new StringWriter();
