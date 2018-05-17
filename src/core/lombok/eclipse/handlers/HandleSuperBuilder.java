@@ -199,35 +199,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		// Set the names of the builder classes.
 		String builderClassName = String.valueOf(td.name) + "Builder";
 		String builderImplClassName = builderClassName + "Impl";
-
-		TypeReference extendsClause = td.superclass;
-		TypeReference superclassBuilderClass = null;
-//		if (extendsClause.getTypeArguments() != null) {
-//			// Remember the type arguments, because we need them for the extends clause of our abstract builder class.
-//			superclassTypeParams = ((JCTypeApply)extendsClause).getTypeArguments();
-//			// A class name with a generics type, e.g., "Superclass<A>".
-//			extendsClause = ((JCTypeApply)extendsClause).getType();
-//		}
-		if (extendsClause instanceof QualifiedTypeReference) {
-			QualifiedTypeReference qualifiedTypeReference = (QualifiedTypeReference)extendsClause;
-			String superclassClassName = String.valueOf(qualifiedTypeReference.getLastToken());
-			String superclassBuilderClassName = superclassClassName + "Builder";
-			char[][] tokens = Arrays.copyOf(qualifiedTypeReference.tokens, qualifiedTypeReference.tokens.length + 1);
-			tokens[tokens.length] = superclassBuilderClassName.toCharArray();
-			long[] poss = new long[tokens.length];
-			Arrays.fill(poss, p);
-			superclassBuilderClass = new QualifiedTypeReference(tokens, poss);
-		} else if (extendsClause != null) {
-			String superClass = String.valueOf(extendsClause.getTypeName()[0]);
-			String superclassBuilderClassName = superClass + "Builder";
-			char[][] tokens = new char[][] {superClass.toCharArray(), superclassBuilderClassName.toCharArray()};
-			long[] poss = new long[tokens.length];
-			Arrays.fill(poss, p);
-			superclassBuilderClass = new QualifiedTypeReference(tokens, poss);
-		}
-		// If there is no superclass, superclassBuilderClassExpression is still == null at this point.
-		// You can use it to check whether to inherit or not.
-
+		
 		typeParams = td.typeParameters != null ? td.typeParameters : new TypeParameter[0];
 		returnType = namePlusTypeParamsToTypeReference(td.name, typeParams, p);
 
@@ -242,6 +214,46 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		}
 		classGenericName = generateNonclashingNameFor(classGenericName, typeParamStrings);
 		builderGenericName = generateNonclashingNameFor(builderGenericName, typeParamStrings);
+
+		TypeReference extendsClause = td.superclass;
+		TypeReference superclassBuilderClass = null;
+		TypeReference[] typeArguments = new TypeReference[] {
+				new SingleTypeReference(classGenericName.toCharArray(), 0), 
+				new SingleTypeReference(builderGenericName.toCharArray(), 0)
+		};
+		if (extendsClause instanceof QualifiedTypeReference) {
+			QualifiedTypeReference qualifiedTypeReference = (QualifiedTypeReference)extendsClause;
+			String superclassClassName = String.valueOf(qualifiedTypeReference.getLastToken());
+			String superclassBuilderClassName = superclassClassName + "Builder";
+
+			char[][] tokens = Arrays.copyOf(qualifiedTypeReference.tokens, qualifiedTypeReference.tokens.length + 1);
+			tokens[tokens.length] = superclassBuilderClassName.toCharArray();
+			long[] poss = new long[tokens.length];
+			Arrays.fill(poss, p);
+
+			// Every token may potentially have type args. Here, we only have
+			// type args for the last token, the superclass' builder.
+			TypeReference[][] typeArgsForTokens = new TypeReference[tokens.length][];
+			typeArgsForTokens[typeArgsForTokens.length-1] = typeArguments;
+			
+			superclassBuilderClass = new ParameterizedQualifiedTypeReference(tokens, typeArgsForTokens, 0, poss);
+		} else if (extendsClause != null) {
+			String superClass = String.valueOf(extendsClause.getTypeName()[0]);
+			String superclassBuilderClassName = superClass + "Builder";
+
+			char[][] tokens = new char[][] {superClass.toCharArray(), superclassBuilderClassName.toCharArray()};
+			long[] poss = new long[tokens.length];
+			Arrays.fill(poss, p);
+
+			// Every token may potentially have type args. Here, we only have
+			// type args for the last token, the superclass' builder.
+			TypeReference[][] typeArgsForTokens = new TypeReference[tokens.length][];
+			typeArgsForTokens[typeArgsForTokens.length-1] = typeArguments;
+
+			superclassBuilderClass = new ParameterizedQualifiedTypeReference(tokens, typeArgsForTokens, 0, poss);
+		}
+		// If there is no superclass, superclassBuilderClassExpression is still == null at this point.
+		// You can use it to check whether to inherit or not.
 
 		generateBuilderBasedConstructor(tdParent, typeParams, builderFields, annotationNode, builderClassName,
 				superclassBuilderClass != null);
@@ -335,14 +347,10 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		// Add the builder() method to the annotated class.
 		if (methodExists(builderMethodName, tdParent, -1) == MemberExistsResult.NOT_EXISTS) {
 			MethodDeclaration md = generateBuilderMethod(builderMethodName, builderClassName, builderImplClassName, tdParent, typeParams, ast);
-//			recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
 			if (md != null) {
 				injectMethod(tdParent, md);
 			}
 		}
-
-//		recursiveSetGeneratedBy(builderType.get(), ast, annotationNode.getContext());
-//		recursiveSetGeneratedBy(builderImplType.get(), ast, annotationNode.getContext());
 	}
 
 	private String generateNonclashingNameFor(String classGenericName, java.util.List<String> typeParamStrings) {
@@ -441,40 +449,19 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		injectMethod(typeNode, constructor);
 	}
 
-//	private ListBuffer<JCExpression> getTypeParamExpressions(List<? extends JCTree> typeParams, JavacTreeMaker maker) {
-//		ListBuffer<JCExpression> typeParamsForBuilderParameter = new ListBuffer<JCExpression>();
-//		for (JCTree typeParam : typeParams) {
-//			if (typeParam instanceof JCTypeParameter) {
-//				typeParamsForBuilderParameter.add(maker.Ident(((JCTypeParameter)typeParam).getName()));
-//			} else if (typeParam instanceof JCIdent) {
-//				typeParamsForBuilderParameter.add(maker.Ident(((JCIdent)typeParam).getName()));
-//			}
-//		}
-//		return typeParamsForBuilderParameter;
-//	}
-
 	private MethodDeclaration generateAbstractSelfMethod(EclipseNode tdParent, boolean override, String builderGenericName) {
-		// TODO: @Override annotation if override == true.
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) tdParent.top().get()).compilationResult);
 		out.selector = SELF_METHOD.toCharArray();
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		out.modifiers = ClassFileConstants.AccAbstract | ClassFileConstants.AccProtected;
+		if (override) {
+			out.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, tdParent.get())};
+		}
 		out.returnType = new SingleTypeReference(builderGenericName.toCharArray(), 0);
 		return out;
 	}
 
 	private MethodDeclaration generateSelfMethod(EclipseNode builderImplType) {
-//		JavacTreeMaker maker = builderImplType.getTreeMaker();
-//
-//		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(builderImplType, "Override"), List.<JCExpression>nil());
-//		JCModifiers modifiers = maker.Modifiers(Flags.PROTECTED, List.of(overrideAnnotation));
-//		Name name = builderImplType.toName(SELF_METHOD);
-//		JCExpression returnType = maker.Ident(builderImplType.toName(builderImplType.getName()));
-//
-//		JCStatement statement = maker.Return(maker.Ident(builderImplType.toName("this")));
-//		JCBlock body = maker.Block(0, List.<JCStatement>of(statement));
-//
-//		return maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) builderImplType.top().get()).compilationResult);
 		out.selector = SELF_METHOD.toCharArray();
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
@@ -497,11 +484,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		if (override) {
 			out.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, source)};
 		}
-
-		AllocationExpression allocationStatement = new AllocationExpression();
-		allocationStatement.type = copyType(out.returnType);
-		// Use a constructor that only has this builder as parameter.
-		allocationStatement.arguments = new Expression[] {new ThisReference(0, 0)};
 		out.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return out;
 	}
@@ -550,51 +532,21 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		return out;
 	}
 
-//	private MethodDeclaration generateBuildMethod(String buildName, JCExpression returnType, EclipseNode type, List<JCExpression> thrownExceptions) {
-//		JavacTreeMaker maker = type.getTreeMaker();
+//	private MethodDeclaration generateDefaultProvider(char[] methodName, TypeParameter[] typeParameters, EclipseNode fieldNode, ASTNode source) {
+//		int pS = source.sourceStart, pE = source.sourceEnd;
 //
-//		JCExpression call;
-//		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
+//		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) fieldNode.top().get()).compilationResult);
+//		out.typeParameters = copyTypeParams(typeParameters, source);
+//		out.selector = methodName;
+//		out.modifiers = ClassFileConstants.AccPrivate | ClassFileConstants.AccStatic;
+//		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
+//		FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
+//		out.returnType = copyType(fd.type, source);
+//		out.statements = new Statement[] {new ReturnStatement(fd.initialization, pS, pE)};
+//		fd.initialization = null;
 //
-//		// Use a constructor that only has this builder as parameter.
-//		List<JCExpression> builderArg = List.<JCExpression>of(maker.Ident(type.toName("this")));
-//		call = maker.NewClass(null, List.<JCExpression>nil(), returnType, builderArg, null);
-//		statements.append(maker.Return(call));
-//
-//		JCBlock body = maker.Block(0, statements.toList());
-//
-//		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(type, "Override"), List.<JCExpression>nil());
-//		JCModifiers modifiers = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
-//
-//		return maker.MethodDef(modifiers, type.toName(buildName), returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), thrownExceptions, body, null);
-//	}
-
-	private MethodDeclaration generateDefaultProvider(char[] methodName, TypeParameter[] typeParameters, EclipseNode fieldNode, ASTNode source) {
-		int pS = source.sourceStart, pE = source.sourceEnd;
-
-		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) fieldNode.top().get()).compilationResult);
-		out.typeParameters = copyTypeParams(typeParameters, source);
-		out.selector = methodName;
-		out.modifiers = ClassFileConstants.AccPrivate | ClassFileConstants.AccStatic;
-		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
-		out.returnType = copyType(fd.type, source);
-		out.statements = new Statement[] {new ReturnStatement(fd.initialization, pS, pE)};
-		fd.initialization = null;
-
-		out.traverse(new SetGeneratedByVisitor(source), ((TypeDeclaration) fieldNode.up().get()).scope);
-		return out;
-	}
-//	public MethodDeclaration generateDefaultProvider(Name methodName, EclipseNode fieldNode, List<JCTypeParameter> params) {
-//		JavacTreeMaker maker = fieldNode.getTreeMaker();
-//		JCVariableDecl field = (JCVariableDecl) fieldNode.get();
-//
-//		JCStatement statement = maker.Return(field.init);
-//		field.init = null;
-//
-//		JCBlock body = maker.Block(0, List.<JCStatement>of(statement));
-//		int modifiers = Flags.PRIVATE | Flags.STATIC;
-//		return maker.MethodDef(maker.Modifiers(modifiers), methodName, cloneType(maker, field.vartype, field, fieldNode.getContext()), copyTypeParams(fieldNode, params), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+//		out.traverse(new SetGeneratedByVisitor(source), ((TypeDeclaration) fieldNode.up().get()).scope);
+//		return out;
 //	}
 
 	private MethodDeclaration generateBuilderMethod(String builderMethodName, String builderClassName, String builderImplClassName, EclipseNode type, TypeParameter[] typeParams, ASTNode source) {
@@ -605,41 +557,21 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		out.selector = builderMethodName.toCharArray();
 		out.modifiers = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic;
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		out.returnType = namePlusTypeParamsToTypeReference(builderClassName.toCharArray(), typeParams, p);
+
+		// TODO: add type params
 		//out.typeParameters = copyTypeParams(typeParams, source);
+		TypeReference[] returnTypeParams = new TypeReference[2]; 
+		returnTypeParams[0] = new Wildcard(Wildcard.UNBOUND);
+		returnTypeParams[1] = new Wildcard(Wildcard.UNBOUND);
+		out.returnType = new ParameterizedSingleTypeReference(builderClassName.toCharArray(), returnTypeParams, 0, p);
+		
 		AllocationExpression invoke = new AllocationExpression();
-		invoke.type = namePlusTypeParamsToTypeReference(builderClassName.toCharArray(), typeParams, p);
+		invoke.type = namePlusTypeParamsToTypeReference(builderImplClassName.toCharArray(), typeParams, p);
 		out.statements = new Statement[] {new ReturnStatement(invoke, pS, pE)};
 
 		out.traverse(new SetGeneratedByVisitor(source), ((TypeDeclaration) type.get()).scope);
 		return out;
 	}
-//	public MethodDeclaration generateBuilderMethod(String builderMethodName, String builderClassName, String builderImplClassName, EclipseNode source, EclipseNode type, List<JCTypeParameter> typeParams) {
-//		JavacTreeMaker maker = type.getTreeMaker();
-//
-//		ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
-//		for (JCTypeParameter typeParam : typeParams) {
-//			typeArgs.append(maker.Ident(typeParam.name));
-//		}
-//
-//		JCExpression call = maker.NewClass(null, List.<JCExpression>nil(), namePlusTypeParamsToTypeReference(maker, type.toName(builderImplClassName), typeParams), List.<JCExpression>nil(), null);
-//		JCStatement statement = maker.Return(call);
-//
-//		JCBlock body = maker.Block(0, List.<JCStatement>of(statement));
-//		int modifiers = Flags.PUBLIC;
-//		modifiers |= Flags.STATIC;
-//
-//		// Add any type params of the annotated class to the return type.
-//		ListBuffer<JCExpression> typeParameterNames = new ListBuffer<JCExpression>();
-//		typeParameterNames.addAll(typeParameterNames(maker, typeParams));
-//		// Now add the <?, ?>.
-//		JCWildcard wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
-//		typeParameterNames.add(wildcard);
-//		typeParameterNames.add(wildcard);
-//		JCTypeApply returnType = maker.TypeApply(maker.Ident(type.toName(builderClassName)), typeParameterNames.toList());
-//
-//		return maker.MethodDef(maker.Modifiers(modifiers), type.toName(builderMethodName), returnType, copyTypeParams(source, typeParams), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
-//	}
 
 	private void generateBuilderFields(EclipseNode builderType, List<BuilderFieldData> builderFields, ASTNode source) {
 		List<EclipseNode> existing = new ArrayList<EclipseNode>();
@@ -779,18 +711,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		o.type = new ParameterizedSingleTypeReference(builderClass.toCharArray(), typerefs, 0, 0);
 		builder.typeParameters[builder.typeParameters.length - 1] = o;
 
-		builder.superclass = superclassBuilderClass;
-		// TODO: Extends clause when there is a superclass. 
-//		JCExpression extending = null;
-//		if (superclassBuilderClassExpression != null) {
-//			// If the annotated class extends another class, we want this builder to extend the builder of the superclass.
-//			// 1. Add the type parameters of the superclass.
-//			typeParamsForBuilder = getTypeParamExpressions(superclassTypeParams, maker);
-//			// 2. Add the builder type params <C, B>.
-//			typeParamsForBuilder.add(maker.Ident(tdParent.toName(classGenericName)));
-//			typeParamsForBuilder.add(maker.Ident(tdParent.toName(builderGenericName)));
-//			extending = maker.TypeApply(superclassBuilderClassExpression, typeParamsForBuilder.toList());
-//		}
+		builder.superclass = copyType(superclassBuilderClass, source);
 
 		builder.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return injectType(tdParent, builder);
