@@ -35,7 +35,7 @@ public enum NullCheckExceptionType {
 	},
 	NULL_POINTER_EXCEPTION {
 		@Override public String toExceptionMessage(String fieldName) {
-			return fieldName;
+			return fieldName + " is marked as @NonNull but is null";
 		}
 		
 		public String getExceptionType() {
