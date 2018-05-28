@@ -85,6 +85,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	}
 	
 	private static class BuilderFieldData {
+		List<JCAnnotation> annotations;
 		JCExpression type;
 		Name rawName;
 		Name name;
@@ -151,6 +152,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				BuilderFieldData bfd = new BuilderFieldData();
 				bfd.rawName = fd.name;
 				bfd.name = removePrefixFromField(fieldNode);
+				bfd.annotations = fd.mods.annotations;
 				bfd.type = fd.vartype;
 				bfd.singularData = getSingularData(fieldNode);
 				bfd.originalFieldNode = fieldNode;
@@ -329,6 +331,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				JCVariableDecl raw = (JCVariableDecl) param.get();
 				bfd.name = raw.name;
 				bfd.rawName = raw.name;
+				bfd.annotations = raw.mods.annotations;
 				bfd.type = raw.vartype;
 				bfd.singularData = getSingularData(param);
 				bfd.originalFieldNode = param;
@@ -678,13 +681,13 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	public void makeSetterMethodsForBuilder(JavacNode builderType, BuilderFieldData fieldNode, JavacNode source, boolean fluent, boolean chain) {
 		boolean deprecate = isFieldDeprecated(fieldNode.originalFieldNode);
 		if (fieldNode.singularData == null || fieldNode.singularData.getSingularizer() == null) {
-			makeSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, fluent, chain);
+			makeSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, fluent, chain, fieldNode.annotations);
 		} else {
 			fieldNode.singularData.getSingularizer().generateMethods(fieldNode.singularData, deprecate, builderType, source.get(), fluent, chain);
 		}
 	}
 	
-	private void makeSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, boolean chain) {
+	private void makeSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, boolean chain, List<JCAnnotation> annosOnParam) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
 		
 		for (JavacNode child : builderType.down()) {
@@ -698,7 +701,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
-		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, nameOfSetFlag, chain, source, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
+		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, nameOfSetFlag, chain, source, List.<JCAnnotation>nil(), annosOnParam);
 		
 		injectMethod(builderType, newMethod);
 	}
