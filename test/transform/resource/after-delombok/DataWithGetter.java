@@ -7,6 +7,10 @@ class DataWithGetter {
 		this.z = z;
 	}
 	@java.lang.SuppressWarnings("all")
+	private DataWithGetter() {
+		this.z = null;
+	}
+	@java.lang.SuppressWarnings("all")
 	public void setX(final int x) {
 		this.x = x;
 	}

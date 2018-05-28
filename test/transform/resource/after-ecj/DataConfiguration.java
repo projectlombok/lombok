@@ -31,4 +31,8 @@
     super();
     this.x = x;
   }
+  private @java.lang.SuppressWarnings("all") DataConfiguration() {
+    super();
+    this.x = 0;
+  }
 }

@@ -42,8 +42,10 @@ import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
+import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
@@ -204,6 +206,18 @@ public class HandleConstructor {
 		return true;
 	}
 	
+	public enum SkipIfConstructorExists {
+		YES, NO, I_AM_BUILDER;
+	}
+	
+	public void generateExtraNoArgsConstructor(EclipseNode typeNode, EclipseNode sourceNode) {
+		Boolean v = typeNode.getAst().readConfiguration(ConfigurationKeys.NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE);
+		if (v != null && !v) return;
+
+		List<EclipseNode> fields = findFinalFields(typeNode);
+		generate(typeNode, AccessLevel.PRIVATE, fields, true, null, SkipIfConstructorExists.NO, Collections.<Annotation>emptyList(), sourceNode, true);
+	}
+	
 	public void generateRequiredArgsConstructor(
 			EclipseNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists,
 			List<Annotation> onConstructor, EclipseNode sourceNode) {
@@ -218,14 +232,17 @@ public class HandleConstructor {
 		generateConstructor(typeNode, level, findAllFields(typeNode), false, staticName, skipIfConstructorExists, onConstructor, sourceNode);
 	}
 	
-	public enum SkipIfConstructorExists {
-		YES, NO, I_AM_BUILDER;
-	}
-	
 	public void generateConstructor(
 		EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists,
 		List<Annotation> onConstructor, EclipseNode sourceNode) {
 		
+		generate(typeNode, level, fields, allToDefault, staticName, skipIfConstructorExists, onConstructor, sourceNode, false);
+	}
+	
+	public void generate(
+			EclipseNode typeNode, AccessLevel level, List<EclipseNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists,
+			List<Annotation> onConstructor, EclipseNode sourceNode, boolean noArgs) {
+			
 		ASTNode source = sourceNode.get();
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
 		
@@ -257,6 +274,8 @@ public class HandleConstructor {
 			}
 		}
 		
+		if (noArgs && noArgsConstructorExists(typeNode)) return;
+		
 		ConstructorDeclaration constr = createConstructor(
 			staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields, allToDefault,
 			sourceNode, onConstructor);
@@ -266,6 +285,22 @@ public class HandleConstructor {
 			injectMethod(typeNode, staticConstr);
 		}
 	}
+	
+	private static boolean noArgsConstructorExists(EclipseNode node) {
+		node = EclipseHandlerUtil.upToTypeNode(node);
+		
+		if (node != null && node.get() instanceof TypeDeclaration) {
+			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
+			if (typeDecl.methods != null) for (AbstractMethodDeclaration def : typeDecl.methods) {
+				if (def instanceof ConstructorDeclaration) {
+					Argument[] arguments = ((ConstructorDeclaration) def).arguments;
+					if (arguments == null || arguments.length == 0) return true;
+				}
+			}
+		}
+		return false;
+	}
+
 	
 	private static final char[][] JAVA_BEANS_CONSTRUCTORPROPERTIES = new char[][] { "java".toCharArray(), "beans".toCharArray(), "ConstructorProperties".toCharArray() };
 	public static Annotation[] createConstructorProperties(ASTNode source, Collection<EclipseNode> fields) {

@@ -20,6 +20,10 @@ class C {
 			this.a = a;
 		}
 		@java.lang.SuppressWarnings("all")
+		private D() {
+			this.a = null;
+		}
+		@java.lang.SuppressWarnings("all")
 		public A getA() {
 			return this.a;
 		}

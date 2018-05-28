@@ -49,6 +49,10 @@ class C {
       super();
       this.a = a;
     }
+    private @java.lang.SuppressWarnings("all") D() {
+      super();
+      this.a = null;
+    }
   }
   C() {
     super();

@@ -6,6 +6,10 @@ class Data1 {
 		this.x = x;
 	}
 	@java.lang.SuppressWarnings("all")
+	private Data1() {
+		this.x = 0;
+	}
+	@java.lang.SuppressWarnings("all")
 	public int getX() {
 		return this.x;
 	}
@@ -58,6 +62,10 @@ class Data2 {
 		this.x = x;
 	}
 	@java.lang.SuppressWarnings("all")
+	private Data2() {
+		this.x = 0;
+	}
+	@java.lang.SuppressWarnings("all")
 	public int getX() {
 		return this.x;
 	}
@@ -108,6 +116,10 @@ final class Data3 {
 	@java.lang.SuppressWarnings("all")
 	public Data3(final int x) {
 		this.x = x;
+	}
+	@java.lang.SuppressWarnings("all")
+	private Data3() {
+		this.x = 0;
 	}
 	@java.lang.SuppressWarnings("all")
 	public int getX() {

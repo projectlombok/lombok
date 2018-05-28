@@ -87,4 +87,10 @@ public final @Value @Builder class BuilderDefaults {
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
     return (((((("BuilderDefaults(x=" + this.getX()) + ", name=") + this.getName()) + ", z=") + this.getZ()) + ")");
   }
+  private @java.lang.SuppressWarnings("all") BuilderDefaults() {
+    super();
+    this.x = 0;
+    this.name = null;
+    this.z = 0L;
+  }
 }

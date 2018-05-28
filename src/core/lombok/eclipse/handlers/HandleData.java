@@ -79,5 +79,6 @@ public class HandleData extends EclipseAnnotationHandler<Data> {
 		handleConstructor.generateRequiredArgsConstructor(
 				typeNode, AccessLevel.PUBLIC, ann.staticConstructor(), SkipIfConstructorExists.YES,
 				Collections.<Annotation>emptyList(), annotationNode);
+		handleConstructor.generateExtraNoArgsConstructor(typeNode, annotationNode);
 	}
 }

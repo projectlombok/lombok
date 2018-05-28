@@ -126,6 +126,13 @@ public class ConfigurationKeys {
 	public static final ConfigurationKey<FlagUsageType> NO_ARGS_CONSTRUCTOR_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.noArgsConstructor.flagUsage", "Emit a warning or error if @NoArgsConstructor is used.") {};
 	
 	/**
+	 * lombok configuration: {@code lombok.noArgsConstructor.extraPrivate} = {@code true} | {@code false}.
+	 * 
+	 * If {@code true} (default), @Data and @Value will also generate a private no-args constructor, if there isn't already one, setting all fields to their default values. 
+	 */
+	public static final ConfigurationKey<Boolean> NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE = new ConfigurationKey<Boolean>("lombok.noArgsConstructor.extraPrivate", "Generate a private no-ars constructor for @Data and @Value (default: true).") {};
+	
+	/**
 	 * lombok configuration: {@code lombok.requiredArgsConstructor.flagUsage} = {@code WARNING} | {@code ERROR}.
 	 * 
 	 * If set, <em>any</em> usage of {@code @RequiredArgsConstructor} results in a warning / error.

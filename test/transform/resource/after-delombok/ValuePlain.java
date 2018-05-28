@@ -7,6 +7,11 @@ final class Value1 {
 		this.name = name;
 	}
 	@java.lang.SuppressWarnings("all")
+	private Value1() {
+		this.x = 0;
+		this.name = null;
+	}
+	@java.lang.SuppressWarnings("all")
 	public int getX() {
 		return this.x;
 	}
@@ -49,6 +54,11 @@ class Value2 {
 	public Value2(final int x, final String name) {
 		this.x = x;
 		this.name = name;
+	}
+	@java.lang.SuppressWarnings("all")
+	private Value2() {
+		this.x = 0;
+		this.name = null;
 	}
 	@java.lang.SuppressWarnings("all")
 	public int getX() {
@@ -98,6 +108,10 @@ final class Value3 {
 	public Value3(final int x, final int y) {
 		this.x = x;
 		this.y = y;
+	}
+	@java.lang.SuppressWarnings("all")
+	private Value3() {
+		this.y = 0;
 	}
 	@java.lang.SuppressWarnings("all")
 	public int getX() {

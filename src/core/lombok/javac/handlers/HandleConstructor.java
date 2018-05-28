@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 The Project Lombok Authors.
+ * Copyright (C) 2010-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@ import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
+import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -191,12 +192,20 @@ public class HandleConstructor {
 		return true;
 	}
 	
-	public void generateRequiredArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
-		generateConstructor(typeNode, level, List.<JCAnnotation>nil(), findRequiredFields(typeNode), false, staticName, skipIfConstructorExists, source);
-	}
-	
 	public enum SkipIfConstructorExists {
 		YES, NO, I_AM_BUILDER;
+	}
+	
+	public void generateExtraNoArgsConstructor(JavacNode typeNode, JavacNode source) {
+		Boolean v = typeNode.getAst().readConfiguration(ConfigurationKeys.NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE);
+		if (v != null && !v) return;
+
+		List<JavacNode> fields = findFinalFields(typeNode);
+		generate(typeNode, AccessLevel.PRIVATE, List.<JCAnnotation>nil(), fields, true, null, SkipIfConstructorExists.NO, source, true);
+	}
+	
+	public void generateRequiredArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
+		generateConstructor(typeNode, level, List.<JCAnnotation>nil(), findRequiredFields(typeNode), false, staticName, skipIfConstructorExists, source);
 	}
 	
 	public void generateAllArgsConstructor(JavacNode typeNode, AccessLevel level, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
@@ -204,6 +213,10 @@ public class HandleConstructor {
 	}
 	
 	public void generateConstructor(JavacNode typeNode, AccessLevel level, List<JCAnnotation> onConstructor, List<JavacNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source) {
+		generate(typeNode, level, onConstructor, fields, allToDefault, staticName, skipIfConstructorExists, source, false);
+	}
+
+	private void generate(JavacNode typeNode, AccessLevel level, List<JCAnnotation> onConstructor, List<JavacNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source, boolean noArgs) {
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
 		
 		if (skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) return;
@@ -232,6 +245,8 @@ public class HandleConstructor {
 			}
 		}
 		
+		if (noArgs && noArgsConstructorExists(typeNode)) return;
+		
 		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, source);
 		ListBuffer<Type> argTypes = new ListBuffer<Type>();
 		for (JavacNode fieldNode : fields) {
@@ -250,6 +265,20 @@ public class HandleConstructor {
 			JCMethodDecl staticConstr = createStaticConstructor(staticName, level, typeNode, allToDefault ? List.<JavacNode>nil() : fields, source.get());
 			injectMethod(typeNode, staticConstr, argTypes_, returnType);
 		}
+	}
+	
+	private static boolean noArgsConstructorExists(JavacNode node) {
+		node = upToTypeNode(node);
+		
+		if (node != null && node.get() instanceof JCClassDecl) {
+			for (JCTree def : ((JCClassDecl) node.get()).defs) {
+				if (def instanceof JCMethodDecl) {
+					JCMethodDecl md = (JCMethodDecl) def;
+					if (md.name.contentEquals("<init>") && md.params.size() == 0) return true;
+				}
+			}
+		}
+		return false;
 	}
 	
 	public static void addConstructorProperties(JCModifiers mods, JavacNode node, List<JavacNode> fields) {

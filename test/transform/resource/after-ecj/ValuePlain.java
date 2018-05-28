@@ -38,6 +38,11 @@ final @lombok.Value class Value1 {
     this.x = x;
     this.name = name;
   }
+  private @java.lang.SuppressWarnings("all") Value1() {
+    super();
+    this.x = 0;
+    this.name = null;
+  }
 }
 @Value @lombok.experimental.NonFinal class Value2 {
   public final int x;
@@ -83,6 +88,11 @@ final @lombok.Value class Value1 {
     this.x = x;
     this.name = name;
   }
+  private @java.lang.SuppressWarnings("all") Value2() {
+    super();
+    this.x = 0;
+    this.name = null;
+  }
 }
 final @Value class Value3 {
   private @lombok.experimental.NonFinal int x;
@@ -119,5 +129,9 @@ final @Value class Value3 {
     super();
     this.x = x;
     this.y = y;
+  }
+  private @java.lang.SuppressWarnings("all") Value3() {
+    super();
+    this.y = 0;
   }
 }
