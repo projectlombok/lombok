@@ -1,8 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.16.21 "Edgy Guinea Pig"
-* v1.16.20 is the latest stable release of Project Lombok.
+### v1.16.22 "Envious Ferret" (May 29th, 2018)
 * FEATURE: Private no-args constructor for `@Data` and `@Value` to enable deserialization frameworks (like Jackson) to operate out-of-the-box. Use `lombok.noArgsConstructor.extraPrivate = false` to disable this behavior.
 * FEATURE: Methods can now be marked for inclusion in `toString`, `equals`, and `hashCode` generation. There is a new mechanism to mark which fields (and now, methods) are to be included or excluded for the generation of these methods: mark the relevant member with for example `@ToString.Include` or `@EqualsAndHashCode.Exclude`. [ToString documentation](https://projectlombok.org/features/ToString) [EqualsAndHashCode documentation](https://projectlombok.org/features/EqualsAndHashCode)
 * FEATURE: `@Getter` and `@Setter` also allow `onMethod` and `onParam` when put on a type. [Issue #1653](https://github.com/rzwitserloot/lombok/issues/1653) 
