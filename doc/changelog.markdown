@@ -7,9 +7,9 @@ Lombok Changelog
 * FEATURE: Methods can now be marked for inclusion in `toString`, `equals`, and `hashCode` generation. There is a new mechanism to mark which fields (and now, methods) are to be included or excluded for the generation of these methods: mark the relevant member with for example `@ToString.Include` or `@EqualsAndHashCode.Exclude`. [ToString documentation](https://projectlombok.org/features/ToString) [EqualsAndHashCode documentation](https://projectlombok.org/features/EqualsAndHashCode)
 * FEATURE: `@Getter` and `@Setter` also allow `onMethod` and `onParam` when put on a type. [Issue #1653](https://github.com/rzwitserloot/lombok/issues/1653) 
 * FEATURE: `@FieldNameConstants` is a new feature that generates string constants for your field names. [Docs on @FieldNameConstants](https://projectlombok.org/features/experimental/FieldNameConstants).
+* PLATFORM: Lombok can be compiled on JDK10, and should run on JDK10. [Issue #1693](https://github.com/rzwitserloot/lombok/issues/1693)
 * PLATFORM: lombok now counts as an _incremental annotation processor_ for gradle. Should speed up your gradle builds considerably! [Issue #1580](https://github.com/rzwitserloot/lombok/issues/1580)
-* PLATFORM: Fix for using lombok together with JDK9's new `module-info.java` feature. [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
-* PLATFORM: Some initial work on supporting JDK10 and JDK11.
+* PLATFORM: Fix for using lombok together with JDK9+'s new `module-info.java` feature. [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
 * BUGFIX: Solved some issues in eclipse that resulted in error 'A save participant caused problems'. [Issue #879](https://github.com/rzwitserloot/lombok/issues/879)
 * BUGFIX: Netbeans on jdk9. [Issue #1617](https://github.com/rzwitserloot/lombok/issues/1617)
 * BUGFIX: Netbeans < 9. [Issue #1555](https://github.com/rzwitserloot/lombok/issues/1555)
