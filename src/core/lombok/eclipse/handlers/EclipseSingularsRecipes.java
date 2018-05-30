@@ -229,7 +229,7 @@ public class EclipseSingularsRecipes {
 		 * control over the return type and value, use
 		 * {@link #generateMethods(SingularData, boolean, EclipseNode, boolean, Supplier, Supplier)}.
 		 */
-		public void generateMethods(SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, boolean chain) {
+		public void generateMethods(SingularData data, boolean deprecate, final EclipseNode builderType, boolean fluent, final boolean chain) {
 			// TODO: Make these lambdas when switching to a source level >= 1.8.
 			Supplier<TypeReference> returnType = new Supplier<TypeReference>() {
 				@Override public TypeReference get() {

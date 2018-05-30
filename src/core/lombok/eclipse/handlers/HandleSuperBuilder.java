@@ -368,7 +368,12 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 	}
 
 	private TypeReference[] getTypeParametersFrom(TypeReference typeRef) {
-		TypeReference[][] typeArgss = typeRef.getTypeArguments();
+		TypeReference[][] typeArgss = null;
+		if (typeRef instanceof ParameterizedQualifiedTypeReference) {
+			typeArgss = ((ParameterizedQualifiedTypeReference)typeRef).typeArguments;
+		} else if (typeRef instanceof ParameterizedSingleTypeReference) {
+			typeArgss = new TypeReference[][] {((ParameterizedSingleTypeReference)typeRef).typeArguments};
+		}
 		TypeReference[] typeArgs = new TypeReference[0];
 		if (typeArgss != null && typeArgss.length > 0) {
 			typeArgs = typeArgss[typeArgss.length - 1];
@@ -609,7 +614,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		}
 	}
 
-	private void makeSetterMethodsForBuilder(EclipseNode builderType, BuilderFieldData bfd, EclipseNode sourceNode, String builderGenericName) {
+	private void makeSetterMethodsForBuilder(EclipseNode builderType, BuilderFieldData bfd, EclipseNode sourceNode, final String builderGenericName) {
 		boolean deprecate = isFieldDeprecated(bfd.originalFieldNode);
 
 		// TODO: Make these lambdas when switching to a source level >= 1.8.
