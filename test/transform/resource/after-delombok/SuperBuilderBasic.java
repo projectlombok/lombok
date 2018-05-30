@@ -5,22 +5,6 @@ public class SuperBuilderBasic {
 		int field1;
 		List<String> items;
 		@java.lang.SuppressWarnings("all")
-		protected Parent(final ParentBuilder<?, ?> b) {
-			this.field1 = b.field1;
-			java.util.List<String> items;
-			switch (b.items == null ? 0 : b.items.size()) {
-			case 0: 
-				items = java.util.Collections.emptyList();
-				break;
-			case 1: 
-				items = java.util.Collections.singletonList(b.items.get(0));
-				break;
-			default: 
-				items = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(b.items));
-			}
-			this.items = items;
-		}
-		@java.lang.SuppressWarnings("all")
 		public static abstract class ParentBuilder<C extends Parent, B extends ParentBuilder<C, B>> {
 			@java.lang.SuppressWarnings("all")
 			private int field1;
@@ -75,6 +59,22 @@ public class SuperBuilderBasic {
 			}
 		}
 		@java.lang.SuppressWarnings("all")
+		protected Parent(final ParentBuilder<?, ?> b) {
+			this.field1 = b.field1;
+			java.util.List<String> items;
+			switch (b.items == null ? 0 : b.items.size()) {
+			case 0: 
+				items = java.util.Collections.emptyList();
+				break;
+			case 1: 
+				items = java.util.Collections.singletonList(b.items.get(0));
+				break;
+			default: 
+				items = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(b.items));
+			}
+			this.items = items;
+		}
+		@java.lang.SuppressWarnings("all")
 		public static ParentBuilder<?, ?> builder() {
 			return new ParentBuilderImpl();
 		}
@@ -82,11 +82,6 @@ public class SuperBuilderBasic {
 	@lombok.experimental.SuperBuilder
 	public static class Child extends Parent {
 		double field3;
-		@java.lang.SuppressWarnings("all")
-		protected Child(final ChildBuilder<?, ?> b) {
-			super(b);
-			this.field3 = b.field3;
-		}
 		@java.lang.SuppressWarnings("all")
 		public static abstract class ChildBuilder<C extends Child, B extends ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
 			@java.lang.SuppressWarnings("all")
@@ -123,6 +118,11 @@ public class SuperBuilderBasic {
 			public Child build() {
 				return new Child(this);
 			}
+		}
+		@java.lang.SuppressWarnings("all")
+		protected Child(final ChildBuilder<?, ?> b) {
+			super(b);
+			this.field3 = b.field3;
 		}
 		@java.lang.SuppressWarnings("all")
 		public static ChildBuilder<?, ?> builder() {
