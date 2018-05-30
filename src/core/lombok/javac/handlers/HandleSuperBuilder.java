@@ -262,18 +262,17 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}
 
 		// Create the toString() method for the abstract builder.
-		if (methodExists("toString", builderType, 0) == MemberExistsResult.NOT_EXISTS) {
-			java.util.List<JavacNode> fieldNodes = new ArrayList<JavacNode>();
-			for (BuilderFieldData bfd : builderFields) {
-				fieldNodes.addAll(bfd.createdFields);
-			}
-			// Let toString() call super.toString() if there is a superclass, so that it also shows fields from the superclass' builder.
-			JCMethodDecl md = HandleToString.createToString(builderType, fieldNodes, true, superclassBuilderClassExpression != null, FieldAccess.ALWAYS_FIELD, ast);
-			if (md != null) {
-				injectMethod(builderType, md);
-			}
+		java.util.List<JavacNode> fieldNodes = new ArrayList<JavacNode>();
+		for (BuilderFieldData bfd : builderFields) {
+			fieldNodes.addAll(bfd.createdFields);
+		}
+		// Let toString() call super.toString() if there is a superclass, so that it also shows fields from the superclass' builder.
+		JCMethodDecl toStringMethod = HandleToString.createToString(builderType, fieldNodes, true, superclassBuilderClassExpression != null, FieldAccess.ALWAYS_FIELD, ast);
+		if (toStringMethod != null) {
+			injectMethod(builderType, toStringMethod);
 		}
 
+		// If clean methods are requested, add them now.
 		if (addCleaning) {
 			injectMethod(builderType, generateCleanMethod(builderFields, builderType, ast));
 		}
@@ -304,10 +303,10 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		// Add the builder() method to the annotated class.
 		// Allow users to specify their own builder() methods, e.g., to provide default values.
 		if (methodExists(builderMethodName, tdParent, -1) == MemberExistsResult.NOT_EXISTS) {
-			JCMethodDecl md = generateBuilderMethod(builderMethodName, builderClassName, builderImplClassName, annotationNode, tdParent, typeParams);
-			recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
-			if (md != null) {
-				injectMethod(tdParent, md);
+			JCMethodDecl builderMethod = generateBuilderMethod(builderMethodName, builderClassName, builderImplClassName, annotationNode, tdParent, typeParams);
+			recursiveSetGeneratedBy(builderMethod, ast, annotationNode.getContext());
+			if (builderMethod != null) {
+				injectMethod(tdParent, builderMethod);
 			}
 		}
 
