@@ -46,43 +46,37 @@ public class SuperBuilderWithGenerics {
     protected @java.lang.SuppressWarnings("all") Parent(final ParentBuilder<A, ?, ?> b) {
       this.field1 = b.field1;
       java.util.List<String> items;
-      switch (b.items == null ? 0 : b.items.size()) {
-      case 0: 
-        items = java.util.Collections.emptyList();
-        break;
-      case 1: 
-        items = java.util.Collections.singletonList(b.items.get(0));
-        break;
-      default: 
-        items = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(b.items));
+      switch (((b.items == null) ? 0 : b.items.size())) {
+      case 0 : 
+          items = java.util.Collections.emptyList();
+          break;
+      case 1 : 
+          items = java.util.Collections.singletonList(b.items.get(0));
+          break;
+      default : 
+          items = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(b.items));
       }
       this.items = items;
     }
-    public static @java.lang.SuppressWarnings("all") <A> ParentBuilder<A, ?, ?> builder() {
+    public static @java.lang.SuppressWarnings("all") <A>ParentBuilder<A, ?, ?> builder() {
       return new ParentBuilderImpl<A>();
     }
   }
-  @lombok.experimental.SuperBuilder
-  public static class Child<A> extends Parent<A> {
-    double field3;
-    protected @java.lang.SuppressWarnings("all") Child(final ChildBuilder<A, ?, ?> b) {
-      super(b);
-      this.field3 = b.field3;
-    }
-    public static abstract class ChildBuilder<A, C extends Child<A>, B extends ChildBuilder<A, C, B>> extends Parent.ParentBuilder<A, C, B> {
+  public static @lombok.experimental.SuperBuilder class Child<A> extends Parent<A> {
+    public static abstract @java.lang.SuppressWarnings("all") class ChildBuilder<A, C extends Child<A>, B extends ChildBuilder<A, C, B>> extends Parent.ParentBuilder<A, C, B> {
       private @java.lang.SuppressWarnings("all") double field3;
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") abstract B self();
-      public @java.lang.Override @java.lang.SuppressWarnings("all") abstract C build();
+      protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
+      public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       public @java.lang.SuppressWarnings("all") B field3(final double field3) {
         this.field3 = field3;
         return self();
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-        return "SuperBuilderWithGenerics.Child.ChildBuilder(super=" + super.toString() + ", field3=" + this.field3 + ")";
+        return (((("SuperBuilderWithGenerics.Child.ChildBuilder(super=" + super.toString()) + ", field3=") + this.field3) + ")");
       }
     }
     private static final @java.lang.SuppressWarnings("all") class ChildBuilderImpl<A> extends ChildBuilder<A, Child<A>, ChildBuilderImpl<A>> {
-      private ChildBuilderImpl() {
+      private @java.lang.SuppressWarnings("all") ChildBuilderImpl() {
       }
       protected @java.lang.Override @java.lang.SuppressWarnings("all") ChildBuilderImpl self() {
         return this;
@@ -91,9 +85,17 @@ public class SuperBuilderWithGenerics {
         return new Child<A>(this);
       }
     }
-    public static @java.lang.SuppressWarnings("all") <A> ChildBuilder<A, ?, ?> builder() {
+    double field3;
+    protected @java.lang.SuppressWarnings("all") Child(final ChildBuilder<A, ?, ?> b) {
+      super(b);
+      this.field3 = b.field3;
+    }
+    public static @java.lang.SuppressWarnings("all") <A>ChildBuilder<A, ?, ?> builder() {
       return new ChildBuilderImpl<A>();
     }
+  }
+  public SuperBuilderWithGenerics() {
+    super();
   }
   public static void test() {
     Child<Integer> x = Child.<Integer>builder().field3(0.0).field1(5).item("").build();
