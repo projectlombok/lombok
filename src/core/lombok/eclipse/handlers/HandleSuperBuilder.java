@@ -91,8 +91,6 @@ import lombok.experimental.SuperBuilder;
 @HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
 public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 
-//	private HandleConstructor handleConstructor = new HandleConstructor();
-
 	private static final char[] CLEAN_FIELD_NAME = "$lombokUnclean".toCharArray();
 	private static final char[] CLEAN_METHOD_NAME = "$lombokClean".toCharArray();
 	private static final char[] DEFAULT_PREFIX = {'$', 'd', 'e', 'f', 'a', 'u', 'l', 't', '$'};
@@ -552,8 +550,10 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		out.modifiers = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic;
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 
-		// TODO: add type params
-		out.typeParameters = copyTypeParams(typeParams, source);
+		// Add type params if there are any.
+		if (typeParams != null && typeParams.length > 0) {
+			out.typeParameters = copyTypeParams(typeParams, source);
+		}
 		TypeReference[] wildcards = new TypeReference[] {new Wildcard(Wildcard.UNBOUND), new Wildcard(Wildcard.UNBOUND) };
 		out.returnType = new ParameterizedSingleTypeReference(builderClassName.toCharArray(), mergeToTypeReferences(typeParams, wildcards), 0, p);
 		
@@ -704,20 +704,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		return result;
 	}
 	
-	private static SingleTypeReference createTypeReferenceWithTypeParameters(String referenceName, TypeParameter[] typeParams) {
-		if (typeParams.length > 0) {
-			TypeReference[] typerefs = new TypeReference[typeParams.length];
-			for (int i = 0; i < typeParams.length; i++) {
-				typerefs[i] = new SingleTypeReference(typeParams[i].name, 0);
-			}
-			return new ParameterizedSingleTypeReference(referenceName.toCharArray(), typerefs, 0, 0);
-		} else {
-			return new SingleTypeReference(referenceName.toCharArray(), 0);
-		}
-
-	}
-
-
 	private EclipseNode makeBuilderAbstractClass(EclipseNode tdParent, String builderClass,
 			TypeReference superclassBuilderClass, TypeParameter[] typeParams,
 			TypeParameter[] superclassTypeParams, ASTNode source, String classGenericName, String builderGenericName) {
@@ -755,7 +741,10 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		builder.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
 		builder.modifiers |= ClassFileConstants.AccPrivate | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal;
 		builder.name = builderImplClass.toCharArray();
-		builder.typeParameters = copyTypeParams(typeParams, source);
+		// Add type params if there are any.
+		if (typeParams != null && typeParams.length > 0) {
+			builder.typeParameters = copyTypeParams(typeParams, source);
+		}
 		if (builderAbstractClass != null) {
 			// Extend the abstract builder.
 			// 1. Add any type params of the annotated class.
@@ -850,6 +839,19 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		return null;
 	}
 
+	private static SingleTypeReference createTypeReferenceWithTypeParameters(String referenceName, TypeParameter[] typeParams) {
+		if (typeParams.length > 0) {
+			TypeReference[] typerefs = new TypeReference[typeParams.length];
+			for (int i = 0; i < typeParams.length; i++) {
+				typerefs[i] = new SingleTypeReference(typeParams[i].name, 0);
+			}
+			return new ParameterizedSingleTypeReference(referenceName.toCharArray(), typerefs, 0, 0);
+		} else {
+			return new SingleTypeReference(referenceName.toCharArray(), 0);
+		}
+
+	}
+	
 	private static final char[] prefixWith(char[] prefix, char[] name) {
 		char[] out = new char[prefix.length + name.length];
 		System.arraycopy(prefix, 0, out, 0, prefix.length);
