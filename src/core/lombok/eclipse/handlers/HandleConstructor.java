@@ -259,7 +259,7 @@ public class HandleConstructor {
 		
 		ConstructorDeclaration constr = createConstructor(
 			staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fields, allToDefault,
-			true, sourceNode, onConstructor);
+			sourceNode, onConstructor);
 		injectMethod(typeNode, constr);
 		if (staticConstrRequired) {
 			MethodDeclaration staticConstr = createStaticConstructor(level, staticName, typeNode, allToDefault ? Collections.<EclipseNode>emptyList() : fields, source);
@@ -301,7 +301,7 @@ public class HandleConstructor {
 	
 	@SuppressWarnings("deprecation") public static ConstructorDeclaration createConstructor(
 		AccessLevel level, EclipseNode type, Collection<EclipseNode> fields, boolean allToDefault,
-		boolean superConstructorCall, EclipseNode sourceNode, List<Annotation> onConstructor) {
+		EclipseNode sourceNode, List<Annotation> onConstructor) {
 		
 		ASTNode source = sourceNode.get();
 		TypeDeclaration typeDeclaration = ((TypeDeclaration) type.get());
@@ -324,11 +324,9 @@ public class HandleConstructor {
 		
 		constructor.modifiers = toEclipseModifier(level);
 		constructor.selector = typeDeclaration.name;
-		if (superConstructorCall) {
-			constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
-			constructor.constructorCall.sourceStart = source.sourceStart;
-			constructor.constructorCall.sourceEnd = source.sourceEnd;
-		}
+		constructor.constructorCall = new ExplicitConstructorCall(ExplicitConstructorCall.ImplicitSuper);
+		constructor.constructorCall.sourceStart = source.sourceStart;
+		constructor.constructorCall.sourceEnd = source.sourceEnd;
 		constructor.thrownExceptions = null;
 		constructor.typeParameters = null;
 		constructor.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;

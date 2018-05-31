@@ -33,6 +33,7 @@ public class SuperBuilderBasic {
     }
     private static final @java.lang.SuppressWarnings("all") class ParentBuilderImpl extends ParentBuilder<Parent, ParentBuilderImpl> {
       private @java.lang.SuppressWarnings("all") ParentBuilderImpl() {
+        super();
       }
       protected @java.lang.Override @java.lang.SuppressWarnings("all") ParentBuilderImpl self() {
         return this;
@@ -44,6 +45,7 @@ public class SuperBuilderBasic {
     int field1;
     @lombok.Singular List<String> items;
     protected @java.lang.SuppressWarnings("all") Parent(final ParentBuilder<?, ?> b) {
+      super();
       this.field1 = b.field1;
       java.util.List<String> items;
       switch (((b.items == null) ? 0 : b.items.size())) {
@@ -77,6 +79,7 @@ public class SuperBuilderBasic {
     }
     private static final @java.lang.SuppressWarnings("all") class ChildBuilderImpl extends ChildBuilder<Child, ChildBuilderImpl> {
       private @java.lang.SuppressWarnings("all") ChildBuilderImpl() {
+        super();
       }
       protected @java.lang.Override @java.lang.SuppressWarnings("all") ChildBuilderImpl self() {
         return this;
