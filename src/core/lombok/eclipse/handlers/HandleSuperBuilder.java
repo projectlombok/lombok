@@ -63,6 +63,7 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
+import org.eclipse.jdt.internal.compiler.lookup.ExtraCompilerModifiers;
 import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
@@ -337,12 +338,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			return;
 		}
 
-		// Create a simple constructor for the BuilderImpl class.
-		ConstructorDeclaration cd = HandleConstructor.createConstructor(AccessLevel.PRIVATE, builderImplType, Collections.<EclipseNode>emptyList(), false, annotationNode, Collections.<Annotation>emptyList());
-		if (cd != null) {
-			injectMethod(builderImplType, cd);
-		}
-
 		// Create the self() and build() methods in the BuilderImpl.
 		injectMethod(builderImplType, generateSelfMethod(builderImplType));
 		injectMethod(builderImplType, generateBuildMethod(tdParent, buildMethodName, returnType, ast));
@@ -383,6 +378,8 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 	
 		builder.superclass = copyType(superclassBuilderClass, source);
 	
+		builder.createDefaultConstructor(false, true);
+		
 		builder.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return injectType(tdParent, builder);
 	}
@@ -393,6 +390,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		builder.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
 		builder.modifiers |= ClassFileConstants.AccPrivate | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal;
 		builder.name = builderImplClass.toCharArray();
+		
 		// Add type params if there are any.
 		if (typeParams != null && typeParams.length > 0) {
 			builder.typeParameters = copyTypeParams(typeParams, source);
@@ -410,6 +408,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			typeArgs[typeArgs.length - 1] = createTypeReferenceWithTypeParameters(builderImplClass, typeParams);
 			builder.superclass = new ParameterizedSingleTypeReference(builderAbstractClass.toCharArray(), typeArgs, 0, 0);
 		}
+		
+		builder.createDefaultConstructor(false, true);
+		
 		builder.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return injectType(tdParent, builder);
 	}
@@ -526,7 +527,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) tdParent.top().get()).compilationResult);
 		out.selector = SELF_METHOD.toCharArray();
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		out.modifiers = ClassFileConstants.AccAbstract | ClassFileConstants.AccProtected;
+		out.modifiers = ClassFileConstants.AccAbstract | ClassFileConstants.AccProtected | ExtraCompilerModifiers.AccSemicolonBody;
 		if (override) {
 			out.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, tdParent.get())};
 		}
@@ -550,7 +551,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) tdParent.top().get()).compilationResult);
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 
-		out.modifiers = ClassFileConstants.AccPublic | ClassFileConstants.AccAbstract;
+		out.modifiers = ClassFileConstants.AccPublic | ClassFileConstants.AccAbstract | ExtraCompilerModifiers.AccSemicolonBody;
 		out.selector = methodName.toCharArray();
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		out.returnType = new SingleTypeReference(classGenericName.toCharArray(), 0);

@@ -4,6 +4,9 @@ public class SuperBuilderBasic {
     public static abstract @java.lang.SuppressWarnings("all") class ParentBuilder<C extends Parent, B extends ParentBuilder<C, B>> {
       private @java.lang.SuppressWarnings("all") int field1;
       private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> items;
+      public ParentBuilder() {
+        super();
+      }
       protected abstract @java.lang.SuppressWarnings("all") B self();
       public abstract @java.lang.SuppressWarnings("all") C build();
       public @java.lang.SuppressWarnings("all") B field1(final int field1) {
@@ -32,7 +35,7 @@ public class SuperBuilderBasic {
       }
     }
     private static final @java.lang.SuppressWarnings("all") class ParentBuilderImpl extends ParentBuilder<Parent, ParentBuilderImpl> {
-      private @java.lang.SuppressWarnings("all") ParentBuilderImpl() {
+      private ParentBuilderImpl() {
         super();
       }
       protected @java.lang.Override @java.lang.SuppressWarnings("all") ParentBuilderImpl self() {
@@ -67,6 +70,9 @@ public class SuperBuilderBasic {
   public static @lombok.experimental.SuperBuilder class Child extends Parent {
     public static abstract @java.lang.SuppressWarnings("all") class ChildBuilder<C extends Child, B extends ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
       private @java.lang.SuppressWarnings("all") double field3;
+      public ChildBuilder() {
+        super();
+      }
       protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
       public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
       public @java.lang.SuppressWarnings("all") B field3(final double field3) {
@@ -78,7 +84,7 @@ public class SuperBuilderBasic {
       }
     }
     private static final @java.lang.SuppressWarnings("all") class ChildBuilderImpl extends ChildBuilder<Child, ChildBuilderImpl> {
-      private @java.lang.SuppressWarnings("all") ChildBuilderImpl() {
+      private ChildBuilderImpl() {
         super();
       }
       protected @java.lang.Override @java.lang.SuppressWarnings("all") ChildBuilderImpl self() {
