@@ -141,7 +141,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		java.util.List<BuilderFieldData> builderFields = new ArrayList<BuilderFieldData>();
 		TypeReference returnType;
 		TypeParameter[] typeParams;
-		TypeParameter[] superclassTypeParams = new TypeParameter[] {}; //TODO
 
 		boolean addCleaning = false;
 
@@ -267,7 +266,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		EclipseNode builderType = findInnerClass(tdParent, builderClassName);
 		if (builderType == null) {
 			builderType = generateBuilderAbstractClass(tdParent, builderClassName, superclassBuilderClass,
-					typeParams, superclassTypeParams, ast, classGenericName, builderGenericName);
+					typeParams, ast, classGenericName, builderGenericName);
 
 		} else {
 			annotationNode.addError("@SuperBuilder does not support customized builders. Use @Builder instead.");
@@ -360,7 +359,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 
 	private EclipseNode generateBuilderAbstractClass(EclipseNode tdParent, String builderClass,
 			TypeReference superclassBuilderClass, TypeParameter[] typeParams,
-			TypeParameter[] superclassTypeParams, ASTNode source, String classGenericName, String builderGenericName) {
+			ASTNode source, String classGenericName, String builderGenericName) {
 	
 		TypeDeclaration parent = (TypeDeclaration) tdParent.get();
 		TypeDeclaration builder = new TypeDeclaration(parent.compilationResult);
