@@ -39,7 +39,7 @@ public class SuperBuilderWithCustomBuilderMethod {
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {
-				return "SuperBuilderWithGenerics.Parent.ParentBuilder(field1=" + this.field1 + ", items=" + this.items + ")";
+				return "SuperBuilderWithCustomBuilderMethod.Parent.ParentBuilder(field1=" + this.field1 + ", items=" + this.items + ")";
 			}
 		}
 		@java.lang.SuppressWarnings("all")
@@ -82,6 +82,9 @@ public class SuperBuilderWithCustomBuilderMethod {
 	@lombok.experimental.SuperBuilder
 	public static class Child<A> extends Parent<A> {
 		double field3;
+		public static <A> ChildBuilder<A, ?, ?> builder() {
+			return new ChildBuilderImpl<A>().item("default item");
+		}
 		@java.lang.SuppressWarnings("all")
 		public static abstract class ChildBuilder<A, C extends Child<A>, B extends ChildBuilder<A, C, B>> extends Parent.ParentBuilder<A, C, B> {
 			@java.lang.SuppressWarnings("all")
@@ -100,7 +103,7 @@ public class SuperBuilderWithCustomBuilderMethod {
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {
-				return "SuperBuilderWithGenerics.Child.ChildBuilder(super=" + super.toString() + ", field3=" + this.field3 + ")";
+				return "SuperBuilderWithCustomBuilderMethod.Child.ChildBuilder(super=" + super.toString() + ", field3=" + this.field3 + ")";
 			}
 		}
 		@java.lang.SuppressWarnings("all")
@@ -123,9 +126,6 @@ public class SuperBuilderWithCustomBuilderMethod {
 		protected Child(final ChildBuilder<A, ?, ?> b) {
 			super(b);
 			this.field3 = b.field3;
-		}
-		public static <A> ChildBuilder<A, ?, ?> builder() {
-			return new ChildBuilderImpl<A>().item("default item");
 		}
 	}
 	public static void test() {

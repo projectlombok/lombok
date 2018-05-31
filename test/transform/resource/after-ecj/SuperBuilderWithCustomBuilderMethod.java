@@ -28,7 +28,7 @@ public class SuperBuilderWithCustomBuilderMethod {
         return self();
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-        return (((("SuperBuilderWithGenerics.Parent.ParentBuilder(field1=" + this.field1) + ", items=") + this.items) + ")");
+        return (((("SuperBuilderWithCustomBuilderMethod.Parent.ParentBuilder(field1=" + this.field1) + ", items=") + this.items) + ")");
       }
     }
     private static final @java.lang.SuppressWarnings("all") class ParentBuilderImpl<A> extends ParentBuilder<A, Parent<A>, ParentBuilderImpl<A>> {
@@ -72,7 +72,7 @@ public class SuperBuilderWithCustomBuilderMethod {
         return self();
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-        return (((("SuperBuilderWithGenerics.Child.ChildBuilder(super=" + super.toString()) + ", field3=") + this.field3) + ")");
+        return (((("SuperBuilderWithCustomBuilderMethod.Child.ChildBuilder(super=" + super.toString()) + ", field3=") + this.field3) + ")");
       }
     }
     private static final @java.lang.SuppressWarnings("all") class ChildBuilderImpl<A> extends ChildBuilder<A, Child<A>, ChildBuilderImpl<A>> {
@@ -86,15 +86,15 @@ public class SuperBuilderWithCustomBuilderMethod {
       }
     }
     double field3;
+    public static <A>ChildBuilder<A, ?, ?> builder() {
+      return new ChildBuilderImpl<A>().item("default item");
+    }
     protected @java.lang.SuppressWarnings("all") Child(final ChildBuilder<A, ?, ?> b) {
       super(b);
       this.field3 = b.field3;
     }
-    public static @java.lang.SuppressWarnings("all") <A>ChildBuilder<A, ?, ?> builder() {
-      return new ChildBuilderImpl<A>().item("default item");
-    }
   }
-  public SuperBuilderWithGenerics() {
+  public SuperBuilderWithCustomBuilderMethod() {
     super();
   }
   public static void test() {
