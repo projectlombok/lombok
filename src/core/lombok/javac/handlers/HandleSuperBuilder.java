@@ -95,6 +95,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	@Override
 	public void handle(AnnotationValues<SuperBuilder> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		SuperBuilder superbuilderAnnotation = annotation.getInstance();
+		deleteAnnotationIfNeccessary(annotationNode, SuperBuilder.class);
 
 		String builderMethodName = superbuilderAnnotation.builderMethodName();
 		String buildMethodName = superbuilderAnnotation.buildMethodName();
