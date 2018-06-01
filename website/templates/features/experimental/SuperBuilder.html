@@ -24,6 +24,8 @@
 			Furthermore, the generated builder code heavily relies on generics to avoid class casting when using the builder. 
 			<code>@SuperBuilder</code> generates a private constructor on the class that takes a builder instances as a parameter. This constructor sets the fields of the new instance to the values from the builder.
 		</p><p>
+			<code>@SuperBuilder</code> is not compatible with <code>@Builder</code>.
+		</p><p>
 			To ensure type-safety, <code>@SuperBuilder</code> generates two inner builder classes for each annotated class, one abstract and one concrete class named <code><em>Foobar</em>Builder</code> and <code><em>Foobar</em>BuilderImpl</code> (where <em>Foobar</em> is the name of the annotated class).
 		</p><p>
 			The configurable aspects of builder are:
@@ -43,7 +45,7 @@
 
 	<@f.confKeys>
 		<dt>
-			<code>lombok.builder.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
+			<code>lombok.superBuilder.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
 			Lombok will flag any usage of <code>@SuperBuilder</code> as a warning or error if configured.
 		</dd><dt>

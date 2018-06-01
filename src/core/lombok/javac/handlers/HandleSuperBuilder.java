@@ -39,6 +39,7 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
+import com.sun.tools.javac.tree.JCTree.JCIf;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
@@ -82,7 +83,6 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JCExpression type;
 		Name rawName;
 		Name name;
-		Name nameOfDefaultProvider;
 		Name nameOfSetFlag;
 		SingularData singularData;
 		ObtainVia obtainVia;
@@ -164,13 +164,16 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			}
 
 			if (isDefault != null) {
-				bfd.nameOfDefaultProvider = tdParent.toName("$default$" + bfd.name);
 				bfd.nameOfSetFlag = tdParent.toName(bfd.name + "$set");
-				JCMethodDecl md = generateDefaultProvider(bfd.nameOfDefaultProvider, fieldNode, td.typarams);
-				recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
-				if (md != null) {
-					injectMethod(tdParent, md);
-				}
+				// The @Builder annotation removes the initializing expression on the field and moves
+				// it to a method called "$default$FIELDNAME". This method is then called upon building.
+				// We do NOT do this, because this is unexpected and may lead to bugs when using other 
+				// constructors (see, e.g., issue #1347).
+				// Instead, we keep the init expression and only set a new value in the builder-based
+				// constructor if it was set in the builder. Drawback is that the init expression is
+				// always executed, even if it was unnecessary because its value is overwritten by the 
+				// builder.
+				// TODO: Once the issue is resolved in @Builder, we can adapt the solution here. 
 			}
 			addObtainVia(bfd, fieldNode);
 			builderFields.add(bfd);
@@ -435,9 +438,16 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			}
 			JCFieldAccess thisX = maker.Select(maker.Ident(typeNode.toName("this")), bfd.rawName);
 
-			JCExpression assign = maker.Assign(thisX, rhs);
-
-			statements.append(maker.Exec(assign));
+			JCStatement assign = maker.Exec(maker.Assign(thisX, rhs));
+			
+			// In case of @Builder.Default, only set the value if it really was set in the builder.
+			if (bfd.nameOfSetFlag != null) {
+				JCFieldAccess setField = maker.Select(maker.Ident(builderVariableName), bfd.nameOfSetFlag);
+				JCIf ifSet = maker.If(setField, assign, null);
+				statements.append(ifSet);
+			} else {
+				statements.append(assign);
+			}
 		}
 
 		JCModifiers mods = maker.Modifiers(toJavacModifier(level), List.<JCAnnotation>nil());
@@ -573,18 +583,6 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		statements.append(maker.Exec(maker.Assign(maker.Select(maker.Ident(type.toName("this")), type.toName("$lombokUnclean")), maker.Literal(CTC_BOOLEAN, 0))));
 		JCBlock body = maker.Block(0, statements.toList());
 		return maker.MethodDef(maker.Modifiers(Flags.PUBLIC), type.toName("$lombokClean"), maker.Type(Javac.createVoidType(type.getSymbolTable(), CTC_VOID)), List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
-	}
-
-	private JCMethodDecl generateDefaultProvider(Name methodName, JavacNode fieldNode, List<JCTypeParameter> params) {
-		JavacTreeMaker maker = fieldNode.getTreeMaker();
-		JCVariableDecl field = (JCVariableDecl) fieldNode.get();
-
-		JCStatement statement = maker.Return(field.init);
-		field.init = null;
-
-		JCBlock body = maker.Block(0, List.<JCStatement>of(statement));
-		int modifiers = Flags.PRIVATE | Flags.STATIC;
-		return maker.MethodDef(maker.Modifiers(modifiers), methodName, cloneType(maker, field.vartype, field, fieldNode.getContext()), copyTypeParams(fieldNode, params), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 	}
 
 	private void generateBuilderFields(JavacNode builderType, java.util.List<BuilderFieldData> builderFields, JCTree source) {

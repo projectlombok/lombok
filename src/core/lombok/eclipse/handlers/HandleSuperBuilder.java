@@ -46,6 +46,7 @@ import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
+import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
@@ -93,9 +94,8 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 
 	private static final char[] CLEAN_FIELD_NAME = "$lombokUnclean".toCharArray();
 	private static final char[] CLEAN_METHOD_NAME = "$lombokClean".toCharArray();
-	private static final char[] DEFAULT_PREFIX = {'$', 'd', 'e', 'f', 'a', 'u', 'l', 't', '$'};
-	private static final char[] SET_PREFIX = {'$', 's', 'e', 't'};
-	private static final String SELF_METHOD = "self";
+	private static final char[] SET_PREFIX = "$set".toCharArray();
+	private static final char[] SELF_METHOD_NAME = "self".toCharArray();
 
 	private static final AbstractMethodDeclaration[] EMPTY_METHODS = {};
 
@@ -103,7 +103,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		TypeReference type;
 		char[] rawName;
 		char[] name;
-		char[] nameOfDefaultProvider;
 		char[] nameOfSetFlag;
 		SingularData singularData;
 		ObtainVia obtainVia;
@@ -185,13 +184,16 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			}
 
 			if (isDefault != null) {
-				bfd.nameOfDefaultProvider = prefixWith(DEFAULT_PREFIX, bfd.name);
 				bfd.nameOfSetFlag = prefixWith(bfd.name, SET_PREFIX);
-
-				MethodDeclaration md = HandleBuilder.generateDefaultProvider(bfd.nameOfDefaultProvider, td.typeParameters, fieldNode, ast);
-				if (md != null) {
-					injectMethod(tdParent, md);
-				}
+				// The @Builder annotation removes the initializing expression on the field and moves
+				// it to a method called "$default$FIELDNAME". This method is then called upon building.
+				// We do NOT do this, because this is unexpected and may lead to bugs when using other 
+				// constructors (see, e.g., issue #1347).
+				// Instead, we keep the init expression and only set a new value in the builder-based
+				// constructor if it was set in the builder. Drawback is that the init expression is
+				// always executed, even if it was unnecessary because its value is overwritten by the 
+				// builder.
+				// TODO: Once the issue is resolved in @Builder, we can adapt the solution here. 
 			}
 			addObtainVia(bfd, fieldNode);
 			builderFields.add(bfd);
@@ -481,9 +483,17 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 				long[] positions = new long[] {p, p};
 				assignmentExpr = new QualifiedNameReference(variableInBuilder, positions, s, e);
 			}
-
-			Assignment assignment = new Assignment(thisX, assignmentExpr, (int) p);
+			Statement assignment = new Assignment(thisX, assignmentExpr, (int) p);
+			
+			// In case of @Builder.Default, only set the value if it really was set in the builder.
+			if (fieldNode.nameOfSetFlag != null) {
+				char[][] variableInBuilder = new char[][] {"b".toCharArray(), fieldNode.nameOfSetFlag};
+				long[] positions = new long[] {p, p};
+				QualifiedNameReference builderRef = new QualifiedNameReference(variableInBuilder, positions, s, e);
+				assignment = new IfStatement(builderRef, assignment, s, e);
+			}
 			statements.add(assignment);
+			
 			Annotation[] nonNulls = findAnnotations((FieldDeclaration)fieldNode.originalFieldNode.get(), NON_NULL_PATTERN);
 			if (nonNulls.length != 0) {
 				Statement nullCheck = generateNullCheck((FieldDeclaration)fieldNode.originalFieldNode.get(), sourceNode);
@@ -527,7 +537,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 
 	private MethodDeclaration generateAbstractSelfMethod(EclipseNode tdParent, boolean override, String builderGenericName) {
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) tdParent.top().get()).compilationResult);
-		out.selector = SELF_METHOD.toCharArray();
+		out.selector = SELF_METHOD_NAME;
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		out.modifiers = ClassFileConstants.AccAbstract | ClassFileConstants.AccProtected | ExtraCompilerModifiers.AccSemicolonBody;
 		if (override) {
@@ -539,7 +549,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 
 	private MethodDeclaration generateSelfMethod(EclipseNode builderImplType) {
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) builderImplType.top().get()).compilationResult);
-		out.selector = SELF_METHOD.toCharArray();
+		out.selector = SELF_METHOD_NAME;
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		out.modifiers = ClassFileConstants.AccProtected;
 		out.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, builderImplType.get())};
@@ -665,7 +675,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			@Override public ReturnStatement get() {
 				MessageSend returnCall = new MessageSend();
 				returnCall.receiver = ThisReference.implicitThis();
-				returnCall.selector = SELF_METHOD.toCharArray();
+				returnCall.selector = SELF_METHOD_NAME;
 				return new ReturnStatement(returnCall, 0, 0);
 			}
 		};
