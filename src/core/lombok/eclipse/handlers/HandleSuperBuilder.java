@@ -115,6 +115,8 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 
 	@Override
 	public void handle(AnnotationValues<SuperBuilder> annotation, Annotation ast, EclipseNode annotationNode) {
+		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.SUPERBUILDER_FLAG_USAGE, "@SuperBuilder");
+		
 		long p = (long) ast.sourceStart << 32 | ast.sourceEnd;
 
 		SuperBuilder builderInstance = annotation.getInstance();

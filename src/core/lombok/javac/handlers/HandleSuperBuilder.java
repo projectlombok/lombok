@@ -94,6 +94,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 
 	@Override
 	public void handle(AnnotationValues<SuperBuilder> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.SUPERBUILDER_FLAG_USAGE, "@SuperBuilder");
+		
 		SuperBuilder superbuilderAnnotation = annotation.getInstance();
 		deleteAnnotationIfNeccessary(annotationNode, SuperBuilder.class);
 
