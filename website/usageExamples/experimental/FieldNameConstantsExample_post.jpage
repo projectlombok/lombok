@@ -1,6 +1,6 @@
 public class FieldNameConstantsExample {
-	public static final String I_AM_A_FIELD = "iAmAField";
-	static final String AND_SO_AM_I = "andSoAmI";
+	public static final String FIELD_I_AM_A_FIELD = "iAmAField";
+	static final String FIELD_AND_SO_AM_I = "andSoAmI";
 
 	private final String iAmAField;
 	private final int andSoAmI;
