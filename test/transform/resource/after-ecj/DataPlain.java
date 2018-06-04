@@ -45,10 +45,6 @@ import lombok.Data;
     super();
     this.x = x;
   }
-  private @java.lang.SuppressWarnings("all") Data1() {
-    super();
-    this.x = 0;
-  }
 }
 @Data class Data2 {
   final int x;
@@ -96,10 +92,6 @@ import lombok.Data;
     super();
     this.x = x;
   }
-  private @java.lang.SuppressWarnings("all") Data2() {
-    super();
-    this.x = 0;
-  }
 }
 final @Data class Data3 {
   final int x;
@@ -141,10 +133,6 @@ final @Data class Data3 {
   public @java.lang.SuppressWarnings("all") Data3(final int x) {
     super();
     this.x = x;
-  }
-  private @java.lang.SuppressWarnings("all") Data3() {
-    super();
-    this.x = 0;
   }
 }
 final @Data @lombok.EqualsAndHashCode(callSuper = true) class Data4 extends java.util.Timer {

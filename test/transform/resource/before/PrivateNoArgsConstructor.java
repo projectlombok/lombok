@@ -1,3 +1,4 @@
+// CONF: lombok.noArgsConstructor.extraPrivate = true
 // CONF: lombok.equalsAndHashCode.callSuper = call
 public class PrivateNoArgsConstructor {
 	private static class Base {

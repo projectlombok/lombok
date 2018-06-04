@@ -32,8 +32,4 @@
     super();
     this.x = x;
   }
-  private @java.lang.SuppressWarnings("all") DataIgnore() {
-    super();
-    this.x = 0;
-  }
 }

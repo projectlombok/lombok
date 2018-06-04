@@ -45,8 +45,4 @@
     super();
     this.z = z;
   }
-  private @java.lang.SuppressWarnings("all") DataWithGetterNone() {
-    super();
-    this.z = null;
-  }
 }

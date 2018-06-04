@@ -67,12 +67,6 @@ public final class BuilderDefaults {
 		return new BuilderDefaultsBuilder();
 	}
 	@java.lang.SuppressWarnings("all")
-	private BuilderDefaults() {
-		this.x = 0;
-		this.name = null;
-		this.z = 0L;
-	}
-	@java.lang.SuppressWarnings("all")
 	public int getX() {
 		return this.x;
 	}

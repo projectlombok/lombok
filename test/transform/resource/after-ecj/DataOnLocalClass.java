@@ -50,10 +50,6 @@ class DataOnLocalClass1 {
         super();
         this.x = x;
       }
-      private @java.lang.SuppressWarnings("all") Local() {
-        super();
-        this.x = 0;
-      }
     }
   }
 }
@@ -107,9 +103,6 @@ class DataOnLocalClass2 {
               }
           this.name = name;
         }
-        private @java.lang.SuppressWarnings("all") InnerLocal() {
-          super();
-        }
       }
       final int x;
       public @java.lang.SuppressWarnings("all") int getX() {
@@ -142,10 +135,6 @@ class DataOnLocalClass2 {
       public @java.lang.SuppressWarnings("all") Local(final int x) {
         super();
         this.x = x;
-      }
-      private @java.lang.SuppressWarnings("all") Local() {
-        super();
-        this.x = 0;
       }
     }
   }

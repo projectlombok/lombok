@@ -70,11 +70,6 @@ public class BuilderWithRecursiveGenerics {
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
       return (((("BuilderWithRecursiveGenerics.Test(foo=" + this.getFoo()) + ", bar=") + this.getBar()) + ")");
     }
-    private @java.lang.SuppressWarnings("all") Test() {
-      super();
-      this.foo = null;
-      this.bar = null;
-    }
   }
   public BuilderWithRecursiveGenerics() {
     super();

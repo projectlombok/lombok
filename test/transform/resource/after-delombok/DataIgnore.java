@@ -6,10 +6,6 @@ class DataIgnore {
 		this.x = x;
 	}
 	@java.lang.SuppressWarnings("all")
-	private DataIgnore() {
-		this.x = 0;
-	}
-	@java.lang.SuppressWarnings("all")
 	public int getX() {
 		return this.x;
 	}

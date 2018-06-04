@@ -214,7 +214,7 @@ public class HandleConstructor {
 		if (!isDirectDescendantOfObject(typeNode)) return;
 		
 		Boolean v = typeNode.getAst().readConfiguration(ConfigurationKeys.NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE);
-		if (v != null && !v) return;
+		if (v == null || !v) return;
 
 		List<EclipseNode> fields = findFinalFields(typeNode);
 		generate(typeNode, AccessLevel.PRIVATE, fields, true, null, SkipIfConstructorExists.NO, Collections.<Annotation>emptyList(), sourceNode, true);

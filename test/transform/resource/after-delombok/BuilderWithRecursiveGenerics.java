@@ -44,11 +44,6 @@ public class BuilderWithRecursiveGenerics {
 			return new TestBuilder<Foo, Bar, Quz>();
 		}
 		@java.lang.SuppressWarnings("all")
-		private Test() {
-			this.foo = null;
-			this.bar = null;
-		}
-		@java.lang.SuppressWarnings("all")
 		public Foo getFoo() {
 			return this.foo;
 		}

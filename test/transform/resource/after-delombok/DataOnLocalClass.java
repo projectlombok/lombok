@@ -8,10 +8,6 @@ class DataOnLocalClass1 {
 				this.x = x;
 			}
 			@java.lang.SuppressWarnings("all")
-			private Local() {
-				this.x = 0;
-			}
-			@java.lang.SuppressWarnings("all")
 			public int getX() {
 				return this.x;
 			}
@@ -72,9 +68,6 @@ class DataOnLocalClass2 {
 					}
 					this.name = name;
 				}
-				@java.lang.SuppressWarnings("all")
-				private InnerLocal() {
-				}
 				@lombok.NonNull
 				@java.lang.SuppressWarnings("all")
 				public String getName() {
@@ -121,10 +114,6 @@ class DataOnLocalClass2 {
 			@java.lang.SuppressWarnings("all")
 			public Local(final int x) {
 				this.x = x;
-			}
-			@java.lang.SuppressWarnings("all")
-			private Local() {
-				this.x = 0;
 			}
 			@java.lang.SuppressWarnings("all")
 			public int getX() {

@@ -200,7 +200,7 @@ public class HandleConstructor {
 		if (!isDirectDescendantOfObject(typeNode)) return;
 		
 		Boolean v = typeNode.getAst().readConfiguration(ConfigurationKeys.NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE);
-		if (v != null && !v) return;
+		if (v == null || !v) return;
 
 		List<JavacNode> fields = findFinalFields(typeNode);
 		generate(typeNode, AccessLevel.PRIVATE, List.<JCAnnotation>nil(), fields, true, null, SkipIfConstructorExists.NO, source, true);
