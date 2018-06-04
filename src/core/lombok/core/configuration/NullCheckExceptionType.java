@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Project Lombok Authors.
+ * Copyright (C) 2014-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ package lombok.core.configuration;
 public enum NullCheckExceptionType {
 	ILLEGAL_ARGUMENT_EXCEPTION {
 		public String toExceptionMessage(String fieldName) {
-			return fieldName + " is null";
+			return fieldName + " is marked @NonNull but is null";
 		}
 		
 		@Override public String getExceptionType() {
@@ -35,7 +35,7 @@ public enum NullCheckExceptionType {
 	},
 	NULL_POINTER_EXCEPTION {
 		@Override public String toExceptionMessage(String fieldName) {
-			return fieldName + " is marked as @NonNull but is null";
+			return fieldName + " is marked @NonNull but is null";
 		}
 		
 		public String getExceptionType() {

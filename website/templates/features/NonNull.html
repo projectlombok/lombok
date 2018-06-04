@@ -11,7 +11,7 @@
 		</p><p>
 			Lombok has always treated any annotation named <code>@NonNull</code> on a field as a signal to generate a null-check if lombok generates an entire method or constructor for you, via for example <a href="/features/Data"><code>@Data</code></a>. Now, however, using lombok's own <code>@lombok.NonNull</code> on a parameter results in the insertion of just the null-check statement inside your own method or constructor.
 		</p><p>
-			The null-check looks like <code>if (param == null) throw new NullPointerException("param");</code> and will be inserted at the very top of your method. For constructors, the null-check will be inserted immediately following any explicit <code>this()</code> or <code>super()</code> calls.
+			The null-check looks like <code>if (param == null) throw new NullPointerException("param is marked @NonNull but is null");</code> and will be inserted at the very top of your method. For constructors, the null-check will be inserted immediately following any explicit <code>this()</code> or <code>super()</code> calls.
 		</p><p>
 			If a null-check is already present at the top, no additional null-check will be generated.
 		</p>
@@ -23,7 +23,7 @@
 		<dt>
 			<code>lombok.nonNull.exceptionType</code> = [<code>NullPointerException</code> | <code>IllegalArgumentException</code>] (default: <code>NullPointerException</code>).
 		</dt><dd>
-			When lombok generates a null-check <code>if</code> statement, by default, a <code>java.lang.NullPointerException</code> will be thrown with the field name as the exception message. However, you can use <code>IllegalArgumentException</code> in this configuration key to have lombok throw that exception, with '<em>fieldName</em> is null' as exception message.
+			When lombok generates a null-check <code>if</code> statement, by default, a <code>java.lang.NullPointerException</code> will be thrown with '<em>field name</em> is marked @NonNull but is null' as the exception message. However, you can use <code>IllegalArgumentException</code> in this configuration key to have lombok throw that exception with this message instead.
 		</dd><dt>
 			<code>lombok.nonNull.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
