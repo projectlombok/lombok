@@ -5,6 +5,7 @@ Lombok Changelog
 * v1.16.22 is the latest stable release of Project Lombok.
 * BUGFIX: Using boolean parameters in lombok annotations would fail. [Issue #1709](https://github.com/rzwitserloot/lombok/issues/1709)
 * BUGFIX: Delombok would give an error message. [Issue #1705](https://github.com/rzwitserloot/lombok/issues/1705)
+* FEATURE: Google's [Flogger (a.k.a. FluentLogger)](https://google.github.io/flogger/) is now available via `@Flogger`. [Issue #1697](https://github.com/rzwitserloot/lombok/issues/1697)
 
 ### v1.16.22 "Envious Ferret" (May 29th, 2018)
 * FEATURE: Private no-args constructor for `@Data` and `@Value` to enable deserialization frameworks (like Jackson) to operate out-of-the-box. Use `lombok.noArgsConstructor.extraPrivate = false` to disable this behavior.

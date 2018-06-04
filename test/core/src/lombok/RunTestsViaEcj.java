@@ -146,6 +146,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		classpath.add("lib/test/org.jboss.logging-jboss-logging.jar");
 		classpath.add("lib/test/com.google.guava-guava.jar");
 		classpath.add("lib/test/com.google.code.findbugs-findbugs.jar");
+		classpath.add("lib/test/com.google.flogger-flogger.jar");
 		return new FileSystem(classpath.toArray(new String[0]), new String[] {file.getAbsolutePath()}, "UTF-8");
 	}
 }

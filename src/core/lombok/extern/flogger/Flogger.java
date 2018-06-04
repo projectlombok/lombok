@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2017 The Project Lombok Authors.
+ * Copyright (C) 2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -19,7 +19,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.extern.log4j;
+package lombok.extern.flogger;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
  * <p>
  * Example:
  * <pre>
- * &#64;Log4j
+ * &#64;Flogger
  * public class LogExample {
  * }
  * </pre>
@@ -42,25 +42,21 @@ import java.lang.annotation.Target;
  * 
  * <pre>
  * public class LogExample {
- *     private static final org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(LogExample.class);
+ *     private static final com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
  * }
  * </pre>
  * 
  * This annotation is valid for classes and enumerations.<br>
- * 
- * @see <a href="https://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Logger.html">org.apache.log4j.Logger</a>
- * @see <a href="https://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Logger.html#getLogger(java.lang.Class)">org.apache.log4j.Logger#getLogger(java.lang.Class)</a>
- * @see lombok.extern.log4j.Log4j2 &#64;Log4j2
+ * @see <a href="https://google.github.io/flogger/">com.google.common.flogger</a>
  * @see lombok.extern.apachecommons.CommonsLog &#64;CommonsLog
  * @see lombok.extern.java.Log &#64;Log
+ * @see lombok.extern.log4j.Log4j &#64;Log4j
+ * @see lombok.extern.log4j.Log4j2 &#64;Log4j2
  * @see lombok.extern.slf4j.Slf4j &#64;Slf4j
  * @see lombok.extern.slf4j.XSlf4j &#64;XSlf4j
  * @see lombok.extern.jbosslog.JBossLog &#64;JBossLog
- * @see lombok.extern.flogger.Flogger &#64;Flogger
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
-public @interface Log4j {
-	/** @return The category of the constructed Logger. By default, it will use the type where the annotation is placed. */
-	String topic() default "";
+public @interface Flogger {
 }

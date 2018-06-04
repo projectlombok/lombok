@@ -390,6 +390,13 @@ public class ConfigurationKeys {
 	public static final ConfigurationKey<FlagUsageType> LOG_JBOSSLOG_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.log.jbosslog.flagUsage", "Emit a warning or error if @JBossLog is used.") {};
 	
 	/**
+	 * lombok configuration: {@code lombok.log.flogger.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @Flogger} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> LOG_FLOGGER_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.log.flogger.flagUsage", "Emit a warning or error if @Flogger is used.") {};
+	
+	/**
 	 * lombok configuration: {@code lombok.log.fieldName} = &lt;String: aJavaIdentifier&gt; (Default: {@code log}).
 	 * 
 	 * If set the various log annotations (which make a log field) will use the stated identifier instead of {@code log} as a name.

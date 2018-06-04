@@ -91,16 +91,18 @@ public class HandleLog {
 		// private static final <loggerType> log = <factoryMethod>(<parameter>);
 		JCExpression loggerType = chainDotsString(typeNode, framework.getLoggerTypeName());
 		JCExpression factoryMethod = chainDotsString(typeNode, framework.getLoggerFactoryMethodName());
-
+		
 		JCExpression loggerName;
-		if (loggerTopic == null || loggerTopic.trim().length() == 0) {
+		if (!framework.passTypeName) {
+			loggerName = null;
+		} else if (loggerTopic == null || loggerTopic.trim().length() == 0) {
 			loggerName = framework.createFactoryParameter(typeNode, loggingType);
 		} else {
 			loggerName = maker.Literal(loggerTopic);
 		}
-
-		JCMethodInvocation factoryMethodCall = maker.Apply(List.<JCExpression>nil(), factoryMethod, List.<JCExpression>of(loggerName));
-
+		
+		JCMethodInvocation factoryMethodCall = maker.Apply(List.<JCExpression>nil(), factoryMethod, loggerName != null ? List.<JCExpression>of(loggerName) : List.<JCExpression>nil());
+		
 		JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
 				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (useStatic ? Flags.STATIC : 0)),
 				typeNode.toName(logFieldName), loggerType, factoryMethodCall), source, typeNode.getContext());
@@ -186,6 +188,17 @@ public class HandleLog {
 		}
 	}
 	
+	/**
+	 * Handles the {@link lombok.extern.flogger.Flogger} annotation for javac.
+	 */
+	@ProviderFor(JavacAnnotationHandler.class)
+	public static class HandleFloggerLog extends JavacAnnotationHandler<lombok.extern.flogger.Flogger> {
+		@Override public void handle(AnnotationValues<lombok.extern.flogger.Flogger> annotation, JCAnnotation ast, JavacNode annotationNode) {
+			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_FLOGGER_FLAG_USAGE, "@Flogger", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
+			processAnnotation(LoggingFramework.FLOGGER, annotation, annotationNode, "");
+		}
+	}
+	
 	enum LoggingFramework {
 		// private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(TargetType.class);
 		COMMONS(lombok.extern.apachecommons.CommonsLog.class, "org.apache.commons.logging.Log", "org.apache.commons.logging.LogFactory.getLog"),
@@ -212,17 +225,29 @@ public class HandleLog {
 		XSLF4J(lombok.extern.slf4j.XSlf4j.class, "org.slf4j.ext.XLogger", "org.slf4j.ext.XLoggerFactory.getXLogger"),
 		
 		// private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(TargetType.class);
-		JBOSSLOG(lombok.extern.jbosslog.JBossLog.class, "org.jboss.logging.Logger", "org.jboss.logging.Logger.getLogger")
+		JBOSSLOG(lombok.extern.jbosslog.JBossLog.class, "org.jboss.logging.Logger", "org.jboss.logging.Logger.getLogger"),
+		
+		// private static final com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
+		FLOGGER(lombok.extern.flogger.Flogger.class, "com.google.common.flogger.FluentLogger", "com.google.common.flogger.FluentLogger.forEnclosingClass", false),
 		;
 		
 		private final Class<? extends Annotation> annotationClass;
 		private final String loggerTypeName;
 		private final String loggerFactoryName;
+		private final boolean passTypeName;
+		
+		LoggingFramework(Class<? extends Annotation> annotationClass, String loggerTypeName, String loggerFactoryName, boolean passTypeName) {
+			this.annotationClass = annotationClass;
+			this.loggerTypeName = loggerTypeName;
+			this.loggerFactoryName = loggerFactoryName;
+			this.passTypeName = passTypeName;
+		}
 		
 		LoggingFramework(Class<? extends Annotation> annotationClass, String loggerTypeName, String loggerFactoryName) {
 			this.annotationClass = annotationClass;
 			this.loggerTypeName = loggerTypeName;
 			this.loggerFactoryName = loggerFactoryName;
+			this.passTypeName = true;
 		}
 		
 		final Class<? extends Annotation> getAnnotationClass() {
