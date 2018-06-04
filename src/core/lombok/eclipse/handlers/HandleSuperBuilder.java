@@ -333,6 +333,11 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			injectMethod(builderType, generateCleanMethod(builderFields, builderType, ast));
 		}
 
+		if ((td.modifiers & ClassFileConstants.AccAbstract) != 0) {
+			// Abstract classes to not get the Builder implementation nor the builder() method.
+			return;
+		}
+
 		// Create the builder implementation class.
 		EclipseNode builderImplType = findInnerClass(tdParent, builderImplClassName);
 		if (builderImplType == null) {

@@ -282,42 +282,51 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		if (addCleaning) {
 			injectMethod(builderType, generateCleanMethod(builderFields, builderType, ast));
 		}
+		
+		recursiveSetGeneratedBy(builderType.get(), ast, annotationNode.getContext());
 
-		// Create the builder implementation class.
-		JavacNode builderImplType = findInnerClass(tdParent, builderImplClassName);
-		if (builderImplType == null) {
-			builderImplType = generateBuilderImplClass(annotationNode, tdParent, builderImplClassName, builderClassName, typeParams, ast);
-		} else {
-			annotationNode.addError("@SuperBuilder does not support customized builders. Use @Builder instead.");
-			return;
+		if ((td.mods.flags & Flags.ABSTRACT) == 0) {
+			// Only non-abstract classes get the Builder implementation.
+
+			// Create the builder implementation class.
+			JavacNode builderImplType = findInnerClass(tdParent, builderImplClassName);
+			if (builderImplType == null) {
+				builderImplType = generateBuilderImplClass(annotationNode, tdParent, builderImplClassName, builderClassName, typeParams, ast);
+			} else {
+				annotationNode.addError("@SuperBuilder does not support customized builders. Use @Builder instead.");
+				return;
+			}
+
+			// Create a simple constructor for the BuilderImpl class.
+			JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PRIVATE, List.<JCAnnotation>nil(), builderImplType, List.<JavacNode>nil(), false, annotationNode);
+			if (cd != null) {
+				injectMethod(builderImplType, cd);
+			}
+
+			// Create the self() and build() methods in the BuilderImpl.
+			injectMethod(builderImplType, generateSelfMethod(builderImplType));
+			injectMethod(builderImplType, generateBuildMethod(buildMethodName, returnType, builderImplType, thrownExceptions));
+
+			recursiveSetGeneratedBy(builderImplType.get(), ast, annotationNode.getContext());
 		}
-
-		// Create a simple constructor for the BuilderImpl class.
-		JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PRIVATE, List.<JCAnnotation>nil(), builderImplType, List.<JavacNode>nil(), false, annotationNode);
-		if (cd != null) {
-			injectMethod(builderImplType, cd);
-		}
-
-		// Create the self() and build() methods in the BuilderImpl.
-		injectMethod(builderImplType, generateSelfMethod(builderImplType));
-		injectMethod(builderImplType, generateBuildMethod(buildMethodName, returnType, builderImplType, thrownExceptions));
 
 		// Generate a constructor in the annotated class that takes a builder as argument.
 		generateBuilderBasedConstructor(tdParent, typeParams, builderFields, annotationNode, builderClassName,
 				superclassBuilderClassExpression != null);
 
-		// Add the builder() method to the annotated class.
-		// Allow users to specify their own builder() methods, e.g., to provide default values.
-		if (methodExists(builderMethodName, tdParent, -1) == MemberExistsResult.NOT_EXISTS) {
-			JCMethodDecl builderMethod = generateBuilderMethod(builderMethodName, builderClassName, builderImplClassName, annotationNode, tdParent, typeParams);
-			recursiveSetGeneratedBy(builderMethod, ast, annotationNode.getContext());
-			if (builderMethod != null) {
-				injectMethod(tdParent, builderMethod);
+		if ((td.mods.flags & Flags.ABSTRACT) == 0) {
+			// Only non-abstract classes get the Builder implementation and the builder() method.
+
+			// Add the builder() method to the annotated class.
+			// Allow users to specify their own builder() methods, e.g., to provide default values.
+			if (methodExists(builderMethodName, tdParent, -1) == MemberExistsResult.NOT_EXISTS) {
+				JCMethodDecl builderMethod = generateBuilderMethod(builderMethodName, builderClassName, builderImplClassName, annotationNode, tdParent, typeParams);
+				recursiveSetGeneratedBy(builderMethod, ast, annotationNode.getContext());
+				if (builderMethod != null) {
+					injectMethod(tdParent, builderMethod);
+				}
 			}
 		}
-
-		recursiveSetGeneratedBy(builderType.get(), ast, annotationNode.getContext());
-		recursiveSetGeneratedBy(builderImplType.get(), ast, annotationNode.getContext());
 	}
 
 	/**
