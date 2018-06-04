@@ -49,7 +49,7 @@ import org.mangosdk.spi.ProviderFor;
 
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldNameConstants> {
-	public void generateFieldNameConstantsForType(EclipseNode typeNode, EclipseNode errorNode, AccessLevel level) {
+	public void generateFieldNameConstantsForType(EclipseNode typeNode, EclipseNode errorNode, AccessLevel level, String prefix, String suffix) {
 		TypeDeclaration typeDecl = null;
 		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
 		
@@ -62,13 +62,13 @@ public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldName
 		}
 		
 		for (EclipseNode field : typeNode.down()) {
-			if (fieldQualifiesForFieldNameConstantsGeneration(field)) generateFieldNameConstantsForField(field, errorNode.get(), level);
+			if (fieldQualifiesForFieldNameConstantsGeneration(field)) generateFieldNameConstantsForField(field, errorNode.get(), level, prefix, suffix);
 		}
 	}
 	
-	private void generateFieldNameConstantsForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level) {
+	private void generateFieldNameConstantsForField(EclipseNode fieldNode, ASTNode pos, AccessLevel level, String prefix, String suffix) {
 		if (hasAnnotation(FieldNameConstants.class, fieldNode)) return;
-		createFieldNameConstantsForField(level, fieldNode, fieldNode, pos, false);
+		createFieldNameConstantsForField(level, prefix, suffix, fieldNode, fieldNode, pos, false);
 	}
 	
 	private boolean fieldQualifiesForFieldNameConstantsGeneration(EclipseNode field) {
@@ -83,27 +83,33 @@ public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldName
 		EclipseNode node = annotationNode.up();
 		FieldNameConstants annotatationInstance = annotation.getInstance();
 		AccessLevel level = annotatationInstance.level();
+		String prefix = annotatationInstance.prefix();
+		String suffix = annotatationInstance.suffix();
+		if (prefix.equals(" CONFIG DEFAULT ")) prefix = annotationNode.getAst().readConfiguration(ConfigurationKeys.FIELD_NAME_CONSTANTS_PREFIX);
+		if (suffix.equals(" CONFIG DEFAULT ")) suffix = annotationNode.getAst().readConfiguration(ConfigurationKeys.FIELD_NAME_CONSTANTS_SUFFIX);
+		if (prefix == null) prefix = "FIELD_";
+		if (suffix == null) suffix = "";
 		if (node == null) return;
 		
 		switch (node.getKind()) {
 		case FIELD:
-			if (level != AccessLevel.NONE) createFieldNameConstantsForFields(level, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true);
+			if (level != AccessLevel.NONE) createFieldNameConstantsForFields(level, prefix, suffix, annotationNode.upFromAnnotationToFields(), annotationNode, annotationNode.get(), true);
 			break;
 		case TYPE:
 			if (level == AccessLevel.NONE) {
 				annotationNode.addWarning("type-level '@FieldNameConstants' does not work with AccessLevel.NONE.");
 				return;
 			}
-			generateFieldNameConstantsForType(node, annotationNode, level);
+			generateFieldNameConstantsForType(node, annotationNode, level, prefix, suffix);
 			break;
 		}
 	}
 	
-	private void createFieldNameConstantsForFields(AccessLevel level, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists) {
-		for (EclipseNode fieldNode : fieldNodes) createFieldNameConstantsForField(level, fieldNode, errorNode, source, whineIfExists);
+	private void createFieldNameConstantsForFields(AccessLevel level, String prefix, String suffix, Collection<EclipseNode> fieldNodes, EclipseNode errorNode, ASTNode source, boolean whineIfExists) {
+		for (EclipseNode fieldNode : fieldNodes) createFieldNameConstantsForField(level, prefix, suffix, fieldNode, errorNode, source, whineIfExists);
 	}
 	
-	private void createFieldNameConstantsForField(AccessLevel level, EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists) {
+	private void createFieldNameConstantsForField(AccessLevel level, String prefix, String suffix, EclipseNode fieldNode, EclipseNode errorNode, ASTNode source, boolean whineIfExists) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			errorNode.addError("@FieldNameConstants is only supported on a class, an enum, or a field");
 			return;
@@ -111,7 +117,7 @@ public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldName
 		
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		String fieldName = new String(field.name);
-		String constantName = HandlerUtil.camelCaseToConstant(fieldName);
+		String constantName = prefix + HandlerUtil.camelCaseToConstant(fieldName) + suffix;
 		if (constantName.equals(fieldName)) {
 			fieldNode.addWarning("Not generating constant for this field: The name of the constant would be equal to the name of this field.");
 			return;

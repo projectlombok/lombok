@@ -49,7 +49,7 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
 
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleFieldNameConstants extends JavacAnnotationHandler<FieldNameConstants> {
-	public void generateFieldNameConstantsForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level) {
+	public void generateFieldNameConstantsForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, String prefix, String suffix) {
 		JCClassDecl typeDecl = null;
 		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) typeNode.get();
 		
@@ -62,13 +62,13 @@ public class HandleFieldNameConstants extends JavacAnnotationHandler<FieldNameCo
 		}
 		
 		for (JavacNode field : typeNode.down()) {
-			if (fieldQualifiesForFieldNameConstantsGeneration(field)) generateFieldNameConstantsForField(field, errorNode.get(), level);
+			if (fieldQualifiesForFieldNameConstantsGeneration(field)) generateFieldNameConstantsForField(field, errorNode.get(), level, prefix, suffix);
 		}
 	}
 	
-	private void generateFieldNameConstantsForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level) {
+	private void generateFieldNameConstantsForField(JavacNode fieldNode, DiagnosticPosition pos, AccessLevel level, String prefix, String suffix) {
 		if (hasAnnotation(FieldNameConstants.class, fieldNode)) return;
-		createFieldNameConstantsForField(level, fieldNode, fieldNode, false);
+		createFieldNameConstantsForField(level, prefix, suffix, fieldNode, fieldNode, false);
 	}
 	
 	private boolean fieldQualifiesForFieldNameConstantsGeneration(JavacNode field) {
@@ -88,26 +88,32 @@ public class HandleFieldNameConstants extends JavacAnnotationHandler<FieldNameCo
 		JavacNode node = annotationNode.up();
 		FieldNameConstants annotatationInstance = annotation.getInstance();
 		AccessLevel level = annotatationInstance.level();
+		String prefix = annotatationInstance.prefix();
+		String suffix = annotatationInstance.suffix();
+		if (prefix.equals(" CONFIG DEFAULT ")) prefix = annotationNode.getAst().readConfiguration(ConfigurationKeys.FIELD_NAME_CONSTANTS_PREFIX);
+		if (suffix.equals(" CONFIG DEFAULT ")) suffix = annotationNode.getAst().readConfiguration(ConfigurationKeys.FIELD_NAME_CONSTANTS_SUFFIX);
+		if (prefix == null) prefix = "FIELD_";
+		if (suffix == null) suffix = "";
 		if (node == null) return;
 		switch (node.getKind()) {
 		case FIELD:
-			if (level != AccessLevel.NONE) createFieldNameConstantsForFields(level, fields, annotationNode, annotationNode, true);
+			if (level != AccessLevel.NONE) createFieldNameConstantsForFields(level, prefix, suffix, fields, annotationNode, annotationNode, true);
 			break;
 		case TYPE:
 			if (level == AccessLevel.NONE) {
 				annotationNode.addWarning("type-level '@FieldNameConstants' does not work with AccessLevel.NONE.");
 				return;
 			}
-			generateFieldNameConstantsForType(node, annotationNode, level);
+			generateFieldNameConstantsForType(node, annotationNode, level, prefix, suffix);
 			break;
 		}
 	}
 	
-	private void createFieldNameConstantsForFields(AccessLevel level, Collection<JavacNode> fieldNodes, JavacNode annotationNode, JavacNode errorNode, boolean whineIfExists) {
-		for (JavacNode fieldNode : fieldNodes) createFieldNameConstantsForField(level, fieldNode, errorNode, whineIfExists);
+	private void createFieldNameConstantsForFields(AccessLevel level, String prefix, String suffix, Collection<JavacNode> fieldNodes, JavacNode annotationNode, JavacNode errorNode, boolean whineIfExists) {
+		for (JavacNode fieldNode : fieldNodes) createFieldNameConstantsForField(level, prefix, suffix, fieldNode, errorNode, whineIfExists);
 	}
 	
-	private void createFieldNameConstantsForField(AccessLevel level, JavacNode fieldNode, JavacNode source, boolean whineIfExists) {
+	private void createFieldNameConstantsForField(AccessLevel level, String prefix, String suffix, JavacNode fieldNode, JavacNode source, boolean whineIfExists) {
 		if (fieldNode.getKind() != Kind.FIELD) {
 			source.addError("@FieldNameConstants is only supported on a class, an enum, or a field");
 			return;
@@ -115,7 +121,7 @@ public class HandleFieldNameConstants extends JavacAnnotationHandler<FieldNameCo
 		
 		JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 		String fieldName = field.name.toString();
-		String constantName = HandlerUtil.camelCaseToConstant(fieldName);
+		String constantName = prefix + HandlerUtil.camelCaseToConstant(fieldName) + suffix;
 		if (constantName.equals(fieldName)) {
 			fieldNode.addWarning("Not generating constant for this field: The name of the constant would be equal to the name of this field.");
 			return;

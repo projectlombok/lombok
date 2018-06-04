@@ -35,4 +35,6 @@ import lombok.AccessLevel;
 @Retention(RetentionPolicy.SOURCE)
 public @interface FieldNameConstants {
 	lombok.AccessLevel level() default AccessLevel.PUBLIC;
+	String prefix() default " CONFIG DEFAULT ";
+	String suffix() default " CONFIG DEFAULT ";
 }

@@ -5,5 +5,8 @@ import lombok.AccessLevel;
 public class FieldNameConstantsWeird {
 	@FieldNameConstants(level = AccessLevel.NONE)
 	String iAmADvdPlayer;
+	@FieldNameConstants(prefix = "")
 	String X;
+	@FieldNameConstants(suffix = "Z")
+	String A;
 }
