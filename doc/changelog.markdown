@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v1.16.23 "Edgy Guinea Pig"
 * v1.16.22 is the latest stable release of Project Lombok.
+* BUGFIX: Using boolean parameters in lombok annotations would fail. [Issue #1709](https://github.com/rzwitserloot/lombok/issues/1709)
 * BUGFIX: Delombok would give an error message. [Issue #1705](https://github.com/rzwitserloot/lombok/issues/1705)
 
 ### v1.16.22 "Envious Ferret" (May 29th, 2018)
