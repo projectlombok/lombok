@@ -1,12 +1,13 @@
 Lombok Changelog
 ----------------
 
-### v1.16.23 "Edgy Guinea Pig"
+### v1.18.0 (June 5th, 2018)
 * v1.16.22 is the latest stable release of Project Lombok.
 * BREAKING CHANGE: The in 1.16.22 introduced configuration key `lombok.noArgsConstructor.extraPrivate` is now `false` by default. [Issue #1708](https://github.com/rzwitserloot/lombok/issues/1708)
 * BUGFIX: Do not generate a private no-args constructor if that breaks the code. [Issue #1703](https://github.com/rzwitserloot/lombok/issues/1703), [Issue #1704](https://github.com/rzwitserloot/lombok/issues/1704), [Issue #1712](https://github.com/rzwitserloot/lombok/issues/1712)
 * BUGFIX: Using boolean parameters in lombok annotations would fail. [Issue #1709](https://github.com/rzwitserloot/lombok/issues/1709)
 * BUGFIX: Delombok would give an error message. [Issue #1705](https://github.com/rzwitserloot/lombok/issues/1705)
+* BUGFIX: Eclipse java10 var support didn't work if lombok was installed in your eclipse. [Issue #1676](https://github.com/rzwitserloot/lombok/issues/1676)
 * FEATURE: Google's [Flogger (a.k.a. FluentLogger)](https://google.github.io/flogger/) is now available via `@Flogger`. [Issue #1697](https://github.com/rzwitserloot/lombok/issues/1697)
 * FEATURE: `@FieldNameConstants` has been extended to support prefixes and suffixes. By default, the generated constants are prefixed with `FIELD_`. [Docs on @FieldNameConstants](https://projectlombok.org/features/experimental/FieldNameConstants).
 
