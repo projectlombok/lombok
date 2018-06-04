@@ -22,23 +22,8 @@
 package lombok.javac.handlers;
 
 import static lombok.core.handlers.HandlerUtil.*;
-import static lombok.javac.handlers.JavacHandlerUtil.*;
 import static lombok.javac.Javac.*;
-
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.ConfigurationKeys;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import lombok.core.AnnotationValues;
-import lombok.core.AST.Kind;
-import lombok.delombok.LombokOptionsFactory;
-import lombok.javac.Javac;
-import lombok.javac.JavacAnnotationHandler;
-import lombok.javac.JavacNode;
-import lombok.javac.JavacTreeMaker;
-import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
+import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -61,6 +46,21 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.ConfigurationKeys;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
+import lombok.delombok.LombokOptionsFactory;
+import lombok.javac.Javac;
+import lombok.javac.JavacAnnotationHandler;
+import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
+import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 
 public class HandleConstructor {
 	@ProviderFor(JavacAnnotationHandler.class)
@@ -197,6 +197,8 @@ public class HandleConstructor {
 	}
 	
 	public void generateExtraNoArgsConstructor(JavacNode typeNode, JavacNode source) {
+		if (!isDirectDescendantOfObject(typeNode)) return;
+		
 		Boolean v = typeNode.getAst().readConfiguration(ConfigurationKeys.NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE);
 		if (v != null && !v) return;
 
@@ -278,6 +280,13 @@ public class HandleConstructor {
 				}
 			}
 		}
+		
+		for (JavacNode child : node.down()) {
+			if (annotationTypeMatches(NoArgsConstructor.class, child)) return true;
+			if (annotationTypeMatches(RequiredArgsConstructor.class, child) && findRequiredFields(node).isEmpty()) return true;
+			if (annotationTypeMatches(AllArgsConstructor.class, child) && findAllFields(node).isEmpty()) return true;
+		}
+		
 		return false;
 	}
 	

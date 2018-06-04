@@ -1854,4 +1854,12 @@ public class EclipseHandlerUtil {
 	private static long[] copy(long[] array) {
 		return array == null ? null : array.clone();
 	}
+	
+	public static boolean isDirectDescendantOfObject(EclipseNode typeNode) {
+		if (!(typeNode.get() instanceof TypeDeclaration)) throw new IllegalArgumentException("not a type node");
+		TypeDeclaration typeDecl = (TypeDeclaration) typeNode.get();
+		if (typeDecl.superclass == null) return true;
+		String p = typeDecl.superclass.toString();
+		return p.equals("Object") || p.equals("java.lang.Object");
+	}
 }

@@ -211,6 +211,8 @@ public class HandleConstructor {
 	}
 	
 	public void generateExtraNoArgsConstructor(EclipseNode typeNode, EclipseNode sourceNode) {
+		if (!isDirectDescendantOfObject(typeNode)) return;
+		
 		Boolean v = typeNode.getAst().readConfiguration(ConfigurationKeys.NO_ARGS_CONSTRUCTOR_EXTRA_PRIVATE);
 		if (v != null && !v) return;
 
@@ -298,6 +300,13 @@ public class HandleConstructor {
 				}
 			}
 		}
+		
+		for (EclipseNode child : node.down()) {
+			if (annotationTypeMatches(NoArgsConstructor.class, child)) return true;
+			if (annotationTypeMatches(RequiredArgsConstructor.class, child) && findRequiredFields(node).isEmpty()) return true;
+			if (annotationTypeMatches(AllArgsConstructor.class, child) && findAllFields(node).isEmpty()) return true;
+		}
+		
 		return false;
 	}
 
