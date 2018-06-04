@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v1.16.23 "Edgy Guinea Pig"
 * v1.16.22 is the latest stable release of Project Lombok.
+* BUGFIX: Delombok would give an error message. [Issue #1705](https://github.com/rzwitserloot/lombok/issues/1705)
 
 ### v1.16.22 "Envious Ferret" (May 29th, 2018)
 * FEATURE: Private no-args constructor for `@Data` and `@Value` to enable deserialization frameworks (like Jackson) to operate out-of-the-box. Use `lombok.noArgsConstructor.extraPrivate = false` to disable this behavior.
