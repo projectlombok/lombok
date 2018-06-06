@@ -70,6 +70,9 @@ import com.sun.tools.javac.util.Context;
  */
 @SupportedAnnotationTypes("*")
 public class LombokProcessor extends AbstractProcessor {
+	private static final String GRADLE_INCREMENTAL_FILER_CLASS =
+			"org.gradle.api.internal.tasks.compile.processing.IncrementalFiler";
+
 	private ProcessingEnvironment processingEnv;
 	private JavacProcessingEnvironment javacProcessingEnv;
 	private JavacFiler javacFiler;
@@ -431,20 +434,30 @@ public class LombokProcessor extends AbstractProcessor {
 	 * gradle incremental compilation, the delegate Filer of the gradle wrapper is returned.
 	 */
 	public JavacFiler getJavacFiler(Filer filer) {
-		final Class<?> filerSuperClass = filer.getClass().getSuperclass();
-		if (filerSuperClass.getName().equals("org.gradle.api.internal.tasks.compile.processing.IncrementalFiler")) {
-			try {
-				Field field = filerSuperClass.getDeclaredField("delegate");
-				field.setAccessible(true);
-				Object delegate = field.get(filer);
-				return (JavacFiler) delegate;
-			} catch (final Exception e) {
-				e.printStackTrace();
-				processingEnv.getMessager().printMessage(Kind.WARNING,
-						"Can't get the delegate of the gradle IncrementalFiler. Lombok won't work.");
+		try {
+			final Class<?> filerClass = filer.getClass();
+			final Class<?> filerSuperClass = filerClass.getSuperclass();
+
+			if (filerSuperClass.getName().equals(GRADLE_INCREMENTAL_FILER_CLASS)) {
+				// Gradle before 4.8
+				return tryGetJavacFilerDelegate(filerSuperClass, filer);
+			} else if (filer.getClass().getName().equals(GRADLE_INCREMENTAL_FILER_CLASS)) {
+				// Gradle 4.8 and above
+				return tryGetJavacFilerDelegate(filerClass, filer);
 			}
+		} catch (final Exception e) {
+			e.printStackTrace();
+			processingEnv.getMessager().printMessage(Kind.WARNING,
+					"Can't get the delegate of the gradle IncrementalFiler. Lombok won't work.");
 		}
+
 		return (JavacFiler) filer;
 	}
 
+	private JavacFiler tryGetJavacFilerDelegate(Class<?> filerDelegateClass, Object instance) throws Exception {
+		Field field = filerDelegateClass.getDeclaredField("delegate");
+		field.setAccessible(true);
+		Object delegate = field.get(instance);
+		return (JavacFiler) delegate;
+	}
 }
