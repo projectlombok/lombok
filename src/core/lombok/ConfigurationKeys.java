@@ -508,6 +508,15 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<FlagUsageType> WITHER_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.wither.flagUsage", "Emit a warning or error if @Wither is used.") {};
 	
+	// ----- SuperBuilder -----
+	
+	/**
+	 * lombok configuration: {@code lombok.superBuilder.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @SuperBuilder} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> SUPERBUILDER_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.superBuilder.flagUsage", "Emit a warning or error if @SuperBuilder is used.") {};
+
 	// ----- Configuration System -----
 	
 	/**

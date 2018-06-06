@@ -31,6 +31,7 @@ import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.experimental.SuperBuilder;
 
 @ProviderFor(EclipseAnnotationHandler.class)
 @HandlerPriority(-1025) //HandleBuilder's level, minus one.
@@ -39,8 +40,9 @@ public class HandleBuilderDefault extends EclipseAnnotationHandler<Builder.Defau
 		EclipseNode annotatedField = annotationNode.up();
 		if (annotatedField.getKind() != Kind.FIELD) return;
 		EclipseNode classWithAnnotatedField = annotatedField.up();
-		if (!hasAnnotation(Builder.class, classWithAnnotatedField) && !hasAnnotation("lombok.experimental.Builder", classWithAnnotatedField)) {
-			annotationNode.addWarning("@Builder.Default requires @Builder on the class for it to mean anything.");
+		if (!hasAnnotation(Builder.class, classWithAnnotatedField) && !hasAnnotation("lombok.experimental.Builder", classWithAnnotatedField)
+				&& !hasAnnotation(SuperBuilder.class, classWithAnnotatedField)) {
+			annotationNode.addWarning("@Builder.Default requires @Builder or @SuperBuilder on the class for it to mean anything.");
 		}
 	}
 }

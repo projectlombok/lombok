@@ -25,6 +25,7 @@ import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.Collections;
+import java.util.function.Supplier;
 
 import lombok.core.GuavaTypeMap;
 import lombok.core.LombokImmutableList;
@@ -36,7 +37,6 @@ import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
 import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
 
 import com.sun.tools.javac.code.Flags;
-import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
@@ -70,20 +70,11 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		return Collections.singletonList(injectFieldAndMarkGenerated(builderType, buildField));
 	}
 	
-	@Override public void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, boolean chain) {
+	@Override public void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, Supplier<JCExpression> returnType, Supplier<? extends JCStatement> returnStatement) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
-		Symtab symbolTable = builderType.getSymbolTable();
-		JCExpression returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(symbolTable, CTC_VOID));
-		JCStatement returnStatement = chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
-		generateSingularMethod(deprecate, maker, returnType, returnStatement, data, builderType, source, fluent);
-
-		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(symbolTable, CTC_VOID));
-		returnStatement = chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
-		generatePluralMethod(deprecate, maker, returnType, returnStatement, data, builderType, source, fluent);
-		
-		returnType = chain ? cloneSelfType(builderType) : maker.Type(createVoidType(symbolTable, CTC_VOID));
-		returnStatement = chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
-		generateClearMethod(deprecate, maker, returnType, returnStatement, data, builderType, source);
+		generateSingularMethod(deprecate, maker, returnType.get(), returnStatement.get(), data, builderType, source, fluent);
+		generatePluralMethod(deprecate, maker, returnType.get(), returnStatement.get(), data, builderType, source, fluent);
+		generateClearMethod(deprecate, maker, returnType.get(), returnStatement.get(), data, builderType, source);
 	}
 	
 	private void generateClearMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {
