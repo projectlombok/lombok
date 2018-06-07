@@ -37,7 +37,6 @@ import java.util.Set;
 import java.util.SortedSet;
 
 import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
@@ -70,8 +69,6 @@ import com.sun.tools.javac.util.Context;
  */
 @SupportedAnnotationTypes("*")
 public class LombokProcessor extends AbstractProcessor {
-	private static final String GRADLE_INCREMENTAL_FILER_CLASS =
-			"org.gradle.api.internal.tasks.compile.processing.IncrementalFiler";
 
 	private ProcessingEnvironment processingEnv;
 	private JavacProcessingEnvironment javacProcessingEnv;
@@ -412,52 +409,51 @@ public class LombokProcessor extends AbstractProcessor {
 	 * This class casts the given processing environment to a JavacProcessingEnvironment. In case of
 	 * gradle incremental compilation, the delegate ProcessingEnvironment of the gradle wrapper is returned.
 	 */
-	public JavacProcessingEnvironment getJavacProcessingEnvironment(ProcessingEnvironment procEnv) {
-		final Class<?> procEnvClass = procEnv.getClass();
-		if (procEnv.getClass().getName().equals("org.gradle.api.internal.tasks.compile.processing.IncrementalProcessingEnvironment")) {
+	public JavacProcessingEnvironment getJavacProcessingEnvironment(Object procEnv) {
+		if (procEnv instanceof JavacProcessingEnvironment) {
+			return (JavacProcessingEnvironment) procEnv;
+		}
+
+		// try to find a "delegate" field in the object, and use this to try to obtain a JavacProcessingEnvironment
+		for (Class<?> procEnvClass = procEnv.getClass(); procEnvClass != null; procEnvClass = procEnvClass.getSuperclass()) {
 			try {
-				Field field = procEnvClass.getDeclaredField("delegate");
-				field.setAccessible(true);
-				Object delegate = field.get(procEnv);
-				return (JavacProcessingEnvironment) delegate;
+				return getJavacProcessingEnvironment(tryGetDelegateField(procEnvClass, procEnv));
 			} catch (final Exception e) {
-				e.printStackTrace();
-				procEnv.getMessager().printMessage(Kind.WARNING,
-						"Can't get the delegate of the gradle IncrementalProcessingEnvironment. Lombok won't work.");
+				// delegate field was not found, try on superclass
 			}
 		}
-		return (JavacProcessingEnvironment) procEnv;
+
+		processingEnv.getMessager().printMessage(Kind.WARNING,
+				"Can't get the delegate of the gradle IncrementalProcessingEnvironment. Lombok won't work.");
+		return null;
 	}
 
 	/**
-	 * This class casts the given filer to a JavacFiler. In case of
-	 * gradle incremental compilation, the delegate Filer of the gradle wrapper is returned.
+	 * This class returns the given filer as a JavacFiler. In case the case that the filer is no
+	 * JavacFiler (e.g. the Gradle IncrementalFiler), its "delegate" field is used to get the JavacFiler
+	 * (directly or through a delegate field again)
 	 */
-	public JavacFiler getJavacFiler(Filer filer) {
-		try {
-			final Class<?> filerClass = filer.getClass();
-			final Class<?> filerSuperClass = filerClass.getSuperclass();
-
-			if (filerSuperClass.getName().equals(GRADLE_INCREMENTAL_FILER_CLASS)) {
-				// Gradle before 4.8
-				return tryGetJavacFilerDelegate(filerSuperClass, filer);
-			} else if (filer.getClass().getName().equals(GRADLE_INCREMENTAL_FILER_CLASS)) {
-				// Gradle 4.8 and above
-				return tryGetJavacFilerDelegate(filerClass, filer);
-			}
-		} catch (final Exception e) {
-			e.printStackTrace();
-			processingEnv.getMessager().printMessage(Kind.WARNING,
-					"Can't get the delegate of the gradle IncrementalFiler. Lombok won't work.");
+	public JavacFiler getJavacFiler(Object filer) {
+		if (filer instanceof JavacFiler) {
+			return (JavacFiler) filer;
 		}
 
-		return (JavacFiler) filer;
-	}
+		// try to find a "delegate" field in the object, and use this to check for a JavacFiler
+		for (Class<?> filerClass = filer.getClass(); filerClass != null; filerClass = filerClass.getSuperclass()) {
+			try {
+				return getJavacFiler(tryGetDelegateField(filerClass, filer));
+			} catch (final Exception e) {
+				// delegate field was not found, try on superclass
+			}
+		}
 
-	private JavacFiler tryGetJavacFilerDelegate(Class<?> filerDelegateClass, Object instance) throws Exception {
-		Field field = filerDelegateClass.getDeclaredField("delegate");
+		processingEnv.getMessager().printMessage(Kind.WARNING,
+				"Can't get a JavacFiler from " + filer.getClass().getName() + ". Lombok won't work.");
+		return null;
+	}
+	private Object tryGetDelegateField(Class<?> delegateClass, Object instance) throws Exception {
+		Field field = delegateClass.getDeclaredField("delegate");
 		field.setAccessible(true);
-		Object delegate = field.get(instance);
-		return (JavacFiler) delegate;
+		return field.get(instance);
 	}
 }
