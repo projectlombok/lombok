@@ -451,6 +451,7 @@ public class LombokProcessor extends AbstractProcessor {
 				"Can't get a JavacFiler from " + filer.getClass().getName() + ". Lombok won't work.");
 		return null;
 	}
+
 	private Object tryGetDelegateField(Class<?> delegateClass, Object instance) throws Exception {
 		Field field = delegateClass.getDeclaredField("delegate");
 		field.setAccessible(true);
