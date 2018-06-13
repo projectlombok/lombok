@@ -49,6 +49,7 @@ import lombok.patcher.ClassRootFinder;
 
 @SupportedAnnotationTypes("*")
 public class AnnotationProcessor extends AbstractProcessor {
+
 	private static String trace(Throwable t) {
 		StringWriter w = new StringWriter();
 		t.printStackTrace(new PrintWriter(w, true));
@@ -71,18 +72,33 @@ public class AnnotationProcessor extends AbstractProcessor {
 	 * the delegate ProcessingEnvironment of the gradle wrapper is returned.
 	 */
 	public static ProcessingEnvironment getJavacProcessingEnvironment(ProcessingEnvironment procEnv, List<String> delayedWarnings) {
-		final Class<? extends ProcessingEnvironment> procEnvClass = procEnv.getClass();
-		if (procEnvClass.getName().equals("org.gradle.api.internal.tasks.compile.processing.IncrementalProcessingEnvironment")) {
+		ProcessingEnvironment javacProcEnv = tryRecursivelyObtainJavacProcessingEnvironment(procEnv);
+
+		if (javacProcEnv == null) {
+			delayedWarnings.add("Can't get the delegate of the gradle IncrementalProcessingEnvironment.");
+		}
+
+		return javacProcEnv;
+	}
+
+	private static ProcessingEnvironment tryRecursivelyObtainJavacProcessingEnvironment(ProcessingEnvironment procEnv) {
+		if (procEnv.getClass().getName().equals("com.sun.tools.javac.processing.JavacProcessingEnvironment")) {
+			return procEnv;
+		}
+
+		for (Class<?> procEnvClass = procEnv.getClass(); procEnvClass != null; procEnvClass = procEnvClass.getSuperclass()) {
 			try {
 				Field field = procEnvClass.getDeclaredField("delegate");
 				field.setAccessible(true);
 				Object delegate = field.get(procEnv);
-				return (ProcessingEnvironment) delegate;
+
+				return tryRecursivelyObtainJavacProcessingEnvironment((ProcessingEnvironment) delegate);
 			} catch (final Exception e) {
-				delayedWarnings.add("Can't get the delegate of the gradle IncrementalProcessingEnvironment: " + trace(e));
+				// no valid delegate, try superclass
 			}
 		}
-		return procEnv;
+
+		return null;
 	}
 
 	
@@ -96,7 +112,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		@Override boolean want(ProcessingEnvironment procEnv, List<String> delayedWarnings) {
 			ProcessingEnvironment javacProcEnv = getJavacProcessingEnvironment(procEnv, delayedWarnings);
 
-			if (!javacProcEnv.getClass().getName().equals("com.sun.tools.javac.processing.JavacProcessingEnvironment")) return false;
+			if (javacProcEnv == null) return false;
 
 			try {
 				ClassLoader classLoader = findAndPatchClassLoader(javacProcEnv);
