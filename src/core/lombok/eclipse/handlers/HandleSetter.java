@@ -212,7 +212,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		return createSetter(parent, deprecate, fieldNode, name, booleanFieldToSet, returnType, returnThis, modifier, sourceNode, onMethod, onParam);
 	}
 	
-	static MethodDeclaration createSetter(TypeDeclaration parent, boolean deprecate, EclipseNode fieldNode, String name, char[] booleanFieldToSet, TypeReference returnType, ReturnStatement returnStatement, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {
+	static MethodDeclaration createSetter(TypeDeclaration parent, boolean deprecate, EclipseNode fieldNode, String name, char[] booleanFieldToSet, TypeReference returnType, Statement returnStatement, int modifier, EclipseNode sourceNode, List<Annotation> onMethod, List<Annotation> onParam) {
 		FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 		ASTNode source = sourceNode.get();
 		int pS = source.sourceStart, pE = source.sourceEnd;

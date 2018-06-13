@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 The Project Lombok Authors.
+ * Copyright (C) 2015-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,13 +25,14 @@ import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.Collections;
-import java.util.function.Supplier;
 
 import lombok.core.handlers.HandlerUtil;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
 import lombok.javac.handlers.JavacHandlerUtil;
+import lombok.javac.handlers.JavacSingularsRecipes.ExpressionMaker;
 import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
+import lombok.javac.handlers.JavacSingularsRecipes.StatementMaker;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
@@ -76,16 +77,16 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		return Collections.singletonList(injectFieldAndMarkGenerated(builderType, buildField));
 	}
 	
-	@Override public void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, Supplier<JCExpression> returnType, Supplier<? extends JCStatement> returnStatement) {
+	@Override public void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, ExpressionMaker returnTypeMaker, StatementMaker returnStatementMaker) {
 		if (useGuavaInstead(builderType)) {
-			guavaListSetSingularizer.generateMethods(data, deprecate, builderType, source, fluent, returnType, returnStatement);
+			guavaListSetSingularizer.generateMethods(data, deprecate, builderType, source, fluent, returnTypeMaker, returnStatementMaker);
 			return;
 		}
 		
 		JavacTreeMaker maker = builderType.getTreeMaker();
-		generateSingularMethod(deprecate, maker, returnType.get(), returnStatement.get(), data, builderType, source, fluent);
-		generatePluralMethod(deprecate, maker, returnType.get(), returnStatement.get(), data, builderType, source, fluent);
-		generateClearMethod(deprecate, maker, returnType.get(), returnStatement.get(), data, builderType, source);
+		generateSingularMethod(deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source, fluent);
+		generatePluralMethod(deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source, fluent);
+		generateClearMethod(deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source);
 	}
 	
 	private void generateClearMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {

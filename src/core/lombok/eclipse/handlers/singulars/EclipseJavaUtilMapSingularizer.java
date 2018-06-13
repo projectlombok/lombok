@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 The Project Lombok Authors.
+ * Copyright (C) 2015-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
 
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
@@ -46,7 +45,6 @@ import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
-import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
@@ -59,6 +57,8 @@ import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.SingularData;
+import lombok.eclipse.handlers.EclipseSingularsRecipes.StatementMaker;
+import lombok.eclipse.handlers.EclipseSingularsRecipes.TypeReferenceMaker;
 
 @ProviderFor(EclipseSingularizer.class)
 public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer {
@@ -133,15 +133,15 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		return Arrays.asList(keyFieldNode, valueFieldNode);
 	}
 	
-	@Override public void generateMethods(SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, Supplier<TypeReference> returnType, Supplier<ReturnStatement> returnStatement) {
+	@Override public void generateMethods(SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, TypeReferenceMaker returnTypeMaker, StatementMaker returnStatementMaker) {
 		if (useGuavaInstead(builderType)) {
-			guavaMapSingularizer.generateMethods(data, deprecate, builderType, fluent, returnType, returnStatement);
+			guavaMapSingularizer.generateMethods(data, deprecate, builderType, fluent, returnTypeMaker, returnStatementMaker);
 			return;
 		}
 		
-		generateSingularMethod(deprecate, returnType.get(), returnStatement.get(), data, builderType, fluent);
-		generatePluralMethod(deprecate, returnType.get(), returnStatement.get(), data, builderType, fluent);
-		generateClearMethod(deprecate, returnType.get(), returnStatement.get(), data, builderType);
+		generateSingularMethod(deprecate, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, fluent);
+		generatePluralMethod(deprecate, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, fluent);
+		generateClearMethod(deprecate, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType);
 	}
 	
 	private void generateClearMethod(boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType) {

@@ -210,12 +210,17 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	}
 	
 	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name booleanFieldToSet, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
-		JCExpression returnType = cloneSelfType(field);
-		JCReturn returnStatement = treeMaker.Return(treeMaker.Ident(field.toName("this")));
+		JCExpression returnType = null;
+		JCReturn returnStatement = null;
+		if (shouldReturnThis) {
+			returnType = cloneSelfType(field);
+			returnStatement = treeMaker.Return(treeMaker.Ident(field.toName("this")));
+		}
+		
 		return createSetter(access, deprecate, field, treeMaker, setterName, booleanFieldToSet, returnType, returnStatement, source, onMethod, onParam);
 	}
-
-	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name booleanFieldToSet, JCExpression methodType, JCReturn returnStatement, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+	
+	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name booleanFieldToSet, JCExpression methodType, JCStatement returnStatement, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (setterName == null) return null;
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
@@ -252,9 +257,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			returnStatement = null;
 		}
 		
-		if (returnStatement != null) {
-			statements.append(returnStatement);
-		}
+		if (returnStatement != null) statements.append(returnStatement);
 		
 		JCBlock methodBody = treeMaker.Block(0, statements.toList());
 		List<JCTypeParameter> methodGenericParams = List.nil();

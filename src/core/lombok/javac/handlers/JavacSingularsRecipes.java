@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 The Project Lombok Authors.
+ * Copyright (C) 2015-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import lombok.core.LombokImmutableList;
 import lombok.core.SpiLoadUtil;
@@ -54,6 +53,14 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
 public class JavacSingularsRecipes {
+	public interface ExpressionMaker {
+		JCExpression make();
+	}
+	
+	public interface StatementMaker {
+		JCStatement make();
+	}
+	
 	private static final JavacSingularsRecipes INSTANCE = new JavacSingularsRecipes();
 	private final Map<String, JavacSingularizer> singularizers = new HashMap<String, JavacSingularizer>();
 	private final TypeLibrary singularizableTypes = new TypeLibrary();
@@ -197,32 +204,32 @@ public class JavacSingularsRecipes {
 		public abstract java.util.List<JavacNode> generateFields(SingularData data, JavacNode builderType, JCTree source);
 		
 		/**
-		 * Generates the singular, plural, and clear methods for the given
-		 * {@link SingularData}.<br>
-		 * Uses the given <code>builderType</code> as return type if
-		 * <code>chain == true</code>, <code>void</code> otherwise. If you need more
-		 * control over the return type and value, use
-		 * {@link #generateMethods(SingularData, boolean, JavacNode, JCTree, boolean, JCExpression, JCStatement)}.
+		 * Generates the singular, plural, and clear methods for the given {@link SingularData}.
+		 * Uses the given {@code builderType} as return type if {@code chain == true}, {@code void} otherwise.
+		 * If you need more control over the return type and value, use
+		 * {@link #generateMethods(SingularData, boolean, JavacNode, JCTree, boolean, ExpressionMaker, StatementMaker)}.
 		 */
 		public void generateMethods(SingularData data, boolean deprecate, final JavacNode builderType, JCTree source, boolean fluent, final boolean chain) {
 			final JavacTreeMaker maker = builderType.getTreeMaker();
-			// TODO: Make these lambdas when switching to a source level >= 1.8.
-			Supplier<JCExpression> returnType = new Supplier<JCExpression>() { @Override public JCExpression get() {
+			
+			ExpressionMaker returnTypeMaker = new ExpressionMaker() { @Override public JCExpression make() {
 				return chain ? 
-						cloneSelfType(builderType) : 
-						maker.Type(createVoidType(builderType.getSymbolTable(), CTC_VOID));
+					cloneSelfType(builderType) : 
+					maker.Type(createVoidType(builderType.getSymbolTable(), CTC_VOID));
 			}};
-			Supplier<JCStatement> returnStatement = new Supplier<JCStatement>() { @Override public JCStatement get() {
+			
+			StatementMaker returnStatementMaker = new StatementMaker() { @Override public JCStatement make() {
 				return chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
 			}};
-			generateMethods(data, deprecate, builderType, source, fluent, returnType, returnStatement);
+			
+			generateMethods(data, deprecate, builderType, source, fluent, returnTypeMaker, returnStatementMaker);
 		}
+		
 		/**
-		 * Generates the singular, plural, and clear methods for the given
-		 * {@link SingularData}.<br>
-		 * Uses the given <code>returnType</code> and <code>returnStatement</code> for the generated methods. 
+		 * Generates the singular, plural, and clear methods for the given {@link SingularData}.
+		 * Uses the given {@code returnTypeMaker} and {@code returnStatementMaker} for the generated methods.
 		 */
-		public abstract void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, Supplier<JCExpression> returnType, Supplier<? extends JCStatement> returnStatement);
+		public abstract void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, ExpressionMaker returnTypeMaker, StatementMaker returnStatementMaker);
 		
 		public abstract void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable);
 		
