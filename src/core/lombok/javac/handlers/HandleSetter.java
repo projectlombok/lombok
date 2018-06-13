@@ -207,6 +207,17 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	}
 	
 	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name booleanFieldToSet, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+		JCExpression returnType = null;
+		JCReturn returnStatement = null;
+		if (shouldReturnThis) {
+			returnType = cloneSelfType(field);
+			returnStatement = treeMaker.Return(treeMaker.Ident(field.toName("this")));
+		}
+		
+		return createSetter(access, deprecate, field, treeMaker, setterName, booleanFieldToSet, returnType, returnStatement, source, onMethod, onParam);
+	}
+	
+	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name booleanFieldToSet, JCExpression methodType, JCStatement returnStatement, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (setterName == null) return null;
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
@@ -237,21 +248,13 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			statements.append(treeMaker.Exec(setBool));
 		}
 		
-		JCExpression methodType = null;
-		if (shouldReturnThis) {
-			methodType = cloneSelfType(field);
-		}
-		
 		if (methodType == null) {
 			//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.
 			methodType = treeMaker.Type(Javac.createVoidType(field.getSymbolTable(), CTC_VOID));
-			shouldReturnThis = false;
+			returnStatement = null;
 		}
 		
-		if (shouldReturnThis) {
-			JCReturn returnStatement = treeMaker.Return(treeMaker.Ident(field.toName("this")));
-			statements.append(returnStatement);
-		}
+		if (returnStatement != null) statements.append(returnStatement);
 		
 		JCBlock methodBody = treeMaker.Block(0, statements.toList());
 		List<JCTypeParameter> methodGenericParams = List.nil();

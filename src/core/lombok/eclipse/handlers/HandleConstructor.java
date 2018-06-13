@@ -309,7 +309,6 @@ public class HandleConstructor {
 		
 		return false;
 	}
-
 	
 	private static final char[][] JAVA_BEANS_CONSTRUCTORPROPERTIES = new char[][] { "java".toCharArray(), "beans".toCharArray(), "ConstructorProperties".toCharArray() };
 	public static Annotation[] createConstructorProperties(ASTNode source, Collection<EclipseNode> fields) {

@@ -550,7 +550,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		for (BuilderFieldData bfd : builderFields) {
 			if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
-				bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, type, source, statements, bfd.name);
+				bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, type, source, statements, bfd.name, "this");
 			}
 		}
 		
