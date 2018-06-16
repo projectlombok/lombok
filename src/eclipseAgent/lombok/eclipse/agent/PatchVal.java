@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The Project Lombok Authors.
+ * Copyright (C) 2010-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,9 +21,11 @@
  */
 package lombok.eclipse.agent;
 
+import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
+import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
@@ -32,8 +34,11 @@ import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.ArrayBinding;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
+import org.eclipse.jdt.internal.compiler.lookup.CompilationUnitScope;
+import org.eclipse.jdt.internal.compiler.lookup.ImportBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
+import org.eclipse.jdt.internal.compiler.lookup.Scope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
@@ -84,11 +89,28 @@ public class PatchVal {
 		return true;
 	}
 	
-	public static boolean couldBe(String key, TypeReference ref) {
+	public static boolean couldBe(ImportBinding[] imports, String key, TypeReference ref) {
 		String[] keyParts = key.split("\\.");
 		if (ref instanceof SingleTypeReference) {
 			char[] token = ((SingleTypeReference)ref).token;
-			return matches(keyParts[keyParts.length - 1], token);
+			if (!matches(keyParts[keyParts.length - 1], token)) return false;
+			if (imports == null) return true;
+			top:
+			for (ImportBinding ib : imports) {
+				ImportReference ir = ib.reference;
+				if (ir == null) continue;
+				if (ir.isStatic()) continue;
+				boolean star = ((ir.bits & ASTNode.OnDemand) != 0);
+				int len = keyParts.length - (star ? 1 : 0);
+				char[][] t = ir.tokens;
+				if (len != t.length) continue;
+				for (int i = 0; i < len; i++) {
+					if (keyParts[i].length() != t[i].length) continue top;
+					for (int j = 0; j < t[i].length; j++) if (keyParts[i].charAt(j) != t[i][j]) continue top;
+				}
+				return true;
+			}
+			return false;
 		}
 		
 		if (ref instanceof QualifiedTypeReference) {
@@ -104,10 +126,53 @@ public class PatchVal {
 		
 		return false;
 	}
-
+	
+	public static boolean couldBe(ImportReference[] imports, String key, TypeReference ref) {
+		String[] keyParts = key.split("\\.");
+		if (ref instanceof SingleTypeReference) {
+			char[] token = ((SingleTypeReference)ref).token;
+			if (!matches(keyParts[keyParts.length - 1], token)) return false;
+			if (imports == null) return true;
+			top:
+			for (ImportReference ir : imports) {
+				if (ir.isStatic()) continue;
+				boolean star = ((ir.bits & ASTNode.OnDemand) != 0);
+				int len = keyParts.length - (star ? 1 : 0);
+				char[][] t = ir.tokens;
+				if (len != t.length) continue;
+				for (int i = 0; i < len; i++) {
+					if (keyParts[i].length() != t[i].length) continue top;
+					for (int j = 0; j < t[i].length; j++) if (keyParts[i].charAt(j) != t[i][j]) continue top;
+				}
+				return true;
+			}
+			return false;
+		}
+		
+		if (ref instanceof QualifiedTypeReference) {
+			char[][] tokens = ((QualifiedTypeReference)ref).tokens;
+			if (keyParts.length != tokens.length) return false;
+			for(int i = 0; i < tokens.length; ++i) {
+				String part = keyParts[i];
+				char[] token = tokens[i];
+				if (!matches(part, token)) return false;
+			}
+			return true;
+		}
+		
+		return false;
+	}
+	
 	private static boolean is(TypeReference ref, BlockScope scope, String key) {
-		if (!couldBe(key, ref)) return false;
-
+		Scope s = scope.parent;
+		while (s != null && !(s instanceof CompilationUnitScope)) {
+			Scope ns = s.parent;
+			s = ns == s ? null : ns;
+		}
+		ImportBinding[] imports = null;
+		if (s instanceof CompilationUnitScope) imports = ((CompilationUnitScope) s).imports;
+		if (!couldBe(imports, key, ref)) return false;
+		
 		TypeBinding resolvedType = ref.resolvedType;
 		if (resolvedType == null) resolvedType = ref.resolveType(scope, false);
 		if (resolvedType == null) return false;
@@ -212,7 +277,7 @@ public class PatchVal {
 	}
 	
 	private static boolean isVar(LocalDeclaration local, BlockScope scope) {
-		return is(local.type, scope, "lombok.experimental.var");
+		return is(local.type, scope, "lombok.experimental.var") || is(local.type, scope, "lombok.var");
 	}
 	
 	private static boolean isVal(LocalDeclaration local, BlockScope scope) {
@@ -224,7 +289,7 @@ public class PatchVal {
 		
 		boolean val = isVal(forEach.elementVariable, scope);
 		boolean var = isVar(forEach.elementVariable, scope);
-        if (!(val || var)) return false;
+		if (!(val || var)) return false;
 		
 		TypeBinding component = getForEachComponentType(forEach.collection, scope);
 		if (component == null) return false;

@@ -1,5 +1,4 @@
-//CONF: lombok.var.flagUsage = ALLOW
-import lombok.experimental.var;
+import lombok.var;
 
 public class VarComplex {
 	private String field = "";

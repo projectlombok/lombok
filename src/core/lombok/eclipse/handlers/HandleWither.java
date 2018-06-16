@@ -36,7 +36,6 @@ import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
-import lombok.eclipse.handlers.EclipseHandlerUtil.FieldAccess;
 import lombok.experimental.Wither;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;

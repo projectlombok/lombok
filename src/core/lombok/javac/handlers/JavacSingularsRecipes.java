@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2017 The Project Lombok Authors.
+ * Copyright (C) 2015-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,6 +53,14 @@ import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
 public class JavacSingularsRecipes {
+	public interface ExpressionMaker {
+		JCExpression make();
+	}
+	
+	public interface StatementMaker {
+		JCStatement make();
+	}
+	
 	private static final JavacSingularsRecipes INSTANCE = new JavacSingularsRecipes();
 	private final Map<String, JavacSingularizer> singularizers = new HashMap<String, JavacSingularizer>();
 	private final TypeLibrary singularizableTypes = new TypeLibrary();
@@ -194,8 +202,36 @@ public class JavacSingularsRecipes {
 		}
 		
 		public abstract java.util.List<JavacNode> generateFields(SingularData data, JavacNode builderType, JCTree source);
-		public abstract void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, boolean chain);
-		public abstract void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName);
+		
+		/**
+		 * Generates the singular, plural, and clear methods for the given {@link SingularData}.
+		 * Uses the given {@code builderType} as return type if {@code chain == true}, {@code void} otherwise.
+		 * If you need more control over the return type and value, use
+		 * {@link #generateMethods(SingularData, boolean, JavacNode, JCTree, boolean, ExpressionMaker, StatementMaker)}.
+		 */
+		public void generateMethods(SingularData data, boolean deprecate, final JavacNode builderType, JCTree source, boolean fluent, final boolean chain) {
+			final JavacTreeMaker maker = builderType.getTreeMaker();
+			
+			ExpressionMaker returnTypeMaker = new ExpressionMaker() { @Override public JCExpression make() {
+				return chain ? 
+					cloneSelfType(builderType) : 
+					maker.Type(createVoidType(builderType.getSymbolTable(), CTC_VOID));
+			}};
+			
+			StatementMaker returnStatementMaker = new StatementMaker() { @Override public JCStatement make() {
+				return chain ? maker.Return(maker.Ident(builderType.toName("this"))) : null;
+			}};
+			
+			generateMethods(data, deprecate, builderType, source, fluent, returnTypeMaker, returnStatementMaker);
+		}
+		
+		/**
+		 * Generates the singular, plural, and clear methods for the given {@link SingularData}.
+		 * Uses the given {@code returnTypeMaker} and {@code returnStatementMaker} for the generated methods.
+		 */
+		public abstract void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, ExpressionMaker returnTypeMaker, StatementMaker returnStatementMaker);
+		
+		public abstract void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable);
 		
 		public boolean requiresCleaning() {
 			try {
@@ -274,9 +310,9 @@ public class JavacSingularsRecipes {
 			return arguments.toList();
 		}
 		
-		/** Generates 'this.<em>name</em>.size()' as an expression; if nullGuard is true, it's this.name == null ? 0 : this.name.size(). */
-		protected JCExpression getSize(JavacTreeMaker maker, JavacNode builderType, Name name, boolean nullGuard, boolean parens) {
-			Name thisName = builderType.toName("this");
+		/** Generates '<em>builderVariable</em>.<em>name</em>.size()' as an expression; if nullGuard is true, it's this.name == null ? 0 : this.name.size(). */
+		protected JCExpression getSize(JavacTreeMaker maker, JavacNode builderType, Name name, boolean nullGuard, boolean parens, String builderVariable) {
+			Name thisName = builderType.toName(builderVariable);
 			JCExpression fn = maker.Select(maker.Select(maker.Ident(thisName), name), builderType.toName("size"));
 			JCExpression sizeInvoke = maker.Apply(List.<JCExpression>nil(), fn, List.<JCExpression>nil());
 			if (nullGuard) {

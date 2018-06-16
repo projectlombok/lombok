@@ -1,5 +1,5 @@
 <!--
- Copyright (C) 2010-2017 The Project Lombok Authors.
+ Copyright (C) 2010-2018 The Project Lombok Authors.
   
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,11 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<property name="build.compiler" value="javac1.6" />
 	<property name="ivy.retrieve.pattern" value="lib/[conf]/[organisation]-[artifact].[ext]" />
 	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
-	<available file="lib/openJDK6Environment/rt-openjdk6.jar" property="rt-openjdk6.available" />
-
+	<property name="rt-openjdk6" location="lib/openJDK6Environment/openjdk6_rt.jar" />
+	<property name="rt-openjdk8" location="lib/openJDK8Environment/openjdk8_rt.jar" />
+	<available file="${rt-openjdk6}" property="rt-openjdk6.available" />
+	<available file="${rt-openjdk8}" property="rt-openjdk8.available" />
+	
 	<path id="build.path">
 		<fileset dir="lib/build">
 			<include name="*.jar" />
@@ -98,12 +101,17 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<ivy:retrieve />
 	</target>
 
-	<target name="ensureOpenJdk7Rt" unless="rt-openjdk6.available">
+	<target name="ensureOpenJdk6Rt" unless="rt-openjdk6.available">
 		<mkdir dir="lib/openJDK6Environment" />
-		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="${rt-openjdk6}" verbose="true" usetimestamp="true" />
 	</target>
 	
-	<target name="ensureBuildDeps" depends="config-ivy,ensureOpenJdk7Rt">
+	<target name="ensureOpenJdk8Rt" unless="rt-openjdk8.available">
+		<mkdir dir="lib/openJDK8Environment" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk8.jar" dest="${rt-openjdk8}" verbose="true" usetimestamp="true" />
+	</target>
+	
+	<target name="ensureBuildDeps" depends="config-ivy,ensureOpenJdk6Rt">
 		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build, javac7" />
 		<ivy:retrieve />
 	</target>
@@ -118,9 +126,15 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<ivy:retrieve />
 	</target>
 	
-	<target name="version" depends="ensure-ipp" description="Shows the version number." unless="lombok.version">
+	<target name="ensureSupportersDeps" depends="config-ivy">
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="supporters" />
+		<ivy:retrieve />
+	</target>
+	
+	<target name="version" depends="ensure-ipp, ensureOpenJdk8Rt" description="Shows the version number." unless="lombok.version">
 		<mkdir dir="build/lombok" />
 		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" ecj="true" nowarn="true">
+			<bootclasspath path="${rt-openjdk8}" />
 			<src path="src/core" />
 			<include name="lombok/core/Version.java" />
 		</ivy:compile>
@@ -147,7 +161,22 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ivy:cachedunjar>
 	</target>
 	
-	<target name="compile" depends="version, ensureBuildDeps, -unpackLibs" description="Compiles the code.">
+	<target name="-ensureJdk9">
+		<condition property="java.version.insufficient">
+			<or>
+				<equals arg1="${ant.java.version}" arg2="1.2" />
+				<equals arg1="${ant.java.version}" arg2="1.3" />
+				<equals arg1="${ant.java.version}" arg2="1.4" />
+				<equals arg1="${ant.java.version}" arg2="1.5" />
+				<equals arg1="${ant.java.version}" arg2="1.6" />
+				<equals arg1="${ant.java.version}" arg2="1.7" />
+				<equals arg1="${ant.java.version}" arg2="1.8" />
+			</or>
+		</condition>
+		<fail if="java.version.insufficient">To compile lombok, you need JDK9 or higher; lombok requires this version because it's rather difficult to produce lombok builds that are compatible on JDK9 without at least building with JDK9. Sorry about that.</fail>
+	</target>
+	
+	<target name="compile" depends="version, ensureBuildDeps, -unpackLibs, -ensureJdk9" description="Compiles the code.">
 		<!-- ant includes the destination dir on the classpath (and there are good reasons to do this), but that also means
 		 the bleeding edge lombok from the previous build is run, which means if there are bugs in it, you can't compile
 		anymore until you 'ant clean'. That's very much not desired, so we kill the processor, which stops lombok from running.
@@ -155,10 +184,12 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<delete file="build/lombok/META-INF/services/javax.annotation.processing.Processor" quiet="true" />
 		<delete file="build/lombok/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor" quiet="true" />
 		<ivy:compile destdir="build/stubsstubs" source="1.5" target="1.5" ecj="true" nowarn="true">
+			<bootclasspath path="${rt-openjdk8}" />
 			<src path="src/stubsstubs" />
 			<classpath location="build/stubsstubs" />
 		</ivy:compile>
 		<ivy:compile destdir="build/stubs" source="1.5" target="1.5" ecj="true" nowarn="true">
+			<bootclasspath path="${rt-openjdk8}" />
 			<src path="src/stubs" />
 			<src path="src/javac-only-stubs" />
 			<classpath location="build/stubsstubs" />
@@ -167,13 +198,15 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		
 		<ivy:compile destdir="build/lombok-utils" source="1.5" target="1.5" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />
+			<bootclasspath path="${rt-openjdk8}" />
 			<src path="src/utils" />
 			<exclude name="lombok/javac/**" />
 			<classpath refid="build.path" />
 		</ivy:compile>
 		
 		<ivy:compile destdir="build/lombok-utils" source="1.6" target="1.6">
-			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
+			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}${rt-openjdk6}" />
+			<compilerarg value="-Xlint:-options" />
 			<src path="src/utils" />
 			<include name="lombok/javac/**" />
 			<classpath location="build/lombok-utils" />
@@ -195,19 +228,22 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 				</lineContainsRegExp>
 			</filterchain>
 		</copy>
-
+		
 		<ivy:compile destdir="build/lombok" source="1.4" target="1.4" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />
+			<bootclasspath path="${rt-openjdk8}" />
 			<src path="build/transformedSources" />
 		</ivy:compile>
-
+		
 		<ivy:compile destdir="build/lombok/Class50" source="1.4" target="1.6" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />
+			<bootclasspath path="${rt-openjdk8}" />
 			<src path="build/transformedSources" />
 		</ivy:compile>
-
+		
 		<ivy:compile destdir="build/lombok" source="1.5" target="1.5" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />
+			<bootclasspath path="${rt-openjdk8}" />
 			<src path="src/launch" />
 			<src path="src/core" />
 			<src path="src/installer" />
@@ -218,8 +254,18 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<classpath refid="build.path" />
 		</ivy:compile>
 		
+		<ivy:compile destdir="build/lombok" source="1.9" target="1.9">
+			<compilerarg value="-Xlint:none" />
+			<!-- The above is because javac9 warns about 'service interface provided but not exported or used', probably because lombok uses SPI internally, and uses the 'old' classpath discovery system for it. We're fine with this, hence, ignore this warning. -->
+			<src path="src/core9" />
+			<src path="src/j9stubs" />
+			<!-- This includes org.mapstruct.ap.spi.AstModifyingAnnotationProcessor; putting this on the classpath doesn't work (needs to be internal or a module) so we just add it and then delete the class file for convenience. -->
+		</ivy:compile>
+		<delete file="build/lombok/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.class" />
+		
 		<ivy:compile destdir="build/lombok/Class50" source="1.5" target="1.6" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />
+			<bootclasspath path="${rt-openjdk8}" />
 			<src path="src/eclipseAgent" />
 			<include name="lombok/launch/PatchFixesHider.java" />
 			<classpath location="build/lombok" />
@@ -227,7 +273,8 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		</ivy:compile>
 		
 		<ivy:compile destdir="build/lombok" source="1.6" target="1.6">
-			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}lib/openJDK6Environment/rt-openjdk6.jar" />
+			<compilerarg value="-Xbootclasspath/p:build/stubs${path.separator}${rt-openjdk6}" />
+			<compilerarg value="-Xlint:-options" />
 			<src path="src/core" />
 			<src path="src/delombok" />
 			<include name="lombok/javac/**" />
@@ -259,6 +306,9 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 		<echo file="build/lombok/META-INF/services/javax.annotation.processing.Processor">lombok.launch.AnnotationProcessorHider$AnnotationProcessor
 lombok.launch.AnnotationProcessorHider$ClaimingProcessor</echo>
 		<echo file="build/lombok/META-INF/services/org.mapstruct.ap.spi.AstModifyingAnnotationProcessor">lombok.launch.AnnotationProcessorHider$AstModificationNotifier</echo>
+		<mkdir dir="build/lombok/META-INF/gradle" />
+		<echo file="build/lombok/META-INF/gradle/incremental.annotation.processors">lombok.launch.AnnotationProcessorHider$AnnotationProcessor,isolating
+lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 	</target>
 	
 	<target name="-latestChanges" depends="version">
@@ -281,16 +331,19 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor</echo>
 			<fileset dir="." includes="AUTHORS" />
 			<fileset dir="." includes="release-timestamp.txt" />
 			<fileset dir="build/lombok">
+				<include name="module-info.class" />
 				<include name="lombok/*.class" />
 				<include name="lombok/experimental/**" />
 				<include name="lombok/extern/**" />
 				<include name="lombok/launch/**" />
 				<include name="lombok/delombok/ant/Tasks*" />
 				<include name="lombok/javac/apt/Processor.class" />
+				<include name="lombok/META-INF/**" />
 			</fileset>
 			<mappedresources>
 				<fileset dir="build/lombok">
 					<exclude name="com/sun/tools/javac/**" />
+					<exclude name="module-info.class" />
 					<exclude name="lombok/*.class" />
 					<exclude name="lombok/javac/apt/Processor.class" />
 					<exclude name="lombok/experimental/**" />
@@ -490,6 +543,7 @@ ${sourceWarning}</echo>
 	<target name="-test-compile" depends="ensureTestDeps, compile" unless="skipTests">
 		<mkdir dir="build/tests" />
 		<ivy:compile destdir="build/tests" source="1.5" target="1.5" ecj="true" nowarn="true">
+			<bootclasspath path="${rt-openjdk8}" />
 			<classpath refid="test.path" />
 			<classpath refid="build.path" />
 			<classpath path="build/lombok" />
@@ -546,11 +600,11 @@ ${sourceWarning}</echo>
 	<target name="setupJavaOpenJDK6TestEnvironment" depends="ensureTestDeps, contrib" description="Sets up the test so that 'ant test' will test against OpenJDK6.">
 		<mkdir dir="lib/openJDK6Environment" />
 		<get src="https://projectlombok.org/ivyrepo/langtools/javac-1.6.0.18.jar" dest="lib/openJDK6Environment/javac6.jar" verbose="true" usetimestamp="true" />
-		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="lib/openJDK6Environment/rt-openjdk6.jar" verbose="true" usetimestamp="true" />
+		<get src="https://projectlombok.org/ivyrepo/langtools/rt-openjdk6.jar" dest="${rt-openjdk6}" verbose="true" usetimestamp="true" />
 		<propertyfile file="testenvironment.properties">
 			<entry key="test.location.javac" value="lib/openJDK6Environment/javac6.jar" />
 			<entry key="test.location.ecj" value="lib/ecj7/org.eclipse.custom-ecj.jar" />
-			<entry key="test.location.bootclasspath" value="lib/openJDK6Environment/rt-openjdk6.jar" />
+			<entry key="test.location.bootclasspath" value="${rt-openjdk6}" />
 			<entry key="test.location.name" value="OpenJDK6" />
 			<entry key="test.javaversion" value="6" />
 		</propertyfile>
@@ -715,7 +769,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</replaceregexp>
 	</target>
 	
-	<target name="utils-maven" depends="version, dist-utils, test, utils-javadoc" description="Build a maven artifact bundle for lombok-utils.">
+	<target name="utils-maven" depends="version, dist-utils, utils-javadoc" description="Build a maven artifact bundle for lombok-utils.">
 		<jar destfile="dist/lombok-utils-${lombok.version}-javadoc.jar">
 			<fileset dir="build/utils-api" />
 		</jar>
@@ -747,7 +801,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</ant>
 	</target>
 	
-	<target name="maven" depends="version, dist, test, javadoc" description="Build a maven artifact bundle.">
+	<target name="maven" depends="version, dist, javadoc" description="Build a maven artifact bundle.">
 		<jar destfile="dist/lombok-${lombok.version}-javadoc.jar">
 			<fileset dir="doc/api" />
 		</jar>
@@ -809,7 +863,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			knownHosts="ssh.knownHosts" />
 	</target>
 	
-	<target name="publish" description="Publishes the latest build to googlecode." depends="config-ssh, version, dist, dist-utils, test">
+	<target name="publish" description="Publishes the latest build to googlecode." depends="config-ssh, version, dist, dist-utils">
 		<ivy:scpUpload
 			from="dist/lombok-utils-${lombok.version}.jar"
 			to="/data/lombok/staging"
@@ -876,7 +930,17 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</ant>
 	</target>
 	
-	<target name="website-only-publish" depends="config-ssh, clean"
+	<target name="website-supporters" depends="ensureSupportersDeps, website-only" description="Updates the supporters repo and adds it to the website build.">
+		<ant antfile="buildScripts/supporters.ant.xml" target="deployToWebsiteBuild" inheritAll="false" />
+	</target>
+	
+	<target name="website-supporters-fast" depends="website-only" description="Updates the supporters repo and adds it to the website build.">
+		<ant antfile="buildScripts/supporters.ant.xml" target="deployToWebsiteBuild" inheritAll="false">
+			<property name="noUpdateRepo" value="true" />
+		</ant>
+	</target>
+	
+	<target name="website-only-publish" depends="config-ssh, clean, ensureSupportersDeps"
 			description="Prepares the website (using lombok version current 'live') for distribution and then publishes it to projectlombok.org.">
 		<ant antfile="buildScripts/website.ant.xml" target="website-only-publish" inheritAll="false">
 			<property name="ssh.username" value="${ssh.username}" />
@@ -884,7 +948,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</ant>
 	</target>
 	
-	<target name="website-publish" depends="config-ssh, clean, version"
+	<target name="website-publish" depends="config-ssh, clean, version, ensureSupportersDeps"
 			description="Prepares the website for distribution and then publishes it to projectlombok.org.">
 		<ant antfile="buildScripts/website.ant.xml" target="website-publish" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />

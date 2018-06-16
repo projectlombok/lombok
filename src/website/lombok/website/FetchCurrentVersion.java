@@ -23,7 +23,7 @@ public class FetchCurrentVersion {
 			BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
 			for (String line = br.readLine(); line != null; line = br.readLine()) {
 				Matcher m = VERSION_PATTERN.matcher(line);
-				if (m.matches() && m.group(1).equals("currentVersionFull") == fetchFull) return m.group(2);
+				if (m.matches() && m.group(1).equals("currentVersionFull") == fetchFull) return m.group(2).replace("&quot;", "\"");
 			}
 			throw new IOException("Expected a span with id 'currentVersion'");
 		} finally {

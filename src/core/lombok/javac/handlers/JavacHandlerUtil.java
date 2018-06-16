@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -162,6 +162,10 @@ public class JavacHandlerUtil {
 		return node;
 	}
 	
+	public static boolean hasAnnotation(String type, JavacNode node) {
+		return hasAnnotation(type, node, false);
+	}
+	
 	public static boolean hasAnnotation(Class<? extends Annotation> type, JavacNode node) {
 		return hasAnnotation(type, node, false);
 	}
@@ -191,7 +195,32 @@ public class JavacHandlerUtil {
 		}
 	}
 	
-	static JavacNode findAnnotation(Class<? extends Annotation> type, JavacNode node, boolean delete) {
+	private static boolean hasAnnotation(String type, JavacNode node, boolean delete) {
+		if (node == null) return false;
+		if (type == null) return false;
+		switch (node.getKind()) {
+		case ARGUMENT:
+		case FIELD:
+		case LOCAL:
+		case TYPE:
+		case METHOD:
+			for (JavacNode child : node.down()) {
+				if (annotationTypeMatches(type, child)) {
+					if (delete) deleteAnnotationIfNeccessary(child, type);
+					return true;
+				}
+			}
+			// intentional fallthrough
+		default:
+			return false;
+		}
+	}
+	
+	public static JavacNode findAnnotation(Class<? extends Annotation> type, JavacNode node) {
+		return findAnnotation(type, node, false);
+	}
+	
+	public static JavacNode findAnnotation(Class<? extends Annotation> type, JavacNode node, boolean delete) {
 		if (node == null) return null;
 		if (type == null) return null;
 		switch (node.getKind()) {
@@ -224,6 +253,17 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
+	 * Checks if the Annotation AST Node provided is likely to be an instance of the provided annotation type.
+	 * 
+	 * @param type An actual annotation type, such as {@code lombok.Getter.class}.
+	 * @param node A Lombok AST node representing an annotation in source code.
+	 */
+	public static boolean annotationTypeMatches(String type, JavacNode node) {
+		if (node.getKind() != Kind.ANNOTATION) return false;
+		return typeMatches(type, node, ((JCAnnotation)node.get()).annotationType);
+	}
+	
+	/**
 	 * Checks if the given TypeReference node is likely to be a reference to the provided class.
 	 * 
 	 * @param type An actual type. This method checks if {@code typeNode} is likely to be a reference to this type.
@@ -231,10 +271,21 @@ public class JavacHandlerUtil {
 	 * @param typeNode A type reference to check.
 	 */
 	public static boolean typeMatches(Class<?> type, JavacNode node, JCTree typeNode) {
+		return typeMatches(type.getName(), node, typeNode);
+	}
+	
+	/**
+	 * Checks if the given TypeReference node is likely to be a reference to the provided class.
+	 * 
+	 * @param type An actual type. This method checks if {@code typeNode} is likely to be a reference to this type.
+	 * @param node A Lombok AST node. Any node in the appropriate compilation unit will do (used to get access to import statements).
+	 * @param typeNode A type reference to check.
+	 */
+	public static boolean typeMatches(String type, JavacNode node, JCTree typeNode) {
 		String typeName = typeNode.toString();
 		
 		TypeResolver resolver = new TypeResolver(node.getImportList());
-		return resolver.typeMatches(node, type.getName(), typeName);
+		return resolver.typeMatches(node, type, typeName);
 	}
 	
 	/**
@@ -274,8 +325,19 @@ public class JavacHandlerUtil {
 	 * @param node A Lombok AST node representing an annotation in source code.
 	 */
 	public static <A extends Annotation> AnnotationValues<A> createAnnotation(Class<A> type, final JavacNode node) {
+		return createAnnotation(type, (JCAnnotation) node.get(), node);
+	}
+	
+	/**
+	 * Creates an instance of {@code AnnotationValues} for the provided AST Node
+	 * and Annotation expression.
+	 *
+	 * @param type An annotation class type, such as {@code lombok.Getter.class}.
+	 * @param anno the annotation expression
+	 * @param node A Lombok AST node representing an annotation in source code.
+	 */
+	public static <A extends Annotation> AnnotationValues<A> createAnnotation(Class<A> type, JCAnnotation anno, final JavacNode node) {
 		Map<String, AnnotationValue> values = new HashMap<String, AnnotationValue>();
-		JCAnnotation anno = (JCAnnotation) node.get();
 		List<JCExpression> arguments = anno.getArguments();
 		
 		for (JCExpression arg : arguments) {
@@ -296,17 +358,39 @@ public class JavacHandlerUtil {
 			}
 			
 			if (rhs instanceof JCNewArray) {
-				List<JCExpression> elems = ((JCNewArray)rhs).elems;
+				List<JCExpression> elems = ((JCNewArray) rhs).elems;
 				for (JCExpression inner : elems) {
 					raws.add(inner.toString());
 					expressions.add(inner);
-					guesses.add(calculateGuess(inner));
+					if (inner instanceof JCAnnotation) {
+						try {
+							@SuppressWarnings("unchecked")
+							Class<A> innerClass = (Class<A>) Class.forName(inner.type.toString());
+							
+							guesses.add(createAnnotation(innerClass, (JCAnnotation) inner, node));
+						} catch (ClassNotFoundException ex) {
+							guesses.add(calculateGuess(inner));
+						}
+					} else {
+						guesses.add(calculateGuess(inner));
+					}
 					positions.add(inner.pos());
 				}
 			} else {
 				raws.add(rhs.toString());
 				expressions.add(rhs);
-				guesses.add(calculateGuess(rhs));
+				if (rhs instanceof JCAnnotation) {
+					try {
+						@SuppressWarnings("unchecked")
+						Class<A> innerClass = (Class<A>) Class.forName(rhs.type.toString());
+						
+						guesses.add(createAnnotation(innerClass, (JCAnnotation) rhs, node));
+					} catch (ClassNotFoundException ex) {
+						guesses.add(calculateGuess(rhs));
+					}
+				} else {
+					guesses.add(calculateGuess(rhs));
+				}
 				positions.add(rhs.pos());
 			}
 			
@@ -346,8 +430,7 @@ public class JavacHandlerUtil {
 	 * then removes any import statement that imports this exact annotation (not star imports).
 	 * Only does this if the DeleteLombokAnnotations class is in the context.
 	 */
-	@SuppressWarnings("unchecked")
-	public static void deleteAnnotationIfNeccessary(JavacNode annotation, Class<? extends Annotation> annotationType) {
+	public static void deleteAnnotationIfNeccessary(JavacNode annotation, String annotationType) {
 		deleteAnnotationIfNeccessary0(annotation, annotationType);
 	}
 	
@@ -356,12 +439,29 @@ public class JavacHandlerUtil {
 	 * then removes any import statement that imports this exact annotation (not star imports).
 	 * Only does this if the DeleteLombokAnnotations class is in the context.
 	 */
-	@SuppressWarnings("unchecked")
-	public static void deleteAnnotationIfNeccessary(JavacNode annotation, Class<? extends Annotation> annotationType1, Class<? extends Annotation> annotationType2) {
-		deleteAnnotationIfNeccessary0(annotation, annotationType1, annotationType2);
+	public static void deleteAnnotationIfNeccessary(JavacNode annotation, Class<? extends Annotation> annotationType) {
+		deleteAnnotationIfNeccessary0(annotation, annotationType.getName());
 	}
 	
-	private static void deleteAnnotationIfNeccessary0(JavacNode annotation, Class<? extends Annotation>... annotationTypes) {
+	/**
+	 * Removes the annotation from javac's AST (it remains in lombok's AST),
+	 * then removes any import statement that imports this exact annotation (not star imports).
+	 * Only does this if the DeleteLombokAnnotations class is in the context.
+	 */
+	public static void deleteAnnotationIfNeccessary(JavacNode annotation, Class<? extends Annotation> annotationType1, Class<? extends Annotation> annotationType2) {
+		deleteAnnotationIfNeccessary0(annotation, annotationType1.getName(), annotationType2.getName());
+	}
+	
+	/**
+	 * Removes the annotation from javac's AST (it remains in lombok's AST),
+	 * then removes any import statement that imports this exact annotation (not star imports).
+	 * Only does this if the DeleteLombokAnnotations class is in the context.
+	 */
+	public static void deleteAnnotationIfNeccessary(JavacNode annotation, Class<? extends Annotation> annotationType1, String annotationType2) {
+		deleteAnnotationIfNeccessary0(annotation, annotationType1.getName(), annotationType2);
+	}
+	
+	private static void deleteAnnotationIfNeccessary0(JavacNode annotation, String... annotationTypes) {
 		if (inNetbeansEditor(annotation)) return;
 		if (!annotation.shouldDeleteLombokAnnotations()) return;
 		JavacNode parentNode = annotation.directUp();
@@ -390,8 +490,8 @@ public class JavacHandlerUtil {
 		}
 		
 		parentNode.getAst().setChanged();
-		for (Class<?> annotationType : annotationTypes) {
-			deleteImportFromCompilationUnit(annotation, annotationType.getName());
+		for (String annotationType : annotationTypes) {
+			deleteImportFromCompilationUnit(annotation, annotationType);
 		}
 	}
 	
@@ -755,7 +855,7 @@ public class JavacHandlerUtil {
 		
 		// Check if the class has a @Getter annotation.
 		
-		if (!hasGetterAnnotation && new HandleGetter().fieldQualifiesForGetterGeneration(field)) {
+		if (!hasGetterAnnotation && HandleGetter.fieldQualifiesForGetterGeneration(field)) {
 			//Check if the class has @Getter or @Data annotation.
 			
 			JavacNode containingType = field.up();
@@ -776,10 +876,6 @@ public class JavacHandlerUtil {
 		}
 		
 		return null;
-	}
-	
-	public enum FieldAccess {
-		GETTER, PREFER_FIELD, ALWAYS_FIELD;
 	}
 	
 	static boolean lookForGetter(JavacNode field, FieldAccess fieldAccess) {
@@ -803,12 +899,14 @@ public class JavacHandlerUtil {
 	 * @see #createFieldAccessor(TreeMaker, JavacNode, FieldAccess)
 	 */
 	static JCExpression getFieldType(JavacNode field, FieldAccess fieldAccess) {
+		if (field.getKind() == Kind.METHOD) return ((JCMethodDecl) field.get()).restype;
+		
 		boolean lookForGetter = lookForGetter(field, fieldAccess);
 		
 		GetterMethod getter = lookForGetter ? findGetter(field) : null;
 		
 		if (getter == null) {
-			return ((JCVariableDecl)field.get()).vartype;
+			return ((JCVariableDecl) field.get()).vartype;
 		}
 		
 		return getter.type;
@@ -845,7 +943,29 @@ public class JavacHandlerUtil {
 		
 		if (receiver == null) receiver = maker.Ident(field.toName("this"));
 		JCMethodInvocation call = maker.Apply(List.<JCExpression>nil(),
-				maker.Select(receiver, getter.name), List.<JCExpression>nil());
+			maker.Select(receiver, getter.name), List.<JCExpression>nil());
+		return call;
+	}
+	
+	static JCExpression createMethodAccessor(JavacTreeMaker maker, JavacNode method) {
+		return createMethodAccessor(maker, method, null);
+	}
+	
+	static JCExpression createMethodAccessor(JavacTreeMaker maker, JavacNode method, JCExpression receiver) {
+		JCMethodDecl methodDecl = (JCMethodDecl) method.get();
+		
+		if (receiver == null && (methodDecl.mods.flags & Flags.STATIC) == 0) {
+			receiver = maker.Ident(method.toName("this"));
+		} else if (receiver == null) {
+			JavacNode containerNode = method.up();
+			if (containerNode != null && containerNode.get() instanceof JCClassDecl) {
+				JCClassDecl container = (JCClassDecl) method.up().get();
+				receiver = maker.Ident(container.name);
+			}
+		}
+		
+		JCMethodInvocation call = maker.Apply(List.<JCExpression>nil(),
+			receiver == null ? maker.Ident(methodDecl.name) : maker.Select(receiver, methodDecl.name), List.<JCExpression>nil());
 		return call;
 	}
 	
@@ -1405,9 +1525,10 @@ public class JavacHandlerUtil {
 	public static void sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(JavacNode typeNode, JavacNode errorNode) {
 		List<String> disallowed = List.nil();
 		for (JavacNode child : typeNode.down()) {
-			for (Class<? extends java.lang.annotation.Annotation> annType : INVALID_ON_BUILDERS) {
+			for (String annType : INVALID_ON_BUILDERS) {
 				if (annotationTypeMatches(annType, child)) {
-					disallowed = disallowed.append(annType.getSimpleName());
+					int lastIndex = annType.lastIndexOf('.');
+					disallowed = disallowed.append(lastIndex == -1 ? annType : annType.substring(lastIndex + 1));
 				}
 			}
 		}
@@ -1691,5 +1812,13 @@ public class JavacHandlerUtil {
 			docComments.put(to, filtered[0]);
 			docComments.put(from.get(), filtered[1]);
 		}
+	}
+	
+	public static boolean isDirectDescendantOfObject(JavacNode typeNode) {
+		if (!(typeNode.get() instanceof JCClassDecl)) throw new IllegalArgumentException("not a type node");
+		JCTree extending = Javac.getExtendsClause((JCClassDecl)typeNode.get());
+		if (extending == null) return true;
+		String p = extending.toString();
+		return p.equals("Object") || p.equals("java.lang.Object");
 	}
 }

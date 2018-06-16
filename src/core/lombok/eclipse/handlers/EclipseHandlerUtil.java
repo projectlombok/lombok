@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -197,17 +197,36 @@ public class EclipseHandlerUtil {
 		
 		TypeResolver resolver = new TypeResolver(node.getImportList());
 		return resolver.typeMatches(node, type.getName(), typeName);
+	}
+	
+	/**
+	 * Checks if the given TypeReference node is likely to be a reference to the provided class.
+	 * 
+	 * @param type An actual type. This method checks if {@code typeNode} is likely to be a reference to this type.
+	 * @param node A Lombok AST node. Any node in the appropriate compilation unit will do (used to get access to import statements).
+	 * @param typeRef A type reference to check.
+	 */
+	public static boolean typeMatches(String type, EclipseNode node, TypeReference typeRef) {
+		if (typeRef == null || typeRef.getTypeName() == null || typeRef.getTypeName().length == 0) return false;
+		String lastPartA = new String(typeRef.getTypeName()[typeRef.getTypeName().length -1]);
+		int lastIndex = type.lastIndexOf('.');
+		String lastPartB = lastIndex == -1 ? type : type.substring(lastIndex + 1);
+		if (!lastPartA.equals(lastPartB)) return false;
+		String typeName = toQualifiedName(typeRef.getTypeName());
 		
+		TypeResolver resolver = new TypeResolver(node.getImportList());
+		return resolver.typeMatches(node, type, typeName);
 	}
 	
 	public static void sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(EclipseNode typeNode, EclipseNode errorNode) {
 		List<String> disallowed = null;
 		for (EclipseNode child : typeNode.down()) {
 			if (child.getKind() != Kind.ANNOTATION) continue;
-			for (Class<? extends java.lang.annotation.Annotation> annType : INVALID_ON_BUILDERS) {
+			for (String annType : INVALID_ON_BUILDERS) {
 				if (annotationTypeMatches(annType, child)) {
 					if (disallowed == null) disallowed = new ArrayList<String>();
-					disallowed.add(annType.getSimpleName());
+					int lastIndex = annType.lastIndexOf('.');
+					disallowed.add(lastIndex == -1 ? annType : annType.substring(lastIndex + 1));
 				}
 			}
 		}
@@ -444,6 +463,24 @@ public class EclipseHandlerUtil {
 		}
 	}
 	
+	public static boolean hasAnnotation(String type, EclipseNode node) {
+		if (node == null) return false;
+		if (type == null) return false;
+		switch (node.getKind()) {
+		case ARGUMENT:
+		case FIELD:
+		case LOCAL:
+		case TYPE:
+		case METHOD:
+			for (EclipseNode child : node.down()) {
+				if (annotationTypeMatches(type, child)) return true;
+			}
+			// intentional fallthrough
+		default:
+			return false;
+		}
+	}
+	
 	public static EclipseNode findAnnotation(Class<? extends java.lang.annotation.Annotation> type, EclipseNode node) {
 		if (node == null) return null;
 		if (type == null) return null;
@@ -468,6 +505,16 @@ public class EclipseHandlerUtil {
 	 * This is a guess, but a decent one.
 	 */
 	public static boolean annotationTypeMatches(Class<? extends java.lang.annotation.Annotation> type, EclipseNode node) {
+		if (node.getKind() != Kind.ANNOTATION) return false;
+		return typeMatches(type, node, ((Annotation) node.get()).type);
+	}
+	
+	/**
+	 * Checks if the provided annotation type is likely to be the intended type for the given annotation node.
+	 * 
+	 * This is a guess, but a decent one.
+	 */
+	public static boolean annotationTypeMatches(String type, EclipseNode node) {
 		if (node.getKind() != Kind.ANNOTATION) return false;
 		return typeMatches(type, node, ((Annotation) node.get()).type);
 	}
@@ -699,7 +746,7 @@ public class EclipseHandlerUtil {
 	 * Provides AnnotationValues with the data it needs to do its thing.
 	 */
 	public static <A extends java.lang.annotation.Annotation> AnnotationValues<A>
-			createAnnotation(Class<A> type, final EclipseNode annotationNode) {
+		createAnnotation(Class<A> type, final EclipseNode annotationNode) {
 		
 		final Annotation annotation = (Annotation) annotationNode.get();
 		Map<String, AnnotationValue> values = new HashMap<String, AnnotationValue>();
@@ -716,7 +763,7 @@ public class EclipseHandlerUtil {
 			String mName = (n == null || n.length == 0) ? "value" : new String(pair.name);
 			final Expression rhs = pair.value;
 			if (rhs instanceof ArrayInitializer) {
-				expressions = ((ArrayInitializer)rhs).expressions;
+				expressions = ((ArrayInitializer) rhs).expressions;
 			} else if (rhs != null) {
 				expressions = new Expression[] { rhs };
 			}
@@ -850,7 +897,7 @@ public class EclipseHandlerUtil {
 		
 		// Check if the class has a @Getter annotation.
 		
-		if (!hasGetterAnnotation && new HandleGetter().fieldQualifiesForGetterGeneration(field)) {
+		if (!hasGetterAnnotation && HandleGetter.fieldQualifiesForGetterGeneration(field)) {
 			//Check if the class has @Getter or @Data annotation.
 			
 			EclipseNode containingType = field.up();
@@ -873,10 +920,6 @@ public class EclipseHandlerUtil {
 		return null;
 	}
 	
-	public enum FieldAccess {
-		GETTER, PREFER_FIELD, ALWAYS_FIELD;
-	}
-	
 	static boolean lookForGetter(EclipseNode field, FieldAccess fieldAccess) {
 		if (fieldAccess == FieldAccess.GETTER) return true;
 		if (fieldAccess == FieldAccess.ALWAYS_FIELD) return false;
@@ -893,11 +936,13 @@ public class EclipseHandlerUtil {
 	}
 	
 	static TypeReference getFieldType(EclipseNode field, FieldAccess fieldAccess) {
+		if (field.get() instanceof MethodDeclaration) return ((MethodDeclaration) field.get()).returnType;
+		
 		boolean lookForGetter = lookForGetter(field, fieldAccess);
 		
 		GetterMethod getter = lookForGetter ? findGetter(field) : null;
 		if (getter == null) {
-			return ((FieldDeclaration)field.get()).type;
+			return ((FieldDeclaration) field.get()).type;
 		}
 		
 		return getter.type;
@@ -905,7 +950,7 @@ public class EclipseHandlerUtil {
 	
 	static Expression createFieldAccessor(EclipseNode field, FieldAccess fieldAccess, ASTNode source) {
 		int pS = source == null ? 0 : source.sourceStart, pE = source == null ? 0 : source.sourceEnd;
-		long p = (long)pS << 32 | pE;
+		long p = (long) pS << 32 | pE;
 		
 		boolean lookForGetter = lookForGetter(field, fieldAccess);
 		
@@ -970,6 +1015,43 @@ public class EclipseHandlerUtil {
 		call.receiver = new SingleNameReference(receiver, p);
 		setGeneratedBy(call.receiver, source);
 		call.selector = getter.name;
+		return call;
+	}
+	
+	static Expression createMethodAccessor(EclipseNode method, ASTNode source) {
+		int pS = source == null ? 0 : source.sourceStart, pE = source == null ? 0 : source.sourceEnd;
+		long p = (long) pS << 32 | pE;
+		
+		MethodDeclaration methodDecl = (MethodDeclaration) method.get();
+		MessageSend call = new MessageSend();
+		setGeneratedBy(call, source);
+		call.sourceStart = pS; call.statementEnd = call.sourceEnd = pE;
+		if ((methodDecl.modifiers & ClassFileConstants.AccStatic) == 0) {
+			call.receiver = new ThisReference(pS, pE);
+			setGeneratedBy(call.receiver, source);
+		} else {
+			EclipseNode containerNode = method.up();
+			if (containerNode != null && containerNode.get() instanceof TypeDeclaration) {
+				call.receiver = new SingleNameReference(((TypeDeclaration) containerNode.get()).name, p);
+				setGeneratedBy(call.receiver, source);
+			}
+		}
+		
+		call.selector = methodDecl.selector;
+		return call;
+	}
+	
+	static Expression createMethodAccessor(EclipseNode method, ASTNode source, char[] receiver) {
+		int pS = source == null ? 0 : source.sourceStart, pE = source == null ? 0 : source.sourceEnd;
+		long p = (long) pS << 32 | pE;
+		
+		MethodDeclaration methodDecl = (MethodDeclaration) method.get();
+		MessageSend call = new MessageSend();
+		setGeneratedBy(call, source);
+		call.sourceStart = pS; call.statementEnd = call.sourceEnd = pE;
+		call.receiver = new SingleNameReference(receiver, p);
+		setGeneratedBy(call.receiver, source);
+		call.selector = methodDecl.selector;
 		return call;
 	}
 	
@@ -1050,7 +1132,7 @@ public class EclipseHandlerUtil {
 	public static boolean filterField(FieldDeclaration declaration, boolean skipStatic) {
 		// Skip the fake fields that represent enum constants.
 		if (declaration.initialization instanceof AllocationExpression &&
-				((AllocationExpression)declaration.initialization).enumConstant != null) return false;
+				((AllocationExpression) declaration.initialization).enumConstant != null) return false;
 		
 		if (declaration.type == null) return false;
 		
@@ -1116,6 +1198,12 @@ public class EclipseHandlerUtil {
 		
 		return AnnotationValues.of(Accessors.class, field);
 	}
+
+	public static EclipseNode upToTypeNode(EclipseNode node) {
+		if (node == null) throw new NullPointerException("node");
+		while (node != null && !(node.get() instanceof TypeDeclaration)) node = node.up();
+		return node;
+	}
 	
 	/**
 	 * Checks if there is a field with the provided name.
@@ -1124,10 +1212,7 @@ public class EclipseHandlerUtil {
 	 * @param node Any node that represents the Type (TypeDeclaration) to look in, or any child node thereof.
 	 */
 	public static MemberExistsResult fieldExists(String fieldName, EclipseNode node) {
-		while (node != null && !(node.get() instanceof TypeDeclaration)) {
-			node = node.up();
-		}
-		
+		node = upToTypeNode(node);
 		if (node != null && node.get() instanceof TypeDeclaration) {
 			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
 			if (typeDecl.fields != null) for (FieldDeclaration def : typeDecl.fields) {
@@ -1213,10 +1298,7 @@ public class EclipseHandlerUtil {
 	 * @param node Any node that represents the Type (TypeDeclaration) to look in, or any child node thereof.
 	 */
 	public static MemberExistsResult constructorExists(EclipseNode node) {
-		while (node != null && !(node.get() instanceof TypeDeclaration)) {
-			node = node.up();
-		}
-		
+		node = upToTypeNode(node);
 		if (node != null && node.get() instanceof TypeDeclaration) {
 			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
 			if (typeDecl.methods != null) for (AbstractMethodDeclaration def : typeDecl.methods) {
@@ -1771,5 +1853,13 @@ public class EclipseHandlerUtil {
 	
 	private static long[] copy(long[] array) {
 		return array == null ? null : array.clone();
+	}
+	
+	public static boolean isDirectDescendantOfObject(EclipseNode typeNode) {
+		if (!(typeNode.get() instanceof TypeDeclaration)) throw new IllegalArgumentException("not a type node");
+		TypeDeclaration typeDecl = (TypeDeclaration) typeNode.get();
+		if (typeDecl.superclass == null) return true;
+		String p = typeDecl.superclass.toString();
+		return p.equals("Object") || p.equals("java.lang.Object");
 	}
 }

@@ -148,7 +148,11 @@ final class PatchFixesHider {
 		}
 		
 		public static String addLombokNotesToEclipseAboutDialog(String origReturnValue, String key) {
-			return (String) Util.invokeMethod(LombokDeps.ADD_LOMBOK_NOTES, origReturnValue, key);
+			try {
+				return (String) Util.invokeMethod(LombokDeps.ADD_LOMBOK_NOTES, origReturnValue, key);
+			} catch (Throwable t) {
+				return origReturnValue;
+			}
 		}
 		
 		public static byte[] runPostCompiler(byte[] bytes, String fileName) {

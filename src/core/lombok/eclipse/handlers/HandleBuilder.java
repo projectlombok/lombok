@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2017 The Project Lombok Authors.
+ * Copyright (C) 2013-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,8 +74,10 @@ import lombok.Builder;
 import lombok.Builder.ObtainVia;
 import lombok.ConfigurationKeys;
 import lombok.Singular;
+import lombok.ToString;
 import lombok.core.AST.Kind;
 import lombok.core.handlers.HandlerUtil;
+import lombok.core.handlers.InclusionExclusionUtils.Included;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.eclipse.Eclipse;
@@ -89,6 +91,8 @@ import lombok.experimental.NonFinal;
 @ProviderFor(EclipseAnnotationHandler.class)
 @HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
 public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
+	private HandleConstructor handleConstructor = new HandleConstructor();
+	
 	private static final char[] CLEAN_FIELD_NAME = "$lombokUnclean".toCharArray();
 	private static final char[] CLEAN_METHOD_NAME = "$lombokClean".toCharArray();
 	
@@ -185,8 +189,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			TypeDeclaration td = (TypeDeclaration) tdParent.get();
 			
 			List<EclipseNode> allFields = new ArrayList<EclipseNode>();
-			@SuppressWarnings("deprecation")
-			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation(lombok.experimental.Value.class, parent));
+			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
 			for (EclipseNode fieldNode : HandleConstructor.findAllFields(tdParent, true)) {
 				FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
 				EclipseNode isDefault = findAnnotation(Builder.Default.class, fieldNode);
@@ -226,7 +229,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				allFields.add(fieldNode);
 			}
 			
-			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER,
+			handleConstructor.generateConstructor(tdParent, AccessLevel.PACKAGE, allFields, false, null, SkipIfConstructorExists.I_AM_BUILDER,
 				Collections.<Annotation>emptyList(), annotationNode);
 			
 			returnType = namePlusTypeParamsToTypeReference(td.name, td.typeParameters, p);
@@ -448,9 +451,11 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 		
 		if (methodExists("toString", builderType, 0) == MemberExistsResult.NOT_EXISTS) {
-			List<EclipseNode> fieldNodes = new ArrayList<EclipseNode>();
+			List<Included<EclipseNode, ToString.Include>> fieldNodes = new ArrayList<Included<EclipseNode, ToString.Include>>();
 			for (BuilderFieldData bfd : builderFields) {
-				fieldNodes.addAll(bfd.createdFields);
+				for (EclipseNode f : bfd.createdFields) {
+					fieldNodes.add(new Included<EclipseNode, ToString.Include>(f, null, true));
+				}
 			}
 			MethodDeclaration md = HandleToString.createToString(builderType, fieldNodes, true, false, ast, FieldAccess.ALWAYS_FIELD);
 			if (md != null) injectMethod(builderType, md);
@@ -568,7 +573,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		
 		for (BuilderFieldData bfd : builderFields) {
 			if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
-				bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, type, statements, bfd.name);
+				bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, type, statements, bfd.name, "this");
 			}
 		}
 		
@@ -639,7 +644,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return trs;
 	}
 	
-	public MethodDeclaration generateDefaultProvider(char[] methodName, TypeParameter[] typeParameters, EclipseNode fieldNode, ASTNode source) {
+	public static MethodDeclaration generateDefaultProvider(char[] methodName, TypeParameter[] typeParameters, EclipseNode fieldNode, ASTNode source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) fieldNode.top().get()).compilationResult);

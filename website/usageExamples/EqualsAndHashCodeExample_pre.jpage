@@ -1,13 +1,13 @@
 import lombok.EqualsAndHashCode;
 
-@EqualsAndHashCode(exclude={"id", "shape"})
+@EqualsAndHashCode
 public class EqualsAndHashCodeExample {
 	private transient int transientVar = 10;
 	private String name;
 	private double score;
-	private Shape shape = new Square(5, 10);
+	@EqualsAndHashCode.Exclude private Shape shape = new Square(5, 10);
 	private String[] tags;
-	private int id;
+	@EqualsAndHashCode.Exclude private int id;
 	
 	public String getName() {
 		return this.name;

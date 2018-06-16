@@ -36,7 +36,6 @@ import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
-import lombok.javac.handlers.JavacHandlerUtil.FieldAccess;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -62,7 +61,7 @@ import com.sun.tools.javac.util.Name;
  */
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleSetter extends JavacAnnotationHandler<Setter> {
-	public void generateSetterForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelSetter) {
+	public void generateSetterForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean checkForTypeLevelSetter, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (checkForTypeLevelSetter) {
 			if (hasAnnotation(Setter.class, typeNode)) {
 				//The annotation will make it happen, so we can skip it.
@@ -90,7 +89,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			//Skip final fields.
 			if ((fieldDecl.mods.flags & Flags.FINAL) != 0) continue;
 			
-			generateSetterForField(field, errorNode, level);
+			generateSetterForField(field, errorNode, level, onMethod, onParam);
 		}
 	}
 	
@@ -109,13 +108,13 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	 * @param fieldNode The node representing the field you want a setter for.
 	 * @param pos The node responsible for generating the setter (the {@code @Data} or {@code @Setter} annotation).
 	 */
-	public void generateSetterForField(JavacNode fieldNode, JavacNode sourceNode, AccessLevel level) {
+	public void generateSetterForField(JavacNode fieldNode, JavacNode sourceNode, AccessLevel level, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (hasAnnotation(Setter.class, fieldNode)) {
 			//The annotation will make it happen, so we can skip it.
 			return;
 		}
 		
-		createSetterForField(level, fieldNode, sourceNode, false, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
+		createSetterForField(level, fieldNode, sourceNode, false, onMethod, onParam);
 	}
 	
 	@Override public void handle(AnnotationValues<Setter> annotation, JCAnnotation ast, JavacNode annotationNode) {
@@ -137,9 +136,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			createSetterForFields(level, fields, annotationNode, true, onMethod, onParam);
 			break;
 		case TYPE:
-			if (!onMethod.isEmpty()) annotationNode.addError("'onMethod' is not supported for @Setter on a type.");
-			if (!onParam.isEmpty()) annotationNode.addError("'onParam' is not supported for @Setter on a type.");
-			generateSetterForType(node, annotationNode, level, false);
+			generateSetterForType(node, annotationNode, level, false, onMethod, onParam);
 			break;
 		}
 	}
@@ -210,6 +207,17 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 	}
 	
 	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name booleanFieldToSet, boolean shouldReturnThis, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
+		JCExpression returnType = null;
+		JCReturn returnStatement = null;
+		if (shouldReturnThis) {
+			returnType = cloneSelfType(field);
+			returnStatement = treeMaker.Return(treeMaker.Ident(field.toName("this")));
+		}
+		
+		return createSetter(access, deprecate, field, treeMaker, setterName, booleanFieldToSet, returnType, returnStatement, source, onMethod, onParam);
+	}
+	
+	public static JCMethodDecl createSetter(long access, boolean deprecate, JavacNode field, JavacTreeMaker treeMaker, String setterName, Name booleanFieldToSet, JCExpression methodType, JCStatement returnStatement, JavacNode source, List<JCAnnotation> onMethod, List<JCAnnotation> onParam) {
 		if (setterName == null) return null;
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
@@ -240,21 +248,13 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 			statements.append(treeMaker.Exec(setBool));
 		}
 		
-		JCExpression methodType = null;
-		if (shouldReturnThis) {
-			methodType = cloneSelfType(field);
-		}
-		
 		if (methodType == null) {
 			//WARNING: Do not use field.getSymbolTable().voidType - that field has gone through non-backwards compatible API changes within javac1.6.
 			methodType = treeMaker.Type(Javac.createVoidType(field.getSymbolTable(), CTC_VOID));
-			shouldReturnThis = false;
+			returnStatement = null;
 		}
 		
-		if (shouldReturnThis) {
-			JCReturn returnStatement = treeMaker.Return(treeMaker.Ident(field.toName("this")));
-			statements.append(returnStatement);
-		}
+		if (returnStatement != null) statements.append(returnStatement);
 		
 		JCBlock methodBody = treeMaker.Block(0, statements.toList());
 		List<JCTypeParameter> methodGenericParams = List.nil();

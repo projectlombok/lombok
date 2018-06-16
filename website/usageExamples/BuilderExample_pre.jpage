@@ -4,6 +4,7 @@ import java.util.Set;
 
 @Builder
 public class BuilderExample {
+	@Builder.Default private long created = System.currentTimeMillis();
 	private String name;
 	private int age;
 	@Singular private Set<String> occupations;

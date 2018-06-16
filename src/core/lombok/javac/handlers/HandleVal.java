@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2016 The Project Lombok Authors.
+ * Copyright (C) 2010-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 import lombok.ConfigurationKeys;
 import lombok.val;
 import lombok.core.HandlerPriority;
-import lombok.experimental.var;
+import lombok.var;
 import lombok.javac.JavacASTAdapter;
 import lombok.javac.JavacASTVisitor;
 import lombok.javac.JavacNode;
@@ -54,29 +54,34 @@ import com.sun.tools.javac.util.List;
 public class HandleVal extends JavacASTAdapter {
 	
 	private static boolean eq(String typeTreeToString, String key) {
-		return (typeTreeToString.equals(key) || typeTreeToString.equals("lombok." + key));
+		return typeTreeToString.equals(key) || typeTreeToString.equals("lombok." + key) || typeTreeToString.equals("lombok.experimental." + key);
 	}
 	
-	@Override
+	@SuppressWarnings("deprecation") @Override
 	public void visitLocal(JavacNode localNode, JCVariableDecl local) {
 		JCTree typeTree = local.vartype;
 		if (typeTree == null) return;
 		String typeTreeToString = typeTree.toString();
-
+		
 		if (!(eq(typeTreeToString, "val") || eq(typeTreeToString, "var"))) return;
 		boolean isVal = typeMatches(val.class, localNode, typeTree);
 		boolean isVar = typeMatches(var.class, localNode, typeTree);
 		if (!(isVal || isVar)) return;
-
+		
 		if (isVal) handleFlagUsage(localNode, ConfigurationKeys.VAL_FLAG_USAGE, "val");
 		if (isVar) handleFlagUsage(localNode, ConfigurationKeys.VAR_FLAG_USAGE, "var");
-
+		
 		JCTree parentRaw = localNode.directUp().get();
 		if (isVal && parentRaw instanceof JCForLoop) {
 			localNode.addError("'val' is not allowed in old-style for loops");
 			return;
 		}
-
+		
+		if (parentRaw instanceof JCForLoop && ((JCForLoop) parentRaw).getInitializer().size() > 1) {
+			localNode.addError("'var' is not allowed in old-style for loops if there is more than 1 initializer");
+			return;
+		}
+		
 		JCExpression rhsOfEnhancedForLoop = null;
 		if (local.init == null) {
 			if (parentRaw instanceof JCEnhancedForLoop) {
@@ -84,26 +89,26 @@ public class HandleVal extends JavacASTAdapter {
 				if (efl.var == local) rhsOfEnhancedForLoop = efl.expr;
 			}
 		}
-
+		
 		final String annotation = typeTreeToString;
 		if (rhsOfEnhancedForLoop == null && local.init == null) {
 			localNode.addError("'" + annotation + "' on a local variable requires an initializer expression");
 			return;
-
 		}
-
+		
 		if (local.init instanceof JCNewArray && ((JCNewArray)local.init).elemtype == null) {
 			localNode.addError("'" + annotation + "' is not compatible with array initializer expressions. Use the full form (new int[] { ... } instead of just { ... })");
 			return;
 		}
-
+		
 		if (localNode.shouldDeleteLombokAnnotations()) {
 			JavacHandlerUtil.deleteImportFromCompilationUnit(localNode, val.class.getName());
+			JavacHandlerUtil.deleteImportFromCompilationUnit(localNode, lombok.experimental.var.class.getName());
 			JavacHandlerUtil.deleteImportFromCompilationUnit(localNode, var.class.getName());
 		}
-
+		
 		if (isVal) local.mods.flags |= Flags.FINAL;
-
+		
 		if (!localNode.shouldDeleteLombokAnnotations()) {
 			JCAnnotation valAnnotation = recursiveSetGeneratedBy(localNode.getTreeMaker().Annotation(local.vartype, List.<JCExpression>nil()), typeTree, localNode.getContext());
 			local.mods.annotations = local.mods.annotations == null ? List.of(valAnnotation) : local.mods.annotations.append(valAnnotation);
@@ -126,7 +131,7 @@ public class HandleVal extends JavacASTAdapter {
 					try {
 						type = ((JCExpression) resolver.resolveMethodMember(localNode).get(local.init)).type;
 					} catch (RuntimeException e) {
-						System.err.println("Exception while resolving: " + localNode);
+						System.err.println("Exception while resolving: " + localNode + "(" + localNode.getFileName() + ")");
 						throw e;
 					}
 				} else {
@@ -137,7 +142,7 @@ public class HandleVal extends JavacASTAdapter {
 							local.type = Symtab.instance(localNode.getContext()).unknownType;
 							type = ((JCExpression) resolver.resolveMethodMember(localNode).get(local.init)).type;
 						} catch (RuntimeException e) {
-							System.err.println("Exception while resolving: " + localNode);
+							System.err.println("Exception while resolving: " + localNode + "(" + localNode.getFileName() + ")");
 							throw e;
 						}
 					}

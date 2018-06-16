@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2017 The Project Lombok Authors.
+ * Copyright (C) 2013-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,6 @@
  */
 package lombok.javac.handlers;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 
 import javax.lang.model.element.Modifier;
@@ -55,10 +54,12 @@ import lombok.Builder;
 import lombok.Builder.ObtainVia;
 import lombok.ConfigurationKeys;
 import lombok.Singular;
+import lombok.ToString;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.core.handlers.HandlerUtil;
+import lombok.core.handlers.InclusionExclusionUtils.Included;
 import lombok.experimental.NonFinal;
 import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
@@ -75,6 +76,8 @@ import static lombok.javac.JavacTreeMaker.TypeTag.*;
 @ProviderFor(JavacAnnotationHandler.class)
 @HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
 public class HandleBuilder extends JavacAnnotationHandler<Builder> {
+	private HandleConstructor handleConstructor = new HandleConstructor();
+	
 	private static final boolean toBoolean(Object expr, boolean defaultValue) {
 		if (expr == null) return defaultValue;
 		if (expr instanceof JCLiteral) return ((Integer) ((JCLiteral) expr).value) != 0;
@@ -119,9 +122,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			if (!checkName("builderClassName", builderClassName, annotationNode)) return;
 		}
 		
-		@SuppressWarnings("deprecation")
-		Class<? extends Annotation> oldExperimentalBuilder = lombok.experimental.Builder.class;
-		deleteAnnotationIfNeccessary(annotationNode, Builder.class, oldExperimentalBuilder);
+		deleteAnnotationIfNeccessary(annotationNode, Builder.class, "lombok.experimental.Builder");
 		
 		JavacNode parent = annotationNode.up();
 		
@@ -140,8 +141,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			tdParent = parent;
 			JCClassDecl td = (JCClassDecl) tdParent.get();
 			ListBuffer<JavacNode> allFields = new ListBuffer<JavacNode>();
-			@SuppressWarnings("deprecation")
-			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation(lombok.experimental.Value.class, parent));
+			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
 			for (JavacNode fieldNode : HandleConstructor.findAllFields(tdParent, true)) {
 				JCVariableDecl fd = (JCVariableDecl) fieldNode.get();
 				JavacNode isDefault = findAnnotation(Builder.Default.class, fieldNode, true);
@@ -180,7 +180,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				allFields.append(fieldNode);
 			}
 			
-			new HandleConstructor().generateConstructor(tdParent, AccessLevel.PACKAGE, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, annotationNode);
+			handleConstructor.generateConstructor(tdParent, AccessLevel.PACKAGE, List.<JCAnnotation>nil(), allFields.toList(), false, null, SkipIfConstructorExists.I_AM_BUILDER, annotationNode);
 			
 			returnType = namePlusTypeParamsToTypeReference(tdParent.getTreeMaker(), td.name, td.typarams);
 			typeParams = td.typarams;
@@ -400,10 +400,13 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		}
 		
 		if (methodExists("toString", builderType, 0) == MemberExistsResult.NOT_EXISTS) {
-			java.util.List<JavacNode> fieldNodes = new ArrayList<JavacNode>();
+			java.util.List<Included<JavacNode, ToString.Include>> fieldNodes = new ArrayList<Included<JavacNode, ToString.Include>>();
 			for (BuilderFieldData bfd : builderFields) {
-				fieldNodes.addAll(bfd.createdFields);
+				for (JavacNode f : bfd.createdFields) {
+					fieldNodes.add(new Included<JavacNode, ToString.Include>(f, null, true));
+				}
 			}
+			
 			JCMethodDecl md = HandleToString.createToString(builderType, fieldNodes, true, false, FieldAccess.ALWAYS_FIELD, ast);
 			if (md != null) injectMethod(builderType, md);
 		}
@@ -547,18 +550,17 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		for (BuilderFieldData bfd : builderFields) {
 			if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
-				bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, type, source, statements, bfd.name);
+				bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, type, source, statements, bfd.name, "this");
 			}
 		}
 		
 		ListBuffer<JCExpression> args = new ListBuffer<JCExpression>();
 		for (BuilderFieldData bfd : builderFields) {
 			if (bfd.nameOfSetFlag != null) {
-				args.append(maker.Conditional(maker.Ident(bfd.nameOfSetFlag), maker.Ident(bfd.name),
-					maker.Apply(typeParameterNames(maker, ((JCClassDecl) tdParent.get()).typarams), maker.Select(maker.Ident(((JCClassDecl) tdParent.get()).name), bfd.nameOfDefaultProvider), List.<JCExpression>nil())));
-			} else {
-				args.append(maker.Ident(bfd.name));
+				statements.append(maker.VarDef(maker.Modifiers(0L), bfd.name, cloneType(maker, bfd.type, source, tdParent.getContext()), maker.Select(maker.Ident(type.toName("this")), bfd.name)));
+				statements.append(maker.If(maker.Unary(CTC_NOT, maker.Ident(bfd.nameOfSetFlag)), maker.Exec(maker.Assign(maker.Ident(bfd.name),maker.Apply(typeParameterNames(maker, ((JCClassDecl) tdParent.get()).typarams), maker.Select(maker.Ident(((JCClassDecl) tdParent.get()).name), bfd.nameOfDefaultProvider), List.<JCExpression>nil()))), null));
 			}
+			args.append(maker.Ident(bfd.name));
 		}
 		
 		if (addCleaning) {

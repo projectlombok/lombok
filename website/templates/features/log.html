@@ -6,6 +6,8 @@
 			The various <code>@Log</code> variants were added in lombok v0.10.
 			<em>NEW in lombok 0.10: </em>You can annotate any class with a log annotation to let lombok generate a logger field.<br/>
 			The logger is named <code>log</code> and the field's type depends on which logger you have selected.
+		</p><p>
+			<em>NEW in lombok v1.16.24: </em>Addition of google's FluentLogger (flogger).
 		</p>
 	</@f.history>
 
@@ -20,13 +22,17 @@
 				</dt><dd>
 					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="https://commons.apache.org/logging/apidocs/org/apache/commons/logging/Log.html">org.apache.commons.logging.Log</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="https://commons.apache.org/logging/apidocs/org/apache/commons/logging/LogFactory.html#getLog(java.lang.Class)">org.apache.commons.logging.LogFactory.getLog</a>(LogExample.<span class="keyword">class</span>);</code>
 				</dd><dt>
+					<code>@Flogger</code>
+				</dt><dd>
+					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="https://google.github.io/flogger/">com.google.common.flogger.FluentLogger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;com.google.common.flogger.FluentLogger.forEnclosingClass();</code>
+				</dd><dt>
 					<code>@JBossLog</code>
 				</dt><dd>
-					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="http://docs.jboss.org/jbosslogging/latest/org/jboss/logging/Logger.html">org.jboss.logging.Logger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="http://docs.jboss.org/jbosslogging/latest/org/jboss/logging/Logger.html#getLogger(java.lang.Class)">org.jboss.logging.Logger.getLogger</a>(LogExample.<span class="keyword">class</span>);</code>
+					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="https://docs.jboss.org/jbosslogging/latest/org/jboss/logging/Logger.html">org.jboss.logging.Logger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="https://docs.jboss.org/jbosslogging/latest/org/jboss/logging/Logger.html#getLogger(java.lang.Class)">org.jboss.logging.Logger.getLogger</a>(LogExample.<span class="keyword">class</span>);</code>
 				</dd><dt>
 					<code>@Log</code>
 				</dt><dd>
-					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="http://download.oracle.com/javase/6/docs/api/java/util/logging/Logger.html">java.util.logging.Logger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="http://download.oracle.com/javase/6/docs/api/java/util/logging/Logger.html#getLogger(java.lang.String)">java.util.logging.Logger.getLogger</a>(LogExample.<span class="keyword">class</span>.getName());</code>
+					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="https://docs.oracle.com/javase/6/docs/api/java/util/logging/Logger.html">java.util.logging.Logger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/java/util/logging/Logger.html#getLogger(java.lang.String)">java.util.logging.Logger.getLogger</a>(LogExample.<span class="keyword">class</span>.getName());</code>
 				</dd><dt>
 					<code>@Log4j</code>
 				</dt><dd>
@@ -38,11 +44,11 @@
 				</dd><dt>
 					<code>@Slf4j</code>
 				</dt><dd>
-					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="http://www.slf4j.org/api/org/slf4j/Logger.html">org.slf4j.Logger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="http://www.slf4j.org/apidocs/org/slf4j/LoggerFactory.html#getLogger(java.lang.Class)">org.slf4j.LoggerFactory.getLogger</a>(LogExample.<span class="keyword">class</span>);</code>
+					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="https://www.slf4j.org/api/org/slf4j/Logger.html">org.slf4j.Logger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="https://www.slf4j.org/api/org/slf4j/LoggerFactory.html#getLogger(java.lang.Class)">org.slf4j.LoggerFactory.getLogger</a>(LogExample.<span class="keyword">class</span>);</code>
 				</dd><dt>
 					<code>@XSlf4j</code>
 				</dt><dd>
-					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="http://www.slf4j.org/api/org/slf4j/ext/XLogger.html">org.slf4j.ext.XLogger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="http://www.slf4j.org/apidocs/org/slf4j/ext/XLoggerFactory.html#getXLogger(java.lang.Class)">org.slf4j.ext.XLoggerFactory.getXLogger</a>(LogExample.<span class="keyword">class</span>);</code>
+					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="https://www.slf4j.org/api/org/slf4j/ext/XLogger.html">org.slf4j.ext.XLogger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="https://www.slf4j.org/api/org/slf4j/ext/XLoggerFactory.html#getXLogger(java.lang.Class)">org.slf4j.ext.XLoggerFactory.getXLogger</a>(LogExample.<span class="keyword">class</span>);</code>
 				</dd>
 			</dl>
 		</p><p>
@@ -70,13 +76,17 @@
 		</dt><dd>
 			Lombok will flag any usage of <code>@lombok.extern.apachecommons.CommonsLog</code> as a warning or error if configured.
 		</dd><dt>
-			<code>lombok.log.javaUtilLogging.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
+			<code>lombok.log.flogger.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
-			Lombok will flag any usage of <code>@lombok.extern.java.Log</code> as a warning or error if configured.
+			Lombok will flag any usage of <code>@lombok.extern.flogger.Flogger</code> as a warning or error if configured.
 		</dd><dt>
 			<code>lombok.log.jbosslog.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
 			Lombok will flag any usage of <code>@lombok.extern.jbosslog.JBossLog</code> as a warning or error if configured.
+		</dd><dt>
+			<code>lombok.log.javaUtilLogging.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
+		</dt><dd>
+			Lombok will flag any usage of <code>@lombok.extern.java.Log</code> as a warning or error if configured.
 		</dd><dt>
 			<code>lombok.log.log4j.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>

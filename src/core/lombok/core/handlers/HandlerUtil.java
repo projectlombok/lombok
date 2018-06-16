@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2017 The Project Lombok Authors.
+ * Copyright (C) 2013-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,6 +56,10 @@ import lombok.experimental.Wither;
  */
 public class HandlerUtil {
 	private HandlerUtil() {}
+	
+	public enum FieldAccess {
+		GETTER, PREFER_FIELD, ALWAYS_FIELD;
+	}
 	
 	public static int primeForHashcode() {
 		return 59;
@@ -171,11 +175,12 @@ public class HandlerUtil {
 	}
 	
 	@SuppressWarnings({"all", "unchecked", "deprecation"})
-	public static final List<Class<? extends java.lang.annotation.Annotation>> INVALID_ON_BUILDERS = Collections.unmodifiableList(
-			Arrays.<Class<? extends java.lang.annotation.Annotation>>asList(
-			Getter.class, Setter.class, Wither.class, ToString.class, EqualsAndHashCode.class, 
-			RequiredArgsConstructor.class, AllArgsConstructor.class, NoArgsConstructor.class, 
-			Data.class, Value.class, lombok.experimental.Value.class, FieldDefaults.class));
+	public static final List<String> INVALID_ON_BUILDERS = Collections.unmodifiableList(
+			Arrays.<String>asList(
+			Getter.class.getName(), Setter.class.getName(), Wither.class.getName(),
+			ToString.class.getName(), EqualsAndHashCode.class.getName(), 
+			RequiredArgsConstructor.class.getName(), AllArgsConstructor.class.getName(), NoArgsConstructor.class.getName(), 
+			Data.class.getName(), Value.class.getName(), "lombok.experimental.Value", FieldDefaults.class.getName()));
 	
 	/**
 	 * Given the name of a field, return the 'base name' of that field. For example, {@code fFoobar} becomes {@code foobar} if {@code f} is in the prefix list.
@@ -439,5 +444,17 @@ public class HandlerUtil {
 					suffix.subSequence(1, suffix.length()));
 		}
 		return String.format("%s%s", prefix, suffix);
+	}
+	
+	public static String camelCaseToConstant(String fieldName) {
+		if (fieldName == null || fieldName.isEmpty()) return "";
+		StringBuilder b = new StringBuilder();
+		b.append(Character.toUpperCase(fieldName.charAt(0)));
+		for (int i = 1; i < fieldName.length(); i++) {
+			char c = fieldName.charAt(i);
+			if (Character.isUpperCase(c)) b.append('_');
+			b.append(Character.toUpperCase(c));
+		}
+		return b.toString();
 	}
 }

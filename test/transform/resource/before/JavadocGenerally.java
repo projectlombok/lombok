@@ -11,6 +11,9 @@ package testPackage;
 class JavadocGenerally {
 	/**
 	 * Doc on field
+	 * <pre>
+	 * 	// code
+	 * </pre>
 	 */
 	private int someField;
 

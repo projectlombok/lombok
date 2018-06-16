@@ -1,9 +1,34 @@
 Lombok Changelog
 ----------------
 
-### v1.16.19 "Edgy Guinea Pig"
-* v1.16.18 is the latest stable release of Project Lombok.
-* PLATFORM: Possible support for jdk9 in the new IntelliJ, Netbeans and for Gradle.
+### v1.18.1 "Edgy Guinea Pig"
+* FEATURE: You can now make builders for type hierarchies, using the new (experimental) `@SuperBuilder` annotation. Thanks for the contribution, Jan Rieke. [`@SuperBuilder` documentation](https://projectlombok.org/features/experimental/SuperBuilder)
+
+### v1.18.0 (June 5th, 2018)
+* BREAKING CHANGE: The in 1.16.22 introduced configuration key `lombok.noArgsConstructor.extraPrivate` is now `false` by default. [Issue #1708](https://github.com/rzwitserloot/lombok/issues/1708)
+* BUGFIX: Do not generate a private no-args constructor if that breaks the code. [Issue #1703](https://github.com/rzwitserloot/lombok/issues/1703), [Issue #1704](https://github.com/rzwitserloot/lombok/issues/1704), [Issue #1712](https://github.com/rzwitserloot/lombok/issues/1712)
+* BUGFIX: Using boolean parameters in lombok annotations would fail. [Issue #1709](https://github.com/rzwitserloot/lombok/issues/1709)
+* BUGFIX: Delombok would give an error message. [Issue #1705](https://github.com/rzwitserloot/lombok/issues/1705)
+* BUGFIX: Eclipse java10 var support didn't work if lombok was installed in your eclipse. [Issue #1676](https://github.com/rzwitserloot/lombok/issues/1676)
+* FEATURE: Google's [Flogger (a.k.a. FluentLogger)](https://google.github.io/flogger/) is now available via `@Flogger`. [Issue #1697](https://github.com/rzwitserloot/lombok/issues/1697)
+* FEATURE: `@FieldNameConstants` has been extended to support prefixes and suffixes. By default, the generated constants are prefixed with `FIELD_`. [Docs on @FieldNameConstants](https://projectlombok.org/features/experimental/FieldNameConstants).
+
+### v1.16.22 "Envious Ferret" (May 29th, 2018)
+* FEATURE: Private no-args constructor for `@Data` and `@Value` to enable deserialization frameworks (like Jackson) to operate out-of-the-box. Use `lombok.noArgsConstructor.extraPrivate = false` to disable this behavior.
+* FEATURE: Methods can now be marked for inclusion in `toString`, `equals`, and `hashCode` generation. There is a new mechanism to mark which fields (and now, methods) are to be included or excluded for the generation of these methods: mark the relevant member with for example `@ToString.Include` or `@EqualsAndHashCode.Exclude`. [ToString documentation](https://projectlombok.org/features/ToString) [EqualsAndHashCode documentation](https://projectlombok.org/features/EqualsAndHashCode)
+* FEATURE: `@Getter` and `@Setter` also allow `onMethod` and `onParam` when put on a type. [Issue #1653](https://github.com/rzwitserloot/lombok/issues/1653) 
+* FEATURE: `@FieldNameConstants` is a new feature that generates string constants for your field names. [Docs on @FieldNameConstants](https://projectlombok.org/features/experimental/FieldNameConstants).
+* PLATFORM: Lombok can be compiled on JDK10, and should run on JDK10. [Issue #1693](https://github.com/rzwitserloot/lombok/issues/1693)
+* PLATFORM: lombok now counts as an _incremental annotation processor_ for gradle. Should speed up your gradle builds considerably! [Issue #1580](https://github.com/rzwitserloot/lombok/issues/1580)
+* PLATFORM: Fix for using lombok together with JDK9+'s new `module-info.java` feature. [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
+* BUGFIX: Solved some issues in eclipse that resulted in error 'A save participant caused problems'. [Issue #879](https://github.com/rzwitserloot/lombok/issues/879)
+* BUGFIX: Netbeans on jdk9. [Issue #1617](https://github.com/rzwitserloot/lombok/issues/1617)
+* BUGFIX: Netbeans < 9. [Issue #1555](https://github.com/rzwitserloot/lombok/issues/1555)
+* PROMOTION: `var` has been promoted from experimental to the main package with no changes. The 'old' experimental one is still around but is deprecated, and is an alias for the new main package one. [var documentation](https://projectlombok.org/features/var.html).
+* OLD-CRUFT: `lombok.experimental.Builder` and `lombok.experimental.Value` are deprecated remnants of when these features were still in experimental. They are now removed entirely. If your project is dependent on an older version of lombok which still has those; fret not, lombok still processes these annotations. It just no longer includes them in the jar.
+
+### v1.16.20 (January 9th, 2018)
+* PLATFORM: Better support for jdk9 in the new IntelliJ, Netbeans and for Gradle.
 * BREAKING CHANGE: _lombok config_ key `lombok.addJavaxGeneratedAnnotation` now defaults to `false` instead of true. Oracle broke this annotation with the release of JDK9, necessitating this breaking change.
 * BREAKING CHANGE: _lombok config_ key `lombok.anyConstructor.suppressConstructorProperties` is now deprecated and defaults to `true`, that is, by default lombok no longer automatically generates `@ConstructorProperties` annotations. New config key `lombok.anyConstructor.addConstructorProperties` now exists; set it to `true` if you want the old behavior. Oracle more or less broke this annotation with the release of JDK9, necessitating this breaking change.
 * DEVELOPMENT: Compiling lombok on JDK1.9 is now possible.
@@ -14,7 +39,7 @@ Lombok Changelog
 * INSTALLER: By default, the lombok installer now inserts an absolute path in `eclipse.ini` and friends, instead of a relative path. If you want the old behavior, you can use `java -jar -Dlombok.installer.fullpath=false lombok.jar`.
 
 ### v1.16.18 (July 3rd, 2017)
-* PLATFORM: JDK9 support much improved since v1.16.6; [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
+* PLATFORM: JDK9 support much improved since v1.16.16; [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
 * BUGFIX: Lombok now works with [Bazel](https://bazel.build/) and [Error Prone](https://error-prone.info/). [Issue #1290](https://github.com/rzwitserloot/lombok/issues/1290)
 * FEATURE: Lombok has a new [website](https://projectlombok.org/)! A few very minor changes to the code to be more consistent with it have been added, mostly to the javadoc.
 

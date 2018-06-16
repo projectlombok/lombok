@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2015 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,8 @@ import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVisitor;
 
+import lombok.core.ClassLiteral;
+import lombok.core.FieldSelect;
 import lombok.javac.JavacTreeMaker.TreeTag;
 import lombok.javac.JavacTreeMaker.TypeTag;
 
@@ -63,8 +65,8 @@ public class Javac {
 	/** Matches any of the 8 primitive names, such as {@code boolean}. */
 	private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern.compile("^(boolean|byte|short|int|long|float|double|char)$");
 	
-	private static final Pattern VERSION_PARSER = Pattern.compile("^(\\d{1,6})\\.(\\d{1,6}).*$");
-	private static final Pattern SOURCE_PARSER = Pattern.compile("^JDK(\\d{1,6})_(\\d{1,6}).*$");
+	private static final Pattern VERSION_PARSER = Pattern.compile("^(\\d{1,6})\\.?(\\d{1,6})?.*$");
+	private static final Pattern SOURCE_PARSER = Pattern.compile("^JDK(\\d{1,6})_?(\\d{1,6})?.*$");
 	
 	private static final AtomicInteger compilerVersion = new AtomicInteger(-1);
 	
@@ -79,11 +81,11 @@ public class Javac {
 			Matcher m = VERSION_PARSER.matcher(JavaCompiler.version());
 			if (m.matches()) {
 				int major = Integer.parseInt(m.group(1));
-				int minor = Integer.parseInt(m.group(2));
 				if (major == 1) {
-					compilerVersion.set(minor);
-					return minor;
+					int minor = Integer.parseInt(m.group(2));
+					return setVersion(minor);
 				}
+				if (major >= 9) return setVersion(major);
 			}
 		}
 		
@@ -92,16 +94,19 @@ public class Javac {
 			Matcher m = SOURCE_PARSER.matcher(name);
 			if (m.matches()) {
 				int major = Integer.parseInt(m.group(1));
-				int minor = Integer.parseInt(m.group(2));
 				if (major == 1) {
-					compilerVersion.set(minor);
-					return minor;
+					int minor = Integer.parseInt(m.group(2));
+					return setVersion(minor);
 				}
+				if (major >= 9) return setVersion(major);
 			}
 		}
-		
-		compilerVersion.set(6);
-		return 6;
+		return setVersion(6);
+	}
+	
+	private static int setVersion(int version) {
+		compilerVersion.set(version);
+		return version;
 	}
 	
 	private static final Class<?> DOCCOMMENTTABLE_CLASS;
@@ -140,16 +145,17 @@ public class Javac {
 				return ((Number) lit.value).intValue() == 0 ? false : true;
 			}
 			return lit.value;
-		} else if (expr instanceof JCIdent || expr instanceof JCFieldAccess) {
+		}
+		
+		if (expr instanceof JCIdent || expr instanceof JCFieldAccess) {
 			String x = expr.toString();
-			if (x.endsWith(".class")) x = x.substring(0, x.length() - 6);
-			else {
-				int idx = x.lastIndexOf('.');
-				if (idx > -1) x = x.substring(idx + 1);
-			}
-			return x;
-		} else
-			return null;
+			if (x.endsWith(".class")) return new ClassLiteral(x.substring(0, x.length() - 6));
+			int idx = x.lastIndexOf('.');
+			if (idx > -1) x = x.substring(idx + 1);
+			return new FieldSelect(x);
+		}
+		
+		return null;
 	}
 	
 	public static final TypeTag CTC_BOOLEAN = typeTag("BOOLEAN");

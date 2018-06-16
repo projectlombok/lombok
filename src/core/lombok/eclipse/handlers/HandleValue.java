@@ -47,6 +47,12 @@ import org.mangosdk.spi.ProviderFor;
 @ProviderFor(EclipseAnnotationHandler.class)
 @HandlerPriority(-512) //-2^9; to ensure @EqualsAndHashCode and such pick up on this handler making the class final and messing with the fields' access levels, run earlier.
 public class HandleValue extends EclipseAnnotationHandler<Value> {
+	private HandleFieldDefaults handleFieldDefaults = new HandleFieldDefaults();
+	private HandleGetter handleGetter = new HandleGetter();
+	private HandleEqualsAndHashCode handleEqualsAndHashCode = new HandleEqualsAndHashCode();
+	private HandleToString handleToString = new HandleToString();
+	private HandleConstructor handleConstructor = new HandleConstructor();
+	
 	public void handle(AnnotationValues<Value> annotation, Annotation ast, EclipseNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.VALUE_FLAG_USAGE, "@Value");
 		
@@ -72,7 +78,7 @@ public class HandleValue extends EclipseAnnotationHandler<Value> {
 			}
 		}
 		
-		new HandleFieldDefaults().generateFieldDefaultsForType(typeNode, annotationNode, AccessLevel.PRIVATE, true, true);
+		handleFieldDefaults.generateFieldDefaultsForType(typeNode, annotationNode, AccessLevel.PRIVATE, true, true);
 		
 		//Careful: Generate the public static constructor (if there is one) LAST, so that any attempt to
 		//'find callers' on the annotation node will find callers of the constructor, which is by far the
@@ -80,10 +86,11 @@ public class HandleValue extends EclipseAnnotationHandler<Value> {
 		//for whatever reason, though you can find callers of that one by focusing on the class name itself
 		//and hitting 'find callers'.
 		
-		new HandleGetter().generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
-		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
-		new HandleToString().generateToStringForType(typeNode, annotationNode);
-		new HandleConstructor().generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, ann.staticConstructor(), SkipIfConstructorExists.YES,
+		handleGetter.generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true, Collections.<Annotation>emptyList());
+		handleEqualsAndHashCode.generateEqualsAndHashCodeForType(typeNode, annotationNode);
+		handleToString.generateToStringForType(typeNode, annotationNode);
+		handleConstructor.generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, ann.staticConstructor(), SkipIfConstructorExists.YES,
 				Collections.<Annotation>emptyList(), annotationNode);
+		handleConstructor.generateExtraNoArgsConstructor(typeNode, annotationNode);
 	}
 }

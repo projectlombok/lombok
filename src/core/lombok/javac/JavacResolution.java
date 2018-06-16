@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2015 The Project Lombok Authors.
+ * Copyright (C) 2011-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@ import java.util.ArrayDeque;
 import java.util.Map;
 
 import javax.lang.model.type.TypeKind;
+import javax.tools.JavaFileObject;
 
 import lombok.Lombok;
 import lombok.core.debug.AssertionLogger;
@@ -59,6 +60,7 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
+import com.sun.tools.javac.util.Log;
 
 public class JavacResolution {
 	private final Attr attr;
@@ -142,9 +144,14 @@ public class JavacResolution {
 			
 			TreeMirrorMaker mirrorMaker = new TreeMirrorMaker(node.getTreeMaker(), node.getContext());
 			JCTree copy = mirrorMaker.copy(finder.copyAt());
-			
-			memberEnterAndAttribute(copy, finder.get(), node.getContext());
-			return mirrorMaker.getOriginalToCopyMap();
+			Log log = Log.instance(node.getContext());
+			JavaFileObject oldFileObject = log.useSource(((JCCompilationUnit) node.top().get()).getSourceFile());
+			try {
+				memberEnterAndAttribute(copy, finder.get(), node.getContext());
+				return mirrorMaker.getOriginalToCopyMap();
+			} finally {
+				log.useSource(oldFileObject);
+			}
 		} finally {
 			messageSuppressor.enableLoggers();
 		}
@@ -222,6 +229,11 @@ public class JavacResolution {
 	}
 	
 	private void attrib(JCTree tree, Env<AttrContext> env) {
+		if (env.enclClass.type == null) try {
+			env.enclClass.type = Type.noType;
+		} catch (Throwable ignore) {
+			// This addresses issue #1553 which involves JDK9; if it doesn't exist, we probably don't need to set it.
+		}
 		if (tree instanceof JCBlock) attr.attribStat(tree, env);
 		else if (tree instanceof JCMethodDecl) attr.attribStat(((JCMethodDecl) tree).body, env);
 		else if (tree instanceof JCVariableDecl) attr.attribStat(tree, env);

@@ -21,6 +21,7 @@
  */
 package lombok.core;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -275,4 +276,15 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	public boolean isStructurallySignificant() {
 		return isStructurallySignificant;
 	}
+	
+	public abstract boolean hasAnnotation(Class<? extends Annotation> type);
+	public abstract <Z extends Annotation> AnnotationValues<Z> findAnnotation(Class<Z> type);
+	
+	public abstract boolean isStatic();
+	public abstract boolean isTransient();
+	public abstract boolean isEnumMember();
+	
+	public abstract int countMethodParameters();
+	
+	public abstract int getStartPos();
 }

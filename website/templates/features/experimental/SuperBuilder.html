@@ -1,0 +1,68 @@
+<#import "../_features.html" as f>
+
+<@f.scaffold title="@SuperBuilder" logline="Bob now knows his ancestors: Builders with fields from superclasses, too. ">
+	<@f.history>
+		<p>
+			<code>@SuperBuilder</code> was introduced as experimental feature in lombok v1.18.2.
+		</p>
+	</@f.history>
+	
+	<@f.overview>
+		<p>
+			The <code>@SuperBuilder</code> annotation produces complex builder APIs for your classes.
+			In contrast to <a href="/features/Builder"><code>@Builder</code></a>, <code>@SuperBuilder</code> also works with fields from superclasses.
+			However, it only works for types, and cannot be customized by providing a partial builder implementation.
+			Most importantly, it requires that <em>all superclasses</em> also have the <code>@SuperBuilder</code> annotation.
+		</p><p>
+			<code>@SuperBuilder</code> lets you automatically produce the code required to have your class be instantiable with code such as:<br />
+			<code>Person.builder().name("Adam Savage").city("San Francisco").job("Mythbusters").job("Unchained Reaction").build();</code>
+		</p><p>
+			<code>@SuperBuilder</code> can generate so-called 'singular' methods for collection parameters/fields. For details, see <a href="/features/Builder#singular">the <code>@Singular</code> documentation in <code>@Builder</code></a>.
+		</p><p>
+			<code>@SuperBuilder</code> generates a private constructor on the class that takes a builder instance as a parameter. This constructor sets the fields of the new instance to the values from the builder.
+		</p><p>
+			<code>@SuperBuilder</code> is not compatible with <code>@Builder</code>.
+		</p><p>
+			To ensure type-safety, <code>@SuperBuilder</code> generates two inner builder classes for each annotated class, one abstract and one concrete class named <code><em>Foobar</em>Builder</code> and <code><em>Foobar</em>BuilderImpl</code> (where <em>Foobar</em> is the name of the annotated class).
+		</p><p>
+			The configurable aspects of builder are:
+			<ul>
+				<li>
+					The <em>build()</em> method's name (default: <code>"build"</code>)
+				</li><li>
+					The <em>builder()</em> method's name (default: <code>"builder"</code>)
+				</li>
+			</ul>
+			Example usage where all options are changed from their defaults:<br />
+			<code>@SuperBuilder(buildMethodName = "execute", builderMethodName = "helloWorld")</code><br />
+		</p>
+	</@f.overview>
+	
+	<@f.confKeys>
+		<dt>
+			<code>lombok.superBuilder.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
+		</dt><dd>
+			Lombok will flag any usage of <code>@SuperBuilder</code> as a warning or error if configured.
+		</dd><dt>
+			<code>lombok.singular.useGuava</code> = [<code>true</code> | <code>false</code>] (default: false)
+		</dt><dd>
+			If <code>true</code>, lombok will use guava's <code>ImmutableXxx</code> builders and types to implement <code>java.util</code> collection interfaces, instead of creating implementations based on <code>Collections.unmodifiableXxx</code>. You must ensure that guava is actually available on the classpath and buildpath if you use this setting. Guava is used automatically if your field/parameter has one of the guava <code>ImmutableXxx</code> types.
+		</dd><dt>
+			<code>lombok.singular.auto</code> = [<code>true</code> | <code>false</code>] (default: true)
+		</dt><dd>
+			If <code>true</code> (which is the default), lombok automatically tries to singularize your identifier name by assuming that it is a common english plural. If <code>false</code>, you must always explicitly specify the singular name, and lombok will generate an error if you don't (useful if you write your code in a language other than english).
+		</dd>
+	</@f.confKeys>
+
+	<@f.smallPrint>
+		<p>
+			@Singular support for <code>java.util.NavigableMap/Set</code> only works if you are compiling with JDK1.8 or higher.
+		</p><p>
+			The sorted collections (java.util: <code>SortedSet</code>, <code>NavigableSet</code>, <code>SortedMap</code>, <code>NavigableMap</code> and guava: <code>ImmutableSortedSet</code>, <code>ImmutableSortedMap</code>) require that the type argument of the collection has natural order (implements <code>java.util.Comparable</code>). There is no way to pass an explicit <code>Comparator</code> to use in the builder.
+		</p><p>
+			An <code>ArrayList</code> is used to store added elements as call methods of a <code>@Singular</code> marked field, if the target collection is from the <code>java.util</code> package, <em>even if the collection is a set or map</em>. Because lombok ensures that generated collections are compacted, a new backing instance of a set or map must be constructed anyway, and storing the data as an <code>ArrayList</code> during the build process is more efficient that storing it as a map or set. This behaviour is not externally visible, an implementation detail of the current implementation of the <code>java.util</code> recipes for <code>@Singular</code>.
+		</p><p>
+			The generated builder code heavily relies on generics to avoid class casting when using the builder.
+		</p>
+	</@f.smallPrint>
+</@f.scaffold>

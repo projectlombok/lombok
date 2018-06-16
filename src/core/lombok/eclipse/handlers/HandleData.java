@@ -43,6 +43,12 @@ import org.mangosdk.spi.ProviderFor;
  */
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleData extends EclipseAnnotationHandler<Data> {
+	private HandleGetter handleGetter = new HandleGetter();
+	private HandleSetter handleSetter = new HandleSetter();
+	private HandleEqualsAndHashCode handleEqualsAndHashCode = new HandleEqualsAndHashCode();
+	private HandleToString handleToString = new HandleToString();
+	private HandleConstructor handleConstructor = new HandleConstructor();
+	
 	@Override public void handle(AnnotationValues<Data> annotation, Annotation ast, EclipseNode annotationNode) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.DATA_FLAG_USAGE, "@Data");
 		
@@ -66,12 +72,13 @@ public class HandleData extends EclipseAnnotationHandler<Data> {
 		//for whatever reason, though you can find callers of that one by focusing on the class name itself
 		//and hitting 'find callers'.
 		
-		new HandleGetter().generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
-		new HandleSetter().generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true);
-		new HandleEqualsAndHashCode().generateEqualsAndHashCodeForType(typeNode, annotationNode);
-		new HandleToString().generateToStringForType(typeNode, annotationNode);
-		new HandleConstructor().generateRequiredArgsConstructor(
+		handleGetter.generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true, Collections.<Annotation>emptyList());
+		handleSetter.generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true, Collections.<Annotation>emptyList(), Collections.<Annotation>emptyList());
+		handleEqualsAndHashCode.generateEqualsAndHashCodeForType(typeNode, annotationNode);
+		handleToString.generateToStringForType(typeNode, annotationNode);
+		handleConstructor.generateRequiredArgsConstructor(
 				typeNode, AccessLevel.PUBLIC, ann.staticConstructor(), SkipIfConstructorExists.YES,
 				Collections.<Annotation>emptyList(), annotationNode);
+		handleConstructor.generateExtraNoArgsConstructor(typeNode, annotationNode);
 	}
 }

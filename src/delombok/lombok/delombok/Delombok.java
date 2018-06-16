@@ -86,6 +86,7 @@ public class Delombok {
 	private PrintStream feedback = System.err;
 	private boolean verbose;
 	private boolean noCopy;
+	private boolean onlyChanged;
 	private boolean force = false;
 	private String classpath, sourcepath, bootclasspath;
 	private LinkedHashMap<File, File> fileToBase = new LinkedHashMap<File, File>();
@@ -144,6 +145,9 @@ public class Delombok {
 		@Description("Lombok will only delombok source files. Without this option, non-java, non-class files are copied to the target directory.")
 		@Shorthand("n")
 		private boolean nocopy;
+		
+		@Description("Output only changed files (implies -n)")
+		private boolean onlyChanged;
 		
 		private boolean help;
 	}
@@ -238,7 +242,8 @@ public class Delombok {
 		}
 		
 		if (args.verbose) delombok.setVerbose(true);
-		if (args.nocopy) delombok.setNoCopy(true);
+		if (args.nocopy || args.onlyChanged) delombok.setNoCopy(true);
+		if (args.onlyChanged) delombok.setOnlyChanged(true);
 		if (args.print) {
 			delombok.setOutputToStandardOut();
 		} else {
@@ -362,6 +367,10 @@ public class Delombok {
 	
 	public void setNoCopy(boolean noCopy) {
 		this.noCopy = noCopy;
+	}
+	
+	public void setOnlyChanged(boolean onlyChanged) {
+		this.onlyChanged = onlyChanged;
 	}
 	
 	public void setOutput(File dir) {
@@ -585,6 +594,10 @@ public class Delombok {
 		FormatPreferences fps = new FormatPreferences(formatPrefs);
 		for (JCCompilationUnit unit : roots) {
 			DelombokResult result = new DelombokResult(catcher.getComments(unit), unit, force || options.isChanged(unit), fps);
+			if (onlyChanged && !result.isChanged() && !options.isChanged(unit)) {
+				if (verbose) feedback.printf("File: %s [%s]\n", unit.sourcefile.getName(), "unchanged (skipped)");
+				continue;
+			}
 			if (verbose) feedback.printf("File: %s [%s%s]\n", unit.sourcefile.getName(), result.isChanged() ? "delomboked" : "unchanged", force && !options.isChanged(unit) ? " (forced)" : "");
 			Writer rawWriter;
 			if (presetWriter != null) rawWriter = createUnicodeEscapeWriter(presetWriter);

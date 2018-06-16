@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The Project Lombok Authors.
+ * Copyright (C) 2010-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,7 @@ import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
+import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
@@ -66,8 +67,8 @@ public class PatchValEclipse {
 		ForeachStatement foreachDecl = (ForeachStatement) astStack[astPtr];
 		ASTNode init = foreachDecl.collection;
 		if (init == null) return;
-		boolean val = couldBeVal(foreachDecl.elementVariable.type);
-		boolean var = couldBeVar(foreachDecl.elementVariable.type);
+		boolean val = couldBeVal(parser == null ? null : parser.compilationUnit == null ? null : parser.compilationUnit.imports, foreachDecl.elementVariable.type);
+		boolean var = couldBeVar(parser == null ? null : parser.compilationUnit == null ? null : parser.compilationUnit.imports, foreachDecl.elementVariable.type);
 		if (foreachDecl.elementVariable == null || !(val || var)) return;
 		
 		try {
@@ -91,8 +92,8 @@ public class PatchValEclipse {
 		if (!(variableDecl instanceof LocalDeclaration)) return;
 		ASTNode init = variableDecl.initialization;
 		if (init == null) return;
-		boolean val = couldBeVal(variableDecl.type);
-		boolean var = couldBeVar(variableDecl.type);
+		boolean val = couldBeVal(parser == null ? null : parser.compilationUnit == null ? null : parser.compilationUnit.imports, variableDecl.type);
+		boolean var = couldBeVar(parser == null ? null : parser.compilationUnit == null ? null : parser.compilationUnit.imports, variableDecl.type);
 		if (!(val || var)) return;
 		
 		try {
@@ -102,8 +103,8 @@ public class PatchValEclipse {
 		}
 	}
 	
-	private static boolean couldBeVar(TypeReference type) {
-		return PatchVal.couldBe("lombok.experimental.var", type);
+	private static boolean couldBeVar(ImportReference[] imports, TypeReference type) {
+		return PatchVal.couldBe(imports, "lombok.experimental.var", type) || PatchVal.couldBe(imports, "lombok.var", type);
 	}
 	
 	public static void addFinalAndValAnnotationToSingleVariableDeclaration(Object converter, SingleVariableDeclaration out, LocalDeclaration in) {
@@ -124,7 +125,7 @@ public class PatchValEclipse {
 		Annotation valAnnotation = null;
 		
 		for (Annotation ann : in.annotations) {
-			if (couldBeVal(ann.type)) {
+			if (couldBeVal(null, ann.type)) {
 				found = true;
 				valAnnotation = ann;
 				break;
@@ -176,8 +177,8 @@ public class PatchValEclipse {
 		}
 	}
 	
-	private static boolean couldBeVal(TypeReference type) {
-		return PatchVal.couldBe("lombok.val", type);
+	private static boolean couldBeVal(ImportReference[] imports, TypeReference type) {
+		return PatchVal.couldBe(imports, "lombok.val", type);
 	}
 	
 	public static Modifier createModifier(AST ast, ModifierKeyword keyword, int start, int end) {

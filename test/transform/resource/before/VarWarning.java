@@ -1,6 +1,5 @@
 //CONF: lombok.var.flagUsage = WARNING
-//skip compare contents
-import lombok.experimental.var;
+import lombok.var;
 
 public class VarWarning {
 	public void isOkay() {

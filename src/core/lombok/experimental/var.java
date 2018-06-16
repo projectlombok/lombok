@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2013 The Project Lombok Authors.
+ * Copyright (C) 2010-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,9 @@ package lombok.experimental;
 
 /**
  * like val but not final
+ * 
+ * @deprecated {@code var} has been promoted to the main package; use {@link lombok.var} instead.
  */
+@Deprecated
 public @interface var {
 }

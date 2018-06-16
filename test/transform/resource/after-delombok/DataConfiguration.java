@@ -5,6 +5,10 @@ class DataConfiguration {
 		this.x = x;
 	}
 	@java.lang.SuppressWarnings("all")
+	private DataConfiguration() {
+		this.x = 0;
+	}
+	@java.lang.SuppressWarnings("all")
 	public int getX() {
 		return this.x;
 	}

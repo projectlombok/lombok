@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2017 The Project Lombok Authors.
+ * Copyright (C) 2013-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,8 +55,8 @@ import java.lang.annotation.Target;
  * 
  * <pre>
  * &#064;Builder
- * class Example {
- * 	private int foo;
+ * class Example&lt;T&gt; {
+ * 	private T foo;
  * 	private final String bar;
  * }
  * </pre>
@@ -103,6 +103,8 @@ import java.lang.annotation.Target;
  * 	}
  * }
  * </pre>
+ * 
+ * @see Singular
  */
 @Target({TYPE, METHOD, CONSTRUCTOR})
 @Retention(SOURCE)

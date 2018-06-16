@@ -23,6 +23,7 @@ package lombok.eclipse.agent;
 
 import static lombok.patcher.scripts.ScriptBuilder.*;
 
+import java.io.File;
 import java.lang.instrument.Instrumentation;
 import java.net.URLClassLoader;
 import java.security.ProtectionDomain;
@@ -86,7 +87,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 			}
 		});
 		
-		final boolean forceBaseResourceNames = !"".equals(System.getProperty("shadow.override.lombok", ""));
+		final boolean forceBaseResourceNames = shouldForceBaseResourceNames();
 		sm.setTransplantMapper(new TransplantMapper() {
 			public String mapResourceName(int classFileFormatVersion, String resourceName) {
 				if (classFileFormatVersion < 50 || forceBaseResourceNames) return resourceName;
@@ -105,7 +106,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 			patchHideGeneratedNodes(sm);
 			patchPostCompileHookEclipse(sm);
 			patchFixSourceTypeConverter(sm);
-			patchDisableLombokForCodeFormatterAndCleanup(sm);
+			patchDisableLombokForCodeCleanup(sm);
 			patchListRewriteHandleGeneratedMethods(sm);
 			patchSyntaxAndOccurrencesHighlighting(sm);
 			patchSortMembersOperation(sm);
@@ -123,6 +124,15 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		patchRenameField(sm);
 		
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
+	}
+	
+	private static boolean shouldForceBaseResourceNames() {
+		String shadowOverride = System.getProperty("shadow.override.lombok", "");
+		if (shadowOverride == null || shadowOverride.length() == 0) return false;
+		for (String part : shadowOverride.split("\\s*" + (File.pathSeparatorChar == ';' ? ";" : ":") + "\\s*")) {
+			if (part.equalsIgnoreCase("lombok.jar")) return false;
+		}
+		return true;
 	}
 	
 	private static void patchRenameField(ScriptManager sm) {
@@ -214,13 +224,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.build());
 	}
 	
-	private static void patchDisableLombokForCodeFormatterAndCleanup(ScriptManager sm) {
-		sm.addScript(ScriptBuilder.setSymbolDuringMethodCall()
-				.target(new MethodTarget("org.eclipse.jdt.internal.formatter.DefaultCodeFormatter", "formatCompilationUnit"))
-				.callToWrap(new Hook("org.eclipse.jdt.internal.core.util.CodeSnippetParsingUtil", "parseCompilationUnit", "org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration", "char[]", "java.util.Map", "boolean"))
-				.symbol("lombok.disable")
-				.build());
-		
+	private static void patchDisableLombokForCodeCleanup(ScriptManager sm) {
 		sm.addScript(ScriptBuilder.exitEarly()
 			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.DoStatement"))
 			.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.ControlStatementsFix$ControlStatementFinder", "visit", "boolean", "org.eclipse.jdt.core.dom.EnhancedForStatement"))
@@ -339,18 +343,19 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	}
 	
 	private static void patchFormatters(ScriptManager sm) {
+	    // before Eclipse Mars
 		sm.addScript(ScriptBuilder.setSymbolDuringMethodCall()
-				.target(new MethodTarget("org.eclipse.jdt.internal.ui.text.java.JavaFormattingStrategy", "format", "void"))
-				.callToWrap(new Hook("org.eclipse.jdt.internal.corext.util.CodeFormatterUtil", "reformat", "org.eclipse.text.edits.TextEdit",
-						"int", "java.lang.String", "int", "int", "int", "java.lang.String", "java.util.Map"))
-				.symbol("lombok.disable").build());
+		        .target(new MethodTarget("org.eclipse.jdt.internal.formatter.DefaultCodeFormatter", "formatCompilationUnit"))
+		        .callToWrap(new Hook("org.eclipse.jdt.internal.core.util.CodeSnippetParsingUtil", "parseCompilationUnit", "org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration", "char[]", "java.util.Map", "boolean"))
+		        .symbol("lombok.disable")
+		        .build());
 		
+		// Eclipse Mars and beyond
 		sm.addScript(ScriptBuilder.setSymbolDuringMethodCall()
-				.target(new MethodTarget("org.eclipse.jdt.internal.corext.fix.CodeFormatFix", "createCleanUp", "org.eclipse.jdt.ui.cleanup.ICleanUpFix",
-						"org.eclipse.jdt.core.ICompilationUnit", "org.eclipse.jface.text.IRegion[]", "boolean", "boolean", "boolean", "boolean"))
-				.callToWrap(new Hook("org.eclipse.jdt.internal.corext.util.CodeFormatterUtil", "reformat", "org.eclipse.text.edits.TextEdit",
-						"int", "java.lang.String", "int", "java.lang.String", "java.util.Map"))
-				.symbol("lombok.disable").build());
+		        .target(new MethodTarget("org.eclipse.jdt.internal.formatter.DefaultCodeFormatter", "parseSourceCode"))
+		        .callToWrap(new Hook("org.eclipse.jdt.core.dom.ASTParser", "createAST", "org.eclipse.jdt.core.dom.ASTNode", "org.eclipse.core.runtime.IProgressMonitor"))
+		        .symbol("lombok.disable")
+		        .build());
 	}
 	
 	private static void patchRefactorScripts(ScriptManager sm) {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@ import static lombok.core.Augments.ClassLoader_lombokAlreadyAddedTo;
 import java.io.File;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
@@ -40,6 +41,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 
@@ -47,6 +49,7 @@ import lombok.patcher.ClassRootFinder;
 
 @SupportedAnnotationTypes("*")
 public class AnnotationProcessor extends AbstractProcessor {
+
 	private static String trace(Throwable t) {
 		StringWriter w = new StringWriter();
 		t.printStackTrace(new PrintWriter(w, true));
@@ -62,6 +65,42 @@ public class AnnotationProcessor extends AbstractProcessor {
 	private final List<ProcessorDescriptor> registered = Arrays.asList(new JavacDescriptor(), new EcjDescriptor());
 	private final List<ProcessorDescriptor> active = new ArrayList<ProcessorDescriptor>();
 	private final List<String> delayedWarnings = new ArrayList<String>();
+
+	/**
+	 * This method is a simplified version of {@link lombok.javac.apt.LombokProcessor.getJavacProcessingEnvironment}
+	 * It simply returns the processing environment, but in case of gradle incremental compilation,
+	 * the delegate ProcessingEnvironment of the gradle wrapper is returned.
+	 */
+	public static ProcessingEnvironment getJavacProcessingEnvironment(ProcessingEnvironment procEnv, List<String> delayedWarnings) {
+		ProcessingEnvironment javacProcEnv = tryRecursivelyObtainJavacProcessingEnvironment(procEnv);
+
+		if (javacProcEnv == null) {
+			delayedWarnings.add("Can't get the delegate of the gradle IncrementalProcessingEnvironment.");
+		}
+
+		return javacProcEnv;
+	}
+
+	private static ProcessingEnvironment tryRecursivelyObtainJavacProcessingEnvironment(ProcessingEnvironment procEnv) {
+		if (procEnv.getClass().getName().equals("com.sun.tools.javac.processing.JavacProcessingEnvironment")) {
+			return procEnv;
+		}
+
+		for (Class<?> procEnvClass = procEnv.getClass(); procEnvClass != null; procEnvClass = procEnvClass.getSuperclass()) {
+			try {
+				Field field = procEnvClass.getDeclaredField("delegate");
+				field.setAccessible(true);
+				Object delegate = field.get(procEnv);
+
+				return tryRecursivelyObtainJavacProcessingEnvironment((ProcessingEnvironment) delegate);
+			} catch (final Exception e) {
+				// no valid delegate, try superclass
+			}
+		}
+
+		return null;
+	}
+
 	
 	static class JavacDescriptor extends ProcessorDescriptor {
 		private Processor processor;
@@ -71,10 +110,12 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		
 		@Override boolean want(ProcessingEnvironment procEnv, List<String> delayedWarnings) {
-			if (!procEnv.getClass().getName().equals("com.sun.tools.javac.processing.JavacProcessingEnvironment")) return false;
-			
+			ProcessingEnvironment javacProcEnv = getJavacProcessingEnvironment(procEnv, delayedWarnings);
+
+			if (javacProcEnv == null) return false;
+
 			try {
-				ClassLoader classLoader = findAndPatchClassLoader(procEnv);
+				ClassLoader classLoader = findAndPatchClassLoader(javacProcEnv);
 				processor = (Processor) Class.forName("lombok.javac.apt.LombokProcessor", false, classLoader).newInstance();
 			} catch (Exception e) {
 				delayedWarnings.add("You found a bug in lombok; lombok.javac.apt.LombokProcessor is not available. Lombok will not run during this compilation: " + trace(e));
@@ -163,7 +204,21 @@ public class AnnotationProcessor extends AbstractProcessor {
 		
 		for (ProcessorDescriptor proc : active) proc.process(annotations, roundEnv);
 		
-		return false;
+		boolean onlyLombok = true;
+		boolean zeroElems = true;
+		for (TypeElement elem : annotations) {
+			zeroElems = false;
+			Name n = elem.getQualifiedName();
+			if (n.length() > 7 && n.subSequence(0, 7).toString().equals("lombok.")) continue;
+			onlyLombok = false;
+		}
+		
+		// Normally we rely on the claiming processor to claim away all lombok annotations.
+		// One of the many Java9 oversights is that this 'process' API has not been fixed to address the point that 'files I want to look at' and 'annotations I want to claim' must be one and the same,
+		// and yet in java9 you can no longer have 2 providers for the same service, thus, if you go by module path, lombok no longer loads the ClaimingProcessor.
+		// This doesn't do as good a job, but it'll have to do. The only way to go from here, I think, is either 2 modules, or use reflection hackery to add ClaimingProcessor during our init.
+		
+		return onlyLombok && !zeroElems;
 	}
 	
 	/**

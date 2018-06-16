@@ -27,6 +27,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import lombok.core.ClassLiteral;
+import lombok.core.FieldSelect;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -40,6 +42,7 @@ import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.TryStatement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.ast.UnaryExpression;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
@@ -161,7 +164,7 @@ public class Eclipse {
 	 */
 	public static Object calculateValue(Expression e) {
 		if (e instanceof Literal) {
-			((Literal)e).computeConstant();
+			((Literal) e).computeConstant();
 			switch (e.constant.typeID()) {
 			case TypeIds.T_int: return e.constant.intValue();
 			case TypeIds.T_byte: return e.constant.byteValue();
@@ -175,13 +178,24 @@ public class Eclipse {
 			default: return null;
 			}
 		} else if (e instanceof ClassLiteralAccess) {
-			return Eclipse.toQualifiedName(((ClassLiteralAccess)e).type.getTypeName());
+			return new ClassLiteral(Eclipse.toQualifiedName(((ClassLiteralAccess)e).type.getTypeName()));
 		} else if (e instanceof SingleNameReference) {
-			return new String(((SingleNameReference)e).token);
+			return new FieldSelect(new String(((SingleNameReference)e).token));
 		} else if (e instanceof QualifiedNameReference) {
 			String qName = Eclipse.toQualifiedName(((QualifiedNameReference)e).tokens);
 			int idx = qName.lastIndexOf('.');
-			return idx == -1 ? qName : qName.substring(idx+1);
+			return new FieldSelect(idx == -1 ? qName : qName.substring(idx+1));
+		} else if (e instanceof UnaryExpression) {
+			if ("-".equals(((UnaryExpression) e).operatorToString())) {
+				Object inner = calculateValue(((UnaryExpression) e).expression);
+				if (inner instanceof Integer) return - ((Integer) inner).intValue();
+				if (inner instanceof Byte) return - ((Byte) inner).byteValue();
+				if (inner instanceof Short) return - ((Short) inner).shortValue();
+				if (inner instanceof Long) return - ((Long) inner).longValue();
+				if (inner instanceof Float) return - ((Float) inner).floatValue();
+				if (inner instanceof Double) return - ((Double) inner).doubleValue();
+				return null;
+			}
 		}
 		
 		return null;
