@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2016 The Project Lombok Authors.
+ * Copyright (C) 2014-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -73,6 +72,7 @@ import java.util.zip.ZipInputStream;
  * 
  * If no overrides are present, the load order is as follows:
  * <li>First, if the resource is found in our own jar (trying ".SCL.<em>sclSuffix</em>" first for any resource request ending in ".class"), return that.
+ * <li>Next, check any jar files other than our own, loading them via this classloader, if they have a file <code>META-INF/ShadowClassLoader</code> that contains a line of text with <em>sclSuffix</em>.
  * <li>Next, ask the <code>parent</code> loader.
  * </ul>
  * 
@@ -117,9 +117,7 @@ class ShadowClassLoader extends ClassLoader {
 			if (!pe.endsWith("/")) pe = pe + "/";
 			this.parentExclusion.add(pe);
 		}
-		if (highlanders != null) for (String hl : highlanders) {
-			this.highlanders.add(hl);
-		}
+		if (highlanders != null) for (String hl : highlanders) this.highlanders.add(hl);
 		
 		if (selfBase != null) {
 			SELF_BASE = selfBase;
@@ -128,12 +126,7 @@ class ShadowClassLoader extends ClassLoader {
 			String sclClassUrl = ShadowClassLoader.class.getResource("ShadowClassLoader.class").toString();
 			if (!sclClassUrl.endsWith(SELF_NAME)) throw new InternalError("ShadowLoader can't find itself.");
 			SELF_BASE_LENGTH = sclClassUrl.length() - SELF_NAME.length();
-			String decoded;
-			try {
-				decoded = URLDecoder.decode(sclClassUrl.substring(0, SELF_BASE_LENGTH), "UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				throw new InternalError("UTF-8 not available");
-			}
+			String decoded = urlDecode(sclClassUrl.substring(0, SELF_BASE_LENGTH));
 			SELF_BASE = decoded;
 		}
 		
@@ -151,11 +144,11 @@ class ShadowClassLoader extends ClassLoader {
 			}
 		}
 	}
-
+	
 	private final Map<String, Object> mapJarPathToTracker = new HashMap<String, Object>();
 	private static final Map<Object, String> mapTrackerToJarPath = new WeakHashMap<Object, String>();
 	private static final Map<Object, Set<String>> mapTrackerToJarContents = new WeakHashMap<Object, Set<String>>();
-
+	
 	/**
 	 * This cache ensures that any given jar file is only opened once in order to determine the full contents of it.
 	 * We use 'trackers' to make sure that the bulk of the memory taken up by this cache (the list of strings representing the content of a jar file)
@@ -324,13 +317,9 @@ class ShadowClassLoader extends ClassLoader {
 	
 	private static String urlDecode(String in) {
 		try {
-			return URLDecoder.decode(in, Charset.defaultCharset().name());
+			return URLDecoder.decode(in, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			try {
-				return URLDecoder.decode(in, "UTF-8");
-			} catch (UnsupportedEncodingException e1) {
-				return in;
-			}
+			throw new InternalError("UTF-8 not supported");
 		}
 	}
 	
