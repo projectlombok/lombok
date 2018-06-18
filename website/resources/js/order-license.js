@@ -15,7 +15,7 @@
 		$("#locationType_eu").toggle(locationType === "eu");
 		$("#locationType_other").toggle(locationType === "other");
 		$("#paymentMethod_iban").toggle(locationType === "eu");
-		if ($("#paymentMethod_iban input").is(":checked") && locationType !== "eu") $("#paymentMethod_payoneer input").prop("checked", true);
+		if ($("#paymentMethod_iban input").is(":checked") && locationType !== "eu") $("#paymentMethod_stripe input").prop("checked", true);
 		if ($("#paymentMethod_intl input").is(":checked") && locationType === "eu") $("#paymentMethod_iban input").prop("checked", true);
 		$("#paymentMethod_intl").toggle(locationType !== "eu");
 	}
