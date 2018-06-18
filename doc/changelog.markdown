@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.1 "Edgy Guinea Pig"
+* BUGFIX: Equals and hashCode again exclude transient fields by default. [Issue #1724](https://github.com/rzwitserloot/lombok/issues/1724)
 * FEATURE: You can now make builders for type hierarchies, using the new (experimental) `@SuperBuilder` annotation. Thanks for the contribution, Jan Rieke. [`@SuperBuilder` documentation](https://projectlombok.org/features/experimental/SuperBuilder)
 
 ### v1.18.0 (June 5th, 2018)
