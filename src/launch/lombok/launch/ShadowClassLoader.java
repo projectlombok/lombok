@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 The Project Lombok Authors.
+ * Copyright (C) 2014-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,9 +21,13 @@
  */
 package lombok.launch;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -36,14 +40,16 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Vector;
 import java.util.WeakHashMap;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * The shadow classloader serves to completely hide almost all classes in a given jar file by using a different file ending.
@@ -66,6 +72,7 @@ import java.util.jar.JarFile;
  * 
  * If no overrides are present, the load order is as follows:
  * <li>First, if the resource is found in our own jar (trying ".SCL.<em>sclSuffix</em>" first for any resource request ending in ".class"), return that.
+ * <li>Next, check any jar files other than our own, loading them via this classloader, if they have a file <code>META-INF/ShadowClassLoader</code> that contains a line of text with <em>sclSuffix</em>.
  * <li>Next, ask the <code>parent</code> loader.
  * </ul>
  * 
@@ -110,9 +117,7 @@ class ShadowClassLoader extends ClassLoader {
 			if (!pe.endsWith("/")) pe = pe + "/";
 			this.parentExclusion.add(pe);
 		}
-		if (highlanders != null) for (String hl : highlanders) {
-			this.highlanders.add(hl);
-		}
+		if (highlanders != null) for (String hl : highlanders) this.highlanders.add(hl);
 		
 		if (selfBase != null) {
 			SELF_BASE = selfBase;
@@ -125,12 +130,7 @@ class ShadowClassLoader extends ClassLoader {
 				throw new RuntimeException("ShadowLoader can't find itself. SCL loader type: " + (cl == null ? "*NULL*" : cl.getClass().toString()));
 			}
 			SELF_BASE_LENGTH = sclClassStr.length() - SELF_NAME.length();
-			String decoded;
-			try {
-				decoded = URLDecoder.decode(sclClassStr.substring(0, SELF_BASE_LENGTH), "UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				throw new InternalError("UTF-8 not available");
-			}
+			String decoded = urlDecode(sclClassStr.substring(0, SELF_BASE_LENGTH));
 			SELF_BASE = decoded;
 		}
 		
@@ -148,11 +148,11 @@ class ShadowClassLoader extends ClassLoader {
 			}
 		}
 	}
-
+	
 	private final Map<String, Object> mapJarPathToTracker = new HashMap<String, Object>();
 	private static final Map<Object, String> mapTrackerToJarPath = new WeakHashMap<Object, String>();
 	private static final Map<Object, Set<String>> mapTrackerToJarContents = new WeakHashMap<Object, Set<String>>();
-
+	
 	/**
 	 * This cache ensures that any given jar file is only opened once in order to determine the full contents of it.
 	 * We use 'trackers' to make sure that the bulk of the memory taken up by this cache (the list of strings representing the content of a jar file)
@@ -296,6 +296,10 @@ class ShadowClassLoader extends ClassLoader {
 		return null;
 	}
 	
+	private boolean partOfShadow(URL item, String name) {
+		return inOwnBase(item, name) || isPartOfShadowSuffix(item, name, sclSuffix);
+	}
+	
 	/**
 	 * Checks if the stated item is located inside the same classpath root as the jar that hosts ShadowClassLoader.class. {@code item} and {@code name} refer to the same thing.
 	 */
@@ -303,6 +307,109 @@ class ShadowClassLoader extends ClassLoader {
 		if (item == null) return false;
 		String itemString = item.toString();
 		return (itemString.length() == SELF_BASE_LENGTH + name.length()) && SELF_BASE.regionMatches(0, itemString, 0, SELF_BASE_LENGTH);
+	}
+	
+	private static boolean sclFileContainsSuffix(InputStream in, String suffix) throws IOException {
+		BufferedReader br = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+		for (String line = br.readLine(); line != null; line = br.readLine()) {
+			line = line.trim();
+			if (line.isEmpty() || line.charAt(0) == '#') continue;
+			if (line.equals(suffix)) return true;
+		}
+		return false;
+	}
+	
+	private static String urlDecode(String in) {
+		try {
+			return URLDecoder.decode(in, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalError("UTF-8 not supported");
+		}
+	}
+	
+	private Map<String, Boolean> fileRootCache = new HashMap<String, Boolean>();
+	private boolean isPartOfShadowSuffixFileBased(String fileRoot, String suffix) {
+		String key = fileRoot + "::" + suffix;
+		Boolean existing = fileRootCache.get(key);
+		if (existing != null) return existing.booleanValue();
+
+		File f = new File(fileRoot + "/META-INF/ShadowClassLoader");
+		try {
+			FileInputStream fis = new FileInputStream(f);
+			try {
+				boolean v = sclFileContainsSuffix(fis, suffix);
+				fileRootCache.put(key, v);
+				return v;
+			} finally {
+				fis.close();
+			}
+		} catch (FileNotFoundException fnfEx) {
+			fileRootCache.put(key, false);
+			return false;
+		} catch (IOException e) {
+			fileRootCache.put(key, false);
+			return false; // *unexpected*
+		}
+	}
+
+	private Map<String, Boolean> jarLocCache = new HashMap<String, Boolean>();
+	private boolean isPartOfShadowSuffixJarBased(String jarLoc, String suffix) {
+		String key = jarLoc + "::" + suffix;
+		Boolean existing = jarLocCache.get(key);
+		if (existing != null) return existing.booleanValue();
+
+		if (jarLoc.startsWith("file:/")) jarLoc = urlDecode(jarLoc.substring(5));
+		try {
+			FileInputStream jar = new FileInputStream(jarLoc);
+			try {
+				ZipInputStream zip = new ZipInputStream(jar);
+				while (true) {
+					ZipEntry entry = zip.getNextEntry();
+					if (entry == null) {
+						jarLocCache.put(key, false);
+						return false;
+					}
+					if (!"META-INF/ShadowClassLoader".equals(entry.getName())) continue;
+					boolean v = sclFileContainsSuffix(zip, suffix);
+					jarLocCache.put(key, v);
+					return v;
+				}
+			} finally {
+				jar.close();
+			}
+		} catch (FileNotFoundException fnfEx) {
+			jarLocCache.put(key, false);
+			return false;
+		} catch (IOException ex) {
+			jarLocCache.put(key, false);
+			return false; // *unexpected*
+		}
+	}
+
+	private boolean isPartOfShadowSuffix(URL item, String name, String suffix) {
+		// Instead of throwing an exception or logging, weird, unexpected cases just return false.
+		// This is better than throwing an exception, because exceptions would make your build tools unusable.
+		// Such cases are marked with the comment: // *unexpected*
+		if (item == null) return false;
+		String url = item.toString();
+		if (url.startsWith("file:/")) {
+			url = urlDecode(url.substring(5));
+			if (url.length() <= name.length() || !url.endsWith(name) || url.charAt(url.length() - name.length() - 1) != '/') {
+				return false; // *unexpected*
+			}
+			
+			String fileRoot = url.substring(0, url.length() - name.length() - 1);
+			return isPartOfShadowSuffixFileBased(fileRoot, suffix);
+		} else if (url.startsWith("jar:")) {
+			int sep = url.indexOf('!');
+			if (sep == -1) {
+				return false; // *unexpected*
+			}
+			String jarLoc = url.substring(4, sep);
+			return isPartOfShadowSuffixJarBased(jarLoc, suffix);
+		}
+		
+		return false;
 	}
 	
 	@Override public Enumeration<URL> getResources(String name) throws IOException {
@@ -329,14 +436,14 @@ class ShadowClassLoader extends ClassLoader {
 		Enumeration<URL> sec = super.getResources(name);
 		while (sec.hasMoreElements()) {
 			URL item = sec.nextElement();
-			if (!inOwnBase(item, name)) vector.add(item);
+			if (!partOfShadow(item, name)) vector.add(item);
 		}
 		
 		if (altName != null) {
 			Enumeration<URL> tern = super.getResources(altName);
 			while (tern.hasMoreElements()) {
 				URL item = tern.nextElement();
-				if (!inOwnBase(item, altName)) vector.add(item);
+				if (!partOfShadow(item, altName)) vector.add(item);
 			}
 		}
 		
@@ -376,11 +483,11 @@ class ShadowClassLoader extends ClassLoader {
 		
 		if (altName != null) {
 			URL res = super.getResource(altName);
-			if (res != null && (!noSuper || inOwnBase(res, altName))) return res;
+			if (res != null && (!noSuper || partOfShadow(res, altName))) return res;
 		}
 		
 		URL res = super.getResource(name);
-		if (res != null && (!noSuper || inOwnBase(res, name))) return res;
+		if (res != null && (!noSuper || partOfShadow(res, name))) return res;
 		return null;
 	}
 	
@@ -394,12 +501,12 @@ class ShadowClassLoader extends ClassLoader {
 	private URL getResourceSkippingSelf(String name) throws IOException {
 		URL candidate = super.getResource(name);
 		if (candidate == null) return null;
-		if (!inOwnBase(candidate, name)) return candidate;
+		if (!partOfShadow(candidate, name)) return candidate;
 		
 		Enumeration<URL> en = super.getResources(name);
 		while (en.hasMoreElements()) {
 			candidate = en.nextElement();
-			if (!inOwnBase(candidate, name)) return candidate;
+			if (!partOfShadow(candidate, name)) return candidate;
 		}
 		
 		return null;
