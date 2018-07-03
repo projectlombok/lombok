@@ -158,6 +158,8 @@
 			An <code>ArrayList</code> is used to store added elements as call methods of a <code>@Singular</code> marked field, if the target collection is from the <code>java.util</code> package, <em>even if the collection is a set or map</em>. Because lombok ensures that generated collections are compacted, a new backing instance of a set or map must be constructed anyway, and storing the data as an <code>ArrayList</code> during the build process is more efficient that storing it as a map or set. This behaviour is not externally visible, an implementation detail of the current implementation of the <code>java.util</code> recipes for <code>@Singular @Builder</code>.
 		</p><p>
 			With <code>toBuilder = true</code> applied to methods, any type parameter of the annotated method itself must also show up in the return type.
+		</p><p>
+			The initializer on a <code>@Builder.Default</code> field is removed and stored in a static method, in order to guarantee that this initializer won't be executed at all if a value is specified in the build. This does mean the initializer cannot refer to <code>this</code>, <code>super</code> or any non-static member. If lombok generates a constructor for you, it'll also initialize this field with the initializer.
 		</p>
 	</@f.smallPrint>
 </@f.scaffold>
