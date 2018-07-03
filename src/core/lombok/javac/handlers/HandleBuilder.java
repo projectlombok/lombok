@@ -155,11 +155,13 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				
 				if (bfd.singularData != null && isDefault != null) {
 					isDefault.addError("@Builder.Default and @Singular cannot be mixed.");
+					findAnnotation(Builder.Default.class, fieldNode, true);
 					isDefault = null;
 				}
 				
 				if (fd.init == null && isDefault != null) {
 					isDefault.addWarning("@Builder.Default requires an initializing expression (' = something;').");
+					findAnnotation(Builder.Default.class, fieldNode, true);
 					isDefault = null;
 				}
 				
