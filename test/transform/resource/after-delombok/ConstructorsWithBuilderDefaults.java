@@ -1,5 +1,6 @@
 final class ConstructorsWithBuilderDefaults {
 	private final int x;
+	private final int y;
 	@java.lang.SuppressWarnings("all")
 	private static int $default$x() {
 		return 5;
@@ -11,6 +12,8 @@ final class ConstructorsWithBuilderDefaults {
 		@java.lang.SuppressWarnings("all")
 		private int x;
 		@java.lang.SuppressWarnings("all")
+		private int y;
+		@java.lang.SuppressWarnings("all")
 		ConstructorsWithBuilderDefaultsBuilder() {
 		}
 		@java.lang.SuppressWarnings("all")
@@ -20,15 +23,20 @@ final class ConstructorsWithBuilderDefaults {
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
+		public ConstructorsWithBuilderDefaultsBuilder y(final int y) {
+			this.y = y;
+			return this;
+		}
+		@java.lang.SuppressWarnings("all")
 		public ConstructorsWithBuilderDefaults build() {
 			int x = this.x;
 			if (!x$set) x = ConstructorsWithBuilderDefaults.$default$x();
-			return new ConstructorsWithBuilderDefaults(x);
+			return new ConstructorsWithBuilderDefaults(x, y);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder(x=" + this.x + ")";
+			return "ConstructorsWithBuilderDefaults.ConstructorsWithBuilderDefaultsBuilder(x=" + this.x + ", y=" + this.y + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
@@ -39,6 +47,10 @@ final class ConstructorsWithBuilderDefaults {
 	public int getX() {
 		return this.x;
 	}
+	@java.lang.SuppressWarnings("all")
+	public int getY() {
+		return this.y;
+	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public boolean equals(final java.lang.Object o) {
@@ -46,6 +58,7 @@ final class ConstructorsWithBuilderDefaults {
 		if (!(o instanceof ConstructorsWithBuilderDefaults)) return false;
 		final ConstructorsWithBuilderDefaults other = (ConstructorsWithBuilderDefaults) o;
 		if (this.getX() != other.getX()) return false;
+		if (this.getY() != other.getY()) return false;
 		return true;
 	}
 	@java.lang.Override
@@ -54,19 +67,22 @@ final class ConstructorsWithBuilderDefaults {
 		final int PRIME = 59;
 		int result = 1;
 		result = result * PRIME + this.getX();
+		result = result * PRIME + this.getY();
 		return result;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public java.lang.String toString() {
-		return "ConstructorsWithBuilderDefaults(x=" + this.getX() + ")";
+		return "ConstructorsWithBuilderDefaults(x=" + this.getX() + ", y=" + this.getY() + ")";
 	}
 	@java.lang.SuppressWarnings("all")
 	public ConstructorsWithBuilderDefaults() {
+		this.y = 0;
 		this.x = ConstructorsWithBuilderDefaults.$default$x();
 	}
 	@java.lang.SuppressWarnings("all")
-	public ConstructorsWithBuilderDefaults(final int x) {
+	public ConstructorsWithBuilderDefaults(final int x, final int y) {
 		this.x = x;
+		this.y = y;
 	}
 }
