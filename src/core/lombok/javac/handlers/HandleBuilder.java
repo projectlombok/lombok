@@ -144,7 +144,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
 			for (JavacNode fieldNode : HandleConstructor.findAllFields(tdParent, true)) {
 				JCVariableDecl fd = (JCVariableDecl) fieldNode.get();
-				JavacNode isDefault = findAnnotation(Builder.Default.class, fieldNode, true);
+				JavacNode isDefault = findAnnotation(Builder.Default.class, fieldNode, false);
 				boolean isFinal = (fd.mods.flags & Flags.FINAL) != 0 || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));
 				BuilderFieldData bfd = new BuilderFieldData();
 				bfd.rawName = fd.name;
