@@ -110,6 +110,8 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		
 		@Override boolean want(ProcessingEnvironment procEnv, List<String> delayedWarnings) {
+			if (procEnv.getClass().getName().equals("org.eclipse.jdt.internal.compiler.apt.dispatch.BatchProcessingEnvImpl")) return false;
+			
 			ProcessingEnvironment javacProcEnv = getJavacProcessingEnvironment(procEnv, delayedWarnings);
 
 			if (javacProcEnv == null) return false;
