@@ -56,6 +56,8 @@ public class Eclipse {
 	 */
 	public static final int ECLIPSE_DO_NOT_TOUCH_FLAG = ASTNode.Bit24;
 	
+	private static final Pattern SPLIT_AT_DOT = Pattern.compile("\\.");
+	
 	private Eclipse() {
 		//Prevent instantiation
 	}
@@ -65,19 +67,25 @@ public class Eclipse {
 	 * but we need to deal with it. This turns [[java][lang][String]] into "java.lang.String".
 	 */
 	public static String toQualifiedName(char[][] typeName) {
-		int len = typeName.length - 1;
+		int len = typeName.length - 1; // number of dots
+		if (len == 0) return new String(typeName[0]);
+		
 		for (char[] c : typeName) len += c.length;
-		StringBuilder sb = new StringBuilder(len);
-		boolean first = true;
-		for (char[] c : typeName) {
-			sb.append(first ? "" : ".").append(c);
-			first = false;
+		char[] ret = new char[len];
+		char[] part = typeName[0];
+		System.arraycopy(part, 0, ret, 0, part.length);
+		int pos = part.length;
+		for (int i = 1; i < typeName.length; i++) {
+			ret[pos++] = '.';
+			part = typeName[i];
+			System.arraycopy(part, 0, ret, pos, part.length);
+			pos += part.length;
 		}
-		return sb.toString();
+		return new String(ret);
 	}
 	
 	public static char[][] fromQualifiedName(String typeName) {
-		String[] split = typeName.split("\\.");
+		String[] split = SPLIT_AT_DOT.split(typeName);
 		char[][] result = new char[split.length][];
 		for (int i = 0; i < split.length; i++) {
 			result[i] = split[i].toCharArray();
