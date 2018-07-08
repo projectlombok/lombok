@@ -104,7 +104,7 @@ class AnnotationProcessorHider {
 		}
 		
 		private static AbstractProcessor createWrappedInstance() {
-			ClassLoader cl = Main.createShadowClassLoader();
+			ClassLoader cl = Main.getShadowClassLoader();
 			try {
 				Class<?> mc = cl.loadClass("lombok.core.AnnotationProcessor");
 				return (AbstractProcessor) mc.getDeclaredConstructor().newInstance();
