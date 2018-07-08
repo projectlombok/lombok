@@ -34,6 +34,7 @@ import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.parser.Parser;
@@ -58,6 +59,7 @@ public class TransformEclipseAST {
 	private static final HandlerLibrary handlers;
 	
 	public static boolean disableLombok = false;
+	public static boolean checkImports = System.getProperty("lombok.checkImports") != null;
 	private static final HistogramTracker lombokTracker;
 	
 	static {
@@ -141,6 +143,7 @@ public class TransformEclipseAST {
 		
 		if (Symbols.hasSymbol("lombok.disable")) return;
 		
+		if (!containsLombokImport(ast.imports)) return;
 		// Do NOT abort if (ast.bits & ASTNode.HasAllMethodBodies) != 0 - that doesn't work.
 		
 		try {
@@ -173,6 +176,25 @@ public class TransformEclipseAST {
 		}
 	}
 	
+	public static boolean containsLombokImport(ImportReference[] imports) {
+		if (!checkImports) return true;
+		if (imports == null) return false;
+		
+		for (ImportReference importRef : imports) {
+			if (importRef.tokens.length > 0
+					&& importRef.tokens[0].length == 6
+					&& importRef.tokens[0][0] == 'l'
+					&& importRef.tokens[0][1] == 'o'
+					&& importRef.tokens[0][2] == 'm'
+					&& importRef.tokens[0][3] == 'b'
+					&& importRef.tokens[0][4] == 'o'
+					&& importRef.tokens[0][5] == 'k') {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public TransformEclipseAST(EclipseAST ast) {
 		this.ast = ast;
 	}
