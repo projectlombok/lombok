@@ -53,7 +53,7 @@ public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode,
 	 * Visits this node and all child nodes depth-first, calling the provided visitor's visit methods.
 	 */
 	public void traverse(EclipseASTVisitor visitor) {
-		if (!this.isCompleteParse() && visitor.getClass().isAnnotationPresent(DeferUntilPostDiet.class)) return;
+		if (visitor.isDeferUntilPostDiet() && !isCompleteParse()) return;
 		
 		switch (getKind()) {
 		case COMPILATION_UNIT:

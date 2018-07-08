@@ -36,6 +36,9 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
  * has been implemented with an empty body. Override whichever methods you need.
  */
 public abstract class EclipseASTAdapter implements EclipseASTVisitor {
+	
+	private final boolean deferUntilPostDiet = getClass().isAnnotationPresent(DeferUntilPostDiet.class);
+
 	/** {@inheritDoc} */
 	public void visitCompilationUnit(EclipseNode top, CompilationUnitDeclaration unit) {}
 	
@@ -98,4 +101,8 @@ public abstract class EclipseASTAdapter implements EclipseASTVisitor {
 	
 	/** {@inheritDoc} */
 	public void endVisitStatement(EclipseNode statementNode, Statement statement) {}
+	
+	public boolean isDeferUntilPostDiet() {
+		return deferUntilPostDiet ;
+	}
 }
