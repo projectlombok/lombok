@@ -50,11 +50,18 @@ import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
  * Javac specific version of the LombokNode class.
  */
 public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTree> {
+	private JavacAST ast;
 	/**
 	 * Passes through to the parent constructor.
 	 */
 	public JavacNode(JavacAST ast, JCTree node, List<JavacNode> children, Kind kind) {
-		super(ast, node, children, kind);
+		super(node, children, kind);
+		this.ast = ast;
+	}
+	
+	@Override 
+	public JavacAST getAst() {
+		return ast;
 	}
 	
 	public Element getElement() {
