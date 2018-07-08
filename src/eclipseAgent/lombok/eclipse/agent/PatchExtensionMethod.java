@@ -142,6 +142,9 @@ public class PatchExtensionMethod {
 	
 	public static EclipseNode getTypeNode(TypeDeclaration decl) {
 		CompilationUnitDeclaration cud = decl.scope.compilationUnitScope().referenceContext;
+		
+		if (!TransformEclipseAST.containsLombokImport(cud.imports)) return null;
+		
 		EclipseAST astNode = TransformEclipseAST.getAST(cud, false);
 		EclipseNode node = astNode.get(decl);
 		if (node == null) {
