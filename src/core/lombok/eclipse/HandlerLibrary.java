@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -212,21 +213,25 @@ public class HandlerLibrary {
 	 * @param ast The Compilation Unit that contains the Annotation AST Node.
 	 * @param annotationNode The Lombok AST Node representing the Annotation AST Node.
 	 * @param annotation 'node.get()' - convenience parameter.
+	 * @param priority current prioritiy
+	 * @return the priority we want to run - MAX_VALUE means never
 	 */
-	public void handleAnnotation(CompilationUnitDeclaration ast, EclipseNode annotationNode, org.eclipse.jdt.internal.compiler.ast.Annotation annotation, long priority) {
+	public long handleAnnotation(CompilationUnitDeclaration ast, EclipseNode annotationNode, org.eclipse.jdt.internal.compiler.ast.Annotation annotation, long priority) {
 		TypeResolver resolver = new TypeResolver(annotationNode.getImportList());
 		TypeReference rawType = annotation.type;
-		if (rawType == null) return;
+		if (rawType == null) return Long.MAX_VALUE;
 		
 		String fqn = resolver.typeRefToFullyQualifiedName(annotationNode, typeLibrary, toQualifiedName(annotation.type.getTypeName()));
-		if (fqn == null) return;
+		if (fqn == null) return Long.MAX_VALUE;
 		AnnotationHandlerContainer<?> container = annotationHandlers.get(fqn);
-		if (container == null) return;
-		if (priority != container.getPriority()) return;
+		if (container == null) return Long.MAX_VALUE;
+		
+		if (priority < container.getPriority()) return container.getPriority(); // we want to run at this priority
+		if (priority > container.getPriority()) return Long.MAX_VALUE; // it's over- we do not want to run again
 		
 		if (!annotationNode.isCompleteParse() && container.deferUntilPostDiet()) {
 			if (needsHandling(annotation)) container.preHandle(annotation, annotationNode);
-			return;
+			return Long.MAX_VALUE;
 		}
 		
 		try {
@@ -236,6 +241,7 @@ public class HandlerLibrary {
 		} catch (Throwable t) {
 			error(ast, String.format("Lombok annotation handler %s failed", container.handler.getClass()), t);
 		}
+		return Long.MAX_VALUE;
 	}
 	
 	/**
