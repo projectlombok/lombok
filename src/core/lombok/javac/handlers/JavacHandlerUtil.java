@@ -134,11 +134,16 @@ public class JavacHandlerUtil {
 		return inNetbeansEditor(node.getContext());
 	}
 	
-	private static boolean inNetbeansEditor(Context context) {
+	public static boolean inNetbeansEditor(Context context) {
 		Options options = Options.instance(context);
 		return (options.keySet().contains("ide") && !options.keySet().contains("backgroundCompilation"));
 	}
-	
+
+	public static boolean inNetbeansCompileOnSave(Context context) {
+		Options options = Options.instance(context);
+		return (options.keySet().contains("ide") && options.keySet().contains("backgroundCompilation"));
+	}
+
 	public static JCTree getGeneratedBy(JCTree node) {
 		return JCTree_generatedNode.get(node);
 	}
