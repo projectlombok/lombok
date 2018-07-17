@@ -261,7 +261,8 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<src path="src/j9stubs" />
 			<!-- This includes org.mapstruct.ap.spi.AstModifyingAnnotationProcessor; putting this on the classpath doesn't work (needs to be internal or a module) so we just add it and then delete the class file for convenience. -->
 		</ivy:compile>
-		<delete file="build/lombok/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.class" />
+		<mkdir dir="build/lombok/secondaryLoading.SCL.lombok/org/mapstruct/ap/spi" />
+		<move file="build/lombok/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.class" tofile="build/lombok/secondaryLoading.SCL.lombok/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.SCL.lombok" />
 		
 		<ivy:compile destdir="build/lombok/Class50" source="1.5" target="1.6" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />

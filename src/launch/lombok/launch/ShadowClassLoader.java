@@ -526,9 +526,14 @@ class ShadowClassLoader extends ClassLoader {
 		String fileNameOfClass = name.replace(".", "/") + ".class";
 		URL res = getResource_(fileNameOfClass, true);
 		if (res == null) {
-			if (!exclusionListMatch(fileNameOfClass)) return super.loadClass(name, resolve);
-			throw new ClassNotFoundException(name);
+			if (!exclusionListMatch(fileNameOfClass)) try {
+				return super.loadClass(name, resolve);
+			} catch (ClassNotFoundException cnfe) {
+				res = getResource_("secondaryLoading.SCL." + sclSuffix + "/" + name.replace(".", "/") + ".SCL." + sclSuffix, true);
+				if (res == null) throw cnfe;
+			}
 		}
+		if (res == null) throw new ClassNotFoundException(name);
 		
 		byte[] b;
 		int p = 0;
