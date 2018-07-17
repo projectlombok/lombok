@@ -1,2 +1,11 @@
 jdk:
-  - openjdk9
+- openjdk9
+before_install:
+- echo "*******JAVA_HOME*******\n"
+- export JAVA_HOME=/usr/lib/jvm/java-9-oracle
+- echo $JAVA_HOME
+- echo "******Ant Version********"
+- ant -version
+- echo "*****Java Version*********"
+- java -version
+- echo  "****************************"

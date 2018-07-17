@@ -162,17 +162,21 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</target>
 	
 	<target name="-ensureJdk9">
+		<echo message="Java version: ${ant.java.version}" />
+		<echo message="Java version: ${java.version}" />
+
 		<condition property="java.version.insufficient">
 			<or>
-				<equals arg1="${ant.java.version}" arg2="1.2" />
-				<equals arg1="${ant.java.version}" arg2="1.3" />
-				<equals arg1="${ant.java.version}" arg2="1.4" />
-				<equals arg1="${ant.java.version}" arg2="1.5" />
-				<equals arg1="${ant.java.version}" arg2="1.6" />
-				<equals arg1="${ant.java.version}" arg2="1.7" />
-				<equals arg1="${ant.java.version}" arg2="1.8" />
+				<equals arg1="${java.version}" arg2="1.2" />
+				<equals arg1="${java.version}" arg2="1.3" />
+				<equals arg1="${java.version}" arg2="1.4" />
+				<equals arg1="${java.version}" arg2="1.5" />
+				<equals arg1="${java.version}" arg2="1.6" />
+				<equals arg1="${java.version}" arg2="1.7" />
+				<equals arg1="${java.version}" arg2="1.8" />
 			</or>
 		</condition>
+		<echo message="Java version insufficient: ${java.version.insufficient}" />
 		<fail if="java.version.insufficient">To compile lombok, you need JDK9 or higher; lombok requires this version because it's rather difficult to produce lombok builds that are compatible on JDK9 without at least building with JDK9. Sorry about that.</fail>
 	</target>
 	
