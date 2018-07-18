@@ -162,7 +162,6 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</target>
 	
 	<target name="-ensureJdk9">
-		<echo message="Java version: ${ant.java.version}" />
 		<echo message="Java version: ${java.version}" />
 
 		<condition property="java.version.insufficient">
