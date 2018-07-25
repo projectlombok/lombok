@@ -1,10 +1,11 @@
 Lombok Changelog
 ----------------
 
-### v1.18.1 "Edgy Guinea Pig"
+### v1.18.2 (July 26th, 2018)
 * BUGFIX: mapstruct + lombok in eclipse should hopefully work again. [Issue #1359](https://github.com/rzwitserloot/lombok/issues/1359) and [mapstruct issue #1159](https://github.com/mapstruct/mapstruct/issues/1159)
 * BUGFIX: Equals and hashCode again exclude transient fields by default. [Issue #1724](https://github.com/rzwitserloot/lombok/issues/1724)
 * BUGFIX: Eclipse 'organize imports' feature (either explicitly, or if automatically triggered on saving via 'save actions') would remove the import for `lombok.var`. [Issue #1783](https://github.com/rzwitserloot/lombok/issues/1783)
+* BUGFIX: Lombok and gradle v4.9 didn't work together; that's been fixed. [Issue #1716](https://github.com/rzwitserloot/lombok/issues/1716) and [gradle-apt-plugin issue #87](https://github.com/tbroyer/gradle-apt-plugin/issues/87)
 * FEATURE: You can now make builders for type hierarchies, using the new (experimental) `@SuperBuilder` annotation. Thanks for the contribution, Jan Rieke. [`@SuperBuilder` documentation](https://projectlombok.org/features/experimental/SuperBuilder)
 * FEATURE: `@NoArgsConstructor`, including forcing one with `lombok.config: lombok.noArgsConstructor.extraPrivate=true` now take any defaults set with `@Builder.Default` into account. [Issue #1347](https://github.com/rzwitserloot/lombok/issues/1347)
 
