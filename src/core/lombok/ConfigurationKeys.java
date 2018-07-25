@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2017 The Project Lombok Authors.
+ * Copyright (C) 2013-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,13 @@ public class ConfigurationKeys {
 	// ##### main package features #####
 	
 	// ----- global -----
+	
+	/**
+	 * lombok configuration: {@code dangerousconfig.lombok.disable} = {@code true} | {@code false}.
+	 * 
+	 * If {@code true}, lombok is disabled entirely.
+	 */
+	public static final ConfigurationKey<Boolean> LOMBOK_DISABLE = new ConfigurationKey<Boolean>("dangerousconfig.lombok.disable", "Disables lombok transformers. It does not flag any lombok mentions (so, @Cleanup silently does nothing), and does not disable patched operations in eclipse either. Don't use this unless you know what you're doing. (default: false).", true) {};
 	
 	/**
 	 * lombok configuration: {@code lombok.addGeneratedAnnotation} = {@code true} | {@code false}.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -40,7 +41,6 @@ import java.util.Map;
 import org.junit.Assert;
 
 import lombok.DirectoryRunner.FileTester;
-import lombok.core.AST;
 import lombok.core.LombokConfiguration;
 import lombok.core.LombokImmutableList;
 import lombok.core.configuration.ConfigurationKeysLoader;
@@ -84,7 +84,7 @@ public abstract class AbstractRunTests {
 				StringWriter writer = new StringWriter();
 				
 				LombokConfiguration.overrideConfigurationResolverFactory(new ConfigurationResolverFactory() {
-					@Override public ConfigurationResolver createResolver(AST<?, ?, ?> ast) {
+					@Override public ConfigurationResolver createResolver(URI sourceLocation) {
 						return sourceDirectives_.getConfiguration();
 					}
 				});
