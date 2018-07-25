@@ -210,16 +210,16 @@ public class PatchVal {
 		if (local == null || !LocalDeclaration.class.equals(local.getClass())) return false;
 		boolean decomponent = false;
 		
-        boolean val = isVal(local, scope);
-        boolean var = isVar(local, scope);
-        if (!(val || var)) return false;
+		boolean val = isVal(local, scope);
+		boolean var = isVar(local, scope);
+		if (!(val || var)) return false;
 		
 		StackTraceElement[] st = new Throwable().getStackTrace();
 		for (int i = 0; i < st.length - 2 && i < 10; i++) {
 			if (st[i].getClassName().equals("lombok.launch.PatchFixesHider$Val")) {
 				boolean valInForStatement = val &&
-						st[i + 1].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration") &&
-						st[i + 2].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.ForStatement");
+					st[i + 1].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.LocalDeclaration") &&
+					st[i + 2].getClassName().equals("org.eclipse.jdt.internal.compiler.ast.ForStatement");
 				if (valInForStatement) return false;
 				break;
 			}
@@ -269,7 +269,7 @@ public class PatchVal {
 			}
 		}
 		
-		if(val) local.modifiers |= ClassFileConstants.AccFinal;
+		if (val) local.modifiers |= ClassFileConstants.AccFinal;
 		local.annotations = addValAnnotation(local.annotations, local.type, scope);
 		local.type = replacement != null ? replacement : new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(local.type, 3));
 		
@@ -298,7 +298,7 @@ public class PatchVal {
 		if (val) forEach.elementVariable.modifiers |= ClassFileConstants.AccFinal;
 		forEach.elementVariable.annotations = addValAnnotation(forEach.elementVariable.annotations, forEach.elementVariable.type, scope);
 		forEach.elementVariable.type = replacement != null ? replacement :
-				new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(forEach.elementVariable.type, 3));
+			new QualifiedTypeReference(TypeConstants.JAVA_LANG_OBJECT, poss(forEach.elementVariable.type, 3));
 		
 		return false;
 	}
@@ -326,7 +326,7 @@ public class PatchVal {
 				resolved = ((ArrayBinding) resolved).elementsType();
 				return resolved;
 			} else if (resolved instanceof ReferenceBinding) {
-				ReferenceBinding iterableType = ((ReferenceBinding)resolved).findSuperTypeOriginatingFrom(TypeIds.T_JavaLangIterable, false);
+				ReferenceBinding iterableType = ((ReferenceBinding) resolved).findSuperTypeOriginatingFrom(TypeIds.T_JavaLangIterable, false);
 				
 				TypeBinding[] arguments = null;
 				if (iterableType != null) switch (iterableType.kind()) {
