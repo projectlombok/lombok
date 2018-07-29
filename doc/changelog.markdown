@@ -2,7 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.3 "Edgy Guinea Pig"
-* No changes yet.
+* FEATURE: THe `@FieldNameConstants` feature has been completely redesigned. [Issue #1774](https://github.com/rzwitserloot/lombok/issues/1774) [FieldNameConstants documentation](https://projectlombok.org/features/experimental/FieldNameConstants)
 
 ### v1.18.2 (July 26th, 2018)
 * BUGFIX: mapstruct + lombok in eclipse should hopefully work again. [Issue #1359](https://github.com/rzwitserloot/lombok/issues/1359) and [mapstruct issue #1159](https://github.com/mapstruct/mapstruct/issues/1159)
