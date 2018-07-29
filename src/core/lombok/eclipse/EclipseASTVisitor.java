@@ -26,7 +26,9 @@ import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import java.io.PrintStream;
 import java.lang.reflect.Modifier;
 
+import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Block;
@@ -38,6 +40,7 @@ import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 
 /**
  * Implement so you can ask any EclipseAST.Node to traverse depth-first through all children,
@@ -199,8 +202,82 @@ public interface EclipseASTVisitor {
 			print("</CUD>");
 		}
 		
+		private String printFlags(int flags, ASTNode node) {
+			StringBuilder out = new StringBuilder();
+			if ((flags & ClassFileConstants.AccPublic) != 0) {
+				flags &= ~ClassFileConstants.AccPublic;
+				out.append("public ");
+			}
+			if ((flags & ClassFileConstants.AccPrivate) != 0) {
+				flags &= ~ClassFileConstants.AccPrivate;
+				out.append("private ");
+			}
+			if ((flags & ClassFileConstants.AccProtected) != 0) {
+				flags &= ~ClassFileConstants.AccProtected;
+				out.append("protected ");
+			}
+			if ((flags & ClassFileConstants.AccStatic) != 0) {
+				flags &= ~ClassFileConstants.AccStatic;
+				out.append("static ");
+			}
+			if ((flags & ClassFileConstants.AccFinal) != 0) {
+				flags &= ~ClassFileConstants.AccFinal;
+				out.append("final ");
+			}
+			if ((flags & ClassFileConstants.AccSynchronized) != 0) {
+				flags &= ~ClassFileConstants.AccSynchronized;
+				out.append("synchronized ");
+			}
+			if ((flags & ClassFileConstants.AccNative) != 0) {
+				flags &= ~ClassFileConstants.AccNative;
+				out.append("native ");
+			}
+			if ((flags & ClassFileConstants.AccInterface) != 0) {
+				flags &= ~ClassFileConstants.AccInterface;
+				out.append("interface ");
+			}
+			if ((flags & ClassFileConstants.AccAbstract) != 0) {
+				flags &= ~ClassFileConstants.AccAbstract;
+				out.append("abstract ");
+			}
+			if ((flags & ClassFileConstants.AccStrictfp) != 0) {
+				flags &= ~ClassFileConstants.AccStrictfp;
+				out.append("strictfp ");
+			}
+			if ((flags & ClassFileConstants.AccSynthetic) != 0) {
+				flags &= ~ClassFileConstants.AccSynthetic;
+				out.append("synthetic ");
+			}
+			if ((flags & ClassFileConstants.AccAnnotation) != 0) {
+				flags &= ~ClassFileConstants.AccAnnotation;
+				out.append("annotation ");
+			}
+			if ((flags & ClassFileConstants.AccEnum) != 0) {
+				flags &= ~ClassFileConstants.AccEnum;
+				out.append("enum ");
+			}
+			
+			if ((flags & ClassFileConstants.AccVolatile) != 0) {
+				flags &= ~ClassFileConstants.AccVolatile;
+				if (node instanceof FieldDeclaration) out.append("volatile ");
+				else out.append("volatile/bridge ");
+			}
+			if ((flags & ClassFileConstants.AccTransient) != 0) {
+				flags &= ~ClassFileConstants.AccTransient;
+				if (node instanceof Argument) out.append("varargs ");
+				else if (node instanceof FieldDeclaration) out.append("transient ");
+				else out.append("transient/varargs ");
+			}
+			
+			if (flags != 0) {
+				out.append(String.format(" 0x%08X ", flags));
+			}
+			
+			return out.toString().trim();
+		}
+		
 		public void visitType(EclipseNode node, TypeDeclaration type) {
-			print("<TYPE %s%s%s>", str(type.name), isGenerated(type) ? " (GENERATED)" : "", position(node));
+			print("<TYPE %s%s%s> %s", str(type.name), isGenerated(type) ? " (GENERATED)" : "", position(node), printFlags(type.modifiers, type));
 			indent++;
 			if (printContent) {
 				print("%s", type);
@@ -239,8 +316,8 @@ public interface EclipseASTVisitor {
 		}
 		
 		public void visitField(EclipseNode node, FieldDeclaration field) {
-			print("<FIELD%s %s %s = %s%s>", isGenerated(field) ? " (GENERATED)" : "",
-					str(field.type), str(field.name), field.initialization, position(node));
+			print("<FIELD%s %s %s = %s%s> %s", isGenerated(field) ? " (GENERATED)" : "",
+					str(field.type), str(field.name), field.initialization, position(node), printFlags(field.modifiers, field));
 			indent++;
 			if (printContent) {
 				if (field.initialization != null) print("%s", field.initialization);
@@ -260,9 +337,13 @@ public interface EclipseASTVisitor {
 		
 		public void visitMethod(EclipseNode node, AbstractMethodDeclaration method) {
 			String type = method instanceof ConstructorDeclaration ? "CONSTRUCTOR" : "METHOD";
-			print("<%s %s: %s%s%s>", type, str(method.selector), method.statements != null ? "filled" : "blank",
-					isGenerated(method) ? " (GENERATED)" : "", position(node));
+			print("<%s %s: %s%s%s> %s", type, str(method.selector), method.statements != null ? ("filled(" + method.statements.length + ")") : "blank",
+					isGenerated(method) ? " (GENERATED)" : "", position(node), printFlags(method.modifiers, method));
 			indent++;
+			if (method instanceof ConstructorDeclaration) {
+				ConstructorDeclaration cd = (ConstructorDeclaration) method;
+				print("--> constructorCall: %s", cd.constructorCall == null ? "-NONE-" : cd.constructorCall);
+			}
 			if (printContent) {
 				if (method.statements != null) print("%s", method);
 				disablePrinting++;
@@ -281,7 +362,8 @@ public interface EclipseASTVisitor {
 		}
 		
 		public void visitMethodArgument(EclipseNode node, Argument arg, AbstractMethodDeclaration method) {
-			print("<METHODARG%s %s %s = %s%s>", isGenerated(arg) ? " (GENERATED)" : "", str(arg.type), str(arg.name), arg.initialization, position(node));
+			print("<METHODARG%s %s %s = %s%s> %s", isGenerated(arg) ? " (GENERATED)" : "",
+				str(arg.type), str(arg.name), arg.initialization, position(node), printFlags(arg.modifiers, arg));
 			indent++;
 		}
 		
@@ -295,7 +377,8 @@ public interface EclipseASTVisitor {
 		}
 		
 		public void visitLocal(EclipseNode node, LocalDeclaration local) {
-			print("<LOCAL%s %s %s = %s%s>", isGenerated(local) ? " (GENERATED)" : "", str(local.type), str(local.name), local.initialization, position(node));
+			print("<LOCAL%s %s %s = %s%s> %s", isGenerated(local) ? " (GENERATED)" : "",
+				str(local.type), str(local.name), local.initialization, position(node), printFlags(local.modifiers, local));
 			indent++;
 		}
 		
@@ -310,6 +393,14 @@ public interface EclipseASTVisitor {
 		
 		public void visitStatement(EclipseNode node, Statement statement) {
 			print("<%s%s%s>", statement.getClass(), isGenerated(statement) ? " (GENERATED)" : "", position(node));
+			if (statement instanceof AllocationExpression) {
+				AllocationExpression alloc = (AllocationExpression) statement;
+				print(" --> arguments: %s", alloc.arguments == null ? "NULL" : alloc.arguments.length);
+				print(" --> genericTypeArguments: %s", alloc.genericTypeArguments == null ? "NULL" : alloc.genericTypeArguments.length);
+				print(" --> typeArguments: %s", alloc.typeArguments == null ? "NULL" : alloc.typeArguments.length);
+				print(" --> enumConstant: %s", alloc.enumConstant);
+				print(" --> inferredReturnType: %s", alloc.inferredReturnType);
+			}
 			indent++;
 			print("%s", statement);
 		}

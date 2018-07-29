@@ -149,8 +149,12 @@ public interface JavacASTVisitor {
 			print("</CUD>");
 		}
 		
+		private String printFlags(long f) {
+			return Flags.toString(f);
+		}
+		
 		@Override public void visitType(JavacNode node, JCClassDecl type) {
-			print("<TYPE %s>", type.name);
+			print("<TYPE %s> %s", type.name, printFlags(type.mods.flags));
 			indent++;
 			if (printContent) {
 				print("%s", type);
@@ -185,7 +189,7 @@ public interface JavacASTVisitor {
 		}
 		
 		@Override public void visitField(JavacNode node, JCVariableDecl field) {
-			print("<FIELD %s %s>", field.vartype, field.name);
+			print("<FIELD %s %s> %s", field.vartype, field.name, printFlags(field.mods.flags));
 			indent++;
 			if (printContent) {
 				if (field.init != null) print("%s", field.init);
@@ -210,7 +214,7 @@ public interface JavacASTVisitor {
 					type = "DEFAULTCONSTRUCTOR";
 				} else type = "CONSTRUCTOR";
 			} else type = "METHOD";
-			print("<%s %s> returns: %s", type, method.name, method.restype);
+			print("<%s %s> %s returns: %s", type, method.name, printFlags(method.mods.flags), method.restype);
 			indent++;
 			if (printContent) {
 				if (method.body == null) print("(ABSTRACT)");
@@ -230,7 +234,7 @@ public interface JavacASTVisitor {
 		}
 		
 		@Override public void visitMethodArgument(JavacNode node, JCVariableDecl arg, JCMethodDecl method) {
-			print("<METHODARG %s %s>", arg.vartype, arg.name);
+			print("<METHODARG %s %s> %s", arg.vartype, arg.name, printFlags(arg.mods.flags));
 			indent++;
 		}
 		
@@ -244,7 +248,7 @@ public interface JavacASTVisitor {
 		}
 		
 		@Override public void visitLocal(JavacNode node, JCVariableDecl local) {
-			print("<LOCAL %s %s>", local.vartype, local.name);
+			print("<LOCAL %s %s> %s", local.vartype, local.name, printFlags(local.mods.flags));
 			indent++;
 		}
 		
