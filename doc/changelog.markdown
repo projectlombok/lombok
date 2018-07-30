@@ -1,14 +1,34 @@
 Lombok Changelog
 ----------------
 
-### v1.16.21 "Edgy Guinea Pig"
-* v1.16.20 is the latest stable release of Project Lombok.
+### v1.18.3 "Edgy Guinea Pig"
+* FEATURE: THe `@FieldNameConstants` feature has been completely redesigned. [Issue #1774](https://github.com/rzwitserloot/lombok/issues/1774) [FieldNameConstants documentation](https://projectlombok.org/features/experimental/FieldNameConstants)
+
+### v1.18.2 (July 26th, 2018)
+* BUGFIX: mapstruct + lombok in eclipse should hopefully work again. [Issue #1359](https://github.com/rzwitserloot/lombok/issues/1359) and [mapstruct issue #1159](https://github.com/mapstruct/mapstruct/issues/1159)
+* BUGFIX: Equals and hashCode again exclude transient fields by default. [Issue #1724](https://github.com/rzwitserloot/lombok/issues/1724)
+* BUGFIX: Eclipse 'organize imports' feature (either explicitly, or if automatically triggered on saving via 'save actions') would remove the import for `lombok.var`. [Issue #1783](https://github.com/rzwitserloot/lombok/issues/1783)
+* BUGFIX: Lombok and gradle v4.9 didn't work together; that's been fixed. [Issue #1716](https://github.com/rzwitserloot/lombok/issues/1716) and [gradle-apt-plugin issue #87](https://github.com/tbroyer/gradle-apt-plugin/issues/87)
+* FEATURE: You can now make builders for type hierarchies, using the new (experimental) `@SuperBuilder` annotation. Thanks for the contribution, Jan Rieke. [`@SuperBuilder` documentation](https://projectlombok.org/features/experimental/SuperBuilder)
+* FEATURE: `@NoArgsConstructor`, including forcing one with `lombok.config: lombok.noArgsConstructor.extraPrivate=true` now take any defaults set with `@Builder.Default` into account. [Issue #1347](https://github.com/rzwitserloot/lombok/issues/1347)
+
+### v1.18.0 (June 5th, 2018)
+* BREAKING CHANGE: The in 1.16.22 introduced configuration key `lombok.noArgsConstructor.extraPrivate` is now `false` by default. [Issue #1708](https://github.com/rzwitserloot/lombok/issues/1708)
+* BUGFIX: Do not generate a private no-args constructor if that breaks the code. [Issue #1703](https://github.com/rzwitserloot/lombok/issues/1703), [Issue #1704](https://github.com/rzwitserloot/lombok/issues/1704), [Issue #1712](https://github.com/rzwitserloot/lombok/issues/1712)
+* BUGFIX: Using boolean parameters in lombok annotations would fail. [Issue #1709](https://github.com/rzwitserloot/lombok/issues/1709)
+* BUGFIX: Delombok would give an error message. [Issue #1705](https://github.com/rzwitserloot/lombok/issues/1705)
+* BUGFIX: Eclipse java10 var support didn't work if lombok was installed in your eclipse. [Issue #1676](https://github.com/rzwitserloot/lombok/issues/1676)
+* FEATURE: Google's [Flogger (a.k.a. FluentLogger)](https://google.github.io/flogger/) is now available via `@Flogger`. [Issue #1697](https://github.com/rzwitserloot/lombok/issues/1697)
+* FEATURE: `@FieldNameConstants` has been extended to support prefixes and suffixes. By default, the generated constants are prefixed with `FIELD_`. [Docs on @FieldNameConstants](https://projectlombok.org/features/experimental/FieldNameConstants).
+
+### v1.16.22 "Envious Ferret" (May 29th, 2018)
+* FEATURE: Private no-args constructor for `@Data` and `@Value` to enable deserialization frameworks (like Jackson) to operate out-of-the-box. Use `lombok.noArgsConstructor.extraPrivate = false` to disable this behavior.
 * FEATURE: Methods can now be marked for inclusion in `toString`, `equals`, and `hashCode` generation. There is a new mechanism to mark which fields (and now, methods) are to be included or excluded for the generation of these methods: mark the relevant member with for example `@ToString.Include` or `@EqualsAndHashCode.Exclude`. [ToString documentation](https://projectlombok.org/features/ToString) [EqualsAndHashCode documentation](https://projectlombok.org/features/EqualsAndHashCode)
 * FEATURE: `@Getter` and `@Setter` also allow `onMethod` and `onParam` when put on a type. [Issue #1653](https://github.com/rzwitserloot/lombok/issues/1653) 
 * FEATURE: `@FieldNameConstants` is a new feature that generates string constants for your field names. [Docs on @FieldNameConstants](https://projectlombok.org/features/experimental/FieldNameConstants).
+* PLATFORM: Lombok can be compiled on JDK10, and should run on JDK10. [Issue #1693](https://github.com/rzwitserloot/lombok/issues/1693)
 * PLATFORM: lombok now counts as an _incremental annotation processor_ for gradle. Should speed up your gradle builds considerably! [Issue #1580](https://github.com/rzwitserloot/lombok/issues/1580)
-* PLATFORM: Fix for using lombok together with JDK9's new `module-info.java` feature. [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
-* PLATFORM: Some initial work on supporting JDK10 and JDK11.
+* PLATFORM: Fix for using lombok together with JDK9+'s new `module-info.java` feature. [Issue #985](https://github.com/rzwitserloot/lombok/issues/985)
 * BUGFIX: Solved some issues in eclipse that resulted in error 'A save participant caused problems'. [Issue #879](https://github.com/rzwitserloot/lombok/issues/879)
 * BUGFIX: Netbeans on jdk9. [Issue #1617](https://github.com/rzwitserloot/lombok/issues/1617)
 * BUGFIX: Netbeans < 9. [Issue #1555](https://github.com/rzwitserloot/lombok/issues/1555)

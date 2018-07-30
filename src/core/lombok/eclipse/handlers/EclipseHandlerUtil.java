@@ -1198,6 +1198,12 @@ public class EclipseHandlerUtil {
 		
 		return AnnotationValues.of(Accessors.class, field);
 	}
+
+	public static EclipseNode upToTypeNode(EclipseNode node) {
+		if (node == null) throw new NullPointerException("node");
+		while (node != null && !(node.get() instanceof TypeDeclaration)) node = node.up();
+		return node;
+	}
 	
 	/**
 	 * Checks if there is a field with the provided name.
@@ -1206,10 +1212,7 @@ public class EclipseHandlerUtil {
 	 * @param node Any node that represents the Type (TypeDeclaration) to look in, or any child node thereof.
 	 */
 	public static MemberExistsResult fieldExists(String fieldName, EclipseNode node) {
-		while (node != null && !(node.get() instanceof TypeDeclaration)) {
-			node = node.up();
-		}
-		
+		node = upToTypeNode(node);
 		if (node != null && node.get() instanceof TypeDeclaration) {
 			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
 			if (typeDecl.fields != null) for (FieldDeclaration def : typeDecl.fields) {
@@ -1295,10 +1298,7 @@ public class EclipseHandlerUtil {
 	 * @param node Any node that represents the Type (TypeDeclaration) to look in, or any child node thereof.
 	 */
 	public static MemberExistsResult constructorExists(EclipseNode node) {
-		while (node != null && !(node.get() instanceof TypeDeclaration)) {
-			node = node.up();
-		}
-		
+		node = upToTypeNode(node);
 		if (node != null && node.get() instanceof TypeDeclaration) {
 			TypeDeclaration typeDecl = (TypeDeclaration)node.get();
 			if (typeDecl.methods != null) for (AbstractMethodDeclaration def : typeDecl.methods) {
@@ -1853,5 +1853,13 @@ public class EclipseHandlerUtil {
 	
 	private static long[] copy(long[] array) {
 		return array == null ? null : array.clone();
+	}
+	
+	public static boolean isDirectDescendantOfObject(EclipseNode typeNode) {
+		if (!(typeNode.get() instanceof TypeDeclaration)) throw new IllegalArgumentException("not a type node");
+		TypeDeclaration typeDecl = (TypeDeclaration) typeNode.get();
+		if (typeDecl.superclass == null) return true;
+		String p = typeDecl.superclass.toString();
+		return p.equals("Object") || p.equals("java.lang.Object");
 	}
 }

@@ -109,7 +109,7 @@ public class HandleLog {
 	
 	private static FieldDeclaration createField(LoggingFramework framework, Annotation source, ClassLiteralAccess loggingType, String logFieldName, boolean useStatic, String loggerTopic) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
+		long p = (long) pS << 32 | pE;
 		
 		// 	private static final <loggerType> log = <factoryMethod>(<parameter>);
 		FieldDeclaration fieldDecl = new FieldDeclaration(logFieldName.toCharArray(), 0, -1);
@@ -126,13 +126,15 @@ public class HandleLog {
 		factoryMethodCall.selector = framework.getLoggerFactoryMethodName().toCharArray();
 		
 		Expression parameter;
-		if (loggerTopic == null || loggerTopic.trim().length() == 0) {
+		if (!framework.passTypeName) {
+			parameter = null;
+		} else if (loggerTopic == null || loggerTopic.trim().length() == 0) {
 			parameter = framework.createFactoryParameter(loggingType, source);
 		} else {
 			parameter = new StringLiteral(loggerTopic.toCharArray(), pS, pE, 0);
 		}
 		
-		factoryMethodCall.arguments = new Expression[] { parameter };
+		factoryMethodCall.arguments = parameter != null ? new Expression[] { parameter } : null;
 		factoryMethodCall.nameSourcePosition = p;
 		factoryMethodCall.sourceStart = pS;
 		factoryMethodCall.sourceEnd = factoryMethodCall.statementEnd = pE;
@@ -240,6 +242,17 @@ public class HandleLog {
 		}
 	}
 	
+	/**
+	 * Handles the {@link lombok.extern.flogger.Flogger} annotation for Eclipse.
+	 */
+	@ProviderFor(EclipseAnnotationHandler.class)
+	public static class HandleFloggerLog extends EclipseAnnotationHandler<lombok.extern.flogger.Flogger> {
+		@Override public void handle(AnnotationValues<lombok.extern.flogger.Flogger> annotation, Annotation source, EclipseNode annotationNode) {
+			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_FLOGGER_FLAG_USAGE, "@Flogger", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
+			processAnnotation(LoggingFramework.FLOGGER, annotation, source, annotationNode, "");
+		}
+	}
+	
 	enum LoggingFramework {
 		// private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(TargetType.class);
 		COMMONS("org.apache.commons.logging.Log", "org.apache.commons.logging.LogFactory", "getLog", "@CommonsLog"),
@@ -278,18 +291,31 @@ public class HandleLog {
 
 		// private static final org.jboss.logging.Logger log = org.jboss.logging.Logger.getLogger(TargetType.class);
 		JBOSSLOG("org.jboss.logging.Logger", "org.jboss.logging.Logger", "getLogger", "@JBossLog"),
+		
+		// private static final com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
+		FLOGGER("com.google.common.flogger.FluentLogger", "com.google.common.flogger.FluentLogger", "forEnclosingClass", "@Flogger", false),
 		;
 		
 		private final String loggerTypeName;
 		private final String loggerFactoryTypeName;
 		private final String loggerFactoryMethodName;
 		private final String annotationAsString;
-
+		private final boolean passTypeName;
+		
+		LoggingFramework(String loggerTypeName, String loggerFactoryTypeName, String loggerFactoryMethodName, String annotationAsString, boolean passTypeName) {
+			this.loggerTypeName = loggerTypeName;
+			this.loggerFactoryTypeName = loggerFactoryTypeName;
+			this.loggerFactoryMethodName = loggerFactoryMethodName;
+			this.annotationAsString = annotationAsString;
+			this.passTypeName = passTypeName;
+		}
+		
 		LoggingFramework(String loggerTypeName, String loggerFactoryTypeName, String loggerFactoryMethodName, String annotationAsString) {
 			this.loggerTypeName = loggerTypeName;
 			this.loggerFactoryTypeName = loggerFactoryTypeName;
 			this.loggerFactoryMethodName = loggerFactoryMethodName;
 			this.annotationAsString = annotationAsString;
+			this.passTypeName = true;
 		}
 		
 		final String getAnnotationAsString() {
@@ -308,7 +334,7 @@ public class HandleLog {
 			return loggerFactoryMethodName;
 		}
 		
-		Expression createFactoryParameter(ClassLiteralAccess loggingType, Annotation source){
+		Expression createFactoryParameter(ClassLiteralAccess loggingType, Annotation source) {
 			TypeReference copy = copyType(loggingType.type, source);
 			ClassLiteralAccess result = new ClassLiteralAccess(source.sourceEnd, copy);
 			setGeneratedBy(result, source);

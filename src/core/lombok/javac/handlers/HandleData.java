@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,9 @@ public class HandleData extends JavacAnnotationHandler<Data> {
 		
 		String staticConstructorName = annotation.getInstance().staticConstructor();
 		
+		// TODO move this to the end OR move it to the top in eclipse.
 		handleConstructor.generateRequiredArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, SkipIfConstructorExists.YES, annotationNode);
+		handleConstructor.generateExtraNoArgsConstructor(typeNode, annotationNode);
 		handleGetter.generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true, List.<JCAnnotation>nil());
 		handleSetter.generateSetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
 		handleEqualsAndHashCode.generateEqualsAndHashCodeForType(typeNode, annotationNode);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@ import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Field;
 
+import lombok.ConfigurationKeys;
+import lombok.core.LombokConfiguration;
 import lombok.core.debug.DebugSnapshotStore;
 import lombok.core.debug.HistogramTracker;
 import lombok.patcher.Symbols;
@@ -142,6 +144,8 @@ public class TransformEclipseAST {
 		if (Symbols.hasSymbol("lombok.disable")) return;
 		
 		// Do NOT abort if (ast.bits & ASTNode.HasAllMethodBodies) != 0 - that doesn't work.
+		
+		if (Boolean.TRUE.equals(LombokConfiguration.read(ConfigurationKeys.LOMBOK_DISABLE, EclipseAST.getAbsoluteFileLocation(ast)))) return;
 		
 		try {
 			DebugSnapshotStore.INSTANCE.snapshot(ast, "transform entry");

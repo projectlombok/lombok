@@ -77,6 +77,7 @@ public class HandleValue extends JavacAnnotationHandler<Value> {
 		}
 		handleFieldDefaults.generateFieldDefaultsForType(typeNode, annotationNode, AccessLevel.PRIVATE, true, true);
 		handleConstructor.generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, staticConstructorName, SkipIfConstructorExists.YES, annotationNode);
+		handleConstructor.generateExtraNoArgsConstructor(typeNode, annotationNode);
 		handleGetter.generateGetterForType(typeNode, annotationNode, AccessLevel.PUBLIC, true, List.<JCAnnotation>nil());
 		handleEqualsAndHashCode.generateEqualsAndHashCodeForType(typeNode, annotationNode);
 		handleToString.generateToStringForType(typeNode, annotationNode);

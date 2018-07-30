@@ -21,27 +21,13 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
 import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-
-import lombok.ConfigurationKeys;
-import lombok.EqualsAndHashCode;
-import lombok.core.AST.Kind;
-import lombok.core.configuration.CallSuperType;
-import lombok.core.AnnotationValues;
-import lombok.core.handlers.HandlerUtil;
-import lombok.core.handlers.InclusionExclusionUtils;
-import lombok.core.handlers.InclusionExclusionUtils.Included;
-import lombok.javac.Javac;
-import lombok.javac.JavacAnnotationHandler;
-import lombok.javac.JavacNode;
-import lombok.javac.JavacTreeMaker;
-import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -66,6 +52,20 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
+
+import lombok.ConfigurationKeys;
+import lombok.EqualsAndHashCode;
+import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
+import lombok.core.configuration.CallSuperType;
+import lombok.core.handlers.HandlerUtil;
+import lombok.core.handlers.HandlerUtil.FieldAccess;
+import lombok.core.handlers.InclusionExclusionUtils;
+import lombok.core.handlers.InclusionExclusionUtils.Included;
+import lombok.javac.JavacAnnotationHandler;
+import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
+import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 
 /**
  * Handles the {@code lombok.EqualsAndHashCode} annotation for javac.
@@ -122,7 +122,6 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			return;
 		}
 		
-		boolean isDirectDescendantOfObject = true;
 		boolean implicitCallSuper = callSuper == null;
 		if (callSuper == null) {
 			try {
@@ -132,11 +131,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 			}
 		}
 		
-		JCTree extending = Javac.getExtendsClause((JCClassDecl)typeNode.get());
-		if (extending != null) {
-			String p = extending.toString();
-			isDirectDescendantOfObject = p.equals("Object") || p.equals("java.lang.Object");
-		}
+		boolean isDirectDescendantOfObject = isDirectDescendantOfObject(typeNode);
 		
 		if (isDirectDescendantOfObject && callSuper) {
 			source.addError("Generating equals/hashCode with a supercall to java.lang.Object is pointless.");

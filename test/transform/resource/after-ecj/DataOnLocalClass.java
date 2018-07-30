@@ -64,7 +64,7 @@ class DataOnLocalClass2 {
         public @java.lang.SuppressWarnings("all") void setName(final @lombok.NonNull String name) {
           if ((name == null))
               {
-                throw new java.lang.NullPointerException("name");
+                throw new java.lang.NullPointerException("name is marked @NonNull but is null");
               }
           this.name = name;
         }
@@ -99,7 +99,7 @@ class DataOnLocalClass2 {
           super();
           if ((name == null))
               {
-                throw new java.lang.NullPointerException("name");
+                throw new java.lang.NullPointerException("name is marked @NonNull but is null");
               }
           this.name = name;
         }

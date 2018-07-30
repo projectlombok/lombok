@@ -261,7 +261,8 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<src path="src/j9stubs" />
 			<!-- This includes org.mapstruct.ap.spi.AstModifyingAnnotationProcessor; putting this on the classpath doesn't work (needs to be internal or a module) so we just add it and then delete the class file for convenience. -->
 		</ivy:compile>
-		<delete file="build/lombok/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.class" />
+		<mkdir dir="build/lombok/secondaryLoading.SCL.lombok/org/mapstruct/ap/spi" />
+		<move file="build/lombok/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.class" tofile="build/lombok/secondaryLoading.SCL.lombok/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.SCL.lombok" />
 		
 		<ivy:compile destdir="build/lombok/Class50" source="1.5" target="1.6" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />
@@ -769,7 +770,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</replaceregexp>
 	</target>
 	
-	<target name="utils-maven" depends="version, dist-utils, test, utils-javadoc" description="Build a maven artifact bundle for lombok-utils.">
+	<target name="utils-maven" depends="version, dist-utils, utils-javadoc" description="Build a maven artifact bundle for lombok-utils.">
 		<jar destfile="dist/lombok-utils-${lombok.version}-javadoc.jar">
 			<fileset dir="build/utils-api" />
 		</jar>
@@ -801,7 +802,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</ant>
 	</target>
 	
-	<target name="maven" depends="version, dist, test, javadoc" description="Build a maven artifact bundle.">
+	<target name="maven" depends="version, dist, javadoc" description="Build a maven artifact bundle.">
 		<jar destfile="dist/lombok-${lombok.version}-javadoc.jar">
 			<fileset dir="doc/api" />
 		</jar>
@@ -863,7 +864,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			knownHosts="ssh.knownHosts" />
 	</target>
 	
-	<target name="publish" description="Publishes the latest build to googlecode." depends="config-ssh, version, dist, dist-utils, test">
+	<target name="publish" description="Publishes the latest build to googlecode." depends="config-ssh, version, dist, dist-utils">
 		<ivy:scpUpload
 			from="dist/lombok-utils-${lombok.version}.jar"
 			to="/data/lombok/staging"

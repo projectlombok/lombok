@@ -1,0 +1,14 @@
+<ivy-module version="2.0">
+	<info organisation="org.projectlombok" module="lombok.patcher" revision="0.26" publication="20180528200000">
+		<license name="MIT License" url="https://www.opensource.org/licenses/mit-license.php" />
+		<ivyauthor name="rzwitserloot" url="https://github.com/rzwitserloot" />
+		<ivyauthor name="rspilker" url="https://github.com/rspilker" />
+		<description homepage="https://projectlombok.org/" />
+	</info>
+	<configurations>
+		<conf name="default" />
+	</configurations>
+	<publications>
+		<artifact conf="default" url="https://projectlombok.org/downloads/lombok.patcher-0.26.jar" />
+	</publications>
+</ivy-module>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,16 +73,20 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	private static final URI NOT_CALCULATED_MARKER = URI.create("https://projectlombok.org/not/calculated");
 	private URI memoizedAbsoluteFileLocation = NOT_CALCULATED_MARKER;
 	
+	public static URI getAbsoluteFileLocation(CompilationUnitDeclaration ast) {
+		return getAbsoluteFileLocation0(ast);
+	}
+	
 	public URI getAbsoluteFileLocation() {
 		if (memoizedAbsoluteFileLocation != NOT_CALCULATED_MARKER) return memoizedAbsoluteFileLocation;
 		
-		memoizedAbsoluteFileLocation = getAbsoluteFileLocation0();
+		memoizedAbsoluteFileLocation = getAbsoluteFileLocation0(this.compilationUnitDeclaration);
 		return memoizedAbsoluteFileLocation;
 	}
 	
 	/** This is the call, but we wrapped it to memoize this. */
-	private URI getAbsoluteFileLocation0() {
-		String fileName = getFileName();
+	private static URI getAbsoluteFileLocation0(CompilationUnitDeclaration ast) {
+		String fileName = toFileName(ast);
 		if (fileName != null && (fileName.startsWith("file:") || fileName.startsWith("sourcecontrol:"))) {
 			// Some exotic build systems get real fancy with filenames. Known culprits:
 			// The 'jazz' source control system _probably_ (not confirmed yet) uses sourcecontrol://jazz: urls.

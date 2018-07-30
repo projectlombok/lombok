@@ -157,12 +157,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			}
 		}
 		
-		boolean isDirectDescendantOfObject = true;
-		
-		if (typeDecl.superclass != null) {
-			String p = typeDecl.superclass.toString();
-			isDirectDescendantOfObject = p.equals("Object") || p.equals("java.lang.Object");
-		}
+		boolean isDirectDescendantOfObject = isDirectDescendantOfObject(typeNode);
 		
 		if (isDirectDescendantOfObject && callSuper) {
 			errorNode.addError("Generating equals/hashCode with a supercall to java.lang.Object is pointless.");

@@ -20,19 +20,19 @@
     super();
     if ((plower == null))
         {
-          throw new java.lang.NullPointerException("plower");
+          throw new java.lang.NullPointerException("plower is marked @NonNull but is null");
         }
     if ((upper == null))
         {
-          throw new java.lang.NullPointerException("upper");
+          throw new java.lang.NullPointerException("upper is marked @NonNull but is null");
         }
     if ((huh == null))
         {
-          throw new java.lang.NullPointerException("huh");
+          throw new java.lang.NullPointerException("huh is marked @NonNull but is null");
         }
     if ((_huh2 == null))
         {
-          throw new java.lang.NullPointerException("_huh2");
+          throw new java.lang.NullPointerException("_huh2 is marked @NonNull but is null");
         }
     this.plower = plower;
     this.pUpper = upper;

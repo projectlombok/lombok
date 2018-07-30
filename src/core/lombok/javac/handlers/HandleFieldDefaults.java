@@ -44,7 +44,7 @@ import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 
 /**
- * Handles the {@code lombok.FieldDefaults} annotation for eclipse.
+ * Handles the {@code lombok.FieldDefaults} annotation for javac.
  */
 @ProviderFor(JavacASTVisitor.class)
 @HandlerPriority(-2048) //-2^11; to ensure @Value picks up on messing with the fields' 'final' state, run earlier.

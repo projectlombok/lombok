@@ -45,7 +45,6 @@ import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.SwitchStatement;
-import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.mangosdk.spi.ProviderFor;
 
@@ -56,9 +55,9 @@ public class EclipseJavaUtilListSingularizer extends EclipseJavaUtilListSetSingu
 		return LombokImmutableList.of("java.util.List", "java.util.Collection", "java.lang.Iterable");
 	}
 	
-	@Override public void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName) {
+	@Override public void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName, String builderVariable) {
 		if (useGuavaInstead(builderType)) {
-			guavaListSetSingularizer.appendBuildCode(data, builderType, statements, targetVariableName);
+			guavaListSetSingularizer.appendBuildCode(data, builderType, statements, targetVariableName, builderVariable);
 			return;
 		}
 		
@@ -76,7 +75,7 @@ public class EclipseJavaUtilListSingularizer extends EclipseJavaUtilListSetSingu
 		/* case 1: (singleton) break; */ {
 			switchContents.add(new CaseStatement(makeIntLiteral(new char[] {'1'}, null), 0, 0));
 			FieldReference thisDotField = new FieldReference(data.getPluralName(), 0L);
-			thisDotField.receiver = new ThisReference(0, 0);
+			thisDotField.receiver = getBuilderReference(builderVariable);
 			MessageSend thisDotFieldGet0 = new MessageSend();
 			thisDotFieldGet0.receiver = thisDotField;
 			thisDotFieldGet0.selector = new char[] {'g', 'e', 't'};
@@ -97,7 +96,7 @@ public class EclipseJavaUtilListSingularizer extends EclipseJavaUtilListSetSingu
 			Expression argToUnmodifiable;
 			/* new j.u.ArrayList<Generics>(this.pluralName); */ {
 				FieldReference thisDotPluralName = new FieldReference(data.getPluralName(), 0L);
-				thisDotPluralName.receiver = new ThisReference(0, 0);
+				thisDotPluralName.receiver = getBuilderReference(builderVariable);
 				TypeReference targetTypeExpr = new QualifiedTypeReference(JAVA_UTIL_ARRAYLIST, NULL_POSS);
 				targetTypeExpr = addTypeArgs(1, false, builderType, targetTypeExpr, data.getTypeArgs());
 				AllocationExpression constructorCall = new AllocationExpression();
@@ -117,7 +116,7 @@ public class EclipseJavaUtilListSingularizer extends EclipseJavaUtilListSetSingu
 		
 		SwitchStatement switchStat = new SwitchStatement();
 		switchStat.statements = switchContents.toArray(new Statement[switchContents.size()]);
-		switchStat.expression = getSize(builderType, data.getPluralName(), true);
+		switchStat.expression = getSize(builderType, data.getPluralName(), true, builderVariable);
 		
 		TypeReference localShadowerType = new QualifiedTypeReference(Eclipse.fromQualifiedName(data.getTargetFqn()), NULL_POSS);
 		localShadowerType = addTypeArgs(1, false, builderType, localShadowerType, data.getTypeArgs());

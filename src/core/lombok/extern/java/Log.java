@@ -55,6 +55,7 @@ import java.lang.annotation.Target;
  * @see lombok.extern.slf4j.Slf4j &#64;Slf4j
  * @see lombok.extern.slf4j.XSlf4j &#64;XSlf4j
  * @see lombok.extern.jbosslog.JBossLog &#64;JBossLog
+ * @see lombok.extern.flogger.Flogger &#64;Flogger
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)

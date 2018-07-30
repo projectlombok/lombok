@@ -147,7 +147,6 @@ public class Delombok {
 		private boolean nocopy;
 		
 		@Description("Output only changed files (implies -n)")
-		@Shorthand("c")
 		private boolean onlyChanged;
 		
 		private boolean help;

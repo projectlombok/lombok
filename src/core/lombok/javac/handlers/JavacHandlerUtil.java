@@ -1813,4 +1813,12 @@ public class JavacHandlerUtil {
 			docComments.put(from.get(), filtered[1]);
 		}
 	}
+	
+	public static boolean isDirectDescendantOfObject(JavacNode typeNode) {
+		if (!(typeNode.get() instanceof JCClassDecl)) throw new IllegalArgumentException("not a type node");
+		JCTree extending = Javac.getExtendsClause((JCClassDecl)typeNode.get());
+		if (extending == null) return true;
+		String p = extending.toString();
+		return p.equals("Object") || p.equals("java.lang.Object");
+	}
 }

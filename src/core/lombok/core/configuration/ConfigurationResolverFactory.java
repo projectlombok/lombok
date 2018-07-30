@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Project Lombok Authors.
+ * Copyright (C) 2014-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,8 +21,8 @@
  */
 package lombok.core.configuration;
 
-import lombok.core.AST;
+import java.net.URI;
 
 public interface ConfigurationResolverFactory {
-	ConfigurationResolver createResolver(AST<?, ?, ?> ast);
+	ConfigurationResolver createResolver(URI sourceLocation);
 }

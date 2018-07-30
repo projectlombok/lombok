@@ -100,6 +100,8 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	}
 	
 	@Override public void handle(AnnotationValues<Builder> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		handleFlagUsage(annotationNode, ConfigurationKeys.BUILDER_FLAG_USAGE, "@Builder");
+		
 		Builder builderInstance = annotation.getInstance();
 		
 		// These exist just to support the 'old' lombok.experimental.Builder, which had these properties. lombok.Builder no longer has them.
@@ -145,7 +147,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			boolean valuePresent = (hasAnnotation(lombok.Value.class, parent) || hasAnnotation("lombok.experimental.Value", parent));
 			for (JavacNode fieldNode : HandleConstructor.findAllFields(tdParent, true)) {
 				JCVariableDecl fd = (JCVariableDecl) fieldNode.get();
-				JavacNode isDefault = findAnnotation(Builder.Default.class, fieldNode, true);
+				JavacNode isDefault = findAnnotation(Builder.Default.class, fieldNode, false);
 				boolean isFinal = (fd.mods.flags & Flags.FINAL) != 0 || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));
 				BuilderFieldData bfd = new BuilderFieldData();
 				bfd.rawName = fd.name;
@@ -157,11 +159,13 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				
 				if (bfd.singularData != null && isDefault != null) {
 					isDefault.addError("@Builder.Default and @Singular cannot be mixed.");
+					findAnnotation(Builder.Default.class, fieldNode, true);
 					isDefault = null;
 				}
 				
 				if (fd.init == null && isDefault != null) {
 					isDefault.addWarning("@Builder.Default requires an initializing expression (' = something;').");
+					findAnnotation(Builder.Default.class, fieldNode, true);
 					isDefault = null;
 				}
 				
@@ -553,7 +557,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		for (BuilderFieldData bfd : builderFields) {
 			if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
-				bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, type, source, statements, bfd.name);
+				bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, type, source, statements, bfd.name, "this");
 			}
 		}
 		

@@ -91,5 +91,6 @@ public class HandleValue extends EclipseAnnotationHandler<Value> {
 		handleToString.generateToStringForType(typeNode, annotationNode);
 		handleConstructor.generateAllArgsConstructor(typeNode, AccessLevel.PUBLIC, ann.staticConstructor(), SkipIfConstructorExists.YES,
 				Collections.<Annotation>emptyList(), annotationNode);
+		handleConstructor.generateExtraNoArgsConstructor(typeNode, annotationNode);
 	}
 }

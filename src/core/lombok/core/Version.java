@@ -30,15 +30,16 @@ public class Version {
 	// ** CAREFUL ** - this class must always compile with 0 dependencies (it must not refer to any other sources or libraries).
 	// Note: In 'X.Y.Z', if Z is odd, its a snapshot build built from the repository, so many different 0.10.3 versions can exist, for example.
 	// Official builds always end in an even number. (Since 0.10.2).
-	private static final String VERSION = "1.16.21";
+	private static final String VERSION = "1.18.3";
 	private static final String RELEASE_NAME = "Edgy Guinea Pig";
-//	private static final String RELEASE_NAME = "Dancing Elephant";
+//	private static final String RELEASE_NAME = "Envious Ferret";
 	
 	// Named version history:
 	//   Angry Butterfly
 	//   Branching Cobra
 	//   Candid Duck
 	//   Dancing Elephant
+	//   Envious Ferret
 	
 	private Version() {
 		//Prevent instantiation

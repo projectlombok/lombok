@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,9 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 
+import lombok.ConfigurationKeys;
+import lombok.core.LombokConfiguration;
+
 public class JavacTransformer {
 	private final HandlerLibrary handlers;
 	private final Messager messager;
@@ -65,7 +68,11 @@ public class JavacTransformer {
 		
 		java.util.List<JavacAST> asts = new ArrayList<JavacAST>();
 		
-		for (JCCompilationUnit unit : compilationUnits) asts.add(new JavacAST(messager, context, unit));
+		for (JCCompilationUnit unit : compilationUnits) {
+			if (!Boolean.TRUE.equals(LombokConfiguration.read(ConfigurationKeys.LOMBOK_DISABLE, JavacAST.getAbsoluteFileLocation(unit)))) {
+				asts.add(new JavacAST(messager, context, unit));
+			}
+		}
 		
 		for (JavacAST ast : asts) {
 			ast.traverse(new AnnotationVisitor(priority));

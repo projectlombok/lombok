@@ -1,0 +1,11 @@
+#!/bin/bash
+BASE=`dirname $0`
+scp "$BASE/website/lombokSupporters/supporters.json" "escudo:/data/lombok/web/files/supporters.json"
+if [ "$*" != "" ]; then
+	for var in "$@"; do
+		scp "$BASE/website/lombokSupporters/logos/$var" "escudo:/data/lombok/web/files/logos/$var"
+	done
+fi
+
+echo Dont forget to list images as arguments
+
