@@ -2,7 +2,7 @@ public class LogExample {
 	private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(LogExample.class.getName());
 	
 	public static void main(String... args) {
-		log.error("Something's wrong here");
+		log.severe("Something's wrong here");
 	}
 }
 
