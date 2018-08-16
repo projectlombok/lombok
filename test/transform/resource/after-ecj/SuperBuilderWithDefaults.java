@@ -36,14 +36,22 @@ public class SuperBuilderWithDefaults {
         return new Parent<N>(this);
       }
     }
-    private @lombok.Builder.Default long millis = System.currentTimeMillis();
-    private @lombok.Builder.Default N numberField = null;
+    private @lombok.Builder.Default long millis;
+    private @lombok.Builder.Default N numberField;
+    private static @java.lang.SuppressWarnings("all") <N extends Number>long $default$millis() {
+      return System.currentTimeMillis();
+    }
+    private static @java.lang.SuppressWarnings("all") <N extends Number>N $default$numberField() {
+      return null;
+    }
     protected @java.lang.SuppressWarnings("all") Parent(final ParentBuilder<N, ?, ?> b) {
       super();
-      if (b.millis$set)
-          this.millis = b.millis;
-      if (b.numberField$set)
-          this.numberField = b.numberField;
+      this.millis = b.millis;
+      if ((! b.millis$set))
+          this.millis = Parent.<N>$default$millis();
+      this.numberField = b.numberField;
+      if ((! b.numberField$set)) 
+          this.numberField = Parent.<N>$default$numberField();
     }
     public static @java.lang.SuppressWarnings("all") <N extends Number>ParentBuilder<N, ?, ?> builder() {
       return new ParentBuilderImpl<N>();
@@ -78,11 +86,15 @@ public class SuperBuilderWithDefaults {
         return new Child(this);
       }
     }
-    private @lombok.Builder.Default double doubleField = Math.PI;
+    private @lombok.Builder.Default double doubleField;
+    private static @java.lang.SuppressWarnings("all") double $default$doubleField() {
+      return Math.PI;
+    }
     protected @java.lang.SuppressWarnings("all") Child(final ChildBuilder<?, ?> b) {
       super(b);
-      if (b.doubleField$set)
-          this.doubleField = b.doubleField;
+      this.doubleField = b.doubleField;
+      if ((! b.doubleField$set)) 
+          this.doubleField = Child.$default$doubleField();
     }
     public static @java.lang.SuppressWarnings("all") ChildBuilder<?, ?> builder() {
       return new ChildBuilderImpl();

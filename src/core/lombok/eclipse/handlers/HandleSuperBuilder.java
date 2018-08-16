@@ -48,6 +48,7 @@ import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
@@ -60,6 +61,7 @@ import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.ast.UnaryExpression;
 import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
@@ -95,6 +97,7 @@ import lombok.experimental.SuperBuilder;
 public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 	private static final char[] CLEAN_FIELD_NAME = "$lombokUnclean".toCharArray();
 	private static final char[] CLEAN_METHOD_NAME = "$lombokClean".toCharArray();
+	private static final char[] DEFAULT_PREFIX = "$default$".toCharArray();
 	private static final char[] SET_PREFIX = "$set".toCharArray();
 	private static final char[] SELF_METHOD_NAME = "self".toCharArray();
 	
@@ -104,6 +107,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		TypeReference type;
 		char[] rawName;
 		char[] name;
+		char[] nameOfDefaultProvider;
 		char[] nameOfSetFlag;
 		SingularData singularData;
 		ObtainVia obtainVia;
@@ -177,16 +181,11 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			}
 			
 			if (isDefault != null) {
+				bfd.nameOfDefaultProvider = prefixWith(DEFAULT_PREFIX, bfd.name);
 				bfd.nameOfSetFlag = prefixWith(bfd.name, SET_PREFIX);
-				// The @Builder annotation removes the initializing expression on the field and moves
-				// it to a method called "$default$FIELDNAME". This method is then called upon building.
-				// We do NOT do this, because this is unexpected and may lead to bugs when using other 
-				// constructors (see, e.g., issue #1347).
-				// Instead, we keep the init expression and only set a new value in the builder-based
-				// constructor if it was set in the builder. Drawback is that the init expression is
-				// always executed, even if it was unnecessary because its value is overwritten by the 
-				// builder.
-				// TODO: Once the issue is resolved in @Builder, we can adapt the solution here. 
+				
+				MethodDeclaration md = HandleBuilder.generateDefaultProvider(bfd.nameOfDefaultProvider, td.typeParameters, fieldNode, ast);
+				if (md != null) injectMethod(tdParent, md);
 			}
 			addObtainVia(bfd, fieldNode);
 			builderFields.add(bfd);
@@ -461,10 +460,10 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		for (BuilderFieldData fieldNode : builderFields) {
 			char[] fieldName = removePrefixFromField(fieldNode.originalFieldNode);
-			FieldReference thisX = new FieldReference(fieldNode.rawName, p);
+			FieldReference fieldInThis = new FieldReference(fieldNode.rawName, p);
 			int s = (int) (p >> 32);
 			int e = (int) p;
-			thisX.receiver = new ThisReference(s, e);
+			fieldInThis.receiver = new ThisReference(s, e);
 			
 			Expression assignmentExpr;
 			if (fieldNode.singularData != null && fieldNode.singularData.getSingularizer() != null) {
@@ -475,16 +474,26 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 				long[] positions = new long[] {p, p};
 				assignmentExpr = new QualifiedNameReference(variableInBuilder, positions, s, e);
 			}
-			Statement assignment = new Assignment(thisX, assignmentExpr, (int) p);
-			
-			// In case of @Builder.Default, only set the value if it really was set in the builder.
-			if (fieldNode.nameOfSetFlag != null) {
-				char[][] variableInBuilder = new char[][] {"b".toCharArray(), fieldNode.nameOfSetFlag};
-				long[] positions = new long[] {p, p};
-				QualifiedNameReference builderRef = new QualifiedNameReference(variableInBuilder, positions, s, e);
-				assignment = new IfStatement(builderRef, assignment, s, e);
-			}
+			Statement assignment = new Assignment(fieldInThis, assignmentExpr, (int) p);
 			statements.add(assignment);
+			
+			// In case of @Builder.Default, set the value to the default if it was NOT set in the builder.
+			if (fieldNode.nameOfSetFlag != null) {
+				char[][] setVariableInBuilder = new char[][] {"b".toCharArray(), fieldNode.nameOfSetFlag};
+				long[] positions = new long[] {p, p};
+				QualifiedNameReference setVariableInBuilderRef = new QualifiedNameReference(setVariableInBuilder, positions, s, e);
+
+				MessageSend inv = new MessageSend();
+				inv.sourceStart = source.sourceStart;
+				inv.sourceEnd = source.sourceEnd;
+				inv.receiver = new SingleNameReference(((TypeDeclaration) typeNode.get()).name, 0L);
+				inv.selector = fieldNode.nameOfDefaultProvider;
+				inv.typeArguments = typeParameterNames(((TypeDeclaration) typeNode.get()).typeParameters);
+				
+				assignment = new Assignment(fieldInThis, inv, (int) p);
+				IfStatement ifBlockForDefault = new IfStatement(new UnaryExpression(setVariableInBuilderRef, OperatorIds.NOT), assignment, s, e);
+				statements.add(ifBlockForDefault);
+			}
 			
 			Annotation[] nonNulls = findAnnotations((FieldDeclaration)fieldNode.originalFieldNode.get(), NON_NULL_PATTERN);
 			if (nonNulls.length != 0) {
@@ -815,6 +824,16 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		for (int i = 0; i < refs1.length; i++) result[i] = refs1[i];
 		for (int i = 0; i < refs2.length; i++) result[refs1.length + i] = refs2[i];
 		return result;
+	}
+	
+	private TypeReference[] typeParameterNames(TypeParameter[] typeParameters) {
+		if (typeParameters == null) return null;
+		
+		TypeReference[] trs = new TypeReference[typeParameters.length];
+		for (int i = 0; i < trs.length; i++) {
+			trs[i] = new SingleTypeReference(typeParameters[i].name, 0);
+		}
+		return trs;
 	}
 	
 	private EclipseNode findInnerClass(EclipseNode parent, String name) {
