@@ -2,7 +2,7 @@ import java.util.List;
 public class SuperBuilderWithNonNull {
 	public static class Parent {
 		@lombok.NonNull
-		String nonNullParentField;
+		final String nonNullParentField;
 		@java.lang.SuppressWarnings("all")
 		private static String $default$nonNullParentField() {
 			return "default";
@@ -47,8 +47,8 @@ public class SuperBuilderWithNonNull {
 		}
 		@java.lang.SuppressWarnings("all")
 		protected Parent(final ParentBuilder<?, ?> b) {
-			this.nonNullParentField = b.nonNullParentField;
-			if (!b.nonNullParentField$set) this.nonNullParentField = Parent.$default$nonNullParentField();
+			if (b.nonNullParentField$set) this.nonNullParentField = b.nonNullParentField;
+			 else this.nonNullParentField = Parent.$default$nonNullParentField();
 			if (nonNullParentField == null) {
 				throw new java.lang.NullPointerException("nonNullParentField is marked @NonNull but is null");
 			}

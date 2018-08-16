@@ -5,7 +5,7 @@ public class SuperBuilderWithNonNull {
 	public static class Parent {
 		@lombok.NonNull
 		@lombok.Builder.Default
-		String nonNullParentField = "default";
+		final String nonNullParentField = "default";
 	}
 	
 	@lombok.experimental.SuperBuilder

@@ -420,14 +420,15 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			JCFieldAccess fieldInThis = maker.Select(maker.Ident(typeNode.toName("this")), bfd.rawName);
 			
 			JCStatement assign = maker.Exec(maker.Assign(fieldInThis, rhs));
-			statements.append(assign);
 			
-			// In case of @Builder.Default, set the value to the default if it was NOT set in the builder.
+			// In case of @Builder.Default, set the value to the default if it was not set in the builder.
 			if (bfd.nameOfSetFlag != null) {
 				JCFieldAccess setField = maker.Select(maker.Ident(builderVariableName), bfd.nameOfSetFlag);
 				fieldInThis = maker.Select(maker.Ident(typeNode.toName("this")), bfd.rawName);
 				JCAssign assignDefault = maker.Assign(fieldInThis, maker.Apply(typeParameterNames(maker, ((JCClassDecl) typeNode.get()).typarams), maker.Select(maker.Ident(((JCClassDecl) typeNode.get()).name), bfd.nameOfDefaultProvider), List.<JCExpression>nil()));
-				statements.append(maker.If(maker.Unary(CTC_NOT, setField), maker.Exec(assignDefault), null));
+				statements.append(maker.If(setField, assign, maker.Exec(assignDefault)));
+			} else {
+				statements.append(assign);
 			}
 			
 			List<JCAnnotation> nonNulls = findAnnotations(bfd.originalFieldNode, NON_NULL_PATTERN);
