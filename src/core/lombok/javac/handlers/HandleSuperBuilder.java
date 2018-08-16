@@ -33,12 +33,12 @@ import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
-import com.sun.tools.javac.tree.JCTree.JCIf;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
@@ -83,6 +83,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JCExpression type;
 		Name rawName;
 		Name name;
+		Name nameOfDefaultProvider;
 		Name nameOfSetFlag;
 		SingularData singularData;
 		ObtainVia obtainVia;
@@ -154,16 +155,12 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			}
 			
 			if (isDefault != null) {
+				bfd.nameOfDefaultProvider = tdParent.toName("$default$" + bfd.name);
 				bfd.nameOfSetFlag = tdParent.toName(bfd.name + "$set");
-				// The @Builder annotation removes the initializing expression on the field and moves
-				// it to a method called "$default$FIELDNAME". This method is then called upon building.
-				// We do NOT do this, because this is unexpected and may lead to bugs when using other 
-				// constructors (see, e.g., issue #1347).
-				// Instead, we keep the init expression and only set a new value in the builder-based
-				// constructor if it was set in the builder. Drawback is that the init expression is
-				// always executed, even if it was unnecessary because its value is overwritten by the 
-				// builder.
-				// TODO: Once the issue is resolved in @Builder, we can adapt the solution here. 
+				bfd.nameOfSetFlag = tdParent.toName(bfd.name + "$set");
+				JCMethodDecl md = HandleBuilder.generateDefaultProvider(bfd.nameOfDefaultProvider, fieldNode, td.typarams);
+				recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
+				if (md != null) injectMethod(tdParent, md);
 			}
 			addObtainVia(bfd, fieldNode);
 			builderFields.add(bfd);
@@ -427,17 +424,17 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			} else {
 				rhs = maker.Select(maker.Ident(builderVariableName), bfd.rawName);
 			}
-			JCFieldAccess thisX = maker.Select(maker.Ident(typeNode.toName("this")), bfd.rawName);
+			JCFieldAccess fieldInThis = maker.Select(maker.Ident(typeNode.toName("this")), bfd.rawName);
 			
-			JCStatement assign = maker.Exec(maker.Assign(thisX, rhs));
+			JCStatement assign = maker.Exec(maker.Assign(fieldInThis, rhs));
+			statements.append(assign);
 			
-			// In case of @Builder.Default, only set the value if it really was set in the builder.
+			// In case of @Builder.Default, set the value to the default if it was NOT set in the builder.
 			if (bfd.nameOfSetFlag != null) {
 				JCFieldAccess setField = maker.Select(maker.Ident(builderVariableName), bfd.nameOfSetFlag);
-				JCIf ifSet = maker.If(setField, assign, null);
-				statements.append(ifSet);
-			} else {
-				statements.append(assign);
+				fieldInThis = maker.Select(maker.Ident(typeNode.toName("this")), bfd.rawName);
+				JCAssign assignDefault = maker.Assign(fieldInThis, maker.Apply(typeParameterNames(maker, ((JCClassDecl) typeNode.get()).typarams), maker.Select(maker.Ident(((JCClassDecl) typeNode.get()).name), bfd.nameOfDefaultProvider), List.<JCExpression>nil()));
+				statements.append(maker.If(maker.Unary(CTC_NOT, setField), maker.Exec(assignDefault), null));
 			}
 		}
 		
