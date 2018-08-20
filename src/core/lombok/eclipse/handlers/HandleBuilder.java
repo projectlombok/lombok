@@ -40,6 +40,7 @@ import org.eclipse.jdt.internal.compiler.ast.Assignment;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
@@ -47,6 +48,7 @@ import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
@@ -492,6 +494,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 	}
 	
+	private static final char[] EMPTY_LIST = "emptyList".toCharArray();
 	private MethodDeclaration generateToBuilderMethod(String methodName, String builderClassName, EclipseNode type, TypeParameter[] typeParams, List<BuilderFieldData> builderFields, boolean fluent, ASTNode source) {
 		// return new ThingieBuilder<A, B>().setA(this.a).setB(this.b);
 		
@@ -511,19 +514,34 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		for (BuilderFieldData bfd : builderFields) {
 			char[] setterName = fluent ? bfd.name : HandlerUtil.buildAccessorName("set", new String(bfd.name)).toCharArray();
 			MessageSend ms = new MessageSend();
+			Expression[] tgt = new Expression[bfd.singularData == null ? 1 : 2];
+			
 			if (bfd.obtainVia == null || !bfd.obtainVia.field().isEmpty()) {
 				char[] fieldName = bfd.obtainVia == null ? bfd.rawName : bfd.obtainVia.field().toCharArray();
-				FieldReference fr = new FieldReference(fieldName, 0);
-				fr.receiver = new ThisReference(0, 0);
-				ms.arguments = new Expression[] {fr};
+				for (int i = 0; i < tgt.length; i++) {
+					FieldReference fr = new FieldReference(fieldName, 0);
+					fr.receiver = new ThisReference(0, 0);
+					tgt[i] = fr;
+				}
 			} else {
 				String obtainName = bfd.obtainVia.method();
 				boolean obtainIsStatic = bfd.obtainVia.isStatic();
-				MessageSend obtainExpr = new MessageSend();
-				obtainExpr.receiver = obtainIsStatic ? new SingleNameReference(type.getName().toCharArray(), 0) : new ThisReference(0, 0);
-				obtainExpr.selector = obtainName.toCharArray();
-				if (obtainIsStatic) obtainExpr.arguments = new Expression[] {new ThisReference(0, 0)};
-				ms.arguments = new Expression[] {obtainExpr};
+				for (int i = 0; i < tgt.length; i++) {
+					MessageSend obtainExpr = new MessageSend();
+					obtainExpr.receiver = obtainIsStatic ? new SingleNameReference(type.getName().toCharArray(), 0) : new ThisReference(0, 0);
+					obtainExpr.selector = obtainName.toCharArray();
+					if (obtainIsStatic) obtainExpr.arguments = new Expression[] {new ThisReference(0, 0)};
+					tgt[i] = obtainExpr;
+				}
+			}
+			if (bfd.singularData == null) {
+				ms.arguments = tgt;
+			} else {
+				Expression ifNull = new EqualExpression(tgt[0], new NullLiteral(0, 0), OperatorIds.EQUAL_EQUAL);
+				MessageSend emptyList = new MessageSend();
+				emptyList.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA, TypeConstants.UTIL, "Collections".toCharArray());
+				emptyList.selector = EMPTY_LIST;
+				ms.arguments = new Expression[] {new ConditionalExpression(ifNull, emptyList, tgt[1])};
 			}
 			ms.receiver = receiver;
 			ms.selector = setterName;
