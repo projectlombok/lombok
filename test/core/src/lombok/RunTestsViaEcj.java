@@ -122,7 +122,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		
 		CompilationUnitDeclaration cud = compilationUnit_.get();
 		
-		if (cud == null) result.append("---- NO CompilationUnit provided by ecj ----");
+		if (cud == null) result.append("---- No CompilationUnit provided by ecj ----");
 		else result.append(cud.toString());
 		
 		return true;

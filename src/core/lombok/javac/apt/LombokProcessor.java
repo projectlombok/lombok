@@ -166,13 +166,13 @@ public class LombokProcessor extends AbstractProcessor {
 			if (!(originalFiler instanceof InterceptingJavaFileManager)) {
 				final Messager messager = processingEnv.getMessager();
 				DiagnosticsReceiver receiver = new MessagerDiagnosticsReceiver(messager);
-
+				
 				JavaFileManager newFilerManager = new InterceptingJavaFileManager(originalFiler, receiver);
 				ht.put(key, newFilerManager);
 				Field filerFileManagerField = JavacFiler.class.getDeclaredField("fileManager");
 				filerFileManagerField.setAccessible(true);
 				filerFileManagerField.set(javacFiler, newFilerManager);
-
+				
 				replaceFileManagerJdk9(context, newFilerManager);
 			}
 		} catch (Exception e) {
@@ -429,7 +429,7 @@ public class LombokProcessor extends AbstractProcessor {
 	}
 
 	/**
-	 * This class returns the given filer as a JavacFiler. In case the case that the filer is no
+	 * This class returns the given filer as a JavacFiler. In case the filer is no
 	 * JavacFiler (e.g. the Gradle IncrementalFiler), its "delegate" field is used to get the JavacFiler
 	 * (directly or through a delegate field again)
 	 */

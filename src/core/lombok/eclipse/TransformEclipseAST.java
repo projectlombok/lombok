@@ -24,8 +24,6 @@ package lombok.eclipse;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.Set;
 
 import lombok.ConfigurationKeys;
 import lombok.core.LombokConfiguration;
@@ -190,14 +188,12 @@ public class TransformEclipseAST {
 	public void go() {
 		long nextPriority = Long.MIN_VALUE;
 		for (Long d : handlers.getPriorities()) {
-			if (nextPriority > d) {
-				continue;
-			}
+			if (nextPriority > d) continue;
 			AnnotationVisitor visitor = new AnnotationVisitor(d);
 			ast.traverse(visitor);
 			// if no visitor interested for this AST, nextPriority would be MAX_VALUE and we bail out immediatetly
 			nextPriority = visitor.getNextPriority();
-			handlers.callASTVisitors(ast, d, ast.isCompleteParse());
+			nextPriority = Math.min(nextPriority, handlers.callASTVisitors(ast, d, ast.isCompleteParse()));
 		}
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -247,8 +246,10 @@ public class HandlerLibrary {
 	/**
 	 * Will call all registered {@link EclipseASTVisitor} instances.
 	 */
-	public void callASTVisitors(EclipseAST ast, long priority, boolean isCompleteParse) {
+	public long callASTVisitors(EclipseAST ast, long priority, boolean isCompleteParse) {
+		long nearestPriority = Long.MAX_VALUE;
 		for (VisitorContainer container : visitorHandlers) {
+			if (priority < container.getPriority()) nearestPriority = Math.min(container.getPriority(), nearestPriority);
 			if (!isCompleteParse && container.deferUntilPostDiet()) continue;
 			if (priority != container.getPriority()) continue;
 			try {
@@ -258,5 +259,6 @@ public class HandlerLibrary {
 						String.format("Lombok visitor handler %s failed", container.visitor.getClass()), t);
 			}
 		}
+		return nearestPriority;
 	}
 }
