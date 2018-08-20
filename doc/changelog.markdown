@@ -2,7 +2,8 @@ Lombok Changelog
 ----------------
 
 ### v1.18.3 "Edgy Guinea Pig"
-* FEATURE: THe `@FieldNameConstants` feature has been completely redesigned. [Issue #1774](https://github.com/rzwitserloot/lombok/issues/1774) [FieldNameConstants documentation](https://projectlombok.org/features/experimental/FieldNameConstants)
+* FEATURE: The `@FieldNameConstants` feature has been completely redesigned. [Issue #1774](https://github.com/rzwitserloot/lombok/issues/1774) [FieldNameConstants documentation](https://projectlombok.org/features/experimental/FieldNameConstants)
+* BUGFIX: When using lombok to compile modularized (`module-info.java`-style) code, if the module name has dots in it, it wouldn't work. [Issue #1808](https://github.com/rzwitserloot/lombok/issues/1808)
 
 ### v1.18.2 (July 26th, 2018)
 * BUGFIX: mapstruct + lombok in eclipse should hopefully work again. [Issue #1359](https://github.com/rzwitserloot/lombok/issues/1359) and [mapstruct issue #1159](https://github.com/mapstruct/mapstruct/issues/1159)
