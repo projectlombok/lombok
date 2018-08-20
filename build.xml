@@ -112,7 +112,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	</target>
 	
 	<target name="ensureBuildDeps" depends="config-ivy,ensureOpenJdk6Rt">
-		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build, javac7" />
+		<ivy:resolve file="buildScripts/ivy.xml" refresh="true" conf="build, javac7, moduleBuild" />
 		<ivy:retrieve />
 	</target>
 	
@@ -246,15 +246,18 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<classpath refid="build.path" />
 		</ivy:compile>
 		
-		<ivy:compile destdir="build/lombok" source="1.9" target="1.9">
+		<javac includeAntRuntime="false" source="1.9" target="1.9" destdir="build/lombok" modulepath="lib/moduleBuild">
 			<compilerarg value="-Xlint:none" />
 			<!-- The above is because javac9 warns about 'service interface provided but not exported or used', probably because lombok uses SPI internally, and uses the 'old' classpath discovery system for it. We're fine with this, hence, ignore this warning. -->
 			<src path="src/core9" />
+		</javac>
+		<mkdir dir="build/lombokMapstruct" />
+		<javac includeAntRuntime="false" source="1.9" target="1.9" destdir="build/lombokMapstruct">
 			<src path="src/j9stubs" />
 			<!-- This includes org.mapstruct.ap.spi.AstModifyingAnnotationProcessor; putting this on the classpath doesn't work (needs to be internal or a module) so we just add it and then delete the class file for convenience. -->
-		</ivy:compile>
+		</javac>
 		<mkdir dir="build/lombok/secondaryLoading.SCL.lombok/org/mapstruct/ap/spi" />
-		<move file="build/lombok/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.class" tofile="build/lombok/secondaryLoading.SCL.lombok/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.SCL.lombok" />
+		<move file="build/lombokMapstruct/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.class" tofile="build/lombok/secondaryLoading.SCL.lombok/org/mapstruct/ap/spi/AstModifyingAnnotationProcessor.SCL.lombok" />
 		
 		<ivy:compile destdir="build/lombok/Class50" source="1.5" target="1.6" ecj="true" nowarn="true" includeSystemBootclasspath="true">
 			<bootclasspath location="build/stubs" />
