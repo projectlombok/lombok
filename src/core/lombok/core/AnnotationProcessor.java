@@ -72,15 +72,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 	 * the delegate ProcessingEnvironment of the gradle wrapper is returned.
 	 */
 	public static ProcessingEnvironment getJavacProcessingEnvironment(ProcessingEnvironment procEnv, List<String> delayedWarnings) {
-		ProcessingEnvironment javacProcEnv = tryRecursivelyObtainJavacProcessingEnvironment(procEnv);
-		
-		if (javacProcEnv == null) {
-			if (!procEnv.getClass().getName().startsWith("org.eclipse.jdt.")) {
-				delayedWarnings.add("Can't get the delegate of the gradle IncrementalProcessingEnvironment.");
-			}
-		}
-		
-		return javacProcEnv;
+		return tryRecursivelyObtainJavacProcessingEnvironment(procEnv);
 	}
 	
 	private static ProcessingEnvironment tryRecursivelyObtainJavacProcessingEnvironment(ProcessingEnvironment procEnv) {
