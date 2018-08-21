@@ -286,7 +286,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			if (cd != null) injectMethod(builderImplType, cd);
 			
 			// Create the self() and build() methods in the BuilderImpl.
-			injectMethod(builderImplType, generateSelfMethod(builderImplType));
+			injectMethod(builderImplType, generateSelfMethod(builderImplType, typeParams));
 			injectMethod(builderImplType, generateBuildMethod(buildMethodName, returnType, builderImplType, thrownExceptions));
 			
 			recursiveSetGeneratedBy(builderImplType.get(), ast, annotationNode.getContext());
@@ -509,14 +509,14 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		return maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), null, null);
 	}
 	
-	private JCMethodDecl generateSelfMethod(JavacNode builderImplType) {
+	private JCMethodDecl generateSelfMethod(JavacNode builderImplType, List<JCTypeParameter> typeParams) {
 		JavacTreeMaker maker = builderImplType.getTreeMaker();
 		
 		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(builderImplType, "Override"), List.<JCExpression>nil());
 		JCModifiers modifiers = maker.Modifiers(Flags.PROTECTED, List.of(overrideAnnotation));
 		Name name = builderImplType.toName(SELF_METHOD);
-		JCExpression returnType = maker.Ident(builderImplType.toName(builderImplType.getName()));
 		
+		JCExpression returnType = namePlusTypeParamsToTypeReference(maker, builderImplType.toName(builderImplType.getName()), typeParams);
 		JCStatement statement = maker.Return(maker.Ident(builderImplType.toName("this")));
 		JCBlock body = maker.Block(0, List.<JCStatement>of(statement));
 		
