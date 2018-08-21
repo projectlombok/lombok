@@ -48,7 +48,7 @@ public class SuperBuilderWithGenerics {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected ParentBuilderImpl self() {
+			protected ParentBuilderImpl<A> self() {
 				return this;
 			}
 			@java.lang.Override
@@ -108,7 +108,7 @@ public class SuperBuilderWithGenerics {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected ChildBuilderImpl self() {
+			protected ChildBuilderImpl<A> self() {
 				return this;
 			}
 			@java.lang.Override
