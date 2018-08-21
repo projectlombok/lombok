@@ -338,7 +338,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		}
 		
 		// Create the self() and build() methods in the BuilderImpl.
-		injectMethod(builderImplType, generateSelfMethod(builderImplType));
+		injectMethod(builderImplType, generateSelfMethod(builderImplType, typeParams, p));
 		injectMethod(builderImplType, generateBuildMethod(tdParent, buildMethodName, returnType, ast));
 		
 		// Add the builder() method to the annotated class.
@@ -536,13 +536,13 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		return out;
 	}
 	
-	private MethodDeclaration generateSelfMethod(EclipseNode builderImplType) {
+	private MethodDeclaration generateSelfMethod(EclipseNode builderImplType, TypeParameter[] typeParams, long p) {
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) builderImplType.top().get()).compilationResult);
 		out.selector = SELF_METHOD_NAME;
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		out.modifiers = ClassFileConstants.AccProtected;
 		out.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, builderImplType.get())};
-		out.returnType = new SingleTypeReference(builderImplType.getName().toCharArray(), 0);
+		out.returnType = namePlusTypeParamsToTypeReference(builderImplType.getName().toCharArray(), typeParams, p);
 		out.statements = new Statement[] {new ReturnStatement(new ThisReference(0, 0), 0, 0)};
 		return out;
 	}
