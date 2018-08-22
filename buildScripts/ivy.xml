@@ -5,6 +5,7 @@
 		<conf name="netbeansBuild" />
 		<conf name="buildBase" extends="netbeansBuild, javac6" />
 		<conf name="build" extends="buildBase, eclipseBuild" />
+		<conf name="moduleBuild" />
 		<conf name="buildWithoutEclipse" extends="buildBase" />
 		<conf name="runtime" />
 		<conf name="test" extends="runtime" />
@@ -64,5 +65,7 @@
 		<dependency org="com.jcraft" name="jsch" rev="0.1.54" conf="supporters->default" />
 		<dependency org="com.rimerosolutions.ant" name="ant-git-tasks" rev="1.3.2" conf="supporters->default" />
 		<dependency org="org.slf4j" name="slf4j-simple" rev="1.6.1" conf="supporters->default" />
+		
+		<dependency org="org.mapstruct" name="mapstruct-processor" rev="1.3.0.Beta1" conf="moduleBuild->default" />
 	</dependencies>
 </ivy-module>

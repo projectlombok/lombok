@@ -24,6 +24,7 @@ package lombok.eclipse.handlers;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.EclipseAugments.*;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.setGeneratedBy;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -1861,5 +1862,30 @@ public class EclipseHandlerUtil {
 		if (typeDecl.superclass == null) return true;
 		String p = typeDecl.superclass.toString();
 		return p.equals("Object") || p.equals("java.lang.Object");
+	}
+	
+	public static NameReference generateQualifiedNameRef(ASTNode source, char[]... varNames) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long)pS << 32 | pE;
+		
+		NameReference ref;
+		
+		if (varNames.length > 1) ref = new QualifiedNameReference(varNames, new long[varNames.length], pS, pE);
+		else ref = new SingleNameReference(varNames[0], p);
+		setGeneratedBy(ref, source);
+		return ref;
+	}
+	
+	public static TypeReference generateQualifiedTypeRef(ASTNode source, char[]... varNames) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long)pS << 32 | pE;
+		
+		TypeReference ref;
+		
+		long[] poss = Eclipse.poss(source, varNames.length);
+		if (varNames.length > 1) ref = new QualifiedTypeReference(varNames, poss);
+		else ref = new SingleTypeReference(varNames[0], p);
+		setGeneratedBy(ref, source);
+		return ref;
 	}
 }

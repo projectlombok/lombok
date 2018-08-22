@@ -43,6 +43,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.QualifiedNameable;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileManager;
@@ -166,13 +167,13 @@ public class LombokProcessor extends AbstractProcessor {
 			if (!(originalFiler instanceof InterceptingJavaFileManager)) {
 				final Messager messager = processingEnv.getMessager();
 				DiagnosticsReceiver receiver = new MessagerDiagnosticsReceiver(messager);
-
+				
 				JavaFileManager newFilerManager = new InterceptingJavaFileManager(originalFiler, receiver);
 				ht.put(key, newFilerManager);
 				Field filerFileManagerField = JavacFiler.class.getDeclaredField("fileManager");
 				filerFileManagerField.setAccessible(true);
 				filerFileManagerField.set(javacFiler, newFilerManager);
-
+				
 				if (lombok.javac.Javac.getJavaCompilerVersion() > 8
 						&& !lombok.javac.handlers.JavacHandlerUtil.inNetbeansCompileOnSave(context)) {
 					replaceFileManagerJdk9(context, newFilerManager);
@@ -383,15 +384,21 @@ public class LombokProcessor extends AbstractProcessor {
 	
 	private String getModuleNameFor(Element element) {
 		while (element != null) {
-			if (element.getKind().name().equals("MODULE")) {
-				String n = element.getSimpleName().toString().trim();
-				return n.isEmpty() ? null : n;
-			}
+			if (element.getKind().name().equals("MODULE")) return ModuleNameOracle.getModuleName(element);
 			Element n = element.getEnclosingElement();
 			if (n == element) return null;
 			element = n;
 		}
 		return null;
+	}
+	
+	// QualifiedNameable is a java7 thing, so to remain compatible with java6, shove this into an inner class to avoid the ClassNotFoundError.
+	private static class ModuleNameOracle {
+		static String getModuleName(Element element) {
+			if (!(element instanceof QualifiedNameable)) return null;
+			String name = ((QualifiedNameable) element).getQualifiedName().toString().trim();
+			return name.isEmpty() ? null : name;
+		}
 	}
 	
 	private JCCompilationUnit toUnit(Element element) {
@@ -432,7 +439,7 @@ public class LombokProcessor extends AbstractProcessor {
 	}
 
 	/**
-	 * This class returns the given filer as a JavacFiler. In case the case that the filer is no
+	 * This class returns the given filer as a JavacFiler. In case the filer is no
 	 * JavacFiler (e.g. the Gradle IncrementalFiler), its "delegate" field is used to get the JavacFiler
 	 * (directly or through a delegate field again)
 	 */

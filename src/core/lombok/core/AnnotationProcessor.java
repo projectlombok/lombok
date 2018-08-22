@@ -49,7 +49,7 @@ import lombok.patcher.ClassRootFinder;
 
 @SupportedAnnotationTypes("*")
 public class AnnotationProcessor extends AbstractProcessor {
-
+	
 	private static String trace(Throwable t) {
 		StringWriter w = new StringWriter();
 		t.printStackTrace(new PrintWriter(w, true));
@@ -65,42 +65,35 @@ public class AnnotationProcessor extends AbstractProcessor {
 	private final List<ProcessorDescriptor> registered = Arrays.asList(new JavacDescriptor(), new EcjDescriptor());
 	private final List<ProcessorDescriptor> active = new ArrayList<ProcessorDescriptor>();
 	private final List<String> delayedWarnings = new ArrayList<String>();
-
+	
 	/**
 	 * This method is a simplified version of {@link lombok.javac.apt.LombokProcessor.getJavacProcessingEnvironment}
 	 * It simply returns the processing environment, but in case of gradle incremental compilation,
 	 * the delegate ProcessingEnvironment of the gradle wrapper is returned.
 	 */
 	public static ProcessingEnvironment getJavacProcessingEnvironment(ProcessingEnvironment procEnv, List<String> delayedWarnings) {
-		ProcessingEnvironment javacProcEnv = tryRecursivelyObtainJavacProcessingEnvironment(procEnv);
-
-		if (javacProcEnv == null) {
-			delayedWarnings.add("Can't get the delegate of the gradle IncrementalProcessingEnvironment.");
-		}
-
-		return javacProcEnv;
+		return tryRecursivelyObtainJavacProcessingEnvironment(procEnv);
 	}
-
+	
 	private static ProcessingEnvironment tryRecursivelyObtainJavacProcessingEnvironment(ProcessingEnvironment procEnv) {
 		if (procEnv.getClass().getName().equals("com.sun.tools.javac.processing.JavacProcessingEnvironment")) {
 			return procEnv;
 		}
-
+		
 		for (Class<?> procEnvClass = procEnv.getClass(); procEnvClass != null; procEnvClass = procEnvClass.getSuperclass()) {
 			try {
 				Field field = procEnvClass.getDeclaredField("delegate");
 				field.setAccessible(true);
 				Object delegate = field.get(procEnv);
-
+				
 				return tryRecursivelyObtainJavacProcessingEnvironment((ProcessingEnvironment) delegate);
 			} catch (final Exception e) {
 				// no valid delegate, try superclass
 			}
 		}
-
+		
 		return null;
 	}
-
 	
 	static class JavacDescriptor extends ProcessorDescriptor {
 		private Processor processor;
@@ -110,10 +103,13 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		
 		@Override boolean want(ProcessingEnvironment procEnv, List<String> delayedWarnings) {
+			// do not run on ECJ as it may print warnings
+			if (procEnv.getClass().getName().startsWith("org.eclipse.jdt.")) return false;
+			
 			ProcessingEnvironment javacProcEnv = getJavacProcessingEnvironment(procEnv, delayedWarnings);
-
+			
 			if (javacProcEnv == null) return false;
-
+			
 			try {
 				ClassLoader classLoader = findAndPatchClassLoader(javacProcEnv);
 				processor = (Processor) Class.forName("lombok.javac.apt.LombokProcessor", false, classLoader).newInstance();
@@ -209,7 +205,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		for (TypeElement elem : annotations) {
 			zeroElems = false;
 			Name n = elem.getQualifiedName();
-			if (n.length() > 7 && n.subSequence(0, 7).toString().equals("lombok.")) continue;
+			if (n.toString().startsWith("lombok.")) continue;
 			onlyLombok = false;
 		}
 		

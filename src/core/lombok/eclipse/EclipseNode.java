@@ -44,16 +44,22 @@ import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
  * Eclipse specific version of the LombokNode class.
  */
 public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode, ASTNode> {
+	private EclipseAST ast;
 	/** {@inheritDoc} */
 	EclipseNode(EclipseAST ast, ASTNode node, List<EclipseNode> children, Kind kind) {
-		super(ast, node, children, kind);
+		super(node, children, kind);
+		this.ast = ast;
 	}
 	
+	@Override 
+	public EclipseAST getAst() {
+		return ast;
+	}
 	/**
 	 * Visits this node and all child nodes depth-first, calling the provided visitor's visit methods.
 	 */
 	public void traverse(EclipseASTVisitor visitor) {
-		if (!this.isCompleteParse() && visitor.getClass().isAnnotationPresent(DeferUntilPostDiet.class)) return;
+		if (visitor.isDeferUntilPostDiet() && !isCompleteParse()) return;
 		
 		switch (getKind()) {
 		case COMPILATION_UNIT:

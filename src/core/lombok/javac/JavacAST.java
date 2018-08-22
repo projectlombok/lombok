@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,8 +93,11 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	}
 	
 	@Override public URI getAbsoluteFileLocation() {
+		return getAbsoluteFileLocation((JCCompilationUnit) top().get());
+	}
+	
+	public static URI getAbsoluteFileLocation(JCCompilationUnit cu) {
 		try {
-			JCCompilationUnit cu = (JCCompilationUnit) top().get();
 			return cu.sourcefile.toUri();
 		} catch (Exception e) {
 			return null;

@@ -92,7 +92,7 @@ final class PatchFixesHider {
 						shadowLoader = Util.class.getClassLoader();
 					} catch (ClassNotFoundException e) {
 						// If we get here, it isn't, and we should use the shadowloader.
-						shadowLoader = Main.createShadowClassLoader();
+						shadowLoader = Main.getShadowClassLoader();
 					}
 				}
 				

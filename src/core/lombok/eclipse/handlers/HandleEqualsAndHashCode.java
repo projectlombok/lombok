@@ -69,7 +69,6 @@ import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
 import org.eclipse.jdt.internal.compiler.ast.OperatorIds;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
-import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ReturnStatement;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
@@ -818,30 +817,5 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		CastExpression expr = makeCastExpression(xorParts, intRef, source);
 		expr.sourceStart = pS; expr.sourceEnd = pE;
 		return expr;
-	}
-	
-	public NameReference generateQualifiedNameRef(ASTNode source, char[]... varNames) {
-		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
-		
-		NameReference ref;
-		
-		if (varNames.length > 1) ref = new QualifiedNameReference(varNames, new long[varNames.length], pS, pE);
-		else ref = new SingleNameReference(varNames[0], p);
-		setGeneratedBy(ref, source);
-		return ref;
-	}
-	
-	public TypeReference generateQualifiedTypeRef(ASTNode source, char[]... varNames) {
-		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
-		
-		TypeReference ref;
-		
-		long[] poss = Eclipse.poss(source, varNames.length);
-		if (varNames.length > 1) ref = new QualifiedTypeReference(varNames, poss);
-		else ref = new SingleTypeReference(varNames[0], p);
-		setGeneratedBy(ref, source);
-		return ref;
 	}
 }

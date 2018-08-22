@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 The Project Lombok Authors.
+ * Copyright (C) 2013-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,13 +43,19 @@ public abstract class ConfigurationKey<T> {
 	private final String keyName;
 	private final String description;
 	private final ConfigurationDataType type;
+	private final boolean hidden;
 	
 	public ConfigurationKey(String keyName, String description) {
+		this(keyName, description, false);
+	}
+	
+	public ConfigurationKey(String keyName, String description, boolean hidden) {
 		this.keyName = checkName(keyName);
 		@SuppressWarnings("unchecked")
 		ConfigurationDataType type = ConfigurationDataType.toDataType((Class<? extends ConfigurationKey<?>>)getClass());
 		this.type = type;
 		this.description = description;
+		this.hidden = hidden;
 		registerKey(keyName, this);
 	}
 	
@@ -63,6 +69,10 @@ public abstract class ConfigurationKey<T> {
 	
 	public final ConfigurationDataType getType() {
 		return type;
+	}
+	
+	public final boolean isHidden() {
+		return hidden;
 	}
 	
 	@Override public String toString() {

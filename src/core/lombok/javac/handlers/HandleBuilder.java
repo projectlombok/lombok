@@ -99,6 +99,8 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 	}
 	
 	@Override public void handle(AnnotationValues<Builder> annotation, JCAnnotation ast, JavacNode annotationNode) {
+		handleFlagUsage(annotationNode, ConfigurationKeys.BUILDER_FLAG_USAGE, "@Builder");
+		
 		Builder builderInstance = annotation.getInstance();
 		
 		// These exist just to support the 'old' lombok.experimental.Builder, which had these properties. lombok.Builder no longer has them.
@@ -490,18 +492,34 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		JCExpression invoke = call;
 		for (BuilderFieldData bfd : builderFields) {
 			Name setterName = fluent ? bfd.name : type.toName(HandlerUtil.buildAccessorName("set", bfd.name.toString()));
-			JCExpression arg;
+			JCExpression[] tgt = new JCExpression[bfd.singularData == null ? 1 : 2];
 			if (bfd.obtainVia == null || !bfd.obtainVia.field().isEmpty()) {
-				arg = maker.Select(maker.Ident(type.toName("this")), bfd.obtainVia == null ? bfd.rawName : type.toName(bfd.obtainVia.field()));
+				for (int i = 0; i < tgt.length; i++) {
+					tgt[i] = maker.Select(maker.Ident(type.toName("this")), bfd.obtainVia == null ? bfd.rawName : type.toName(bfd.obtainVia.field()));
+				}
 			} else {
 				if (bfd.obtainVia.isStatic()) {
-					JCExpression c = maker.Select(maker.Ident(type.toName(type.getName())), type.toName(bfd.obtainVia.method()));
-					arg = maker.Apply(List.<JCExpression>nil(), c, List.<JCExpression>of(maker.Ident(type.toName("this"))));
+					for (int i = 0; i < tgt.length; i++) {
+						JCExpression c = maker.Select(maker.Ident(type.toName(type.getName())), type.toName(bfd.obtainVia.method()));
+						tgt[i] = maker.Apply(List.<JCExpression>nil(), c, List.<JCExpression>of(maker.Ident(type.toName("this"))));
+					}
 				} else {
-					JCExpression c = maker.Select(maker.Ident(type.toName("this")), type.toName(bfd.obtainVia.method()));
-					arg = maker.Apply(List.<JCExpression>nil(), c, List.<JCExpression>nil());
+					for (int i = 0; i < tgt.length; i++) {
+						JCExpression c = maker.Select(maker.Ident(type.toName("this")), type.toName(bfd.obtainVia.method()));
+						tgt[i] = maker.Apply(List.<JCExpression>nil(), c, List.<JCExpression>nil());
+					}
 				}
 			}
+			
+			JCExpression arg;
+			if (bfd.singularData == null) {
+				arg = tgt[0];
+			} else {
+				JCExpression eqNull = maker.Binary(CTC_EQUAL, tgt[0], maker.Literal(CTC_BOT, null));
+				JCExpression emptyList = maker.Apply(List.<JCExpression>nil(), chainDots(type, "java", "util", "Collections", "emptyList"), List.<JCExpression>nil());
+				arg = maker.Conditional(eqNull, emptyList, tgt[1]);
+			}
+			
 			invoke = maker.Apply(List.<JCExpression>nil(), maker.Select(invoke, setterName), List.of(arg));
 		}
 		JCStatement statement = maker.Return(invoke);

@@ -129,6 +129,27 @@
 		</p>
 	</@f.featureSection>
 
+	<@f.featureSection>
+		<h3 id="jackson"><a name="jackson">With Jackson</a></h3>
+		<p>
+			You can customize parts of your builder, for example adding another method to the builder class, or annotating a method in the builder class, by making the builder class yourself. Lombok will generate everything that you do not manually add, and put it into this builder class. For example, if you are trying to configure <a href="https://github.com/FasterXML/jackson">jackson</a> to use a specific subtype for a collection, you can write something like:<div class="snippet"><div class="java" align="left"><pre>
+@Value @Builder
+@JsonDeserialize(builder = JacksonExample.JacksonExampleBuilder.class)
+public class JacksonExample {
+	@Singular private List&lt;Foo&gt; foos;
+	
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class JacksonExampleBuilder implements JacksonExampleBuilderMeta {
+	}
+	
+	private interface JacksonExampleBuilderMeta {
+		@JsonDeserialize(contentAs = FooImpl.class) JacksonExampleBuilder foos(List&lt;? extends Foo&gt; foos)
+	}
+}
+</pre></div></div>
+		</p>
+	</@f.featureSection>
+	
 	<@f.snippets name="Builder" />
 
 	<@f.confKeys>

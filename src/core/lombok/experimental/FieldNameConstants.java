@@ -29,12 +29,32 @@ import java.lang.annotation.Target;
 import lombok.AccessLevel;
 
 /**
- * Generates String constants containing the field name for each field.
+ * Generates an inner type, containing String constants containing the field name for each field. Alternatively, generates an inner enum with enum values matching each field name.
  */
-@Target({ElementType.TYPE, ElementType.FIELD})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface FieldNameConstants {
 	lombok.AccessLevel level() default AccessLevel.PUBLIC;
-	String prefix() default " CONFIG DEFAULT ";
-	String suffix() default " CONFIG DEFAULT ";
+	boolean asEnum() default false;
+	String innerTypeName() default "";
+	
+	/**
+	 * Only include fields and methods explicitly marked with {@code @FieldNameConstants.Include}.
+	 * Normally, all (non-static) fields are included by default.
+	 */
+	boolean onlyExplicitlyIncluded() default false;
+	
+	/**
+	 * If present, do not include this field in the generated fieldnames inner type.
+	 */
+	@Target(ElementType.FIELD)
+	@Retention(RetentionPolicy.SOURCE)
+	public @interface Exclude {}
+	
+	/**
+	 * If present, include this field in the generated fieldnames inner type (default).
+	 */
+	@Target(ElementType.FIELD)
+	@Retention(RetentionPolicy.SOURCE)
+	public @interface Include {}
 }
