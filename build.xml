@@ -368,7 +368,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 		<property name="lombok.dist.built" value="true" />
 	</target>
 	
-	<target name="install-maven" depends="version,dist" description="Install THE lombok.jar into the local maven repository using Apache Maven, assumed to be available in $PATH">
+	<target name="install-maven" depends="version,dist" description="Install THE lombok.jar into the local maven repository using Apache Maven">
 		<fail unless="env.MAVEN_HOME" message="MAVEN_HOME environment variable must be set. "/>
 		<echo message="MAVEN_HOME: ${env.MAVEN_HOME}"  />
 		<echo message="Lombok version: ${lombok.version}"  />
