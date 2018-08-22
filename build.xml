@@ -32,7 +32,8 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<property name="rt-openjdk8" location="lib/openJDK8Environment/openjdk8_rt.jar" />
 	<available file="${rt-openjdk6}" property="rt-openjdk6.available" />
 	<available file="${rt-openjdk8}" property="rt-openjdk8.available" />
-	
+	<property environment="env"/>
+
 	<path id="build.path">
 		<fileset dir="lib/build">
 			<include name="*.jar" />
@@ -367,6 +368,31 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 		<property name="lombok.dist.built" value="true" />
 	</target>
 	
+	<target name="install-maven" depends="version,dist" description="Install THE lombok.jar into the local maven repository using Apache Maven, assumed to be available in $PATH">
+		<fail unless="env.MAVEN_HOME" message="MAVEN_HOME environment variable must be set. "/>
+		<echo message="MAVEN_HOME: ${env.MAVEN_HOME}"  />
+		<echo message="Lombok version: ${lombok.version}"  />
+	
+		<echo file="pom.xml"><![CDATA[<project>
+				<modelVersion>4.0.0</modelVersion>
+			    <groupId>org.projectlombok</groupId>
+			    <artifactId>lombok</artifactId>
+			    <version>]]>${lombok.version}<![CDATA[</version>
+</project>]]></echo>
+
+		<exec executable="${env.MAVEN_HOME}/bin/mvn">
+		    <arg value="install:install-file"/>
+		    <arg value="-Dfile=dist/lombok-${lombok.version}.jar"/>
+		    <arg value="-DgroupId=org.projectlombok1"/>
+		    <arg value="-DartifactId=lombok"/>
+		    <arg value="-Dversion=${lombok.version}"/>
+		    <arg value="-Dpackaging=jar"/>
+	  	</exec>
+
+	  	<delete file="pom.xml" quiet="true" />
+
+	</target>
+
 	<target name="dist-utils" description="Builds lombok-utils.jar, which is a library used by i.e. lombok.ast project." depends="version, compile">
 		<mkdir dir="dist" />
 		<jar destfile="dist/lombok-utils-${lombok.version}.jar">
