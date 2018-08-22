@@ -383,7 +383,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 		<exec executable="${env.MAVEN_HOME}/bin/mvn">
 		    <arg value="install:install-file"/>
 		    <arg value="-Dfile=dist/lombok-${lombok.version}.jar"/>
-		    <arg value="-DgroupId=org.projectlombok1"/>
+		    <arg value="-DgroupId=org.projectlombok"/>
 		    <arg value="-DartifactId=lombok"/>
 		    <arg value="-Dversion=${lombok.version}"/>
 		    <arg value="-Dpackaging=jar"/>
