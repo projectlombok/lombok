@@ -371,13 +371,13 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 	<target name="install-maven" depends="version,dist" description="Install THE lombok.jar into the local maven repository using Apache Maven">
 		<fail unless="env.MAVEN_HOME" message="MAVEN_HOME environment variable must be set. "/>
 		<echo message="MAVEN_HOME: ${env.MAVEN_HOME}"  />
-		<echo message="Lombok version: ${lombok.version}"  />
+		<echo message="Lombok version: ${lombok.version}-SNAPSHOT"  />
 	
 		<echo file="pom.xml"><![CDATA[<project>
-				<modelVersion>4.0.0</modelVersion>
+			    <modelVersion>4.0.0</modelVersion>
 			    <groupId>org.projectlombok</groupId>
 			    <artifactId>lombok</artifactId>
-			    <version>]]>${lombok.version}<![CDATA[</version>
+			    <version>]]>${lombok.version}-SNAPSHOT<![CDATA[</version>
 </project>]]></echo>
 
 		<exec executable="${env.MAVEN_HOME}/bin/mvn">
@@ -385,7 +385,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 		    <arg value="-Dfile=dist/lombok-${lombok.version}.jar"/>
 		    <arg value="-DgroupId=org.projectlombok"/>
 		    <arg value="-DartifactId=lombok"/>
-		    <arg value="-Dversion=${lombok.version}"/>
+		    <arg value="-Dversion=${lombok.version}-SNAPSHOT"/>
 		    <arg value="-Dpackaging=jar"/>
 	  	</exec>
 
