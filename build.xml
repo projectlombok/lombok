@@ -374,11 +374,8 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 		</condition>
 	</target>
 	
-	<target name="install-maven" depends="version,dist,-mvn-ext" description="Install THE lombok.jar into the local maven repository using Apache Maven">
-		<condition property="mvn-exe" value="${env.MAVEN_HOME}/bin/mvn${mvn-ext}" else="mvn${mvn-ext}">
-			<isset property="env.MAVEN_HOME" />
-		</condition>
-		<echo message="Lombok version: ${lombok.version}-SNAPSHOT"  />
+	<target name="generate-pom" depends="version,dist">
+		<echo message="Lombok version: ${lombok.version}-SNAPSHOT" />
 		
 		<echo file="pom.xml"><![CDATA[<project>
 			<modelVersion>4.0.0</modelVersion>
@@ -386,7 +383,13 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 			<artifactId>lombok</artifactId>
 			<version>]]>${lombok.version}-SNAPSHOT<![CDATA[</version>
 </project>]]></echo>
-
+	</target>
+	
+	<target name="install-maven" depends="generate-pom,-mvn-ext" description="Install THE lombok.jar into the local maven repository using Apache Maven">
+		<condition property="mvn-exe" value="${env.MAVEN_HOME}/bin/mvn${mvn-ext}" else="mvn${mvn-ext}">
+			<isset property="env.MAVEN_HOME" />
+		</condition>
+		
 		<exec executable="${mvn-exe}" failifexecutionfails="false" resultproperty="mvn-result">
 			<arg value="install:install-file"/>
 			<arg value="-Dfile=dist/lombok-${lombok.version}.jar"/>
@@ -395,7 +398,6 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 			<arg value="-Dversion=${lombok.version}-SNAPSHOT"/>
 			<arg value="-Dpackaging=jar"/>
 		</exec>
-		<delete file="pom.xml" quiet="true" />
 		<condition property="mvn-notfound" value="true">
 			<not><isset property="mvn-result" /></not>
 		</condition>
