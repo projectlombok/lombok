@@ -377,7 +377,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 	<target name="generate-pom" depends="version,dist">
 		<echo message="Lombok version: ${lombok.version}-SNAPSHOT" />
 		
-		<echo file="pom.xml"><![CDATA[<project>
+		<echo file="build/pom.xml"><![CDATA[<project>
 			<modelVersion>4.0.0</modelVersion>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -391,12 +391,13 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 		</condition>
 		
 		<exec executable="${mvn-exe}" failifexecutionfails="false" resultproperty="mvn-result">
-			<arg value="install:install-file"/>
-			<arg value="-Dfile=dist/lombok-${lombok.version}.jar"/>
-			<arg value="-DgroupId=org.projectlombok"/>
-			<arg value="-DartifactId=lombok"/>
-			<arg value="-Dversion=${lombok.version}-SNAPSHOT"/>
-			<arg value="-Dpackaging=jar"/>
+			<arg value="install:install-file" />
+			<arg value="-Dfile=dist/lombok-${lombok.version}.jar" />
+			<arg value="-DgroupId=org.projectlombok" />
+			<arg value="-DartifactId=lombok" />
+			<arg value="-Dversion=${lombok.version}-SNAPSHOT" />
+			<arg value="-Dpackaging=jar" />
+			<arg value="-DpomFile=build/pom.xml" />
 		</exec>
 		<condition property="mvn-notfound" value="true">
 			<not><isset property="mvn-result" /></not>
