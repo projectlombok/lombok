@@ -155,6 +155,24 @@ public class Eclipse {
 		return result.toArray(EMPTY_ANNOTATIONS_ARRAY);
 	}
 	
+	/**
+	 * Searches the given field node for annotations and returns each one that matches the provided list of names.
+	 */
+	public static Annotation[] findExactAnnotations(FieldDeclaration field, List<String> names) {
+		List<Annotation> result = new ArrayList<Annotation>();
+		if (field.annotations == null) return EMPTY_ANNOTATIONS_ARRAY;
+		for (Annotation annotation : field.annotations) {
+			TypeReference typeRef = annotation.type;
+			if (typeRef != null && typeRef.getTypeName() != null) {
+				String annoname = toQualifiedName(typeRef.getTypeName());
+				if (names.contains(annoname)) {
+					result.add(annotation);
+				}
+			}
+		}
+		return result.toArray(EMPTY_ANNOTATIONS_ARRAY);
+	}
+
 	/** Matches any of the 8 primitive names, such as {@code boolean}. */
 	private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern.compile(
 			"^(boolean|byte|short|int|long|float|double|char)$");

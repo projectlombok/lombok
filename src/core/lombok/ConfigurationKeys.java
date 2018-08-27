@@ -563,4 +563,12 @@ public class ConfigurationKeys {
 	 * If set to {@code true}, no further {@code lombok.config} files will be checked.
 	 */
 	public static final ConfigurationKey<Boolean> STOP_BUBBLING = new ConfigurationKey<Boolean>("config.stopBubbling", "Tell the configuration system it should stop looking for other configuration files (default: false).") {};
+
+	/**
+	 * lombok configuration: {@code lombok.copyAnnotations} += &lt;String: fully-qualified annotation class name&gt;.
+	 *
+	 * Copy these annotations to getters, setters, etc.
+	 */
+	public static final ConfigurationKey<List<String>> COPY_ANNOTATIONS = new ConfigurationKey<List<String>>("lombok.copyAnnotations", "Copy these annotations to getters, setters, etc.") {};
+
 }
