@@ -1,6 +1,5 @@
 jdk:
 - openjdk10
-# before_install:
-# - export JAVA_HOME=/usr/lib/jvm/java-10-oracle
-# - echo "******Ant Version********"
-# - ant -version
+install:
+   - echo "Running a custom install command"
+   - ant install-maven
