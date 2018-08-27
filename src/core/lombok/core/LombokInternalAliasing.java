@@ -36,10 +36,8 @@ public class LombokInternalAliasing {
 	 */
 	public static String processAliases(String in) {
 		if (in == null) return null;
-		for (Map.Entry<String, String> e : ALIASES.entrySet()) {
-			if (in.equals(e.getKey())) return e.getValue();
-		}
-		return in;
+		String ret = ALIASES.get(in);
+		return ret == null ? in : ret;
 	}
 	
 	static {

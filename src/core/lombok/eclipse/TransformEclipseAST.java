@@ -186,42 +186,54 @@ public class TransformEclipseAST {
 	 * then handles any PrintASTs.
 	 */
 	public void go() {
+		long nextPriority = Long.MIN_VALUE;
 		for (Long d : handlers.getPriorities()) {
-			ast.traverse(new AnnotationVisitor(d));
-			handlers.callASTVisitors(ast, d, ast.isCompleteParse());
+			if (nextPriority > d) continue;
+			AnnotationVisitor visitor = new AnnotationVisitor(d);
+			ast.traverse(visitor);
+			// if no visitor interested for this AST, nextPriority would be MAX_VALUE and we bail out immediatetly
+			nextPriority = visitor.getNextPriority();
+			nextPriority = Math.min(nextPriority, handlers.callASTVisitors(ast, d, ast.isCompleteParse()));
 		}
 	}
 	
 	private static class AnnotationVisitor extends EclipseASTAdapter {
 		private final long priority;
+		// this is the next priority we continue to visit.
+		// Long.MAX_VALUE means never. Each visit method will potentially reduce the next priority
+		private long nextPriority = Long.MAX_VALUE;
 		
 		public AnnotationVisitor(long priority) {
 			this.priority = priority;
 		}
 		
+		public long getNextPriority() {
+			return nextPriority;
+		}
+		
 		@Override public void visitAnnotationOnField(FieldDeclaration field, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation, priority);
+			nextPriority = Math.min(nextPriority, handlers.handleAnnotation(top, annotationNode, annotation, priority));
 		}
 		
 		@Override public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation, priority);
+			nextPriority = Math.min(nextPriority, handlers.handleAnnotation(top, annotationNode, annotation, priority));
 		}
 		
 		@Override public void visitAnnotationOnLocal(LocalDeclaration local, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation, priority);
+			nextPriority = Math.min(nextPriority, handlers.handleAnnotation(top, annotationNode, annotation, priority));
 		}
 		
 		@Override public void visitAnnotationOnMethod(AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation, priority);
+			nextPriority = Math.min(nextPriority, handlers.handleAnnotation(top, annotationNode, annotation, priority));
 		}
 		
 		@Override public void visitAnnotationOnType(TypeDeclaration type, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation, priority);
+			nextPriority = Math.min(nextPriority, handlers.handleAnnotation(top, annotationNode, annotation, priority));
 		}
 	}
 }

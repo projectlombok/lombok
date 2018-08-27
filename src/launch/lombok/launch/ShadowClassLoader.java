@@ -296,17 +296,18 @@ class ShadowClassLoader extends ClassLoader {
 		return null;
 	}
 	
-	private boolean partOfShadow(URL item, String name) {
-		return inOwnBase(item, name) || isPartOfShadowSuffix(item, name, sclSuffix);
+	private boolean partOfShadow(String item, String name) {
+		return !name.startsWith("java/") 
+				&& !name.startsWith("sun/") 
+				&& (inOwnBase(item, name) || isPartOfShadowSuffix(item, name, sclSuffix));
 	}
 	
 	/**
 	 * Checks if the stated item is located inside the same classpath root as the jar that hosts ShadowClassLoader.class. {@code item} and {@code name} refer to the same thing.
 	 */
-	private boolean inOwnBase(URL item, String name) {
+	private boolean inOwnBase(String item, String name) {
 		if (item == null) return false;
-		String itemString = item.toString();
-		return (itemString.length() == SELF_BASE_LENGTH + name.length()) && SELF_BASE.regionMatches(0, itemString, 0, SELF_BASE_LENGTH);
+		return (item.length() == SELF_BASE_LENGTH + name.length()) && SELF_BASE.regionMatches(0, item, 0, SELF_BASE_LENGTH);
 	}
 	
 	private static boolean sclFileContainsSuffix(InputStream in, String suffix) throws IOException {
@@ -386,12 +387,11 @@ class ShadowClassLoader extends ClassLoader {
 		}
 	}
 
-	private boolean isPartOfShadowSuffix(URL item, String name, String suffix) {
+	private boolean isPartOfShadowSuffix(String url, String name, String suffix) {
 		// Instead of throwing an exception or logging, weird, unexpected cases just return false.
 		// This is better than throwing an exception, because exceptions would make your build tools unusable.
 		// Such cases are marked with the comment: // *unexpected*
-		if (item == null) return false;
-		String url = item.toString();
+		if (url == null) return false;
 		if (url.startsWith("file:/")) {
 			url = urlDecode(url.substring(5));
 			if (url.length() <= name.length() || !url.endsWith(name) || url.charAt(url.length() - name.length() - 1) != '/') {
@@ -436,14 +436,14 @@ class ShadowClassLoader extends ClassLoader {
 		Enumeration<URL> sec = super.getResources(name);
 		while (sec.hasMoreElements()) {
 			URL item = sec.nextElement();
-			if (!partOfShadow(item, name)) vector.add(item);
+			if (!partOfShadow(item.toString(), name)) vector.add(item);
 		}
 		
 		if (altName != null) {
 			Enumeration<URL> tern = super.getResources(altName);
 			while (tern.hasMoreElements()) {
 				URL item = tern.nextElement();
-				if (!partOfShadow(item, altName)) vector.add(item);
+				if (!partOfShadow(item.toString(), altName)) vector.add(item);
 			}
 		}
 		
@@ -483,11 +483,11 @@ class ShadowClassLoader extends ClassLoader {
 		
 		if (altName != null) {
 			URL res = super.getResource(altName);
-			if (res != null && (!noSuper || partOfShadow(res, altName))) return res;
+			if (res != null && (!noSuper || partOfShadow(res.toString(), altName))) return res;
 		}
 		
 		URL res = super.getResource(name);
-		if (res != null && (!noSuper || partOfShadow(res, name))) return res;
+		if (res != null && (!noSuper || partOfShadow(res.toString(), name))) return res;
 		return null;
 	}
 	
@@ -501,12 +501,12 @@ class ShadowClassLoader extends ClassLoader {
 	private URL getResourceSkippingSelf(String name) throws IOException {
 		URL candidate = super.getResource(name);
 		if (candidate == null) return null;
-		if (!partOfShadow(candidate, name)) return candidate;
+		if (!partOfShadow(candidate.toString(), name)) return candidate;
 		
 		Enumeration<URL> en = super.getResources(name);
 		while (en.hasMoreElements()) {
 			candidate = en.nextElement();
-			if (!partOfShadow(candidate, name)) return candidate;
+			if (!partOfShadow(candidate.toString(), name)) return candidate;
 		}
 		
 		return null;

@@ -416,5 +416,11 @@ public interface EclipseASTVisitor {
 			int end = node.get().sourceEnd();
 			return String.format(" [%d, %d]", start, end);
 		}
+
+		public boolean isDeferUntilPostDiet() {
+			return false;
+		}
 	}
+
+	boolean isDeferUntilPostDiet();
 }

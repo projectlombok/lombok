@@ -67,7 +67,6 @@ public class StringConfigurationSource implements ConfigurationSource {
 				list.add(new ListModification(value, add));
 			}
 		});
-		
 		return new StringConfigurationSource(values);
 	}
 	

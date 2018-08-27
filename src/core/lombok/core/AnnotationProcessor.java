@@ -72,15 +72,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 	 * the delegate ProcessingEnvironment of the gradle wrapper is returned.
 	 */
 	public static ProcessingEnvironment getJavacProcessingEnvironment(ProcessingEnvironment procEnv, List<String> delayedWarnings) {
-		ProcessingEnvironment javacProcEnv = tryRecursivelyObtainJavacProcessingEnvironment(procEnv);
-		
-		if (javacProcEnv == null) {
-			if (!procEnv.getClass().getName().startsWith("org.eclipse.jdt.")) {
-				delayedWarnings.add("Can't get the delegate of the gradle IncrementalProcessingEnvironment.");
-			}
-		}
-		
-		return javacProcEnv;
+		return tryRecursivelyObtainJavacProcessingEnvironment(procEnv);
 	}
 	
 	private static ProcessingEnvironment tryRecursivelyObtainJavacProcessingEnvironment(ProcessingEnvironment procEnv) {
@@ -111,6 +103,9 @@ public class AnnotationProcessor extends AbstractProcessor {
 		}
 		
 		@Override boolean want(ProcessingEnvironment procEnv, List<String> delayedWarnings) {
+			// do not run on ECJ as it may print warnings
+			if (procEnv.getClass().getName().startsWith("org.eclipse.jdt.")) return false;
+			
 			ProcessingEnvironment javacProcEnv = getJavacProcessingEnvironment(procEnv, delayedWarnings);
 			
 			if (javacProcEnv == null) return false;
@@ -210,7 +205,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		for (TypeElement elem : annotations) {
 			zeroElems = false;
 			Name n = elem.getQualifiedName();
-			if (n.length() > 7 && n.subSequence(0, 7).toString().equals("lombok.")) continue;
+			if (n.toString().startsWith("lombok.")) continue;
 			onlyLombok = false;
 		}
 		
