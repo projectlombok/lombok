@@ -34,10 +34,6 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<available file="${rt-openjdk8}" property="rt-openjdk8.available" />
 	<property environment="env"/>
 	
-	<condition property="isWindows">
-		<os family="windows" />
-	</condition>
-	
 	<path id="build.path">
 		<fileset dir="lib/build">
 			<include name="*.jar" />
@@ -372,17 +368,16 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 		<property name="lombok.dist.built" value="true" />
 	</target>
 	
-	<target name="-mvn-ext-win" if="isWindows">
-		<property name="mvn-ext" value=".cmd" />
+	<target name="-mvn-ext">
+		<condition property="mvn-ext" value=".cmd" else="">
+			<os family="windows" />
+		</condition>
 	</target>
-	<target name="-mvn-ext-not-win" unless="isWindows">
-		<property name="mvn-ext" value="" />
-	</target>
-	<target name="-mvn-ext" depends="-mvn-ext-win,-mvn-ext-not-win" />
 	
 	<target name="install-maven" depends="version,dist,-mvn-ext" description="Install THE lombok.jar into the local maven repository using Apache Maven">
-		<fail unless="env.MAVEN_HOME" message="MAVEN_HOME environment variable must be set. "/>
-		<echo message="MAVEN_HOME: ${env.MAVEN_HOME}"  />
+		<condition property="mvn-exe" value="${env.MAVEN_HOME}/bin/mvn${mvn-ext}" else="mvn${mvn-ext}">
+			<isset property="env.MAVEN_HOME" />
+		</condition>
 		<echo message="Lombok version: ${lombok.version}-SNAPSHOT"  />
 		
 		<echo file="pom.xml"><![CDATA[<project>
@@ -392,7 +387,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 			<version>]]>${lombok.version}-SNAPSHOT<![CDATA[</version>
 </project>]]></echo>
 
-		<exec executable="${env.MAVEN_HOME}/bin/mvn${mvn-ext}">
+		<exec executable="${mvn-exe}" failifexecutionfails="false" resultproperty="mvn-result">
 			<arg value="install:install-file"/>
 			<arg value="-Dfile=dist/lombok-${lombok.version}.jar"/>
 			<arg value="-DgroupId=org.projectlombok"/>
@@ -401,6 +396,10 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 			<arg value="-Dpackaging=jar"/>
 		</exec>
 		<delete file="pom.xml" quiet="true" />
+		<condition property="mvn-notfound" value="true">
+			<not><isset property="mvn-result" /></not>
+		</condition>
+		<fail message="mvn is not on your path and/or MAVEN_HOME is not set. Add mvn to your path or set MAVEN_HOME to continue." if="mvn-notfound" />
 	</target>
 	
 	<target name="dist-utils" description="Builds lombok-utils.jar, which is a library used by i.e. lombok.ast project." depends="version, compile">
