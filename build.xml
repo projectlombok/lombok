@@ -372,9 +372,13 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 		<property name="lombok.dist.built" value="true" />
 	</target>
 	
-	<target name="-mvn-ext" if="isWindows">
+	<target name="-mvn-ext-win" if="isWindows">
 		<property name="mvn-ext" value=".cmd" />
 	</target>
+	<target name="-mvn-ext-not-win" unless="isWindows">
+		<property name="mvn-ext" value="" />
+	</target>
+	<target name="-mvn-ext" depends="-mvn-ext-win,-mvn-ext-not-win" />
 	
 	<target name="install-maven" depends="version,dist,-mvn-ext" description="Install THE lombok.jar into the local maven repository using Apache Maven">
 		<fail unless="env.MAVEN_HOME" message="MAVEN_HOME environment variable must be set. "/>
