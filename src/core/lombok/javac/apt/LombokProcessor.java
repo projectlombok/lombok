@@ -174,7 +174,10 @@ public class LombokProcessor extends AbstractProcessor {
 				filerFileManagerField.setAccessible(true);
 				filerFileManagerField.set(javacFiler, newFilerManager);
 				
-				replaceFileManagerJdk9(context, newFilerManager);
+				if (lombok.javac.Javac.getJavaCompilerVersion() > 8
+						&& !lombok.javac.handlers.JavacHandlerUtil.inNetbeansCompileOnSave(context)) {
+					replaceFileManagerJdk9(context, newFilerManager);
+				}
 			}
 		} catch (Exception e) {
 			throw Lombok.sneakyThrow(e);
