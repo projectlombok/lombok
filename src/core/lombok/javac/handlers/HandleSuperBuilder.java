@@ -406,17 +406,10 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		AccessLevel level = AccessLevel.PROTECTED;
 		
-		ListBuffer<JCStatement> nullChecks = new ListBuffer<JCStatement>();
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		
 		Name builderVariableName = typeNode.toName("b");
 		for (BuilderFieldData bfd : builderFields) {
-			List<JCAnnotation> nonNulls = findAnnotations(bfd.originalFieldNode, NON_NULL_PATTERN);
-			if (!nonNulls.isEmpty()) {
-				JCStatement nullCheck = generateNullCheck(maker, bfd.originalFieldNode, source);
-				if (nullCheck != null) nullChecks.append(nullCheck);
-			}
-			
 			JCExpression rhs;
 			if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
 				bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, bfd.originalFieldNode, bfd.type, statements, bfd.name, "b");
@@ -427,14 +420,21 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			JCFieldAccess fieldInThis = maker.Select(maker.Ident(typeNode.toName("this")), bfd.rawName);
 			
 			JCStatement assign = maker.Exec(maker.Assign(fieldInThis, rhs));
-			statements.append(assign);
 			
-			// In case of @Builder.Default, set the value to the default if it was NOT set in the builder.
+			// In case of @Builder.Default, set the value to the default if it was not set in the builder.
 			if (bfd.nameOfSetFlag != null) {
 				JCFieldAccess setField = maker.Select(maker.Ident(builderVariableName), bfd.nameOfSetFlag);
 				fieldInThis = maker.Select(maker.Ident(typeNode.toName("this")), bfd.rawName);
 				JCAssign assignDefault = maker.Assign(fieldInThis, maker.Apply(typeParameterNames(maker, ((JCClassDecl) typeNode.get()).typarams), maker.Select(maker.Ident(((JCClassDecl) typeNode.get()).name), bfd.nameOfDefaultProvider), List.<JCExpression>nil()));
-				statements.append(maker.If(maker.Unary(CTC_NOT, setField), maker.Exec(assignDefault), null));
+				statements.append(maker.If(setField, assign, maker.Exec(assignDefault)));
+			} else {
+				statements.append(assign);
+			}
+			
+			List<JCAnnotation> nonNulls = findAnnotations(bfd.originalFieldNode, NON_NULL_PATTERN);
+			if (!nonNulls.isEmpty()) {
+				JCStatement nullCheck = generateNullCheck(maker, bfd.originalFieldNode, source);
+				if (nullCheck != null) statements.append(nullCheck);
 			}
 		}
 		
@@ -465,7 +465,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		JCMethodDecl constr = recursiveSetGeneratedBy(maker.MethodDef(mods, typeNode.toName("<init>"),
 			null, List.<JCTypeParameter>nil(), params.toList(), List.<JCExpression>nil(),
-			maker.Block(0L, nullChecks.appendList(statements).toList()), null), source.get(), typeNode.getContext());
+			maker.Block(0L, statements.toList()), null), source.get(), typeNode.getContext());
 		
 		injectMethod(typeNode, constr, null, Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
 	}
