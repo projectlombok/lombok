@@ -382,6 +382,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				Argument arg = (Argument) param.get();
 				bfd.rawName = arg.name;
 				bfd.name = arg.name;
+				bfd.annotations = arg.annotations;
 				bfd.type = arg.type;
 				bfd.singularData = getSingularData(param, ast);
 				bfd.originalFieldNode = param;
