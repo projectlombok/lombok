@@ -1336,6 +1336,23 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
+	 * Searches the given field node for annotations and returns each one that matches the provided list of names.
+	 */
+	public static List<JCAnnotation> findExactAnnotations(JavacNode fieldNode, java.util.List<String> names) {
+		ListBuffer<JCAnnotation> result = new ListBuffer<JCAnnotation>();
+		for (JavacNode child : fieldNode.down()) {
+			if (child.getKind() == Kind.ANNOTATION) {
+				JCAnnotation annotation = (JCAnnotation) child.get();
+				String annoname = annotation.annotationType.toString();
+				if (names.contains(annoname)) {
+					result.append(annotation);
+				}
+			}
+		}
+		return result.toList();
+	}
+
+	/**
 	 * Generates a new statement that checks if the given variable is null, and if so, throws a configured exception with the
 	 * variable name as message.
 	 */

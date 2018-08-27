@@ -149,10 +149,15 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				JCVariableDecl fd = (JCVariableDecl) fieldNode.get();
 				JavacNode isDefault = findAnnotation(Builder.Default.class, fieldNode, false);
 				boolean isFinal = (fd.mods.flags & Flags.FINAL) != 0 || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));
+
+				List<JCAnnotation> nonNulls = findAnnotations(fieldNode, NON_NULL_PATTERN);
+				List<JCAnnotation> nullables = findAnnotations(fieldNode, NULLABLE_PATTERN);
+				List<JCAnnotation> copyAnnotations = findExactAnnotations(fieldNode, copyAnnotationNames(fieldNode.getAst()));
+
 				BuilderFieldData bfd = new BuilderFieldData();
 				bfd.rawName = fd.name;
 				bfd.name = removePrefixFromField(fieldNode);
-				bfd.annotations = fd.mods.annotations;
+				bfd.annotations = nonNulls.appendList(nullables).appendList(copyAnnotations);
 				bfd.type = fd.vartype;
 				bfd.singularData = getSingularData(fieldNode);
 				bfd.originalFieldNode = fieldNode;

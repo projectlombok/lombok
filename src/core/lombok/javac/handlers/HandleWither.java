@@ -224,6 +224,7 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		
 		List<JCAnnotation> nonNulls = findAnnotations(field, NON_NULL_PATTERN);
 		List<JCAnnotation> nullables = findAnnotations(field, NULLABLE_PATTERN);
+		List<JCAnnotation> copyAnnotations = findExactAnnotations(field, copyAnnotationNames(field.getAst()));
 		
 		Name methodName = field.toName(witherName);
 		
@@ -231,7 +232,7 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		
 		JCBlock methodBody = null;
 		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, field.getContext());
-		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(nonNulls).appendList(nullables);
+		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(nonNulls).appendList(nullables).appendList(copyAnnotations);
 		
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
 		

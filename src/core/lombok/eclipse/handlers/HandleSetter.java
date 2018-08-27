@@ -238,6 +238,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		
 		Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
 		Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
+		Annotation[] copyAnnotations = findExactAnnotations(field, copyAnnotationNames(fieldNode.getAst()));
 		List<Statement> statements = new ArrayList<Statement>(5);
 		if (nonNulls.length == 0) {
 			statements.add(assignment);
@@ -255,7 +256,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 			statements.add(returnStatement);
 		}
 		method.statements = statements.toArray(new Statement[0]);
-		param.annotations = copyAnnotations(source, nonNulls, nullables, onParam.toArray(new Annotation[0]));
+		param.annotations = copyAnnotations(source, nonNulls, nullables, copyAnnotations, onParam.toArray(new Annotation[0]));
 		
 		method.traverse(new SetGeneratedByVisitor(source), parent.scope);
 		return method;
