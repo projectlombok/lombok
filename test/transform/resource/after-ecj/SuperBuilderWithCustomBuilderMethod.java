@@ -38,7 +38,7 @@ public class SuperBuilderWithCustomBuilderMethod {
       private ParentBuilderImpl() {
         super();
       }
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") ParentBuilderImpl self() {
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") ParentBuilderImpl<A> self() {
         return this;
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") Parent<A> build() {
@@ -87,7 +87,7 @@ public class SuperBuilderWithCustomBuilderMethod {
       private ChildBuilderImpl() {
         super();
       }
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") ChildBuilderImpl self() {
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") ChildBuilderImpl<A> self() {
         return this;
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") Child<A> build() {

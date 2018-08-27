@@ -24,7 +24,6 @@ package lombok.eclipse.handlers;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.EclipseAugments.*;
-import static lombok.eclipse.handlers.EclipseHandlerUtil.setGeneratedBy;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;

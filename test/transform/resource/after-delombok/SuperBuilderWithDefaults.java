@@ -50,7 +50,7 @@ public class SuperBuilderWithDefaults {
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected ParentBuilderImpl self() {
+			protected ParentBuilderImpl<N> self() {
 				return this;
 			}
 			@java.lang.Override
