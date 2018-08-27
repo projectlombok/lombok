@@ -456,7 +456,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		constructor.arguments = new Argument[] {new Argument("b".toCharArray(), p, builderType, Modifier.FINAL)};
 		
 		List<Statement> statements = new ArrayList<Statement>();
-		List<Statement> nullChecks = new ArrayList<Statement>();
 		
 		for (BuilderFieldData fieldNode : builderFields) {
 			char[] fieldName = removePrefixFromField(fieldNode.originalFieldNode);
@@ -475,7 +474,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 				assignmentExpr = new QualifiedNameReference(variableInBuilder, positions, s, e);
 			}
 			Statement assignment = new Assignment(fieldInThis, assignmentExpr, (int) p);
-			statements.add(assignment);
 			
 			// In case of @Builder.Default, set the value to the default if it was NOT set in the builder.
 			if (fieldNode.nameOfSetFlag != null) {
@@ -483,29 +481,30 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 				long[] positions = new long[] {p, p};
 				QualifiedNameReference setVariableInBuilderRef = new QualifiedNameReference(setVariableInBuilder, positions, s, e);
 
-				MessageSend inv = new MessageSend();
-				inv.sourceStart = source.sourceStart;
-				inv.sourceEnd = source.sourceEnd;
-				inv.receiver = new SingleNameReference(((TypeDeclaration) typeNode.get()).name, 0L);
-				inv.selector = fieldNode.nameOfDefaultProvider;
-				inv.typeArguments = typeParameterNames(((TypeDeclaration) typeNode.get()).typeParameters);
+				MessageSend defaultMethodCall = new MessageSend();
+				defaultMethodCall.sourceStart = source.sourceStart;
+				defaultMethodCall.sourceEnd = source.sourceEnd;
+				defaultMethodCall.receiver = new SingleNameReference(((TypeDeclaration) typeNode.get()).name, 0L);
+				defaultMethodCall.selector = fieldNode.nameOfDefaultProvider;
+				defaultMethodCall.typeArguments = typeParameterNames(((TypeDeclaration) typeNode.get()).typeParameters);
 				
-				assignment = new Assignment(fieldInThis, inv, (int) p);
-				IfStatement ifBlockForDefault = new IfStatement(new UnaryExpression(setVariableInBuilderRef, OperatorIds.NOT), assignment, s, e);
+				Statement defaultAssignment = new Assignment(fieldInThis, defaultMethodCall, (int) p);
+				IfStatement ifBlockForDefault = new IfStatement(setVariableInBuilderRef, assignment, defaultAssignment, s, e);
 				statements.add(ifBlockForDefault);
+			} else {
+				statements.add(assignment);
 			}
 			
 			Annotation[] nonNulls = findAnnotations((FieldDeclaration)fieldNode.originalFieldNode.get(), NON_NULL_PATTERN);
 			if (nonNulls.length != 0) {
 				Statement nullCheck = generateNullCheck((FieldDeclaration)fieldNode.originalFieldNode.get(), sourceNode);
 				if (nullCheck != null) {
-					nullChecks.add(nullCheck);
+					statements.add(nullCheck);
 				}
 			}
 		}
 		
-		nullChecks.addAll(statements);
-		constructor.statements = nullChecks.isEmpty() ? null : nullChecks.toArray(new Statement[nullChecks.size()]);
+		constructor.statements = statements.isEmpty() ? null : statements.toArray(new Statement[statements.size()]);
 		
 		constructor.traverse(new SetGeneratedByVisitor(source), typeDeclaration.scope);
 		

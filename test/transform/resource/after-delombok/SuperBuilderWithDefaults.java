@@ -61,10 +61,10 @@ public class SuperBuilderWithDefaults {
 		}
 		@java.lang.SuppressWarnings("all")
 		protected Parent(final ParentBuilder<N, ?, ?> b) {
-			this.millis = b.millis;
-			if (!b.millis$set) this.millis = Parent.<N>$default$millis();
-			this.numberField = b.numberField;
-			if (!b.numberField$set) this.numberField = Parent.<N>$default$numberField();
+			if (b.millis$set) this.millis = b.millis;
+			 else this.millis = Parent.<N>$default$millis();
+			if (b.numberField$set) this.numberField = b.numberField; 
+			 else this.numberField = Parent.<N>$default$numberField();
 		}
 		@java.lang.SuppressWarnings("all")
 		public static <N extends Number> ParentBuilder<N, ?, ?> builder() {
@@ -120,8 +120,8 @@ public class SuperBuilderWithDefaults {
 		@java.lang.SuppressWarnings("all")
 		protected Child(final ChildBuilder<?, ?> b) {
 			super(b);
-			this.doubleField = b.doubleField;
-			if (!b.doubleField$set) this.doubleField = Child.$default$doubleField();
+			if (b.doubleField$set) this.doubleField = b.doubleField;
+			 else this.doubleField = Child.$default$doubleField();
 		}
 		@java.lang.SuppressWarnings("all")
 		public static ChildBuilder<?, ?> builder() {
