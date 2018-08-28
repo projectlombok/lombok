@@ -1,5 +1,5 @@
 jdk:
 - openjdk10
 install:
-   - echo "Running a custom install command"
-   - ant generate-pom
+- echo "Running a custom install command"
+- ant install-maven
