@@ -29,7 +29,7 @@ public class SuperBuilderWithDefaults {
       private ParentBuilderImpl() {
         super();
       }
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") ParentBuilderImpl self() {
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") ParentBuilderImpl<N> self() {
         return this;
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") Parent<N> build() {

@@ -415,7 +415,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 				bfd.singularData.getSingularizer().appendBuildCode(bfd.singularData, bfd.originalFieldNode, bfd.type, statements, bfd.name, "b");
 				rhs = maker.Ident(bfd.singularData.getPluralName());
 			} else {
-				rhs = maker.Select(maker.Ident(builderVariableName), bfd.rawName);
+				rhs = maker.Select(maker.Ident(builderVariableName), bfd.name);
 			}
 			JCFieldAccess fieldInThis = maker.Select(maker.Ident(typeNode.toName("this")), bfd.rawName);
 			
