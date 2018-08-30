@@ -12,5 +12,5 @@ import java.util.List;
 
 class GetterTypeAnnos {
 	@Getter
-       	@TA List<@TA String> foo;
+	@TA List<@TA String> foo;
 }
