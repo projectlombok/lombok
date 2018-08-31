@@ -773,7 +773,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		String setterName = fluent ? fieldNode.getName() : HandlerUtil.buildAccessorName("set", fieldNode.getName());
 		
 		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, nameOfSetFlag, chain, ClassFileConstants.AccPublic,
-			sourceNode, Collections.<Annotation>emptyList(), Arrays.asList(annotations));
+			sourceNode, Collections.<Annotation>emptyList(), annotations != null ? Arrays.asList(annotations) : Collections.<Annotation>emptyList());
 		injectMethod(builderType, setter);
 	}
 	
