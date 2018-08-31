@@ -1,3 +1,15 @@
+This is a dirty fork to play with a proof of concept about do notation for java.
+
+The unique files added (no changes was maded to lombok itself) are:
+
+* src/core/lombok/BindTo.java
+* src/core/lombok/bind.java
+* src/core/lombok/javac/handlers/HandleBind.java
+
+
+
+========================
+
 Project Lombok makes java a spicier language by adding 'handlers' that know how to build and compile simple, boilerplate-free, not-quite-java code.
 See LICENSE for the Project Lombok license.
 
