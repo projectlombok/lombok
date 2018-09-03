@@ -34,9 +34,14 @@ import org.eclipse.jdt.internal.compiler.ast.Argument;
 import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
+import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
+import org.eclipse.jdt.internal.compiler.ast.NormalAnnotation;
+import org.eclipse.jdt.internal.compiler.ast.SingleMemberAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
@@ -351,7 +356,23 @@ public interface EclipseASTVisitor {
 		}
 		
 		public void visitAnnotationOnMethod(AbstractMethodDeclaration method, EclipseNode node, Annotation annotation) {
-			forcePrint("<ANNOTATION%s: %s%s />", isGenerated(method) ? " (GENERATED)" : "", annotation, position(node));
+			forcePrint("<ANNOTATION%s: %s%s>", isGenerated(method) ? " (GENERATED)" : "", annotation, position(node));
+			if (annotation instanceof MarkerAnnotation || disablePrinting != 0) {
+				forcePrint("<ANNOTATION%s: %s%s />", isGenerated(method) ? " (GENERATED)" : "", annotation, position(node));
+			} else {
+				forcePrint("<ANNOTATION%s: %s%s>", isGenerated(method) ? " (GENERATED)" : "", annotation, position(node));
+				indent++;
+				if (annotation instanceof SingleMemberAnnotation) {
+					Expression expr = ((SingleMemberAnnotation) annotation).memberValue;
+					print("<SINGLE-MEMBER-VALUE %s /> %s", expr.getClass(), expr);
+				}
+				if (annotation instanceof NormalAnnotation) {
+					for (MemberValuePair mvp : ((NormalAnnotation) annotation).memberValuePairs) {
+						print("<Member %s: %s /> %s", new String(mvp.name), mvp.value.getClass(), mvp.value);
+					}
+				}
+				indent--;
+			}
 		}
 		
 		public void endVisitMethod(EclipseNode node, AbstractMethodDeclaration method) {
