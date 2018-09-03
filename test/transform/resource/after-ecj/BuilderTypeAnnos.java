@@ -1,7 +1,9 @@
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.List;
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER}) @interface TA {
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER}) @interface TA {
+}
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER}) @interface TB {
 }
 @lombok.Builder class BuilderTypeAnnos {
   public static @java.lang.SuppressWarnings("all") class BuilderTypeAnnosBuilder {
@@ -20,7 +22,7 @@ import java.util.List;
       return (("BuilderTypeAnnos.BuilderTypeAnnosBuilder(foo=" + this.foo) + ")");
     }
   }
-  private @TA List<@TA String> foo;
+  private @TA @TB List<String> foo;
   @java.lang.SuppressWarnings("all") BuilderTypeAnnos(final @TA List<String> foo) {
     super();
     this.foo = foo;

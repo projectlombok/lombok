@@ -1343,15 +1343,13 @@ public class JavacHandlerUtil {
 		for (JavacNode child : fieldNode.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				JCAnnotation annotation = (JCAnnotation) child.get();
-				String annoname = annotation.annotationType.toString();
-				if (names.contains(annoname)) {
-					result.append(annotation);
-				}
+				String annoName = annotation.annotationType.toString();
+				if (names.contains(annoName)) result.append(annotation);
 			}
 		}
 		return result.toList();
 	}
-
+	
 	/**
 	 * Generates a new statement that checks if the given variable is null, and if so, throws a configured exception with the
 	 * variable name as message.

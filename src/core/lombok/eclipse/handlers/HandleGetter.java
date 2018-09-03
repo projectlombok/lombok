@@ -274,7 +274,7 @@ public class HandleGetter extends EclipseAnnotationHandler<Getter> {
 					onMethod.toArray(new Annotation[0]),
 					findAnnotations(field, NON_NULL_PATTERN),
 					findAnnotations(field, NULLABLE_PATTERN),
-					findExactAnnotations(field, copyAnnotationNames(fieldNode.getAst())),
+					findExactAnnotations(field, getCopyableAnnotationNames(fieldNode.getAst())),
 					findDelegatesAndMarkAsHandled(fieldNode),
 					deprecated);
 		}

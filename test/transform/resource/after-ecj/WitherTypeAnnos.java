@@ -2,11 +2,13 @@ import lombok.experimental.Wither;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.util.List;
-@Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER}) @interface TA {
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER}) @interface TA {
+}
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER}) @interface TB {
 }
 class WitherTypeAnnos {
-  final @Wither @TA List<@TA String> foo;
-  WitherTypeAnnos(@TA List<@TA String> foo) {
+  final @Wither @TA @TB List<String> foo;
+  WitherTypeAnnos(@TA @TB List<String> foo) {
     super();
     this.foo = foo;
   }

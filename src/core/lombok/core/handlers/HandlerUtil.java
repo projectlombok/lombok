@@ -230,9 +230,9 @@ public class HandlerUtil {
 	
 	public static final String DEFAULT_EXCEPTION_FOR_NON_NULL = "java.lang.NullPointerException";
 	
-	/** Returns the configuration value for ConfigurationKeys.COPY_ANNOTATIONS. */
-	public static List<String> copyAnnotationNames(AST<?, ?, ?> ast) {
-		return ast.readConfiguration(ConfigurationKeys.COPY_ANNOTATIONS);
+	/** Returns the configuration value for ConfigurationKeys.COPYABLE_ANNOTATIONS. */
+	public static List<String> getCopyableAnnotationNames(AST<?, ?, ?> ast) {
+		return ast.readConfiguration(ConfigurationKeys.COPYABLE_ANNOTATIONS);
 	}
 
 	/**

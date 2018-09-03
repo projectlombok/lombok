@@ -202,8 +202,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				
 				Annotation[] nonNulls = findAnnotations(fd, NON_NULL_PATTERN);
 				Annotation[] nullables = findAnnotations(fd, NULLABLE_PATTERN);
-				Annotation[] copyAnnotations = findExactAnnotations(fd, copyAnnotationNames(fieldNode.getAst()));
-
+				Annotation[] copyAnnotations = findExactAnnotations(fd, getCopyableAnnotationNames(fieldNode.getAst()));
+				
 				BuilderFieldData bfd = new BuilderFieldData();
 				bfd.rawName = fieldNode.getName().toCharArray();
 				bfd.name = removePrefixFromField(fieldNode);
@@ -380,9 +380,14 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				if (param.getKind() != Kind.ARGUMENT) continue;
 				BuilderFieldData bfd = new BuilderFieldData();
 				Argument arg = (Argument) param.get();
+				
+				Annotation[] nonNulls = findAnnotations(arg, NON_NULL_PATTERN);
+				Annotation[] nullables = findAnnotations(arg, NULLABLE_PATTERN);
+				Annotation[] copyAnnotations = findExactAnnotations(arg, getCopyableAnnotationNames(param.getAst()));
+				
 				bfd.rawName = arg.name;
 				bfd.name = arg.name;
-				bfd.annotations = arg.annotations;
+				bfd.annotations = copyAnnotations(arg, nonNulls, nullables, copyAnnotations);
 				bfd.type = arg.type;
 				bfd.singularData = getSingularData(param, ast);
 				bfd.originalFieldNode = param;
@@ -774,7 +779,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		String setterName = fluent ? fieldNode.getName() : HandlerUtil.buildAccessorName("set", fieldNode.getName());
 		
 		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, nameOfSetFlag, chain, ClassFileConstants.AccPublic,
-			sourceNode, Collections.<Annotation>emptyList(), annotations != null ? Arrays.asList(annotations) : Collections.<Annotation>emptyList());
+			sourceNode, Collections.<Annotation>emptyList(), annotations != null ? Arrays.asList(copyAnnotations(sourceNode.get(), annotations)) : Collections.<Annotation>emptyList());
 		injectMethod(builderType, setter);
 	}
 	

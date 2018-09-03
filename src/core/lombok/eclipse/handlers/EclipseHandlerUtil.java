@@ -672,6 +672,24 @@ public class EclipseHandlerUtil {
 		}
 	}
 	
+	private static final Annotation[] EMPTY_ANNOTATIONS_ARRAY = new Annotation[0];
+	
+	/**
+	 * Searches the given field node for annotations and returns each one that matches the provided list of names.
+	 */
+	public static Annotation[] findExactAnnotations(AbstractVariableDeclaration field, List<String> names) {
+		List<Annotation> result = new ArrayList<Annotation>();
+		if (field.annotations == null) return EMPTY_ANNOTATIONS_ARRAY;
+		for (Annotation annotation : field.annotations) {
+			TypeReference typeRef = annotation.type;
+			if (typeRef != null && typeRef.getTypeName() != null) {
+				String annoName = toQualifiedName(typeRef.getTypeName());
+				if (names.contains(annoName)) result.add(annotation);
+			}
+		}
+		return result.toArray(EMPTY_ANNOTATIONS_ARRAY);
+	}
+	
 	/**
 	 * Checks if the provided annotation type is likely to be the intended type for the given annotation node.
 	 * 

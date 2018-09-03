@@ -149,15 +149,15 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				JCVariableDecl fd = (JCVariableDecl) fieldNode.get();
 				JavacNode isDefault = findAnnotation(Builder.Default.class, fieldNode, false);
 				boolean isFinal = (fd.mods.flags & Flags.FINAL) != 0 || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));
-
+				
 				List<JCAnnotation> nonNulls = findAnnotations(fieldNode, NON_NULL_PATTERN);
 				List<JCAnnotation> nullables = findAnnotations(fieldNode, NULLABLE_PATTERN);
-				List<JCAnnotation> copyAnnotations = findExactAnnotations(fieldNode, copyAnnotationNames(fieldNode.getAst()));
-
+				List<JCAnnotation> copyableAnnotations = findExactAnnotations(fieldNode, getCopyableAnnotationNames(fieldNode.getAst()));
+				
 				BuilderFieldData bfd = new BuilderFieldData();
 				bfd.rawName = fd.name;
 				bfd.name = removePrefixFromField(fieldNode);
-				bfd.annotations = nonNulls.appendList(nullables).appendList(copyAnnotations);
+				bfd.annotations = nonNulls.appendList(nullables).appendList(copyableAnnotations);
 				bfd.type = fd.vartype;
 				bfd.singularData = getSingularData(fieldNode);
 				bfd.originalFieldNode = fieldNode;
@@ -333,10 +333,15 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			for (JavacNode param : fillParametersFrom.down()) {
 				if (param.getKind() != Kind.ARGUMENT) continue;
 				BuilderFieldData bfd = new BuilderFieldData();
+				
+				List<JCAnnotation> nonNulls = findAnnotations(param, NON_NULL_PATTERN);
+				List<JCAnnotation> nullables = findAnnotations(param, NULLABLE_PATTERN);
+				List<JCAnnotation> copyableAnnotations = findExactAnnotations(param, getCopyableAnnotationNames(param.getAst()));
+				
 				JCVariableDecl raw = (JCVariableDecl) param.get();
 				bfd.name = raw.name;
 				bfd.rawName = raw.name;
-				bfd.annotations = raw.mods.annotations;
+				bfd.annotations = nonNulls.appendList(nullables).appendList(copyableAnnotations);
 				bfd.type = raw.vartype;
 				bfd.singularData = getSingularData(param);
 				bfd.originalFieldNode = param;

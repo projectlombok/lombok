@@ -331,9 +331,9 @@ public class HandleConstructor {
 			Name rawName = field.name;
 			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, NON_NULL_PATTERN);
 			List<JCAnnotation> nullables = findAnnotations(fieldNode, NULLABLE_PATTERN);
-			List<JCAnnotation> copyAnnotations = findExactAnnotations(fieldNode, copyAnnotationNames(fieldNode.getAst()));
+			List<JCAnnotation> copyableAnnotations = findExactAnnotations(fieldNode, getCopyableAnnotationNames(fieldNode.getAst()));
 			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, nonNulls.appendList(nullables).appendList(copyAnnotations)), fieldName, field.vartype, null);
+			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, nonNulls.appendList(nullables).appendList(copyableAnnotations)), fieldName, field.vartype, null);
 			params.append(param);
 			if (!nonNulls.isEmpty()) {
 				JCStatement nullCheck = generateNullCheck(maker, fieldNode, param, source);

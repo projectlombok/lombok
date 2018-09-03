@@ -242,7 +242,7 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 		
 		Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
 		Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
-		Annotation[] copyAnnotations = findExactAnnotations(field, copyAnnotationNames(fieldNode.getAst()));
+		Annotation[] copyableAnnotations = findExactAnnotations(field, getCopyableAnnotationNames(fieldNode.getAst()));
 		
 		if (!makeAbstract) {
 			List<Expression> args = new ArrayList<Expression>();
@@ -286,7 +286,7 @@ public class HandleWither extends EclipseAnnotationHandler<Wither> {
 			
 			method.statements = statements.toArray(new Statement[0]);
 		}
-		param.annotations = copyAnnotations(source, nonNulls, nullables, copyAnnotations, onParam.toArray(new Annotation[0]));
+		param.annotations = copyAnnotations(source, nonNulls, nullables, copyableAnnotations, onParam.toArray(new Annotation[0]));
 		
 		method.traverse(new SetGeneratedByVisitor(source), parent.scope);
 		return method;

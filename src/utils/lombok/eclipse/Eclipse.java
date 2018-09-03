@@ -31,11 +31,11 @@ import lombok.core.ClassLiteral;
 import lombok.core.FieldSelect;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.AbstractVariableDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.Clinit;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
-import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Literal;
 import org.eclipse.jdt.internal.compiler.ast.QualifiedNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
@@ -139,7 +139,7 @@ public class Eclipse {
 	 * 
 	 * Only the simple name is checked - the package and any containing class are ignored.
 	 */
-	public static Annotation[] findAnnotations(FieldDeclaration field, Pattern namePattern) {
+	public static Annotation[] findAnnotations(AbstractVariableDeclaration field, Pattern namePattern) {
 		List<Annotation> result = new ArrayList<Annotation>();
 		if (field.annotations == null) return EMPTY_ANNOTATIONS_ARRAY;
 		for (Annotation annotation : field.annotations) {
@@ -155,24 +155,6 @@ public class Eclipse {
 		return result.toArray(EMPTY_ANNOTATIONS_ARRAY);
 	}
 	
-	/**
-	 * Searches the given field node for annotations and returns each one that matches the provided list of names.
-	 */
-	public static Annotation[] findExactAnnotations(FieldDeclaration field, List<String> names) {
-		List<Annotation> result = new ArrayList<Annotation>();
-		if (field.annotations == null) return EMPTY_ANNOTATIONS_ARRAY;
-		for (Annotation annotation : field.annotations) {
-			TypeReference typeRef = annotation.type;
-			if (typeRef != null && typeRef.getTypeName() != null) {
-				String annoname = toQualifiedName(typeRef.getTypeName());
-				if (names.contains(annoname)) {
-					result.add(annotation);
-				}
-			}
-		}
-		return result.toArray(EMPTY_ANNOTATIONS_ARRAY);
-	}
-
 	/** Matches any of the 8 primitive names, such as {@code boolean}. */
 	private static final Pattern PRIMITIVE_TYPE_NAME_PATTERN = Pattern.compile(
 			"^(boolean|byte|short|int|long|float|double|char)$");
