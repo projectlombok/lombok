@@ -1583,6 +1583,14 @@ public class JavacHandlerUtil {
 		return node;
 	}
 	
+	public static List<JCExpression> cloneTypes(JavacTreeMaker maker, List<JCExpression> in, JCTree source, Context context) {
+		if (in.isEmpty()) return List.nil();
+		if (in.size() == 1) return List.of(cloneType(maker, in.get(0), source, context));
+		ListBuffer<JCExpression> lb = new ListBuffer<JCExpression>();
+		for (JCExpression expr : in) lb.append(cloneType(maker, expr, source, context));
+		return lb.toList();
+	}
+	
 	/**
 	 * Creates a full clone of a given javac AST type node. Every part is cloned (every identifier, every select, every wildcard, every type apply).
 	 * 

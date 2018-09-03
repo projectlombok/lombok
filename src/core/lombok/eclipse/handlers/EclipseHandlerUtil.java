@@ -24,8 +24,10 @@ package lombok.eclipse.handlers;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.Eclipse.*;
 import static lombok.eclipse.EclipseAugments.*;
+import static lombok.eclipse.handlers.EclipseHandlerUtil.EclipseReflectiveMembers.*;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -64,14 +66,22 @@ import org.eclipse.jdt.internal.compiler.ast.ArrayQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ArrayTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.CastExpression;
+import org.eclipse.jdt.internal.compiler.ast.CharLiteral;
+import org.eclipse.jdt.internal.compiler.ast.ClassLiteralAccess;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ConstructorDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.DoubleLiteral;
 import org.eclipse.jdt.internal.compiler.ast.EqualExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
+import org.eclipse.jdt.internal.compiler.ast.ExtendedStringLiteral;
+import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
+import org.eclipse.jdt.internal.compiler.ast.FloatLiteral;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
 import org.eclipse.jdt.internal.compiler.ast.IntLiteral;
+import org.eclipse.jdt.internal.compiler.ast.Literal;
+import org.eclipse.jdt.internal.compiler.ast.LongLiteral;
 import org.eclipse.jdt.internal.compiler.ast.MarkerAnnotation;
 import org.eclipse.jdt.internal.compiler.ast.MemberValuePair;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
@@ -89,8 +99,10 @@ import org.eclipse.jdt.internal.compiler.ast.SingleNameReference;
 import org.eclipse.jdt.internal.compiler.ast.SingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
+import org.eclipse.jdt.internal.compiler.ast.StringLiteralConcatenation;
 import org.eclipse.jdt.internal.compiler.ast.ThisReference;
 import org.eclipse.jdt.internal.compiler.ast.ThrowStatement;
+import org.eclipse.jdt.internal.compiler.ast.TrueLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeParameter;
 import org.eclipse.jdt.internal.compiler.ast.TypeReference;
@@ -250,6 +262,9 @@ public class EclipseHandlerUtil {
 			MarkerAnnotation ann = new MarkerAnnotation(copyType(annotation.type, source), pS);
 			setGeneratedBy(ann, source);
 			ann.declarationSourceEnd = ann.sourceEnd = ann.statementEnd = pE;
+			try {
+				reflectSet(ANNOTATION__MEMBER_VALUE_PAIR_NAME, ann, reflect(ANNOTATION__MEMBER_VALUE_PAIR_NAME, annotation));
+			} catch (Exception ignore) { /* Various eclipse versions don't have it */ }
 			return ann;
 		}
 		
@@ -257,8 +272,10 @@ public class EclipseHandlerUtil {
 			SingleMemberAnnotation ann = new SingleMemberAnnotation(copyType(annotation.type, source), pS);
 			setGeneratedBy(ann, source);
 			ann.declarationSourceEnd = ann.sourceEnd = ann.statementEnd = pE;
-			//TODO memberValue(s) need to be copied as well (same for copying a NormalAnnotation as below).
-			ann.memberValue = ((SingleMemberAnnotation)annotation).memberValue;
+			ann.memberValue = copyAnnotationMemberValue(((SingleMemberAnnotation) annotation).memberValue);
+			try {
+				reflectSet(ANNOTATION__MEMBER_VALUE_PAIR_NAME, ann, reflect(ANNOTATION__MEMBER_VALUE_PAIR_NAME, annotation));
+			} catch (Exception ignore) { /* Various eclipse versions don't have it */ }
 			return ann;
 		}
 		
@@ -266,11 +283,136 @@ public class EclipseHandlerUtil {
 			NormalAnnotation ann = new NormalAnnotation(copyType(annotation.type, source), pS);
 			setGeneratedBy(ann, source);
 			ann.declarationSourceEnd = ann.statementEnd = ann.sourceEnd = pE;
-			ann.memberValuePairs = ((NormalAnnotation)annotation).memberValuePairs;
+			MemberValuePair[] inPairs = ((NormalAnnotation) annotation).memberValuePairs;
+			if (inPairs == null) {
+				ann.memberValuePairs = null;
+			} else {
+				ann.memberValuePairs = new MemberValuePair[inPairs.length];
+				for (int i = 0; i < inPairs.length; i++) ann.memberValuePairs[i] =
+						new MemberValuePair(inPairs[i].name, inPairs[i].sourceStart, inPairs[i].sourceEnd, copyAnnotationMemberValue(inPairs[i].value));
+			}
+			try {
+				reflectSet(ANNOTATION__MEMBER_VALUE_PAIR_NAME, ann, reflect(ANNOTATION__MEMBER_VALUE_PAIR_NAME, annotation));
+			} catch (Exception ignore) { /* Various eclipse versions don't have it */ }
 			return ann;
 		}
 		
 		return annotation;
+	}
+	
+	static class EclipseReflectiveMembers {
+		public static final Field STRING_LITERAL__LINE_NUMBER;
+		public static final Field ANNOTATION__MEMBER_VALUE_PAIR_NAME;
+		public static final Field TYPE_REFERENCE__ANNOTATIONS;
+		static {
+			STRING_LITERAL__LINE_NUMBER = getField(StringLiteral.class, "lineNumber");
+			ANNOTATION__MEMBER_VALUE_PAIR_NAME = getField(Annotation.class, "memberValuePairName");
+			TYPE_REFERENCE__ANNOTATIONS = getField(TypeReference.class, "annotations");
+		}
+		
+		public static int reflectInt(Field f, Object o) {
+			try {
+				return ((Number) f.get(o)).intValue();
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
+		public static void reflectSet(Field f, Object o, Object v) {
+			try {
+				f.set(o, v);
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
+		public static Object reflect(Field f, Object o) {
+			try {
+				return f.get(o);
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
+		private static Field getField(Class<?> c, String fName) {
+			try {
+				Field f = c.getDeclaredField(fName);
+				f.setAccessible(true);
+				return f;
+			} catch (Exception e) {
+				return null;
+			}
+		}
+	}
+	
+	private static Expression copyAnnotationMemberValue(Expression in) {
+		Expression out = copyAnnotationMemberValue0(in);
+		out.constant = in.constant;
+		return out;
+	}
+	
+	private static Expression copyAnnotationMemberValue0(Expression in) {
+		int s = in.sourceStart, e = in.sourceEnd;
+		
+		// literals
+		
+		if (in instanceof FalseLiteral) return new FalseLiteral(s, e);
+		if (in instanceof TrueLiteral) return new TrueLiteral(s, e);
+		if (in instanceof NullLiteral) return new NullLiteral(s, e);
+		
+		if (in instanceof CharLiteral) return new CharLiteral(((Literal) in).source(), s, e);
+		if (in instanceof DoubleLiteral) return new DoubleLiteral(((Literal) in).source(), s, e);
+		if (in instanceof FloatLiteral) return new FloatLiteral(((Literal) in).source(), s, e);
+		if (in instanceof IntLiteral) return IntLiteral.buildIntLiteral(((Literal) in).source(), s, e);
+		if (in instanceof LongLiteral) return LongLiteral.buildLongLiteral(((Literal) in).source(), s, e);
+		
+		if (in instanceof StringLiteral) return new StringLiteral(((Literal) in).source(), s, e, reflectInt(STRING_LITERAL__LINE_NUMBER, in) + 1);
+		if (in instanceof ExtendedStringLiteral) {
+			StringLiteral str = new StringLiteral(((Literal) in).source(), s, e, reflectInt(STRING_LITERAL__LINE_NUMBER, in) + 1);
+			StringLiteral empty = new StringLiteral(new char[0], s, e, reflectInt(STRING_LITERAL__LINE_NUMBER, in) + 1);
+			return new ExtendedStringLiteral(str, empty);
+		}
+		if (in instanceof StringLiteralConcatenation) {
+			Expression[] literals = ((StringLiteralConcatenation) in).literals;
+			// 0 and 1 len shouldn't happen.
+			if (literals.length == 0) return new StringLiteral(new char[0], s, e, 0);
+			if (literals.length == 1) return copyAnnotationMemberValue0(literals[0]);
+			StringLiteralConcatenation c = new StringLiteralConcatenation((StringLiteral) literals[0], (StringLiteral) literals[1]);
+			for (int i = 2; i < literals.length; i++) c = c.extendsWith((StringLiteral) literals[i]);
+			return c;
+		}
+		
+		// enums and field accesses (as long as those are references to compile time constant literals that's also acceptable)
+		
+		if (in instanceof SingleNameReference) {
+			SingleNameReference snr = (SingleNameReference) in;
+			long p = (long) s << 32 | e;
+			return new SingleNameReference(snr.token, p);
+		}
+		if (in instanceof QualifiedNameReference) {
+			QualifiedNameReference qnr = (QualifiedNameReference) in;
+			return new QualifiedNameReference(qnr.tokens, qnr.sourcePositions, s, e);
+		}
+		
+		// class refs
+		if (in instanceof ClassLiteralAccess) return new ClassLiteralAccess(e, copyType(((ClassLiteralAccess) in).type));
+		
+		// arrays
+		if (in instanceof ArrayInitializer) {
+			Expression[] exprs = ((ArrayInitializer) in).expressions;
+			Expression[] copy = new Expression[exprs.length];
+			for (int i = 0; i < exprs.length; i++) copy[i] = copyAnnotationMemberValue(exprs[i]);
+			ArrayInitializer out = new ArrayInitializer();
+			out.sourceStart = s;
+			out.sourceEnd = e;
+			out.bits = in.bits;
+			out.implicitConversion = in.implicitConversion;
+			out.statementEnd = in.statementEnd;
+			out.expressions = copy;
+			return out;
+		}
+		
+		return in;
 	}
 	
 	/**
@@ -368,6 +510,7 @@ public class EclipseHandlerUtil {
 			}
 			
 			TypeReference typeRef = new ParameterizedQualifiedTypeReference(iRef.tokens, args, iRef.dimensions(), copy(iRef.sourcePositions));
+			copyTypeAnns(ref, typeRef);
 			if (source != null) setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
@@ -375,6 +518,7 @@ public class EclipseHandlerUtil {
 		if (ref instanceof ArrayQualifiedTypeReference) {
 			ArrayQualifiedTypeReference iRef = (ArrayQualifiedTypeReference) ref;
 			TypeReference typeRef = new ArrayQualifiedTypeReference(iRef.tokens, iRef.dimensions(), copy(iRef.sourcePositions));
+			copyTypeAnns(ref, typeRef);
 			if (source != null) setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
@@ -382,6 +526,7 @@ public class EclipseHandlerUtil {
 		if (ref instanceof QualifiedTypeReference) {
 			QualifiedTypeReference iRef = (QualifiedTypeReference) ref;
 			TypeReference typeRef = new QualifiedTypeReference(iRef.tokens, copy(iRef.sourcePositions));
+			copyTypeAnns(ref, typeRef);
 			if (source != null) setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
@@ -398,37 +543,65 @@ public class EclipseHandlerUtil {
 				}
 			}
 			
-			TypeReference typeRef = new ParameterizedSingleTypeReference(iRef.token, args, iRef.dimensions(), (long)iRef.sourceStart << 32 | iRef.sourceEnd);
+			TypeReference typeRef = new ParameterizedSingleTypeReference(iRef.token, args, iRef.dimensions(), (long) iRef.sourceStart << 32 | iRef.sourceEnd);
+			copyTypeAnns(ref, typeRef);
 			if (source != null) setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
 		
 		if (ref instanceof ArrayTypeReference) {
 			ArrayTypeReference iRef = (ArrayTypeReference) ref;
-			TypeReference typeRef = new ArrayTypeReference(iRef.token, iRef.dimensions(), (long)iRef.sourceStart << 32 | iRef.sourceEnd);
+			TypeReference typeRef = new ArrayTypeReference(iRef.token, iRef.dimensions(), (long) iRef.sourceStart << 32 | iRef.sourceEnd);
+			copyTypeAnns(ref, typeRef);
 			if (source != null) setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
 		
 		if (ref instanceof Wildcard) {
-			Wildcard original = (Wildcard)ref;
+			Wildcard original = (Wildcard) ref;
 			
 			Wildcard wildcard = new Wildcard(original.kind);
 			wildcard.sourceStart = original.sourceStart;
 			wildcard.sourceEnd = original.sourceEnd;
 			if (original.bound != null) wildcard.bound = copyType(original.bound, source);
+			copyTypeAnns(ref, wildcard);
 			if (source != null) setGeneratedBy(wildcard, source);
 			return wildcard;
 		}
 		
 		if (ref instanceof SingleTypeReference) {
 			SingleTypeReference iRef = (SingleTypeReference) ref;
-			TypeReference typeRef = new SingleTypeReference(iRef.token, (long)iRef.sourceStart << 32 | iRef.sourceEnd);
+			TypeReference typeRef = new SingleTypeReference(iRef.token, (long) iRef.sourceStart << 32 | iRef.sourceEnd);
+			copyTypeAnns(ref, typeRef);
 			if (source != null) setGeneratedBy(typeRef, source);
 			return typeRef;
 		}
 		
 		return ref;
+	}
+	
+	private static void copyTypeAnns(TypeReference in, TypeReference out) {
+		Annotation[][] a;
+		try {
+			a = (Annotation[][]) reflect(TYPE_REFERENCE__ANNOTATIONS, in);
+		} catch (Exception e) {
+			return;
+		}
+		
+		if (a == null) {
+			reflectSet(TYPE_REFERENCE__ANNOTATIONS, out, null);
+			return;
+		}
+		
+		Annotation[][] b = new Annotation[a.length][];
+		for (int i = 0; i < a.length; i++) {
+			b[i] = new Annotation[a[i].length];
+			for (int j = 0 ; j < a[i].length; j++) {
+				b[i][j] = copyAnnotation(a[i][j], a[i][j]);
+			}
+		}
+		
+		reflectSet(TYPE_REFERENCE__ANNOTATIONS, out, b);
 	}
 	
 	public static Annotation[] copyAnnotations(ASTNode source, Annotation[]... allAnnotations) {
@@ -525,7 +698,7 @@ public class EclipseHandlerUtil {
 	
 	public static TypeReference cloneSelfType(EclipseNode context, ASTNode source) {
 		int pS = source == null ? 0 : source.sourceStart, pE = source == null ? 0 : source.sourceEnd;
-		long p = (long)pS << 32 | pE;
+		long p = (long) pS << 32 | pE;
 		EclipseNode type = context;
 		TypeReference result = null;
 		while (type != null && type.getKind() != Kind.TYPE) type = type.up();
