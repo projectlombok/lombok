@@ -209,6 +209,16 @@ such as applying the templates to produce the website, converting the changelog 
 			username="${ssh.username}"
 			keyfile="${ssh.keyfile}"
 			knownHosts="ssh.knownHosts" />
+		<exec executable="/usr/bin/git">
+			<arg value="tag" />
+			<arg value="-f" />
+			<arg value="live" />
+		</exec>
+		<exec executable="/usr/bin/git">
+			<arg value="push" />
+			<arg value="-f" />
+			<arg value="--tags" />
+		</exec>
 	</target>
 	
 	<target name="javadoc" description="Generates the javadoc" depends="-ensure-version, -ensure-fullversion" unless="skip.javadoc">
