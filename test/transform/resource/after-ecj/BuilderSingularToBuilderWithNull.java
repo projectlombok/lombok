@@ -52,6 +52,6 @@ import lombok.Singular;
     return new BuilderSingularToBuilderWithNullBuilder();
   }
   public @java.lang.SuppressWarnings("all") BuilderSingularToBuilderWithNullBuilder toBuilder() {
-    return new BuilderSingularToBuilderWithNullBuilder().elems(((this.elems == null) ? java.util.Collections.emptyList() : this.elems));
+    return new BuilderSingularToBuilderWithNullBuilder().elems(((this.elems == null) ? java.util.Collections.<String>emptyList() : this.elems));
   }
 }
