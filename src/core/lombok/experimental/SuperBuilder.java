@@ -1,16 +1,16 @@
 /*
  * Copyright (C) 2018 The Project Lombok Authors.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -43,7 +43,7 @@ import lombok.Singular;
  * The builder also has a <code>build()</code> method which returns a completed instance of the original type.
  * <p>
  * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/SuperBuilder">the project lombok features page for &#64;SuperBuilder</a>.
- * 
+ *
  * @see Singular
  */
 @Target(TYPE)
@@ -51,16 +51,15 @@ import lombok.Singular;
 public @interface SuperBuilder {
 	/** @return Name of the method that creates a new builder instance. Default: {@code builder}. */
 	String builderMethodName() default "builder";
-	
+
 	/** @return Name of the method in the builder class that creates an instance of your {@code @Builder}-annotated class. */
 	String buildMethodName() default "build";
-	
-	// toBuilder also requires a two-stage system where each class gets its own toBuilder but calls on a second method (and also calls parentclass's method)
-	// to fill the builder, as this class does not know what fields to pass on to the builder. Let's consider this, but only for milestone 2.
-	/*
-	 * If true, generate an instance method to obtain a builder that is initialized with the values of this instance.
-	 * 
+
+	/**
+	 * If <code>true</code>, generate an instance method to obtain a builder that is initialized with the values of this instance.
+	 * In this case, all superclasses must also have <code>toBuilder=true</code>.
+	 *
 	 * @return Whether to generate a {@code toBuilder()} method.
 	 */
-//	boolean toBuilder() default false;
+	boolean toBuilder() default false;
 }
