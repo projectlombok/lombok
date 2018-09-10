@@ -2,6 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.3 "Edgy Guinea Pig"
+* PLATFORM: Support for Eclipse Photon. [Issue #1831](https://github.com/rzwitserloot/lombok/issues/1831)
 * FEATURE: The `@FieldNameConstants` feature has been completely redesigned. [Issue #1774](https://github.com/rzwitserloot/lombok/issues/1774) [FieldNameConstants documentation](https://projectlombok.org/features/experimental/FieldNameConstants)
 * BUGFIX: When using lombok to compile modularized (`module-info.java`-style) code, if the module name has dots in it, it wouldn't work. [Issue #1808](https://github.com/rzwitserloot/lombok/issues/1808)
 * BUGFIX: Errors about lombok not reading a module providing `org.mapstruct.ap.spi` when trying to use lombok in jigsaw-mode on JDK 11. [Issue #1806](https://github.com/rzwitserloot/lombok/issues/1806)
