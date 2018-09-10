@@ -374,30 +374,25 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 		</condition>
 	</target>
 	
-	<target name="generate-pom" depends="version,dist">
-		<echo message="Lombok version: ${lombok.version}-SNAPSHOT" />
-		
-		<echo file="build/pom.xml"><![CDATA[<project>
-			<modelVersion>4.0.0</modelVersion>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<version>]]>${lombok.version}-SNAPSHOT<![CDATA[</version>
-</project>]]></echo>
+	<target name="-version-edge">
+		<property name="lombok.version.mvn" value="edge-SNAPSHOT" />
 	</target>
 	
-	<target name="install-maven" depends="generate-pom,-mvn-ext" description="Install THE lombok.jar into the local maven repository using Apache Maven">
+	<target name="edge-maven" depends="-version-edge,-mvn-ext,-prepare-maven" description="Install THE lombok.jar into the local maven repository using Apache Maven">
 		<condition property="mvn-exe" value="${env.MAVEN_HOME}/bin/mvn${mvn-ext}" else="mvn${mvn-ext}">
 			<isset property="env.MAVEN_HOME" />
 		</condition>
 		
 		<exec executable="${mvn-exe}" failifexecutionfails="false" resultproperty="mvn-result">
-			<arg value="install:install-file" />
+			<arg value="deploy:deploy-file" />
 			<arg value="-Dfile=dist/lombok-${lombok.version}.jar" />
+			<arg value="-Dsources=dist/lombok-${lombok.version}-sources.jar" />
+			<arg value="-Djavadoc=dist/lombok-${lombok.version}-javadoc.jar" />
 			<arg value="-DgroupId=org.projectlombok" />
 			<arg value="-DartifactId=lombok" />
-			<arg value="-Dversion=${lombok.version}-SNAPSHOT" />
-			<arg value="-Dpackaging=jar" />
-			<arg value="-DpomFile=build/pom.xml" />
+			<arg value="-Dversion=edge-SNAPSHOT" />
+			<arg value="-DpomFile=build/mavenPublish/pom.xml" />
+			<arg value="-Durl=file://${basedir}/build/edgePublish" />
 		</exec>
 		<condition property="mvn-notfound" value="true">
 			<not><isset property="mvn-result" /></not>
@@ -835,7 +830,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</ant>
 	</target>
 	
-	<target name="maven" depends="version, dist, javadoc" description="Build a maven artifact bundle.">
+	<target name="-prepare-maven" depends="version, dist, javadoc">
 		<jar destfile="dist/lombok-${lombok.version}-javadoc.jar">
 			<fileset dir="doc/api" />
 		</jar>
@@ -850,13 +845,18 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			<fileset dir="test/core/src" />
 		</jar>
 		<mkdir dir="build/mavenPublish" />
+		<!-- Could already be set for edge releases -->
+		<property name="lombok.version.mvn" value="${lombok.version}" />
 		<copy tofile="build/mavenPublish/pom.xml" overwrite="true" file="doc/maven-pom.xml">
 			<filterchain>
 				<replacetokens>
-					<token key="VERSION" value="${lombok.version}" />
+					<token key="VERSION" value="${lombok.version.mvn}" />
 				</replacetokens>
 			</filterchain>
 		</copy>
+	</target>
+	
+	<target name="maven" depends="-prepare-maven" description="Build a maven artifact bundle.">
 		<tar destfile="build/mavenPublish/mavenPublish.tar.bz2" compression="bzip2">
 			<tarfileset dir="dist">
 				<include name="lombok-${lombok.version}.jar" />
