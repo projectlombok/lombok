@@ -222,9 +222,7 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		
 		JCVariableDecl fieldDecl = (JCVariableDecl) field.get();
 		
-		List<JCAnnotation> nonNulls = findAnnotations(field, NON_NULL_PATTERN);
-		List<JCAnnotation> nullables = findAnnotations(field, NULLABLE_PATTERN);
-		List<JCAnnotation> copyableAnnotations = findExactAnnotations(field, getCopyableAnnotationNames(field.getAst()));
+		List<JCAnnotation> copyableAnnotations = findCopyableAnnotations(field);
 		
 		Name methodName = field.toName(witherName);
 		
@@ -232,7 +230,7 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 		
 		JCBlock methodBody = null;
 		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, field.getContext());
-		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(nonNulls).appendList(nullables).appendList(copyableAnnotations);
+		List<JCAnnotation> annsOnParam = copyAnnotations(onParam).appendList(copyableAnnotations);
 		
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
 		
@@ -265,7 +263,7 @@ public class HandleWither extends JavacAnnotationHandler<Wither> {
 			JCConditional conditional = maker.Conditional(identityCheck, maker.Ident(field.toName("this")), newClass);
 			JCReturn returnStatement = maker.Return(conditional);
 			
-			if (nonNulls.isEmpty()) {
+			if (!hasNonNullAnnotations(field)) {
 				statements.append(returnStatement);
 			} else {
 				JCStatement nullCheck = generateNullCheck(maker, field, source);

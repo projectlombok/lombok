@@ -200,14 +200,12 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				EclipseNode isDefault = findAnnotation(Builder.Default.class, fieldNode);
 				boolean isFinal = ((fd.modifiers & ClassFileConstants.AccFinal) != 0) || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));
 				
-				Annotation[] nonNulls = findAnnotations(fd, NON_NULL_PATTERN);
-				Annotation[] nullables = findAnnotations(fd, NULLABLE_PATTERN);
-				Annotation[] copyAnnotations = findExactAnnotations(fd, getCopyableAnnotationNames(fieldNode.getAst()));
+				Annotation[] copyableAnnotations = findCopyableAnnotations(fieldNode);
 				
 				BuilderFieldData bfd = new BuilderFieldData();
 				bfd.rawName = fieldNode.getName().toCharArray();
 				bfd.name = removePrefixFromField(fieldNode);
-				bfd.annotations = copyAnnotations(fd, nonNulls, nullables, copyAnnotations);
+				bfd.annotations = copyAnnotations(fd, copyableAnnotations);
 				bfd.type = fd.type;
 				bfd.singularData = getSingularData(fieldNode, ast);
 				bfd.originalFieldNode = fieldNode;
@@ -381,13 +379,11 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				BuilderFieldData bfd = new BuilderFieldData();
 				Argument arg = (Argument) param.get();
 				
-				Annotation[] nonNulls = findAnnotations(arg, NON_NULL_PATTERN);
-				Annotation[] nullables = findAnnotations(arg, NULLABLE_PATTERN);
-				Annotation[] copyAnnotations = findExactAnnotations(arg, getCopyableAnnotationNames(param.getAst()));
+				Annotation[] copyableAnnotations = findCopyableAnnotations(param);
 				
 				bfd.rawName = arg.name;
 				bfd.name = arg.name;
-				bfd.annotations = copyAnnotations(arg, nonNulls, nullables, copyAnnotations);
+				bfd.annotations = copyAnnotations(arg, copyableAnnotations);
 				bfd.type = arg.type;
 				bfd.singularData = getSingularData(param, ast);
 				bfd.originalFieldNode = param;

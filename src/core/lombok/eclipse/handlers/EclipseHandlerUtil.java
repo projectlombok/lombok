@@ -48,6 +48,7 @@ import lombok.core.AnnotationValues;
 import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TypeResolver;
 import lombok.core.configuration.NullCheckExceptionType;
+import lombok.core.configuration.TypeName;
 import lombok.core.debug.ProblemReporter;
 import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.Eclipse;
@@ -672,19 +673,42 @@ public class EclipseHandlerUtil {
 		}
 	}
 	
+	public static boolean hasNonNullAnnotations(EclipseNode node) {
+		AbstractVariableDeclaration avd = (AbstractVariableDeclaration) node.get();
+		if (avd.annotations == null) return false;
+		for (Annotation annotation : avd.annotations) {
+			TypeReference typeRef = annotation.type;
+			if (typeRef != null && typeRef.getTypeName() != null) {
+				for (String bn : NONNULL_ANNOTATIONS) if (typeMatches(bn, node, typeRef)) return true;
+			}
+		}
+		return false;
+	}
+	
 	private static final Annotation[] EMPTY_ANNOTATIONS_ARRAY = new Annotation[0];
 	
 	/**
-	 * Searches the given field node for annotations and returns each one that matches the provided list of names.
+	 * Searches the given field node for annotations and returns each one that is 'copyable' (either via configuration or from the base list).
 	 */
-	public static Annotation[] findExactAnnotations(AbstractVariableDeclaration field, List<String> names) {
+	public static Annotation[] findCopyableAnnotations(EclipseNode node) {
+		AbstractVariableDeclaration avd = (AbstractVariableDeclaration) node.get();
+		if (avd.annotations == null) return EMPTY_ANNOTATIONS_ARRAY;
 		List<Annotation> result = new ArrayList<Annotation>();
-		if (field.annotations == null) return EMPTY_ANNOTATIONS_ARRAY;
-		for (Annotation annotation : field.annotations) {
+		List<TypeName> configuredCopyable = node.getAst().readConfiguration(ConfigurationKeys.COPYABLE_ANNOTATIONS);
+		
+		for (Annotation annotation : avd.annotations) {
 			TypeReference typeRef = annotation.type;
+			boolean match = false;
 			if (typeRef != null && typeRef.getTypeName() != null) {
-				String annoName = toQualifiedName(typeRef.getTypeName());
-				if (names.contains(annoName)) result.add(annotation);
+				for (TypeName cn : configuredCopyable) if (typeMatches(cn.toString(), node, typeRef)) {
+					result.add(annotation);
+					match = true;
+					break;
+				}
+				if (!match) for (String bn : BASE_COPYABLE_ANNOTATIONS) if (typeMatches(bn, node, typeRef)) {
+					result.add(annotation);
+					break;
+				}
 			}
 		}
 		return result.toArray(EMPTY_ANNOTATIONS_ARRAY);

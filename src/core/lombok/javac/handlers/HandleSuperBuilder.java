@@ -431,8 +431,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 				statements.append(assign);
 			}
 			
-			List<JCAnnotation> nonNulls = findAnnotations(bfd.originalFieldNode, NON_NULL_PATTERN);
-			if (!nonNulls.isEmpty()) {
+			if (hasNonNullAnnotations(bfd.originalFieldNode)) {
 				JCStatement nullCheck = generateNullCheck(maker, bfd.originalFieldNode, source);
 				if (nullCheck != null) statements.append(nullCheck);
 			}

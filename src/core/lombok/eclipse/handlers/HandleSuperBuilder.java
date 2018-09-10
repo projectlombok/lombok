@@ -493,12 +493,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 				statements.add(assignment);
 			}
 			
-			Annotation[] nonNulls = findAnnotations((FieldDeclaration)fieldNode.originalFieldNode.get(), NON_NULL_PATTERN);
-			if (nonNulls.length != 0) {
-				Statement nullCheck = generateNullCheck((FieldDeclaration)fieldNode.originalFieldNode.get(), sourceNode);
-				if (nullCheck != null) {
-					statements.add(nullCheck);
-				}
+			if (hasNonNullAnnotations(fieldNode.originalFieldNode)) {
+				Statement nullCheck = generateNullCheck((FieldDeclaration) fieldNode.originalFieldNode.get(), sourceNode);
+				if (nullCheck != null) statements.add(nullCheck);
 			}
 		}
 		

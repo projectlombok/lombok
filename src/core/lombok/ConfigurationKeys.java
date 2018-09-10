@@ -27,6 +27,7 @@ import lombok.core.configuration.CallSuperType;
 import lombok.core.configuration.ConfigurationKey;
 import lombok.core.configuration.FlagUsageType;
 import lombok.core.configuration.NullCheckExceptionType;
+import lombok.core.configuration.TypeName;
 
 /**
  * A container class containing all lombok configuration keys that do not belong to a specific annotation.
@@ -565,10 +566,10 @@ public class ConfigurationKeys {
 	public static final ConfigurationKey<Boolean> STOP_BUBBLING = new ConfigurationKey<Boolean>("config.stopBubbling", "Tell the configuration system it should stop looking for other configuration files (default: false).") {};
 
 	/**
-	 * lombok configuration: {@code lombok.copyableAnnotations} += &lt;String: fully-qualified annotation class name&gt;.
+	 * lombok configuration: {@code lombok.copyableAnnotations} += &lt;TypeName: fully-qualified annotation class name&gt;.
 	 *
 	 * Copy these annotations to getters, setters, withers, builder-setters, etc.
 	 */
-	public static final ConfigurationKey<List<String>> COPYABLE_ANNOTATIONS = new ConfigurationKey<List<String>>("lombok.copyableAnnotations", "Copy these annotations to getters, setters, withers, builder-setters, etc.") {};
+	public static final ConfigurationKey<List<TypeName>> COPYABLE_ANNOTATIONS = new ConfigurationKey<List<TypeName>>("lombok.copyableAnnotations", "Copy these annotations to getters, setters, withers, builder-setters, etc.") {};
 
 }

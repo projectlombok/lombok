@@ -49,6 +49,7 @@ import lombok.core.LombokImmutableList;
 import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TypeResolver;
 import lombok.core.configuration.NullCheckExceptionType;
+import lombok.core.configuration.TypeName;
 import lombok.core.handlers.HandlerUtil;
 import lombok.delombok.LombokOptionsFactory;
 import lombok.experimental.Accessors;
@@ -1335,16 +1336,58 @@ public class JavacHandlerUtil {
 		return result.toList();
 	}
 	
-	/**
-	 * Searches the given field node for annotations and returns each one that matches the provided list of names.
-	 */
-	public static List<JCAnnotation> findExactAnnotations(JavacNode fieldNode, java.util.List<String> names) {
-		ListBuffer<JCAnnotation> result = new ListBuffer<JCAnnotation>();
-		for (JavacNode child : fieldNode.down()) {
+	public static boolean hasNonNullAnnotations(JavacNode node) {
+		for (JavacNode child : node.down()) {
 			if (child.getKind() == Kind.ANNOTATION) {
 				JCAnnotation annotation = (JCAnnotation) child.get();
-				String annoName = annotation.annotationType.toString();
-				if (names.contains(annoName)) result.append(annotation);
+				for (String nn : NONNULL_ANNOTATIONS) if (typeMatches(nn, node, annotation.annotationType)) return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Searches the given field node for annotations and returns each one that is 'copyable' (either via configuration or from the base list).
+	 */
+	public static List<JCAnnotation> findCopyableAnnotations(JavacNode node) {
+		JCAnnotation anno = null;
+		String annoName = null;
+		for (JavacNode child : node.down()) {
+			if (child.getKind() == Kind.ANNOTATION) {
+				if (anno != null) {
+					annoName = "";
+					break;
+				}
+				JCAnnotation annotation = (JCAnnotation) child.get();
+				annoName = annotation.annotationType.toString();
+				anno = annotation;
+			}
+		}
+		
+		if (annoName == null) return List.nil();
+		
+		java.util.List<TypeName> configuredCopyable = node.getAst().readConfiguration(ConfigurationKeys.COPYABLE_ANNOTATIONS);
+		
+		if (!annoName.isEmpty()) {
+			for (TypeName cn : configuredCopyable) if (typeMatches(cn.toString(), node, anno.annotationType)) return List.of(anno);
+			for (String bn : BASE_COPYABLE_ANNOTATIONS) if (typeMatches(bn, node, anno.annotationType)) return List.of(anno);
+		}
+		
+		ListBuffer<JCAnnotation> result = new ListBuffer<JCAnnotation>();
+		for (JavacNode child : node.down()) {
+			if (child.getKind() == Kind.ANNOTATION) {
+				JCAnnotation annotation = (JCAnnotation) child.get();
+				boolean match = false;
+				for (TypeName cn : configuredCopyable) if (typeMatches(cn.toString(), node, annotation.annotationType)) {
+					result.append(annotation);
+					match = true;
+					break;
+				}
+				if (!match) for (String bn : BASE_COPYABLE_ANNOTATIONS) if (typeMatches(bn, node, annotation.annotationType)) {
+					result.append(annotation);
+					break;
+				}
 			}
 		}
 		return result.toList();
