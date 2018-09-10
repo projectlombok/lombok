@@ -185,9 +185,11 @@ such as applying the templates to produce the website, converting the changelog 
 			<arg value="build/website-edge/download-edge.html" />
 		</java>
 		<copy file="dist/lombok.jar" tofile="build/website-edge/lombok-edge.jar" />
-		
 		<tar destfile="dist/website-edge.tar.bz2" compression="bzip2">
 			<tarfileset dir="build/website-edge" />
+			<tarfileset dir="build">
+				<include name="edge-releases/**" />
+			</tarfileset>
 		</tar>
 	</target>
 	

@@ -32,7 +32,6 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	<property name="rt-openjdk8" location="lib/openJDK8Environment/openjdk8_rt.jar" />
 	<available file="${rt-openjdk6}" property="rt-openjdk6.available" />
 	<available file="${rt-openjdk8}" property="rt-openjdk8.available" />
-	<property environment="env"/>
 	
 	<path id="build.path">
 		<fileset dir="lib/build">
@@ -366,38 +365,6 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 		<delete file="release-timestamp.txt" />
 		<copy file="dist/lombok-${lombok.version}.jar" tofile="dist/lombok.jar" />
 		<property name="lombok.dist.built" value="true" />
-	</target>
-	
-	<target name="-mvn-ext">
-		<condition property="mvn-ext" value=".cmd" else="">
-			<os family="windows" />
-		</condition>
-	</target>
-	
-	<target name="-version-edge">
-		<property name="lombok.version.mvn" value="edge-SNAPSHOT" />
-	</target>
-	
-	<target name="edge-maven" depends="-version-edge,-mvn-ext,-prepare-maven" description="Install THE lombok.jar into the local maven repository using Apache Maven">
-		<condition property="mvn-exe" value="${env.MAVEN_HOME}/bin/mvn${mvn-ext}" else="mvn${mvn-ext}">
-			<isset property="env.MAVEN_HOME" />
-		</condition>
-		
-		<exec executable="${mvn-exe}" failifexecutionfails="false" resultproperty="mvn-result">
-			<arg value="deploy:deploy-file" />
-			<arg value="-Dfile=dist/lombok-${lombok.version}.jar" />
-			<arg value="-Dsources=dist/lombok-${lombok.version}-sources.jar" />
-			<arg value="-Djavadoc=dist/lombok-${lombok.version}-javadoc.jar" />
-			<arg value="-DgroupId=org.projectlombok" />
-			<arg value="-DartifactId=lombok" />
-			<arg value="-Dversion=edge-SNAPSHOT" />
-			<arg value="-DpomFile=build/mavenPublish/pom.xml" />
-			<arg value="-Durl=file://${basedir}/build/edgePublish" />
-		</exec>
-		<condition property="mvn-notfound" value="true">
-			<not><isset property="mvn-result" /></not>
-		</condition>
-		<fail message="mvn is not on your path and/or MAVEN_HOME is not set. Add mvn to your path or set MAVEN_HOME to continue." if="mvn-notfound" />
 	</target>
 	
 	<target name="dist-utils" description="Builds lombok-utils.jar, which is a library used by i.e. lombok.ast project." depends="version, compile">
@@ -929,7 +896,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 	<target name="publish-all" depends="clean, version, website-publish, maven-publish, publish"
 		description="Publishes lombok itself, updates the maven repository and the website." />
 	
-	<target name="edge-release" depends="config-ssh, clean, version, dist"
+	<target name="edge-release" depends="config-ssh, clean, version, dist, make-edge-as-maven_snapshot_repo"
 		description="Publishes an edge release for those who need to test a cutting edge build.">
 		<ant antfile="buildScripts/website.ant.xml" target="edgeRelease" inheritAll="false">
 			<property name="lombok.version" value="${lombok.version}" />
@@ -991,7 +958,42 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			<property name="ssh.keyfile" value="${ssh.keyfile}" />
 		</ant>
 	</target>
-
+	
+	<target name="-mvn-ext">
+		<condition property="mvn-ext" value=".cmd" else="">
+			<os family="windows" />
+		</condition>
+	</target>
+	
+	<target name="-version-edge">
+		<property name="lombok.version.mvn" value="edge-SNAPSHOT" />
+	</target>
+	
+	<target name="make-edge-as-maven_snapshot_repo" depends="-version-edge,-mvn-ext,-prepare-maven" description="Create a maven repo for the current snapshot into a build dir. The intent is for you to put that on a server someplace. Will invoke your local mvn installation.">
+		<property environment="env" />
+		<delete quiet="true" dir="build/edge-releases" />
+		<mkdir dir="build/edge-releases" />
+		<condition property="mvn-exe" value="${env.MAVEN_HOME}/bin/mvn${mvn-ext}" else="mvn${mvn-ext}">
+			<isset property="env.MAVEN_HOME" />
+		</condition>
+		
+		<exec executable="${mvn-exe}" failifexecutionfails="false" resultproperty="mvn-result">
+			<arg value="deploy:deploy-file" />
+			<arg value="-Dfile=dist/lombok-${lombok.version}.jar" />
+			<arg value="-Dsources=dist/lombok-${lombok.version}-sources.jar" />
+			<arg value="-Djavadoc=dist/lombok-${lombok.version}-javadoc.jar" />
+			<arg value="-DgroupId=org.projectlombok" />
+			<arg value="-DartifactId=lombok" />
+			<arg value="-Dversion=edge-SNAPSHOT" />
+			<arg value="-DpomFile=build/mavenPublish/pom.xml" />
+			<arg value="-Durl=file://${basedir}/build/edge-releases" />
+		</exec>
+		<condition property="mvn-notfound" value="true">
+			<not><isset property="mvn-result" /></not>
+		</condition>
+		<fail message="mvn is not on your path and/or MAVEN_HOME is not set. Add mvn to your path or set MAVEN_HOME to continue." if="mvn-notfound" />
+	</target>
+	
 	<target name="testAp-compile" depends="ensureBuildDeps">
 		<delete file="build/testAP/META-INF/services/javax.annotation.processing.Processor" quiet="true" />
 		<ivy:compile destdir="build/testAP" source="1.7" target="1.7">
