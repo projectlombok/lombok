@@ -891,6 +891,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			username="${ssh.username}"
 			keyfile="${ssh.keyfile}"
 			knownHosts="ssh.knownHosts" />
+		<echo>WARNING: You should now immediately run an edge release!</echo>
 	</target>
 	
 	<target name="publish-all" depends="clean, version, website-publish, maven-publish, publish"
