@@ -77,7 +77,7 @@
 				ji.attr("title", n.text());
 				a.prepend(ji);
 			};
-			i.src = 'files/' + this.logo;
+			i.src = '/files/' + this.logo;
 		}
 		return d;
 	}
@@ -132,6 +132,7 @@
 	var supPerBar = 4;
 	function updateSupporterBar() {
 		var s = $(".supporterBar");
+		if (s.length === 0) return;
 		s.find(".introText").show();
 		s.append($("<div />").addClass("sbCnt"));
 		var sf = s.find(".supporterFooter").show();
