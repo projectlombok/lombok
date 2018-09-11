@@ -10,7 +10,7 @@ public class SuperBuilderBasic {
       }
       protected @java.lang.SuppressWarnings("all") B $fillValuesFrom(final C instance) {
         this.field1(instance.field1);
-        this.items(instance.items);
+        this.items(instance.items == null ? java.util.Collections.emptyList() : instance.items);
         return self();
       }
       protected abstract @java.lang.SuppressWarnings("all") B self();

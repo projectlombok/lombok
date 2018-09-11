@@ -1,5 +1,4 @@
 import java.util.List;
-
 public class SuperBuilderBasicToBuilder {
 	public static class Parent {
 		int field1;
@@ -13,7 +12,7 @@ public class SuperBuilderBasicToBuilder {
 			@java.lang.SuppressWarnings("all")
 			protected B $fillValuesFrom(final C instance) {
 				this.field1(instance.field1);
-				this.items(instance.items);
+				this.items(instance.items == null ? java.util.Collections.emptyList() : instance.items);
 				return self();
 			}
 			@java.lang.SuppressWarnings("all")
@@ -97,7 +96,7 @@ public class SuperBuilderBasicToBuilder {
 			private double field3;
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			protected B $fillValuesFrom(C instance) {
+			protected B $fillValuesFrom(final C instance) {
 				super.$fillValuesFrom(instance);
 				this.field3(instance.field3);
 				return self();
