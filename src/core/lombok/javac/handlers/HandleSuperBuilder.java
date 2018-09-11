@@ -236,8 +236,10 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			injectFieldAndMarkGenerated(builderType, uncleanField);
 		}
 		
-		// Generate $fillValuesFrom() method in the abstract builder.
-		injectMethod(builderType, generateFillValuesMethod(tdParent, superclassBuilderClassExpression != null, builderGenericName, classGenericName, builderFields));
+		if (toBuilder) {
+			// Generate $fillValuesFrom() method in the abstract builder.
+			injectMethod(builderType, generateFillValuesMethod(tdParent, superclassBuilderClassExpression != null, builderGenericName, classGenericName, builderFields));
+		}
 
 		// Generate abstract self() and build() methods in the abstract builder.
 		injectMethod(builderType, generateAbstractSelfMethod(tdParent, superclassBuilderClassExpression != null, builderGenericName));

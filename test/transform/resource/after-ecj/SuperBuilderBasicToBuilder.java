@@ -1,7 +1,7 @@
 import java.util.List;
 
-public class SuperBuilderBasic {
-  public static @lombok.experimental.SuperBuilder class Parent {
+public class SuperBuilderBasicToBuilder {
+  public static @lombok.experimental.SuperBuilder(toBuilder = true) class Parent {
     public static abstract @java.lang.SuppressWarnings("all") class ParentBuilder<C extends Parent, B extends ParentBuilder<C, B>> {
       private @java.lang.SuppressWarnings("all") int field1;
       private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> items;
@@ -9,8 +9,8 @@ public class SuperBuilderBasic {
         super();
       }
       protected @java.lang.SuppressWarnings("all") B $fillValuesFrom(final C instance) {
-        this.field1(instance.field1);
-        this.items(instance.items == null ? java.util.Collections.emptyList() : instance.items);
+        field1(instance.field1);
+        items(((instance.items == null) ? java.util.Collections.emptyList() : instance.items));
         return self();
       }
       protected abstract @java.lang.SuppressWarnings("all") B self();
@@ -37,7 +37,7 @@ public class SuperBuilderBasic {
         return self();
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-        return (((("SuperBuilderBasic.Parent.ParentBuilder(field1=" + this.field1) + ", items=") + this.items) + ")");
+        return (((("SuperBuilderBasicToBuilder.Parent.ParentBuilder(field1=" + this.field1) + ", items=") + this.items) + ")");
       }
     }
     private static final @java.lang.SuppressWarnings("all") class ParentBuilderImpl extends ParentBuilder<Parent, ParentBuilderImpl> {
@@ -76,7 +76,7 @@ public class SuperBuilderBasic {
       return new ParentBuilderImpl().$fillValuesFrom(this);
     }
   }
-  public static @lombok.experimental.SuperBuilder class Child extends Parent {
+  public static @lombok.experimental.SuperBuilder(toBuilder = true) class Child extends Parent {
     public static abstract @java.lang.SuppressWarnings("all") class ChildBuilder<C extends Child, B extends ChildBuilder<C, B>> extends Parent.ParentBuilder<C, B> {
       private @java.lang.SuppressWarnings("all") double field3;
       public ChildBuilder() {
@@ -84,7 +84,7 @@ public class SuperBuilderBasic {
       }
       protected @java.lang.Override @java.lang.SuppressWarnings("all") B $fillValuesFrom(C instance) {
         super.$fillValuesFrom(instance);
-        this.field3(instance.field3);
+        field3(instance.field3);
         return self();
       }
       protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
@@ -94,7 +94,7 @@ public class SuperBuilderBasic {
         return self();
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-        return (((("SuperBuilderBasic.Child.ChildBuilder(super=" + super.toString()) + ", field3=") + this.field3) + ")");
+        return (((("SuperBuilderBasicToBuilder.Child.ChildBuilder(super=" + super.toString()) + ", field3=") + this.field3) + ")");
       }
     }
     private static final @java.lang.SuppressWarnings("all") class ChildBuilderImpl extends ChildBuilder<Child, ChildBuilderImpl> {
