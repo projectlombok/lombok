@@ -3,7 +3,7 @@ import java.util.List;
 public class SuperBuilderBasicToBuilder {
 	@lombok.experimental.SuperBuilder(toBuilder=true)
 	public static class Parent {
-		int field1;
+		private int field1;
 		@lombok.Builder.ObtainVia(field="field1")
 		int obtainViaField;
 		@lombok.Builder.ObtainVia(method="method")
@@ -12,7 +12,7 @@ public class SuperBuilderBasicToBuilder {
 		String obtainViaStaticMethod;
 		@lombok.Singular List<String> items;
 		
-		int method() {
+		private int method() {
 			return 2;
 		}
 
@@ -23,7 +23,7 @@ public class SuperBuilderBasicToBuilder {
 	
 	@lombok.experimental.SuperBuilder(toBuilder=true)
 	public static class Child extends Parent {
-		double field3;
+		private double field3;
 	}
 	
 	public static void test() {
