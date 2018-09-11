@@ -2,16 +2,34 @@ import java.util.List;
 public class SuperBuilderBasicToBuilder {
 	public static class Parent {
 		int field1;
+		int obtainViaField;
+		int obtainViaMethod;
+		String obtainViaStaticMethod;
 		List<String> items;
+		int method() {
+			return 2;
+		}
+		private static String staticMethod(Parent instance) {
+			return "staticMethod";
+		}
 		@java.lang.SuppressWarnings("all")
 		public static abstract class ParentBuilder<C extends Parent, B extends ParentBuilder<C, B>> {
 			@java.lang.SuppressWarnings("all")
 			private int field1;
 			@java.lang.SuppressWarnings("all")
+			private int obtainViaField;
+			@java.lang.SuppressWarnings("all")
+			private int obtainViaMethod;
+			@java.lang.SuppressWarnings("all")
+			private String obtainViaStaticMethod;
+			@java.lang.SuppressWarnings("all")
 			private java.util.ArrayList<String> items;
 			@java.lang.SuppressWarnings("all")
 			protected B $fillValuesFrom(final C instance) {
 				this.field1(instance.field1);
+				this.obtainViaField(instance.field1);
+				this.obtainViaMethod(instance.method());
+				this.obtainViaStaticMethod(Parent.staticMethod(instance));
 				this.items(instance.items == null ? java.util.Collections.emptyList() : instance.items);
 				return self();
 			}
@@ -22,6 +40,21 @@ public class SuperBuilderBasicToBuilder {
 			@java.lang.SuppressWarnings("all")
 			public B field1(final int field1) {
 				this.field1 = field1;
+				return self();
+			}
+			@java.lang.SuppressWarnings("all")
+			public B obtainViaField(final int obtainViaField) {
+				this.obtainViaField = obtainViaField;
+				return self();
+			}
+			@java.lang.SuppressWarnings("all")
+			public B obtainViaMethod(final int obtainViaMethod) {
+				this.obtainViaMethod = obtainViaMethod;
+				return self();
+			}
+			@java.lang.SuppressWarnings("all")
+			public B obtainViaStaticMethod(final String obtainViaStaticMethod) {
+				this.obtainViaStaticMethod = obtainViaStaticMethod;
 				return self();
 			}
 			@java.lang.SuppressWarnings("all")
@@ -44,7 +77,7 @@ public class SuperBuilderBasicToBuilder {
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
 			public java.lang.String toString() {
-				return "SuperBuilderBasicToBuilder.Parent.ParentBuilder(field1=" + this.field1 + ", items=" + this.items + ")";
+				return "SuperBuilderBasicToBuilder.Parent.ParentBuilder(field1=" + this.field1 + ", obtainViaField=" + this.obtainViaField + ", obtainViaMethod=" + this.obtainViaMethod + ", obtainViaStaticMethod=" + this.obtainViaStaticMethod + ", items=" + this.items + ")";
 			}
 		}
 		@java.lang.SuppressWarnings("all")
@@ -66,6 +99,9 @@ public class SuperBuilderBasicToBuilder {
 		@java.lang.SuppressWarnings("all")
 		protected Parent(final ParentBuilder<?, ?> b) {
 			this.field1 = b.field1;
+			this.obtainViaField = b.obtainViaField;
+			this.obtainViaMethod = b.obtainViaMethod;
+			this.obtainViaStaticMethod = b.obtainViaStaticMethod;
 			java.util.List<String> items;
 			switch (b.items == null ? 0 : b.items.size()) {
 			case 0: 

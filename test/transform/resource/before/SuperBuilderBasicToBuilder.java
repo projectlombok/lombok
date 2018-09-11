@@ -4,7 +4,21 @@ public class SuperBuilderBasicToBuilder {
 	@lombok.experimental.SuperBuilder(toBuilder=true)
 	public static class Parent {
 		int field1;
+		@lombok.Builder.ObtainVia(field="field1")
+		int obtainViaField;
+		@lombok.Builder.ObtainVia(method="method")
+		int obtainViaMethod;
+		@lombok.Builder.ObtainVia(method = "staticMethod", isStatic = true)
+		String obtainViaStaticMethod;
 		@lombok.Singular List<String> items;
+		
+		int method() {
+			return 2;
+		}
+
+		private static String staticMethod(Parent instance) {
+			return "staticMethod";
+		}
 	}
 	
 	@lombok.experimental.SuperBuilder(toBuilder=true)

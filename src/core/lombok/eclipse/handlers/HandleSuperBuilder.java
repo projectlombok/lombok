@@ -646,9 +646,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 				boolean obtainIsStatic = bfd.obtainVia.isStatic();
 				for (int i = 0; i < tgt.length; i++) {
 					MessageSend obtainExpr = new MessageSend();
-					obtainExpr.receiver = obtainIsStatic ? new SingleNameReference(type.getName().toCharArray(), 0) : new ThisReference(0, 0);
+					obtainExpr.receiver = obtainIsStatic ? new SingleNameReference(type.getName().toCharArray(), 0) : new SingleNameReference(instanceVariableName.toCharArray(), 0);
 					obtainExpr.selector = obtainName.toCharArray();
-					if (obtainIsStatic) obtainExpr.arguments = new Expression[] {new ThisReference(0, 0)};
+					if (obtainIsStatic) obtainExpr.arguments = new Expression[] {new SingleNameReference(instanceVariableName.toCharArray(), 0)};
 					tgt[i] = obtainExpr;
 				}
 			}
