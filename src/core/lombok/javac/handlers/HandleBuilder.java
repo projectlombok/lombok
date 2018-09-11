@@ -84,7 +84,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		return ((Boolean) expr).booleanValue();
 	}
 	
-	private static class BuilderFieldData {
+	public static class BuilderFieldData {
 		JCExpression type;
 		Name rawName;
 		Name name;

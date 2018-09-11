@@ -1,9 +1,5 @@
 import java.util.List;
 
-import SuperBuilderBasicToBuilder.Child.ChildBuilder;
-import SuperBuilderBasicToBuilder.Child.ChildBuilderImpl;
-import SuperBuilderBasicToBuilder.Parent.ParentBuilder;
-import SuperBuilderBasicToBuilder.Parent.ParentBuilderImpl;
 public class SuperBuilderBasic {
   public static @lombok.experimental.SuperBuilder class Parent {
     public static abstract @java.lang.SuppressWarnings("all") class ParentBuilder<C extends Parent, B extends ParentBuilder<C, B>> {

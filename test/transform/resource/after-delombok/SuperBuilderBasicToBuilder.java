@@ -1,7 +1,5 @@
 import java.util.List;
 
-import manual.model.Superclass.SuperclassBuilder;
-import manual.model.Superclass.SuperclassBuilderImpl;
 public class SuperBuilderBasicToBuilder {
 	public static class Parent {
 		int field1;
