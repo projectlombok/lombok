@@ -405,11 +405,12 @@ public class HandleConstructor {
 			Argument parameter = new Argument(fieldName, fieldPos, copyType(field.type, source), Modifier.FINAL);
 			Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
 			Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
+			Annotation[] copyAnnotations = findExactAnnotations(field, copyAnnotationNames(fieldNode.getAst()));
 			if (nonNulls.length != 0) {
 				Statement nullCheck = generateNullCheck(parameter, sourceNode);
 				if (nullCheck != null) nullChecks.add(nullCheck);
 			}
-			parameter.annotations = copyAnnotations(source, nonNulls, nullables);
+			parameter.annotations = copyAnnotations(source, nonNulls, nullables, copyAnnotations);
 			params.add(parameter);
 		}
 		

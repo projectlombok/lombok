@@ -106,6 +106,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	}
 	
 	private static class BuilderFieldData {
+		Annotation[] annotations;
 		TypeReference type;
 		char[] rawName;
 		char[] name;
@@ -199,9 +200,14 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				EclipseNode isDefault = findAnnotation(Builder.Default.class, fieldNode);
 				boolean isFinal = ((fd.modifiers & ClassFileConstants.AccFinal) != 0) || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));
 				
+				Annotation[] nonNulls = findAnnotations(fd, NON_NULL_PATTERN);
+				Annotation[] nullables = findAnnotations(fd, NULLABLE_PATTERN);
+				Annotation[] copyAnnotations = findExactAnnotations(fd, copyAnnotationNames(fieldNode.getAst()));
+
 				BuilderFieldData bfd = new BuilderFieldData();
 				bfd.rawName = fieldNode.getName().toCharArray();
 				bfd.name = removePrefixFromField(fieldNode);
+				bfd.annotations = copyAnnotations(fd, nonNulls, nullables, copyAnnotations);
 				bfd.type = fd.type;
 				bfd.singularData = getSingularData(fieldNode, ast);
 				bfd.originalFieldNode = fieldNode;
@@ -376,6 +382,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				Argument arg = (Argument) param.get();
 				bfd.rawName = arg.name;
 				bfd.name = arg.name;
+				bfd.annotations = arg.annotations;
 				bfd.type = arg.type;
 				bfd.singularData = getSingularData(param, ast);
 				bfd.originalFieldNode = param;
@@ -744,13 +751,13 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 	public void makeSetterMethodsForBuilder(EclipseNode builderType, BuilderFieldData bfd, EclipseNode sourceNode, boolean fluent, boolean chain) {
 		boolean deprecate = isFieldDeprecated(bfd.originalFieldNode);
 		if (bfd.singularData == null || bfd.singularData.getSingularizer() == null) {
-			makeSimpleSetterMethodForBuilder(builderType, deprecate, bfd.createdFields.get(0), bfd.nameOfSetFlag, sourceNode, fluent, chain);
+			makeSimpleSetterMethodForBuilder(builderType, deprecate, bfd.createdFields.get(0), bfd.nameOfSetFlag, sourceNode, fluent, chain, bfd.annotations);
 		} else {
 			bfd.singularData.getSingularizer().generateMethods(bfd.singularData, deprecate, builderType, fluent, chain);
 		}
 	}
 	
-	private void makeSimpleSetterMethodForBuilder(EclipseNode builderType, boolean deprecate, EclipseNode fieldNode, char[] nameOfSetFlag, EclipseNode sourceNode, boolean fluent, boolean chain) {
+	private void makeSimpleSetterMethodForBuilder(EclipseNode builderType, boolean deprecate, EclipseNode fieldNode, char[] nameOfSetFlag, EclipseNode sourceNode, boolean fluent, boolean chain, Annotation[] annotations) {
 		TypeDeclaration td = (TypeDeclaration) builderType.get();
 		AbstractMethodDeclaration[] existing = td.methods;
 		if (existing == null) existing = EMPTY;
@@ -767,7 +774,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		String setterName = fluent ? fieldNode.getName() : HandlerUtil.buildAccessorName("set", fieldNode.getName());
 		
 		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, nameOfSetFlag, chain, ClassFileConstants.AccPublic,
-			sourceNode, Collections.<Annotation>emptyList(), Collections.<Annotation>emptyList());
+			sourceNode, Collections.<Annotation>emptyList(), annotations != null ? Arrays.asList(annotations) : Collections.<Annotation>emptyList());
 		injectMethod(builderType, setter);
 	}
 	
