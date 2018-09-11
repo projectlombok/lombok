@@ -104,7 +104,8 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 	private static final char[] DEFAULT_PREFIX = "$default$".toCharArray();
 	private static final char[] SET_PREFIX = "$set".toCharArray();
 	private static final char[] SELF_METHOD_NAME = "self".toCharArray();
-	private static final char[] TO_BUILDER_METHOD_NAME = "toBuilder".toCharArray();
+	private static final String TO_BUILDER_METHOD_NAME_STRING = "toBuilder";
+	private static final char[] TO_BUILDER_METHOD_NAME = TO_BUILDER_METHOD_NAME_STRING.toCharArray();
 	private static final char[] FILL_VALUES_METHOD_NAME = "$fillValuesFrom".toCharArray();
 	private static final char[] EMPTY_LIST = "emptyList".toCharArray();
 	
@@ -345,6 +346,15 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			MethodDeclaration md = generateBuilderMethod(builderMethodName, builderClassName, builderImplClassName, tdParent, typeParams, ast);
 			if (md != null) injectMethod(tdParent, md);
 		}
+
+		if (toBuilder) switch (methodExists(TO_BUILDER_METHOD_NAME_STRING, tdParent, 0)) {
+		case EXISTS_BY_USER:
+			annotationNode.addWarning("Not generating toBuilder() as it already exists.");
+			break;
+		case NOT_EXISTS:
+			MethodDeclaration md = generateToBuilderMethod(builderClassName, builderImplClassName, tdParent, typeParams, ast);
+			if (md != null) injectMethod(tdParent, md);
+		}
 	}
 	
 	private EclipseNode generateBuilderAbstractClass(EclipseNode tdParent, String builderClass,
@@ -534,6 +544,41 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		return out;
 	}
 	
+	/**
+	 * Generates a <code>toBuilder()</code> method in the annotated class that looks like this:
+	 * <pre>
+	 * public ParentBuilder&lt;?, ?&gt; toBuilder() {
+	 *     return new <i>Foobar</i>BuilderImpl().$fillValuesFrom(this);
+	 * }
+	 * </pre>
+	 */
+	private MethodDeclaration generateToBuilderMethod(String builderClassName, String builderImplClassName, EclipseNode type, TypeParameter[] typeParams, ASTNode source) {
+		int pS = source.sourceStart, pE = source.sourceEnd;
+		long p = (long) pS << 32 | pE;
+		
+		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
+		out.selector = TO_BUILDER_METHOD_NAME;
+		out.modifiers = ClassFileConstants.AccPublic;
+		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
+		
+		// Add type params if there are any.
+		if (typeParams != null && typeParams.length > 0) out.typeParameters = copyTypeParams(typeParams, source);
+		
+		TypeReference[] wildcards = new TypeReference[] {new Wildcard(Wildcard.UNBOUND), new Wildcard(Wildcard.UNBOUND) };
+		out.returnType = new ParameterizedSingleTypeReference(builderClassName.toCharArray(), mergeToTypeReferences(typeParams, wildcards), 0, p);
+		
+		AllocationExpression newClass = new AllocationExpression();
+		newClass.type = namePlusTypeParamsToTypeReference(builderImplClassName.toCharArray(), typeParams, p);
+		MessageSend invokeFillMethod = new MessageSend();
+		invokeFillMethod.receiver = newClass;
+		invokeFillMethod.selector = FILL_VALUES_METHOD_NAME;
+		invokeFillMethod.arguments = new Expression[] {new ThisReference(0, 0)};
+		out.statements = new Statement[] {new ReturnStatement(invokeFillMethod, pS, pE)};
+		
+		out.traverse(new SetGeneratedByVisitor(source), ((TypeDeclaration) type.get()).scope);
+		return out;
+	}
+
 	/**
 	 * Generates a <code>$fillValuesFrom()</code> method in the abstract builder class that looks
 	 * like this:

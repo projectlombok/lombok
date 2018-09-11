@@ -523,7 +523,6 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JCExpression newClass = maker.NewClass(null, List.<JCExpression>nil(), namePlusTypeParamsToTypeReference(maker, type.toName(builderImplClassName), typeParams), List.<JCExpression>nil(), null);
 		List<JCExpression> methodArgs = List.<JCExpression>of(maker.Ident(type.toName("this")));
 		JCMethodInvocation invokeFillMethod = maker.Apply(List.<JCExpression>nil(), maker.Select(newClass, type.toName(FILL_VALUES_METHOD_NAME)), methodArgs);
-//		JCMethodInvocation invokeFillMethod = maker.Apply(List.<JCExpression>nil(), maker.Select(newClass, type.toName(FILL_VALUES_METHOD_NAME)), List.<JCExpression>nil());
 		JCStatement statement = maker.Return(invokeFillMethod);
 		
 		JCBlock body = maker.Block(0, List.<JCStatement>of(statement));

@@ -82,7 +82,7 @@ public class SuperBuilderBasicToBuilder {
       public ChildBuilder() {
         super();
       }
-      protected @java.lang.Override @java.lang.SuppressWarnings("all") B $fillValuesFrom(C instance) {
+      protected @java.lang.Override @java.lang.SuppressWarnings("all") B $fillValuesFrom(final C instance) {
         super.$fillValuesFrom(instance);
         field3(instance.field3);
         return self();
@@ -120,10 +120,10 @@ public class SuperBuilderBasicToBuilder {
       return new ChildBuilderImpl().$fillValuesFrom(this);
     }
   }
-  public SuperBuilderBasic() {
+  public SuperBuilderBasicToBuilder() {
     super();
   }
   public static void test() {
-    Child x = Child.builder().field3(0.0).field1(5).item("").build();
+    Child x = Child.builder().field3(0.0).field1(5).item("").build().toBuilder().build();
   }
 }
