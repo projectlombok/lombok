@@ -58,6 +58,6 @@ class BuilderSingularToBuilderWithNull {
 	}
 	@java.lang.SuppressWarnings("all")
 	public BuilderSingularToBuilderWithNullBuilder toBuilder() {
-		return new BuilderSingularToBuilderWithNullBuilder().elems(this.elems == null ? java.util.Collections.emptyList() : this.elems);
+		return new BuilderSingularToBuilderWithNullBuilder().elems(this.elems == null ? java.util.Collections.<String>emptyList() : this.elems);
 	}
 }

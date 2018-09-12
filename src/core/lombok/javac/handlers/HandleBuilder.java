@@ -516,7 +516,8 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				arg = tgt[0];
 			} else {
 				JCExpression eqNull = maker.Binary(CTC_EQUAL, tgt[0], maker.Literal(CTC_BOT, null));
-				JCExpression emptyList = maker.Apply(List.<JCExpression>nil(), chainDots(type, "java", "util", "Collections", "emptyList"), List.<JCExpression>nil());
+				List<JCExpression> tas = cloneTypes(maker, bfd.singularData.getTypeArgs(), ast, type.getContext());
+				JCExpression emptyList = maker.Apply(tas, chainDots(type, "java", "util", "Collections", "emptyList"), List.<JCExpression>nil());
 				arg = maker.Conditional(eqNull, emptyList, tgt[1]);
 			}
 			

@@ -7,6 +7,10 @@
 	margin-bottom: 40px;
 }
 
+pre {
+	text-align: left;
+}
+
 .buttonLike {
 	cursor: pointer;
 	background: -webkit-linear-gradient(top, #FFFEF7, #CFCEC7);

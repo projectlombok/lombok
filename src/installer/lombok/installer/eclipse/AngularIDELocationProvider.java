@@ -19,16 +19,26 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package lombok.core;
+package lombok.installer.eclipse;
 
-public class ClassLiteral {
-	private final String className;
+import java.util.Collections;
+
+import org.mangosdk.spi.ProviderFor;
+
+import lombok.installer.IdeLocationProvider;
+
+@ProviderFor(IdeLocationProvider.class)
+public class AngularIDELocationProvider extends EclipseProductLocationProvider {
 	
-	public ClassLiteral(String className) {
-		this.className = className;
-	}
+	private static final EclipseProductDescriptor ANGULAR = new StandardProductDescriptor(
+			"Angular IDE",
+			"angularide",
+			"angular",
+			AngularIDELocationProvider.class.getResource("angular.png"),
+			Collections.<String>emptySet()
+	);
 	
-	public String getClassName() {
-		return className;
+	public AngularIDELocationProvider() {
+		super(ANGULAR);
 	}
 }

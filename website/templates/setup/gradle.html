@@ -29,13 +29,13 @@ repositories {
 }
 
 plugins {
-    id 'net.ltgt.apt' version '0.10'
+	id 'net.ltgt.apt' version '0.10'
 }
 
 dependencies {
 	compileOnly 'org.projectlombok:lombok:${version}'
 	
-	apt "org.projectlombok:lombok:${version}"
+	apt 'org.projectlombok:lombok:${version}'
 }</pre>
 		</p><p>
 			Remember that you still have to download <code>lombok.jar</code> (or find it in gradle's caches) and run it as a jarfile, if you wish to program in eclipse. The plugin makes that part easier.

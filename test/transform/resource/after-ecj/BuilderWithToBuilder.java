@@ -74,7 +74,7 @@ import lombok.Builder;
     return new BuilderWithToBuilderBuilder<T>();
   }
   public @java.lang.SuppressWarnings("all") BuilderWithToBuilderBuilder<T> toBuilder() {
-    return new BuilderWithToBuilderBuilder<T>().one(this.mOne).two(this.mTwo).foo(BuilderWithToBuilder.rrr(this)).bars(((this.bars == null) ? java.util.Collections.emptyList() : this.bars));
+    return new BuilderWithToBuilderBuilder<T>().one(this.mOne).two(this.mTwo).foo(BuilderWithToBuilder.rrr(this)).bars(((this.bars == null) ? java.util.Collections.<T>emptyList() : this.bars));
   }
 }
 @lombok.experimental.Accessors(prefix = "m") class ConstructorWithToBuilder<T> {

@@ -186,11 +186,11 @@ public class Eclipse {
 			default: return null;
 			}
 		} else if (e instanceof ClassLiteralAccess) {
-			return new ClassLiteral(Eclipse.toQualifiedName(((ClassLiteralAccess)e).type.getTypeName()));
+			return new ClassLiteral(Eclipse.toQualifiedName(((ClassLiteralAccess) e).type.getTypeName()));
 		} else if (e instanceof SingleNameReference) {
 			return new FieldSelect(new String(((SingleNameReference)e).token));
 		} else if (e instanceof QualifiedNameReference) {
-			String qName = Eclipse.toQualifiedName(((QualifiedNameReference)e).tokens);
+			String qName = Eclipse.toQualifiedName(((QualifiedNameReference) e).tokens);
 			int idx = qName.lastIndexOf('.');
 			return new FieldSelect(idx == -1 ? qName : qName.substring(idx+1));
 		} else if (e instanceof UnaryExpression) {
