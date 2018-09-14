@@ -11,7 +11,7 @@ public class SuperBuilderBasicToBuilder {
         super();
       }
       protected @java.lang.SuppressWarnings("all") B $fillValuesFrom(final C instance) {
-        ParentBuilderImpl.$fillValuesFromInto(instance, this);
+        ParentBuilderImpl.$fillValuesFromInstanceIntoBuilder(instance, this);
         return self();
       }
       protected abstract @java.lang.SuppressWarnings("all") B self();
@@ -57,7 +57,7 @@ public class SuperBuilderBasicToBuilder {
       private ParentBuilderImpl() {
         super();
       }
-      private static @java.lang.SuppressWarnings("all") void $fillValuesFromInto(Parent instance, ParentBuilder<?,?> b) {
+      private static @java.lang.SuppressWarnings("all") void $fillValuesFromInstanceIntoBuilder(Parent instance, ParentBuilder<?,?> b) {
         b.field1(instance.field1);
         b.obtainViaField(instance.field1);
         b.obtainViaMethod(instance.method());
@@ -116,7 +116,7 @@ public class SuperBuilderBasicToBuilder {
       }
       protected @java.lang.Override @java.lang.SuppressWarnings("all") B $fillValuesFrom(final C instance) {
         super.$fillValuesFrom(instance);
-        ChildBuilderImpl.$fillValuesFromInto(instance, this);
+        ChildBuilderImpl.$fillValuesFromInstanceIntoBuilder(instance, this);
         return self();
       }
       protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
@@ -133,7 +133,7 @@ public class SuperBuilderBasicToBuilder {
       private ChildBuilderImpl() {
         super();
       }
-      private static @java.lang.SuppressWarnings("all") void $fillValuesFromInto(Child instance, ChildBuilder<?,?> b) {
+      private static @java.lang.SuppressWarnings("all") void $fillValuesFromInstanceIntoBuilder(Child instance, ChildBuilder<?,?> b) {
         b.field3(instance.field3);
       }
       protected @java.lang.Override @java.lang.SuppressWarnings("all") ChildBuilderImpl self() {
