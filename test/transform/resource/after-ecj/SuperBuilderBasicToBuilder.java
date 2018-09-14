@@ -57,7 +57,7 @@ public class SuperBuilderBasicToBuilder {
       private ParentBuilderImpl() {
         super();
       }
-      private static @java.lang.SuppressWarnings("all") void $fillValuesFromInstanceIntoBuilder(Parent instance, ParentBuilder<?,?> b) {
+      private static @java.lang.SuppressWarnings("all") void $fillValuesFromInstanceIntoBuilder(final Parent instance, final ParentBuilder<?, ?> b) {
         b.field1(instance.field1);
         b.obtainViaField(instance.field1);
         b.obtainViaMethod(instance.method());
@@ -101,11 +101,11 @@ public class SuperBuilderBasicToBuilder {
       }
       this.items = items;
     }
-    public static @java.lang.SuppressWarnings("all") ParentBuilder<?, ?> builder() {
-      return new ParentBuilderImpl();
-    }
     public @java.lang.SuppressWarnings("all") ParentBuilder<?, ?> toBuilder() {
       return new ParentBuilderImpl().$fillValuesFrom(this);
+    }
+    public static @java.lang.SuppressWarnings("all") ParentBuilder<?, ?> builder() {
+      return new ParentBuilderImpl();
     }
   }
   public static @lombok.experimental.SuperBuilder(toBuilder = true) class Child extends Parent {
@@ -133,7 +133,7 @@ public class SuperBuilderBasicToBuilder {
       private ChildBuilderImpl() {
         super();
       }
-      private static @java.lang.SuppressWarnings("all") void $fillValuesFromInstanceIntoBuilder(Child instance, ChildBuilder<?,?> b) {
+      private static @java.lang.SuppressWarnings("all") void $fillValuesFromInstanceIntoBuilder(final Child instance, final ChildBuilder<?, ?> b) {
         b.field3(instance.field3);
       }
       protected @java.lang.Override @java.lang.SuppressWarnings("all") ChildBuilderImpl self() {
@@ -148,11 +148,11 @@ public class SuperBuilderBasicToBuilder {
       super(b);
       this.field3 = b.field3;
     }
-    public static @java.lang.SuppressWarnings("all") ChildBuilder<?, ?> builder() {
-      return new ChildBuilderImpl();
-    }
     public @java.lang.SuppressWarnings("all") ChildBuilder<?, ?> toBuilder() {
       return new ChildBuilderImpl().$fillValuesFrom(this);
+    }
+    public static @java.lang.SuppressWarnings("all") ChildBuilder<?, ?> builder() {
+      return new ChildBuilderImpl();
     }
   }
   public SuperBuilderBasicToBuilder() {
