@@ -226,7 +226,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JavacNode builderType = findInnerClass(tdParent, builderClassName);
 		if (builderType == null) {
 			builderType = generateBuilderAbstractClass(annotationNode, tdParent, builderClassName, superclassBuilderClassExpression,
-					typeParams, superclassTypeParams, ast, classGenericName, builderGenericName);
+					typeParams, superclassTypeParams, classGenericName, builderGenericName);
 		} else {
 			annotationNode.addError("@SuperBuilder does not support customized builders. Use @Builder instead.");
 			return;
@@ -242,7 +242,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		if (toBuilder) {
 			// Generate $fillValuesFrom() method in the abstract builder.
-			injectMethod(builderType, generateFillValuesMethod(tdParent, superclassBuilderClassExpression != null, builderGenericName, classGenericName, builderImplClassName, builderFields));
+			injectMethod(builderType, generateFillValuesMethod(tdParent, superclassBuilderClassExpression != null, builderGenericName, classGenericName, builderImplClassName));
 		}
 
 		// Generate abstract self() and build() methods in the abstract builder.
@@ -279,7 +279,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			// Create the builder implementation class.
 			JavacNode builderImplType = findInnerClass(tdParent, builderImplClassName);
 			if (builderImplType == null) {
-				builderImplType = generateBuilderImplClass(annotationNode, tdParent, builderImplClassName, builderClassName, typeParams, ast);
+				builderImplType = generateBuilderImplClass(annotationNode, tdParent, builderImplClassName, builderClassName, typeParams);
 			} else {
 				annotationNode.addError("@SuperBuilder does not support customized builders. Use @Builder instead.");
 				return;
@@ -287,7 +287,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 
 			if (toBuilder) {
 				// Generate $fillValuesFromInstanceIntoBuilder() method in the builder implementation class.
-				injectMethod(builderImplType, generateStaticFillValuesMethod(tdParent, superclassBuilderClassExpression != null, builderClassName, classGenericName, typeParams, builderFields, ast));
+				injectMethod(builderImplType, generateStaticFillValuesMethod(tdParent, builderClassName, typeParams, builderFields));
 			}
 			
 			if (!isAbstract) {
@@ -329,6 +329,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 				if (md != null) {
 					injectMethod(tdParent, md);
 				}
+			default:
+				// Should not happen.
 			}
 		}
 	}
@@ -338,7 +340,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	 */
 	private JavacNode generateBuilderAbstractClass(JavacNode source, JavacNode tdParent, String builderClass,
 			JCExpression superclassBuilderClassExpression, List<JCTypeParameter> typeParams,
-			List<JCExpression> superclassTypeParams, JCAnnotation ast, String classGenericName, String builderGenericName) {
+			List<JCExpression> superclassTypeParams, String classGenericName, String builderGenericName) {
 		
 		JavacTreeMaker maker = tdParent.getTreeMaker();
 		JCModifiers mods = maker.Modifiers(Flags.STATIC | Flags.ABSTRACT | Flags.PUBLIC);
@@ -380,7 +382,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	/**
 	 * Creates and returns the concrete builder implementation class and injects it into the annotated class.
 	 */
-	private JavacNode generateBuilderImplClass(JavacNode source, JavacNode tdParent, String builderImplClass, String builderAbstractClass, List<JCTypeParameter> typeParams, JCAnnotation ast) {
+	private JavacNode generateBuilderImplClass(JavacNode source, JavacNode tdParent, String builderImplClass, String builderAbstractClass, List<JCTypeParameter> typeParams) {
 		JavacTreeMaker maker = tdParent.getTreeMaker();
 		JCModifiers mods = maker.Modifiers(Flags.STATIC | Flags.PRIVATE | Flags.FINAL);
 		
@@ -564,7 +566,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	 * }
 	 * </pre>
 	 */
-	private JCMethodDecl generateFillValuesMethod(JavacNode type, boolean inherited, String builderGenericName, String classGenericName, String builderImplClassName, java.util.List<BuilderFieldData> builderFields) {
+	private JCMethodDecl generateFillValuesMethod(JavacNode type, boolean inherited, String builderGenericName, String classGenericName, String builderImplClassName) {
 		JavacTreeMaker maker = type.getTreeMaker();
 		List<JCAnnotation> annotations = List.nil();
 		if (inherited) {
@@ -612,7 +614,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	 * }
 	 * </pre>
 	 */
-	private JCMethodDecl generateStaticFillValuesMethod(JavacNode type, boolean inherited, String builderClassname, String classGenericName, List<JCTypeParameter> typeParams, java.util.List<BuilderFieldData> builderFields, JCAnnotation ast) {
+	private JCMethodDecl generateStaticFillValuesMethod(JavacNode type, String builderClassname, List<JCTypeParameter> typeParams, java.util.List<BuilderFieldData> builderFields) {
 		JavacTreeMaker maker = type.getTreeMaker();
 		List<JCAnnotation> annotations = List.nil();
 		JCModifiers modifiers = maker.Modifiers(Flags.PRIVATE | Flags.STATIC, annotations);
@@ -802,13 +804,13 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}};
 		
 		if (fieldNode.singularData == null || fieldNode.singularData.getSingularizer() == null) {
-			generateSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, true, true, returnTypeMaker.make(), returnStatementMaker.make());
+			generateSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, true, returnTypeMaker.make(), returnStatementMaker.make());
 		} else {
 			fieldNode.singularData.getSingularizer().generateMethods(fieldNode.singularData, deprecate, builderType, source.get(), true, returnTypeMaker, returnStatementMaker);
 		}
 	}
 	
-	private void generateSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, boolean chain, JCExpression returnType, JCStatement returnStatement) {
+	private void generateSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, JCExpression returnType, JCStatement returnStatement) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
 		
 		for (JavacNode child : builderType.down()) {
