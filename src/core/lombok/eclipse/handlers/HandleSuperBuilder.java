@@ -344,7 +344,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 
 		if (toBuilder) {
 			// Generate $fillValuesFromInstanceIntoBuilder() method in the builder implementation class.
-			injectMethod(builderImplType, generateStaticFillValuesMethod(tdParent, superclassBuilderClass != null, builderClassName, classGenericName, typeParams, builderFields, ast));
+			injectMethod(builderImplType, generateStaticFillValuesMethod(tdParent, superclassBuilderClass != null, builderClassName, typeParams, builderFields, ast));
 			
 			switch (methodExists(TO_BUILDER_METHOD_NAME_STRING, tdParent, 0)) {
 			case EXISTS_BY_USER:
@@ -654,7 +654,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 	 * }
 	 * </pre>
 	 */
-	private MethodDeclaration generateStaticFillValuesMethod(EclipseNode tdParent, boolean inherited, String builderClassName, String classGenericName, TypeParameter[] typeParams, java.util.List<BuilderFieldData> builderFields, ASTNode source) {
+	private MethodDeclaration generateStaticFillValuesMethod(EclipseNode tdParent, boolean inherited, String builderClassName, TypeParameter[] typeParams, java.util.List<BuilderFieldData> builderFields, ASTNode source) {
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) tdParent.top().get()).compilationResult);
 		out.selector = FILL_VALUES_STATIC_METHOD_NAME;
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;

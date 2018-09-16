@@ -79,7 +79,7 @@ public class SuperBuilderBasicToBuilder {
 		@java.lang.SuppressWarnings("all")
 		private static final class ParentBuilderImpl extends ParentBuilder<Parent, ParentBuilderImpl> {
 			@java.lang.SuppressWarnings("all")
-			private static void $fillValuesFromInstanceIntoBuilder(final Parent instance, final ParentBuilder<?,?> b) {
+			private static void $fillValuesFromInstanceIntoBuilder(final Parent instance, final ParentBuilder<?, ?> b) {
 				b.field1(instance.field1);
 				b.obtainViaField(instance.field1);
 				b.obtainViaMethod(instance.method());
@@ -161,7 +161,7 @@ public class SuperBuilderBasicToBuilder {
 		@java.lang.SuppressWarnings("all")
 		private static final class ChildBuilderImpl extends ChildBuilder<Child, ChildBuilderImpl> {
 			@java.lang.SuppressWarnings("all")
-			private static void $fillValuesFromInstanceIntoBuilder(final Parent instance, final ParentBuilder<?,?> b) {
+			private static void $fillValuesFromInstanceIntoBuilder(final Child instance, final ChildBuilder<?, ?> b) {
 				b.field3(instance.field3);
 			}
 			@java.lang.SuppressWarnings("all")
