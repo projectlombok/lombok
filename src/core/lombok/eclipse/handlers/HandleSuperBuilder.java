@@ -298,7 +298,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 
 		if (toBuilder) {
 			// Generate $fillValuesFrom() method in the abstract builder.
-			injectMethod(builderType, generateFillValuesMethod(tdParent, superclassBuilderClass != null, builderGenericName, classGenericName, builderImplClassName, typeParams));
+			injectMethod(builderType, generateFillValuesMethod(tdParent, superclassBuilderClass != null, builderGenericName, classGenericName, builderClassName, typeParams));
+			// Generate $fillValuesFromInstanceIntoBuilder() method in the builder implementation class.
+			injectMethod(builderType, generateStaticFillValuesMethod(tdParent, builderClassName, typeParams, builderFields, ast));
 		}
 
 		// Generate abstract self() and build() methods in the abstract builder.
@@ -327,9 +329,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		if (addCleaning) injectMethod(builderType, generateCleanMethod(builderFields, builderType, ast));
 		
-		if ((td.modifiers & ClassFileConstants.AccAbstract) != 0 && !toBuilder) {
+		boolean isAbstract = (td.modifiers & ClassFileConstants.AccAbstract) != 0;
+		if (isAbstract) {
 			// Only non-abstract classes get the Builder implementation.
-			// However, if we want to generate a toBuilder, we need a helper function in the builder implementation class.
 			return;
 		}
 		
@@ -343,9 +345,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		}
 
 		if (toBuilder) {
-			// Generate $fillValuesFromInstanceIntoBuilder() method in the builder implementation class.
-			injectMethod(builderImplType, generateStaticFillValuesMethod(tdParent, builderClassName, typeParams, builderFields, ast));
-			
+			// Add the toBuilder() method to the annotated class.
 			switch (methodExists(TO_BUILDER_METHOD_NAME_STRING, tdParent, 0)) {
 			case EXISTS_BY_USER:
 				annotationNode.addWarning("Not generating toBuilder() as it already exists.");
@@ -354,10 +354,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 				injectMethod(tdParent, generateToBuilderMethod(builderClassName, builderImplClassName, tdParent, typeParams, ast));
 			default:
 				// Should not happen.
-			}
-			if ((td.modifiers & ClassFileConstants.AccAbstract) != 0) {
-				// The rest of the builder implementation class is not necessary for abstract classes.
-				return;
 			}
 		}
 
@@ -605,7 +601,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 	 * }
 	 * </pre>
 	 */
-	private MethodDeclaration generateFillValuesMethod(EclipseNode tdParent, boolean inherited, String builderGenericName, String classGenericName, String builderImplClassName, TypeParameter[] typeParams) {
+	private MethodDeclaration generateFillValuesMethod(EclipseNode tdParent, boolean inherited, String builderGenericName, String classGenericName, String builderClassName, TypeParameter[] typeParams) {
 		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) tdParent.top().get()).compilationResult);
 		out.selector = FILL_VALUES_METHOD_NAME;
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
@@ -629,7 +625,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 
 		// Call the builder implemention's helper method that actually fills the values from the instance.
 		MessageSend callStaticFillValuesMethod = new MessageSend();
-		callStaticFillValuesMethod.receiver = new SingleNameReference(builderImplClassName.toCharArray(), 0);
+		callStaticFillValuesMethod.receiver = new SingleNameReference(builderClassName.toCharArray(), 0);
 		callStaticFillValuesMethod.selector = FILL_VALUES_STATIC_METHOD_NAME;
 		callStaticFillValuesMethod.arguments = new Expression[] {new SingleNameReference(INSTANCE_VARIABLE_NAME, 0), new ThisReference(0, 0)};
 		body.add(callStaticFillValuesMethod);

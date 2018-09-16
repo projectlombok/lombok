@@ -11,8 +11,15 @@ public class SuperBuilderBasicToBuilder {
         super();
       }
       protected @java.lang.SuppressWarnings("all") B $fillValuesFrom(final C instance) {
-        ParentBuilderImpl.$fillValuesFromInstanceIntoBuilder(instance, this);
+        ParentBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
         return self();
+      }
+      private static @java.lang.SuppressWarnings("all") void $fillValuesFromInstanceIntoBuilder(final Parent instance, final ParentBuilder<?, ?> b) {
+        b.field1(instance.field1);
+        b.obtainViaField(instance.field1);
+        b.obtainViaMethod(instance.method());
+        b.obtainViaStaticMethod(Parent.staticMethod(instance));
+        b.items(((instance.items == null) ? java.util.Collections.emptyList() : instance.items));
       }
       protected abstract @java.lang.SuppressWarnings("all") B self();
       public abstract @java.lang.SuppressWarnings("all") C build();
@@ -56,13 +63,6 @@ public class SuperBuilderBasicToBuilder {
     private static final @java.lang.SuppressWarnings("all") class ParentBuilderImpl extends ParentBuilder<Parent, ParentBuilderImpl> {
       private ParentBuilderImpl() {
         super();
-      }
-      private static @java.lang.SuppressWarnings("all") void $fillValuesFromInstanceIntoBuilder(final Parent instance, final ParentBuilder<?, ?> b) {
-        b.field1(instance.field1);
-        b.obtainViaField(instance.field1);
-        b.obtainViaMethod(instance.method());
-        b.obtainViaStaticMethod(Parent.staticMethod(instance));
-        b.items(((instance.items == null) ? java.util.Collections.emptyList() : instance.items));
       }
       protected @java.lang.Override @java.lang.SuppressWarnings("all") ParentBuilderImpl self() {
         return this;
@@ -116,8 +116,11 @@ public class SuperBuilderBasicToBuilder {
       }
       protected @java.lang.Override @java.lang.SuppressWarnings("all") B $fillValuesFrom(final C instance) {
         super.$fillValuesFrom(instance);
-        ChildBuilderImpl.$fillValuesFromInstanceIntoBuilder(instance, this);
+        ChildBuilder.$fillValuesFromInstanceIntoBuilder(instance, this);
         return self();
+      }
+      private static @java.lang.SuppressWarnings("all") void $fillValuesFromInstanceIntoBuilder(final Child instance, final ChildBuilder<?, ?> b) {
+        b.field3(instance.field3);
       }
       protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
       public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
@@ -132,9 +135,6 @@ public class SuperBuilderBasicToBuilder {
     private static final @java.lang.SuppressWarnings("all") class ChildBuilderImpl extends ChildBuilder<Child, ChildBuilderImpl> {
       private ChildBuilderImpl() {
         super();
-      }
-      private static @java.lang.SuppressWarnings("all") void $fillValuesFromInstanceIntoBuilder(final Child instance, final ChildBuilder<?, ?> b) {
-        b.field3(instance.field3);
       }
       protected @java.lang.Override @java.lang.SuppressWarnings("all") ChildBuilderImpl self() {
         return this;
