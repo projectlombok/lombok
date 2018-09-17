@@ -102,6 +102,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 	private static final AbstractMethodDeclaration[] EMPTY_METHODS = {};
 	
 	private static class BuilderFieldData {
+		Annotation[] annotations;
 		TypeReference type;
 		char[] rawName;
 		char[] name;
@@ -154,9 +155,12 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			EclipseNode isDefault = findAnnotation(Builder.Default.class, fieldNode);
 			boolean isFinal = ((fd.modifiers & ClassFileConstants.AccFinal) != 0) || (valuePresent && !hasAnnotation(NonFinal.class, fieldNode));
 			
+			Annotation[] copyableAnnotations = findCopyableAnnotations(fieldNode);
+			
 			BuilderFieldData bfd = new BuilderFieldData();
 			bfd.rawName = fieldNode.getName().toCharArray();
 			bfd.name = removePrefixFromField(fieldNode);
+			bfd.annotations = copyAnnotations(fd, copyableAnnotations);
 			bfd.type = fd.type;
 			bfd.singularData = getSingularData(fieldNode, ast);
 			bfd.originalFieldNode = fieldNode;
@@ -665,13 +669,13 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		};
 		
 		if (bfd.singularData == null || bfd.singularData.getSingularizer() == null) {
-			generateSimpleSetterMethodForBuilder(builderType, deprecate, bfd.createdFields.get(0), bfd.nameOfSetFlag, returnTypeMaker.make(), returnStatementMaker.make(), sourceNode);
+			generateSimpleSetterMethodForBuilder(builderType, deprecate, bfd.createdFields.get(0), bfd.nameOfSetFlag, returnTypeMaker.make(), returnStatementMaker.make(), sourceNode, bfd.annotations);
 		} else {
 			bfd.singularData.getSingularizer().generateMethods(bfd.singularData, deprecate, builderType, true, returnTypeMaker, returnStatementMaker);
 		}
 	}
 
-	private void generateSimpleSetterMethodForBuilder(EclipseNode builderType, boolean deprecate, EclipseNode fieldNode, char[] nameOfSetFlag, TypeReference returnType, Statement returnStatement, EclipseNode sourceNode) {
+	private void generateSimpleSetterMethodForBuilder(EclipseNode builderType, boolean deprecate, EclipseNode fieldNode, char[] nameOfSetFlag, TypeReference returnType, Statement returnStatement, EclipseNode sourceNode, Annotation[] annosOnParam) {
 		TypeDeclaration td = (TypeDeclaration) builderType.get();
 		AbstractMethodDeclaration[] existing = td.methods;
 		if (existing == null) existing = EMPTY_METHODS;
@@ -688,7 +692,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		String setterName = fieldNode.getName();
 		
 		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, nameOfSetFlag, returnType, returnStatement, ClassFileConstants.AccPublic,
-			sourceNode, Collections.<Annotation>emptyList(), Collections.<Annotation>emptyList());
+			sourceNode, Collections.<Annotation>emptyList(), annosOnParam != null ? Arrays.asList(copyAnnotations(sourceNode.get(), annosOnParam)) : Collections.<Annotation>emptyList());
 		injectMethod(builderType, setter);
 	}
 	

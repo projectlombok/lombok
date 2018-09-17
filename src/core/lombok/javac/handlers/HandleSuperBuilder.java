@@ -80,6 +80,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	private static final String SELF_METHOD = "self";
 	
 	private static class BuilderFieldData {
+		List<JCAnnotation> annotations;
 		JCExpression type;
 		Name rawName;
 		Name name;
@@ -135,6 +136,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			BuilderFieldData bfd = new BuilderFieldData();
 			bfd.rawName = fd.name;
 			bfd.name = removePrefixFromField(fieldNode);
+			bfd.annotations = findCopyableAnnotations(fieldNode);
 			bfd.type = fd.vartype;
 			bfd.singularData = getSingularData(fieldNode);
 			bfd.originalFieldNode = fieldNode;
@@ -616,13 +618,13 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}};
 		
 		if (fieldNode.singularData == null || fieldNode.singularData.getSingularizer() == null) {
-			generateSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, true, true, returnTypeMaker.make(), returnStatementMaker.make());
+			generateSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, true, true, returnTypeMaker.make(), returnStatementMaker.make(), fieldNode.annotations);
 		} else {
 			fieldNode.singularData.getSingularizer().generateMethods(fieldNode.singularData, deprecate, builderType, source.get(), true, returnTypeMaker, returnStatementMaker);
 		}
 	}
 	
-	private void generateSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, boolean chain, JCExpression returnType, JCStatement returnStatement) {
+	private void generateSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, boolean chain, JCExpression returnType, JCStatement returnStatement, List<JCAnnotation> annosOnParam) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
 		
 		for (JavacNode child : builderType.down()) {
@@ -636,7 +638,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
-		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, nameOfSetFlag, returnType, returnStatement, source, List.<JCAnnotation>nil(), List.<JCAnnotation>nil());
+		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, nameOfSetFlag, returnType, returnStatement, source, List.<JCAnnotation>nil(), annosOnParam);
 		
 		injectMethod(builderType, newMethod);
 	}

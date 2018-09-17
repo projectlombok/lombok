@@ -8,13 +8,13 @@ import lombok.Singular;
     @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder things(String things) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder things(final String things) {
       if ((this.things == null))
           this.things = new java.util.ArrayList<String>();
       this.things.add(things);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder things(java.util.Collection<? extends String> things) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder things(final java.util.Collection<? extends String> things) {
       if ((this.things == null))
           this.things = new java.util.ArrayList<String>();
       this.things.addAll(things);
@@ -25,13 +25,13 @@ import lombok.Singular;
           this.things.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder widget(String widget) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder widget(final String widget) {
       if ((this.widgets == null))
           this.widgets = new java.util.ArrayList<String>();
       this.widgets.add(widget);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder widgets(java.util.Collection<? extends String> widgets) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder widgets(final java.util.Collection<? extends String> widgets) {
       if ((this.widgets == null))
           this.widgets = new java.util.ArrayList<String>();
       this.widgets.addAll(widgets);
@@ -42,13 +42,13 @@ import lombok.Singular;
           this.widgets.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder items(String items) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder items(final String items) {
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.add(items);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder items(java.util.Collection<? extends String> items) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularNoAutoBuilder items(final java.util.Collection<? extends String> items) {
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.addAll(items);

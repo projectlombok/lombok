@@ -9,7 +9,7 @@ public class SuperBuilderWithNonNull {
       }
       protected abstract @java.lang.SuppressWarnings("all") B self();
       public abstract @java.lang.SuppressWarnings("all") C build();
-      public @java.lang.SuppressWarnings("all") B nonNullParentField(final String nonNullParentField) {
+      public @java.lang.SuppressWarnings("all") B nonNullParentField(final @lombok.NonNull String nonNullParentField) {
         this.nonNullParentField = nonNullParentField;
         nonNullParentField$set = true;
         return self();
@@ -56,7 +56,7 @@ public class SuperBuilderWithNonNull {
       }
       protected abstract @java.lang.Override @java.lang.SuppressWarnings("all") B self();
       public abstract @java.lang.Override @java.lang.SuppressWarnings("all") C build();
-      public @java.lang.SuppressWarnings("all") B nonNullChildField(final String nonNullChildField) {
+      public @java.lang.SuppressWarnings("all") B nonNullChildField(final @lombok.NonNull String nonNullChildField) {
         this.nonNullChildField = nonNullChildField;
         return self();
       }

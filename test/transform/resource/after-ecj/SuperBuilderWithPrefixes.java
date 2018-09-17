@@ -16,13 +16,13 @@
       this.otherField = otherField;
       return self();
     }
-    public @java.lang.SuppressWarnings("all") B item(String item) {
+    public @java.lang.SuppressWarnings("all") B item(final String item) {
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.add(item);
       return self();
     }
-    public @java.lang.SuppressWarnings("all") B items(java.util.Collection<? extends String> items) {
+    public @java.lang.SuppressWarnings("all") B items(final java.util.Collection<? extends String> items) {
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.addAll(items);

@@ -58,7 +58,26 @@ import org.mangosdk.spi.ProviderFor;
 @ProviderFor(EclipseAnnotationHandler.class)
 @HandlerPriority(value = 512) // 2^9; onParameter=@__(@NonNull) has to run first.
 public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
+	public static final HandleNonNull INSTANCE = new HandleNonNull();
+	
+	public void fix(EclipseNode method) {
+		for (EclipseNode m : method.down()) {
+			if (m.getKind() != Kind.ARGUMENT) continue;
+			for (EclipseNode c : m.down()) {
+				if (c.getKind() == Kind.ANNOTATION) {
+					if (annotationTypeMatches(NonNull.class, c)) {
+						handle0((Annotation) c.get(), c, true);
+					}
+				}
+			}
+		}
+	}
+	
 	@Override public void handle(AnnotationValues<NonNull> annotation, Annotation ast, EclipseNode annotationNode) {
+		handle0(ast, annotationNode, false);
+	}
+	
+	private void handle0(Annotation ast, EclipseNode annotationNode, boolean force) {
 		handleFlagUsage(annotationNode, ConfigurationKeys.NON_NULL_FLAG_USAGE, "@NonNull");
 		
 		if (annotationNode.up().getKind() == Kind.FIELD) {
@@ -88,7 +107,7 @@ public class HandleNonNull extends EclipseAnnotationHandler<NonNull> {
 			return;
 		}
 		
-		if (isGenerated(declaration)) return;
+		if (!force && isGenerated(declaration)) return;
 		
 		if (declaration.isAbstract()) {
 			// This used to be a warning, but as @NonNull also has a documentary purpose, better to not warn about this. Since 1.16.7

@@ -1,24 +1,32 @@
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.util.Set;
 import java.util.Map;
 import lombok.NonNull;
 import lombok.Singular;
+@Target(ElementType.TYPE_USE) @interface MyAnnotation {
+}
 @lombok.Builder class BuilderSingularAnnotatedTypes {
   public static @java.lang.SuppressWarnings("all") class BuilderSingularAnnotatedTypesBuilder {
-    private @java.lang.SuppressWarnings("all") java.util.ArrayList<@NonNull String> foos;
-    private @java.lang.SuppressWarnings("all") java.util.ArrayList<@NonNull String> bars$key;
-    private @java.lang.SuppressWarnings("all") java.util.ArrayList<@NonNull Integer> bars$value;
+    private @java.lang.SuppressWarnings("all") java.util.ArrayList<@MyAnnotation @NonNull String> foos;
+    private @java.lang.SuppressWarnings("all") java.util.ArrayList<@MyAnnotation @NonNull String> bars$key;
+    private @java.lang.SuppressWarnings("all") java.util.ArrayList<@MyAnnotation @NonNull Integer> bars$value;
     @java.lang.SuppressWarnings("all") BuilderSingularAnnotatedTypesBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularAnnotatedTypesBuilder foo(@NonNull String foo) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularAnnotatedTypesBuilder foo(final @MyAnnotation @NonNull String foo) {
+      if ((foo == null))
+          {
+            throw new java.lang.NullPointerException("foo is marked @NonNull but is null");
+          }
       if ((this.foos == null))
-          this.foos = new java.util.ArrayList<@NonNull String>();
+          this.foos = new java.util.ArrayList<@MyAnnotation @NonNull String>();
       this.foos.add(foo);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularAnnotatedTypesBuilder foos(java.util.Collection<? extends @NonNull String> foos) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularAnnotatedTypesBuilder foos(final java.util.Collection<? extends @MyAnnotation @NonNull String> foos) {
       if ((this.foos == null))
-          this.foos = new java.util.ArrayList<@NonNull String>();
+          this.foos = new java.util.ArrayList<@MyAnnotation @NonNull String>();
       this.foos.addAll(foos);
       return this;
     }
@@ -27,23 +35,31 @@ import lombok.Singular;
           this.foos.clear();
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularAnnotatedTypesBuilder bar(@NonNull String barKey, @NonNull Integer barValue) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularAnnotatedTypesBuilder bar(final @MyAnnotation @NonNull String barKey, final @MyAnnotation @NonNull Integer barValue) {
+      if ((barKey == null))
+          {
+            throw new java.lang.NullPointerException("barKey is marked @NonNull but is null");
+          }
+      if ((barValue == null))
+          {
+            throw new java.lang.NullPointerException("barValue is marked @NonNull but is null");
+          }
       if ((this.bars$key == null))
           {
-            this.bars$key = new java.util.ArrayList<@NonNull String>();
-            this.bars$value = new java.util.ArrayList<@NonNull Integer>();
+            this.bars$key = new java.util.ArrayList<@MyAnnotation @NonNull String>();
+            this.bars$value = new java.util.ArrayList<@MyAnnotation @NonNull Integer>();
           }
       this.bars$key.add(barKey);
       this.bars$value.add(barValue);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularAnnotatedTypesBuilder bars(java.util.Map<? extends @NonNull String, ? extends @NonNull Integer> bars) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularAnnotatedTypesBuilder bars(final java.util.Map<? extends @MyAnnotation @NonNull String, ? extends @MyAnnotation @NonNull Integer> bars) {
       if ((this.bars$key == null))
           {
-            this.bars$key = new java.util.ArrayList<@NonNull String>();
-            this.bars$value = new java.util.ArrayList<@NonNull Integer>();
+            this.bars$key = new java.util.ArrayList<@MyAnnotation @NonNull String>();
+            this.bars$value = new java.util.ArrayList<@MyAnnotation @NonNull Integer>();
           }
-      for (java.util.Map.Entry<? extends @NonNull String, ? extends @NonNull Integer> $lombokEntry : bars.entrySet()) 
+      for (java.util.Map.Entry<? extends @MyAnnotation @NonNull String, ? extends @MyAnnotation @NonNull Integer> $lombokEntry : bars.entrySet()) 
         {
           this.bars$key.add($lombokEntry.getKey());
           this.bars$value.add($lombokEntry.getValue());
@@ -59,7 +75,7 @@ import lombok.Singular;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderSingularAnnotatedTypes build() {
-      java.util.Set<@NonNull String> foos;
+      java.util.Set<@MyAnnotation @NonNull String> foos;
       switch (((this.foos == null) ? 0 : this.foos.size())) {
       case 0 :
           foos = java.util.Collections.emptySet();
@@ -68,11 +84,11 @@ import lombok.Singular;
           foos = java.util.Collections.singleton(this.foos.get(0));
           break;
       default :
-          foos = new java.util.LinkedHashSet<@NonNull String>(((this.foos.size() < 0x40000000) ? ((1 + this.foos.size()) + ((this.foos.size() - 3) / 3)) : java.lang.Integer.MAX_VALUE));
+          foos = new java.util.LinkedHashSet<@MyAnnotation @NonNull String>(((this.foos.size() < 0x40000000) ? ((1 + this.foos.size()) + ((this.foos.size() - 3) / 3)) : java.lang.Integer.MAX_VALUE));
           foos.addAll(this.foos);
           foos = java.util.Collections.unmodifiableSet(foos);
       }
-      java.util.Map<@NonNull String, @NonNull Integer> bars;
+      java.util.Map<@MyAnnotation @NonNull String, @MyAnnotation @NonNull Integer> bars;
       switch (((this.bars$key == null) ? 0 : this.bars$key.size())) {
       case 0 :
           bars = java.util.Collections.emptyMap();
@@ -81,7 +97,7 @@ import lombok.Singular;
           bars = java.util.Collections.singletonMap(this.bars$key.get(0), this.bars$value.get(0));
           break;
       default :
-          bars = new java.util.LinkedHashMap<@NonNull String, @NonNull Integer>(((this.bars$key.size() < 0x40000000) ? ((1 + this.bars$key.size()) + ((this.bars$key.size() - 3) / 3)) : java.lang.Integer.MAX_VALUE));
+          bars = new java.util.LinkedHashMap<@MyAnnotation @NonNull String, @MyAnnotation @NonNull Integer>(((this.bars$key.size() < 0x40000000) ? ((1 + this.bars$key.size()) + ((this.bars$key.size() - 3) / 3)) : java.lang.Integer.MAX_VALUE));
           for (int $i = 0;; ($i < this.bars$key.size()); $i ++) 
             bars.put(this.bars$key.get($i), this.bars$value.get($i));
           bars = java.util.Collections.unmodifiableMap(bars);
@@ -92,9 +108,9 @@ import lombok.Singular;
       return (((((("BuilderSingularAnnotatedTypes.BuilderSingularAnnotatedTypesBuilder(foos=" + this.foos) + ", bars$key=") + this.bars$key) + ", bars$value=") + this.bars$value) + ")");
     }
   }
-  private @Singular Set<@NonNull String> foos;
-  private @Singular Map<@NonNull String, @NonNull Integer> bars;
-  @java.lang.SuppressWarnings("all") BuilderSingularAnnotatedTypes(final Set<@NonNull String> foos, final Map<@NonNull String, @NonNull Integer> bars) {
+  private @Singular Set<@MyAnnotation @NonNull String> foos;
+  private @Singular Map<@MyAnnotation @NonNull String, @MyAnnotation @NonNull Integer> bars;
+  @java.lang.SuppressWarnings("all") BuilderSingularAnnotatedTypes(final Set<@MyAnnotation @NonNull String> foos, final Map<@MyAnnotation @NonNull String, @MyAnnotation @NonNull Integer> bars) {
     super();
     this.foos = foos;
     this.bars = bars;

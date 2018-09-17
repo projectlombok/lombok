@@ -449,6 +449,24 @@ public class EclipseHandlerUtil {
 		return out;
 	}
 	
+	public static Annotation[] getTypeUseAnnotations(TypeReference from) {
+		Annotation[][] a;
+		try {
+			a = (Annotation[][]) reflect(TYPE_REFERENCE__ANNOTATIONS, from);
+		} catch (Exception e) {
+			return null;
+		}
+		if (a == null) return null;
+		Annotation[] b = a[a.length - 1];
+		return b.length == 0 ? null : b;
+	}
+	
+	public static void removeTypeUseAnnotations(TypeReference from) {
+		try {
+			reflectSet(TYPE_REFERENCE__ANNOTATIONS, from, null);
+		} catch (Exception ignore) {}
+	}
+	
 	public static TypeReference namePlusTypeParamsToTypeReference(char[] typeName, TypeParameter[] params, long p) {
 		if (params != null && params.length > 0) {
 			TypeReference[] refs = new TypeReference[params.length];

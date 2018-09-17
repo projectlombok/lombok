@@ -5,13 +5,13 @@ import lombok.Singular;
     @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixesBuilder() {
       super();
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixesBuilder elem(String elem) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixesBuilder elem(final String elem) {
       if ((this.elems == null))
           this.elems = new java.util.ArrayList<String>();
       this.elems.add(elem);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixesBuilder elems(java.util.Collection<? extends String> elems) {
+    public @java.lang.SuppressWarnings("all") BuilderSingularWithPrefixesBuilder elems(final java.util.Collection<? extends String> elems) {
       if ((this.elems == null))
           this.elems = new java.util.ArrayList<String>();
       this.elems.addAll(elems);

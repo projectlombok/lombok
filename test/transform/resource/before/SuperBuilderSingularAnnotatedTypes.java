@@ -7,8 +7,8 @@ import lombok.NonNull;
 import lombok.Singular;
 @Target(ElementType.TYPE_USE)
 @interface MyAnnotation {}
-@lombok.Builder
-class BuilderSingularAnnotatedTypes {
+@lombok.experimental.SuperBuilder
+class SuperBuilderSingularAnnotatedTypes {
 	@Singular private Set<@MyAnnotation @NonNull String> foos;
 	@Singular private Map<@MyAnnotation @NonNull String, @MyAnnotation @NonNull Integer> bars;
 }

@@ -16,13 +16,13 @@ public @Builder class BuilderDefaultsWarnings {
       this.z = z;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderDefaultsWarningsBuilder item(String item) {
+    public @java.lang.SuppressWarnings("all") BuilderDefaultsWarningsBuilder item(final String item) {
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.add(item);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderDefaultsWarningsBuilder items(java.util.Collection<? extends String> items) {
+    public @java.lang.SuppressWarnings("all") BuilderDefaultsWarningsBuilder items(final java.util.Collection<? extends String> items) {
       if ((this.items == null))
           this.items = new java.util.ArrayList<String>();
       this.items.addAll(items);
