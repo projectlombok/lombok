@@ -42,6 +42,8 @@
 		</p><p>
 			For classes with generics, it's useful to have a static method which serves as a constructor, because inference of generic parameters via static methods works in java6 and avoids having to use the diamond operator. While you can force this by applying an explicit <code>@AllArgsConstructor(staticConstructor="of")</code> annotation, there's also the <code>@Value(staticConstructor="of")</code> feature, which will make the generated all-arguments constructor private, and generates a public static method named <code>of</code> which is a wrapper around this private constructor.
 		</p><p>
+			Various well known annotations about nullity cause null checks to be inserted and will be copied to the relevant places (such as the method for getters, and the parameter for the constructor and setters). See <a href="/features/GetterSetter">Getter/Setter</a> documentation's small print for more information.
+		</p><p>
 			<code>@Value</code> was an experimental feature from v0.11.4 to v0.11.9 (as <code>@lombok.experimental.Value</code>). It has since been moved into the core package. The old annotation is still around (and is an alias). It will eventually be removed in a future version, though.
 		</p><p>
 			It is not possible to use <code>@FieldDefaults</code> to 'undo' the private-by-default and final-by-default aspect of fields in the annotated class. Use <code>@NonFinal</code> and <code>@PackagePrivate</code> on the fields in the class to override this behaviour.
