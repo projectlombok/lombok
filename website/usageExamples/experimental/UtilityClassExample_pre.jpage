@@ -4,7 +4,7 @@ import lombok.experimental.UtilityClass;
 public class UtilityClassExample {
 	private final int CONSTANT = 5;
 
-	public void addSomething(int in) {
+	public int addSomething(int in) {
 		return in + CONSTANT;
 	}
 }
