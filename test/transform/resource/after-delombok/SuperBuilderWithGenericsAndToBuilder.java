@@ -15,7 +15,7 @@ public class SuperBuilderWithGenericsAndToBuilder {
 				return self();
 			}
 			@java.lang.SuppressWarnings("all")
-			private static void <A> $fillValuesFromInstanceIntoBuilder(final Parent<A> instance, final ParentBuilder<A, ?, ?> b) {
+			private static <A> void $fillValuesFromInstanceIntoBuilder(final Parent<A> instance, final ParentBuilder<A, ?, ?> b) {
 				b.field1(instance.field1);
 				b.items(instance.items == null ? java.util.Collections.emptyList() : instance.items);
 			}
@@ -106,7 +106,7 @@ public class SuperBuilderWithGenericsAndToBuilder {
 				return self();
 			}
 			@java.lang.SuppressWarnings("all")
-			private static void <A> $fillValuesFromInstanceIntoBuilder(final Child<A> instance, final ChildBuilder<A, ?, ?> b) {
+			private static <A> void $fillValuesFromInstanceIntoBuilder(final Child<A> instance, final ChildBuilder<A, ?, ?> b) {
 				b.field3(instance.field3);
 			}
 			@java.lang.Override
