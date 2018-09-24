@@ -27,6 +27,8 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.ArrayList;
 
+import javax.lang.model.element.Modifier;
+
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.BoundKind;
@@ -227,8 +229,23 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			builderType = generateBuilderAbstractClass(annotationNode, tdParent, builderClassName, superclassBuilderClassExpression,
 					typeParams, superclassTypeParams, classGenericName, builderGenericName);
 		} else {
-			annotationNode.addError("@SuperBuilder does not support customized builders. Use @Builder instead.");
-			return;
+			JCClassDecl builderTypeDeclaration = (JCClassDecl) builderType.get();
+			if (!builderTypeDeclaration.getModifiers().getFlags().contains(Modifier.STATIC)
+					|| !builderTypeDeclaration.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
+				annotationNode.addError("Existing Builder must be an abstract static inner class.");
+				return;
+			}
+			sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(builderType, annotationNode);
+			// Generate errors for @Singular BFDs that have one already defined node.
+			for (BuilderFieldData bfd : builderFields) {
+				SingularData sd = bfd.singularData;
+				if (sd == null) continue;
+				JavacSingularizer singularizer = sd.getSingularizer();
+				if (singularizer == null) continue;
+				if (singularizer.checkForAlreadyExistingNodesAndGenerateError(builderType, sd)) {
+					bfd.singularData = null;
+				}
+			}
 		}
 		
 		// Generate the fields in the abstract builder class that hold the values for the instance.
@@ -281,8 +298,13 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			if (builderImplType == null) {
 				builderImplType = generateBuilderImplClass(annotationNode, tdParent, builderImplClassName, builderClassName, typeParams);
 			} else {
-				annotationNode.addError("@SuperBuilder does not support customized builders. Use @Builder instead.");
-				return;
+				JCClassDecl builderImplTypeDeclaration = (JCClassDecl) builderImplType.get();
+				if (!builderImplTypeDeclaration.getModifiers().getFlags().contains(Modifier.STATIC)
+						|| builderImplTypeDeclaration.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
+					annotationNode.addError("Existing BuilderImpl must be a non-abstract static inner class.");
+					return;
+				}
+				sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(builderImplType, annotationNode);
 			}
 
 			// Create a simple constructor for the BuilderImpl class.
@@ -291,7 +313,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			
 			// Create the self() and build() methods in the BuilderImpl.
 			injectMethod(builderImplType, generateSelfMethod(builderImplType, typeParams));
-			injectMethod(builderImplType, generateBuildMethod(buildMethodName, tdParent, builderImplType, thrownExceptions));
+			if (methodExists(buildMethodName, builderImplType, -1) == MemberExistsResult.NOT_EXISTS) {
+				injectMethod(builderImplType, generateBuildMethod(buildMethodName, tdParent, builderImplType, thrownExceptions));
+			}
 			
 			recursiveSetGeneratedBy(builderImplType.get(), ast, annotationNode.getContext());
 		}
