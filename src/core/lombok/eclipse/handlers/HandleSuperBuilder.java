@@ -659,7 +659,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		TypeReference[] wildcards = new TypeReference[] {new Wildcard(Wildcard.UNBOUND), new Wildcard(Wildcard.UNBOUND)};
 		TypeReference builderType = new ParameterizedSingleTypeReference(builderClassName.toCharArray(), mergeToTypeReferences(typeParams, wildcards), 0, 0);
 		Argument builderArgument = new Argument(BUILDER_VARIABLE_NAME, 0, builderType, Modifier.FINAL);
-		TypeReference parentArgument = new ParameterizedSingleTypeReference(tdParent.getName().toCharArray(), mergeToTypeReferences(typeParams, new TypeReference[0]), 0, 0);
+		TypeReference parentArgument = createTypeReferenceWithTypeParameters(tdParent.getName(), typeParams);
 		out.arguments = new Argument[] {new Argument(INSTANCE_VARIABLE_NAME, 0, parentArgument, Modifier.FINAL), builderArgument};
 
 		// Add type params if there are any.
