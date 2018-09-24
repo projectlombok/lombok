@@ -105,7 +105,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		return ((Boolean) expr).booleanValue();
 	}
 	
-	public static class BuilderFieldData {
+	static class BuilderFieldData {
 		Annotation[] annotations;
 		TypeReference type;
 		char[] rawName;
