@@ -18,7 +18,10 @@ public class SuperBuilderWithNonNull {
 			@java.lang.SuppressWarnings("all")
 			public abstract C build();
 			@java.lang.SuppressWarnings("all")
-			public B nonNullParentField(final String nonNullParentField) {
+			public B nonNullParentField(@lombok.NonNull final String nonNullParentField) {
+				if (nonNullParentField == null) {
+					throw new java.lang.NullPointerException("nonNullParentField is marked @NonNull but is null");
+				}
 				this.nonNullParentField = nonNullParentField;
 				nonNullParentField$set = true;
 				return self();
@@ -72,7 +75,10 @@ public class SuperBuilderWithNonNull {
 			@java.lang.SuppressWarnings("all")
 			public abstract C build();
 			@java.lang.SuppressWarnings("all")
-			public B nonNullChildField(final String nonNullChildField) {
+			public B nonNullChildField(@lombok.NonNull final String nonNullChildField) {
+				if (nonNullChildField == null) {
+					throw new java.lang.NullPointerException("nonNullChildField is marked @NonNull but is null");
+				}
 				this.nonNullChildField = nonNullChildField;
 				return self();
 			}

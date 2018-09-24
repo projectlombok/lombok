@@ -21,13 +21,13 @@ import lombok.Builder;
       this.foo = foo;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderWithToBuilderBuilder<T> bar(T bar) {
+    public @java.lang.SuppressWarnings("all") BuilderWithToBuilderBuilder<T> bar(final T bar) {
       if ((this.bars == null))
           this.bars = new java.util.ArrayList<T>();
       this.bars.add(bar);
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderWithToBuilderBuilder<T> bars(java.util.Collection<? extends T> bars) {
+    public @java.lang.SuppressWarnings("all") BuilderWithToBuilderBuilder<T> bars(final java.util.Collection<? extends T> bars) {
       if ((this.bars == null))
           this.bars = new java.util.ArrayList<T>();
       this.bars.addAll(bars);

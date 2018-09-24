@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import lombok.AllArgsConstructor;
 import lombok.ConfigurationKeys;
@@ -75,6 +74,33 @@ public class HandlerUtil {
 	
 	public static int primeForNull() {
 		return 43;
+	}
+	
+	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS;
+	static {
+		NONNULL_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+			"lombok.NonNull",
+			"javax.annotation.Nonnull",
+			"edu.umd.cs.findbugs.annotations.NonNull",
+			"org.jetbrains.annotations.NotNull",
+			"android.support.annotation.NonNull",
+			"org.eclipse.jdt.annotation.NonNull",
+		}));
+		BASE_COPYABLE_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+			"lombok.NonNull",
+			"javax.annotation.Nonnull",
+			"edu.umd.cs.findbugs.annotations.NonNull",
+			"org.jetbrains.annotations.NotNull",
+			"android.support.annotation.NonNull",
+			"org.eclipse.jdt.annotation.NonNull",
+			"javax.annotation.Nullable",
+			"javax.annotation.CheckForNull",
+			"edu.umd.cs.findbugs.annotations.UnknownNullness",
+			"edu.umd.cs.findbugs.annotations.Nullable",
+			"org.jetbrains.annotations.Nullable",
+			"android.support.annotation.Nullable",
+			"org.eclipse.jdt.annotation.Nullable",
+		}));
 	}
 	
 	/** Checks if the given name is a valid identifier.
@@ -221,12 +247,6 @@ public class HandlerUtil {
 	        something else, such as 'this field must not be null _when saved to the db_ but its perfectly okay to start out as such, and a no-args
 	        constructor and the implied starts-out-as-null state that goes with it is in fact mandatory' which happens with javax.validation.constraints.NotNull.
 	        Various problems with spring have also been reported. See issue #287, issue #271, and issue #43. */
-	
-	/** Matches the simple part of any annotation that lombok considers as indicative of NonNull status. */
-	public static final Pattern NON_NULL_PATTERN = Pattern.compile("^(?:nonnull)$", Pattern.CASE_INSENSITIVE);
-	
-	/** Matches the simple part of any annotation that lombok considers as indicative of Nullable status. */
-	public static final Pattern NULLABLE_PATTERN = Pattern.compile("^(?:nullable|checkfornull)$", Pattern.CASE_INSENSITIVE);
 	
 	public static final String DEFAULT_EXCEPTION_FOR_NON_NULL = "java.lang.NullPointerException";
 	

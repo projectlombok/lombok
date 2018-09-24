@@ -18,13 +18,13 @@ public @Builder class BuilderWithDeprecated {
       this.dep2 = dep2;
       return this;
     }
-    public @java.lang.Deprecated @java.lang.SuppressWarnings("all") BuilderWithDeprecatedBuilder string(String string) {
+    public @java.lang.Deprecated @java.lang.SuppressWarnings("all") BuilderWithDeprecatedBuilder string(final String string) {
       if ((this.strings == null))
           this.strings = new java.util.ArrayList<String>();
       this.strings.add(string);
       return this;
     }
-    public @java.lang.Deprecated @java.lang.SuppressWarnings("all") BuilderWithDeprecatedBuilder strings(java.util.Collection<? extends String> strings) {
+    public @java.lang.Deprecated @java.lang.SuppressWarnings("all") BuilderWithDeprecatedBuilder strings(final java.util.Collection<? extends String> strings) {
       if ((this.strings == null))
           this.strings = new java.util.ArrayList<String>();
       this.strings.addAll(strings);
@@ -35,13 +35,13 @@ public @Builder class BuilderWithDeprecated {
           this.strings.clear();
       return this;
     }
-    public @java.lang.Deprecated @java.lang.SuppressWarnings("all") BuilderWithDeprecatedBuilder number(Integer number) {
+    public @java.lang.Deprecated @java.lang.SuppressWarnings("all") BuilderWithDeprecatedBuilder number(final Integer number) {
       if ((this.numbers == null))
           this.numbers = com.google.common.collect.ImmutableList.builder();
       this.numbers.add(number);
       return this;
     }
-    public @java.lang.Deprecated @java.lang.SuppressWarnings("all") BuilderWithDeprecatedBuilder numbers(java.lang.Iterable<? extends Integer> numbers) {
+    public @java.lang.Deprecated @java.lang.SuppressWarnings("all") BuilderWithDeprecatedBuilder numbers(final java.lang.Iterable<? extends Integer> numbers) {
       if ((this.numbers == null))
           this.numbers = com.google.common.collect.ImmutableList.builder();
       this.numbers.addAll(numbers);

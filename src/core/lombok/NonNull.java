@@ -41,7 +41,7 @@ import java.lang.annotation.Target;
  * this annotation will <strong>be deleted</strong> from the lombok package. If the need to update an import statement scares
  * you, you should use your own annotation named {@code @NonNull} instead of this one.
  */
-@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE})
+@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.CLASS)
 @Documented
 public @interface NonNull {

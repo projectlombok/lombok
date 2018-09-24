@@ -30,6 +30,7 @@ import java.util.List;
 
 import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.EclipseNode;
+import lombok.eclipse.handlers.HandleNonNull;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.SingularData;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.StatementMaker;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.TypeReferenceMaker;
@@ -138,14 +139,18 @@ abstract class EclipseJavaUtilListSetSingularizer extends EclipseJavaUtilSingula
 		
 		md.statements = statements.toArray(new Statement[statements.size()]);
 		TypeReference paramType = cloneParamType(0, data.getTypeArgs(), builderType);
-		Argument param = new Argument(data.getSingularName(), 0, paramType, 0);
+		Annotation[] typeUseAnns = getTypeUseAnnotations(paramType);
+		removeTypeUseAnnotations(paramType);
+		Argument param = new Argument(data.getSingularName(), 0, paramType, ClassFileConstants.AccFinal);
+		param.annotations = typeUseAnns;
 		md.arguments = new Argument[] {param};
 		md.returnType = returnType;
 		md.selector = fluent ? data.getSingularName() : HandlerUtil.buildAccessorName("add", new String(data.getSingularName())).toCharArray();
 		md.annotations = deprecate ? new Annotation[] { generateDeprecatedAnnotation(data.getSource()) } : null;
 		
 		data.setGeneratedByRecursive(md);
-		injectMethod(builderType, md);
+		
+		HandleNonNull.INSTANCE.fix(injectMethod(builderType, md));
 	}
 	
 	void generatePluralMethod(boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {
@@ -169,7 +174,7 @@ abstract class EclipseJavaUtilListSetSingularizer extends EclipseJavaUtilSingula
 		
 		TypeReference paramType = new QualifiedTypeReference(TypeConstants.JAVA_UTIL_COLLECTION, NULL_POSS);
 		paramType = addTypeArgs(1, true, builderType, paramType, data.getTypeArgs());
-		Argument param = new Argument(data.getPluralName(), 0, paramType, 0);
+		Argument param = new Argument(data.getPluralName(), 0, paramType, ClassFileConstants.AccFinal);
 		md.arguments = new Argument[] {param};
 		md.returnType = returnType;
 		md.selector = fluent ? data.getPluralName() : HandlerUtil.buildAccessorName("addAll", new String(data.getPluralName())).toCharArray();

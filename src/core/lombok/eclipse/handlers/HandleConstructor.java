@@ -139,7 +139,7 @@ public class HandleConstructor {
 			FieldDeclaration fieldDecl = (FieldDeclaration) child.get();
 			if (!filterField(fieldDecl)) continue;
 			boolean isFinal = (fieldDecl.modifiers & ClassFileConstants.AccFinal) != 0;
-			boolean isNonNull = nullMarked && findAnnotations(fieldDecl, NON_NULL_PATTERN).length != 0;
+			boolean isNonNull = nullMarked && hasNonNullAnnotations(child);
 			if ((isFinal || isNonNull) && fieldDecl.initialization == null) fields.add(child);
 		}
 		return fields;
@@ -403,13 +403,12 @@ public class HandleConstructor {
 			assigns.add(assignment);
 			long fieldPos = (((long) field.sourceStart) << 32) | field.sourceEnd;
 			Argument parameter = new Argument(fieldName, fieldPos, copyType(field.type, source), Modifier.FINAL);
-			Annotation[] nonNulls = findAnnotations(field, NON_NULL_PATTERN);
-			Annotation[] nullables = findAnnotations(field, NULLABLE_PATTERN);
-			if (nonNulls.length != 0) {
+			Annotation[] copyableAnnotations = findCopyableAnnotations(fieldNode);
+			if (hasNonNullAnnotations(fieldNode)) {
 				Statement nullCheck = generateNullCheck(parameter, sourceNode);
 				if (nullCheck != null) nullChecks.add(nullCheck);
 			}
-			parameter.annotations = copyAnnotations(source, nonNulls, nullables);
+			parameter.annotations = copyAnnotations(source, copyableAnnotations);
 			params.add(parameter);
 		}
 		
@@ -546,7 +545,7 @@ public class HandleConstructor {
 			assigns.add(nameRef);
 			
 			Argument parameter = new Argument(field.name, fieldPos, copyType(field.type, source), Modifier.FINAL);
-			parameter.annotations = copyAnnotations(source, findAnnotations(field, NON_NULL_PATTERN), findAnnotations(field, NULLABLE_PATTERN));
+			parameter.annotations = copyAnnotations(source, findCopyableAnnotations(fieldNode));
 			params.add(parameter);
 		}
 		

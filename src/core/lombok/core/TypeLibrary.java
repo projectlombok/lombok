@@ -45,6 +45,12 @@ public class TypeLibrary {
 		qualified = null;
 	}
 	
+	public TypeLibrary(TypeLibrary parent) {
+		unqualifiedToQualifiedMap = new HashMap<String, String>();
+		unqualified = null;
+		qualified = null;
+	}
+	
 	public void lock() {
 		this.locked = true;
 	}

@@ -39,6 +39,7 @@ import lombok.javac.handlers.JavacSingularsRecipes.StatementMaker;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
@@ -125,7 +126,10 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
 		for (int i = 0; i < suffixes.size(); i++) {
 			JCExpression pt = cloneParamType(i, maker, data.getTypeArgs(), builderType, source);
-			JCVariableDecl p = maker.VarDef(maker.Modifiers(paramFlags), names[i], pt, null);
+			List<JCAnnotation> typeUseAnns = getTypeUseAnnotations(pt);
+			pt = removeTypeUseAnnotations(pt);
+			JCModifiers paramMods = typeUseAnns.isEmpty() ? maker.Modifiers(paramFlags) : maker.Modifiers(paramFlags, typeUseAnns);
+			JCVariableDecl p = maker.VarDef(paramMods, names[i], pt, null);
 			params.append(p);
 		}
 		

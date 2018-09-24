@@ -27,6 +27,7 @@ import static lombok.javac.Javac.*;
 import static lombok.javac.JavacAugments.JCTree_generatedNode;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -49,6 +50,7 @@ import lombok.core.LombokImmutableList;
 import lombok.core.AnnotationValues.AnnotationValue;
 import lombok.core.TypeResolver;
 import lombok.core.configuration.NullCheckExceptionType;
+import lombok.core.configuration.TypeName;
 import lombok.core.handlers.HandlerUtil;
 import lombok.delombok.LombokOptionsFactory;
 import lombok.experimental.Accessors;
@@ -1038,6 +1040,57 @@ public class JavacHandlerUtil {
 		return (field.mods.flags & Flags.ENUM) != 0;
 	}
 	
+	static class JCAnnotatedTypeReflect {
+		private static Class<?> TYPE;
+		private static Constructor<?> CONSTRUCTOR;
+		private static Field ANNOTATIONS, UNDERLYING_TYPE;
+		
+		private static void init(Class<?> in) {
+			if (TYPE != null) return;
+			if (!in.getName().equals("com.sun.tools.javac.tree.JCTree$JCAnnotatedType")) return;
+			try {
+				CONSTRUCTOR = in.getDeclaredConstructor(List.class, JCExpression.class);
+				CONSTRUCTOR.setAccessible(true);
+				ANNOTATIONS = in.getDeclaredField("annotations");
+				UNDERLYING_TYPE = in.getDeclaredField("underlyingType");
+				TYPE = in;
+			} catch (Exception ignore) {}
+		}
+		
+		static boolean is(JCTree obj) {
+			if (obj == null) return false;
+			init(obj.getClass());
+			return obj.getClass() == TYPE;
+		}
+		
+		@SuppressWarnings("unchecked")
+		static List<JCAnnotation> getAnnotations(JCTree obj) {
+			init(obj.getClass());
+			try {
+				return (List<JCAnnotation>) ANNOTATIONS.get(obj);
+			} catch (Exception e) {
+				return List.nil();
+			}
+		}
+		
+		static JCExpression getUnderlyingType(JCTree obj) {
+			init(obj.getClass());
+			try {
+				return (JCExpression) UNDERLYING_TYPE.get(obj);
+			} catch (Exception e) {
+				return null;
+			}
+		}
+		
+		static JCExpression create(List<JCAnnotation> annotations, JCExpression underlyingType) {
+			try {
+				return (JCExpression) CONSTRUCTOR.newInstance(annotations, underlyingType);
+			} catch (Exception e) {
+				return null;
+			}
+		}
+	}
+	
 	// jdk9 support, types have changed, names stay the same
 	static class ClassSymbolMembersField {
 		private static final Field membersField;
@@ -1335,6 +1388,63 @@ public class JavacHandlerUtil {
 		return result.toList();
 	}
 	
+	public static boolean hasNonNullAnnotations(JavacNode node) {
+		for (JavacNode child : node.down()) {
+			if (child.getKind() == Kind.ANNOTATION) {
+				JCAnnotation annotation = (JCAnnotation) child.get();
+				for (String nn : NONNULL_ANNOTATIONS) if (typeMatches(nn, node, annotation.annotationType)) return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * Searches the given field node for annotations and returns each one that is 'copyable' (either via configuration or from the base list).
+	 */
+	public static List<JCAnnotation> findCopyableAnnotations(JavacNode node) {
+		JCAnnotation anno = null;
+		String annoName = null;
+		for (JavacNode child : node.down()) {
+			if (child.getKind() == Kind.ANNOTATION) {
+				if (anno != null) {
+					annoName = "";
+					break;
+				}
+				JCAnnotation annotation = (JCAnnotation) child.get();
+				annoName = annotation.annotationType.toString();
+				anno = annotation;
+			}
+		}
+		
+		if (annoName == null) return List.nil();
+		
+		java.util.List<TypeName> configuredCopyable = node.getAst().readConfiguration(ConfigurationKeys.COPYABLE_ANNOTATIONS);
+		
+		if (!annoName.isEmpty()) {
+			for (TypeName cn : configuredCopyable) if (typeMatches(cn.toString(), node, anno.annotationType)) return List.of(anno);
+			for (String bn : BASE_COPYABLE_ANNOTATIONS) if (typeMatches(bn, node, anno.annotationType)) return List.of(anno);
+		}
+		
+		ListBuffer<JCAnnotation> result = new ListBuffer<JCAnnotation>();
+		for (JavacNode child : node.down()) {
+			if (child.getKind() == Kind.ANNOTATION) {
+				JCAnnotation annotation = (JCAnnotation) child.get();
+				boolean match = false;
+				for (TypeName cn : configuredCopyable) if (typeMatches(cn.toString(), node, annotation.annotationType)) {
+					result.append(annotation);
+					match = true;
+					break;
+				}
+				if (!match) for (String bn : BASE_COPYABLE_ANNOTATIONS) if (typeMatches(bn, node, annotation.annotationType)) {
+					result.append(annotation);
+					break;
+				}
+			}
+		}
+		return result.toList();
+	}
+	
 	/**
 	 * Generates a new statement that checks if the given variable is null, and if so, throws a configured exception with the
 	 * variable name as message.
@@ -1512,6 +1622,16 @@ public class JavacHandlerUtil {
 		return out.toList();
 	}
 	
+	public static List<JCAnnotation> getTypeUseAnnotations(JCExpression from) {
+		if (!JCAnnotatedTypeReflect.is(from)) return List.nil();
+		return JCAnnotatedTypeReflect.getAnnotations(from);
+	}
+	
+	public static JCExpression removeTypeUseAnnotations(JCExpression from) {
+		if (!JCAnnotatedTypeReflect.is(from)) return from;
+		return JCAnnotatedTypeReflect.getUnderlyingType(from);
+	}
+	
 	public static JCExpression namePlusTypeParamsToTypeReference(JavacTreeMaker maker, Name typeName, List<JCTypeParameter> params) {
 		if (params.isEmpty()) {
 			return maker.Ident(typeName);
@@ -1592,7 +1712,7 @@ public class JavacHandlerUtil {
 	}
 	
 	/**
-	 * Creates a full clone of a given javac AST type node. Every part is cloned (every identifier, every select, every wildcard, every type apply).
+	 * Creates a full clone of a given javac AST type node. Every part is cloned (every identifier, every select, every wildcard, every type apply, every type_use annotation).
 	 * 
 	 * If there's any node in the tree that we don't know how to clone, that part isn't cloned. However, we wouldn't know what could possibly show up that we
 	 * can't currently clone; that's just a safeguard.
@@ -1652,6 +1772,12 @@ public class JavacHandlerUtil {
 				break;
 			}
 			return maker.Wildcard(newKind, newInner);
+		}
+		
+		if (JCAnnotatedTypeReflect.is(in)) {
+			JCExpression underlyingType = cloneType0(maker, JCAnnotatedTypeReflect.getUnderlyingType(in));
+			List<JCAnnotation> anns = copyAnnotations(JCAnnotatedTypeReflect.getAnnotations(in));
+			return JCAnnotatedTypeReflect.create(anns, underlyingType);
 		}
 		
 		// This is somewhat unsafe, but it's better than outright throwing an exception here. Returning null will just cause an exception down the pipeline.
@@ -1829,7 +1955,7 @@ public class JavacHandlerUtil {
 	
 	public static boolean isDirectDescendantOfObject(JavacNode typeNode) {
 		if (!(typeNode.get() instanceof JCClassDecl)) throw new IllegalArgumentException("not a type node");
-		JCTree extending = Javac.getExtendsClause((JCClassDecl)typeNode.get());
+		JCTree extending = Javac.getExtendsClause((JCClassDecl) typeNode.get());
 		if (extending == null) return true;
 		String p = extending.toString();
 		return p.equals("Object") || p.equals("java.lang.Object");

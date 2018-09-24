@@ -127,7 +127,7 @@ public class HandleConstructor {
 			//Skip static fields.
 			if ((fieldFlags & Flags.STATIC) != 0) continue;
 			boolean isFinal = (fieldFlags & Flags.FINAL) != 0;
-			boolean isNonNull = nullMarked && !findAnnotations(child, NON_NULL_PATTERN).isEmpty();
+			boolean isNonNull = nullMarked && hasNonNullAnnotations(child);
 			if ((isFinal || isNonNull) && fieldDecl.init == null) fields.append(child);
 		}
 		return fields.toList();
@@ -329,12 +329,11 @@ public class HandleConstructor {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			Name fieldName = removePrefixFromField(fieldNode);
 			Name rawName = field.name;
-			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, NON_NULL_PATTERN);
-			List<JCAnnotation> nullables = findAnnotations(fieldNode, NULLABLE_PATTERN);
+			List<JCAnnotation> copyableAnnotations = findCopyableAnnotations(fieldNode);
 			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, nonNulls.appendList(nullables)), fieldName, field.vartype, null);
+			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, copyableAnnotations), fieldName, field.vartype, null);
 			params.append(param);
-			if (!nonNulls.isEmpty()) {
+			if (hasNonNullAnnotations(fieldNode)) {
 				JCStatement nullCheck = generateNullCheck(maker, fieldNode, param, source);
 				if (nullCheck != null) nullChecks.append(nullCheck);
 			}
@@ -471,10 +470,9 @@ public class HandleConstructor {
 			JCVariableDecl field = (JCVariableDecl) fieldNode.get();
 			Name fieldName = removePrefixFromField(fieldNode);
 			JCExpression pType = cloneType(maker, field.vartype, source, typeNode.getContext());
-			List<JCAnnotation> nonNulls = findAnnotations(fieldNode, NON_NULL_PATTERN);
-			List<JCAnnotation> nullables = findAnnotations(fieldNode, NULLABLE_PATTERN);
+			List<JCAnnotation> copyableAnnotations = findCopyableAnnotations(fieldNode);
 			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, typeNode.getContext());
-			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, nonNulls.appendList(nullables)), fieldName, pType, null);
+			JCVariableDecl param = maker.VarDef(maker.Modifiers(flags, copyableAnnotations), fieldName, pType, null);
 			params.append(param);
 			args.append(maker.Ident(fieldName));
 		}
