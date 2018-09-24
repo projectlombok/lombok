@@ -572,9 +572,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		out.modifiers = ClassFileConstants.AccPublic;
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
 		
-		// Add type params if there are any.
-		if (typeParams != null && typeParams.length > 0) out.typeParameters = copyTypeParams(typeParams, source);
-		
 		TypeReference[] wildcards = new TypeReference[] {new Wildcard(Wildcard.UNBOUND), new Wildcard(Wildcard.UNBOUND) };
 		out.returnType = new ParameterizedSingleTypeReference(builderClassName.toCharArray(), mergeToTypeReferences(typeParams, wildcards), 0, p);
 		
@@ -609,7 +606,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		if (inherited) out.annotations = new Annotation[] {makeMarkerAnnotation(TypeConstants.JAVA_LANG_OVERRIDE, tdParent.get())};
 		out.returnType = new SingleTypeReference(builderGenericName.toCharArray(), 0);
 		
-		TypeReference builderType = createTypeReferenceWithTypeParameters(classGenericName, typeParams);
+		TypeReference builderType = new SingleTypeReference(classGenericName.toCharArray(), 0);
 		out.arguments = new Argument[] {new Argument(INSTANCE_VARIABLE_NAME, 0, builderType, Modifier.FINAL)};
 
 		List<Statement> body = new ArrayList<Statement>();
@@ -662,7 +659,11 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		TypeReference[] wildcards = new TypeReference[] {new Wildcard(Wildcard.UNBOUND), new Wildcard(Wildcard.UNBOUND)};
 		TypeReference builderType = new ParameterizedSingleTypeReference(builderClassName.toCharArray(), mergeToTypeReferences(typeParams, wildcards), 0, 0);
 		Argument builderArgument = new Argument(BUILDER_VARIABLE_NAME, 0, builderType, Modifier.FINAL);
-		out.arguments = new Argument[] {new Argument(INSTANCE_VARIABLE_NAME, 0, new SingleTypeReference(tdParent.getName().toCharArray(), 0), Modifier.FINAL), builderArgument};
+		TypeReference parentArgument = new ParameterizedSingleTypeReference(tdParent.getName().toCharArray(), mergeToTypeReferences(typeParams, new TypeReference[0]), 0, 0);
+		out.arguments = new Argument[] {new Argument(INSTANCE_VARIABLE_NAME, 0, parentArgument, Modifier.FINAL), builderArgument};
+
+		// Add type params if there are any.
+		if (typeParams.length > 0) out.typeParameters = copyTypeParams(typeParams, source);
 
 		List<Statement> body = new ArrayList<Statement>();
 
