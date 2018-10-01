@@ -543,6 +543,7 @@ ${sourceWarning}</echo>
 			<classpath refid="test.path" />
 			<classpath refid="build.path" />
 			<classpath path="build/lombok" />
+			<classpath path="build/tests" />
 			<src path="test/core/src" />
 			<src path="test/transform/src" />
 			<src path="test/bytecode/src" />
