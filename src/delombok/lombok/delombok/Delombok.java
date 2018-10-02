@@ -527,6 +527,7 @@ public class Delombok {
 			}
 			String[] argv = argsList.toArray(new String[0]);
 			args.init("javac", argv);
+			options.put("diags.legacy", "TRUE");
 		}
 		
 		CommentCatcher catcher = CommentCatcher.create(context);
