@@ -197,7 +197,7 @@ public abstract class AbstractRunTests {
 		}
 	}
 	
-	@SuppressWarnings("null") /* eclipse bug; it falsely thinks stuffAc will always be null or some such hogwash. */
+	@SuppressWarnings("null") /* eclipse bug workaround; it falsely thinks stuffAc will always be null. */
 	private static void compareMessages(String name, LombokImmutableList<CompilerMessageMatcher> expected, LinkedHashSet<CompilerMessage> actual) {
 		Iterator<CompilerMessageMatcher> expectedIterator = expected.iterator();
 		Iterator<CompilerMessage> actualIterator = actual.iterator();

@@ -680,7 +680,9 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 </fail>
 	</target>
 	
-	<target name="test" depends="-loadTestEnvironmentProperties, -failIfNoTestEnvironmentProperties, -test-compile, dist, test-ecj, -test-check, -test8, -test9" />
+	<target name="test" depends="-loadTestEnvironmentProperties, -failIfNoTestEnvironmentProperties, -test-compile, dist, test-ecj, -test-check, -test8, -test9" description="Runs all tests." />
+	
+	<target name="testfast" depends="-loadTestEnvironmentProperties, -failIfNoTestEnvironmentProperties, -test-compile, -test-check, -test8, -test9" />
 	
 	<target name="-test-check">
 		<condition property="test9.run">
@@ -697,7 +699,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		</condition>
 	</target>
 	
-	<target name="-test9" depends="-loadTestEnvironmentProperties, -failIfNoTestEnvironmentProperties, -test-compile, dist, test-ecj" if="test9.run">
+	<target name="-test9" if="test9.run">
 		<echo>Running test suite in JDK9+ mode</echo>
 		<junit haltonfailure="no" fork="true">
 			<jvmarg value="-javaagent:dist/lombok.jar" />
@@ -732,7 +734,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			</junit>
 	</target>
 	
-	<target name="-test8" depends="-loadTestEnvironmentProperties, -failIfNoTestEnvironmentProperties, -test-compile, dist, test-ecj" if="test8.run" description="Runs the tests.">
+	<target name="-test8" if="test8.run">
 		<echo>Running test suite in JDK6-8 mode</echo>
 		<junit haltonfailure="no" fork="true">
 			<jvmarg value="-javaagent:dist/lombok.jar" />
