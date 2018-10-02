@@ -1,3 +1,4 @@
+//version :9
 //CONF: lombok.var.flagUsage = WARNING
 import lombok.var;
 

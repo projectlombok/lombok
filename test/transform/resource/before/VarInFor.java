@@ -1,3 +1,4 @@
+//version :9
 import lombok.var;
 
 public class VarInFor {
