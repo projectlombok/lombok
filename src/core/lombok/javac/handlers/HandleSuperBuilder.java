@@ -37,11 +37,13 @@ import com.sun.tools.javac.tree.JCTree.JCAssign;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
+import com.sun.tools.javac.tree.JCTree.JCReturn;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
@@ -61,6 +63,7 @@ import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
 import lombok.core.handlers.HandlerUtil;
+import lombok.core.handlers.HandlerUtil.FieldAccess;
 import lombok.core.handlers.InclusionExclusionUtils.Included;
 import lombok.experimental.NonFinal;
 import lombok.experimental.SuperBuilder;
@@ -68,32 +71,23 @@ import lombok.javac.Javac;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
+import lombok.javac.handlers.HandleBuilder.BuilderFieldData;
 import lombok.javac.handlers.JavacHandlerUtil.MemberExistsResult;
 import lombok.javac.handlers.JavacSingularsRecipes.ExpressionMaker;
-import lombok.javac.handlers.JavacSingularsRecipes.StatementMaker;
 import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
 import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
+import lombok.javac.handlers.JavacSingularsRecipes.StatementMaker;
 
 @ProviderFor(JavacAnnotationHandler.class)
 @HandlerPriority(-1024) //-2^10; to ensure we've picked up @FieldDefault's changes (-2048) but @Value hasn't removed itself yet (-512), so that we can error on presence of it on the builder classes.
 public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	private static final String SELF_METHOD = "self";
-	
-	private static class BuilderFieldData {
-		List<JCAnnotation> annotations;
-		JCExpression type;
-		Name rawName;
-		Name name;
-		Name nameOfDefaultProvider;
-		Name nameOfSetFlag;
-		SingularData singularData;
-		ObtainVia obtainVia;
-		JavacNode obtainViaNode;
-		JavacNode originalFieldNode;
-		
-		java.util.List<JavacNode> createdFields = new ArrayList<JavacNode>();
-	}
-	
+	private static final String TO_BUILDER_METHOD_NAME = "toBuilder";
+	private static final String FILL_VALUES_METHOD_NAME = "$fillValuesFrom";
+	private static final String STATIC_FILL_VALUES_METHOD_NAME = "$fillValuesFromInstanceIntoBuilder";
+	private static final String INSTANCE_VARIABLE_NAME = "instance";
+	private static final String BUILDER_VARIABLE_NAME = "b";
+
 	@Override
 	public void handle(AnnotationValues<SuperBuilder> annotation, JCAnnotation ast, JavacNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.SUPERBUILDER_FLAG_USAGE, "@SuperBuilder");
@@ -110,10 +104,11 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		if (!checkName("builderMethodName", builderMethodName, annotationNode)) return;
 		if (!checkName("buildMethodName", buildMethodName, annotationNode)) return;
 		
+		boolean toBuilder = superbuilderAnnotation.toBuilder();
+
 		JavacNode tdParent = annotationNode.up();
 		
 		java.util.List<BuilderFieldData> builderFields = new ArrayList<BuilderFieldData>();
-		JCExpression returnType;
 		List<JCTypeParameter> typeParams = List.nil();
 		List<JCExpression> thrownExceptions = List.nil();
 		List<JCExpression> superclassTypeParams = List.nil();
@@ -192,7 +187,6 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		// If there is no superclass, superclassBuilderClassExpression is still == null at this point.
 		// You can use it to check whether to inherit or not.
 		
-		returnType = namePlusTypeParamsToTypeReference(tdParent.getTreeMaker(), td.name, td.typarams);
 		typeParams = td.typarams;
 		
 		// <C, B> are the generics for our builder.
@@ -231,7 +225,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JavacNode builderType = findInnerClass(tdParent, builderClassName);
 		if (builderType == null) {
 			builderType = generateBuilderAbstractClass(annotationNode, tdParent, builderClassName, superclassBuilderClassExpression,
-					typeParams, superclassTypeParams, ast, classGenericName, builderGenericName);
+					typeParams, superclassTypeParams, classGenericName, builderGenericName);
 		} else {
 			annotationNode.addError("@SuperBuilder does not support customized builders. Use @Builder instead.");
 			return;
@@ -245,6 +239,13 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			injectFieldAndMarkGenerated(builderType, uncleanField);
 		}
 		
+		if (toBuilder) {
+			// Generate $fillValuesFrom() method in the abstract builder.
+			injectMethod(builderType, generateFillValuesMethod(tdParent, superclassBuilderClassExpression != null, builderGenericName, classGenericName, builderClassName));
+			// Generate $fillValuesFromInstanceIntoBuilder() method in the builder implementation class.
+			injectMethod(builderType, generateStaticFillValuesMethod(tdParent, builderClassName, typeParams, builderFields));
+		}
+
 		// Generate abstract self() and build() methods in the abstract builder.
 		injectMethod(builderType, generateAbstractSelfMethod(tdParent, superclassBuilderClassExpression != null, builderGenericName));
 		injectMethod(builderType, generateAbstractBuildMethod(tdParent, buildMethodName, superclassBuilderClassExpression != null, classGenericName));
@@ -271,25 +272,26 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		recursiveSetGeneratedBy(builderType.get(), ast, annotationNode.getContext());
 		
-		if ((td.mods.flags & Flags.ABSTRACT) == 0) {
+		boolean isAbstract = (td.mods.flags & Flags.ABSTRACT) != 0;
+		if (!isAbstract) {
 			// Only non-abstract classes get the Builder implementation.
 			
 			// Create the builder implementation class.
 			JavacNode builderImplType = findInnerClass(tdParent, builderImplClassName);
 			if (builderImplType == null) {
-				builderImplType = generateBuilderImplClass(annotationNode, tdParent, builderImplClassName, builderClassName, typeParams, ast);
+				builderImplType = generateBuilderImplClass(annotationNode, tdParent, builderImplClassName, builderClassName, typeParams);
 			} else {
 				annotationNode.addError("@SuperBuilder does not support customized builders. Use @Builder instead.");
 				return;
 			}
-			
+
 			// Create a simple constructor for the BuilderImpl class.
 			JCMethodDecl cd = HandleConstructor.createConstructor(AccessLevel.PRIVATE, List.<JCAnnotation>nil(), builderImplType, List.<JavacNode>nil(), false, annotationNode);
 			if (cd != null) injectMethod(builderImplType, cd);
 			
 			// Create the self() and build() methods in the BuilderImpl.
 			injectMethod(builderImplType, generateSelfMethod(builderImplType, typeParams));
-			injectMethod(builderImplType, generateBuildMethod(buildMethodName, returnType, builderImplType, thrownExceptions));
+			injectMethod(builderImplType, generateBuildMethod(buildMethodName, tdParent, builderImplType, thrownExceptions));
 			
 			recursiveSetGeneratedBy(builderImplType.get(), ast, annotationNode.getContext());
 		}
@@ -298,15 +300,32 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		generateBuilderBasedConstructor(tdParent, typeParams, builderFields, annotationNode, builderClassName,
 				superclassBuilderClassExpression != null);
 		
-		if ((td.mods.flags & Flags.ABSTRACT) == 0) {
-			// Only non-abstract classes get the Builder implementation and the builder() method.
+		if (isAbstract) {
+			// Only non-abstract classes get the builder() and toBuilder() methods.
+			return;
+		}
 			
-			// Add the builder() method to the annotated class.
-			// Allow users to specify their own builder() methods, e.g., to provide default values.
-			if (methodExists(builderMethodName, tdParent, -1) == MemberExistsResult.NOT_EXISTS) {
-				JCMethodDecl builderMethod = generateBuilderMethod(builderMethodName, builderClassName, builderImplClassName, annotationNode, tdParent, typeParams);
-				recursiveSetGeneratedBy(builderMethod, ast, annotationNode.getContext());
-				if (builderMethod != null) injectMethod(tdParent, builderMethod);
+		// Add the builder() method to the annotated class.
+		// Allow users to specify their own builder() methods, e.g., to provide default values.
+		if (methodExists(builderMethodName, tdParent, -1) == MemberExistsResult.NOT_EXISTS) {
+			JCMethodDecl builderMethod = generateBuilderMethod(builderMethodName, builderClassName, builderImplClassName, annotationNode, tdParent, typeParams);
+			recursiveSetGeneratedBy(builderMethod, ast, annotationNode.getContext());
+			if (builderMethod != null) injectMethod(tdParent, builderMethod);
+		}
+
+		// Add the toBuilder() method to the annotated class.
+		if (toBuilder) {
+			switch (methodExists(TO_BUILDER_METHOD_NAME, tdParent, 0)) {
+			case EXISTS_BY_USER:
+				annotationNode.addWarning("Not generating toBuilder() as it already exists.");
+				return;
+			case NOT_EXISTS:
+				JCMethodDecl md = generateToBuilderMethod(builderClassName, builderImplClassName, annotationNode, tdParent, typeParams);
+				if (md != null) {
+					injectMethod(tdParent, md);
+				}
+			default:
+				// Should not happen.
 			}
 		}
 	}
@@ -316,7 +335,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	 */
 	private JavacNode generateBuilderAbstractClass(JavacNode source, JavacNode tdParent, String builderClass,
 			JCExpression superclassBuilderClassExpression, List<JCTypeParameter> typeParams,
-			List<JCExpression> superclassTypeParams, JCAnnotation ast, String classGenericName, String builderGenericName) {
+			List<JCExpression> superclassTypeParams, String classGenericName, String builderGenericName) {
 		
 		JavacTreeMaker maker = tdParent.getTreeMaker();
 		JCModifiers mods = maker.Modifiers(Flags.STATIC | Flags.ABSTRACT | Flags.PUBLIC);
@@ -358,7 +377,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	/**
 	 * Creates and returns the concrete builder implementation class and injects it into the annotated class.
 	 */
-	private JavacNode generateBuilderImplClass(JavacNode source, JavacNode tdParent, String builderImplClass, String builderAbstractClass, List<JCTypeParameter> typeParams, JCAnnotation ast) {
+	private JavacNode generateBuilderImplClass(JavacNode source, JavacNode tdParent, String builderImplClass, String builderAbstractClass, List<JCTypeParameter> typeParams) {
 		JavacTreeMaker maker = tdParent.getTreeMaker();
 		JCModifiers mods = maker.Modifiers(Flags.STATIC | Flags.PRIVATE | Flags.FINAL);
 		
@@ -410,7 +429,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		
-		Name builderVariableName = typeNode.toName("b");
+		Name builderVariableName = typeNode.toName(BUILDER_VARIABLE_NAME);
 		for (BuilderFieldData bfd : builderFields) {
 			JCExpression rhs;
 			if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
@@ -496,6 +515,166 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		return maker.MethodDef(maker.Modifiers(modifiers), type.toName(builderMethodName), returnType, copyTypeParams(source, typeParams), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 	}
 	
+	/**
+	 * Generates a <code>toBuilder()</code> method in the annotated class that looks like this:
+	 * <pre>
+	 * public ParentBuilder&lt;?, ?&gt; toBuilder() {
+	 *     return new <i>Foobar</i>BuilderImpl().$fillValuesFrom(this);
+	 * }
+	 * </pre>
+	 */
+	private JCMethodDecl generateToBuilderMethod(String builderClassName, String builderImplClassName, JavacNode source, JavacNode type, List<JCTypeParameter> typeParams) {
+		JavacTreeMaker maker = type.getTreeMaker();
+		
+		ListBuffer<JCExpression> typeArgs = new ListBuffer<JCExpression>();
+		for (JCTypeParameter typeParam : typeParams) typeArgs.append(maker.Ident(typeParam.name));
+		
+		JCExpression newClass = maker.NewClass(null, List.<JCExpression>nil(), namePlusTypeParamsToTypeReference(maker, type.toName(builderImplClassName), typeParams), List.<JCExpression>nil(), null);
+		List<JCExpression> methodArgs = List.<JCExpression>of(maker.Ident(type.toName("this")));
+		JCMethodInvocation invokeFillMethod = maker.Apply(List.<JCExpression>nil(), maker.Select(newClass, type.toName(FILL_VALUES_METHOD_NAME)), methodArgs);
+		JCStatement statement = maker.Return(invokeFillMethod);
+		
+		JCBlock body = maker.Block(0, List.<JCStatement>of(statement));
+		int modifiers = Flags.PUBLIC;
+		
+		// Add any type params of the annotated class to the return type.
+		ListBuffer<JCExpression> typeParameterNames = new ListBuffer<JCExpression>();
+		typeParameterNames.addAll(typeParameterNames(maker, typeParams));
+		// Now add the <?, ?>.
+		JCWildcard wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
+		typeParameterNames.add(wildcard);
+		typeParameterNames.add(wildcard);
+		JCTypeApply returnType = maker.TypeApply(maker.Ident(type.toName(builderClassName)), typeParameterNames.toList());
+		
+		return maker.MethodDef(maker.Modifiers(modifiers), type.toName(TO_BUILDER_METHOD_NAME), returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+	}
+
+	/**
+	 * Generates a <code>$fillValuesFrom()</code> method in the abstract builder class that looks
+	 * like this:
+	 * <pre>
+	 * protected B $fillValuesFrom(final C instance) {
+	 *     super.$fillValuesFrom(instance);
+	 *     FoobarBuilderImpl.$fillValuesFromInstanceIntoBuilder(instance, this);
+	 *     return self();
+	 * }
+	 * </pre>
+	 */
+	private JCMethodDecl generateFillValuesMethod(JavacNode type, boolean inherited, String builderGenericName, String classGenericName, String builderImplClassName) {
+		JavacTreeMaker maker = type.getTreeMaker();
+		List<JCAnnotation> annotations = List.nil();
+		if (inherited) {
+			JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(type, "Override"), List.<JCExpression>nil());
+			annotations = List.of(overrideAnnotation);
+		}
+		JCModifiers modifiers = maker.Modifiers(Flags.PROTECTED, annotations);
+		Name name = type.toName(FILL_VALUES_METHOD_NAME);
+		JCExpression returnType = maker.Ident(type.toName(builderGenericName));
+		
+		JCExpression classGenericNameExpr = maker.Ident(type.toName(classGenericName));
+		JCVariableDecl param = maker.VarDef(maker.Modifiers(Flags.LocalVarFlags), type.toName(INSTANCE_VARIABLE_NAME), classGenericNameExpr, null);
+
+		ListBuffer<JCStatement> body = new ListBuffer<JCStatement>();
+		
+		if (inherited) {
+			// Call super.
+			JCMethodInvocation callToSuper = maker.Apply(List.<JCExpression>nil(),
+					maker.Select(maker.Ident(type.toName("super")), name),
+					List.<JCExpression>of(maker.Ident(type.toName(INSTANCE_VARIABLE_NAME))));
+			body.append(maker.Exec(callToSuper));
+		}
+		
+		// Call the builder implemention's helper method that actually fills the values from the instance.
+		JCMethodInvocation callStaticFillValuesMethod = maker.Apply(List.<JCExpression>nil(),
+						maker.Select(maker.Ident(type.toName(builderImplClassName)), type.toName(STATIC_FILL_VALUES_METHOD_NAME)),
+						List.<JCExpression>of(maker.Ident(type.toName(INSTANCE_VARIABLE_NAME)), maker.Ident(type.toName("this"))));
+		body.append(maker.Exec(callStaticFillValuesMethod));
+		
+		JCReturn returnStatement = maker.Return(maker.Apply(List.<JCExpression>nil(), maker.Ident(type.toName(SELF_METHOD)), List.<JCExpression>nil()));
+		body.append(returnStatement);
+		JCBlock bodyBlock = maker.Block(0, body.toList());
+
+		return maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.of(param), List.<JCExpression>nil(), bodyBlock, null);
+	}
+
+	/**
+	 * Generates a <code>$fillValuesFromInstanceIntoBuilder()</code> method in
+	 * the builder implementation class that copies all fields from the instance
+	 * to the builder. It looks like this:
+	 * 
+	 * <pre>
+	 * protected B $fillValuesFromInstanceIntoBuilder(Foobar instance, FoobarBuilder&lt;?, ?&gt; b) {
+	 * 	b.field(instance.field);
+	 * }
+	 * </pre>
+	 */
+	private JCMethodDecl generateStaticFillValuesMethod(JavacNode type, String builderClassname, List<JCTypeParameter> typeParams, java.util.List<BuilderFieldData> builderFields) {
+		JavacTreeMaker maker = type.getTreeMaker();
+		List<JCAnnotation> annotations = List.nil();
+		JCModifiers modifiers = maker.Modifiers(Flags.PRIVATE | Flags.STATIC, annotations);
+		Name name = type.toName(STATIC_FILL_VALUES_METHOD_NAME);
+		JCExpression returnType = maker.TypeIdent(CTC_VOID);
+		
+		// 1st parameter: "Foobar instance"
+		JCVariableDecl paramInstance = maker.VarDef(maker.Modifiers(Flags.LocalVarFlags), type.toName(INSTANCE_VARIABLE_NAME), cloneSelfType(type), null);
+
+		// 2nd parameter: "FoobarBuilder<?, ?> b" (plus generics on the annotated type)
+		// First add all generics that are present on the parent type.
+		ListBuffer<JCExpression> typeParamsForBuilderParameter = getTypeParamExpressions(typeParams, maker);
+		// Now add the <?, ?>.
+		JCWildcard wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
+		typeParamsForBuilderParameter.add(wildcard);
+		wildcard = maker.Wildcard(maker.TypeBoundKind(BoundKind.UNBOUND), null);
+		typeParamsForBuilderParameter.add(wildcard);
+		JCTypeApply builderType = maker.TypeApply(maker.Ident(type.toName(builderClassname)), typeParamsForBuilderParameter.toList());
+		JCVariableDecl paramBuilder = maker.VarDef(maker.Modifiers(Flags.LocalVarFlags), type.toName(BUILDER_VARIABLE_NAME), builderType, null);
+
+		ListBuffer<JCStatement> body = new ListBuffer<JCStatement>();
+		
+		// Call the builder's setter methods to fill the values from the instance.
+		for (BuilderFieldData bfd : builderFields) {
+			JCExpressionStatement exec = createSetterCallWithInstanceValue(bfd, type, maker);
+			body.append(exec);
+		}
+		
+		JCBlock bodyBlock = maker.Block(0, body.toList());
+
+		return maker.MethodDef(modifiers, name, returnType, copyTypeParams(type, typeParams), List.of(paramInstance, paramBuilder), List.<JCExpression>nil(), bodyBlock, null);
+	}
+	
+	private JCExpressionStatement createSetterCallWithInstanceValue(BuilderFieldData bfd, JavacNode type, JavacTreeMaker maker) {
+		JCExpression[] tgt = new JCExpression[bfd.singularData == null ? 1 : 2];
+		if (bfd.obtainVia == null || !bfd.obtainVia.field().isEmpty()) {
+			for (int i = 0; i < tgt.length; i++) {
+				tgt[i] = maker.Select(maker.Ident(type.toName(INSTANCE_VARIABLE_NAME)), bfd.obtainVia == null ? bfd.rawName : type.toName(bfd.obtainVia.field()));
+			}
+		} else {
+			if (bfd.obtainVia.isStatic()) {
+				for (int i = 0; i < tgt.length; i++) {
+					JCExpression c = maker.Select(maker.Ident(type.toName(type.getName())), type.toName(bfd.obtainVia.method()));
+					tgt[i] = maker.Apply(List.<JCExpression>nil(), c, List.<JCExpression>of(maker.Ident(type.toName(INSTANCE_VARIABLE_NAME))));
+				}
+			} else {
+				for (int i = 0; i < tgt.length; i++) {
+					JCExpression c = maker.Select(maker.Ident(type.toName(INSTANCE_VARIABLE_NAME)), type.toName(bfd.obtainVia.method()));
+					tgt[i] = maker.Apply(List.<JCExpression>nil(), c, List.<JCExpression>nil());
+				}
+			}
+		}
+		
+		JCExpression arg;
+		if (bfd.singularData == null) {
+			arg = tgt[0];
+		} else {
+			JCExpression eqNull = maker.Binary(CTC_EQUAL, tgt[0], maker.Literal(CTC_BOT, null));
+			JCExpression emptyList = maker.Apply(List.<JCExpression>nil(), chainDots(type, "java", "util", "Collections", "emptyList"), List.<JCExpression>nil());
+			arg = maker.Conditional(eqNull, emptyList, tgt[1]);
+		}
+		JCMethodInvocation apply = maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(type.toName(BUILDER_VARIABLE_NAME)), bfd.name), List.of(arg));
+		JCExpressionStatement exec = maker.Exec(apply);
+		return exec;
+	}
+	
 	private JCMethodDecl generateAbstractSelfMethod(JavacNode type, boolean override, String builderGenericName) {
 		JavacTreeMaker maker = type.getTreeMaker();
 		List<JCAnnotation> annotations = List.nil();
@@ -506,7 +685,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JCModifiers modifiers = maker.Modifiers(Flags.PROTECTED | Flags.ABSTRACT, annotations);
 		Name name = type.toName(SELF_METHOD);
 		JCExpression returnType = maker.Ident(type.toName(builderGenericName));
-		
+
 		return maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), null, null);
 	}
 	
@@ -538,7 +717,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		return maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), null, null);
 	}
 
-	private JCMethodDecl generateBuildMethod(String buildName, JCExpression returnType, JavacNode type, List<JCExpression> thrownExceptions) {
+	private JCMethodDecl generateBuildMethod(String buildName, JavacNode returnType, JavacNode type, List<JCExpression> thrownExceptions) {
 		JavacTreeMaker maker = type.getTreeMaker();
 		
 		JCExpression call;
@@ -546,7 +725,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		// Use a constructor that only has this builder as parameter.
 		List<JCExpression> builderArg = List.<JCExpression>of(maker.Ident(type.toName("this")));
-		call = maker.NewClass(null, List.<JCExpression>nil(), returnType, builderArg, null);
+		call = maker.NewClass(null, List.<JCExpression>nil(), cloneSelfType(returnType), builderArg, null);
 		statements.append(maker.Return(call));
 		
 		JCBlock body = maker.Block(0, statements.toList());
@@ -554,7 +733,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JCAnnotation overrideAnnotation = maker.Annotation(genJavaLangTypeRef(type, "Override"), List.<JCExpression>nil());
 		JCModifiers modifiers = maker.Modifiers(Flags.PUBLIC, List.of(overrideAnnotation));
 		
-		return maker.MethodDef(modifiers, type.toName(buildName), returnType, List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), thrownExceptions, body, null);
+		return maker.MethodDef(modifiers, type.toName(buildName), cloneSelfType(returnType), List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), thrownExceptions, body, null);
 	}
 	
 	private JCMethodDecl generateCleanMethod(java.util.List<BuilderFieldData> builderFields, JavacNode type, JCTree source) {
@@ -618,13 +797,13 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}};
 		
 		if (fieldNode.singularData == null || fieldNode.singularData.getSingularizer() == null) {
-			generateSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, true, true, returnTypeMaker.make(), returnStatementMaker.make(), fieldNode.annotations);
+			generateSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, true, returnTypeMaker.make(), returnStatementMaker.make(), fieldNode.annotations);
 		} else {
 			fieldNode.singularData.getSingularizer().generateMethods(fieldNode.singularData, deprecate, builderType, source.get(), true, returnTypeMaker, returnStatementMaker);
 		}
 	}
 	
-	private void generateSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, boolean chain, JCExpression returnType, JCStatement returnStatement, List<JCAnnotation> annosOnParam) {
+	private void generateSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, JCExpression returnType, JCStatement returnStatement, List<JCAnnotation> annosOnParam) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
 		
 		for (JavacNode child : builderType.down()) {

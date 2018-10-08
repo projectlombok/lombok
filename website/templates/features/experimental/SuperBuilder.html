@@ -23,6 +23,8 @@
 		</p><p>
 			<code>@SuperBuilder</code> is not compatible with <code>@Builder</code>.
 		</p><p>
+			You can use <code>@SuperBuilder(toBuilder = true)</code> to also generate an instance method in your class called <code>toBuilder()</code>; it creates a new builder that starts out with all the values of this instance. You can put the <code>@Builder.ObtainVia</code> annotation on the fields to indicate alternative means by which the value for that field/parameter is obtained from this instance. For example, you can specify a method to be invoked: <code>@Builder.ObtainVia(method = "calculateFoo")</code>.
+		</p><p>
 			To ensure type-safety, <code>@SuperBuilder</code> generates two inner builder classes for each annotated class, one abstract and one concrete class named <code><em>Foobar</em>Builder</code> and <code><em>Foobar</em>BuilderImpl</code> (where <em>Foobar</em> is the name of the annotated class).
 		</p><p>
 			The configurable aspects of builder are:
@@ -31,10 +33,12 @@
 					The <em>build()</em> method's name (default: <code>"build"</code>)
 				</li><li>
 					The <em>builder()</em> method's name (default: <code>"builder"</code>)
+				</li><li>
+					If you want <code>toBuilder()</code> (default: no)
 				</li>
 			</ul>
 			Example usage where all options are changed from their defaults:<br />
-			<code>@SuperBuilder(buildMethodName = "execute", builderMethodName = "helloWorld")</code><br />
+			<code>@SuperBuilder(buildMethodName = "execute", builderMethodName = "helloWorld", toBuilder = true)</code><br />
 		</p>
 	</@f.overview>
 	
