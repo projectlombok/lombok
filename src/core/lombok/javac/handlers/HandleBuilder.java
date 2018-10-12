@@ -506,7 +506,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 				if (bfd.obtainVia.isStatic()) {
 					for (int i = 0; i < tgt.length; i++) {
 						JCExpression c = maker.Select(maker.Ident(type.toName(type.getName())), type.toName(bfd.obtainVia.method()));
-						tgt[i] = maker.Apply(List.<JCExpression>nil(), c, List.<JCExpression>of(maker.Ident(type.toName("this"))));
+						tgt[i] = maker.Apply(typeParameterNames(maker, typeParams), c, List.<JCExpression>of(maker.Ident(type.toName("this"))));
 					}
 				} else {
 					for (int i = 0; i < tgt.length; i++) {

@@ -86,7 +86,7 @@ class BuilderWithToBuilder<T> {
 	}
 	@java.lang.SuppressWarnings("all")
 	public BuilderWithToBuilderBuilder<T> toBuilder() {
-		return new BuilderWithToBuilderBuilder<T>().one(this.mOne).two(this.mTwo).foo(BuilderWithToBuilder.rrr(this)).bars(this.bars == null ? java.util.Collections.<T>emptyList() : this.bars);
+		return new BuilderWithToBuilderBuilder<T>().one(this.mOne).two(this.mTwo).foo(BuilderWithToBuilder.<T>rrr(this)).bars(this.bars == null ? java.util.Collections.<T>emptyList() : this.bars);
 	}
 }
 class ConstructorWithToBuilder<T> {
