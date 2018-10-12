@@ -559,7 +559,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				MessageSend emptyList = new MessageSend();
 				emptyList.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA, TypeConstants.UTIL, "Collections".toCharArray());
 				emptyList.selector = EMPTY_LIST;
-				emptyList.typeArguments = copyTypes(bfd.singularData.getTypeArgs().toArray(new TypeReference[0]));
+				emptyList.typeArguments = bfd.singularData.getSingularizer().createTypeArgs(bfd.singularData.getTypeArgs().size(), false, type, bfd.singularData.getTypeArgs());
 				ms.arguments = new Expression[] {new ConditionalExpression(ifNull, emptyList, tgt[1])};
 			}
 			ms.receiver = receiver;
