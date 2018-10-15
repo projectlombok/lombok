@@ -25,6 +25,8 @@ This buildfile is part of projectlombok.org. It is the main entry point that con
 the common tasks and can be called on to run the main aspects of all the sub-scripts.
 	</description>
 	
+	<property name="pattern.jdk9Plus" value="^(9|[1-9][0-9])(\..*)?$" />
+	<property name="pattern.jdkUpto8" value="^(1\.)?[2-8](\..*)?$" />
 	<property name="build.compiler" value="javac1.6" />
 	<property name="ivy.retrieve.pattern" value="lib/[conf]/[organisation]-[artifact].[ext]" />
 	<available file="lib/ivyplusplus.jar" property="ivyplusplus.available" />
@@ -163,7 +165,7 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 	
 	<target name="-ensureJdk9">
 		<condition property="java.version.insufficient">
-			<matches string="${java.version}" pattern="^1\.[2-8](\..*)?" />
+			<matches string="${ant.java.version}" pattern="${pattern.jdkUpto8}" />
 		</condition>
 		<fail if="java.version.insufficient">To compile lombok, you need JDK9 or higher; lombok requires this version because it's rather difficult to produce lombok builds that are compatible on JDK9 without at least building with JDK9. Sorry about that.</fail>
 	</target>
@@ -552,11 +554,11 @@ ${sourceWarning}</echo>
 	</target>
 	
 	<target name="test-ecj" depends="dist, contrib, setupJavaOracle8TestEnvironment" unless="tests.skip">
-		<condition property="ecj.loc" value="lib/ecj9/*" else="lib/ecj8/*">
-			<equals arg1="${ant.java.version}" arg2="9" />
+		<condition property="ecj.loc" value="lib/ecj9/org.eclipse.jdt-ecj.jar" else="lib/ecj8/org.eclipse.jdt.core.compiler-ecj.jar">
+			<matches string="${ant.java.version}" pattern="${pattern.jdk9Plus}" />
 		</condition>
-		<java classname="org.eclipse.jdt.internal.compiler.batch.Main" fork="true" failonerror="true">
-			<classpath path="${ecj.loc}" />
+		<echo>Testing ECJ using ECJ: ${ecj.loc}</echo>
+		<java jar="${ecj.loc}" fork="true" failonerror="true">
 			<jvmarg value="-javaagent:dist/lombok.jar=ecj" />
 			<arg value="-source" />
 			<arg value="1.6" />
@@ -646,7 +648,7 @@ ${sourceWarning}</echo>
 		<get src="https://projectlombok.org/ivyrepo/langtools/jdk8-javac-sources.zip" dest="lib/oracleJDK8Environment/javac8-sources.zip" verbose="true" usetimestamp="true" />
 		<propertyfile file="testenvironment.properties">
 			<entry key="test.location.javac" value="lib/oracleJDK8Environment/javac8.jar" />
-			<entry key="test.location.ecj" value="lib/ecj8/org.eclipse.custom-ecj.jar" />
+			<entry key="test.location.ecj" value="lib/ecj8/org.eclipse.jdt.core.compiler-ecj.jar" />
 			<entry key="test.location.bootclasspath" value="lib/oracleJDK8Environment/rt.jar" />
 			<entry key="test.location.name" value="OracleJDK8" />
 			<entry key="test.javaversion" value="8" />
@@ -688,13 +690,13 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 		<condition property="test9.run">
 			<and>
 				<not><isset property="tests.skip" /></not>
-				<equals arg1="${ant.java.version}" arg2="9" />
+				<matches string="${ant.java.version}" pattern="${pattern.jdk9Plus}" />
 			</and>
 		</condition>
 		<condition property="test8.run">
 			<and>
 				<not><isset property="tests.skip" /></not>
-				<not><equals arg1="${ant.java.version}" arg2="9" /></not>
+				<matches string="${ant.java.version}" pattern="${pattern.jdkUpto8}" />
 			</and>
 		</condition>
 	</target>
