@@ -17,7 +17,7 @@
 		</p><p>
 			To put annotations on the generated constructor, you can use <code>onConstructor=@__({@AnnotationsHere})</code>, but be careful; this is an experimental feature. For more details see the documentation on the <a href="/features/experimental/onX">onX</a> feature.
 		</p><p>
-			Static fields are skipped by these annotations. Also, a <code>@java.beans.ConstructorProperties</code> annotation is added for all constructors with at least 1 argument, which allows bean editor tools to call the generated constructors. <code>@ConstructorProperties</code> is new in Java 1.6, which means that if your code is intended for compilation on Java 1.5, a compiler error will occur. <em>Running</em> on a JVM 1.5 should be no problem (the annotation will be ignored). To suppress the generation of the <code>@ConstructorProperties</code> annotation, add a parameter to your annotation: <code>@AllArgsConstructor(suppressConstructorProperties=true)</code>. However, as java 1.5, which has already been end-of-lifed, fades into obscurity, this parameter will eventually be removed. It has also been marked deprecated for this reason.
+			Static fields are skipped by these annotations.
 		</p><p>
 			Unlike most other lombok annotations, the existence of an explicit constructor does not stop these annotations from generating their own constructor. This means you can write your own specialized constructor, and let lombok generate the boilerplate ones as well. If a conflict arises (one of your constructors ends up with the same signature as one that lombok generates), a compiler error will occur.
 		</p>
@@ -27,9 +27,9 @@
 
 	<@f.confKeys>
 		<dt>
-			<code>lombok.anyConstructor.suppressConstructorProperties</code> = [<code>true</code> | <code>false</code>] (default: <code>false</code>)
+			<code>lombok.anyConstructor.addConstructorProperties</code> = [<code>true</code> | <code>false</code>] (default: <code>false</code>)
 		</dt><dd>
-			If set to <code>true</code>, then lombok will skip adding a <code>@java.beans.ConstructorProperties</code> to generated constructors. This is useful in android and GWT development where that annotation is not usually available.
+			If set to <code>true</code>, then lombok will add a <code>@java.beans.ConstructorProperties</code> to generated constructors.
 		</dd><dt>
 			<code>lombok.</code>[<code>allArgsConstructor</code>|<code>requiredArgsConstructor</code>|<code>noArgsConstructor</code>]<code>.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
@@ -48,8 +48,6 @@
 			The <code>@java.beans.ConstructorProperties</code> annotation is never generated for a constructor with no arguments. This also explains why <code>@NoArgsConstructor</code> lacks the <code>suppressConstructorProperties</code> annotation method. The generated static factory methods also do not get <code>@ConstructorProperties</code>, as this annotation can only be added to real constructors.
 		</p><p>
 			<code>@XArgsConstructor</code> can also be used on an enum definition. The generated constructor will always be private, because non-private constructors aren't legal in enums. You don't have to specify <code>AccessLevel.PRIVATE</code>.
-		</p><p>
-			While <code>suppressConstructorProperties</code> has been marked deprecated in anticipation of a world where all java environments have the <code>@ConstructorProperties</code> annotation available, first GWT 2.2 and Android 2.3.3, which do not (yet) have this annotation, will have to be ancient history before this annotation parameter will be removed.
 		</p><p>
 			Various well known annotations about nullity cause null checks to be inserted and will be copied to the parameter. See <a href="/features/GetterSetter">Getter/Setter</a> documentation's small print for more information.
 		</p><p>
