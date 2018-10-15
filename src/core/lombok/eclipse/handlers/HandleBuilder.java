@@ -445,6 +445,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			cleanDecl.declarationSourceEnd = -1;
 			cleanDecl.modifiers = ClassFileConstants.AccPrivate;
 			cleanDecl.type = TypeReference.baseTypeReference(TypeIds.T_boolean, 0);
+			cleanDecl.traverse(new SetGeneratedByVisitor(ast), (MethodScope) null);
 			injectFieldAndMarkGenerated(builderType, cleanDecl);
 		}
 		

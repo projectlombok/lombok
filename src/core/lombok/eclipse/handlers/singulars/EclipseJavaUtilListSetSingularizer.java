@@ -85,6 +85,7 @@ abstract class EclipseJavaUtilListSetSingularizer extends EclipseJavaUtilSingula
 		buildField.modifiers = ClassFileConstants.AccPrivate;
 		buildField.declarationSourceEnd = -1;
 		buildField.type = type;
+		
 		data.setGeneratedByRecursive(buildField);
 		return Collections.singletonList(injectFieldAndMarkGenerated(builderType, buildField));
 	}
@@ -117,6 +118,8 @@ abstract class EclipseJavaUtilListSetSingularizer extends EclipseJavaUtilSingula
 		md.statements = returnStatement != null ? new Statement[] {clearStatement, returnStatement} : new Statement[] {clearStatement};
 		md.returnType = returnType;
 		md.annotations = deprecate ? new Annotation[] { generateDeprecatedAnnotation(data.getSource()) } : null;
+		
+		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
 	}
 	
@@ -149,7 +152,6 @@ abstract class EclipseJavaUtilListSetSingularizer extends EclipseJavaUtilSingula
 		md.annotations = deprecate ? new Annotation[] { generateDeprecatedAnnotation(data.getSource()) } : null;
 		
 		data.setGeneratedByRecursive(md);
-		
 		HandleNonNull.INSTANCE.fix(injectMethod(builderType, md));
 	}
 	

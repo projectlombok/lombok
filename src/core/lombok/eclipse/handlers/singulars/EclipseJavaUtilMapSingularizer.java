@@ -127,6 +127,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 			buildValueField.declarationSourceEnd = -1;
 			buildValueField.type = type;
 		}
+		
 		data.setGeneratedByRecursive(buildKeyField);
 		data.setGeneratedByRecursive(buildValueField);
 		EclipseNode keyFieldNode = injectFieldAndMarkGenerated(builderType, buildKeyField);
@@ -174,6 +175,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		md.returnType = returnType;
 		md.annotations = deprecate ? new Annotation[] { generateDeprecatedAnnotation(data.getSource()) } : null;
 		
+		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
 	}
 	

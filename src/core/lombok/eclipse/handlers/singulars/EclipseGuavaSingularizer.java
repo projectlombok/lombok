@@ -94,6 +94,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		buildField.modifiers = ClassFileConstants.AccPrivate;
 		buildField.declarationSourceEnd = -1;
 		buildField.type = type;
+		
 		data.setGeneratedByRecursive(buildField);
 		return Collections.singletonList(injectFieldAndMarkGenerated(builderType, buildField));
 	}
@@ -117,6 +118,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		md.returnType = returnType;
 		md.annotations = deprecate ? new Annotation[] { generateDeprecatedAnnotation(data.getSource()) } : null;
 		
+		data.setGeneratedByRecursive(md);
 		injectMethod(builderType, md);
 	}
 	
