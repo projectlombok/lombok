@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
@@ -211,20 +213,27 @@ public class Delombok {
 	}
 	
 	public static void main(String[] rawArgs) {
+		try {
+			rawArgs = fileExpand(rawArgs);
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+			System.exit(1);
+		}
+		
 		CmdReader<CmdArgs> reader = CmdReader.of(CmdArgs.class);
 		CmdArgs args;
 		try {
 			args = reader.make(rawArgs);
 		} catch (InvalidCommandLineException e) {
 			System.err.println("ERROR: " + e.getMessage());
-			System.err.println(reader.generateCommandLineHelp("delombok"));
+			System.err.println(cmdHelp(reader));
 			System.exit(1);
 			return;
 		}
 		
 		if (args.help || (args.input.isEmpty() && !args.formatHelp)) {
 			if (!args.help) System.err.println("ERROR: no files or directories to delombok specified.");
-			System.err.println(reader.generateCommandLineHelp("delombok"));
+			System.err.println(cmdHelp(reader));
 			System.exit(args.help ? 0 : 1);
 			return;
 		}
@@ -307,6 +316,116 @@ public class Delombok {
 				return;
 			}
 		}
+	}
+	
+	private static String cmdHelp(CmdReader<CmdArgs> reader) {
+		String x = reader.generateCommandLineHelp("delombok");
+		int idx = x.indexOf('\n');
+		return x.substring(0, idx) + "\n You can use @filename.args to read arguments from the file 'filename.args'.\n" + x.substring(idx);
+	}
+	
+	private static String[] fileExpand(String[] rawArgs) throws IOException {
+		String[] out = rawArgs;
+		int offset = 0;
+		for (int i = 0; i < rawArgs.length; i++) {
+			if (rawArgs[i].length() > 0 && rawArgs[i].charAt(0) == '@') {
+				String[] parts = readArgsFromFile(rawArgs[i].substring(1));
+				String[] newOut = new String[out.length + parts.length - 1];
+				System.arraycopy(out, 0, newOut, 0, i + offset);
+				System.arraycopy(parts, 0, newOut, i + offset, parts.length);
+				System.arraycopy(out, i + offset + 1, newOut, i + offset + parts.length, out.length - (i + offset + 1));
+				offset += parts.length - 1;
+				out = newOut;
+			}
+		}
+		
+		return out;
+	}
+	
+	private static String[] readArgsFromFile(String file) throws IOException {
+		InputStream in = new FileInputStream(file);
+		StringBuilder s = new StringBuilder();
+		try {
+			InputStreamReader isr = new InputStreamReader(in, "UTF-8");
+			char[] c = new char[4096];
+			while (true) {
+				int r = isr.read(c);
+				if (r == -1) break;
+				s.append(c, 0, r);
+			}
+		} finally {
+			in.close();
+		}
+		
+		List<String> x = new ArrayList<String>();
+		StringBuilder a = new StringBuilder();
+		int state = 1;
+		for (int i = 0; i < s.length(); i++) {
+			char c = s.charAt(i);
+			if (state < 0) {
+				state = -state;
+				if (c != '\n') a.append(c);
+				continue;
+			}
+			if (state == 1) {
+				if (c == '\\') {
+					state = -1;
+					continue;
+				}
+				if (c == '"') {
+					state = 2;
+					continue;
+				}
+				if (c == '\'') {
+					state = 3;
+					continue;
+				}
+				if (Character.isWhitespace(c)) {
+					String aa = a.toString();
+					if (!aa.isEmpty()) x.add(aa);
+					a.setLength(0);
+					continue;
+				}
+				a.append(c);
+				continue;
+			}
+			if (state == 2) {
+				if (c == '\\') {
+					state = -2;
+					continue;
+				}
+				if (c == '"') {
+					state = 1;
+					x.add(a.toString());
+					a.setLength(0);
+					continue;
+				}
+				a.append(c);
+				continue;
+			}
+			if (state == 3) {
+				if (c == '\'') {
+					state = 1;
+					x.add(a.toString());
+					a.setLength(0);
+					continue;
+				}
+				a.append(c);
+				continue;
+			}
+		}
+		if (state == 1) {
+			String aa = a.toString();
+			if (!aa.isEmpty()) x.add(aa);
+		} else if (state < 0) {
+			throw new IOException("Unclosed backslash escape in @ file");
+		} else if (state == 2) {
+			throw new IOException("Unclosed \" in @ file");
+		} else if (state == 3) {
+			throw new IOException("Unclosed ' in @ file");
+		}
+		
+		return x.toArray(new String[x.size()]);
 	}
 	
 	public static class InvalidFormatOptionException extends Exception {
