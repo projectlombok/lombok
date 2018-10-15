@@ -25,6 +25,7 @@ import static lombok.eclipse.Eclipse.*;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -46,6 +47,7 @@ import org.eclipse.jdt.internal.compiler.ast.FalseLiteral;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldReference;
 import org.eclipse.jdt.internal.compiler.ast.IfStatement;
+import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.MessageSend;
 import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.NullLiteral;
@@ -502,15 +504,12 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		}
 	}
 	
-	private static final char[] EMPTY_LIST = "emptyList".toCharArray();
+	private static final char[] BUILDER_TEMP_VAR = {'b', 'u', 'i', 'l', 'd', 'e', 'r'};
 	private MethodDeclaration generateToBuilderMethod(String methodName, String builderClassName, EclipseNode type, TypeParameter[] typeParams, List<BuilderFieldData> builderFields, boolean fluent, ASTNode source) {
-		// return new ThingieBuilder<A, B>().setA(this.a).setB(this.b);
-		
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
 		
-		MethodDeclaration out = new MethodDeclaration(
-				((CompilationUnitDeclaration) type.top().get()).compilationResult);
+		MethodDeclaration out = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		out.selector = methodName.toCharArray();
 		out.modifiers = ClassFileConstants.AccPublic;
 		out.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
@@ -519,6 +518,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		invoke.type = namePlusTypeParamsToTypeReference(builderClassName.toCharArray(), typeParams, p);
 		
 		Expression receiver = invoke;
+		List<Statement> statements = null;
 		for (BuilderFieldData bfd : builderFields) {
 			char[] setterName = fluent ? bfd.name : HandlerUtil.buildAccessorName("set", new String(bfd.name)).toCharArray();
 			MessageSend ms = new MessageSend();
@@ -542,22 +542,34 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 					tgt[i] = obtainExpr;
 				}
 			}
+			
+			ms.selector = setterName;
 			if (bfd.singularData == null) {
 				ms.arguments = tgt;
+				ms.receiver = receiver;
+				receiver = ms;
 			} else {
-				Expression ifNull = new EqualExpression(tgt[0], new NullLiteral(0, 0), OperatorIds.EQUAL_EQUAL);
-				MessageSend emptyList = new MessageSend();
-				emptyList.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA, TypeConstants.UTIL, "Collections".toCharArray());
-				emptyList.selector = EMPTY_LIST;
-				emptyList.typeArguments = copyTypes(bfd.singularData.getTypeArgs().toArray(new TypeReference[0]));
-				ms.arguments = new Expression[] {new ConditionalExpression(ifNull, emptyList, tgt[1])};
+				ms.arguments = new Expression[] {tgt[1]};
+				ms.receiver = new SingleNameReference(BUILDER_TEMP_VAR, p);
+				EqualExpression isNotNull = new EqualExpression(tgt[0], new NullLiteral(pS, pE), OperatorIds.NOT_EQUAL);
+				if (statements == null) statements = new ArrayList<Statement>();
+				statements.add(new IfStatement(isNotNull, ms, pS, pE));
 			}
-			ms.receiver = receiver;
-			ms.selector = setterName;
-			receiver = ms;
 		}
 		
-		out.statements = new Statement[] {new ReturnStatement(receiver, pS, pE)};
+		if (statements != null) {
+			out.statements = new Statement[statements.size() + 2];
+			for (int i = 0; i < statements.size(); i++) out.statements[i + 1] = statements.get(i);
+			LocalDeclaration b = new LocalDeclaration(BUILDER_TEMP_VAR, pS, pE);
+			out.statements[0] = b;
+			b.modifiers |= Modifier.FINAL;
+			b.type = namePlusTypeParamsToTypeReference(builderClassName.toCharArray(), typeParams, p);
+			b.type.sourceStart = pS; b.type.sourceEnd = pE;
+			b.initialization = receiver;
+			out.statements[out.statements.length - 1] = new ReturnStatement(new SingleNameReference(BUILDER_TEMP_VAR, p), pS, pE);
+		} else {
+			out.statements = new Statement[] {new ReturnStatement(receiver, pS, pE)};
+		}
 		
 		out.traverse(new SetGeneratedByVisitor(source), ((TypeDeclaration) type.get()).scope);
 		return out;
@@ -617,7 +629,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				inv.typeArguments = typeParameterNames(((TypeDeclaration) type.get()).typeParameters);
 				
 				args.add(new ConditionalExpression(
-					new SingleNameReference(bfd.nameOfSetFlag,  0L),
+					new SingleNameReference(bfd.nameOfSetFlag, 0L),
 					new SingleNameReference(bfd.name, 0L),
 					inv));
 			} else {

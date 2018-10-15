@@ -13,19 +13,8 @@ class BuilderWithToBuilder<T> {
 class ConstructorWithToBuilder<T> {
 	private String mOne, mTwo;
 	private T foo;
-	@lombok.Singular private List<T> bars;
+	@lombok.Singular private com.google.common.collect.ImmutableList<T> bars;
 	@Builder(toBuilder = true)
-	public ConstructorWithToBuilder(String mOne, @Builder.ObtainVia(field = "foo") T bar) {
-	}
-}
-@lombok.experimental.Accessors(prefix = "m")
-class StaticWithToBuilder<T, K> {
-	private String mOne, mTwo;
-	private T foo;
-	private K bar;
-	@lombok.Singular private List<T> bars;
-	@Builder(toBuilder = true)
-	public static <Z> StaticWithToBuilder<Z, String> test(String mOne, @Builder.ObtainVia(field = "foo") Z bar) {
-		return new StaticWithToBuilder<Z, String>();
+	public ConstructorWithToBuilder(String mOne, @Builder.ObtainVia(field = "foo") T baz, com.google.common.collect.ImmutableList<T> bars) {
 	}
 }

@@ -484,6 +484,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		sb.append("__ERR__");
 	}
 	
+	private static final String BUILDER_TEMP_VAR = "builder";
 	private JCMethodDecl generateToBuilderMethod(String toBuilderMethodName, String builderClassName, JavacNode type, List<JCTypeParameter> typeParams, java.util.List<BuilderFieldData> builderFields, boolean fluent, JCAnnotation ast) {
 		// return new ThingieBuilder<A, B>().setA(this.a).setB(this.b);
 		JavacTreeMaker maker = type.getTreeMaker();
@@ -495,6 +496,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		JCExpression call = maker.NewClass(null, List.<JCExpression>nil(), namePlusTypeParamsToTypeReference(maker, type.toName(builderClassName), typeParams), List.<JCExpression>nil(), null);
 		JCExpression invoke = call;
+		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		for (BuilderFieldData bfd : builderFields) {
 			Name setterName = fluent ? bfd.name : type.toName(HandlerUtil.buildAccessorName("set", bfd.name.toString()));
 			JCExpression[] tgt = new JCExpression[bfd.singularData == null ? 1 : 2];
@@ -519,18 +521,21 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			JCExpression arg;
 			if (bfd.singularData == null) {
 				arg = tgt[0];
+				invoke = maker.Apply(List.<JCExpression>nil(), maker.Select(invoke, setterName), List.of(arg));
 			} else {
-				JCExpression eqNull = maker.Binary(CTC_EQUAL, tgt[0], maker.Literal(CTC_BOT, null));
-				List<JCExpression> tas = cloneTypes(maker, bfd.singularData.getTypeArgs(), ast, type.getContext());
-				JCExpression emptyList = maker.Apply(tas, chainDots(type, "java", "util", "Collections", "emptyList"), List.<JCExpression>nil());
-				arg = maker.Conditional(eqNull, emptyList, tgt[1]);
+				JCExpression isNotNull = maker.Binary(CTC_NOT_EQUAL, tgt[0], maker.Literal(CTC_BOT, null));
+				JCExpression invokeBuilder = maker.Apply(List.<JCExpression>nil(), maker.Select(maker.Ident(type.toName(BUILDER_TEMP_VAR)), setterName), List.<JCExpression>of(tgt[1]));
+				statements.append(maker.If(isNotNull, maker.Exec(invokeBuilder), null));
 			}
-			
-			invoke = maker.Apply(List.<JCExpression>nil(), maker.Select(invoke, setterName), List.of(arg));
 		}
-		JCStatement statement = maker.Return(invoke);
-		
-		JCBlock body = maker.Block(0, List.<JCStatement>of(statement));
+		if (!statements.isEmpty()) {
+			JCExpression tempVarType = namePlusTypeParamsToTypeReference(maker, type.toName(builderClassName), typeParams);
+			statements.prepend(maker.VarDef(maker.Modifiers(Flags.FINAL), type.toName(BUILDER_TEMP_VAR), tempVarType, invoke));
+			statements.append(maker.Return(maker.Ident(type.toName(BUILDER_TEMP_VAR))));
+		} else {
+			statements.append(maker.Return(invoke));
+		}
+		JCBlock body = maker.Block(0, statements.toList());
 		return maker.MethodDef(maker.Modifiers(Flags.PUBLIC), type.toName(toBuilderMethodName), namePlusTypeParamsToTypeReference(maker, type.toName(builderClassName), typeParams), List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
 	}
 	
