@@ -484,6 +484,7 @@ public class HandleConstructor {
 		for (EclipseNode node : type.down()) {
 			if (node.getKind() != Kind.FIELD) continue top;
 			FieldDeclaration fd = (FieldDeclaration) node.get();
+			if (fd.initialization != null) continue top;
 			if ((fd.modifiers & ClassFileConstants.AccFinal) == 0) continue top;
 			if ((fd.modifiers & ClassFileConstants.AccStatic) != 0) continue top;
 			for (EclipseNode ftp : fieldsToParam) if (node == ftp) continue top;
