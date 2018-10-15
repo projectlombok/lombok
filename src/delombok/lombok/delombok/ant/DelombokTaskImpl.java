@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2015 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,7 @@ public class DelombokTaskImpl {
 	private File fromDir, toDir;
 	private Path classpath;
 	private Path sourcepath;
+	private Path modulepath;
 	private boolean verbose;
 	private String encoding;
 	private Path path;
@@ -60,6 +61,7 @@ public class DelombokTaskImpl {
 		
 		if (classpath != null) delombok.setClasspath(classpath.toString());
 		if (sourcepath != null) delombok.setSourcepath(sourcepath.toString());
+		if (modulepath != null) delombok.setModulepath(modulepath.toString());
 		
 		try {
 			delombok.setFormatPreferences(Delombok.formatOptionsToMap(formatOptions));

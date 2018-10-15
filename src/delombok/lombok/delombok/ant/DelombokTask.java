@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2015 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,6 +78,7 @@ class Tasks {
 		private File fromDir, toDir;
 		private Path classpath;
 		private Path sourcepath;
+		private Path modulepath;
 		private boolean verbose;
 		private String encoding;
 		private Path path;
@@ -92,9 +93,7 @@ class Tasks {
 		}
 		
 		public Path createClasspath() {
-			if (classpath == null) {
-				classpath = new Path(getProject());
-			}
+			if (classpath == null) classpath = new Path(getProject());
 			return classpath.createPath();
 		}
 		
@@ -111,14 +110,29 @@ class Tasks {
 		}
 		
 		public Path createSourcepath() {
-			if (sourcepath == null) {
-				sourcepath = new Path(getProject());
-			}
+			if (sourcepath == null) sourcepath = new Path(getProject());
 			return sourcepath.createPath();
 		}
 		
 		public void setSourcepathRef(Reference r) {
 			createSourcepath().setRefid(r);
+		}
+		
+		public void setModulepath(Path modulepath) {
+			if (this.modulepath == null) {
+				this.modulepath = modulepath;
+			} else {
+				this.modulepath.append(modulepath);
+			}
+		}
+		
+		public Path createModulepath() {
+			if (modulepath == null) modulepath = new Path(getProject());
+			return modulepath.createPath();
+		}
+		
+		public void setModulepathRef(Reference r) {
+			createModulepath().setRefid(r);
 		}
 		
 		public void setFrom(File dir) {
@@ -180,7 +194,7 @@ class Tasks {
 			
 			try {
 				Object instance = shadowLoadClass("lombok.delombok.ant.DelombokTaskImpl").newInstance();
-				for(Field selfField : getClass().getDeclaredFields()) {
+				for (Field selfField : getClass().getDeclaredFields()) {
 					if (selfField.isSynthetic() || Modifier.isStatic(selfField.getModifiers())) continue;
 					Field otherField = instance.getClass().getDeclaredField(selfField.getName());
 					otherField.setAccessible(true);

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,11 +29,13 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
@@ -88,7 +90,7 @@ public class Delombok {
 	private boolean noCopy;
 	private boolean onlyChanged;
 	private boolean force = false;
-	private String classpath, sourcepath, bootclasspath;
+	private String classpath, sourcepath, bootclasspath, modulepath;
 	private LinkedHashMap<File, File> fileToBase = new LinkedHashMap<File, File>();
 	private List<File> filesToParse = new ArrayList<File>();
 	private Map<String, String> formatPrefs = new HashMap<String, String>();
@@ -138,6 +140,10 @@ public class Delombok {
 		@Description("override Bootclasspath (analogous to javac -bootclasspath option)")
 		private String bootclasspath;
 		
+		@Description("Module path (analogous to javac --module-path option)")
+		@FullName("module-path")
+		private String modulepath;
+		
 		@Description("Files to delombok. Provide either a file, or a directory. If you use a directory, all files in it (recursive) are delombok-ed")
 		@Sequential
 		private List<String> input = new ArrayList<String>();
@@ -180,6 +186,28 @@ public class Delombok {
 		}
 		
 		return out.toString();
+	}
+	
+	static String getPathOfSelf() {
+		String url = Delombok.class.getResource("Delombok.class").toString();
+		if (url.endsWith("lombok/delombok/Delombok.class")) {
+			url = urlDecode(url.substring(0, url.length() - "lombok/delombok/Delombok.class".length()));
+		} else if (url.endsWith("lombok/delombok/Delombok.SCL.lombok")) {
+			url = urlDecode(url.substring(0, url.length() - "lombok/delombok/Delombok.SCL.lombok".length()));
+		} else {
+			return null;
+		}
+		if (url.startsWith("jar:file:") && url.endsWith("!/")) return url.substring(9, url.length() - 2);
+		if (url.startsWith("file:")) return url.substring(5);
+		return null;
+	}
+	
+	private static String urlDecode(String in) {
+		try {
+			return URLDecoder.decode(in, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalError("UTF-8 not supported");
+		}
 	}
 	
 	public static void main(String[] rawArgs) {
@@ -253,6 +281,7 @@ public class Delombok {
 		if (args.classpath != null) delombok.setClasspath(args.classpath);
 		if (args.sourcepath != null) delombok.setSourcepath(args.sourcepath);
 		if (args.bootclasspath != null) delombok.setBootclasspath(args.bootclasspath);
+		if (args.modulepath != null) delombok.setModulepath(args.modulepath);
 		
 		try {
 			for (String in : args.input) {
@@ -273,9 +302,7 @@ public class Delombok {
 			if (!args.quiet) {
 				String msg = e.getMessage();
 				if (msg != null && msg.startsWith("DELOMBOK: ")) System.err.println(msg.substring("DELOMBOK: ".length()));
-				else {
-					e.printStackTrace();
-				}
+				else e.printStackTrace();
 				System.exit(1);
 				return;
 			}
@@ -383,6 +410,10 @@ public class Delombok {
 	
 	public void setOutputToStandardOut() {
 		this.output = null;
+	}
+	
+	public void setModulepath(String modulepath) {
+		this.modulepath = modulepath;
 	}
 	
 	public void addDirectory(File base) throws IOException {
@@ -525,9 +556,19 @@ public class Delombok {
 				argsList.add("-encoding");
 				argsList.add(charset.name());
 			}
+			String pathToSelfJar = getPathOfSelf();
+			if (pathToSelfJar != null) {
+				argsList.add("--module-path");
+				argsList.add((modulepath == null || modulepath.isEmpty()) ? pathToSelfJar : (pathToSelfJar + File.pathSeparator + modulepath));
+			} else if (modulepath != null && !modulepath.isEmpty()) {
+				argsList.add("--module-path");
+				argsList.add(modulepath);
+			}
 			String[] argv = argsList.toArray(new String[0]);
 			args.init("javac", argv);
 			options.put("diags.legacy", "TRUE");
+		} else {
+			if (modulepath != null && !modulepath.isEmpty()) throw new IllegalStateException("DELOMBOK: Option --module-path requires usage of JDK9 or higher.");
 		}
 		
 		CommentCatcher catcher = CommentCatcher.create(context);

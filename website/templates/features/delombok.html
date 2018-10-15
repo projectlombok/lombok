@@ -23,6 +23,8 @@
 		</p><p>
 			To let delombok print the transformation result of a single java file directly to standard output, you can use:
 			<pre>java -jar lombok.jar delombok -p MyJavaFile.java</pre>
+		</p><p>
+			The <code>-classpath</code>, <code>-sourcepath</code>, and <code>--module-path</code> options of javac are replicated as <code>--classpath</code>, <code>--sourcepath</code>, and <code>--module-path</code> in delombok.
 		</p>
 
 		<@f.main.h3 title="Running delombok in ant" />
@@ -39,7 +41,7 @@
 &lt;javadoc sourcepath="build/src-delomboked" defaultexcludes="yes" destdir="build/api" /&gt;
 &lt;/target&gt;</pre>
 			<br />
-			Instead of a <code>from</code> attribute, you can also nest <code>&lt;fileset&gt;</code> nodes.
+			Instead of a <code>from</code> attribute, you can also nest <code>&lt;fileset&gt;</code> nodes. The <code>delombok</code> supports <code>sourcepath</code>, <code>classpath</code>, and <code>modulepath</code> as parameter or as nested element, or as nested refid element, similar to the <code>javac</code> task.
 		</p>
 
 		<@f.main.h3 title="Running delombok in maven" />
