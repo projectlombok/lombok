@@ -74,7 +74,7 @@ import lombok.Builder;
     return new BuilderWithToBuilderBuilder<T>();
   }
   public @java.lang.SuppressWarnings("all") BuilderWithToBuilderBuilder<T> toBuilder() {
-    final BuilderWithToBuilderBuilder<T> builder = new BuilderWithToBuilderBuilder<T>().one(this.mOne).two(this.mTwo).foo(BuilderWithToBuilder.rrr(this));
+    final BuilderWithToBuilderBuilder<T> builder = new BuilderWithToBuilderBuilder<T>().one(this.mOne).two(this.mTwo).foo(BuilderWithToBuilder.<T>rrr(this));
     if ((this.bars != null))
         builder.bars(this.bars);
     return builder;

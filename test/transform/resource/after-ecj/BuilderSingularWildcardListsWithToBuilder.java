@@ -82,6 +82,11 @@ import lombok.Singular;
     return new BuilderSingularWildcardListsWithToBuilderBuilder();
   }
   public @java.lang.SuppressWarnings("all") BuilderSingularWildcardListsWithToBuilderBuilder toBuilder() {
-    return new BuilderSingularWildcardListsWithToBuilderBuilder().objects(((this.objects == null) ? java.util.Collections.<java.lang.Object>emptyList() : this.objects)).numbers(((this.numbers == null) ? java.util.Collections.<Number>emptyList() : this.numbers));
+    final BuilderSingularWildcardListsWithToBuilderBuilder builder = new BuilderSingularWildcardListsWithToBuilderBuilder();
+    if ((this.objects != null))
+        builder.objects(this.objects);
+    if ((this.numbers != null))
+        builder.numbers(this.numbers);
+    return builder;
   }
 }
