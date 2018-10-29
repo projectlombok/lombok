@@ -169,13 +169,13 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		List<JCExpression> jceBlank = List.nil();
 		
 		JCExpression varType = chainDotsString(builderType, data.getTargetFqn());
-		int agrumentsCount = getTypeArgumentsCount();
-		varType = addTypeArgs(agrumentsCount, false, builderType, varType, data.getTypeArgs(), source);
+		int argumentsCount = getTypeArgumentsCount();
+		varType = addTypeArgs(argumentsCount, false, builderType, varType, data.getTypeArgs(), source);
 		
 		JCExpression empty; {
 			//ImmutableX.of()
 			JCExpression emptyMethod = chainDots(builderType, "com", "google", "common", "collect", getSimpleTargetTypeName(data), "of");
-			List<JCExpression> invokeTypeArgs = createTypeArgs(agrumentsCount, false, builderType, data.getTypeArgs(), source);
+			List<JCExpression> invokeTypeArgs = createTypeArgs(argumentsCount, false, builderType, data.getTypeArgs(), source);
 			empty = maker.Apply(invokeTypeArgs, emptyMethod, jceBlank);
 		}
 		

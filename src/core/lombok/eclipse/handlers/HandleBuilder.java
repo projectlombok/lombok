@@ -537,7 +537,17 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				boolean obtainIsStatic = bfd.obtainVia.isStatic();
 				for (int i = 0; i < tgt.length; i++) {
 					MessageSend obtainExpr = new MessageSend();
-					obtainExpr.receiver = obtainIsStatic ? new SingleNameReference(type.getName().toCharArray(), 0) : new ThisReference(0, 0);
+					if (obtainIsStatic) {
+						if (typeParams != null && typeParams.length > 0) {
+							obtainExpr.typeArguments = new TypeReference[typeParams.length];
+							for (int j = 0; j<typeParams.length; j++) {
+								obtainExpr.typeArguments[j] = new SingleTypeReference(typeParams[j].name, 0);
+							}
+						}
+						obtainExpr.receiver = new SingleNameReference(type.getName().toCharArray(), 0);
+					} else {
+						obtainExpr.receiver = new ThisReference(0, 0);
+					}
 					obtainExpr.selector = obtainName.toCharArray();
 					if (obtainIsStatic) obtainExpr.arguments = new Expression[] {new ThisReference(0, 0)};
 					tgt[i] = obtainExpr;
