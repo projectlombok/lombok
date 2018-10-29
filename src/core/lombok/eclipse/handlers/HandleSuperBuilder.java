@@ -259,14 +259,28 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		generateBuilderBasedConstructor(tdParent, typeParams, builderFields, annotationNode, builderClassName,
 			superclassBuilderClass != null);
 		
-		// Create the abstract builder class.
+		// Create the abstract builder class, or reuse an existing one.
 		EclipseNode builderType = findInnerClass(tdParent, builderClassName);
 		if (builderType == null) {
 			builderType = generateBuilderAbstractClass(tdParent, builderClassName, superclassBuilderClass,
 				typeParams, ast, classGenericName, builderGenericName);
 		} else {
-			annotationNode.addError("@SuperBuilder does not support customized builders. Use @Builder instead.");
-			return;
+			TypeDeclaration builderTypeDeclaration = (TypeDeclaration) builderType.get();
+			if ((builderTypeDeclaration.modifiers & (ClassFileConstants.AccStatic | ClassFileConstants.AccAbstract)) == 0) {
+				annotationNode.addError("Existing Builder must be an abstract static inner class.");
+				return;
+			}
+			sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(builderType, annotationNode);
+			// Generate errors for @Singular BFDs that have one already defined node.
+			for (BuilderFieldData bfd : builderFields) {
+				SingularData sd = bfd.singularData;
+				if (sd == null) continue;
+				EclipseSingularizer singularizer = sd.getSingularizer();
+				if (singularizer == null) continue;
+				if (singularizer.checkForAlreadyExistingNodesAndGenerateError(builderType, sd)) {
+					bfd.singularData = null;
+				}
+			}
 		}
 		
 		// Check validity of @ObtainVia fields, and add check if adding cleaning for @Singular is necessary.
@@ -338,13 +352,18 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			return;
 		}
 		
-		// Create the builder implementation class.
+		// Create the builder implementation class, or reuse an existing one.
 		EclipseNode builderImplType = findInnerClass(tdParent, builderImplClassName);
 		if (builderImplType == null) {
 			builderImplType = generateBuilderImplClass(tdParent, builderImplClassName, builderClassName, typeParams, ast);
 		} else {
-			annotationNode.addError("@SuperBuilder does not support customized builders. Use @Builder instead.");
-			return;
+			TypeDeclaration builderImplTypeDeclaration = (TypeDeclaration) builderImplType.get();
+			if ((builderImplTypeDeclaration.modifiers & ClassFileConstants.AccAbstract) != 0 ||
+					(builderImplTypeDeclaration.modifiers & ClassFileConstants.AccStatic) == 0) {
+				annotationNode.addError("Existing BuilderImpl must be a non-abstract static inner class.");
+				return;
+			}
+			sanityCheckForMethodGeneratingAnnotationsOnBuilderClass(builderImplType, annotationNode);
 		}
 
 		if (toBuilder) {
@@ -362,7 +381,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 
 		// Create the self() and build() methods in the BuilderImpl.
 		injectMethod(builderImplType, generateSelfMethod(builderImplType, typeParams, p));
-		injectMethod(builderImplType, generateBuildMethod(tdParent, buildMethodName, returnType, ast));
+		if (methodExists(buildMethodName, builderImplType, -1) == MemberExistsResult.NOT_EXISTS) {
+			injectMethod(builderImplType, generateBuildMethod(tdParent, buildMethodName, returnType, ast));
+		}
 		
 		// Add the builder() method to the annotated class.
 		if (methodExists(builderMethodName, tdParent, -1) == MemberExistsResult.NOT_EXISTS) {
