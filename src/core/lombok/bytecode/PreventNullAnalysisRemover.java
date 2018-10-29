@@ -50,7 +50,7 @@ public class PreventNullAnalysisRemover implements PostCompilerTransformation {
 		
 		class PreventNullAnalysisVisitor extends MethodVisitor {
 			PreventNullAnalysisVisitor(MethodVisitor mv) {
-				super(Opcodes.ASM6, mv);
+				super(Opcodes.ASM7, mv);
 			}
 			
 			@Override public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
@@ -68,7 +68,7 @@ public class PreventNullAnalysisRemover implements PostCompilerTransformation {
 			}
 		}
 		
-		reader.accept(new ClassVisitor(Opcodes.ASM6, writer) {
+		reader.accept(new ClassVisitor(Opcodes.ASM7, writer) {
 			@Override public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 				return new PreventNullAnalysisVisitor(super.visitMethod(access, name, desc, signature, exceptions));
 			}

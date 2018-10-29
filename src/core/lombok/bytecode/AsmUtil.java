@@ -37,7 +37,7 @@ class AsmUtil {
 		ClassReader reader = new ClassReader(byteCode);
 		ClassWriter writer = new FixedClassWriter(reader, 0);
 		
-		ClassVisitor visitor = new ClassVisitor(Opcodes.ASM6, writer) {
+		ClassVisitor visitor = new ClassVisitor(Opcodes.ASM7, writer) {
 			@Override public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
 				return new JSRInlinerAdapter(super.visitMethod(access, name, desc, signature, exceptions), access, name, desc, signature, exceptions);
 			}
