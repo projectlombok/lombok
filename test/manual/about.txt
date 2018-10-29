@@ -1,0 +1,1 @@
+This directory contains test cases which must be manually run. The aim is to get these automated as unit tests, but, walk before you can run.
