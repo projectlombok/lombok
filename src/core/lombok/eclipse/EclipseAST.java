@@ -34,6 +34,7 @@ import lombok.Lombok;
 import lombok.core.AST;
 import lombok.core.LombokImmutableList;
 import lombok.eclipse.handlers.EclipseHandlerUtil;
+import lombok.permit.Permit;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
@@ -497,7 +498,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 			Throwable problem_ = null;
 			Method m = null;
 			try {
-				m = EclipseAstProblemView.class.getMethod("addProblemToCompilationResult", char[].class, Class.forName(COMPILATIONRESULT_TYPE), boolean.class, String.class, int.class, int.class);
+				m = Permit.getMethod(EclipseAstProblemView.class, "addProblemToCompilationResult", char[].class, Class.forName(COMPILATIONRESULT_TYPE), boolean.class, String.class, int.class, int.class);
 			} catch (Throwable t) {
 				// That's problematic, but as long as no local classes are used we don't actually need it.
 				// Better fail on local classes than crash altogether.

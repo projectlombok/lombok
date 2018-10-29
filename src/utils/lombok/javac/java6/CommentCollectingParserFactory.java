@@ -28,6 +28,8 @@ import com.sun.tools.javac.parser.Lexer;
 import com.sun.tools.javac.parser.Parser;
 import com.sun.tools.javac.util.Context;
 
+import lombok.permit.Permit;
+
 public class CommentCollectingParserFactory extends Parser.Factory {
 	static Context.Key<Parser.Factory> key() {
 		return parserFactoryKey;
@@ -49,8 +51,7 @@ public class CommentCollectingParserFactory extends Parser.Factory {
 		context.put(CommentCollectingParserFactory.key(), (Parser.Factory)null);
 		Field field;
 		try {
-			field = JavaCompiler.class.getDeclaredField("parserFactory");
-			field.setAccessible(true);
+			field = Permit.getField(JavaCompiler.class, "parserFactory");
 			field.set(compiler, new CommentCollectingParserFactory(context));
 		} catch (Exception e) {
 			throw new IllegalStateException("Could not set comment sensitive parser in the compiler", e);

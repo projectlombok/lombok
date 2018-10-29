@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 
 import lombok.core.FieldAugment;
+import lombok.permit.Permit;
 
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -79,7 +80,7 @@ public class CommentCatcher {
 			} else {
 				scannerFactory = Class.forName("lombok.javac.java8.CommentCollectingScannerFactory");
 			}
-			scannerFactory.getMethod("preRegister", Context.class).invoke(null, context);
+			Permit.getMethod(scannerFactory, "preRegister", Context.class).invoke(null, context);
 		} catch (InvocationTargetException e) {
 			throw Javac.sneakyThrow(e.getCause());
 		} catch (Exception e) {
@@ -100,7 +101,7 @@ public class CommentCatcher {
 			} else {
 				parserFactory = Class.forName("lombok.javac.java9.CommentCollectingParserFactory");
 			}
-			parserFactory.getMethod("setInCompiler", JavaCompiler.class, Context.class).invoke(null, compiler, context);
+			Permit.getMethod(parserFactory, "setInCompiler", JavaCompiler.class, Context.class).invoke(null, compiler, context);
 		} catch (InvocationTargetException e) {
 			throw Javac.sneakyThrow(e.getCause());
 		} catch (Exception e) {

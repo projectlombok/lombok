@@ -30,6 +30,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import lombok.Lombok;
+import lombok.permit.Permit;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.IExtendedModifier;
@@ -277,8 +278,7 @@ public class PatchValEclipse {
 	static {
 		Field f = null;
 		try {
-			f = Name.class.getDeclaredField("index");
-			f.setAccessible(true);
+			f = Permit.getField(Name.class, "index");
 		} catch (Throwable t) {
 			// Leave it null, in which case we don't set index. That'll result in error log messages but its better than crashing here.
 		}
@@ -308,24 +308,19 @@ public class PatchValEclipse {
 			Method h = null;
 			
 			try {
-				a = LocalDeclaration.class.getDeclaredField("$initCopy");
-				b = LocalDeclaration.class.getDeclaredField("$iterableCopy");
+				a = Permit.getField(LocalDeclaration.class, "$initCopy");
+				b = Permit.getField(LocalDeclaration.class, "$iterableCopy");
 			} catch (Throwable t) {
 				//ignore - no $initCopy exists when running in ecj.
 			}
 			
 			try {
-				c = Parser.class.getDeclaredField("astStack");
-				c.setAccessible(true);
-				d = Parser.class.getDeclaredField("astPtr");
-				d.setAccessible(true);
-				f = Modifier.class.getDeclaredConstructor(AST.class);
-				f.setAccessible(true);
-				g = MarkerAnnotation.class.getDeclaredConstructor(AST.class);
-				g.setAccessible(true);
+				c = Permit.getField(Parser.class, "astStack");
+				d = Permit.getField(Parser.class, "astPtr");
+				f = Permit.getConstructor(Modifier.class, AST.class);
+				g = Permit.getConstructor(MarkerAnnotation.class, AST.class);
 				Class<?> z = Class.forName("org.eclipse.jdt.core.dom.ASTConverter");
-				h = z.getDeclaredMethod("recordNodes", org.eclipse.jdt.core.dom.ASTNode.class, org.eclipse.jdt.internal.compiler.ast.ASTNode.class);
-				h.setAccessible(true);
+				h = Permit.getMethod(z, "recordNodes", org.eclipse.jdt.core.dom.ASTNode.class, org.eclipse.jdt.internal.compiler.ast.ASTNode.class);
 			} catch (Throwable t) {
 				// Most likely we're in ecj or some other plugin usage of the eclipse compiler. No need for this.
 			}

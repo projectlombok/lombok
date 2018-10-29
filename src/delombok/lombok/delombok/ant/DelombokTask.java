@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Lombok;
+import lombok.permit.Permit;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Location;
@@ -176,8 +177,7 @@ class Tasks {
 					} catch (ClassNotFoundException e) {
 						// If we get here, it isn't, and we should use the shadowloader.
 						Class<?> launcherMain = Class.forName("lombok.launch.Main");
-						Method m = launcherMain.getDeclaredMethod("createShadowClassLoader");
-						m.setAccessible(true);
+						Method m = Permit.getMethod(launcherMain, "createShadowClassLoader");
 						shadowLoader = (ClassLoader) m.invoke(null);
 					}
 				}
@@ -195,10 +195,9 @@ class Tasks {
 			try {
 				Object instance = shadowLoadClass("lombok.delombok.ant.DelombokTaskImpl").newInstance();
 				for (Field selfField : getClass().getDeclaredFields()) {
+					Permit.setAccessible(selfField);
 					if (selfField.isSynthetic() || Modifier.isStatic(selfField.getModifiers())) continue;
-					Field otherField = instance.getClass().getDeclaredField(selfField.getName());
-					otherField.setAccessible(true);
-					selfField.setAccessible(true);
+					Field otherField = Permit.getField(instance.getClass(), selfField.getName());
 					if (selfField.getName().equals("formatOptions")) {
 						List<String> rep = new ArrayList<String>();
 						for (Format f : formatOptions) {
@@ -211,8 +210,7 @@ class Tasks {
 					}
 				}
 				
-				Method m = instance.getClass().getMethod("execute", Location.class);
-				m.setAccessible(true);
+				Method m = Permit.getMethod(instance.getClass(), "execute", Location.class);
 				m.invoke(instance, loc);
 			} catch (InvocationTargetException e) {
 				throw Lombok.sneakyThrow(e.getCause());

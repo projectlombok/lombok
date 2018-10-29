@@ -43,6 +43,8 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 
+import lombok.permit.Permit;
+
 import java.lang.reflect.Field;
 
 import static lombok.eclipse.Eclipse.poss;
@@ -196,8 +198,8 @@ public class PatchVal {
 			Field a = null, b = null;
 			
 			try {
-				a = LocalDeclaration.class.getDeclaredField("$initCopy");
-				b = LocalDeclaration.class.getDeclaredField("$iterableCopy");
+				a = Permit.getField(LocalDeclaration.class, "$initCopy");
+				b = Permit.getField(LocalDeclaration.class, "$iterableCopy");
 			} catch (Throwable t) {
 				//ignore - no $initCopy exists when running in ecj.
 			}

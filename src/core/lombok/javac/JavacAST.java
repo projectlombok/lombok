@@ -37,6 +37,7 @@ import javax.tools.JavaFileObject;
 
 import com.sun.tools.javac.util.JCDiagnostic;
 import lombok.core.AST;
+import lombok.permit.Permit;
 
 import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Symtab;
@@ -243,7 +244,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	private static List<JCTree> getResourcesForTryNode(JCTry tryNode) {
 		if (!JCTRY_RESOURCES_FIELD_INITIALIZED) {
 			try {
-				JCTRY_RESOURCES_FIELD = JCTry.class.getField("resources");
+				JCTRY_RESOURCES_FIELD = Permit.getField(JCTry.class, "resources");
 			} catch (NoSuchFieldException ignore) {
 				// Java 1.6 or lower won't have this at all.
 			} catch (Exception ignore) {
@@ -343,7 +344,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			return m;
 		}
 		try {
-			m = c.getMethod("getBody");
+			m = Permit.getMethod(c, "getBody");
 		} catch (NoSuchMethodException e) {
 			throw Javac.sneakyThrow(e);
 		}
@@ -501,12 +502,11 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		}
 		
 		static ErrorLog create(Messager messager, Log log) {
-			Field errorCount = null;
-			try {
-				Field f = messager.getClass().getDeclaredField("errorCount");
-				f.setAccessible(true);
-				errorCount = f;
-			} catch (Throwable t) {}
+			Field errorCount; try {
+				errorCount = Permit.getField(messager.getClass(), "errorCount");
+			} catch (Throwable t) {
+				errorCount = null;
+			}
 			boolean hasMultipleErrors = false;
 			for (Field field : log.getClass().getFields()) {
 				if (field.getName().equals("multipleErrors")) {
@@ -515,14 +515,13 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 				}
 			}
 			if (hasMultipleErrors) return new JdkBefore9(log, messager, errorCount);
-
-			Field warningCount = null;
-			try {
-				Field f = messager.getClass().getDeclaredField("warningCount");
-				f.setAccessible(true);
-				warningCount = f;
-			} catch (Throwable t) {}
-
+			
+			Field warningCount; try {
+				warningCount = Permit.getField(messager.getClass(), "warningCount");
+			} catch (Throwable t) {
+				warningCount = null;
+			}
+			
 			return new Jdk9Plus(log, messager, errorCount, warningCount);
 		}
 	}
@@ -577,21 +576,18 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 				Class<?> noteCls = Class.forName(jcd + "$Note");
 				
 				Class<?> lc = log.getClass();
-				this.errorMethod = lc.getMethod("error", df, DiagnosticPosition.class, errorCls);
-				this.warningMethod = lc.getMethod("warning", DiagnosticPosition.class, warningCls);
-				this.mandatoryWarningMethod = lc.getMethod("mandatoryWarning", DiagnosticPosition.class, warningCls);
-				this.noteMethod = lc.getMethod("note", DiagnosticPosition.class, noteCls);
+				this.errorMethod = Permit.getMethod(lc, "error", df, DiagnosticPosition.class, errorCls);
+				this.warningMethod = Permit.getMethod(lc, "warning", DiagnosticPosition.class, warningCls);
+				this.mandatoryWarningMethod = Permit.getMethod(lc, "mandatoryWarning", DiagnosticPosition.class, warningCls);
+				this.noteMethod = Permit.getMethod(lc, "note", DiagnosticPosition.class, noteCls);
 
-				Field diagsField = lc.getSuperclass().getDeclaredField("diags");
-				diagsField.setAccessible(true);
-				this.diags = (JCDiagnostic.Factory)diagsField.get(log);
+				Field diagsField = Permit.getField(lc.getSuperclass(), "diags");
+				this.diags = (JCDiagnostic.Factory) diagsField.get(log);
 
 				Class<?> dc = this.diags.getClass();
-				this.errorKey = dc.getMethod("errorKey", String.class, Object[].class);
-				this.warningKey = dc.getDeclaredMethod("warningKey", String.class, Object[].class);
-				this.warningKey.setAccessible(true);
-				this.noteKey = dc.getDeclaredMethod("noteKey", String.class, Object[].class);
-				this.noteKey.setAccessible(true);
+				this.errorKey = Permit.getMethod(dc, "errorKey", String.class, Object[].class);
+				this.warningKey = Permit.getMethod(dc, "warningKey", String.class, Object[].class);
+				this.noteKey = Permit.getMethod(dc, "noteKey", String.class, Object[].class);
 			} catch (Throwable t) {
 				//t.printStackTrace();
 			}

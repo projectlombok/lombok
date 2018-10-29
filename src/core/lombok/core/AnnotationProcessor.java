@@ -46,6 +46,7 @@ import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 
 import lombok.patcher.ClassRootFinder;
+import lombok.permit.Permit;
 
 @SupportedAnnotationTypes("*")
 public class AnnotationProcessor extends AbstractProcessor {
@@ -82,8 +83,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 		
 		for (Class<?> procEnvClass = procEnv.getClass(); procEnvClass != null; procEnvClass = procEnvClass.getSuperclass()) {
 			try {
-				Field field = procEnvClass.getDeclaredField("delegate");
-				field.setAccessible(true);
+				Field field = Permit.getField(procEnvClass, "delegate");
 				Object delegate = field.get(procEnv);
 				
 				return tryRecursivelyObtainJavacProcessingEnvironment((ProcessingEnvironment) delegate);
@@ -136,7 +136,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 			ClassLoader environmentClassLoader = procEnv.getClass().getClassLoader();
 			if (environmentClassLoader != null && environmentClassLoader.getClass().getCanonicalName().equals("org.codehaus.plexus.compiler.javac.IsolatedClassLoader")) {
 				if (!ClassLoader_lombokAlreadyAddedTo.getAndSet(environmentClassLoader, true)) {
-					Method m = environmentClassLoader.getClass().getDeclaredMethod("addURL", URL.class);
+					Method m = Permit.getMethod(environmentClassLoader.getClass(), "addURL", URL.class);
 					URL selfUrl = new File(ClassRootFinder.findClassRootOfClass(AnnotationProcessor.class)).toURI().toURL();
 					m.invoke(environmentClassLoader, selfUrl);
 				}

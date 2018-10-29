@@ -88,6 +88,8 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 
+import lombok.permit.Permit;
+
 public class JavacTreeMaker {
 	private final TreeMaker tm;
 	
@@ -153,7 +155,7 @@ public class JavacTreeMaker {
 			Object value = cache.get(fieldName);
 			if (value != null) return value;
 			try {
-				value = Class.forName(className).getField(fieldName).get(null);
+				value = Permit.getField(Class.forName(className), fieldName).get(null);
 			} catch (NoSuchFieldException e) {
 				throw Javac.sneakyThrow(e);
 			} catch (IllegalAccessException e) {
@@ -169,7 +171,7 @@ public class JavacTreeMaker {
 		private static Field NOSUCHFIELDEX_MARKER;
 		static {
 			try {
-				NOSUCHFIELDEX_MARKER = SchroedingerType.class.getDeclaredField("NOSUCHFIELDEX_MARKER");
+				NOSUCHFIELDEX_MARKER = Permit.getField(SchroedingerType.class, "NOSUCHFIELDEX_MARKER");
 			} catch (NoSuchFieldException e) {
 				throw Javac.sneakyThrow(e);
 			}
@@ -180,12 +182,12 @@ public class JavacTreeMaker {
 			Field field = cache.get(c);
 			if (field == null) {
 				try {
-					field = c.getField(fieldName);
+					field = Permit.getField(c, fieldName);
 				} catch (NoSuchFieldException e) {
 					cache.putIfAbsent(c, NOSUCHFIELDEX_MARKER);
 					throw Javac.sneakyThrow(e);
 				}
-				field.setAccessible(true);
+				Permit.setAccessible(field);
 				Field old = cache.putIfAbsent(c, field);
 				if (old != null) field = old;
 			}
@@ -207,8 +209,7 @@ public class JavacTreeMaker {
 		static {
 			Method m = null;
 			try {
-				m = Type.class.getDeclaredMethod("getTag");
-				m.setAccessible(true);
+				m = Permit.getMethod(Type.class, "getTag");
 			} catch (NoSuchMethodException e) {}
 			TYPE_TYPETAG_METHOD = m;
 		}
@@ -255,8 +256,7 @@ public class JavacTreeMaker {
 		static {
 			Method m = null;
 			try {
-				m = JCTree.class.getDeclaredMethod("getTag");
-				m.setAccessible(true);
+				m = Permit.getMethod(JCTree.class, "getTag");
 			} catch (NoSuchMethodException e) {}
 			
 			if (m != null) {
@@ -265,8 +265,7 @@ public class JavacTreeMaker {
 			} else {
 				Field f = null;
 				try {
-					f = JCTree.class.getDeclaredField("tag");
-					f.setAccessible(true);
+					f = Permit.getField(JCTree.class, "tag");
 				} catch (NoSuchFieldException e) {}
 				TAG_FIELD = f;
 				TAG_METHOD = null;
@@ -381,7 +380,7 @@ public class JavacTreeMaker {
 			else throw new IllegalStateException("Lombok TreeMaker frontend issue: multiple matches when looking for method: " + m);
 		}
 		if (found == null) throw new IllegalStateException("Lombok TreeMaker frontend issue: no match when looking for method: " + m);
-		found.setAccessible(true);
+		Permit.setAccessible(found);
 		Object marker = METHOD_CACHE.putIfAbsent(m, found);
 		if (marker == null) return found;
 		return METHOD_CACHE.get(m);

@@ -93,6 +93,7 @@ import com.sun.tools.javac.util.Position;
 
 import lombok.javac.CommentInfo;
 import lombok.javac.PackageName;
+import lombok.permit.Permit;
 import lombok.javac.CommentInfo.EndConnection;
 import lombok.javac.CommentInfo.StartConnection;
 import lombok.javac.JavacTreeMaker.TreeTag;
@@ -1335,7 +1336,6 @@ public class PrettyPrinter extends JCTree.Visitor {
 	
 	static {
 		getExtendsClause = getMethod(JCClassDecl.class, "getExtendsClause", new Class<?>[0]);
-		getExtendsClause.setAccessible(true);
 		
 		if (getJavaCompilerVersion() < 8) {
 			getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", java.util.Map.class);
@@ -1350,11 +1350,11 @@ public class PrettyPrinter extends JCTree.Visitor {
 				throw sneakyThrow(ex);
 			}
 			try {
-				storeEndMethodTemp = endPosTable.getMethod("storeEnd", JCTree.class, int.class);
+				storeEndMethodTemp = Permit.getMethod(endPosTable, "storeEnd", JCTree.class, int.class);
 			} catch (NoSuchMethodException e) {
 				try {
 					endPosTable = Class.forName("com.sun.tools.javac.parser.JavacParser$AbstractEndPosTable");
-					storeEndMethodTemp = endPosTable.getDeclaredMethod("storeEnd", JCTree.class, int.class);
+					storeEndMethodTemp = Permit.getMethod(endPosTable, "storeEnd", JCTree.class, int.class);
 				} catch (NoSuchMethodException ex) {
 					throw sneakyThrow(ex);
 				} catch (ClassNotFoundException ex) {
@@ -1363,13 +1363,13 @@ public class PrettyPrinter extends JCTree.Visitor {
 			}
 			storeEnd = storeEndMethodTemp;
 		}
-		getEndPosition.setAccessible(true);
-		storeEnd.setAccessible(true);
+		Permit.setAccessible(getEndPosition);
+		Permit.setAccessible(storeEnd);
 	}
 	
 	private static Method getMethod(Class<?> clazz, String name, Class<?>... paramTypes) {
 		try {
-			return clazz.getMethod(name, paramTypes);
+			return Permit.getMethod(clazz, name, paramTypes);
 		} catch (NoSuchMethodException e) {
 			throw sneakyThrow(e);
 		}
@@ -1379,7 +1379,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 		try {
 			Class<?>[] c = new Class[paramTypes.length];
 			for (int i = 0; i < paramTypes.length; i++) c[i] = Class.forName(paramTypes[i]);
-			return clazz.getMethod(name, c);
+			return Permit.getMethod(clazz, name, c);
 		} catch (NoSuchMethodException e) {
 			throw sneakyThrow(e);
 		} catch (ClassNotFoundException e) {
@@ -1418,11 +1418,10 @@ public class PrettyPrinter extends JCTree.Visitor {
 		Field f = c.get(fieldName);
 		if (f == null) {
 			try {
-				f = tClass.getDeclaredField(fieldName);
+				f = Permit.getField(tClass, fieldName);
 			} catch (Exception e) {
 				return defaultValue;
 			}
-			f.setAccessible(true);
 			c.put(fieldName, f);
 		}
 		

@@ -58,6 +58,7 @@ import lombok.experimental.Tolerate;
 import lombok.javac.Javac;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
+import lombok.permit.Permit;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
@@ -1049,10 +1050,9 @@ public class JavacHandlerUtil {
 			if (TYPE != null) return;
 			if (!in.getName().equals("com.sun.tools.javac.tree.JCTree$JCAnnotatedType")) return;
 			try {
-				CONSTRUCTOR = in.getDeclaredConstructor(List.class, JCExpression.class);
-				CONSTRUCTOR.setAccessible(true);
-				ANNOTATIONS = in.getDeclaredField("annotations");
-				UNDERLYING_TYPE = in.getDeclaredField("underlyingType");
+				CONSTRUCTOR = Permit.getConstructor(in, List.class, JCExpression.class);
+				ANNOTATIONS = Permit.getField(in, "annotations");
+				UNDERLYING_TYPE = Permit.getField(in, "underlyingType");
 				TYPE = in;
 			} catch (Exception ignore) {}
 		}
@@ -1102,9 +1102,9 @@ public class JavacHandlerUtil {
 			Method r = null;
 			Method e = null;
 			try {
-				f = ClassSymbol.class.getField("members_field");
-				r = f.getType().getMethod("remove", Symbol.class);
-				e = f.getType().getMethod("enter", Symbol.class);
+				f = Permit.getField(ClassSymbol.class, "members_field");
+				r = Permit.getMethod(f.getType(), "remove", Symbol.class);
+				e = Permit.getMethod(f.getType(), "enter", Symbol.class);
 			} catch (Exception ex) {}
 			membersField = f;
 			removeMethod = r;

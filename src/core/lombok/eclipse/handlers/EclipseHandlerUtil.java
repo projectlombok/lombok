@@ -56,6 +56,7 @@ import lombok.eclipse.EclipseAST;
 import lombok.eclipse.EclipseNode;
 import lombok.experimental.Accessors;
 import lombok.experimental.Tolerate;
+import lombok.permit.Permit;
 
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
@@ -337,9 +338,7 @@ public class EclipseHandlerUtil {
 		
 		private static Field getField(Class<?> c, String fName) {
 			try {
-				Field f = c.getDeclaredField(fName);
-				f.setAccessible(true);
-				return f;
+				return Permit.getField(c, fName);
 			} catch (Exception e) {
 				return null;
 			}
@@ -1931,12 +1930,12 @@ public class EclipseHandlerUtil {
 		Constructor<IntLiteral> intLiteralConstructor_ = null;
 		Method intLiteralFactoryMethod_ = null;
 		try { 
-			intLiteralConstructor_ = IntLiteral.class.getConstructor(parameterTypes);
+			intLiteralConstructor_ = Permit.getConstructor(IntLiteral.class, parameterTypes);
 		} catch (Throwable ignore) {
 			// probably eclipse 3.7++
 		}
 		try { 
-			intLiteralFactoryMethod_ = IntLiteral.class.getMethod("buildIntLiteral", parameterTypes);
+			intLiteralFactoryMethod_ = Permit.getMethod(IntLiteral.class, "buildIntLiteral", parameterTypes);
 		} catch (Throwable ignore) {
 			// probably eclipse versions before 3.7
 		}

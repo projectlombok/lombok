@@ -30,6 +30,7 @@ import lombok.core.LombokConfiguration;
 import lombok.core.debug.DebugSnapshotStore;
 import lombok.core.debug.HistogramTracker;
 import lombok.patcher.Symbols;
+import lombok.permit.Permit;
 
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -90,7 +91,7 @@ public class TransformEclipseAST {
 				disableLombok = true;
 			}
 			try {
-				f = CompilationUnitDeclaration.class.getDeclaredField("$lombokAST");
+				f = Permit.getField(CompilationUnitDeclaration.class, "$lombokAST");
 			} catch (Throwable t) {
 				//I guess we're in an ecj environment; we'll just not cache stuff then.
 			}

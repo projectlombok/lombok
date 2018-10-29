@@ -39,6 +39,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 
 import lombok.core.DiagnosticsReceiver;
+import lombok.permit.Permit;
 
 import com.sun.tools.javac.file.BaseFileManager;
 
@@ -87,16 +88,14 @@ final class LombokFileObjects {
 	}
 		
 	static Method getDecoderMethod(String className) {
-		Method m = null;
 		try {
-			m = Class.forName(className).getDeclaredMethod("getDecoder", boolean.class);
-			m.setAccessible(true);
+			return Permit.getMethod(Class.forName(className), "getDecoder", boolean.class);
 		} catch (NoSuchMethodException e) {
 			// Intentional fallthrough - getDecoder(boolean) is not always present.
 		} catch (ClassNotFoundException e) {
 			// Intentional fallthrough - getDecoder(boolean) is not always present.
 		}
-		return m;
+		return null;
 	}
 	
 	private LombokFileObjects() {}

@@ -52,6 +52,7 @@ import javax.tools.JavaFileObject;
 import lombok.Lombok;
 import lombok.core.DiagnosticsReceiver;
 import lombok.javac.JavacTransformer;
+import lombok.permit.Permit;
 
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
@@ -112,10 +113,7 @@ public class LombokProcessor extends AbstractProcessor {
 	
 	private static final Field getFieldAccessor(String typeName, String fieldName) {
 		try {
-			Class<?> c = Class.forName(typeName);
-			Field f = c.getDeclaredField(fieldName);
-			f.setAccessible(true);
-			return f;
+			return Permit.getField(Class.forName(typeName), fieldName);
 		} catch (ClassNotFoundException e) {
 			return null;
 		} catch (NoSuchFieldException e) {
@@ -156,11 +154,9 @@ public class LombokProcessor extends AbstractProcessor {
 		Context context = javacProcessingEnv.getContext();
 		disablePartialReparseInNetBeansEditor(context);
 		try {
-			Method keyMethod = Context.class.getDeclaredMethod("key", Class.class);
-			keyMethod.setAccessible(true);
+			Method keyMethod = Permit.getMethod(Context.class, "key", Class.class);
 			Object key = keyMethod.invoke(context, JavaFileManager.class);
-			Field htField = Context.class.getDeclaredField("ht");
-			htField.setAccessible(true);
+			Field htField = Permit.getField(Context.class, "ht");
 			@SuppressWarnings("unchecked")
 			Map<Object,Object> ht = (Map<Object,Object>) htField.get(context);
 			final JavaFileManager originalFiler = (JavaFileManager) ht.get(key);
@@ -170,8 +166,7 @@ public class LombokProcessor extends AbstractProcessor {
 				
 				JavaFileManager newFilerManager = new InterceptingJavaFileManager(originalFiler, receiver);
 				ht.put(key, newFilerManager);
-				Field filerFileManagerField = JavacFiler.class.getDeclaredField("fileManager");
-				filerFileManagerField.setAccessible(true);
+				Field filerFileManagerField = Permit.getField(JavacFiler.class, "fileManager");
 				filerFileManagerField.set(javacFiler, newFilerManager);
 				
 				if (lombok.javac.Javac.getJavaCompilerVersion() > 8
@@ -186,20 +181,17 @@ public class LombokProcessor extends AbstractProcessor {
 
 	private void replaceFileManagerJdk9(Context context, JavaFileManager newFiler) {
 		try {
-			JavaCompiler compiler = (JavaCompiler) JavaCompiler.class.getDeclaredMethod("instance", Context.class).invoke(null, context);
+			JavaCompiler compiler = (JavaCompiler) Permit.getMethod(JavaCompiler.class, "instance", Context.class).invoke(null, context);
 			try {
-				Field fileManagerField = JavaCompiler.class.getDeclaredField("fileManager");
-				fileManagerField.setAccessible(true);
+				Field fileManagerField = Permit.getField(JavaCompiler.class, "fileManager");
 				fileManagerField.set(compiler, newFiler);
 			}
 			catch (Exception e) {}
 			
 			try {
-				Field writerField = JavaCompiler.class.getDeclaredField("writer");
-				writerField.setAccessible(true);
+				Field writerField = Permit.getField(JavaCompiler.class, "writer");
 				ClassWriter writer = (ClassWriter) writerField.get(compiler);
-				Field fileManagerField = ClassWriter.class.getDeclaredField("fileManager");
-				fileManagerField.setAccessible(true);
+				Field fileManagerField = Permit.getField(ClassWriter.class, "fileManager");
 				fileManagerField.set(writer, newFiler);
 			}
 			catch (Exception e) {}
@@ -210,8 +202,7 @@ public class LombokProcessor extends AbstractProcessor {
 	
 	private void forceMultipleRoundsInNetBeansEditor() {
 		try {
-			Field f = JavacProcessingEnvironment.class.getDeclaredField("isBackgroundCompilation");
-			f.setAccessible(true);
+			Field f = Permit.getField(JavacProcessingEnvironment.class, "isBackgroundCompilation");
 			f.set(javacProcessingEnv, true);
 		} catch (NoSuchFieldException e) {
 			// only NetBeans has it
@@ -223,14 +214,12 @@ public class LombokProcessor extends AbstractProcessor {
 	private void disablePartialReparseInNetBeansEditor(Context context) {
 		try {
 			Class<?> cancelServiceClass = Class.forName("com.sun.tools.javac.util.CancelService");
-			Method cancelServiceInstace = cancelServiceClass.getDeclaredMethod("instance", Context.class);
+			Method cancelServiceInstace = Permit.getMethod(cancelServiceClass, "instance", Context.class);
 			Object cancelService = cancelServiceInstace.invoke(null, context);
 			if (cancelService == null) return;
-			Field parserField = cancelService.getClass().getDeclaredField("parser");
-			parserField.setAccessible(true);
+			Field parserField = Permit.getField(cancelService.getClass(), "parser");
 			Object parser = parserField.get(cancelService);
-			Field supportsReparseField = parser.getClass().getDeclaredField("supportsReparse");
-			supportsReparseField.setAccessible(true);
+			Field supportsReparseField = Permit.getField(parser.getClass(), "supportsReparse");
 			supportsReparseField.set(parser, false);
 		} catch (ClassNotFoundException e) {
 			// only NetBeans has it
@@ -284,8 +273,7 @@ public class LombokProcessor extends AbstractProcessor {
 	
 	private void stopJavacProcessingEnvironmentFromClosingOurClassloader() {
 		try {
-			Field f = JavacProcessingEnvironment.class.getDeclaredField("processorClassLoader");
-			f.setAccessible(true);
+			Field f = Permit.getField(JavacProcessingEnvironment.class, "processorClassLoader");
 			ClassLoader unwrapped = (ClassLoader) f.get(javacProcessingEnv);
 			if (unwrapped == null) return;
 			ClassLoader wrapped = wrapClassLoader(unwrapped);
@@ -377,7 +365,7 @@ public class LombokProcessor extends AbstractProcessor {
 			} catch (Exception e) {
 				e.printStackTrace();
 				processingEnv.getMessager().printMessage(Kind.WARNING,
-						"Can't force a new processing round. Lombok won't work.");
+					"Can't force a new processing round. Lombok won't work.");
 			}
 		}
 	}
@@ -414,16 +402,14 @@ public class LombokProcessor extends AbstractProcessor {
 	@Override public SourceVersion getSupportedSourceVersion() {
 		return SourceVersion.latest();
 	}
-
+	
 	/**
 	 * This class casts the given processing environment to a JavacProcessingEnvironment. In case of
 	 * gradle incremental compilation, the delegate ProcessingEnvironment of the gradle wrapper is returned.
 	 */
 	public JavacProcessingEnvironment getJavacProcessingEnvironment(Object procEnv) {
-		if (procEnv instanceof JavacProcessingEnvironment) {
-			return (JavacProcessingEnvironment) procEnv;
-		}
-
+		if (procEnv instanceof JavacProcessingEnvironment) return (JavacProcessingEnvironment) procEnv;
+		
 		// try to find a "delegate" field in the object, and use this to try to obtain a JavacProcessingEnvironment
 		for (Class<?> procEnvClass = procEnv.getClass(); procEnvClass != null; procEnvClass = procEnvClass.getSuperclass()) {
 			try {
@@ -432,9 +418,9 @@ public class LombokProcessor extends AbstractProcessor {
 				// delegate field was not found, try on superclass
 			}
 		}
-
+		
 		processingEnv.getMessager().printMessage(Kind.WARNING,
-				"Can't get the delegate of the gradle IncrementalProcessingEnvironment. Lombok won't work.");
+			"Can't get the delegate of the gradle IncrementalProcessingEnvironment. Lombok won't work.");
 		return null;
 	}
 
@@ -444,10 +430,8 @@ public class LombokProcessor extends AbstractProcessor {
 	 * (directly or through a delegate field again)
 	 */
 	public JavacFiler getJavacFiler(Object filer) {
-		if (filer instanceof JavacFiler) {
-			return (JavacFiler) filer;
-		}
-
+		if (filer instanceof JavacFiler) return (JavacFiler) filer;
+		
 		// try to find a "delegate" field in the object, and use this to check for a JavacFiler
 		for (Class<?> filerClass = filer.getClass(); filerClass != null; filerClass = filerClass.getSuperclass()) {
 			try {
@@ -456,15 +440,13 @@ public class LombokProcessor extends AbstractProcessor {
 				// delegate field was not found, try on superclass
 			}
 		}
-
+		
 		processingEnv.getMessager().printMessage(Kind.WARNING,
-				"Can't get a JavacFiler from " + filer.getClass().getName() + ". Lombok won't work.");
+			"Can't get a JavacFiler from " + filer.getClass().getName() + ". Lombok won't work.");
 		return null;
 	}
 
 	private Object tryGetDelegateField(Class<?> delegateClass, Object instance) throws Exception {
-		Field field = delegateClass.getDeclaredField("delegate");
-		field.setAccessible(true);
-		return field.get(instance);
+		return Permit.getField(delegateClass, "delegate").get(instance);
 	}
 }

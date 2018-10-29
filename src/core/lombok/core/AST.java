@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import lombok.core.configuration.ConfigurationKey;
 import lombok.core.debug.HistogramTracker;
+import lombok.permit.Permit;
 
 /**
  * Lombok wraps the AST produced by a target platform into its own AST system, mostly because both Eclipse and javac
@@ -252,7 +253,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 			}
 			
 			if (shouldDrill(c, t, f.getName())) {
-				f.setAccessible(true);
+				Permit.setAccessible(f);
 				fields.add(new FieldAccess(f, dim));
 			}
 		}

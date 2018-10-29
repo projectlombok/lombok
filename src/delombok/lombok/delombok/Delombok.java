@@ -61,6 +61,7 @@ import lombok.javac.CommentCatcher;
 import lombok.javac.Javac;
 import lombok.javac.LombokOptions;
 import lombok.javac.apt.LombokProcessor;
+import lombok.permit.Permit;
 
 import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.comp.Todo;
@@ -638,7 +639,7 @@ public class Delombok {
 	private static final Field MODULE_FIELD = getModuleField();
 	private static Field getModuleField() {
 		try {
-			return JCCompilationUnit.class.getField("modle");
+			return Permit.getField(JCCompilationUnit.class, "modle");
 		} catch (NoSuchFieldException e) {
 			return null;
 		} catch (SecurityException e) {
@@ -808,10 +809,10 @@ public class Delombok {
 	private static Object callAttributeMethodOnJavaCompiler(JavaCompiler compiler, Todo arg) {
 		if (attributeMethod == null) {
 			try {
-				attributeMethod = JavaCompiler.class.getDeclaredMethod("attribute", java.util.Queue.class);
+				attributeMethod = Permit.getMethod(JavaCompiler.class, "attribute", java.util.Queue.class);
 			} catch (NoSuchMethodException e) {
 				try {
-					attributeMethod = JavaCompiler.class.getDeclaredMethod("attribute", com.sun.tools.javac.util.ListBuffer.class);
+					attributeMethod = Permit.getMethod(JavaCompiler.class, "attribute", com.sun.tools.javac.util.ListBuffer.class);
 				} catch (NoSuchMethodException e2) {
 					throw Lombok.sneakyThrow(e2);
 				}
@@ -830,10 +831,10 @@ public class Delombok {
 	private static void callFlowMethodOnJavaCompiler(JavaCompiler compiler, Object arg) {
 		if (flowMethod == null) {
 			try {
-				flowMethod = JavaCompiler.class.getDeclaredMethod("flow", java.util.Queue.class);
+				flowMethod = Permit.getMethod(JavaCompiler.class, "flow", java.util.Queue.class);
 			} catch (NoSuchMethodException e) {
 				try {
-					flowMethod = JavaCompiler.class.getDeclaredMethod("flow", com.sun.tools.javac.util.List.class);
+					flowMethod = Permit.getMethod(JavaCompiler.class, "flow", com.sun.tools.javac.util.List.class);
 				} catch (NoSuchMethodException e2) {
 					throw Lombok.sneakyThrow(e2);
 				}

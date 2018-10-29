@@ -39,6 +39,8 @@ import com.sun.tools.javac.util.JCDiagnostic;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Log;
 
+import lombok.permit.Permit;
+
 /**
  * During resolution, the resolver will emit resolution errors, but without appropriate file names and line numbers. If these resolution errors stick around
  * then they will be generated AGAIN, this time with proper names and line numbers, at the end. Therefore, we want to suppress the logger.
@@ -89,11 +91,8 @@ public final class CompilerMessageSuppressor {
 	
 	static Field getDeclaredField(Class<?> c, String fieldName) {
 		try {
-			Field field = c.getDeclaredField(fieldName);
-			field.setAccessible(true);
-			return field;
-		}
-		catch (Throwable t) {
+			return Permit.getField(c, fieldName);
+		} catch (Throwable t) {
 			return null;
 		}
 	}

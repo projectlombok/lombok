@@ -40,6 +40,7 @@ import lombok.core.ClassLiteral;
 import lombok.core.FieldSelect;
 import lombok.javac.JavacTreeMaker.TreeTag;
 import lombok.javac.JavacTreeMaker.TypeTag;
+import lombok.permit.Permit;
 
 import com.sun.tools.javac.code.Source;
 import com.sun.tools.javac.code.Symtab;
@@ -199,7 +200,6 @@ public class Javac {
 	
 	static {
 		getExtendsClause = getMethod(JCClassDecl.class, "getExtendsClause", new Class<?>[0]);
-		getExtendsClause.setAccessible(true);
 		
 		if (getJavaCompilerVersion() < 8) {
 			getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", java.util.Map.class);
@@ -214,11 +214,11 @@ public class Javac {
 				throw sneakyThrow(ex);
 			}
 			try {
-				storeEndMethodTemp = endPosTable.getMethod("storeEnd", JCTree.class, int.class);
+				storeEndMethodTemp = Permit.getMethod(endPosTable, "storeEnd", JCTree.class, int.class);
 			} catch (NoSuchMethodException e) {
 				try {
 					endPosTable = Class.forName("com.sun.tools.javac.parser.JavacParser$AbstractEndPosTable");
-					storeEndMethodTemp = endPosTable.getDeclaredMethod("storeEnd", JCTree.class, int.class);
+					storeEndMethodTemp = Permit.getMethod(endPosTable, "storeEnd", JCTree.class, int.class);
 				} catch (NoSuchMethodException ex) {
 					throw sneakyThrow(ex);
 				} catch (ClassNotFoundException ex) {
@@ -227,13 +227,13 @@ public class Javac {
 			}
 			storeEnd = storeEndMethodTemp;
 		}
-		getEndPosition.setAccessible(true);
-		storeEnd.setAccessible(true);
+		Permit.setAccessible(getEndPosition);
+		Permit.setAccessible(storeEnd);
 	}
 	
 	private static Method getMethod(Class<?> clazz, String name, Class<?>... paramTypes) {
 		try {
-			return clazz.getMethod(name, paramTypes);
+			return Permit.getMethod(clazz, name, paramTypes);
 		} catch (NoSuchMethodException e) {
 			throw sneakyThrow(e);
 		}
@@ -243,7 +243,7 @@ public class Javac {
 		try {
 			Class<?>[] c = new Class[paramTypes.length];
 			for (int i = 0; i < paramTypes.length; i++) c[i] = Class.forName(paramTypes[i]);
-			return clazz.getMethod(name, c);
+			return Permit.getMethod(clazz, name, c);
 		} catch (NoSuchMethodException e) {
 			throw sneakyThrow(e);
 		} catch (ClassNotFoundException e) {
@@ -320,7 +320,7 @@ public class Javac {
 	
 	private static Field getFieldIfExists(Class<?> c, String fieldName) {
 		try {
-			return c.getField("voidType");
+			return Permit.getField(c, "voidType");
 		} catch (Exception e) {
 			return null;
 		}
@@ -370,13 +370,13 @@ public class Javac {
 	static {
 		Field f = null;
 		try {
-			f = JCCompilationUnit.class.getDeclaredField("endPositions");
+			f = Permit.getField(JCCompilationUnit.class, "endPositions");
 		} catch (NoSuchFieldException e) {}
 		JCCOMPILATIONUNIT_ENDPOSITIONS = f;
 		
 		f = null;
 		try {
-			f = JCCompilationUnit.class.getDeclaredField("docComments");
+			f = Permit.getField(JCCompilationUnit.class, "docComments");
 		} catch (NoSuchFieldException e) {}
 		JCCOMPILATIONUNIT_DOCCOMMENTS = f;
 	}

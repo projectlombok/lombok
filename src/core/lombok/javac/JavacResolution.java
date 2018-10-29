@@ -35,6 +35,7 @@ import javax.tools.JavaFileObject;
 
 import lombok.Lombok;
 import lombok.core.debug.AssertionLogger;
+import lombok.permit.Permit;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
@@ -162,14 +163,10 @@ public class JavacResolution {
 	private static Field getMemberEnterDotEnv() {
 		if (memberEnterDotEnv != null) return memberEnterDotEnv;
 		try {
-			Field f = MemberEnter.class.getDeclaredField("env");
-			f.setAccessible(true);
-			memberEnterDotEnv = f;
+			return memberEnterDotEnv = Permit.getField(MemberEnter.class, "env");
 		} catch (NoSuchFieldException e) {
 			return null;
 		}
-		
-		return memberEnterDotEnv;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -252,10 +249,10 @@ public class JavacResolution {
 		static {
 			Method upperBound = null;
 			try {
-				upperBound = Types.class.getMethod("upperBound", Type.class);
+				upperBound = Permit.getMethod(Types.class, "upperBound", Type.class);
 			} catch (Throwable ignore) {}
 			if (upperBound == null) try {
-				upperBound = Types.class.getMethod("wildUpperBound", Type.class);
+				upperBound = Permit.getMethod(Types.class, "wildUpperBound", Type.class);
 			} catch (Throwable ignore) {}
 			
 			UPPER_BOUND = upperBound;
