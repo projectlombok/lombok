@@ -2,11 +2,12 @@
 
 [_(general configuration and options)_](../readme.md)
 
-### `ARG gradle=4.7`
+### `ARG gradle=4.10.2`
 
 The gradle version to be used. Supported values:
 
-- `4.7` (default)
+- `4.10.2` (default)
+- `4.7`
 - `4.2.1`
 
 ## Example build commands:
