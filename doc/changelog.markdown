@@ -3,17 +3,19 @@ Lombok Changelog
 
 ### v1.18.3 "Edgy Guinea Pig"
 * PLATFORM: Support for Eclipse Photon. [Issue #1831](https://github.com/rzwitserloot/lombok/issues/1831)
-* FEATURE: The `@FieldNameConstants` feature has been completely redesigned. [Issue #1774](https://github.com/rzwitserloot/lombok/issues/1774) [FieldNameConstants documentation](https://projectlombok.org/features/experimental/FieldNameConstants)
+* PLATFORM: Angular IDE is now recognized by the installer [Issue #1830](https://github.com/rzwitserloot/lombok/issues/1830)
+* PLATFORM: Many improvements for lombok's JDK10/11 support.
+* BREAKING CHANGE: The `@FieldNameConstants` feature has been completely redesigned. [Issue #1774](https://github.com/rzwitserloot/lombok/issues/1774) [FieldNameConstants documentation](https://projectlombok.org/features/experimental/FieldNameConstants)
+* BREAKING CHANGE: Lombok will now always copy specific annotations around (from field to getter, from field to builder 'setter', etcetera): A specific curated list of known annotations where that is the right thing to do (generally, `@NonNull` style annotations from various libraries), as well as any annotations you explicitly list in the `lombok.copyableAnnotations` config key in your `lombok.config` file. Also, lombok is more consistent about copying these annotations. (Previous behaviour: Lombok used to copy any annotation whose simple name was `NonNull`, `Nullable`, or `CheckForNull`). [Issue #1570](https://github.com/rzwitserloot/lombok/issues/1570) and [Issue #1634](https://github.com/rzwitserloot/lombok/issues/1634)
 * FEATURE: Lombok's `@NonNull` annotation can now be used on types (annotation on types has been introduced in JDK 8). `@Builder`'s `@Singular` annotation now properly deals with annotations on the generics type on the collection: `@Singular List<@NonNull String> names;` now does the right thing.
-* FEATURE: You can now mix `@SuperBuilder` and `toBuilder`, and `toBuilder` no longer throws `NullPointerException` if an `@Singular`-marked collection field is `null`. [Issue #1324](https://github.com/rzwitserloot/lombok/issues/1324)
+* FEATURE: You can now mix `@SuperBuilder` and `toBuilder`, and `toBuilder` no longer throws `NullPointerException` if a `@Singular`-marked collection field is `null`. [Issue #1324](https://github.com/rzwitserloot/lombok/issues/1324)
 * FEATURE: delombok now supports module paths via the `--module-path` option, and will automatically add lombok itself to the module path. This should make it possible to delombok your modularized projects. [Issue #1848](https://github.com/rzwitserloot/lombok/issues/1848)
 * FEATURE: You can pass `@args.txt` to `delombok` to read args from the text file; useful if you have really long classpaths you need to pass to delombok. [Issue #1795](https://github.com/rzwitserloot/lombok/issues/1795)
-* BREAKING CHANGE: Lombok will now always copy specific annotations around (from field to getter, from field to builder 'setter', etcetera): A specific curated list of known annotations where that is the right thing to do (generally, `@NonNull` style annotations from various libraries), as well as any annotations you explicitly list in the `lombok.copyableAnnotations` config key in your `lombok.config` file. Also, lombok is more consistent about copying these annotations. (Previous behaviour: Lombok used to copy any annotation whose simple name was `NonNull`, `Nullable`, or `CheckForNull`). [Issue #1570](https://github.com/rzwitserloot/lombok/issues/1570) and [Issue #1634](https://github.com/rzwitserloot/lombok/issues/1634)
 * BUGFIX: `@NoArgsConstructor(force=true)` would try to initialize already initialized final fields in Eclipse. [Issue #1829](https://github.com/rzwitserloot/lombok/issues/1829)
 * BUGFIX: When using lombok to compile modularized (`module-info.java`-style) code, if the module name has dots in it, it wouldn't work. [Issue #1808](https://github.com/rzwitserloot/lombok/issues/1808)
 * BUGFIX: Errors about lombok not reading a module providing `org.mapstruct.ap.spi` when trying to use lombok in jigsaw-mode on JDK 11. [Issue #1806](https://github.com/rzwitserloot/lombok/issues/1806)
 * BUGFIX: Fix NetBeans compile on save. [Issue #1770](https://github.com/rzwitserloot/lombok/issues/1770)
-* PLATFORM: Angular IDE is now recognized by the installer [Issue #1830](https://github.com/rzwitserloot/lombok/issues/1830)
+* BUGFIX: If you manually write your builder class so you can add a few methods of your own, and those methods refer to generated methods, you'd usually run into various bizarre error messages, but only on JDK9/10/11. This one is hard to describe, but we fixed it. [Issue #1907](https://github.com/rzwitserloot/lombok/issues/1907)
 
 
 ### v1.18.2 (July 26th, 2018)
