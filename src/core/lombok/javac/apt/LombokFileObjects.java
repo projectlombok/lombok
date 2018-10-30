@@ -24,9 +24,6 @@ package lombok.javac.apt;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -168,25 +165,13 @@ final class LombokFileObjects {
 		}
 		
 		@Override public JavaFileObject wrap(LombokFileObject fileObject) {
-			return new Javac9BaseFileObjectWrapper(fileManager, toPath(fileObject), fileObject);
+			return new Javac9BaseFileObjectWrapper(fileObject);
 		}
 		
 		@Override public Method getDecoderMethod() {
 			return null;
 		}
-		
-		private static Path toPath(LombokFileObject fileObject) {
-			URI uri = fileObject.toUri();
-			if (uri.getScheme() == null) {
-				uri = URI.create("file:///" + uri);
-			}
-			try {
-				return Paths.get(uri);
-			} catch (IllegalArgumentException e) {
-				throw new IllegalArgumentException("Problems in URI '" + uri + "' (" + fileObject.toUri() + ")", e);
-			}
-		}
-		
+
 		private static BaseFileManager asBaseFileManager(JavaFileManager jfm) {
 			if (jfm instanceof BaseFileManager) {
 				return (BaseFileManager) jfm;

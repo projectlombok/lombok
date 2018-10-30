@@ -28,18 +28,14 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URI;
-import java.nio.file.Path;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 
-import com.sun.tools.javac.file.BaseFileManager;
-
-class Javac9BaseFileObjectWrapper extends com.sun.tools.javac.file.PathFileObject {
+class Javac9BaseFileObjectWrapper implements javax.tools.JavaFileObject {
 	private final LombokFileObject delegate;
 	
-	public Javac9BaseFileObjectWrapper(BaseFileManager fileManager, Path path, LombokFileObject delegate) {
-		super(fileManager, path);
+	public Javac9BaseFileObjectWrapper(LombokFileObject delegate) {
 		this.delegate = delegate;
 	}
 	
