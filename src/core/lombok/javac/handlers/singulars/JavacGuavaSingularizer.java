@@ -92,6 +92,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		JCBlock body = maker.Block(0, statements);
 		Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
 		JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, params, thrown, body, null);
+		recursiveSetGeneratedBy(method, source, builderType.getContext());
 		injectMethod(builderType, method);
 	}
 	
@@ -134,6 +135,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		}
 		
 		JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, params.toList(), thrown, body, null);
+		recursiveSetGeneratedBy(method, source, builderType.getContext());
 		injectMethod(builderType, method);
 	}
 	
@@ -161,6 +163,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
 		JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, List.of(param), thrown, body, null);
+		recursiveSetGeneratedBy(method, source, builderType.getContext());
 		injectMethod(builderType, method);
 	}
 	

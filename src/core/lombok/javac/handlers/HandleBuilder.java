@@ -345,6 +345,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		JavacNode builderType = findInnerClass(tdParent, builderClassName);
 		if (builderType == null) {
 			builderType = makeBuilderClass(isStatic, annotationNode, tdParent, builderClassName, typeParams, ast);
+			recursiveSetGeneratedBy(builderType.get(), ast, annotationNode.getContext());
 		} else {
 			JCClassDecl builderTypeDeclaration = (JCClassDecl) builderType.get();
 			if (isStatic && !builderTypeDeclaration.getModifiers().getFlags().contains(Modifier.STATIC)) {
@@ -392,6 +393,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			JavacTreeMaker maker = builderType.getTreeMaker();
 			JCVariableDecl uncleanField = maker.VarDef(maker.Modifiers(Flags.PRIVATE), builderType.toName("$lombokUnclean"), maker.TypeIdent(CTC_BOOLEAN), null);
 			injectFieldAndMarkGenerated(builderType, uncleanField);
+			recursiveSetGeneratedBy(uncleanField, ast, annotationNode.getContext());
 		}
 		
 		if (constructorExists(builderType) == MemberExistsResult.NOT_EXISTS) {
@@ -405,7 +407,10 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		if (methodExists(buildMethodName, builderType, -1) == MemberExistsResult.NOT_EXISTS) {
 			JCMethodDecl md = generateBuildMethod(tdParent, isStatic, buildMethodName, nameOfBuilderMethod, returnType, builderFields, builderType, thrownExceptions, ast, addCleaning);
-			if (md != null) injectMethod(builderType, md);
+			if (md != null) {
+				injectMethod(builderType, md);
+				recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
+			}
 		}
 		
 		if (methodExists("toString", builderType, 0) == MemberExistsResult.NOT_EXISTS) {
@@ -444,11 +449,12 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					tps = lb.toList();
 				}
 				JCMethodDecl md = generateToBuilderMethod(toBuilderMethodName, builderClassName, tdParent, tps, builderFields, fluent, ast);
-				if (md != null) injectMethod(tdParent, md);
+				if (md != null) {
+					recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
+					injectMethod(tdParent, md);
+				}
 			}
 		}
-		
-		recursiveSetGeneratedBy(builderType.get(), ast, annotationNode.getContext());
 	}
 	
 	private static String unpack(JCExpression expr) {
@@ -551,7 +557,9 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		statements.append(maker.Exec(maker.Assign(maker.Select(maker.Ident(type.toName("this")), type.toName("$lombokUnclean")), maker.Literal(CTC_BOOLEAN, 0))));
 		JCBlock body = maker.Block(0, statements.toList());
-		return maker.MethodDef(maker.Modifiers(Flags.PUBLIC), type.toName("$lombokClean"), maker.Type(Javac.createVoidType(type.getSymbolTable(), CTC_VOID)), List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+		JCMethodDecl method = maker.MethodDef(maker.Modifiers(Flags.PUBLIC), type.toName("$lombokClean"), maker.Type(Javac.createVoidType(type.getSymbolTable(), CTC_VOID)), List.<JCTypeParameter>nil(), List.<JCVariableDecl>nil(), List.<JCExpression>nil(), body, null);
+		recursiveSetGeneratedBy(method, source, type.getContext());
+		return method;
 		/*
 		 * 		if (shouldReturnThis) {
 			methodType = cloneSelfType(field);
@@ -658,6 +666,8 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			if (child.getKind() == Kind.FIELD) existing.add(child);
 		}
 		
+		java.util.List<JCVariableDecl> generated = new ArrayList<JCVariableDecl>();
+		
 		for (int i = len - 1; i >= 0; i--) {
 			BuilderFieldData bfd = builderFields.get(i);
 			if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
@@ -674,15 +684,18 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 					JCModifiers mods = maker.Modifiers(Flags.PRIVATE);
 					JCVariableDecl newField = maker.VarDef(mods, bfd.name, cloneType(maker, bfd.type, source, builderType.getContext()), null);
 					field = injectFieldAndMarkGenerated(builderType, newField);
+					generated.add(newField);
 				}
 				if (setFlag == null && bfd.nameOfSetFlag != null) {
 					JCModifiers mods = maker.Modifiers(Flags.PRIVATE);
 					JCVariableDecl newField = maker.VarDef(mods, bfd.nameOfSetFlag, maker.TypeIdent(CTC_BOOLEAN), null);
 					injectFieldAndMarkGenerated(builderType, newField);
+					generated.add(newField);
 				}
 				bfd.createdFields.add(field);
 			}
 		}
+		for (JCVariableDecl gen : generated)  recursiveSetGeneratedBy(gen, source, builderType.getContext());
 	}
 	
 	public void makeSetterMethodsForBuilder(JavacNode builderType, BuilderFieldData fieldNode, JavacNode source, boolean fluent, boolean chain) {
@@ -709,7 +722,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
 		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, nameOfSetFlag, chain, source, List.<JCAnnotation>nil(), annosOnParam);
-		
+		recursiveSetGeneratedBy(newMethod, source.get(), builderType.getContext());
 		injectMethod(builderType, newMethod);
 	}
 	

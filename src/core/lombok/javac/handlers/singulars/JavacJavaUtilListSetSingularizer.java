@@ -107,6 +107,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		JCBlock body = maker.Block(0, statements);
 		Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
 		JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, params, thrown, body, null);
+		recursiveSetGeneratedBy(method, source, builderType.getContext());
 		injectMethod(builderType, method);
 	}
 	
@@ -130,6 +131,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		JCModifiers paramMods = typeUseAnns.isEmpty() ? maker.Modifiers(paramFlags) : maker.Modifiers(paramFlags, typeUseAnns);
 		JCVariableDecl param = maker.VarDef(paramMods, data.getSingularName(), paramType, null);
 		JCMethodDecl method = maker.MethodDef(mods, name, returnType, typeParams, List.of(param), thrown, body, null);
+		recursiveSetGeneratedBy(method, source, builderType.getContext());
 		injectMethod(builderType, method);
 	}
 	
@@ -151,6 +153,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		paramType = addTypeArgs(1, true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
 		JCMethodDecl method = maker.MethodDef(mods, name, returnType, typeParams, List.of(param), thrown, body, null);
+		recursiveSetGeneratedBy(method, source, builderType.getContext());
 		injectMethod(builderType, method);
 	}
 }

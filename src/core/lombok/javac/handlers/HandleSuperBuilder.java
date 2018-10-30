@@ -227,11 +227,13 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		JavacNode builderType = findInnerClass(tdParent, builderClassName);
 		if (builderType == null) {
 			builderType = generateBuilderAbstractClass(annotationNode, tdParent, builderClassName, superclassBuilderClassExpression,
-					typeParams, superclassTypeParams, classGenericName, builderGenericName);
+				typeParams, superclassTypeParams, classGenericName, builderGenericName);
+			recursiveSetGeneratedBy(builderType.get(), ast, annotationNode.getContext());
 		} else {
 			JCClassDecl builderTypeDeclaration = (JCClassDecl) builderType.get();
 			if (!builderTypeDeclaration.getModifiers().getFlags().contains(Modifier.STATIC)
-					|| !builderTypeDeclaration.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
+				|| !builderTypeDeclaration.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
+				
 				annotationNode.addError("Existing Builder must be an abstract static inner class.");
 				return;
 			}
@@ -253,19 +255,28 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		if (addCleaning) {
 			JavacTreeMaker maker = builderType.getTreeMaker();
 			JCVariableDecl uncleanField = maker.VarDef(maker.Modifiers(Flags.PRIVATE), builderType.toName("$lombokUnclean"), maker.TypeIdent(CTC_BOOLEAN), null);
+			recursiveSetGeneratedBy(uncleanField, ast, annotationNode.getContext());
 			injectFieldAndMarkGenerated(builderType, uncleanField);
 		}
 		
 		if (toBuilder) {
 			// Generate $fillValuesFrom() method in the abstract builder.
-			injectMethod(builderType, generateFillValuesMethod(tdParent, superclassBuilderClassExpression != null, builderGenericName, classGenericName, builderClassName));
+			JCMethodDecl fvm = generateFillValuesMethod(tdParent, superclassBuilderClassExpression != null, builderGenericName, classGenericName, builderClassName);
+			recursiveSetGeneratedBy(fvm, ast, annotationNode.getContext());
+			injectMethod(builderType, fvm);
 			// Generate $fillValuesFromInstanceIntoBuilder() method in the builder implementation class.
-			injectMethod(builderType, generateStaticFillValuesMethod(tdParent, builderClassName, typeParams, builderFields));
+			JCMethodDecl sfvm = generateStaticFillValuesMethod(tdParent, builderClassName, typeParams, builderFields);
+			recursiveSetGeneratedBy(sfvm, ast, annotationNode.getContext());
+			injectMethod(builderType, sfvm);
 		}
-
+		
 		// Generate abstract self() and build() methods in the abstract builder.
-		injectMethod(builderType, generateAbstractSelfMethod(tdParent, superclassBuilderClassExpression != null, builderGenericName));
-		injectMethod(builderType, generateAbstractBuildMethod(tdParent, buildMethodName, superclassBuilderClassExpression != null, classGenericName));
+		JCMethodDecl asm = generateAbstractSelfMethod(tdParent, superclassBuilderClassExpression != null, builderGenericName);
+		recursiveSetGeneratedBy(asm, ast, annotationNode.getContext());
+		injectMethod(builderType, asm);
+		JCMethodDecl abm = generateAbstractBuildMethod(tdParent, buildMethodName, superclassBuilderClassExpression != null, classGenericName);
+		recursiveSetGeneratedBy(abm, ast, annotationNode.getContext());
+		injectMethod(builderType, abm);
 		
 		// Create the setter methods in the abstract builder.
 		for (BuilderFieldData bfd : builderFields) {
@@ -285,9 +296,11 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		if (toStringMethod != null) injectMethod(builderType, toStringMethod);
 		
 		// If clean methods are requested, add them now.
-		if (addCleaning) injectMethod(builderType, generateCleanMethod(builderFields, builderType, ast));
-		
-		recursiveSetGeneratedBy(builderType.get(), ast, annotationNode.getContext());
+		if (addCleaning) {
+			JCMethodDecl md = generateCleanMethod(builderFields, builderType, ast);
+			recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
+			injectMethod(builderType, md);
+		}
 		
 		boolean isAbstract = (td.mods.flags & Flags.ABSTRACT) != 0;
 		if (!isAbstract) {
@@ -297,6 +310,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			JavacNode builderImplType = findInnerClass(tdParent, builderImplClassName);
 			if (builderImplType == null) {
 				builderImplType = generateBuilderImplClass(annotationNode, tdParent, builderImplClassName, builderClassName, typeParams);
+				recursiveSetGeneratedBy(builderImplType.get(), ast, annotationNode.getContext());
 			} else {
 				JCClassDecl builderImplTypeDeclaration = (JCClassDecl) builderImplType.get();
 				if (!builderImplTypeDeclaration.getModifiers().getFlags().contains(Modifier.STATIC)
@@ -312,17 +326,19 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			if (cd != null) injectMethod(builderImplType, cd);
 			
 			// Create the self() and build() methods in the BuilderImpl.
-			injectMethod(builderImplType, generateSelfMethod(builderImplType, typeParams));
+			JCMethodDecl selfMethod = generateSelfMethod(builderImplType, typeParams);
+			recursiveSetGeneratedBy(selfMethod, ast, annotationNode.getContext());
+			injectMethod(builderImplType, selfMethod);
 			if (methodExists(buildMethodName, builderImplType, -1) == MemberExistsResult.NOT_EXISTS) {
-				injectMethod(builderImplType, generateBuildMethod(buildMethodName, tdParent, builderImplType, thrownExceptions));
+				JCMethodDecl buildMethod = generateBuildMethod(buildMethodName, tdParent, builderImplType, thrownExceptions);
+				recursiveSetGeneratedBy(buildMethod, ast, annotationNode.getContext());
+				injectMethod(builderImplType, buildMethod);
 			}
-			
-			recursiveSetGeneratedBy(builderImplType.get(), ast, annotationNode.getContext());
 		}
 		
 		// Generate a constructor in the annotated class that takes a builder as argument.
 		generateBuilderBasedConstructor(tdParent, typeParams, builderFields, annotationNode, builderClassName,
-				superclassBuilderClassExpression != null);
+			superclassBuilderClassExpression != null);
 		
 		if (isAbstract) {
 			// Only non-abstract classes get the builder() and toBuilder() methods.
@@ -346,6 +362,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			case NOT_EXISTS:
 				JCMethodDecl md = generateToBuilderMethod(builderClassName, builderImplClassName, annotationNode, tdParent, typeParams);
 				if (md != null) {
+					recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
 					injectMethod(tdParent, md);
 				}
 			default:
@@ -358,8 +375,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 	 * Creates and returns the abstract builder class and injects it into the annotated class.
 	 */
 	private JavacNode generateBuilderAbstractClass(JavacNode source, JavacNode tdParent, String builderClass,
-			JCExpression superclassBuilderClassExpression, List<JCTypeParameter> typeParams,
-			List<JCExpression> superclassTypeParams, String classGenericName, String builderGenericName) {
+		JCExpression superclassBuilderClassExpression, List<JCTypeParameter> typeParams,
+		List<JCExpression> superclassTypeParams, String classGenericName, String builderGenericName) {
 		
 		JavacTreeMaker maker = tdParent.getTreeMaker();
 		JCModifiers mods = maker.Modifiers(Flags.STATIC | Flags.ABSTRACT | Flags.PUBLIC);
@@ -603,21 +620,21 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		if (inherited) {
 			// Call super.
 			JCMethodInvocation callToSuper = maker.Apply(List.<JCExpression>nil(),
-					maker.Select(maker.Ident(type.toName("super")), name),
-					List.<JCExpression>of(maker.Ident(type.toName(INSTANCE_VARIABLE_NAME))));
+				maker.Select(maker.Ident(type.toName("super")), name),
+				List.<JCExpression>of(maker.Ident(type.toName(INSTANCE_VARIABLE_NAME))));
 			body.append(maker.Exec(callToSuper));
 		}
 		
 		// Call the builder implemention's helper method that actually fills the values from the instance.
 		JCMethodInvocation callStaticFillValuesMethod = maker.Apply(List.<JCExpression>nil(),
-						maker.Select(maker.Ident(type.toName(builderImplClassName)), type.toName(STATIC_FILL_VALUES_METHOD_NAME)),
-						List.<JCExpression>of(maker.Ident(type.toName(INSTANCE_VARIABLE_NAME)), maker.Ident(type.toName("this"))));
+			maker.Select(maker.Ident(type.toName(builderImplClassName)), type.toName(STATIC_FILL_VALUES_METHOD_NAME)),
+			List.<JCExpression>of(maker.Ident(type.toName(INSTANCE_VARIABLE_NAME)), maker.Ident(type.toName("this"))));
 		body.append(maker.Exec(callStaticFillValuesMethod));
 		
 		JCReturn returnStatement = maker.Return(maker.Apply(List.<JCExpression>nil(), maker.Ident(type.toName(SELF_METHOD)), List.<JCExpression>nil()));
 		body.append(returnStatement);
 		JCBlock bodyBlock = maker.Block(0, body.toList());
-
+		
 		return maker.MethodDef(modifiers, name, returnType, List.<JCTypeParameter>nil(), List.of(param), List.<JCExpression>nil(), bodyBlock, null);
 	}
 
@@ -782,6 +799,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			if (child.getKind() == Kind.FIELD) existing.add(child);
 		}
 		
+		java.util.List<JCVariableDecl> generated = new ArrayList<JCVariableDecl>();
+		
 		for (int i = len - 1; i >= 0; i--) {
 			BuilderFieldData bfd = builderFields.get(i);
 			if (bfd.singularData != null && bfd.singularData.getSingularizer() != null) {
@@ -798,15 +817,18 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 					JCModifiers mods = maker.Modifiers(Flags.PRIVATE);
 					JCVariableDecl newField = maker.VarDef(mods, bfd.name, cloneType(maker, bfd.type, source, builderType.getContext()), null);
 					field = injectFieldAndMarkGenerated(builderType, newField);
+					generated.add(newField);
 				}
 				if (setFlag == null && bfd.nameOfSetFlag != null) {
 					JCModifiers mods = maker.Modifiers(Flags.PRIVATE);
 					JCVariableDecl newField = maker.VarDef(mods, bfd.nameOfSetFlag, maker.TypeIdent(CTC_BOOLEAN), null);
 					injectFieldAndMarkGenerated(builderType, newField);
+					generated.add(newField);
 				}
 				bfd.createdFields.add(field);
 			}
 		}
+		for (JCVariableDecl gen : generated)  recursiveSetGeneratedBy(gen, source, builderType.getContext());
 	}
 	
 	private void generateSetterMethodsForBuilder(final JavacNode builderType, BuilderFieldData fieldNode, JavacNode source, final String builderGenericName) {

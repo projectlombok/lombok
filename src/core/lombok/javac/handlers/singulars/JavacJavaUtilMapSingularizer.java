@@ -136,6 +136,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCBlock body = maker.Block(0, statements);
 		Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
 		JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, params, thrown, body, null);
+		recursiveSetGeneratedBy(method, source, builderType.getContext());
 		injectMethod(builderType, method);
 	}
 	
@@ -175,6 +176,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCVariableDecl paramKey = maker.VarDef(paramModsKey, keyName, paramTypeKey, null);
 		JCVariableDecl paramValue = maker.VarDef(paramModsValue, valueName, paramTypeValue, null);
 		JCMethodDecl method = maker.MethodDef(mods, name, returnType, typeParams, List.of(paramKey, paramValue), thrown, body, null);
+		recursiveSetGeneratedBy(method, source, builderType.getContext());
 		injectMethod(builderType, method);
 	}
 
@@ -207,6 +209,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		paramType = addTypeArgs(2, true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
 		JCMethodDecl method = maker.MethodDef(mods, name, returnType, typeParams, List.of(param), jceBlank, body, null);
+		recursiveSetGeneratedBy(method, source, builderType.getContext());
 		injectMethod(builderType, method);
 	}
 	
