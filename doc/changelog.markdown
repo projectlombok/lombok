@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.18.3 "Edgy Guinea Pig"
+### v1.18.4 (October 30th, 2018)
 * PLATFORM: Support for Eclipse Photon. [Issue #1831](https://github.com/rzwitserloot/lombok/issues/1831)
 * PLATFORM: Angular IDE is now recognized by the installer [Issue #1830](https://github.com/rzwitserloot/lombok/issues/1830)
 * PLATFORM: Many improvements for lombok's JDK10/11 support.
