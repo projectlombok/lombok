@@ -139,8 +139,12 @@ public class HandleFieldNameConstants extends JavacAnnotationHandler<FieldNameCo
 		} else {
 			JCClassDecl builderTypeDeclaration = (JCClassDecl) fieldsType.get();
 			long f = builderTypeDeclaration.getModifiers().flags;
-			if ((f & (Flags.STATIC | Flags.ENUM)) == 0) {
-				errorNode.addError("Existing " + innerTypeName + " must be declared as an 'enum' or a 'static class'.");
+			if (asEnum && (f & Flags.ENUM) == 0) {
+				errorNode.addError("Existing " + innerTypeName + " must be declared as an 'enum'.");
+				return;
+			}
+			if (!asEnum && (f & Flags.STATIC) == 0) {
+				errorNode.addError("Existing " + innerTypeName + " must be declared as a 'static class'.");
 				return;
 			}
 			genConstr = constructorExists(fieldsType) == MemberExistsResult.NOT_EXISTS;

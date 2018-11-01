@@ -132,8 +132,12 @@ public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldName
 			genClinit = asEnum;
 		} else {
 			TypeDeclaration builderTypeDeclaration = (TypeDeclaration) fieldsType.get();
-			if ((builderTypeDeclaration.modifiers & (ClassFileConstants.AccEnum | ClassFileConstants.AccStatic)) == 0) {
-				errorNode.addError("Existing " + innerTypeName + " must be declared as an 'enum' or a 'static class'.");
+			if (asEnum && (builderTypeDeclaration.modifiers & ClassFileConstants.AccEnum) == 0) {
+				errorNode.addError("Existing " + innerTypeName + " must be declared as an 'enum'.");
+				return;
+			}
+			if (!asEnum && (builderTypeDeclaration.modifiers & ClassFileConstants.AccStatic) == 0) {
+				errorNode.addError("Existing " + innerTypeName + " must be declared as a 'static class'.");
 				return;
 			}
 			genConstr = constructorExists(fieldsType) == MemberExistsResult.NOT_EXISTS;
