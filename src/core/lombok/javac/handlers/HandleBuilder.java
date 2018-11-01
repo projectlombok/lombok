@@ -726,15 +726,6 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		injectMethod(builderType, newMethod);
 	}
 	
-	public JavacNode findInnerClass(JavacNode parent, String name) {
-		for (JavacNode child : parent.down()) {
-			if (child.getKind() != Kind.TYPE) continue;
-			JCClassDecl td = (JCClassDecl) child.get();
-			if (td.name.contentEquals(name)) return child;
-		}
-		return null;
-	}
-	
 	public JavacNode makeBuilderClass(boolean isStatic, JavacNode source, JavacNode tdParent, String builderClassName, List<JCTypeParameter> typeParams, JCAnnotation ast) {
 		JavacTreeMaker maker = tdParent.getTreeMaker();
 		int modifiers = Flags.PUBLIC;

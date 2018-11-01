@@ -224,6 +224,15 @@ public class JavacHandlerUtil {
 		}
 	}
 	
+	public static JavacNode findInnerClass(JavacNode parent, String name) {
+		for (JavacNode child : parent.down()) {
+			if (child.getKind() != Kind.TYPE) continue;
+			JCClassDecl td = (JCClassDecl) child.get();
+			if (td.name.contentEquals(name)) return child;
+		}
+		return null;
+	}
+	
 	public static JavacNode findAnnotation(Class<? extends Annotation> type, JavacNode node) {
 		return findAnnotation(type, node, false);
 	}
@@ -1001,7 +1010,11 @@ public class JavacHandlerUtil {
 		return injectField(typeNode, field, false);
 	}
 
-	private static JavacNode injectField(JavacNode typeNode, JCVariableDecl field, boolean addGenerated) {
+	public static JavacNode injectField(JavacNode typeNode, JCVariableDecl field, boolean addGenerated) {
+		return injectField(typeNode, field, addGenerated, false);
+	}
+	
+	public static JavacNode injectField(JavacNode typeNode, JCVariableDecl field, boolean addGenerated, boolean specialEnumHandling) {
 		JCClassDecl type = (JCClassDecl) typeNode.get();
 		
 		if (addGenerated) {
@@ -1015,7 +1028,7 @@ public class JavacHandlerUtil {
 			boolean skip = false;
 			if (insertBefore.head instanceof JCVariableDecl) {
 				JCVariableDecl f = (JCVariableDecl) insertBefore.head;
-				if (isEnumConstant(f) || isGenerated(f)) skip = true;
+				if ((!specialEnumHandling && isEnumConstant(f)) || isGenerated(f)) skip = true;
 			} else if (insertBefore.head instanceof JCMethodDecl) {
 				if ((((JCMethodDecl) insertBefore.head).mods.flags & GENERATEDCONSTR) != 0) skip = true;
 			}

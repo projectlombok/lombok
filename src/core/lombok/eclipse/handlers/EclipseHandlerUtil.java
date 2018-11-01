@@ -672,6 +672,16 @@ public class EclipseHandlerUtil {
 		}
 	}
 	
+	public static EclipseNode findInnerClass(EclipseNode parent, String name) {
+		char[] c = name.toCharArray();
+		for (EclipseNode child : parent.down()) {
+			if (child.getKind() != Kind.TYPE) continue;
+			TypeDeclaration td = (TypeDeclaration) child.get();
+			if (Arrays.equals(td.name, c)) return child;
+		}
+		return null;
+	}
+	
 	public static EclipseNode findAnnotation(Class<? extends java.lang.annotation.Annotation> type, EclipseNode node) {
 		if (node == null) return null;
 		if (type == null) return null;

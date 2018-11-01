@@ -802,16 +802,6 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		injectMethod(builderType, setter);
 	}
 	
-	public EclipseNode findInnerClass(EclipseNode parent, String name) {
-		char[] c = name.toCharArray();
-		for (EclipseNode child : parent.down()) {
-			if (child.getKind() != Kind.TYPE) continue;
-			TypeDeclaration td = (TypeDeclaration) child.get();
-			if (Arrays.equals(td.name, c)) return child;
-		}
-		return null;
-	}
-	
 	public EclipseNode makeBuilderClass(boolean isStatic, EclipseNode tdParent, String builderClassName, TypeParameter[] typeParams, ASTNode source) {
 		TypeDeclaration parent = (TypeDeclaration) tdParent.get();
 		TypeDeclaration builder = new TypeDeclaration(parent.compilationResult);

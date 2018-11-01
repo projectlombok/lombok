@@ -48,7 +48,6 @@ import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.StringLiteral;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
-import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.mangosdk.spi.ProviderFor;
 
@@ -75,7 +74,7 @@ public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldName
 		if (qualified.isEmpty()) {
 			errorNode.addWarning("No fields qualify for @FieldNameConstants, therefore this annotation does nothing");
 		} else {
-			createInnerTypeFieldNameConstants(typeNode, errorNode.get(), level, qualified, asEnum, innerTypeName);
+			createInnerTypeFieldNameConstants(typeNode, errorNode, errorNode.get(), level, qualified, asEnum, innerTypeName);
 		}
 	}
 	
@@ -115,53 +114,72 @@ public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldName
 		generateFieldNameConstantsForType(node, annotationNode, level, asEnum, innerTypeName, annotationInstance.onlyExplicitlyIncluded());
 	}
 	
-	private void createInnerTypeFieldNameConstants(EclipseNode typeNode, ASTNode source, AccessLevel level, List<EclipseNode> fields, boolean asEnum, String innerTypeName) {
+	private void createInnerTypeFieldNameConstants(EclipseNode typeNode, EclipseNode errorNode, ASTNode source, AccessLevel level, List<EclipseNode> fields, boolean asEnum, String innerTypeName) {
 		if (fields.isEmpty()) return;
 		
 		TypeDeclaration parent = (TypeDeclaration) typeNode.get();
-		TypeDeclaration innerType = new TypeDeclaration(parent.compilationResult);
-		innerType.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
-		innerType.modifiers = toEclipseModifier(level) | (asEnum ? ClassFileConstants.AccEnum : ClassFileConstants.AccStatic | ClassFileConstants.AccFinal);
+		EclipseNode fieldsType = findInnerClass(typeNode, innerTypeName);
+		boolean genConstr = false, genClinit = false;
 		char[] name = innerTypeName.toCharArray();
-		innerType.name = name;
-		innerType.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
-		EclipseNode innerNode = injectType(typeNode, innerType);
+		TypeDeclaration generatedInnerType = null;
+		if (fieldsType == null) {
+			generatedInnerType = new TypeDeclaration(parent.compilationResult);
+			generatedInnerType.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
+			generatedInnerType.modifiers = toEclipseModifier(level) | (asEnum ? ClassFileConstants.AccEnum : ClassFileConstants.AccStatic | ClassFileConstants.AccFinal);
+			generatedInnerType.name = name;
+			fieldsType = injectType(typeNode, generatedInnerType);
+			genConstr = true;
+			genClinit = asEnum;
+		} else {
+			TypeDeclaration builderTypeDeclaration = (TypeDeclaration) fieldsType.get();
+			if ((builderTypeDeclaration.modifiers & (ClassFileConstants.AccEnum | ClassFileConstants.AccStatic)) == 0) {
+				errorNode.addError("Existing " + innerTypeName + " must be declared as an 'enum' or a 'static class'.");
+				return;
+			}
+			genConstr = constructorExists(fieldsType) == MemberExistsResult.NOT_EXISTS;
+		}
 		
-		ConstructorDeclaration constructor = new ConstructorDeclaration(parent.compilationResult);
-		constructor.selector = name;
-		constructor.declarationSourceStart = constructor.sourceStart = source.sourceStart;
-		constructor.declarationSourceEnd = constructor.sourceEnd = source.sourceEnd;
-		constructor.modifiers = ClassFileConstants.AccPrivate;
-		ExplicitConstructorCall superCall = new ExplicitConstructorCall(0);
-		superCall.sourceStart = source.sourceStart;
-		superCall.sourceEnd = source.sourceEnd;
-		superCall.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
-		constructor.constructorCall = superCall;
-		if (!asEnum) constructor.statements = new Statement[0];
-		
-		injectMethod(innerNode, constructor);
-		
-		if (asEnum) injectMethod(innerNode, new Clinit(parent.compilationResult));
+		if (genConstr) {
+			ConstructorDeclaration constructor = new ConstructorDeclaration(parent.compilationResult);
+			constructor.selector = name;
+			constructor.declarationSourceStart = constructor.sourceStart = source.sourceStart;
+			constructor.declarationSourceEnd = constructor.sourceEnd = source.sourceEnd;
+			constructor.modifiers = ClassFileConstants.AccPrivate;
+			ExplicitConstructorCall superCall = new ExplicitConstructorCall(0);
+			superCall.sourceStart = source.sourceStart;
+			superCall.sourceEnd = source.sourceEnd;
+			superCall.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
+			constructor.constructorCall = superCall;
+			if (!asEnum) constructor.statements = new Statement[0];
+			injectMethod(fieldsType, constructor);
+		}
+		if (genClinit) {
+			Clinit cli = new Clinit(parent.compilationResult);
+			injectMethod(fieldsType, cli);
+		}
+
 		
 		for (EclipseNode fieldNode : fields) {
 			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
 			char[] fName = field.name;
+			if (fieldExists(new String(fName), fieldsType) != MemberExistsResult.NOT_EXISTS) continue;
 			int pS = source.sourceStart, pE = source.sourceEnd;
 			long p = (long) pS << 32 | pE;
-			FieldDeclaration fieldConstant = new FieldDeclaration(fName, pS, pE);
-			fieldConstant.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
-			fieldConstant.modifiers = asEnum ? 0 : ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal;
-			fieldConstant.type = asEnum ? null : new QualifiedTypeReference(TypeConstants.JAVA_LANG_STRING, new long[] {p, p, p});
+			FieldDeclaration constantField = new FieldDeclaration(fName, pS, pE);
+			constantField.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
+			constantField.modifiers = asEnum ? 0 : ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal;
+			constantField.type = asEnum ? null : new QualifiedTypeReference(TypeConstants.JAVA_LANG_STRING, new long[] {p, p, p});
 			if (asEnum) {
 				AllocationExpression ac = new AllocationExpression();
-				ac.enumConstant = fieldConstant;
+				ac.enumConstant = constantField;
 				ac.sourceStart = source.sourceStart;
 				ac.sourceEnd = source.sourceEnd;
-				fieldConstant.initialization = ac;
+				constantField.initialization = ac;
 			} else {
-				fieldConstant.initialization = new StringLiteral(field.name, pS, pE, 0);
+				constantField.initialization = new StringLiteral(field.name, pS, pE, 0);
 			}
-			injectField(innerNode, fieldConstant);
+			constantField.traverse(new SetGeneratedByVisitor(source), null);
+			injectField(fieldsType, constantField);
 		}
 	}
 }
