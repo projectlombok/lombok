@@ -29,9 +29,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Lombok;
-import lombok.permit.Permit;
-
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Location;
 import org.apache.tools.ant.Task;
@@ -177,14 +174,16 @@ class Tasks {
 					} catch (ClassNotFoundException e) {
 						// If we get here, it isn't, and we should use the shadowloader.
 						Class<?> launcherMain = Class.forName("lombok.launch.Main");
-						Method m = Permit.getMethod(launcherMain, "createShadowClassLoader");
+						Method m = launcherMain.getDeclaredMethod("getShadowClassLoader");
+						m.setAccessible(true);
 						shadowLoader = (ClassLoader) m.invoke(null);
 					}
 				}
 				
 				return Class.forName(name, true, shadowLoader);
 			} catch (Exception e) {
-				throw Lombok.sneakyThrow(e);
+				if (e instanceof RuntimeException) throw (RuntimeException) e;
+				throw new RuntimeException(e);
 			}
 		}
 		
@@ -195,9 +194,9 @@ class Tasks {
 			try {
 				Object instance = shadowLoadClass("lombok.delombok.ant.DelombokTaskImpl").newInstance();
 				for (Field selfField : getClass().getDeclaredFields()) {
-					Permit.setAccessible(selfField);
 					if (selfField.isSynthetic() || Modifier.isStatic(selfField.getModifiers())) continue;
-					Field otherField = Permit.getField(instance.getClass(), selfField.getName());
+					Field otherField = instance.getClass().getDeclaredField(selfField.getName());
+					otherField.setAccessible(true);
 					if (selfField.getName().equals("formatOptions")) {
 						List<String> rep = new ArrayList<String>();
 						for (Format f : formatOptions) {
@@ -210,12 +209,13 @@ class Tasks {
 					}
 				}
 				
-				Method m = Permit.getMethod(instance.getClass(), "execute", Location.class);
+				Method m = instance.getClass().getMethod("execute", Location.class);
 				m.invoke(instance, loc);
-			} catch (InvocationTargetException e) {
-				throw Lombok.sneakyThrow(e.getCause());
 			} catch (Exception e) {
-				throw Lombok.sneakyThrow(e);
+				Throwable t = (e instanceof InvocationTargetException) ? ((InvocationTargetException) e).getCause() : e;
+				if (t instanceof Error) throw (Error) t;
+				if (t instanceof RuntimeException) throw (RuntimeException) t;
+				throw new RuntimeException(t);
 			}
 		}
 	}

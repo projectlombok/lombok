@@ -25,9 +25,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 
 class Main {
-	
 	private static ShadowClassLoader classLoader;
-
+	
 	static synchronized ClassLoader getShadowClassLoader() {
 		if (classLoader == null) {
 			classLoader = new ShadowClassLoader(Main.class.getClassLoader(), "lombok", null, Arrays.<String>asList(), Arrays.asList("lombok.patcher.Symbols"));

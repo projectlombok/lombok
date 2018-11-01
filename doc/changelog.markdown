@@ -2,7 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.5 "Edgy Guinea Pig"
-* Edge currently has no new features.
+* BUGFIX: Since version 1.18.4, the delombok ant task didn't work and errored with a `NoClassDefFoundError`. [Issue #1932](https://github.com/rzwitserloot/lombok/issues/1932)
 
 ### v1.18.4 (October 30th, 2018)
 * PLATFORM: Support for Eclipse Photon. [Issue #1831](https://github.com/rzwitserloot/lombok/issues/1831)
