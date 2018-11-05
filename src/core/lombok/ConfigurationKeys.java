@@ -214,7 +214,7 @@ public class ConfigurationKeys {
 	 * 
 	 * For any class with an {@code @EqualsAndHashCode} annotation which extends a class other than {@code java.lang.Object}, should a call to superclass's implementation of {@code equals} and {@code hashCode} be included in the generated methods? (Default = warn)
 	 */
-	public static final ConfigurationKey<CallSuperType> EQUALS_AND_HASH_CODE_CALL_SUPER = new ConfigurationKey<CallSuperType>("lombok.equalsAndHashCode.callSuper", "When generating equals and hashCode for classes that don't extend Object, either automatically take into account superclass implementation (call), or don't (skip), or warn and don't (warn). (default = warn).") {};
+	public static final ConfigurationKey<CallSuperType> EQUALS_AND_HASH_CODE_CALL_SUPER = new ConfigurationKey<CallSuperType>("lombok.equalsAndHashCode.callSuper", "When generating equals and hashCode for classes that extend something (other than Object), either automatically take into account superclass implementation (call), or don't (skip), or warn and don't (warn). (default = warn).") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.equalsAndHashCode.flagUsage} = {@code WARNING} | {@code ERROR}.
@@ -231,6 +231,13 @@ public class ConfigurationKeys {
 	 * For any class without an {@code @ToString} that explicitly defines the {@code doNotUseGetters} option, this value is used  (default = false).
 	 */
 	public static final ConfigurationKey<Boolean> TO_STRING_DO_NOT_USE_GETTERS = new ConfigurationKey<Boolean>("lombok.toString.doNotUseGetters", "Don't call the getters but use the fields directly in the generated toString method (default = false).") {};
+	
+	/**
+	 * lombok configuration: {@code lombok.toString.callSuper} = {@code call} | {@code ignore} | {@code warn}.
+	 * 
+	 * For any class with an {@code @ToString} annotation which extends a class other than {@code java.lang.Object}, should a call to superclass's implementation of {@code toString} be included in the generated method? (Default = skip)
+	 */
+	public static final ConfigurationKey<CallSuperType> TO_STRING_CALL_SUPER = new ConfigurationKey<CallSuperType>("lombok.toString.callSuper", "When generating toString for classes that extend something (other than Object), either automatically take into account superclass implementation (call), or don't (skip), or warn and don't (warn). (default = warn).") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.toString.flagUsage} = {@code WARNING} | {@code ERROR}.

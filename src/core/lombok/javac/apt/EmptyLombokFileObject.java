@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 The Project Lombok Authors.
+ * Copyright (C) 2010-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,8 +52,7 @@ class EmptyLombokFileObject implements LombokFileObject {
 	@Override public boolean isNameCompatible(String simpleName, Kind kind) {
 		String baseName = simpleName + kind.extension;
 		return kind.equals(getKind())
-		&& (baseName.equals(toUri().getPath())
-				|| toUri().getPath().endsWith("/" + baseName));
+		&& (baseName.equals(toUri().getPath()) || toUri().getPath().endsWith("/" + baseName));
 	}
 	
 	@Override public URI toUri() {
@@ -112,12 +111,8 @@ class EmptyLombokFileObject implements LombokFileObject {
 	}
 	
 	@Override public boolean equals(Object obj) {
-		if (!(obj instanceof EmptyLombokFileObject)) {
-			return false;
-		}
-		if (obj == this) {
-			return true;
-		}
+		if (!(obj instanceof EmptyLombokFileObject)) return false;
+		if (obj == this) return true;
 		EmptyLombokFileObject other = (EmptyLombokFileObject) obj;
 		return name.equals(other.name) && kind.equals(other.kind);
 	}

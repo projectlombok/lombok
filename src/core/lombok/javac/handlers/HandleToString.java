@@ -30,6 +30,7 @@ import java.util.Collection;
 import lombok.ConfigurationKeys;
 import lombok.ToString;
 import lombok.core.AnnotationValues;
+import lombok.core.configuration.CallSuperType;
 import lombok.core.AST.Kind;
 import lombok.core.handlers.InclusionExclusionUtils;
 import lombok.core.handlers.InclusionExclusionUtils.Included;
@@ -111,12 +112,6 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 			notAClass = (flags & (Flags.INTERFACE | Flags.ANNOTATION)) != 0;
 		}
 		
-		if (callSuper == null) {
-			try {
-				callSuper = ((Boolean) ToString.class.getMethod("callSuper").getDefaultValue()).booleanValue();
-			} catch (Exception ignore) {}
-		}
-		
 		if (notAClass) {
 			source.addError("@ToString is only supported on a class or enum.");
 			return;
@@ -124,6 +119,27 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		
 		switch (methodExists("toString", typeNode, 0)) {
 		case NOT_EXISTS:
+			if (callSuper == null) {
+				if (isDirectDescendantOfObject(typeNode)) {
+					callSuper = false;
+				} else {
+					CallSuperType cst = typeNode.getAst().readConfiguration(ConfigurationKeys.TO_STRING_CALL_SUPER);
+					if (cst == null) cst = CallSuperType.SKIP;
+					switch (cst) {
+					default:
+					case SKIP:
+						callSuper = false;
+						break;
+					case WARN:
+						source.addWarning("Generating toString implementation but without a call to superclass, even though this class does not extend java.lang.Object. If this is intentional, add '@ToString(callSuper=false)' to your type.");
+						callSuper = false;
+						break;
+					case CALL:
+						callSuper = true;
+						break;
+					}
+				}
+			}
 			JCMethodDecl method = createToString(typeNode, members, includeFieldNames, callSuper, fieldAccess, source.get());
 			injectMethod(typeNode, method);
 			break;

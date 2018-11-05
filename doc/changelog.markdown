@@ -4,6 +4,8 @@ Lombok Changelog
 ### v1.18.5 "Edgy Guinea Pig"
 * BUGFIX: Since version 1.18.4, the delombok ant task didn't work and errored with a `NoClassDefFoundError`. [Issue #1932](https://github.com/rzwitserloot/lombok/issues/1932)
 * FEATURE: The `@FieldNameConstants` feature now allows you to write the inner type by hand and add whatever you like to it; lombok will add the constants to this class. See the updated [FieldNameConstants feature](https://projectlombok.org/features/experimental/FieldNameConstants) page.
+* FEATURE: There is now a `lombok.config` key to configure `@ToString`'s call super behavior; it's just like `@EqualsAndHashCode` which has had it for a while now. [Issue #1918](https://github.com/rzwitserloot/lombok/issues/1918)
+
 ### v1.18.4 (October 30th, 2018)
 * PLATFORM: Support for Eclipse Photon. [Issue #1831](https://github.com/rzwitserloot/lombok/issues/1831)
 * PLATFORM: Angular IDE is now recognized by the installer [Issue #1830](https://github.com/rzwitserloot/lombok/issues/1830)
