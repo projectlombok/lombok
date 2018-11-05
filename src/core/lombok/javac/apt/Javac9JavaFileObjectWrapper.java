@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 The Project Lombok Authors.
+ * Copyright (C) 2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,18 +28,14 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
 import java.net.URI;
-import java.nio.file.Path;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.NestingKind;
 
-import com.sun.tools.javac.file.BaseFileManager;
-
-class Javac9BaseFileObjectWrapper extends com.sun.tools.javac.file.PathFileObject {
+class Javac9JavaFileObjectWrapper implements javax.tools.JavaFileObject {
 	private final LombokFileObject delegate;
 	
-	public Javac9BaseFileObjectWrapper(BaseFileManager fileManager, Path path, LombokFileObject delegate) {
-		super(fileManager, path);
+	public Javac9JavaFileObjectWrapper(LombokFileObject delegate) {
 		this.delegate = delegate;
 	}
 	
@@ -97,8 +93,8 @@ class Javac9BaseFileObjectWrapper extends com.sun.tools.javac.file.PathFileObjec
 	}
 	
 	@Override public boolean equals(Object obj) {
-		if (!(obj instanceof Javac9BaseFileObjectWrapper)) return false;
-		return delegate.equals(((Javac9BaseFileObjectWrapper)obj).delegate);
+		if (!(obj instanceof Javac9JavaFileObjectWrapper)) return false;
+		return delegate.equals(((Javac9JavaFileObjectWrapper)obj).delegate);
 	}
 	
 	@Override public int hashCode() {
