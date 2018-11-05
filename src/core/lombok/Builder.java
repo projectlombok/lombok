@@ -35,6 +35,10 @@ import java.lang.annotation.Target;
  * then a private constructor is generated with all fields as arguments
  * (as if {@code @AllArgsConstructor(AccessLevel.PRIVATE)} is present
  * on the class), and it is as if this constructor has been annotated with {@code @Builder} instead.
+ * Note that this constructor is only generated if you haven't written any constructors and also haven't
+ * added any explicit {@code @XArgsConstructor} annotations. In those cases, lombok will assume an all-args
+ * constructor is present and generate code that uses it; this means you'd get a compiler error if this
+ * constructor is not present.
  * <p>
  * The effect of {@code @Builder} is that an inner class is generated named <code><strong>T</strong>Builder</code>,
  * with a private constructor. Instances of <code><strong>T</strong>Builder</code> are made with the
