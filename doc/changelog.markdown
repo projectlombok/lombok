@@ -6,6 +6,7 @@ Lombok Changelog
 * FEATURE: The `@FieldNameConstants` feature now allows you to write the inner type by hand and add whatever you like to it; lombok will add the constants to this class. See the updated [FieldNameConstants feature](https://projectlombok.org/features/experimental/FieldNameConstants) page.
 * FEATURE: There is now a `lombok.config` key to configure `@ToString`'s call super behavior; it's just like `@EqualsAndHashCode` which has had it for a while now. [Issue #1918](https://github.com/rzwitserloot/lombok/issues/1918)
 * ENHANCEMENT: The toString generation of enums now contains the name of the enum constant. [Issue #1916](https://github.com/rzwitserloot/lombok/issues/1916)
+* PLATFORM: Due to changes to switch statements in JDK12, lombok wasn't working with the JDK12 preview. [Issue #1888](https://github.com/rzwitserloot/lombok/issues/1888)
 
 ### v1.18.4 (October 30th, 2018)
 * PLATFORM: Support for Eclipse Photon. [Issue #1831](https://github.com/rzwitserloot/lombok/issues/1831)
