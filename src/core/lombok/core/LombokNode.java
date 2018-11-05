@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -279,6 +279,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	public abstract boolean isStatic();
 	public abstract boolean isTransient();
 	public abstract boolean isEnumMember();
+	public abstract boolean isEnumType();
 	
 	public abstract int countMethodParameters();
 	

@@ -8,7 +8,7 @@ public enum DataOnEnum {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public java.lang.String toString() {
-		return "DataOnEnum(someField=" + this.getSomeField() + ")";
+		return "DataOnEnum." + this.name() + "(someField=" + this.getSomeField() + ")";
 	}
 	@java.lang.SuppressWarnings("all")
 	private DataOnEnum(final String someField) {

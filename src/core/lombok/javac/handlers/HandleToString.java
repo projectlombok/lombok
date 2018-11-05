@@ -166,23 +166,34 @@ public class HandleToString extends JavacAnnotationHandler<ToString> {
 		boolean first = true;
 		
 		String typeName = getTypeName(typeNode);
+		boolean isEnum = typeNode.isEnumType();
+		
 		String infix = ", ";
 		String suffix = ")";
 		String prefix;
 		if (callSuper) {
-			prefix = typeName + "(super=";
+			prefix = "(super=";
 		} else if (members.isEmpty()) {
-			prefix = typeName + "()";
+			prefix = isEnum ? "" : "()";
 		} else if (includeNames) {
 			Included<JavacNode, ToString.Include> firstMember = members.iterator().next();
 			String name = firstMember.getInc() == null ? "" : firstMember.getInc().name();
 			if (name.isEmpty()) name = firstMember.getNode().getName();
-			prefix = typeName + "(" + name + "=";
+			prefix = "(" + name + "=";
 		} else {
-			prefix = typeName + "(";
+			prefix = "(";
 		}
 		
-		JCExpression current = maker.Literal(prefix);
+		JCExpression current;
+		if (!isEnum) { 
+			current = maker.Literal(typeName + prefix);
+		} else {
+			current = maker.Binary(CTC_PLUS, maker.Literal(typeName + "."), maker.Apply(List.<JCExpression>nil(),
+					maker.Select(maker.Ident(typeNode.toName("this")), typeNode.toName("name")),
+					List.<JCExpression>nil()));
+			if (!prefix.isEmpty()) current = maker.Binary(CTC_PLUS, current, maker.Literal(prefix));
+		}
+		
 		
 		if (callSuper) {
 			JCMethodInvocation callToSuper = maker.Apply(List.<JCExpression>nil(),

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -248,6 +248,11 @@ public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode,
 	@Override public boolean isEnumMember() {
 		if (getKind() != Kind.FIELD) return false;
 		return ((FieldDeclaration) node).getKind() == 3;
+	}
+	
+	@Override public boolean isEnumType() {
+		if (getKind() != Kind.TYPE) return false;
+		return (((TypeDeclaration) node).modifiers & ClassFileConstants.AccEnum) != 0;
 	}
 	
 	@Override public int countMethodParameters() {
