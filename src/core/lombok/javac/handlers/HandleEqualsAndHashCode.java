@@ -210,8 +210,10 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 		Name resultName = typeNode.toName(RESULT_NAME);
 		long finalFlag = JavacHandlerUtil.addFinalIfNeeded(0L, typeNode.getContext());
 		
+		boolean isEmpty = members.isEmpty();
+		
 		/* final int PRIME = X; */ {
-			if (!members.isEmpty()) {
+			if (!isEmpty) {
 				statements.append(maker.VarDef(maker.Modifiers(finalFlag), primeName, maker.TypeIdent(CTC_INT), maker.Literal(HandlerUtil.primeForHashcode())));
 			}
 		}
@@ -227,7 +229,7 @@ public class HandleEqualsAndHashCode extends JavacAnnotationHandler<EqualsAndHas
 				/* ... 1; */
 				init = maker.Literal(1);
 			}
-			statements.append(maker.VarDef(maker.Modifiers(0), resultName, maker.TypeIdent(CTC_INT), init));
+			statements.append(maker.VarDef(maker.Modifiers(isEmpty ? finalFlag : 0), resultName, maker.TypeIdent(CTC_INT), init));
 		}
 		
 		for (Included<JavacNode, EqualsAndHashCode.Include> member : members) {

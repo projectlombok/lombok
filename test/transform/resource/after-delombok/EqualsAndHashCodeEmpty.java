@@ -1,16 +1,16 @@
-class EqualsAndHashCodeConfigKeys1Parent {
+class EqualsAndHashCodeEmpty {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
-		if (!(o instanceof EqualsAndHashCodeConfigKeys1Parent)) return false;
-		final EqualsAndHashCodeConfigKeys1Parent other = (EqualsAndHashCodeConfigKeys1Parent) o;
+		if (!(o instanceof EqualsAndHashCodeEmpty)) return false;
+		final EqualsAndHashCodeEmpty other = (EqualsAndHashCodeEmpty) o;
 		if (!other.canEqual((java.lang.Object) this)) return false;
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
 	protected boolean canEqual(final java.lang.Object other) {
-		return other instanceof EqualsAndHashCodeConfigKeys1Parent;
+		return other instanceof EqualsAndHashCodeEmpty;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
@@ -19,28 +19,25 @@ class EqualsAndHashCodeConfigKeys1Parent {
 		return result;
 	}
 }
-class EqualsAndHashCodeConfigKeys1 extends EqualsAndHashCodeConfigKeys1Parent {
-	int x;
+class EqualsAndHashCodeEmptyWithSuper extends EqualsAndHashCodeEmpty {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
-		if (!(o instanceof EqualsAndHashCodeConfigKeys1)) return false;
-		final EqualsAndHashCodeConfigKeys1 other = (EqualsAndHashCodeConfigKeys1) o;
+		if (!(o instanceof EqualsAndHashCodeEmptyWithSuper)) return false;
+		final EqualsAndHashCodeEmptyWithSuper other = (EqualsAndHashCodeEmptyWithSuper) o;
 		if (!other.canEqual((java.lang.Object) this)) return false;
-		if (this.x != other.x) return false;
+		if (!super.equals(o)) return false;
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
 	protected boolean canEqual(final java.lang.Object other) {
-		return other instanceof EqualsAndHashCodeConfigKeys1;
+		return other instanceof EqualsAndHashCodeEmptyWithSuper;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
-		final int PRIME = 59;
-		int result = 1;
-		result = result * PRIME + this.x;
+		final int result = super.hashCode();
 		return result;
 	}
 }

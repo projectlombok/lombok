@@ -1,49 +1,46 @@
-@lombok.EqualsAndHashCode class EqualsAndHashCodeConfigKeys1Parent {
-  EqualsAndHashCodeConfigKeys1Parent() {
+@lombok.EqualsAndHashCode class EqualsAndHashCodeEmpty {
+  EqualsAndHashCodeEmpty() {
     super();
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
-    if ((! (o instanceof EqualsAndHashCodeConfigKeys1Parent)))
+    if ((! (o instanceof EqualsAndHashCodeEmpty)))
         return false;
-    final EqualsAndHashCodeConfigKeys1Parent other = (EqualsAndHashCodeConfigKeys1Parent) o;
+    final EqualsAndHashCodeEmpty other = (EqualsAndHashCodeEmpty) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
     return true;
   }
   protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
-    return (other instanceof EqualsAndHashCodeConfigKeys1Parent);
+    return (other instanceof EqualsAndHashCodeEmpty);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
     final int result = 1;
     return result;
   }
 }
-@lombok.EqualsAndHashCode class EqualsAndHashCodeConfigKeys1 extends EqualsAndHashCodeConfigKeys1Parent {
-  int x;
-  EqualsAndHashCodeConfigKeys1() {
+@lombok.EqualsAndHashCode(callSuper = true) class EqualsAndHashCodeEmptyWithSuper extends EqualsAndHashCodeEmpty {
+  EqualsAndHashCodeEmptyWithSuper() {
     super();
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
-    if ((! (o instanceof EqualsAndHashCodeConfigKeys1)))
+    if ((! (o instanceof EqualsAndHashCodeEmptyWithSuper)))
         return false;
-    final EqualsAndHashCodeConfigKeys1 other = (EqualsAndHashCodeConfigKeys1) o;
+    final EqualsAndHashCodeEmptyWithSuper other = (EqualsAndHashCodeEmptyWithSuper) o;
     if ((! other.canEqual((java.lang.Object) this)))
         return false;
-    if ((this.x != other.x))
+    if ((! super.equals(o)))
         return false;
     return true;
   }
   protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
-    return (other instanceof EqualsAndHashCodeConfigKeys1);
+    return (other instanceof EqualsAndHashCodeEmptyWithSuper);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    final int PRIME = 59;
-    int result = 1;
-    result = ((result * PRIME) + this.x);
+    final int result = super.hashCode();
     return result;
   }
 }

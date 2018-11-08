@@ -227,7 +227,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 	
 	public MethodDeclaration createHashCode(EclipseNode type, Collection<Included<EclipseNode, EqualsAndHashCode.Include>> members, boolean callSuper, ASTNode source, FieldAccess fieldAccess) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
+		long p = (long) pS << 32 | pE;
 		
 		MethodDeclaration method = new MethodDeclaration(((CompilationUnitDeclaration) type.top().get()).compilationResult);
 		setGeneratedBy(method, source);
@@ -246,7 +246,14 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 		
 		List<Statement> statements = new ArrayList<Statement>();
 		
-		final boolean isEmpty = members.isEmpty();
+		boolean isEmpty = true;
+		for (Included<EclipseNode, EqualsAndHashCode.Include> member : members) {
+			TypeReference fType = getFieldType(member.getNode(), fieldAccess);
+			if (fType.getLastToken() != null) {
+				isEmpty = false;
+				break;
+			}
+		}
 		
 		/* final int PRIME = X; */ {
 			/* Without members, PRIME isn't used, as that would trigger a 'local variable not used' warning. */
@@ -282,6 +289,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			resultDecl.initialization = init;
 			resultDecl.type = TypeReference.baseTypeReference(TypeIds.T_int, 0);
 			resultDecl.type.sourceStart = pS; resultDecl.type.sourceEnd = pE;
+			if (isEmpty) resultDecl.modifiers |= Modifier.FINAL;
 			setGeneratedBy(resultDecl.type, source);
 			statements.add(resultDecl);
 		}
@@ -303,6 +311,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 					setGeneratedBy(intForBool, source);
 					statements.add(createResultCalculation(source, intForBool));
 				} else if (Arrays.equals(TypeConstants.LONG, token)) {
+					/* (int)(ref >>> 32 ^ ref) */
 					statements.add(createLocalDeclaration(source, dollarFieldName, TypeReference.baseTypeReference(TypeIds.T_long, 0), fieldAccessor));
 					SingleNameReference copy1 = new SingleNameReference(dollarFieldName, p);
 					setGeneratedBy(copy1, source);

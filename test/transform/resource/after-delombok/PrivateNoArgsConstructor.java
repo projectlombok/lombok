@@ -224,7 +224,7 @@ public class PrivateNoArgsConstructor {
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public int hashCode() {
-			int result = 1;
+			final int result = 1;
 			return result;
 		}
 		@java.lang.Override

@@ -12,7 +12,7 @@ final @Value class ValueStaticField {
     return true;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    int result = 1;
+    final int result = 1;
     return result;
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {

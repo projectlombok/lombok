@@ -105,7 +105,7 @@ final @lombok.EqualsAndHashCode(callSuper = false) class EqualsAndHashCode3 exte
     return (other instanceof EqualsAndHashCode3);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    int result = 1;
+    final int result = 1;
     return result;
   }
 }
@@ -129,7 +129,7 @@ final @lombok.EqualsAndHashCode(callSuper = false) class EqualsAndHashCode3 exte
     return (other instanceof EqualsAndHashCode4);
   }
   public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
-    int result = super.hashCode();
+    final int result = super.hashCode();
     return result;
   }
 }

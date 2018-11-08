@@ -21,7 +21,7 @@ final class ValueCallSuper extends ValueParent {
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
 	public int hashCode() {
-		int result = super.hashCode();
+		final int result = super.hashCode();
 		return result;
 	}
 	@java.lang.Override
