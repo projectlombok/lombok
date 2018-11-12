@@ -44,7 +44,7 @@
 
 	<@f.smallPrint>
 		<p>
-			Starting with lombok v1.18.5, lombok will silently skip generating anything that already exists. You can define the inner <code>Fields</code> enum/class yourself,
+			Starting with lombok v1.18.6, lombok will silently skip generating anything that already exists. You can define the inner <code>Fields</code> enum/class yourself,
 			in which case lombok will add all the enum constants / public static final fields you haven't written yourself.
 		</p><p>
 			From lombok v1.16.22 to lombok v1.18.2, this feature generated constants inside the type directly; the name of these fields would for example turn field <code>exampleFieldName</code> into <code>public static final String FIELD_EXAMPLE_FIELD_NAME = "exampleFieldName";</code>. The prefix and suffix (here, <code>FIELD_</code>, and the empty string) were configurable. Starting with lombok v1.18.4 this feature has been redesigned into generating an inner type as described above.

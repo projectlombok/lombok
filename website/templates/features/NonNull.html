@@ -9,7 +9,7 @@
 		<p>
 			You can use <code>@NonNull</code> on the parameter of a method or constructor to have lombok generate a null-check statement for you.
 		</p><p>
-			Lombok has always treated any annotation named <code>@NonNull</code> on a field as a signal to generate a null-check if lombok generates an entire method or constructor for you, via for example <a href="/features/Data"><code>@Data</code></a>. Now, however, using lombok's own <code>@lombok.NonNull</code> on a parameter results in the insertion of just the null-check statement inside your own method or constructor.
+			Lombok has always treated various annotations generally named <code>@NonNull</code> on a field as a signal to generate a null-check if lombok generates an entire method or constructor for you, via for example <a href="/features/Data"><code>@Data</code></a>. Now, however, using lombok's own <code>@lombok.NonNull</code> on a parameter results in the insertion of just the null-check statement inside your own method or constructor.
 		</p><p>
 			The null-check looks like <code>if (param == null) throw new NullPointerException("param is marked @NonNull but is null");</code> and will be inserted at the very top of your method. For constructors, the null-check will be inserted immediately following any explicit <code>this()</code> or <code>super()</code> calls.
 		</p><p>
@@ -35,7 +35,7 @@
 		<p>
 			Lombok's detection scheme for already existing null-checks consists of scanning for if statements that look just like lombok's own. Any 'throws' statement as the 'then' part of the if statement, whether in braces or not, counts. The conditional of the if statement <em>must</em> look exactly like <code>PARAMNAME == null</code>. The first statement in your method that is not such a null-check stops the process of inspecting for null-checks.
 		</p><p>
-			While <code>@Data</code> and other method-generating lombok annotations will trigger on any annotation named <code>@NonNull</code> regardless of casing or package name, this feature only triggers on lombok's own <code>@NonNull</code> annotation from the <code>lombok</code> package.
+			While <code>@Data</code> and other method-generating lombok annotations will trigger on various well-known annotations that signify the field must never be <code>@NonNull</code>, this feature only triggers on lombok's own <code>@NonNull</code> annotation from the <code>lombok</code> package.
 		</p><p>
 			A <code>@NonNull</code> on a primitive parameter results in a warning. No null-check will be generated.
 		</p><p>

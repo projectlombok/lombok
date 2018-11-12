@@ -4,6 +4,6 @@ import lombok.AccessLevel;
 @FieldNameConstants
 public class FieldNameConstantsExample {
 	private final String iAmAField;
-	@FieldNameConstants(level = AccessLevel.PACKAGE)
 	private final int andSoAmI;
+	@FieldNameConstants.Exclude private final int asAmI;
 }
