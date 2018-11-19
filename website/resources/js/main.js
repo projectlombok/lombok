@@ -39,7 +39,7 @@
 		self.data("clc", true);
 		if (!href || href.substr(0, 4) === "http" || href === "/api/" || href === "/" || href === "/supporters" || href === "/order-license") return;
 		var ext = href.substr(href.length - 4, 4);
-		if (ext === ".xml" || ext === ".jar") return;
+		if (ext === ".xml" || ext === ".jar" || ext === ".pdf") return;
 		self.on("click", function(evt) {
 			evt.preventDefault();
 			var key = toKey(window.location.pathname);
