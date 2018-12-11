@@ -7,6 +7,22 @@
 	margin-bottom: 40px;
 }
 
+.tidelift-para {
+	margin-top: 10px;
+}
+
+#tideliftlink {
+	margin-left: 2px;
+	padding: 4px 6px 4px 20px;
+	background-image: url('/img/tidelift-mark.png');
+	background-repeat: no-repeat;
+	background-position: 4px;
+	background-size: 12px;
+	background-color: #4b5168;
+	border-radius: 5px;
+	color: white;
+}
+
 pre {
 	text-align: left;
 }
