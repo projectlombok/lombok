@@ -112,6 +112,50 @@ such as applying the templates to produce the website, converting the changelog 
 				<include name="LICENSE" />
 			</fileset>
 		</copy>
+		
+		<get src="https://code.jquery.com/jquery-3.3.1.min.js" dest="build/website/js/jquery.min.js" />
+		<fail message="jQuery checksum failed">
+			<condition><not>
+				<checksum file="build/website/js/jquery.min.js" algorithm="SHA-384" property="b6c405aa91117aeed92e1055d9566502eef370e57ead76d8945d9ca81f2dc48ffc6996a38e9e01a9df95e83e4882f293" verifyproperty="jquery.ok" />
+			</not></condition>
+		</fail>
+		
+		<get src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js" dest="build/website/js/modernizr.min.js" />
+		<fail message="modernizr checksum failed">
+			<condition><not>
+				<checksum file="build/website/js/modernizr.min.js" algorithm="SHA-384" property="6cf577980d9ea3779da2ae7a57370f0661b537541551f8d833154824f3f3c85272159f0615f37b369b74e99af6deab6c" verifyproperty="modernizr.ok" />
+			</not></condition>
+		</fail>
+		
+		<get src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js" dest="build/website/js/bootstrap.min.js" />
+		<fail message="bootstrap checksum failed">
+			<condition><not>
+				<checksum file="build/website/js/bootstrap.min.js" algorithm="SHA-384" property="0a17eaab1b995029c948adfe31798f348c84e996d687620ca84db8d6b622a89c7232267a396fc9999439b2dc0450b4f2" verifyproperty="bootstrap.ok" />
+			</not></condition>
+		</fail>
+
+		<get src="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" dest="build/website/css/font-awesome.min.css" />
+		<fail message="font-awesome checksum failed">
+			<condition><not>
+				<checksum file="build/website/css/font-awesome.min.css" algorithm="SHA-384" property="c2f7d7a6aa596554062ba4c08793d594639f40d1d2a03db16c4f9090fc4200594d11ebe8107dd2974b226d570e4159cd" verifyproperty="fontawesome.ok" />
+			</not></condition>
+		</fail>
+		
+		<mkdir dir="build/website/fonts" />
+		<get src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff" dest="build/website/fonts/fontawesome-webfont.woff" />
+		<fail message="woff checksum failed">
+			<condition><not>
+				<checksum file="build/website/fonts/fontawesome-webfont.woff" algorithm="SHA-384" property="9a2008ccbb9e142d9ad62db6439db4a0543073f376c2d6987bddd0cab298963e5fd13d3e0e4404a4cb3b4be32f9135bf" verifyproperty="woff.ok" />
+			</not></condition>
+		</fail>
+		
+		<get src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff2" dest="build/website/fonts/fontawesome-webfont.woff2" />
+		<fail message="woff2 checksum failed">
+			<condition><not>
+				<checksum file="build/website/fonts/fontawesome-webfont.woff2" algorithm="SHA-384" property="c267dab02b05137a7d06041209c8a227447a1af392b0a29924c5c1bd3882b966b7ca96b9c971958d2773b94fce37a3fa" verifyproperty="woff2.ok" />
+			</not></condition>
+		</fail>
+		
 		<java classname="lombok.website.WebsiteMaker" failonerror="true">
 			<classpath>
 				<path refid="build.path" />
