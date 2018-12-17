@@ -20,7 +20,7 @@
 
 	<@f.overview>
 		<p>
-			The <code>@FieldNameConstants</code> annotation generates an inner type which contains 1 constant for each field in your class; either string constants (fields marked <code>public static final</code>, of type <code>java.lang.String</code>) or if you prefer, an enum type with 1 value for each field. <code>@FieldNameConstants</code> is useful for various marshalling and serialization frameworks. The constant field (whether enum value or string constant) always has the exact same name as the field, capitalization and all.
+			The <code>@FieldNameConstants</code> annotation generates an inner type which contains 1 constant for each field in your class; either string constants (fields marked <code>public static final</code>, of type <code>java.lang.String</code>) or if you prefer, an enum type with 1 value for each field - write <code>@FieldNameConstants(asEnum = true)</code> for the enum variant. <code>@FieldNameConstants</code> is useful for various marshalling and serialization frameworks. The constant field (whether enum value or string constant) always has the exact same name as the field, capitalization and all.
 		</p><p>
 			The generated inner type is by default called <code>Fields</code> and is <code>public</code>. You can modify this via <code>@FieldNameConstants(innerTypeName = "FieldNames", access = AccessLevel.PACKAGE)</code> for example. The default inner type name can also be modified via configuration key <code>lombok.fieldNameConstants.innerTypeName</code>. The generated fields are always <code>public</code>.
 		</p><p>
