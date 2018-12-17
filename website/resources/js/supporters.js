@@ -214,7 +214,7 @@
 		});
 		if (s.children().length < 1) {
 			var x = $("<div />").addClass("noSupportersBox").html(
-				"We don't have any supporters yet this month.<br /><a href=\"https://patreon.com/lombok\" rel=\"noopener\">Become a patron</a> " +
+				"We don't have any supporters yet this month.<br /><a href=\"https://patreon.com/lombok\">Become a patron</a> " +
 				"or <a href=\"/order-license-info\">order a professional or enterprise license</a> today!");
 			s.append(x);
 		}
