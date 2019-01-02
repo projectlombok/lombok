@@ -85,7 +85,8 @@ public class HandlerUtil {
 			"org.jetbrains.annotations.NotNull",
 			"android.support.annotation.NonNull",
 			"org.eclipse.jdt.annotation.NonNull",
-			"org.springframework.lang.NonNull"
+			"org.springframework.lang.NonNull",
+                        "org.checkerframework.checker.nullness.qual.NonNull"
 		}));
 		BASE_COPYABLE_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"lombok.NonNull",
@@ -95,6 +96,7 @@ public class HandlerUtil {
 			"android.support.annotation.NonNull",
 			"org.eclipse.jdt.annotation.NonNull",
 			"org.springframework.lang.NonNull",
+                        "org.checkerframework.checker.nullness.qual.NonNull",
 			"javax.annotation.Nullable",
 			"javax.annotation.CheckForNull",
 			"edu.umd.cs.findbugs.annotations.UnknownNullness",
@@ -102,7 +104,8 @@ public class HandlerUtil {
 			"org.jetbrains.annotations.Nullable",
 			"android.support.annotation.Nullable",
 			"org.eclipse.jdt.annotation.Nullable",
-			"org.springframework.lang.Nullable"
+			"org.springframework.lang.Nullable",
+                        "org.checkerframework.checker.nullness.qual.Nullable"
 		}));
 	}
 	
