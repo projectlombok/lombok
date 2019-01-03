@@ -1836,6 +1836,14 @@ public class JavacHandlerUtil {
 		
 		return null;
 	}
+	public static String removeJavadocSectionIfPresent(String javadoc, String sectionName) {
+		String[] split = splitJavadocOnSectionIfPresent(javadoc, sectionName);
+		if (split == null) {
+			return javadoc;
+		} else {
+			return split[1];
+		}
+	}
 	
 	public static enum CopyJavadoc {
 		VERBATIM,
@@ -1919,6 +1927,35 @@ public class JavacHandlerUtil {
 			filtered[0] = addReturnsThisIfNeeded(filtered[0]);
 		}
 		return filtered;
+	}
+
+	static String getJavadoc(JavacNode node) {
+		JCCompilationUnit cu = ((JCCompilationUnit) node.top().get());
+		Object dc = Javac.getDocComments(cu);
+		if (dc instanceof Map) {
+			Map<JCTree, String> docComments = (Map<JCTree, String>) dc;
+			return docComments.get(node.get());
+		} else if (Javac.instanceOfDocCommentTable(dc)) {
+			DocCommentTable dct = (DocCommentTable) dc;
+			final Comment docComment = dct.getComment(node.get());
+			return docComment == null ? null : docComment.getText();
+		}
+		return null;
+	}
+
+	public static boolean putJavadoc(JavacNode node, String javadocText) {
+		JCCompilationUnit cu = ((JCCompilationUnit) node.top().get());
+		Object dc = Javac.getDocComments(cu);
+		if (dc instanceof Map) {
+			Map<JCTree, String> docComments = (Map<JCTree, String>) dc;
+			docComments.put(node.get(), javadocText);
+			return true;
+		} else if (Javac.instanceOfDocCommentTable(dc)) {
+			DocCommentTable dct = (DocCommentTable) dc;
+			dct.putComment(node.get(), CopyJavadoc_8.createJavadocComment(javadocText, node));
+			return true;
+		}
+		return false;
 	}
 
 	private static class CopyJavadoc_8 {
