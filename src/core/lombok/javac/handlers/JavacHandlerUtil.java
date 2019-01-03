@@ -1912,17 +1912,22 @@ public class JavacHandlerUtil {
 		if (in.endsWith("\n")) return in + line + "\n";
 		return in + "\n" + line;
 	}
-	
+
+	private static String[] filterJavadocString(JavacNode from, CopyJavadoc copyMode, String javadoc) {
+		String[] filtered = copyMode.split(javadoc);
+		if (copyMode == CopyJavadoc.SETTER && shouldReturnThis(from)) {
+			filtered[0] = addReturnsThisIfNeeded(filtered[0]);
+		}
+		return filtered;
+	}
+
 	private static class CopyJavadoc_8 {
 		static void copyJavadoc(JavacNode from, JCTree to, CopyJavadoc copyMode, Object dc) {
 			DocCommentTable dct = (DocCommentTable) dc;
 			Comment javadoc = dct.getComment(from.get());
 			
 			if (javadoc != null) {
-				String[] filtered = copyMode.split(javadoc.getText());
-				if (copyMode == CopyJavadoc.SETTER && shouldReturnThis(from)) {
-					filtered[0] = addReturnsThisIfNeeded(filtered[0]);
-				}
+				String[] filtered = filterJavadocString(from, copyMode, javadoc.getText());
 				dct.putComment(to, createJavadocComment(filtered[0], from));
 				dct.putComment(from.get(), createJavadocComment(filtered[1], from));
 			}
@@ -1955,10 +1960,7 @@ public class JavacHandlerUtil {
 		String javadoc = docComments.get(from.get());
 		
 		if (javadoc != null) {
-			String[] filtered = copyMode.split(javadoc);
-			if (copyMode == CopyJavadoc.SETTER && shouldReturnThis(from)) {
-				filtered[0] = addReturnsThisIfNeeded(filtered[0]);
-			}
+			String[] filtered = filterJavadocString(from, copyMode, javadoc);
 			docComments.put(to, filtered[0]);
 			docComments.put(from.get(), filtered[1]);
 		}
