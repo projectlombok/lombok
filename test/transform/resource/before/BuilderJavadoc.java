@@ -15,10 +15,51 @@ class BuilderJavadoc<T> {
 	 */
 	private final int yes;
 
+	/**
+	 * getset gets a builder setter and an instance getter and setter.
+	 * @param tag is moved to the setters.
+	 * @return tag is moved to the getter.
+	 */
+	@lombok.Getter
+	@lombok.Setter
+	private int getset;
+
+	/**
+	 * Predef has a predefined builder setter with no javadoc, and the builder setter does not get this one.
+	 * @param tag remains on the field.
+	 * @return tag remains on the field.
+	 */
+	private final int predef;
+
+	/**
+	 * predefWithJavadoc has a predefined builder setter with javadoc, so it keeps that one untouched.
+	 * @param tag is removed from the field.
+	 * @return tag remains on the field.
+	 */
+	private final int predefWithJavadoc;
+
 	private List<T> also;
 
 	/**
 	 * But this one doesn't.
 	 */
 	private int $butNotMe;
+
+	public static class BuilderJavadocBuilder<T> {
+		public BuilderJavadocBuilder<T> predef(final int x) {
+			this.predef = x * 10;
+			return this;
+		}
+
+		/**
+		 * This javadoc remains untouched.
+		 * @param x 1/100 of the thing
+		 * @return the updated builder
+		 */
+		public BuilderJavadocBuilder<T> predefWithJavadoc(final int x) {
+			this.predefWithJavadoc = x * 100;
+			return this;
+		}
+    }
+
 }
