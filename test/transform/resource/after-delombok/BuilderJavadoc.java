@@ -12,9 +12,9 @@ class BuilderJavadoc<T> {
 	 */
 	private final int yes;
 	/**
-	 * getset gets a builder setter and an instance getter and setter.
+	 * getsetwith gets a builder setter, an instance getter and setter, and a wither.
 	 */
-	private int getset;
+	private int getsetwith;
 	/**
 	 * Predef has a predefined builder setter with no javadoc, and the builder setter does not get this one.
 	 * @param tag remains on the field.
@@ -36,7 +36,7 @@ class BuilderJavadoc<T> {
 		@java.lang.SuppressWarnings("all")
 		private int yes;
 		@java.lang.SuppressWarnings("all")
-		private int getset;
+		private int getsetwith;
 		@java.lang.SuppressWarnings("all")
 		private int predef;
 		@java.lang.SuppressWarnings("all")
@@ -70,12 +70,12 @@ class BuilderJavadoc<T> {
 			return this;
 		}
 		/**
-		 * getset gets a builder setter and an instance getter and setter.
-		 * @param tag is moved to the setters.
+		 * getsetwith gets a builder setter, an instance getter and setter, and a wither.
+		 * @param tag is moved to the setters and wither.
 		 */
 		@java.lang.SuppressWarnings("all")
-		public BuilderJavadocBuilder<T> getset(final int getset) {
-			this.getset = getset;
+		public BuilderJavadocBuilder<T> getsetwith(final int getsetwith) {
+			this.getsetwith = getsetwith;
 			return this;
 		}
 		@java.lang.SuppressWarnings("all")
@@ -85,18 +85,18 @@ class BuilderJavadoc<T> {
 		}
 		@java.lang.SuppressWarnings("all")
 		public BuilderJavadoc<T> build() {
-			return new BuilderJavadoc<T>(yes, getset, predef, predefWithJavadoc, also);
+			return new BuilderJavadoc<T>(yes, getsetwith, predef, predefWithJavadoc, also);
 		}
 		@java.lang.Override
 		@java.lang.SuppressWarnings("all")
 		public java.lang.String toString() {
-			return "BuilderJavadoc.BuilderJavadocBuilder(yes=" + this.yes + ", getset=" + this.getset + ", predef=" + this.predef + ", predefWithJavadoc=" + this.predefWithJavadoc + ", also=" + this.also + ")";
+			return "BuilderJavadoc.BuilderJavadocBuilder(yes=" + this.yes + ", getsetwith=" + this.getsetwith + ", predef=" + this.predef + ", predefWithJavadoc=" + this.predefWithJavadoc + ", also=" + this.also + ")";
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	BuilderJavadoc(final int yes, final int getset, final int predef, final int predefWithJavadoc, final List<T> also) {
+	BuilderJavadoc(final int yes, final int getsetwith, final int predef, final int predefWithJavadoc, final List<T> also) {
 		this.yes = yes;
-		this.getset = getset;
+		this.getsetwith = getsetwith;
 		this.predef = predef;
 		this.predefWithJavadoc = predefWithJavadoc;
 		this.also = also;
@@ -106,20 +106,28 @@ class BuilderJavadoc<T> {
 		return new BuilderJavadocBuilder<T>();
 	}
 	/**
-	 * getset gets a builder setter and an instance getter and setter.
+	 * getsetwith gets a builder setter, an instance getter and setter, and a wither.
 	 *
 	 * @return tag is moved to the getter.
 	 */
 	@java.lang.SuppressWarnings("all")
-	public int getGetset() {
-		return this.getset;
+	public int getGetsetwith() {
+		return this.getsetwith;
 	}
 	/**
-	 * getset gets a builder setter and an instance getter and setter.
-	 * @param tag is moved to the setters.
+	 * getsetwith gets a builder setter, an instance getter and setter, and a wither.
+	 * @param tag is moved to the setters and wither.
 	 */
 	@java.lang.SuppressWarnings("all")
-	public void setGetset(final int getset) {
-		this.getset = getset;
+	public void setGetsetwith(final int getsetwith) {
+		this.getsetwith = getsetwith;
+	}
+	/**
+	 * getsetwith gets a builder setter, an instance getter and setter, and a wither.
+	 * @param tag is moved to the setters and wither.
+	 */
+	@java.lang.SuppressWarnings("all")
+	public BuilderJavadoc<T> withGetsetwith(final int getsetwith) {
+		return this.getsetwith == getsetwith ? this : new BuilderJavadoc<T>(this.yes, getsetwith, this.predef, this.predefWithJavadoc, this.also);
 	}
 }

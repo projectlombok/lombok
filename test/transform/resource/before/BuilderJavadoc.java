@@ -16,13 +16,14 @@ class BuilderJavadoc<T> {
 	private final int yes;
 
 	/**
-	 * getset gets a builder setter and an instance getter and setter.
-	 * @param tag is moved to the setters.
+	 * getsetwith gets a builder setter, an instance getter and setter, and a wither.
+	 * @param tag is moved to the setters and wither.
 	 * @return tag is moved to the getter.
 	 */
 	@lombok.Getter
 	@lombok.Setter
-	private int getset;
+	@lombok.experimental.Wither
+	private int getsetwith;
 
 	/**
 	 * Predef has a predefined builder setter with no javadoc, and the builder setter does not get this one.

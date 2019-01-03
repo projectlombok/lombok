@@ -2,7 +2,7 @@ import java.util.List;
 @lombok.Builder class BuilderJavadoc<T> {
   public static class BuilderJavadocBuilder<T> {
     private @java.lang.SuppressWarnings("all") int yes;
-    private @java.lang.SuppressWarnings("all") int getset;
+    private @java.lang.SuppressWarnings("all") int getsetwith;
     private @java.lang.SuppressWarnings("all") int predef;
     private @java.lang.SuppressWarnings("all") int predefWithJavadoc;
     private @java.lang.SuppressWarnings("all") List<T> also;
@@ -21,8 +21,8 @@ import java.util.List;
       this.yes = yes;
       return this;
     }
-    public @java.lang.SuppressWarnings("all") BuilderJavadocBuilder<T> getset(final int getset) {
-      this.getset = getset;
+    public @java.lang.SuppressWarnings("all") BuilderJavadocBuilder<T> getsetwith(final int getsetwith) {
+      this.getsetwith = getsetwith;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderJavadocBuilder<T> also(final List<T> also) {
@@ -30,23 +30,23 @@ import java.util.List;
       return this;
     }
     public @java.lang.SuppressWarnings("all") BuilderJavadoc<T> build() {
-      return new BuilderJavadoc<T>(yes, getset, predef, predefWithJavadoc, also);
+      return new BuilderJavadoc<T>(yes, getsetwith, predef, predefWithJavadoc, also);
     }
     public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-      return (((((((((("BuilderJavadoc.BuilderJavadocBuilder(yes=" + this.yes) + ", getset=") + this.getset) + ", predef=") + this.predef) + ", predefWithJavadoc=") + this.predefWithJavadoc) + ", also=") + this.also) + ")");
+      return (((((((((("BuilderJavadoc.BuilderJavadocBuilder(yes=" + this.yes) + ", getsetwith=") + this.getsetwith) + ", predef=") + this.predef) + ", predefWithJavadoc=") + this.predefWithJavadoc) + ", also=") + this.also) + ")");
     }
   }
   private final int noshow = 0;
   private final int yes;
-  private @lombok.Getter @lombok.Setter int getset;
+  private @lombok.Getter @lombok.Setter @lombok.experimental.Wither int getsetwith;
   private final int predef;
   private final int predefWithJavadoc;
   private List<T> also;
   private int $butNotMe;
-  @java.lang.SuppressWarnings("all") BuilderJavadoc(final int yes, final int getset, final int predef, final int predefWithJavadoc, final List<T> also) {
+  @java.lang.SuppressWarnings("all") BuilderJavadoc(final int yes, final int getsetwith, final int predef, final int predefWithJavadoc, final List<T> also) {
     super();
     this.yes = yes;
-    this.getset = getset;
+    this.getsetwith = getsetwith;
     this.predef = predef;
     this.predefWithJavadoc = predefWithJavadoc;
     this.also = also;
@@ -54,10 +54,13 @@ import java.util.List;
   public static @java.lang.SuppressWarnings("all") <T>BuilderJavadocBuilder<T> builder() {
     return new BuilderJavadocBuilder<T>();
   }
-  public @java.lang.SuppressWarnings("all") int getGetset() {
-    return this.getset;
+  public @java.lang.SuppressWarnings("all") int getGetsetwith() {
+    return this.getsetwith;
   }
-  public @java.lang.SuppressWarnings("all") void setGetset(final int getset) {
-    this.getset = getset;
+  public @java.lang.SuppressWarnings("all") void setGetsetwith(final int getsetwith) {
+    this.getsetwith = getsetwith;
+  }
+  public @java.lang.SuppressWarnings("all") BuilderJavadoc<T> withGetsetwith(final int getsetwith) {
+    return ((this.getsetwith == getsetwith) ? this : new BuilderJavadoc<T>(this.yes, getsetwith, this.predef, this.predefWithJavadoc, this.also));
   }
 }
