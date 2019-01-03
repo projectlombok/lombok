@@ -30,6 +30,9 @@ public class BuilderWithDeprecated {
 		@java.lang.SuppressWarnings("all")
 		BuilderWithDeprecatedBuilder() {
 		}
+		/**
+		 * @deprecated since always
+		 */
 		@java.lang.Deprecated
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithDeprecatedBuilder dep1(final String dep1) {
