@@ -1966,7 +1966,6 @@ public class JavacHandlerUtil {
 			if (javadoc != null) {
 				String[] filtered = filterJavadocString(from, copyMode, javadoc.getText());
 				dct.putComment(to, createJavadocComment(filtered[0], from));
-				dct.putComment(from.get(), createJavadocComment(filtered[1], from));
 			}
 		}
 		
@@ -1999,7 +1998,6 @@ public class JavacHandlerUtil {
 		if (javadoc != null) {
 			String[] filtered = filterJavadocString(from, copyMode, javadoc);
 			docComments.put(to, filtered[0]);
-			docComments.put(from.get(), filtered[1]);
 		}
 	}
 	
