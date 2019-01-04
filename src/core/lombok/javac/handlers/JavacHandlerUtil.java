@@ -1891,12 +1891,10 @@ public class JavacHandlerUtil {
 	public static void copyJavadoc(JavacNode from, JCTree to, CopyJavadoc copyMode) {
 		if (copyMode == null) copyMode = CopyJavadoc.VERBATIM;
 		try {
-			JCCompilationUnit cu = ((JCCompilationUnit) from.top().get());
-			Object dc = Javac.getDocComments(cu);
-			if (dc instanceof Map) {
-				copyJavadoc_jdk6_7(from, to, copyMode, dc);
-			} else if (Javac.instanceOfDocCommentTable(dc)) {
-				CopyJavadoc_8.copyJavadoc(from, to, copyMode, dc);
+			final String javadoc = getJavadoc(from);
+			if (javadoc != null) {
+				final String copied = filterJavadocString(from, copyMode, javadoc)[0];
+				putJavadoc(from, to, copied);
 			}
 		} catch (Exception ignore) {}
 	}
@@ -1935,32 +1933,28 @@ public class JavacHandlerUtil {
 		return null;
 	}
 
-	public static boolean putJavadoc(JavacNode node, String javadocText) {
-		JCCompilationUnit cu = ((JCCompilationUnit) node.top().get());
+	static boolean putJavadoc(JavacNode node, String javadocText) {
+		return putJavadoc(node, node.get(), javadocText);
+    }
+	private static boolean putJavadoc(JavacNode definingNode, JCTree node, String javadocText) {
+		JCCompilationUnit cu = ((JCCompilationUnit) definingNode.top().get());
+		return putJavadoc(cu, definingNode, node, javadocText);
+	}
+	private static boolean putJavadoc(JCCompilationUnit cu, JavacNode definingNode, JCTree node, String javadocText) {
 		Object dc = Javac.getDocComments(cu);
 		if (dc instanceof Map) {
 			Map<JCTree, String> docComments = (Map<JCTree, String>) dc;
-			docComments.put(node.get(), javadocText);
+			docComments.put(node, javadocText);
 			return true;
 		} else if (Javac.instanceOfDocCommentTable(dc)) {
 			DocCommentTable dct = (DocCommentTable) dc;
-			dct.putComment(node.get(), CopyJavadoc_8.createJavadocComment(javadocText, node));
+			dct.putComment(node, CopyJavadoc_8.createJavadocComment(javadocText, definingNode));
 			return true;
 		}
 		return false;
 	}
 
 	private static class CopyJavadoc_8 {
-		static void copyJavadoc(JavacNode from, JCTree to, CopyJavadoc copyMode, Object dc) {
-			DocCommentTable dct = (DocCommentTable) dc;
-			Comment javadoc = dct.getComment(from.get());
-			
-			if (javadoc != null) {
-				String[] filtered = filterJavadocString(from, copyMode, javadoc.getText());
-				dct.putComment(to, createJavadocComment(filtered[0], from));
-			}
-		}
-		
 		private static Comment createJavadocComment(final String text, final JavacNode field) {
 			return new Comment() {
 				@Override public String getText() {
@@ -1982,17 +1976,6 @@ public class JavacHandlerUtil {
 		}
 	}
 
-	@SuppressWarnings({"unchecked", "all"})
-	private static void copyJavadoc_jdk6_7(JavacNode from, JCTree to, CopyJavadoc copyMode, Object dc) {
-		Map<JCTree, String> docComments = (Map<JCTree, String>) dc;
-		String javadoc = docComments.get(from.get());
-		
-		if (javadoc != null) {
-			String[] filtered = filterJavadocString(from, copyMode, javadoc);
-			docComments.put(to, filtered[0]);
-		}
-	}
-	
 	public static boolean isDirectDescendantOfObject(JavacNode typeNode) {
 		if (!(typeNode.get() instanceof JCClassDecl)) throw new IllegalArgumentException("not a type node");
 		JCTree extending = Javac.getExtendsClause((JCClassDecl) typeNode.get());
