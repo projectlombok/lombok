@@ -7,8 +7,6 @@ class BuilderJavadoc<T> {
 	/**
 	 * Yes, yes gets a setter.
 	 * @see #also
-	 *
-	 * @return tag is removed from the setter.
 	 */
 	private final int yes;
 	/**
@@ -17,14 +15,10 @@ class BuilderJavadoc<T> {
 	private int getsetwith;
 	/**
 	 * Predef has a predefined builder setter with no javadoc, and the builder setter does not get this one.
-	 * @param tag remains on the field.
-	 * @return tag remains on the field.
 	 */
 	private final int predef;
 	/**
 	 * predefWithJavadoc has a predefined builder setter with javadoc, so it keeps that one untouched.
-	 * @param tag is removed from the field.
-	 * @return tag remains on the field.
 	 */
 	private final int predefWithJavadoc;
 	private List<T> also;
