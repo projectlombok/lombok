@@ -22,6 +22,7 @@
 package lombok.javac.handlers;
 
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import java.util.Set;
 import lombok.core.HandlerPriority;
 import lombok.javac.JavacASTAdapter;
 import lombok.javac.JavacASTVisitor;
@@ -40,16 +41,15 @@ public class HandleCleanupFieldJavadoc extends JavacASTAdapter {
 
     @Override
     public void endVisitField(JavacNode fieldNode, JCVariableDecl field) {
-        final String originalJavadoc = JavacHandlerUtil.getJavadoc(fieldNode);
+        Set<CopyJavadoc> cleanups = JavacHandlerUtil.getJavadocCleanups(fieldNode.get());
+        if (cleanups != null) {
+            String javadoc = JavacHandlerUtil.getJavadoc(fieldNode);
 
-        if (originalJavadoc != null) {
-            String reduced = originalJavadoc;
-
-            for (CopyJavadoc copyMode : CopyJavadoc.values()) {
-                reduced = JavacHandlerUtil.filterJavadocString(fieldNode, copyMode, reduced)[1];
+            for (CopyJavadoc copyMode : cleanups) {
+                javadoc = JavacHandlerUtil.filterJavadocString(fieldNode, copyMode, javadoc)[1];
             }
 
-            JavacHandlerUtil.putJavadoc(fieldNode, reduced);
+            JavacHandlerUtil.putJavadoc(fieldNode, javadoc);
         }
     }
 

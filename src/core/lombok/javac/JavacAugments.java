@@ -21,9 +21,11 @@
  */
 package lombok.javac;
 
+import java.util.Set;
 import lombok.core.FieldAugment;
 
 import com.sun.tools.javac.tree.JCTree;
+import lombok.javac.handlers.JavacHandlerUtil.CopyJavadoc;
 
 public final class JavacAugments {
 	private JavacAugments() {
@@ -32,4 +34,5 @@ public final class JavacAugments {
 	
 	public static final FieldAugment<JCTree, Boolean> JCTree_handled = FieldAugment.augment(JCTree.class, boolean.class, "lombok$handled");
 	public static final FieldAugment<JCTree, JCTree> JCTree_generatedNode = FieldAugment.circularSafeAugment(JCTree.class, JCTree.class, "lombok$generatedNode");
+	public static final FieldAugment<JCTree, Set<CopyJavadoc>> JCTree_javadocCleanups = FieldAugment.augment(JCTree.class, Set.class, "lombok#javadocCleanups");
 }

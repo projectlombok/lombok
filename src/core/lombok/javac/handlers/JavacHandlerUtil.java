@@ -24,6 +24,7 @@ package lombok.javac.handlers;
 import static com.sun.tools.javac.code.Flags.GENERATEDCONSTR;
 import static lombok.core.handlers.HandlerUtil.*;
 import static lombok.javac.Javac.*;
+import static lombok.javac.JavacAugments.JCTree_javadocCleanups;
 import static lombok.javac.JavacAugments.JCTree_generatedNode;
 
 import java.lang.annotation.Annotation;
@@ -34,7 +35,9 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -169,7 +172,20 @@ public class JavacHandlerUtil {
 		if (source != null && (!inNetbeansEditor(context) || (node instanceof JCVariableDecl && (((JCVariableDecl) node).mods.flags & Flags.PARAMETER) != 0))) node.pos = source.pos;
 		return node;
 	}
-	
+
+	private static void addJavadocCleanup(JavacNode node, CopyJavadoc copyMode) {
+		Set<CopyJavadoc> set = JCTree_javadocCleanups.get(node.get());
+		if (set == null) {
+			set = new HashSet<CopyJavadoc>();
+			JCTree_javadocCleanups.set(node.get(), set);
+		}
+		set.add(copyMode);
+	}
+
+	public static Set<CopyJavadoc> getJavadocCleanups(JCTree node) {
+		return JCTree_javadocCleanups.get(node);
+	}
+
 	public static boolean hasAnnotation(String type, JavacNode node) {
 		return hasAnnotation(type, node, false);
 	}
@@ -1897,6 +1913,7 @@ public class JavacHandlerUtil {
 			if (javadoc != null) {
 				final String copied = filterJavadocString(from, copyMode, javadoc)[0];
 				putJavadoc(from, to, copied);
+				addJavadocCleanup(from, copyMode);
 			}
 		} catch (Exception ignore) {}
 	}
