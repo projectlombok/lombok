@@ -26,6 +26,7 @@ import lombok.core.HandlerPriority;
 import lombok.javac.JavacASTAdapter;
 import lombok.javac.JavacASTVisitor;
 import lombok.javac.JavacNode;
+import lombok.javac.handlers.JavacHandlerUtil.CopyJavadoc;
 import org.mangosdk.spi.ProviderFor;
 
 
@@ -44,12 +45,9 @@ public class HandleCleanupFieldJavadoc extends JavacASTAdapter {
         if (originalJavadoc != null) {
             String reduced = originalJavadoc;
 
-            reduced = JavacHandlerUtil.removeJavadocSectionIfPresent(reduced, "GETTER");
-            reduced = JavacHandlerUtil.removeJavadocSectionIfPresent(reduced, "SETTER");
-            reduced = JavacHandlerUtil.removeJavadocSectionIfPresent(reduced, "WITHER");
-
-            reduced = JavacHandlerUtil.stripLinesWithTagFromJavadoc(reduced, "@returns?\\s+.*");
-            reduced = JavacHandlerUtil.stripLinesWithTagFromJavadoc(reduced, "@param(?:eter)?\\s+.*");
+            for (CopyJavadoc copyMode : CopyJavadoc.values()) {
+                reduced = JavacHandlerUtil.filterJavadocString(fieldNode, copyMode, reduced)[1];
+            }
 
             JavacHandlerUtil.putJavadoc(fieldNode, reduced);
         }

@@ -1836,15 +1836,7 @@ public class JavacHandlerUtil {
 		
 		return null;
 	}
-	public static String removeJavadocSectionIfPresent(String javadoc, String sectionName) {
-		String[] split = splitJavadocOnSectionIfPresent(javadoc, sectionName);
-		if (split == null) {
-			return javadoc;
-		} else {
-			return split[1];
-		}
-	}
-	
+
 	public static enum CopyJavadoc {
 		VERBATIM,
 		GETTER {
@@ -1921,7 +1913,7 @@ public class JavacHandlerUtil {
 		return in + "\n" + line;
 	}
 
-	private static String[] filterJavadocString(JavacNode from, CopyJavadoc copyMode, String javadoc) {
+	static String[] filterJavadocString(JavacNode from, CopyJavadoc copyMode, String javadoc) {
 		String[] filtered = copyMode.split(javadoc);
 		if (copyMode == CopyJavadoc.SETTER && shouldReturnThis(from)) {
 			filtered[0] = addReturnsThisIfNeeded(filtered[0]);
