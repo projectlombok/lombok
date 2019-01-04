@@ -1836,20 +1836,19 @@ public class JavacHandlerUtil {
 		
 		return null;
 	}
-	
+
 	public static enum CopyJavadoc {
 		VERBATIM,
 		GETTER {
-			@Override public String[] split(String javadoc) {
+			@Override public String[] split(final String original) {
 				// step 1: Check if there is a 'GETTER' section. If yes, that becomes the new method's javadoc and we strip that from the original.
-				String[] out = splitJavadocOnSectionIfPresent(javadoc, "GETTER");
+				String[] out = splitJavadocOnSectionIfPresent(original, "GETTER");
 				if (out != null) return out;
 				// failing that, create a copy, but strip @return from the original and @param from the copy, as well as other sections.
-				String copy = javadoc;
-				javadoc = stripLinesWithTagFromJavadoc(javadoc, "@returns?\\s+.*");
-				copy = stripLinesWithTagFromJavadoc(copy, "@param(?:eter)?\\s+.*");
+				final String reduced = stripLinesWithTagFromJavadoc(original, "@returns?\\s+.*");
+				String copy = stripLinesWithTagFromJavadoc(original, "@param(?:eter)?\\s+.*");
 				copy = stripSectionsFromJavadoc(copy);
-				return new String[] {copy, javadoc};
+				return new String[] {copy, reduced};
 			}
 		},
 		SETTER {
@@ -1863,16 +1862,15 @@ public class JavacHandlerUtil {
 			}
 		};
 		
-		private static String[] splitForSetters(String javadoc, String sectionName) {
+		private static String[] splitForSetters(final String original, String sectionName) {
 			// step 1: Check if there is a 'SETTER' section. If yes, that becomes the new one and we strip that from the original.
-			String[] out = splitJavadocOnSectionIfPresent(javadoc, sectionName);
+			String[] out = splitJavadocOnSectionIfPresent(original, sectionName);
 			if (out != null) return out;
 			// failing that, create a copy, but strip @param from the original and @return from the copy.
-			String copy = javadoc;
-			javadoc = stripLinesWithTagFromJavadoc(javadoc, "@param(?:eter)?\\s+.*");
-			copy = stripLinesWithTagFromJavadoc(copy, "@returns?\\s+.*");
+			final String reduced = stripLinesWithTagFromJavadoc(original, "@param(?:eter)?\\s+.*");
+			String copy = stripLinesWithTagFromJavadoc(original, "@returns?\\s+.*");
 			copy = stripSectionsFromJavadoc(copy);
-			return new String[] {copy, javadoc};
+			return new String[] {copy, reduced};
 		}
 		
 		/** Splits the javadoc into the section to be copied (ret[0]) and the section to replace the original with (ret[1]) */
@@ -1893,12 +1891,10 @@ public class JavacHandlerUtil {
 	public static void copyJavadoc(JavacNode from, JCTree to, CopyJavadoc copyMode) {
 		if (copyMode == null) copyMode = CopyJavadoc.VERBATIM;
 		try {
-			JCCompilationUnit cu = ((JCCompilationUnit) from.top().get());
-			Object dc = Javac.getDocComments(cu);
-			if (dc instanceof Map) {
-				copyJavadoc_jdk6_7(from, to, copyMode, dc);
-			} else if (Javac.instanceOfDocCommentTable(dc)) {
-				CopyJavadoc_8.copyJavadoc(from, to, copyMode, dc);
+			final String javadoc = getJavadoc(from);
+			if (javadoc != null) {
+				final String copied = filterJavadocString(from, copyMode, javadoc)[0];
+				putJavadoc(from, to, copied);
 			}
 		} catch (Exception ignore) {}
 	}
@@ -1914,22 +1910,51 @@ public class JavacHandlerUtil {
 		if (in.endsWith("\n")) return in + line + "\n";
 		return in + "\n" + line;
 	}
-	
-	private static class CopyJavadoc_8 {
-		static void copyJavadoc(JavacNode from, JCTree to, CopyJavadoc copyMode, Object dc) {
-			DocCommentTable dct = (DocCommentTable) dc;
-			Comment javadoc = dct.getComment(from.get());
-			
-			if (javadoc != null) {
-				String[] filtered = copyMode.split(javadoc.getText());
-				if (copyMode == CopyJavadoc.SETTER && shouldReturnThis(from)) {
-					filtered[0] = addReturnsThisIfNeeded(filtered[0]);
-				}
-				dct.putComment(to, createJavadocComment(filtered[0], from));
-				dct.putComment(from.get(), createJavadocComment(filtered[1], from));
-			}
+
+	static String[] filterJavadocString(JavacNode from, CopyJavadoc copyMode, String javadoc) {
+		String[] filtered = copyMode.split(javadoc);
+		if (copyMode == CopyJavadoc.SETTER && shouldReturnThis(from)) {
+			filtered[0] = addReturnsThisIfNeeded(filtered[0]);
 		}
-		
+		return filtered;
+	}
+
+	static String getJavadoc(JavacNode node) {
+		JCCompilationUnit cu = ((JCCompilationUnit) node.top().get());
+		Object dc = Javac.getDocComments(cu);
+		if (dc instanceof Map) {
+			Map<JCTree, String> docComments = (Map<JCTree, String>) dc;
+			return docComments.get(node.get());
+		} else if (Javac.instanceOfDocCommentTable(dc)) {
+			DocCommentTable dct = (DocCommentTable) dc;
+			final Comment docComment = dct.getComment(node.get());
+			return docComment == null ? null : docComment.getText();
+		}
+		return null;
+	}
+
+	static boolean putJavadoc(JavacNode node, String javadocText) {
+		return putJavadoc(node, node.get(), javadocText);
+    }
+	private static boolean putJavadoc(JavacNode definingNode, JCTree node, String javadocText) {
+		JCCompilationUnit cu = ((JCCompilationUnit) definingNode.top().get());
+		return putJavadoc(cu, definingNode, node, javadocText);
+	}
+	private static boolean putJavadoc(JCCompilationUnit cu, JavacNode definingNode, JCTree node, String javadocText) {
+		Object dc = Javac.getDocComments(cu);
+		if (dc instanceof Map) {
+			Map<JCTree, String> docComments = (Map<JCTree, String>) dc;
+			docComments.put(node, javadocText);
+			return true;
+		} else if (Javac.instanceOfDocCommentTable(dc)) {
+			DocCommentTable dct = (DocCommentTable) dc;
+			dct.putComment(node, CopyJavadoc_8.createJavadocComment(javadocText, definingNode));
+			return true;
+		}
+		return false;
+	}
+
+	private static class CopyJavadoc_8 {
 		private static Comment createJavadocComment(final String text, final JavacNode field) {
 			return new Comment() {
 				@Override public String getText() {
@@ -1951,21 +1976,6 @@ public class JavacHandlerUtil {
 		}
 	}
 
-	@SuppressWarnings({"unchecked", "all"})
-	private static void copyJavadoc_jdk6_7(JavacNode from, JCTree to, CopyJavadoc copyMode, Object dc) {
-		Map<JCTree, String> docComments = (Map<JCTree, String>) dc;
-		String javadoc = docComments.get(from.get());
-		
-		if (javadoc != null) {
-			String[] filtered = copyMode.split(javadoc);
-			if (copyMode == CopyJavadoc.SETTER && shouldReturnThis(from)) {
-				filtered[0] = addReturnsThisIfNeeded(filtered[0]);
-			}
-			docComments.put(to, filtered[0]);
-			docComments.put(from.get(), filtered[1]);
-		}
-	}
-	
 	public static boolean isDirectDescendantOfObject(JavacNode typeNode) {
 		if (!(typeNode.get() instanceof JCClassDecl)) throw new IllegalArgumentException("not a type node");
 		JCTree extending = Javac.getExtendsClause((JCClassDecl) typeNode.get());
