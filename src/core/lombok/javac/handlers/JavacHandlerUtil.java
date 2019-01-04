@@ -1840,15 +1840,16 @@ public class JavacHandlerUtil {
 	public static enum CopyJavadoc {
 		VERBATIM,
 		GETTER {
-			@Override public String[] split(final String original) {
+			@Override public String[] split(String javadoc) {
 				// step 1: Check if there is a 'GETTER' section. If yes, that becomes the new method's javadoc and we strip that from the original.
-				String[] out = splitJavadocOnSectionIfPresent(original, "GETTER");
+				String[] out = splitJavadocOnSectionIfPresent(javadoc, "GETTER");
 				if (out != null) return out;
 				// failing that, create a copy, but strip @return from the original and @param from the copy, as well as other sections.
-				final String reduced = stripLinesWithTagFromJavadoc(original, "@returns?\\s+.*");
-				String copy = stripLinesWithTagFromJavadoc(original, "@param(?:eter)?\\s+.*");
+				String copy = javadoc;
+				javadoc = stripLinesWithTagFromJavadoc(javadoc, "@returns?\\s+.*");
+				copy = stripLinesWithTagFromJavadoc(copy, "@param(?:eter)?\\s+.*");
 				copy = stripSectionsFromJavadoc(copy);
-				return new String[] {copy, reduced};
+				return new String[] {copy, javadoc};
 			}
 		},
 		SETTER {
@@ -1862,15 +1863,16 @@ public class JavacHandlerUtil {
 			}
 		};
 		
-		private static String[] splitForSetters(final String original, String sectionName) {
+		private static String[] splitForSetters(String javadoc, String sectionName) {
 			// step 1: Check if there is a 'SETTER' section. If yes, that becomes the new one and we strip that from the original.
-			String[] out = splitJavadocOnSectionIfPresent(original, sectionName);
+			String[] out = splitJavadocOnSectionIfPresent(javadoc, sectionName);
 			if (out != null) return out;
 			// failing that, create a copy, but strip @param from the original and @return from the copy.
-			final String reduced = stripLinesWithTagFromJavadoc(original, "@param(?:eter)?\\s+.*");
-			String copy = stripLinesWithTagFromJavadoc(original, "@returns?\\s+.*");
+			String copy = javadoc;
+			javadoc = stripLinesWithTagFromJavadoc(javadoc, "@param(?:eter)?\\s+.*");
+			copy = stripLinesWithTagFromJavadoc(copy, "@returns?\\s+.*");
 			copy = stripSectionsFromJavadoc(copy);
-			return new String[] {copy, reduced};
+			return new String[] {copy, javadoc};
 		}
 		
 		/** Splits the javadoc into the section to be copied (ret[0]) and the section to replace the original with (ret[1]) */
