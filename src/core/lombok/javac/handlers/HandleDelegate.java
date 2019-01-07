@@ -21,11 +21,12 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.core.handlers.HandlerUtil.*;
-import static lombok.javac.handlers.JavacHandlerUtil.*;
 import static com.sun.tools.javac.code.Flags.*;
+import static lombok.core.handlers.HandlerUtil.handleExperimentalFlagUsage;
+import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -41,19 +42,6 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-
-import lombok.ConfigurationKeys;
-import lombok.experimental.Delegate;
-import lombok.core.AST.Kind;
-import lombok.core.AnnotationValues;
-import lombok.core.HandlerPriority;
-import lombok.javac.FindTypeVarScanner;
-import lombok.javac.JavacAnnotationHandler;
-import lombok.javac.JavacNode;
-import lombok.javac.JavacResolution;
-import lombok.javac.JavacTreeMaker;
-import lombok.javac.ResolutionResetNeeded;
-import lombok.javac.JavacResolution.TypeNotConvertibleException;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -80,10 +68,24 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 
+import lombok.ConfigurationKeys;
+import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
+import lombok.core.HandlerPriority;
+import lombok.experimental.Delegate;
+import lombok.javac.FindTypeVarScanner;
+import lombok.javac.JavacAnnotationHandler;
+import lombok.javac.JavacNode;
+import lombok.javac.JavacResolution;
+import lombok.javac.JavacResolution.TypeNotConvertibleException;
+import lombok.javac.JavacTreeMaker;
+import lombok.javac.ResolutionResetNeeded;
+
 @ProviderFor(JavacAnnotationHandler.class)
 @HandlerPriority(65536) //2^16; to make sure that we also delegate generated methods.
 @ResolutionResetNeeded
 public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
+	
 	private static final List<String> METHODS_IN_OBJECT = Collections.unmodifiableList(Arrays.asList(
 			"hashCode()",
 			"canEqual(java.lang.Object)",  //Not in j.l.Object, but it goes with hashCode and equals so if we ignore those two, we should ignore this one.
@@ -197,8 +199,9 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 			}
 			
 			for (Type t : toDelegate) {
-				if (t instanceof ClassType) {
-					ClassType ct = (ClassType) t;
+				Type unannotatedType = Unannotated.unannotatedType(t);
+				if (unannotatedType instanceof ClassType) {
+					ClassType ct = (ClassType) unannotatedType;
 					addMethodBindings(signaturesToDelegate, ct, annotationNode.getTypesUtil(), banList);
 				} else {
 					annotationNode.addError("@Delegate can only use concrete class types, not wildcards, arrays, type variables, or primitives.");
@@ -452,5 +455,26 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 		};
 		
 		public abstract JCExpression get(final JavacNode node, final Name name);
+	}
+	
+	private static class Unannotated {
+		private static final Method unannotated;
+		
+		static {
+			Method m = null;
+			try {
+				m = Type.class.getDeclaredMethod("unannotatedType");
+			} catch (Exception e) {/* ignore */}
+			unannotated = m;
+		}
+		
+		static Type unannotatedType(Type t) {
+			if (unannotated == null) return t;
+			try {
+				return (Type) unannotated.invoke(t);
+			} catch (Exception e) {
+				return t;
+			}
+		}
 	}
 }
