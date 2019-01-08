@@ -3,17 +3,12 @@ import java.util.List;
 @lombok.Builder
 class BuilderJavadoc<T> {
 	/**
-	 * Will not get a setter on the builder.
-	 */
-	private final int noshow = 0;
-
-	/**
-	 * Yes, yes gets a setter.
-     * @see #also
+	 * basic gets only a builder setter.
+     * @see #getsetwith
 	 * @param tag is moved to the setter.
 	 * @return tag is removed from the setter.
 	 */
-	private final int yes;
+	private final int basic;
 
 	/**
 	 * getsetwith gets a builder setter, an instance getter and setter, and a wither.
@@ -38,13 +33,6 @@ class BuilderJavadoc<T> {
 	 * @return tag remains on the field.
 	 */
 	private final int predefWithJavadoc;
-
-	private List<T> also;
-
-	/**
-	 * But this one doesn't.
-	 */
-	private int $butNotMe;
 
 	public static class BuilderJavadocBuilder<T> {
 		public BuilderJavadocBuilder<T> predef(final int x) {
