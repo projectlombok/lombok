@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,7 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 
 import lombok.ConfigurationKeys;
+import lombok.core.CleanupRegistry;
 import lombok.core.LombokConfiguration;
 
 public class JavacTransformer {
@@ -55,7 +56,7 @@ public class JavacTransformer {
 		return handlers.getPrioritiesRequiringResolutionReset();
 	}
 	
-	public void transform(long priority, Context context, java.util.List<JCCompilationUnit> compilationUnitsRaw) {
+	public void transform(long priority, Context context, java.util.List<JCCompilationUnit> compilationUnitsRaw, CleanupRegistry cleanup) {
 		List<JCCompilationUnit> compilationUnits;
 		if (compilationUnitsRaw instanceof List<?>) {
 			compilationUnits = (List<JCCompilationUnit>) compilationUnitsRaw;
@@ -70,7 +71,7 @@ public class JavacTransformer {
 		
 		for (JCCompilationUnit unit : compilationUnits) {
 			if (!Boolean.TRUE.equals(LombokConfiguration.read(ConfigurationKeys.LOMBOK_DISABLE, JavacAST.getAbsoluteFileLocation(unit)))) {
-				asts.add(new JavacAST(messager, context, unit));
+				asts.add(new JavacAST(messager, context, unit, cleanup));
 			}
 		}
 		

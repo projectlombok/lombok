@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,8 @@ import javax.tools.JavaFileObject;
 
 import com.sun.tools.javac.util.JCDiagnostic;
 import lombok.core.AST;
+import lombok.core.CleanupRegistry;
+import lombok.core.CleanupTask;
 import lombok.permit.Permit;
 
 import com.sun.tools.javac.code.Source;
@@ -65,6 +67,7 @@ import com.sun.tools.javac.util.Name;
  * something javac's own AST system does not offer.
  */
 public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
+	private final CleanupRegistry cleanup;
 	private final JavacElements elements;
 	private final JavacTreeMaker treeMaker;
 	private final Symtab symtab;
@@ -80,7 +83,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	 * @param context A Context object for interfacing with the compiler.
 	 * @param top The compilation unit, which serves as the top level node in the tree to be built.
 	 */
-	public JavacAST(Messager messager, Context context, JCCompilationUnit top) {
+	public JavacAST(Messager messager, Context context, JCCompilationUnit top, CleanupRegistry cleanup) {
 		super(sourceName(top), PackageName.getPackageName(top), new JavacImportList(top), statementTypes());
 		setTop(buildCompilationUnit(top));
 		this.context = context;
@@ -90,6 +93,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		this.treeMaker = new JavacTreeMaker(TreeMaker.instance(context));
 		this.symtab = Symtab.instance(context);
 		this.javacTypes = JavacTypes.instance(context);
+		this.cleanup = cleanup;
 		clearChanged();
 	}
 	
@@ -138,6 +142,10 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	
 	@Override public int getLatestJavaSpecSupported() {
 		return Javac.getJavaCompilerVersion();
+	}
+	
+	public void cleanupTask(String key, JCTree target, CleanupTask task) {
+		cleanup.registerTask(key, target, task);
 	}
 	
 	/** @return A Name object generated for the proper name table belonging to this AST. */

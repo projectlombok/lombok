@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,6 +48,7 @@ import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.LombokImmutableList;
 import lombok.core.AnnotationValues.AnnotationValue;
+import lombok.core.CleanupTask;
 import lombok.core.TypeResolver;
 import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.configuration.TypeName;
@@ -70,8 +71,6 @@ import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type.MethodType;
-import com.sun.tools.javac.parser.Tokens.Comment;
-import com.sun.tools.javac.tree.DocCommentTable;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
@@ -277,7 +276,7 @@ public class JavacHandlerUtil {
 	 */
 	public static boolean annotationTypeMatches(String type, JavacNode node) {
 		if (node.getKind() != Kind.ANNOTATION) return false;
-		return typeMatches(type, node, ((JCAnnotation)node.get()).annotationType);
+		return typeMatches(type, node, ((JCAnnotation) node.get()).annotationType);
 	}
 	
 	/**
@@ -1165,7 +1164,7 @@ public class JavacHandlerUtil {
 						JavacNode tossMe = typeNode.getNodeFor(def);
 						if (tossMe != null) tossMe.up().removeChild(tossMe);
 						type.defs = addAllButOne(type.defs, idx);
-						ClassSymbolMembersField.remove(type.sym, ((JCMethodDecl)def).sym);
+						ClassSymbolMembersField.remove(type.sym, ((JCMethodDecl) def).sym);
 						break;
 					}
 				}
@@ -1812,72 +1811,90 @@ public class JavacHandlerUtil {
 		return javadoc.substring(0, m.start());
 	}
 	
-	public static String[] splitJavadocOnSectionIfPresent(String javadoc, String sectionName) {
+	public static String getJavadocSection(String javadoc, String sectionName) {
 		Matcher m = SECTION_FINDER.matcher(javadoc);
-		int getterSectionHeaderStart = -1;
-		int getterSectionStart = -1;
-		int getterSectionEnd = -1;
+		int sectionStart = -1;
+		int sectionEnd = -1;
 		while (m.find()) {
 			if (m.group(1).equalsIgnoreCase(sectionName)) {
-				getterSectionStart = m.end() + 1;
-				getterSectionHeaderStart = m.start();
-			} else if (getterSectionStart != -1) {
-				getterSectionEnd = m.start();
+				sectionStart = m.end() + 1;
+			} else if (sectionStart != -1) {
+				sectionEnd = m.start();
 			}
 		}
 		
-		if (getterSectionStart != -1) {
-			if (getterSectionEnd != -1) {
-				return new String[] {javadoc.substring(getterSectionStart, getterSectionEnd), javadoc.substring(0, getterSectionHeaderStart) + javadoc.substring(getterSectionEnd)};
-			} else {
-				return new String[] {javadoc.substring(getterSectionStart), javadoc.substring(0, getterSectionHeaderStart)};
-			}
+		if (sectionStart != -1) {
+			if (sectionEnd != -1) return javadoc.substring(sectionStart, sectionEnd);
+			return javadoc.substring(sectionStart);
 		}
 		
 		return null;
 	}
 	
 	public static enum CopyJavadoc {
-		VERBATIM,
+		VERBATIM {
+			@Override public String apply(final JCCompilationUnit cu, final JavacNode node) {
+				return Javac.getDocComment(cu, node.get());
+			}
+		},
 		GETTER {
-			@Override public String[] split(String javadoc) {
-				// step 1: Check if there is a 'GETTER' section. If yes, that becomes the new method's javadoc and we strip that from the original.
-				String[] out = splitJavadocOnSectionIfPresent(javadoc, "GETTER");
-				if (out != null) return out;
-				// failing that, create a copy, but strip @return from the original and @param from the copy, as well as other sections.
-				String copy = javadoc;
-				javadoc = stripLinesWithTagFromJavadoc(javadoc, "@returns?\\s+.*");
-				copy = stripLinesWithTagFromJavadoc(copy, "@param(?:eter)?\\s+.*");
-				copy = stripSectionsFromJavadoc(copy);
-				return new String[] {copy, javadoc};
+			@Override public String apply(final JCCompilationUnit cu, final JavacNode node) {
+				final JCTree n = node.get();
+				String javadoc = Javac.getDocComment(cu, n);
+				// step 1: Check if there is a 'GETTER' section. If yes, that becomes the new method's javadoc.
+				String out = getJavadocSection(javadoc, "GETTER");
+				final boolean sectionBased = out != null;
+				if (!sectionBased) {
+					out = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), "@param(?:eter)?\\s+.*");
+				}
+				node.getAst().cleanupTask("javadocfilter-getter", n, new CleanupTask() {
+					@Override public void cleanup() {
+						String javadoc = Javac.getDocComment(cu, n);
+						if (javadoc == null || javadoc.isEmpty()) return;
+						javadoc = stripSectionsFromJavadoc(javadoc);
+						if (!sectionBased) {
+							javadoc = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), "@returns?\\s+.*");
+						}
+						Javac.setDocComment(cu, n, javadoc);
+					}
+				});
+				return out;
 			}
 		},
 		SETTER {
-			@Override public String[] split(String javadoc) {
-				return splitForSetters(javadoc, "SETTER");
+			@Override public String apply(final JCCompilationUnit cu, final JavacNode node) {
+				return applySetter(cu, node, "SETTER");
 			}
 		},
 		WITHER {
-			@Override public String[] split(String javadoc) {
-				return splitForSetters(javadoc, "WITHER");
+			@Override public String apply(final JCCompilationUnit cu, final JavacNode node) {
+				return applySetter(cu, node, "WITHER");
 			}
 		};
 		
-		private static String[] splitForSetters(String javadoc, String sectionName) {
-			// step 1: Check if there is a 'SETTER' section. If yes, that becomes the new one and we strip that from the original.
-			String[] out = splitJavadocOnSectionIfPresent(javadoc, sectionName);
-			if (out != null) return out;
-			// failing that, create a copy, but strip @param from the original and @return from the copy.
-			String copy = javadoc;
-			javadoc = stripLinesWithTagFromJavadoc(javadoc, "@param(?:eter)?\\s+.*");
-			copy = stripLinesWithTagFromJavadoc(copy, "@returns?\\s+.*");
-			copy = stripSectionsFromJavadoc(copy);
-			return new String[] {copy, javadoc};
-		}
+		public abstract String apply(final JCCompilationUnit cu, final JavacNode node);
 		
-		/** Splits the javadoc into the section to be copied (ret[0]) and the section to replace the original with (ret[1]) */
-		public String[] split(String javadoc) {
-			return new String[] {javadoc, javadoc};
+		private static String applySetter(final JCCompilationUnit cu, JavacNode node, String sectionName) {
+			final JCTree n = node.get();
+			String javadoc = Javac.getDocComment(cu, n);
+			// step 1: Check if there is a 'SETTER' section. If yes, that becomes the new method's javadoc.
+			String out = getJavadocSection(javadoc, sectionName);
+			final boolean sectionBased = out != null;
+			if (!sectionBased) {
+				out = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), "@returns?\\s+.*");
+			}
+			node.getAst().cleanupTask("javadocfilter-setter", n, new CleanupTask() {
+				@Override public void cleanup() {
+					String javadoc = Javac.getDocComment(cu, n);
+					if (javadoc == null || javadoc.isEmpty()) return;
+					javadoc = stripSectionsFromJavadoc(javadoc);
+					if (!sectionBased) {
+						javadoc = stripLinesWithTagFromJavadoc(stripSectionsFromJavadoc(javadoc), "@param(?:eter)?\\s+.*");
+					}
+					Javac.setDocComment(cu, n, javadoc);
+				}
+			});
+			return shouldReturnThis(node) ? addReturnsThisIfNeeded(out) : out;
 		}
 	}
 	
@@ -1894,12 +1911,8 @@ public class JavacHandlerUtil {
 		if (copyMode == null) copyMode = CopyJavadoc.VERBATIM;
 		try {
 			JCCompilationUnit cu = ((JCCompilationUnit) from.top().get());
-			Object dc = Javac.getDocComments(cu);
-			if (dc instanceof Map) {
-				copyJavadoc_jdk6_7(from, to, copyMode, dc);
-			} else if (Javac.instanceOfDocCommentTable(dc)) {
-				CopyJavadoc_8.copyJavadoc(from, to, copyMode, dc);
-			}
+			String newJavadoc = copyMode.apply(cu, from);
+			if (newJavadoc != null) Javac.setDocComment(cu, to, newJavadoc);
 		} catch (Exception ignore) {}
 	}
 	
@@ -1913,57 +1926,6 @@ public class JavacHandlerUtil {
 	static String addJavadocLine(String in, String line) {
 		if (in.endsWith("\n")) return in + line + "\n";
 		return in + "\n" + line;
-	}
-	
-	private static class CopyJavadoc_8 {
-		static void copyJavadoc(JavacNode from, JCTree to, CopyJavadoc copyMode, Object dc) {
-			DocCommentTable dct = (DocCommentTable) dc;
-			Comment javadoc = dct.getComment(from.get());
-			
-			if (javadoc != null) {
-				String[] filtered = copyMode.split(javadoc.getText());
-				if (copyMode == CopyJavadoc.SETTER && shouldReturnThis(from)) {
-					filtered[0] = addReturnsThisIfNeeded(filtered[0]);
-				}
-				dct.putComment(to, createJavadocComment(filtered[0], from));
-				dct.putComment(from.get(), createJavadocComment(filtered[1], from));
-			}
-		}
-		
-		private static Comment createJavadocComment(final String text, final JavacNode field) {
-			return new Comment() {
-				@Override public String getText() {
-					return text;
-				}
-				
-				@Override public int getSourcePos(int index) {
-					return -1;
-				}
-				
-				@Override public CommentStyle getStyle() {
-					return CommentStyle.JAVADOC;
-				}
-				
-				@Override public boolean isDeprecated() {
-					return text.contains("@deprecated") && field.getKind() == Kind.FIELD && isFieldDeprecated(field);
-				}
-			};
-		}
-	}
-
-	@SuppressWarnings({"unchecked", "all"})
-	private static void copyJavadoc_jdk6_7(JavacNode from, JCTree to, CopyJavadoc copyMode, Object dc) {
-		Map<JCTree, String> docComments = (Map<JCTree, String>) dc;
-		String javadoc = docComments.get(from.get());
-		
-		if (javadoc != null) {
-			String[] filtered = copyMode.split(javadoc);
-			if (copyMode == CopyJavadoc.SETTER && shouldReturnThis(from)) {
-				filtered[0] = addReturnsThisIfNeeded(filtered[0]);
-			}
-			docComments.put(to, filtered[0]);
-			docComments.put(from.get(), filtered[1]);
-		}
 	}
 	
 	public static boolean isDirectDescendantOfObject(JavacNode typeNode) {

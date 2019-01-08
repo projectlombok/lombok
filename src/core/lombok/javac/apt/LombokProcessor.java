@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,7 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 
 import lombok.Lombok;
+import lombok.core.CleanupRegistry;
 import lombok.core.DiagnosticsReceiver;
 import lombok.javac.JavacTransformer;
 import lombok.permit.Permit;
@@ -288,11 +289,15 @@ public class LombokProcessor extends AbstractProcessor {
 	private final IdentityHashMap<JCCompilationUnit, Long> roots = new IdentityHashMap<JCCompilationUnit, Long>();
 	private long[] priorityLevels;
 	private Set<Long> priorityLevelsRequiringResolutionReset;
+	private CleanupRegistry cleanup = new CleanupRegistry();
 	
 	/** {@inheritDoc} */
 	@Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
 		if (lombokDisabled) return false;
-		if (roundEnv.processingOver()) return false;
+		if (roundEnv.processingOver()) {
+			cleanup.run();
+			return false;
+		}
 		
 		// We have: A sorted set of all priority levels: 'priorityLevels'
 		
@@ -318,7 +323,7 @@ public class LombokProcessor extends AbstractProcessor {
 					if (prioOfCu == null || prioOfCu != prio) continue;
 					cusForThisRound.add(entry.getKey());
 				}
-				transformer.transform(prio, javacProcessingEnv.getContext(), cusForThisRound);
+				transformer.transform(prio, javacProcessingEnv.getContext(), cusForThisRound, cleanup);
 			}
 			
 			// Step 3: Push up all CUs to the next level. Set level to null if there is no next level.
