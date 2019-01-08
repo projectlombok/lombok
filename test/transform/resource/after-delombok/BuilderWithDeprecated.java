@@ -1,7 +1,7 @@
 import com.google.common.collect.ImmutableList;
 public class BuilderWithDeprecated {
 	/**
-	 * @deprecated
+	 * @deprecated since always
 	 */
 	String dep1;
 	@Deprecated
@@ -30,6 +30,9 @@ public class BuilderWithDeprecated {
 		@java.lang.SuppressWarnings("all")
 		BuilderWithDeprecatedBuilder() {
 		}
+		/**
+		 * @deprecated since always
+		 */
 		@java.lang.Deprecated
 		@java.lang.SuppressWarnings("all")
 		public BuilderWithDeprecatedBuilder dep1(final String dep1) {
