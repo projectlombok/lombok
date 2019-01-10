@@ -168,7 +168,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		if (returnStatement != null) statements.append(returnStatement);
 		JCBlock body = maker.Block(0, statements.toList());
 		Name name = data.getPluralName();
-		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName("putAll", name.toString()));
+		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName() + "All", name.toString()));
 		JCExpression paramType = getPluralMethodParamType(builderType);
 		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
 		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
