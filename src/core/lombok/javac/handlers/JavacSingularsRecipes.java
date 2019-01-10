@@ -254,8 +254,8 @@ public class JavacSingularsRecipes {
 			JCStatement clearStatement = generateClearStatements(maker, data, builderType);
 			List<JCStatement> statements = returnStatement != null ? List.of(clearStatement, returnStatement) : List.of(clearStatement);
 
-			JCBlock body = maker.Block(0, statements);
 			Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
+			JCBlock body = maker.Block(0, statements);
 			finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, methodName, List.<JCVariableDecl>nil());
 		}
 
@@ -265,10 +265,10 @@ public class JavacSingularsRecipes {
 			ListBuffer<JCStatement> statements = generateSingularMethodStatements(maker, data, builderType, source);
 			List<JCVariableDecl> params = generateSingularMethodParameters(maker, data, builderType, source);
 			if (returnStatement != null) statements.append(returnStatement);
-			JCBlock body = maker.Block(0, statements.toList());
 			Name name = data.getSingularName();
 			if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName(), name.toString()));
 
+			JCBlock body = maker.Block(0, statements.toList());
 			finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, name, params);
 		}
 
@@ -294,13 +294,13 @@ public class JavacSingularsRecipes {
 		void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 			ListBuffer<JCStatement> statements = generatePluralMethodStatements(maker, data, builderType, source);
 			if (returnStatement != null) statements.append(returnStatement);
-			JCBlock body = maker.Block(0, statements.toList());
 			Name name = data.getPluralName();
 			if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName() + "All", name.toString()));
 			JCExpression paramType = getPluralMethodParamType(builderType);
 			paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
 			long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 			JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
+			JCBlock body = maker.Block(0, statements.toList());
 			finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, name, List.of(param));
 		}
 
