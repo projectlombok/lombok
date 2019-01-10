@@ -149,7 +149,6 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 	@Override
 	protected void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 		List<JCExpression> jceBlank = List.nil();
-		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, true, source));
 		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
@@ -174,6 +173,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCExpression paramType = chainDots(builderType, "java", "util", "Map");
 		paramType = addTypeArgs(2, true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
+		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, List.of(param));
 	}
 	

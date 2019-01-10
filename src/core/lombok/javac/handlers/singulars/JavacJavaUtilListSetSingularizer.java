@@ -112,7 +112,6 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 
 	@Override
 	protected void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
-		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, false, source));
 		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), "addAll");
@@ -126,6 +125,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		JCExpression paramType = chainDots(builderType, "java", "util", "Collection");
 		paramType = addTypeArgs(1, true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
+		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, List.of(param));
 	}
 

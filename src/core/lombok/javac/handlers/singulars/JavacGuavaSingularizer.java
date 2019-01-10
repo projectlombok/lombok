@@ -120,7 +120,6 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 
 	@Override
 	protected void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
-		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
 		JCExpression thisDotFieldDotAddAll = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName() + "All");
@@ -140,6 +139,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		}
 		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
+		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, methodName, List.of(param));
     }
 	
