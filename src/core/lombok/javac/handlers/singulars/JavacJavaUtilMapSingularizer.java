@@ -127,7 +127,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 	protected void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 		ListBuffer<JCStatement> statements = generateSingularMethodStatements(maker, data, builderType, source);
 		List<JCVariableDecl> params = generateSingularMethodParameters(maker, data, builderType, source);
-		finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, deprecate, statements, params, "put");
+		finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, deprecate, statements, params, getAddMethodName());
 	}
 
 	private ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
@@ -195,5 +195,9 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		} else {
 			statements.appendList(createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, true, true, false, true, "TreeMap", source, builderVariable));
 		}
+	}
+
+	private String getAddMethodName() {
+		return "put";
 	}
 }
