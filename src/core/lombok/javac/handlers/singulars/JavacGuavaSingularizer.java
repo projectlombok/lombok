@@ -119,25 +119,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 	}
 
 	@Override
-	protected void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
-		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
-		JCExpression thisDotFieldDotAddAll = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName() + "All");
-		JCExpression invokeAddAll = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAddAll, List.<JCExpression>of(maker.Ident(data.getPluralName())));
-		statements.append(maker.Exec(invokeAddAll));
-
-		if (returnStatement != null) statements.append(returnStatement);
-		JCBlock body = maker.Block(0, statements.toList());
-		Name methodName = data.getPluralName();
-		if (!fluent) methodName = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName() + "All", methodName.toString()));
-		JCExpression paramType = getPluralMethodParamType(builderType);
-		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
-		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
-		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
-		finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, methodName, List.of(param));
-    }
-
-	private JCExpression getPluralMethodParamType(JavacNode builderType) {
+	protected JCExpression getPluralMethodParamType(JavacNode builderType) {
 		JCExpression paramType;
 		String aaTypeName = getAddAllTypeName();
 		if (aaTypeName.startsWith("java.lang.") && aaTypeName.indexOf('.', 11) == -1) {
@@ -196,7 +178,8 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 	protected abstract LombokImmutableList<String> getArgumentSuffixes();
 
 	protected abstract String getAddAllTypeName();
-	
+
+	@Override
 	protected int getTypeArgumentsCount() {
 		return getArgumentSuffixes().size();
 	}

@@ -111,25 +111,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 	}
 
 	@Override
-	protected void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
-		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
-		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName() + "All");
-		JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, List.<JCExpression>of(maker.Ident(data.getPluralName())));
-		statements.append(maker.Exec(invokeAdd));
-
-		if (returnStatement != null) statements.append(returnStatement);
-		JCBlock body = maker.Block(0, statements.toList());
-		Name name = data.getPluralName();
-		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName() + "All", name.toString()));
-		JCExpression paramType = getPluralMethodParamType(builderType);
-		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
-		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
-		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
-		finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, name, List.of(param));
-	}
-
-	private JCExpression getPluralMethodParamType(JavacNode builderType) {
+	protected JCExpression getPluralMethodParamType(JavacNode builderType) {
 		return chainDots(builderType, "java", "util", "Collection");
 	}
 
@@ -143,7 +125,8 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		return "add";
 	}
 
-	private int getTypeArgumentsCount() {
+	@Override
+	protected int getTypeArgumentsCount() {
 		return 1;
 	}
 }

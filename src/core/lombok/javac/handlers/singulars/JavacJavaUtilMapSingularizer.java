@@ -176,7 +176,8 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, name, List.of(param));
 	}
 
-	private JCExpression getPluralMethodParamType(JavacNode builderType) {
+	@Override
+	protected JCExpression getPluralMethodParamType(JavacNode builderType) {
 		return chainDots(builderType, "java", "util", "Map");
 	}
 
@@ -205,7 +206,8 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		return "put";
 	}
 
-	private int getTypeArgumentsCount() {
+	@Override
+	protected int getTypeArgumentsCount() {
 		return 2;
 	}
 }
