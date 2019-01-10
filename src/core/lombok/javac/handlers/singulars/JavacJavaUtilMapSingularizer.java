@@ -180,7 +180,8 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		return chainDots(builderType, "java", "util", "Map");
 	}
 
-	private JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+	@Override
+	protected JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
 		return createConstructBuilderVarIfNeeded(maker, data, builderType, true, source);
 	}
 

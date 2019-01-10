@@ -178,7 +178,8 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		JCStatement jcs = maker.VarDef(maker.Modifiers(0), data.getPluralName(), varType, init);
 		statements.append(jcs);
 	}
-	
+
+	@Override
 	protected JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
 		List<JCExpression> jceBlank = List.nil();
 		

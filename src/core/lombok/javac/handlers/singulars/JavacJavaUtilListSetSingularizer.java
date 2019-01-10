@@ -133,7 +133,8 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		return chainDots(builderType, "java", "util", "Collection");
 	}
 
-	private JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+	@Override
+	protected JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
 		return createConstructBuilderVarIfNeeded(maker, data, builderType, false, source);
 	}
 
