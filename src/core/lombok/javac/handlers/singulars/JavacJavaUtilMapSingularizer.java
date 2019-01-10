@@ -40,7 +40,6 @@ import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
@@ -133,15 +132,11 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		Name keyName = builderType.toName(data.getSingularName().toString() + "Key");
 		Name valueName = builderType.toName(data.getSingularName().toString() + "Value");
 		/* this.pluralname$key.add(singularnameKey); */ {
-			JCExpression thisDotKeyFieldDotAdd = chainDots(builderType, "this", data.getPluralName() + "$key", "add");
-			JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotKeyFieldDotAdd, List.<JCExpression>of(maker.Ident(keyName)));
-			JCStatement st = maker.Exec(invokeAdd);
+			JCStatement st = generateSingularMethodAddStatement(maker, builderType, keyName, data.getPluralName() + "$key");
 			statements.append(st);
 		}
 		/* this.pluralname$value.add(singularnameValue); */ {
-			JCExpression thisDotValueFieldDotAdd = chainDots(builderType, "this", data.getPluralName() + "$value", "add");
-			JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotValueFieldDotAdd, List.<JCExpression>of(maker.Ident(valueName)));
-			JCStatement st = maker.Exec(invokeAdd);
+			JCStatement st = generateSingularMethodAddStatement(maker, builderType, valueName, data.getPluralName() + "$value");
 			statements.append(st);
 		}
 		if (returnStatement != null) statements.append(returnStatement);

@@ -275,6 +275,12 @@ public class JavacSingularsRecipes {
 			return maker.VarDef(mods, name, type, null);
 		}
 
+		protected JCStatement generateSingularMethodAddStatement(JavacTreeMaker maker, JavacNode builderType, Name argumentName, String builderFieldName) {
+			JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", builderFieldName, "add");
+			JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, List.<JCExpression>of(maker.Ident(argumentName)));
+			return maker.Exec(invokeAdd);
+		}
+
 		protected abstract void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent);
 
 		public abstract void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable);
