@@ -43,7 +43,6 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
@@ -162,9 +161,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCModifiers paramModsValue = typeUseAnnsValue.isEmpty() ? maker.Modifiers(paramFlags) : maker.Modifiers(paramFlags, typeUseAnnsValue);
 		JCVariableDecl paramKey = maker.VarDef(paramModsKey, keyName, paramTypeKey, null);
 		JCVariableDecl paramValue = maker.VarDef(paramModsValue, valueName, paramTypeValue, null);
-		JCMethodDecl method = maker.MethodDef(mods, name, returnType, typeParams, List.of(paramKey, paramValue), thrown, body, null);
-		recursiveSetGeneratedBy(method, source, builderType.getContext());
-		injectMethod(builderType, method);
+		finishAndInjectMethod(maker, returnType, builderType, source, typeParams, thrown, mods, body, name, List.of(paramKey, paramValue));
 	}
 
 	@Override
@@ -196,9 +193,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCExpression paramType = chainDots(builderType, "java", "util", "Map");
 		paramType = addTypeArgs(2, true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
-		JCMethodDecl method = maker.MethodDef(mods, name, returnType, typeParams, List.of(param), jceBlank, body, null);
-		recursiveSetGeneratedBy(method, source, builderType.getContext());
-		injectMethod(builderType, method);
+		finishAndInjectMethod(maker, returnType, builderType, source, typeParams, jceBlank, mods, body, name, List.of(param));
 	}
 	
 	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {

@@ -39,7 +39,6 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
-import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
@@ -119,9 +118,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		paramType = removeTypeUseAnnotations(paramType);
 		JCModifiers paramMods = typeUseAnns.isEmpty() ? maker.Modifiers(paramFlags) : maker.Modifiers(paramFlags, typeUseAnns);
 		JCVariableDecl param = maker.VarDef(paramMods, data.getSingularName(), paramType, null);
-		JCMethodDecl method = maker.MethodDef(mods, name, returnType, typeParams, List.of(param), thrown, body, null);
-		recursiveSetGeneratedBy(method, source, builderType.getContext());
-		injectMethod(builderType, method);
+		finishAndInjectMethod(maker, returnType, builderType, source, typeParams, thrown, mods, body, name, List.of(param));
 	}
 
 	@Override
@@ -142,8 +139,6 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		JCExpression paramType = chainDots(builderType, "java", "util", "Collection");
 		paramType = addTypeArgs(1, true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
-		JCMethodDecl method = maker.MethodDef(mods, name, returnType, typeParams, List.of(param), thrown, body, null);
-		recursiveSetGeneratedBy(method, source, builderType.getContext());
-		injectMethod(builderType, method);
+		finishAndInjectMethod(maker, returnType, builderType, source, typeParams, thrown, mods, body, name, List.of(param));
 	}
 }
