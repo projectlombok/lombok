@@ -252,10 +252,12 @@ public class JavacSingularsRecipes {
 
 		void generateClearMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {
 			JCStatement clearStatement = generateClearStatements(maker, data, builderType);
-			List<JCStatement> statements = returnStatement != null ? List.of(clearStatement, returnStatement) : List.of(clearStatement);
+			ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
+			statements.add(clearStatement);
+			if (returnStatement != null) statements.append(returnStatement);
 
 			Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
-			JCBlock body = maker.Block(0, statements);
+			JCBlock body = maker.Block(0, statements.toList());
 			finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, methodName, List.<JCVariableDecl>nil());
 		}
 
