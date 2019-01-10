@@ -267,7 +267,13 @@ public class JavacSingularsRecipes {
 		void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 			ListBuffer<JCStatement> statements = generateSingularMethodStatements(maker, data, builderType, source);
 			List<JCVariableDecl> params = generateSingularMethodParameters(maker, data, builderType, source);
-			finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, deprecate, statements, params, getAddMethodName());
+			JCModifiers mods = makeMods(maker, builderType, deprecate);
+			if (returnStatement != null) statements.append(returnStatement);
+			JCBlock body = maker.Block(0, statements.toList());
+			Name name = data.getSingularName();
+			if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName(), name.toString()));
+
+			finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, params);
 		}
 
 		protected JCVariableDecl generateSingularMethodParameter(int typeIndex, JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source, Name name) {
@@ -283,16 +289,6 @@ public class JavacSingularsRecipes {
 			JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", builderFieldName, "add");
 			JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, List.<JCExpression>of(maker.Ident(argumentName)));
 			return maker.Exec(invokeAdd);
-		}
-
-		protected void finishAndInjectSingularMethod(JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent, boolean deprecate, ListBuffer<JCStatement> statements, List<JCVariableDecl> params, String addMethodName) {
-			JCModifiers mods = makeMods(maker, builderType, deprecate);
-			if (returnStatement != null) statements.append(returnStatement);
-			JCBlock body = maker.Block(0, statements.toList());
-			Name name = data.getSingularName();
-			if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName(addMethodName, name.toString()));
-
-			finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, params);
 		}
 
 		protected abstract ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source);
