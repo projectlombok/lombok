@@ -82,12 +82,18 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		List<JCTypeParameter> typeParams = List.nil();
 		List<JCExpression> thrown = List.nil();
 		List<JCVariableDecl> params = List.nil();
-		
-		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
-		JCStatement clearField = maker.Exec(maker.Assign(thisDotField, maker.Literal(CTC_BOT, null)));
-		List<JCStatement> statements = returnStatement != null ? List.of(clearField, returnStatement) : List.of(clearField);
+
+		List<JCStatement> statements = generateClearStatements(maker, returnStatement, data, builderType);
 
 		finishGenerateClearMethod(maker, returnType, data, builderType, source, mods, typeParams, thrown, params, statements);
+	}
+
+	@Override
+	protected List<JCStatement> generateClearStatements(JavacTreeMaker maker, JCStatement returnStatement, SingularData data, JavacNode builderType) {
+		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
+
+		JCStatement clearField = maker.Exec(maker.Assign(thisDotField, maker.Literal(CTC_BOT, null)));
+		return returnStatement != null ? List.of(clearField, returnStatement) : List.of(clearField);
 	}
 
 	@Override

@@ -93,16 +93,23 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		List<JCTypeParameter> typeParams = List.nil();
 		List<JCExpression> thrown = List.nil();
 		List<JCVariableDecl> params = List.nil();
-		List<JCExpression> jceBlank = List.nil();
-		
-		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
-		JCExpression thisDotFieldDotClear = maker.Select(maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName()), builderType.toName("clear"));
-		JCStatement clearCall = maker.Exec(maker.Apply(jceBlank, thisDotFieldDotClear, jceBlank));
-		JCExpression cond = maker.Binary(CTC_NOT_EQUAL, thisDotField, maker.Literal(CTC_BOT, null));
-		JCStatement ifSetCallClear = maker.If(cond, clearCall, null);
-		List<JCStatement> statements = returnStatement != null ? List.of(ifSetCallClear, returnStatement) : List.of(ifSetCallClear);
+
+		List<JCStatement> statements = generateClearStatements(maker, returnStatement, data, builderType);
 
 		finishGenerateClearMethod(maker, returnType, data, builderType, source, mods, typeParams, thrown, params, statements);
+	}
+
+	@Override
+	protected List<JCStatement> generateClearStatements(JavacTreeMaker maker, JCStatement returnStatement, SingularData data, JavacNode builderType) {
+		List<JCExpression> jceBlank = List.nil();
+		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
+		JCExpression thisDotFieldDotClear = maker.Select(maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName()), builderType.toName("clear"));
+
+		JCStatement clearCall = maker.Exec(maker.Apply(jceBlank, thisDotFieldDotClear, jceBlank));
+		JCExpression cond = maker.Binary(CTC_NOT_EQUAL, thisDotField, maker.Literal(CTC_BOT, null));
+
+		JCStatement ifSetCallClear = maker.If(cond, clearCall, null);
+		return returnStatement != null ? List.of(ifSetCallClear, returnStatement) : List.of(ifSetCallClear);
 	}
 
 	@Override

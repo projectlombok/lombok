@@ -251,6 +251,8 @@ public class JavacSingularsRecipes {
 			injectMethod(builderType, method);
 		}
 
+		protected abstract List<JCStatement> generateClearStatements(JavacTreeMaker maker, JCStatement returnStatement, SingularData data, JavacNode builderType);
+
 		protected abstract void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent);
 
 		protected abstract void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent);

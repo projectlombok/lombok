@@ -119,6 +119,14 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		List<JCTypeParameter> typeParams = List.nil();
 		List<JCExpression> thrown = List.nil();
 		List<JCVariableDecl> params = List.nil();
+
+		List<JCStatement> statements = generateClearStatements(maker, returnStatement, data, builderType);
+
+		finishGenerateClearMethod(maker, returnType, data, builderType, source, mods, typeParams, thrown, params, statements);
+	}
+
+	@Override
+	protected List<JCStatement> generateClearStatements(JavacTreeMaker maker, JCStatement returnStatement, SingularData data, JavacNode builderType) {
 		List<JCExpression> jceBlank = List.nil();
 		
 		JCExpression thisDotKeyField = chainDots(builderType, "this", data.getPluralName() + "$key");
@@ -129,9 +137,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCExpression cond = maker.Binary(CTC_NOT_EQUAL, thisDotKeyField, maker.Literal(CTC_BOT, null));
 		JCBlock clearCalls = maker.Block(0, List.of(clearKeyCall, clearValueCall));
 		JCStatement ifSetCallClear = maker.If(cond, clearCalls, null);
-		List<JCStatement> statements = returnStatement != null ? List.of(ifSetCallClear, returnStatement) : List.of(ifSetCallClear);
-
-		finishGenerateClearMethod(maker, returnType, data, builderType, source, mods, typeParams, thrown, params, statements);
+		return returnStatement != null ? List.of(ifSetCallClear, returnStatement) : List.of(ifSetCallClear);
 	}
 	
 	@Override
