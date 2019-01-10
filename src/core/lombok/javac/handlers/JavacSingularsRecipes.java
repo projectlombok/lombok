@@ -231,6 +231,13 @@ public class JavacSingularsRecipes {
 		 */
 		public abstract void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, ExpressionMaker returnTypeMaker, StatementMaker returnStatementMaker);
 
+		protected void doGenerateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, ExpressionMaker returnTypeMaker, StatementMaker returnStatementMaker) {
+			JavacTreeMaker maker = builderType.getTreeMaker();
+			generateSingularMethod(deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source, fluent);
+			generatePluralMethod(deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source, fluent);
+			generateClearMethod(deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source);
+		}
+
 		protected abstract void generateClearMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source);
 
 		protected abstract void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent);

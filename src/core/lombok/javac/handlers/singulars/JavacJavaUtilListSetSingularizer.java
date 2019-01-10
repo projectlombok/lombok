@@ -83,11 +83,8 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 			guavaListSetSingularizer.generateMethods(data, deprecate, builderType, source, fluent, returnTypeMaker, returnStatementMaker);
 			return;
 		}
-		
-		JavacTreeMaker maker = builderType.getTreeMaker();
-		generateSingularMethod(deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source, fluent);
-		generatePluralMethod(deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source, fluent);
-		generateClearMethod(deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source);
+
+		doGenerateMethods(data, deprecate, builderType, source, fluent, returnTypeMaker, returnStatementMaker);
 	}
 
 	@Override
