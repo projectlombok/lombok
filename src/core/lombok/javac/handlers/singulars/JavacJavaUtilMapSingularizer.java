@@ -125,21 +125,30 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 	
 	@Override
 	protected void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
+		ListBuffer<JCStatement> statements = generateSingularMethodStatements(maker, data, builderType, source);
+		List<JCVariableDecl> params = generateSingularMethodParameters(maker, data, builderType, source);
+		finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, deprecate, statements, params, "put");
+	}
+
+	private ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, true, source));
 		Name keyName = builderType.toName(data.getSingularName().toString() + "Key");
 		Name valueName = builderType.toName(data.getSingularName().toString() + "Value");
 
+		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, true, source));
 		/* Generates: this.pluralname$key.add(singularnameKey); */
 		statements.append(generateSingularMethodAddStatement(maker, builderType, keyName, data.getPluralName() + "$key"));
 		/* Generates: this.pluralname$value.add(singularnameValue); */
 		statements.append(generateSingularMethodAddStatement(maker, builderType, valueName, data.getPluralName() + "$value"));
+		return statements;
+	}
 
+	private List<JCVariableDecl> generateSingularMethodParameters(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+		Name keyName = builderType.toName(data.getSingularName().toString() + "Key");
+		Name valueName = builderType.toName(data.getSingularName().toString() + "Value");
 		JCVariableDecl paramKey = generateSingularMethodParameter(0, maker, data, builderType, source, keyName);
 		JCVariableDecl paramValue = generateSingularMethodParameter(1, maker, data, builderType, source, valueName);
-		List<JCVariableDecl> params = List.of(paramKey, paramValue);
-
-		finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, deprecate, statements, params, "put");
+		return List.of(paramKey, paramValue);
 	}
 
 	@Override

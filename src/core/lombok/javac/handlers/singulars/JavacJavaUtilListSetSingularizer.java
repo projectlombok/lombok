@@ -98,14 +98,21 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 
 	@Override
 	protected void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
+		ListBuffer<JCStatement> statements = generateSingularMethodStatements(maker, data, builderType, source);
+		List<JCVariableDecl> params = generateSingularMethodParameters(maker, data, builderType, source);
+		finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, deprecate, statements, params, "add");
+	}
+
+	private ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, false, source));
 		statements.append(generateSingularMethodAddStatement(maker, builderType, data.getSingularName(), data.getPluralName().toString()));
+		return statements;
+	}
 
+	private List<JCVariableDecl> generateSingularMethodParameters(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
 		JCVariableDecl param = generateSingularMethodParameter(0, maker, data, builderType, source, data.getSingularName());
-		List<JCVariableDecl> params = List.of(param);
-
-		finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, deprecate, statements, params, "add");
+		return List.of(param);
 	}
 
 	@Override

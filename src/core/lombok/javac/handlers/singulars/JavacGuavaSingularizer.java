@@ -39,7 +39,6 @@ import lombok.javac.handlers.JavacSingularsRecipes.StatementMaker;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
@@ -82,9 +81,24 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 
 	@Override
 	protected void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
+		ListBuffer<JCStatement> statements = generateSingularMethodStatements(maker, data, builderType, source);
+		List<JCVariableDecl> params = generateSingularMethodParameters(maker, data, builderType, source);
+		finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, deprecate, statements, params, getAddMethodName());
+	}
+
+	private List<JCVariableDecl> generateSingularMethodParameters(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+		Name[] names = generateSingularMethodParameterNames(data, builderType);
+		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
+		for (int i = 0; i < names.length; i++) {
+			params.append(generateSingularMethodParameter(i, maker, data, builderType, source, names[i]));
+		}
+		return params.toList();
+	}
+
+	private ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		Name[] names = generateSingularMethodParameterNames(data, builderType);
 
-		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
 		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName());
 		ListBuffer<JCExpression> invokeAddExprBuilder = new ListBuffer<JCExpression>();
@@ -95,13 +109,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, invokeAddExpr);
 		JCStatement st = maker.Exec(invokeAdd);
 		statements.append(st);
-
-		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
-		for (int i = 0; i < names.length; i++) {
-			params.append(generateSingularMethodParameter(i, maker, data, builderType, source, names[i]));
-		}
-
-		finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, deprecate, statements, params.toList(), getAddMethodName());
+		return statements;
 	}
 
 	private Name[] generateSingularMethodParameterNames(SingularData data, JavacNode builderType) {
