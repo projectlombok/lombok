@@ -128,7 +128,6 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		if (returnStatement != null) statements.append(returnStatement);
 		JCBlock body = maker.Block(0, statements.toList());
 		Name methodName = data.getPluralName();
-		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 		if (!fluent) methodName = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName() + "All", methodName.toString()));
 		JCExpression paramType;
 		String aaTypeName = getAddAllTypeName();
@@ -138,6 +137,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 			paramType = chainDotsString(builderType, aaTypeName);
 		}
 		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
+		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
 		finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, methodName, List.of(param));
     }

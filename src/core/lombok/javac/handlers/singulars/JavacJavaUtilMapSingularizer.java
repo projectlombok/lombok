@@ -151,7 +151,6 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		List<JCExpression> jceBlank = List.nil();
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, true, source));
-		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 		long baseFlags = JavacHandlerUtil.addFinalIfNeeded(0, builderType.getContext());
 		Name entryName = builderType.toName("$lombokEntry");
 		
@@ -172,6 +171,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName("putAll", name.toString()));
 		JCExpression paramType = chainDots(builderType, "java", "util", "Map");
 		paramType = addTypeArgs(2, true, builderType, paramType, data.getTypeArgs(), source);
+		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
 		finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, name, List.of(param));
 	}

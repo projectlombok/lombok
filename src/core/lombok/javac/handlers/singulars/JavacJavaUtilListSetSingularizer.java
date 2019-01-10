@@ -117,13 +117,14 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), "addAll");
 		JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, List.<JCExpression>of(maker.Ident(data.getPluralName())));
 		statements.append(maker.Exec(invokeAdd));
+
 		if (returnStatement != null) statements.append(returnStatement);
 		JCBlock body = maker.Block(0, statements.toList());
 		Name name = data.getPluralName();
-		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName("addAll", name.toString()));
 		JCExpression paramType = chainDots(builderType, "java", "util", "Collection");
 		paramType = addTypeArgs(1, true, builderType, paramType, data.getTypeArgs(), source);
+		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
 		finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, name, List.of(param));
 	}
