@@ -100,7 +100,9 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		}
 		List<JCExpression> invokeAddExpr = invokeAddExprBuilder.toList();
 		JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, invokeAddExpr);
-		statements.append(maker.Exec(invokeAdd));
+		JCStatement st = maker.Exec(invokeAdd);
+		statements.append(st);
+
 		if (returnStatement != null) statements.append(returnStatement);
 		JCBlock body = maker.Block(0, statements.toList());
 		Name methodName = data.getSingularName();

@@ -135,12 +135,14 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		/* this.pluralname$key.add(singularnameKey); */ {
 			JCExpression thisDotKeyFieldDotAdd = chainDots(builderType, "this", data.getPluralName() + "$key", "add");
 			JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotKeyFieldDotAdd, List.<JCExpression>of(maker.Ident(keyName)));
-			statements.append(maker.Exec(invokeAdd));
+			JCStatement st = maker.Exec(invokeAdd);
+			statements.append(st);
 		}
 		/* this.pluralname$value.add(singularnameValue); */ {
 			JCExpression thisDotValueFieldDotAdd = chainDots(builderType, "this", data.getPluralName() + "$value", "add");
 			JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotValueFieldDotAdd, List.<JCExpression>of(maker.Ident(valueName)));
-			statements.append(maker.Exec(invokeAdd));
+			JCStatement st = maker.Exec(invokeAdd);
+			statements.append(st);
 		}
 		if (returnStatement != null) statements.append(returnStatement);
 		JCBlock body = maker.Block(0, statements.toList());

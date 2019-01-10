@@ -103,7 +103,9 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, false, source));
 		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), "add");
 		JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, List.<JCExpression>of(maker.Ident(data.getSingularName())));
-		statements.append(maker.Exec(invokeAdd));
+		JCStatement st = maker.Exec(invokeAdd);
+		statements.append(st);
+
 		if (returnStatement != null) statements.append(returnStatement);
 		JCBlock body = maker.Block(0, statements.toList());
 		Name name = data.getSingularName();
