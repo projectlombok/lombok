@@ -111,11 +111,12 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		Name name = data.getSingularName();
 		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName("add", name.toString()));
+		Name paramName = data.getSingularName();
 		JCExpression paramType = cloneParamType(0, maker, data.getTypeArgs(), builderType, source);
 		List<JCAnnotation> typeUseAnns = getTypeUseAnnotations(paramType);
 		paramType = removeTypeUseAnnotations(paramType);
 		JCModifiers paramMods = typeUseAnns.isEmpty() ? maker.Modifiers(paramFlags) : maker.Modifiers(paramFlags, typeUseAnns);
-		JCVariableDecl param = maker.VarDef(paramMods, data.getSingularName(), paramType, null);
+		JCVariableDecl param = maker.VarDef(paramMods, paramName, paramType, null);
 		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, List.of(param));
 	}
 
