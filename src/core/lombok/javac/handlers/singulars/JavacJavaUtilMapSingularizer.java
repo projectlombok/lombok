@@ -145,7 +145,8 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 
 		JCVariableDecl paramKey = generateSingularMethodParameter(0, maker, data, builderType, source, keyName);
 		JCVariableDecl paramValue = generateSingularMethodParameter(1, maker, data, builderType, source, valueName);
-		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, List.of(paramKey, paramValue));
+		List<JCVariableDecl> params = List.of(paramKey, paramValue);
+		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, params);
 	}
 
 	@Override
