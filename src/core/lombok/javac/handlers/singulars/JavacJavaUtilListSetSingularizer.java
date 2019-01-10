@@ -107,9 +107,10 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		if (returnStatement != null) statements.append(returnStatement);
 		JCBlock body = maker.Block(0, statements.toList());
 		Name name = data.getSingularName();
-		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName("add", name.toString()));
 		Name paramName = data.getSingularName();
+
+		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 		JCVariableDecl param = generateSingularMethodParameter(0, maker, data, builderType, source, paramName, paramFlags);
 		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, List.of(param));
 	}
