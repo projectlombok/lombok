@@ -125,10 +125,19 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		JCExpression thisDotFieldDotAddAll = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName() + "All");
 		JCExpression invokeAddAll = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAddAll, List.<JCExpression>of(maker.Ident(data.getPluralName())));
 		statements.append(maker.Exec(invokeAddAll));
+
 		if (returnStatement != null) statements.append(returnStatement);
 		JCBlock body = maker.Block(0, statements.toList());
 		Name methodName = data.getPluralName();
 		if (!fluent) methodName = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName() + "All", methodName.toString()));
+		JCExpression paramType = getPluralMethodParamType(builderType);
+		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
+		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
+		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
+		finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, methodName, List.of(param));
+    }
+
+	private JCExpression getPluralMethodParamType(JavacNode builderType) {
 		JCExpression paramType;
 		String aaTypeName = getAddAllTypeName();
 		if (aaTypeName.startsWith("java.lang.") && aaTypeName.indexOf('.', 11) == -1) {
@@ -136,12 +145,9 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		} else {
 			paramType = chainDotsString(builderType, aaTypeName);
 		}
-		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
-		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
-		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
-		finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, methodName, List.of(param));
-    }
-	
+		return paramType;
+	}
+
 	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		List<JCExpression> jceBlank = List.nil();
