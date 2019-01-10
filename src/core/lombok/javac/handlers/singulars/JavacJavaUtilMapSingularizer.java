@@ -147,7 +147,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 	}
 
 	@Override
-	protected void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
+	protected ListBuffer<JCStatement> generatePluralMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
 		List<JCExpression> jceBlank = List.nil();
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
@@ -164,8 +164,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCExpression entrySetInvocation = maker.Apply(jceBlank, maker.Select(maker.Ident(data.getPluralName()), builderType.toName("entrySet")), jceBlank);
 		JCStatement forEach = maker.ForeachLoop(maker.VarDef(maker.Modifiers(baseFlags), entryName, forEachType, null), entrySetInvocation, forEachBody);
 		statements.append(forEach);
-
-		finishAndInjectPluralMethod(deprecate, maker, returnType, returnStatement, data, builderType, source, fluent, statements);
+		return statements;
 	}
 
 	@Override

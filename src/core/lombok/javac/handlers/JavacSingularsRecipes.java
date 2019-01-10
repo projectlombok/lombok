@@ -294,17 +294,21 @@ public class JavacSingularsRecipes {
 
 		protected abstract List<JCVariableDecl> generateSingularMethodParameters(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source);
 
-		protected void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
+		void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
+			ListBuffer<JCStatement> statements = generatePluralMethodStatements(maker, data, builderType, source);
+			finishAndInjectPluralMethod(deprecate, maker, returnType, returnStatement, data, builderType, source, fluent, statements);
+		}
+
+		protected ListBuffer<JCStatement> generatePluralMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
 			ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 			statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
 			JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName() + "All");
 			JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, List.<JCExpression>of(maker.Ident(data.getPluralName())));
 			statements.append(maker.Exec(invokeAdd));
-
-			finishAndInjectPluralMethod(deprecate, maker, returnType, returnStatement, data, builderType, source, fluent, statements);
+			return statements;
 		}
 
-		protected void finishAndInjectPluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent, ListBuffer<JCStatement> statements) {
+		void finishAndInjectPluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent, ListBuffer<JCStatement> statements) {
 			if (returnStatement != null) statements.append(returnStatement);
 			JCBlock body = maker.Block(0, statements.toList());
 			Name name = data.getPluralName();
