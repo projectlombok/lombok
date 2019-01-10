@@ -141,6 +141,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		injectMethod(builderType, method);
 	}
 	
+	@Override
 	protected void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 		List<JCTypeParameter> typeParams = List.nil();
 		List<JCExpression> thrown = List.nil();
