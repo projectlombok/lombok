@@ -36,12 +36,10 @@ import lombok.javac.handlers.JavacSingularsRecipes.StatementMaker;
 
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
-import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
@@ -112,11 +110,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName("add", name.toString()));
 		Name paramName = data.getSingularName();
-		JCExpression paramType = cloneParamType(0, maker, data.getTypeArgs(), builderType, source);
-		List<JCAnnotation> typeUseAnns = getTypeUseAnnotations(paramType);
-		paramType = removeTypeUseAnnotations(paramType);
-		JCModifiers paramMods = typeUseAnns.isEmpty() ? maker.Modifiers(paramFlags) : maker.Modifiers(paramFlags, typeUseAnns);
-		JCVariableDecl param = maker.VarDef(paramMods, paramName, paramType, null);
+		JCVariableDecl param = generateSingularMethodParameter(0, maker, data, builderType, source, paramName, paramFlags);
 		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, List.of(param));
 	}
 

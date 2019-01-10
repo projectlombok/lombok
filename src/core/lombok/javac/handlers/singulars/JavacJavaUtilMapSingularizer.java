@@ -45,7 +45,6 @@ import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
-import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
@@ -150,17 +149,8 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		Name name = data.getSingularName();
 		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName("put", name.toString()));
 
-		JCExpression paramTypeKey = cloneParamType(0, maker, data.getTypeArgs(), builderType, source);
-		List<JCAnnotation> typeUseAnnsKey = getTypeUseAnnotations(paramTypeKey);
-		paramTypeKey = removeTypeUseAnnotations(paramTypeKey);
-		JCModifiers paramModsKey = typeUseAnnsKey.isEmpty() ? maker.Modifiers(paramFlags) : maker.Modifiers(paramFlags, typeUseAnnsKey);
-		JCVariableDecl paramKey = maker.VarDef(paramModsKey, keyName, paramTypeKey, null);
-
-		JCExpression paramTypeValue = cloneParamType(1, maker, data.getTypeArgs(), builderType, source);
-		List<JCAnnotation> typeUseAnnsValue = getTypeUseAnnotations(paramTypeValue);
-		paramTypeValue = removeTypeUseAnnotations(paramTypeValue);
-		JCModifiers paramModsValue = typeUseAnnsValue.isEmpty() ? maker.Modifiers(paramFlags) : maker.Modifiers(paramFlags, typeUseAnnsValue);
-		JCVariableDecl paramValue = maker.VarDef(paramModsValue, valueName, paramTypeValue, null);
+		JCVariableDecl paramKey = generateSingularMethodParameter(0, maker, data, builderType, source, keyName, paramFlags);
+		JCVariableDecl paramValue = generateSingularMethodParameter(1, maker, data, builderType, source, valueName, paramFlags);
 		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, List.of(paramKey, paramValue));
 	}
 

@@ -44,7 +44,6 @@ import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
-import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
@@ -109,11 +108,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		if (!fluent) methodName = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName(), methodName.toString()));
 		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
 		for (int i = 0; i < suffixes.size(); i++) {
-			JCExpression pt = cloneParamType(i, maker, data.getTypeArgs(), builderType, source);
-			List<JCAnnotation> typeUseAnns = getTypeUseAnnotations(pt);
-			pt = removeTypeUseAnnotations(pt);
-			JCModifiers paramMods = typeUseAnns.isEmpty() ? maker.Modifiers(paramFlags) : maker.Modifiers(paramFlags, typeUseAnns);
-			JCVariableDecl p = maker.VarDef(paramMods, names[i], pt, null);
+			JCVariableDecl p = generateSingularMethodParameter(i, maker, data, builderType, source, names[i], paramFlags);
 			params.append(p);
 		}
 
