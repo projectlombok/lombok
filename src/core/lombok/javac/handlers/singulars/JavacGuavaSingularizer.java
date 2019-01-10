@@ -94,8 +94,8 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
 		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName());
 		ListBuffer<JCExpression> invokeAddExprBuilder = new ListBuffer<JCExpression>();
-		for (int i = 0; i < names.length; i++) {
-			invokeAddExprBuilder.append(maker.Ident(names[i]));
+		for (Name name : names) {
+			invokeAddExprBuilder.append(maker.Ident(name));
 		}
 		List<JCExpression> invokeAddExpr = invokeAddExprBuilder.toList();
 		JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, invokeAddExpr);
