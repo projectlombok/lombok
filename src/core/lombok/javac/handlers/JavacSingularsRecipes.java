@@ -251,15 +251,12 @@ public class JavacSingularsRecipes {
 		}
 
 		void generateClearMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {
-
-			List<JCVariableDecl> params = List.nil();
-
 			JCStatement clearStatement = generateClearStatements(maker, data, builderType);
 			List<JCStatement> statements = returnStatement != null ? List.of(clearStatement, returnStatement) : List.of(clearStatement);
 
 			JCBlock body = maker.Block(0, statements);
 			Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
-			finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, methodName, params);
+			finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, methodName, List.<JCVariableDecl>nil());
 		}
 
 		protected abstract JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType);
