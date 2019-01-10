@@ -170,7 +170,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		Name name = data.getPluralName();
 		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName("putAll", name.toString()));
 		JCExpression paramType = getPluralMethodParamType(builderType);
-		paramType = addTypeArgs(2, true, builderType, paramType, data.getTypeArgs(), source);
+		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
 		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
 		finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, name, List.of(param));
@@ -198,5 +198,9 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 	@Override
 	protected String getAddMethodName() {
 		return "put";
+	}
+
+	private int getTypeArgumentsCount() {
+		return 2;
 	}
 }

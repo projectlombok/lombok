@@ -123,7 +123,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		Name name = data.getPluralName();
 		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName("addAll", name.toString()));
 		JCExpression paramType = getPluralMethodParamType(builderType);
-		paramType = addTypeArgs(1, true, builderType, paramType, data.getTypeArgs(), source);
+		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
 		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
 		finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, name, List.of(param));
@@ -136,5 +136,9 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 	@Override
 	protected String getAddMethodName() {
 		return "add";
+	}
+
+	private int getTypeArgumentsCount() {
+		return 1;
 	}
 }
