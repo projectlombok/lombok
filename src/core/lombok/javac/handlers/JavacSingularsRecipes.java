@@ -250,7 +250,7 @@ public class JavacSingularsRecipes {
 			injectMethod(builderType, method);
 		}
 
-		protected void generateClearMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {
+		void generateClearMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {
 
 			List<JCVariableDecl> params = List.nil();
 
