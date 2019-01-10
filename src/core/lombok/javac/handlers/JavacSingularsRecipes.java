@@ -255,9 +255,9 @@ public class JavacSingularsRecipes {
 			JCStatement clearStatement = generateClearStatements(maker, data, builderType);
 			ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 			statements.add(clearStatement);
-			if (returnStatement != null) statements.append(returnStatement);
 
 			Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
+			if (returnStatement != null) statements.append(returnStatement);
 			finishAndInjectMethod(maker, returnType, builderType, source, deprecate, statements, methodName, List.<JCVariableDecl>nil());
 		}
 
@@ -266,10 +266,10 @@ public class JavacSingularsRecipes {
 		void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 			ListBuffer<JCStatement> statements = generateSingularMethodStatements(maker, data, builderType, source);
 			List<JCVariableDecl> params = generateSingularMethodParameters(maker, data, builderType, source);
-			if (returnStatement != null) statements.append(returnStatement);
 			Name name = data.getSingularName();
 			if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName(), name.toString()));
 
+			if (returnStatement != null) statements.append(returnStatement);
 			finishAndInjectMethod(maker, returnType, builderType, source, deprecate, statements, name, params);
 		}
 
@@ -294,13 +294,13 @@ public class JavacSingularsRecipes {
 
 		void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 			ListBuffer<JCStatement> statements = generatePluralMethodStatements(maker, data, builderType, source);
-			if (returnStatement != null) statements.append(returnStatement);
 			Name name = data.getPluralName();
 			if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName() + "All", name.toString()));
 			JCExpression paramType = getPluralMethodParamType(builderType);
 			paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
 			long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 			JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
+			if (returnStatement != null) statements.append(returnStatement);
 			finishAndInjectMethod(maker, returnType, builderType, source, deprecate, statements, name, List.of(param));
 		}
 
