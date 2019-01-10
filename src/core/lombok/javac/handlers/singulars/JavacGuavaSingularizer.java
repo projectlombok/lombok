@@ -193,7 +193,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 	}
 	
 	protected abstract LombokImmutableList<String> getArgumentSuffixes();
-	protected abstract String getAddMethodName();
+
 	protected abstract String getAddAllTypeName();
 	
 	protected int getTypeArgumentsCount() {

@@ -197,7 +197,8 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		}
 	}
 
-	private String getAddMethodName() {
+	@Override
+	protected String getAddMethodName() {
 		return "put";
 	}
 }

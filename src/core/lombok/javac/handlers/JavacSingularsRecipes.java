@@ -404,5 +404,7 @@ public class JavacSingularsRecipes {
 				}
 			}
 		}
+
+		protected abstract String getAddMethodName();
 	}
 }

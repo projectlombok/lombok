@@ -134,7 +134,8 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, List.of(param));
 	}
 
-	private String getAddMethodName() {
+	@Override
+	protected String getAddMethodName() {
 		return "add";
 	}
 }
