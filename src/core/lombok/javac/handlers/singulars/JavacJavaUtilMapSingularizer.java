@@ -149,15 +149,17 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		
 		Name name = data.getSingularName();
 		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName("put", name.toString()));
+
 		JCExpression paramTypeKey = cloneParamType(0, maker, data.getTypeArgs(), builderType, source);
-		JCExpression paramTypeValue = cloneParamType(1, maker, data.getTypeArgs(), builderType, source);
 		List<JCAnnotation> typeUseAnnsKey = getTypeUseAnnotations(paramTypeKey);
-		List<JCAnnotation> typeUseAnnsValue = getTypeUseAnnotations(paramTypeValue);
 		paramTypeKey = removeTypeUseAnnotations(paramTypeKey);
-		paramTypeValue = removeTypeUseAnnotations(paramTypeValue);
 		JCModifiers paramModsKey = typeUseAnnsKey.isEmpty() ? maker.Modifiers(paramFlags) : maker.Modifiers(paramFlags, typeUseAnnsKey);
-		JCModifiers paramModsValue = typeUseAnnsValue.isEmpty() ? maker.Modifiers(paramFlags) : maker.Modifiers(paramFlags, typeUseAnnsValue);
 		JCVariableDecl paramKey = maker.VarDef(paramModsKey, keyName, paramTypeKey, null);
+
+		JCExpression paramTypeValue = cloneParamType(1, maker, data.getTypeArgs(), builderType, source);
+		List<JCAnnotation> typeUseAnnsValue = getTypeUseAnnotations(paramTypeValue);
+		paramTypeValue = removeTypeUseAnnotations(paramTypeValue);
+		JCModifiers paramModsValue = typeUseAnnsValue.isEmpty() ? maker.Modifiers(paramFlags) : maker.Modifiers(paramFlags, typeUseAnnsValue);
 		JCVariableDecl paramValue = maker.VarDef(paramModsValue, valueName, paramTypeValue, null);
 		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, List.of(paramKey, paramValue));
 	}
