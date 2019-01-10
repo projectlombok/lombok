@@ -241,7 +241,8 @@ public class JavacSingularsRecipes {
 			generateClearMethod(deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source);
 		}
 
-		void finishAndInjectMethod(JavacTreeMaker maker, JCExpression returnType, JavacNode builderType, JCTree source, boolean deprecate, ListBuffer<JCStatement> statements, Name methodName, List<JCVariableDecl> jcVariableDecls) {
+		void finishAndInjectMethod(JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, JavacNode builderType, JCTree source, boolean deprecate, ListBuffer<JCStatement> statements, Name methodName, List<JCVariableDecl> jcVariableDecls) {
+			if (returnStatement != null) statements.append(returnStatement);
 			JCBlock body = maker.Block(0, statements.toList());
 			JCModifiers mods = makeMods(maker, builderType, deprecate);
 			List<JCTypeParameter> typeParams = List.nil();
@@ -257,8 +258,7 @@ public class JavacSingularsRecipes {
 			statements.add(clearStatement);
 
 			Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
-			if (returnStatement != null) statements.append(returnStatement);
-			finishAndInjectMethod(maker, returnType, builderType, source, deprecate, statements, methodName, List.<JCVariableDecl>nil());
+			finishAndInjectMethod(maker, returnType, returnStatement, builderType, source, deprecate, statements, methodName, List.<JCVariableDecl>nil());
 		}
 
 		protected abstract JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType);
@@ -269,8 +269,7 @@ public class JavacSingularsRecipes {
 			Name name = data.getSingularName();
 			if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName(), name.toString()));
 
-			if (returnStatement != null) statements.append(returnStatement);
-			finishAndInjectMethod(maker, returnType, builderType, source, deprecate, statements, name, params);
+			finishAndInjectMethod(maker, returnType, returnStatement, builderType, source, deprecate, statements, name, params);
 		}
 
 		protected JCVariableDecl generateSingularMethodParameter(int typeIndex, JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source, Name name) {
@@ -300,8 +299,7 @@ public class JavacSingularsRecipes {
 			paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
 			long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 			JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
-			if (returnStatement != null) statements.append(returnStatement);
-			finishAndInjectMethod(maker, returnType, builderType, source, deprecate, statements, name, List.of(param));
+			finishAndInjectMethod(maker, returnType, returnStatement, builderType, source, deprecate, statements, name, List.of(param));
 		}
 
 		protected ListBuffer<JCStatement> generatePluralMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
