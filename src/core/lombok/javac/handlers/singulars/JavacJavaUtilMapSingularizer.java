@@ -164,16 +164,8 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCExpression entrySetInvocation = maker.Apply(jceBlank, maker.Select(maker.Ident(data.getPluralName()), builderType.toName("entrySet")), jceBlank);
 		JCStatement forEach = maker.ForeachLoop(maker.VarDef(maker.Modifiers(baseFlags), entryName, forEachType, null), entrySetInvocation, forEachBody);
 		statements.append(forEach);
-		
-		if (returnStatement != null) statements.append(returnStatement);
-		JCBlock body = maker.Block(0, statements.toList());
-		Name name = data.getPluralName();
-		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName() + "All", name.toString()));
-		JCExpression paramType = getPluralMethodParamType(builderType);
-		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
-		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
-		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
-		finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, name, List.of(param));
+
+		finishAndInjectPluralMethod(deprecate, maker, returnType, returnStatement, data, builderType, source, fluent, statements);
 	}
 
 	@Override
