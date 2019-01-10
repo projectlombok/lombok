@@ -125,8 +125,6 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 	
 	@Override
 	protected void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
-		JCModifiers mods = makeMods(maker, builderType, deprecate);
-		
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, true, source));
 		Name keyName = builderType.toName(data.getSingularName().toString() + "Key");
@@ -141,6 +139,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCVariableDecl paramValue = generateSingularMethodParameter(1, maker, data, builderType, source, valueName);
 		List<JCVariableDecl> params = List.of(paramKey, paramValue);
 
+		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, mods, statements, params, "put");
 	}
 

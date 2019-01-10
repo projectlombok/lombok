@@ -90,7 +90,6 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 			names[i] = s.isEmpty() ? n : builderType.toName(s);
 		}
 		
-		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
 		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName());
@@ -108,6 +107,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 			params.append(generateSingularMethodParameter(i, maker, data, builderType, source, names[i]));
 		}
 
+		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, mods, statements, params.toList(), getAddMethodName());
 	}
 	
