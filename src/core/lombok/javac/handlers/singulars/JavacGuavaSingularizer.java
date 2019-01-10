@@ -107,8 +107,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 			params.append(generateSingularMethodParameter(i, maker, data, builderType, source, names[i]));
 		}
 
-		JCModifiers mods = makeMods(maker, builderType, deprecate);
-		finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, mods, statements, params.toList(), getAddMethodName());
+		finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, deprecate, statements, params.toList(), getAddMethodName());
 	}
 	
 	@Override

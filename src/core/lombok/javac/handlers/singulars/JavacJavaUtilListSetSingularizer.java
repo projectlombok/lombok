@@ -105,8 +105,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		JCVariableDecl param = generateSingularMethodParameter(0, maker, data, builderType, source, data.getSingularName());
 		List<JCVariableDecl> params = List.of(param);
 
-		JCModifiers mods = makeMods(maker, builderType, deprecate);
-		finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, mods, statements, params, "add");
+		finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, deprecate, statements, params, "add");
 	}
 
 	@Override
