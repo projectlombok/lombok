@@ -95,8 +95,9 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		recursiveSetGeneratedBy(method, source, builderType.getContext());
 		injectMethod(builderType, method);
 	}
-	
-	void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
+
+	@Override
+	protected void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 		List<JCTypeParameter> typeParams = List.nil();
 		List<JCExpression> thrown = List.nil();
 		

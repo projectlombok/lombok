@@ -140,7 +140,8 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		injectMethod(builderType, method);
 	}
 	
-	private void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
+	@Override
+	protected void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 		List<JCTypeParameter> typeParams = List.nil();
 		List<JCExpression> thrown = List.nil();
 		JCModifiers mods = makeMods(maker, builderType, deprecate);
