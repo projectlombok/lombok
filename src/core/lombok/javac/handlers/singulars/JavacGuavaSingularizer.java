@@ -77,11 +77,9 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 	}
 	
 	@Override
-	protected List<JCStatement> generateClearStatements(JavacTreeMaker maker, JCStatement returnStatement, SingularData data, JavacNode builderType) {
+	protected JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType) {
 		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
-
-		JCStatement clearField = maker.Exec(maker.Assign(thisDotField, maker.Literal(CTC_BOT, null)));
-		return returnStatement != null ? List.of(clearField, returnStatement) : List.of(clearField);
+		return maker.Exec(maker.Assign(thisDotField, maker.Literal(CTC_BOT, null)));
 	}
 
 	@Override

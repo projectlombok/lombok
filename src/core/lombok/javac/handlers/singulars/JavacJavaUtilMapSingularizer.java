@@ -113,7 +113,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 	}
 
 	@Override
-	protected List<JCStatement> generateClearStatements(JavacTreeMaker maker, JCStatement returnStatement, SingularData data, JavacNode builderType) {
+	protected JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType) {
 		List<JCExpression> jceBlank = List.nil();
 		
 		JCExpression thisDotKeyField = chainDots(builderType, "this", data.getPluralName() + "$key");
@@ -123,8 +123,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCStatement clearValueCall = maker.Exec(maker.Apply(jceBlank, thisDotValueFieldDotClear, jceBlank));
 		JCExpression cond = maker.Binary(CTC_NOT_EQUAL, thisDotKeyField, maker.Literal(CTC_BOT, null));
 		JCBlock clearCalls = maker.Block(0, List.of(clearKeyCall, clearValueCall));
-		JCStatement ifSetCallClear = maker.If(cond, clearCalls, null);
-		return returnStatement != null ? List.of(ifSetCallClear, returnStatement) : List.of(ifSetCallClear);
+		return maker.If(cond, clearCalls, null);
 	}
 	
 	@Override

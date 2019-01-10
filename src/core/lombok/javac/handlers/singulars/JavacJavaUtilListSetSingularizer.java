@@ -88,7 +88,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 	}
 
 	@Override
-	protected List<JCStatement> generateClearStatements(JavacTreeMaker maker, JCStatement returnStatement, SingularData data, JavacNode builderType) {
+	protected JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType) {
 		List<JCExpression> jceBlank = List.nil();
 		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
 		JCExpression thisDotFieldDotClear = maker.Select(maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName()), builderType.toName("clear"));
@@ -96,8 +96,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		JCStatement clearCall = maker.Exec(maker.Apply(jceBlank, thisDotFieldDotClear, jceBlank));
 		JCExpression cond = maker.Binary(CTC_NOT_EQUAL, thisDotField, maker.Literal(CTC_BOT, null));
 
-		JCStatement ifSetCallClear = maker.If(cond, clearCall, null);
-		return returnStatement != null ? List.of(ifSetCallClear, returnStatement) : List.of(ifSetCallClear);
+		return maker.If(cond, clearCall, null);
 	}
 
 	@Override

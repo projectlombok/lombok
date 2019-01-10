@@ -248,7 +248,8 @@ public class JavacSingularsRecipes {
 			List<JCExpression> thrown = List.nil();
 			List<JCVariableDecl> params = List.nil();
 
-			List<JCStatement> statements = generateClearStatements(maker, returnStatement, data, builderType);
+			JCStatement clearStatement = generateClearStatements(maker, data, builderType);
+			List<JCStatement> statements = returnStatement != null ? List.of(clearStatement, returnStatement) : List.of(clearStatement);
 
 			JCBlock body = maker.Block(0, statements);
 			Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
@@ -257,7 +258,7 @@ public class JavacSingularsRecipes {
 			injectMethod(builderType, method);
 		}
 
-		protected abstract List<JCStatement> generateClearStatements(JavacTreeMaker maker, JCStatement returnStatement, SingularData data, JavacNode builderType);
+		protected abstract JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType);
 
 		protected abstract void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent);
 
