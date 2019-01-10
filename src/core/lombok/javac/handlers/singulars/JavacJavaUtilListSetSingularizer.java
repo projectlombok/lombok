@@ -89,8 +89,9 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		generatePluralMethod(deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source, fluent);
 		generateClearMethod(deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source);
 	}
-	
-	private void generateClearMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {
+
+	@Override
+	protected void generateClearMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {
 		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		List<JCTypeParameter> typeParams = List.nil();
 		List<JCExpression> thrown = List.nil();
