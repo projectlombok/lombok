@@ -82,13 +82,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 
 	@Override
 	protected void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
-		LombokImmutableList<String> suffixes = getArgumentSuffixes();
-		Name[] names = new Name[suffixes.size()];
-		for (int i = 0; i < names.length; i++) {
-			String s = suffixes.get(i);
-			Name n = data.getSingularName();
-			names[i] = s.isEmpty() ? n : builderType.toName(s);
-		}
+		Name[] names = generateSingularMethodParameterNames(data, builderType);
 
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
@@ -109,7 +103,18 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 
 		finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, deprecate, statements, params.toList(), getAddMethodName());
 	}
-	
+
+	private Name[] generateSingularMethodParameterNames(SingularData data, JavacNode builderType) {
+		LombokImmutableList<String> suffixes = getArgumentSuffixes();
+		Name[] names = new Name[suffixes.size()];
+		for (int i = 0; i < names.length; i++) {
+			String s = suffixes.get(i);
+			Name n = data.getSingularName();
+			names[i] = s.isEmpty() ? n : builderType.toName(s);
+		}
+		return names;
+	}
+
 	@Override
 	protected void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 		JCModifiers mods = makeMods(maker, builderType, deprecate);
