@@ -129,7 +129,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		Name keyName = builderType.toName(data.getSingularName().toString() + "Key");
 		Name valueName = builderType.toName(data.getSingularName().toString() + "Value");
 
-		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, true, source));
+		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
 		/* Generates: this.pluralname$key.add(singularnameKey); */
 		statements.append(generateSingularMethodAddStatement(maker, builderType, keyName, data.getPluralName() + "$key"));
 		/* Generates: this.pluralname$value.add(singularnameValue); */
@@ -150,7 +150,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 	protected void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 		List<JCExpression> jceBlank = List.nil();
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, true, source));
+		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
 		long baseFlags = JavacHandlerUtil.addFinalIfNeeded(0, builderType.getContext());
 		Name entryName = builderType.toName("$lombokEntry");
 		
@@ -178,6 +178,10 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 
 	private JCExpression getPluralMethodParamType(JavacNode builderType) {
 		return chainDots(builderType, "java", "util", "Map");
+	}
+
+	private JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+		return createConstructBuilderVarIfNeeded(maker, data, builderType, true, source);
 	}
 
 	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {

@@ -99,7 +99,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 	@Override
 	protected ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, false, source));
+		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
 		statements.append(generateSingularMethodAddStatement(maker, builderType, data.getSingularName(), data.getPluralName().toString()));
 		return statements;
 	}
@@ -113,7 +113,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 	@Override
 	protected void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, false, source));
+		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
 		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName() + "All");
 		JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, List.<JCExpression>of(maker.Ident(data.getPluralName())));
 		statements.append(maker.Exec(invokeAdd));
@@ -131,6 +131,10 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 
 	private JCExpression getPluralMethodParamType(JavacNode builderType) {
 		return chainDots(builderType, "java", "util", "Collection");
+	}
+
+	private JCStatement createConstructBuilderVarIfNeeded(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+		return createConstructBuilderVarIfNeeded(maker, data, builderType, false, source);
 	}
 
 	@Override
