@@ -281,6 +281,15 @@ public class JavacSingularsRecipes {
 			return maker.Exec(invokeAdd);
 		}
 
+		protected void finishAndInjectSingularMethod(JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent, JCModifiers mods, ListBuffer<JCStatement> statements, List<JCVariableDecl> params, String addMethodName) {
+			if (returnStatement != null) statements.append(returnStatement);
+			JCBlock body = maker.Block(0, statements.toList());
+			Name name = data.getSingularName();
+			if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName(addMethodName, name.toString()));
+
+			finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, params);
+		}
+
 		protected abstract void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent);
 
 		public abstract void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable);
