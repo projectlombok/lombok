@@ -100,8 +100,6 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 
 	@Override
 	protected void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
-		List<JCTypeParameter> typeParams = List.nil();
-		List<JCExpression> thrown = List.nil();
 		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, false, source));
@@ -118,13 +116,13 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		paramType = removeTypeUseAnnotations(paramType);
 		JCModifiers paramMods = typeUseAnns.isEmpty() ? maker.Modifiers(paramFlags) : maker.Modifiers(paramFlags, typeUseAnns);
 		JCVariableDecl param = maker.VarDef(paramMods, data.getSingularName(), paramType, null);
+		List<JCTypeParameter> typeParams = List.nil();
+		List<JCExpression> thrown = List.nil();
 		finishAndInjectMethod(maker, returnType, builderType, source, typeParams, thrown, mods, body, name, List.of(param));
 	}
 
 	@Override
 	protected void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
-		List<JCTypeParameter> typeParams = List.nil();
-		List<JCExpression> thrown = List.nil();
 		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, false, source));
@@ -139,6 +137,8 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		JCExpression paramType = chainDots(builderType, "java", "util", "Collection");
 		paramType = addTypeArgs(1, true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
+		List<JCTypeParameter> typeParams = List.nil();
+		List<JCExpression> thrown = List.nil();
 		finishAndInjectMethod(maker, returnType, builderType, source, typeParams, thrown, mods, body, name, List.of(param));
 	}
 }

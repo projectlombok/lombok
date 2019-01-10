@@ -250,8 +250,6 @@ public class JavacSingularsRecipes {
 		protected void generateClearMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {
 			JCModifiers mods = makeMods(maker, builderType, deprecate);
 
-			List<JCTypeParameter> typeParams = List.nil();
-			List<JCExpression> thrown = List.nil();
 			List<JCVariableDecl> params = List.nil();
 
 			JCStatement clearStatement = generateClearStatements(maker, data, builderType);
@@ -259,6 +257,8 @@ public class JavacSingularsRecipes {
 
 			JCBlock body = maker.Block(0, statements);
 			Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
+			List<JCTypeParameter> typeParams = List.nil();
+			List<JCExpression> thrown = List.nil();
 			finishAndInjectMethod(maker, returnType, builderType, source, typeParams, thrown, mods, body, methodName, params);
 		}
 

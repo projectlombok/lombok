@@ -127,8 +127,6 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 	
 	@Override
 	protected void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
-		List<JCTypeParameter> typeParams = List.nil();
-		List<JCExpression> thrown = List.nil();
 		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
@@ -161,12 +159,13 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCModifiers paramModsValue = typeUseAnnsValue.isEmpty() ? maker.Modifiers(paramFlags) : maker.Modifiers(paramFlags, typeUseAnnsValue);
 		JCVariableDecl paramKey = maker.VarDef(paramModsKey, keyName, paramTypeKey, null);
 		JCVariableDecl paramValue = maker.VarDef(paramModsValue, valueName, paramTypeValue, null);
+		List<JCTypeParameter> typeParams = List.nil();
+		List<JCExpression> thrown = List.nil();
 		finishAndInjectMethod(maker, returnType, builderType, source, typeParams, thrown, mods, body, name, List.of(paramKey, paramValue));
 	}
 
 	@Override
 	protected void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
-		List<JCTypeParameter> typeParams = List.nil();
 		List<JCExpression> jceBlank = List.nil();
 		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
@@ -193,6 +192,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCExpression paramType = chainDots(builderType, "java", "util", "Map");
 		paramType = addTypeArgs(2, true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
+		List<JCTypeParameter> typeParams = List.nil();
 		finishAndInjectMethod(maker, returnType, builderType, source, typeParams, jceBlank, mods, body, name, List.of(param));
 	}
 	

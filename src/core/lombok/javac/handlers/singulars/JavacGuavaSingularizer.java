@@ -83,9 +83,6 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 
 	@Override
 	protected void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
-		List<JCTypeParameter> typeParams = List.nil();
-		List<JCExpression> thrown = List.nil();
-		
 		LombokImmutableList<String> suffixes = getArgumentSuffixes();
 		Name[] names = new Name[suffixes.size()];
 		for (int i = 0; i < suffixes.size(); i++) {
@@ -120,13 +117,13 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 			params.append(p);
 		}
 
+		List<JCTypeParameter> typeParams = List.nil();
+		List<JCExpression> thrown = List.nil();
 		finishAndInjectMethod(maker, returnType, builderType, source, typeParams, thrown, mods, body, methodName, params.toList());
 	}
 	
 	@Override
 	protected void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
-		List<JCTypeParameter> typeParams = List.nil();
-		List<JCExpression> thrown = List.nil();
 		JCModifiers mods = makeMods(maker, builderType, deprecate);
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
@@ -147,6 +144,8 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		}
 		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
+		List<JCTypeParameter> typeParams = List.nil();
+		List<JCExpression> thrown = List.nil();
         finishAndInjectMethod(maker, returnType, builderType, source, typeParams, thrown, mods, body, methodName, List.of(param));
     }
 	
