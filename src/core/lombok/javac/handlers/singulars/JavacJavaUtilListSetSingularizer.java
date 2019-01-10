@@ -88,18 +88,6 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 	}
 
 	@Override
-	protected void generateClearMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {
-		JCModifiers mods = makeMods(maker, builderType, deprecate);
-		List<JCTypeParameter> typeParams = List.nil();
-		List<JCExpression> thrown = List.nil();
-		List<JCVariableDecl> params = List.nil();
-
-		List<JCStatement> statements = generateClearStatements(maker, returnStatement, data, builderType);
-
-		finishGenerateClearMethod(maker, returnType, data, builderType, source, mods, typeParams, thrown, params, statements);
-	}
-
-	@Override
 	protected List<JCStatement> generateClearStatements(JavacTreeMaker maker, JCStatement returnStatement, SingularData data, JavacNode builderType) {
 		List<JCExpression> jceBlank = List.nil();
 		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());

@@ -241,9 +241,15 @@ public class JavacSingularsRecipes {
 			generateClearMethod(deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source);
 		}
 
-		protected abstract void generateClearMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source);
+		protected void generateClearMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source) {
+			JCModifiers mods = makeMods(maker, builderType, deprecate);
 
-		protected void finishGenerateClearMethod(JavacTreeMaker maker, JCExpression returnType, SingularData data, JavacNode builderType, JCTree source, JCModifiers mods, List<JCTypeParameter> typeParams, List<JCExpression> thrown, List<JCVariableDecl> params, List<JCStatement> statements) {
+			List<JCTypeParameter> typeParams = List.nil();
+			List<JCExpression> thrown = List.nil();
+			List<JCVariableDecl> params = List.nil();
+
+			List<JCStatement> statements = generateClearStatements(maker, returnStatement, data, builderType);
+
 			JCBlock body = maker.Block(0, statements);
 			Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
 			JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, params, thrown, body, null);
