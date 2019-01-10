@@ -84,17 +84,17 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 	protected void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 		LombokImmutableList<String> suffixes = getArgumentSuffixes();
 		Name[] names = new Name[suffixes.size()];
-		for (int i = 0; i < suffixes.size(); i++) {
+		for (int i = 0; i < names.length; i++) {
 			String s = suffixes.get(i);
 			Name n = data.getSingularName();
 			names[i] = s.isEmpty() ? n : builderType.toName(s);
 		}
-		
+
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
 		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName());
 		ListBuffer<JCExpression> invokeAddExprBuilder = new ListBuffer<JCExpression>();
-		for (int i = 0; i < suffixes.size(); i++) {
+		for (int i = 0; i < names.length; i++) {
 			invokeAddExprBuilder.append(maker.Ident(names[i]));
 		}
 		List<JCExpression> invokeAddExpr = invokeAddExprBuilder.toList();
@@ -103,7 +103,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		statements.append(st);
 
 		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
-		for (int i = 0; i < suffixes.size(); i++) {
+		for (int i = 0; i < names.length; i++) {
 			params.append(generateSingularMethodParameter(i, maker, data, builderType, source, names[i]));
 		}
 
