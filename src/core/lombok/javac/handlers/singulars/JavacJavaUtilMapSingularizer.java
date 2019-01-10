@@ -148,9 +148,8 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		Name name = data.getSingularName();
 		if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName("put", name.toString()));
 
-		long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
-		JCVariableDecl paramKey = generateSingularMethodParameter(0, maker, data, builderType, source, keyName, paramFlags);
-		JCVariableDecl paramValue = generateSingularMethodParameter(1, maker, data, builderType, source, valueName, paramFlags);
+		JCVariableDecl paramKey = generateSingularMethodParameter(0, maker, data, builderType, source, keyName);
+		JCVariableDecl paramValue = generateSingularMethodParameter(1, maker, data, builderType, source, valueName);
 		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, List.of(paramKey, paramValue));
 	}
 

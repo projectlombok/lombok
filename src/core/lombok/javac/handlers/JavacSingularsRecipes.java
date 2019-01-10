@@ -266,7 +266,8 @@ public class JavacSingularsRecipes {
 
 		protected abstract void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent);
 
-		protected JCVariableDecl generateSingularMethodParameter(int typeIndex, JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source, Name name, long flags) {
+		protected JCVariableDecl generateSingularMethodParameter(int typeIndex, JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source, Name name) {
+			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 			JCExpression type = cloneParamType(typeIndex, maker, data.getTypeArgs(), builderType, source);
 			List<JCAnnotation> typeUseAnns = getTypeUseAnnotations(type);
 			type = removeTypeUseAnnotations(type);

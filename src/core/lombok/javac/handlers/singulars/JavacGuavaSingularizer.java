@@ -107,8 +107,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		if (!fluent) methodName = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName(), methodName.toString()));
 		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
 		for (int i = 0; i < suffixes.size(); i++) {
-			long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
-			params.append(generateSingularMethodParameter(i, maker, data, builderType, source, names[i], paramFlags));
+			params.append(generateSingularMethodParameter(i, maker, data, builderType, source, names[i]));
 		}
 
 		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, methodName, params.toList());
