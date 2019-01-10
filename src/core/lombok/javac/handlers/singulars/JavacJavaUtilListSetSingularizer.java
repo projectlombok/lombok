@@ -125,8 +125,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		JCExpression paramType = chainDots(builderType, "java", "util", "Collection");
 		paramType = addTypeArgs(1, true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
-		JCModifiers mods = makeMods(maker, builderType, deprecate);
-		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, List.of(param));
+		finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, name, List.of(param));
 	}
 
 	@Override

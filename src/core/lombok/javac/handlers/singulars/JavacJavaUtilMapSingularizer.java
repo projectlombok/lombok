@@ -173,8 +173,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCExpression paramType = chainDots(builderType, "java", "util", "Map");
 		paramType = addTypeArgs(2, true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
-		JCModifiers mods = makeMods(maker, builderType, deprecate);
-		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, List.of(param));
+		finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, name, List.of(param));
 	}
 	
 	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {

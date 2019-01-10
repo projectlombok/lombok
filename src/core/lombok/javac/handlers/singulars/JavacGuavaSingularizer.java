@@ -139,8 +139,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		}
 		paramType = addTypeArgs(getTypeArgumentsCount(), true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
-		JCModifiers mods = makeMods(maker, builderType, deprecate);
-		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, methodName, List.of(param));
+		finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, methodName, List.of(param));
     }
 	
 	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {

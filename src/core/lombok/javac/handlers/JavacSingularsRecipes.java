@@ -241,7 +241,8 @@ public class JavacSingularsRecipes {
 			generateClearMethod(deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source);
 		}
 
-		protected void finishAndInjectMethod(JavacTreeMaker maker, JCExpression returnType, JavacNode builderType, JCTree source, JCModifiers mods, JCBlock body, Name methodName, List<JCVariableDecl> jcVariableDecls) {
+		protected void finishAndInjectMethod(JavacTreeMaker maker, JCExpression returnType, JavacNode builderType, JCTree source, boolean deprecate, JCBlock body, Name methodName, List<JCVariableDecl> jcVariableDecls) {
+			JCModifiers mods = makeMods(maker, builderType, deprecate);
 			List<JCTypeParameter> typeParams = List.nil();
 			List<JCExpression> thrown = List.nil();
 			JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, jcVariableDecls, thrown, body, null);
@@ -258,8 +259,7 @@ public class JavacSingularsRecipes {
 
 			JCBlock body = maker.Block(0, statements);
 			Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
-			JCModifiers mods = makeMods(maker, builderType, deprecate);
-			finishAndInjectMethod(maker, returnType, builderType, source, mods, body, methodName, params);
+			finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, methodName, params);
 		}
 
 		protected abstract JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType);
@@ -272,8 +272,7 @@ public class JavacSingularsRecipes {
 			Name name = data.getSingularName();
 			if (!fluent) name = builderType.toName(HandlerUtil.buildAccessorName(getAddMethodName(), name.toString()));
 
-			JCModifiers mods = makeMods(maker, builderType, deprecate);
-			finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, params);
+			finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, name, params);
 		}
 
 		protected JCVariableDecl generateSingularMethodParameter(int typeIndex, JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source, Name name) {
