@@ -131,14 +131,9 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, true, source));
 		Name keyName = builderType.toName(data.getSingularName().toString() + "Key");
 		Name valueName = builderType.toName(data.getSingularName().toString() + "Value");
-		/* this.pluralname$key.add(singularnameKey); */ {
-			JCStatement st = generateSingularMethodAddStatement(maker, builderType, keyName, data.getPluralName() + "$key");
-			statements.append(st);
-		}
-		/* this.pluralname$value.add(singularnameValue); */ {
-			JCStatement st = generateSingularMethodAddStatement(maker, builderType, valueName, data.getPluralName() + "$value");
-			statements.append(st);
-		}
+		statements.append(generateSingularMethodAddStatement(maker, builderType, keyName, data.getPluralName() + "$key"));
+		statements.append(generateSingularMethodAddStatement(maker, builderType, valueName, data.getPluralName() + "$value"));
+
 		if (returnStatement != null) statements.append(returnStatement);
 		JCBlock body = maker.Block(0, statements.toList());
 
