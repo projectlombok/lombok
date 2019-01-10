@@ -24,6 +24,8 @@ package lombok.javac.handlers;
 import static lombok.javac.Javac.*;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
+import com.sun.tools.javac.tree.JCTree.JCBlock;
+import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +35,7 @@ import java.util.Map;
 import lombok.core.LombokImmutableList;
 import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
+import lombok.core.handlers.HandlerUtil;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
 
@@ -239,6 +242,14 @@ public class JavacSingularsRecipes {
 		}
 
 		protected abstract void generateClearMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source);
+
+		protected void finishGenerateClearMethod(JavacTreeMaker maker, JCExpression returnType, SingularData data, JavacNode builderType, JCTree source, JCModifiers mods, List<JCTypeParameter> typeParams, List<JCExpression> thrown, List<JCVariableDecl> params, List<JCStatement> statements) {
+			JCBlock body = maker.Block(0, statements);
+			Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
+			JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, params, thrown, body, null);
+			recursiveSetGeneratedBy(method, source, builderType.getContext());
+			injectMethod(builderType, method);
+		}
 
 		protected abstract void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent);
 

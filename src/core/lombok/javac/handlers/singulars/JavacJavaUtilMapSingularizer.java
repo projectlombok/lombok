@@ -130,12 +130,8 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCBlock clearCalls = maker.Block(0, List.of(clearKeyCall, clearValueCall));
 		JCStatement ifSetCallClear = maker.If(cond, clearCalls, null);
 		List<JCStatement> statements = returnStatement != null ? List.of(ifSetCallClear, returnStatement) : List.of(ifSetCallClear);
-		
-		JCBlock body = maker.Block(0, statements);
-		Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
-		JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, params, thrown, body, null);
-		recursiveSetGeneratedBy(method, source, builderType.getContext());
-		injectMethod(builderType, method);
+
+		finishGenerateClearMethod(maker, returnType, data, builderType, source, mods, typeParams, thrown, params, statements);
 	}
 	
 	@Override

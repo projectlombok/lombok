@@ -86,12 +86,8 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
 		JCStatement clearField = maker.Exec(maker.Assign(thisDotField, maker.Literal(CTC_BOT, null)));
 		List<JCStatement> statements = returnStatement != null ? List.of(clearField, returnStatement) : List.of(clearField);
-		
-		JCBlock body = maker.Block(0, statements);
-		Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
-		JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, params, thrown, body, null);
-		recursiveSetGeneratedBy(method, source, builderType.getContext());
-		injectMethod(builderType, method);
+
+		finishGenerateClearMethod(maker, returnType, data, builderType, source, mods, typeParams, thrown, params, statements);
 	}
 
 	@Override
