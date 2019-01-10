@@ -159,9 +159,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCModifiers paramModsValue = typeUseAnnsValue.isEmpty() ? maker.Modifiers(paramFlags) : maker.Modifiers(paramFlags, typeUseAnnsValue);
 		JCVariableDecl paramKey = maker.VarDef(paramModsKey, keyName, paramTypeKey, null);
 		JCVariableDecl paramValue = maker.VarDef(paramModsValue, valueName, paramTypeValue, null);
-		List<JCTypeParameter> typeParams = List.nil();
-		List<JCExpression> thrown = List.nil();
-		finishAndInjectMethod(maker, returnType, builderType, source, typeParams, thrown, mods, body, name, List.of(paramKey, paramValue));
+		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, List.of(paramKey, paramValue));
 	}
 
 	@Override
@@ -192,8 +190,7 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCExpression paramType = chainDots(builderType, "java", "util", "Map");
 		paramType = addTypeArgs(2, true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
-		List<JCTypeParameter> typeParams = List.nil();
-		finishAndInjectMethod(maker, returnType, builderType, source, typeParams, jceBlank, mods, body, name, List.of(param));
+		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, List.of(param));
 	}
 	
 	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {

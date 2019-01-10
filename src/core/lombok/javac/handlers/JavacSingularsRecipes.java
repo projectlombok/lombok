@@ -241,7 +241,9 @@ public class JavacSingularsRecipes {
 			generateClearMethod(deprecate, maker, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, source);
 		}
 
-		protected void finishAndInjectMethod(JavacTreeMaker maker, JCExpression returnType, JavacNode builderType, JCTree source, List<JCTypeParameter> typeParams, List<JCExpression> thrown, JCModifiers mods, JCBlock body, Name methodName, List<JCVariableDecl> jcVariableDecls) {
+		protected void finishAndInjectMethod(JavacTreeMaker maker, JCExpression returnType, JavacNode builderType, JCTree source, JCModifiers mods, JCBlock body, Name methodName, List<JCVariableDecl> jcVariableDecls) {
+			List<JCTypeParameter> typeParams = List.nil();
+			List<JCExpression> thrown = List.nil();
 			JCMethodDecl method = maker.MethodDef(mods, methodName, returnType, typeParams, jcVariableDecls, thrown, body, null);
 			recursiveSetGeneratedBy(method, source, builderType.getContext());
 			injectMethod(builderType, method);
@@ -257,9 +259,7 @@ public class JavacSingularsRecipes {
 
 			JCBlock body = maker.Block(0, statements);
 			Name methodName = builderType.toName(HandlerUtil.buildAccessorName("clear", data.getPluralName().toString()));
-			List<JCTypeParameter> typeParams = List.nil();
-			List<JCExpression> thrown = List.nil();
-			finishAndInjectMethod(maker, returnType, builderType, source, typeParams, thrown, mods, body, methodName, params);
+			finishAndInjectMethod(maker, returnType, builderType, source, mods, body, methodName, params);
 		}
 
 		protected abstract JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType);

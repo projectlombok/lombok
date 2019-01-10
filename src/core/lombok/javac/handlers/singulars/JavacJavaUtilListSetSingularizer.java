@@ -116,9 +116,7 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		paramType = removeTypeUseAnnotations(paramType);
 		JCModifiers paramMods = typeUseAnns.isEmpty() ? maker.Modifiers(paramFlags) : maker.Modifiers(paramFlags, typeUseAnns);
 		JCVariableDecl param = maker.VarDef(paramMods, data.getSingularName(), paramType, null);
-		List<JCTypeParameter> typeParams = List.nil();
-		List<JCExpression> thrown = List.nil();
-		finishAndInjectMethod(maker, returnType, builderType, source, typeParams, thrown, mods, body, name, List.of(param));
+		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, List.of(param));
 	}
 
 	@Override
@@ -137,8 +135,6 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 		JCExpression paramType = chainDots(builderType, "java", "util", "Collection");
 		paramType = addTypeArgs(1, true, builderType, paramType, data.getTypeArgs(), source);
 		JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
-		List<JCTypeParameter> typeParams = List.nil();
-		List<JCExpression> thrown = List.nil();
-		finishAndInjectMethod(maker, returnType, builderType, source, typeParams, thrown, mods, body, name, List.of(param));
+		finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, List.of(param));
 	}
 }
