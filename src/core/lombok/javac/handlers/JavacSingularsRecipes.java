@@ -296,19 +296,6 @@ public class JavacSingularsRecipes {
 
 		void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
 			ListBuffer<JCStatement> statements = generatePluralMethodStatements(maker, data, builderType, source);
-			finishAndInjectPluralMethod(deprecate, maker, returnType, returnStatement, data, builderType, source, fluent, statements);
-		}
-
-		protected ListBuffer<JCStatement> generatePluralMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
-			ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-			statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
-			JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName() + "All");
-			JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, List.<JCExpression>of(maker.Ident(data.getPluralName())));
-			statements.append(maker.Exec(invokeAdd));
-			return statements;
-		}
-
-		void finishAndInjectPluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent, ListBuffer<JCStatement> statements) {
 			if (returnStatement != null) statements.append(returnStatement);
 			JCBlock body = maker.Block(0, statements.toList());
 			Name name = data.getPluralName();
@@ -318,6 +305,15 @@ public class JavacSingularsRecipes {
 			long paramFlags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
 			JCVariableDecl param = maker.VarDef(maker.Modifiers(paramFlags), data.getPluralName(), paramType, null);
 			finishAndInjectMethod(maker, returnType, builderType, source, deprecate, body, name, List.of(param));
+		}
+
+		protected ListBuffer<JCStatement> generatePluralMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+			ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
+			statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
+			JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName() + "All");
+			JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, List.<JCExpression>of(maker.Ident(data.getPluralName())));
+			statements.append(maker.Exec(invokeAdd));
+			return statements;
 		}
 
 		protected abstract JCExpression getPluralMethodParamType(JavacNode builderType);
