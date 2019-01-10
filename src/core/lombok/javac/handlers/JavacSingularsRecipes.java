@@ -264,7 +264,11 @@ public class JavacSingularsRecipes {
 
 		protected abstract JCStatement generateClearStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType);
 
-		protected abstract void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent);
+		void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
+			ListBuffer<JCStatement> statements = generateSingularMethodStatements(maker, data, builderType, source);
+			List<JCVariableDecl> params = generateSingularMethodParameters(maker, data, builderType, source);
+			finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, deprecate, statements, params, getAddMethodName());
+		}
 
 		protected JCVariableDecl generateSingularMethodParameter(int typeIndex, JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source, Name name) {
 			long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, builderType.getContext());
@@ -290,6 +294,10 @@ public class JavacSingularsRecipes {
 
 			finishAndInjectMethod(maker, returnType, builderType, source, mods, body, name, params);
 		}
+
+		protected abstract ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source);
+
+		protected abstract List<JCVariableDecl> generateSingularMethodParameters(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source);
 
 		protected abstract void generatePluralMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent);
 

@@ -80,13 +80,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 	}
 
 	@Override
-	protected void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
-		ListBuffer<JCStatement> statements = generateSingularMethodStatements(maker, data, builderType, source);
-		List<JCVariableDecl> params = generateSingularMethodParameters(maker, data, builderType, source);
-		finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, deprecate, statements, params, getAddMethodName());
-	}
-
-	private List<JCVariableDecl> generateSingularMethodParameters(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+	protected List<JCVariableDecl> generateSingularMethodParameters(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
 		Name[] names = generateSingularMethodParameterNames(data, builderType);
 		ListBuffer<JCVariableDecl> params = new ListBuffer<JCVariableDecl>();
 		for (int i = 0; i < names.length; i++) {
@@ -95,7 +89,8 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		return params.toList();
 	}
 
-	private ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+	@Override
+	protected ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		Name[] names = generateSingularMethodParameterNames(data, builderType);
 

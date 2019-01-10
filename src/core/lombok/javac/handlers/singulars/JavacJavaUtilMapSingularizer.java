@@ -122,15 +122,9 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		JCBlock clearCalls = maker.Block(0, List.of(clearKeyCall, clearValueCall));
 		return maker.If(cond, clearCalls, null);
 	}
-	
-	@Override
-	protected void generateSingularMethod(boolean deprecate, JavacTreeMaker maker, JCExpression returnType, JCStatement returnStatement, SingularData data, JavacNode builderType, JCTree source, boolean fluent) {
-		ListBuffer<JCStatement> statements = generateSingularMethodStatements(maker, data, builderType, source);
-		List<JCVariableDecl> params = generateSingularMethodParameters(maker, data, builderType, source);
-		finishAndInjectSingularMethod(maker, returnType, returnStatement, data, builderType, source, fluent, deprecate, statements, params, getAddMethodName());
-	}
 
-	private ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+	@Override
+	protected ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		Name keyName = builderType.toName(data.getSingularName().toString() + "Key");
 		Name valueName = builderType.toName(data.getSingularName().toString() + "Value");
@@ -143,7 +137,8 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		return statements;
 	}
 
-	private List<JCVariableDecl> generateSingularMethodParameters(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+	@Override
+	protected List<JCVariableDecl> generateSingularMethodParameters(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
 		Name keyName = builderType.toName(data.getSingularName().toString() + "Key");
 		Name valueName = builderType.toName(data.getSingularName().toString() + "Value");
 		JCVariableDecl paramKey = generateSingularMethodParameter(0, maker, data, builderType, source, keyName);
