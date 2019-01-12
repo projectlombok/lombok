@@ -101,8 +101,8 @@ public class JavacSingularsRecipes {
 		return singularizableTypes.toQualified(typeReference);
 	}
 	
-	public JavacSingularizer getSingularizer(String fqn) {
-		return singularizers.get(fqn);
+	public JavacSingularizer getSingularizer(String fqn, JavacNode node) {
+		return singularizers.get(fqn).getGuavaInsteadIfNeeded(node);
 	}
 	
 	public static final class SingularData {
@@ -154,6 +154,10 @@ public class JavacSingularsRecipes {
 	
 	public static abstract class JavacSingularizer {
 		public abstract LombokImmutableList<String> getSupportedTypes();
+
+		protected JavacSingularizer getGuavaInsteadIfNeeded(JavacNode node) {
+			return this;
+		}
 		
 		protected JCModifiers makeMods(JavacTreeMaker maker, JavacNode node, boolean deprecate) {
 			if (deprecate) return maker.Modifiers(Flags.PUBLIC, List.<JCAnnotation>of(maker.Annotation(genJavaLangTypeRef(node, "Deprecated"), List.<JCExpression>nil())));

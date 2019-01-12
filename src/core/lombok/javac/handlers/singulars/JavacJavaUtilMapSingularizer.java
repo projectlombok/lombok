@@ -52,29 +52,25 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 	@Override public LombokImmutableList<String> getSupportedTypes() {
 		return LombokImmutableList.of("java.util.Map", "java.util.SortedMap", "java.util.NavigableMap");
 	}
-	
-	@Override public java.util.List<Name> listFieldsToBeGenerated(SingularData data, JavacNode builderType) {
-		if (useGuavaInstead(builderType)) {
-			return guavaMapSingularizer.listFieldsToBeGenerated(data, builderType);
+
+	@Override
+	protected JavacSingularizer getGuavaInsteadIfNeeded(JavacNode node) {
+		if (useGuavaInstead(node)) {
+			return guavaMapSingularizer;
 		}
-		
+		return this;
+	}
+
+	@Override public java.util.List<Name> listFieldsToBeGenerated(SingularData data, JavacNode builderType) {
 		String p = data.getPluralName().toString();
 		return Arrays.asList(builderType.toName(p + "$key"), builderType.toName(p + "$value"));
 	}
 	
 	@Override public java.util.List<Name> listMethodsToBeGenerated(SingularData data, JavacNode builderType) {
-		if (useGuavaInstead(builderType)) {
-			return guavaMapSingularizer.listMethodsToBeGenerated(data, builderType);
-		}
-		
 		return super.listMethodsToBeGenerated(data, builderType);
 	}
 	
 	@Override public java.util.List<JavacNode> generateFields(SingularData data, JavacNode builderType, JCTree source) {
-		if (useGuavaInstead(builderType)) {
-			return guavaMapSingularizer.generateFields(data, builderType, source);
-		}
-		
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		
 		JCVariableDecl buildKeyField; {
@@ -99,11 +95,6 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 	}
 	
 	@Override public void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, ExpressionMaker returnTypeMaker, StatementMaker returnStatementMaker) {
-		if (useGuavaInstead(builderType)) {
-			guavaMapSingularizer.generateMethods(data, deprecate, builderType, source, fluent, returnTypeMaker, returnStatementMaker);
-			return;
-		}
-
 		doGenerateMethods(data, deprecate, builderType, source, fluent, returnTypeMaker, returnStatementMaker);
 	}
 
@@ -176,11 +167,6 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 	}
 
 	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {
-		if (useGuavaInstead(builderType)) {
-			guavaMapSingularizer.appendBuildCode(data, builderType, source, statements, targetVariableName, builderVariable);
-			return;
-		}
-		
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		
 		if (data.getTargetFqn().equals("java.util.Map")) {

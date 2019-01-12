@@ -919,7 +919,7 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			name = type.toString();
 			
 			String targetFqn = JavacSingularsRecipes.get().toQualified(name);
-			JavacSingularizer singularizer = JavacSingularsRecipes.get().getSingularizer(targetFqn);
+			JavacSingularizer singularizer = JavacSingularsRecipes.get().getSingularizer(targetFqn, node);
 			if (singularizer == null) {
 				node.addError("Lombok does not know how to create the singular-form builder methods for type '" + name + "'; they won't be generated.");
 				return null;
