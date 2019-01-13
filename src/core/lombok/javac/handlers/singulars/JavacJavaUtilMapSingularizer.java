@@ -111,10 +111,10 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 
 	@Override
 	protected ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
-		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		Name keyName = builderType.toName(data.getSingularName().toString() + "Key");
 		Name valueName = builderType.toName(data.getSingularName().toString() + "Value");
 
+		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		/* Generates: this.pluralname$key.add(singularnameKey); */
 		statements.append(generateSingularMethodAddStatement(maker, builderType, keyName, data.getPluralName() + "$key"));
 		/* Generates: this.pluralname$value.add(singularnameValue); */
