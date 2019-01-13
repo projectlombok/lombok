@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.ConfigurationKeys;
 import lombok.core.LombokImmutableList;
 import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
@@ -102,7 +103,9 @@ public class JavacSingularsRecipes {
 	}
 	
 	public JavacSingularizer getSingularizer(String fqn, JavacNode node) {
-		return singularizers.get(fqn).getGuavaInsteadIfNeeded(node);
+		final JavacSingularizer singularizer = singularizers.get(fqn);
+		final boolean useGuavaInstead = Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.SINGULAR_USE_GUAVA));
+		return useGuavaInstead ? singularizer.getGuavaInstead(node) : singularizer;
 	}
 	
 	public static final class SingularData {
@@ -155,7 +158,7 @@ public class JavacSingularsRecipes {
 	public static abstract class JavacSingularizer {
 		public abstract LombokImmutableList<String> getSupportedTypes();
 
-		protected JavacSingularizer getGuavaInsteadIfNeeded(JavacNode node) {
+		protected JavacSingularizer getGuavaInstead(JavacNode node) {
 			return this;
 		}
 		

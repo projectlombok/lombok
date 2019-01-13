@@ -53,12 +53,8 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		return LombokImmutableList.of("java.util.Map", "java.util.SortedMap", "java.util.NavigableMap");
 	}
 
-	@Override
-	protected JavacSingularizer getGuavaInsteadIfNeeded(JavacNode node) {
-		if (useGuavaInstead(node)) {
-			return guavaMapSingularizer;
-		}
-		return this;
+	@Override protected JavacSingularizer getGuavaInstead(JavacNode node) {
+		return guavaMapSingularizer;
 	}
 
 	@Override public java.util.List<Name> listFieldsToBeGenerated(SingularData data, JavacNode builderType) {

@@ -42,10 +42,6 @@ abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 	protected final JavacSingularizer guavaListSetSingularizer = new JavacGuavaSetListSingularizer();
 	protected final JavacSingularizer guavaMapSingularizer = new JavacGuavaMapSingularizer();
 	
-	protected boolean useGuavaInstead(JavacNode node) {
-		return Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.SINGULAR_USE_GUAVA));
-	}
-	
 	protected List<JCStatement> createJavaUtilSetMapInitialCapacitySwitchStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, boolean mapMode, String emptyCollectionMethod, String singletonCollectionMethod, String targetType, JCTree source, String builderVariable) {
 		List<JCExpression> jceBlank = List.nil();
 		ListBuffer<JCCase> cases = new ListBuffer<JCCase>();

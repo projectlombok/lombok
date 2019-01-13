@@ -45,12 +45,8 @@ import com.sun.tools.javac.util.Name;
 
 abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularizer {
 
-	@Override
-	protected JavacSingularizer getGuavaInsteadIfNeeded(JavacNode node) {
-		if (useGuavaInstead(node)) {
-			return guavaListSetSingularizer;
-		}
-		return this;
+	@Override protected JavacSingularizer getGuavaInstead(JavacNode node) {
+		return guavaListSetSingularizer;
 	}
 
 	@Override public java.util.List<Name> listFieldsToBeGenerated(SingularData data, JavacNode builderType) {
