@@ -84,9 +84,8 @@ abstract class JavacJavaUtilListSetSingularizer extends JavacJavaUtilSingularize
 
 	@Override
 	protected ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
-		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		statements.append(generateSingularMethodAddStatement(maker, builderType, data.getSingularName(), data.getPluralName().toString()));
-		return statements;
+		return new ListBuffer<JCStatement>()
+			.append(generateSingularMethodAddStatement(maker, builderType, data.getSingularName(), data.getPluralName().toString()));
 	}
 
 	@Override
