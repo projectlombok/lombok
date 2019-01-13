@@ -49,14 +49,13 @@ import com.sun.tools.javac.util.Name;
 
 @ProviderFor(JavacSingularizer.class)
 public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
-	private final JavacSingularizer guavaMapSingularizer = new JavacGuavaMapSingularizer();
 
 	@Override public LombokImmutableList<String> getSupportedTypes() {
 		return LombokImmutableList.of("java.util.Map", "java.util.SortedMap", "java.util.NavigableMap");
 	}
 
 	@Override protected JavacSingularizer getGuavaInstead(JavacNode node) {
-		return guavaMapSingularizer;
+		return new JavacGuavaMapSingularizer();
 	}
 
 	@Override public java.util.List<Name> listFieldsToBeGenerated(SingularData data, JavacNode builderType) {
