@@ -88,7 +88,6 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 
 	@Override
 	protected ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
-		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		Name[] names = generateSingularMethodParameterNames(data, builderType);
 
 		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName());
@@ -99,8 +98,8 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		List<JCExpression> invokeAddExpr = invokeAddExprBuilder.toList();
 		JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, invokeAddExpr);
 		JCStatement st = maker.Exec(invokeAdd);
-		statements.append(st);
-		return statements;
+
+		return new ListBuffer<JCStatement>().append(st);
 	}
 
 	private Name[] generateSingularMethodParameterNames(SingularData data, JavacNode builderType) {
