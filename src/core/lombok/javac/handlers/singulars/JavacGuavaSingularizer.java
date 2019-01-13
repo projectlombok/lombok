@@ -91,7 +91,6 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
 		Name[] names = generateSingularMethodParameterNames(data, builderType);
 
-		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
 		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName());
 		ListBuffer<JCExpression> invokeAddExprBuilder = new ListBuffer<JCExpression>();
 		for (Name name : names) {

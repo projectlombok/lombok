@@ -115,7 +115,6 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		Name keyName = builderType.toName(data.getSingularName().toString() + "Key");
 		Name valueName = builderType.toName(data.getSingularName().toString() + "Value");
 
-		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
 		/* Generates: this.pluralname$key.add(singularnameKey); */
 		statements.append(generateSingularMethodAddStatement(maker, builderType, keyName, data.getPluralName() + "$key"));
 		/* Generates: this.pluralname$value.add(singularnameValue); */
@@ -136,7 +135,6 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 	protected ListBuffer<JCStatement> generatePluralMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
 		List<JCExpression> jceBlank = List.nil();
 		ListBuffer<JCStatement> statements = new ListBuffer<JCStatement>();
-		statements.append(createConstructBuilderVarIfNeeded(maker, data, builderType, source));
 		long baseFlags = JavacHandlerUtil.addFinalIfNeeded(0, builderType.getContext());
 		Name entryName = builderType.toName("$lombokEntry");
 		
