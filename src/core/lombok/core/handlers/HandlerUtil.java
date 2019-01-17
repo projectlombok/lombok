@@ -80,32 +80,32 @@ public class HandlerUtil {
 	static {
 		NONNULL_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"lombok.NonNull",
-			"javax.annotation.Nonnull",
-			"edu.umd.cs.findbugs.annotations.NonNull",
-			"org.jetbrains.annotations.NotNull",
 			"android.support.annotation.NonNull",
+			"edu.umd.cs.findbugs.annotations.NonNull",
+			"javax.annotation.Nonnull",
+			"org.checkerframework.checker.nullness.qual.NonNull",
 			"org.eclipse.jdt.annotation.NonNull",
-			"org.springframework.lang.NonNull",
-			"org.checkerframework.checker.nullness.qual.NonNull"
+			"org.jetbrains.annotations.NotNull",
+			"org.springframework.lang.NonNull"
 		}));
 		BASE_COPYABLE_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"lombok.NonNull",
-			"javax.annotation.Nonnull",
-			"edu.umd.cs.findbugs.annotations.NonNull",
-			"org.jetbrains.annotations.NotNull",
 			"android.support.annotation.NonNull",
-			"org.eclipse.jdt.annotation.NonNull",
-			"org.springframework.lang.NonNull",
+			"edu.umd.cs.findbugs.annotations.NonNull",
+			"javax.annotation.Nonnull",
 			"org.checkerframework.checker.nullness.qual.NonNull",
-			"javax.annotation.Nullable",
-			"javax.annotation.CheckForNull",
-			"edu.umd.cs.findbugs.annotations.UnknownNullness",
-			"edu.umd.cs.findbugs.annotations.Nullable",
-			"org.jetbrains.annotations.Nullable",
+			"org.eclipse.jdt.annotation.NonNull",
+			"org.jetbrains.annotations.NotNull",
+			"org.springframework.lang.NonNull",
 			"android.support.annotation.Nullable",
+			"edu.umd.cs.findbugs.annotations.Nullable",
+			"edu.umd.cs.findbugs.annotations.UnknownNullness",
+			"javax.annotation.CheckForNull",
+			"javax.annotation.Nullable",
+			"org.checkerframework.checker.nullness.qual.Nullable",
 			"org.eclipse.jdt.annotation.Nullable",
-			"org.springframework.lang.Nullable",
-			"org.checkerframework.checker.nullness.qual.Nullable"
+			"org.jetbrains.annotations.Nullable",
+			"org.springframework.lang.Nullable"
 		}));
 	}
 	
