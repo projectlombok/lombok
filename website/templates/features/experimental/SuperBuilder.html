@@ -26,7 +26,7 @@
 			<code>@SuperBuilder</code> is not compatible with <code>@Builder</code>.
 		</p><p>
 			You can use <code>@SuperBuilder(toBuilder = true)</code> to also generate an instance method in your class called <code>toBuilder()</code>; it creates a new builder that starts out with all the values of this instance.
-			Using <code>toBuilder</code> requires that all superclasses must also have <code>toBuilder = true</code>.
+			Using <code>toBuilder</code> requires that all superclasses also have <code>toBuilder = true</code>.
 			You can put the <code>@Builder.ObtainVia</code> annotation on the fields to indicate alternative means by which the value for that field/parameter is obtained from this instance.
 			For example, you can specify a method to be invoked: <code>@Builder.ObtainVia(method = "calculateFoo")</code>.
 		</p><p>
