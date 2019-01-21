@@ -152,6 +152,7 @@ final class Data3 {
 final class Data4 extends java.util.Timer {
 	int x;
 	Data4() {
+		super();
 	}
 	@java.lang.SuppressWarnings("all")
 	public int getX() {

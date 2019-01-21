@@ -258,6 +258,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 				JCMethodInvocation inv = (JCMethodInvocation) expr;
 				if (!inv.typeargs.isEmpty() || !inv.args.isEmpty()) return false;
 				if (!(inv.meth instanceof JCIdent)) return false;
+				if (tree.pos != expr.pos) return false; // Explicit super call
 				return ((JCIdent) inv.meth).name.toString().equals("super");
 			}
 		}
