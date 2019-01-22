@@ -4,7 +4,7 @@ ARG jdk=11
 ADD provision/jdk/java-${jdk}.sh provision/jdk/java-${jdk}.sh
 RUN provision/jdk/java-${jdk}.sh
 
-ARG maven=3.5.0
+ARG maven=3.6.0
 ADD provision/maven/maven-${maven}.sh provision/maven/maven-${maven}.sh
 RUN provision/maven/maven-${maven}.sh
 
