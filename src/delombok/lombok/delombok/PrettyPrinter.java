@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Project Lombok Authors.
+ * Copyright (C) 2016-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -378,6 +378,9 @@ public class PrettyPrinter extends JCTree.Visitor {
 	private int dims(JCExpression vartype) {
 		if (vartype instanceof JCArrayTypeTree) {
 			return 1 + dims(((JCArrayTypeTree) vartype).elemtype);
+		} else if (isJcAnnotatedType(vartype)) {
+			JCTree underlyingType = readObject(vartype, "underlyingType", (JCTree) null);
+			if (underlyingType instanceof JCArrayTypeTree) return 1 + dims (((JCArrayTypeTree) underlyingType).elemtype);
 		}
 		
 		return 0;
@@ -625,13 +628,29 @@ public class PrettyPrinter extends JCTree.Visitor {
 		printVarDef0(tree);
 	}
 	
+	private boolean innermostArrayBracketsAreVarargs = false;
 	private void printVarDef0(JCVariableDecl tree) {
 		boolean varargs = (tree.mods.flags & VARARGS) != 0;
-		if (varargs && tree.vartype instanceof JCArrayTypeTree) {
-			print(((JCArrayTypeTree) tree.vartype).elemtype);
-			print("...");
-		} else {
+		
+		/* story time!
+		 
+		 in 'new int[5][6];', the 5 is the outermost and the 6 is the innermost: That means: 5 int arrays, each capable of containing 6 elements.
+		 But that's actually a crazy way to read it; you'd think that in FOO[], you should interpret that as 'an array of FOO', but that's not correct;
+		 if FOO is for example 'int[]', it's: "Modify the component type of FOO to be an array of whatever it was before.. unless FOO isn't an array, in which case,
+		 this is an array of FOO". Which is weird.
+		 
+		 This is particularly poignant with vargs. In: "int[]... x", the ... are actually the _INNER_ type even though varargs by definition is a modification of
+		 how to interpret the outer. The JLS just sort of lets that be: To indicate varargs, replace the lexically last [] with dots even though that's the wrong
+		 [] to modify!
+		 
+		 This becomes an utter shambles when annotations-on-arrays become involved. The annotation on the INNER most type is to be placed right before the ...;
+		 and because of that, we have to do crazy stuff with this innermostArrayBracketsAreVarargs flag.
+		 */
+		try {
+			innermostArrayBracketsAreVarargs = varargs;
 			print(tree.vartype);
+		} finally {
+			innermostArrayBracketsAreVarargs = false;
 		}
 		print(" ");
 		print(tree.name);
@@ -775,10 +794,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 	}
 	
 	@Override public void visitTypeArray(JCArrayTypeTree tree) {
-		JCTree elem = tree.elemtype;
-		while (elem instanceof JCWildcard) elem = ((JCWildcard) elem).inner;
-		print(elem);
-		print("[]");
+		printTypeArray0(tree);
 	}
 	
 	@Override public void visitNewArray(JCNewArray tree) {
@@ -1457,6 +1473,21 @@ public class PrettyPrinter extends JCTree.Visitor {
 		}
 	}
 	
+	private boolean jcAnnotatedTypeInit = false;
+	private Class<?> jcAnnotatedTypeClass = null;
+	
+	private boolean isJcAnnotatedType(Object o) {
+		if (o == null) return false;
+		if (jcAnnotatedTypeInit) return jcAnnotatedTypeClass == o.getClass();
+		Class<?> c = o.getClass();
+		if (c.getSimpleName().equals("JCAnnotatedType")) {
+			jcAnnotatedTypeClass = c;
+			jcAnnotatedTypeInit = true;
+			return true;
+		}
+		return false;
+	}
+	
 	private void printMemberReference0(JCTree tree) {
 		print(readObject(tree, "expr", (JCExpression) null));
 		print("::");
@@ -1515,10 +1546,57 @@ public class PrettyPrinter extends JCTree.Visitor {
 			print(readObject(tree, "annotations", List.<JCExpression>nil()), " ");
 			print(" ");
 			print(((JCFieldAccess) underlyingType).name);
+		} else if (underlyingType instanceof JCArrayTypeTree) {
+			printTypeArray0(tree);
 		} else {
 			print(readObject(tree, "annotations", List.<JCExpression>nil()), " ");
 			print(" ");
 			print(underlyingType);
+		}
+	}
+	
+	private void printTypeArray0(JCTree tree) {
+		JCTree inner = tree;
+		int dimCount = 0;
+		
+		while (true) {
+			if (inner instanceof JCArrayTypeTree) {
+				inner = ((JCArrayTypeTree) inner).elemtype;
+				dimCount++;
+				continue;
+			} else if (isJcAnnotatedType(inner)) {
+				JCTree underlyingType = readObject(inner, "underlyingType", (JCTree) null);
+				if (underlyingType instanceof JCArrayTypeTree) {
+					inner = ((JCArrayTypeTree) underlyingType).elemtype;
+					dimCount++;
+					continue;
+				}
+			}
+			break;
+		}
+		
+		print(inner);
+		
+		inner = tree;
+		while (true) {
+			if (inner instanceof JCArrayTypeTree) {
+				dimCount--;
+				print((dimCount == 0 && innermostArrayBracketsAreVarargs) ? "..." : "[]");
+				inner = ((JCArrayTypeTree) inner).elemtype;
+				continue;
+			} else if (isJcAnnotatedType(inner)) {
+				JCTree underlyingType = readObject(inner, "underlyingType", (JCTree) null);
+				if (underlyingType instanceof JCArrayTypeTree) {
+					dimCount--;
+					print(" ");
+					print(readObject(inner, "annotations", List.<JCExpression>nil()), " ");
+					print(" ");
+					print((dimCount == 0 && innermostArrayBracketsAreVarargs) ? "..." : "[]");
+					inner = ((JCArrayTypeTree) underlyingType).elemtype;
+					continue;
+				}
+			}
+			break;
 		}
 	}
 }

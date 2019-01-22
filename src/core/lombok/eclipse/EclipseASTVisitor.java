@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -105,6 +105,13 @@ public interface EclipseASTVisitor {
 	void visitLocal(EclipseNode localNode, LocalDeclaration local);
 	void visitAnnotationOnLocal(LocalDeclaration local, EclipseNode annotationNode, Annotation annotation);
 	void endVisitLocal(EclipseNode localNode, LocalDeclaration local);
+	
+	/**
+	 * Visits a node that represents a type reference. Anything from {@code int} to {@code T} to {@code foo,.pkg.Bar<T>.Baz<?> @Ann []}.
+	 */
+	void visitTypeUse(EclipseNode typeUseNode, TypeReference typeUse);
+	void visitAnnotationOnTypeUse(TypeReference typeUse, EclipseNode annotationNode, Annotation annotation);
+	void endVisitTypeUse(EclipseNode typeUseNode, TypeReference typeUse);
 	
 	/**
 	 * Visits a statement that isn't any of the other visit methods (e.g. TypeDeclaration).
@@ -410,6 +417,21 @@ public interface EclipseASTVisitor {
 		public void endVisitLocal(EclipseNode node, LocalDeclaration local) {
 			indent--;
 			print("</LOCAL %s %s>", str(local.type), str(local.name));
+		}
+		
+		@Override public void visitTypeUse(EclipseNode typeUseNode, TypeReference typeUse) {
+			print("<TYPE %s>", typeUse.getClass());
+			indent++;
+			print("%s", typeUse);
+		}
+		
+		@Override public void visitAnnotationOnTypeUse(TypeReference typeUse, EclipseNode annotationNode, Annotation annotation) {
+			print("<ANNOTATION%s: %s />", isGenerated(annotation) ? " (GENERATED)" : "", annotation);
+		}
+		
+		@Override public void endVisitTypeUse(EclipseNode typeUseNode, TypeReference typeUse) {
+			indent--;
+			print("</TYPE %s>", typeUse.getClass());
 		}
 		
 		public void visitStatement(EclipseNode node, Statement statement) {

@@ -27,6 +27,7 @@ import java.util.SortedSet;
 import javax.annotation.processing.Messager;
 
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
@@ -111,6 +112,11 @@ public class JavacTransformer {
 		}
 		
 		@Override public void visitAnnotationOnLocal(JCVariableDecl local, JavacNode annotationNode, JCAnnotation annotation) {
+			JCCompilationUnit top = (JCCompilationUnit) annotationNode.top().get();
+			handlers.handleAnnotation(top, annotationNode, annotation, priority);
+		}
+		
+		@Override public void visitAnnotationOnTypeUse(JCTree typeUse, JavacNode annotationNode, JCAnnotation annotation) {
 			JCCompilationUnit top = (JCCompilationUnit) annotationNode.top().get();
 			handlers.handleAnnotation(top, annotationNode, annotation, priority);
 		}

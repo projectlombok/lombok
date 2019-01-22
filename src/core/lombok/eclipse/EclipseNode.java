@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@ import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 
 /**
@@ -119,9 +120,17 @@ public class EclipseNode extends lombok.core.LombokNode<EclipseAST, EclipseNode,
 			case LOCAL:
 				visitor.visitAnnotationOnLocal((LocalDeclaration) parent.get(), this, (Annotation) get());
 				break;
+			case TYPE_USE:
+				visitor.visitAnnotationOnTypeUse((TypeReference) parent.get(), this, (Annotation) get());
+				break;
 			default:
 				throw new AssertionError("Annotation not expected as child of a " + up().getKind());
 			}
+			break;
+		case TYPE_USE:
+			visitor.visitTypeUse(this, (TypeReference) get());
+			ast.traverseChildren(visitor, this);
+			visitor.endVisitTypeUse(this, (TypeReference) get());
 			break;
 		case STATEMENT:
 			visitor.visitStatement(this, (Statement) get());

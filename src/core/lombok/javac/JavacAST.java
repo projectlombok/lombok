@@ -47,15 +47,19 @@ import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCArrayTypeTree;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCTry;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
+import com.sun.tools.javac.tree.JCTree.JCWildcard;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.JCDiagnostic.DiagnosticPosition;
@@ -192,6 +196,8 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 			return buildStatementOrExpression(node);
 		case ANNOTATION:
 			return buildAnnotation((JCAnnotation) node, false);
+		case TYPE_USE:
+			return buildTypeUse(node);
 		default:
 			throw new AssertionError("Did not expect: " + kind);
 		}
@@ -233,6 +239,7 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		if (setAndGetAsHandled(field)) return null;
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
 		for (JCAnnotation annotation : field.mods.annotations) addIfNotNull(childNodes, buildAnnotation(annotation, true));
+		addIfNotNull(childNodes, buildTypeUse(field.vartype));
 		addIfNotNull(childNodes, buildExpression(field.init));
 		return putInMap(new JavacNode(this, field, childNodes, Kind.FIELD));
 	}
@@ -241,23 +248,62 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		if (setAndGetAsHandled(local)) return null;
 		List<JavacNode> childNodes = new ArrayList<JavacNode>();
 		for (JCAnnotation annotation : local.mods.annotations) addIfNotNull(childNodes, buildAnnotation(annotation, true));
+		addIfNotNull(childNodes, buildTypeUse(local.vartype));
 		addIfNotNull(childNodes, buildExpression(local.init));
 		return putInMap(new JavacNode(this, local, childNodes, kind));
 	}
 	
-	private static boolean JCTRY_RESOURCES_FIELD_INITIALIZED;
+	private JavacNode buildTypeUse(JCTree typeUse) {
+		if (setAndGetAsHandled(typeUse)) return null;
+		
+		if (typeUse == null) return null;
+		
+		if (typeUse.getClass().getSimpleName().equals("JCAnnotatedType")) {
+			initJcAnnotatedType(typeUse.getClass());
+			Collection<?> anns = Permit.permissiveReadField(Collection.class, JCANNOTATEDTYPE_ANNOTATIONS, typeUse);
+			JCExpression underlying = Permit.permissiveReadField(JCExpression.class, JCANNOTATEDTYPE_UNDERLYINGTYPE, typeUse);
+			
+			List<JavacNode> childNodes = new ArrayList<JavacNode>();
+			if (anns != null) for (Object annotation : anns) if (annotation instanceof JCAnnotation) addIfNotNull(childNodes, buildAnnotation((JCAnnotation) annotation, true));
+			addIfNotNull(childNodes, buildTypeUse(underlying));
+			return putInMap(new JavacNode(this, typeUse, childNodes, Kind.TYPE_USE));
+		}
+		
+		if (typeUse instanceof JCWildcard) {
+			JCTree inner = ((JCWildcard) typeUse).inner;
+			List<JavacNode> childNodes = inner == null ? Collections.<JavacNode>emptyList() : new ArrayList<JavacNode>();
+			if (inner != null) addIfNotNull(childNodes, buildTypeUse(inner));
+			return putInMap(new JavacNode(this, typeUse, childNodes, Kind.TYPE_USE));
+		}
+		
+		if (typeUse instanceof JCArrayTypeTree) {
+			JCTree inner = ((JCArrayTypeTree) typeUse).elemtype;
+			List<JavacNode> childNodes = inner == null ? Collections.<JavacNode>emptyList() : new ArrayList<JavacNode>();
+			if (inner != null) addIfNotNull(childNodes, buildTypeUse(inner));
+			return putInMap(new JavacNode(this, typeUse, childNodes, Kind.TYPE_USE));
+		}
+		
+		if (typeUse instanceof JCFieldAccess) {
+			JCTree inner = ((JCFieldAccess) typeUse).selected;
+			List<JavacNode> childNodes = inner == null ? Collections.<JavacNode>emptyList() : new ArrayList<JavacNode>();
+			if (inner != null) addIfNotNull(childNodes, buildTypeUse(inner));
+			return putInMap(new JavacNode(this, typeUse, childNodes, Kind.TYPE_USE));
+		}
+		
+		if (typeUse instanceof JCIdent) {
+			return putInMap(new JavacNode(this, typeUse, Collections.<JavacNode>emptyList(), Kind.TYPE_USE));
+		}
+		
+		return null;
+	}
+	
+	private static boolean JCTRY_RESOURCES_FIELD_INITIALIZED = false;
 	private static Field JCTRY_RESOURCES_FIELD;
 	
 	@SuppressWarnings("unchecked")
 	private static List<JCTree> getResourcesForTryNode(JCTry tryNode) {
 		if (!JCTRY_RESOURCES_FIELD_INITIALIZED) {
-			try {
-				JCTRY_RESOURCES_FIELD = Permit.getField(JCTry.class, "resources");
-			} catch (NoSuchFieldException ignore) {
-				// Java 1.6 or lower won't have this at all.
-			} catch (Exception ignore) {
-				// Shouldn't happen. Best thing we can do is just carry on and break on try/catch.
-			}
+			JCTRY_RESOURCES_FIELD = Permit.permissiveGetField(JCTry.class, "resources");
 			JCTRY_RESOURCES_FIELD_INITIALIZED = true;
 		}
 		
@@ -269,6 +315,15 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 		
 		if (rv instanceof List) return (List<JCTree>) rv;
 		return Collections.emptyList();
+	}
+	
+	private static boolean JCANNOTATEDTYPE_FIELDS_INITIALIZED = false;
+	private static Field JCANNOTATEDTYPE_ANNOTATIONS, JCANNOTATEDTYPE_UNDERLYINGTYPE;
+	private static void initJcAnnotatedType(Class<?> context) {
+		if (JCANNOTATEDTYPE_FIELDS_INITIALIZED) return;
+		JCANNOTATEDTYPE_ANNOTATIONS = Permit.permissiveGetField(context, "annotations");
+		JCANNOTATEDTYPE_UNDERLYINGTYPE = Permit.permissiveGetField(context, "underlyingType");
+		JCANNOTATEDTYPE_FIELDS_INITIALIZED = true;
 	}
 	
 	private JavacNode buildTry(JCTry tryNode) {
@@ -323,8 +378,8 @@ public class JavacAST extends AST<JavacAST, JavacNode, JCTree> {
 	private JavacNode buildStatementOrExpression(JCTree statement) {
 		if (statement == null) return null;
 		if (statement instanceof JCAnnotation) return null;
-		if (statement instanceof JCClassDecl) return buildType((JCClassDecl)statement);
-		if (statement instanceof JCVariableDecl) return buildLocalVar((JCVariableDecl)statement, Kind.LOCAL);
+		if (statement instanceof JCClassDecl) return buildType((JCClassDecl) statement);
+		if (statement instanceof JCVariableDecl) return buildLocalVar((JCVariableDecl) statement, Kind.LOCAL);
 		if (statement instanceof JCTry) return buildTry((JCTry) statement);
 		if (statement.getClass().getSimpleName().equals("JCLambda")) return buildLambda(statement);
 		if (setAndGetAsHandled(statement)) return null;

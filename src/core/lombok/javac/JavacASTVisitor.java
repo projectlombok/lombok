@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -87,6 +87,13 @@ public interface JavacASTVisitor {
 	void visitLocal(JavacNode localNode, JCVariableDecl local);
 	void visitAnnotationOnLocal(JCVariableDecl local, JavacNode annotationNode, JCAnnotation annotation);
 	void endVisitLocal(JavacNode localNode, JCVariableDecl local);
+	
+	/**
+	 * Visits a node that represents a type reference. Anything from {@code int} to {@code T} to {@code foo.pkg.Bar<T>.Baz<?> @Ann []}.
+	 */
+	void visitTypeUse(JavacNode typeUseNode, JCTree typeUse);
+	void visitAnnotationOnTypeUse(JCTree typeUse, JavacNode annotationNode, JCAnnotation annotation);
+	void endVisitTypeUse(JavacNode typeUseNode, JCTree typeUse);
 	
 	/**
 	 * Visits a statement that isn't any of the other visit methods (e.g. JCClassDecl).
@@ -259,6 +266,21 @@ public interface JavacASTVisitor {
 		@Override public void endVisitLocal(JavacNode node, JCVariableDecl local) {
 			indent--;
 			print("</LOCAL %s %s>", local.vartype, local.name);
+		}
+		
+		@Override public void visitTypeUse(JavacNode node, JCTree typeUse) {
+			print("<TYPE %s>", typeUse.getClass());
+			indent++;
+			print("%s", typeUse);
+		}
+		
+		@Override public void visitAnnotationOnTypeUse(JCTree typeUse, JavacNode node, JCAnnotation annotation) {
+			print("<ANNOTATION: %s />", annotation);
+		}
+		
+		@Override public void endVisitTypeUse(JavacNode node, JCTree typeUse) {
+			indent--;
+			print("</TYPE %s>", typeUse.getClass());
 		}
 		
 		@Override public void visitStatement(JavacNode node, JCTree statement) {

@@ -1462,7 +1462,7 @@ public class JavacHandlerUtil {
 	 * variable name as message.
 	 */
 	public static JCStatement generateNullCheck(JavacTreeMaker maker, JavacNode variable, JavacNode source) {
-		return generateNullCheck(maker, variable, (JCVariableDecl)variable.get(), source);
+		return generateNullCheck(maker, variable, (JCVariableDecl) variable.get(), source);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -145,9 +145,17 @@ public class JavacNode extends lombok.core.LombokNode<JavacAST, JavacNode, JCTre
 			case LOCAL:
 				visitor.visitAnnotationOnLocal((JCVariableDecl) up().get(), this, (JCAnnotation) get());
 				break;
+			case TYPE_USE:
+				visitor.visitAnnotationOnTypeUse(up().get(), this, (JCAnnotation) get());
+				break;
 			default:
 				throw new AssertionError("Annotion not expected as child of a " + up().getKind());
 			}
+			break;
+		case TYPE_USE:
+			visitor.visitTypeUse(this, get());
+			ast.traverseChildren(visitor, this);
+			visitor.endVisitTypeUse(this, get());
 			break;
 		default:
 			throw new AssertionError("Unexpected kind during node traversal: " + getKind());

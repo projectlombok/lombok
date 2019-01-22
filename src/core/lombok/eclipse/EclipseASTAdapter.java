@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@ import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 
 /**
  * Standard adapter for the {@link EclipseASTVisitor} interface. Every method on that interface
@@ -95,6 +96,15 @@ public abstract class EclipseASTAdapter implements EclipseASTVisitor {
 	
 	/** {@inheritDoc} */
 	public void endVisitLocal(EclipseNode localNode, LocalDeclaration local) {}
+	
+	/** {@inheritDoc} */
+	@Override public void visitTypeUse(EclipseNode typeUseNode, TypeReference typeUse) {}
+	
+	/** {@inheritDoc} */
+	public void visitAnnotationOnTypeUse(TypeReference typeUse, EclipseNode annotationNode, Annotation annotation) {}
+	
+	/** {@inheritDoc} */
+	@Override public void endVisitTypeUse(EclipseNode typeUseNode, TypeReference typeUse) {}
 	
 	/** {@inheritDoc} */
 	public void visitStatement(EclipseNode statementNode, Statement statement) {}

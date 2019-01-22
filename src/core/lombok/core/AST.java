@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2016 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +53,7 @@ import lombok.permit.Permit;
 public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N> {
 	/** The kind of node represented by a given AST.Node object. */
 	public enum Kind {
-		COMPILATION_UNIT, TYPE, FIELD, INITIALIZER, METHOD, ANNOTATION, ARGUMENT, LOCAL, STATEMENT;
+		COMPILATION_UNIT, TYPE, FIELD, INITIALIZER, METHOD, ANNOTATION, ARGUMENT, LOCAL, STATEMENT, TYPE_USE;
 	}
 	
 	private L top;
@@ -263,8 +263,8 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	
 	private Class<?> getComponentType(Type type) {
 		if (type instanceof ParameterizedType) {
-			Type component = ((ParameterizedType)type).getActualTypeArguments()[0];
-			return component instanceof Class<?> ? (Class<?>)component : Object.class;
+			Type component = ((ParameterizedType) type).getActualTypeArguments()[0];
+			return component instanceof Class<?> ? (Class<?>) component : Object.class;
 		}
 		return Object.class;
 	}
@@ -330,7 +330,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 			idx++;
 			if (o == null) continue;
 			if (Collection.class.isInstance(o)) {
-				Collection<?> newC = (Collection<?>)o;
+				Collection<?> newC = (Collection<?>) o;
 				List<Collection<?>> newChain = new ArrayList<Collection<?>>(chain);
 				newChain.add(newC);
 				if (replaceStatementInCollection(field, fieldRef, newChain, newC, oldN, newN)) return true;
@@ -356,7 +356,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	protected void setElementInASTCollection(Field field, Object fieldRef, List<Collection<?>> chain, Collection<?> collection, int idx, N newN) throws IllegalAccessException {
 		if (collection instanceof List<?>) {
-			((List)collection).set(idx, newN);
+			((List) collection).set(idx, newN);
 		}
 	}
 	
@@ -384,7 +384,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 			Object o = fa.field.get(child);
 			if (o == null) return;
 			if (fa.dim == 0) {
-				L node = buildTree((N)o, Kind.STATEMENT);
+				L node = buildTree((N) o, Kind.STATEMENT);
 				if (node != null) list.add(nodeType.cast(node));
 			} else if (o.getClass().isArray()) {
 				buildWithArray(nodeType, o, list, fa.dim);
@@ -399,12 +399,12 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	@SuppressWarnings("unchecked")
 	private void buildWithArray(Class<L> nodeType, Object array, Collection<L> list, int dim) {
 		if (dim == 1) {
-			for (Object v : (Object[])array) {
+			for (Object v : (Object[]) array) {
 				if (v == null) continue;
 				L node = buildTree((N)v, Kind.STATEMENT);
 				if (node != null) list.add(nodeType.cast(node));
 			}
-		} else for (Object v : (Object[])array) {
+		} else for (Object v : (Object[]) array) {
 			if (v == null) return;
 			buildWithArray(nodeType, v, list, dim -1);
 		}
@@ -413,13 +413,13 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	@SuppressWarnings("unchecked")
 	private void buildWithCollection(Class<L> nodeType, Object collection, Collection<L> list, int dim) {
 		if (dim == 1) {
-			for (Object v : (Collection<?>)collection) {
+			for (Object v : (Collection<?>) collection) {
 				if (v == null) continue;
-				L node = buildTree((N)v, Kind.STATEMENT);
+				L node = buildTree((N) v, Kind.STATEMENT);
 				if (node != null) list.add(nodeType.cast(node));
 			}
-		} else for (Object v : (Collection<?>)collection) {
-			buildWithCollection(nodeType, v, list, dim-1);
+		} else for (Object v : (Collection<?>) collection) {
+			buildWithCollection(nodeType, v, list, dim - 1);
 		}
 	}
 	

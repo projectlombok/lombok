@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 The Project Lombok Authors.
+ * Copyright (C) 2013-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,12 +74,24 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 			return;
 		}
 		
-		if (annotationNode.up().getKind() != Kind.ARGUMENT) return;
-		
 		JCMethodDecl declaration;
+		JavacNode paramNode;
 		
+		switch (annotationNode.up().getKind()) {
+		case ARGUMENT:
+			paramNode = annotationNode.up();
+			break;
+		case TYPE_USE:
+			JavacNode typeNode = annotationNode.directUp();
+			paramNode = typeNode.directUp();
+			break;
+		default:
+			return;
+		}
+		
+		if (paramNode.getKind() != Kind.ARGUMENT) return;
 		try {
-			declaration = (JCMethodDecl) annotationNode.up().up().get();
+			declaration = (JCMethodDecl) paramNode.up().get();
 		} catch (Exception e) {
 			return;
 		}
@@ -93,7 +105,7 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 		// and if they exist, create a new method in the class: 'private static <T> T lombok$nullCheck(T expr, String msg) {if (expr == null) throw NPE; return expr;}' and
 		// wrap all references to it in the super/this to a call to this method.
 		
-		JCStatement nullCheck = recursiveSetGeneratedBy(generateNullCheck(annotationNode.getTreeMaker(), annotationNode.up(), annotationNode), ast, annotationNode.getContext());
+		JCStatement nullCheck = recursiveSetGeneratedBy(generateNullCheck(annotationNode.getTreeMaker(), paramNode, annotationNode), ast, annotationNode.getContext());
 		
 		if (nullCheck == null) {
 			// @NonNull applied to a primitive. Kinda pointless. Let's generate a warning.
@@ -103,7 +115,7 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 		
 		List<JCStatement> statements = declaration.body.stats;
 		
-		String expectedName = annotationNode.up().getName();
+		String expectedName = paramNode.getName();
 		
 		/* Abort if the null check is already there, delving into try and synchronized statements */ {
 			List<JCStatement> stats = statements;
