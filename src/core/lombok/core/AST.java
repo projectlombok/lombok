@@ -229,7 +229,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 		
 		List<FieldAccess> fieldList = new ArrayList<FieldAccess>();
 		getFields(c, fieldList);
-		fieldsOfASTClasses.putIfAbsent(c, fieldList.toArray(new FieldAccess[fieldList.size()]));
+		fieldsOfASTClasses.putIfAbsent(c, fieldList.toArray(new FieldAccess[0]));
 		return fieldsOfASTClasses.get(c);
 	}
 	

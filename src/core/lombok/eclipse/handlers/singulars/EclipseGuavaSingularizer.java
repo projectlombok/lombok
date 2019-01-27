@@ -149,7 +149,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		thisDotFieldDotAdd.selector = getAddMethodName().toCharArray();
 		statements.add(thisDotFieldDotAdd);
 		if (returnStatement != null) statements.add(returnStatement);
-		md.statements = statements.toArray(new Statement[statements.size()]);
+		md.statements = statements.toArray(new Statement[0]);
 		md.arguments = new Argument[suffixes.size()];
 		for (int i = 0; i < suffixes.size(); i++) {
 			TypeReference tr = cloneParamType(i, data.getTypeArgs(), builderType);
@@ -183,7 +183,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		statements.add(thisDotFieldDotAddAll);
 		if (returnStatement != null) statements.add(returnStatement);
 		
-		md.statements = statements.toArray(new Statement[statements.size()]);
+		md.statements = statements.toArray(new Statement[0]);
 		
 		TypeReference paramType;
 		paramType = new QualifiedTypeReference(fromQualifiedName(getAddAllTypeName()), NULL_POSS);

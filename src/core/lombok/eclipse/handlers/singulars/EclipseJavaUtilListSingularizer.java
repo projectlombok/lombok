@@ -115,7 +115,7 @@ public class EclipseJavaUtilListSingularizer extends EclipseJavaUtilListSetSingu
 		}
 		
 		SwitchStatement switchStat = new SwitchStatement();
-		switchStat.statements = switchContents.toArray(new Statement[switchContents.size()]);
+		switchStat.statements = switchContents.toArray(new Statement[0]);
 		switchStat.expression = getSize(builderType, data.getPluralName(), true, builderVariable);
 		
 		TypeReference localShadowerType = new QualifiedTypeReference(Eclipse.fromQualifiedName(data.getTargetFqn()), NULL_POSS);

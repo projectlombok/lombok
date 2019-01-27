@@ -103,7 +103,7 @@ public class HandleHelper extends EclipseAnnotationHandler<Helper> {
 		}
 		
 		Collections.sort(knownMethodNames);
-		final String[] knownMethodNames_ = knownMethodNames.toArray(new String[knownMethodNames.size()]);
+		final String[] knownMethodNames_ = knownMethodNames.toArray(new String[0]);
 		
 		final char[] helperName = new char[annotatedType_.name.length + 1];
 		final boolean[] helperUsed = new boolean[1];

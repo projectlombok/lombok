@@ -447,8 +447,8 @@ public class HandleConstructor {
 		}
 		
 		nullChecks.addAll(assigns);
-		constructor.statements = nullChecks.isEmpty() ? null : nullChecks.toArray(new Statement[nullChecks.size()]);
-		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[params.size()]);
+		constructor.statements = nullChecks.isEmpty() ? null : nullChecks.toArray(new Statement[0]);
+		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[0]);
 		
 		/* Generate annotations that must  be put on the generated method, and attach them. */ {
 			Annotation[] constructorProperties = null;
@@ -550,8 +550,8 @@ public class HandleConstructor {
 			params.add(parameter);
 		}
 		
-		statement.arguments = assigns.isEmpty() ? null : assigns.toArray(new Expression[assigns.size()]);
-		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[params.size()]);
+		statement.arguments = assigns.isEmpty() ? null : assigns.toArray(new Expression[0]);
+		constructor.arguments = params.isEmpty() ? null : params.toArray(new Argument[0]);
 		constructor.statements = new Statement[] { new ReturnStatement(statement, (int) (p >> 32), (int)p) };
 		
 		constructor.traverse(new SetGeneratedByVisitor(source), typeDecl.scope);

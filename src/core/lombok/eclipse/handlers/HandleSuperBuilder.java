@@ -546,7 +546,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			}
 		}
 		
-		constructor.statements = statements.isEmpty() ? null : statements.toArray(new Statement[statements.size()]);
+		constructor.statements = statements.isEmpty() ? null : statements.toArray(new Statement[0]);
 		
 		constructor.traverse(new SetGeneratedByVisitor(source), typeDeclaration.scope);
 		
@@ -654,7 +654,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		returnCall.selector = SELF_METHOD_NAME;
 		body.add(new ReturnStatement(returnCall, 0, 0));
 		
-		out.statements = body.isEmpty() ? null : body.toArray(new Statement[body.size()]);
+		out.statements = body.isEmpty() ? null : body.toArray(new Statement[0]);
 		
 		return out;
 	}
@@ -694,7 +694,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			body.add(exec);
 		}
 		
-		out.statements = body.isEmpty() ? null : body.toArray(new Statement[body.size()]);
+		out.statements = body.isEmpty() ? null : body.toArray(new Statement[0]);
 		
 		return out;
 	}
@@ -788,7 +788,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		// Use a constructor that only has this builder as parameter.
 		allocationStatement.arguments = new Expression[] {new ThisReference(0, 0)};
 		statements.add(new ReturnStatement(allocationStatement, 0, 0));
-		out.statements = statements.isEmpty() ? null : statements.toArray(new Statement[statements.size()]);
+		out.statements = statements.isEmpty() ? null : statements.toArray(new Statement[0]);
 		out.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return out;
 	}

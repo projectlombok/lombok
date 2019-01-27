@@ -102,7 +102,7 @@ public class HandleHelper extends JavacAnnotationHandler<Helper> {
 		}
 		
 		Collections.sort(knownMethodNames);
-		final String[] knownMethodNames_ = knownMethodNames.toArray(new String[knownMethodNames.size()]);
+		final String[] knownMethodNames_ = knownMethodNames.toArray(new String[0]);
 		
 		final Name helperName = annotationNode.toName("$" + annotatedType_.name);
 		final boolean[] helperUsed = new boolean[1];

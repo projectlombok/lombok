@@ -147,7 +147,7 @@ abstract class EclipseJavaUtilSingularizer extends EclipseSingularizer {
 		}
 		
 		SwitchStatement switchStat = new SwitchStatement();
-		switchStat.statements = switchContents.toArray(new Statement[switchContents.size()]);
+		switchStat.statements = switchContents.toArray(new Statement[0]);
 		switchStat.expression = getSize(builderType, keyName, true, builderVariable);
 		
 		TypeReference localShadowerType = new QualifiedTypeReference(fromQualifiedName(data.getTargetFqn()), NULL_POSS);
