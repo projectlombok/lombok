@@ -663,7 +663,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		if (staticName == null) {
 			AllocationExpression allocationStatement = new AllocationExpression();
 			allocationStatement.type = copyType(out.returnType);
-			allocationStatement.arguments = args.isEmpty() ? null : args.toArray(new Expression[args.size()]);
+			allocationStatement.arguments = args.isEmpty() ? null : args.toArray(new Expression[0]);
 			statements.add(new ReturnStatement(allocationStatement, 0, 0));
 		} else {
 			MessageSend invoke = new MessageSend();
@@ -674,14 +674,14 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				invoke.receiver = new QualifiedThisReference(new SingleTypeReference(type.up().getName().toCharArray(), 0) , 0, 0);
 			
 			invoke.typeArguments = typeParameterNames(((TypeDeclaration) type.get()).typeParameters);
-			invoke.arguments = args.isEmpty() ? null : args.toArray(new Expression[args.size()]);
+			invoke.arguments = args.isEmpty() ? null : args.toArray(new Expression[0]);
 			if (returnType instanceof SingleTypeReference && Arrays.equals(TypeConstants.VOID, ((SingleTypeReference) returnType).token)) {
 				statements.add(invoke);
 			} else {
 				statements.add(new ReturnStatement(invoke, 0, 0));
 			}
 		}
-		out.statements = statements.isEmpty() ? null : statements.toArray(new Statement[statements.size()]);
+		out.statements = statements.isEmpty() ? null : statements.toArray(new Statement[0]);
 		out.traverse(new SetGeneratedByVisitor(source), (ClassScope) null);
 		return out;
 	}

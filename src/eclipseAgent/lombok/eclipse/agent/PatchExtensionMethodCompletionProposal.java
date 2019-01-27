@@ -78,7 +78,7 @@ public class PatchExtensionMethodCompletionProposal {
 				}
 			}
 		}
-		return proposals.toArray(new IJavaCompletionProposal[proposals.size()]);
+		return proposals.toArray(new IJavaCompletionProposal[0]);
 	}
 	
 	

@@ -426,7 +426,7 @@ public class Delombok {
 			throw new IOException("Unclosed ' in @ file");
 		}
 		
-		return x.toArray(new String[x.size()]);
+		return x.toArray(new String[0]);
 	}
 	
 	public static class InvalidFormatOptionException extends Exception {

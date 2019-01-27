@@ -215,7 +215,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		}
 		if (returnStatement != null) statements.add(returnStatement);
 		
-		md.statements = statements.toArray(new Statement[statements.size()]);
+		md.statements = statements.toArray(new Statement[0]);
 		TypeReference keyParamType = cloneParamType(0, data.getTypeArgs(), builderType);
 		TypeReference valueParamType = cloneParamType(1, data.getTypeArgs(), builderType);
 		Annotation[] typeUseAnnsKey = getTypeUseAnnotations(keyParamType);
@@ -286,7 +286,7 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		statements.add(forEach);
 		if (returnStatement != null) statements.add(returnStatement);
 		
-		md.statements = statements.toArray(new Statement[statements.size()]);
+		md.statements = statements.toArray(new Statement[0]);
 		
 		TypeReference paramType = new QualifiedTypeReference(JAVA_UTIL_MAP, NULL_POSS);
 		paramType = addTypeArgs(2, true, builderType, paramType, data.getTypeArgs());

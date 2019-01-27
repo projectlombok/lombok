@@ -391,7 +391,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			setGeneratedBy(returnStatement, source);
 			statements.add(returnStatement);
 		}
-		method.statements = statements.toArray(new Statement[statements.size()]);
+		method.statements = statements.toArray(new Statement[0]);
 		return method;
 	}
 
@@ -738,7 +738,7 @@ public class HandleEqualsAndHashCode extends EclipseAnnotationHandler<EqualsAndH
 			setGeneratedBy(returnStatement, source);
 			statements.add(returnStatement);
 		}
-		method.statements = statements.toArray(new Statement[statements.size()]);
+		method.statements = statements.toArray(new Statement[0]);
 		return method;
 	}
 	

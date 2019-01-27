@@ -341,7 +341,7 @@ public class EclipseSingularsRecipes {
 			}
 			
 			if (arguments.isEmpty()) return null;
-			return arguments.toArray(new TypeReference[arguments.size()]);
+			return arguments.toArray(new TypeReference[0]);
 		}
 		
 		private static final char[] SIZE_TEXT = new char[] {'s', 'i', 'z', 'e'};

@@ -551,7 +551,7 @@ final class PatchFixesHider {
 			// Since Eclipse doesn't honor the "insert at specified location" for already existing members,
 			// we'll just add them last
 			newChildren.addAll(modifiedChildren);
-			return newChildren.toArray(new RewriteEvent[newChildren.size()]);
+			return newChildren.toArray(new RewriteEvent[0]);
 		}
 		
 		public static int getTokenEndOffsetFixed(TokenScanner scanner, int token, int startOffset, Object domNode) throws CoreException {
@@ -570,7 +570,7 @@ final class PatchFixesHider {
 			for (IMethod m : methods) {
 				if (m.getNameRange().getLength() > 0 && !m.getNameRange().equals(m.getSourceRange())) result.add(m);
 			}
-			return result.size() == methods.length ? methods : result.toArray(new IMethod[result.size()]);
+			return result.size() == methods.length ? methods : result.toArray(new IMethod[0]);
 		}
 		
 		public static SearchMatch[] removeGenerated(SearchMatch[] returnValue) {
@@ -591,7 +591,7 @@ final class PatchFixesHider {
 				}
 				result.add(searchResult);
 			}
-			return result.toArray(new SearchMatch[result.size()]);
+			return result.toArray(new SearchMatch[0]);
 		}
 		
 		public static SearchResultGroup[] createFakeSearchResult(SearchResultGroup[] returnValue,
