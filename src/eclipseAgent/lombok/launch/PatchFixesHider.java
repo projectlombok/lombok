@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2015 The Project Lombok Authors.
+ * Copyright (C) 2010-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
-import lombok.eclipse.EclipseAugments;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.IAnnotatable;
 import org.eclipse.jdt.core.IAnnotation;
@@ -63,6 +61,8 @@ import org.eclipse.jdt.internal.core.dom.rewrite.RewriteEvent;
 import org.eclipse.jdt.internal.core.dom.rewrite.TokenScanner;
 import org.eclipse.jdt.internal.corext.refactoring.SearchResultGroup;
 import org.eclipse.jdt.internal.corext.refactoring.structure.ASTNodeSearchUtil;
+
+import lombok.eclipse.EclipseAugments;
 
 /** These contain a mix of the following:
  * <ul>
@@ -476,8 +476,10 @@ final class PatchFixesHider {
 			return original == -1 ? start : original;
 		}
 		
-		public static int fixRetrieveIdentifierEndPosition(int original, int end) {
-			return original == -1 ? end : original;
+		public static int fixRetrieveIdentifierEndPosition(int original, int start, int end) {
+			if (original == -1) return end;
+			if (original < start) return end;
+			return original;
 		}
 		
 		public static int fixRetrieveEllipsisStartPosition(int original, int end) {

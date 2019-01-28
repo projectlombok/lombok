@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2018 The Project Lombok Authors.
+ * Copyright (C) 2014-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,15 +27,7 @@ import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.AccessLevel;
-import lombok.ConfigurationKeys;
-import lombok.core.AST.Kind;
-import lombok.core.AnnotationValues;
-import lombok.eclipse.Eclipse;
-import lombok.eclipse.EclipseAnnotationHandler;
-import lombok.eclipse.EclipseNode;
-import lombok.experimental.FieldNameConstants;
-
+import org.eclipse.jdt.internal.compiler.ASTVisitor;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.AllocationExpression;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -50,6 +42,16 @@ import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.mangosdk.spi.ProviderFor;
+
+import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
+import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
+import lombok.eclipse.Eclipse;
+import lombok.eclipse.EclipseAnnotationHandler;
+import lombok.eclipse.EclipseNode;
+import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
+import lombok.experimental.FieldNameConstants;
 
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldNameConstants> {
@@ -88,7 +90,7 @@ public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldName
 		return filterField(fieldDecl);
 	}
 	
-	public void handle(AnnotationValues<FieldNameConstants> annotation, Annotation ast, EclipseNode annotationNode) {
+	@Override public void handle(AnnotationValues<FieldNameConstants> annotation, Annotation ast, EclipseNode annotationNode) {
 		handleExperimentalFlagUsage(annotationNode, ConfigurationKeys.FIELD_NAME_CONSTANTS_FLAG_USAGE, "@FieldNameConstants");
 		
 		EclipseNode node = annotationNode.up();
@@ -117,6 +119,7 @@ public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldName
 	private void createInnerTypeFieldNameConstants(EclipseNode typeNode, EclipseNode errorNode, ASTNode source, AccessLevel level, List<EclipseNode> fields, boolean asEnum, String innerTypeName) {
 		if (fields.isEmpty()) return;
 		
+		ASTVisitor generatedByVisitor = new SetGeneratedByVisitor(source);
 		TypeDeclaration parent = (TypeDeclaration) typeNode.get();
 		EclipseNode fieldsType = findInnerClass(typeNode, innerTypeName);
 		boolean genConstr = false, genClinit = false;
@@ -125,11 +128,12 @@ public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldName
 		if (fieldsType == null) {
 			generatedInnerType = new TypeDeclaration(parent.compilationResult);
 			generatedInnerType.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
-			generatedInnerType.modifiers = toEclipseModifier(level) | (asEnum ? ClassFileConstants.AccEnum : ClassFileConstants.AccStatic | ClassFileConstants.AccFinal);
+			generatedInnerType.modifiers = toEclipseModifier(level) | (asEnum ? ClassFileConstants.AccEnum : (ClassFileConstants.AccStatic | ClassFileConstants.AccFinal));
 			generatedInnerType.name = name;
 			fieldsType = injectType(typeNode, generatedInnerType);
 			genConstr = true;
 			genClinit = asEnum;
+			generatedInnerType.traverse(generatedByVisitor, ((TypeDeclaration) typeNode.get()).scope);
 		} else {
 			TypeDeclaration builderTypeDeclaration = (TypeDeclaration) fieldsType.get();
 			if (asEnum && (builderTypeDeclaration.modifiers & ClassFileConstants.AccEnum) == 0) {
@@ -146,8 +150,6 @@ public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldName
 		if (genConstr) {
 			ConstructorDeclaration constructor = new ConstructorDeclaration(parent.compilationResult);
 			constructor.selector = name;
-			constructor.declarationSourceStart = constructor.sourceStart = source.sourceStart;
-			constructor.declarationSourceEnd = constructor.sourceEnd = source.sourceEnd;
 			constructor.modifiers = ClassFileConstants.AccPrivate;
 			ExplicitConstructorCall superCall = new ExplicitConstructorCall(0);
 			superCall.sourceStart = source.sourceStart;
@@ -157,11 +159,12 @@ public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldName
 			if (!asEnum) constructor.statements = new Statement[0];
 			injectMethod(fieldsType, constructor);
 		}
+		
 		if (genClinit) {
 			Clinit cli = new Clinit(parent.compilationResult);
 			injectMethod(fieldsType, cli);
+			cli.traverse(generatedByVisitor, ((TypeDeclaration) fieldsType.get()).scope);
 		}
-
 		
 		for (EclipseNode fieldNode : fields) {
 			FieldDeclaration field = (FieldDeclaration) fieldNode.get();
@@ -171,19 +174,20 @@ public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldName
 			long p = (long) pS << 32 | pE;
 			FieldDeclaration constantField = new FieldDeclaration(fName, pS, pE);
 			constantField.bits |= Eclipse.ECLIPSE_DO_NOT_TOUCH_FLAG;
-			constantField.modifiers = asEnum ? 0 : ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal;
-			constantField.type = asEnum ? null : new QualifiedTypeReference(TypeConstants.JAVA_LANG_STRING, new long[] {p, p, p});
 			if (asEnum) {
 				AllocationExpression ac = new AllocationExpression();
 				ac.enumConstant = constantField;
 				ac.sourceStart = source.sourceStart;
 				ac.sourceEnd = source.sourceEnd;
 				constantField.initialization = ac;
+				constantField.modifiers = 0;
 			} else {
+				constantField.type = new QualifiedTypeReference(TypeConstants.JAVA_LANG_STRING, new long[] {p, p, p});
 				constantField.initialization = new StringLiteral(field.name, pS, pE, 0);
+				constantField.modifiers = ClassFileConstants.AccPublic | ClassFileConstants.AccStatic | ClassFileConstants.AccFinal;
 			}
-			constantField.traverse(new SetGeneratedByVisitor(source), null);
 			injectField(fieldsType, constantField);
+			constantField.traverse(generatedByVisitor, ((TypeDeclaration) fieldsType.get()).initializerScope);
 		}
 	}
 }
