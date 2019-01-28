@@ -84,7 +84,8 @@ public class HandlerUtil {
 			"com.sun.istack.internal.NotNull",
 			"edu.umd.cs.findbugs.annotations.NonNull",
 			"javax.annotation.Nonnull",
-			"javax.validation.constraints.NotNull",
+                        // The field might contain a null value until it is persisted.
+			// "javax.validation.constraints.NotNull",
 			"lombok.NonNull",
 			"org.checkerframework.checker.nullness.qual.NonNull",
 			"org.eclipse.jdt.annotation.NonNull",
