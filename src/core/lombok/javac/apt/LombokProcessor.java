@@ -23,7 +23,6 @@ package lombok.javac.apt;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Writer;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -47,13 +46,6 @@ import javax.lang.model.element.QualifiedNameable;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.JavaFileManager;
-import javax.tools.JavaFileObject;
-
-import lombok.Lombok;
-import lombok.core.CleanupRegistry;
-import lombok.core.DiagnosticsReceiver;
-import lombok.javac.JavacTransformer;
-import lombok.permit.Permit;
 
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
@@ -63,6 +55,12 @@ import com.sun.tools.javac.processing.JavacFiler;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.util.Context;
+
+import lombok.Lombok;
+import lombok.core.CleanupRegistry;
+import lombok.core.DiagnosticsReceiver;
+import lombok.javac.JavacTransformer;
+import lombok.permit.Permit;
 
 /**
  * This Annotation Processor is the standard injection mechanism for lombok-enabling the javac compiler.
@@ -362,11 +360,7 @@ public class LombokProcessor extends AbstractProcessor {
 	private void forceNewRound(String randomModuleName, JavacFiler filer) {
 		if (!filer.newFiles()) {
 			try {
-				String name = "lombok.dummy.ForceNewRound" + (dummyCount++);
-				if (randomModuleName != null) name = randomModuleName + "/" + name;
-				JavaFileObject dummy = filer.createSourceFile(name);
-				Writer w = dummy.openWriter();
-				w.close();
+				filer.getGeneratedSourceNames().add("lombok.dummy.ForceNewRound" + (dummyCount++));
 			} catch (Exception e) {
 				e.printStackTrace();
 				processingEnv.getMessager().printMessage(Kind.WARNING,

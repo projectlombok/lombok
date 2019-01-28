@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2018 The Project Lombok Authors.
+ * Copyright (C) 2010-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,10 +38,10 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 
+import com.sun.tools.javac.file.BaseFileManager;
+
 import lombok.core.DiagnosticsReceiver;
 import lombok.permit.Permit;
-
-import com.sun.tools.javac.file.BaseFileManager;
 
 //Can't use SimpleJavaFileObject so we copy/paste most of its content here, because javac doesn't follow the interface,
 //and casts to its own BaseFileObject type. D'oh!
@@ -150,10 +150,6 @@ final class LombokFileObjects {
 			}
 		}
 		throw new IllegalArgumentException(sb.toString());
-	}
-	
-	static JavaFileObject createEmpty(Compiler compiler, String name, Kind kind) {
-		return compiler.wrap(new EmptyLombokFileObject(name, kind));
 	}
 	
 	static JavaFileObject createIntercepting(Compiler compiler, JavaFileObject delegate, String fileName, DiagnosticsReceiver diagnostics) {
