@@ -24,7 +24,7 @@ docker build -t lombok-maven-jdk11 --build-arg lombokjar=lombok-1.16.20.jar -f m
 ```
 docker run -it lombok-maven-jdk11
 
-docker run --rm -it -v /<lombokhome>/dist/lombok.jar:/workspace/lombok.jar lombok-maven-jdk10
+docker run --rm -it -v /<lombokhome>/dist/lombok.jar:/workspace/lombok.jar lombok-maven-jdk11
 ```
 
 ## Example container commands:
