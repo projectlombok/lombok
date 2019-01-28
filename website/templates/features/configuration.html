@@ -30,9 +30,9 @@
 				</dt><dd>
 					If set to <code>true</code>, generated setters and getters will simply be named the same as the field name, without a <code>get</code> or <code>set</code> prefix.
 				</dd><dt>
-					<code>lombok.anyConstructor.suppressConstructorProperties</code>
+					<code>llombok.anyConstructor.addConstructorProperties</code>
 				</dt><dd>
-					If <code>true</code>, lombok will not generate a <code>@java.beans.ConstructorProperties</code> annotation when generating constructors. This is particularly useful for GWT and Android development.
+					If <code>true</code>, lombok will generate a <code>@java.beans.ConstructorProperties</code> annotation when generating constructors. This is particularly useful for GWT and Android development. Note that you'll need to depend on module 'java.desktop' if you're using jigsaw.
 				</dd><dt>
 					<code>lombok.log.fieldName</code>
 				</dt><dd>
