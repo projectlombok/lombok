@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2018 The Project Lombok Authors.
+ * Copyright (C) 2013-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -405,11 +405,15 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			makeSetterMethodsForBuilder(builderType, bfd, annotationNode, fluent, chain);
 		}
 		
-		if (methodExists(buildMethodName, builderType, -1) == MemberExistsResult.NOT_EXISTS) {
-			JCMethodDecl md = generateBuildMethod(tdParent, isStatic, buildMethodName, nameOfBuilderMethod, returnType, builderFields, builderType, thrownExceptions, ast, addCleaning);
-			if (md != null) {
-				injectMethod(builderType, md);
-				recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
+		{
+			MemberExistsResult methodExists = methodExists(builderMethodName, builderType, -1);
+			if (methodExists == MemberExistsResult.EXISTS_BY_LOMBOK) methodExists = methodExists(buildMethodName, builderType, 0);
+			if (methodExists == MemberExistsResult.NOT_EXISTS) {
+				JCMethodDecl md = generateBuildMethod(tdParent, isStatic, buildMethodName, nameOfBuilderMethod, returnType, builderFields, builderType, thrownExceptions, ast, addCleaning);
+				if (md != null) {
+					injectMethod(builderType, md);
+					recursiveSetGeneratedBy(md, ast, annotationNode.getContext());
+				}
 			}
 		}
 		

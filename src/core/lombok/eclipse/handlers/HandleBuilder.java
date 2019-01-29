@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2018 The Project Lombok Authors.
+ * Copyright (C) 2013-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -87,6 +87,7 @@ import lombok.core.HandlerPriority;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
+import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.EclipseSingularizer;
 import lombok.eclipse.handlers.EclipseSingularsRecipes.SingularData;
 import lombok.eclipse.handlers.HandleConstructor.SkipIfConstructorExists;
@@ -460,9 +461,13 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			makeSetterMethodsForBuilder(builderType, bfd, annotationNode, fluent, chain);
 		}
 		
-		if (methodExists(buildMethodName, builderType, -1) == MemberExistsResult.NOT_EXISTS) {
-			MethodDeclaration md = generateBuildMethod(tdParent, isStatic, buildMethodName, nameOfStaticBuilderMethod, returnType, builderFields, builderType, thrownExceptions, addCleaning, ast);
-			if (md != null) injectMethod(builderType, md);
+		{
+			MemberExistsResult methodExists = methodExists(buildMethodName, builderType, -1);
+			if (methodExists == MemberExistsResult.EXISTS_BY_LOMBOK) methodExists = methodExists(buildMethodName, builderType, 0);
+			if (methodExists == MemberExistsResult.NOT_EXISTS) {
+				MethodDeclaration md = generateBuildMethod(tdParent, isStatic, buildMethodName, nameOfStaticBuilderMethod, returnType, builderFields, builderType, thrownExceptions, addCleaning, ast);
+				if (md != null) injectMethod(builderType, md);
+			}
 		}
 		
 		if (methodExists("toString", builderType, 0) == MemberExistsResult.NOT_EXISTS) {
