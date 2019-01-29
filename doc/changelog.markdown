@@ -11,6 +11,7 @@ Lombok Changelog
 * BUGFIX: Using the new `@FieldNameConstants` in eclipse would cause errors in the error log view, and error popups if save actions are turned on. [Issue #2024](https://github.com/rzwitserloot/lombok/issues/2024)
 * BUGFIX: Since version 1.18.4, the delombok ant task didn't work and errored with a `NoClassDefFoundError`. [Issue #1932](https://github.com/rzwitserloot/lombok/issues/1932)
 * BUGFIX: Combining both `@Setter` and `@Wither` on the same field, when that field also has javadoc with a `--setter--` section or an `@param` tag, resulted in a race condition where the first handler to get to the field would take that part of the javadoc. This is a step along the way to fixing [Issue #1033](https://github.com/rzwitserloot/lombok/issues/1033)
+* BUGFIX: Compiling multi-module projects would fail on forcing new rounds. [Issue #1723](https://github.com/rzwitserloot/lombok/issues/1723), [Issue #1858](https://github.com/rzwitserloot/lombok/issues/1858), [Issue #1946](https://github.com/rzwitserloot/lombok/issues/1946), [Issue #2028](https://github.com/rzwitserloot/lombok/issues/2028)
 
 ### v1.18.4 (October 30th, 2018)
 * PLATFORM: Support for Eclipse Photon. [Issue #1831](https://github.com/rzwitserloot/lombok/issues/1831)
