@@ -1,7 +1,7 @@
 Lombok Changelog
 ----------------
 
-### v1.18.5 "Edgy Guinea Pig"
+### v1.18.6 (February 12th, 2019)
 * FEATURE: Javadoc on fields will now also be copied to the Builders' setters. Thanks for the contribution, Emil Lundberg. [Issue #2008](https://github.com/rzwitserloot/lombok/issues/2008)
 * FEATURE: The `@FieldNameConstants` feature now allows you to write the inner type by hand and add whatever you like to it; lombok will add the constants to this class. See the updated [FieldNameConstants feature](https://projectlombok.org/features/experimental/FieldNameConstants) page.
 * FEATURE: There is now a `lombok.config` key to configure `@ToString`'s call super behavior; it's just like `@EqualsAndHashCode` which has had it for a while now. [Issue #1918](https://github.com/rzwitserloot/lombok/issues/1918)
