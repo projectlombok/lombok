@@ -1,16 +1,16 @@
 /*
  * Copyright (C) 2015 The Project Lombok Authors.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -28,12 +28,14 @@ import java.lang.annotation.Target;
 
 /**
  * An annotation to create utility classes.
- * 
+ *
  * If a class is annotated with {@code @UtilityClass}, the following things happen to it:<ul>
  * <li>It is marked final.</li>
  * <li>If any constructors are declared in it, an error is generated. Otherwise, a private no-args constructor is generated; it throws a {@code UnsupportedOperationException}.</li>
  * <li>All methods, inner classes, and fields in the class are marked static.</li>
  * </ul>
+ * <strong>Warning!</strong> Do not use static imports with the methods in this class. Javac will try to resolve them too early,
+ * and your code will not compile.
  */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.SOURCE)

@@ -23,6 +23,8 @@
 			A utility class cannot be instantiated. By marking your class with <code>@UtilityClass</code>, lombok will automatically generate a private constructor that throws an exception, flags as error any explicit constructors you add, and marks the class <code>final</code>. If the class is an inner class, the class is also marked <code>static</code>.
 		</p><p>
 			<em>All</em> members of a utility class are automatically marked as <code>static</code>. Even fields and inner classes.
+		</p><p>
+			<em>Warning</em> - do not try and use static imports with the methods inside a <code>@UtilityClass</code>. Javac will not be able to resolve them correctly, and your code will fail to compile.
 		</p>
 	</@f.overview>
 
