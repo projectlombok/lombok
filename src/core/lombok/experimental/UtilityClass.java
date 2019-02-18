@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Project Lombok Authors.
+ * Copyright (C) 2015-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,8 @@ import java.lang.annotation.Target;
  * <li>It is marked final.</li>
  * <li>If any constructors are declared in it, an error is generated. Otherwise, a private no-args constructor is generated; it throws a {@code UnsupportedOperationException}.</li>
  * <li>All methods, inner classes, and fields in the class are marked static.</li>
+ * <li><em>WARNING:</em> Do not use non-star static imports to import these members; javac won't be able to figure it out. Use either:
+ *    <code>import static ThisType.*;</code> or don't static-import.</li>
  * </ul>
  */
 @Target({ElementType.TYPE})
