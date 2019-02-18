@@ -281,9 +281,8 @@ the common tasks and can be called on to run the main aspects of all the sub-scr
 			<classpath refid="build.path" />
 		</ivy:compile>
 		<delete dir="build/lombok-proc-result" quiet="true" />
-		<ivy:compile destdir="build/lombok-proc-result" source="1.6" target="1.6" nowarn="true" ecj="true">
-			<bootclasspath location="build/stubs" />
-			<bootclasspath path="${rt-openjdk8}" />
+		<ivy:compile destdir="build/lombok-proc-result" source="9" target="9">
+			<classpath location="build/stubs" />
 			<compilerarg value="-proc:only" />
 			<compilerarg value="-processor" />
 			<compilerarg value="org.mangosdk.spi.processor.SpiProcessor" />
