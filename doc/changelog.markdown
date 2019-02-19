@@ -2,7 +2,7 @@ Lombok Changelog
 ----------------
 
 ### v1.18.7 "Edgy Guinea Pig"
-* Nothing new yet in the edge release.
+* BUGFIX: var/val on methods that return an intersection type would now work in Eclipse [Issue #1986](https://github.com/rzwitserloot/lombok/issues/1986)
 
 ### v1.18.6 (February 12th, 2019)
 * FEATURE: Javadoc on fields will now also be copied to the Builders' setters. Thanks for the contribution, Emil Lundberg. [Issue #2008](https://github.com/rzwitserloot/lombok/issues/2008)

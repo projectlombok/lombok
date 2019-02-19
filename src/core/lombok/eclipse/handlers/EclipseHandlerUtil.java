@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2018 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -306,10 +306,14 @@ public class EclipseHandlerUtil {
 		public static final Field STRING_LITERAL__LINE_NUMBER;
 		public static final Field ANNOTATION__MEMBER_VALUE_PAIR_NAME;
 		public static final Field TYPE_REFERENCE__ANNOTATIONS;
+		public static final Class<?> INTERSECTION_BINDING;
+		public static final Field INTERSECTION_BINDING_TYPES;
 		static {
 			STRING_LITERAL__LINE_NUMBER = getField(StringLiteral.class, "lineNumber");
 			ANNOTATION__MEMBER_VALUE_PAIR_NAME = getField(Annotation.class, "memberValuePairName");
 			TYPE_REFERENCE__ANNOTATIONS = getField(TypeReference.class, "annotations");
+			INTERSECTION_BINDING = getClass("org.eclipse.jdt.internal.compiler.lookup.IntersectionTypeBinding18");
+			INTERSECTION_BINDING_TYPES = INTERSECTION_BINDING == null ? null : getField(INTERSECTION_BINDING, "intersectingTypes");
 		}
 		
 		public static int reflectInt(Field f, Object o) {
@@ -333,6 +337,14 @@ public class EclipseHandlerUtil {
 				return f.get(o);
 			} catch (IllegalAccessException e) {
 				throw new RuntimeException(e);
+			}
+		}
+		
+		private static Class<?> getClass(String fqn) {
+			try {
+				return Class.forName(fqn);
+			} catch (Exception e) {
+				return null;
 			}
 		}
 		
@@ -791,6 +803,11 @@ public class EclipseHandlerUtil {
 	}
 	
 	public static TypeReference makeType(TypeBinding binding, ASTNode pos, boolean allowCompound) {
+		
+		if (binding.getClass() == EclipseReflectiveMembers.INTERSECTION_BINDING) {
+			Object[] arr = (Object[]) EclipseReflectiveMembers.reflect(EclipseReflectiveMembers.INTERSECTION_BINDING_TYPES, binding);
+			binding = (TypeBinding) arr[0];
+		}
 		int dims = binding.dimensions();
 		binding = binding.leafComponentType();
 		
