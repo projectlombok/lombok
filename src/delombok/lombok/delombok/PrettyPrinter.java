@@ -1268,9 +1268,14 @@ public class PrettyPrinter extends JCTree.Visitor {
 			break;
 		case 1:
 			print("(");
-			JCVariableDecl decl = (JCVariableDecl) resources.get(0);
-			flagMod = -1L & ~FINAL;
-			printVarDefInline(decl);
+			JCTree resource = (JCTree) resources.get(0);
+			if (resource instanceof JCVariableDecl) {
+				JCVariableDecl decl = (JCVariableDecl) resource;
+				flagMod = -1L & ~FINAL;
+				printVarDefInline(decl);
+			} else {
+				print(resource);
+			}
 			print(") ");
 			break;
 		default:
@@ -1279,8 +1284,12 @@ public class PrettyPrinter extends JCTree.Visitor {
 			int c = 0;
 			for (Object i : resources) {
 				align();
-				flagMod = -1L & ~FINAL;
-				printVarDefInline((JCVariableDecl) i);
+				if (i instanceof JCVariableDecl) {
+					flagMod = -1L & ~FINAL;
+					printVarDefInline((JCVariableDecl) i);
+				} else {
+					print((JCTree) i);
+				}
 				if (++c == len) {
 					print(") ");
 				} else {
