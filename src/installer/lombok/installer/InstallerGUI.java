@@ -110,7 +110,7 @@ public class InstallerGUI {
 		
 		appWindow.setLocationByPlatform(true);
 		appWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		appWindow.setResizable(false);
+		appWindow.setResizable(true);
 		appWindow.setIconImage(Toolkit.getDefaultToolkit().getImage(Installer.class.getResource("lombokIcon.png")));
 		
 		try {
