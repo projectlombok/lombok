@@ -372,7 +372,7 @@ public class HandlerUtil {
 		if (fut != null) {
 			String msg = "Use of " + featureName + " is flagged according to lombok configuration.";
 			if (fut == FlagUsageType.WARNING) node.addWarning(msg);
-			else node.addError(msg);
+			else if (fut == FlagUsageType.ERROR) node.addError(msg);
 		}
 	}
 	
