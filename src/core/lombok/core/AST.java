@@ -60,6 +60,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	private final String fileName;
 	private final String packageDeclaration;
 	private final ImportList imports;
+	private TypeResolver importsAsResolver;
 	Map<N, N> identityDetector = new IdentityHashMap<N, N>();
 	private Map<N, L> nodeMap = new IdentityHashMap<N, L>();
 	private boolean changed = false;
@@ -112,11 +113,17 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	
 	/**
 	 * Return the contents of each non-static import statement on this AST's top (Compilation Unit) node.
-	 * 
-	 * Example: "java.util.IOException".
 	 */
 	public final ImportList getImportList() {
 		return imports;
+	}
+	
+	/**
+	 * Return the contents of each non-static import statement on this AST's top (Compilation Unit) node, packed into a (cached) TypeResolver.
+	 */
+	public final TypeResolver getImportListAsTypeResolver() {
+		if (importsAsResolver != null) return importsAsResolver;
+		return importsAsResolver = new TypeResolver(getImportList());
 	}
 	
 	/**

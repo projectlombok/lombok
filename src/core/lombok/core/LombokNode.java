@@ -97,6 +97,15 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	}
 	
 	/**
+	 * Convenient shortcut to the owning ast object's {@code getImportListAsTypeResolver} method.
+	 * 
+	 * @see AST#getImportListAsTypeResolver()
+	 */
+	public TypeResolver getImportListAsTypeResolver() {
+		return getAst().getImportListAsTypeResolver();
+	}
+	
+	/**
 	 * See {@link #isStructurallySignificant}.
 	 */
 	protected abstract boolean calculateIsStructurallySignificant(N parent);

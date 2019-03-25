@@ -298,9 +298,14 @@ public class JavacHandlerUtil {
 	 * @param typeNode A type reference to check.
 	 */
 	public static boolean typeMatches(String type, JavacNode node, JCTree typeNode) {
-		String typeName = typeNode.toString();
-		
-		TypeResolver resolver = new TypeResolver(node.getImportList());
+		String typeName = typeNode == null ? null : typeNode.toString();
+		if (typeName == null || typeName.length() == 0) return false;
+		int lastIndexA = typeName.lastIndexOf('.') + 1;
+		int lastIndexB = type.lastIndexOf('.') + 1;
+		int len = typeName.length() - lastIndexA;
+		if (len != type.length() - lastIndexB) return false;
+		for (int i = 0; i < len; i++) if (typeName.charAt(i + lastIndexA) != type.charAt(i + lastIndexB)) return false;
+		TypeResolver resolver = node.getImportListAsTypeResolver();
 		return resolver.typeMatches(node, type, typeName);
 	}
 	

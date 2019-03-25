@@ -221,14 +221,14 @@ public class EclipseHandlerUtil {
 	 * @param typeRef A type reference to check.
 	 */
 	public static boolean typeMatches(String type, EclipseNode node, TypeReference typeRef) {
-		if (typeRef == null || typeRef.getTypeName() == null || typeRef.getTypeName().length == 0) return false;
-		String lastPartA = new String(typeRef.getTypeName()[typeRef.getTypeName().length -1]);
-		int lastIndex = type.lastIndexOf('.');
-		String lastPartB = lastIndex == -1 ? type : type.substring(lastIndex + 1);
-		if (!lastPartA.equals(lastPartB)) return false;
-		String typeName = toQualifiedName(typeRef.getTypeName());
-		
-		TypeResolver resolver = new TypeResolver(node.getImportList());
+		char[][] tn = typeRef == null ? null : typeRef.getTypeName();
+		if (tn == null || tn.length == 0) return false;
+		char[] lastPartA = tn[tn.length - 1];
+		int lastIndex = type.lastIndexOf('.') + 1;
+		if (lastPartA.length != type.length() - lastIndex) return false;
+		for (int i = 0; i < lastPartA.length; i++) if (lastPartA[i] != type.charAt(i + lastIndex)) return false;
+		String typeName = toQualifiedName(tn);
+		TypeResolver resolver = node.getImportListAsTypeResolver();
 		return resolver.typeMatches(node, type, typeName);
 	}
 	
