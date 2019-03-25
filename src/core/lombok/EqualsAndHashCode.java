@@ -97,6 +97,8 @@ public @interface EqualsAndHashCode {
 	/**
 	 * Only include fields and methods explicitly marked with {@code @EqualsAndHashCode.Include}.
 	 * Normally, all (non-static, non-transient) fields are included by default.
+	 * 
+	 * @return If {@code true}, don't include non-static non-transient fields automatically (default: {@code false}).
 	 */
 	boolean onlyExplicitlyIncluded() default false;
 	
@@ -113,7 +115,12 @@ public @interface EqualsAndHashCode {
 	@Target({ElementType.FIELD, ElementType.METHOD})
 	@Retention(RetentionPolicy.SOURCE)
 	public @interface Include {
-		/** Defaults to the method name of the annotated member. If on a method and the name equals the name of a default-included field, this member takes its place. */
+		/**
+		 * Defaults to the method name of the annotated member.
+		 * If on a method and the name equals the name of a default-included field, this member takes its place.
+		 * 
+		 * @return If present, this method serves as replacement for the named field.
+		 */
 		String replaces() default "";
 	}
 }

@@ -41,6 +41,8 @@ public @interface FieldNameConstants {
 	/**
 	 * Only include fields and methods explicitly marked with {@code @FieldNameConstants.Include}.
 	 * Normally, all (non-static) fields are included by default.
+	 * 
+	 * @return If {@code true}, don't include non-static fields automatically (default: {@code false}).
 	 */
 	boolean onlyExplicitlyIncluded() default false;
 	

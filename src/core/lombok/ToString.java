@@ -83,6 +83,8 @@ public @interface ToString {
 	/**
 	 * Only include fields and methods explicitly marked with {@code @ToString.Include}.
 	 * Normally, all (non-static) fields are included by default.
+	 * 
+	 * @return If {@code true}, don't include non-static fields automatically (default: {@code false}).
 	 */
 	boolean onlyExplicitlyIncluded() default false;
 	
@@ -102,10 +104,19 @@ public @interface ToString {
 //		/** If true and the return value is {@code null}, omit this member entirely from the {@code toString} output. */
 //		boolean skipNull() default false; // -- We'll add it later, it requires a complete rework on the toString code we generate.
 		
-		/** Higher ranks are printed first. Members of the same rank are printed in the order they appear in the source file. */
+		/**
+		 * Higher ranks are printed first. Members of the same rank are printed in the order they appear in the source file.
+		 * 
+		 * @return ordering within the generating {@code toString()}; higher numbers are printed first.
+		 */
 		int rank() default 0;
 		
-		/** Defaults to the field / method name of the annotated member. If the name equals the name of a default-included field, this member takes its place. */
+		/**
+		 * Defaults to the field / method name of the annotated member.
+		 * If the name equals the name of a default-included field, this member takes its place.
+		 * 
+		 * @return The name to show in the generated {@code toString()}. Also, if this annotation is on a method and the name matches an existing field, it replaces that field.
+		 */
 		String name() default "";
 	}
 }
