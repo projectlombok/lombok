@@ -32,7 +32,6 @@ Lombok Changelog
 * BUGFIX: Fix NetBeans compile on save. [Issue #1770](https://github.com/rzwitserloot/lombok/issues/1770)
 * BUGFIX: If you manually write your builder class so you can add a few methods of your own, and those methods refer to generated methods, you'd usually run into various bizarre error messages, but only on JDK9/10/11. This one is hard to describe, but we fixed it. [Issue #1907](https://github.com/rzwitserloot/lombok/issues/1907)
 
-
 ### v1.18.2 (July 26th, 2018)
 * BUGFIX: mapstruct + lombok in eclipse should hopefully work again. [Issue #1359](https://github.com/rzwitserloot/lombok/issues/1359) and [mapstruct issue #1159](https://github.com/mapstruct/mapstruct/issues/1159)
 * BUGFIX: Equals and hashCode again exclude transient fields by default. [Issue #1724](https://github.com/rzwitserloot/lombok/issues/1724)
@@ -40,6 +39,7 @@ Lombok Changelog
 * BUGFIX: Lombok and gradle v4.9 didn't work together; that's been fixed. [Issue #1716](https://github.com/rzwitserloot/lombok/issues/1716) and [gradle-apt-plugin issue #87](https://github.com/tbroyer/gradle-apt-plugin/issues/87)
 * FEATURE: You can now make builders for type hierarchies, using the new (experimental) `@SuperBuilder` annotation. Thanks for the contribution, Jan Rieke. [`@SuperBuilder` documentation](https://projectlombok.org/features/experimental/SuperBuilder)
 * FEATURE: `@NoArgsConstructor`, including forcing one with `lombok.config: lombok.noArgsConstructor.extraPrivate=true` now take any defaults set with `@Builder.Default` into account. [Issue #1347](https://github.com/rzwitserloot/lombok/issues/1347)
+
 ### v1.18.0 (June 5th, 2018)
 * BREAKING CHANGE: The in 1.16.22 introduced configuration key `lombok.noArgsConstructor.extraPrivate` is now `false` by default. [Issue #1708](https://github.com/rzwitserloot/lombok/issues/1708)
 * BUGFIX: Do not generate a private no-args constructor if that breaks the code. [Issue #1703](https://github.com/rzwitserloot/lombok/issues/1703), [Issue #1704](https://github.com/rzwitserloot/lombok/issues/1704), [Issue #1712](https://github.com/rzwitserloot/lombok/issues/1712)
