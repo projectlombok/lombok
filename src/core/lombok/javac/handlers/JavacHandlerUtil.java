@@ -265,7 +265,7 @@ public class JavacHandlerUtil {
 	 */
 	public static boolean annotationTypeMatches(Class<? extends Annotation> type, JavacNode node) {
 		if (node.getKind() != Kind.ANNOTATION) return false;
-		return typeMatches(type, node, ((JCAnnotation)node.get()).annotationType);
+		return typeMatches(type, node, ((JCAnnotation) node.get()).annotationType);
 	}
 	
 	/**
@@ -301,7 +301,7 @@ public class JavacHandlerUtil {
 		String typeName = typeNode == null ? null : typeNode.toString();
 		if (typeName == null || typeName.length() == 0) return false;
 		int lastIndexA = typeName.lastIndexOf('.') + 1;
-		int lastIndexB = type.lastIndexOf('.') + 1;
+		int lastIndexB = Math.max(type.lastIndexOf('.'), type.lastIndexOf('$')) + 1;
 		int len = typeName.length() - lastIndexA;
 		if (len != type.length() - lastIndexB) return false;
 		for (int i = 0; i < len; i++) if (typeName.charAt(i + lastIndexA) != type.charAt(i + lastIndexB)) return false;
