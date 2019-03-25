@@ -10,6 +10,8 @@
 			<code>@Builder</code> with <code>@Singular</code> adds a clear method since lombok v1.16.8.
 		</p><p>
 			<code>@Builder.Default</code> functionality was added in lombok v1.16.16.
+		</p><p>
+			<code>@Builder(builderMethodName = "")</code> is legal (and will suppress generation of the builder method) starting with lombok v1.18.8.
 		</p>
 	</@f.history>
 	
@@ -183,6 +185,13 @@ public class JacksonExample {
 			The initializer on a <code>@Builder.Default</code> field is removed and stored in a static method, in order to guarantee that this initializer won't be executed at all if a value is specified in the build. This does mean the initializer cannot refer to <code>this</code>, <code>super</code> or any non-static member. If lombok generates a constructor for you, it'll also initialize this field with the initializer.
 		</p><p>
 			Various well known annotations about nullity cause null checks to be inserted and will be copied to parameter of the builder's 'setter' method. See <a href="/features/GetterSetter">Getter/Setter</a> documentation's small print for more information.
+		</p><p>
+			You can suppress the generation of the <code>builder()</code> method, for example because you <em>just</em> want the <code>toBuilder()</code> functionality, by using:
+			<code>@Builder(builderMethodName = "")</code>. Any warnings about missing <code>@Builder.Default</code> annotations will disappear when you do this, as such warnings
+			are not relevant when only using <code>toBuilder()</code> to make builder instances.
+		</p><p>
+			You can use <code>@Builder</code> for copy constructors: <code>foo.toBuilder().build()</code> makes a shallow clone. Consider suppressing the generating of the
+			<code>builder</code> method if you just want this functionality, by using: <code>@Builder(toBuilder = true, builderMethodName = "")</code>.
 		</p><p>
 			Due to a peculiar way javac processes static imports, trying to do a non-star static import of the static <code>builder()</code> method won't work. Either use a star static import: `import static TypeThatHasABuilder.*;` or don't statically import the <code>builder</code> method.
 		</p>

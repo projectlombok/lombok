@@ -173,7 +173,15 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		if (buildMethodName == null) builderMethodName = "build";
 		if (builderClassName == null) builderClassName = "";
 		
-		if (!checkName("builderMethodName", builderMethodName, annotationNode)) return;
+		boolean generateBuilderMethod;
+		if (builderMethodName.isEmpty()) {
+			generateBuilderMethod = false;
+		} else if (!checkName("builderMethodName", builderMethodName, annotationNode)) {
+			return;
+		} else {
+			generateBuilderMethod = true;
+		}
+		
 		if (!checkName("buildMethodName", buildMethodName, annotationNode)) return;
 		if (!builderClassName.isEmpty()) {
 			if (!checkName("builderClassName", builderClassName, annotationNode)) return;
@@ -191,6 +199,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		EclipseNode fillParametersFrom = parent.get() instanceof AbstractMethodDeclaration ? parent : null;
 		boolean addCleaning = false;
 		boolean isStatic = true;
+		
+		List<EclipseNode> nonFinalNonDefaultedFields = null;
 		
 		if (parent.get() instanceof TypeDeclaration) {
 			tdParent = parent;
@@ -225,7 +235,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 				
 				if (fd.initialization != null && isDefault == null) {
 					if (isFinal) continue;
-					fieldNode.addWarning("@Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.");
+					if (nonFinalNonDefaultedFields == null) nonFinalNonDefaultedFields = new ArrayList<EclipseNode>();
+					nonFinalNonDefaultedFields.add(fieldNode);
 				}
 				
 				if (isDefault != null) {
@@ -486,7 +497,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			if (cleanMethod != null) injectMethod(builderType, cleanMethod);
 		}
 		
-		if (methodExists(builderMethodName, tdParent, -1) == MemberExistsResult.NOT_EXISTS) {
+		if (generateBuilderMethod && methodExists(builderMethodName, tdParent, -1) != MemberExistsResult.NOT_EXISTS) generateBuilderMethod = false;
+		if (generateBuilderMethod) {
 			MethodDeclaration md = generateBuilderMethod(isStatic, builderMethodName, builderClassName, tdParent, typeParams, ast);
 			if (md != null) injectMethod(tdParent, md);
 		}
@@ -507,6 +519,12 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			MethodDeclaration md = generateToBuilderMethod(toBuilderMethodName, builderClassName, tdParent, tps, builderFields, fluent, ast);
 			
 			if (md != null) injectMethod(tdParent, md);
+		}
+		
+		if (nonFinalNonDefaultedFields != null && generateBuilderMethod) {
+			for (EclipseNode fieldNode : nonFinalNonDefaultedFields) {
+				fieldNode.addWarning("@Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.");
+			}
 		}
 	}
 	
