@@ -21,8 +21,8 @@
  */
 package lombok.core;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class CleanupRegistry {
 	private static final class CleanupKey {
@@ -48,7 +48,7 @@ public class CleanupRegistry {
 		}
 	}
 	
-	private final Map<CleanupKey, CleanupTask> tasks = new ConcurrentHashMap<CleanupKey, CleanupTask>();
+	private final ConcurrentMap<CleanupKey, CleanupTask> tasks = new ConcurrentHashMap<CleanupKey, CleanupTask>();
 	
 	public void registerTask(String key, Object target, CleanupTask task) {
 		CleanupKey ck = new CleanupKey(key, target);
