@@ -66,6 +66,7 @@ import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.ArrayInitializer;
 import org.eclipse.jdt.internal.compiler.ast.ArrayQualifiedTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.ArrayTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.AssertStatement;
 import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.CastExpression;
 import org.eclipse.jdt.internal.compiler.ast.CharLiteral;
@@ -1786,27 +1787,39 @@ public class EclipseHandlerUtil {
 		if (isPrimitive(variable.type)) return null;
 		AllocationExpression exception = new AllocationExpression();
 		setGeneratedBy(exception, source);
-		int partCount = 1;
-		String exceptionTypeStr = exceptionType.getExceptionType();
-		for (int i = 0; i < exceptionTypeStr.length(); i++) if (exceptionTypeStr.charAt(i) == '.') partCount++;
-		long[] ps = new long[partCount];
-		Arrays.fill(ps, 0L);
-		exception.type = new QualifiedTypeReference(fromQualifiedName(exceptionTypeStr), ps);
-		setGeneratedBy(exception.type, source);
-		exception.arguments = new Expression[] {
-				new StringLiteral(exceptionType.toExceptionMessage(new String(variable.name)).toCharArray(), pS, pE, 0)
-		};
-		setGeneratedBy(exception.arguments[0], source);
-		ThrowStatement throwStatement = new ThrowStatement(exception, pS, pE);
-		setGeneratedBy(throwStatement, source);
 		
 		SingleNameReference varName = new SingleNameReference(variable.name, p);
 		setGeneratedBy(varName, source);
 		NullLiteral nullLiteral = new NullLiteral(pS, pE);
 		setGeneratedBy(nullLiteral, source);
-		EqualExpression equalExpression = new EqualExpression(varName, nullLiteral, OperatorIds.EQUAL_EQUAL);
+
+		int equalOperator = exceptionType == NullCheckExceptionType.ASSERTION ? OperatorIds.NOT_EQUAL : OperatorIds.EQUAL_EQUAL; 
+		EqualExpression equalExpression = new EqualExpression(varName, nullLiteral, equalOperator);
 		equalExpression.sourceStart = pS; equalExpression.statementEnd = equalExpression.sourceEnd = pE;
 		setGeneratedBy(equalExpression, source);
+
+		StringLiteral message = new StringLiteral(exceptionType.toExceptionMessage(new String(variable.name)).toCharArray(), pS, pE, 0);
+		setGeneratedBy(message, source);
+		
+		if (exceptionType == NullCheckExceptionType.ASSERTION) {
+			Statement assertStatement = new AssertStatement(message, equalExpression, pS);
+			setGeneratedBy(assertStatement, source);
+			return assertStatement;
+		}
+		
+		String exceptionTypeStr = exceptionType.getExceptionType();
+		int partCount = 1;
+		for (int i = 0; i < exceptionTypeStr.length(); i++) if (exceptionTypeStr.charAt(i) == '.') partCount++;
+		long[] ps = new long[partCount];
+		Arrays.fill(ps, 0L);
+		exception.type = new QualifiedTypeReference(fromQualifiedName(exceptionTypeStr), ps);
+		setGeneratedBy(exception.type, source);
+		exception.arguments = new Expression[] {message};
+		
+		ThrowStatement throwStatement = new ThrowStatement(exception, pS, pE);
+		setGeneratedBy(throwStatement, source);
+		
+		
 		Block throwBlock = new Block(0);
 		throwBlock.statements = new Statement[] {throwStatement};
 		throwBlock.sourceStart = pS; throwBlock.sourceEnd = pE;

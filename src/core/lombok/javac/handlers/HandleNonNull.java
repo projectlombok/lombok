@@ -21,13 +21,16 @@
  */
 package lombok.javac.handlers;
 
-import static lombok.core.handlers.HandlerUtil.*;
+import static lombok.core.handlers.HandlerUtil.handleFlagUsage;
 import static lombok.javac.Javac.*;
+import static lombok.javac.JavacTreeMaker.TreeTag.treeTag;
+import static lombok.javac.JavacTreeMaker.TypeTag.typeTag;
 import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import org.mangosdk.spi.ProviderFor;
 
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
+import com.sun.tools.javac.tree.JCTree.JCAssert;
 import com.sun.tools.javac.tree.JCTree.JCBinary;
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
@@ -45,13 +48,11 @@ import com.sun.tools.javac.util.List;
 
 import lombok.ConfigurationKeys;
 import lombok.NonNull;
+import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
 import lombok.core.HandlerPriority;
-import lombok.core.AST.Kind;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
-import static lombok.javac.JavacTreeMaker.TypeTag.*;
-import static lombok.javac.JavacTreeMaker.TreeTag.*;
 
 @ProviderFor(JavacAnnotationHandler.class)
 @HandlerPriority(value = 512) // 2^9; onParameter=@__(@NonNull) has to run first.
@@ -161,14 +162,16 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 	}
 	
 	/**
-	 * Checks if the statement is of the form 'if (x == null) {throw WHATEVER;},
+	 * Checks if the statement is of the form 'if (x == null) {throw WHATEVER;}' or 'assert x != null;',
 	 * where the block braces are optional. If it is of this form, returns "x".
 	 * If it is not of this form, returns null.
 	 */
 	public String returnVarNameIfNullCheck(JCStatement stat) {
-		if (!(stat instanceof JCIf)) return null;
+		boolean isIf = stat instanceof JCIf; 
+		if (!isIf && !(stat instanceof JCAssert)) return null;
 		
-		/* Check that the if's statement is a throw statement, possibly in a block. */ {
+		if (isIf) {
+			/* Check that the if's statement is a throw statement, possibly in a block. */
 			JCStatement then = ((JCIf) stat).thenpart;
 			if (then instanceof JCBlock) {
 				List<JCStatement> stats = ((JCBlock) then).stats;
@@ -180,11 +183,15 @@ public class HandleNonNull extends JavacAnnotationHandler<NonNull> {
 		
 		/* Check that the if's conditional is like 'x == null'. Return from this method (don't generate
 		   a nullcheck) if 'x' is equal to our own variable's name: There's already a nullcheck here. */ {
-			JCExpression cond = ((JCIf) stat).cond;
+			JCExpression cond = isIf ? ((JCIf) stat).cond : ((JCAssert) stat).cond;
 			while (cond instanceof JCParens) cond = ((JCParens) cond).expr;
 			if (!(cond instanceof JCBinary)) return null;
 			JCBinary bin = (JCBinary) cond;
-			if (!CTC_EQUAL.equals(treeTag(bin))) return null;
+			if (isIf) {
+				if (!CTC_EQUAL.equals(treeTag(bin))) return null;
+			} else {
+				if (!CTC_NOT_EQUAL.equals(treeTag(bin))) return null;
+			}
 			if (!(bin.lhs instanceof JCIdent)) return null;
 			if (!(bin.rhs instanceof JCLiteral)) return null;
 			if (!CTC_BOT.equals(typeTag(bin.rhs))) return null;

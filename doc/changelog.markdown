@@ -2,8 +2,10 @@ Lombok Changelog
 ----------------
 
 ### v1.18.7 "Edgy Guinea Pig"
-* BUGFIX: var/val on methods that return an intersection type would now work in Eclipse [Issue #1986](https://github.com/rzwitserloot/lombok/issues/1986)
 * FEATURE: You can now suppress generation of the `builder` method when using `@Builder`; usually because you're only interested in the `toBuilder` method. As a convenience we won't emit warnings about missing `@Builder.Default` annotations when you do this. [Issue #2046](https://github.com/rzwitserloot/lombok/issues/2046)
+* FEATURE: When using `@NonNull`, or any other annotation that would result in a null-check, you can configure to generate an assert statement instead. [Issue #2078](https://github.com/rzwitserloot/lombok/issues/2078).
+* BUGFIX: var/val on methods that return an intersection type would now work in Eclipse [Issue #1986](https://github.com/rzwitserloot/lombok/issues/1986)
+* IMPROBABLE BREAKING CHANGE: For fields and parameters marked non-null, if the method body starts with an assert statement to ensure the value isn't null, no code to throw an exception will be generated.
 
 ### v1.18.6 (February 12th, 2019)
 * FEATURE: Javadoc on fields will now also be copied to the Builders' setters. Thanks for the contribution, Emil Lundberg. [Issue #2008](https://github.com/rzwitserloot/lombok/issues/2008)

@@ -28,7 +28,7 @@ class BuilderSingularAnnotatedTypes {
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularAnnotatedTypesBuilder foo(@MyAnnotation @NonNull final String foo) {
 			if (foo == null) {
-				throw new java.lang.NullPointerException("foo is marked @NonNull but is null");
+				throw new java.lang.NullPointerException("foo is marked non-null but is null");
 			}
 			if (this.foos == null) this.foos = new java.util.ArrayList<@MyAnnotation @NonNull String>();
 			this.foos.add(foo);
@@ -48,10 +48,10 @@ class BuilderSingularAnnotatedTypes {
 		@java.lang.SuppressWarnings("all")
 		public BuilderSingularAnnotatedTypesBuilder bar(@MyAnnotation @NonNull final String barKey, @MyAnnotation @NonNull final Integer barValue) {
 			if (barKey == null) {
-				throw new java.lang.NullPointerException("barKey is marked @NonNull but is null");
+				throw new java.lang.NullPointerException("barKey is marked non-null but is null");
 			}
 			if (barValue == null) {
-				throw new java.lang.NullPointerException("barValue is marked @NonNull but is null");
+				throw new java.lang.NullPointerException("barValue is marked non-null but is null");
 			}
 			if (this.bars$key == null) {
 				this.bars$key = new java.util.ArrayList<@MyAnnotation @NonNull String>();

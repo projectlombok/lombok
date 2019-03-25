@@ -17,7 +17,7 @@ import lombok.Singular;
     public @java.lang.SuppressWarnings("all") BuilderSingularAnnotatedTypesBuilder foo(final @MyAnnotation @NonNull String foo) {
       if ((foo == null))
           {
-            throw new java.lang.NullPointerException("foo is marked @NonNull but is null");
+            throw new java.lang.NullPointerException("foo is marked non-null but is null");
           }
       if ((this.foos == null))
           this.foos = new java.util.ArrayList<@MyAnnotation @NonNull String>();
@@ -38,11 +38,11 @@ import lombok.Singular;
     public @java.lang.SuppressWarnings("all") BuilderSingularAnnotatedTypesBuilder bar(final @MyAnnotation @NonNull String barKey, final @MyAnnotation @NonNull Integer barValue) {
       if ((barKey == null))
           {
-            throw new java.lang.NullPointerException("barKey is marked @NonNull but is null");
+            throw new java.lang.NullPointerException("barKey is marked non-null but is null");
           }
       if ((barValue == null))
           {
-            throw new java.lang.NullPointerException("barValue is marked @NonNull but is null");
+            throw new java.lang.NullPointerException("barValue is marked non-null but is null");
           }
       if ((this.bars$key == null))
           {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,16 +30,7 @@ import java.lang.annotation.Target;
 /**
  * If put on a parameter, lombok will insert a null-check at the start of the method / constructor's body, throwing a
  * {@code NullPointerException} with the parameter's name as message. If put on a field, any generated method assigning
- * a value to this field will also produce these nullchecks.
- * <p>
- * Note that any annotation named {@code NonNull} with any casing and any package will result in nullchecks produced for
- * generated methods (and the annotation will be copied to the getter return type and any parameters of generated methods),
- * but <em>only</em> this annotation, if present on a parameter, will result in a null check inserted into your otherwise
- * handwritten method.
- * 
- * WARNING: If the java community ever does decide on supporting a single {@code @NonNull} annotation (for example via JSR305), then
- * this annotation will <strong>be deleted</strong> from the lombok package. If the need to update an import statement scares
- * you, you should use your own annotation named {@code @NonNull} instead of this one.
+ * a value to this field will also produce these null-checks.
  */
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.LOCAL_VARIABLE, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.CLASS)

@@ -41,7 +41,7 @@ public class SuperBuilderWithNonNull {
           this.nonNullParentField = Parent.$default$nonNullParentField();
       if ((nonNullParentField == null))
           {
-            throw new java.lang.NullPointerException("nonNullParentField is marked @NonNull but is null");
+            throw new java.lang.NullPointerException("nonNullParentField is marked non-null but is null");
           }
     }
     public static @java.lang.SuppressWarnings("all") ParentBuilder<?, ?> builder() {
@@ -81,7 +81,7 @@ public class SuperBuilderWithNonNull {
       this.nonNullChildField = b.nonNullChildField;
       if ((nonNullChildField == null))
           {
-            throw new java.lang.NullPointerException("nonNullChildField is marked @NonNull but is null");
+            throw new java.lang.NullPointerException("nonNullChildField is marked non-null but is null");
           }
     }
     public static @java.lang.SuppressWarnings("all") ChildBuilder<?, ?> builder() {

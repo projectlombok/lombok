@@ -20,7 +20,7 @@ public class SuperBuilderWithNonNull {
 			@java.lang.SuppressWarnings("all")
 			public B nonNullParentField(@lombok.NonNull final String nonNullParentField) {
 				if (nonNullParentField == null) {
-					throw new java.lang.NullPointerException("nonNullParentField is marked @NonNull but is null");
+					throw new java.lang.NullPointerException("nonNullParentField is marked non-null but is null");
 				}
 				this.nonNullParentField = nonNullParentField;
 				nonNullParentField$set = true;
@@ -53,7 +53,7 @@ public class SuperBuilderWithNonNull {
 			if (b.nonNullParentField$set) this.nonNullParentField = b.nonNullParentField;
 			 else this.nonNullParentField = Parent.$default$nonNullParentField();
 			if (nonNullParentField == null) {
-				throw new java.lang.NullPointerException("nonNullParentField is marked @NonNull but is null");
+				throw new java.lang.NullPointerException("nonNullParentField is marked non-null but is null");
 			}
 		}
 		@java.lang.SuppressWarnings("all")
@@ -77,7 +77,7 @@ public class SuperBuilderWithNonNull {
 			@java.lang.SuppressWarnings("all")
 			public B nonNullChildField(@lombok.NonNull final String nonNullChildField) {
 				if (nonNullChildField == null) {
-					throw new java.lang.NullPointerException("nonNullChildField is marked @NonNull but is null");
+					throw new java.lang.NullPointerException("nonNullChildField is marked non-null but is null");
 				}
 				this.nonNullChildField = nonNullChildField;
 				return self();
@@ -109,7 +109,7 @@ public class SuperBuilderWithNonNull {
 			super(b);
 			this.nonNullChildField = b.nonNullChildField;
 			if (nonNullChildField == null) {
-				throw new java.lang.NullPointerException("nonNullChildField is marked @NonNull but is null");
+				throw new java.lang.NullPointerException("nonNullChildField is marked non-null but is null");
 			}
 		}
 		@java.lang.SuppressWarnings("all")

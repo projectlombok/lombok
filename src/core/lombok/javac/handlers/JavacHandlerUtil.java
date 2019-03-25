@@ -40,36 +40,15 @@ import java.util.regex.Pattern;
 
 import javax.lang.model.element.Element;
 
-import lombok.AccessLevel;
-import lombok.ConfigurationKeys;
-import lombok.Data;
-import lombok.Getter;
-import lombok.core.AST.Kind;
-import lombok.core.AnnotationValues;
-import lombok.core.LombokImmutableList;
-import lombok.core.AnnotationValues.AnnotationValue;
-import lombok.core.CleanupTask;
-import lombok.core.TypeResolver;
-import lombok.core.configuration.NullCheckExceptionType;
-import lombok.core.configuration.TypeName;
-import lombok.core.handlers.HandlerUtil;
-import lombok.delombok.LombokOptionsFactory;
-import lombok.experimental.Accessors;
-import lombok.experimental.Tolerate;
-import lombok.javac.Javac;
-import lombok.javac.JavacNode;
-import lombok.javac.JavacTreeMaker;
-import lombok.permit.Permit;
-
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Scope;
 import com.sun.tools.javac.code.Symbol;
-import com.sun.tools.javac.code.Symtab;
-import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
+import com.sun.tools.javac.code.Symtab;
+import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.MethodType;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCAnnotation;
@@ -83,6 +62,7 @@ import com.sun.tools.javac.tree.JCTree.JCExpressionStatement;
 import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCImport;
+import com.sun.tools.javac.tree.JCTree.JCLiteral;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodInvocation;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
@@ -102,6 +82,28 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Options;
+
+import lombok.AccessLevel;
+import lombok.ConfigurationKeys;
+import lombok.Data;
+import lombok.Getter;
+import lombok.core.AST.Kind;
+import lombok.core.AnnotationValues;
+import lombok.core.AnnotationValues.AnnotationValue;
+import lombok.core.CleanupTask;
+import lombok.core.LombokImmutableList;
+import lombok.core.TypeResolver;
+import lombok.core.configuration.NullCheckExceptionType;
+import lombok.core.configuration.TypeName;
+import lombok.core.handlers.HandlerUtil;
+import lombok.core.handlers.HandlerUtil.FieldAccess;
+import lombok.delombok.LombokOptionsFactory;
+import lombok.experimental.Accessors;
+import lombok.experimental.Tolerate;
+import lombok.javac.Javac;
+import lombok.javac.JavacNode;
+import lombok.javac.JavacTreeMaker;
+import lombok.permit.Permit;
 
 /**
  * Container for static utility methods useful to handlers written for javac.
@@ -1484,8 +1486,14 @@ public class JavacHandlerUtil {
 		
 		if (isPrimitive(varDecl.vartype)) return null;
 		Name fieldName = varDecl.name;
+		
+		JCLiteral message = maker.Literal(exceptionType.toExceptionMessage(fieldName.toString()));
+		if (exceptionType == NullCheckExceptionType.ASSERTION) {
+			return maker.Assert(maker.Binary(CTC_NOT_EQUAL, maker.Ident(fieldName), maker.Literal(CTC_BOT, null)), message);
+		}
+		
 		JCExpression exType = genTypeRef(variable, exceptionType.getExceptionType());
-		JCExpression exception = maker.NewClass(null, List.<JCExpression>nil(), exType, List.<JCExpression>of(maker.Literal(exceptionType.toExceptionMessage(fieldName.toString()))), null);
+		JCExpression exception = maker.NewClass(null, List.<JCExpression>nil(), exType, List.<JCExpression>of(message), null);
 		JCStatement throwStatement = maker.Throw(exception);
 		JCBlock throwBlock = maker.Block(0, List.of(throwStatement));
 		return maker.If(maker.Binary(CTC_EQUAL, maker.Ident(fieldName), maker.Literal(CTC_BOT, null)), throwBlock, null);
