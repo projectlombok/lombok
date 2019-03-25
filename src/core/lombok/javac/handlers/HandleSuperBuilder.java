@@ -103,7 +103,14 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		if (builderMethodName == null) builderMethodName = "builder";
 		if (buildMethodName == null) buildMethodName = "build";
 		
-		if (!checkName("builderMethodName", builderMethodName, annotationNode)) return;
+		boolean generateBuilderMethod;
+		if (builderMethodName.isEmpty()) {
+			generateBuilderMethod = false;
+		} else if (!checkName("builderMethodName", builderMethodName, annotationNode)) {
+			return;
+		} else {
+			generateBuilderMethod = true;
+		}
 		if (!checkName("buildMethodName", buildMethodName, annotationNode)) return;
 		
 		boolean toBuilder = superbuilderAnnotation.toBuilder();
@@ -125,6 +132,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		// Gather all fields of the class that should be set by the builder.
 		JCClassDecl td = (JCClassDecl) tdParent.get();
 		ListBuffer<JavacNode> allFields = new ListBuffer<JavacNode>();
+		ArrayList<JavacNode> nonFinalNonDefaultedFields = null;
+		
 		boolean valuePresent = (hasAnnotation(lombok.Value.class, tdParent) || hasAnnotation("lombok.experimental.Value", tdParent));
 		for (JavacNode fieldNode : HandleConstructor.findAllFields(tdParent, true)) {
 			JCVariableDecl fd = (JCVariableDecl) fieldNode.get();
@@ -150,7 +159,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			
 			if (fd.init != null && isDefault == null) {
 				if (isFinal) continue;
-				fieldNode.addWarning("@SuperBuilder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.");
+				if (nonFinalNonDefaultedFields == null) nonFinalNonDefaultedFields = new ArrayList<JavacNode>();
+				nonFinalNonDefaultedFields.add(fieldNode);
 			}
 			
 			if (isDefault != null) {
@@ -347,7 +357,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 			
 		// Add the builder() method to the annotated class.
 		// Allow users to specify their own builder() methods, e.g., to provide default values.
-		if (methodExists(builderMethodName, tdParent, -1) == MemberExistsResult.NOT_EXISTS) {
+		if (generateBuilderMethod && methodExists(builderMethodName, tdParent, -1) != MemberExistsResult.NOT_EXISTS) generateBuilderMethod = false;
+		if (generateBuilderMethod) {
 			JCMethodDecl builderMethod = generateBuilderMethod(builderMethodName, builderClassName, builderImplClassName, annotationNode, tdParent, typeParams);
 			recursiveSetGeneratedBy(builderMethod, ast, annotationNode.getContext());
 			if (builderMethod != null) injectMethod(tdParent, builderMethod);
@@ -367,6 +378,12 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 				}
 			default:
 				// Should not happen.
+			}
+		}
+		
+		if (nonFinalNonDefaultedFields != null && generateBuilderMethod) {
+			for (JavacNode fieldNode : nonFinalNonDefaultedFields) {
+				fieldNode.addWarning("@SuperBuilder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.");
 			}
 		}
 	}

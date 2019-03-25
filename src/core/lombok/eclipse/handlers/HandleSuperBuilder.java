@@ -129,7 +129,14 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		if (builderMethodName == null) builderMethodName = "builder";
 		if (buildMethodName == null) buildMethodName = "build";
 		
-		if (!checkName("builderMethodName", builderMethodName, annotationNode)) return;
+		boolean generateBuilderMethod;
+		if (builderMethodName.isEmpty()) {
+			generateBuilderMethod = false;
+		} else if (!checkName("builderMethodName", builderMethodName, annotationNode)) {
+			return;
+		} else {
+			generateBuilderMethod = true;
+		}
 		if (!checkName("buildMethodName", buildMethodName, annotationNode)) return;
 
 		boolean toBuilder = superbuilderAnnotation.toBuilder();
@@ -150,6 +157,8 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		// Gather all fields of the class that should be set by the builder.
 		List<EclipseNode> allFields = new ArrayList<EclipseNode>();
+		List<EclipseNode> nonFinalNonDefaultedFields = null;
+		
 		boolean valuePresent = (hasAnnotation(lombok.Value.class, tdParent) || hasAnnotation("lombok.experimental.Value", tdParent));
 		for (EclipseNode fieldNode : HandleConstructor.findAllFields(tdParent, true)) {
 			FieldDeclaration fd = (FieldDeclaration) fieldNode.get();
@@ -177,10 +186,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			}
 			
 			if (fd.initialization != null && isDefault == null) {
-				if (isFinal) {
-					continue;
-				}
-				fieldNode.addWarning("@Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.");
+				if (isFinal) continue;
+				if (nonFinalNonDefaultedFields == null) nonFinalNonDefaultedFields = new ArrayList<EclipseNode>();
+				nonFinalNonDefaultedFields.add(fieldNode);
 			}
 			
 			if (isDefault != null) {
@@ -386,9 +394,16 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		}
 		
 		// Add the builder() method to the annotated class.
-		if (methodExists(builderMethodName, tdParent, -1) == MemberExistsResult.NOT_EXISTS) {
+		if (generateBuilderMethod && methodExists(builderMethodName, tdParent, -1) != MemberExistsResult.NOT_EXISTS) generateBuilderMethod = false;
+		if (generateBuilderMethod) {
 			MethodDeclaration md = generateBuilderMethod(builderMethodName, builderClassName, builderImplClassName, tdParent, typeParams, ast);
 			if (md != null) injectMethod(tdParent, md);
+		}
+		
+		if (nonFinalNonDefaultedFields != null && generateBuilderMethod) {
+			for (EclipseNode fieldNode : nonFinalNonDefaultedFields) {
+				fieldNode.addWarning("@SuperBuilder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.");
+			}
 		}
 	}
 	
