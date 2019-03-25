@@ -84,8 +84,7 @@ public class HandlerUtil {
 			"com.sun.istack.internal.NotNull",
 			"edu.umd.cs.findbugs.annotations.NonNull",
 			"javax.annotation.Nonnull",
-                        // The field might contain a null value until it is persisted.
-			// "javax.validation.constraints.NotNull",
+			// "javax.validation.constraints.NotNull", // The field might contain a null value until it is persisted.
 			"lombok.NonNull",
 			"org.checkerframework.checker.nullness.qual.NonNull",
 			"org.eclipse.jdt.annotation.NonNull",
@@ -105,8 +104,8 @@ public class HandlerUtil {
 			"javax.annotation.Nonnull",
 			"javax.annotation.Nullable",
 			"lombok.NonNull",
-                        // To update Checker Framework annotations, run:
-                        // grep --recursive --files-with-matches -e '^@Target\b.*TYPE_USE' $CHECKERFRAMEWORK/checker/src/main/java  $CHECKERFRAMEWORK/framework/src/main/java | grep '\.java$' | sed 's/.*\/java\//\t\t\t"/' | sed 's/\.java$/",/' | sed 's/\//./g' | sort
+			// To update Checker Framework annotations, run:
+			// grep --recursive --files-with-matches -e '^@Target\b.*TYPE_USE' $CHECKERFRAMEWORK/checker/src/main/java  $CHECKERFRAMEWORK/framework/src/main/java | grep '\.java$' | sed 's/.*\/java\//\t\t\t"/' | sed 's/\.java$/",/' | sed 's/\//./g' | sort
 			"org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey",
 			"org.checkerframework.checker.compilermsgs.qual.CompilerMessageKeyBottom",
 			"org.checkerframework.checker.compilermsgs.qual.UnknownCompilerMessageKey",
@@ -293,6 +292,7 @@ public class HandlerUtil {
 			"org.checkerframework.common.value.qual.UnknownVal",
 			"org.checkerframework.framework.qual.PolyAll",
 			"org.checkerframework.framework.util.PurityUnqualified",
+			
 			"org.eclipse.jdt.annotation.NonNull",
 			"org.eclipse.jdt.annotation.Nullable",
 			"org.jetbrains.annotations.NotNull",
