@@ -753,6 +753,7 @@ public class Delombok {
 		Object care = callAttributeMethodOnJavaCompiler(delegate, delegate.todo);
 		
 		callFlowMethodOnJavaCompiler(delegate, care);
+		
 		FormatPreferences fps = new FormatPreferences(formatPrefs);
 		for (JCCompilationUnit unit : roots) {
 			DelombokResult result = new DelombokResult(catcher.getComments(unit), unit, force || options.isChanged(unit), fps);

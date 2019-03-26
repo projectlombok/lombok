@@ -648,7 +648,11 @@ public class PrettyPrinter extends JCTree.Visitor {
 		 */
 		try {
 			innermostArrayBracketsAreVarargs = varargs;
-			print(tree.vartype);
+			if (tree.vartype == null || tree.vartype.pos == -1) {
+				print("var");
+			} else {
+				print(tree.vartype);
+			}
 		} finally {
 			innermostArrayBracketsAreVarargs = false;
 		}
