@@ -170,7 +170,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		List<char[]> typeArgsForToBuilder = null;
 		
 		if (builderMethodName == null) builderMethodName = "builder";
-		if (buildMethodName == null) builderMethodName = "build";
+		if (buildMethodName == null) buildMethodName = "build";
 		if (builderClassName == null) builderClassName = "";
 		
 		boolean generateBuilderMethod;

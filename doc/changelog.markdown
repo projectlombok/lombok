@@ -7,6 +7,7 @@ Lombok Changelog
 * BUGFIX: var/val on methods that return an intersection type would now work in Eclipse. [Issue #1986](https://github.com/rzwitserloot/lombok/issues/1986)
 * BUGFIX: Fix for java6 regression if a field has javadoc. [Issue #2066](https://github.com/rzwitserloot/lombok/issues/2066)
 * BUGFIX: Delombok now delomboks java10's own `var` as `var` and not as the actual underlying type. [Issue #2049](https://github.com/rzwitserloot/lombok/issues/2049)
+* BUGFIX: If you use `@Builder` and manually write the `build()` method in your builder class, javac would error out instead of deferring to your implementation. [Issue #2050](https://github.com/rzwitserloot/lombok/issues/2050) [Issue #2061](https://github.com/rzwitserloot/lombok/issues/2061)
 * IMPROBABLE BREAKING CHANGE: For fields and parameters marked non-null, if the method body starts with an assert statement to ensure the value isn't null, no code to throw an exception will be generated.
 
 ### v1.18.6 (February 12th, 2019)
