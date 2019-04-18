@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 The Project Lombok Authors.
+ * Copyright (C) 2013-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,10 +36,8 @@ public class LombokInternalAliasing {
 	 */
 	public static String processAliases(String in) {
 		if (in == null) return null;
-		for (Map.Entry<String, String> e : ALIASES.entrySet()) {
-			if (in.equals(e.getKey())) return e.getValue();
-		}
-		return in;
+		String ret = ALIASES.get(in);
+		return ret == null ? in : ret;
 	}
 	
 	static {
@@ -51,6 +49,7 @@ public class LombokInternalAliasing {
 		Map<String, String> m2 = new HashMap<String, String>();
 		m2.put("lombok.experimental.Value", "lombok.Value");
 		m2.put("lombok.experimental.Builder", "lombok.Builder");
+		m2.put("lombok.experimental.var", "lombok.var");
 		m2.put("lombok.Delegate", "lombok.experimental.Delegate");
 		ALIASES = Collections.unmodifiableMap(m2);
 	}

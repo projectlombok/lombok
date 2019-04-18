@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2012 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,9 +25,12 @@ import static lombok.eclipse.handlers.EclipseHandlerUtil.*;
 
 import java.lang.reflect.Field;
 
+import lombok.ConfigurationKeys;
+import lombok.core.LombokConfiguration;
 import lombok.core.debug.DebugSnapshotStore;
 import lombok.core.debug.HistogramTracker;
 import lombok.patcher.Symbols;
+import lombok.permit.Permit;
 
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
@@ -36,6 +39,7 @@ import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.parser.Parser;
 
 /**
@@ -88,7 +92,7 @@ public class TransformEclipseAST {
 				disableLombok = true;
 			}
 			try {
-				f = CompilationUnitDeclaration.class.getDeclaredField("$lombokAST");
+				f = Permit.getField(CompilationUnitDeclaration.class, "$lombokAST");
 			} catch (Throwable t) {
 				//I guess we're in an ecj environment; we'll just not cache stuff then.
 			}
@@ -143,6 +147,8 @@ public class TransformEclipseAST {
 		
 		// Do NOT abort if (ast.bits & ASTNode.HasAllMethodBodies) != 0 - that doesn't work.
 		
+		if (Boolean.TRUE.equals(LombokConfiguration.read(ConfigurationKeys.LOMBOK_DISABLE, EclipseAST.getAbsoluteFileLocation(ast)))) return;
+		
 		try {
 			DebugSnapshotStore.INSTANCE.snapshot(ast, "transform entry");
 			long histoToken = lombokTracker == null ? 0L : lombokTracker.start();
@@ -182,42 +188,59 @@ public class TransformEclipseAST {
 	 * then handles any PrintASTs.
 	 */
 	public void go() {
+		long nextPriority = Long.MIN_VALUE;
 		for (Long d : handlers.getPriorities()) {
-			ast.traverse(new AnnotationVisitor(d));
-			handlers.callASTVisitors(ast, d, ast.isCompleteParse());
+			if (nextPriority > d) continue;
+			AnnotationVisitor visitor = new AnnotationVisitor(d);
+			ast.traverse(visitor);
+			// if no visitor interested for this AST, nextPriority would be MAX_VALUE and we bail out immediatetly
+			nextPriority = visitor.getNextPriority();
+			nextPriority = Math.min(nextPriority, handlers.callASTVisitors(ast, d, ast.isCompleteParse()));
 		}
 	}
 	
 	private static class AnnotationVisitor extends EclipseASTAdapter {
 		private final long priority;
+		// this is the next priority we continue to visit.
+		// Long.MAX_VALUE means never. Each visit method will potentially reduce the next priority
+		private long nextPriority = Long.MAX_VALUE;
 		
 		public AnnotationVisitor(long priority) {
 			this.priority = priority;
 		}
 		
+		public long getNextPriority() {
+			return nextPriority;
+		}
+		
 		@Override public void visitAnnotationOnField(FieldDeclaration field, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation, priority);
+			nextPriority = Math.min(nextPriority, handlers.handleAnnotation(top, annotationNode, annotation, priority));
 		}
 		
 		@Override public void visitAnnotationOnMethodArgument(Argument arg, AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation, priority);
+			nextPriority = Math.min(nextPriority, handlers.handleAnnotation(top, annotationNode, annotation, priority));
 		}
 		
 		@Override public void visitAnnotationOnLocal(LocalDeclaration local, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation, priority);
+			nextPriority = Math.min(nextPriority, handlers.handleAnnotation(top, annotationNode, annotation, priority));
 		}
 		
 		@Override public void visitAnnotationOnMethod(AbstractMethodDeclaration method, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation, priority);
+			nextPriority = Math.min(nextPriority, handlers.handleAnnotation(top, annotationNode, annotation, priority));
 		}
 		
 		@Override public void visitAnnotationOnType(TypeDeclaration type, EclipseNode annotationNode, Annotation annotation) {
 			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
-			handlers.handleAnnotation(top, annotationNode, annotation, priority);
+			nextPriority = Math.min(nextPriority, handlers.handleAnnotation(top, annotationNode, annotation, priority));
+		}
+		
+		@Override public void visitAnnotationOnTypeUse(TypeReference typeUse, EclipseNode annotationNode, Annotation annotation) {
+			CompilationUnitDeclaration top = (CompilationUnitDeclaration) annotationNode.top().get();
+			nextPriority = Math.min(nextPriority, handlers.handleAnnotation(top, annotationNode, annotation, priority));
 		}
 	}
 }

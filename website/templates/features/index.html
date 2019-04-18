@@ -1,0 +1,97 @@
+<#import "../_scaffold.html" as main>
+
+<@main.scaffold title="Stable">
+	<div class="page-header top5">
+		<div class="row text-center">
+			<@main.h1 title="Lombok features" />
+		</div>
+		<div class="row">
+			The <a href="/api/">Lombok javadoc</a> is available, but we advise these pages.
+			
+			<@main.feature title="val" href="val">
+				Finally! Hassle-free final local variables.
+			</@main.feature>
+
+			<@main.feature title="var" href="var">
+				Mutably! Hassle-free local variables.
+			</@main.feature>
+
+			<@main.feature title="@NonNull" href="NonNull">
+				or: How I learned to stop worrying and love the NullPointerException.
+			</@main.feature>
+
+			<@main.feature title="@Cleanup" href="Cleanup">
+				Automatic resource management: Call your <code>close()</code> methods safely with no hassle.
+			</@main.feature>
+
+			<@main.feature title="@Getter/@Setter" href="GetterSetter">
+				Never write <code>public int getFoo() {return foo;}</code> again.
+			</@main.feature>
+
+			<@main.feature title="@ToString" href="ToString">
+				No need to start a debugger to see your fields: Just let lombok generate a <code>toString</code> for
+				you!
+			</@main.feature>
+
+			<@main.feature title="@EqualsAndHashCode" href="EqualsAndHashCode">
+				Equality made easy: Generates <code>hashCode</code> and <code>equals</code> implementations from the
+				fields of your object..
+			</@main.feature>
+
+			<@main.feature title="@NoArgsConstructor, @RequiredArgsConstructor and @AllArgsConstructor" href="constructor">
+				Constructors made to order: Generates constructors that take no arguments, one argument per final /
+				non-nullfield, or one argument for every field.
+			</@main.feature>
+
+			<@main.feature title="@Data" href="Data">
+				All together now: A shortcut for <code>@ToString</code>, <code>@EqualsAndHashCode</code>,
+				<code>@Getter</code> on all fields, and <code>@Setter</code> on all non-final fields, and
+				<code>@RequiredArgsConstructor</code>!
+			</@main.feature>
+
+			<@main.feature title="@Value" href="Value">
+				Immutable classes made very easy.
+			</@main.feature>
+
+			<@main.feature title="@Builder" href="Builder">
+				... and Bob's your uncle: No-hassle fancy-pants APIs for object creation!
+			</@main.feature>
+
+			<@main.feature title="@SneakyThrows" href="SneakyThrows">
+				To boldly throw checked exceptions where no one has thrown them before!
+			</@main.feature>
+
+			<@main.feature title="@Synchronized" href="Synchronized">
+				<code>synchronized</code> done right: Don't expose your locks.
+			</@main.feature>
+
+			<@main.feature title="@Getter(lazy=true)" href="GetterLazy">
+				Laziness is a virtue!
+			</@main.feature>
+
+			<@main.feature title="@Log" href="log">
+				Captain's Log, stardate 24435.7: &quot;What was that line again?&quot;
+			</@main.feature>
+			
+			<@main.feature title="experimental" href="/features/experimental/all">
+				Head to the lab: The new stuff we're working on.
+			</@main.feature>
+		</div>
+
+		<div class="row">
+			<@main.h1 title="Configuration system" />
+
+			<div class="text-center">
+				Lombok, made to order: <a href="configuration">Configure lombok features</a> in one place for your entire project or even your workspace.
+			</div>
+		</div>
+
+		<div class="row">
+			<@main.h1 title="Running delombok" />
+
+			<div>
+				Delombok copies your source files to another directory, replacing all lombok annotations with their desugared form. So, it'll turn <code>@Getter</code> back into the actual getter. It then removes the annotation. This is useful for all sorts of reasons; you can check out what's happening under the hood, if the unthinkable happens and you want to stop using lombok, you can easily remove all traces of it in your source, and you can use delombok to preprocess your source files for source-level tools such as javadoc and GWT. More information about how to run delombok, including instructions for build tools can be found at the <a href="delombok">delombok page</a>.
+			</div>
+		</div>
+	</div>
+</@main.scaffold>

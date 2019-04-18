@@ -9,7 +9,6 @@ class MixGetterVal {
 		m(a);
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public int getX() {
 		return this.x;
 	}

@@ -27,11 +27,13 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import lombok.core.AST.Kind;
+import lombok.permit.Permit;
 
 /**
  * Represents a single annotation in a source file and can be used to query the parameters present on it.
@@ -42,7 +44,7 @@ public class AnnotationValues<A extends Annotation> {
 	private final Class<A> type;
 	private final Map<String, AnnotationValue> values;
 	private final LombokNode<?, ?, ?> ast;
-	
+
 	/**
 	 * Represents a single method on the annotation class. For example, the value() method on the Getter annotation.
 	 */
@@ -50,8 +52,7 @@ public class AnnotationValues<A extends Annotation> {
 		/** A list of the raw expressions. List is size 1 unless an array is provided. */
 		public final List<String> raws;
 		
-		/** Guesses for each raw expression. If the raw expression is a literal expression, the guess will
-		 * likely be right. If not, it'll be wrong. */
+		/** Guesses for each raw expression. It's 'primitive' (String or primitive), an AV.ClassLiteral, an AV.FieldSelect, or an array of one of those. */
 		public final List<Object> valueGuesses;
 		
 		/** A list of the actual expressions. List is size 1 unless an array is provided. */
@@ -160,6 +161,62 @@ public class AnnotationValues<A extends Annotation> {
 	
 	private A cachedInstance = null;
 	
+	public List<String> getAsStringList(String methodName) {
+		AnnotationValue v = values.get(methodName);
+		
+		if (v == null) {
+			String[] s = getDefaultIf(methodName, String[].class, new String[0]);
+			return Collections.unmodifiableList(Arrays.asList(s));
+		}
+		
+		List<String> out = new ArrayList<String>(v.valueGuesses.size());
+		int idx = 0;
+		for (Object guess : v.valueGuesses) {
+			Object result = guess == null ? null : guessToType(guess, String.class, v, idx);
+			if (result == null) {
+				if (v.valueGuesses.size() == 1) {
+					String[] s = getDefaultIf(methodName, String[].class, new String[0]);
+					return Collections.unmodifiableList(Arrays.asList(s));
+				} 
+				throw new AnnotationValueDecodeFail(v, 
+					"I can't make sense of this annotation value. Try using a fully qualified literal.", idx);
+			}
+			out.add((String) result);
+		}
+		
+		return Collections.unmodifiableList(out);
+	}
+	
+	public String getAsString(String methodName) {
+		AnnotationValue v = values.get(methodName);
+		if (v == null || v.valueGuesses.size() != 1) {
+			return getDefaultIf(methodName, String.class, "");
+		}
+		
+		Object guess = guessToType(v.valueGuesses.get(0), String.class, v, 0);
+		if (guess instanceof String) return (String) guess;
+		return getDefaultIf(methodName, String.class, "");
+	}
+	
+	public boolean getAsBoolean(String methodName) {
+		AnnotationValue v = values.get(methodName);
+		if (v == null || v.valueGuesses.size() != 1) {
+			return getDefaultIf(methodName, boolean.class, false);
+		}
+		
+		Object guess = guessToType(v.valueGuesses.get(0), boolean.class, v, 0);
+		if (guess instanceof Boolean) return ((Boolean) guess).booleanValue();
+		return getDefaultIf(methodName, boolean.class, false);
+	}
+	
+	public <T> T getDefaultIf(String methodName, Class<T> type, T defaultValue) {
+		try {
+			return type.cast(Permit.getMethod(type, methodName).getDefaultValue());
+		} catch (Exception e) {
+			return defaultValue;
+		}
+	}
+	
 	/**
 	 * Creates an actual annotation instance. You can use this to query any annotation methods, except for
 	 * those annotation methods with class literals, as those can most likely not be turned into Class objects.
@@ -190,7 +247,7 @@ public class AnnotationValues<A extends Annotation> {
 				
 				if (!isArray && v.valueGuesses.size() > 1) {
 					throw new AnnotationValueDecodeFail(v, 
-							"Expected a single value, but " + method.getName() + " has an array of values", -1);
+						"Expected a single value, but " + method.getName() + " has an array of values", -1);
 				}
 				
 				if (v.valueGuesses.size() == 0 && !isArray) {
@@ -217,7 +274,7 @@ public class AnnotationValues<A extends Annotation> {
 							return defaultValue;
 						} 
 						throw new AnnotationValueDecodeFail(v, 
-								"I can't make sense of this annotation value. Try using a fully qualified literal.", idx);
+							"I can't make sense of this annotation value. Try using a fully qualified literal.", idx);
 					}
 					Array.set(array, idx++, result);
 				}
@@ -230,48 +287,48 @@ public class AnnotationValues<A extends Annotation> {
 	}
 	
 	private Object guessToType(Object guess, Class<?> expected, AnnotationValue v, int pos) {
-		if (expected == int.class) {
+		if (expected == int.class || expected == Integer.class) {
 			if (guess instanceof Integer || guess instanceof Short || guess instanceof Byte) {
-				return ((Number)guess).intValue();
+				return ((Number) guess).intValue();
 			}
 		}
 		
-		if (expected == long.class) {
+		if (expected == long.class || expected == Long.class) {
 			if (guess instanceof Long || guess instanceof Integer || guess instanceof Short || guess instanceof Byte) {
-				return ((Number)guess).longValue();
+				return ((Number) guess).longValue();
 			}
 		}
 		
-		if (expected == short.class) {
+		if (expected == short.class || expected == Short.class) {
 			if (guess instanceof Integer || guess instanceof Short || guess instanceof Byte) {
-				int intVal = ((Number)guess).intValue();
-				int shortVal = ((Number)guess).shortValue();
+				int intVal = ((Number) guess).intValue();
+				int shortVal = ((Number) guess).shortValue();
 				if (shortVal == intVal) return shortVal;
 			}
 		}
 		
-		if (expected == byte.class) {
+		if (expected == byte.class || expected == Byte.class) {
 			if (guess instanceof Integer || guess instanceof Short || guess instanceof Byte) {
-				int intVal = ((Number)guess).intValue();
-				int byteVal = ((Number)guess).byteValue();
+				int intVal = ((Number) guess).intValue();
+				int byteVal = ((Number) guess).byteValue();
 				if (byteVal == intVal) return byteVal;
 			}
 		}
 		
-		if (expected == double.class) {
-			if (guess instanceof Number) return ((Number)guess).doubleValue();
+		if (expected == double.class || expected == Double.class) {
+			if (guess instanceof Number) return ((Number) guess).doubleValue();
 		}
 		
-		if (expected == float.class) {
-			if (guess instanceof Number) return ((Number)guess).floatValue();
+		if (expected == float.class || expected == Float.class) {
+			if (guess instanceof Number) return ((Number) guess).floatValue();
 		}
 		
-		if (expected == boolean.class) {
-			if (guess instanceof Boolean) return ((Boolean)guess).booleanValue();
+		if (expected == boolean.class || expected == Boolean.class) {
+			if (guess instanceof Boolean) return ((Boolean) guess).booleanValue();
 		}
 		
-		if (expected == char.class) {
-			if (guess instanceof Character) return ((Character)guess).charValue();
+		if (expected == char.class || expected == Character.class) {
+			if (guess instanceof Character) return ((Character) guess).charValue();
 		}
 		
 		if (expected == String.class) {
@@ -279,27 +336,36 @@ public class AnnotationValues<A extends Annotation> {
 		}
 		
 		if (Enum.class.isAssignableFrom(expected) ) {
-			if (guess instanceof String) {
+			if (guess instanceof FieldSelect) {
+				String fieldSel = ((FieldSelect) guess).getFinalPart();
 				for (Object enumConstant : expected.getEnumConstants()) {
-					String target = ((Enum<?>)enumConstant).name();
-					if (target.equals(guess)) return enumConstant;
+					String target = ((Enum<?>) enumConstant).name();
+					if (target.equals(fieldSel)) return enumConstant;
 				}
 				throw new AnnotationValueDecodeFail(v,
-						"Can't translate " + guess + " to an enum of type " + expected, pos);
+					"Can't translate " + fieldSel + " to an enum of type " + expected, pos);
 			}
 		}
 		
-		if (Class.class == expected) {
-			if (guess instanceof String) try {
-				return Class.forName(toFQ((String)guess));
+		if (expected == Class.class) {
+			if (guess instanceof ClassLiteral) try {
+				String classLit = ((ClassLiteral) guess).getClassName();
+				return Class.forName(toFQ(classLit));
 			} catch (ClassNotFoundException e) {
 				throw new AnnotationValueDecodeFail(v,
-						"Can't translate " + guess + " to a class object.", pos);
+					"Can't translate " + guess + " to a class object.", pos);
 			}
 		}
 		
+		if (guess instanceof AnnotationValues) {
+			return ((AnnotationValues<?>) guess).getInstance();
+		}
+		
+		if (guess instanceof FieldSelect) throw new AnnotationValueDecodeFail(v,
+			"You must use constant literals in lombok annotations; they cannot be references to (static) fields.", pos);
+		
 		throw new AnnotationValueDecodeFail(v,
-				"Can't translate a " + guess.getClass() + " to the expected " + expected, pos);
+			"Can't translate a " + guess.getClass() + " to the expected " + expected, pos);
 	}
 	
 	/**

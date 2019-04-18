@@ -3,13 +3,13 @@ public @lombok.Getter @lombok.ToString @lombok.RequiredArgsConstructor enum Data
   private final String someField;
   <clinit>() {
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") String getSomeField() {
+  public @java.lang.SuppressWarnings("all") String getSomeField() {
     return this.someField;
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") java.lang.String toString() {
-    return (("DataOnEnum(someField=" + this.getSomeField()) + ")");
+  public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
+    return (((("DataOnEnum." + this.name()) + "(someField=") + this.getSomeField()) + ")");
   }
-  private @java.beans.ConstructorProperties({"someField"}) @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") DataOnEnum(final String someField) {
+  private @java.lang.SuppressWarnings("all") DataOnEnum(final String someField) {
     super();
     this.someField = someField;
   }

@@ -36,6 +36,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import lombok.core.LombokApp;
+import lombok.permit.Permit;
 
 import org.mangosdk.spi.ProviderFor;
 
@@ -52,7 +53,7 @@ public class DelombokApp extends LombokApp {
 				return 1;
 			}
 			try {
-				loadDelombok(args).getMethod("main", String[].class).invoke(null, new Object[] {args.toArray(new String[0])});
+				Permit.getMethod(loadDelombok(args), "main", String[].class).invoke(null, new Object[] {args.toArray(new String[0])});
 			} catch (InvocationTargetException e1) {
 				Throwable t = e1.getCause();
 				if (t instanceof Error) throw (Error)t;
@@ -79,7 +80,7 @@ public class DelombokApp extends LombokApp {
 				}
 			}
 			
-			System.err.printf("Can't find tools.jar. Rerun delombok as: java -cp lombok.jar%1$s%2$s lombok.core.Main delombok %3$s\n",
+			System.err.printf("Can't find tools.jar. Rerun delombok as: java -cp lombok.jar%1$s%2$s lombok.launch.Main delombok %3$s\n",
 					File.pathSeparator, examplePath, sb.toString());
 			return null;
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2013 The Project Lombok Authors.
+ * Copyright (C) 2010-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 /**
  * Causes lombok to generate a logger field.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/Log.html">the project lombok features page for lombok log annotations</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/Log">the project lombok features page for lombok log annotations</a>.
  * <p>
  * Example:
  * <pre>
@@ -46,21 +46,20 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * 
- * This annotation is valid for classes and enumerations.<br />
- * @see java.util.logging.Logger java.util.logging.Logger
- * @see java.util.logging.Logger#getLogger(java.lang.String) java.util.logging.Logger.getLogger(String name)
+ * This annotation is valid for classes and enumerations.<br>
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/util/logging/Logger.html">java.util.logging.Logger</a>
+ * @see <a href="https://docs.oracle.com/javase/8/docs/api/java/util/logging/Logger.html#getLogger-java.lang.String-">java.util.logging.Logger#getLogger(java.lang.String)</a>
  * @see lombok.extern.apachecommons.CommonsLog &#64;CommonsLog
  * @see lombok.extern.log4j.Log4j &#64;Log4j
  * @see lombok.extern.log4j.Log4j2 &#64;Log4j2
  * @see lombok.extern.slf4j.Slf4j &#64;Slf4j
  * @see lombok.extern.slf4j.XSlf4j &#64;XSlf4j
  * @see lombok.extern.jbosslog.JBossLog &#64;JBossLog
+ * @see lombok.extern.flogger.Flogger &#64;Flogger
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface Log {
-	/**
-	 * Sets the category of the constructed Logger. By default, it will use the type where the annotation is placed.
-	 */
+	/** @return The category of the constructed Logger. By default, it will use the type where the annotation is placed. */
 	String topic() default "";
 }

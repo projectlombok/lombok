@@ -1,0 +1,79 @@
+<#import "/_scaffold.html" as main>
+
+<#macro featureSection>
+	<div class="row">
+		<#nested>
+	</div>
+</#macro>
+
+<#macro history>
+	<div class="row">
+		<#nested>
+	</div>
+</#macro>
+
+<#macro overview>
+	<div class="row">
+		<@main.h3 title="Overview" />
+		<#nested>
+	</div>
+</#macro>
+
+<#macro experimental>
+	<div class="row">
+		<@main.h3 title="Experimental" />
+
+		Experimental because:
+		<#nested>
+	</div>
+</#macro>
+
+<#macro snippets name>
+	<div class="row container-fluid">
+		<div class="snippet-col first-snippet">
+			<@main.h3 title="With Lombok" />
+
+			<div class="snippet">${usages.pre(name)?no_esc}</div>
+		</div>
+		<div class="sep"></div>
+		<div class="snippet-col second-snippet">
+			<@main.h3 title="Vanilla Java" />
+
+			<div class="snippet">${usages.post(name)?no_esc}</div>
+		</div>
+	</div>
+</#macro>
+
+<#macro confKeys>
+	<div class="row">
+		<@main.h3 title="Supported configuration keys:" />
+		<dl>
+			<#nested>
+		</dl>
+	</div>
+</#macro>
+
+<#macro smallPrint>
+	<div class="row">
+		<@main.h3 title="Small print" />
+
+		<div class="smallprint">
+			<#nested>
+		</div>
+	</div>
+</#macro>
+
+<#macro scaffold title logline load=[]>
+	<@main.scaffold load title>
+		<div class="page-header top5" id="featureContent">
+			<div class="row text-center">
+				<div class="header-group">
+					<@main.h1 title="${title}" />
+
+					<@main.h3 title="${logline?no_esc}" />
+				</div>
+			</div>
+			<#nested>
+		</div>
+	</@main.scaffold>
+</#macro>

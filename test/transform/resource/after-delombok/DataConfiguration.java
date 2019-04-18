@@ -1,18 +1,19 @@
 class DataConfiguration {
 	final int x;
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public DataConfiguration(final int x) {
 		this.x = x;
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
+	private DataConfiguration() {
+		this.x = 0;
+	}
+	@java.lang.SuppressWarnings("all")
 	public int getX() {
 		return this.x;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public boolean equals(final java.lang.Object o) {
 		if (o == this) return true;
 		if (!(o instanceof DataConfiguration)) return false;
@@ -22,13 +23,11 @@ class DataConfiguration {
 		return true;
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	protected boolean canEqual(final java.lang.Object other) {
 		return other instanceof DataConfiguration;
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public int hashCode() {
 		final int PRIME = 59;
 		int result = 1;
@@ -37,7 +36,6 @@ class DataConfiguration {
 	}
 	@java.lang.Override
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public java.lang.String toString() {
 		return "DataConfiguration(x=" + this.x + ")";
 	}

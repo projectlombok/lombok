@@ -24,7 +24,6 @@ package lombok;
 import java.io.File;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -123,7 +122,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		
 		CompilationUnitDeclaration cud = compilationUnit_.get();
 		
-		if (cud == null) result.append("---- NO CompilationUnit provided by ecj ----");
+		if (cud == null) result.append("---- No CompilationUnit provided by ecj ----");
 		else result.append(cud.toString());
 		
 		return true;
@@ -131,14 +130,14 @@ public class RunTestsViaEcj extends AbstractRunTests {
 	
 	private FileSystem createFileSystem(File file) {
 		List<String> classpath = new ArrayList<String>();
-		classpath.addAll(Arrays.asList(System.getProperty("sun.boot.class.path").split(File.pathSeparator)));
 		for (Iterator<String> i = classpath.iterator(); i.hasNext();) {
 			if (FileSystem.getClasspath(i.next(), "UTF-8", null) == null) {
 				i.remove();
 			}
 		}
-		classpath.add("bin");
+		if (new File("bin").exists()) classpath.add("bin");
 		classpath.add("dist/lombok.jar");
+		classpath.add("lib/oracleJDK8Environment/rt.jar");
 		classpath.add("lib/test/commons-logging-commons-logging.jar");
 		classpath.add("lib/test/org.slf4j-slf4j-api.jar");
 		classpath.add("lib/test/org.slf4j-slf4j-ext.jar");
@@ -147,6 +146,7 @@ public class RunTestsViaEcj extends AbstractRunTests {
 		classpath.add("lib/test/org.jboss.logging-jboss-logging.jar");
 		classpath.add("lib/test/com.google.guava-guava.jar");
 		classpath.add("lib/test/com.google.code.findbugs-findbugs.jar");
+		classpath.add("lib/test/com.google.flogger-flogger.jar");
 		return new FileSystem(classpath.toArray(new String[0]), new String[] {file.getAbsolutePath()}, "UTF-8");
 	}
 }

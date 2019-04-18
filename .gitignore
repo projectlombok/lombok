@@ -20,4 +20,6 @@
 /eclipse.location
 /.apt_generated/
 /out
+/website/lombokSupporters
+/pom.xml
 *.iml

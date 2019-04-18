@@ -1,0 +1,9 @@
+import lombok.experimental.FieldNameConstants;
+import lombok.AccessLevel;
+
+@FieldNameConstants
+public class FieldNameConstantsExample {
+	private final String iAmAField;
+	private final int andSoAmI;
+	@FieldNameConstants.Exclude private final int asAmI;
+}

@@ -1,19 +1,10 @@
-Project Lombok makes java a spicier language by adding 'handlers' that know how to build and compile simple, boilerplate-free, not-quite-java code.
+Project Lombok is a java library that automatically plugs into your editor and build tools, spicing up your java.
+Never write another getter or equals method again, with one annotation your class has a fully featured builder, Automate your logging variables, and much more.
+
 See LICENSE for the Project Lombok license.
 
-
-To start, run:
-
-ant -projecthelp
-
-HINT: If you'd like to develop lombok in eclipse, run 'ant eclipse' first. It creates the necessary project infrastructure and downloads dependencies. Note that, in order to run "LombokizedEclipse.launch", you need to have "Eclipse SDK" installed.
+Looking for professional support of Project Lombok? Lombok is now part of a tidelift subscription!
 
 For a list of all authors, see the AUTHORS file. 
 
-Project Lombok was started by: 
-
-Reinier Zwitserloot
-twitter: @surial
-home: http://zwitserloot.com/
-
-Roel Spilker
+For complete project information, see https://projectlombok.org/

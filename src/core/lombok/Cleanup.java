@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
  * of what happens. Implemented by wrapping all statements following the local variable declaration to the
  * end of your scope into a try block that, as a finally action, closes the resource.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/Cleanup.html">the project lombok features page for &#64;Cleanup</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/Cleanup">the project lombok features page for &#64;Cleanup</a>.
  * <p>
  * Example:
  * <pre>
@@ -61,10 +61,10 @@ import java.lang.annotation.Target;
  *                 outStream.write(b, 0, r);
  *             }
  *         } finally {
- *             if (out != null) out.close();
+ *             if (outStream != null) outStream.close();
  *         }
  *     } finally {
- *         if (in != null) in.close();
+ *         if (inStream != null) inStream.close();
  *     }
  * }
  * </pre>
@@ -72,6 +72,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.LOCAL_VARIABLE)
 @Retention(RetentionPolicy.SOURCE)
 public @interface Cleanup {
-	/** The name of the method that cleans up the resource. By default, 'close'. The method must not have any parameters. */
+	/** @return The name of the method that cleans up the resource. By default, 'close'. The method must not have any parameters. */
 	String value() default "close";
 }

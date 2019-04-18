@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2015 The Project Lombok Authors.
+ * Copyright (C) 2011-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,11 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 import javax.lang.model.type.TypeKind;
+import javax.tools.JavaFileObject;
 
 import lombok.Lombok;
 import lombok.core.debug.AssertionLogger;
+import lombok.permit.Permit;
 
 import com.sun.tools.javac.code.BoundKind;
 import com.sun.tools.javac.code.Symbol.TypeSymbol;
@@ -60,6 +62,7 @@ import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
+import com.sun.tools.javac.util.Log;
 
 public class JavacResolution {
 	private final Attr attr;
@@ -143,9 +146,14 @@ public class JavacResolution {
 			
 			TreeMirrorMaker mirrorMaker = new TreeMirrorMaker(node.getTreeMaker(), node.getContext());
 			JCTree copy = mirrorMaker.copy(finder.copyAt());
-			
-			memberEnterAndAttribute(copy, finder.get(), node.getContext());
-			return mirrorMaker.getOriginalToCopyMap();
+			Log log = Log.instance(node.getContext());
+			JavaFileObject oldFileObject = log.useSource(((JCCompilationUnit) node.top().get()).getSourceFile());
+			try {
+				memberEnterAndAttribute(copy, finder.get(), node.getContext());
+				return mirrorMaker.getOriginalToCopyMap();
+			} finally {
+				log.useSource(oldFileObject);
+			}
 		} finally {
 			messageSuppressor.enableLoggers();
 		}
@@ -156,14 +164,10 @@ public class JavacResolution {
 	private static Field getMemberEnterDotEnv() {
 		if (memberEnterDotEnv != null) return memberEnterDotEnv;
 		try {
-			Field f = MemberEnter.class.getDeclaredField("env");
-			f.setAccessible(true);
-			memberEnterDotEnv = f;
+			return memberEnterDotEnv = Permit.getField(MemberEnter.class, "env");
 		} catch (NoSuchFieldException e) {
 			return null;
 		}
-		
-		return memberEnterDotEnv;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -223,8 +227,13 @@ public class JavacResolution {
 	}
 	
 	private void attrib(JCTree tree, Env<AttrContext> env) {
+		if (env.enclClass.type == null) try {
+			env.enclClass.type = Type.noType;
+		} catch (Throwable ignore) {
+			// This addresses issue #1553 which involves JDK9; if it doesn't exist, we probably don't need to set it.
+		}
 		if (tree instanceof JCBlock) attr.attribStat(tree, env);
-		else if (tree instanceof JCMethodDecl) attr.attribStat(((JCMethodDecl)tree).body, env);
+		else if (tree instanceof JCMethodDecl) attr.attribStat(((JCMethodDecl) tree).body, env);
 		else if (tree instanceof JCVariableDecl) attr.attribStat(tree, env);
 		else throw new IllegalStateException("Called with something that isn't a block, method decl, or variable decl");
 	}
@@ -241,10 +250,10 @@ public class JavacResolution {
 		static {
 			Method upperBound = null;
 			try {
-				upperBound = Types.class.getMethod("upperBound", Type.class);
+				upperBound = Permit.getMethod(Types.class, "upperBound", Type.class);
 			} catch (Throwable ignore) {}
 			if (upperBound == null) try {
-				upperBound = Types.class.getMethod("wildUpperBound", Type.class);
+				upperBound = Permit.getMethod(Types.class, "wildUpperBound", Type.class);
 			} catch (Throwable ignore) {}
 			
 			UPPER_BOUND = upperBound;
@@ -262,6 +271,7 @@ public class JavacResolution {
 	}
 	
 	public static Type ifTypeIsIterableToComponent(Type type, JavacAST ast) {
+		if (type == null) return null;
 		Types types = Types.instance(ast.getContext());
 		Symtab syms = Symtab.instance(ast.getContext());
 		Type boundType = ReflectiveAccess.Types_upperBound(types, type);

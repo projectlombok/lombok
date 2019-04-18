@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Project Lombok Authors.
+ * Copyright (C) 2015-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,31 +22,35 @@
 package lombok.core;
 
 import static lombok.core.handlers.Singulars.autoSingularize;
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
 public class TestSingulars {
 	@Test
 	public void testSingulars() {
-		assertEquals(null, autoSingularize("axes"));
+		assertNull("axes", autoSingularize("axes"));
 		assertEquals("adjective", autoSingularize("adjectives"));
 		assertEquals("bus", autoSingularize("buses"));
 		assertEquals("octopus", autoSingularize("octopodes"));
-		assertEquals(null, autoSingularize("octopi"));
+		assertNull("octopi", autoSingularize("octopi"));
 		assertEquals("elf", autoSingularize("elves"));
 		assertEquals("jack", autoSingularize("jacks"));
 		assertEquals("colloquy", autoSingularize("colloquies"));
-		assertEquals(null, autoSingularize("series"));
+		assertNull("series", autoSingularize("series"));
 		assertEquals("man", autoSingularize("men"));
-		assertEquals(null, autoSingularize("highwaymen"));
+		assertNull("highwaymen", autoSingularize("highwaymen"));
 		assertEquals("caveMan", autoSingularize("caveMen"));
-		assertEquals(null, autoSingularize("jackss"));
-		assertEquals(null, autoSingularize("virus"));
+		assertNull("jackss", autoSingularize("jackss"));
+		assertNull("virus", autoSingularize("virus"));
 		assertEquals("quiz", autoSingularize("quizzes"));
 		assertEquals("database", autoSingularize("databases"));
 		assertEquals("dataBase", autoSingularize("dataBases"));
 		assertEquals("Query", autoSingularize("Queries"));
 		assertEquals("Movie", autoSingularize("Movies"));
+		assertEquals("cafe", autoSingularize("cafes"));
+		assertNull("caves", autoSingularize("caves"));
+		assertEquals("leaf", autoSingularize("leaves"));
+		assertEquals("autosave", autoSingularize("autosaves"));
 	}
 }

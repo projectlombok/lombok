@@ -5,7 +5,6 @@ interface EqualsAndHashCodeNestedShadow {
 		public static class Foo extends Bar implements EqualsAndHashCodeNestedShadow.Foo {
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			@javax.annotation.Generated("lombok")
 			public boolean equals(final java.lang.Object o) {
 				if (o == this) return true;
 				if (!(o instanceof EqualsAndHashCodeNestedShadow.Bar.Foo)) return false;
@@ -14,15 +13,13 @@ interface EqualsAndHashCodeNestedShadow {
 				return true;
 			}
 			@java.lang.SuppressWarnings("all")
-			@javax.annotation.Generated("lombok")
 			protected boolean canEqual(final java.lang.Object other) {
 				return other instanceof EqualsAndHashCodeNestedShadow.Bar.Foo;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			@javax.annotation.Generated("lombok")
 			public int hashCode() {
-				int result = 1;
+				final int result = 1;
 				return result;
 			}
 		}
@@ -31,7 +28,6 @@ interface EqualsAndHashCodeNestedShadow {
 		public static class Foo<T> extends Bar implements EqualsAndHashCodeNestedShadow.Foo {
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			@javax.annotation.Generated("lombok")
 			public boolean equals(final java.lang.Object o) {
 				if (o == this) return true;
 				if (!(o instanceof EqualsAndHashCodeNestedShadow.Baz.Foo)) return false;
@@ -40,15 +36,13 @@ interface EqualsAndHashCodeNestedShadow {
 				return true;
 			}
 			@java.lang.SuppressWarnings("all")
-			@javax.annotation.Generated("lombok")
 			protected boolean canEqual(final java.lang.Object other) {
 				return other instanceof EqualsAndHashCodeNestedShadow.Baz.Foo;
 			}
 			@java.lang.Override
 			@java.lang.SuppressWarnings("all")
-			@javax.annotation.Generated("lombok")
 			public int hashCode() {
-				int result = 1;
+				final int result = 1;
 				return result;
 			}
 		}

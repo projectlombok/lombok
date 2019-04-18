@@ -5,10 +5,10 @@ class GetterPlain {
   GetterPlain() {
     super();
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int getI() {
+  public @java.lang.SuppressWarnings("all") int getI() {
     return this.i;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int getFoo() {
+  public @java.lang.SuppressWarnings("all") int getFoo() {
     return this.foo;
   }
 }

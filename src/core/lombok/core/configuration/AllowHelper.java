@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Project Lombok Authors.
+ * Copyright (C) 2018 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,8 @@ package lombok.core.configuration;
 import java.util.Collection;
 import java.util.Collections;
 
-import lombok.ConfigurationKeys;
-
 public final class AllowHelper {
-	private final static Collection<? extends ConfigurationKey<?>> ALLOWABLE = Collections.singleton(ConfigurationKeys.VAR_FLAG_USAGE);
+	private final static Collection<? extends ConfigurationKey<?>> ALLOWABLE = Collections.emptySet();
 	
 	private AllowHelper() {
 		// Prevent instantiation

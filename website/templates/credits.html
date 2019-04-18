@@ -1,0 +1,50 @@
+<#import "/_scaffold.html" as main>
+
+<@main.scaffold title="Credits">
+	<div class="page-header top5">
+		<div class="row text-center">
+			<@main.h1 title="Project Lombok - About the authors and everyone that's helped us create Project Lombok." />
+		</div>
+		<div class="row">
+			<div class="credits">
+				<div class="committers personList">
+					<@main.h3 title="Regular contributors to Project Lombok:" />
+
+					<div class="row text-center">
+						<div class="person col-md-2">
+							<div class="imgCt"><img class="reinierImg" src="/img/reinier.jpg" /></div>
+							<span class="name">Reinier Zwitserloot</span>
+						</div>
+						<div class="person col-md-2">
+							<div class="imgCt"><img class="roelImg" src="/img/roel.jpg" /></div>
+							<span class="name">Roel Spilker</span>
+						</div>
+					</div>
+				</div>
+				<div class="thanks">
+					We'd like to thank:
+					<ul>
+						<li>
+							<strong>Perry Nguyen</strong> (pfn on ##java on freenode) for creating the inspiration for project lombok.
+						</li><li>
+							<strong>Tor Norbye</strong>, <strong>Jan Lahoda</strong>, and <strong>Petr Jiricka</strong> for helping out with Netbeans internals and/or javac.
+						</li><li>
+							All contributors who submitted patches or helped answering questions!</li>
+					</ul>
+
+					as well as the authors of the following tools that we use:
+
+					<ul>
+						<li>
+							<a href="https://github.com/">Github</a> for hosting lombok's repository and issue tracker.
+						</li><li>
+							The <a href="http://asm.ow2.org/index.html">ASM team</a> at ObjectWeb for creating an excellent class file editing tool. Lombok uses ASM to interact with Eclipse.
+						</li><li>
+							<strong>Markus Gebhard</strong> for creating <a href="http://java2html.de/">java2html</a> which we use for the example code snippets on the features pages.
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</@main.scaffold>

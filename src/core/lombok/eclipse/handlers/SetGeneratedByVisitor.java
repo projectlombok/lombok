@@ -369,11 +369,6 @@ public final class SetGeneratedByVisitor extends ASTVisitor {
 		return super.visit(node, scope);
 	}
 	
-	@Override public boolean visit(ArrayInitializer node, ClassScope scope) {
-		fixPositions(setGeneratedBy(node, source));
-		return super.visit(node, scope);
-	}
-	
 	@Override public boolean visit(ArrayQualifiedTypeReference node, BlockScope scope) {
 		fixPositions(setGeneratedBy(node, source));
 		return super.visit(node, scope);

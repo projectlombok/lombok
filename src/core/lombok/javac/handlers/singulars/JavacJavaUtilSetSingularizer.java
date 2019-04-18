@@ -40,18 +40,13 @@ public class JavacJavaUtilSetSingularizer extends JavacJavaUtilListSetSingulariz
 		return LombokImmutableList.of("java.util.Set", "java.util.SortedSet", "java.util.NavigableSet");
 	}
 	
-	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName) {
-		if (useGuavaInstead(builderType)) {
-			guavaListSetSingularizer.appendBuildCode(data, builderType, source, statements, targetVariableName);
-			return;
-		}
-		
+	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		
 		if (data.getTargetFqn().equals("java.util.Set")) {
-			statements.appendList(createJavaUtilSetMapInitialCapacitySwitchStatements(maker, data, builderType, false, "emptySet", "singleton", "LinkedHashSet", source));
+			statements.appendList(createJavaUtilSetMapInitialCapacitySwitchStatements(maker, data, builderType, false, "emptySet", "singleton", "LinkedHashSet", source, builderVariable));
 		} else {
-			statements.appendList(createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, false, true, false, true, "TreeSet", source));
+			statements.appendList(createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, false, true, false, true, "TreeSet", source, builderVariable));
 		}
 	}
 }

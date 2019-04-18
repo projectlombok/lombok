@@ -27,4 +27,13 @@ class NonNullOnParameter extends Thread {
 		System.out.println("Hey");
 		if (arg == null) throw new NullPointerException();
 	}
+	
+	public void testWithAssert(@lombok.NonNull String param) {
+		assert param != null;
+	}
+	
+	public void testWithAssertAndMessage(@lombok.NonNull String param) {
+		assert param != null : "Oops";
+	}
+
 }

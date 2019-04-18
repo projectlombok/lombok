@@ -1,0 +1,69 @@
+RewriteEngine On
+
+RewriteRule ^$ /main.html [L,END]
+RewriteRule ^(index|home)(\.html)?$ / [NC,R=301]
+
+RewriteRule ^setup/overview$ /setup/main.html [L,END]
+RewriteRule ^setup/main(\.html)?/?$ /setup/overview [NC,R=301]
+RewriteRule ^setup/index(\.html)?/?$ /setup/overview [NC,R=301]
+RewriteRule ^setup(/(overview/?)?)?$ /setup/overview [NC,R=301]
+
+RewriteRule ^changelog$ /changelog.html [L,END]
+RewriteRule ^changelog(\.html)?/?$ /changelog [NC,R=301]
+RewriteRule ^credits$ /credits.html [L,END]
+RewriteRule ^credits(\.html)?/?$ /credits [NC,R=301]
+RewriteRule ^download$ /download.html [L,END]
+RewriteRule ^download(\.html)?/?$ /download [NC,R=301]
+RewriteRule ^download-edge$ /download-edge.html [L,END]
+RewriteRule ^download-edge(\.html)?/?$ /download-edge [NC,R=301]
+RewriteRule ^all-versions$ /all-versions.html [L,END]
+RewriteRule ^all-versions(\.html)?/?$ /all-versions [NC,R=301]
+RewriteRule ^all-versions$ /all-versions.html [L,END]
+RewriteRule ^all-versions(\.html)?/?$ /all-versions [NC,R=301]
+RewriteRule ^disable-checked-exceptions$ /disable-checked-exceptions.html [L,END]
+RewriteRule ^disable-checked-exceptions(\.html)?/?$ /disable-checked-exceptions [NC,R=301]
+RewriteRule ^supporters$ /supporters.html [L,END]
+RewriteRule ^supporters(.html)?/?$ /supporters [NC,R=301]
+RewriteRule ^security$ /security.html [L,END]
+RewriteRule ^security(.html)?/?$ /security [NC,R=301]
+RewriteRule ^contact$ /contact.html [L,END]
+RewriteRule ^contact(.html)?/?$ /contact [NC,R=301]
+RewriteRule ^order-license-info$ /order-license-info.html [L,END]
+RewriteRule ^order-?license-?info(.html)?/?$ /order-license-info [NC,R=301]
+RewriteRule ^order-license$ /order-license.html [L,END]
+RewriteRule ^order-?license(.html)?/?$ /order-license [NC,R=301]
+
+RewriteRule ^contributing/index$ /contributing/index.html [L,END]
+RewriteRule ^contributing(\.html)?/?$ /contributing/index [NC,R=301]
+RewriteRule ^contributing/index(\.html)?/?$ /contributing/index [NC,R=301]
+RewriteRule ^contributing/contributing$ /contributing/contributing.html [L,END]
+RewriteRule ^contributing/contributing(\.html)?/?$ /contributing/contributing [NC,R=301]
+RewriteRule ^contributing/lombok-execution-path$ /contributing/lombok-execution-path.html [L,END]
+RewriteRule ^contributing/lombok-execution-path(\.html)?/?$ /contributing/lombok-execution-path [NC,R=301]
+
+<#list setupPages as pg>
+RewriteRule ^setup/${pg?no_esc}$ /setup/${pg?no_esc}.html [L,END]
+RewriteRule ^setup/${pg?no_esc}(\.html)?/?$ /setup/${pg?no_esc} [NC,R=301]
+</#list>
+
+RewriteRule ^features/all$ /features/index.html [L,END]
+RewriteRule ^features(/all)?/?$ /features/all [NC,R=301]
+RewriteRule ^features/index(\.html)?/?$ /features/all [NC,R=301]
+
+<#list featurePages as pg>
+RewriteRule ^features/${pg?no_esc}$ /features/${pg?no_esc}.html [L,END]
+RewriteRule ^features/${pg?no_esc}(\.html)?/?$ /features/${pg?no_esc} [NC,R=301]
+</#list>
+
+RewriteRule ^features/experimental/Builder(\.html)?/?$ /features/Builder [NC,R=301]
+RewriteRule ^features/experimental/Value(\.html)?/?$ /features/Value [NC,R=301]
+RewriteRule ^features/experimental/var(\.html)?/?$ /features/var [NC,R=301]
+
+RewriteRule ^features/experimental/all$ /features/experimental/index.html [L,END]
+RewriteRule ^features/experimental(/all)?/?$ /features/experimental/all [NC,R=301]
+RewriteRule ^features/experimental/index(\.html)?/?$ /features/experimental/all [NC,R=301]
+
+<#list experimentalPages as pg>
+RewriteRule ^features/experimental/${pg?no_esc}$ /features/experimental/${pg?no_esc}.html [L,END]
+RewriteRule ^features/experimental/${pg?no_esc}(\.html)?/?$ /features/experimental/${pg?no_esc} [NC,R=301]
+</#list>

@@ -1,0 +1,20 @@
+<#import "_setup.html" as s>
+
+<@s.scaffold title="Kobalt">
+	<@s.introduction>
+		<p>
+			To set up lombok with any build tool, you have to specify that the lombok dependency is required to compile your source code, but does not need to be present when running/testing/jarring/otherwise deploying your code. Generally this is called a 'provided' dependency. This page explains how to integrate lombok with the <a href="http://beust.com/kobalt/home/index.html">Kobalt</a> buid tool.
+		</p><p>
+			Lombok is available in maven central, so telling Kobalt to download lombok is easy.
+		</p>
+	</@s.introduction>
+
+	<@s.section title="Configuring Kobalt">
+		<p>
+			To add lombok as a 'provided' dependency to your project, write your <code>Built.kt</code> like so:<pre>
+dependencies {
+	provided("org.projectlombok:lombok:${version}")
+}</pre>
+		</p>
+	</@s.section>
+</@s.scaffold>

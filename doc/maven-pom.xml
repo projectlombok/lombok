@@ -21,8 +21,8 @@
 		<url>http://github.com/rzwitserloot/lombok</url>
 	</scm>
 	<issueManagement>
-		<system>Google Code</system>
-		<url>http://code.google.com/p/projectlombok/issues</url>
+		<system>GitHub Issues</system>
+		<url>https://github.com/rzwitserloot/lombok/issues</url>
 	</issueManagement>
 	<developers>
 		<developer>
@@ -30,18 +30,13 @@
 			<name>Reinier Zwitserloot</name>
 			<email>reinier@projectlombok.org</email>
 			<url>http://zwitserloot.com</url>
-			<timezone>+1</timezone>
+			<timezone>Europe/Amsterdam</timezone>
 		</developer>
 		<developer>
 			<id>rspilker</id>
 			<name>Roel Spilker</name>
 			<email>roel@projectlombok.org</email>
-			<timezone>+1</timezone>
-		</developer>
-		<developer>
-			<id>rgrootjans</id>
-			<name>Robbert Jan Grootjans</name>
-			<timezone>+1</timezone>
+			<timezone>Europe/Amsterdam</timezone>
 		</developer>
 	</developers>
 </project>

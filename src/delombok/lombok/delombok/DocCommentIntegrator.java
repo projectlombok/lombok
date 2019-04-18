@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 
 import lombok.javac.CommentInfo;
 import lombok.javac.Javac;
+import lombok.javac.PackageName;
 import lombok.javac.handlers.JavacHandlerUtil;
 
 import com.sun.tools.javac.parser.Tokens.Comment;
@@ -73,7 +74,7 @@ public class DocCommentIntegrator {
 		return out;
 	}
 	
-	private static final Pattern CONTENT_STRIPPER = Pattern.compile("^(?:\\s*\\*)?[ \\t]*(.*?)$", Pattern.MULTILINE);
+	private static final Pattern CONTENT_STRIPPER = Pattern.compile("^(?:\\s*\\*)?(.*?)$", Pattern.MULTILINE);
 	@SuppressWarnings("unchecked") private boolean attach(JCCompilationUnit top, final JCTree node, CommentInfo cmt) {
 		String docCommentContent = cmt.content;
 		if (docCommentContent.startsWith("/**")) docCommentContent = docCommentContent.substring(3);
@@ -120,7 +121,8 @@ public class DocCommentIntegrator {
 	}
 	
 	private JCTree findJavadocableNodeOnOrAfter(JCCompilationUnit unit, int endPos) {
-		if (unit.pid != null && endPos <= unit.pid.pos) return null;
+		JCTree pid = PackageName.getPackageNode(unit);
+		if (pid != null && endPos <= pid.pos) return null;
 		Iterator<JCTree> it = unit.defs.iterator();
 		
 		while (it.hasNext()) {

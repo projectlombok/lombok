@@ -2,7 +2,7 @@
   EqualsAndHashCodeConfigKeys1Parent() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof EqualsAndHashCodeConfigKeys1Parent)))
@@ -12,11 +12,11 @@
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
     return (other instanceof EqualsAndHashCodeConfigKeys1Parent);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
-    int result = 1;
+  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
+    final int result = 1;
     return result;
   }
 }
@@ -25,7 +25,7 @@
   EqualsAndHashCodeConfigKeys1() {
     super();
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean equals(final java.lang.Object o) {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") boolean equals(final java.lang.Object o) {
     if ((o == this))
         return true;
     if ((! (o instanceof EqualsAndHashCodeConfigKeys1)))
@@ -37,10 +37,10 @@
         return false;
     return true;
   }
-  protected @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") boolean canEqual(final java.lang.Object other) {
+  protected @java.lang.SuppressWarnings("all") boolean canEqual(final java.lang.Object other) {
     return (other instanceof EqualsAndHashCodeConfigKeys1);
   }
-  public @java.lang.Override @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int hashCode() {
+  public @java.lang.Override @java.lang.SuppressWarnings("all") int hashCode() {
     final int PRIME = 59;
     int result = 1;
     result = ((result * PRIME) + this.x);

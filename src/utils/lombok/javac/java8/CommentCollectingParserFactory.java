@@ -30,6 +30,8 @@ import com.sun.tools.javac.parser.ParserFactory;
 import com.sun.tools.javac.parser.ScannerFactory;
 import com.sun.tools.javac.util.Context;
 
+import lombok.permit.Permit;
+
 public class CommentCollectingParserFactory extends ParserFactory {
 	private final Context context;
 	
@@ -52,12 +54,21 @@ public class CommentCollectingParserFactory extends ParserFactory {
 		//Either way this will work out.
 	}
 	
+	public JavacParser newParser(CharSequence input, boolean keepDocComments, boolean keepEndPos, boolean keepLineMap, boolean parseModuleInfo) {
+		ScannerFactory scannerFactory = ScannerFactory.instance(context);
+		Lexer lexer = scannerFactory.newScanner(input, true);
+		Object x = new CommentCollectingParser(this, lexer, true, keepLineMap, keepEndPos);
+		return (JavacParser) x;
+		// CCP is based on a stub which extends nothing, but at runtime the stub is replaced with either
+		//javac6's EndPosParser which extends Parser, or javac8's JavacParser which implements Parser.
+		//Either way this will work out.
+	}
+	
 	public static void setInCompiler(JavaCompiler compiler, Context context) {
 		context.put(CommentCollectingParserFactory.key(), (ParserFactory) null);
 		Field field;
 		try {
-			field = JavaCompiler.class.getDeclaredField("parserFactory");
-			field.setAccessible(true);
+			field = Permit.getField(JavaCompiler.class, "parserFactory");
 			field.set(compiler, new CommentCollectingParserFactory(context));
 		} catch (Exception e) {
 			throw new IllegalStateException("Could not set comment sensitive parser in the compiler", e);

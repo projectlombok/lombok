@@ -1,4 +1,4 @@
 13 @Builder.Default requires @Builder on the class for it to mean anything.
-6 @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
 8 @Builder.Default requires an initializing expression (' = something;').
 9 @Builder.Default and @Singular cannot be mixed.
+6 @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.

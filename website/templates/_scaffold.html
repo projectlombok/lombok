@@ -1,0 +1,156 @@
+<#macro feature title href>
+	<div class="bs-callout bs-callout-danger">
+		<h4><a href="${href}"><code>${title}</code></a></h4>
+		<p><#nested></p>
+	</div>
+</#macro>
+
+<#assign setupTargets = {
+	"Compilers": {
+		"Javac": "javac",
+		"ECJ": "ecj"
+	},
+	"Build tools": {
+		"maven": "maven",
+		"gradle": "gradle",
+		"ant": "ant",
+		"kobalt": "kobalt"
+	},
+	"IDEs": {
+		"Eclipse": "eclipse",
+		"IntelliJ IDEA": "intellij",
+		"Netbeans": "netbeans",
+		"MyEclipse": "eclipse",
+		"Spring Tool Suite": "eclipse",
+		"JBoss Developer Studio": "eclipse",
+		"Visual Studio Code": "vscode"
+	},
+	"Platforms": {
+		"Android": "android",
+		"GWT": "gwt"
+	}
+}>
+
+<#macro scaffold load=[] title='Project Lombok'>
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+		<meta name="google-site-verification" content="uCgX3Or3kDRGpbJ6JCsQc3Ub4JsnR5-p0itfsKAYZ_U" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link href="/favicon.ico" rel="icon" type="image/x-icon" />
+
+		<title>${title}</title>
+
+		<script src="/js/modernizr.min.js"></script>
+
+		<link href="/css/bootstrap.css" rel="stylesheet" />
+		<link href="/css/font-awesome.min.css" rel="stylesheet" />
+		<link href="/css/custom.css" rel="stylesheet" />
+
+		<#list load as ld>
+			<#if ld?ends_with(".css")>
+				<link href="${ld?url_path}" rel="stylesheet" />
+			</#if>
+		</#list>
+		<script src="/js/jquery.min.js"></script>
+		<script src="/js/bootstrap.min.js"></script>
+
+		<script src="/js/history.js"></script>
+		<script src="/js/main.js"></script>
+		<#list load as ld>
+			<#if ld?ends_with(".js")>
+				<script src="${ld?url_path}"></script>
+			</#if>
+		</#list>
+	</head><body>
+		<script>
+			(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+ga('create', 'UA-9884254-1', 'auto');
+ga('send', 'pageview');
+		</script>
+		<div class="navbar navbar-default navbar-fixed-top">
+			<div class="container">
+				<div class="navbar-header">
+					<a href="/" class="navbar-brand">Lombok Project</a>
+					<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#navbar-main">
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+						<span class="icon-bar"></span>
+					</button>
+				</div>
+				<div class="navbar-collapse collapse" id="navbar-main">
+					<ul class="nav navbar-nav">
+						<li class="dropdown">
+							<a class="dropdown-toggle pointer" data-toggle="dropdown">Features<span class="caret"></span></a>
+							<ul class="dropdown-menu" aria-labelledby="themes">
+								<li><a href="/features/all">Stable</a></li>
+								<li><a href="/features/experimental/all">Experimental</a></li>
+							</ul>
+						</li>
+						<li class="dropdown">
+							<a class="dropdown-toggle pointer" data-toggle="dropdown">Community<span class="caret"></span></a>
+							<ul class="dropdown-menu" aria-labelledby="themes">
+								<li><a href="https://groups.google.com/group/project-lombok">Discuss / Help</a></li>
+								<li><a href="https://github.com/rzwitserloot/lombok/issues">Issues</a></li>
+								<li><a href="/contributing/index">Documentation for contributors</a></li>
+								<li><a href="/contact">Contact the team behind Project Lombok</a></li>
+							</ul>
+						</li>
+						<li>
+							<a href="/order-license-info">
+								<span>Order / Donate</span>
+							</a>
+						</li>
+						<li class="dropdown">
+							<a href="/setup/overview" class="smallOnly"><span>How to use</span></a>
+							<a class="dropdown-toggle pointer wideOnly" data-toggle="dropdown">Install<span class="caret"></span></a>
+							<ul class="dropdown-menu" aria-labelledby="themes">
+								<#list setupTargets as cat, tgtList>
+									<li class="header">${cat}</li>
+									<#list tgtList as name, url>
+										<li class="target"><a href="/setup/${url}">${name}</a></li>
+									</#list>
+									<#sep><li class="divider"></li></#sep>
+								</#list>
+							</ul>
+						</li>
+						<li><a href="/download">Download</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="container-fluid main-section" id="main-section">
+			<#nested>
+		</div>
+		<footer class="container">
+			<footer class="footer text-center">
+				<div class="container">
+					<a href="/credits">credits</a> | Copyright &copy; 2009-${year} The Project Lombok
+					Authors, licensed under the <a href="http://www.opensource.org/licenses/mit-license.php">MIT
+					license</a>.
+				</div>
+			</footer>
+		</footer>
+	</body>
+</html>
+</#macro>
+
+<#macro h1 title class="">
+<#assign idvalue="*"?no_esc + "${title}"/>
+<h1 class="${class}" id="${idvalue?markup_string?replace("[ _]", "-", "r")?lower_case?replace("[^a-zA-Z0-9-]", "", "r")}">${title}</h1>
+</#macro>
+
+<#macro h2 title class="">
+<#assign idvalue="*"?no_esc + "${title}"/>
+<h2 class="${class}" id="${idvalue?markup_string?replace("[ _]", "-", "r")?lower_case?replace("[^a-zA-Z0-9-]", "", "r")}">${title}</h2>
+</#macro>
+
+<#macro h3 title class="">
+<#assign idvalue="*"?no_esc + "${title}"/>
+<h3 class="${class}" id="${idvalue?markup_string?replace("[ _]", "-", "r")?lower_case?replace("[^a-zA-Z0-9-]", "", "r")}">${title}</h3>
+</#macro>

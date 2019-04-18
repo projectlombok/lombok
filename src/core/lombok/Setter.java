@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 /**
  * Put on any field to make lombok build a standard setter.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/GetterSetter.html">the project lombok features page for &#64;Getter and &#64;Setter</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/GetterSetter">the project lombok features page for &#64;Getter and &#64;Setter</a>.
  * <p>
  * Even though it is not listed, this annotation also has the {@code onParam} and {@code onMethod} parameter. See the full documentation for more details.
  * <p>
@@ -55,26 +55,32 @@ import java.lang.annotation.Target;
 public @interface Setter {
 	/**
 	 * If you want your setter to be non-public, you can specify an alternate access level here.
+	 * 
+	 * @return The setter method will be generated with this access modifier.
 	 */
 	lombok.AccessLevel value() default lombok.AccessLevel.PUBLIC;
 	
 	/**
 	 * Any annotations listed here are put on the generated method.
-	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br />
-	 * up to JDK7:<br />
-	 *  {@code @Setter(onMethod=@__({@AnnotationsGoHere}))}<br />
-	 * from JDK8:<br />
+	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br>
+	 * up to JDK7:<br>
+	 *  {@code @Setter(onMethod=@__({@AnnotationsGoHere}))}<br>
+	 * from JDK8:<br>
 	 *  {@code @Setter(onMethod_={@AnnotationsGohere})} // note the underscore after {@code onMethod}.
+	 *  
+	 * @return List of annotations to apply to the generated setter method.
 	 */
 	AnyAnnotation[] onMethod() default {};
 	
 	/**
 	 * Any annotations listed here are put on the generated method's parameter.
-	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br />
-	 * up to JDK7:<br />
-	 *  {@code @Setter(onParam=@__({@AnnotationsGoHere}))}<br />
-	 * from JDK8:<br />
+	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br>
+	 * up to JDK7:<br>
+	 *  {@code @Setter(onParam=@__({@AnnotationsGoHere}))}<br>
+	 * from JDK8:<br>
 	 *  {@code @Setter(onParam_={@AnnotationsGohere})} // note the underscore after {@code onParam}.
+	 *  
+	 * @return List of annotations to apply to the generated parameter in the setter method.
 	 */
 	AnyAnnotation[] onParam() default {};
 	

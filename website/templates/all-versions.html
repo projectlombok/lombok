@@ -1,0 +1,31 @@
+<#import "/_scaffold.html" as main>
+<@main.scaffold title="older versions">
+	<div class="page-header top5">
+		<div>
+			<div>
+				<h1 class="text-center">
+					<div class="row">
+						<icon class="fa fa-download"></icon>
+						<a class="currentVersion" href="downloads/lombok.jar">
+							${version} [Current Version]
+						</a>
+					</div>
+				</h1>
+			</div>
+			<#list linksToVersions as lnk>
+				<div class="row">
+					<icon class="fa fa-download"></icon>
+					<a class="oldVersion" href="${lnk[0]}">${lnk[1]}</a>
+				</div>
+			</#list>
+			<div class="row">
+				<div class="text-center">
+					<h3>
+						Feeling adventurous? Download the latest <a href="/download-edge">snapshot</a>
+						release.
+					</h3>
+				</div>
+			</div>
+		</div>
+	</div>
+</@main.scaffold>

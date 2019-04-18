@@ -19,10 +19,10 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 -->
-<project name="lombok-website" basedir=".." default="website">
+<project name="lombok-website" basedir=".." default="website" xmlns:ivy="antlib:com.zwitserloot.ivyplusplus">
 	<description>
 This buildfile is part of projectlombok.org. It is responsible for building the website and all website-related aspects,
-such as converting the changelog into HTML, and creating javadoc.
+such as applying the templates to produce the website, converting the changelog into HTML, and creating javadoc.
 	</description>
 	
 	<path id="build.path">
@@ -37,150 +37,134 @@ such as converting the changelog into HTML, and creating javadoc.
 		<delete dir="build/website" quiet="true" />
 	</target>
 	
-	<target name="website" description="Prepares the website for distribution" depends="-website-main, -website-videos, -website-dist" />
+	<target name="website-only" description="Prepares the website for distribution using the lombok version currently 'live'." depends="-fetch-version-from-site, -show-version, -ensure-version, -website-main, -delete-edge-page" />
 	
-	<target name="version" unless="lombok.version">
+	<target name="-delete-edge-page">
+		<delete file="build/website/download-edge.html" />
+	</target>
+	
+	<target name="website" description="Prepares the website for distribution" depends="javadoc, -website-main" />
+	
+	<target name="website-supporters" description="Updates website supporters store and adds it to the website build.">
+		<ant antfile="buildScripts/supporters.ant.xml" target="deployToWebsiteBuild" inheritAll="false" />
+	</target>
+	
+	<target name="-fetch-version-from-site" depends="-compile-webclasses">
+		<fail if="lombok.version">lombok.version already set.</fail>
+		<fail if="lombok.fullversion">lombok.fullversion already set.</fail>
+		<java classname="lombok.website.FetchCurrentVersion" outputproperty="lombok.version" failonerror="true">
+			<classpath>
+				<path refid="build.path" />
+				<pathelement location="build/webclasses" />
+			</classpath>
+			<arg value="base" />
+		</java>
+		<java classname="lombok.website.FetchCurrentVersion" outputproperty="lombok.fullversion" failonerror="true">
+			<classpath>
+				<path refid="build.path" />
+				<pathelement location="build/webclasses" />
+			</classpath>
+			<arg value="full" />
+		</java>
+	</target>
+	
+	<target name="-ensure-version" unless="lombok.version">
 		<fail>Supply lombok.version</fail>
+	</target>
+	
+	<target name="-show-version">
+		<echo>Version: ${lombok.version}</echo>
+		<echo>Full: ${lombok.fullversion}</echo>
+	</target>
+		
+	<target name="-ensure-fullversion" unless="lombok.fullversion">
+		<fail>Supply lombok.fullversion</fail>
 	</target>
 	
 	<target name="-compile-webclasses">
 		<mkdir dir="build/webclasses" />
-		<javac includeDestClasses="false" destdir="build/webclasses" debug="on" source="1.4" target="1.4">
+		<javac includeDestClasses="false" includeantruntime="false" destdir="build/webclasses" debug="on" source="1.8" target="1.8">
+			<compilerarg value="-proc:none" />
+			<compilerarg value="-Xlint:-options" />
 			<classpath refid="build.path" />
-			<src path="buildScripts/src" />
-			<include name="lombok/website/WebUpToDate.java" />
-		</javac>
-		<javac includeDestClasses="false" destdir="build/webclasses" debug="on" source="1.5" target="1.5">
-			<classpath refid="build.path" />
-			<src path="buildScripts/src" />
-			<include name="lombok/website/CompileChangelog.java" />
+			<src path="src/website" />
 		</javac>
 	</target>
 	
-	<target name="build-webuptodate" depends="-compile-webclasses">
-		<taskdef name="webuptodate" classname="lombok.website.WebUpToDate" classpath="build/webclasses" />
+	<target name="changelogToHtml" depends="-compile-webclasses">
+		<mkdir dir="build/website" />
+		<java classname="lombok.website.WebsiteMaker" failonerror="true">
+			<classpath>
+				<path refid="build.path" />
+				<pathelement location="build/webclasses" />
+			</classpath>
+			<arg value="${lombok.version}" />
+			<arg value="${lombok.fullversion}" />
+			<arg value="changelog" />
+		</java>
 	</target>
 	
-	<target name="check-videos-uptodate" depends="build-webuptodate">
-		<webuptodate property="videos.uptodate" urlbase="https://projectlombok.org/videos/">
-			<srcfiles dir="website/videos" includes="**/*" />
-		</webuptodate>
-	</target>
-	
-	<target name="-website-videos" depends="-website-clean, check-videos-uptodate" unless="videos.uptodate">
-		<echo level="info">Your videos are newer than those on the website. They will be included too.</echo>
-		<mkdir dir="build/website/videos" />
-		<copy todir="build/website/videos">
-			<fileset dir="website/videos" />
-		</copy>
-	</target>
-	
-	<target name="-website-main" depends="-website-clean, version, javadoc, changelogToHtml">
-		<taskdef classpath="lib/build/de.java2html-java2html.jar" name="java2html" classname="de.java2html.anttasks.Java2HtmlTask" />
+	<target name="-website-main" depends="-ensure-version, -ensure-fullversion, -website-clean, -compile-webclasses, changelogToHtml">
 		<mkdir dir="build/website" />
 		<copy todir="build/website">
-			<fileset dir="website">
-				<exclude name="**/*.jpage" />
-				<exclude name="**/*.svg" />
-				<exclude name="**/*.psd" />
-				<exclude name="**/*.ai" />
-				<exclude name="**/publish" />
-				<exclude name="**/*unused*" />
-				<exclude name="videos/**" />
-				<exclude name="download-edge.html" />
-				<exclude name="download-edge-none.html" />
-			</fileset>
+			<fileset dir="website/resources" />
 			<fileset dir=".">
-				<include name="LICENCE" />
+				<include name="LICENSE" />
 			</fileset>
 		</copy>
-		<copy file="website/download-edge-none.html" tofile="build/website/download-edge.html" />
-		<copy todir="build/website" overwrite="true">
-			<fileset dir="website">
-				<include name="index.html" />
-				<include name="download.html" />
-				<include name="slideshow.html" />
-				<include name="setup/*.html" />
-				<include name="mavenrepo/index.html" />
-			</fileset>
-			<filterchain>
-				<replacetokens>
-					<token key="VERSION" value="${lombok.version}" />
-				</replacetokens>
-			</filterchain>
-		</copy>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="GetterSetter" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="GetterLazy" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="ToString" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="EqualsAndHashCode" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Data" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Cleanup" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Synchronized" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="SneakyThrows" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Constructor" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Log" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="val" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Value" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="NonNull" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Builder" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="Singular-snippet" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/var" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/Delegate" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/Accessors" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/ExtensionMethod" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/FieldDefaults" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/Wither" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/onX" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/UtilityClass" />
-		</antcall>
-		<antcall target="-integrateSnippet">
-			<param name="transformationName" value="experimental/Helper" />
-		</antcall>
+		
+		<get src="https://code.jquery.com/jquery-3.3.1.min.js" dest="build/website/js/jquery.min.js" />
+		<fail message="jQuery checksum failed">
+			<condition><not>
+				<checksum file="build/website/js/jquery.min.js" algorithm="SHA-384" property="b6c405aa91117aeed92e1055d9566502eef370e57ead76d8945d9ca81f2dc48ffc6996a38e9e01a9df95e83e4882f293" verifyproperty="jquery.ok" />
+			</not></condition>
+		</fail>
+		
+		<get src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js" dest="build/website/js/modernizr.min.js" />
+		<fail message="modernizr checksum failed">
+			<condition><not>
+				<checksum file="build/website/js/modernizr.min.js" algorithm="SHA-384" property="6cf577980d9ea3779da2ae7a57370f0661b537541551f8d833154824f3f3c85272159f0615f37b369b74e99af6deab6c" verifyproperty="modernizr.ok" />
+			</not></condition>
+		</fail>
+		
+		<get src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.min.js" dest="build/website/js/bootstrap.min.js" />
+		<fail message="bootstrap checksum failed">
+			<condition><not>
+				<checksum file="build/website/js/bootstrap.min.js" algorithm="SHA-384" property="0a17eaab1b995029c948adfe31798f348c84e996d687620ca84db8d6b622a89c7232267a396fc9999439b2dc0450b4f2" verifyproperty="bootstrap.ok" />
+			</not></condition>
+		</fail>
+
+		<get src="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" dest="build/website/css/font-awesome.min.css" />
+		<fail message="font-awesome checksum failed">
+			<condition><not>
+				<checksum file="build/website/css/font-awesome.min.css" algorithm="SHA-384" property="c2f7d7a6aa596554062ba4c08793d594639f40d1d2a03db16c4f9090fc4200594d11ebe8107dd2974b226d570e4159cd" verifyproperty="fontawesome.ok" />
+			</not></condition>
+		</fail>
+		
+		<mkdir dir="build/website/fonts" />
+		<get src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff" dest="build/website/fonts/fontawesome-webfont.woff" />
+		<fail message="woff checksum failed">
+			<condition><not>
+				<checksum file="build/website/fonts/fontawesome-webfont.woff" algorithm="SHA-384" property="9a2008ccbb9e142d9ad62db6439db4a0543073f376c2d6987bddd0cab298963e5fd13d3e0e4404a4cb3b4be32f9135bf" verifyproperty="woff.ok" />
+			</not></condition>
+		</fail>
+		
+		<get src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/fonts/fontawesome-webfont.woff2" dest="build/website/fonts/fontawesome-webfont.woff2" />
+		<fail message="woff2 checksum failed">
+			<condition><not>
+				<checksum file="build/website/fonts/fontawesome-webfont.woff2" algorithm="SHA-384" property="c267dab02b05137a7d06041209c8a227447a1af392b0a29924c5c1bd3882b966b7ca96b9c971958d2773b94fce37a3fa" verifyproperty="woff2.ok" />
+			</not></condition>
+		</fail>
+		
+		<java classname="lombok.website.WebsiteMaker" failonerror="true">
+			<classpath>
+				<path refid="build.path" />
+				<pathelement location="build/webclasses" />
+			</classpath>
+			<arg value="${lombok.version}" />
+			<arg value="${lombok.fullversion}" />
+			<arg value="all" />
+		</java>
 	</target>
 	
 	<target name="-website-dist">
@@ -191,107 +175,65 @@ such as converting the changelog into HTML, and creating javadoc.
 		</tar>
 	</target>
 	
-	<taskdef name="scp" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.Scp" classpathref="build.path" />
-	<taskdef name="sshexec" classname="org.apaxhe.tools.ant.taskdefs.optional.ssh.SSHExec" classpathref="build.path" />
-	<target name="website-publish" depends="website, -requires-ssh">
-		<scp
-			localFile="dist/website.tar.bz2"
-			todir="${ssh.username}@projectlombok.org:/data/lombok/staging"
-			keyfile="${ssh.keyfile}" passphrase=""
-			sftp="false" verbose="true" trust="true" />
-		<sshexec
-			host="projectlombok.org"
+	<target name="-website-only-dist">
+		<mkdir dir="dist" />
+		<tar destfile="dist/website.tar.bz2" compression="bzip2">
+			<tarfileset dir="build/website" />
+		</tar>
+	</target>
+	
+	<target name="website-publish" depends="website, website-supporters, -website-dist, -send-site-to-remote" />
+	<target name="website-only-publish" depends="website-only, website-supporters, -website-only-dist, -send-site-to-remote" />
+	<target name="-send-site-to-remote" depends="-requires-ssh">
+		<ivy:scpUpload
+			from="dist/website.tar.bz2"
+			to="/data/lombok/staging"
+			server="projectlombok.org"
 			username="${ssh.username}"
-			keyfile="${ssh.keyfile}" passphrase=""
-			trust="true" command="/data/lombok/stagingCmd/deployWebsite" />
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
+		<ivy:sshExec
+			cmd="/data/lombok/stagingCmd/deployWebsite"
+			server="projectlombok.org"
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
 	</target>
 	
-	<target name="-integrateSnippet">
+	<target name="latestChanges" depends="-compile-webclasses, -ensure-version, -ensure-fullversion">
 		<mkdir dir="build/website" />
-		<property name="prefile" location="usage_examples/${transformationName}Example_pre.jpage" />
-		<property name="postfile" location="usage_examples/${transformationName}Example_post.jpage" />
-		<property name="htmlfile" location="website/features/${transformationName}.html" />
-		<mkdir dir="build/temp" />
-		<property name="preout" location="build/temp/${transformationName}Example_pre.jpage.html" />
-		<property name="postout" location="build/temp/${transformationName}Example_post.jpage.html" />
-		<java2html srcdir="usage_examples" includes="${transformationName}Example_*.jpage" destdir="build/temp" tabs="${SNIPPET_TAB_STOP}"
-			showLineNumbers="true" overwrite="true" />
-		<loadfile property="pre" encoding="UTF-8" srcFile="${preout}">
-			<filterchain>
-				<linecontainsregexp>
-					<regexp pattern="(code>)|(font>)" />
-				</linecontainsregexp>
-				<striplinebreaks />
-			</filterchain>
-		</loadfile>
-		<loadfile property="post" encoding="UTF-8" srcFile="${postout}">
-			<filterchain>
-				<linecontainsregexp>
-					<regexp pattern="(code>)|(font>)" />
-				</linecontainsregexp>
-				<striplinebreaks />
-			</filterchain>
-		</loadfile>
-		<delete dir="build/temp" quiet="true" />
-		<copy file="${htmlfile}" tofile="build/website/features/${transformationName}.html" overwrite="true">
-			<filterchain>
-				<replacetokens>
-					<token key="HTML_PRE" value="${pre}" />
-					<token key="HTML_POST" value="${post}" />
-				</replacetokens>
-			</filterchain>
-		</copy>
-	</target>
-	
-	<target name="latestChanges" depends="-compile-webclasses, version">
-		<java fork="true" classname="lombok.website.CompileChangelog" failonerror="true">
+		<java classname="lombok.website.WebsiteMaker" failonerror="true">
 			<classpath>
 				<path refid="build.path" />
 				<pathelement location="build/webclasses" />
 			</classpath>
-			<arg value="doc/changelog.markdown" />
+			<arg value="${lombok.version}" />
+			<arg value="${lombok.fullversion}" />
+			<arg value="changelog-latest" />
+			<arg value="website" />
 			<arg value="build/latestchanges.html" />
-			<arg value="-latest" />
-			<arg value="${lombok.version}" />
 		</java>
 	</target>
 	
-	<target name="edgeRelease-build" depends="-compile-webclasses, version">
+	<target name="edgeRelease-build" depends="-compile-webclasses, -ensure-version, -ensure-fullversion">
 		<mkdir dir="build/website-edge" />
-		<property name="CHANGELOG_FILE" location="doc/changelog.markdown" />
-		<property name="CHANGELOG_HTML" location="build/website-edge/changelog-edge.html" />
-		<java fork="true" classname="lombok.website.CompileChangelog" failonerror="true">
+		<java classname="lombok.website.WebsiteMaker" failonerror="true">
 			<classpath>
 				<path refid="build.path" />
 				<pathelement location="build/webclasses" />
 			</classpath>
-			<arg value="${CHANGELOG_FILE}" />
-			<arg value="${CHANGELOG_HTML}" />
-			<arg value="-edge" />
 			<arg value="${lombok.version}" />
+			<arg value="${lombok.fullversion}" />
+			<arg value="download-edge" />
+			<arg value="website" />
+			<arg value="build/website-edge/download-edge.html" />
 		</java>
-		<loadfile property="changelog.edge" srcFile="build/website-edge/changelog-edge.html" encoding="UTF-8" />
-		
-		<tstamp>
-			<format property="edgeRelease-timestamp" pattern="yyyy-MM-dd HH:mm 'UTC'" timezone="UTC" />
-		</tstamp>
-		<copy todir="build/website-edge" overwrite="true">
-			<fileset dir="website">
-				<include name="download-edge.html" />
-			</fileset>
-			<filterchain>
-				<replacetokens>
-					<token key="VERSION-EDGE" value="${lombok.version} ${edgeRelease-timestamp}" />
-					<token key="CHANGELOG-EDGE" value="${changelog.edge}" />
-				</replacetokens>
-			</filterchain>
-		</copy>
-		
-		<delete file="build/website-edge/changelog-edge.html" />
 		<copy file="dist/lombok.jar" tofile="build/website-edge/lombok-edge.jar" />
-		
 		<tar destfile="dist/website-edge.tar.bz2" compression="bzip2">
 			<tarfileset dir="build/website-edge" />
+			<tarfileset dir="build">
+				<include name="edge-releases/**" />
+			</tarfileset>
 		</tar>
 	</target>
 	
@@ -300,65 +242,60 @@ such as converting the changelog into HTML, and creating javadoc.
 	</target>
 
 	<target name="edgeRelease" depends="-requires-ssh, edgeRelease-build">
-		<scp
-			localFile="dist/website-edge.tar.bz2"
-			todir="${ssh.username}@projectlombok.org:/data/lombok/staging"
-			keyfile="${ssh.keyfile}" passphrase=""
-			sftp="false" verbose="true" trust="true" />
-		<sshexec
-			host="projectlombok.org" username="${ssh.username}" keyfile="${ssh.keyfile}" passphrase=""
-			trust="true" command="/data/lombok/stagingCmd/deployEdge" />
+		<ivy:scpUpload
+			from="dist/website-edge.tar.bz2"
+			to="/data/lombok/staging"
+			server="projectlombok.org"
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
+		<ivy:sshExec
+			cmd="/data/lombok/stagingCmd/deployEdge"
+			server="projectlombok.org"
+			username="${ssh.username}"
+			keyfile="${ssh.keyfile}"
+			knownHosts="ssh.knownHosts" />
+		<exec executable="/usr/bin/git" failonerror="true">
+			<arg value="merge-base" />
+			<arg value="--is-ancestor" />
+			<arg value="edge" />
+			<arg value="master" />
+		</exec>
+		<exec executable="/usr/bin/git">
+			<arg value="branch" />
+			<arg value="-f" />
+			<arg value="edge" />
+			<arg value="master" />
+		</exec>
+		<exec executable="/usr/bin/git">
+			<arg value="push" />
+			<arg value="origin" />
+			<arg value="edge:refs/heads/edge" />
+		</exec>
 	</target>
 	
-	<target name="changelogToHtml" depends="-compile-webclasses">
-		<mkdir dir="build/website" />
-		<property name="CHANGELOG_FILE" location="doc/changelog.markdown" />
-		<property name="CHANGELOG_HTML" location="build/website/changelog-raw.html" />
-		<java fork="true" classname="lombok.website.CompileChangelog" failonerror="true">
-			<classpath>
-				<path refid="build.path" />
-				<pathelement location="build/webclasses" />
-			</classpath>
-			<arg value="${CHANGELOG_FILE}" />
-			<arg value="${CHANGELOG_HTML}" />
-		</java>
-		<loadfile property="changelog.main" srcFile="build/website/changelog-raw.html" />
-		<delete file="build/website/changelog-raw.html" />
-		<copy todir="build/website" overwrite="true">
-			<fileset dir="website">
-				<include name="changelog.html" />
-			</fileset>
-			<filterchain>
-				<replacetokens>
-					<token key="CHANGELOG" value="${changelog.main}" />
-				</replacetokens>
-			</filterchain>
-		</copy>
-	</target>
-	
-	<target name="javadoc" description="Generates the javadoc" depends="version">
+	<target name="javadoc" description="Generates the javadoc" depends="-ensure-version, -ensure-fullversion" unless="skip.javadoc">
 		<delete dir="build/api" quiet="true" />
 		<delete dir="doc/api" quiet="true" />
 		<mkdir dir="build/api" />
 		<property name="javadoc.overview.html" location="build/javadoc.overview.html" />
 		<echo file="${javadoc.overview.html}"><![CDATA[<html><body>
 			Welcome to the lombok javadoc.&nbsp;If you're just looking to learn more about using lombok
-			You probably want to look at <a href="https://projectlombok.org/features/index.html">the feature documentation</a>.&nbsp;Otherwise,
+			You probably want to look at <a href="https://projectlombok.org/features/all">the feature documentation</a>.&nbsp;Otherwise,
 			check the <a href="lombok/package-summary.html">lombok</a> package.&nbsp;If you're trying to extend lombok or
 			write your own plugins, the other packages are what you're looking for.</body></html>
 		]]></echo>
-		<javadoc sourcepath="src/core" defaultexcludes="yes" destdir="build/api" windowtitle="Lombok" Overview="${javadoc.overview.html}">
+		<javadoc sourcepath="src/core" defaultexcludes="yes" destdir="build/api" windowtitle="Lombok" source="1.8" Overview="${javadoc.overview.html}">
+			<package name="lombok" />
+			<package name="lombok.experimental" />
+			<package name="lombok.extern.*" />
 			<classpath refid="build.path" />
 			<classpath location="build/lombok" />
-			<link href="http://download.oracle.com/javase/6/docs/api/" />
-			<link href="http://www.slf4j.org/api/" />
-			<link href="http://commons.apache.org/logging/apidocs/" />
-			<link href="http://logging.apache.org/log4j/1.2/apidocs/" />
 			<header><![CDATA[<a href='https://projectlombok.org/' target='_blank'>Lombok</a> - ]]>v${lombok.version}</header>
-			<bottom><![CDATA[<i>Copyright &copy; 2009-2015 The Project Lombok Authors, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php' target='_blank'>MIT licence</a>.]]></bottom>
+			<bottom><![CDATA[<i>Copyright &copy; 2009-2019 The Project Lombok Authors, licensed under the <a href='http://www.opensource.org/licenses/mit-license.php' target='_blank'>MIT licence</a>.]]></bottom>
 		</javadoc>
 		<!-- bugfix for boneheaded javadoc bug where ?is-external=true is inserted before an anchor ref, breaking the anchor ref.
-		is-external=true doesn't actually do anything, so, we'll just get rid of it. -->
+		is-external=true doesn't actually do anything except mess with titles, so, we'll just get rid of it. -->
 		<replaceregexp match="\?is-external=true#" replace="#" flags="gi">
 			<fileset dir="build/api" includes="**/*.html" />
 		</replaceregexp>
@@ -367,12 +304,25 @@ such as converting the changelog into HTML, and creating javadoc.
 			<fileset dir="build/api" includes="**/*.html" />
 			<filterchain>
 				<linecontainsregexp negate="true">
-					<regexp pattern="(Generated by javadoc)|(.META NAME=.date.)" />
+					<regexp pattern="(Generated by javadoc)|(.META NAME=.date.)|(meta name=.dc.created.)" />
 				</linecontainsregexp>
 			</filterchain>
 		</copy>
 		<copy todir="doc/api">
-			<fileset dir="build/api" excludes="**/*.html" />
+			<fileset dir="build/api" includes="**/*.css" />
+			<filterchain>
+				<linecontainsregexp negate="true">
+					<regexp pattern="@import.*dejavu.css.*" />
+				</linecontainsregexp>
+			</filterchain>
 		</copy>
+		<copy todir="doc/api">
+			<fileset dir="build/api">
+				<exclude name="**/*.html" />
+				<exclude name="**/*.css" />
+			</fileset>
+		</copy>
+		<echo append="true" file="doc/api/module-search-index.js"></echo>
+		<echo append="true" file="doc/api/tag-search-index.js"></echo>
 	</target>
 </project>

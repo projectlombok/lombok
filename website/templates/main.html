@@ -1,0 +1,40 @@
+<#import "/_scaffold.html" as main>
+<@main.scaffold load=["/js/supporters.js"]>
+	<div class="page-header top5">
+		<div class="row text-center">
+			<@main.h1 title="Project Lombok" />
+			<p>
+				Project Lombok is a java library that automatically plugs into your editor and build tools, spicing up your java.<br />
+				Never write another getter or equals method again, with one annotation your class has a fully featured builder, Automate your logging variables, and much more.
+			</p>
+		</div>
+		<div class="video text-center">
+			<div id="clickForVideo"><span class="clickToTap">Click</span> to watch a 4 minute demo to learn more.</div>
+			<video id="demoVideo" hidden="hidden" width="800" height="480" poster="/img/poster.png" controls="controls" preload="none">
+				<source src="https://projectlombok.org/videos/lombok.ogv" type="video/ogg" />
+				<source src="https://projectlombok.org/videos/lombok.mp4" type="video/mp4" />
+				<source src="https://projectlombok.org/videos/lombok-iPhone.m4v" type="video/mp4" />
+				<@main.h1 title="Can't watch the video?" />
+				<p>
+					<a href="https://www.youtube.com/watch?v=y6zMyM-YTgg">See it on Youtube instead</a>.
+				</p><p>
+					Or, download the video:<br/>
+					<a href="/videos/lombok.mp4">MPEG4 / H.264 (Windows / Mac)</a> |
+					<a href="/videos/lombok.ogv">Ogg Theora &amp; Vorbis ".ogv" (Linux)</a>
+				</p>
+			</video>
+			<div class="row">
+				<div class="text-center">
+					<a href="http://jnb.ociweb.com/jnb/jnbJan2010.html">Show me a text and images based explanation and tutorial instead!</a>
+				</div>
+			</div>
+		</div>
+		<div class="row text-center supporterBar">
+			<h2 class="introText" hidden="hidden">Project Lombok is <a href="/supporters">powered by</a>:</h2>
+			<div class="supporterFooter" hidden="hidden"><a class="buttonLike" href="/order-license-info">I want to support Project Lombok too!</a></div>
+		</div>
+		<div class="row text-center tidelift-para">
+			Looking for professional support of Project Lombok? Lombok is now part of a <a id="tideliftlink" href="https://tidelift.com/subscription/pkg/maven-org-projectlombok-lombok?utm_source=lombok&utm_medium=referral&utm_campaign=website">Tidelift subscription</a>
+		</div>
+	</div>
+</@main.scaffold>

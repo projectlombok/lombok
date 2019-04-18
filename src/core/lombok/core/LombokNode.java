@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  */
 package lombok.core;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,7 +40,6 @@ import lombok.core.AST.Kind;
  *          For example, JCTree for javac, and ASTNode for Eclipse.
  */
 public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N> implements DiagnosticsReceiver {
-	protected final A ast;
 	protected final Kind kind;
 	protected final N node;
 	protected LombokImmutableList<L> children;
@@ -58,8 +58,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 * @param kind The kind of node represented by this object.
 	 */
 	@SuppressWarnings("unchecked")
-	protected LombokNode(A ast, N node, List<L> children, Kind kind) {
-		this.ast = ast;
+	protected LombokNode(N node, List<L> children, Kind kind) {
 		this.kind = kind;
 		this.node = node;
 		this.children = children != null ? LombokImmutableList.copyOf(children) : LombokImmutableList.<L>of();
@@ -71,9 +70,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 		this.isStructurallySignificant = calculateIsStructurallySignificant(null);
 	}
 	
-	public A getAst() {
-		return ast;
-	}
+	public abstract A getAst();
 	
 	/** {@inheritDoc} */
 	@Override public String toString() {
@@ -87,7 +84,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 * @see AST#getPackageDeclaration()
 	 */
 	public String getPackageDeclaration() {
-		return ast.getPackageDeclaration();
+		return getAst().getPackageDeclaration();
 	}
 	
 	/**
@@ -96,7 +93,16 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 * @see AST#getImportList()
 	 */
 	public ImportList getImportList() {
-		return ast.getImportList();
+		return getAst().getImportList();
+	}
+	
+	/**
+	 * Convenient shortcut to the owning ast object's {@code getImportListAsTypeResolver} method.
+	 * 
+	 * @see AST#getImportListAsTypeResolver()
+	 */
+	public TypeResolver getImportListAsTypeResolver() {
+		return getAst().getImportListAsTypeResolver();
 	}
 	
 	/**
@@ -110,7 +116,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 * @see AST#get(Object)
 	 */
 	public L getNodeFor(N obj) {
-		return ast.get(obj);
+		return getAst().get(obj);
 	}
 	
 	/**
@@ -186,7 +192,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 * @see AST#getLatestJavaSpecSupported()
 	 */
 	public int getLatestJavaSpecSupported() {
-		return ast.getLatestJavaSpecSupported();
+		return getAst().getLatestJavaSpecSupported();
 	}
 	
 	/**
@@ -195,7 +201,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 * @see AST#getSourceVersion()
 	 */
 	public int getSourceVersion() {
-		return ast.getSourceVersion();
+		return getAst().getSourceVersion();
 	}
 	
 	/**
@@ -204,7 +210,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 * @see AST#top()
 	 */
 	public L top() {
-		return ast.top();
+		return getAst().top();
 	}
 	
 	/**
@@ -213,7 +219,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 * @see AST#getFileName()
 	 */
 	public String getFileName() {
-		return ast.getFileName();
+		return getAst().getFileName();
 	}
 	
 	/**
@@ -223,8 +229,8 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 */
 	@SuppressWarnings({"unchecked"})
 	public L add(N newChild, Kind newChildKind) {
-		ast.setChanged();
-		L n = ast.buildTree(newChild, newChildKind);
+		getAst().setChanged();
+		L n = getAst().buildTree(newChild, newChildKind);
 		if (n == null) return null;
 		n.parent = (L) this;
 		children = children.append(n);
@@ -241,20 +247,20 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 		Map<N, L> oldNodes = new IdentityHashMap<N, L>();
 		gatherAndRemoveChildren(oldNodes);
 		
-		L newNode = ast.buildTree(get(), kind);
+		L newNode = getAst().buildTree(get(), kind);
 		
-		ast.setChanged();
+		getAst().setChanged();
 		
-		ast.replaceNewWithExistingOld(oldNodes, newNode);
+		getAst().replaceNewWithExistingOld(oldNodes, newNode);
 	}
 	
 	@SuppressWarnings({"unchecked", "rawtypes"})
 	private void gatherAndRemoveChildren(Map<N, L> map) {
 		for (LombokNode child : children) child.gatherAndRemoveChildren(map);
-		ast.identityDetector.remove(get());
+		getAst().identityDetector.remove(get());
 		map.put(get(), (L) this);
 		children = LombokImmutableList.of();
-		ast.getNodeMap().remove(get());
+		getAst().getNodeMap().remove(get());
 	}
 	
 	/**
@@ -263,7 +269,7 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	 * Does not change the underlying (javac/Eclipse) AST, only the wrapped view.
 	 */
 	public void removeChild(L child) {
-		ast.setChanged();
+		getAst().setChanged();
 		children = children.removeElement(child);
 	}
 	
@@ -275,4 +281,16 @@ public abstract class LombokNode<A extends AST<A, L, N>, L extends LombokNode<A,
 	public boolean isStructurallySignificant() {
 		return isStructurallySignificant;
 	}
+	
+	public abstract boolean hasAnnotation(Class<? extends Annotation> type);
+	public abstract <Z extends Annotation> AnnotationValues<Z> findAnnotation(Class<Z> type);
+	
+	public abstract boolean isStatic();
+	public abstract boolean isTransient();
+	public abstract boolean isEnumMember();
+	public abstract boolean isEnumType();
+	
+	public abstract int countMethodParameters();
+	
+	public abstract int getStartPos();
 }

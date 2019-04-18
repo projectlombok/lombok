@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,7 @@
 package lombok.eclipse;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -34,6 +35,7 @@ import lombok.Lombok;
 import lombok.core.AST;
 import lombok.core.LombokImmutableList;
 import lombok.eclipse.handlers.EclipseHandlerUtil;
+import lombok.permit.Permit;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Path;
@@ -48,8 +50,12 @@ import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ImportReference;
 import org.eclipse.jdt.internal.compiler.ast.Initializer;
 import org.eclipse.jdt.internal.compiler.ast.LocalDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.ParameterizedQualifiedTypeReference;
+import org.eclipse.jdt.internal.compiler.ast.ParameterizedSingleTypeReference;
 import org.eclipse.jdt.internal.compiler.ast.Statement;
 import org.eclipse.jdt.internal.compiler.ast.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.TypeReference;
+import org.eclipse.jdt.internal.compiler.ast.Wildcard;
 
 /**
  * Wraps around Eclipse's internal AST view to add useful features as well as the ability to visit parents from children,
@@ -73,16 +79,20 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	private static final URI NOT_CALCULATED_MARKER = URI.create("https://projectlombok.org/not/calculated");
 	private URI memoizedAbsoluteFileLocation = NOT_CALCULATED_MARKER;
 	
+	public static URI getAbsoluteFileLocation(CompilationUnitDeclaration ast) {
+		return getAbsoluteFileLocation0(ast);
+	}
+	
 	public URI getAbsoluteFileLocation() {
 		if (memoizedAbsoluteFileLocation != NOT_CALCULATED_MARKER) return memoizedAbsoluteFileLocation;
 		
-		memoizedAbsoluteFileLocation = getAbsoluteFileLocation0();
+		memoizedAbsoluteFileLocation = getAbsoluteFileLocation0(this.compilationUnitDeclaration);
 		return memoizedAbsoluteFileLocation;
 	}
 	
 	/** This is the call, but we wrapped it to memoize this. */
-	private URI getAbsoluteFileLocation0() {
-		String fileName = getFileName();
+	private static URI getAbsoluteFileLocation0(CompilationUnitDeclaration ast) {
+		String fileName = toFileName(ast);
 		if (fileName != null && (fileName.startsWith("file:") || fileName.startsWith("sourcecontrol:"))) {
 			// Some exotic build systems get real fancy with filenames. Known culprits:
 			// The 'jazz' source control system _probably_ (not confirmed yet) uses sourcecontrol://jazz: urls.
@@ -287,11 +297,30 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 			throw Lombok.sneakyThrow(e);
 		} catch (NullPointerException e) {
 			if (!"false".equals(System.getProperty("lombok.debug.reflection", "false"))) {
-				e.initCause(EcjReflectionCheck.problem);
+				e.initCause(EcjReflectionCheck.problemAddProblemToCompilationResult);
 				throw e;
 			}
 			//ignore, we don't have access to the correct ECJ classes, so lombok can't possibly
 			//do anything useful here.
+		}
+	}
+	
+	public static Annotation[] getTopLevelTypeReferenceAnnotations(TypeReference tr) {
+		Method m = EcjReflectionCheck.typeReferenceGetAnnotationsOnDimensions;
+		if (m == null) return null;
+		Annotation[][] annss = null;
+		try {
+			annss = (Annotation[][]) m.invoke(tr);
+			if (annss != null) return annss[0];
+		} catch (Throwable ignore) {}
+		
+		try {
+			Field f = EcjReflectionCheck.typeReferenceAnnotations;
+			if (f == null) return null;
+			annss = (Annotation[][]) f.get(tr);
+			return annss[annss.length - 1];
+		} catch (Throwable t) {
+			return null;
 		}
 	}
 	
@@ -345,6 +374,8 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 			return buildStatement((Statement) node);
 		case ANNOTATION:
 			return buildAnnotation((Annotation) node, false);
+		case TYPE_USE:
+			return buildTypeUse((TypeReference) node);
 		default:
 			throw new AssertionError("Did not expect to arrive here: " + kind);
 		}
@@ -392,6 +423,7 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 		if (field instanceof Initializer) return buildInitializer((Initializer)field);
 		if (setAndGetAsHandled(field)) return null;
 		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
+		addIfNotNull(childNodes, buildTypeUse(field.type));
 		addIfNotNull(childNodes, buildStatement(field.initialization));
 		childNodes.addAll(buildAnnotations(field.annotations, true));
 		return putInMap(new EclipseNode(this, field, childNodes, Kind.FIELD));
@@ -433,9 +465,38 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	private EclipseNode buildLocal(LocalDeclaration local, Kind kind) {
 		if (setAndGetAsHandled(local)) return null;
 		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
+		addIfNotNull(childNodes, buildTypeUse(local.type));
 		addIfNotNull(childNodes, buildStatement(local.initialization));
 		childNodes.addAll(buildAnnotations(local.annotations, true));
 		return putInMap(new EclipseNode(this, local, childNodes, kind));
+	}
+	
+	private EclipseNode buildTypeUse(TypeReference tr) {
+		if (setAndGetAsHandled(tr)) return null;
+		if (tr == null) return null;
+		
+		List<EclipseNode> childNodes = new ArrayList<EclipseNode>();
+		Annotation[] anns = getTopLevelTypeReferenceAnnotations(tr);
+		if (anns != null) for (Annotation ann : anns) addIfNotNull(childNodes, buildAnnotation(ann, false));
+		
+		if (tr instanceof ParameterizedQualifiedTypeReference) {
+			ParameterizedQualifiedTypeReference pqtr = (ParameterizedQualifiedTypeReference) tr;
+			int len = pqtr.tokens.length;
+			for (int i = 0; i < len; i++) {
+				TypeReference[] typeArgs = pqtr.typeArguments[i];
+				if (typeArgs != null) for (TypeReference tArg : typeArgs) addIfNotNull(childNodes, buildTypeUse(tArg));
+			}
+		} else if (tr instanceof ParameterizedSingleTypeReference) {
+			ParameterizedSingleTypeReference pstr = (ParameterizedSingleTypeReference) tr;
+			if (pstr.typeArguments != null) for (TypeReference tArg : pstr.typeArguments) {
+				addIfNotNull(childNodes, buildTypeUse(tArg));
+			}
+		} else if (tr instanceof Wildcard) {
+			TypeReference bound = ((Wildcard) tr).bound;
+			if (bound != null) addIfNotNull(childNodes, buildTypeUse(bound));
+		}
+		
+		return putInMap(new EclipseNode(this, tr, childNodes, Kind.TYPE_USE));
 	}
 	
 	private Collection<EclipseNode> buildAnnotations(Annotation[] annotations, boolean varDecl) {
@@ -462,9 +523,9 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	
 	private EclipseNode buildStatement(Statement child) {
 		if (child == null) return null;
-		if (child instanceof TypeDeclaration) return buildType((TypeDeclaration)child);
+		if (child instanceof TypeDeclaration) return buildType((TypeDeclaration) child);
 		
-		if (child instanceof LocalDeclaration) return buildLocal((LocalDeclaration)child, Kind.LOCAL);
+		if (child instanceof LocalDeclaration) return buildLocal((LocalDeclaration) child, Kind.LOCAL);
 		
 		if (setAndGetAsHandled(child)) return null;
 		
@@ -486,21 +547,35 @@ public class EclipseAST extends AST<EclipseAST, EclipseNode, ASTNode> {
 	private static class EcjReflectionCheck {
 		private static final String COMPILATIONRESULT_TYPE = "org.eclipse.jdt.internal.compiler.CompilationResult";
 		
-		public static Method addProblemToCompilationResult;
-		public static final Throwable problem;
-		
+		public static final Method addProblemToCompilationResult;
+		public static final Throwable problemAddProblemToCompilationResult;
+		public static final Method typeReferenceGetAnnotationsOnDimensions;
+		public static final Field typeReferenceAnnotations;
 		static {
 			Throwable problem_ = null;
-			Method m = null;
+			Method m1 = null, m2;
+			Field f;
 			try {
-				m = EclipseAstProblemView.class.getMethod("addProblemToCompilationResult", char[].class, Class.forName(COMPILATIONRESULT_TYPE), boolean.class, String.class, int.class, int.class);
+				m1 = Permit.getMethod(EclipseAstProblemView.class, "addProblemToCompilationResult", char[].class, Class.forName(COMPILATIONRESULT_TYPE), boolean.class, String.class, int.class, int.class);
 			} catch (Throwable t) {
 				// That's problematic, but as long as no local classes are used we don't actually need it.
 				// Better fail on local classes than crash altogether.
 				problem_ = t;
 			}
-			addProblemToCompilationResult = m;
-			problem = problem_;
+			try {
+				m2 = Permit.getMethod(TypeReference.class, "getAnnotationsOnDimensions");
+			} catch (Throwable t) {
+				m2 = null;
+			}
+			try {
+				f = Permit.getField(TypeReference.class, "annotations");
+			} catch (Throwable t) {
+				f = null;
+			}
+			addProblemToCompilationResult = m1;
+			problemAddProblemToCompilationResult = problem_;
+			typeReferenceGetAnnotationsOnDimensions = m2;
+			typeReferenceAnnotations = f;
 		}
 	}
 }

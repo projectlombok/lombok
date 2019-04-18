@@ -5,7 +5,6 @@ class DelegateOnGetter {
 		int getInt();
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public Bar getBar() {
 		java.lang.Object value = this.bar.get();
 		if (value == null) {
@@ -27,12 +26,10 @@ class DelegateOnGetter {
 		return (Bar) (value == this.bar ? null : value);
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public void setList(final java.util.ArrayList<java.lang.String> list) {
 		this.getBar().setList(list);
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public int getInt() {
 		return this.getBar().getInt();
 	}

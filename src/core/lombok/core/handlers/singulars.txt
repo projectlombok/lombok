@@ -19,7 +19,7 @@ Mice = mouse
 Lice = louse
 News = !
 # We could add more detail (axemen, boatsmen, boogymen, cavemen, gentlemen, etc, but (A) there's stuff like 'cerumen', and (B) the 'men' ending is common in singulars and other languages.)
-# Therefore, the odds of a mistake are too high, so other than these 2 well known cases, so force the explicit singular.
+# Therefore, the odds of a mistake are too high, so other than these 2 well known cases, force the explicit singular.
 Men = man
 Women = woman
 minutiae = minutia
@@ -48,7 +48,9 @@ hives = hive
 -shes = sh
 -lves = lf
 -rves = rf
--ves = fe
+saves = save
+Leaves = leaf
+-ves = !
 -ss = !
 -us = !
 -s = 

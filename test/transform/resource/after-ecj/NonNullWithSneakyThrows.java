@@ -7,7 +7,7 @@ class NonNullWithSneakyThrows {
       {
         if ((in == null))
             {
-              throw new java.lang.NullPointerException("in");
+              throw new java.lang.NullPointerException("in is marked non-null but is null");
             }
         System.out.println(in);
       }

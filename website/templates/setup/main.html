@@ -1,0 +1,14 @@
+<#import "_setup.html" as s>
+
+<@s.scaffold title="Using lombok">
+	<@s.introduction>
+		<#list s.main.setupTargets as cat, tgtList>
+			<h3 class="listHeader">${cat}</h3>
+			<ul>
+				<#list tgtList as name, url>
+					<li class="target"><a href="/setup/${url}">${name}</a></li>
+				</#list>
+			</ul>
+		</#list>
+	</@s.introduction>
+</@s.scaffold>

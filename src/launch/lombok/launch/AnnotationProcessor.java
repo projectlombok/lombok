@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2017 The Project Lombok Authors.
+ * Copyright (C) 2014-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,6 +21,7 @@
  */
 package lombok.launch;
 
+import java.lang.reflect.Field;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -36,6 +37,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.mapstruct.ap.spi.AstModifyingAnnotationProcessor;
+
+import sun.misc.Unsafe;
 
 class AnnotationProcessorHider {
 	public static class AstModificationNotifier implements AstModifyingAnnotationProcessor {
@@ -65,9 +68,31 @@ class AnnotationProcessorHider {
 		}
 		
 		@Override public void init(ProcessingEnvironment processingEnv) {
+			disableJava9SillyWarning();
 			AstModificationNotifierData.lombokInvoked = true;
 			instance.init(processingEnv);
 			super.init(processingEnv);
+		}
+		
+		// sunapi suppresses javac's warning about using Unsafe; 'all' suppresses eclipse's warning about the unspecified 'sunapi' key. Leave them both.
+		// Yes, javac's definition of the word 'all' is quite contrary to what the dictionary says it means. 'all' does NOT include 'sunapi' according to javac.
+		@SuppressWarnings({"sunapi", "all"})
+		private void disableJava9SillyWarning() {
+			// JVM9 complains about using reflection to access packages from a module that aren't exported. This makes no sense; the whole point of reflection
+			// is to get past such issues. The only comment from the jigsaw team lead on this was some unspecified mumbling about security which makes no sense,
+			// as the SecurityManager is invoked to check such things. Therefore this warning is a bug, so we shall patch java to fix it.
+			
+			try {
+				Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");
+				theUnsafe.setAccessible(true);
+				Unsafe u = (Unsafe) theUnsafe.get(null);
+				
+				Class<?> cls = Class.forName("jdk.internal.module.IllegalAccessLogger");
+				Field logger = cls.getDeclaredField("logger");
+				u.putObjectVolatile(cls, u.staticFieldOffset(logger), null);
+			} catch (Throwable t) {
+				// We shall ignore it; the effect of this code failing is that the user gets to see a warning they remove with various --add-opens magic.
+			}
 		}
 		
 		@Override public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
@@ -79,10 +104,10 @@ class AnnotationProcessorHider {
 		}
 		
 		private static AbstractProcessor createWrappedInstance() {
-			ClassLoader cl = Main.createShadowClassLoader();
+			ClassLoader cl = Main.getShadowClassLoader();
 			try {
 				Class<?> mc = cl.loadClass("lombok.core.AnnotationProcessor");
-				return (AbstractProcessor) mc.newInstance();
+				return (AbstractProcessor) mc.getDeclaredConstructor().newInstance();
 			} catch (Throwable t) {
 				if (t instanceof Error) throw (Error) t;
 				if (t instanceof RuntimeException) throw (RuntimeException) t;

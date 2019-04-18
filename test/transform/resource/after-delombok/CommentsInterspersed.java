@@ -12,7 +12,6 @@ public class CommentsInterspersed {
 		javascript;
 	}-*/
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public String getTest() {
 		return this.test;
 	}

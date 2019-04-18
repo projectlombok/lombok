@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@ import java.lang.annotation.Target;
  * {@code $LOCK} is used. These will be generated if needed and if they aren't already present. The contents
  * of the fields will be serializable.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/Synchronized.html">the project lombok features page for &#64;Synchronized</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/Synchronized">the project lombok features page for &#64;Synchronized</a>.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.SOURCE)
@@ -43,6 +43,8 @@ public @interface Synchronized {
 	/**
 	 * Optional: specify the name of a different field to lock on. It is a compile time error if this field
 	 * doesn't already exist (the fields are automatically generated only if you don't specify a specific name.
+	 * 
+	 * @return Name of the field to lock on (blank = generate one).
 	 */
 	String value() default "";
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Project Lombok Authors.
+ * Copyright (C) 2014-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -118,7 +118,7 @@ public class ConfigurationApp extends LombokApp {
 		
 		boolean verbose = args.verbose;
 		if (args.generate) {
-			return generate(keys, verbose);
+			return generate(keys, verbose, !args.key.isEmpty());
 		}
 		
 		return display(keys, verbose, args.paths, !args.key.isEmpty());
@@ -130,8 +130,9 @@ public class ConfigurationApp extends LombokApp {
 		return this;
 	}
 	
-	public int generate(Collection<ConfigurationKey<?>> keys, boolean verbose) {
+	public int generate(Collection<ConfigurationKey<?>> keys, boolean verbose, boolean explicit) {
 		for (ConfigurationKey<?> key : keys) {
+			if (!explicit && key.isHidden()) continue;
 			String keyName = key.getKeyName();
 			ConfigurationDataType type = key.getType();
 			String description = key.getDescription();

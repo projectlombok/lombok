@@ -5,10 +5,10 @@ class GetterDeprecated {
   GetterDeprecated() {
     super();
   }
-  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int getAnnotation() {
+  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") int getAnnotation() {
     return this.annotation;
   }
-  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") int getJavadoc() {
+  public @java.lang.Deprecated @java.lang.SuppressWarnings("all") int getJavadoc() {
     return this.javadoc;
   }
 }

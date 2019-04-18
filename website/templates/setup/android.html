@@ -1,0 +1,84 @@
+<#import "_setup.html" as s>
+
+<@s.scaffold title="Android">
+	<@s.introduction>
+		<p>
+			Android development with lombok is easy and won't make your android application any 'heavier' because lombok is a compile-time only library. It is important to configure your android project properly to make sure lombok doesn't end up in your application and waste precious space on android devices.
+		</p><p>
+			The instructions listed below are excerpts from <a href="https://github.com/excilys/androidannotations/wiki/Cookbook">The
+			AndroidAnnotations project cookbook</a>. You may wish to refer to that documentation for complete instructions; lombok is just
+			the equivalent to <code>androidannotations-VERSION.jar</code>; there is no <code>-api</code> aspect.
+		</p>
+	</@s.introduction>
+
+	<@s.section title="Gradle">
+		<p>
+			<ul><li>
+				Make sure that the version of your android plugin is <code>&gt;= 0.4.3</code>
+			</li><li>
+				Use the <a href="https://github.com/franzbecker/gradle-lombok">gradle-lombok</a> plugin.
+			</li><li>
+				If you don't want to use the plugin, add Lombok to your application's <code>dependencies</code> block (requires Gradle v2.12 or newer):<br /><br />
+<pre>
+dependencies {
+	compileOnly "org.projectlombok:lombok:${version}"
+}</pre>
+			</li></ul>
+		</p>
+	</@s.section>
+
+	<@s.section title="Android Studio">
+		<p>
+			Follow the previous instructions (<em>Gradle</em>). In addition to setting up your gradle project correctly, you need to add the <a href="https://plugins.jetbrains.com/plugin/6317">Lombok IntelliJ plugin</a> to add lombok support to Android Studio:
+			<ul><li>
+				Go to <code>File &gt; Settings &gt; Plugins</code>
+			</li><li>
+				Click on <code>Browse repositories...</code>
+			</li><li>
+				Search for <code>Lombok Plugin</code>
+			</li><li>
+				Click on <code>Install plugin</code>
+			</li><li>
+				Restart Android Studio
+			</li></ul>
+		</p>
+		<p>
+			Modify your application's <code>dependencies</code> block:
+<pre>
+dependencies {
+	compileOnly 'org.projectlombok:lombok:${version}'
+	annotationProcessor 'org.projectlombok:lombok:${version}'
+}</pre>
+	</@s.section>
+
+	<@s.section title="Eclipse">
+		<p>
+			In eclipse, create a 'lightweight' lombok jar that contains only the annotations by running:<br /><br />
+			<pre>
+java -jar lombok.jar publicApi</pre>
+			Then, add the <code>lombok-api.jar</code> file created by running this command to your android project instead of the complete <code>lombok.jar</code>, and, as usual, install lombok into eclipse by double-clicking <code>lombok.jar</code>.
+		</p>
+	</@s.section>
+
+	<@s.section title="Maven">
+		<p>
+			You should be able to just follow the normal <a href="maven">integrate lombok with maven instructions</a>.<br />
+			Note that if you use android, eclipse, and maven together you may have to replace <code>lombok.jar</code> in your eclipse android project's build path (which you can modify in that project's properties page) with <code>lombok-api.jar</code>, as produced in the procedure explained for <em>Eclipse</em>, above.
+		</p>
+	</@s.section>
+
+	<@s.section title="Ant">
+		<p>
+			<ul><li>
+				Find <code>build.xml</code> in <code>${r"${ANDROID_SDK_ROOT}"}/tools/ant/build.xml</code> and copy the <code>-compile</code> target into the paste buffer.
+			</li><li>
+				Copy this to the <code>build.xml</code> of your own project, right before the <code>&lt;import file="${r"${sdk.dir}"}/tools/ant/build.xml"&gt;</code> line.
+			</li><li>
+				Create a <code>compile-libs</code> directory in your own project and copy the complete <code>lombok.jar</code> to it.
+			</li><li>
+				Now modify the <code>&lt;classpath&gt;</code> entry inside the <code>&lt;javac&gt;</code> task in the <code>-compile</code> target you just copied:<br />
+				add <code>&lt;fileset dir="compile-libs" includes="*.jar" /&gt;</code> to it.
+			</li></ul>
+		</p>
+	</@s.section>
+</@s.scaffold>

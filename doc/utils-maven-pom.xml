@@ -21,8 +21,8 @@
 		<url>http://github.com/rzwitserloot/lombok</url>
 	</scm>
 	<issueManagement>
-		<system>Google Code</system>
-		<url>http://code.google.com/p/projectlombok/issues</url>
+		<system>GitHub Issues</system>
+		<url>https://github.com/rzwitserloot/lombok/issues</url>
 	</issueManagement>
 	<developers>
 		<developer>

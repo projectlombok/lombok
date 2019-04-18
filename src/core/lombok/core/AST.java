@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2016 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import lombok.core.configuration.ConfigurationKey;
 import lombok.core.debug.HistogramTracker;
+import lombok.permit.Permit;
 
 /**
  * Lombok wraps the AST produced by a target platform into its own AST system, mostly because both Eclipse and javac
@@ -52,13 +53,14 @@ import lombok.core.debug.HistogramTracker;
 public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>, N> {
 	/** The kind of node represented by a given AST.Node object. */
 	public enum Kind {
-		COMPILATION_UNIT, TYPE, FIELD, INITIALIZER, METHOD, ANNOTATION, ARGUMENT, LOCAL, STATEMENT;
+		COMPILATION_UNIT, TYPE, FIELD, INITIALIZER, METHOD, ANNOTATION, ARGUMENT, LOCAL, STATEMENT, TYPE_USE;
 	}
 	
 	private L top;
 	private final String fileName;
 	private final String packageDeclaration;
 	private final ImportList imports;
+	private TypeResolver importsAsResolver;
 	Map<N, N> identityDetector = new IdentityHashMap<N, N>();
 	private Map<N, L> nodeMap = new IdentityHashMap<N, L>();
 	private boolean changed = false;
@@ -111,11 +113,17 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	
 	/**
 	 * Return the contents of each non-static import statement on this AST's top (Compilation Unit) node.
-	 * 
-	 * Example: "java.util.IOException".
 	 */
 	public final ImportList getImportList() {
 		return imports;
+	}
+	
+	/**
+	 * Return the contents of each non-static import statement on this AST's top (Compilation Unit) node, packed into a (cached) TypeResolver.
+	 */
+	public final TypeResolver getImportListAsTypeResolver() {
+		if (importsAsResolver != null) return importsAsResolver;
+		return importsAsResolver = new TypeResolver(getImportList());
 	}
 	
 	/**
@@ -216,19 +224,19 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 		}
 	}
 	
-	private static final ConcurrentMap<Class<?>, Collection<FieldAccess>> fieldsOfASTClasses = new ConcurrentHashMap<Class<?>, Collection<FieldAccess>>();
+	private static final ConcurrentMap<Class<?>, FieldAccess[]> fieldsOfASTClasses = new ConcurrentHashMap<Class<?>, FieldAccess[]>();
 	
 	/** Returns FieldAccess objects for the stated class. Each field that contains objects of the kind returned by
 	 * {@link #getStatementTypes()}, either directly or inside of an array or java.util.collection (or array-of-arrays,
 	 * or collection-of-collections, et cetera), is returned.
 	 */
-	protected Collection<FieldAccess> fieldsOf(Class<?> c) {
-		Collection<FieldAccess> fields = fieldsOfASTClasses.get(c);
+	protected FieldAccess[] fieldsOf(Class<?> c) {
+		FieldAccess[] fields = fieldsOfASTClasses.get(c);
 		if (fields != null) return fields;
 		
-		fields = new ArrayList<FieldAccess>();
-		getFields(c, fields);
-		fieldsOfASTClasses.putIfAbsent(c, fields);
+		List<FieldAccess> fieldList = new ArrayList<FieldAccess>();
+		getFields(c, fieldList);
+		fieldsOfASTClasses.putIfAbsent(c, fieldList.toArray(new FieldAccess[0]));
 		return fieldsOfASTClasses.get(c);
 	}
 	
@@ -252,7 +260,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 			}
 			
 			if (shouldDrill(c, t, f.getName())) {
-				f.setAccessible(true);
+				Permit.setAccessible(f);
 				fields.add(new FieldAccess(f, dim));
 			}
 		}
@@ -262,8 +270,8 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	
 	private Class<?> getComponentType(Type type) {
 		if (type instanceof ParameterizedType) {
-			Type component = ((ParameterizedType)type).getActualTypeArguments()[0];
-			return component instanceof Class<?> ? (Class<?>)component : Object.class;
+			Type component = ((ParameterizedType) type).getActualTypeArguments()[0];
+			return component instanceof Class<?> ? (Class<?>) component : Object.class;
 		}
 		return Object.class;
 	}
@@ -329,7 +337,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 			idx++;
 			if (o == null) continue;
 			if (Collection.class.isInstance(o)) {
-				Collection<?> newC = (Collection<?>)o;
+				Collection<?> newC = (Collection<?>) o;
 				List<Collection<?>> newChain = new ArrayList<Collection<?>>(chain);
 				newChain.add(newC);
 				if (replaceStatementInCollection(field, fieldRef, newChain, newC, oldN, newN)) return true;
@@ -355,7 +363,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	protected void setElementInASTCollection(Field field, Object fieldRef, List<Collection<?>> chain, Collection<?> collection, int idx, N newN) throws IllegalAccessException {
 		if (collection instanceof List<?>) {
-			((List)collection).set(idx, newN);
+			((List) collection).set(idx, newN);
 		}
 	}
 	
@@ -383,7 +391,7 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 			Object o = fa.field.get(child);
 			if (o == null) return;
 			if (fa.dim == 0) {
-				L node = buildTree((N)o, Kind.STATEMENT);
+				L node = buildTree((N) o, Kind.STATEMENT);
 				if (node != null) list.add(nodeType.cast(node));
 			} else if (o.getClass().isArray()) {
 				buildWithArray(nodeType, o, list, fa.dim);
@@ -398,12 +406,12 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	@SuppressWarnings("unchecked")
 	private void buildWithArray(Class<L> nodeType, Object array, Collection<L> list, int dim) {
 		if (dim == 1) {
-			for (Object v : (Object[])array) {
+			for (Object v : (Object[]) array) {
 				if (v == null) continue;
 				L node = buildTree((N)v, Kind.STATEMENT);
 				if (node != null) list.add(nodeType.cast(node));
 			}
-		} else for (Object v : (Object[])array) {
+		} else for (Object v : (Object[]) array) {
 			if (v == null) return;
 			buildWithArray(nodeType, v, list, dim -1);
 		}
@@ -412,13 +420,13 @@ public abstract class AST<A extends AST<A, L, N>, L extends LombokNode<A, L, N>,
 	@SuppressWarnings("unchecked")
 	private void buildWithCollection(Class<L> nodeType, Object collection, Collection<L> list, int dim) {
 		if (dim == 1) {
-			for (Object v : (Collection<?>)collection) {
+			for (Object v : (Collection<?>) collection) {
 				if (v == null) continue;
-				L node = buildTree((N)v, Kind.STATEMENT);
+				L node = buildTree((N) v, Kind.STATEMENT);
 				if (node != null) list.add(nodeType.cast(node));
 			}
-		} else for (Object v : (Collection<?>)collection) {
-			buildWithCollection(nodeType, v, list, dim-1);
+		} else for (Object v : (Collection<?>) collection) {
+			buildWithCollection(nodeType, v, list, dim - 1);
 		}
 	}
 	

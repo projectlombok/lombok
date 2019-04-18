@@ -105,7 +105,7 @@ public class PublicApiCreatorApp extends LombokApp {
 				int firstSlash = subName.indexOf('/');
 				if (firstSlash == -1) {
 					// direct member of the lombok package.
-					toCopy.add(name);
+					if (!subName.startsWith("ConfigurationKeys")) toCopy.add(name);
 					continue;
 				}
 				String topPkg = subName.substring(0, firstSlash);

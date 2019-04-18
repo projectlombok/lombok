@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2013-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -88,6 +88,8 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 
+import lombok.permit.Permit;
+
 public class JavacTreeMaker {
 	private final TreeMaker tm;
 	
@@ -153,7 +155,7 @@ public class JavacTreeMaker {
 			Object value = cache.get(fieldName);
 			if (value != null) return value;
 			try {
-				value = Class.forName(className).getField(fieldName).get(null);
+				value = Permit.getField(Class.forName(className), fieldName).get(null);
 			} catch (NoSuchFieldException e) {
 				throw Javac.sneakyThrow(e);
 			} catch (IllegalAccessException e) {
@@ -169,7 +171,7 @@ public class JavacTreeMaker {
 		private static Field NOSUCHFIELDEX_MARKER;
 		static {
 			try {
-				NOSUCHFIELDEX_MARKER = SchroedingerType.class.getDeclaredField("NOSUCHFIELDEX_MARKER");
+				NOSUCHFIELDEX_MARKER = Permit.getField(SchroedingerType.class, "NOSUCHFIELDEX_MARKER");
 			} catch (NoSuchFieldException e) {
 				throw Javac.sneakyThrow(e);
 			}
@@ -180,12 +182,12 @@ public class JavacTreeMaker {
 			Field field = cache.get(c);
 			if (field == null) {
 				try {
-					field = c.getField(fieldName);
+					field = Permit.getField(c, fieldName);
 				} catch (NoSuchFieldException e) {
 					cache.putIfAbsent(c, NOSUCHFIELDEX_MARKER);
 					throw Javac.sneakyThrow(e);
 				}
-				field.setAccessible(true);
+				Permit.setAccessible(field);
 				Field old = cache.putIfAbsent(c, field);
 				if (old != null) field = old;
 			}
@@ -207,8 +209,7 @@ public class JavacTreeMaker {
 		static {
 			Method m = null;
 			try {
-				m = Type.class.getDeclaredMethod("getTag");
-				m.setAccessible(true);
+				m = Permit.getMethod(Type.class, "getTag");
 			} catch (NoSuchMethodException e) {}
 			TYPE_TYPETAG_METHOD = m;
 		}
@@ -226,6 +227,7 @@ public class JavacTreeMaker {
 		}
 		
 		public static TypeTag typeTag(Type t) {
+			if (t == null) return Javac.CTC_VOID;
 			try {
 				return new TypeTag(getFieldCached(FIELD_CACHE, t, "tag"));
 			} catch (NoSuchFieldException e) {
@@ -254,8 +256,7 @@ public class JavacTreeMaker {
 		static {
 			Method m = null;
 			try {
-				m = JCTree.class.getDeclaredMethod("getTag");
-				m.setAccessible(true);
+				m = Permit.getMethod(JCTree.class, "getTag");
 			} catch (NoSuchMethodException e) {}
 			
 			if (m != null) {
@@ -264,8 +265,7 @@ public class JavacTreeMaker {
 			} else {
 				Field f = null;
 				try {
-					f = JCTree.class.getDeclaredField("tag");
-					f.setAccessible(true);
+					f = Permit.getField(JCTree.class, "tag");
 				} catch (NoSuchFieldException e) {}
 				TAG_FIELD = f;
 				TAG_METHOD = null;
@@ -332,14 +332,15 @@ public class JavacTreeMaker {
 		throw new InternalError("Not found: " + name);
 	}
 	
-	private static final ConcurrentHashMap<MethodId<?>, Method> METHOD_CACHE = new ConcurrentHashMap<MethodId<?>, Method>();
+	private static final Object METHOD_NOT_FOUND = new Object[0];
+	private static final Object METHOD_MULTIPLE_FOUND = new Object[0];
+	private static final ConcurrentHashMap<MethodId<?>, Object> METHOD_CACHE = new ConcurrentHashMap<MethodId<?>, Object>();
 	private <J> J invoke(MethodId<J> m, Object... args) {
 		return invokeAny(tm, m, args);
 	}
 	
 	@SuppressWarnings("unchecked") private static <J> J invokeAny(Object owner, MethodId<J> m, Object... args) {
-		Method method = METHOD_CACHE.get(m);
-		if (method == null) method = addToCache(m);
+		Method method = getFromCache(m);
 		try {
 			if (m.returnType.isPrimitive()) {
 				Object res = method.invoke(owner, args);
@@ -358,7 +359,22 @@ public class JavacTreeMaker {
 		}
 	}
 	
-	private static Method addToCache(MethodId<?> m) {
+	private static boolean tryResolve(MethodId<?> m) {
+		Object s = METHOD_CACHE.get(m);
+		if (s == null) s = addToCache(m);
+		if (s instanceof Method) return true;
+		return false;
+	}
+	
+	private static Method getFromCache(MethodId<?> m) {
+		Object s = METHOD_CACHE.get(m);
+		if (s == null) s = addToCache(m);
+		if (s == METHOD_MULTIPLE_FOUND) throw new IllegalStateException("Lombok TreeMaker frontend issue: multiple matches when looking for method: " + m);
+		if (s == METHOD_NOT_FOUND) throw new IllegalStateException("Lombok TreeMaker frontend issue: no match when looking for method: " + m);
+		return (Method) s;
+	}
+	
+	private static Object addToCache(MethodId<?> m) {
 		Method found = null;
 		
 		outer:
@@ -377,13 +393,19 @@ public class JavacTreeMaker {
 				}
 			}
 			if (found == null) found = method;
-			else throw new IllegalStateException("Lombok TreeMaker frontend issue: multiple matches when looking for method: " + m);
+			else {
+				METHOD_CACHE.putIfAbsent(m, METHOD_MULTIPLE_FOUND);
+				return METHOD_MULTIPLE_FOUND;
+			}
 		}
-		if (found == null) throw new IllegalStateException("Lombok TreeMaker frontend issue: no match when looking for method: " + m);
-		found.setAccessible(true);
+		if (found == null) {
+			METHOD_CACHE.putIfAbsent(m, METHOD_NOT_FOUND);
+			return METHOD_NOT_FOUND;
+		}
+		Permit.setAccessible(found);
 		Object marker = METHOD_CACHE.putIfAbsent(m, found);
 		if (marker == null) return found;
-		return METHOD_CACHE.get(m);
+		return marker;
 	}
 	
 	//javac versions: 6-8
@@ -476,10 +498,28 @@ public class JavacTreeMaker {
 		return invoke(Switch, selector, cases);
 	}
 	
-	//javac versions: 6-8
-	private static final MethodId<JCCase> Case = MethodId("Case");
+	//javac versions: 6-11
+	private static final MethodId<JCCase> Case11 = MethodId("Case", JCCase.class, JCExpression.class, com.sun.tools.javac.util.List.class);
+	//javac version: 12+
+	public static class Case12 {
+		private static final Class<?> CASE_KIND_CLASS = classForName(TreeMaker.class, "com.sun.source.tree.CaseTree$CaseKind");
+		static final MethodId<JCCase> Case12 = MethodId("Case", JCCase.class, CASE_KIND_CLASS, com.sun.tools.javac.util.List.class, com.sun.tools.javac.util.List.class, JCTree.class);
+		static final Object CASE_KIND_STATEMENT = CASE_KIND_CLASS.getEnumConstants()[0];
+	}
+	
+	static Class<?> classForName(Class<?> context, String name) {
+		try {
+			return context.getClassLoader().loadClass(name);
+		} catch (ClassNotFoundException e) {
+			Error x = new NoClassDefFoundError(e.getMessage());
+			x.setStackTrace(e.getStackTrace());
+			throw x;
+		}
+	}
+	
 	public JCCase Case(JCExpression pat, List<JCStatement> stats) {
-		return invoke(Case, pat, stats);
+		if (tryResolve(Case11)) return invoke(Case11, pat, stats);
+		return invoke(Case12.Case12, Case12.CASE_KIND_STATEMENT, pat == null ? com.sun.tools.javac.util.List.nil() : com.sun.tools.javac.util.List.of(pat), stats, null);
 	}
 	
 	//javac versions: 6-8
@@ -524,10 +564,14 @@ public class JavacTreeMaker {
 		return invoke(Exec, expr);
 	}
 	
-	//javac versions: 6-8
-	private static final MethodId<JCBreak> Break = MethodId("Break");
+	//javac version: 6-11
+	private static final MethodId<JCBreak> Break11 = MethodId("Break", JCBreak.class, Name.class);
+	//javac version: 12+
+	private static final MethodId<JCBreak> Break12 = MethodId("Break", JCBreak.class, JCExpression.class);
+	
 	public JCBreak Break(Name label) {
-		return invoke(Break, label);
+		if (tryResolve(Break11)) return invoke(Break11, label);
+		return invoke(Break12, label != null ? Ident(label) : null);
 	}
 	
 	//javac versions: 6-8

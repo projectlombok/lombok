@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 The Project Lombok Authors.
+ * Copyright (C) 2012-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,8 @@ import java.lang.annotation.*;
  * otherwise modifying the original type. Extension methods are a special kind of static method, but they are called as
  * if they were instance methods on the extended type.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/ExtensionMethod.html">the project lombok features page for &#64;ExtensionMethod</a>.
- * <p>
+ * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/ExtensionMethod">the project lombok features page for &#64;ExtensionMethod</a>.
+ * <br>
  * <p>
  * Before:
  * 
@@ -60,12 +60,14 @@ import java.lang.annotation.*;
 @Target(TYPE)
 @Retention(SOURCE)
 public @interface ExtensionMethod {
-	/** All types whose static methods will be exposed as extension methods. */
+	/** @return All types whose static methods will be exposed as extension methods. */
 	Class<?>[] value();
 
 	/**
 	 * If {@code true}, an applicable extension method is used (if found) even if the method call already was compilable (this is the default).
 	 * If {@code false}, an extension method is only used if the method call is not also defined by the type itself.
+	 * 
+	 * @return Whether or not to override already existing methods with the extension.
 	 */
 	boolean suppressBaseMethods() default true;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 The Project Lombok Authors.
+ * Copyright (C) 2012-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,14 +29,19 @@ public class PatchDiagnostics {
 	 * checks, and throw the exact same exception (thus, effectively, we don't change how eclipse operates), but, we <em>do</em> provide a useful message.
 	 */
 	public static boolean setSourceRangeCheck(Object astNode, int startPosition, int length) {
+		String nodeTxt;
 		if (startPosition >= 0 && length < 0) {
+			if (astNode == null) nodeTxt = "(NULL NODE)";
+			else nodeTxt = astNode.getClass() + ": " + astNode.toString();
 			throw new IllegalArgumentException("startPos = " + startPosition + " and length is " + length + ".\n" +
-					"This breaks the rule that lengths are not allowed to be negative. Affected Node:\n" + astNode);
+				"This breaks the rule that lengths are not allowed to be negative. Affected Node:\n" + nodeTxt);
 		}
 		
 		if (startPosition < 0 && length != 0) {
+			if (astNode == null) nodeTxt = "(NULL NODE)";
+			else nodeTxt = astNode.getClass() + ": " + astNode.toString();
 			throw new IllegalArgumentException("startPos = " + startPosition + " and length is " + length + ".\n" +
-					"This breaks the rule that length must be 0 if startPosition is negative. Affected Node:\n" + astNode);
+				"This breaks the rule that length must be 0 if startPosition is negative. Affected Node:\n" + nodeTxt);
 		}
 		
 		return false;

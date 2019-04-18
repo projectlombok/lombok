@@ -35,7 +35,7 @@ final class Agent {
 	}
 	
 	private static void runLauncher(String agentArgs, Instrumentation instrumentation, boolean injected) throws Throwable {
-		ClassLoader cl = Main.createShadowClassLoader();
+		ClassLoader cl = Main.getShadowClassLoader();
 		try {
 			Class<?> c = cl.loadClass("lombok.core.AgentLauncher");
 			Method m = c.getDeclaredMethod("runAgents", String.class, Instrumentation.class, boolean.class, Class.class);

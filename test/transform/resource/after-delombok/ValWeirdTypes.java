@@ -1,3 +1,4 @@
+import java.math.BigDecimal;
 import java.util.*;
 public class ValWeirdTypes<Z> {
 	private List<Z> fieldList;
@@ -53,5 +54,10 @@ public class ValWeirdTypes<Z> {
 		final int[] copy = intArray;
 		final java.lang.Object[] single = multiDimArray[0];
 		final int singleInt = copy[0];
+	}
+	public void arraysAsList() {
+		final java.util.List<java.lang.Class<? extends java.lang.Object>> x = Arrays.asList(String.class, BigDecimal.class);
+		for (final java.lang.Class<?> y : x) {
+		}
 	}
 }

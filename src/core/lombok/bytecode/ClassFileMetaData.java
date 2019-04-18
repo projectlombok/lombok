@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 The Project Lombok Authors.
+ * Copyright (C) 2010-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,9 @@ public class ClassFileMetaData {
 	private static final byte METHOD_HANDLE = 15;
 	private static final byte METHOD_TYPE = 16;
 	private static final byte INVOKE_DYNAMIC = 18;
+	// New in java9: support for modules
+	private static final byte MODULE = 19;
+	private static final byte PACKAGE = 20;
 	
 	private static final int NOT_FOUND = -1;
 	private static final int START_OF_CONSTANT_POOL = 8; 
@@ -79,6 +82,8 @@ public class ClassFileMetaData {
 			case CLASS:
 			case STRING:
 			case METHOD_TYPE:
+			case MODULE:
+			case PACKAGE:
 				position += 2;
 				break;
 			case METHOD_HANDLE:
@@ -111,23 +116,24 @@ public class ClassFileMetaData {
 		int end = pos + size;
 		
 		// the resulting string might be smaller
-		StringBuilder result = new StringBuilder(size);
+		char[] result = new char[size];
+		int length = 0;
 		while (pos < end) {
 			int first = (byteCode[pos++] & 0xFF);
 			if (first < 0x80) {
-				result.append((char)first);
+				result[length++] = (char)first;
 			} else if ((first & 0xE0) == 0xC0) {
 				int x = (first & 0x1F) << 6;
 				int y = (byteCode[pos++] & 0x3F);
-				result.append((char)(x | y));
+				result[length++] = (char)(x | y);
 			} else {
 				int x = (first & 0x0F) << 12;
 				int y = (byteCode[pos++] & 0x3F) << 6;
 				int z = (byteCode[pos++] & 0x3F);
-				result.append((char)(x | y | z));
+				result[length++] = (char)(x | y | z);
 			}
 		}
-		return result.toString();
+		return new String(result, 0, length);
 	}
 	
 	/**

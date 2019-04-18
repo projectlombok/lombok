@@ -13,19 +13,19 @@ public class OnXJava7Style {
   public OnXJava7Style() {
     super();
   }
-  public @Foo @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") String getA() {
+  public @Foo @java.lang.SuppressWarnings("all") String getA() {
     return this.a;
   }
-  public @Foo() @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setB(final String b) {
+  public @Foo() @java.lang.SuppressWarnings("all") void setB(final String b) {
     this.b = b;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setC(final @Foo("a") String c) {
+  public @java.lang.SuppressWarnings("all") void setC(final @Foo("a") String c) {
     this.c = c;
   }
-  public @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") void setD(final @Bar(stuff = "b") String d) {
+  public @java.lang.SuppressWarnings("all") void setD(final @Bar(stuff = "b") String d) {
     this.d = d;
   }
-  public @Foo(value = "c") @Bar(stuff = "d") @java.lang.SuppressWarnings("all") @javax.annotation.Generated("lombok") String getE() {
+  public @Foo(value = "c") @Bar(stuff = "d") @java.lang.SuppressWarnings("all") String getE() {
     return this.e;
   }
 }

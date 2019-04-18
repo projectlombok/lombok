@@ -1,0 +1,28 @@
+<#import "/_scaffold.html" as main>
+
+<#macro introduction>
+	<div class="row">
+		<#nested>
+	</div>
+</#macro>
+
+<#macro section title>
+	<div class="row">
+		<@main.h3 title="${title}" />
+
+		<#nested>
+	</div>
+</#macro>
+
+<#macro scaffold title load=[]>
+	<@main.scaffold load title>
+		<div class="page-header top5" id="featureContent">
+			<div class="row text-center">
+				<div class="header-group">
+					<@main.h1 title="${title}" />
+				</div>
+			</div>
+			<#nested>
+		</div>
+	</@main.scaffold>
+</#macro>

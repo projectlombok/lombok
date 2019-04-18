@@ -39,14 +39,8 @@ import lombok.javac.handlers.JavacSingularsRecipes.JavacSingularizer;
 import lombok.javac.handlers.JavacSingularsRecipes.SingularData;
 
 abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
-	protected final JavacSingularizer guavaListSetSingularizer = new JavacGuavaSetListSingularizer();
-	protected final JavacSingularizer guavaMapSingularizer = new JavacGuavaMapSingularizer();
 	
-	protected boolean useGuavaInstead(JavacNode node) {
-		return Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.SINGULAR_USE_GUAVA));
-	}
-	
-	protected List<JCStatement> createJavaUtilSetMapInitialCapacitySwitchStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, boolean mapMode, String emptyCollectionMethod, String singletonCollectionMethod, String targetType, JCTree source) {
+	protected List<JCStatement> createJavaUtilSetMapInitialCapacitySwitchStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, boolean mapMode, String emptyCollectionMethod, String singletonCollectionMethod, String targetType, JCTree source, String builderVariable) {
 		List<JCExpression> jceBlank = List.nil();
 		ListBuffer<JCCase> cases = new ListBuffer<JCCase>();
 		
@@ -66,11 +60,11 @@ abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 				// !mapMode: pluralName = java.util.Collections.singletonCollectionMethod(this.pluralName.get(0));
 				//  mapMode: pluralName = java.util.Collections.singletonCollectionMethod(this.pluralName$key.get(0), this.pluralName$value.get(0));
 				JCExpression zeroLiteral = maker.Literal(CTC_INT, 0);
-				JCExpression arg = maker.Apply(jceBlank, chainDots(builderType, "this", data.getPluralName() + (mapMode ? "$key" : ""), "get"), List.of(zeroLiteral));
+				JCExpression arg = maker.Apply(jceBlank, chainDots(builderType, builderVariable, data.getPluralName() + (mapMode ? "$key" : ""), "get"), List.of(zeroLiteral));
 				List<JCExpression> args;
 				if (mapMode) {
 					JCExpression zeroLiteralClone = maker.Literal(CTC_INT, 0);
-					JCExpression arg2 = maker.Apply(jceBlank, chainDots(builderType, "this", data.getPluralName() + (mapMode ? "$value" : ""), "get"), List.of(zeroLiteralClone));
+					JCExpression arg2 = maker.Apply(jceBlank, chainDots(builderType, builderVariable, data.getPluralName() + (mapMode ? "$value" : ""), "get"), List.of(zeroLiteralClone));
 					args = List.of(arg, arg2);
 				} else {
 					args = List.of(arg);
@@ -84,12 +78,12 @@ abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 		}
 		
 		{ // default:
-			List<JCStatement> statements = createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, mapMode, false, true, emptyCollectionMethod == null, targetType, source);
+			List<JCStatement> statements = createJavaUtilSimpleCreationAndFillStatements(maker, data, builderType, mapMode, false, true, emptyCollectionMethod == null, targetType, source, builderVariable);
 			JCCase defaultCase = maker.Case(null, statements);
 			cases.append(defaultCase);
 		}
 		
-		JCStatement switchStat = maker.Switch(getSize(maker,  builderType, mapMode ? builderType.toName(data.getPluralName() + "$key") : data.getPluralName(), true, false), cases.toList());
+		JCStatement switchStat = maker.Switch(getSize(maker,  builderType, mapMode ? builderType.toName(data.getPluralName() + "$key") : data.getPluralName(), true, false, builderVariable), cases.toList());
 		JCExpression localShadowerType = chainDotsString(builderType, data.getTargetFqn());
 		localShadowerType = addTypeArgs(mapMode ? 2 : 1, false, builderType, localShadowerType, data.getTypeArgs(), source);
 		JCStatement varDefStat = maker.VarDef(maker.Modifiers(0), data.getPluralName(), localShadowerType, null);
@@ -125,9 +119,9 @@ abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 		return maker.If(cond, thenPart, null);
 	}
 	
-	protected List<JCStatement> createJavaUtilSimpleCreationAndFillStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, boolean mapMode, boolean defineVar, boolean addInitialCapacityArg, boolean nullGuard, String targetType, JCTree source) {
+	protected List<JCStatement> createJavaUtilSimpleCreationAndFillStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, boolean mapMode, boolean defineVar, boolean addInitialCapacityArg, boolean nullGuard, String targetType, JCTree source, String builderVariable) {
 		List<JCExpression> jceBlank = List.nil();
-		Name thisName = builderType.toName("this");
+		Name thisName = builderType.toName(builderVariable);
 		
 		JCStatement createStat; {
 			 // pluralName = new java.util.TargetType(initialCap);
@@ -136,10 +130,10 @@ abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 				Name varName = mapMode ? builderType.toName(data.getPluralName() + "$key") : data.getPluralName();
 				// this.varName.size() < MAX_POWER_OF_2 ? 1 + this.varName.size() + (this.varName.size() - 3) / 3 : Integer.MAX_VALUE;
 				// lessThanCutOff = this.varName.size() < MAX_POWER_OF_2
-				JCExpression lessThanCutoff = maker.Binary(CTC_LESS_THAN, getSize(maker, builderType, varName, nullGuard, true), maker.Literal(CTC_INT, 0x40000000));
+				JCExpression lessThanCutoff = maker.Binary(CTC_LESS_THAN, getSize(maker, builderType, varName, nullGuard, true, builderVariable), maker.Literal(CTC_INT, 0x40000000));
 				JCExpression integerMaxValue = genJavaLangTypeRef(builderType, "Integer", "MAX_VALUE");
-				JCExpression sizeFormulaLeft = maker.Binary(CTC_PLUS, maker.Literal(CTC_INT, 1), getSize(maker, builderType, varName, nullGuard, true));
-				JCExpression sizeFormulaRightLeft = maker.Parens(maker.Binary(CTC_MINUS, getSize(maker, builderType, varName, nullGuard, true), maker.Literal(CTC_INT, 3)));
+				JCExpression sizeFormulaLeft = maker.Binary(CTC_PLUS, maker.Literal(CTC_INT, 1), getSize(maker, builderType, varName, nullGuard, true, builderVariable));
+				JCExpression sizeFormulaRightLeft = maker.Parens(maker.Binary(CTC_MINUS, getSize(maker, builderType, varName, nullGuard, true, builderVariable), maker.Literal(CTC_INT, 3)));
 				JCExpression sizeFormulaRight = maker.Binary(CTC_DIV, sizeFormulaRightLeft, maker.Literal(CTC_INT, 3));
 				JCExpression sizeFormula = maker.Binary(CTC_PLUS, sizeFormulaLeft, sizeFormulaRight);
 				constructorArgs = List.<JCExpression>of(maker.Conditional(lessThanCutoff, sizeFormula, integerMaxValue));
@@ -163,14 +157,14 @@ abstract class JavacJavaUtilSingularizer extends JavacSingularizer {
 				Name ivar = builderType.toName("$i");
 				Name keyVarName = builderType.toName(data.getPluralName() + "$key");
 				JCExpression pluralnameDotPut = maker.Select(maker.Ident(data.getPluralName()), builderType.toName("put"));
-				JCExpression arg1 = maker.Apply(jceBlank, chainDots(builderType, "this", data.getPluralName() + "$key", "get"), List.<JCExpression>of(maker.Ident(ivar)));
-				JCExpression arg2 = maker.Apply(jceBlank, chainDots(builderType, "this", data.getPluralName() + "$value", "get"), List.<JCExpression>of(maker.Ident(ivar)));
+				JCExpression arg1 = maker.Apply(jceBlank, chainDots(builderType, builderVariable, data.getPluralName() + "$key", "get"), List.<JCExpression>of(maker.Ident(ivar)));
+				JCExpression arg2 = maker.Apply(jceBlank, chainDots(builderType, builderVariable, data.getPluralName() + "$value", "get"), List.<JCExpression>of(maker.Ident(ivar)));
 				// [jdk9] We add an unneccessary (V) cast here. Not doing so gives an error in javac (build 9-ea+156-jigsaw-nightly-h6072-20170212):
 				//   error: method put in interface Map<K#2,V#2> cannot be applied to given types;
 				arg2 = maker.TypeCast(createTypeArgs(2, false, builderType, data.getTypeArgs(), source).get(1), arg2);
 				JCStatement putStatement = maker.Exec(maker.Apply(jceBlank, pluralnameDotPut, List.of(arg1, arg2)));
 				JCStatement forInit = maker.VarDef(maker.Modifiers(0), ivar, maker.TypeIdent(CTC_INT), maker.Literal(CTC_INT, 0));
-				JCExpression checkExpr = maker.Binary(CTC_LESS_THAN, maker.Ident(ivar), getSize(maker, builderType, keyVarName, nullGuard, true));
+				JCExpression checkExpr = maker.Binary(CTC_LESS_THAN, maker.Ident(ivar), getSize(maker, builderType, keyVarName, nullGuard, true, builderVariable));
 				JCExpression incrementExpr = maker.Unary(CTC_POSTINC, maker.Ident(ivar));
 				fillStat = maker.ForLoop(List.of(forInit), checkExpr, List.of(maker.Exec(incrementExpr)), putStatement);
 			} else {

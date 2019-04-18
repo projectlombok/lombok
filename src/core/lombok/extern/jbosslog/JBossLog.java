@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Project Lombok Authors.
+ * Copyright (C) 2016-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
 /**
  * Causes lombok to generate a logger field.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/Log.html">the project lombok features page for lombok log annotations</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/Log">the project lombok features page for lombok log annotations</a>.
  * <p>
  * Example:
  * <pre>
@@ -46,22 +46,20 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * 
- * This annotation is valid for classes and enumerations.<br />
- * @see org.jboss.logging.Logger org.jboss.logging.Logger
- * @see org.jboss.logging.Logger#getLogger(java.lang.Class) org.jboss.logging.Logger.getLogger(Class target)
+ * This annotation is valid for classes and enumerations.<br>
+ * @see <a href="https://docs.jboss.org/jbosslogging/latest/org/jboss/logging/Logger.html">org.jboss.logging.Logger</a>
+ * @see <a href="https://docs.jboss.org/jbosslogging/latest/org/jboss/logging/Logger.html#getLogger(java.lang.Class)">org.jboss.logging.Logger#getLogger(java.lang.Class)</a>
  * @see lombok.extern.apachecommons.CommonsLog &#64;CommonsLog
  * @see lombok.extern.java.Log &#64;Log
  * @see lombok.extern.log4j.Log4j &#64;Log4j
  * @see lombok.extern.log4j.Log4j2 &#64;Log4j2
+ * @see lombok.extern.slf4j.Slf4j &#64;Slf4j
  * @see lombok.extern.slf4j.XSlf4j &#64;XSlf4j
- * @see lombok.extern.jbosslog.JBossLog &#64;JBossLog
+ * @see lombok.extern.flogger.Flogger &#64;Flogger
  *  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface JBossLog {
-	
-	/**
-	 * Sets the category of the constructed Logger. By default, it will use the type where the annotation is placed.
-	 */
+	/** @return The category of the constructed Logger. By default, it will use the type where the annotation is placed. */
 	String topic() default "";
 }

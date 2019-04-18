@@ -25,12 +25,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 
 class Main {
-	static ClassLoader createShadowClassLoader() {
-		return new ShadowClassLoader(Main.class.getClassLoader(), "lombok", null, Arrays.<String>asList(), Arrays.asList("lombok.patcher.Symbols"));
+	private static ShadowClassLoader classLoader;
+	
+	static synchronized ClassLoader getShadowClassLoader() {
+		if (classLoader == null) {
+			classLoader = new ShadowClassLoader(Main.class.getClassLoader(), "lombok", null, Arrays.<String>asList(), Arrays.asList("lombok.patcher.Symbols"));
+		}
+		return classLoader;
 	}
 	
 	public static void main(String[] args) throws Throwable {
-		ClassLoader cl = createShadowClassLoader();
+		ClassLoader cl = getShadowClassLoader();
 		Class<?> mc = cl.loadClass("lombok.core.Main");
 		try {
 			mc.getMethod("main", String[].class).invoke(null, new Object[] {args});

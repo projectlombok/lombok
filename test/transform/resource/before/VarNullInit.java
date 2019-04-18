@@ -1,5 +1,5 @@
-//CONF: lombok.var.flagUsage = ALLOW
-import lombok.experimental.var;
+//version :9
+import lombok.var;
 
 public class VarNullInit {
 	void method() {

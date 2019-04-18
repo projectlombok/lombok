@@ -1,0 +1,5 @@
+java_import(
+    name = "jar",
+    jars = ["lombok.jar"],
+    visibility = ["//visibility:public"]
+)

@@ -1,0 +1,25 @@
+<#import "_setup.html" as s>
+
+<@s.scaffold title="JavaC">
+	<@s.introduction>
+		<p>
+			Just put lombok on the classpath when compiling with any javac (version 1.6 - 1.8): <code>javac -cp lombok.jar ....</code>
+		</p>
+	</@s.introduction>
+
+	<@s.section title="JDK 9">
+		<p>
+			Support for JDK9, if you haven't modularized your own projects yet (no <code>module-info.java</code> yet), is included in lombok starting with version 1.16.20. Just use lombok as normal: <code> javac -cp lombok.jar ...</code>
+		</p><p>
+			Support for JDK9 if you did modularize your own projects (you've written a <code>module-info.java</code> file) is available in the <a href="/download-edge">edge release</a>. To use it: <code>javac -cp lombok.jar -p lombok.jar ...</code><br />
+			Note that you will have to add lombok to your <code>module-info.java</code> file:<pre>
+module <em>myapp</em> {
+	requires static lombok;
+}</pre>
+		</p><p>
+			The 'static' part ensures that you won't need lombok to be present at runtime.
+		</p><p>
+			Feedback about JDK9 module-info support can be given at <a href="https://github.com/rzwitserloot/lombok/issues/985">github issue #985</a>.
+		</p>
+	</@s.section>
+</@s.scaffold>

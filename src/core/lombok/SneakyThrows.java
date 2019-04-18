@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2013 The Project Lombok Authors.
+ * Copyright (C) 2009-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
  * checked exception types. The JVM does not check for the consistency of the checked exception system; javac does,
  * and this annotation lets you opt out of its mechanism.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/SneakyThrows.html">the project lombok features page for &#64;SneakyThrows</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/SneakyThrows">the project lombok features page for &#64;SneakyThrows</a>.
  * <p>
  * Example:
  * <pre>
@@ -59,8 +59,9 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
 @Retention(RetentionPolicy.SOURCE)
 public @interface SneakyThrows {
-	/** The exception type(s) you want to sneakily throw onward. */
+	/** @return The exception type(s) you want to sneakily throw onward. */
 	Class<? extends Throwable>[] value() default java.lang.Throwable.class;
 	
-	//The package is mentioned in java.lang due to a bug in javac (presence of an annotation processor throws off the type resolver for some reason).
+	//The fully qualified name is used for java.lang.Throwable in the parameter only. This works around a bug in javac:
+	//   presence of an annotation processor throws off the type resolver for some reason.
 }

@@ -1,0 +1,95 @@
+<#import "../../_scaffold.html" as main>
+<#import "../_features.html" as f>
+
+<@main.scaffold title="Experimental">
+	<div class="page-header top5">
+		<div class="row text-center">
+			<@main.h1 title="Lombok experimental features" />
+		</div>
+		<div class="row">
+			The <a href="/api/">Lombok javadoc</a> is available, but we advise these pages.
+			
+			<p>
+				Experimental features are available in your normal lombok installation, but are not as robustly supported as lombok's main features. In particular, experimental features:
+				<ul>
+					<li>
+						Are not tested as well as the core features.
+					</li><li>
+						Do not get bugs fixed as quickly as core features.
+					</li><li>
+						May have APIs that will change, possibly drastically if we find a different, better way to solve the same problem.
+					</li><li>
+						May disappear entirely if the feature is too difficult to support or doesn't bust enough boilerplate.
+					</li>
+				</ul>
+			</p><p>
+				Features that receive positive community feedback and which seem to produce clean, flexible code will eventually become accepted as a core feature and move out of the experimental package.
+			</p>
+		</div>
+		<div class="row">
+			<@main.feature title="var" href="var">
+				Modifiable local variables with a type inferred by assigning value.
+			</@main.feature>
+
+			<@main.feature title="@Accessors" href="Accessors">
+				A more fluent API for getters and setters.
+			</@main.feature>
+
+			<@main.feature title="@ExtensionMethod" href="ExtensionMethod">
+				Annoying API? Fix it yourself: Add new methods to existing types!
+			</@main.feature>
+
+			<@main.feature title="@FieldDefaults" href="FieldDefaults">
+				New default field modifiers for the 21st century.
+			</@main.feature>
+
+			<@main.feature title="@Delegate" href="Delegate">
+				Don't lose your composition.
+			</@main.feature>
+
+			<@main.feature title="@Wither" href="Wither">
+				Immutable 'setters' - methods that create a clone but with one changed field.
+			</@main.feature>
+
+			<@main.feature title="onMethod= / onConstructor= / onParam=" href="onX">
+				Sup dawg, we heard you like annotations, so we put annotations in your annotations so you can annotate while you're annotating.
+			</@main.feature>
+
+			<@main.feature title="@UtilityClass" href="UtilityClass">
+				Utility, metility, wetility! Utility classes for the masses.
+			</@main.feature>
+
+			<@main.feature title="@Helper" href="Helper">
+				With a little help from my friends... Helper methods for java.
+			</@main.feature>
+
+			<@main.feature title="@FieldNameConstants" href="FieldNameConstants">
+				Name... that... field! String constants for your field's names.
+			</@main.feature>
+
+			<@main.feature title="@SuperBuilder" href="SuperBuilder">
+				Bob now knows his ancestors: Builders with fields from superclasses, too.
+			</@main.feature>
+		</div>
+
+		<@f.confKeys>
+			<dt>
+				<code>lombok.experimental.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
+			</dt><dd>
+				Lombok will flag any usage of any of the features listed here as a warning or error if configured.
+			</dd>
+		</@f.confKeys>
+
+		<div class="row">
+			<h3 class="text-center">Putting the "Ex" in "Experimental": promoted or deleted experimental features.</h3>
+			<div class="row">
+				<@main.feature title="@Value: promoted" href="/features/Value">
+					<code>@Value</code> has proven its value and has been moved to the main package.
+				</@main.feature>
+				<@main.feature title="@Builder: promoted" href="/features/Builder">
+					<code>@Builder</code> is a solid base to build APIs on, and has been moved to the main package.
+				</@main.feature>
+			</div>
+		</div>
+	</div>
+</@main.scaffold>

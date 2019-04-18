@@ -33,6 +33,7 @@ import java.util.List;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.agent.PatchExtensionMethod.Extension;
 import lombok.experimental.ExtensionMethod;
+import lombok.permit.Permit;
 
 import org.eclipse.jdt.core.CompletionProposal;
 import org.eclipse.jdt.internal.codeassist.InternalCompletionContext;
@@ -77,7 +78,7 @@ public class PatchExtensionMethodCompletionProposal {
 				}
 			}
 		}
-		return proposals.toArray(new IJavaCompletionProposal[proposals.size()]);
+		return proposals.toArray(new IJavaCompletionProposal[0]);
 	}
 	
 	
@@ -220,7 +221,7 @@ public class PatchExtensionMethodCompletionProposal {
 				return null;
 			}
 		}
-
+		
 		private static Method accessMethod(Class<?> clazz, String methodName, Class<?> parameter) {
 			try {
 				return makeAccessible(clazz.getDeclaredMethod(methodName, parameter));
@@ -228,10 +229,9 @@ public class PatchExtensionMethodCompletionProposal {
 				return null;
 			}
 		}
-
+		
 		private static <T extends AccessibleObject> T makeAccessible(T object) {
-			object.setAccessible(true);
-			return object;
+			return Permit.setAccessible(object);
 		}
 	}
 }

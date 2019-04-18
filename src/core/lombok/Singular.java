@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 The Project Lombok Authors.
+ * Copyright (C) 2015-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,10 @@ import java.lang.annotation.Target;
 
 /**
  * The singular annotation is used together with {@code @Builder} to create single element 'add' methods in the builder for collections.
- * <p>
  */
 @Target({FIELD, PARAMETER})
 @Retention(SOURCE)
 public @interface Singular {
+	/** @return The singular name of this field. If it's a normal english plural, lombok will figure it out automatically. Otherwise, this parameter is mandatory. */
 	String value() default "";
 }

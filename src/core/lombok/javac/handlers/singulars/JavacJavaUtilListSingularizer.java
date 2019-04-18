@@ -46,12 +46,7 @@ public class JavacJavaUtilListSingularizer extends JavacJavaUtilListSetSingulari
 		return LombokImmutableList.of("java.util.List", "java.util.Collection", "java.lang.Iterable");
 	}
 	
-	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName) {
-		if (useGuavaInstead(builderType)) {
-			guavaListSetSingularizer.appendBuildCode(data, builderType, source, statements, targetVariableName);
-			return;
-		}
-		
+	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		List<JCExpression> jceBlank = List.nil();
 		ListBuffer<JCCase> cases = new ListBuffer<JCCase>();
@@ -71,7 +66,7 @@ public class JavacJavaUtilListSingularizer extends JavacJavaUtilListSetSingulari
 			JCStatement assignStat; {
 				// pluralName = java.util.Collections.singletonList(this.pluralName.get(0));
 				JCExpression zeroLiteral = maker.Literal(CTC_INT, 0);
-				JCExpression arg = maker.Apply(jceBlank, chainDots(builderType, "this", data.getPluralName().toString(), "get"), List.of(zeroLiteral));
+				JCExpression arg = maker.Apply(jceBlank, chainDots(builderType, builderVariable, data.getPluralName().toString(), "get"), List.of(zeroLiteral));
 				List<JCExpression> args = List.of(arg);
 				JCExpression invoke = maker.Apply(jceBlank, chainDots(builderType, "java", "util", "Collections", "singletonList"), args);
 				assignStat = maker.Exec(maker.Assign(maker.Ident(data.getPluralName()), invoke));
@@ -82,12 +77,12 @@ public class JavacJavaUtilListSingularizer extends JavacJavaUtilListSetSingulari
 		}
 		
 		/* default: Create with right size, then addAll */ {
-			List<JCStatement> defStats = createListCopy(maker, data, builderType, source);
+			List<JCStatement> defStats = createListCopy(maker, data, builderType, source, builderVariable);
 			JCCase defaultCase = maker.Case(null, defStats);
 			cases.append(defaultCase);
 		}
 		
-		JCStatement switchStat = maker.Switch(getSize(maker,  builderType, data.getPluralName(), true, false), cases.toList());
+		JCStatement switchStat = maker.Switch(getSize(maker,  builderType, data.getPluralName(), true, false, builderVariable), cases.toList());
 		JCExpression localShadowerType = chainDotsString(builderType, data.getTargetFqn());
 		localShadowerType = addTypeArgs(1, false, builderType, localShadowerType, data.getTypeArgs(), source);
 		JCStatement varDefStat = maker.VarDef(maker.Modifiers(0), data.getPluralName(), localShadowerType, null);
@@ -95,9 +90,9 @@ public class JavacJavaUtilListSingularizer extends JavacJavaUtilListSetSingulari
 		statements.append(switchStat);
 	}
 	
-	private List<JCStatement> createListCopy(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
+	private List<JCStatement> createListCopy(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source, String builderVariable) {
 		List<JCExpression> jceBlank = List.nil();
-		Name thisName = builderType.toName("this");
+		Name thisName = builderType.toName(builderVariable);
 		
 		JCExpression argToUnmodifiable; {
 			 // new java.util.ArrayList<Generics>(this.pluralName);

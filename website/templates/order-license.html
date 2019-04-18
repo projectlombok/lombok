@@ -1,0 +1,151 @@
+<#import "/_scaffold.html" as main>
+
+<@main.scaffold load=["/js/order-license.js"] title="Order a license">
+	<div class="page-header top5 order-license">
+		<div class="row text-center">
+			<h2>Order a professional or enterprise license</h2>
+		</div>
+		<div class="row">
+			<form>
+				<fieldset class="form-group">
+					<legend>Basic information</legend>
+					<div class="form-group">
+						<label for="companyName">Company name</label>
+						<input type="text" class="form-control" aria-describedby="companyNameHelp" id="companyName" placeholder="license holder name" />
+						<div id="companyNameErr" class="formErr" hidden="hidden">Company name is a required field.</div>
+						<small id="companyNameHelp" class="form-text text-muted">If applying for an individual license, fill in your own name.</small>
+					</div>
+					<div class="form-group">
+						<label for="email">Email</label>
+						<input type="email" class="form-control" aria-describedby="emailHelp" id="email" placeholder="email of contact / holder" />
+						<div id="emailErr" class="formErr" hidden="hidden">Your email address is required; we will send the bill to this email address.</div>
+						<small id="emailHelp" class="form-text text-muted">We will never share this email with any third parties; we'll email you the invoice at this email address.</small>
+					</div>
+				</fieldset>
+				<fieldset class="form-group">
+					<legend>Type of license</legend>
+					<div class="form-group">
+						<div class="form-check">
+							<label class="form-check-label">
+								<input type="radio" class="form-check-input licenseType" name="licenseType" value="professional" checked="checked" />
+								Professional (€2,- per developer per month; ~ $2.50).
+							</label>
+						</div>
+						<div class="form-check">
+							<label class="form-check-label">
+								<input type="radio" class="form-check-input licenseType" name="licenseType" value="enterprise" />
+								Enterprise (€5,- per developer per month; ~ $6.10).
+							</label>
+						</div>
+					</div>
+					<div id="licenseTypeErr" class="formErr" hidden="hidden">License type is a required field.</div>
+					<div class="form-group">
+						<label for="seats"># of developers using lombok</label>
+						<input type="number" placeholder="# of developers" class="form-control" id="seats" />
+						<div id="seatsErr" class="formErr" hidden="hidden">We need to know the # of developers to determine the license price.</div>
+					</div>
+				</fieldset>
+				<fieldset class="form-group">
+					<legend>Payment</legend>
+					<div class="form-check">
+						<label class="form-check-label">
+							<input type="radio" class="form-check-input paymentType" name="paymentType" value="yearly" checked="checked" />
+							Yearly
+						</label>
+					</div>
+					<div class="form-check">
+						<label class="form-check-label">
+							<input type="radio" class="form-check-input paymentType" name="paymentType" value="monthly" />
+							Monthly<span id="onlyYearlyWarning" hidden="hidden" class="warning">The total license cost is sufficiently low that we'll bill you yearly.</span>
+						</label>
+					</div>
+					<div id="paymentTypeErr" class="formErr" hidden="hidden">Payment type is a required field.</div>
+					<div class="form-group" hidden="hidden" id="costIndicator">
+					</div>
+				</fieldset>
+				<fieldset class="form-group">
+					<legend>Mention</legend>
+					<div class="form-check">
+						<label class="form-check-label">
+							<input type="checkbox" class="form-check-input" id="mentionMe" name="mentionMe" checked="checked" />
+							Mention me on the <em>supporters / licensees</em> page.
+						</label>
+					</div>
+					<div class="form-group">
+						<label for="companyUrl">Company URL (optional)</label>
+						<input type="url" class="form-control" id="companyUrl" placeholder="URL of your company website" />
+					</div>
+					<div class="form-group">
+						<label for="logo">Company Logo (optional)</label>
+						<input type="file" style="display: none;" id="logo" name="logo" />
+						<button class="form-control" id="companyLogo">Upload a logo</button>
+						<div id="logoCnt" style="display: none;"></div>
+						<button class="form-control" id="deleteCompanyLogo" style="display: none;">Remove logo</button>
+					</div>
+				</fieldset>
+				<fieldset class="form-group">
+					<legend>Location and VAT</legend>
+					<div class="form-group">
+						<div class="form-check">
+							<label class="form-check-label">
+								<input type="radio" class="form-check-input locationType" name="locationType" value="eu" checked="checked" />
+								We are based in Europe
+							</label>
+						</div>
+						<div class="form-check">
+							<label class="form-check-label">
+								<input type="radio" class="form-check-input locationType" name="locationType" value="usa" />
+								We are based in the USA
+							</label>
+						</div>
+						<div class="form-check">
+							<label class="form-check-label">
+								<input type="radio" class="form-check-input locationType" name="locationType" value="other" />
+								We are based elsewhere
+							</label>
+						</div>
+						<div id="locationTypeErr" class="formErr" hidden="hidden">Location (continent) is a required field.</div>
+					</div>
+					<div class="form-group" id="locationType_eu">
+						<label for="euVat">EU VAT number</label>
+						<input type="text" class="form-control" id="euVat" placeholder="EU VAT number" />
+						<div id="euVatErr" class="formErr" hidden="hidden">EU VAT is a required field. If you are an individual and you have no EU VAT number, consider giving us a <a href="https://www.patreon.com/lombok">patreon</a> donation.</div>
+					</div>
+					<div class="form-group" hidden="hidden" id="locationType_usa">
+						Please <a href="/W8BEN_lombok.pdf">download our W-8BEN form</a> for your tax records.
+					</div>
+					<div class="form-group" hidden="hidden" id="locationType_other">
+						Please make sure you fulfill any local tax obligations for buying software from other countries.
+					</div>
+				</fieldset>
+				<fieldset class="form-group">
+					<legend>Payment method</legend>
+					<div class="form-group">
+						<div class="form-check" id="paymentMethod_iban">
+							<label class="form-check-label">
+								<input type="radio" class="form-check-input" name="paymentMethod" value="iban" checked="checked" />
+								Pay via IBAN (european bank transfer)
+							</label>
+						</div>
+						<div class="form-check" hidden="hidden" id="paymentMethod_intl">
+							<label class="form-check-label">
+								<input type="radio" class="form-check-input" name="paymentMethod" value="intl" />
+								Pay via international bank transfer (not suggested for bills less than €500,-)
+							</label>
+						</div>
+						<div class="form-check">
+							<label class="form-check-label" id="paymentMethod_stripe">
+								<input type="radio" class="form-check-input" name="paymentMethod" value="stripe" />
+								Pay with Stripe (Credit Cards)
+							</label>
+						</div>
+						<div id="paymentMethodErr" class="formErr" hidden="hidden">Payment method is a required field.</div>
+					</div>
+				</fieldset>
+				<button type="submit" id="submit" class="btn btn-primary">Submit order</button>
+				<div id="orderHelp">If you run into issues with the order form, or you have any other questions, please send us an email at <a href="mailto:orders@projectlombok.org"><code>orders@projectlombok.org</code></a>. You can cancel your subscription at any time.</div>
+				<div class="orderDetails">Our EU VAT number: NL858105378B01</div>
+			</p>
+		</div>
+	</div>
+</@main.scaffold>

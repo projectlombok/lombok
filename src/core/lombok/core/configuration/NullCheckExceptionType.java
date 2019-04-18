@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The Project Lombok Authors.
+ * Copyright (C) 2014-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,27 +22,27 @@
 package lombok.core.configuration;
 
 
-@ExampleValueString("[NullPointerException | IllegalArgumentException]")
+@ExampleValueString("[NullPointerException | IllegalArgumentException | Assertion]")
 public enum NullCheckExceptionType {
 	ILLEGAL_ARGUMENT_EXCEPTION {
-		public String toExceptionMessage(String fieldName) {
-			return fieldName + " is null";
-		}
-		
 		@Override public String getExceptionType() {
 			return "java.lang.IllegalArgumentException";
 		}
 	},
 	NULL_POINTER_EXCEPTION {
-		@Override public String toExceptionMessage(String fieldName) {
-			return fieldName;
-		}
-		
-		public String getExceptionType() {
+		@Override public String getExceptionType() {
 			return "java.lang.NullPointerException";
+		}
+	},
+	ASSERTION {
+		@Override public String getExceptionType() {
+			return null;
 		}
 	};
 	
-	public abstract String toExceptionMessage(String fieldName);
+	public String toExceptionMessage(String fieldName) {
+		return fieldName + " is marked non-null but is null";
+	}
+	
 	public abstract String getExceptionType();
 }

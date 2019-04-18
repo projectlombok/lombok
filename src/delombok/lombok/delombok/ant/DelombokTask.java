@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2015 The Project Lombok Authors.
+ * Copyright (C) 2009-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
-
-import lombok.Lombok;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Location;
@@ -78,6 +76,7 @@ class Tasks {
 		private File fromDir, toDir;
 		private Path classpath;
 		private Path sourcepath;
+		private Path modulepath;
 		private boolean verbose;
 		private String encoding;
 		private Path path;
@@ -92,9 +91,7 @@ class Tasks {
 		}
 		
 		public Path createClasspath() {
-			if (classpath == null) {
-				classpath = new Path(getProject());
-			}
+			if (classpath == null) classpath = new Path(getProject());
 			return classpath.createPath();
 		}
 		
@@ -111,14 +108,29 @@ class Tasks {
 		}
 		
 		public Path createSourcepath() {
-			if (sourcepath == null) {
-				sourcepath = new Path(getProject());
-			}
+			if (sourcepath == null) sourcepath = new Path(getProject());
 			return sourcepath.createPath();
 		}
 		
 		public void setSourcepathRef(Reference r) {
 			createSourcepath().setRefid(r);
+		}
+		
+		public void setModulepath(Path modulepath) {
+			if (this.modulepath == null) {
+				this.modulepath = modulepath;
+			} else {
+				this.modulepath.append(modulepath);
+			}
+		}
+		
+		public Path createModulepath() {
+			if (modulepath == null) modulepath = new Path(getProject());
+			return modulepath.createPath();
+		}
+		
+		public void setModulepathRef(Reference r) {
+			createModulepath().setRefid(r);
 		}
 		
 		public void setFrom(File dir) {
@@ -162,7 +174,7 @@ class Tasks {
 					} catch (ClassNotFoundException e) {
 						// If we get here, it isn't, and we should use the shadowloader.
 						Class<?> launcherMain = Class.forName("lombok.launch.Main");
-						Method m = launcherMain.getDeclaredMethod("createShadowClassLoader");
+						Method m = launcherMain.getDeclaredMethod("getShadowClassLoader");
 						m.setAccessible(true);
 						shadowLoader = (ClassLoader) m.invoke(null);
 					}
@@ -170,7 +182,8 @@ class Tasks {
 				
 				return Class.forName(name, true, shadowLoader);
 			} catch (Exception e) {
-				throw Lombok.sneakyThrow(e);
+				if (e instanceof RuntimeException) throw (RuntimeException) e;
+				throw new RuntimeException(e);
 			}
 		}
 		
@@ -180,11 +193,10 @@ class Tasks {
 			
 			try {
 				Object instance = shadowLoadClass("lombok.delombok.ant.DelombokTaskImpl").newInstance();
-				for(Field selfField : getClass().getDeclaredFields()) {
+				for (Field selfField : getClass().getDeclaredFields()) {
 					if (selfField.isSynthetic() || Modifier.isStatic(selfField.getModifiers())) continue;
 					Field otherField = instance.getClass().getDeclaredField(selfField.getName());
 					otherField.setAccessible(true);
-					selfField.setAccessible(true);
 					if (selfField.getName().equals("formatOptions")) {
 						List<String> rep = new ArrayList<String>();
 						for (Format f : formatOptions) {
@@ -198,12 +210,12 @@ class Tasks {
 				}
 				
 				Method m = instance.getClass().getMethod("execute", Location.class);
-				m.setAccessible(true);
 				m.invoke(instance, loc);
-			} catch (InvocationTargetException e) {
-				throw Lombok.sneakyThrow(e.getCause());
 			} catch (Exception e) {
-				throw Lombok.sneakyThrow(e);
+				Throwable t = (e instanceof InvocationTargetException) ? ((InvocationTargetException) e).getCause() : e;
+				if (t instanceof Error) throw (Error) t;
+				if (t instanceof RuntimeException) throw (RuntimeException) t;
+				throw new RuntimeException(t);
 			}
 		}
 	}

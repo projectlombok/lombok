@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2015 The Project Lombok Authors.
+ * Copyright (C) 2010-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  * Generates a no-args constructor.
  * Will generate an error message if such a constructor cannot be written due to the existence of final fields.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/Constructor.html">the project lombok features page for &#64;Constructor</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/Constructor">the project lombok features page for &#64;Constructor</a>.
  * <p>
  * Even though it is not listed, this annotation also has the {@code onConstructor} parameter. See the full documentation for more details.
  * <p>
@@ -47,27 +47,35 @@ public @interface NoArgsConstructor {
 	 * is generated with the same argument list that wraps the real constructor.
 	 * 
 	 * Such a static 'constructor' is primarily useful as it infers type arguments.
+	 * 
+	 * @return Name of static 'constructor' method to generate (blank = generate a normal constructor).
 	 */
 	String staticName() default "";
 	
 	/**
 	 * Any annotations listed here are put on the generated constructor.
-	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br />
-	 * up to JDK7:<br />
-	 *  {@code @NoArgsConstructor(onConstructor=@__({@AnnotationsGoHere}))}<br />
-	 * from JDK8:<br />
+	 * The syntax for this feature depends on JDK version (nothing we can do about that; it's to work around javac bugs).<br>
+	 * up to JDK7:<br>
+	 *  {@code @NoArgsConstructor(onConstructor=@__({@AnnotationsGoHere}))}<br>
+	 * from JDK8:<br>
 	 *  {@code @NoArgsConstructor(onConstructor_={@AnnotationsGohere})} // note the underscore after {@code onConstructor}.
+	 * 
+	 * @return List of annotations to apply to the generated constructor.
 	 */
 	AnyAnnotation[] onConstructor() default {};
 	
 	/**
 	 * Sets the access level of the constructor. By default, generated constructors are {@code public}.
+	 * 
+	 * @return The constructor will be generated with this access modifier.
 	 */
 	AccessLevel access() default lombok.AccessLevel.PUBLIC;
 	
 	/**
 	 * If {@code true}, initializes all final fields to 0 / null / false.
 	 * Otherwise, a compile time error occurs.
+	 * 
+	 * @return Return {@code} true to force generation of a no-args constructor, picking defaults if necessary to assign required fields.
 	 */
 	boolean force() default false;
 	

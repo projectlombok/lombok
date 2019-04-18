@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2017 The Project Lombok Authors.
+ * Copyright (C) 2013-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,8 +33,12 @@ import java.lang.annotation.Target;
  * <p>
  * If a member is annotated, it must be either a constructor or a method. If a class is annotated,
  * then a private constructor is generated with all fields as arguments
- * (as if {@code @AllArgsConstructor(AccessLevel.PRIVATE)} is present
+ * (as if {@code @AllArgsConstructor(access = AccessLevel.PRIVATE)} is present
  * on the class), and it is as if this constructor has been annotated with {@code @Builder} instead.
+ * Note that this constructor is only generated if you haven't written any constructors and also haven't
+ * added any explicit {@code @XArgsConstructor} annotations. In those cases, lombok will assume an all-args
+ * constructor is present and generate code that uses it; this means you'd get a compiler error if this
+ * constructor is not present.
  * <p>
  * The effect of {@code @Builder} is that an inner class is generated named <code><strong>T</strong>Builder</code>,
  * with a private constructor. Instances of <code><strong>T</strong>Builder</code> are made with the
@@ -48,15 +52,15 @@ import java.lang.annotation.Target;
  * as the relevant class, unless a method has been annotated, in which case it'll be equal to the
  * return type of that method.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/experimental/Builder.html">the project lombok features page for &#64;Builder</a>.
- * <p>
+ * Complete documentation is found at <a href="https://projectlombok.org/features/Builder">the project lombok features page for &#64;Builder</a>.
+ * <br>
  * <p>
  * Before:
  * 
  * <pre>
  * &#064;Builder
- * class Example {
- * 	private int foo;
+ * class Example&lt;T&gt; {
+ * 	private T foo;
  * 	private final String bar;
  * }
  * </pre>
@@ -103,6 +107,8 @@ import java.lang.annotation.Target;
  * 	}
  * }
  * </pre>
+ * 
+ * @see Singular
  */
 @Target({TYPE, METHOD, CONSTRUCTOR})
 @Retention(SOURCE)
@@ -114,10 +120,10 @@ public @interface Builder {
 	@Retention(SOURCE)
 	public @interface Default {}
 
-	/** Name of the method that creates a new builder instance. Default: {@code builder}. */
+	/** @return Name of the method that creates a new builder instance. Default: {@code builder}. If the empty string, suppress generating the {@code builder} method. */
 	String builderMethodName() default "builder";
 	
-	/** Name of the method in the builder class that creates an instance of your {@code @Builder}-annotated class. */
+	/** @return Name of the method in the builder class that creates an instance of your {@code @Builder}-annotated class. */
 	String buildMethodName() default "build";
 	
 	/**
@@ -126,6 +132,8 @@ public @interface Builder {
 	 * Default for {@code @Builder} on types and constructors: {@code (TypeName)Builder}.
 	 * <p>
 	 * Default for {@code @Builder} on methods: {@code (ReturnTypeName)Builder}.
+	 * 
+	 * @return Name of the builder class that will be generated (or if it already exists, will be filled with builder elements).
 	 */
 	String builderClassName() default "";
 	
@@ -133,6 +141,8 @@ public @interface Builder {
 	 * If true, generate an instance method to obtain a builder that is initialized with the values of this instance.
 	 * Legal only if {@code @Builder} is used on a constructor, on the type itself, or on a static method that returns
 	 * an instance of the declaring type.
+	 * 
+	 * @return Whether to generate a {@code toBuilder()} method.
 	 */
 	boolean toBuilder() default false;
 	
@@ -149,13 +159,19 @@ public @interface Builder {
 	@Target({FIELD, PARAMETER})
 	@Retention(SOURCE)
 	public @interface ObtainVia {
-		/** Tells lombok to obtain a value with the expression {@code this.value}. */
+		/**
+		 * @return Tells lombok to obtain a value with the expression {@code this.value}.
+		 */
 		String field() default "";
 		
-		/** Tells lombok to obtain a value with the expression {@code this.method()}. */
+		/**
+		 * @return Tells lombok to obtain a value with the expression {@code this.method()}.
+		 */
 		String method() default "";
 		
-		/** Tells lombok to obtain a value with the expression {@code SelfType.method(this)}; requires {@code method} to be set. */
+		/**
+		 * @return Tells lombok to obtain a value with the expression {@code SelfType.method(this)}; requires {@code method} to be set.
+		 */
 		boolean isStatic() default false;
 	}
 }

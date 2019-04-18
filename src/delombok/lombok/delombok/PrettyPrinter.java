@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2016 The Project Lombok Authors.
+ * Copyright (C) 2016-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,6 +92,8 @@ import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
 
 import lombok.javac.CommentInfo;
+import lombok.javac.PackageName;
+import lombok.permit.Permit;
 import lombok.javac.CommentInfo.EndConnection;
 import lombok.javac.CommentInfo.StartConnection;
 import lombok.javac.JavacTreeMaker.TreeTag;
@@ -256,6 +258,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 				JCMethodInvocation inv = (JCMethodInvocation) expr;
 				if (!inv.typeargs.isEmpty() || !inv.args.isEmpty()) return false;
 				if (!(inv.meth instanceof JCIdent)) return false;
+				if (tree.pos != expr.pos) return false; // Explicit super call
 				return ((JCIdent) inv.meth).name.toString().equals("super");
 			}
 		}
@@ -375,6 +378,9 @@ public class PrettyPrinter extends JCTree.Visitor {
 	private int dims(JCExpression vartype) {
 		if (vartype instanceof JCArrayTypeTree) {
 			return 1 + dims(((JCArrayTypeTree) vartype).elemtype);
+		} else if (isJcAnnotatedType(vartype)) {
+			JCTree underlyingType = readObject(vartype, "underlyingType", (JCTree) null);
+			if (underlyingType instanceof JCArrayTypeTree) return 1 + dims (((JCArrayTypeTree) underlyingType).elemtype);
 		}
 		
 		return 0;
@@ -457,11 +463,12 @@ public class PrettyPrinter extends JCTree.Visitor {
 	
 	@Override public void visitTopLevel(JCCompilationUnit tree) {
 		printDocComment(tree);
-		if (tree.pid != null) {
+		JCTree n = PackageName.getPackageNode(tree);
+		if (n != null) {
 			consumeComments(tree);
 			aPrint("package ");
-			print(tree.pid);
-			println(";", tree.pid);
+			print(n);
+			println(";", n);
 		}
 		
 		boolean first = true;
@@ -621,13 +628,33 @@ public class PrettyPrinter extends JCTree.Visitor {
 		printVarDef0(tree);
 	}
 	
+	private boolean innermostArrayBracketsAreVarargs = false;
 	private void printVarDef0(JCVariableDecl tree) {
 		boolean varargs = (tree.mods.flags & VARARGS) != 0;
-		if (varargs && tree.vartype instanceof JCArrayTypeTree) {
-			print(((JCArrayTypeTree) tree.vartype).elemtype);
-			print("...");
-		} else {
-			print(tree.vartype);
+		
+		/* story time!
+		 
+		 in 'new int[5][6];', the 5 is the outermost and the 6 is the innermost: That means: 5 int arrays, each capable of containing 6 elements.
+		 But that's actually a crazy way to read it; you'd think that in FOO[], you should interpret that as 'an array of FOO', but that's not correct;
+		 if FOO is for example 'int[]', it's: "Modify the component type of FOO to be an array of whatever it was before.. unless FOO isn't an array, in which case,
+		 this is an array of FOO". Which is weird.
+		 
+		 This is particularly poignant with vargs. In: "int[]... x", the ... are actually the _INNER_ type even though varargs by definition is a modification of
+		 how to interpret the outer. The JLS just sort of lets that be: To indicate varargs, replace the lexically last [] with dots even though that's the wrong
+		 [] to modify!
+		 
+		 This becomes an utter shambles when annotations-on-arrays become involved. The annotation on the INNER most type is to be placed right before the ...;
+		 and because of that, we have to do crazy stuff with this innermostArrayBracketsAreVarargs flag.
+		 */
+		try {
+			innermostArrayBracketsAreVarargs = varargs;
+			if (tree.vartype == null || tree.vartype.pos == -1) {
+				print("var");
+			} else {
+				print(tree.vartype);
+			}
+		} finally {
+			innermostArrayBracketsAreVarargs = false;
 		}
 		print(" ");
 		print(tree.name);
@@ -771,10 +798,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 	}
 	
 	@Override public void visitTypeArray(JCArrayTypeTree tree) {
-		JCTree elem = tree.elemtype;
-		while (elem instanceof JCWildcard) elem = ((JCWildcard) elem).inner;
-		print(elem);
-		print("[]");
+		printTypeArray0(tree);
 	}
 	
 	@Override public void visitNewArray(JCNewArray tree) {
@@ -811,6 +835,11 @@ public class PrettyPrinter extends JCTree.Visitor {
 			print(tree.encl);
 			print(".");
 		}
+		boolean moveFirstParameter = tree.args.nonEmpty() && tree.args.head instanceof JCUnary && tree.args.head.toString().startsWith("<*nullchk*>");
+		if (moveFirstParameter) {
+			print(((JCUnary) tree.args.head).arg);
+			print(".");
+		}
 		
 		print("new ");
 		if (!tree.typeargs.isEmpty()) {
@@ -820,7 +849,11 @@ public class PrettyPrinter extends JCTree.Visitor {
 		}
 		print(tree.clazz);
 		print("(");
-		print(tree.args, ", ");
+		if (moveFirstParameter) {
+			print(tree.args.tail, ", ");
+		} else {
+			print(tree.args, ", ");
+		}
 		print(")");
 		if (tree.def != null) {
 			Name previousTypeName = currentTypeName;
@@ -1239,9 +1272,14 @@ public class PrettyPrinter extends JCTree.Visitor {
 			break;
 		case 1:
 			print("(");
-			JCVariableDecl decl = (JCVariableDecl) resources.get(0);
-			flagMod = -1L & ~FINAL;
-			printVarDefInline(decl);
+			JCTree resource = (JCTree) resources.get(0);
+			if (resource instanceof JCVariableDecl) {
+				JCVariableDecl decl = (JCVariableDecl) resource;
+				flagMod = -1L & ~FINAL;
+				printVarDefInline(decl);
+			} else {
+				print(resource);
+			}
 			print(") ");
 			break;
 		default:
@@ -1250,8 +1288,12 @@ public class PrettyPrinter extends JCTree.Visitor {
 			int c = 0;
 			for (Object i : resources) {
 				align();
-				flagMod = -1L & ~FINAL;
-				printVarDefInline((JCVariableDecl) i);
+				if (i instanceof JCVariableDecl) {
+					flagMod = -1L & ~FINAL;
+					printVarDefInline((JCVariableDecl) i);
+				} else {
+					print((JCTree) i);
+				}
 				if (++c == len) {
 					print(") ");
 				} else {
@@ -1324,7 +1366,6 @@ public class PrettyPrinter extends JCTree.Visitor {
 	
 	static {
 		getExtendsClause = getMethod(JCClassDecl.class, "getExtendsClause", new Class<?>[0]);
-		getExtendsClause.setAccessible(true);
 		
 		if (getJavaCompilerVersion() < 8) {
 			getEndPosition = getMethod(DiagnosticPosition.class, "getEndPosition", java.util.Map.class);
@@ -1339,11 +1380,11 @@ public class PrettyPrinter extends JCTree.Visitor {
 				throw sneakyThrow(ex);
 			}
 			try {
-				storeEndMethodTemp = endPosTable.getMethod("storeEnd", JCTree.class, int.class);
+				storeEndMethodTemp = Permit.getMethod(endPosTable, "storeEnd", JCTree.class, int.class);
 			} catch (NoSuchMethodException e) {
 				try {
 					endPosTable = Class.forName("com.sun.tools.javac.parser.JavacParser$AbstractEndPosTable");
-					storeEndMethodTemp = endPosTable.getDeclaredMethod("storeEnd", JCTree.class, int.class);
+					storeEndMethodTemp = Permit.getMethod(endPosTable, "storeEnd", JCTree.class, int.class);
 				} catch (NoSuchMethodException ex) {
 					throw sneakyThrow(ex);
 				} catch (ClassNotFoundException ex) {
@@ -1352,13 +1393,13 @@ public class PrettyPrinter extends JCTree.Visitor {
 			}
 			storeEnd = storeEndMethodTemp;
 		}
-		getEndPosition.setAccessible(true);
-		storeEnd.setAccessible(true);
+		Permit.setAccessible(getEndPosition);
+		Permit.setAccessible(storeEnd);
 	}
 	
 	private static Method getMethod(Class<?> clazz, String name, Class<?>... paramTypes) {
 		try {
-			return clazz.getMethod(name, paramTypes);
+			return Permit.getMethod(clazz, name, paramTypes);
 		} catch (NoSuchMethodException e) {
 			throw sneakyThrow(e);
 		}
@@ -1368,7 +1409,7 @@ public class PrettyPrinter extends JCTree.Visitor {
 		try {
 			Class<?>[] c = new Class[paramTypes.length];
 			for (int i = 0; i < paramTypes.length; i++) c[i] = Class.forName(paramTypes[i]);
-			return clazz.getMethod(name, c);
+			return Permit.getMethod(clazz, name, c);
 		} catch (NoSuchMethodException e) {
 			throw sneakyThrow(e);
 		} catch (ClassNotFoundException e) {
@@ -1407,11 +1448,10 @@ public class PrettyPrinter extends JCTree.Visitor {
 		Field f = c.get(fieldName);
 		if (f == null) {
 			try {
-				f = tClass.getDeclaredField(fieldName);
+				f = Permit.getField(tClass, fieldName);
 			} catch (Exception e) {
 				return defaultValue;
 			}
-			f.setAccessible(true);
 			c.put(fieldName, f);
 		}
 		
@@ -1431,22 +1471,34 @@ public class PrettyPrinter extends JCTree.Visitor {
 		if ("JCTypeUnion".equals(simpleName)) {
 			List<JCExpression> types = readObject(tree, "alternatives", List.<JCExpression>nil());
 			print(types, " | ");
-			return;
 		} else if ("JCTypeIntersection".equals(simpleName)) {
 			print(readObject(tree, "bounds", List.<JCExpression>nil()), " & ");
-			return;
 		} else if ("JCMemberReference".equals(simpleName)) {
 			printMemberReference0(tree);
-			return;
 		} else if ("JCLambda".equals(simpleName)) {
 			printLambda0(tree);
-			return;
 		} else if ("JCAnnotatedType".equals(simpleName)) {
 			printAnnotatedType0(tree);
-			return;
+		} else if ("JCPackageDecl".equals(simpleName)) {
+			// Starting with JDK9, this is inside the import list, but we've already printed it. Just ignore it.
+		} else {
+			throw new AssertionError("Unhandled tree type: " + tree.getClass() + ": " + tree);
 		}
-		
-		throw new AssertionError("Unhandled tree type: " + tree.getClass() + ": " + tree);
+	}
+	
+	private boolean jcAnnotatedTypeInit = false;
+	private Class<?> jcAnnotatedTypeClass = null;
+	
+	private boolean isJcAnnotatedType(Object o) {
+		if (o == null) return false;
+		if (jcAnnotatedTypeInit) return jcAnnotatedTypeClass == o.getClass();
+		Class<?> c = o.getClass();
+		if (c.getSimpleName().equals("JCAnnotatedType")) {
+			jcAnnotatedTypeClass = c;
+			jcAnnotatedTypeInit = true;
+			return true;
+		}
+		return false;
 	}
 	
 	private void printMemberReference0(JCTree tree) {
@@ -1507,10 +1559,57 @@ public class PrettyPrinter extends JCTree.Visitor {
 			print(readObject(tree, "annotations", List.<JCExpression>nil()), " ");
 			print(" ");
 			print(((JCFieldAccess) underlyingType).name);
+		} else if (underlyingType instanceof JCArrayTypeTree) {
+			printTypeArray0(tree);
 		} else {
 			print(readObject(tree, "annotations", List.<JCExpression>nil()), " ");
 			print(" ");
 			print(underlyingType);
+		}
+	}
+	
+	private void printTypeArray0(JCTree tree) {
+		JCTree inner = tree;
+		int dimCount = 0;
+		
+		while (true) {
+			if (inner instanceof JCArrayTypeTree) {
+				inner = ((JCArrayTypeTree) inner).elemtype;
+				dimCount++;
+				continue;
+			} else if (isJcAnnotatedType(inner)) {
+				JCTree underlyingType = readObject(inner, "underlyingType", (JCTree) null);
+				if (underlyingType instanceof JCArrayTypeTree) {
+					inner = ((JCArrayTypeTree) underlyingType).elemtype;
+					dimCount++;
+					continue;
+				}
+			}
+			break;
+		}
+		
+		print(inner);
+		
+		inner = tree;
+		while (true) {
+			if (inner instanceof JCArrayTypeTree) {
+				dimCount--;
+				print((dimCount == 0 && innermostArrayBracketsAreVarargs) ? "..." : "[]");
+				inner = ((JCArrayTypeTree) inner).elemtype;
+				continue;
+			} else if (isJcAnnotatedType(inner)) {
+				JCTree underlyingType = readObject(inner, "underlyingType", (JCTree) null);
+				if (underlyingType instanceof JCArrayTypeTree) {
+					dimCount--;
+					print(" ");
+					print(readObject(inner, "annotations", List.<JCExpression>nil()), " ");
+					print(" ");
+					print((dimCount == 0 && innermostArrayBracketsAreVarargs) ? "..." : "[]");
+					inner = ((JCArrayTypeTree) underlyingType).elemtype;
+					continue;
+				}
+			}
+			break;
 		}
 	}
 }

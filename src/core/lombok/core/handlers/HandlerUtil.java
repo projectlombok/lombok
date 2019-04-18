@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2017 The Project Lombok Authors.
+ * Copyright (C) 2013-2018 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import lombok.AllArgsConstructor;
 import lombok.ConfigurationKeys;
@@ -57,6 +56,10 @@ import lombok.experimental.Wither;
 public class HandlerUtil {
 	private HandlerUtil() {}
 	
+	public enum FieldAccess {
+		GETTER, PREFER_FIELD, ALWAYS_FIELD;
+	}
+	
 	public static int primeForHashcode() {
 		return 59;
 	}
@@ -71,6 +74,232 @@ public class HandlerUtil {
 	
 	public static int primeForNull() {
 		return 43;
+	}
+	
+	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS;
+	static {
+		NONNULL_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+			"android.annotation.NonNull",
+			"android.support.annotation.NonNull",
+			"com.sun.istack.internal.NotNull",
+			"edu.umd.cs.findbugs.annotations.NonNull",
+			"javax.annotation.Nonnull",
+			// "javax.validation.constraints.NotNull", // The field might contain a null value until it is persisted.
+			"lombok.NonNull",
+			"org.checkerframework.checker.nullness.qual.NonNull",
+			"org.eclipse.jdt.annotation.NonNull",
+			"org.eclipse.jgit.annotations.NonNull",
+			"org.jetbrains.annotations.NotNull",
+			"org.jmlspecs.annotation.NonNull",
+			"org.netbeans.api.annotations.common.NonNull",
+			"org.springframework.lang.NonNull"
+		}));
+		BASE_COPYABLE_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+			"android.support.annotation.NonNull",
+			"android.support.annotation.Nullable",
+			"edu.umd.cs.findbugs.annotations.NonNull",
+			"edu.umd.cs.findbugs.annotations.Nullable",
+			"edu.umd.cs.findbugs.annotations.UnknownNullness",
+			"javax.annotation.CheckForNull",
+			"javax.annotation.Nonnull",
+			"javax.annotation.Nullable",
+			"lombok.NonNull",
+			// To update Checker Framework annotations, run:
+			// grep --recursive --files-with-matches -e '^@Target\b.*TYPE_USE' $CHECKERFRAMEWORK/checker/src/main/java  $CHECKERFRAMEWORK/framework/src/main/java | grep '\.java$' | sed 's/.*\/java\//\t\t\t"/' | sed 's/\.java$/",/' | sed 's/\//./g' | sort
+			"org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey",
+			"org.checkerframework.checker.compilermsgs.qual.CompilerMessageKeyBottom",
+			"org.checkerframework.checker.compilermsgs.qual.UnknownCompilerMessageKey",
+			"org.checkerframework.checker.fenum.qual.AwtAlphaCompositingRule",
+			"org.checkerframework.checker.fenum.qual.AwtColorSpace",
+			"org.checkerframework.checker.fenum.qual.AwtCursorType",
+			"org.checkerframework.checker.fenum.qual.AwtFlowLayout",
+			"org.checkerframework.checker.fenum.qual.Fenum",
+			"org.checkerframework.checker.fenum.qual.FenumBottom",
+			"org.checkerframework.checker.fenum.qual.FenumTop",
+			"org.checkerframework.checker.fenum.qual.PolyFenum",
+			"org.checkerframework.checker.fenum.qual.SwingBoxOrientation",
+			"org.checkerframework.checker.fenum.qual.SwingCompassDirection",
+			"org.checkerframework.checker.fenum.qual.SwingElementOrientation",
+			"org.checkerframework.checker.fenum.qual.SwingHorizontalOrientation",
+			"org.checkerframework.checker.fenum.qual.SwingSplitPaneOrientation",
+			"org.checkerframework.checker.fenum.qual.SwingTextOrientation",
+			"org.checkerframework.checker.fenum.qual.SwingTitleJustification",
+			"org.checkerframework.checker.fenum.qual.SwingTitlePosition",
+			"org.checkerframework.checker.fenum.qual.SwingVerticalOrientation",
+			"org.checkerframework.checker.formatter.qual.Format",
+			"org.checkerframework.checker.formatter.qual.FormatBottom",
+			"org.checkerframework.checker.formatter.qual.InvalidFormat",
+			"org.checkerframework.checker.guieffect.qual.AlwaysSafe",
+			"org.checkerframework.checker.guieffect.qual.PolyUI",
+			"org.checkerframework.checker.guieffect.qual.UI",
+			"org.checkerframework.checker.i18nformatter.qual.I18nFormat",
+			"org.checkerframework.checker.i18nformatter.qual.I18nFormatBottom",
+			"org.checkerframework.checker.i18nformatter.qual.I18nFormatFor",
+			"org.checkerframework.checker.i18nformatter.qual.I18nInvalidFormat",
+			"org.checkerframework.checker.i18nformatter.qual.I18nUnknownFormat",
+			"org.checkerframework.checker.i18n.qual.LocalizableKey",
+			"org.checkerframework.checker.i18n.qual.LocalizableKeyBottom",
+			"org.checkerframework.checker.i18n.qual.Localized",
+			"org.checkerframework.checker.i18n.qual.UnknownLocalizableKey",
+			"org.checkerframework.checker.i18n.qual.UnknownLocalized",
+			"org.checkerframework.checker.index.qual.GTENegativeOne",
+			"org.checkerframework.checker.index.qual.IndexFor",
+			"org.checkerframework.checker.index.qual.IndexOrHigh",
+			"org.checkerframework.checker.index.qual.IndexOrLow",
+			"org.checkerframework.checker.index.qual.LengthOf",
+			"org.checkerframework.checker.index.qual.LessThan",
+			"org.checkerframework.checker.index.qual.LessThanBottom",
+			"org.checkerframework.checker.index.qual.LessThanUnknown",
+			"org.checkerframework.checker.index.qual.LowerBoundBottom",
+			"org.checkerframework.checker.index.qual.LowerBoundUnknown",
+			"org.checkerframework.checker.index.qual.LTEqLengthOf",
+			"org.checkerframework.checker.index.qual.LTLengthOf",
+			"org.checkerframework.checker.index.qual.LTOMLengthOf",
+			"org.checkerframework.checker.index.qual.NegativeIndexFor",
+			"org.checkerframework.checker.index.qual.NonNegative",
+			"org.checkerframework.checker.index.qual.PolyIndex",
+			"org.checkerframework.checker.index.qual.PolyLength",
+			"org.checkerframework.checker.index.qual.PolyLowerBound",
+			"org.checkerframework.checker.index.qual.PolySameLen",
+			"org.checkerframework.checker.index.qual.PolyUpperBound",
+			"org.checkerframework.checker.index.qual.Positive",
+			"org.checkerframework.checker.index.qual.SameLen",
+			"org.checkerframework.checker.index.qual.SameLenBottom",
+			"org.checkerframework.checker.index.qual.SameLenUnknown",
+			"org.checkerframework.checker.index.qual.SearchIndexBottom",
+			"org.checkerframework.checker.index.qual.SearchIndexFor",
+			"org.checkerframework.checker.index.qual.SearchIndexUnknown",
+			"org.checkerframework.checker.index.qual.SubstringIndexBottom",
+			"org.checkerframework.checker.index.qual.SubstringIndexFor",
+			"org.checkerframework.checker.index.qual.SubstringIndexUnknown",
+			"org.checkerframework.checker.index.qual.UpperBoundBottom",
+			"org.checkerframework.checker.index.qual.UpperBoundUnknown",
+			"org.checkerframework.checker.initialization.qual.FBCBottom",
+			"org.checkerframework.checker.initialization.qual.Initialized",
+			"org.checkerframework.checker.initialization.qual.UnderInitialization",
+			"org.checkerframework.checker.initialization.qual.UnknownInitialization",
+			"org.checkerframework.checker.interning.qual.Interned",
+			"org.checkerframework.checker.interning.qual.InternedDistinct",
+			"org.checkerframework.checker.interning.qual.PolyInterned",
+			"org.checkerframework.checker.interning.qual.UnknownInterned",
+			"org.checkerframework.checker.lock.qual.GuardedBy",
+			"org.checkerframework.checker.lock.qual.GuardedByBottom",
+			"org.checkerframework.checker.lock.qual.GuardedByUnknown",
+			"org.checkerframework.checker.lock.qual.GuardSatisfied",
+			"org.checkerframework.checker.nullness.qual.KeyFor",
+			"org.checkerframework.checker.nullness.qual.KeyForBottom",
+			"org.checkerframework.checker.nullness.qual.MonotonicNonNull",
+			"org.checkerframework.checker.nullness.qual.NonNull",
+			"org.checkerframework.checker.nullness.qual.NonRaw",
+			"org.checkerframework.checker.nullness.qual.Nullable",
+			"org.checkerframework.checker.nullness.qual.PolyKeyFor",
+			"org.checkerframework.checker.nullness.qual.PolyNull",
+			"org.checkerframework.checker.nullness.qual.PolyRaw",
+			"org.checkerframework.checker.nullness.qual.Raw",
+			"org.checkerframework.checker.nullness.qual.UnknownKeyFor",
+			"org.checkerframework.checker.optional.qual.MaybePresent",
+			"org.checkerframework.checker.optional.qual.PolyPresent",
+			"org.checkerframework.checker.optional.qual.Present",
+			"org.checkerframework.checker.propkey.qual.PropertyKey",
+			"org.checkerframework.checker.propkey.qual.PropertyKeyBottom",
+			"org.checkerframework.checker.propkey.qual.UnknownPropertyKey",
+			"org.checkerframework.checker.regex.qual.PolyRegex",
+			"org.checkerframework.checker.regex.qual.Regex",
+			"org.checkerframework.checker.regex.qual.RegexBottom",
+			"org.checkerframework.checker.regex.qual.UnknownRegex",
+			"org.checkerframework.checker.signature.qual.BinaryName",
+			"org.checkerframework.checker.signature.qual.BinaryNameInUnnamedPackage",
+			"org.checkerframework.checker.signature.qual.ClassGetName",
+			"org.checkerframework.checker.signature.qual.ClassGetSimpleName",
+			"org.checkerframework.checker.signature.qual.DotSeparatedIdentifiers",
+			"org.checkerframework.checker.signature.qual.FieldDescriptor",
+			"org.checkerframework.checker.signature.qual.FieldDescriptorForPrimitive",
+			"org.checkerframework.checker.signature.qual.FieldDescriptorForPrimitiveOrArrayInUnnamedPackage",
+			"org.checkerframework.checker.signature.qual.FullyQualifiedName",
+			"org.checkerframework.checker.signature.qual.Identifier",
+			"org.checkerframework.checker.signature.qual.IdentifierOrArray",
+			"org.checkerframework.checker.signature.qual.InternalForm",
+			"org.checkerframework.checker.signature.qual.MethodDescriptor",
+			"org.checkerframework.checker.signature.qual.PolySignature",
+			"org.checkerframework.checker.signature.qual.SignatureBottom",
+			"org.checkerframework.checker.signedness.qual.Constant",
+			"org.checkerframework.checker.signedness.qual.PolySignedness",
+			"org.checkerframework.checker.signedness.qual.Signed",
+			"org.checkerframework.checker.signedness.qual.SignednessBottom",
+			"org.checkerframework.checker.signedness.qual.UnknownSignedness",
+			"org.checkerframework.checker.signedness.qual.Unsigned",
+			"org.checkerframework.checker.tainting.qual.PolyTainted",
+			"org.checkerframework.checker.tainting.qual.Tainted",
+			"org.checkerframework.checker.tainting.qual.Untainted",
+			"org.checkerframework.checker.units.qual.A",
+			"org.checkerframework.checker.units.qual.Acceleration",
+			"org.checkerframework.checker.units.qual.Angle",
+			"org.checkerframework.checker.units.qual.Area",
+			"org.checkerframework.checker.units.qual.C",
+			"org.checkerframework.checker.units.qual.cd",
+			"org.checkerframework.checker.units.qual.Current",
+			"org.checkerframework.checker.units.qual.degrees",
+			"org.checkerframework.checker.units.qual.g",
+			"org.checkerframework.checker.units.qual.h",
+			"org.checkerframework.checker.units.qual.K",
+			"org.checkerframework.checker.units.qual.kg",
+			"org.checkerframework.checker.units.qual.km",
+			"org.checkerframework.checker.units.qual.km2",
+			"org.checkerframework.checker.units.qual.kmPERh",
+			"org.checkerframework.checker.units.qual.Length",
+			"org.checkerframework.checker.units.qual.Luminance",
+			"org.checkerframework.checker.units.qual.m",
+			"org.checkerframework.checker.units.qual.m2",
+			"org.checkerframework.checker.units.qual.Mass",
+			"org.checkerframework.checker.units.qual.min",
+			"org.checkerframework.checker.units.qual.mm",
+			"org.checkerframework.checker.units.qual.mm2",
+			"org.checkerframework.checker.units.qual.mol",
+			"org.checkerframework.checker.units.qual.mPERs",
+			"org.checkerframework.checker.units.qual.mPERs2",
+			"org.checkerframework.checker.units.qual.PolyUnit",
+			"org.checkerframework.checker.units.qual.radians",
+			"org.checkerframework.checker.units.qual.s",
+			"org.checkerframework.checker.units.qual.Speed",
+			"org.checkerframework.checker.units.qual.Substance",
+			"org.checkerframework.checker.units.qual.Temperature",
+			"org.checkerframework.checker.units.qual.Time",
+			"org.checkerframework.checker.units.qual.UnitsBottom",
+			"org.checkerframework.checker.units.qual.UnknownUnits",
+			"org.checkerframework.common.aliasing.qual.LeakedToResult",
+			"org.checkerframework.common.aliasing.qual.MaybeAliased",
+			"org.checkerframework.common.aliasing.qual.NonLeaked",
+			"org.checkerframework.common.aliasing.qual.Unique",
+			"org.checkerframework.common.reflection.qual.ClassBound",
+			"org.checkerframework.common.reflection.qual.ClassVal",
+			"org.checkerframework.common.reflection.qual.ClassValBottom",
+			"org.checkerframework.common.reflection.qual.MethodVal",
+			"org.checkerframework.common.reflection.qual.MethodValBottom",
+			"org.checkerframework.common.reflection.qual.UnknownClass",
+			"org.checkerframework.common.reflection.qual.UnknownMethod",
+			"org.checkerframework.common.subtyping.qual.Bottom",
+			"org.checkerframework.common.util.report.qual.ReportUnqualified",
+			"org.checkerframework.common.value.qual.ArrayLen",
+			"org.checkerframework.common.value.qual.ArrayLenRange",
+			"org.checkerframework.common.value.qual.BoolVal",
+			"org.checkerframework.common.value.qual.BottomVal",
+			"org.checkerframework.common.value.qual.DoubleVal",
+			"org.checkerframework.common.value.qual.IntRange",
+			"org.checkerframework.common.value.qual.IntVal",
+			"org.checkerframework.common.value.qual.MinLen",
+			"org.checkerframework.common.value.qual.PolyValue",
+			"org.checkerframework.common.value.qual.StringVal",
+			"org.checkerframework.common.value.qual.UnknownVal",
+			"org.checkerframework.framework.qual.PolyAll",
+			"org.checkerframework.framework.util.PurityUnqualified",
+			
+			"org.eclipse.jdt.annotation.NonNull",
+			"org.eclipse.jdt.annotation.Nullable",
+			"org.jetbrains.annotations.NotNull",
+			"org.jetbrains.annotations.Nullable",
+			"org.springframework.lang.NonNull",
+			"org.springframework.lang.Nullable"
+		}));
 	}
 	
 	/** Checks if the given name is a valid identifier.
@@ -113,7 +342,7 @@ public class HandlerUtil {
 	public static boolean shouldAddGenerated(LombokNode<?, ?, ?> node) {
 		Boolean add = node.getAst().readConfiguration(ConfigurationKeys.ADD_JAVAX_GENERATED_ANNOTATIONS);
 		if (add != null) return add;
-		return !Boolean.FALSE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_GENERATED_ANNOTATIONS));
+		return Boolean.TRUE.equals(node.getAst().readConfiguration(ConfigurationKeys.ADD_GENERATED_ANNOTATIONS));
 	}
 	
 	public static void handleExperimentalFlagUsage(LombokNode<?, ?, ?> node, ConfigurationKey<FlagUsageType> key, String featureName) {
@@ -143,7 +372,7 @@ public class HandlerUtil {
 		if (fut != null) {
 			String msg = "Use of " + featureName + " is flagged according to lombok configuration.";
 			if (fut == FlagUsageType.WARNING) node.addWarning(msg);
-			else node.addError(msg);
+			else if (fut == FlagUsageType.ERROR) node.addError(msg);
 		}
 	}
 	
@@ -171,11 +400,12 @@ public class HandlerUtil {
 	}
 	
 	@SuppressWarnings({"all", "unchecked", "deprecation"})
-	public static final List<Class<? extends java.lang.annotation.Annotation>> INVALID_ON_BUILDERS = Collections.unmodifiableList(
-			Arrays.<Class<? extends java.lang.annotation.Annotation>>asList(
-			Getter.class, Setter.class, Wither.class, ToString.class, EqualsAndHashCode.class, 
-			RequiredArgsConstructor.class, AllArgsConstructor.class, NoArgsConstructor.class, 
-			Data.class, Value.class, lombok.experimental.Value.class, FieldDefaults.class));
+	public static final List<String> INVALID_ON_BUILDERS = Collections.unmodifiableList(
+			Arrays.<String>asList(
+			Getter.class.getName(), Setter.class.getName(), Wither.class.getName(),
+			ToString.class.getName(), EqualsAndHashCode.class.getName(), 
+			RequiredArgsConstructor.class.getName(), AllArgsConstructor.class.getName(), NoArgsConstructor.class.getName(), 
+			Data.class.getName(), Value.class.getName(), "lombok.experimental.Value", FieldDefaults.class.getName()));
 	
 	/**
 	 * Given the name of a field, return the 'base name' of that field. For example, {@code fFoobar} becomes {@code foobar} if {@code f} is in the prefix list.
@@ -216,12 +446,6 @@ public class HandlerUtil {
 	        something else, such as 'this field must not be null _when saved to the db_ but its perfectly okay to start out as such, and a no-args
 	        constructor and the implied starts-out-as-null state that goes with it is in fact mandatory' which happens with javax.validation.constraints.NotNull.
 	        Various problems with spring have also been reported. See issue #287, issue #271, and issue #43. */
-	
-	/** Matches the simple part of any annotation that lombok considers as indicative of NonNull status. */
-	public static final Pattern NON_NULL_PATTERN = Pattern.compile("^(?:nonnull)$", Pattern.CASE_INSENSITIVE);
-	
-	/** Matches the simple part of any annotation that lombok considers as indicative of Nullable status. */
-	public static final Pattern NULLABLE_PATTERN = Pattern.compile("^(?:nullable|checkfornull)$", Pattern.CASE_INSENSITIVE);
 	
 	public static final String DEFAULT_EXCEPTION_FOR_NON_NULL = "java.lang.NullPointerException";
 	
@@ -439,5 +663,17 @@ public class HandlerUtil {
 					suffix.subSequence(1, suffix.length()));
 		}
 		return String.format("%s%s", prefix, suffix);
+	}
+	
+	public static String camelCaseToConstant(String fieldName) {
+		if (fieldName == null || fieldName.isEmpty()) return "";
+		StringBuilder b = new StringBuilder();
+		b.append(Character.toUpperCase(fieldName.charAt(0)));
+		for (int i = 1; i < fieldName.length(); i++) {
+			char c = fieldName.charAt(i);
+			if (Character.isUpperCase(c)) b.append('_');
+			b.append(Character.toUpperCase(c));
+		}
+		return b.toString();
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 The Project Lombok Authors.
+ * Copyright (C) 2012-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
  * <p>
  * Equivalent to {@code @Getter @FieldDefaults(makeFinal=true, level=AccessLevel.PRIVATE) @AllArgsConstructor @ToString @EqualsAndHashCode}.
  * <p>
- * Complete documentation is found at <a href="https://projectlombok.org/features/Value.html">the project lombok features page for &#64;Value</a>.
+ * Complete documentation is found at <a href="https://projectlombok.org/features/Value">the project lombok features page for &#64;Value</a>.
  * 
  * @see lombok.Getter
  * @see lombok.experimental.FieldDefaults
@@ -53,6 +53,8 @@ public @interface Value {
 	 * </pre>
 	 * 
 	 * Default: No static constructor, instead the normal constructor is public.
+	 * 
+	 * @return Name of static 'constructor' method to generate (blank = generate a normal constructor).
 	 */
 	String staticConstructor() default "";
 }

@@ -1,0 +1,1 @@
+6 'var' is not allowed in old-style for loops if there is more than 1 initializer

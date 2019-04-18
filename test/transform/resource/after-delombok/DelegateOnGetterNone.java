@@ -5,12 +5,10 @@ class DelegateOnGetterNone {
 		int getInt();
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public void setList(final java.util.ArrayList<java.lang.String> list) {
 		this.bar.setList(list);
 	}
 	@java.lang.SuppressWarnings("all")
-	@javax.annotation.Generated("lombok")
 	public int getInt() {
 		return this.bar.getInt();
 	}

@@ -24,6 +24,7 @@ package lombok.delombok;
 import lombok.javac.Javac;
 import lombok.javac.Javac6BasedLombokOptions;
 import lombok.javac.Javac8BasedLombokOptions;
+import lombok.javac.Javac9BasedLombokOptions;
 import lombok.javac.LombokOptions;
 
 import com.sun.tools.javac.util.Context;
@@ -41,9 +42,15 @@ public class LombokOptionsFactory {
 			@Override LombokOptions createAndRegisterOptions(Context context) {
 				return Javac8BasedLombokOptions.replaceWithDelombokOptions(context);
 			}
+		},
+		
+		JDK9 {
+			@Override LombokOptions createAndRegisterOptions(Context context) {
+				return Javac9BasedLombokOptions.replaceWithDelombokOptions(context);
+			}
 		};
 		
-		abstract LombokOptions createAndRegisterOptions(Context context); 
+		abstract LombokOptions createAndRegisterOptions(Context context);
 	}
 	
 	public static LombokOptions getDelombokOptions(Context context) {
@@ -53,8 +60,10 @@ public class LombokOptionsFactory {
 		LombokOptions options;
 		if (Javac.getJavaCompilerVersion() < 8) {
 			options = LombokOptionCompilerVersion.JDK7_AND_LOWER.createAndRegisterOptions(context);
-		} else {
+		} else if (Javac.getJavaCompilerVersion() == 8) {
 			options = LombokOptionCompilerVersion.JDK8.createAndRegisterOptions(context);
+		} else {
+			options = LombokOptionCompilerVersion.JDK9.createAndRegisterOptions(context);
 		}
 		return options;
 	}

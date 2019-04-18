@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2014 The Project Lombok Authors.
+ * Copyright (C) 2009-2017 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,6 @@
  * to the official feature documentation.
  * 
  * @see lombok
- * @see <a href="https://projectlombok.org/features/experimental/index.html">Lombok features (experimental)</a>
+ * @see <a href="https://projectlombok.org/features/experimental/all">Lombok features (experimental)</a>
  */
 package lombok.experimental;
