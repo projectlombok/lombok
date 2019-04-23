@@ -143,6 +143,7 @@ public class HandleHelper extends JavacAnnotationHandler<Helper> {
 			mark = true;
 			JCExpression init = maker.NewClass(null, List.<JCExpression>nil(), maker.Ident(annotatedType_.name), List.<JCExpression>nil(), null);
 			JCExpression varType = maker.Ident(annotatedType_.name);
+			varType.pos = annotatedType_.pos;
 			JCVariableDecl decl = maker.VarDef(maker.Modifiers(Flags.FINAL), helperName, varType, init);
 			newStatements.append(decl);
 		}

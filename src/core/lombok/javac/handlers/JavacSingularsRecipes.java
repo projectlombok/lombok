@@ -26,6 +26,7 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCTypeParameter;
+import com.sun.tools.javac.tree.JCTree.JCTypeApply;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -350,8 +351,9 @@ public class JavacSingularsRecipes {
 		protected JCExpression addTypeArgs(int count, boolean addExtends, JavacNode node, JCExpression type, List<JCExpression> typeArgs, JCTree source) {
 			JavacTreeMaker maker = node.getTreeMaker();
 			List<JCExpression> clonedAndFixedTypeArgs = createTypeArgs(count, addExtends, node, typeArgs, source);
-			
-			return maker.TypeApply(type, clonedAndFixedTypeArgs);
+			JCTypeApply result = maker.TypeApply(type, clonedAndFixedTypeArgs);
+			result.pos = source.pos;
+			return result;
 		}
 		
 		protected List<JCExpression> createTypeArgs(int count, boolean addExtends, JavacNode node, List<JCExpression> typeArgs, JCTree source) {
