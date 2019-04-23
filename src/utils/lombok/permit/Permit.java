@@ -46,8 +46,7 @@ public class Permit {
 		Throwable ex;
 		
 		try {
-			f = AccessibleObject.class.getDeclaredField("override");
-			g = UNSAFE.objectFieldOffset(f);
+			g = getOverrideFieldOffset();
 			ex = null;
 		} catch (Throwable t) {
 			f = null;
@@ -72,6 +71,30 @@ public class Permit {
 		}
 		
 		return accessor;
+	}
+	
+	private static long getOverrideFieldOffset() throws Throwable {
+		Field f = null;
+		Throwable saved = null;
+		try {
+			f = AccessibleObject.class.getDeclaredField("override");
+		} catch (Throwable t) {
+			saved = t;
+		}
+		
+		if (f != null) {
+			return UNSAFE.objectFieldOffset(f);
+		}
+		// The below seems very risky, but for all AccessibleObjects in java today it does work, and starting with JDK12, making the field accessible is no longer possible.
+		try {
+			return UNSAFE.objectFieldOffset(Fake.class.getDeclaredField("override"));
+		} catch (Throwable t) {
+			throw saved;
+		}
+	}
+	
+	static class Fake {
+		boolean override;
 	}
 	
 	public static Method getMethod(Class<?> c, String mName, Class<?>... parameterTypes) throws NoSuchMethodException {
