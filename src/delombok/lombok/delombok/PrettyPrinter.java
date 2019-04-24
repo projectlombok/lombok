@@ -1046,9 +1046,17 @@ public class PrettyPrinter extends JCTree.Visitor {
 	
 	@Override public void visitBreak(JCBreak tree) {
 		aPrint("break");
-		if (tree.label != null) {
+		
+		JCExpression value = readObject(tree, "value", null); // JDK 12+
+		if (value != null) {
 			print(" ");
-			print(tree.label);
+			print(value);
+		} else {
+			Name label = readObject(tree, "label", null);
+			if (label != null) {
+				print(" ");
+				print(label);
+			}
 		}
 		println(";", tree);
 	}
@@ -1230,16 +1238,41 @@ public class PrettyPrinter extends JCTree.Visitor {
 	}
 	
 	@Override public void visitCase(JCCase tree) {
-		if (tree.pat == null) {
+		// Starting with JDK12, switches allow multiple expressions per case, and can take the form of an expression (preview feature).
+		
+		List<JCExpression> pats = readObject(tree, "pats", null); // JDK 12+
+		if (pats == null) {
+			JCExpression pat = readObject(tree, "pat", null); // JDK -11
+			pats = pat == null ? List.<JCExpression>nil() : List.of(pat);
+		}
+		
+		if (pats.isEmpty()) {
 			aPrint("default");
 		} else {
 			aPrint("case ");
-			print(tree.pat);
+			print(pats, ", ");
 		}
-		println(": ");
-		indent++;
-		print(tree.stats, "");
-		indent--;
+		
+		Enum<?> caseKind = readObject(tree, "caseKind", null); // JDK 12+
+		
+		if (caseKind != null && caseKind.name().equalsIgnoreCase("RULE")) {
+			print(" -> ");
+			if (tree.stats.head instanceof JCBreak) {
+				JCBreak b = (JCBreak) tree.stats.head;
+				print((JCExpression) readObject(b, "value", null));
+				print(";");
+				needsNewLine = true;
+				needsAlign = true;
+			} else {
+				print(tree.stats.head);
+				if (tree.stats.head instanceof JCBlock) needsNewLine = false;
+			}
+		} else {
+			println(": ");
+			indent++;
+			print(tree.stats, "");
+			indent--;
+		}
 	}
 	
 	@Override public void visitCatch(JCCatch tree) {
@@ -1259,8 +1292,24 @@ public class PrettyPrinter extends JCTree.Visitor {
 			print(")");
 		}
 		println(" {");
-		print(tree.cases, "\n");
+		print(tree.cases, "");
 		aPrintln("}", tree);
+	}
+	
+	void printSwitchExpression(JCTree tree) {
+		aPrint("switch ");
+		JCExpression selector = readObject(tree, "selector", null);
+		if (selector instanceof JCParens) {
+			print(selector);
+		} else {
+			print("(");
+			print(selector);
+			print(")");
+		}
+		println(" {");
+		List<JCCase> cases = readObject(tree, "cases", null);
+		print(cases, "");
+		aPrint("}");
 	}
 	
 	@Override public void visitTry(JCTry tree) {
@@ -1481,6 +1530,8 @@ public class PrettyPrinter extends JCTree.Visitor {
 			printAnnotatedType0(tree);
 		} else if ("JCPackageDecl".equals(simpleName)) {
 			// Starting with JDK9, this is inside the import list, but we've already printed it. Just ignore it.
+		} else if ("JCSwitchExpression".equals(simpleName)) { // Introduced as preview feature in JDK12
+			printSwitchExpression(tree);
 		} else {
 			throw new AssertionError("Unhandled tree type: " + tree.getClass() + ": " + tree);
 		}
