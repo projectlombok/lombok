@@ -336,7 +336,7 @@ public class JavacResolution {
 			if (type instanceof ClassType) {
 				List<Type> ifaces = ((ClassType) type).interfaces_field;
 				Type supertype = ((ClassType) type).supertype_field;
-				if (ifaces != null && ifaces.length() == 1) {
+				if (isObject(supertype) && ifaces != null && ifaces.length() > 0) {
 					return typeToJCTree(ifaces.get(0), ast, allowCompound, allowVoid);
 				}
 				if (supertype != null) return typeToJCTree(supertype, ast, allowCompound, allowVoid);
@@ -400,6 +400,10 @@ public class JavacResolution {
 		}
 		
 		return genericsToJCTreeNodes(generics, ast, replacement);
+	}
+	
+	private static boolean isObject(Type supertype) {
+		return supertype.tsym.toString().equals("java.lang.Object");
 	}
 	
 	private static JCExpression genericsToJCTreeNodes(List<Type> generics, JavacAST ast, JCExpression rawTypeNode) throws TypeNotConvertibleException {

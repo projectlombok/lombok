@@ -7,9 +7,9 @@ class ValLambda {
 };
   }
   public void easyIntersectionLambda() {
-    final @lombok.val java.lang.Object foo = (Runnable & java.io.Serializable) () -> {
+    final @lombok.val java.lang.Runnable foo = (Runnable & java.io.Serializable) () -> {
 };
-    final @lombok.val java.lang.Object bar = (java.io.Serializable & Runnable) () -> {
+    final @lombok.val java.io.Serializable bar = (java.io.Serializable & Runnable) () -> {
 };
   }
   public void easyLubLambda() {

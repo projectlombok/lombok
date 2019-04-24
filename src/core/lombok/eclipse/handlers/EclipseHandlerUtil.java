@@ -893,7 +893,12 @@ public class EclipseHandlerUtil {
 			WildcardBinding wildcard = (WildcardBinding) binding;
 			if (wildcard.boundKind == Wildcard.EXTENDS) {
 				if (!allowCompound) {
-					return makeType(wildcard.bound, pos, false);
+					TypeBinding bound = wildcard.bound;
+					boolean isObject = bound.id == TypeIds.T_JavaLangObject;
+					TypeBinding[] otherBounds = wildcard.otherBounds;
+					if (isObject && otherBounds != null && otherBounds.length > 0) {
+						return makeType(otherBounds[0], pos, false);
+					} else return makeType(bound, pos, false);
 				} else {
 					Wildcard out = new Wildcard(Wildcard.EXTENDS);
 					setGeneratedBy(out, pos);
