@@ -263,11 +263,15 @@ public class PatchVal {
 				resolved = null;
 			}
 			if (resolved != null) {
-				try {
-					replacement = makeType(resolved, local.type, false);
-					if (!decomponent) init.resolvedType = replacement.resolveType(scope);
-				} catch (Exception e) {
-					// Some type thing failed.
+				if (resolved.getClass().getSimpleName().startsWith("IntersectionTypeBinding")) {
+					// We intentionally deconstruct these into simply 'Object', because picking an arbitrary type amongst the intersection feels worse.
+				} else {
+					try {
+						replacement = makeType(resolved, local.type, false);
+						if (!decomponent) init.resolvedType = replacement.resolveType(scope);
+					} catch (Exception e) {
+						// Some type thing failed.
+					}
 				}
 			}
 		}
