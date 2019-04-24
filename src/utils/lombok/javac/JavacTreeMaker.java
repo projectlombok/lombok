@@ -441,7 +441,9 @@ public class JavacTreeMaker {
 	//javac versions: 6-8
 	private static final MethodId<JCVariableDecl> VarDef = MethodId("VarDef");
 	public JCVariableDecl VarDef(JCModifiers mods, Name name, JCExpression vartype, JCExpression init) {
-		return invoke(VarDef, mods, name, vartype, init);
+		JCVariableDecl varDef = invoke(VarDef, mods, name, vartype, init);
+		if (varDef.vartype != null && varDef.vartype.pos == -1) varDef.vartype.pos = 0;
+		return varDef;
 	}
 	
 	//javac versions: 8
