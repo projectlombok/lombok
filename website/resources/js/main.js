@@ -94,7 +94,23 @@
 		});
 	}
 	
+	function seekVideo() {
+		var t = window.location.hash;
+		if (!t) return;
+		var s = /^#?(?:(\d\d?):)?(\d\d?):(\d\d?)$/.exec(t);
+		if (!s) return;
+		var videoj = $("#presentationVideo");
+		if (!videoj || videoj.length == 0) return;
+		var video = videoj[0];
+		var h = parseInt(s[1]);
+		if (!h) h = 0;
+		var m = parseInt(s[2]);
+		var s = parseInt(s[3]);
+		video.currentTime = (((h * 60) + m) * 60) + s;
+	}
+	
 	$(ajaxFeaturePages);
 	$(clickToTap);
 	$(clickForVideo);
+	$(seekVideo);
 })($);

@@ -154,10 +154,6 @@ class Tasks {
 			path.add(set);
 		}
 		
-		public Format createFormat() {
-			return new Format();
-		}
-		
 		public void addFormat(Format format) {
 			formatOptions.add(format);
 		}

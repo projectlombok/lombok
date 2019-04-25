@@ -67,3 +67,7 @@ RewriteRule ^features/experimental/index(\.html)?/?$ /features/experimental/all 
 RewriteRule ^features/experimental/${pg?no_esc}$ /features/experimental/${pg?no_esc}.html [L,END]
 RewriteRule ^features/experimental/${pg?no_esc}(\.html)?/?$ /features/experimental/${pg?no_esc} [NC,R=301]
 </#list>
+
+RewriteRule ^presentations/7lessons$ /presentations/7lessons.html [L,END]
+RewriteRule ^presentations/7lessons(\.html)?/?$ /presentations/7lessons [NC,R=301]
+RewriteRule ^presentations/7mistakes(\.html)?/?$ /presentations/7lessons [NC,R=301]

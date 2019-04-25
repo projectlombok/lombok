@@ -441,7 +441,11 @@ public class JavacTreeMaker {
 	//javac versions: 6-8
 	private static final MethodId<JCVariableDecl> VarDef = MethodId("VarDef");
 	public JCVariableDecl VarDef(JCModifiers mods, Name name, JCExpression vartype, JCExpression init) {
-		return invoke(VarDef, mods, name, vartype, init);
+		JCVariableDecl varDef = invoke(VarDef, mods, name, vartype, init);
+		// We use 'position of the type is -1' as indicator in delombok that the original node was written using JDK10's 'var' feature, because javac desugars 'var' to the real type and doesn't leave any markers other than the
+		// node position to indicate that it did so. Unfortunately, that means vardecls we generate look like 'var' to delombok. Adjust the position to avoid this.
+		if (varDef.vartype != null && varDef.vartype.pos == -1) varDef.vartype.pos = 0;
+		return varDef;
 	}
 	
 	//javac versions: 8
