@@ -1,2 +1,2 @@
 4 method nullObject in class SafeCallErrorMethodParameters cannot be applied to given types;
-5 method nullObject2 in class SafeCallErrorMethodParameters cannot be applied to given types;
+5 incompatible types: java.lang.String cannot be converted to int

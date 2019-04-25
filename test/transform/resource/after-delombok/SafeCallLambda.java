@@ -1,6 +1,7 @@
 // version 8:
 class SafeCallLambda {
 	public SafeCallLambda() {
+		super();
 		Runnable r = () -> {
 			int i;
 			{

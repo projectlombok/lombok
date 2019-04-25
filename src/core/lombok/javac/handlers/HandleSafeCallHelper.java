@@ -6,7 +6,6 @@ import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
-import com.sun.tools.javac.code.Symbol.OperatorSymbol;
 import com.sun.tools.javac.code.Symbol.VarSymbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.*;
@@ -15,6 +14,7 @@ import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Name;
+import lombok.Lombok;
 import lombok.core.AST;
 import lombok.core.handlers.SafeCallAbortProcessing;
 import lombok.core.handlers.SafeCallIllegalUsingException;
@@ -55,7 +55,12 @@ public final class HandleSafeCallHelper {
 	
 	private HandleSafeCallHelper() {
 	}
-	
+	private static JCExpression getDefaultValue(
+			JavacTreeMaker maker, TypeKind typeKind, int pos) {
+		JCExpression expression = getDefaultValue(maker, typeKind);
+		expression.pos = pos;
+		return expression;
+	}
 	private static JCExpression getDefaultValue(
 			JavacTreeMaker maker, TypeKind typeKind) {
 		switch (typeKind) {
@@ -148,7 +153,7 @@ public final class HandleSafeCallHelper {
 				falsePartType instanceof CapturedType) {
 			falsePart = newNullLiteral(maker, pos);
 		} else {
-			falsePart = getDefaultValue(maker, falsePartType.getKind());
+			falsePart = getDefaultValue(maker, falsePartType.getKind(), pos);
 		}
 		return falsePart;
 	}
@@ -472,7 +477,11 @@ public final class HandleSafeCallHelper {
 			Type varType;
 			if (varRef.var != null) {
 				Type expectedType = unary.type;
-				if (!expectedType.isPrimitive()) expectedType = getOperatorType(unary.operator, expr);
+
+				if (!expectedType.isPrimitive()) {
+					Symbol operator = getOperator(unary);
+					expectedType = getOperatorType(operator, expr);
+				}
 				varRef = protectIfPrimitive(annotationNode, varRef, templateName, expression.type,
 						expectedType, statements);
 				lastLevel = varRef.level;
@@ -489,6 +498,16 @@ public final class HandleSafeCallHelper {
 		return new VarRef(resultVar, lastLevel);
 	}
 	
+	private static Symbol getOperator(JCTree.JCUnary unary)  {
+		try {
+			return (Symbol) unary.getClass().getField("operator").get(unary);
+		} catch (IllegalAccessException e) {
+			throw Lombok.sneakyThrow(e);
+		} catch (NoSuchFieldException e) {
+			throw Lombok.sneakyThrow(e);
+		}
+	}
+	
 	private static JCExpression newIndentOfSymbolOwner(JavacAST ast, Symbol sym, int pos) {
 		ClassSymbol owner = (ClassSymbol) sym.owner;
 		Name fullname = owner.fullname;
@@ -498,12 +517,12 @@ public final class HandleSafeCallHelper {
 	}
 	
 	private static Type getOperatorType(Symbol operator, JCExpression expr) {
-		if (!(operator instanceof OperatorSymbol)) {
+
+		if (operator == null || !operator.getClass().getSimpleName().equals("OperatorSymbol")) {
 			throw new SafeCallIllegalUsingException(unsupportedUnaryOperatorSymbol(expr, operator), expr);
 		}
-		OperatorSymbol opSym = (OperatorSymbol) operator;
-		
-		Type opSymType = opSym.type;
+
+		Type opSymType = operator.type;
 		if (!(opSymType instanceof MethodType)) {
 			throw new SafeCallIllegalUsingException(unsupportedUnaryOperatorType(expr, opSymType), expr);
 		}
@@ -937,6 +956,7 @@ public final class HandleSafeCallHelper {
 			vartype = removeStartDot(treeMaker, type1);
 		}
 		
+		vartype.pos = expr.pos;
 		JCVariableDecl variableDecl = treeMaker.VarDef(treeMaker.Modifiers(0), name, vartype, expr);
 		variableDecl.pos = expr.pos;
 		return variableDecl;
@@ -1063,7 +1083,7 @@ public final class HandleSafeCallHelper {
 			} else kind = varType.type.getKind();
 			
 			rhs = newIfNullThenConditional(maker, annotationNode.getAst(), rhs, rhs,
-					defaultValue != null ? defaultValue : getDefaultValue(maker, kind));
+					defaultValue != null ? defaultValue : getDefaultValue(maker, kind, rhs.pos));
 			removeOnlyOneStatement = false;
 		} else if (!removeOnlyOneStatement && defaultValue != null) {
 			if (isVarTypePrimitive) {
