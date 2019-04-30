@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2018 The Project Lombok Authors.
+ * Copyright (C) 2015-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import lombok.AccessLevel;
 import lombok.core.GuavaTypeMap;
 import lombok.core.LombokImmutableList;
 import lombok.core.handlers.HandlerUtil;
@@ -99,16 +100,16 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		return Collections.singletonList(injectFieldAndMarkGenerated(builderType, buildField));
 	}
 	
-	@Override public void generateMethods(SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, TypeReferenceMaker returnTypeMaker, StatementMaker returnStatementMaker) {
-		generateSingularMethod(deprecate, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, fluent);
-		generatePluralMethod(deprecate, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, fluent);
-		generateClearMethod(deprecate, returnTypeMaker.make(), returnStatementMaker.make(), data,  builderType);
+	@Override public void generateMethods(SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, TypeReferenceMaker returnTypeMaker, StatementMaker returnStatementMaker, AccessLevel access) {
+		generateSingularMethod(deprecate, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, fluent, access);
+		generatePluralMethod(deprecate, returnTypeMaker.make(), returnStatementMaker.make(), data, builderType, fluent, access);
+		generateClearMethod(deprecate, returnTypeMaker.make(), returnStatementMaker.make(), data,  builderType, access);
 	}
 	
-	void generateClearMethod(boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType) {
+	void generateClearMethod(boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, AccessLevel access) {
 		MethodDeclaration md = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
 		md.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		md.modifiers = ClassFileConstants.AccPublic;
+		md.modifiers = toEclipseModifier(access);
 		
 		FieldReference thisDotField = new FieldReference(data.getPluralName(), 0L);
 		thisDotField.receiver = new ThisReference(0, 0);
@@ -122,7 +123,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		injectMethod(builderType, md);
 	}
 	
-	void generateSingularMethod(boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {
+	void generateSingularMethod(boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent, AccessLevel access) {
 		LombokImmutableList<String> suffixes = getArgumentSuffixes();
 		char[][] names = new char[suffixes.size()][];
 		for (int i = 0; i < suffixes.size(); i++) {
@@ -133,7 +134,7 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		
 		MethodDeclaration md = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
 		md.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		md.modifiers = ClassFileConstants.AccPublic;
+		md.modifiers = toEclipseModifier(access);
 		
 		List<Statement> statements = new ArrayList<Statement>();
 		statements.add(createConstructBuilderVarIfNeeded(data, builderType));
@@ -166,10 +167,10 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 		HandleNonNull.INSTANCE.fix(injectMethod(builderType, md));
 	}
 	
-	void generatePluralMethod(boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent) {
+	void generatePluralMethod(boolean deprecate, TypeReference returnType, Statement returnStatement, SingularData data, EclipseNode builderType, boolean fluent, AccessLevel access) {
 		MethodDeclaration md = new MethodDeclaration(((CompilationUnitDeclaration) builderType.top().get()).compilationResult);
 		md.bits |= ECLIPSE_DO_NOT_TOUCH_FLAG;
-		md.modifiers = ClassFileConstants.AccPublic;
+		md.modifiers = toEclipseModifier(access);
 		
 		List<Statement> statements = new ArrayList<Statement>();
 		statements.add(createConstructBuilderVarIfNeeded(data, builderType));

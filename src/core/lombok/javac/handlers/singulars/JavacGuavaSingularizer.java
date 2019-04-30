@@ -26,6 +26,7 @@ import static lombok.javac.handlers.JavacHandlerUtil.*;
 
 import java.util.Collections;
 
+import lombok.AccessLevel;
 import lombok.core.GuavaTypeMap;
 import lombok.core.LombokImmutableList;
 import lombok.javac.JavacNode;
@@ -66,8 +67,8 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		return Collections.singletonList(injectFieldAndMarkGenerated(builderType, buildField));
 	}
 	
-	@Override public void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, ExpressionMaker returnTypeMaker, StatementMaker returnStatementMaker) {
-		doGenerateMethods(data, deprecate, builderType, source, fluent, returnTypeMaker, returnStatementMaker);
+	@Override public void generateMethods(SingularData data, boolean deprecate, JavacNode builderType, JCTree source, boolean fluent, ExpressionMaker returnTypeMaker, StatementMaker returnStatementMaker, AccessLevel access) {
+		doGenerateMethods(data, deprecate, builderType, source, fluent, returnTypeMaker, returnStatementMaker, access);
 	}
 	
 	@Override
@@ -75,7 +76,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		JCExpression thisDotField = maker.Select(maker.Ident(builderType.toName("this")), data.getPluralName());
 		return maker.Exec(maker.Assign(thisDotField, maker.Literal(CTC_BOT, null)));
 	}
-
+	
 	@Override
 	protected List<JCVariableDecl> generateSingularMethodParameters(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
 		Name[] names = generateSingularMethodParameterNames(data, builderType);
@@ -85,11 +86,11 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		}
 		return params.toList();
 	}
-
+	
 	@Override
 	protected ListBuffer<JCStatement> generateSingularMethodStatements(JavacTreeMaker maker, SingularData data, JavacNode builderType, JCTree source) {
 		Name[] names = generateSingularMethodParameterNames(data, builderType);
-
+		
 		JCExpression thisDotFieldDotAdd = chainDots(builderType, "this", data.getPluralName().toString(), getAddMethodName());
 		ListBuffer<JCExpression> invokeAddExprBuilder = new ListBuffer<JCExpression>();
 		for (Name name : names) {
@@ -98,10 +99,10 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		List<JCExpression> invokeAddExpr = invokeAddExprBuilder.toList();
 		JCExpression invokeAdd = maker.Apply(List.<JCExpression>nil(), thisDotFieldDotAdd, invokeAddExpr);
 		JCStatement st = maker.Exec(invokeAdd);
-
+		
 		return new ListBuffer<JCStatement>().append(st);
 	}
-
+	
 	private Name[] generateSingularMethodParameterNames(SingularData data, JavacNode builderType) {
 		LombokImmutableList<String> suffixes = getArgumentSuffixes();
 		Name[] names = new Name[suffixes.size()];
@@ -112,7 +113,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		}
 		return names;
 	}
-
+	
 	@Override
 	protected JCExpression getPluralMethodParamType(JavacNode builderType) {
 		JCExpression paramType;
@@ -124,7 +125,7 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		}
 		return paramType;
 	}
-
+	
 	@Override public void appendBuildCode(SingularData data, JavacNode builderType, JCTree source, ListBuffer<JCStatement> statements, Name targetVariableName, String builderVariable) {
 		JavacTreeMaker maker = builderType.getTreeMaker();
 		List<JCExpression> jceBlank = List.nil();
@@ -171,9 +172,9 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 	}
 	
 	protected abstract LombokImmutableList<String> getArgumentSuffixes();
-
+	
 	protected abstract String getAddAllTypeName();
-
+	
 	@Override
 	protected int getTypeArgumentsCount() {
 		return getArgumentSuffixes().size();

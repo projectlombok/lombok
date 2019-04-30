@@ -3,6 +3,7 @@ Lombok Changelog
 
 ### v1.18.7 "Edgy Guinea Pig"
 * FEATURE: You can now suppress generation of the `builder` method when using `@Builder`; usually because you're only interested in the `toBuilder` method. As a convenience we won't emit warnings about missing `@Builder.Default` annotations when you do this. [Issue #2046](https://github.com/rzwitserloot/lombok/issues/2046)
+* FEATURE: You can now change the access modifier of generated builder classes. [Issue #2083](https://github.com/rzwitserloot/lombok/issues/2083).
 * FEATURE: When using `@NonNull`, or any other annotation that would result in a null-check, you can configure to generate an assert statement instead. [Issue #2078](https://github.com/rzwitserloot/lombok/issues/2078).
 * PLATFORM: A few lombok features (most notably delombok) failed on JDK12. [Issue #2082](https://github.com/rzwitserloot/lombok/issues/2082)
 * BUGFIX: var/val on methods that return an intersection type would now work in Eclipse. [Issue #1986](https://github.com/rzwitserloot/lombok/issues/1986)
