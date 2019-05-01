@@ -54,6 +54,12 @@ public class JavacJavaUtilMapSingularizer extends JavacJavaUtilSingularizer {
 		return LombokImmutableList.of("java.util.Map", "java.util.SortedMap", "java.util.NavigableMap");
 	}
 	
+	@Override protected String getEmptyMaker(String target) {
+		if (target.endsWith("NavigableMap")) return "java.util.Collections.emptyNavigableMap";
+		if (target.endsWith("SortedMap")) return "java.util.Collections.emptySortedMap";
+		return "java.util.Collections.emptyMap";
+	}
+	
 	@Override protected JavacSingularizer getGuavaInstead(JavacNode node) {
 		return new JavacGuavaMapSingularizer();
 	}

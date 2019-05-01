@@ -437,5 +437,7 @@ public class JavacSingularsRecipes {
 		protected abstract String getAddMethodName();
 		
 		protected abstract int getTypeArgumentsCount();
+		
+		protected abstract String getEmptyMaker(String target);
 	}
 }

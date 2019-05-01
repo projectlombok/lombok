@@ -395,5 +395,8 @@ public class EclipseSingularsRecipes {
 				return new SingleNameReference(builderVariable.toCharArray(), 0);
 			}
 		}
+		
+		protected abstract char[][] getEmptyMakerReceiver(String targetFqn);
+		protected abstract char[] getEmptyMakerSelector(String targetFqn);
 	}
 }

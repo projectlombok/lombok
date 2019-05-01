@@ -63,6 +63,9 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 
 abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
+	protected static final char[] OF = {'o', 'f'};
+	protected static final char[][] CGCC = {{'c', 'o', 'm'}, {'g', 'o', 'o', 'g', 'l', 'e'}, {'c', 'o', 'm', 'm', 'o', 'n'}, {'c', 'o', 'l', 'l', 'e', 'c', 't'}};
+	
 	protected String getSimpleTargetTypeName(SingularData data) {
 		return GuavaTypeMap.getGuavaTypeName(data.getTargetFqn());
 	}
@@ -75,13 +78,21 @@ abstract class EclipseGuavaSingularizer extends EclipseSingularizer {
 	
 	protected char[][] makeGuavaTypeName(String simpleName, boolean addBuilder) {
 		char[][] tokenizedName = new char[addBuilder ? 6 : 5][];
-		tokenizedName[0] = new char[] {'c', 'o', 'm'};
-		tokenizedName[1] = new char[] {'g', 'o', 'o', 'g', 'l', 'e'};
-		tokenizedName[2] = new char[] {'c', 'o', 'm', 'm', 'o', 'n'};
-		tokenizedName[3] = new char[] {'c', 'o', 'l', 'l', 'e', 'c', 't'};
+		tokenizedName[0] = CGCC[0];
+		tokenizedName[1] = CGCC[1];
+		tokenizedName[2] = CGCC[2];
+		tokenizedName[3] = CGCC[3];
 		tokenizedName[4] = simpleName.toCharArray();
 		if (addBuilder) tokenizedName[5] = new char[] { 'B', 'u', 'i', 'l', 'd', 'e', 'r'};
 		return tokenizedName;
+	}
+	
+	@Override protected char[] getEmptyMakerSelector(String targetFqn) {
+		return OF;
+	}
+	
+	@Override protected char[][] getEmptyMakerReceiver(String targetFqn) {
+		return CGCC;
 	}
 	
 	@Override public List<EclipseNode> generateFields(SingularData data, EclipseNode builderType) {

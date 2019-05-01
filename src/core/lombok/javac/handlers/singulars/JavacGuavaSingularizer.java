@@ -51,6 +51,10 @@ abstract class JavacGuavaSingularizer extends JavacSingularizer {
 		return GuavaTypeMap.getGuavaTypeName(data.getTargetFqn());
 	}
 	
+	@Override protected String getEmptyMaker(String target) {
+		return target + ".of";
+	}
+	
 	protected String getBuilderMethodName(SingularData data) {
 		String simpleTypeName = getSimpleTargetTypeName(data);
 		if ("ImmutableSortedSet".equals(simpleTypeName) || "ImmutableSortedMap".equals(simpleTypeName)) return "naturalOrder";

@@ -68,6 +68,20 @@ public class EclipseJavaUtilMapSingularizer extends EclipseJavaUtilSingularizer 
 		return LombokImmutableList.of("java.util.Map", "java.util.SortedMap", "java.util.NavigableMap");
 	}
 	
+	private static final char[] EMPTY_SORTED_MAP = {'e', 'm', 'p', 't', 'y', 'S', 'o', 'r', 't', 'e', 'd', 'M', 'a', 'p'};
+	private static final char[] EMPTY_NAVIGABLE_MAP = {'e', 'm', 'p', 't', 'y', 'N', 'a', 'v', 'i', 'g', 'a', 'b', 'l', 'e', 'M', 'a', 'p'};
+	private static final char[] EMPTY_MAP = {'e', 'm', 'p', 't', 'y', 'M', 'a', 'p'};
+	
+	@Override protected char[][] getEmptyMakerReceiver(String targetFqn) {
+		return JAVA_UTIL_COLLECTIONS;
+	}
+	
+	@Override protected char[] getEmptyMakerSelector(String targetFqn) {
+		if (targetFqn.endsWith("SortedMap")) return EMPTY_SORTED_MAP;
+		if (targetFqn.endsWith("NavigableMap")) return EMPTY_NAVIGABLE_MAP;
+		return EMPTY_MAP;
+	}
+	
 	@Override public List<char[]> listFieldsToBeGenerated(SingularData data, EclipseNode builderType) {
 		if (useGuavaInstead(builderType)) {
 			return guavaMapSingularizer.listFieldsToBeGenerated(data, builderType);

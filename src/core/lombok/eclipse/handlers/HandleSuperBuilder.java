@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2018 The Project Lombok Authors.
+ * Copyright (C) 2013-2019 The Project Lombok Authors.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -108,7 +108,6 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 	private static final char[] TO_BUILDER_METHOD_NAME = TO_BUILDER_METHOD_NAME_STRING.toCharArray();
 	private static final char[] FILL_VALUES_METHOD_NAME = "$fillValuesFrom".toCharArray();
 	private static final char[] FILL_VALUES_STATIC_METHOD_NAME = "$fillValuesFromInstanceIntoBuilder".toCharArray();
-	private static final char[] EMPTY_LIST = "emptyList".toCharArray();
 	private static final char[] INSTANCE_VARIABLE_NAME = "instance".toCharArray();
 	private static final String BUILDER_VARIABLE_NAME_STRING = "b";
 	private static final char[] BUILDER_VARIABLE_NAME = BUILDER_VARIABLE_NAME_STRING.toCharArray();
@@ -741,10 +740,10 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 			ms.arguments = tgt;
 		} else {
 			Expression ifNull = new EqualExpression(tgt[0], new NullLiteral(0, 0), OperatorIds.EQUAL_EQUAL);
-			MessageSend emptyList = new MessageSend();
-			emptyList.receiver = generateQualifiedNameRef(source, TypeConstants.JAVA, TypeConstants.UTIL, "Collections".toCharArray());
-			emptyList.selector = EMPTY_LIST;
-			ms.arguments = new Expression[] {new ConditionalExpression(ifNull, emptyList, tgt[1])};
+			MessageSend emptyCollection = new MessageSend();
+			emptyCollection.receiver = generateQualifiedNameRef(source, bfd.singularData.getSingularizer().getEmptyMakerReceiver(bfd.singularData.getTargetFqn()));
+			emptyCollection.selector = bfd.singularData.getSingularizer().getEmptyMakerSelector(bfd.singularData.getTargetFqn());
+			ms.arguments = new Expression[] {new ConditionalExpression(ifNull, emptyCollection, tgt[1])};
 		}
 		ms.receiver = new SingleNameReference(BUILDER_VARIABLE_NAME, 0);
 		ms.selector = setterName;
