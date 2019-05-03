@@ -147,6 +147,14 @@ public @interface Builder {
 	boolean toBuilder() default false;
 	
 	/**
+	 * Sets the access level of the generated builder class. By default, generated builder classes are {@code public}.
+	 * Note: This does nothing if you write your own builder class (we won't change its access level).
+	 * 
+	 * @return The builder class will be generated with this access modifier.
+	 */
+	AccessLevel access() default lombok.AccessLevel.PUBLIC;
+	
+	/**
 	 * Put on a field (in case of {@code @Builder} on a type) or a parameter (for {@code @Builder} on a constructor or static method) to
 	 * indicate how lombok should obtain a value for this field or parameter given an instance; this is only relevant if {@code toBuilder} is {@code true}.
 	 * 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2018 The Project Lombok Authors.
+ * Copyright (C) 2015-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,6 +58,7 @@ import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 
+import lombok.AccessLevel;
 import lombok.core.LombokImmutableList;
 import lombok.core.SpiLoadUtil;
 import lombok.core.TypeLibrary;
@@ -234,7 +235,7 @@ public class EclipseSingularsRecipes {
 		 * If you need more control over the return type and value, use
 		 * {@link #generateMethods(SingularData, boolean, EclipseNode, boolean, TypeReferenceMaker, StatementMaker)}.
 		 */
-		public void generateMethods(SingularData data, boolean deprecate, final EclipseNode builderType, boolean fluent, final boolean chain) {
+		public void generateMethods(SingularData data, boolean deprecate, final EclipseNode builderType, boolean fluent, final boolean chain, AccessLevel access) {
 			TypeReferenceMaker returnTypeMaker = new TypeReferenceMaker() {
 				@Override public TypeReference make() {
 					return chain ? cloneSelfType(builderType) : TypeReference.baseTypeReference(TypeIds.T_void, 0);
@@ -247,14 +248,14 @@ public class EclipseSingularsRecipes {
 				}
 			};
 			
-			generateMethods(data, deprecate, builderType, fluent, returnTypeMaker, returnStatementMaker);
+			generateMethods(data, deprecate, builderType, fluent, returnTypeMaker, returnStatementMaker, access);
 		}
 		
 		/**
 		 * Generates the singular, plural, and clear methods for the given {@link SingularData}.
 		 * Uses the given {@code returnTypeMaker} and {@code returnStatementMaker} for the generated methods.
 		 */
-		public abstract void generateMethods(SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, TypeReferenceMaker returnTypeMaker, StatementMaker returnStatementMaker);
+		public abstract void generateMethods(SingularData data, boolean deprecate, EclipseNode builderType, boolean fluent, TypeReferenceMaker returnTypeMaker, StatementMaker returnStatementMaker, AccessLevel access);
 		
 		public abstract void appendBuildCode(SingularData data, EclipseNode builderType, List<Statement> statements, char[] targetVariableName, String builderVariable);
 		
@@ -394,5 +395,8 @@ public class EclipseSingularsRecipes {
 				return new SingleNameReference(builderVariable.toCharArray(), 0);
 			}
 		}
+		
+		protected abstract char[][] getEmptyMakerReceiver(String targetFqn);
+		protected abstract char[] getEmptyMakerSelector(String targetFqn);
 	}
 }

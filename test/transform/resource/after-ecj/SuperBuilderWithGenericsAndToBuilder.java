@@ -1,9 +1,10 @@
-import java.util.List;
+import java.util.Map;
 public class SuperBuilderWithGenericsAndToBuilder {
   public static @lombok.experimental.SuperBuilder(toBuilder = true) class Parent<A> {
     public static abstract @java.lang.SuppressWarnings("all") class ParentBuilder<A, C extends Parent<A>, B extends ParentBuilder<A, C, B>> {
       private @java.lang.SuppressWarnings("all") A field1;
-      private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> items;
+      private @java.lang.SuppressWarnings("all") java.util.ArrayList<Integer> items$key;
+      private @java.lang.SuppressWarnings("all") java.util.ArrayList<String> items$value;
       public ParentBuilder() {
         super();
       }
@@ -13,7 +14,7 @@ public class SuperBuilderWithGenericsAndToBuilder {
       }
       private static @java.lang.SuppressWarnings("all") <A>void $fillValuesFromInstanceIntoBuilder(final Parent<A> instance, final ParentBuilder<A, ?, ?> b) {
         b.field1(instance.field1);
-        b.items(((instance.items == null) ? java.util.Collections.emptyList() : instance.items));
+        b.items(((instance.items == null) ? java.util.Collections.emptyMap() : instance.items));
       }
       protected abstract @java.lang.SuppressWarnings("all") B self();
       public abstract @java.lang.SuppressWarnings("all") C build();
@@ -21,25 +22,39 @@ public class SuperBuilderWithGenericsAndToBuilder {
         this.field1 = field1;
         return self();
       }
-      public @java.lang.SuppressWarnings("all") B item(final String item) {
-        if ((this.items == null))
-            this.items = new java.util.ArrayList<String>();
-        this.items.add(item);
+      public @java.lang.SuppressWarnings("all") B item(final Integer itemKey, final String itemValue) {
+        if ((this.items$key == null))
+            {
+              this.items$key = new java.util.ArrayList<Integer>();
+              this.items$value = new java.util.ArrayList<String>();
+            }
+        this.items$key.add(itemKey);
+        this.items$value.add(itemValue);
         return self();
       }
-      public @java.lang.SuppressWarnings("all") B items(final java.util.Collection<? extends String> items) {
-        if ((this.items == null))
-            this.items = new java.util.ArrayList<String>();
-        this.items.addAll(items);
+      public @java.lang.SuppressWarnings("all") B items(final java.util.Map<? extends Integer, ? extends String> items) {
+        if ((this.items$key == null))
+            {
+              this.items$key = new java.util.ArrayList<Integer>();
+              this.items$value = new java.util.ArrayList<String>();
+            }
+        for (java.util.Map.Entry<? extends Integer, ? extends String> $lombokEntry : items.entrySet()) 
+          {
+            this.items$key.add($lombokEntry.getKey());
+            this.items$value.add($lombokEntry.getValue());
+          }
         return self();
       }
       public @java.lang.SuppressWarnings("all") B clearItems() {
-        if ((this.items != null))
-            this.items.clear();
+        if ((this.items$key != null))
+            {
+              this.items$key.clear();
+              this.items$value.clear();
+            }
         return self();
       }
       public @java.lang.Override @java.lang.SuppressWarnings("all") java.lang.String toString() {
-        return (((("SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilder(field1=" + this.field1) + ", items=") + this.items) + ")");
+        return (((((("SuperBuilderWithGenericsAndToBuilder.Parent.ParentBuilder(field1=" + this.field1) + ", items$key=") + this.items$key) + ", items$value=") + this.items$value) + ")");
       }
     }
     private static final @java.lang.SuppressWarnings("all") class ParentBuilderImpl<A> extends ParentBuilder<A, Parent<A>, ParentBuilderImpl<A>> {
@@ -54,20 +69,23 @@ public class SuperBuilderWithGenericsAndToBuilder {
       }
     }
     A field1;
-    @lombok.Singular List<String> items;
+    @lombok.Singular Map<Integer, String> items;
     protected @java.lang.SuppressWarnings("all") Parent(final ParentBuilder<A, ?, ?> b) {
       super();
       this.field1 = b.field1;
-      java.util.List<String> items;
-      switch (((b.items == null) ? 0 : b.items.size())) {
+      java.util.Map<Integer, String> items;
+      switch (((b.items$key == null) ? 0 : b.items$key.size())) {
       case 0 : 
-          items = java.util.Collections.emptyList();
+          items = java.util.Collections.emptyMap();
           break;
       case 1 : 
-          items = java.util.Collections.singletonList(b.items.get(0));
+          items = java.util.Collections.singletonMap(b.items$key.get(0), b.items$value.get(0));
           break;
       default : 
-          items = java.util.Collections.unmodifiableList(new java.util.ArrayList<String>(b.items));
+          items = new java.util.LinkedHashMap<Integer, String>(((b.items$key.size() < 0x40000000) ? ((1 + b.items$key.size()) + ((b.items$key.size() - 3) / 3)) : java.lang.Integer.MAX_VALUE));
+          for (int $i = 0;; ($i < b.items$key.size()); $i ++) 
+            items.put(b.items$key.get($i), b.items$value.get($i));
+          items = java.util.Collections.unmodifiableMap(items);
       }
       this.items = items;
     }
@@ -129,6 +147,6 @@ public class SuperBuilderWithGenericsAndToBuilder {
     super();
   }
   public static void test() {
-    Child<Integer> x = Child.<Integer>builder().field3(0.0).field1(5).item("").build().toBuilder().build();
+    Child<Integer> x = Child.<Integer>builder().field3(0.0).field1(5).item(5, "").build().toBuilder().build();
   }
 }

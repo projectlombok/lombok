@@ -33,7 +33,8 @@ import java.lang.annotation.Target;
  * <p>
  * NB: As of v1.16.2 which introduces this annotation, lombok doesn't actually add this annotation; we're setting
  * it up so that lombok jars in widespread use start having this, which will make it easier to actually apply it
- * later on.
+ * later on. By adding {@code lombok.addLombokGeneratedAnnotation = true} to {@code lombok.config} you can already
+ * get this behavior.
  */
 @Target({ElementType.CONSTRUCTOR, ElementType.METHOD, ElementType.FIELD, ElementType.TYPE})
 @Retention(RetentionPolicy.CLASS)

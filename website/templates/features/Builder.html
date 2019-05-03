@@ -12,6 +12,8 @@
 			<code>@Builder.Default</code> functionality was added in lombok v1.16.16.
 		</p><p>
 			<code>@Builder(builderMethodName = "")</code> is legal (and will suppress generation of the builder method) starting with lombok v1.18.8.
+		</p><p>
+			<code>@Builder(access = AccessLevel.PACKAGE)</code> is legal (and will generate the builder class, the builder method, etc with the indicated access level) starting with lombok v1.18.8.
 		</p>
 	</@f.history>
 	
@@ -64,10 +66,12 @@
 					The <em>builder()</em> method's name (default: <code>"builder"</code>)
 				</li><li>
 					If you want <code>toBuilder()</code> (default: no)
+				</li><li>
+					The access level of all generated elements (default: <code>public</code>).
 				</li>
 			</ul>
 			Example usage where all options are changed from their defaults:<br />
-			<code>@Builder(builderClassName = "HelloWorldBuilder", buildMethodName = "execute", builderMethodName = "helloWorld", toBuilder = true)</code><br />
+			<code>@Builder(builderClassName = "HelloWorldBuilder", buildMethodName = "execute", builderMethodName = "helloWorld", toBuilder = true, access = AccessLevel.PRIVATE)</code><br />
 		</p>
 	</@f.overview>
 	
@@ -194,6 +198,9 @@ public class JacksonExample {
 			<code>builder</code> method if you just want this functionality, by using: <code>@Builder(toBuilder = true, builderMethodName = "")</code>.
 		</p><p>
 			Due to a peculiar way javac processes static imports, trying to do a non-star static import of the static <code>builder()</code> method won't work. Either use a star static import: `import static TypeThatHasABuilder.*;` or don't statically import the <code>builder</code> method.
+		</p><p>
+			If setting the access level to <code>PROTECTED</code>, all methods generated inside the builder class are actually generated as <code>public</code>; the meaning of the
+			<code>protected</code> keyword is different inside the inner class, and the precise behaviour that <code>PROTECTED</code> would indicate (access by any source in the same package is allowed, as well as any subclasses <em>from the outer class, marked with <code>@Builder</code></em> is not possible, and marking the inner members <code>public</code> is as close as we can get.
 		</p>
 	</@f.smallPrint>
 </@f.scaffold>

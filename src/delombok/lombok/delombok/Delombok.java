@@ -93,6 +93,7 @@ public class Delombok {
 	private boolean noCopy;
 	private boolean onlyChanged;
 	private boolean force = false;
+	private boolean disablePreview;
 	private String classpath, sourcepath, bootclasspath, modulepath;
 	private LinkedHashMap<File, File> fileToBase = new LinkedHashMap<File, File>();
 	private List<File> filesToParse = new ArrayList<File>();
@@ -157,6 +158,10 @@ public class Delombok {
 		
 		@Description("Output only changed files (implies -n)")
 		private boolean onlyChanged;
+		
+		@Description("By default lombok enables preview features if available (introduced in JDK 12). With this option, lombok won't do that.")
+		@FullName("disable-preview")
+		private boolean disablePreview;
 		
 		private boolean help;
 	}
@@ -281,6 +286,7 @@ public class Delombok {
 		
 		if (args.verbose) delombok.setVerbose(true);
 		if (args.nocopy || args.onlyChanged) delombok.setNoCopy(true);
+		if (args.disablePreview) delombok.setDisablePreview(true);
 		if (args.onlyChanged) delombok.setOnlyChanged(true);
 		if (args.print) {
 			delombok.setOutputToStandardOut();
@@ -516,6 +522,10 @@ public class Delombok {
 		this.noCopy = noCopy;
 	}
 	
+	public void setDisablePreview(boolean disablePreview) {
+		this.disablePreview = disablePreview;
+	}
+	
 	public void setOnlyChanged(boolean onlyChanged) {
 		this.onlyChanged = onlyChanged;
 	}
@@ -684,6 +694,9 @@ public class Delombok {
 				argsList.add("--module-path");
 				argsList.add(modulepath);
 			}
+			
+			if (!disablePreview && Javac.getJavaCompilerVersion() >= 11) argsList.add("--enable-preview");
+			
 			String[] argv = argsList.toArray(new String[0]);
 			args.init("javac", argv);
 			options.put("diags.legacy", "TRUE");

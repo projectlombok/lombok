@@ -10,7 +10,7 @@ class BuilderSimple<T> {
 		this.also = also;
 	}
 	@java.lang.SuppressWarnings("all")
-	public static class BuilderSimpleBuilder<T> {
+	protected static class BuilderSimpleBuilder<T> {
 		@java.lang.SuppressWarnings("all")
 		private int yes;
 		@java.lang.SuppressWarnings("all")
@@ -39,7 +39,7 @@ class BuilderSimple<T> {
 		}
 	}
 	@java.lang.SuppressWarnings("all")
-	public static <T> BuilderSimpleBuilder<T> builder() {
+	protected static <T> BuilderSimpleBuilder<T> builder() {
 		return new BuilderSimpleBuilder<T>();
 	}
 }

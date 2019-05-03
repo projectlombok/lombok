@@ -1,0 +1,25 @@
+<#import "../_scaffold.html" as main>
+<@main.scaffold>
+	<div class="page-header top5">
+		<div class="row text-center">
+			<@main.h1 title="The 7 biggest mistakes we made in Project Lombok" />
+			<p>
+				A presentation by Lombok's 2 core authors: Roel Spilker and Reinier Zwitserloot.<br />
+				We talk about the 7 biggest mistakes we made managing an open source project for the past 10 years.<br />
+				First given at <a href="https://programm.javaland.eu/2019/#/scheduledEvent/579921">Javaland (in Brühl, Germany) on March 19th, 2019</a>. Total length: 40 minutes.
+			</p>
+		</div>
+		<div class="video text-center">
+			<video id="presentationVideo" width="640" height="360" poster="/presentations/7lessons-poster.jpg" controls="controls" preload="none">
+				<source src="https://projectlombok.org/presentations/7lessons-vp9.webm" type="video/webm" />
+				<source src="https://projectlombok.org/presentations/7lessons.webm" type="video/webm" />
+				<source src="https://projectlombok.org/presentations/7lessons.mp4" type="video/mp4" />
+				<@main.h1 title="Can't watch the video?" />
+					<p>
+					You can download it and watch it with, for example, <a href="https://www.videolan.org/vlc/index.html">The open source VLC media player</a>:<br />
+					<a href="/videos/7lessons.mp4">Download: 7 biggest mistakes we made in Project Lombok</a>
+				</p>
+			</video>
+		</div>
+	</div>
+</@main.scaffold>

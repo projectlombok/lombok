@@ -91,7 +91,7 @@ public class DirectoryRunner extends Runner {
 	public DirectoryRunner(Class<?> testClass) throws Exception {
 		description = Description.createSuiteDescription(testClass);
 		
-		this.params = (TestParams) testClass.newInstance();
+		this.params = (TestParams) testClass.getConstructor().newInstance();
 		
 		Throwable error = null;
 		try {

@@ -17,7 +17,7 @@
 		</p><p>
 			In practice, <code>@Value</code> is shorthand for: <code>final @ToString @EqualsAndHashCode @AllArgsConstructor @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE) @Getter</code>, except that explicitly including an implementation of any of the relevant methods simply means that part won't be generated and no warning will be emitted. For example, if you write your own <code>toString</code>, no error occurs, and lombok will not generate a <code>toString</code>. Also, <em>any</em> explicit constructor, no matter the arguments list, implies lombok will not generate a constructor. If you do want lombok to generate the all-args constructor, add <code>@AllArgsConstructor</code> to the class. You can mark any constructor or method with <code>@lombok.experimental.Tolerate</code> to hide them from lombok.
 		</p><p>
-			It is possible to override the final-by-default and private-by-default behavior using either an explicit access level on a field, or by using the <code>@NonFinal</code> or <code>@PackagePrivate</code> annotations.<br />
+			It is possible to override the final-by-default and private-by-default behavior using either an explicit access level on a field, or by using the <code>@NonFinal</code> or <code>@PackagePrivate</code> annotations. <code>@NonFinal</code> can also be used on a class to remove the final keyword. <br />
 			It is possible to override any default behavior for any of the 'parts' that make up <code>@Value</code> by explicitly using that annotation.
 		</p>
 	</@f.overview>
