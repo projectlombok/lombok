@@ -82,7 +82,7 @@ import lombok.javac.JavacTreeMaker;
 import lombok.javac.ResolutionResetNeeded;
 
 @ProviderFor(JavacAnnotationHandler.class)
-@HandlerPriority(65536) //2^16; to make sure that we also delegate generated methods.
+@HandlerPriority(HandleDelegate.HANDLE_DELEGATE_PRIORITY) //2^16; to make sure that we also delegate generated methods.
 @ResolutionResetNeeded
 public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 	
@@ -102,6 +102,7 @@ public class HandleDelegate extends JavacAnnotationHandler<Delegate> {
 	
 	private static final String LEGALITY_OF_DELEGATE = "@Delegate is legal only on instance fields or no-argument instance methods.";
 	private static final String RECURSION_NOT_ALLOWED = "@Delegate does not support recursion (delegating to a type that itself has @Delegate members). Member \"%s\" is @Delegate in type \"%s\"";
+	public static final int HANDLE_DELEGATE_PRIORITY = 65536;
 
 	
 	@Override public void handle(AnnotationValues<Delegate> annotation, JCAnnotation ast, JavacNode annotationNode) {
