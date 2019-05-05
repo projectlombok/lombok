@@ -55,8 +55,10 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.LombokNode;
 import lombok.delombok.LombokOptionsFactory;
 import lombok.javac.Javac;
+import lombok.javac.JavacAST;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -219,8 +221,8 @@ public class HandleConstructor {
 	private void generate(JavacNode typeNode, AccessLevel level, List<JCAnnotation> onConstructor, List<JavacNode> fields, boolean allToDefault, String staticName, SkipIfConstructorExists skipIfConstructorExists, JavacNode source, boolean noArgs) {
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
 		
-		if (skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) return;
 		if (skipIfConstructorExists != SkipIfConstructorExists.NO) {
+
 			for (JavacNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
 					boolean skipGeneration = annotationTypeMatches(NoArgsConstructor.class, child) ||
@@ -230,7 +232,6 @@ public class HandleConstructor {
 					if (!skipGeneration && skipIfConstructorExists == SkipIfConstructorExists.YES) {
 						skipGeneration = annotationTypeMatches(Builder.class, child);
 					}
-					
 					if (skipGeneration) {
 						if (staticConstrRequired) {
 							// @Data has asked us to generate a constructor, but we're going to skip this instruction, as an explicit 'make a constructor' annotation
@@ -246,8 +247,7 @@ public class HandleConstructor {
 		}
 		
 		if (noArgs && noArgsConstructorExists(typeNode)) return;
-		
-		JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, source);
+
 		ListBuffer<Type> argTypes = new ListBuffer<Type>();
 		for (JavacNode fieldNode : fields) {
 			Type mirror = getMirrorForFieldType(fieldNode);
@@ -258,7 +258,15 @@ public class HandleConstructor {
 			argTypes.append(mirror);
 		}
 		List<Type> argTypes_ = argTypes == null ? null : argTypes.toList();
-		injectMethod(typeNode, constr, argTypes_, Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
+
+		if (!(skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS)) {
+			JCMethodDecl constr = createConstructor(staticConstrRequired ? AccessLevel.PRIVATE : level, onConstructor, typeNode, fields, allToDefault, source);
+			injectMethod(typeNode, constr, argTypes_, Javac.createVoidType(typeNode.getSymbolTable(), CTC_VOID));
+		}
+		generateStaticConstructor(staticConstrRequired, typeNode, staticName, level, allToDefault, fields, source, argTypes_);
+	}
+	
+	private void generateStaticConstructor(boolean staticConstrRequired, JavacNode typeNode, String staticName, AccessLevel level, boolean allToDefault, List<JavacNode> fields, LombokNode<JavacAST, JavacNode, JCTree> source, List<Type> argTypes_) {
 		if (staticConstrRequired) {
 			ClassSymbol sym = ((JCClassDecl) typeNode.get()).sym;
 			Type returnType = sym == null ? null : sym.type;
