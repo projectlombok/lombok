@@ -242,8 +242,7 @@ public class HandleConstructor {
 			
 		ASTNode source = sourceNode.get();
 		boolean staticConstrRequired = staticName != null && !staticName.equals("");
-		
-		if (skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS) return;
+
 		if (skipIfConstructorExists != SkipIfConstructorExists.NO) {
 			for (EclipseNode child : typeNode.down()) {
 				if (child.getKind() == Kind.ANNOTATION) {
@@ -273,12 +272,18 @@ public class HandleConstructor {
 		
 		if (noArgs && noArgsConstructorExists(typeNode)) return;
 		
-		ConstructorDeclaration constr = createConstructor(
-			staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fieldsToParam, forceDefaults,
-			sourceNode, onConstructor);
-		injectMethod(typeNode, constr);
+		if (!(skipIfConstructorExists != SkipIfConstructorExists.NO && constructorExists(typeNode) != MemberExistsResult.NOT_EXISTS)) {
+			ConstructorDeclaration constr = createConstructor(
+				staticConstrRequired ? AccessLevel.PRIVATE : level, typeNode, fieldsToParam, forceDefaults,
+				sourceNode, onConstructor);
+			injectMethod(typeNode, constr);
+		}
+		generateStaticConstructor(staticConstrRequired, typeNode, staticName, level, fieldsToParam, source);
+	}
+	
+	private void generateStaticConstructor(boolean staticConstrRequired, EclipseNode typeNode, String staticName, AccessLevel level, Collection<EclipseNode> fields, ASTNode source) {
 		if (staticConstrRequired) {
-			MethodDeclaration staticConstr = createStaticConstructor(level, staticName, typeNode, fieldsToParam, source);
+			MethodDeclaration staticConstr = createStaticConstructor(level, staticName, typeNode, fields, source);
 			injectMethod(typeNode, staticConstr);
 		}
 	}
