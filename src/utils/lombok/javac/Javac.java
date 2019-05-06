@@ -409,10 +409,14 @@ public class Javac {
 		} else {
 			try {
 				if (CTC_VOID.equals(tag)) {
-					return (Type) JC_VOID_TYPE.newInstance();
+					return (Type) JC_VOID_TYPE.getConstructor().newInstance();
 				} else {
-					return (Type) JC_NO_TYPE.newInstance();
+					return (Type) JC_NO_TYPE.getConstructor().newInstance();
 				}
+			} catch (InvocationTargetException e) {
+				throw sneakyThrow(e.getCause());
+			} catch (NoSuchMethodException e) {
+				throw sneakyThrow(e);
 			} catch (IllegalAccessException e) {
 				throw sneakyThrow(e);
 			} catch (InstantiationException e) {

@@ -188,7 +188,7 @@ class Tasks {
 			Location loc = getLocation();
 			
 			try {
-				Object instance = shadowLoadClass("lombok.delombok.ant.DelombokTaskImpl").newInstance();
+				Object instance = shadowLoadClass("lombok.delombok.ant.DelombokTaskImpl").getConstructor().newInstance();
 				for (Field selfField : getClass().getDeclaredFields()) {
 					if (selfField.isSynthetic() || Modifier.isStatic(selfField.getModifiers())) continue;
 					Field otherField = instance.getClass().getDeclaredField(selfField.getName());
@@ -208,7 +208,7 @@ class Tasks {
 				Method m = instance.getClass().getMethod("execute", Location.class);
 				m.invoke(instance, loc);
 			} catch (Exception e) {
-				Throwable t = (e instanceof InvocationTargetException) ? ((InvocationTargetException) e).getCause() : e;
+				Throwable t = (e instanceof InvocationTargetException) ? e.getCause() : e;
 				if (t instanceof Error) throw (Error) t;
 				if (t instanceof RuntimeException) throw (RuntimeException) t;
 				throw new RuntimeException(t);
