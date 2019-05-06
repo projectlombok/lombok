@@ -649,6 +649,15 @@ public class EclipseHandlerUtil {
 		return result == null ? null : result.toArray(new Annotation[0]);
 	}
 	
+	public static Annotation[] mergeAnnotations(Annotation[] a, Annotation[] b) {
+		if (a == null || a.length == 0) return (b == null || b.length == 0) ? null : b;
+		if (b == null || b.length == 0) return a.length == 0 ? null : a;
+		Annotation[] c = new Annotation[a.length + b.length];
+		System.arraycopy(a, 0, c, 0, a.length);
+		System.arraycopy(b, 0, c, a.length, b.length);
+		return c;
+	}
+	
 	public static boolean hasAnnotation(Class<? extends java.lang.annotation.Annotation> type, EclipseNode node) {
 		if (node == null) return false;
 		if (type == null) return false;
@@ -757,6 +766,26 @@ public class EclipseHandlerUtil {
 					break;
 				}
 				if (!match) for (String bn : BASE_COPYABLE_ANNOTATIONS) if (typeMatches(bn, node, typeRef)) {
+					result.add(annotation);
+					break;
+				}
+			}
+		}
+		return result.toArray(EMPTY_ANNOTATIONS_ARRAY);
+	}
+	
+	/**
+	 * Searches the given field node for annotations that are specifically intentioned to be copied to the setter.
+	 */
+	public static Annotation[] findCopyableToSetterAnnotations(EclipseNode node) {
+		AbstractVariableDeclaration avd = (AbstractVariableDeclaration) node.get();
+		if (avd.annotations == null) return EMPTY_ANNOTATIONS_ARRAY;
+		List<Annotation> result = new ArrayList<Annotation>();
+		
+		for (Annotation annotation : avd.annotations) {
+			TypeReference typeRef = annotation.type;
+			if (typeRef != null && typeRef.getTypeName() != null) {
+				for (String bn : COPY_TO_SETTER_ANNOTATIONS) if (typeMatches(bn, node, typeRef)) {
 					result.add(annotation);
 					break;
 				}

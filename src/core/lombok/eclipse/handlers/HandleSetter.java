@@ -220,7 +220,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		if (isFieldDeprecated(fieldNode) || deprecate) {
 			deprecated = new Annotation[] { generateDeprecatedAnnotation(source) };
 		}
-		method.annotations = copyAnnotations(source, onMethod.toArray(new Annotation[0]), deprecated);
+		method.annotations = mergeAnnotations(copyAnnotations(source, onMethod.toArray(new Annotation[0]), deprecated), findCopyableToSetterAnnotations(fieldNode));
 		Argument param = new Argument(field.name, p, copyType(field.type, source), Modifier.FINAL);
 		param.sourceStart = pS; param.sourceEnd = pE;
 		method.arguments = new Argument[] { param };

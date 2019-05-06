@@ -861,13 +861,13 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}};
 		
 		if (fieldNode.singularData == null || fieldNode.singularData.getSingularizer() == null) {
-			generateSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, true, returnTypeMaker.make(), returnStatementMaker.make(), fieldNode.annotations);
+			generateSimpleSetterMethodForBuilder(builderType, deprecate, fieldNode.createdFields.get(0), fieldNode.nameOfSetFlag, source, true, returnTypeMaker.make(), returnStatementMaker.make(), fieldNode.annotations, fieldNode.originalFieldNode);
 		} else {
 			fieldNode.singularData.getSingularizer().generateMethods(fieldNode.singularData, deprecate, builderType, source.get(), true, returnTypeMaker, returnStatementMaker, AccessLevel.PUBLIC);
 		}
 	}
 	
-	private void generateSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, JCExpression returnType, JCStatement returnStatement, List<JCAnnotation> annosOnParam) {
+	private void generateSimpleSetterMethodForBuilder(JavacNode builderType, boolean deprecate, JavacNode fieldNode, Name nameOfSetFlag, JavacNode source, boolean fluent, JCExpression returnType, JCStatement returnStatement, List<JCAnnotation> annosOnParam, JavacNode originalFieldNode) {
 		Name fieldName = ((JCVariableDecl) fieldNode.get()).name;
 		
 		for (JavacNode child : builderType.down()) {
@@ -881,7 +881,8 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
-		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, nameOfSetFlag, returnType, returnStatement, source, List.<JCAnnotation>nil(), annosOnParam);
+		List<JCAnnotation> methodAnns = JavacHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
+		JCMethodDecl newMethod = HandleSetter.createSetter(Flags.PUBLIC, deprecate, fieldNode, maker, setterName, nameOfSetFlag, returnType, returnStatement, source, methodAnns, annosOnParam);
 		
 		injectMethod(builderType, newMethod);
 	}

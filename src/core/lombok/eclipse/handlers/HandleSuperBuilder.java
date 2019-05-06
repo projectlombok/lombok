@@ -886,13 +886,13 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		};
 		
 		if (bfd.singularData == null || bfd.singularData.getSingularizer() == null) {
-			generateSimpleSetterMethodForBuilder(builderType, deprecate, bfd.createdFields.get(0), bfd.nameOfSetFlag, returnTypeMaker.make(), returnStatementMaker.make(), sourceNode, bfd.annotations);
+			generateSimpleSetterMethodForBuilder(builderType, deprecate, bfd.createdFields.get(0), bfd.nameOfSetFlag, returnTypeMaker.make(), returnStatementMaker.make(), sourceNode, bfd.annotations, bfd.originalFieldNode);
 		} else {
 			bfd.singularData.getSingularizer().generateMethods(bfd.singularData, deprecate, builderType, true, returnTypeMaker, returnStatementMaker, AccessLevel.PUBLIC);
 		}
 	}
 
-	private void generateSimpleSetterMethodForBuilder(EclipseNode builderType, boolean deprecate, EclipseNode fieldNode, char[] nameOfSetFlag, TypeReference returnType, Statement returnStatement, EclipseNode sourceNode, Annotation[] annosOnParam) {
+	private void generateSimpleSetterMethodForBuilder(EclipseNode builderType, boolean deprecate, EclipseNode fieldNode, char[] nameOfSetFlag, TypeReference returnType, Statement returnStatement, EclipseNode sourceNode, Annotation[] annosOnParam, EclipseNode originalFieldNode) {
 		TypeDeclaration td = (TypeDeclaration) builderType.get();
 		AbstractMethodDeclaration[] existing = td.methods;
 		if (existing == null) existing = EMPTY_METHODS;
@@ -908,8 +908,11 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		
 		String setterName = fieldNode.getName();
 		
+		List<Annotation> methodAnnsList = Collections.<Annotation>emptyList();
+		Annotation[] methodAnns = EclipseHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
+		if (methodAnns != null && methodAnns.length > 0) methodAnnsList = Arrays.asList(methodAnns);
 		MethodDeclaration setter = HandleSetter.createSetter(td, deprecate, fieldNode, setterName, nameOfSetFlag, returnType, returnStatement, ClassFileConstants.AccPublic,
-			sourceNode, Collections.<Annotation>emptyList(), annosOnParam != null ? Arrays.asList(copyAnnotations(sourceNode.get(), annosOnParam)) : Collections.<Annotation>emptyList());
+			sourceNode, methodAnnsList, annosOnParam != null ? Arrays.asList(copyAnnotations(sourceNode.get(), annosOnParam)) : Collections.<Annotation>emptyList());
 		injectMethod(builderType, setter);
 	}
 	

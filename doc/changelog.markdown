@@ -6,6 +6,7 @@ Lombok Changelog
 * FEATURE: You can now suppress generation of the `builder` method when using `@Builder`; usually because you're only interested in the `toBuilder` method. As a convenience we won't emit warnings about missing `@Builder.Default` annotations when you do this. [Issue #2046](https://github.com/rzwitserloot/lombok/issues/2046)
 * FEATURE: You can now change the access modifier of generated builder classes. [Issue #2083](https://github.com/rzwitserloot/lombok/issues/2083).
 * FEATURE: When using `@NonNull`, or any other annotation that would result in a null-check, you can configure to generate an assert statement instead. [Issue #2078](https://github.com/rzwitserloot/lombok/issues/2078).
+* FEATURE: Lombok now knows exactly how to treat `@com.fasterxml.jackson.annotation.JsonProperty` and will copy it to the right places for example when making builders. [Issue #1961](https://github.com/rzwitserloot/lombok/issues/1961) [Issue #1981](https://github.com/rzwitserloot/lombok/issues/1981).
 * PLATFORM: A few lombok features (most notably delombok) failed on JDK12. [Issue #2082](https://github.com/rzwitserloot/lombok/issues/2082)
 * BUGFIX: var/val on methods that return an intersection type would now work in Eclipse. [Issue #1986](https://github.com/rzwitserloot/lombok/issues/1986)
 * BUGFIX: Fix for java6 regression if a field has javadoc. [Issue #2066](https://github.com/rzwitserloot/lombok/issues/2066)

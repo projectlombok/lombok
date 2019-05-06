@@ -750,10 +750,11 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		JavacTreeMaker maker = fieldNode.getTreeMaker();
 		
-		JCMethodDecl newMethod = HandleSetter.createSetter(toJavacModifier(access), deprecate, fieldNode, maker, setterName, nameOfSetFlag, chain, source, List.<JCAnnotation>nil(), annosOnParam);
+		List<JCAnnotation> methodAnns = JavacHandlerUtil.findCopyableToSetterAnnotations(originalFieldNode);
+		JCMethodDecl newMethod = HandleSetter.createSetter(toJavacModifier(access), deprecate, fieldNode, maker, setterName, nameOfSetFlag, chain, source, methodAnns, annosOnParam);
 		recursiveSetGeneratedBy(newMethod, source.get(), builderType.getContext());
 		copyJavadoc(originalFieldNode, newMethod, CopyJavadoc.SETTER);
-
+		
 		injectMethod(builderType, newMethod);
 	}
 	
