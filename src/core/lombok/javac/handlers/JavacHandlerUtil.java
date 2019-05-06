@@ -1418,6 +1418,15 @@ public class JavacHandlerUtil {
 		return false;
 	}
 	
+	public static boolean hasNonNullAnnotations(JavacNode node, List<JCAnnotation> anns) {
+		if (anns == null) return false;
+		for (JCAnnotation ann : anns) {
+			for (String nn : NONNULL_ANNOTATIONS) if (typeMatches(nn, node, ann)) return true;
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Searches the given field node for annotations and returns each one that is 'copyable' (either via configuration or from the base list).
 	 */

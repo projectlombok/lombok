@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -238,7 +238,7 @@ public class HandleSetter extends EclipseAnnotationHandler<Setter> {
 		
 		Annotation[] copyableAnnotations = findCopyableAnnotations(fieldNode);
 		List<Statement> statements = new ArrayList<Statement>(5);
-		if (!hasNonNullAnnotations(fieldNode)) {
+		if (!hasNonNullAnnotations(fieldNode) && !hasNonNullAnnotations(fieldNode, onParam)) {
 			statements.add(assignment);
 		} else {
 			Statement nullCheck = generateNullCheck(field, sourceNode);

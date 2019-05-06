@@ -13,6 +13,7 @@ Lombok Changelog
 * BUGFIX: If you use `@Builder` and manually write the `build()` method in your builder class, javac would error out instead of deferring to your implementation. [Issue #2050](https://github.com/rzwitserloot/lombok/issues/2050) [Issue #2061](https://github.com/rzwitserloot/lombok/issues/2061)
 * BUGFIX: `@SuperBuilder` together with `@Singular` on non-lists would produce an erroneous `emptyList` call. [Issue #2104](https://github.com/rzwitserloot/lombok/issues/2104).
 * IMPROBABLE BREAKING CHANGE: For fields and parameters marked non-null, if the method body starts with an assert statement to ensure the value isn't null, no code to throw an exception will be generated.
+* IMPROBABLE BREAKING CHANGE: When using `ecj` to compile java code with `@Builder` or `@SuperBuilder` in it, and a builder setter method was generated for a `@NonNull`-marked method, no explicit null check would be present. However, running `javac` on the exact same file _would_ produce the null check. Now ecj also produces this null check. [Issue #2120](https://github.com/rzwitserloot/lombok/issues/2120).
 
 ### v1.18.6 (February 12th, 2019)
 * FEATURE: Javadoc on fields will now also be copied to the Builders' setters. Thanks for the contribution, Emil Lundberg. [Issue #2008](https://github.com/rzwitserloot/lombok/issues/2008)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2017 The Project Lombok Authors.
+ * Copyright (C) 2009-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -234,7 +234,7 @@ public class HandleSetter extends JavacAnnotationHandler<Setter> {
 		long flags = JavacHandlerUtil.addFinalIfNeeded(Flags.PARAMETER, field.getContext());
 		JCVariableDecl param = treeMaker.VarDef(treeMaker.Modifiers(flags, annsOnParam), fieldDecl.name, fieldDecl.vartype, null);
 		
-		if (!hasNonNullAnnotations(field)) {
+		if (!hasNonNullAnnotations(field) && !hasNonNullAnnotations(field, onParam)) {
 			statements.append(treeMaker.Exec(assign));
 		} else {
 			JCStatement nullCheck = generateNullCheck(treeMaker, field, source);
