@@ -1418,6 +1418,15 @@ public class JavacHandlerUtil {
 		return false;
 	}
 	
+	public static boolean hasNonNullAnnotations(JavacNode node, List<JCAnnotation> anns) {
+		if (anns == null) return false;
+		for (JCAnnotation ann : anns) {
+			for (String nn : NONNULL_ANNOTATIONS) if (typeMatches(nn, node, ann)) return true;
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Searches the given field node for annotations and returns each one that is 'copyable' (either via configuration or from the base list).
 	 */
@@ -1456,6 +1465,44 @@ public class JavacHandlerUtil {
 					break;
 				}
 				if (!match) for (String bn : BASE_COPYABLE_ANNOTATIONS) if (typeMatches(bn, node, annotation.annotationType)) {
+					result.append(annotation);
+					break;
+				}
+			}
+		}
+		return result.toList();
+	}
+	
+	/**
+	 * Searches the given field node for annotations that are specifically intentioned to be copied to the setter.
+	 */
+	public static List<JCAnnotation> findCopyableToSetterAnnotations(JavacNode node) {
+		JCAnnotation anno = null;
+		String annoName = null;
+		for (JavacNode child : node.down()) {
+			if (child.getKind() == Kind.ANNOTATION) {
+				if (anno != null) {
+					annoName = "";
+					break;
+				}
+				JCAnnotation annotation = (JCAnnotation) child.get();
+				annoName = annotation.annotationType.toString();
+				anno = annotation;
+			}
+		}
+		
+		if (annoName == null) return List.nil();
+		
+		if (!annoName.isEmpty()) {
+			for (String bn : COPY_TO_SETTER_ANNOTATIONS) if (typeMatches(bn, node, anno.annotationType)) return List.of(anno);
+		}
+		
+		ListBuffer<JCAnnotation> result = new ListBuffer<JCAnnotation>();
+		for (JavacNode child : node.down()) {
+			if (child.getKind() == Kind.ANNOTATION) {
+				JCAnnotation annotation = (JCAnnotation) child.get();
+				boolean match = false;
+				if (!match) for (String bn : COPY_TO_SETTER_ANNOTATIONS) if (typeMatches(bn, node, annotation.annotationType)) {
 					result.append(annotation);
 					break;
 				}
@@ -1701,6 +1748,15 @@ public class JavacHandlerUtil {
 			if (!(expr instanceof JCAnnotation)) continue;
 			out.append((JCAnnotation) expr.clone());
 		}
+		return out.toList();
+	}
+	
+	static List<JCAnnotation> mergeAnnotations(List<JCAnnotation> a, List<JCAnnotation> b) {
+		if (a == null || a.isEmpty()) return b;
+		if (b == null || b.isEmpty()) return a;
+		ListBuffer<JCAnnotation> out = new ListBuffer<JCAnnotation>();
+		for (JCAnnotation ann : a) out.append(ann);
+		for (JCAnnotation ann : b) out.append(ann);
 		return out.toList();
 	}
 	

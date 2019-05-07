@@ -400,6 +400,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 				<srcdir dir="test/core/src" test="true" />
 				<srcdir dir="test/bytecode/src" test="true" />
 				<srcdir dir="test/configuration/src" test="true" />
+				<srcdir dir="test/stubs" test="true" />
 			</module>
 			<settings>
 				<url url="https://projectlombok.org/downloads/lombok.intellij.settings" />
@@ -432,6 +433,7 @@ lombok.launch.AnnotationProcessorHider$ClaimingProcessor,isolating</echo>
 			<srcdir dir="test/core/src" />
 			<srcdir dir="test/bytecode/src" />
 			<srcdir dir="test/configuration/src" />
+			<srcdir dir="test/stubs" />
 			<conf name="${eclipse.build.configname}" sources="contrib" />
 			<conf name="test" sources="contrib" />
 			<local org="org.projectlombok" name="lombok.patcher" dir="../lombok.patcher" />
@@ -550,6 +552,10 @@ ${sourceWarning}</echo>
 			<src path="test/transform/src" />
 			<src path="test/bytecode/src" />
 			<src path="test/configuration/src" />
+		</ivy:compile>
+		<mkdir dir="build/teststubs" />
+		<ivy:compile destdir="build/teststubs" source="1.6" target="1.6" ecj="true" nowarn="true">
+			<src path="test/stubs" />
 		</ivy:compile>
 	</target>
 	
@@ -728,6 +734,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 				<classpath path="${test.location.javac}" />
 				<classpath path="build/lombok" />
 				<classpath path="build/tests" />
+				<classpath path="build/teststubs" />
 				<batchtest>
 					<fileset dir="test/core/src">
 						<include name="lombok/RunAllTests.java" />
@@ -747,6 +754,7 @@ You can also create your own by writing a 'testenvironment.properties' file. The
 			<classpath path="${test.location.javac}" />
 			<classpath path="build/lombok" />
 			<classpath path="build/tests" />
+			<classpath path="build/teststubs" />
 			<batchtest>
 				<fileset dir="test/core/src">
 					<include name="lombok/RunAllTests.java" />

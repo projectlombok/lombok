@@ -76,7 +76,7 @@ public class HandlerUtil {
 		return 43;
 	}
 	
-	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS;
+	public static final List<String> NONNULL_ANNOTATIONS, BASE_COPYABLE_ANNOTATIONS, COPY_TO_SETTER_ANNOTATIONS;
 	static {
 		NONNULL_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"android.annotation.NonNull",
@@ -92,7 +92,7 @@ public class HandlerUtil {
 			"org.jetbrains.annotations.NotNull",
 			"org.jmlspecs.annotation.NonNull",
 			"org.netbeans.api.annotations.common.NonNull",
-			"org.springframework.lang.NonNull"
+			"org.springframework.lang.NonNull",
 		}));
 		BASE_COPYABLE_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
 			"android.support.annotation.NonNull",
@@ -298,8 +298,11 @@ public class HandlerUtil {
 			"org.jetbrains.annotations.NotNull",
 			"org.jetbrains.annotations.Nullable",
 			"org.springframework.lang.NonNull",
-			"org.springframework.lang.Nullable"
+			"org.springframework.lang.Nullable",
 		}));
+		COPY_TO_SETTER_ANNOTATIONS = Collections.unmodifiableList(Arrays.asList(new String[] {
+				"com.fasterxml.jackson.annotation.JsonProperty",
+			}));
 	}
 	
 	/** Checks if the given name is a valid identifier.
