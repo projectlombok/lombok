@@ -12,7 +12,7 @@ class ValLambda {
 	}
 	public void easyLubLambda() {
 		final java.lang.Runnable foo = (System.currentTimeMillis() > 0) ? (Runnable) () -> {
-		} : (Runnable) System.out::println;
+		} : System.out::println;
 	}
 //	public void castLubLambda() {
 //		Runnable foo = (Runnable) ((System.currentTimeMillis() > 0) ? () -> {} : System.out::println);

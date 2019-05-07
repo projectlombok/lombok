@@ -14,6 +14,6 @@ class ValLambda {
   }
   public void easyLubLambda() {
     final @lombok.val java.lang.Runnable foo = ((System.currentTimeMillis() > 0) ? (Runnable) () -> {
-} : (Runnable) System.out::println);
+} : System.out::println);
   }
 }

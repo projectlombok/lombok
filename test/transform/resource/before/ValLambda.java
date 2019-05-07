@@ -10,7 +10,7 @@ class ValLambda {
 	}
 	
 	public void easyLubLambda() {
-		lombok.val foo = (System.currentTimeMillis() > 0) ? (Runnable)()-> {} : (Runnable)System.out::println;
+		lombok.val foo = (System.currentTimeMillis() > 0) ? (Runnable)()-> {} : System.out::println;
 	}
 	
 //	public void castLubLambda() {
