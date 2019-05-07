@@ -71,7 +71,17 @@ public class HandleLog {
 			}
 
 			JCFieldAccess loggingType = selfType(typeNode);
-			createField(framework, typeNode, loggingType, annotationNode.get(), logFieldName, useStatic, loggerTopic);
+			String loggerTypeName = framework == LoggingFramework.CUSTOM ? annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_CUSTOM_LOGGER_TYPE_NAME) : framework.getLoggerTypeName();
+			if (loggerTypeName == null || loggerTypeName.isEmpty()) {
+				annotationNode.addError(ConfigurationKeys.LOG_CUSTOM_LOGGER_TYPE_NAME + " is not configured.");
+				return;
+			}
+			String loggerFactoryMethodName = framework == LoggingFramework.CUSTOM ? annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_CUSTOM_LOGGER_FACTORY_NAME) : framework.getLoggerFactoryMethodName();
+			if (loggerFactoryMethodName == null || loggerFactoryMethodName.isEmpty()) {
+				annotationNode.addError(ConfigurationKeys.LOG_CUSTOM_LOGGER_FACTORY_NAME + " is not configured.");
+				return;
+			}
+			createField(framework, typeNode, loggingType, annotationNode.get(), logFieldName, useStatic, loggerTopic, loggerTypeName, loggerFactoryMethodName);
 			break;
 		default:
 			annotationNode.addError("@Log is legal only on types.");
@@ -85,12 +95,14 @@ public class HandleLog {
 		return maker.Select(maker.Ident(name), typeNode.toName("class"));
 	}
 	
-	private static boolean createField(LoggingFramework framework, JavacNode typeNode, JCFieldAccess loggingType, JCTree source, String logFieldName, boolean useStatic, String loggerTopic) {
+	private static boolean createField(LoggingFramework framework, JavacNode typeNode, JCFieldAccess loggingType, JCTree source, String logFieldName, boolean useStatic, String loggerTopic,
+									   String loggerTypeName, String loggerFactoryMethodName) {
+
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		
 		// private static final <loggerType> log = <factoryMethod>(<parameter>);
-		JCExpression loggerType = chainDotsString(typeNode, framework.getLoggerTypeName());
-		JCExpression factoryMethod = chainDotsString(typeNode, framework.getLoggerFactoryMethodName());
+		JCExpression loggerType = chainDotsString(typeNode, loggerTypeName);
+		JCExpression factoryMethod = chainDotsString(typeNode, loggerFactoryMethodName);
 		
 		JCExpression loggerName;
 		if (!framework.passTypeName) {
@@ -198,7 +210,18 @@ public class HandleLog {
 			processAnnotation(LoggingFramework.FLOGGER, annotation, annotationNode, "");
 		}
 	}
-	
+
+	/**
+	 * Handles the {@link lombok.extern.custom.CustomLogger} annotation for javac.
+	 */
+	@ProviderFor(JavacAnnotationHandler.class)
+	public static class HandleCustomLoggerLog extends JavacAnnotationHandler<lombok.extern.custom.CustomLogger> {
+		@Override public void handle(AnnotationValues<lombok.extern.custom.CustomLogger> annotation, JCAnnotation ast, JavacNode annotationNode) {
+			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_CUSTOM_FLAG_USAGE, "@CustomLogger", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
+			processAnnotation(LoggingFramework.CUSTOM, annotation, annotationNode, annotation.getInstance().topic());
+		}
+	}
+
 	enum LoggingFramework {
 		// private static final org.apache.commons.logging.Log log = org.apache.commons.logging.LogFactory.getLog(TargetType.class);
 		COMMONS(lombok.extern.apachecommons.CommonsLog.class, "org.apache.commons.logging.Log", "org.apache.commons.logging.LogFactory.getLog"),
@@ -229,6 +252,9 @@ public class HandleLog {
 		
 		// private static final com.google.common.flogger.FluentLogger log = com.google.common.flogger.FluentLogger.forEnclosingClass();
 		FLOGGER(lombok.extern.flogger.Flogger.class, "com.google.common.flogger.FluentLogger", "com.google.common.flogger.FluentLogger.forEnclosingClass", false),
+
+		// private static final {loggerClass} log = {factoryClass}.getLogger(TargetType.class);
+		CUSTOM(lombok.extern.custom.CustomLogger.class, "", ""),
 		;
 		
 		private final Class<? extends Annotation> annotationClass;

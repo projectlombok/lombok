@@ -410,7 +410,28 @@ public class ConfigurationKeys {
 	 * If set, <em>any</em> usage of {@code @Flogger} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> LOG_FLOGGER_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.log.flogger.flagUsage", "Emit a warning or error if @Flogger is used.") {};
-	
+
+	/**
+	 * lombok configuration: {@code lombok.log.custom.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 *
+	 * If set, <em>any</em> usage of {@code @CustomLogger} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> LOG_CUSTOM_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.log.custom.flagUsage", "Emit a warning or error if @CustomLogger is used.") {};
+
+	/**
+	 * lombok configuration: {@code lombok.log.loggerTypeName} = &lt;String: aValidJavaTypeName&gt; (Default: {@code ""}).
+	 *
+	 * If set the custom log annotation will use the given name as the class name of the log field.
+	 */
+	public static final ConfigurationKey<String> LOG_CUSTOM_LOGGER_TYPE_NAME = new ConfigurationKey<String>("lombok.log.loggerTypeName", "Use this type name for the generated logger fields.") {};
+
+	/**
+	 * lombok configuration: {@code lombok.log.loggerFactoryName} = &lt;String: aValidJavaTypeName&gt; (Default: {@code ""}).
+	 *
+	 * If set the custom log annotation will use the given name as the factory method name used to initialize the log field.
+	 */
+	public static final ConfigurationKey<String> LOG_CUSTOM_LOGGER_FACTORY_NAME = new ConfigurationKey<String>("lombok.log.loggerFactoryName","Use this type name for the generated logger factory.") {};
+
 	/**
 	 * lombok configuration: {@code lombok.log.fieldName} = &lt;String: aJavaIdentifier&gt; (Default: {@code log}).
 	 * 
