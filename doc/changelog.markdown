@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.18.9 "Edgy Guinea Pig"
+* Nothing yet.
+
 ### v1.18.8 (May 7th, 2019)
 * FEATURE: You can now configure `@FieldNameConstants` to `CONSTANT_CASE` the generated constants, using a `lombok.config` option. See the [FieldNameConstants documentation](https://projectlombok.org/features/experimental/FieldNameConstants). [Issue #2092](https://github.com/rzwitserloot/lombok/issues/2092).
 * FEATURE: You can now suppress generation of the `builder` method when using `@Builder`; usually because you're only interested in the `toBuilder` method. As a convenience we won't emit warnings about missing `@Builder.Default` annotations when you do this. [Issue #2046](https://github.com/rzwitserloot/lombok/issues/2046)
