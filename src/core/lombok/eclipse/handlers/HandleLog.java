@@ -30,6 +30,7 @@ import java.util.Arrays;
 
 import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
+import lombok.core.configuration.IdentifierName;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
 import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
@@ -48,6 +49,8 @@ import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.mangosdk.spi.ProviderFor;
 
 public class HandleLog {
+	private static final IdentifierName LOG = IdentifierName.valueOf("log");
+
 	private HandleLog() {
 		throw new UnsupportedOperationException();
 	}
@@ -57,8 +60,8 @@ public class HandleLog {
 		
 		switch (owner.getKind()) {
 		case TYPE:
-			String logFieldName = annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_NAME);
-			if (logFieldName == null) logFieldName = "log";
+			IdentifierName logFieldName = annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_NAME);
+			if (logFieldName == null) logFieldName = LOG;
 			
 			boolean useStatic = !Boolean.FALSE.equals(annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_IS_STATIC));
 			
@@ -74,14 +77,14 @@ public class HandleLog {
 				return;
 			}
 			
-			if (fieldExists(logFieldName, owner) != MemberExistsResult.NOT_EXISTS) {
+			if (fieldExists(logFieldName.getName(), owner) != MemberExistsResult.NOT_EXISTS) {
 				annotationNode.addWarning("Field '" + logFieldName + "' already exists.");
 				return;
 			}
 			
 			ClassLiteralAccess loggingType = selfType(owner, source);
 			
-			FieldDeclaration fieldDeclaration = createField(framework, source, loggingType, logFieldName, useStatic, loggerTopic);
+			FieldDeclaration fieldDeclaration = createField(framework, source, loggingType, logFieldName.getName(), useStatic, loggerTopic);
 			fieldDeclaration.traverse(new SetGeneratedByVisitor(source), typeDecl.staticInitializerScope);
 			// TODO temporary workaround for issue 217. http://code.google.com/p/projectlombok/issues/detail?id=217
 			// injectFieldSuppressWarnings(owner, fieldDeclaration);

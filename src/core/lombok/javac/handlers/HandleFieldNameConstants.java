@@ -30,6 +30,7 @@ import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.configuration.IdentifierName;
 import lombok.core.handlers.HandlerUtil;
 import lombok.experimental.FieldNameConstants;
 import lombok.javac.JavacAnnotationHandler;
@@ -54,7 +55,9 @@ import com.sun.tools.javac.util.Name;
 
 @ProviderFor(JavacAnnotationHandler.class)
 public class HandleFieldNameConstants extends JavacAnnotationHandler<FieldNameConstants> {
-	public void generateFieldNameConstantsForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean asEnum, String innerTypeName, boolean onlyExplicit, boolean uppercase) {
+	private static final IdentifierName FIELDS = IdentifierName.valueOf("Fields");
+
+	public void generateFieldNameConstantsForType(JavacNode typeNode, JavacNode errorNode, AccessLevel level, boolean asEnum, IdentifierName innerTypeName, boolean onlyExplicit, boolean uppercase) {
 		JCClassDecl typeDecl = null;
 		if (typeNode.get() instanceof JCClassDecl) typeDecl = (JCClassDecl) typeNode.get();
 		
@@ -115,24 +118,30 @@ public class HandleFieldNameConstants extends JavacAnnotationHandler<FieldNameCo
 			return;
 		}
 		
-		String innerTypeName = annotationInstance.innerTypeName();
-		if (innerTypeName.isEmpty()) innerTypeName = annotationNode.getAst().readConfiguration(ConfigurationKeys.FIELD_NAME_CONSTANTS_INNER_TYPE_NAME);
-		if (innerTypeName == null || innerTypeName.isEmpty()) innerTypeName = "Fields";
+		IdentifierName innerTypeName;
+		try {
+			innerTypeName = IdentifierName.valueOf(annotationInstance.innerTypeName());
+		} catch(IllegalArgumentException e) {
+			annotationNode.addError("InnerTypeName " + annotationInstance.innerTypeName() + " is not a valid Java identifier.");
+			return;
+		}
+		if (innerTypeName == null) innerTypeName = annotationNode.getAst().readConfiguration(ConfigurationKeys.FIELD_NAME_CONSTANTS_INNER_TYPE_NAME);
+		if (innerTypeName == null) innerTypeName = FIELDS;
 		Boolean uppercase = annotationNode.getAst().readConfiguration(ConfigurationKeys.FIELD_NAME_CONSTANTS_UPPERCASE);
 		if (uppercase == null) uppercase = false;
 		
 		generateFieldNameConstantsForType(node, annotationNode, level, asEnum, innerTypeName, annotationInstance.onlyExplicitlyIncluded(), uppercase);
 	}
 	
-	private void createInnerTypeFieldNameConstants(JavacNode typeNode, JavacNode errorNode, JCTree pos, AccessLevel level, java.util.List<JavacNode> fields, boolean asEnum, String innerTypeName, boolean uppercase) {
+	private void createInnerTypeFieldNameConstants(JavacNode typeNode, JavacNode errorNode, JCTree pos, AccessLevel level, java.util.List<JavacNode> fields, boolean asEnum, IdentifierName innerTypeName, boolean uppercase) {
 		if (fields.isEmpty()) return;
 		
 		JavacTreeMaker maker = typeNode.getTreeMaker();
 		JCModifiers mods = maker.Modifiers(toJavacModifier(level) | (asEnum ? Flags.ENUM : Flags.STATIC | Flags.FINAL));
 		
-		Name fieldsName = typeNode.toName(innerTypeName);
+		Name fieldsName = typeNode.toName(innerTypeName.getName());
 		
-		JavacNode fieldsType = findInnerClass(typeNode, innerTypeName);
+		JavacNode fieldsType = findInnerClass(typeNode, innerTypeName.getName());
 		boolean genConstr = false;
 		if (fieldsType == null) {
 			JCClassDecl innerType = maker.ClassDef(mods, fieldsName, List.<JCTypeParameter>nil(), null, List.<JCExpression>nil(), List.<JCTree>nil());

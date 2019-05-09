@@ -110,6 +110,19 @@ public final class ConfigurationDataType {
 				return "<fully.qualified.Type>";
 			}
 		});
+		map.put(IdentifierName.class, new ConfigurationValueParser() {
+			@Override public Object parse(String value) {
+				return IdentifierName.valueOf(value);
+			}
+			
+			@Override public String description() {
+				return "identifier-name";
+			}
+			
+			@Override public String exampleValue() {
+				return "<javaIdentifier>";
+			}
+		});
 		SIMPLE_TYPES = map;
 	}
 	

@@ -28,6 +28,7 @@ import java.lang.annotation.Annotation;
 
 import lombok.ConfigurationKeys;
 import lombok.core.AnnotationValues;
+import lombok.core.configuration.IdentifierName;
 import lombok.javac.JavacAnnotationHandler;
 import lombok.javac.JavacNode;
 import lombok.javac.JavacTreeMaker;
@@ -46,6 +47,8 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Name;
 
 public class HandleLog {
+	private static final IdentifierName LOG = IdentifierName.valueOf("log");
+
 	private HandleLog() {
 		throw new UnsupportedOperationException();
 	}
@@ -56,8 +59,8 @@ public class HandleLog {
 		JavacNode typeNode = annotationNode.up();
 		switch (typeNode.getKind()) {
 		case TYPE:
-			String logFieldName = annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_NAME);
-			if (logFieldName == null) logFieldName = "log";
+			IdentifierName logFieldName = annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_NAME);
+			if (logFieldName == null) logFieldName = LOG;
 			
 			boolean useStatic = !Boolean.FALSE.equals(annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_IS_STATIC));
 			
@@ -65,13 +68,13 @@ public class HandleLog {
 				annotationNode.addError("@Log is legal only on classes and enums.");
 				return;
 			}
-			if (fieldExists(logFieldName, typeNode) != MemberExistsResult.NOT_EXISTS) {
+			if (fieldExists(logFieldName.getName(), typeNode) != MemberExistsResult.NOT_EXISTS) {
 				annotationNode.addWarning("Field '" + logFieldName + "' already exists.");
 				return;
 			}
 
 			JCFieldAccess loggingType = selfType(typeNode);
-			createField(framework, typeNode, loggingType, annotationNode.get(), logFieldName, useStatic, loggerTopic);
+			createField(framework, typeNode, loggingType, annotationNode.get(), logFieldName.getName(), useStatic, loggerTopic);
 			break;
 		default:
 			annotationNode.addError("@Log is legal only on types.");
