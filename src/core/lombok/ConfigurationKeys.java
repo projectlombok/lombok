@@ -25,6 +25,7 @@ import java.util.List;
 
 import lombok.core.configuration.CallSuperType;
 import lombok.core.configuration.ConfigurationKey;
+import lombok.core.configuration.LogDeclaration;
 import lombok.core.configuration.FlagUsageType;
 import lombok.core.configuration.IdentifierName;
 import lombok.core.configuration.NullCheckExceptionType;
@@ -428,6 +429,36 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<Boolean> LOG_ANY_FIELD_IS_STATIC = new ConfigurationKey<Boolean>("lombok.log.fieldIsStatic", "Make the generated logger fields static (default: true).") {};
 	
+	// ----- Custom Logging -----
+	
+	/**
+	 * lombok configuration: {@code lombok.log.custom.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @CustomLog} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> LOG_CUSTOM_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.log.custom.flagUsage", "Emit a warning or error if @CustomLog is used.") {};
+	
+	/**
+	 * lombok configuration: {@code lombok.log.custom.declaration} = &lt;String: logDeclaration&gt;.
+	 * 
+	 * The log declaration must follow the pattern: 
+	 * <br>
+	 * {@code [LoggerType ]LoggerFactoryType.loggerFactoryMethod(loggerFactoryMethodParams)[(loggerFactoryMethodParams)]}
+	 * <br>
+	 * It consists of:
+	 * <ul>
+	 * <li>Optional fully qualified logger type, e.g. {@code my.cool.Logger}, followed by space. If not specified, it defaults to the logger factory type. 
+	 * <li>Fully qualified logger factory type, e.g. {@code my.cool.LoggerFactory}, followed by dot.
+	 * <li>Factory method, e.g. {@code createLogger}. The method must be defined on the logger factory type and must be static.
+	 * <li>At least one definition of factory method parameters, e.g. {@code ()} or {@code (TOPIC,TYPE)}. The format is comma-separated list of parameters wrapped in parentheses. 
+	 * The allowed parameters are: {@code TYPE} | {@code NAME} | {@code TOPIC} | {@code NULL}.
+	 * There can be at most one parameter definition with {@code TOPIC} and at most one without {@code TOPIC}.
+	 * </ul>
+	 * 
+	 * If not set, any usage of {@code @CustomLog} will result in an error.
+	 */
+	public static final ConfigurationKey<LogDeclaration> LOG_CUSTOM_DECLARATION = new ConfigurationKey<LogDeclaration>("lombok.log.custom.declaration", "Define the generated custom logger field.") {};
+
 	// ##### Experimental #####
 	
 	/**
