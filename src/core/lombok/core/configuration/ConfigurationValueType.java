@@ -21,52 +21,16 @@
  */
 package lombok.core.configuration;
 
-import lombok.core.JavaIdentifiers;
-
-public final class IdentifierName implements ConfigurationValueType {
-	private final String name;
-	
-	private IdentifierName(String name) {
-		this.name = name;
-	}
-	
-	public static IdentifierName valueOf(String name) {
-		if (name == null || name.trim().isEmpty()) {
-			return null;
-		}
-		String trimmedName = name.trim();
-		if (!JavaIdentifiers.isValidJavaIdentifier(trimmedName)) {
-			throw new IllegalArgumentException("Invalid identifier " + trimmedName);
-		}
-		return new IdentifierName(trimmedName);
-	}
-	
-	public static String description() {
-		return "identifier-name";
-	}
-	
-	public static String exampleValue() {
-		return "<javaIdentifier>";
-	}
-	
-	@Override public boolean equals(Object obj) {
-		if (!(obj instanceof IdentifierName)) return false;
-		return name.equals(((IdentifierName) obj).name);
-	}
-	
-	@Override public int hashCode() {
-		return name.hashCode();
-	}
-	
-	@Override public String toString() {
-		return name;
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public char[] getCharArray() {
-		return name.toCharArray();
-	}
+/**
+ * If a type used in {@link ConfigurationKey} type argument implements this interface,
+ * it is expected to provide the following three static methods:
+ * <ul>
+ * <li><code>public static SELF valueOf(String value)</code>
+ * <li><code>public static String description()</code>
+ * <li><code>public static String exampleValue()</code>
+ * </ul>
+ * Based on these methods, an instance of {@link ConfigurationValueParser} is created
+ * and used by the configuration system.
+ */
+public interface ConfigurationValueType {
 }

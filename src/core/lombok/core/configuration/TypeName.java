@@ -23,7 +23,7 @@ package lombok.core.configuration;
 
 import lombok.core.JavaIdentifiers;
 
-public final class TypeName {
+public final class TypeName implements ConfigurationValueType {
 	private final String name;
 	
 	private TypeName(String name) {
@@ -43,6 +43,14 @@ public final class TypeName {
 		return new TypeName(trimmedName);
 	}
 	
+	public static String description() {
+		return "type-name";
+	}
+	
+	public static String exampleValue() {
+		return "<fully.qualified.Type>";
+	}
+	
 	@Override public boolean equals(Object obj) {
 		if (!(obj instanceof TypeName)) return false;
 		return name.equals(((TypeName) obj).name);
@@ -58,5 +66,9 @@ public final class TypeName {
 	
 	public String getName() {
 		return name;
+	}
+	
+	public char[] getCharArray() {
+		return name.toCharArray();
 	}
 }

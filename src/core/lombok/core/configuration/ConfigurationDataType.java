@@ -21,6 +21,8 @@
  */
 package lombok.core.configuration;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
@@ -97,36 +99,10 @@ public final class ConfigurationDataType {
 				return "[false | true]";
 			}
 		});
-		map.put(TypeName.class, new ConfigurationValueParser() {
-			@Override public Object parse(String value) {
-				return TypeName.valueOf(value);
-			}
-			
-			@Override public String description() {
-				return "type-name";
-			}
-			
-			@Override public String exampleValue() {
-				return "<fully.qualified.Type>";
-			}
-		});
-		map.put(IdentifierName.class, new ConfigurationValueParser() {
-			@Override public Object parse(String value) {
-				return IdentifierName.valueOf(value);
-			}
-			
-			@Override public String description() {
-				return "identifier-name";
-			}
-			
-			@Override public String exampleValue() {
-				return "<javaIdentifier>";
-			}
-		});
 		SIMPLE_TYPES = map;
 	}
 	
-	private static ConfigurationValueParser enumParser(Object enumType) {
+	private static ConfigurationValueParser enumParser(Type enumType) {
 		final Class<?> type = (Class<?>) enumType;
 		@SuppressWarnings("rawtypes") final Class rawType = type;
 		
@@ -158,6 +134,38 @@ public final class ConfigurationDataType {
 		};
 	}
 	
+	private static ConfigurationValueParser valueTypeParser(Type argumentType) {
+		final Class<?> type = (Class<?>) argumentType;
+		final Method valueOfMethod = getMethod(type, "valueOf", String.class);
+		final Method descriptionMethod = getMethod(type, "description");
+		final Method exampleValueMethod = getMethod(type, "exampleValue");
+		return new ConfigurationValueParser() {
+			@Override public Object parse(String value) {
+				return invokeStaticMethod(valueOfMethod, value);
+			}
+
+			@Override public String description() {
+				return invokeStaticMethod(descriptionMethod);
+			}
+
+			@Override public String exampleValue() {
+				return invokeStaticMethod(exampleValueMethod);
+			}
+			
+			@SuppressWarnings("unchecked") 
+			private <R> R invokeStaticMethod(Method method, Object... arguments) {
+				try {
+					return (R) method.invoke(null, arguments);
+				} catch (IllegalAccessException e) {
+					throw new IllegalStateException("The method " + method.getName() + " ", e);
+				} catch (InvocationTargetException e) {
+					// There shouldn't be any checked Exception, only IllegalArgumentException is expected
+					throw (RuntimeException) e.getTargetException();
+				}
+			}
+		};
+	}
+	
 	private final boolean isList;
 	private final ConfigurationValueParser parser;
 	
@@ -168,7 +176,7 @@ public final class ConfigurationDataType {
 		
 		Type type = keyClass.getGenericSuperclass();
 		if (!(type instanceof ParameterizedType)) {
-			throw new IllegalArgumentException("Missing type parameter in "+ type);
+			throw new IllegalArgumentException("Missing type parameter in " + type);
 		}
 		
 		ParameterizedType parameterized = (ParameterizedType) type;
@@ -189,6 +197,10 @@ public final class ConfigurationDataType {
 		
 		if (isEnum(argumentType)) {
 			return new ConfigurationDataType(isList, enumParser(argumentType));
+		}
+		
+		if (isConfigurationValueType(argumentType)) {
+			return new ConfigurationDataType(isList, valueTypeParser(argumentType));
 		}
 		
 		throw new IllegalArgumentException("Unsupported type parameter in " + type);
@@ -215,5 +227,19 @@ public final class ConfigurationDataType {
 	
 	private static boolean isEnum(Type argumentType) {
 		return argumentType instanceof Class && ((Class<?>) argumentType).isEnum();
+	}
+	
+	private static boolean isConfigurationValueType(Type argumentType) {
+		return argumentType instanceof Class && ConfigurationValueType.class.isAssignableFrom((Class<?>) argumentType);
+	}
+	
+	private static Method getMethod(Class<?> argumentType, String name, Class<?>... parameterTypes) {
+		try {
+			return argumentType.getMethod(name, parameterTypes);
+		} catch (NoSuchMethodException e) {
+			throw new IllegalStateException("Method " + name + " with parameters " + Arrays.toString(parameterTypes) + "was not found.", e);
+		} catch (SecurityException e) {
+			throw new IllegalStateException("Cannot inspect methods of type " + argumentType, e);
+		}
 	}
 }
