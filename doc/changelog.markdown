@@ -1,6 +1,9 @@
 Lombok Changelog
 ----------------
 
+### v1.18.9 "Edgy Guinea Pig"
+* Nothing yet.
+
 ### v1.18.8 (May 7th, 2019)
 * FEATURE: You can now configure `@FieldNameConstants` to `CONSTANT_CASE` the generated constants, using a `lombok.config` option. See the [FieldNameConstants documentation](https://projectlombok.org/features/experimental/FieldNameConstants). [Issue #2092](https://github.com/rzwitserloot/lombok/issues/2092).
 * FEATURE: You can now suppress generation of the `builder` method when using `@Builder`; usually because you're only interested in the `toBuilder` method. As a convenience we won't emit warnings about missing `@Builder.Default` annotations when you do this. [Issue #2046](https://github.com/rzwitserloot/lombok/issues/2046)
@@ -15,6 +18,7 @@ Lombok Changelog
 * BUGFIX: `@SuperBuilder` together with `@Singular` on non-lists would produce an erroneous `emptyList` call. [Issue #2104](https://github.com/rzwitserloot/lombok/issues/2104).
 * IMPROBABLE BREAKING CHANGE: For fields and parameters marked non-null, if the method body starts with an assert statement to ensure the value isn't null, no code to throw an exception will be generated.
 * IMPROBABLE BREAKING CHANGE: When using `ecj` to compile java code with `@Builder` or `@SuperBuilder` in it, and a builder setter method was generated for a `@NonNull`-marked method, no explicit null check would be present. However, running `javac` on the exact same file _would_ produce the null check. Now ecj also produces this null check. [Issue #2120](https://github.com/rzwitserloot/lombok/issues/2120).
+* IMPROBABLE BREAKING CHANGE: We slightly changed the message of the exception lombok generates to handle `@NonNull` marked parameters. [Issue #2122](https://github.com/rzwitserloot/lombok/issues/2122).
 
 ### v1.18.6 (February 12th, 2019)
 * FEATURE: Javadoc on fields will now also be copied to the Builders' setters. Thanks for the contribution, Emil Lundberg. [Issue #2008](https://github.com/rzwitserloot/lombok/issues/2008)
