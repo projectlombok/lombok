@@ -21,8 +21,11 @@
  */
 package lombok.eclipse.agent;
 
+import org.eclipse.jdt.core.compiler.CategorizedProblem;
+import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
 import org.eclipse.jdt.internal.compiler.ast.ImportReference;
@@ -44,11 +47,13 @@ import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 
 import lombok.permit.Permit;
+import org.eclipse.jdt.internal.compiler.problem.AbortCompilation;
 
 import java.lang.reflect.Field;
 
 import static lombok.eclipse.Eclipse.poss;
 import static lombok.eclipse.handlers.EclipseHandlerUtil.makeType;
+import static org.eclipse.jdt.core.compiler.CategorizedProblem.CAT_TYPE;
 
 public class PatchVal {
 	
@@ -263,15 +268,11 @@ public class PatchVal {
 				resolved = null;
 			}
 			if (resolved != null) {
-				if (resolved.getClass().getSimpleName().startsWith("IntersectionTypeBinding")) {
-					// We intentionally deconstruct these into simply 'Object', because picking an arbitrary type amongst the intersection feels worse.
-				} else {
-					try {
-						replacement = makeType(resolved, local.type, false);
-						if (!decomponent) init.resolvedType = replacement.resolveType(scope);
-					} catch (Exception e) {
-						// Some type thing failed.
-					}
+				try {
+					replacement = makeType(resolved, local.type, false);
+					if (!decomponent) init.resolvedType = replacement.resolveType(scope);
+				} catch (Exception e) {
+					// Some type thing failed.
 				}
 			}
 		}
@@ -362,6 +363,32 @@ public class PatchVal {
 		} catch (ArrayIndexOutOfBoundsException e) {
 			// Known cause of issues; for example: val e = mth("X"), where mth takes 2 arguments.
 			return null;
+		} catch (AbortCompilation e) {
+			if (collection instanceof ConditionalExpression) {
+				ConditionalExpression cexp = (ConditionalExpression) collection;
+				Expression ifTrue = cexp.valueIfTrue;
+				Expression ifFalse = cexp.valueIfFalse;
+				TypeBinding ifTrueResolvedType = ifTrue.resolvedType;
+				CategorizedProblem problem = e.problem;
+				if (ifTrueResolvedType != null && ifFalse.resolvedType == null && problem.getCategoryID() == CAT_TYPE) {
+					CompilationResult compilationResult = e.compilationResult;
+					CategorizedProblem[] problems = compilationResult.problems;
+					int problemCount = compilationResult.problemCount;
+					for (int i = 0; i < problemCount; ++i) {
+						if (problems[i] == problem) {
+							problems[i] = null;
+							if (i + 1 < problemCount) {
+								System.arraycopy(problems, i + 1, problems, i, problemCount - i + 1);
+							}
+							break;
+						}
+					}
+					compilationResult.removeProblem(problem);
+					
+					return ifTrueResolvedType;
+				}
+			}
+			throw e;
 		}
 	}
 }

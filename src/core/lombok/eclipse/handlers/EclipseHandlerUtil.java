@@ -114,6 +114,7 @@ import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.lookup.Binding;
 import org.eclipse.jdt.internal.compiler.lookup.CaptureBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ParameterizedTypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.RawTypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
@@ -844,7 +845,6 @@ public class EclipseHandlerUtil {
 	}
 	
 	public static TypeReference makeType(TypeBinding binding, ASTNode pos, boolean allowCompound) {
-		
 		if (binding.getClass() == EclipseReflectiveMembers.INTERSECTION_BINDING) {
 			Object[] arr = (Object[]) EclipseReflectiveMembers.reflect(EclipseReflectiveMembers.INTERSECTION_BINDING_TYPES, binding);
 			binding = (TypeBinding) arr[0];
@@ -933,7 +933,12 @@ public class EclipseHandlerUtil {
 			WildcardBinding wildcard = (WildcardBinding) binding;
 			if (wildcard.boundKind == Wildcard.EXTENDS) {
 				if (!allowCompound) {
-					return makeType(wildcard.bound, pos, false);
+					TypeBinding bound = wildcard.bound;
+					boolean isObject = bound.id == TypeIds.T_JavaLangObject;
+					TypeBinding[] otherBounds = wildcard.otherBounds;
+					if (isObject && otherBounds != null && otherBounds.length > 0) {
+						return makeType(otherBounds[0], pos, false);
+					} else return makeType(bound, pos, false);
 				} else {
 					Wildcard out = new Wildcard(Wildcard.EXTENDS);
 					setGeneratedBy(out, pos);
@@ -960,7 +965,8 @@ public class EclipseHandlerUtil {
 		// Finally, add however many nullTypeArgument[] arrays as that are missing, inverse the list, toArray it, and use that as PTR's typeArgument argument.
 		
 		List<TypeReference[]> params = new ArrayList<TypeReference[]>();
-		/* Calculate generics */ {
+		/* Calculate generics */
+		if (!(binding instanceof RawTypeBinding)) {
 			TypeBinding b = binding;
 			while (true) {
 				boolean isFinalStop = b.isLocalType() || !b.isMemberType() || b.enclosingType() == null;

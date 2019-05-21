@@ -63,8 +63,14 @@ public class ValWeirdTypes<Z> {
     final @val int singleInt = copy[0];
   }
   public void arraysAsList() {
-    final @val java.util.List<java.lang.Class<? extends java.lang.Object>> x = Arrays.asList(String.class, BigDecimal.class);
-    for (final @val java.lang.Class<? extends java.lang.Object> y : x) 
+    final @val java.util.List<java.lang.Class<? extends java.io.Serializable>> x = Arrays.asList(String.class, BigDecimal.class);
+    for (final @val java.lang.Class<? extends java.io.Serializable> y : x)
+      {
+      }
+  }
+  public @SuppressWarnings("all") void arraysAsList2() {
+    final @val java.util.List<java.lang.Class<? extends java.lang.Comparable>> x = Arrays.asList(String.class, BigDecimal.class, Comparable.class);
+    for (final @val java.lang.Class<? extends java.lang.Comparable> y : x)
       {
       }
   }

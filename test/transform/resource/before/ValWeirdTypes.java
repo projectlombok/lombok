@@ -72,4 +72,12 @@ public class ValWeirdTypes<Z> {
 			
 		}
 	}
+	
+	@SuppressWarnings("all")
+	public void arraysAsList2() {
+		val x = Arrays.asList(String.class, BigDecimal.class, Comparable.class);
+		for (val y : x) {
+		
+		}
+	}
 }
