@@ -1,8 +1,49 @@
 .importantNotification {
-        background-color: #FFEBCD;
-        border-radius: 20px;
-        padding: 10px;
-        margin: 10px;
+	background-color: #FFEBCD;
+	border-radius: 20px;
+	padding: 10px;
+	margin: 10px;
+}
+
+.tidelift-link-inline {
+	border-radius: 18px;
+	background-color: #626980;
+	background-color: #626980;
+	background-image: url('/img/tidelift-mark.png');
+	background-repeat: no-repeat;
+	background-position: 6px;
+	background-size: 12px;
+	padding: 2px 8px 2px 26px;
+	color: #FFF;
+}
+
+.tidelift-link {
+	border-bottom-left-radius: 18px;
+	border-top-left-radius: 18px;
+	background-color: #626980;
+	box-sizing: border-box;
+	color: #FFF;
+	display: flex;
+	top: 46px;
+	right: 0px;
+	position: absolute;
+	background-image: url('/img/tidelift-mark.png');
+	background-repeat: no-repeat;
+	background-position: 10px;
+	background-size: 12px;
+	padding: 6px 12px 6px 28px;
+}
+
+.tidelift-link:hover, .tidelift-link-inline:hover {
+	color: white;
+}
+
+#tideliftlink {
+	margin-left: 2px;
+	padding: 4px 6px 4px 20px;
+	background-color: #4b5168;
+	border-radius: 5px;
+	color: white;
 }
 
 #clickForVideo {
@@ -12,22 +53,6 @@
 	margin-left: auto;
 	margin-right: auto;
 	margin-bottom: 40px;
-}
-
-.tidelift-para {
-	margin-top: 10px;
-}
-
-#tideliftlink {
-	margin-left: 2px;
-	padding: 4px 6px 4px 20px;
-	background-image: url('/img/tidelift-mark.png');
-	background-repeat: no-repeat;
-	background-position: 4px;
-	background-size: 12px;
-	background-color: #4b5168;
-	border-radius: 5px;
-	color: white;
 }
 
 pre {
