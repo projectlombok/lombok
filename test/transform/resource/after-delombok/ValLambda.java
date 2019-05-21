@@ -18,8 +18,4 @@ class ValLambda {
 		java.util.function.Function foo3 = (System.currentTimeMillis() < 0) ? (java.util.function.Function) r -> "" : r -> System.currentTimeMillis();
 		final java.util.function.Function<java.lang.String, java.lang.String> foo4 = (System.currentTimeMillis() < 0) ? (java.util.function.Function<String, String>) r -> "" : r -> String.valueOf(System.currentTimeMillis());
 	}
-//	public void castLubLambda() {
-//		Runnable foo = (Runnable) ((System.currentTimeMillis() > 0) ? () -> {} : System.out::println);
-//		lombok.val foo = (Runnable) ((System.currentTimeMillis() > 0) ? () -> {} : System.out::println);
-//	}
 }

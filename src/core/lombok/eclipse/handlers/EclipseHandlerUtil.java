@@ -845,7 +845,6 @@ public class EclipseHandlerUtil {
 	}
 	
 	public static TypeReference makeType(TypeBinding binding, ASTNode pos, boolean allowCompound) {
-		
 		if (binding.getClass() == EclipseReflectiveMembers.INTERSECTION_BINDING) {
 			Object[] arr = (Object[]) EclipseReflectiveMembers.reflect(EclipseReflectiveMembers.INTERSECTION_BINDING_TYPES, binding);
 			binding = (TypeBinding) arr[0];
@@ -966,7 +965,8 @@ public class EclipseHandlerUtil {
 		// Finally, add however many nullTypeArgument[] arrays as that are missing, inverse the list, toArray it, and use that as PTR's typeArgument argument.
 		
 		List<TypeReference[]> params = new ArrayList<TypeReference[]>();
-		/* Calculate generics */ if(!(binding instanceof RawTypeBinding)) {
+		/* Calculate generics */
+		if (!(binding instanceof RawTypeBinding)) {
 			TypeBinding b = binding;
 			while (true) {
 				boolean isFinalStop = b.isLocalType() || !b.isMemberType() || b.enclosingType() == null;
