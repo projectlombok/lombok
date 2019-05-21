@@ -27,7 +27,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Causes lombok to generate a logger field.
+ * Causes lombok to generate a logger field based on a custom logger implementation.
  * <p>
  * Complete documentation is found at <a href="https://projectlombok.org/features/Log">the project lombok features page for lombok log annotations</a>.
  * <p>
@@ -50,7 +50,7 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  * <p>
- * Configuration must be provided in lombok.config, otherwise any usage will lead to errors.
+ * Configuration must be provided in lombok.config, otherwise any usage of this annotation will result in a compile-time error.
  * 
  * This annotation is valid for classes and enumerations.<br>
  * @see lombok.extern.java.Log &#64;Log
@@ -65,6 +65,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface CustomLog {
-	/** @return The category of the constructed Logger. By default, it will use the type where the annotation is placed. */
+	/**
+	 * 
+	 * Sets a custom topic/category. Note that this requires you to specify a parameter configuration for your custom logger that includes {@code TOPIC}.
+	 * 
+	 * @return The topic/category of the constructed Logger. By default (or for the empty string as topic), the parameter configuration without {@code TOPIC} is invoked.
+	 */
 	String topic() default "";
 }

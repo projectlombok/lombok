@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 The Project Lombok Authors.
+ * Copyright (C) 2010-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,6 @@ import lombok.core.configuration.LogDeclaration.LogFactoryParameter;
 import lombok.core.handlers.LoggingFramework;
 import lombok.eclipse.EclipseAnnotationHandler;
 import lombok.eclipse.EclipseNode;
-import lombok.eclipse.handlers.EclipseHandlerUtil.MemberExistsResult;
 
 public class HandleLog {
 	private static final IdentifierName LOG = IdentifierName.valueOf("log");
@@ -74,8 +73,7 @@ public class HandleLog {
 			if (owner.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) owner.get();
 			int modifiers = typeDecl == null ? 0 : typeDecl.modifiers;
 			
-			boolean notAClass = (modifiers &
-					(ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation)) != 0;
+			boolean notAClass = (modifiers & (ClassFileConstants.AccInterface | ClassFileConstants.AccAnnotation)) != 0;
 			
 			if (typeDecl == null || notAClass) {
 				annotationNode.addError(framework.getAnnotationAsString() + " is legal only on classes and enums.");
@@ -89,13 +87,13 @@ public class HandleLog {
 			
 			if (loggerTopic != null && loggerTopic.trim().isEmpty()) loggerTopic = null;
 			if (framework.getDeclaration().getParametersWithTopic() == null && loggerTopic != null) {
-				annotationNode.addError(framework.getAnnotationAsString() + " does not allow to set a topic.");
+				annotationNode.addError(framework.getAnnotationAsString() + " does not allow a topic.");
 			}
 			
 			ClassLiteralAccess loggingType = selfType(owner, source);
 			FieldDeclaration fieldDeclaration = createField(framework, source, loggingType, logFieldName.getName(), useStatic, loggerTopic);
 			fieldDeclaration.traverse(new SetGeneratedByVisitor(source), typeDecl.staticInitializerScope);
-			// TODO temporary workaround for issue 217. http://code.google.com/p/projectlombok/issues/detail?id=217
+			// TODO temporary workaround for issue 290. https://github.com/rzwitserloot/lombok/issues/290
 			// injectFieldSuppressWarnings(owner, fieldDeclaration);
 			injectField(owner, fieldDeclaration);
 			owner.rebuild();
@@ -107,12 +105,12 @@ public class HandleLog {
 	
 	public static ClassLiteralAccess selfType(EclipseNode type, Annotation source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
-
+		long p = (long) pS << 32 | pE;
+		
 		TypeDeclaration typeDeclaration = (TypeDeclaration)type.get();
 		TypeReference typeReference = new SingleTypeReference(typeDeclaration.name, p);
 		setGeneratedBy(typeReference, source);
-
+		
 		ClassLiteralAccess result = new ClassLiteralAccess(source.sourceEnd, typeReference);
 		setGeneratedBy(result, source);
 		
@@ -123,7 +121,7 @@ public class HandleLog {
 		int pS = source.sourceStart, pE = source.sourceEnd;
 		long p = (long) pS << 32 | pE;
 		
-		// 	private static final <loggerType> log = <factoryMethod>(<parameter>);
+		// private static final <loggerType> log = <factoryMethod>(<parameter>);
 		FieldDeclaration fieldDecl = new FieldDeclaration(logFieldName.toCharArray(), 0, -1);
 		setGeneratedBy(fieldDecl, source);
 		fieldDecl.declarationSourceEnd = -1;
@@ -134,7 +132,7 @@ public class HandleLog {
 		
 		MessageSend factoryMethodCall = new MessageSend();
 		setGeneratedBy(factoryMethodCall, source);
-
+		
 		factoryMethodCall.receiver = createNameReference(logDeclaration.getLoggerFactoryType().getName(), source);
 		factoryMethodCall.selector = logDeclaration.getLoggerFactoryMethod().getCharArray();
 		
@@ -151,7 +149,7 @@ public class HandleLog {
 	
 	public static TypeReference createTypeReference(String typeName, Annotation source) {
 		int pS = source.sourceStart, pE = source.sourceEnd;
-		long p = (long)pS << 32 | pE;
+		long p = (long) pS << 32 | pE;
 		
 		char[][] typeNameTokens = fromQualifiedName(typeName);
 		long[] pos = new long[typeNameTokens.length];
@@ -161,7 +159,7 @@ public class HandleLog {
 		setGeneratedBy(typeReference, source);
 		return typeReference;
 	}
-
+	
 	private static final Expression[] createFactoryParameters(ClassLiteralAccess loggingType, Annotation source, List<LogFactoryParameter> parameters, String loggerTopic) {
 		Expression[] expressions = new Expression[parameters.size()];
 		int pS = source.sourceStart, pE = source.sourceEnd;
@@ -174,7 +172,7 @@ public class HandleLog {
 				expressions[i] = createFactoryTypeParameter(loggingType, source);
 				break;
 			case NAME:
-				long p = (long)pS << 32 | pE;
+				long p = (long) pS << 32 | pE;
 				
 				MessageSend factoryParameterCall = new MessageSend();
 				setGeneratedBy(factoryParameterCall, source);
@@ -306,7 +304,7 @@ public class HandleLog {
 			handleFlagUsage(annotationNode, ConfigurationKeys.LOG_CUSTOM_FLAG_USAGE, "@CustomLog", ConfigurationKeys.LOG_ANY_FLAG_USAGE, "any @Log");
 			LogDeclaration logDeclaration = annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_CUSTOM_DECLARATION);
 			if (logDeclaration == null) {
-				annotationNode.addError("The @CustomLog is not configured; please set log.custom.declaration in lombok.config.");
+				annotationNode.addError("The @CustomLog annotation is not configured; please set log.custom.declaration in lombok.config.");
 				return;
 			}
 			LoggingFramework framework = new LoggingFramework(lombok.CustomLog.class, logDeclaration);

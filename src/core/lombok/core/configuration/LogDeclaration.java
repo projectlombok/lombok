@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,14 +49,11 @@ public final class LogDeclaration implements ConfigurationValueType {
 	}
 	
 	public static LogDeclaration valueOf(String declaration) {
-		if (declaration == null) {
-			return null;
-		}
+		if (declaration == null) return null;
 		
 		Matcher matcher = DECLARATION_PATTERN.matcher(declaration);
-		if (!matcher.matches()) {
-			throw new IllegalArgumentException("The declaration must follow the pattern: [LoggerType ]LoggerFactoryType.loggerFactoryMethod(loggerFactoryMethodParams)[(loggerFactoryMethodParams)]");
-		}
+		if (!matcher.matches()) throw new IllegalArgumentException("The declaration must follow the pattern: [LoggerType ]LoggerFactoryType.loggerFactoryMethod(loggerFactoryMethodParams)[(loggerFactoryMethodParams)]");
+		
 		TypeName loggerFactoryType = TypeName.valueOf(matcher.group(2));
 		TypeName loggerType = TypeName.valueOf(matcher.group(1));
 		if (loggerType == null) loggerType = loggerFactoryType;
@@ -67,21 +64,16 @@ public final class LogDeclaration implements ConfigurationValueType {
 		List<LogFactoryParameter> parametersWithTopic = null;
 		for (List<LogFactoryParameter> parameters: allParameters) {
 			if (parameters.contains(LogFactoryParameter.TOPIC)) {
-				if (parametersWithTopic != null) {
-					throw new IllegalArgumentException("There are too many parameters with TOPIC: " + parametersWithTopic + " and " + parameters);
-				}
+				if (parametersWithTopic != null) throw new IllegalArgumentException("There is more than one parameter definition that includes TOPIC: " + parametersWithTopic + " and " + parameters);
 				parametersWithTopic = parameters;
 			} else {
-				if (parametersWithoutTopic != null) {
-					throw new IllegalArgumentException("There are too many parameters without TOPIC: " + parametersWithoutTopic + " and " + parameters);
-				}
+				if (parametersWithoutTopic != null) throw new IllegalArgumentException("There is more than one parmaeter definition that does not include TOPIC: " + parametersWithoutTopic + " and " + parameters);
 				parametersWithoutTopic = parameters;
 			}
 		}
-		if (parametersWithoutTopic == null && parametersWithTopic == null) {
-			// shouldn't happen the pattern does not allow it
-			throw new IllegalArgumentException("No logger factory method parameters specified.");
-		}
+		
+		// sanity check (the pattern should disallow this situation
+		if (parametersWithoutTopic == null && parametersWithTopic == null) throw new IllegalArgumentException("No logger factory method parameters specified.");
 		
 		return new LogDeclaration(loggerType, loggerFactoryType, loggerFactoryMethod, parametersWithoutTopic, parametersWithTopic);
 	}
@@ -103,7 +95,7 @@ public final class LogDeclaration implements ConfigurationValueType {
 	}
 	
 	public static String description() {
-		return "custom-log-declartation";
+		return "custom-log-declaration";
 	}
 	
 	public static String exampleValue() {

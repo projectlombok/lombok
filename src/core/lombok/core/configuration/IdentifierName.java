@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,13 +31,10 @@ public final class IdentifierName implements ConfigurationValueType {
 	}
 	
 	public static IdentifierName valueOf(String name) {
-		if (name == null || name.trim().isEmpty()) {
-			return null;
-		}
+		if (name == null || name.trim().isEmpty()) return null;
+		
 		String trimmedName = name.trim();
-		if (!JavaIdentifiers.isValidJavaIdentifier(trimmedName)) {
-			throw new IllegalArgumentException("Invalid identifier " + trimmedName);
-		}
+		if (!JavaIdentifiers.isValidJavaIdentifier(trimmedName)) throw new IllegalArgumentException("Invalid identifier " + trimmedName);
 		return new IdentifierName(trimmedName);
 	}
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 The Project Lombok Authors.
+ * Copyright (C) 2010-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,14 +51,14 @@ import com.sun.tools.javac.util.Name;
 
 public class HandleLog {
 	private static final IdentifierName LOG = IdentifierName.valueOf("log");
-
+	
 	private HandleLog() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	public static void processAnnotation(LoggingFramework framework, AnnotationValues<?> annotation, JavacNode annotationNode, String loggerTopic) {
 		deleteAnnotationIfNeccessary(annotationNode, framework.getAnnotationClass());
-
+		
 		JavacNode typeNode = annotationNode.up();
 		switch (typeNode.getKind()) {
 		case TYPE:
@@ -67,7 +67,7 @@ public class HandleLog {
 			
 			boolean useStatic = !Boolean.FALSE.equals(annotationNode.getAst().readConfiguration(ConfigurationKeys.LOG_ANY_FIELD_IS_STATIC));
 			
-			if ((((JCClassDecl)typeNode.get()).mods.flags & Flags.INTERFACE) != 0) {
+			if ((((JCClassDecl) typeNode.get()).mods.flags & Flags.INTERFACE) != 0) {
 				annotationNode.addError(framework.getAnnotationAsString() + " is legal only on classes and enums.");
 				return;
 			}
@@ -78,9 +78,9 @@ public class HandleLog {
 			
 			if (loggerTopic != null && loggerTopic.trim().isEmpty()) loggerTopic = null;
 			if (framework.getDeclaration().getParametersWithTopic() == null && loggerTopic != null) {
-				annotationNode.addError(framework.getAnnotationAsString() + " does not allow to set a topic.");
+				annotationNode.addError(framework.getAnnotationAsString() + " does not allow a topic.");
 			}
-
+			
 			JCFieldAccess loggingType = selfType(typeNode);
 			createField(framework, typeNode, loggingType, annotationNode.get(), logFieldName.getName(), useStatic, loggerTopic);
 			break;
@@ -109,8 +109,8 @@ public class HandleLog {
 		JCMethodInvocation factoryMethodCall = maker.Apply(List.<JCExpression>nil(), factoryMethod, List.<JCExpression>from(factoryParameters));
 		
 		JCVariableDecl fieldDecl = recursiveSetGeneratedBy(maker.VarDef(
-				maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (useStatic ? Flags.STATIC : 0)),
-				typeNode.toName(logFieldName), loggerType, factoryMethodCall), source, typeNode.getContext());
+			maker.Modifiers(Flags.PRIVATE | Flags.FINAL | (useStatic ? Flags.STATIC : 0)),
+			typeNode.toName(logFieldName), loggerType, factoryMethodCall), source, typeNode.getContext());
 		
 		injectFieldAndMarkGenerated(typeNode, fieldDecl);
 		return true;

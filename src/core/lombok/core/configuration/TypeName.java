@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2013-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,14 +31,11 @@ public final class TypeName implements ConfigurationValueType {
 	}
 	
 	public static TypeName valueOf(String name) {
-		if (name == null || name.trim().isEmpty()) {
-			return null;
-		}
+		if (name == null || name.trim().isEmpty()) return null;
+		
 		String trimmedName = name.trim();
 		for (String identifier : trimmedName.split(".")) {
-			if (!JavaIdentifiers.isValidJavaIdentifier(identifier)) {
-				throw new IllegalArgumentException("Invalid type name " + trimmedName + " (part " + identifier + ")");
-			}
+			if (!JavaIdentifiers.isValidJavaIdentifier(identifier)) throw new IllegalArgumentException("Invalid type name " + trimmedName + " (part " + identifier + ")");
 		}
 		return new TypeName(trimmedName);
 	}

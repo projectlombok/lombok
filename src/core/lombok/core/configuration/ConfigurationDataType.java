@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2014 The Project Lombok Authors.
+ * Copyright (C) 2013-2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -143,16 +143,16 @@ public final class ConfigurationDataType {
 			@Override public Object parse(String value) {
 				return invokeStaticMethod(valueOfMethod, value);
 			}
-
+			
 			@Override public String description() {
 				return invokeStaticMethod(descriptionMethod);
 			}
-
+			
 			@Override public String exampleValue() {
 				return invokeStaticMethod(exampleValueMethod);
 			}
 			
-			@SuppressWarnings("unchecked") 
+			@SuppressWarnings("unchecked")
 			private <R> R invokeStaticMethod(Method method, Object... arguments) {
 				try {
 					return (R) method.invoke(null, arguments);
@@ -237,7 +237,7 @@ public final class ConfigurationDataType {
 		try {
 			return argumentType.getMethod(name, parameterTypes);
 		} catch (NoSuchMethodException e) {
-			throw new IllegalStateException("Method " + name + " with parameters " + Arrays.toString(parameterTypes) + "was not found.", e);
+			throw new IllegalStateException("Method " + name + " with parameters " + Arrays.toString(parameterTypes) + " was not found.", e);
 		} catch (SecurityException e) {
 			throw new IllegalStateException("Cannot inspect methods of type " + argumentType, e);
 		}

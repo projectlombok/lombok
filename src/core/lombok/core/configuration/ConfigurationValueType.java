@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 The Project Lombok Authors.
+ * Copyright (C) 2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ package lombok.core.configuration;
  * <li><code>public static String description()</code>
  * <li><code>public static String exampleValue()</code>
  * </ul>
+ * None of them should throw checked exceptions.
  * Based on these methods, an instance of {@link ConfigurationValueParser} is created
  * and used by the configuration system.
  */
