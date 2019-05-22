@@ -760,7 +760,7 @@ public class EclipseHandlerUtil {
 			TypeReference typeRef = annotation.type;
 			boolean match = false;
 			if (typeRef != null && typeRef.getTypeName() != null) {
-				for (TypeName cn : configuredCopyable) if (typeMatches(cn.toString(), node, typeRef)) {
+				for (TypeName cn : configuredCopyable) if (cn != null && typeMatches(cn.toString(), node, typeRef)) {
 					result.add(annotation);
 					match = true;
 					break;

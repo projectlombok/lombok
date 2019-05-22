@@ -135,7 +135,7 @@ public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldName
 		TypeDeclaration parent = (TypeDeclaration) typeNode.get();
 		EclipseNode fieldsType = findInnerClass(typeNode, innerTypeName.getName());
 		boolean genConstr = false, genClinit = false;
-		char[] name = innerTypeName.getName().toCharArray();
+		char[] name = innerTypeName.getCharArray();
 		TypeDeclaration generatedInnerType = null;
 		if (fieldsType == null) {
 			generatedInnerType = new TypeDeclaration(parent.compilationResult);

@@ -34,7 +34,7 @@ public final class TypeName implements ConfigurationValueType {
 		if (name == null || name.trim().isEmpty()) return null;
 		
 		String trimmedName = name.trim();
-		for (String identifier : trimmedName.split(".")) {
+		for (String identifier : trimmedName.split("\\.")) {
 			if (!JavaIdentifiers.isValidJavaIdentifier(identifier)) throw new IllegalArgumentException("Invalid type name " + trimmedName + " (part " + identifier + ")");
 		}
 		return new TypeName(trimmedName);
