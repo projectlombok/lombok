@@ -1,5 +1,13 @@
 // version 8:
 class ValLambda {
+	
+	static {
+		lombok.val foo = (System.currentTimeMillis() > 0) ? (Runnable)()-> {} : System.out::println;
+	}
+	{
+		lombok.val foo = (System.currentTimeMillis() > 0) ? (Runnable)()-> {} : System.out::println;
+	}
+	
 	public void easyLambda() {
 		lombok.val foo = (Runnable)()-> {};
 	}

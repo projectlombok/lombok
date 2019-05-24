@@ -1,4 +1,14 @@
 class ValLambda {
+  static {
+    final @lombok.val java.lang.Runnable foo = ((System.currentTimeMillis() > 0) ? (Runnable) () -> {
+} : System.out::println);
+  }
+  {
+    final @lombok.val java.lang.Runnable foo = ((System.currentTimeMillis() > 0) ? (Runnable) () -> {
+} : System.out::println);
+  }
+  <clinit>() {
+  }
   ValLambda() {
     super();
   }

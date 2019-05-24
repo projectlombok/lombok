@@ -1,15 +1,27 @@
 // version 8:
 class ValLambda {
+	static {
+		final java.lang.Runnable foo = (System.currentTimeMillis() > 0) ? (Runnable) () -> {
+		} : System.out::println;
+	}
+	
+	{
+		final java.lang.Runnable foo = (System.currentTimeMillis() > 0) ? (Runnable) () -> {
+		} : System.out::println;
+	}
+	
 	public void easyLambda() {
 		final java.lang.Runnable foo = (Runnable) () -> {
 		};
 	}
+	
 	public void easyIntersectionLambda() {
 		final java.lang.Runnable foo = (Runnable & java.io.Serializable) () -> {
 		};
 		final java.io.Serializable bar = (java.io.Serializable & Runnable) () -> {
 		};
 	}
+	
 	public void easyLubLambda() {
 		final java.lang.Runnable foo = (System.currentTimeMillis() > 0) ? (Runnable) () -> {
 		} : System.out::println;
