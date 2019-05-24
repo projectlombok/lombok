@@ -21,10 +21,13 @@
  */
 package lombok.eclipse.agent;
 
+import lombok.permit.Permit;
 import org.eclipse.jdt.core.compiler.CategorizedProblem;
 import org.eclipse.jdt.internal.compiler.CompilationResult;
+import org.eclipse.jdt.internal.compiler.DefaultErrorHandlingPolicies;
 import org.eclipse.jdt.internal.compiler.ast.ASTNode;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.ConditionalExpression;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.ForeachStatement;
@@ -45,9 +48,8 @@ import org.eclipse.jdt.internal.compiler.lookup.Scope;
 import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeConstants;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
-
-import lombok.permit.Permit;
 import org.eclipse.jdt.internal.compiler.problem.AbortCompilation;
+import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
 
 import java.lang.reflect.Field;
 
@@ -358,6 +360,10 @@ public class PatchVal {
 	}
 	
 	private static TypeBinding resolveForExpression(Expression collection, BlockScope scope) {
+		CompilationUnitDeclaration referenceContext = scope.compilationUnitScope().referenceContext;
+		ProblemReporter oldProblemReporter = referenceContext.problemReporter;
+		referenceContext.problemReporter = new ProblemReporter(DefaultErrorHandlingPolicies.exitOnFirstError(),
+				oldProblemReporter.options, oldProblemReporter.problemFactory);
 		try {
 			return collection.resolveType(scope);
 		} catch (ArrayIndexOutOfBoundsException e) {
@@ -389,6 +395,8 @@ public class PatchVal {
 				}
 			}
 			throw e;
+		} finally {
+			referenceContext.problemReporter = oldProblemReporter;
 		}
 	}
 }
