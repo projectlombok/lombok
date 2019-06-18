@@ -692,7 +692,10 @@ public class PrettyPrinter extends JCTree.Visitor {
 	@Override public void visitTypeApply(JCTypeApply tree) {
 		print(tree.clazz);
 		print("<");
+		boolean temp = innermostArrayBracketsAreVarargs;
+		innermostArrayBracketsAreVarargs = false;
 		print(tree.arguments, ", ");
+		innermostArrayBracketsAreVarargs = temp;
 		print(">");
 	}
 	
