@@ -124,8 +124,11 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		if (builderMethodName == null) builderMethodName = "builder";
 		if (buildMethodName == null) buildMethodName = "build";
+		if (builderClassName.isEmpty()) {
+			builderClassName = annotationNode.getAst().readConfiguration(ConfigurationKeys.BUILDER_CLASS_NAME);
+		}
 		if (builderClassName == null) builderClassName = "";
-		
+
 		boolean generateBuilderMethod;
 		if (builderMethodName.isEmpty()) {
 			generateBuilderMethod = false;
@@ -485,7 +488,7 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			}
 		}
 	}
-	
+
 	private static String unpack(JCExpression expr) {
 		StringBuilder sb = new StringBuilder();
 		unpack(sb, expr);

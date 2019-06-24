@@ -261,7 +261,14 @@ public class ConfigurationKeys {
 	 * If set, <em>any</em> usage of {@code @Builder} results in a warning / error.
 	 */
 	public static final ConfigurationKey<FlagUsageType> BUILDER_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.builder.flagUsage", "Emit a warning or error if @Builder is used.") {};
-	
+
+	/**
+	 * lombok configuration: {@code lombok.builder.className} = &lt;String: aJavaIdentifier&gt;.
+	 *
+	 * Default value that will be used when no <code>builderClassName</code> is passed explicitly to {@code @Builder}.
+	 */
+	public static final ConfigurationKey<String> BUILDER_CLASS_NAME = new ConfigurationKey<String>("lombok.builder.className", "Default builder class name.") {};
+
 	// ----- Singular -----
 	
 	/**
