@@ -14,7 +14,7 @@
 	background-position: 6px;
 	background-size: 12px;
 	padding: 2px 8px 2px 26px;
-	color: #FFF;
+	color: white;
 }
 
 .tidelift-link {
@@ -22,7 +22,7 @@
 	border-top-left-radius: 18px;
 	background-color: #626980;
 	box-sizing: border-box;
-	color: #FFF;
+	color: white;
 	display: flex;
 	top: 46px;
 	right: 0px;
@@ -59,6 +59,36 @@ pre {
 	text-align: left;
 }
 
+.tideliftb {
+	border-radius: 4px;
+	border: 2px solid #D9230F;
+	font-size: 28px;
+	width: 330px;
+	line-height: 48px;
+	display: inline-block;
+	margin: 16px 0;
+	text-align: center;
+}
+
+.tideliftb1 {
+	background-color: white;
+	float: left;
+	color: #D9230F;
+}
+
+.tideliftb1:hover {
+	color: #D9230F;
+}
+
+.tideliftb2 {
+	background-color: #D9230F;
+	color: #FCFCFC;
+}
+
+.tideliftb2:hover {
+	color: #FCFCFC;
+}
+
 .buttonLike {
 	cursor: pointer;
 	background: -webkit-linear-gradient(top, #FFFEF7, #CFCEC7);
@@ -86,6 +116,10 @@ pre {
 	font-style: italic;
 	font-size: 10px;
 	margin-top: 20px;
+}
+
+.tidelift {
+	font-size: 16px;
 }
 
 .formErr {
