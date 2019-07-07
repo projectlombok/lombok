@@ -43,6 +43,7 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.search.SearchMatch;
 import org.eclipse.jdt.internal.compiler.ast.AbstractMethodDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Annotation;
+import org.eclipse.jdt.internal.compiler.ast.Block;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.ast.Expression;
 import org.eclipse.jdt.internal.compiler.ast.FieldDeclaration;
@@ -262,6 +263,22 @@ final class PatchFixesHider {
 		
 		public static boolean handleValForForEach(ForeachStatement forEach, BlockScope scope) {
 			return (Boolean) Util.invokeMethod(HANDLE_VAL_FOR_FOR_EACH, forEach, scope);
+		}
+	}
+	
+	
+	public static final class SafeCall {
+		
+		private static final Method HANDLE_SAFE_FOR_LOCAL_DECLARATION;
+		
+		static {
+			Class<?> shadowed = Util.shadowLoadClass("lombok.eclipse.agent.PatchSafeCall");
+			HANDLE_SAFE_FOR_LOCAL_DECLARATION = Util.findMethod(shadowed, "handleSafe",
+					Block.class, BlockScope.class);
+		}
+		
+		public static void handleSafe(Block local, BlockScope scope) {
+			Util.invokeMethod(HANDLE_SAFE_FOR_LOCAL_DECLARATION, local, scope);
 		}
 	}
 	

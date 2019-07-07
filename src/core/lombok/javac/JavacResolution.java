@@ -29,6 +29,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayDeque;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import javax.lang.model.type.TypeKind;
 import javax.tools.JavaFileObject;
@@ -294,6 +295,22 @@ public class JavacResolution {
 		JCExpression out = maker.Ident(ast.toName("java"));
 		out = maker.Select(out, ast.toName("lang"));
 		out = maker.Select(out, ast.toName("Object"));
+		return out;
+	}
+	
+	public static JCExpression createJavaType(Class clazz, JavacAST ast) {
+		return createJavaType(clazz.getName(), ast);
+	}
+	
+	public static JCExpression createJavaType(String name, JavacAST ast) {
+		JavacTreeMaker maker = ast.getTreeMaker();
+		
+		StringTokenizer chunks = new StringTokenizer(name, ".");
+		String first = chunks.hasMoreElements() ? chunks.nextToken() : name;
+		JCExpression out = maker.Ident(ast.toName(first));
+		while (chunks.hasMoreElements()) {
+			out = maker.Select(out, ast.toName(chunks.nextToken()));
+		}
 		return out;
 	}
 	

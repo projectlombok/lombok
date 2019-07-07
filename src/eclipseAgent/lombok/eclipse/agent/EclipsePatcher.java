@@ -52,6 +52,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	// At some point I'd like the agent to be capable of auto-detecting if its on eclipse or on ecj. This class is a sure sign we're not in ecj but in eclipse. -ReinierZ
 	@SuppressWarnings("unused")
 	private static final String ECLIPSE_SIGNATURE_CLASS = "org/eclipse/core/runtime/adaptor/EclipseStarter";
+	public static final String ELVIS_PATHCER = "lombok.launch.PatchFixesHider$SafeCall";
 	
 	@Override public void runAgent(String agentArgs, Instrumentation instrumentation, boolean injected, Class<?> launchingContext) throws Exception {
 		String[] args = agentArgs == null ? new String[0] : agentArgs.split(":");
@@ -607,6 +608,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 	private static void patchEcjTransformers(ScriptManager sm, boolean ecj) {
 		addPatchesForDelegate(sm, ecj);
 		addPatchesForVal(sm);
+		addPatchesForSafe(sm);
 		if (!ecj) addPatchesForValEclipse(sm);
 	}
 	
@@ -667,6 +669,25 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 						"void", "java.lang.Object", "java.lang.Object", "java.lang.Object"))
 				.request(StackRequest.THIS, StackRequest.PARAM1, StackRequest.PARAM2).build());
 	}
+	
+	private static void addPatchesForSafe(ScriptManager sm) {
+		patchSafe(new MethodTarget(
+				"org.eclipse.jdt.internal.compiler.ast.Block",
+				"resolve", "void",
+				"org.eclipse.jdt.internal.compiler.lookup.BlockScope"), sm);
+		
+	}
+	
+	private static void patchSafe(MethodTarget methodTarget, ScriptManager sm) {
+		String[] parameterTypes = {
+				"org.eclipse.jdt.internal.compiler.ast.Block",
+				"org.eclipse.jdt.internal.compiler.lookup.BlockScope"
+		};
+		sm.addScript(ScriptBuilder.wrapReturnValue().request(StackRequest.THIS, StackRequest.PARAM1)
+				.wrapMethod(new Hook(ELVIS_PATHCER, "handleSafe",
+						"void", parameterTypes)).target(methodTarget).build());
+	}
+	
 	
 	private static void addPatchesForVal(ScriptManager sm) {
 		final String LOCALDECLARATION_SIG = "org.eclipse.jdt.internal.compiler.ast.LocalDeclaration";

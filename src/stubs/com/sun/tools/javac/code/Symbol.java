@@ -23,6 +23,7 @@ import com.sun.tools.javac.util.Name;
 public abstract class Symbol implements Element {
 	public Type type;
 	public Name name;
+	public Symbol owner;
 	
 	public long flags() { return 0; }
 	public boolean isStatic() { return false; }
@@ -39,7 +40,7 @@ public abstract class Symbol implements Element {
 	@Override public Element getEnclosingElement() { return null; }
 	
 	public static abstract class TypeSymbol extends Symbol {}
-	
+
 	public static class MethodSymbol extends Symbol implements ExecutableElement {
 		public MethodSymbol(long flags, Name name, Type type, Symbol owner) {}
 		@Override public ElementKind getKind() { return null; }
@@ -65,6 +66,7 @@ public abstract class Symbol implements Element {
 	}
 	
 	public static class ClassSymbol extends TypeSymbol implements TypeElement {
+		public Name fullname;
 		@Override public Name getQualifiedName() { return null; }
 		@Override public java.util.List<? extends TypeMirror> getInterfaces() { return null; }
 		@Override public TypeMirror getSuperclass() { return null; }

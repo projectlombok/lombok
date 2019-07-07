@@ -1,0 +1,4 @@
+13 'SafeCall' doesn't support expressions of type BinaryExpression
+15 'SafeCall' doesn't support expressions of type Assignment
+16 'SafeCall' doesn't support expressions of type CompoundAssignment
+17 'SafeCall' doesn't support expressions of type BinaryExpression

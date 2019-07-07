@@ -1048,6 +1048,38 @@ public class EclipseHandlerUtil {
 		return result;
 	}
 	
+	public static char[] getPrimitiveTypeName(int typeId) {
+		char[] base = null;
+		
+		switch (typeId) {
+			case TypeIds.T_int:
+				base = TypeConstants.INT;
+				break;
+			case TypeIds.T_long:
+				base = TypeConstants.LONG;
+				break;
+			case TypeIds.T_short:
+				base = TypeConstants.SHORT;
+				break;
+			case TypeIds.T_byte:
+				base = TypeConstants.BYTE;
+				break;
+			case TypeIds.T_double:
+				base = TypeConstants.DOUBLE;
+				break;
+			case TypeIds.T_float:
+				base = TypeConstants.FLOAT;
+				break;
+			case TypeIds.T_boolean:
+				base = TypeConstants.BOOLEAN;
+				break;
+			case TypeIds.T_char:
+				base = TypeConstants.CHAR;
+				break;
+		}
+		return base;
+	}
+	
 	/**
 	 * Provides AnnotationValues with the data it needs to do its thing.
 	 */
@@ -1146,6 +1178,11 @@ public class EclipseHandlerUtil {
 		case PRIVATE:
 			return ClassFileConstants.AccPrivate;
 		}
+	}
+	
+	public static void copySourcePosition(ASTNode from, ASTNode to) {
+		to.sourceStart = from.sourceStart;
+		to.sourceEnd = from.sourceEnd;
 	}
 	
 	private static class GetterMethod {

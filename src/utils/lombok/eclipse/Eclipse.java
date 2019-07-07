@@ -45,6 +45,8 @@ import org.eclipse.jdt.internal.compiler.ast.TypeReference;
 import org.eclipse.jdt.internal.compiler.ast.UnaryExpression;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileConstants;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
+import org.eclipse.jdt.internal.compiler.lookup.BaseTypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.lookup.TypeIds;
 
 public class Eclipse {
@@ -136,7 +138,7 @@ public class Eclipse {
 	
 	/**
 	 * Searches the given field node for annotations and returns each one that matches the provided regular expression pattern.
-	 * 
+	 *
 	 * Only the simple name is checked - the package and any containing class are ignored.
 	 */
 	public static Annotation[] findAnnotations(AbstractVariableDeclaration field, Pattern namePattern) {
@@ -151,7 +153,7 @@ public class Eclipse {
 					result.add(annotation);
 				}
 			}
-		}	
+		}
 		return result.toArray(EMPTY_ANNOTATIONS_ARRAY);
 	}
 	
@@ -164,7 +166,16 @@ public class Eclipse {
 	 */
 	public static boolean isPrimitive(TypeReference ref) {
 		if (ref.dimensions() > 0) return false;
-		return PRIMITIVE_TYPE_NAME_PATTERN.matcher(toQualifiedName(ref.getTypeName())).matches();
+		return isPrimitive(toQualifiedName(ref.getTypeName()));
+	}
+	
+	public static boolean isPrimitive(String name) {
+		return PRIMITIVE_TYPE_NAME_PATTERN.matcher(name).matches();
+	}
+	
+	public static boolean isPrimitive(TypeBinding typeBinding) {
+		return typeBinding instanceof BaseTypeBinding &&
+				PRIMITIVE_TYPE_NAME_PATTERN.matcher(new String(typeBinding.sourceName())).matches();
 	}
 	
 	/**
