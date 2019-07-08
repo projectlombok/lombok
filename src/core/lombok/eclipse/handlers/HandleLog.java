@@ -88,6 +88,11 @@ public class HandleLog {
 			if (loggerTopic != null && loggerTopic.trim().isEmpty()) loggerTopic = null;
 			if (framework.getDeclaration().getParametersWithTopic() == null && loggerTopic != null) {
 				annotationNode.addError(framework.getAnnotationAsString() + " does not allow a topic.");
+				loggerTopic = null;
+			}
+			if (framework.getDeclaration().getParametersWithoutTopic() == null && loggerTopic == null) {
+				annotationNode.addError(framework.getAnnotationAsString() + " requires a topic.");
+				loggerTopic = "";
 			}
 			
 			ClassLiteralAccess loggingType = selfType(owner, source);
