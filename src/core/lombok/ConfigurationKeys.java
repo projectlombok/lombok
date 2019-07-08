@@ -256,6 +256,13 @@ public class ConfigurationKeys {
 	// ----- Builder -----
 	
 	/**
+	 * lombok configuration: {@code lombok.builder.classNames} = &lt;String: aJavaIdentifier (optionally with a star as placeholder for the type name)&gt; (Default: {@code *Builder}).
+	 * 
+	 * For any usage of the {@code @Builder} annotation without an explicit {@code builderClassName} parameter, this value is used to determine the name of the builder class to generate (or to adapt if such an inner class already exists).
+	 */
+	public static final ConfigurationKey<String> BUILDER_CLASS_NAME = new ConfigurationKey<String>("lombok.builder.className", "Default name of the generated builder class. A * is replaced with the name of the relevant type (default = *Builder).") {};
+	
+	/**
 	 * lombok configuration: {@code lombok.builder.flagUsage} = {@code WARNING} | {@code ERROR}.
 	 * 
 	 * If set, <em>any</em> usage of {@code @Builder} results in a warning / error.

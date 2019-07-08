@@ -160,6 +160,10 @@ public class JacksonExample {
 
 	<@f.confKeys>
 		<dt>
+			<code>lombok.builder.className</code> = [a java identifier with an optional star to indicate where the return type name goes] (default: <code>*Builder</code>)
+		</dt><dd>
+			Unless you explicitly pick the builder's class name with the <code>builderClassName</code> parameter, this name is chosen; any star in the name is replaced with the relevant return type.
+		</dd><dt>
 			<code>lombok.builder.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
 			Lombok will flag any usage of <code>@Builder</code> as a warning or error if configured.

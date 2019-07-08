@@ -52,6 +52,10 @@
 	
 	<@f.confKeys>
 		<dt>
+			<code>lombok.builder.className</code> = [a java identifier with an optional star to indicate where the return type name goes] (default: <code>*Builder</code>)
+		</dt><dd>
+			This is the name of the generated builder class; any star in the name is replaced with the relevant return type. Note that the parent class must also have the same setting (the entire type hierarchy annoated with <code>@SuperBuilder</code> needs the same setting).
+		</dd><dt>
 			<code>lombok.superBuilder.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
 			Lombok will flag any usage of <code>@SuperBuilder</code> as a warning or error if configured.

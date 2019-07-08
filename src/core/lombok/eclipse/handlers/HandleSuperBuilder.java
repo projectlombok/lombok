@@ -203,7 +203,9 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		}
 		
 		// Set the names of the builder classes.
-		String builderClassName = String.valueOf(td.name) + "Builder";
+		String builderClassNameTemplate = annotationNode.getAst().readConfiguration(ConfigurationKeys.BUILDER_CLASS_NAME);
+		if (builderClassNameTemplate == null || builderClassNameTemplate.isEmpty()) builderClassNameTemplate = "*Builder";
+		String builderClassName = builderClassNameTemplate.replace("*", String.valueOf(td.name));
 		String builderImplClassName = builderClassName + "Impl";
 		
 		typeParams = td.typeParameters != null ? td.typeParameters : new TypeParameter[0];
@@ -228,7 +230,7 @@ public class HandleSuperBuilder extends EclipseAnnotationHandler<SuperBuilder> {
 		if (extendsClause instanceof QualifiedTypeReference) {
 			QualifiedTypeReference qualifiedTypeReference = (QualifiedTypeReference)extendsClause;
 			String superclassClassName = String.valueOf(qualifiedTypeReference.getLastToken());
-			String superclassBuilderClassName = superclassClassName + "Builder";
+			String superclassBuilderClassName = builderClassNameTemplate.replace("*", superclassClassName);
 			
 			char[][] tokens = Arrays.copyOf(qualifiedTypeReference.tokens, qualifiedTypeReference.tokens.length + 1);
 			tokens[tokens.length] = superclassBuilderClassName.toCharArray();

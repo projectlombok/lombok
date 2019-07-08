@@ -209,6 +209,10 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 		
 		List<EclipseNode> nonFinalNonDefaultedFields = null;
 		
+		if (builderClassName.isEmpty()) builderClassName = annotationNode.getAst().readConfiguration(ConfigurationKeys.BUILDER_CLASS_NAME);
+		if (builderClassName == null || builderClassName.isEmpty()) builderClassName = "*Builder";
+		boolean replaceNameInBuilderClassName = builderClassName.contains("*");
+		
 		if (parent.get() instanceof TypeDeclaration) {
 			tdParent = parent;
 			TypeDeclaration td = (TypeDeclaration) tdParent.get();
@@ -265,7 +269,8 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			typeParams = td.typeParameters;
 			thrownExceptions = null;
 			nameOfStaticBuilderMethod = null;
-			if (builderClassName.isEmpty()) builderClassName = new String(td.name) + "Builder";
+			if (replaceNameInBuilderClassName) builderClassName = builderClassName.replace("*", new String(td.name));
+			replaceNameInBuilderClassName = false;
 		} else if (parent.get() instanceof ConstructorDeclaration) {
 			ConstructorDeclaration cd = (ConstructorDeclaration) parent.get();
 			if (cd.typeParameters != null && cd.typeParameters.length > 0) {
@@ -279,12 +284,13 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			typeParams = td.typeParameters;
 			thrownExceptions = cd.thrownExceptions;
 			nameOfStaticBuilderMethod = null;
-			if (builderClassName.isEmpty()) builderClassName = new String(cd.selector) + "Builder";
+			if (replaceNameInBuilderClassName) builderClassName = builderClassName.replace("*", new String(cd.selector));
+			replaceNameInBuilderClassName = false;
 		} else if (parent.get() instanceof MethodDeclaration) {
 			MethodDeclaration md = (MethodDeclaration) parent.get();
 			tdParent = parent.up();
 			isStatic = md.isStatic();
-
+			
 			if (toBuilder) {
 				final String TO_BUILDER_NOT_SUPPORTED = "@Builder(toBuilder=true) is only supported if you return your own type.";
 				char[] token;
@@ -360,7 +366,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 			typeParams = md.typeParameters;
 			thrownExceptions = md.thrownExceptions;
 			nameOfStaticBuilderMethod = md.selector;
-			if (builderClassName.isEmpty()) {
+			if (replaceNameInBuilderClassName) {
 				char[] token;
 				if (md.returnType instanceof QualifiedTypeReference) {
 					char[][] tokens = ((QualifiedTypeReference) md.returnType).tokens;
@@ -387,7 +393,7 @@ public class HandleBuilder extends EclipseAnnotationHandler<Builder> {
 					token = newToken;
 				}
 				
-				builderClassName = new String(token) + "Builder";
+				builderClassName = builderClassName.replace("*", new String(token));
 			}
 		} else {
 			annotationNode.addError("@Builder is only supported on types, constructors, and methods.");

@@ -4,6 +4,7 @@ Lombok Changelog
 ### v1.18.9 "Edgy Guinea Pig"
 * ENHANCEMENT: Thanks to Mark Haynes, the `staticConstructor` will now also be generated if a (private) constructor already exists. [Issue #2100](https://github.com/rzwitserloot/lombok/issues/2100)
 * ENHANCEMENT: `val` is now capable of decoding the type of convoluted expressions (particularly if the right hand side involves lambdas and conditional (ternary) expressions). [Pull Request #2109](https://github.com/rzwitserloot/lombok/pull/2109) with thanks to Alexander Bulgakov.
+* ENHANCEMENT: You can now configure the generated builder class name via the config system, using key `lombok.builder.className`. See the [Builder documentation](https://projectlombok.org/features/Builder) and [SuperBuilder documentation](https://projectlombok.org/features/experimental/SuperBuilder)
 * BUGFIX: Delombok would turn something like `List<byte[]>...` in a method parameter to `List<byte...>...` [Issue #2140](https://github.com/rzwitserloot/lombok/issues/2140)
 * BUGFIX: Javac would generate the wrong equals and hashCode if a type-use annotation was put on an array type field [Issue #2165](https://github.com/rzwitserloot/lombok/issues/2165)
 

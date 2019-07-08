@@ -1,3 +1,4 @@
+//CONF: lombok.builder.className = Test*Name
 import java.util.List;
 import lombok.Builder;
 

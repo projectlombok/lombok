@@ -177,7 +177,9 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}
 		
 		// Set the names of the builder classes.
-		String builderClassName = td.name.toString() + "Builder";
+		String builderClassNameTemplate = annotationNode.getAst().readConfiguration(ConfigurationKeys.BUILDER_CLASS_NAME);
+		if (builderClassNameTemplate == null || builderClassNameTemplate.isEmpty()) builderClassNameTemplate = "*Builder";
+		String builderClassName = builderClassNameTemplate.replace("*", td.name.toString());
 		String builderImplClassName = builderClassName + "Impl";
 		JCTree extendsClause = Javac.getExtendsClause(td);
 		JCExpression superclassBuilderClassExpression = null;
@@ -189,11 +191,11 @@ public class HandleSuperBuilder extends JavacAnnotationHandler<SuperBuilder> {
 		}
 		if (extendsClause instanceof JCFieldAccess) {
 			Name superclassClassName = ((JCFieldAccess)extendsClause).getIdentifier();
-			String superclassBuilderClassName = superclassClassName + "Builder";
+			String superclassBuilderClassName = builderClassNameTemplate.replace("*", superclassClassName);
 			superclassBuilderClassExpression = tdParent.getTreeMaker().Select((JCFieldAccess) extendsClause,
-					tdParent.toName(superclassBuilderClassName));
+				tdParent.toName(superclassBuilderClassName));
 		} else if (extendsClause != null) {
-			String superclassBuilderClassName = extendsClause.toString() + "Builder";
+			String superclassBuilderClassName = builderClassNameTemplate.replace("*", extendsClause.toString());
 			superclassBuilderClassExpression = chainDots(tdParent, extendsClause.toString(), superclassBuilderClassName);
 		}
 		// If there is no superclass, superclassBuilderClassExpression is still == null at this point.

@@ -129,9 +129,9 @@ public @interface Builder {
 	/**
 	 * Name of the builder class.
 	 * 
-	 * Default for {@code @Builder} on types and constructors: {@code (TypeName)Builder}.
+	 * Default for {@code @Builder} on types and constructors: see the configkey {@code lombok.builder.className}, which if not set defaults to {@code (TypeName)Builder}.
 	 * <p>
-	 * Default for {@code @Builder} on methods: {@code (ReturnTypeName)Builder}.
+	 * Default for {@code @Builder} on methods: see the configkey {@code lombok.builder.className}, which if not set defaults to {@code (ReturnTypeName)Builder}.
 	 * 
 	 * @return Name of the builder class that will be generated (or if it already exists, will be filled with builder elements).
 	 */

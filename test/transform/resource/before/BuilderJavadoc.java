@@ -4,7 +4,7 @@ import java.util.List;
 class BuilderJavadoc<T> {
 	/**
 	 * basic gets only a builder setter.
-     * @see #getsetwith
+	 * @see #getsetwith
 	 * @param tag is moved to the setter.
 	 * @return tag is removed from the setter.
 	 */
@@ -49,6 +49,5 @@ class BuilderJavadoc<T> {
 			this.predefWithJavadoc = x * 100;
 			return this;
 		}
-    }
-
+	}
 }

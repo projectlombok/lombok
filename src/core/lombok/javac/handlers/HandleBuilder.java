@@ -157,6 +157,10 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 		
 		ArrayList<JavacNode> nonFinalNonDefaultedFields = null;
 		
+		if (builderClassName.isEmpty()) builderClassName = annotationNode.getAst().readConfiguration(ConfigurationKeys.BUILDER_CLASS_NAME);
+		if (builderClassName == null || builderClassName.isEmpty()) builderClassName = "*Builder";
+		boolean replaceNameInBuilderClassName = builderClassName.contains("*");
+		
 		if (parent.get() instanceof JCClassDecl) {
 			tdParent = parent;
 			JCClassDecl td = (JCClassDecl) tdParent.get();
@@ -211,7 +215,8 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			typeParams = td.typarams;
 			thrownExceptions = List.nil();
 			nameOfBuilderMethod = null;
-			if (builderClassName.isEmpty()) builderClassName = td.name.toString() + "Builder";
+			if (replaceNameInBuilderClassName) builderClassName = builderClassName.replace("*", td.name.toString());
+			replaceNameInBuilderClassName = false;
 		} else if (fillParametersFrom != null && fillParametersFrom.getName().toString().equals("<init>")) {
 			JCMethodDecl jmd = (JCMethodDecl) fillParametersFrom.get();
 			if (!jmd.typarams.isEmpty()) {
@@ -225,7 +230,8 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			typeParams = td.typarams;
 			thrownExceptions = jmd.thrown;
 			nameOfBuilderMethod = null;
-			if (builderClassName.isEmpty()) builderClassName = td.name.toString() + "Builder";
+			if (replaceNameInBuilderClassName) builderClassName = builderClassName.replace("*", td.name.toString());
+			replaceNameInBuilderClassName = false;
 		} else if (fillParametersFrom != null) {
 			tdParent = parent.up();
 			JCClassDecl td = (JCClassDecl) tdParent.get();
@@ -239,9 +245,10 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 			if (returnType instanceof JCTypeApply) {
 				returnType = cloneType(tdParent.getTreeMaker(), returnType, ast, annotationNode.getContext());
 			}
-			if (builderClassName.isEmpty()) {
+			if (replaceNameInBuilderClassName) {
+				String replStr = null;
 				if (returnType instanceof JCFieldAccess) {
-					builderClassName = ((JCFieldAccess) returnType).name.toString() + "Builder";
+					replStr = ((JCFieldAccess) returnType).name.toString();
 				} else if (returnType instanceof JCIdent) {
 					Name n = ((JCIdent) returnType).name;
 					
@@ -251,27 +258,30 @@ public class HandleBuilder extends JavacAnnotationHandler<Builder> {
 							return;
 						}
 					}
-					builderClassName = n.toString() + "Builder";
+					replStr = n.toString();
 				} else if (returnType instanceof JCPrimitiveTypeTree) {
-					builderClassName = returnType.toString() + "Builder";
-					if (Character.isLowerCase(builderClassName.charAt(0))) {
-						builderClassName = Character.toTitleCase(builderClassName.charAt(0)) + builderClassName.substring(1);
+					replStr = returnType.toString();
+					if (Character.isLowerCase(replStr.charAt(0))) {
+						replStr = Character.toTitleCase(replStr.charAt(0)) + replStr.substring(1);
 					}
 				} else if (returnType instanceof JCTypeApply) {
 					JCExpression clazz = ((JCTypeApply) returnType).clazz;
 					if (clazz instanceof JCFieldAccess) {
-						builderClassName = ((JCFieldAccess) clazz).name + "Builder";
+						replStr = ((JCFieldAccess) clazz).name.toString();
 					} else if (clazz instanceof JCIdent) {
-						builderClassName = ((JCIdent) clazz).name + "Builder";
+						replStr = ((JCIdent) clazz).name.toString();
 					}
 				}
 				
-				if (builderClassName.isEmpty()) {
+				if (replStr == null || replStr.isEmpty()) {
 					// This shouldn't happen.
 					System.err.println("Lombok bug ID#20140614-1651: javac HandleBuilder: return type to name conversion failed: " + returnType.getClass());
-					builderClassName = td.name.toString() + "Builder";
+					replStr = td.name.toString();
 				}
+				builderClassName = builderClassName.replace("*", replStr);
+				replaceNameInBuilderClassName = false;
 			}
+			if (replaceNameInBuilderClassName) builderClassName = builderClassName.replace("*", td.name.toString());
 			if (toBuilder) {
 				final String TO_BUILDER_NOT_SUPPORTED = "@Builder(toBuilder=true) is only supported if you return your own type.";
 				if (returnType instanceof JCArrayTypeTree) {
