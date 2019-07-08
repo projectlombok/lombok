@@ -5,6 +5,7 @@ Lombok Changelog
 * ENHANCEMENT: Thanks to Mark Haynes, the `staticConstructor` will now also be generated if a (private) constructor already exists. [Issue #2100](https://github.com/rzwitserloot/lombok/issues/2100)
 * ENHANCEMENT: `val` is now capable of decoding the type of convoluted expressions (particularly if the right hand side involves lambdas and conditional (ternary) expressions). [Pull Request #2109](https://github.com/rzwitserloot/lombok/pull/2109) with thanks to Alexander Bulgakov.
 * BUGFIX: Delombok would turn something like `List<byte[]>...` in a method parameter to `List<byte...>...` [Issue #2140](https://github.com/rzwitserloot/lombok/issues/2140)
+* BUGFIX: Javac would generate the wrong equals and hashCode if a type-use annotation was put on an array type field [Issue #2165](https://github.com/rzwitserloot/lombok/issues/2165)
 
 ### v1.18.8 (May 7th, 2019)
 * FEATURE: You can now configure `@FieldNameConstants` to `CONSTANT_CASE` the generated constants, using a `lombok.config` option. See the [FieldNameConstants documentation](https://projectlombok.org/features/experimental/FieldNameConstants). [Issue #2092](https://github.com/rzwitserloot/lombok/issues/2092).
