@@ -7,52 +7,67 @@
 			<em>NEW in lombok 0.10: </em>You can annotate any class with a log annotation to let lombok generate a logger field.<br/>
 			The logger is named <code>log</code> and the field's type depends on which logger you have selected.
 		</p><p>
-			<em>NEW in lombok v1.16.24: </em>Addition of google's FluentLogger (flogger).
+			<em>NEW in lombok v1.16.24: </em>Addition of google's FluentLogger (via <a href="#Flogger"><code>@Flogger</code></a>).
+		</p><p>
+			<em>NEW in lombok v1.18.10: </em>Addition of <a href="#CustomLog"><code>@CustomLog</code></a> which lets you add any logger by configuring how to create them with a config key.
 		</p>
 	</@f.history>
 
 	<@f.overview>
 		<p>
-			You put the variant of <code>@Log</code> on your class (whichever one applies to the logging system you use); you then have a static final <code>log</code> field, initialized to the name of your class, which you can then use to write log statements.
+			You put the variant of <code>@Log</code> on your class (whichever one applies to the logging system you use); you then have a static final <code>log</code> field, initialized as is the commonly prescribed way for the logging framework you use, which you can then use to write log statements.
 		</p><p>
 			There are several choices available:<br />
 			<dl>
-				<dt>
+				<dt id="CommonsLog">
 					<code>@CommonsLog</code>
 				</dt><dd>
 					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="https://commons.apache.org/logging/apidocs/org/apache/commons/logging/Log.html">org.apache.commons.logging.Log</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="https://commons.apache.org/logging/apidocs/org/apache/commons/logging/LogFactory.html#getLog(java.lang.Class)">org.apache.commons.logging.LogFactory.getLog</a>(LogExample.<span class="keyword">class</span>);</code>
-				</dd><dt>
+				</dd><dt id="Flogger">
 					<code>@Flogger</code>
 				</dt><dd>
 					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="https://google.github.io/flogger/">com.google.common.flogger.FluentLogger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;com.google.common.flogger.FluentLogger.forEnclosingClass();</code>
-				</dd><dt>
+				</dd><dt id="JBossLog">
 					<code>@JBossLog</code>
 				</dt><dd>
 					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="https://docs.jboss.org/jbosslogging/latest/org/jboss/logging/Logger.html">org.jboss.logging.Logger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="https://docs.jboss.org/jbosslogging/latest/org/jboss/logging/Logger.html#getLogger(java.lang.Class)">org.jboss.logging.Logger.getLogger</a>(LogExample.<span class="keyword">class</span>);</code>
-				</dd><dt>
+				</dd><dt id="javaLog">
 					<code>@Log</code>
 				</dt><dd>
 					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="https://docs.oracle.com/javase/6/docs/api/java/util/logging/Logger.html">java.util.logging.Logger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="https://docs.oracle.com/javase/6/docs/api/java/util/logging/Logger.html#getLogger(java.lang.String)">java.util.logging.Logger.getLogger</a>(LogExample.<span class="keyword">class</span>.getName());</code>
-				</dd><dt>
+				</dd><dt id="Log4j">
 					<code>@Log4j</code>
 				</dt><dd>
 					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="https://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Logger.html">org.apache.log4j.Logger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="https://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Logger.html#getLogger(java.lang.Class)">org.apache.log4j.Logger.getLogger</a>(LogExample.<span class="keyword">class</span>);</code>
-				</dd><dt>
+				</dd><dt id="Log4j2">
 					<code>@Log4j2</code>
 				</dt><dd>
 					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="https://logging.apache.org/log4j/2.0/log4j-api/apidocs/org/apache/logging/log4j/Logger.html">org.apache.logging.log4j.Logger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="https://logging.apache.org/log4j/2.0/log4j-api/apidocs/org/apache/logging/log4j/LogManager.html#getLogger(java.lang.Class)">org.apache.logging.log4j.LogManager.getLogger</a>(LogExample.<span class="keyword">class</span>);</code>
-				</dd><dt>
+				</dd><dt id="Slf4j">
 					<code>@Slf4j</code>
 				</dt><dd>
 					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="https://www.slf4j.org/api/org/slf4j/Logger.html">org.slf4j.Logger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="https://www.slf4j.org/api/org/slf4j/LoggerFactory.html#getLogger(java.lang.Class)">org.slf4j.LoggerFactory.getLogger</a>(LogExample.<span class="keyword">class</span>);</code>
-				</dd><dt>
+				</dd><dt id="Xslf4j">
 					<code>@XSlf4j</code>
 				</dt><dd>
 					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><a href="https://www.slf4j.org/api/org/slf4j/ext/XLogger.html">org.slf4j.ext.XLogger</a>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<a href="https://www.slf4j.org/api/org/slf4j/ext/XLoggerFactory.html#getXLogger(java.lang.Class)">org.slf4j.ext.XLoggerFactory.getXLogger</a>(LogExample.<span class="keyword">class</span>);</code>
+				</dd><dt id="CustomLog">
+					<code>@CustomLog</code>
+				</dt><dd>
+					Creates <code><span class="keyword">private&nbsp;static&nbsp;final&nbsp;</span><em>com.foo.your.Logger</em>&nbsp;<span class="staticfield">log</span>&nbsp;=&nbsp;<em>com.foo.your.LoggerFactory.createYourLogger</em>(LogExample.<span class="keyword">class</span>);</code>
+					<p>
+						This option <em>requires</em> that you add a configuration to your <a href="/features/configuration"><code>lombok.config</code></a> file to specify what <code>@CustomLog</code> should do.
+					</p><p>
+						For example:<code>lombok.log.custom.declaration = com.foo.your.Logger com.foo.your.LoggerFactory.createYourLog(TYPE)(TOPIC)</code> which would produce the above statement. First comes a type which is the type of your logger, then a space, then the type of your logger factory, then a dot, then the name of the logger factory method, and then 1 or 2 parameter definitions; at most one definition with <code>TOPIC</code> and at most one without <code>TOPIC</code>. Each parameter definition is specified as a parenthesised comma-separated list of parameter kinds. The options are: <code>TYPE</code> (passes this <code>@Log</code> decorated type, as a class), <code>NAME</code> (passes this <code>@Log</code> decorated type's fully qualified name), <code>TOPIC</code> (passes the explicitly chosen topic string set on the <code>@CustomLog</code> annotation), and <code>NULL</code> (passes <code>null</code>).
+					</p><p>
+						The logger type is optional; if it is omitted, the logger factory type is used. (So, if your logger class has a static method that creates loggers, you can shorten your logger definition).
+					</p><p>
+						Please contact us if there is a public, open source, somewhat commonly used logging framework that we don't yet have an explicit annotation for. The primary purpose of <code>@CustomLog</code> is to support your in-house, private logging frameworks.
+					</p>
 				</dd>
 			</dl>
 		</p><p>
-			By default, the topic (or name) of the logger will be the class name of the class annotated with the <code>@Log</code> annotation. This can be customised by specifying the <code>topic</code> parameter. For example: <code>@XSlf4j(topic="reporting")</code>.
+			By default, the topic (or name) of the logger will be the (name of) the class annotated with the <code>@Log</code> annotation. This can be customised by specifying the <code>topic</code> parameter. For example: <code>@XSlf4j(topic="reporting")</code>.
 		</p>
 	</@f.overview>
 
@@ -68,9 +83,17 @@
 		</dt><dd>
 			Normally the generated logger is a <code>static</code> field. By setting this key to <code>false</code>, the generated field will be an instance field instead.
 		</dd><dt>
+			<code>lombok.log.custom.declaration</code> = <em>LoggerType </em> LoggerFactoryType.loggerFactoryMethod(loggerFactoryMethodParams)<em>(loggerFactoryMethodParams)</em>
+		</dt><dd>
+			Configures what to generate when <code>@CustomLog</code> is used. (The italicized parts are optional). loggerFactoryMethodParams is a comma-separated list of zero to any number of parameter kinds to pass. Valid kinds: TYPE, NAME, TOPIC, and NULL. You can include a parameter definition for the case where no explicit topic is set (do not include the TOPIC in the parameter list), and for when an explicit topic is set (do include the TOPIC parameter in the list).
+		</dd><dt>
 			<code>lombok.log.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>
 			Lombok will flag any usage of any of the various log annotations as a warning or error if configured.
+		</dd><dt>
+			<code>lombok.log.custom.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
+		</dt><dd>
+			Lombok will flag any usage of <code>@lombok.CustomLog</code> as a warning or error if configured.
 		</dd><dt>
 			<code>lombok.log.apacheCommons.flagUsage</code> = [<code>warning</code> | <code>error</code>] (default: not set)
 		</dt><dd>

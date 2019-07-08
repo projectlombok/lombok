@@ -25,7 +25,9 @@ import java.util.List;
 
 import lombok.core.configuration.CallSuperType;
 import lombok.core.configuration.ConfigurationKey;
+import lombok.core.configuration.LogDeclaration;
 import lombok.core.configuration.FlagUsageType;
+import lombok.core.configuration.IdentifierName;
 import lombok.core.configuration.NullCheckExceptionType;
 import lombok.core.configuration.TypeName;
 
@@ -309,16 +311,15 @@ public class ConfigurationKeys {
 	// ----- NonNull -----
 	
 	/**
-	 * lombok configuration: {@code lombok.nonNull.exceptionType} = &lt;String: <em>a java exception type</em>; either [{@code IllegalArgumentException} or: {@code NullPointerException}].
+	 * lombok configuration: {@code lombok.nonNull.exceptionType} = one of: [{@code IllegalArgumentException}, {@code NullPointerException}, or {@code Assertion}].
 	 * 
-	 * Sets the exception to throw if {@code @NonNull} is applied to a method parameter, and a caller passes in {@code null}.
+	 * Sets the exception to throw if {@code @NonNull} is applied to a method parameter, and a caller passes in {@code null}. If the chosen configuration is {@code Assertion}, an assertion is generated instead,
+	 * which would mean your code throws an {@code AssertionError} if assertions are enabled, and does nothing if assertions are not enabled.
 	 */
 	public static final ConfigurationKey<NullCheckExceptionType> NON_NULL_EXCEPTION_TYPE = new ConfigurationKey<NullCheckExceptionType>("lombok.nonNull.exceptionType", "The type of the exception to throw if a passed-in argument is null (Default: NullPointerException).") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.nonNull.flagUsage} = {@code WARNING} | {@code ERROR}.
-	 * 
-	 * <em>Implementation note: This field is supposed to be lombok.NonNull itself, but jdk6 and 7 have bugs where fields in annotations don't work well.</em>
 	 * 
 	 * If set, <em>any</em> usage of {@code @NonNull} results in a warning / error.
 	 */
@@ -423,7 +424,7 @@ public class ConfigurationKeys {
 	 * 
 	 * If set the various log annotations (which make a log field) will use the stated identifier instead of {@code log} as a name.
 	 */
-	public static final ConfigurationKey<String> LOG_ANY_FIELD_NAME = new ConfigurationKey<String>("lombok.log.fieldName", "Use this name for the generated logger fields (default: 'log').") {};
+	public static final ConfigurationKey<IdentifierName> LOG_ANY_FIELD_NAME = new ConfigurationKey<IdentifierName>("lombok.log.fieldName", "Use this name for the generated logger fields (default: 'log').") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.log.fieldIsStatic} = {@code true} | {@code false}.
@@ -434,6 +435,40 @@ public class ConfigurationKeys {
 	 */
 	public static final ConfigurationKey<Boolean> LOG_ANY_FIELD_IS_STATIC = new ConfigurationKey<Boolean>("lombok.log.fieldIsStatic", "Make the generated logger fields static (default: true).") {};
 	
+	// ----- Custom Logging -----
+	
+	/**
+	 * lombok configuration: {@code lombok.log.custom.flagUsage} = {@code WARNING} | {@code ERROR}.
+	 * 
+	 * If set, <em>any</em> usage of {@code @CustomLog} results in a warning / error.
+	 */
+	public static final ConfigurationKey<FlagUsageType> LOG_CUSTOM_FLAG_USAGE = new ConfigurationKey<FlagUsageType>("lombok.log.custom.flagUsage", "Emit a warning or error if @CustomLog is used.") {};
+	
+	/**
+	 * lombok configuration: {@code lombok.log.custom.declaration} = &lt;logDeclaration string&gt;.
+	 * 
+	 * The log declaration must follow the pattern: 
+	 * <br>
+	 * {@code [LoggerType ]LoggerFactoryType.loggerFactoryMethod(loggerFactoryMethodParams)[(loggerFactoryMethodParams)]}
+	 * <br>
+	 * It consists of:
+	 * <ul>
+	 * <li>Optional fully qualified logger type, e.g. {@code my.cool.Logger}, followed by space. If not specified, it defaults to the <em>LoggerFactoryType</em>.
+	 * <li>Fully qualified logger factory type, e.g. {@code my.cool.LoggerFactory}, followed by dot.
+	 * <li>Factory method, e.g. {@code createLogger}. This must be a {@code public static} method in the <em>LoggerFactoryType</em>.
+	 * <li>At least one definition of factory method parameters, e.g. {@code ()} or {@code (TOPIC,TYPE)}. The format inside the parentheses is a comma-separated list of parameter kinds.<br>
+	 * The allowed parameters are: {@code TYPE} | {@code NAME} | {@code TOPIC} | {@code NULL}.<br>
+	 * There can be at most one parameter definition with {@code TOPIC} and at most one without {@code TOPIC}. You can specify both.
+	 * </ul>
+	 * 
+	 * An example: {@code my.cool.Logger my.cool.LoggerFactory.createLogger(TYPE)(TYPE,TOPIC)}<br>
+	 * If no topic is provided in the usage of {@code @CustomLog}, the above will invoke {@code LoggerFactory}'s {@code createLogger} method, passing in the type as a {@code java.lang.Class} variable.<br>
+	 * If a topic is provided, the overload of that method is invoked with 2 parameters: First the type (as {@code Class}), then the topic (as {@code String}).
+	 * <p>
+	 * If this configuration key is not set, any usage of {@code @CustomLog} will result in an error.
+	 */
+	public static final ConfigurationKey<LogDeclaration> LOG_CUSTOM_DECLARATION = new ConfigurationKey<LogDeclaration>("lombok.log.custom.declaration", "Define the generated custom logger field.") {};
+
 	// ##### Experimental #####
 	
 	/**
@@ -548,7 +583,7 @@ public class ConfigurationKeys {
 	 * 
 	 * The names of the constants generated by {@code @FieldNameConstants} will be prefixed with this value.
 	 */
-	public static final ConfigurationKey<String> FIELD_NAME_CONSTANTS_INNER_TYPE_NAME = new ConfigurationKey<String>("lombok.fieldNameConstants.innerTypeName", "The default name of the inner type generated by @FieldNameConstants. (default: 'Fields').") {};
+	public static final ConfigurationKey<IdentifierName> FIELD_NAME_CONSTANTS_INNER_TYPE_NAME = new ConfigurationKey<IdentifierName>("lombok.fieldNameConstants.innerTypeName", "The default name of the inner type generated by @FieldNameConstants. (default: 'Fields').") {};
 	
 	/**
 	 * lombok configuration: {@code lombok.fieldNameConstants.uppercase} = {@code true} | {@code false}.

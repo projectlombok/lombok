@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2019 The Project Lombok Authors.
+ * Copyright (C) 2019 The Project Lombok Authors.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,34 +23,32 @@ package lombok.core.configuration;
 
 import lombok.core.JavaIdentifiers;
 
-public final class TypeName implements ConfigurationValueType {
+public final class IdentifierName implements ConfigurationValueType {
 	private final String name;
 	
-	private TypeName(String name) {
+	private IdentifierName(String name) {
 		this.name = name;
 	}
 	
-	public static TypeName valueOf(String name) {
+	public static IdentifierName valueOf(String name) {
 		if (name == null || name.trim().isEmpty()) return null;
 		
 		String trimmedName = name.trim();
-		for (String identifier : trimmedName.split("\\.")) {
-			if (!JavaIdentifiers.isValidJavaIdentifier(identifier)) throw new IllegalArgumentException("Invalid type name " + trimmedName + " (part " + identifier + ")");
-		}
-		return new TypeName(trimmedName);
+		if (!JavaIdentifiers.isValidJavaIdentifier(trimmedName)) throw new IllegalArgumentException("Invalid identifier " + trimmedName);
+		return new IdentifierName(trimmedName);
 	}
 	
 	public static String description() {
-		return "type-name";
+		return "identifier-name";
 	}
 	
 	public static String exampleValue() {
-		return "<fully.qualified.Type>";
+		return "<javaIdentifier>";
 	}
 	
 	@Override public boolean equals(Object obj) {
-		if (!(obj instanceof TypeName)) return false;
-		return name.equals(((TypeName) obj).name);
+		if (!(obj instanceof IdentifierName)) return false;
+		return name.equals(((IdentifierName) obj).name);
 	}
 	
 	@Override public int hashCode() {

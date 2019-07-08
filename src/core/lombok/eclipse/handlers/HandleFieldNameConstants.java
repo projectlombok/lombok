@@ -47,6 +47,7 @@ import lombok.AccessLevel;
 import lombok.ConfigurationKeys;
 import lombok.core.AST.Kind;
 import lombok.core.AnnotationValues;
+import lombok.core.configuration.IdentifierName;
 import lombok.core.handlers.HandlerUtil;
 import lombok.eclipse.Eclipse;
 import lombok.eclipse.EclipseAnnotationHandler;
@@ -56,7 +57,9 @@ import lombok.experimental.FieldNameConstants;
 
 @ProviderFor(EclipseAnnotationHandler.class)
 public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldNameConstants> {
-	public void generateFieldNameConstantsForType(EclipseNode typeNode, EclipseNode errorNode, AccessLevel level, boolean asEnum, String innerTypeName, boolean onlyExplicit, boolean uppercase) {
+	private static final IdentifierName FIELDS = IdentifierName.valueOf("Fields");
+
+	public void generateFieldNameConstantsForType(EclipseNode typeNode, EclipseNode errorNode, AccessLevel level, boolean asEnum, IdentifierName innerTypeName, boolean onlyExplicit, boolean uppercase) {
 		TypeDeclaration typeDecl = null;
 		if (typeNode.get() instanceof TypeDeclaration) typeDecl = (TypeDeclaration) typeNode.get();
 		
@@ -110,23 +113,29 @@ public class HandleFieldNameConstants extends EclipseAnnotationHandler<FieldName
 			return;
 		}
 		
-		String innerTypeName = annotationInstance.innerTypeName();
-		if (innerTypeName.isEmpty()) innerTypeName = annotationNode.getAst().readConfiguration(ConfigurationKeys.FIELD_NAME_CONSTANTS_INNER_TYPE_NAME);
-		if (innerTypeName == null || innerTypeName.isEmpty()) innerTypeName = "Fields";
+		IdentifierName innerTypeName;
+		try {
+			innerTypeName = IdentifierName.valueOf(annotationInstance.innerTypeName());
+		} catch(IllegalArgumentException e) {
+			annotationNode.addError("InnerTypeName " + annotationInstance.innerTypeName() + " is not a valid Java identifier.");
+			return;
+		}
+		if (innerTypeName == null) innerTypeName = annotationNode.getAst().readConfiguration(ConfigurationKeys.FIELD_NAME_CONSTANTS_INNER_TYPE_NAME);
+		if (innerTypeName == null) innerTypeName = FIELDS;
 		Boolean uppercase = annotationNode.getAst().readConfiguration(ConfigurationKeys.FIELD_NAME_CONSTANTS_UPPERCASE);
 		if (uppercase == null) uppercase = false;
 		
 		generateFieldNameConstantsForType(node, annotationNode, level, asEnum, innerTypeName, annotationInstance.onlyExplicitlyIncluded(), uppercase);
 	}
 	
-	private void createInnerTypeFieldNameConstants(EclipseNode typeNode, EclipseNode errorNode, ASTNode source, AccessLevel level, List<EclipseNode> fields, boolean asEnum, String innerTypeName, boolean uppercase) {
+	private void createInnerTypeFieldNameConstants(EclipseNode typeNode, EclipseNode errorNode, ASTNode source, AccessLevel level, List<EclipseNode> fields, boolean asEnum, IdentifierName innerTypeName, boolean uppercase) {
 		if (fields.isEmpty()) return;
 		
 		ASTVisitor generatedByVisitor = new SetGeneratedByVisitor(source);
 		TypeDeclaration parent = (TypeDeclaration) typeNode.get();
-		EclipseNode fieldsType = findInnerClass(typeNode, innerTypeName);
+		EclipseNode fieldsType = findInnerClass(typeNode, innerTypeName.getName());
 		boolean genConstr = false, genClinit = false;
-		char[] name = innerTypeName.toCharArray();
+		char[] name = innerTypeName.getCharArray();
 		TypeDeclaration generatedInnerType = null;
 		if (fieldsType == null) {
 			generatedInnerType = new TypeDeclaration(parent.compilationResult);

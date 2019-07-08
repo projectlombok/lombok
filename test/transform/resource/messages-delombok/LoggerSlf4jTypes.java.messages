@@ -1,2 +1,2 @@
-1 @Log is legal only on classes and enums.
-4 @Log is legal only on classes and enums.
+1 @Slf4j is legal only on classes and enums.
+4 @Slf4j is legal only on classes and enums.

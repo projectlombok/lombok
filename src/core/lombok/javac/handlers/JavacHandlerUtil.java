@@ -1450,7 +1450,7 @@ public class JavacHandlerUtil {
 		java.util.List<TypeName> configuredCopyable = node.getAst().readConfiguration(ConfigurationKeys.COPYABLE_ANNOTATIONS);
 		
 		if (!annoName.isEmpty()) {
-			for (TypeName cn : configuredCopyable) if (typeMatches(cn.toString(), node, anno.annotationType)) return List.of(anno);
+			for (TypeName cn : configuredCopyable) if (cn != null && typeMatches(cn.toString(), node, anno.annotationType)) return List.of(anno);
 			for (String bn : BASE_COPYABLE_ANNOTATIONS) if (typeMatches(bn, node, anno.annotationType)) return List.of(anno);
 		}
 		
@@ -1459,7 +1459,7 @@ public class JavacHandlerUtil {
 			if (child.getKind() == Kind.ANNOTATION) {
 				JCAnnotation annotation = (JCAnnotation) child.get();
 				boolean match = false;
-				for (TypeName cn : configuredCopyable) if (typeMatches(cn.toString(), node, annotation.annotationType)) {
+				for (TypeName cn : configuredCopyable) if (cn != null && typeMatches(cn.toString(), node, annotation.annotationType)) {
 					result.append(annotation);
 					match = true;
 					break;
