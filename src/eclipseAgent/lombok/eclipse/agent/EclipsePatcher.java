@@ -122,6 +122,7 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 		patchEcjTransformers(sm, ecjOnly);
 		patchExtensionMethod(sm, ecjOnly);
 		patchRenameField(sm);
+		patchNullCheck(sm);
 		
 		if (reloadExistingClasses) sm.reloadClasses(instrumentation);
 	}
@@ -774,4 +775,24 @@ public class EclipsePatcher implements AgentLauncher.AgentLaunchable {
 				.build());
 		}
 	}
+
+	private static void patchNullCheck(ScriptManager sm) {
+		/* Avoid warnings caused by the null check generated for lombok.NonNull if NonNullByDefault is used. */
+
+		/* Avoid "Redundant null check: comparing '@NonNull String' against null" */
+		sm.addScript(ScriptBuilder.exitEarly()
+				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.problem.ProblemReporter", "expressionNonNullComparison", "boolean", "org.eclipse.jdt.internal.compiler.ast.Expression", "boolean"))
+				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.valueMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "returnTrue", "boolean", "java.lang.Object"))
+				.request(StackRequest.PARAM1)
+				.transplant().build());
+
+		/* Avoid "Dead code" */
+		sm.addScript(ScriptBuilder.exitEarly()
+				.target(new MethodTarget("org.eclipse.jdt.internal.compiler.problem.ProblemReporter", "fakeReachable", "void", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.decisionMethod(new Hook("lombok.launch.PatchFixesHider$PatchFixes", "isGenerated", "boolean", "org.eclipse.jdt.internal.compiler.ast.ASTNode"))
+				.request(StackRequest.PARAM1)
+				.transplant().build());
+	}
+
 }

@@ -315,7 +315,17 @@ final class PatchFixesHider {
 			}
 			return result;
 		}
-		
+
+		public static boolean isGenerated(org.eclipse.jdt.internal.compiler.ast.ASTNode node) {
+			boolean result = false;
+			try {
+				result = node.getClass().getField("$generatedBy").get(node) != null;
+			} catch (Exception e) {
+				// better to assume it isn't generated
+			}
+			return result;
+		}
+
 		public static boolean isListRewriteOnGeneratedNode(org.eclipse.jdt.core.dom.rewrite.ListRewrite rewrite) {
 			return isGenerated(rewrite.getParent());
 		}
